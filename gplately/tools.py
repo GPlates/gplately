@@ -62,3 +62,41 @@ def extract_feature_lonlat(features):
         rlat[i], rlon[i] = geometry.to_lat_lon()
 
     return rlon, rlat
+
+
+def lonlat2xyz(lon, lat):
+    """
+    Convert lon / lat (radians) for the spherical triangulation into x,y,z
+    on the unit sphere
+    """
+    cosphi = np.cos(lat)
+    xs = cosphi*np.cos(lon)
+    ys = cosphi*np.sin(lon)
+    zs = np.sin(lat)
+    return xs, ys, zs
+
+def xyz2lonlat(x,y,z):
+    """
+    Convert x,y,z representation of points *on the unit sphere* of the
+    spherical triangulation to lon / lat (radians).
+
+    Notes:
+        no check is made here that (x,y,z) are unit vectors
+    """
+    lons = np.arctan2(ys, xs)
+    lats = np.arcsin(zs)
+    return lons, lats
+
+
+def haversine_distance(lon1, lon2, lat1, lat2):
+    """
+    from  https://en.wikipedia.org/wiki/Haversine_formula
+    https://stackoverflow.com/questions/639695/how-to-convert-latitude-or-longitude-to-meters
+    """
+    R = 6378.137 # radius of earth in km
+    dLat = lat2*np.pi/180 - lat1*np.pi/180
+    dLon = lon2*np.pi/180 - lon1*np.pi/180
+    a = np.sin(dLat/2)**2 + np.cos(lat1*np.pi/180)*np.cos(lat2*np.pi/180) * np.sin(dLon/2)**2
+    c = 2.0*np.arctan2(np.sqrt(a), np.sqrt(1.0 - a))
+    d = R*c
+    return d*1000
