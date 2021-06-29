@@ -1,3 +1,8 @@
+import ptt
+import numpy as np
+import matplotlib.pyplot as plt
+import pygplates
+
 def get_valid_geometries(shape_filename):
     """ only return valid geometries """
     import cartopy.io.shapereader as shpreader
@@ -85,7 +90,7 @@ def add_quiver(ax, reconstruction_time, **kwargs):
 
 
 # subduction teeth
-def tesselate_triangles(shapefilename, tesselation_radians, triangle_base_length, triangle_aspect=1.0):
+def tesselate_triangles(features, tesselation_radians, triangle_base_length, triangle_aspect=1.0):
     """
     Place subduction teeth along line segments within a MultiLineString shapefile
     
@@ -102,18 +107,16 @@ def tesselate_triangles(shapefilename, tesselation_radians, triangle_base_length
         Y_points : (n,3) array of triangle y points
     """
 
-    import shapefile
-    shp = shapefile.Reader(shapefilename)
-
     tesselation_degrees = np.degrees(tesselation_radians)
     triangle_pointsX = []
     triangle_pointsY = []
 
-    for i in range(len(shp)):
-        pts = np.array(shp.shape(i).points)
+    for feature in features:
+        # get geometry in lon lat order
+        pts = feature.get_reconstructed_geometry().to_lat_lon_array()[::-1,::-1]
 
         cum_distance = 0.0
-        for p in range(len(pts) - 1):
+        for p in range(0, len(pts) - 1):
 
             A = pts[p]
             B = pts[p+1]
@@ -141,86 +144,201 @@ def tesselate_triangles(shapefilename, tesselation_radians, triangle_base_length
 
                 cum_distance = 0.0
 
-    shp.close()
     return np.array(triangle_pointsX), np.array(triangle_pointsY)
 
+def shapelify_feature_polygons(features):
+    import shapely
+
+    date_line_wrapper = pygplates.DateLineWrapper()
+
+    all_geometries = []
+    for feature in features:
+
+        rings = []
+        wrapped_polygons = date_line_wrapper.wrap(feature.get_reconstructed_geometry())
+        for poly in wrapped_polygons:
+            ring = np.array([(p.get_longitude(), p.get_latitude()) for p in poly.get_exterior_points()])
+            ring[:,1] = np.clip(ring[:,1], -89, 89) # anything approaching the poles creates artefacts
+            ring_polygon = shapely.geometry.Polygon(ring)
+
+            # we need to make sure the exterior coordinates are ordered anti-clockwise
+            # and the geometry is valid otherwise it will screw with cartopy
+            if not ring_polygon.exterior.is_ccw:
+                ring_polygon.exterior.coords = list(ring[::-1])
+
+            rings.append(ring_polygon)
+
+        geom = shapely.geometry.MultiPolygon(rings)
+
+        # we need to make sure the exterior coordinates are ordered anti-clockwise
+        # and the geometry is valid otherwise it will screw with cartopy
+        all_geometries.append(geom.buffer(0.0)) # add 0.0 buffer to deal with artefacts
+
+    return all_geometries
+
+def shapelify_feature_lines(features):
+    import shapely
+
+    date_line_wrapper = pygplates.DateLineWrapper()
+
+    all_geometries = []
+    for feature in features:
+
+        rings = []
+        wrapped_lines = date_line_wrapper.wrap(feature.get_reconstructed_geometry())
+        for line in wrapped_lines:
+            ring = np.array([(p.get_longitude(), p.get_latitude()) for p in line.get_points()])
+            ring[:,1] = np.clip(ring[:,1], -89, 89) # anything approaching the poles creates artefacts
+            ring_linestring = shapely.geometry.LineString(ring)
+
+            rings.append(ring_linestring)
+
+        # construct shapely geometry
+        geom = shapely.geometry.MultiLineString(rings)
+
+        if geom.is_valid:
+            all_geometries.append(geom)
+
+    return all_geometries
 
 
 
 class PlotTopologies(object):
 
-    def __init__(self, time, PlateReconstruction_object):
+    def __init__(self, PlateReconstruction_object, time, coastline_filename=None, continent_filename=None, COB_filename=None):
 
         import ptt
+        import cartopy.crs as ccrs
 
         self.PlateReconstruction_object = PlateReconstruction_object
+        self.base_projection = ccrs.PlateCarree()
+
+        self.coastline_filename = coastline_filename
+        self.continent_filename = continent_filename
+        self.COB_filename = COB_filename
 
         # store topologies for easy access
+        # setting time runs the update_time routine
+        self.time = time
 
+    @property
+    def time(self):
+        """ Reconstruction time """
+        return self._time
 
+    @time.setter
+    def time(self, var):
+        if var >= 0:
+            self.update_time(var)
+        else:
+            raise ValueError("Enter a valid time >= 0")
 
 
     def update_time(self, time):
-        self.time = float(time)
+        self._time = float(time)
         resolved_topologies = ptt.resolve_topologies.resolve_topologies_into_features(
             self.PlateReconstruction_object.rotation_model,
             self.PlateReconstruction_object.topology_features,
             self.time)
 
-        self.topologies, self.transforms, self.ridges, self.trenches, self.trench_left, self.trench_right, self.other = resolve_topologies
+        self.topologies, self.ridge_transforms, self.ridges, self.transforms, self.trenches, self.trench_left, self.trench_right, self.other = resolved_topologies
 
+        # reconstruct other important polygons and lines
+        if self.coastline_filename:
+            self.coastlines = self.PlateReconstruction_object.reconstruct(
+                self.coastline_filename, self.time, from_time=0, anchor_plate_id=0)
 
-    def _get_reconstructed_lines(feature):
+        if self.continent_filename:
+            self.continents = self.PlateReconstruction_object.reconstruct(
+                self.continent_filename, self.time, from_time=0, anchor_plate_id=0)
+
+        if self.COB_filename:
+            self.COBs = self.PlateReconstruction_object.reconstruct(
+                self.COB_filename, self.time, from_time=0, anchor_plate_id=0)
+
+    def _get_feature_lines(self, features):
         import shapely
+        
+        date_line_wrapper = pygplates.DateLineWrapper()
 
         all_geometries = []
-        for feature in reconstructed_feature:
+        for feature in features:
 
             # get geometry in lon lat order
-            geometry = feature.get_reconstructed_geometry().to_lat_lon_array()[::-1,::-1]
-
+            rings = []
+            for geometry in feature.get_geometries():
+                wrapped_lines = date_line_wrapper.wrap(geometry)
+                for line in wrapped_lines:
+                    ring = np.array([(p.get_longitude(), p.get_latitude()) for p in line.get_points()])
+                    ring[:,1] = np.clip(ring[:,1], -89, 89) # anything approaching the poles creates artefacts
+                    ring_linestring = shapely.geometry.LineString(ring)
+                    
+                    rings.append(ring_linestring)
+                
             # construct shapely geometry
-            geom = shapely.geometry.LineString(geometry)
+            geom = shapely.geometry.MultiLineString(rings)
 
-            # we need to make sure the exterior coordinates are ordered anti-clockwise
-            # and the geometry is valid otherwise it will screw with cartopy
-            if not geom.exterior.is_ccw:
-                geom.exterior.coords = list(geometry[::-1])
             if geom.is_valid:
                 all_geometries.append(geom)
 
         return all_geometries
 
-    def plot_coastlines(self):
-        pass
+    def plot_coastlines(self, ax, **kwargs):
+        if self.coastline_filename is None:
+            raise ValueError("Supply coastline_filename to PlotTopologies object")
 
-    def plot_ridges(self, ax, **kwargs):
-        ax.add_geometries(all_geometries, crs=ccrs.PlateCarree(), **kwargs)
+        coastline_polygons = shapelify_feature_polygons(self.coastlines)
+        ax.add_geometries(coastline_polygons, crs=self.base_projection, **kwargs)
 
-    def plot_trenches(self, ax, **kwargs):
-        ax.add_geometries(all_geometries, crs=ccrs.PlateCarree(), **kwargs)
+    def plot_continents(self, ax, **kwargs):
+        if self.continent_filename is None:
+            raise ValueError("Supply continent_filename to PlotTopologies object")
 
-    def plot_subduction_teeth(self, ax, **kwargs):
+        continent_polygons = shapelify_feature_polygons(self.continents)
+        ax.add_geometries(continent_polygons, crs=self.base_projection, **kwargs)
+
+    def plot_continent_ocean_boundaries(self, ax, **kwargs):
+        if self.COB_filename is None:
+            raise ValueError("Supply COB_filename to PlotTopologies object")
+
+        COB_lines = shapelify_feature_lines(self.COBs)
+        ax.add_geometries(COB_lines, crs=self.base_projection, facecolor='none', **kwargs)
+
+    def plot_ridges(self, ax, color='black', **kwargs):
+        ridge_lines = self._get_feature_lines(self.ridges)
+        ax.add_geometries(ridge_lines, crs=self.base_projection, facecolor='none', edgecolor=color, **kwargs)
+
+    def plot_ridges_and_transforms(self, ax, color='black', **kwargs):
+        ridge_transform_lines = self._get_feature_lines(self.ridge_transforms)
+        ax.add_geometries(ridge_transform_lines, crs=self.base_projection, facecolor='none', edgecolor=color, **kwargs)
+
+    def plot_transforms(self, ax, color='black', **kwargs):
+        transform_lines = self._get_feature_lines(self.transforms)
+        ax.add_geometries(transform_lines, crs=self.base_projection, facecolor='none', edgecolor=color, **kwargs)
+
+    def plot_trenches(self, ax, color='black', **kwargs):
+        trench_lines = self._get_feature_lines(self.trenches)
+        ax.add_geometries(trench_lines, crs=self.base_projection, facecolor='none', edgecolor=color, **kwargs)
+
+    def plot_subduction_teeth(self, ax, spacing=0.1, size=2.0, aspect=1, color='black', **kwargs):
 
         # add Subduction Teeth
         subd_xL, subd_yL = tesselate_triangles(
-            "reconstructed_topologies/subduction_boundaries_sL_{:.2f}Ma.shp".format(reconstruction_time),
-            tesselation_radians=0.1, triangle_base_length=2.0, triangle_aspect=-1.0)
+            self.trench_left, tesselation_radians=0.1, triangle_base_length=2.0, triangle_aspect=-1.0)
         subd_xR, subd_yR = tesselate_triangles(
-            "reconstructed_topologies/subduction_boundaries_sR_{:.2f}Ma.shp".format(reconstruction_time),
-            tesselation_radians=0.1, triangle_base_length=2.0, triangle_aspect=1.0)
+            self.trench_right, tesselation_radians=0.1, triangle_base_length=2.0, triangle_aspect=1.0)
         
         for tX, tY in zip(subd_xL, subd_yL):
             triangle_xy_points = np.c_[tX, tY]
-            patch = plt.Polygon(triangle_xy_points, transform=ccrs.PlateCarree(), **kwargs)
+            patch = plt.Polygon(triangle_xy_points, transform=self.base_projection, color=color, **kwargs)
             ax.add_patch(patch)
         for tX, tY in zip(subd_xR, subd_yR):
             triangle_xy_points = np.c_[tX, tY]
-            patch = plt.Polygon(triangle_xy_points, transform=ccrs.PlateCarree(), **kwargs)
+            patch = plt.Polygon(triangle_xy_points, transform=self.base_projection, color=color, **kwargs)
             ax.add_patch(patch)
 
     def plot_raster(self, ax, grid, extent=[-180,180,-90,90], **kwargs):
-        ax.imshow(grid, origin='lower', extent=extent, transform=ccrs.PlateCarree(), **kwargs)
+        ax.imshow(grid, origin='lower', extent=extent, transform=self.base_projection, **kwargs)
 
 
     def plot_raster_from_netCDF4_file(self, ax, filename, **kwargs):
