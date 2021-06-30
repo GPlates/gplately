@@ -414,13 +414,33 @@ class PlotTopologies(object):
 
         ax.add_geometries(teeth, crs=self.base_projection, color=color, **kwargs)
 
-    def plot_raster(self, ax, grid, extent=[-180,180,-90,90], **kwargs):
+    def plot_grid(self, ax, grid, extent=[-180,180,-90,90], **kwargs):
         ax.imshow(grid, origin='lower', extent=extent, transform=self.base_projection, **kwargs)
 
 
-    def plot_raster_from_netCDF4_file(self, ax, filename, **kwargs):
+    def plot_grid_from_netCDF(self, ax, filename, **kwargs):
         from .grids import read_netcdf_grid
 
         raster, lon_coords, lat_coords = read_netcdf_grid(filename, return_grids=True)
         extent = [lon_coords.min(), lon_coords.max(), lat_coords.min(), lat_coords.max()]
-        self.plot_raster(ax, raster, extent=extent, **kwargs)
+        self.plot_grid(ax, raster, extent=extent, **kwargs)
+
+
+    def plot_plate_motion_vectors(self, ax, spacingX, spacingY, **kwargs):
+        from .tools import get_point_velocities
+
+        lons = np.arange(-180,180+spacingX,spacingX)
+        lats = np.arange(-90,90+spacingY,spacingY)
+        lonq, latq = np.meshgrid(lons, lats)
+
+        rotation_model = self.PlateReconstruction_object.rotation_model
+        topology_features = self.PlateReconstruction_object.topology_features
+
+        velocities = get_point_velocities(lonq.ravel(), latq.ravel(), topology_features, rotation_model, self.time)
+        U = velocities[:,0].reshape(lonq.shape)
+        V = velocities[:,1].reshape(latq.shape)
+
+        mag = np.sqrt(U**2 + V**2)
+        mag[mag == 0] = 1
+
+        ax.quiver(lonq, latq, U, V, transform=self.base_projection, **kwargs)

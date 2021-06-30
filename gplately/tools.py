@@ -1,3 +1,6 @@
+import numpy as np
+import pygplates
+
 def plate_temp(age, z, PLATE_THICKNESS) :
     "Computes the temperature in a cooling plate for age = t\
     and at a depth = z."
