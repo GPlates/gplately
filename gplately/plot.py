@@ -90,7 +90,7 @@ def add_quiver(ax, reconstruction_time, **kwargs):
 
 
 # subduction teeth
-def tesselate_triangles(features, tesselation_radians, triangle_base_length, triangle_aspect=1.0):
+def tesselate_triangles(shapefilename, tesselation_radians, triangle_base_length, triangle_aspect=1.0):
     """
     Place subduction teeth along line segments within a MultiLineString shapefile
     
@@ -107,16 +107,18 @@ def tesselate_triangles(features, tesselation_radians, triangle_base_length, tri
         Y_points : (n,3) array of triangle y points
     """
 
+    import shapefile
+    shp = shapefile.Reader(shapefilename)
+
     tesselation_degrees = np.degrees(tesselation_radians)
     triangle_pointsX = []
     triangle_pointsY = []
 
-    for feature in features:
-        # get geometry in lon lat order
-        pts = feature.get_reconstructed_geometry().to_lat_lon_array()[::-1,::-1]
+    for i in range(len(shp)):
+        pts = np.array(shp.shape(i).points)
 
         cum_distance = 0.0
-        for p in range(0, len(pts) - 1):
+        for p in range(len(pts) - 1):
 
             A = pts[p]
             B = pts[p+1]
@@ -144,6 +146,7 @@ def tesselate_triangles(features, tesselation_radians, triangle_base_length, tri
 
                 cum_distance = 0.0
 
+    shp.close()
     return np.array(triangle_pointsX), np.array(triangle_pointsY)
 
 def shapelify_feature_polygons(features):
@@ -283,6 +286,69 @@ class PlotTopologies(object):
 
         return all_geometries
 
+    # subduction teeth
+    def _tesselate_triangles(self, features, tesselation_radians, triangle_base_length, triangle_aspect=1.0):
+        """
+        Place subduction teeth along line segments within a MultiLineString shapefile
+        
+        Parameters
+        ----------
+            shapefilename  : str  path to shapefile
+            tesselation_radians : float
+            triangle_base_length : float  length of base
+            triangle_aspect : float  aspect ratio
+            
+        Returns
+        -------
+            X_points : (n,3) array of triangle x points
+            Y_points : (n,3) array of triangle y points
+        """
+
+        tesselation_degrees = np.degrees(tesselation_radians)
+        triangle_pointsX = []
+        triangle_pointsY = []
+
+        date_line_wrapper = pygplates.DateLineWrapper()
+
+
+        for feature in features:
+
+            cum_distance = 0.0
+
+            for geometry in feature.get_geometries():
+                wrapped_lines = date_line_wrapper.wrap(geometry)
+                for line in wrapped_lines:
+                    pts = np.array([(p.get_longitude(), p.get_latitude()) for p in line.get_points()])
+
+                    for p in range(0, len(pts) - 1):
+                        A = pts[p]
+                        B = pts[p+1]
+
+                        AB_dist = B - A
+                        AB_norm = AB_dist / np.hypot(*AB_dist)
+                        cum_distance += np.hypot(*AB_dist)
+
+                        # create a new triangle if cumulative distance is exceeded.
+                        if cum_distance >= tesselation_degrees:
+
+                            C = A + triangle_base_length*AB_norm
+
+                            # find normal vector
+                            AD_dist = np.array([AB_norm[1], -AB_norm[0]])
+                            AD_norm = AD_dist / np.linalg.norm(AD_dist)
+
+                            C0 = A + 0.5*triangle_base_length*AB_norm
+
+                            # project point along normal vector
+                            D = C0 + triangle_base_length*triangle_aspect*AD_norm
+
+                            triangle_pointsX.append( [A[0], C[0], D[0]] )
+                            triangle_pointsY.append( [A[1], C[1], D[1]] )
+
+                            cum_distance = 0.0
+
+        return np.array(triangle_pointsX), np.array(triangle_pointsY)
+
     def plot_coastlines(self, ax, **kwargs):
         if self.coastline_filename is None:
             raise ValueError("Supply coastline_filename to PlotTopologies object")
@@ -321,21 +387,32 @@ class PlotTopologies(object):
         ax.add_geometries(trench_lines, crs=self.base_projection, facecolor='none', edgecolor=color, **kwargs)
 
     def plot_subduction_teeth(self, ax, spacing=0.1, size=2.0, aspect=1, color='black', **kwargs):
+        import shapely
 
         # add Subduction Teeth
-        subd_xL, subd_yL = tesselate_triangles(
-            self.trench_left, tesselation_radians=0.1, triangle_base_length=2.0, triangle_aspect=-1.0)
-        subd_xR, subd_yR = tesselate_triangles(
-            self.trench_right, tesselation_radians=0.1, triangle_base_length=2.0, triangle_aspect=1.0)
+        subd_xL, subd_yL = self._tesselate_triangles(
+            self.trench_left,
+            tesselation_radians=spacing,
+            triangle_base_length=size,
+            triangle_aspect=-aspect)
+        subd_xR, subd_yR = self._tesselate_triangles(
+            self.trench_right,
+            tesselation_radians=spacing,
+            triangle_base_length=size,
+            triangle_aspect=aspect)
         
+        teeth = []
         for tX, tY in zip(subd_xL, subd_yL):
             triangle_xy_points = np.c_[tX, tY]
-            patch = plt.Polygon(triangle_xy_points, transform=self.base_projection, color=color, **kwargs)
-            ax.add_patch(patch)
+            shp = shapely.geometry.Polygon(triangle_xy_points)
+            teeth.append(shp)
+
         for tX, tY in zip(subd_xR, subd_yR):
             triangle_xy_points = np.c_[tX, tY]
-            patch = plt.Polygon(triangle_xy_points, transform=self.base_projection, color=color, **kwargs)
-            ax.add_patch(patch)
+            shp = shapely.geometry.Polygon(triangle_xy_points)
+            teeth.append(shp)
+
+        ax.add_geometries(teeth, crs=self.base_projection, color=color, **kwargs)
 
     def plot_raster(self, ax, grid, extent=[-180,180,-90,90], **kwargs):
         ax.imshow(grid, origin='lower', extent=extent, transform=self.base_projection, **kwargs)
