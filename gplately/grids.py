@@ -166,3 +166,99 @@ def sample_grid(lon, lat, grid, extent=[-180,180,-90,90], return_indices=False, 
                                             grid, method=method)
 
     return interpolator(np.c_[lat, lon], return_indices=return_indices, return_distances=return_distances)
+
+
+
+
+class Raster(object):
+
+    def __init__(self, filename=None, array=None, extent=None, resample=None):
+
+        if filename is None and array is None:
+            raise ValueError("Supply either a filename or numpy array")
+
+        elif filename and array:
+            raise ValueError("Supply either a filename or numpy array")
+
+        elif filename is not None:
+            self.data, lons, lats = read_netcdf_grid(filename, return_grids=True, resample=resample)
+            self.extent = [lons.min(), lons.max(), lats.min(), lats.max()]
+            self.lons = lons
+            self.lats = lats
+
+        elif array is not None:
+            if extent is None:
+                extent = [-180,180,-90,90]
+            self.data = np.array(array)
+            self.extent = extent
+            self.lons = np.linspace(extent[0], extent[1], self.data.shape[1])
+            self.lats = np.linspace(extent[2], extent[3], self.data.shape[0])
+
+        self._update()
+
+
+    def _update(self):
+        # store interpolation object
+        interpolator = RegularGridInterpolator((self.lats, self.lons), self.data, method='linear')
+        self._interpolator = interpolator
+
+
+    def interpolate(self, lons, lats, method='linear', return_indices=False, return_distances=False):
+        interp = self._interpolator
+        data_interp = interp((lats,lons), method=method, return_indices=return_indices, return_distances=return_distances)
+        return data_interp
+
+
+    def resample(self, spacingX, spacingY, overwrite=False):
+
+        lons = np.arange(self.extent[0], self.extent[1]+spacingX, spacingX)
+        lats = np.arange(self.extent[2], self.extent[3]+spacingY, spacingY)
+        lonq, latq = np.meshgrid(lons, lats)
+
+        data = self.interpolate(lonq, latq)
+        if overwrite:
+            self.data = data
+            self.lons = lons
+            self.lats = lats
+            self._update()
+
+        return data
+
+
+    def resize(self, resX, resY, overwrite=False):
+
+        # construct grid
+        lons = np.linspace(self.extent[0], self.extent[1], resX)
+        lats = np.linspace(self.extent[2], self.extent[3], resY)
+        lonq, latq = np.meshgrid(lons, lats)
+
+        data = self.interpolate(lonq, latq)
+        if overwrite:
+            self.data = data
+            self.lons = lons
+            self.lats = lats
+            self._update()
+
+        return data
+
+
+    def fill_NaNs(self, overwrite=False):
+
+        data = fill_raster(self.data)
+        if overwrite:
+            self.data = data
+
+        return data
+
+
+    def save_to_NetCDF4(filename):
+        pass
+
+
+class TimeRaster(Raster):
+
+    def __init__(self, PlateReconstruction_object, filename=None, array=None, extent=None, resample=None):
+
+        super(TimeRaster, self).__init__(filename, array, extent, resample)
+
+        self.PlateReconstruction_object = PlateReconstruction_object
