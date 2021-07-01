@@ -1,6 +1,7 @@
 import pygplates
 import numpy as np
 import ptt
+import warnings
 
 from . import tools as _tools
 
@@ -23,23 +24,27 @@ class PlateReconstruction(object):
 
 
     def tesselate_subduction_zones(self, time, tessellation_threshold_radians=0.001, anchor_plate_id=0):
-        subduction_data = ptt.subduction_convergence.subduction_convergence(
-            self.rotation_model,
-            self.topology_features,
-            tessellation_threshold_radians,
-            float(time),
-            anchor_plate_id=anchor_plate_id)
+        with warnings.catch_warnings():
+            warnings.simplefilter('ignore')
+            subduction_data = ptt.subduction_convergence.subduction_convergence(
+                self.rotation_model,
+                self.topology_features,
+                tessellation_threshold_radians,
+                float(time),
+                anchor_plate_id=anchor_plate_id)
         subduction_data = np.vstack(subduction_data)
         return subduction_data
 
 
     def tesselate_mid_ocean_ridges(self, time, tessellation_threshold_radians=0.001, anchor_plate_id=0):
-        ridge_data = ptt.ridge_spreading_rate.spreading_rates(
-            self.rotation_model,
-            self.topology_features,
-            float(time),
-            tessellation_threshold_radians,
-            anchor_plate_id=anchor_plate_id)
+        with warnings.catch_warnings():
+            warnings.simplefilter('ignore')
+            ridge_data = ptt.ridge_spreading_rate.spreading_rates(
+                self.rotation_model,
+                self.topology_features,
+                float(time),
+                tessellation_threshold_radians,
+                anchor_plate_id=anchor_plate_id)
         ridge_data = np.vstack(ridge_data)
         return ridge_data
 
@@ -59,7 +64,7 @@ class PlateReconstruction(object):
         Lon and Lat are assumed to be 1d arrays. """
         # Add points to a multipoint geometry
 
-        reconstruction_time = float(reconstruction_time)
+        time = float(time)
 
         multi_point = pygplates.MultiPointOnSphere([(float(lat),float(lon)) for lat, lon in zip(lats,lons)])
 
@@ -79,7 +84,7 @@ class PlateReconstruction(object):
         all_velocities = []
 
         # Partition our velocity domain features into our topological plate polygons at the current 'time'.
-        plate_partitioner = pygplates.PlatePartitioner(topology_features, rotation_model, reconstruction_time)
+        plate_partitioner = pygplates.PlatePartitioner(self.topology_features, self.rotation_model, time)
 
         for velocity_domain_feature in velocity_domain_features:
             # A velocity domain feature usually has a single geometry but we'll assume it can be any number.
@@ -98,9 +103,9 @@ class PlateReconstruction(object):
                         partitioning_plate_id = partitioning_plate.get_feature().get_reconstruction_plate_id()
 
                         # Get the stage rotation of partitioning plate from 'time + delta_time' to 'time'.
-                        equivalent_stage_rotation = rotation_model.get_rotation(reconstruction_time,
-                                                                                partitioning_plate_id,
-                                                                                reconstruction_time + delta_time)
+                        equivalent_stage_rotation = self.rotation_model.get_rotation(time,
+                                                                                     partitioning_plate_id,
+                                                                                     time + delta_time)
 
                         # Calculate velocity at the velocity domain point.
                         # This is from 'time + delta_time' to 'time' on the partitioning plate.
@@ -147,7 +152,7 @@ class Points(object):
         static_polygons = PlateReconstruction_object.static_polygons
         self.PlateReconstruction_object = PlateReconstruction_object
 
-        features = points_to_features(lons, lats, plate_id)
+        features = _tools.points_to_features(lons, lats, plate_id)
 
         if plate_id:
             self.features = features
@@ -170,7 +175,27 @@ class Points(object):
         return rlons, rlats
 
     def plate_velocity(self, time, delta_time=1):
-        return self.PlateReconstruction_object.get_point_velocities(self.lons, self.lats, time, delta_time)
+        rotation_model = self.PlateReconstruction_object.rotation_model
+        all_velocities = np.empty((len(self.features), 2))
+
+        for i, feature in enumerate(self.features):
+            geometry = feature.get_geometry()
+            partitioning_plate_id = feature.get_reconstruction_plate_id()
+            equivalent_stage_rotation = rotation_model.get_rotation(time, partitioning_plate_id, time+delta_time)
+            
+            velocity_vectors = pygplates.calculate_velocities(
+                [geometry],
+                equivalent_stage_rotation,
+                delta_time,
+                pygplates.VelocityUnits.cms_per_yr)
+            
+            velocities = pygplates.LocalCartesian.convert_from_geocentric_to_north_east_down(
+                [geometry],
+                velocity_vectors)
+
+            all_velocities[i] = velocities[0].get_x(), velocities[0].get_y()
+
+        return list(all_velocities.T)
 
 
     def save(self, filename):
