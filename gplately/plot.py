@@ -354,37 +354,37 @@ class PlotTopologies(object):
             raise ValueError("Supply coastline_filename to PlotTopologies object")
 
         coastline_polygons = shapelify_feature_polygons(self.coastlines)
-        ax.add_geometries(coastline_polygons, crs=self.base_projection, **kwargs)
+        return ax.add_geometries(coastline_polygons, crs=self.base_projection, **kwargs)
 
     def plot_continents(self, ax, **kwargs):
         if self.continent_filename is None:
             raise ValueError("Supply continent_filename to PlotTopologies object")
 
         continent_polygons = shapelify_feature_polygons(self.continents)
-        ax.add_geometries(continent_polygons, crs=self.base_projection, **kwargs)
+        return ax.add_geometries(continent_polygons, crs=self.base_projection, **kwargs)
 
     def plot_continent_ocean_boundaries(self, ax, **kwargs):
         if self.COB_filename is None:
             raise ValueError("Supply COB_filename to PlotTopologies object")
 
         COB_lines = shapelify_feature_lines(self.COBs)
-        ax.add_geometries(COB_lines, crs=self.base_projection, facecolor='none', **kwargs)
+        return ax.add_geometries(COB_lines, crs=self.base_projection, facecolor='none', **kwargs)
 
     def plot_ridges(self, ax, color='black', **kwargs):
         ridge_lines = self._get_feature_lines(self.ridges)
-        ax.add_geometries(ridge_lines, crs=self.base_projection, facecolor='none', edgecolor=color, **kwargs)
+        return ax.add_geometries(ridge_lines, crs=self.base_projection, facecolor='none', edgecolor=color, **kwargs)
 
     def plot_ridges_and_transforms(self, ax, color='black', **kwargs):
         ridge_transform_lines = self._get_feature_lines(self.ridge_transforms)
-        ax.add_geometries(ridge_transform_lines, crs=self.base_projection, facecolor='none', edgecolor=color, **kwargs)
+        return ax.add_geometries(ridge_transform_lines, crs=self.base_projection, facecolor='none', edgecolor=color, **kwargs)
 
     def plot_transforms(self, ax, color='black', **kwargs):
         transform_lines = self._get_feature_lines(self.transforms)
-        ax.add_geometries(transform_lines, crs=self.base_projection, facecolor='none', edgecolor=color, **kwargs)
+        return ax.add_geometries(transform_lines, crs=self.base_projection, facecolor='none', edgecolor=color, **kwargs)
 
     def plot_trenches(self, ax, color='black', **kwargs):
         trench_lines = self._get_feature_lines(self.trenches)
-        ax.add_geometries(trench_lines, crs=self.base_projection, facecolor='none', edgecolor=color, **kwargs)
+        return ax.add_geometries(trench_lines, crs=self.base_projection, facecolor='none', edgecolor=color, **kwargs)
 
     def plot_subduction_teeth(self, ax, spacing=0.1, size=2.0, aspect=1, color='black', **kwargs):
         import shapely
@@ -415,7 +415,7 @@ class PlotTopologies(object):
         ax.add_geometries(teeth, crs=self.base_projection, color=color, **kwargs)
 
     def plot_grid(self, ax, grid, extent=[-180,180,-90,90], **kwargs):
-        ax.imshow(grid, origin='lower', extent=extent, transform=self.base_projection, **kwargs)
+        return ax.imshow(grid, origin='lower', extent=extent, transform=self.base_projection, **kwargs)
 
 
     def plot_grid_from_netCDF(self, ax, filename, **kwargs):
@@ -423,24 +423,37 @@ class PlotTopologies(object):
 
         raster, lon_coords, lat_coords = read_netcdf_grid(filename, return_grids=True)
         extent = [lon_coords.min(), lon_coords.max(), lat_coords.min(), lat_coords.max()]
-        self.plot_grid(ax, raster, extent=extent, **kwargs)
+        return self.plot_grid(ax, raster, extent=extent, **kwargs)
 
 
-    def plot_plate_motion_vectors(self, ax, spacingX, spacingY, **kwargs):
-        from .tools import get_point_velocities
+    def plot_plate_motion_vectors(self, ax, spacingX=10, spacingY=10, normalise=False, **kwargs):
 
-        lons = np.arange(-180,180+spacingX,spacingX)
-        lats = np.arange(-90,90+spacingY,spacingY)
+
+        lons = np.arange(-180, 180+spacingX, spacingX)
+        lats = np.arange(-90, 90+spacingY, spacingY)
         lonq, latq = np.meshgrid(lons, lats)
+
+        # create a feature from all the points
+        velocity_domain_features = ptt.velocity_tools.make_GPML_velocity_feature(lonq.ravel(), latq.ravel())
 
         rotation_model = self.PlateReconstruction_object.rotation_model
         topology_features = self.PlateReconstruction_object.topology_features
 
-        velocities = get_point_velocities(lonq.ravel(), latq.ravel(), topology_features, rotation_model, self.time)
-        U = velocities[:,0].reshape(lonq.shape)
-        V = velocities[:,1].reshape(latq.shape)
+        delta_time = 5.0
+        all_velocities = ptt.velocity_tools.get_plate_velocities(
+            velocity_domain_features,
+            topology_features,
+            rotation_model,
+            self.time,
+            delta_time,
+            'vector_comp')
 
-        mag = np.sqrt(U**2 + V**2)
-        mag[mag == 0] = 1
+        X, Y, U, V = ptt.velocity_tools.get_x_y_u_v(lons, lats, all_velocities)
 
-        ax.quiver(lonq, latq, U, V, transform=self.base_projection, **kwargs)
+        if normalise:
+            mag = np.hypot(U, V)
+            mag[mag == 0] = 1
+            U /= mag
+            V /= mag
+
+        return ax.quiver(X, Y, U, V, transform=self.base_projection, **kwargs)
