@@ -1,0 +1,2133 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gpml:FeatureCollection xmlns:gpml="http://www.gplates.org/gplates" xmlns:gml="http://www.opengis.net/gml" xmlns:xsi="http://www.w3.org/XMLSchema-instance" gpml:version="1.6.0338" xsi:schemaLocation="http://www.gplates.org/gplates ../xsd/gpml.xsd http://www.opengis.net/gml ../../../gml/current/base">
+    <gml:featureMember>
+        <gpml:TopologicalNetwork>
+            <gpml:identity>GPlates-e97fb7e0-16f3-41af-88dc-df6d879cda8d</gpml:identity>
+            <gpml:revision>GPlates-d0698bbd-dfbc-46c3-a177-1a4414f9844b</gpml:revision>
+            <gml:name>South_China_Sea_Deformation_Network</gml:name>
+            <gml:validTime>
+                <gml:TimePeriod>
+                    <gml:begin>
+                        <gml:TimeInstant>
+                            <gml:timePosition gml:frame="http://gplates.org/TRS/flat">27</gml:timePosition>
+                        </gml:TimeInstant>
+                    </gml:begin>
+                    <gml:end>
+                        <gml:TimeInstant>
+                            <gml:timePosition gml:frame="http://gplates.org/TRS/flat">10.1</gml:timePosition>
+                        </gml:TimeInstant>
+                    </gml:end>
+                </gml:TimePeriod>
+            </gml:validTime>
+            <gpml:reconstructionPlateId>
+                <gpml:ConstantValue>
+                    <gpml:value>602</gpml:value>
+                    <gml:description></gml:description>
+                    <gpml:valueType xmlns:gpml="http://www.gplates.org/gplates">gpml:plateId</gpml:valueType>
+                </gpml:ConstantValue>
+            </gpml:reconstructionPlateId>
+            <gpml:network>
+                <gpml:ConstantValue>
+                    <gpml:value>
+                        <gpml:TopologicalNetwork>
+                            <gpml:boundary>
+                                <gpml:TopologicalSections>
+                                    <gpml:section>
+                                        <gpml:TopologicalLineSection>
+                                            <gpml:sourceGeometry>
+                                                <gpml:PropertyDelegate>
+                                                    <gpml:targetFeature>GPlates-7cb9aae0-6fda-4c50-b763-4372b1d8834c</gpml:targetFeature>
+                                                    <gpml:targetProperty xmlns:gpml="http://www.gplates.org/gplates">gpml:boundary</gpml:targetProperty>
+                                                    <gpml:valueType xmlns:gml="http://www.opengis.net/gml">gml:LineString</gpml:valueType>
+                                                </gpml:PropertyDelegate>
+                                            </gpml:sourceGeometry>
+                                            <gpml:reverseOrder>true</gpml:reverseOrder>
+                                        </gpml:TopologicalLineSection>
+                                    </gpml:section>
+                                    <gpml:section>
+                                        <gpml:TopologicalLineSection>
+                                            <gpml:sourceGeometry>
+                                                <gpml:PropertyDelegate>
+                                                    <gpml:targetFeature>GPlates-8b253860-9f33-4d8f-864b-36098d621988</gpml:targetFeature>
+                                                    <gpml:targetProperty xmlns:gpml="http://www.gplates.org/gplates">gpml:boundary</gpml:targetProperty>
+                                                    <gpml:valueType xmlns:gml="http://www.opengis.net/gml">gml:LineString</gpml:valueType>
+                                                </gpml:PropertyDelegate>
+                                            </gpml:sourceGeometry>
+                                            <gpml:reverseOrder>true</gpml:reverseOrder>
+                                        </gpml:TopologicalLineSection>
+                                    </gpml:section>
+                                    <gpml:section>
+                                        <gpml:TopologicalLineSection>
+                                            <gpml:sourceGeometry>
+                                                <gpml:PropertyDelegate>
+                                                    <gpml:targetFeature>GPlates-b2e9effa-a2de-4dfb-bf79-4833d08e73af</gpml:targetFeature>
+                                                    <gpml:targetProperty xmlns:gpml="http://www.gplates.org/gplates">gpml:boundary</gpml:targetProperty>
+                                                    <gpml:valueType xmlns:gml="http://www.opengis.net/gml">gml:LineString</gpml:valueType>
+                                                </gpml:PropertyDelegate>
+                                            </gpml:sourceGeometry>
+                                            <gpml:reverseOrder>true</gpml:reverseOrder>
+                                        </gpml:TopologicalLineSection>
+                                    </gpml:section>
+                                    <gpml:section>
+                                        <gpml:TopologicalLineSection>
+                                            <gpml:sourceGeometry>
+                                                <gpml:PropertyDelegate>
+                                                    <gpml:targetFeature>GPlates-4e7195ae-67f0-4b0f-8e41-038ac23bb5a4</gpml:targetFeature>
+                                                    <gpml:targetProperty xmlns:gpml="http://www.gplates.org/gplates">gpml:boundary</gpml:targetProperty>
+                                                    <gpml:valueType xmlns:gml="http://www.opengis.net/gml">gml:LineString</gpml:valueType>
+                                                </gpml:PropertyDelegate>
+                                            </gpml:sourceGeometry>
+                                            <gpml:reverseOrder>true</gpml:reverseOrder>
+                                        </gpml:TopologicalLineSection>
+                                    </gpml:section>
+                                    <gpml:section>
+                                        <gpml:TopologicalLineSection>
+                                            <gpml:sourceGeometry>
+                                                <gpml:PropertyDelegate>
+                                                    <gpml:targetFeature>GPlates-29f9850c-1310-45f6-a649-7f48757d72bd</gpml:targetFeature>
+                                                    <gpml:targetProperty xmlns:gpml="http://www.gplates.org/gplates">gpml:centerLineOf</gpml:targetProperty>
+                                                    <gpml:valueType xmlns:gml="http://www.opengis.net/gml">gml:LineString</gpml:valueType>
+                                                </gpml:PropertyDelegate>
+                                            </gpml:sourceGeometry>
+                                            <gpml:reverseOrder>true</gpml:reverseOrder>
+                                        </gpml:TopologicalLineSection>
+                                    </gpml:section>
+                                    <gpml:section>
+                                        <gpml:TopologicalLineSection>
+                                            <gpml:sourceGeometry>
+                                                <gpml:PropertyDelegate>
+                                                    <gpml:targetFeature>GPlates-dee534f0-026a-4803-8666-ccbb339ec268</gpml:targetFeature>
+                                                    <gpml:targetProperty xmlns:gpml="http://www.gplates.org/gplates">gpml:centerLineOf</gpml:targetProperty>
+                                                    <gpml:valueType xmlns:gml="http://www.opengis.net/gml">gml:LineString</gpml:valueType>
+                                                </gpml:PropertyDelegate>
+                                            </gpml:sourceGeometry>
+                                            <gpml:reverseOrder>true</gpml:reverseOrder>
+                                        </gpml:TopologicalLineSection>
+                                    </gpml:section>
+                                    <gpml:section>
+                                        <gpml:TopologicalLineSection>
+                                            <gpml:sourceGeometry>
+                                                <gpml:PropertyDelegate>
+                                                    <gpml:targetFeature>GPlates-8dd6a57e-05a2-4ae5-9608-2157108d41ae</gpml:targetFeature>
+                                                    <gpml:targetProperty xmlns:gpml="http://www.gplates.org/gplates">gpml:centerLineOf</gpml:targetProperty>
+                                                    <gpml:valueType xmlns:gml="http://www.opengis.net/gml">gml:LineString</gpml:valueType>
+                                                </gpml:PropertyDelegate>
+                                            </gpml:sourceGeometry>
+                                            <gpml:reverseOrder>true</gpml:reverseOrder>
+                                        </gpml:TopologicalLineSection>
+                                    </gpml:section>
+                                    <gpml:section>
+                                        <gpml:TopologicalLineSection>
+                                            <gpml:sourceGeometry>
+                                                <gpml:PropertyDelegate>
+                                                    <gpml:targetFeature>GPlates-21e5af00-6580-40c4-bd0b-fd295f69b207</gpml:targetFeature>
+                                                    <gpml:targetProperty xmlns:gpml="http://www.gplates.org/gplates">gpml:boundary</gpml:targetProperty>
+                                                    <gpml:valueType xmlns:gml="http://www.opengis.net/gml">gml:LineString</gpml:valueType>
+                                                </gpml:PropertyDelegate>
+                                            </gpml:sourceGeometry>
+                                            <gpml:reverseOrder>true</gpml:reverseOrder>
+                                        </gpml:TopologicalLineSection>
+                                    </gpml:section>
+                                    <gpml:section>
+                                        <gpml:TopologicalLineSection>
+                                            <gpml:sourceGeometry>
+                                                <gpml:PropertyDelegate>
+                                                    <gpml:targetFeature>GPlates-33921c41-7110-4751-9de2-30e75573c579</gpml:targetFeature>
+                                                    <gpml:targetProperty xmlns:gpml="http://www.gplates.org/gplates">gpml:boundary</gpml:targetProperty>
+                                                    <gpml:valueType xmlns:gml="http://www.opengis.net/gml">gml:LineString</gpml:valueType>
+                                                </gpml:PropertyDelegate>
+                                            </gpml:sourceGeometry>
+                                            <gpml:reverseOrder>true</gpml:reverseOrder>
+                                        </gpml:TopologicalLineSection>
+                                    </gpml:section>
+                                    <gpml:section>
+                                        <gpml:TopologicalLineSection>
+                                            <gpml:sourceGeometry>
+                                                <gpml:PropertyDelegate>
+                                                    <gpml:targetFeature>GPlates-e9071f6c-d08d-4783-bfc7-6be1742b99dd</gpml:targetFeature>
+                                                    <gpml:targetProperty xmlns:gpml="http://www.gplates.org/gplates">gpml:boundary</gpml:targetProperty>
+                                                    <gpml:valueType xmlns:gml="http://www.opengis.net/gml">gml:LineString</gpml:valueType>
+                                                </gpml:PropertyDelegate>
+                                            </gpml:sourceGeometry>
+                                            <gpml:reverseOrder>true</gpml:reverseOrder>
+                                        </gpml:TopologicalLineSection>
+                                    </gpml:section>
+                                    <gpml:section>
+                                        <gpml:TopologicalLineSection>
+                                            <gpml:sourceGeometry>
+                                                <gpml:PropertyDelegate>
+                                                    <gpml:targetFeature>GPlates-6504fd3b-4356-4414-ac62-a446a95892ee</gpml:targetFeature>
+                                                    <gpml:targetProperty xmlns:gpml="http://www.gplates.org/gplates">gpml:boundary</gpml:targetProperty>
+                                                    <gpml:valueType xmlns:gml="http://www.opengis.net/gml">gml:LineString</gpml:valueType>
+                                                </gpml:PropertyDelegate>
+                                            </gpml:sourceGeometry>
+                                            <gpml:reverseOrder>true</gpml:reverseOrder>
+                                        </gpml:TopologicalLineSection>
+                                    </gpml:section>
+                                    <gpml:section>
+                                        <gpml:TopologicalLineSection>
+                                            <gpml:sourceGeometry>
+                                                <gpml:PropertyDelegate>
+                                                    <gpml:targetFeature>GPlates-29a82fad-add4-47cd-abd0-09e7c3ef11bf</gpml:targetFeature>
+                                                    <gpml:targetProperty xmlns:gpml="http://www.gplates.org/gplates">gpml:boundary</gpml:targetProperty>
+                                                    <gpml:valueType xmlns:gml="http://www.opengis.net/gml">gml:LineString</gpml:valueType>
+                                                </gpml:PropertyDelegate>
+                                            </gpml:sourceGeometry>
+                                            <gpml:reverseOrder>true</gpml:reverseOrder>
+                                        </gpml:TopologicalLineSection>
+                                    </gpml:section>
+                                    <gpml:section>
+                                        <gpml:TopologicalLineSection>
+                                            <gpml:sourceGeometry>
+                                                <gpml:PropertyDelegate>
+                                                    <gpml:targetFeature>GPlates-9c53637e-103c-47f8-967e-9911c1bd5ae1</gpml:targetFeature>
+                                                    <gpml:targetProperty xmlns:gpml="http://www.gplates.org/gplates">gpml:boundary</gpml:targetProperty>
+                                                    <gpml:valueType xmlns:gml="http://www.opengis.net/gml">gml:LineString</gpml:valueType>
+                                                </gpml:PropertyDelegate>
+                                            </gpml:sourceGeometry>
+                                            <gpml:reverseOrder>true</gpml:reverseOrder>
+                                        </gpml:TopologicalLineSection>
+                                    </gpml:section>
+                                    <gpml:section>
+                                        <gpml:TopologicalLineSection>
+                                            <gpml:sourceGeometry>
+                                                <gpml:PropertyDelegate>
+                                                    <gpml:targetFeature>GPlates-6e9ec050-32a3-42cf-a3fd-2c3f29b6315e</gpml:targetFeature>
+                                                    <gpml:targetProperty xmlns:gpml="http://www.gplates.org/gplates">gpml:boundary</gpml:targetProperty>
+                                                    <gpml:valueType xmlns:gml="http://www.opengis.net/gml">gml:LineString</gpml:valueType>
+                                                </gpml:PropertyDelegate>
+                                            </gpml:sourceGeometry>
+                                            <gpml:reverseOrder>false</gpml:reverseOrder>
+                                        </gpml:TopologicalLineSection>
+                                    </gpml:section>
+                                    <gpml:section>
+                                        <gpml:TopologicalLineSection>
+                                            <gpml:sourceGeometry>
+                                                <gpml:PropertyDelegate>
+                                                    <gpml:targetFeature>GPlates-f22cbf1f-00a8-4784-b654-c281c8d0a295</gpml:targetFeature>
+                                                    <gpml:targetProperty xmlns:gpml="http://www.gplates.org/gplates">gpml:boundary</gpml:targetProperty>
+                                                    <gpml:valueType xmlns:gml="http://www.opengis.net/gml">gml:LineString</gpml:valueType>
+                                                </gpml:PropertyDelegate>
+                                            </gpml:sourceGeometry>
+                                            <gpml:reverseOrder>false</gpml:reverseOrder>
+                                        </gpml:TopologicalLineSection>
+                                    </gpml:section>
+                                    <gpml:section>
+                                        <gpml:TopologicalLineSection>
+                                            <gpml:sourceGeometry>
+                                                <gpml:PropertyDelegate>
+                                                    <gpml:targetFeature>GPlates-89b2efa9-4484-473a-9b94-7d3b43307c67</gpml:targetFeature>
+                                                    <gpml:targetProperty xmlns:gpml="http://www.gplates.org/gplates">gpml:boundary</gpml:targetProperty>
+                                                    <gpml:valueType xmlns:gml="http://www.opengis.net/gml">gml:LineString</gpml:valueType>
+                                                </gpml:PropertyDelegate>
+                                            </gpml:sourceGeometry>
+                                            <gpml:reverseOrder>true</gpml:reverseOrder>
+                                        </gpml:TopologicalLineSection>
+                                    </gpml:section>
+                                    <gpml:section>
+                                        <gpml:TopologicalLineSection>
+                                            <gpml:sourceGeometry>
+                                                <gpml:PropertyDelegate>
+                                                    <gpml:targetFeature>GPlates-ea6f13f2-f0e9-41fb-9382-2f148f8124b3</gpml:targetFeature>
+                                                    <gpml:targetProperty xmlns:gpml="http://www.gplates.org/gplates">gpml:boundary</gpml:targetProperty>
+                                                    <gpml:valueType xmlns:gml="http://www.opengis.net/gml">gml:LineString</gpml:valueType>
+                                                </gpml:PropertyDelegate>
+                                            </gpml:sourceGeometry>
+                                            <gpml:reverseOrder>false</gpml:reverseOrder>
+                                        </gpml:TopologicalLineSection>
+                                    </gpml:section>
+                                    <gpml:section>
+                                        <gpml:TopologicalLineSection>
+                                            <gpml:sourceGeometry>
+                                                <gpml:PropertyDelegate>
+                                                    <gpml:targetFeature>GPlates-36e945c1-b39e-4cc6-8401-ab138622270c</gpml:targetFeature>
+                                                    <gpml:targetProperty xmlns:gpml="http://www.gplates.org/gplates">gpml:boundary</gpml:targetProperty>
+                                                    <gpml:valueType xmlns:gml="http://www.opengis.net/gml">gml:LineString</gpml:valueType>
+                                                </gpml:PropertyDelegate>
+                                            </gpml:sourceGeometry>
+                                            <gpml:reverseOrder>false</gpml:reverseOrder>
+                                        </gpml:TopologicalLineSection>
+                                    </gpml:section>
+                                    <gpml:section>
+                                        <gpml:TopologicalLineSection>
+                                            <gpml:sourceGeometry>
+                                                <gpml:PropertyDelegate>
+                                                    <gpml:targetFeature>GPlates-8d9fcabb-2281-494a-bebf-3e59134349df</gpml:targetFeature>
+                                                    <gpml:targetProperty xmlns:gpml="http://www.gplates.org/gplates">gpml:boundary</gpml:targetProperty>
+                                                    <gpml:valueType xmlns:gml="http://www.opengis.net/gml">gml:LineString</gpml:valueType>
+                                                </gpml:PropertyDelegate>
+                                            </gpml:sourceGeometry>
+                                            <gpml:reverseOrder>true</gpml:reverseOrder>
+                                        </gpml:TopologicalLineSection>
+                                    </gpml:section>
+                                    <gpml:section>
+                                        <gpml:TopologicalLineSection>
+                                            <gpml:sourceGeometry>
+                                                <gpml:PropertyDelegate>
+                                                    <gpml:targetFeature>GPlates-e1984708-713b-402c-8b1c-c3a38b072795</gpml:targetFeature>
+                                                    <gpml:targetProperty xmlns:gpml="http://www.gplates.org/gplates">gpml:boundary</gpml:targetProperty>
+                                                    <gpml:valueType xmlns:gml="http://www.opengis.net/gml">gml:LineString</gpml:valueType>
+                                                </gpml:PropertyDelegate>
+                                            </gpml:sourceGeometry>
+                                            <gpml:reverseOrder>true</gpml:reverseOrder>
+                                        </gpml:TopologicalLineSection>
+                                    </gpml:section>
+                                    <gpml:section>
+                                        <gpml:TopologicalLineSection>
+                                            <gpml:sourceGeometry>
+                                                <gpml:PropertyDelegate>
+                                                    <gpml:targetFeature>GPlates-29a82fad-add4-47cd-abd0-09e7c3ef11bf</gpml:targetFeature>
+                                                    <gpml:targetProperty xmlns:gpml="http://www.gplates.org/gplates">gpml:boundary</gpml:targetProperty>
+                                                    <gpml:valueType xmlns:gml="http://www.opengis.net/gml">gml:LineString</gpml:valueType>
+                                                </gpml:PropertyDelegate>
+                                            </gpml:sourceGeometry>
+                                            <gpml:reverseOrder>false</gpml:reverseOrder>
+                                        </gpml:TopologicalLineSection>
+                                    </gpml:section>
+                                    <gpml:section>
+                                        <gpml:TopologicalLineSection>
+                                            <gpml:sourceGeometry>
+                                                <gpml:PropertyDelegate>
+                                                    <gpml:targetFeature>GPlates-7c4a86e1-a3f3-4481-9c91-8dd96fc8a1f8</gpml:targetFeature>
+                                                    <gpml:targetProperty xmlns:gpml="http://www.gplates.org/gplates">gpml:boundary</gpml:targetProperty>
+                                                    <gpml:valueType xmlns:gml="http://www.opengis.net/gml">gml:LineString</gpml:valueType>
+                                                </gpml:PropertyDelegate>
+                                            </gpml:sourceGeometry>
+                                            <gpml:reverseOrder>true</gpml:reverseOrder>
+                                        </gpml:TopologicalLineSection>
+                                    </gpml:section>
+                                    <gpml:section>
+                                        <gpml:TopologicalLineSection>
+                                            <gpml:sourceGeometry>
+                                                <gpml:PropertyDelegate>
+                                                    <gpml:targetFeature>GPlates-84bb37f8-0e97-4c0a-8095-53ca8eab6c0d</gpml:targetFeature>
+                                                    <gpml:targetProperty xmlns:gpml="http://www.gplates.org/gplates">gpml:boundary</gpml:targetProperty>
+                                                    <gpml:valueType xmlns:gml="http://www.opengis.net/gml">gml:LineString</gpml:valueType>
+                                                </gpml:PropertyDelegate>
+                                            </gpml:sourceGeometry>
+                                            <gpml:reverseOrder>false</gpml:reverseOrder>
+                                        </gpml:TopologicalLineSection>
+                                    </gpml:section>
+                                    <gpml:section>
+                                        <gpml:TopologicalLineSection>
+                                            <gpml:sourceGeometry>
+                                                <gpml:PropertyDelegate>
+                                                    <gpml:targetFeature>GPlates-bbea6caa-9aee-40b1-a70d-7d55c995f839</gpml:targetFeature>
+                                                    <gpml:targetProperty xmlns:gpml="http://www.gplates.org/gplates">gpml:boundary</gpml:targetProperty>
+                                                    <gpml:valueType xmlns:gml="http://www.opengis.net/gml">gml:LineString</gpml:valueType>
+                                                </gpml:PropertyDelegate>
+                                            </gpml:sourceGeometry>
+                                            <gpml:reverseOrder>false</gpml:reverseOrder>
+                                        </gpml:TopologicalLineSection>
+                                    </gpml:section>
+                                    <gpml:section>
+                                        <gpml:TopologicalLineSection>
+                                            <gpml:sourceGeometry>
+                                                <gpml:PropertyDelegate>
+                                                    <gpml:targetFeature>GPlates-812a1f32-bc86-406c-ae8e-3a71b6e2179f</gpml:targetFeature>
+                                                    <gpml:targetProperty xmlns:gpml="http://www.gplates.org/gplates">gpml:boundary</gpml:targetProperty>
+                                                    <gpml:valueType xmlns:gml="http://www.opengis.net/gml">gml:LineString</gpml:valueType>
+                                                </gpml:PropertyDelegate>
+                                            </gpml:sourceGeometry>
+                                            <gpml:reverseOrder>false</gpml:reverseOrder>
+                                        </gpml:TopologicalLineSection>
+                                    </gpml:section>
+                                    <gpml:section>
+                                        <gpml:TopologicalLineSection>
+                                            <gpml:sourceGeometry>
+                                                <gpml:PropertyDelegate>
+                                                    <gpml:targetFeature>GPlates-aa7c0912-0e9c-42ba-bb96-bf94f22aa845</gpml:targetFeature>
+                                                    <gpml:targetProperty xmlns:gpml="http://www.gplates.org/gplates">gpml:boundary</gpml:targetProperty>
+                                                    <gpml:valueType xmlns:gml="http://www.opengis.net/gml">gml:LineString</gpml:valueType>
+                                                </gpml:PropertyDelegate>
+                                            </gpml:sourceGeometry>
+                                            <gpml:reverseOrder>false</gpml:reverseOrder>
+                                        </gpml:TopologicalLineSection>
+                                    </gpml:section>
+                                    <gpml:section>
+                                        <gpml:TopologicalLineSection>
+                                            <gpml:sourceGeometry>
+                                                <gpml:PropertyDelegate>
+                                                    <gpml:targetFeature>GPlates-6504fd3b-4356-4414-ac62-a446a95892ee</gpml:targetFeature>
+                                                    <gpml:targetProperty xmlns:gpml="http://www.gplates.org/gplates">gpml:boundary</gpml:targetProperty>
+                                                    <gpml:valueType xmlns:gml="http://www.opengis.net/gml">gml:LineString</gpml:valueType>
+                                                </gpml:PropertyDelegate>
+                                            </gpml:sourceGeometry>
+                                            <gpml:reverseOrder>false</gpml:reverseOrder>
+                                        </gpml:TopologicalLineSection>
+                                    </gpml:section>
+                                    <gpml:section>
+                                        <gpml:TopologicalLineSection>
+                                            <gpml:sourceGeometry>
+                                                <gpml:PropertyDelegate>
+                                                    <gpml:targetFeature>GPlates-a1dc49ce-ccee-428d-b474-0e9010c2d9c9</gpml:targetFeature>
+                                                    <gpml:targetProperty xmlns:gpml="http://www.gplates.org/gplates">gpml:boundary</gpml:targetProperty>
+                                                    <gpml:valueType xmlns:gml="http://www.opengis.net/gml">gml:LineString</gpml:valueType>
+                                                </gpml:PropertyDelegate>
+                                            </gpml:sourceGeometry>
+                                            <gpml:reverseOrder>true</gpml:reverseOrder>
+                                        </gpml:TopologicalLineSection>
+                                    </gpml:section>
+                                    <gpml:section>
+                                        <gpml:TopologicalLineSection>
+                                            <gpml:sourceGeometry>
+                                                <gpml:PropertyDelegate>
+                                                    <gpml:targetFeature>GPlates-17419d22-d5ef-415a-af3f-af55936a9b5b</gpml:targetFeature>
+                                                    <gpml:targetProperty xmlns:gpml="http://www.gplates.org/gplates">gpml:boundary</gpml:targetProperty>
+                                                    <gpml:valueType xmlns:gml="http://www.opengis.net/gml">gml:LineString</gpml:valueType>
+                                                </gpml:PropertyDelegate>
+                                            </gpml:sourceGeometry>
+                                            <gpml:reverseOrder>true</gpml:reverseOrder>
+                                        </gpml:TopologicalLineSection>
+                                    </gpml:section>
+                                    <gpml:section>
+                                        <gpml:TopologicalLineSection>
+                                            <gpml:sourceGeometry>
+                                                <gpml:PropertyDelegate>
+                                                    <gpml:targetFeature>GPlates-18d83884-7a75-4313-85dd-954251ca3523</gpml:targetFeature>
+                                                    <gpml:targetProperty xmlns:gpml="http://www.gplates.org/gplates">gpml:boundary</gpml:targetProperty>
+                                                    <gpml:valueType xmlns:gml="http://www.opengis.net/gml">gml:LineString</gpml:valueType>
+                                                </gpml:PropertyDelegate>
+                                            </gpml:sourceGeometry>
+                                            <gpml:reverseOrder>true</gpml:reverseOrder>
+                                        </gpml:TopologicalLineSection>
+                                    </gpml:section>
+                                    <gpml:section>
+                                        <gpml:TopologicalLineSection>
+                                            <gpml:sourceGeometry>
+                                                <gpml:PropertyDelegate>
+                                                    <gpml:targetFeature>GPlates-7eaec4ff-2c84-4aaf-85bf-d86db6e71f5b</gpml:targetFeature>
+                                                    <gpml:targetProperty xmlns:gpml="http://www.gplates.org/gplates">gpml:boundary</gpml:targetProperty>
+                                                    <gpml:valueType xmlns:gml="http://www.opengis.net/gml">gml:LineString</gpml:valueType>
+                                                </gpml:PropertyDelegate>
+                                            </gpml:sourceGeometry>
+                                            <gpml:reverseOrder>true</gpml:reverseOrder>
+                                        </gpml:TopologicalLineSection>
+                                    </gpml:section>
+                                    <gpml:section>
+                                        <gpml:TopologicalLineSection>
+                                            <gpml:sourceGeometry>
+                                                <gpml:PropertyDelegate>
+                                                    <gpml:targetFeature>GPlates-4906f804-00f3-4772-993e-0548ef3fabb5</gpml:targetFeature>
+                                                    <gpml:targetProperty xmlns:gpml="http://www.gplates.org/gplates">gpml:boundary</gpml:targetProperty>
+                                                    <gpml:valueType xmlns:gml="http://www.opengis.net/gml">gml:LineString</gpml:valueType>
+                                                </gpml:PropertyDelegate>
+                                            </gpml:sourceGeometry>
+                                            <gpml:reverseOrder>false</gpml:reverseOrder>
+                                        </gpml:TopologicalLineSection>
+                                    </gpml:section>
+                                    <gpml:section>
+                                        <gpml:TopologicalLineSection>
+                                            <gpml:sourceGeometry>
+                                                <gpml:PropertyDelegate>
+                                                    <gpml:targetFeature>GPlates-137c1f64-c35f-4d64-bb5b-068f854f74e8</gpml:targetFeature>
+                                                    <gpml:targetProperty xmlns:gpml="http://www.gplates.org/gplates">gpml:boundary</gpml:targetProperty>
+                                                    <gpml:valueType xmlns:gml="http://www.opengis.net/gml">gml:LineString</gpml:valueType>
+                                                </gpml:PropertyDelegate>
+                                            </gpml:sourceGeometry>
+                                            <gpml:reverseOrder>true</gpml:reverseOrder>
+                                        </gpml:TopologicalLineSection>
+                                    </gpml:section>
+                                    <gpml:section>
+                                        <gpml:TopologicalLineSection>
+                                            <gpml:sourceGeometry>
+                                                <gpml:PropertyDelegate>
+                                                    <gpml:targetFeature>GPlates-c6fd59e5-9c4b-4635-a8ef-5c721b05e621</gpml:targetFeature>
+                                                    <gpml:targetProperty xmlns:gpml="http://www.gplates.org/gplates">gpml:boundary</gpml:targetProperty>
+                                                    <gpml:valueType xmlns:gml="http://www.opengis.net/gml">gml:LineString</gpml:valueType>
+                                                </gpml:PropertyDelegate>
+                                            </gpml:sourceGeometry>
+                                            <gpml:reverseOrder>true</gpml:reverseOrder>
+                                        </gpml:TopologicalLineSection>
+                                    </gpml:section>
+                                    <gpml:section>
+                                        <gpml:TopologicalLineSection>
+                                            <gpml:sourceGeometry>
+                                                <gpml:PropertyDelegate>
+                                                    <gpml:targetFeature>GPlates-8aba20e9-1fca-491c-be78-85e5d8a5552a</gpml:targetFeature>
+                                                    <gpml:targetProperty xmlns:gpml="http://www.gplates.org/gplates">gpml:centerLineOf</gpml:targetProperty>
+                                                    <gpml:valueType xmlns:gml="http://www.opengis.net/gml">gml:LineString</gpml:valueType>
+                                                </gpml:PropertyDelegate>
+                                            </gpml:sourceGeometry>
+                                            <gpml:reverseOrder>true</gpml:reverseOrder>
+                                        </gpml:TopologicalLineSection>
+                                    </gpml:section>
+                                    <gpml:section>
+                                        <gpml:TopologicalLineSection>
+                                            <gpml:sourceGeometry>
+                                                <gpml:PropertyDelegate>
+                                                    <gpml:targetFeature>GPlates-ac1ae7d8-1e82-4266-8e60-41d0fa7813ff</gpml:targetFeature>
+                                                    <gpml:targetProperty xmlns:gpml="http://www.gplates.org/gplates">gpml:centerLineOf</gpml:targetProperty>
+                                                    <gpml:valueType xmlns:gml="http://www.opengis.net/gml">gml:LineString</gpml:valueType>
+                                                </gpml:PropertyDelegate>
+                                            </gpml:sourceGeometry>
+                                            <gpml:reverseOrder>true</gpml:reverseOrder>
+                                        </gpml:TopologicalLineSection>
+                                    </gpml:section>
+                                    <gpml:section>
+                                        <gpml:TopologicalLineSection>
+                                            <gpml:sourceGeometry>
+                                                <gpml:PropertyDelegate>
+                                                    <gpml:targetFeature>GPlates-8082a08a-d594-4172-9bf6-984efdd50f99</gpml:targetFeature>
+                                                    <gpml:targetProperty xmlns:gpml="http://www.gplates.org/gplates">gpml:centerLineOf</gpml:targetProperty>
+                                                    <gpml:valueType xmlns:gml="http://www.opengis.net/gml">gml:LineString</gpml:valueType>
+                                                </gpml:PropertyDelegate>
+                                            </gpml:sourceGeometry>
+                                            <gpml:reverseOrder>true</gpml:reverseOrder>
+                                        </gpml:TopologicalLineSection>
+                                    </gpml:section>
+                                    <gpml:section>
+                                        <gpml:TopologicalLineSection>
+                                            <gpml:sourceGeometry>
+                                                <gpml:PropertyDelegate>
+                                                    <gpml:targetFeature>GPlates-e759e244-1da0-4933-b65b-6d1f6fd4ae8e</gpml:targetFeature>
+                                                    <gpml:targetProperty xmlns:gpml="http://www.gplates.org/gplates">gpml:boundary</gpml:targetProperty>
+                                                    <gpml:valueType xmlns:gml="http://www.opengis.net/gml">gml:LineString</gpml:valueType>
+                                                </gpml:PropertyDelegate>
+                                            </gpml:sourceGeometry>
+                                            <gpml:reverseOrder>true</gpml:reverseOrder>
+                                        </gpml:TopologicalLineSection>
+                                    </gpml:section>
+                                    <gpml:section>
+                                        <gpml:TopologicalLineSection>
+                                            <gpml:sourceGeometry>
+                                                <gpml:PropertyDelegate>
+                                                    <gpml:targetFeature>GPlates-01743c3b-a1e9-421c-80a0-7095da8c601f</gpml:targetFeature>
+                                                    <gpml:targetProperty xmlns:gpml="http://www.gplates.org/gplates">gpml:boundary</gpml:targetProperty>
+                                                    <gpml:valueType xmlns:gml="http://www.opengis.net/gml">gml:LineString</gpml:valueType>
+                                                </gpml:PropertyDelegate>
+                                            </gpml:sourceGeometry>
+                                            <gpml:reverseOrder>true</gpml:reverseOrder>
+                                        </gpml:TopologicalLineSection>
+                                    </gpml:section>
+                                    <gpml:section>
+                                        <gpml:TopologicalLineSection>
+                                            <gpml:sourceGeometry>
+                                                <gpml:PropertyDelegate>
+                                                    <gpml:targetFeature>GPlates-8082a08a-d594-4172-9bf6-984efdd50f99</gpml:targetFeature>
+                                                    <gpml:targetProperty xmlns:gpml="http://www.gplates.org/gplates">gpml:centerLineOf</gpml:targetProperty>
+                                                    <gpml:valueType xmlns:gml="http://www.opengis.net/gml">gml:LineString</gpml:valueType>
+                                                </gpml:PropertyDelegate>
+                                            </gpml:sourceGeometry>
+                                            <gpml:reverseOrder>false</gpml:reverseOrder>
+                                        </gpml:TopologicalLineSection>
+                                    </gpml:section>
+                                </gpml:TopologicalSections>
+                            </gpml:boundary>
+                        </gpml:TopologicalNetwork>
+                    </gpml:value>
+                    <gml:description></gml:description>
+                    <gpml:valueType xmlns:gpml="http://www.gplates.org/gplates">gpml:TopologicalNetwork</gpml:valueType>
+                </gpml:ConstantValue>
+            </gpml:network>
+        </gpml:TopologicalNetwork>
+    </gml:featureMember>
+    <gml:featureMember>
+        <gpml:TopologicalNetwork>
+            <gpml:identity>GPlates-fa1d7688-53d5-4a69-923a-d479958c913c</gpml:identity>
+            <gpml:revision>GPlates-ecb8f0c3-f58b-4d30-854a-d32d7fb567a2</gpml:revision>
+            <gml:name>South_China_Sea_Deformation_Network</gml:name>
+            <gml:validTime>
+                <gml:TimePeriod>
+                    <gml:begin>
+                        <gml:TimeInstant>
+                            <gml:timePosition gml:frame="http://gplates.org/TRS/flat">40</gml:timePosition>
+                        </gml:TimeInstant>
+                    </gml:begin>
+                    <gml:end>
+                        <gml:TimeInstant>
+                            <gml:timePosition gml:frame="http://gplates.org/TRS/flat">36.100000000000001</gml:timePosition>
+                        </gml:TimeInstant>
+                    </gml:end>
+                </gml:TimePeriod>
+            </gml:validTime>
+            <gpml:reconstructionPlateId>
+                <gpml:ConstantValue>
+                    <gpml:value>602</gpml:value>
+                    <gml:description></gml:description>
+                    <gpml:valueType xmlns:gpml="http://www.gplates.org/gplates">gpml:plateId</gpml:valueType>
+                </gpml:ConstantValue>
+            </gpml:reconstructionPlateId>
+            <gpml:network>
+                <gpml:ConstantValue>
+                    <gpml:value>
+                        <gpml:TopologicalNetwork>
+                            <gpml:boundary>
+                                <gpml:TopologicalSections>
+                                    <gpml:section>
+                                        <gpml:TopologicalLineSection>
+                                            <gpml:sourceGeometry>
+                                                <gpml:PropertyDelegate>
+                                                    <gpml:targetFeature>GPlates-21e5af00-6580-40c4-bd0b-fd295f69b207</gpml:targetFeature>
+                                                    <gpml:targetProperty xmlns:gpml="http://www.gplates.org/gplates">gpml:boundary</gpml:targetProperty>
+                                                    <gpml:valueType xmlns:gml="http://www.opengis.net/gml">gml:LineString</gpml:valueType>
+                                                </gpml:PropertyDelegate>
+                                            </gpml:sourceGeometry>
+                                            <gpml:reverseOrder>false</gpml:reverseOrder>
+                                        </gpml:TopologicalLineSection>
+                                    </gpml:section>
+                                    <gpml:section>
+                                        <gpml:TopologicalLineSection>
+                                            <gpml:sourceGeometry>
+                                                <gpml:PropertyDelegate>
+                                                    <gpml:targetFeature>GPlates-8dd6a57e-05a2-4ae5-9608-2157108d41ae</gpml:targetFeature>
+                                                    <gpml:targetProperty xmlns:gpml="http://www.gplates.org/gplates">gpml:centerLineOf</gpml:targetProperty>
+                                                    <gpml:valueType xmlns:gml="http://www.opengis.net/gml">gml:LineString</gpml:valueType>
+                                                </gpml:PropertyDelegate>
+                                            </gpml:sourceGeometry>
+                                            <gpml:reverseOrder>false</gpml:reverseOrder>
+                                        </gpml:TopologicalLineSection>
+                                    </gpml:section>
+                                    <gpml:section>
+                                        <gpml:TopologicalLineSection>
+                                            <gpml:sourceGeometry>
+                                                <gpml:PropertyDelegate>
+                                                    <gpml:targetFeature>GPlates-dee534f0-026a-4803-8666-ccbb339ec268</gpml:targetFeature>
+                                                    <gpml:targetProperty xmlns:gpml="http://www.gplates.org/gplates">gpml:centerLineOf</gpml:targetProperty>
+                                                    <gpml:valueType xmlns:gml="http://www.opengis.net/gml">gml:LineString</gpml:valueType>
+                                                </gpml:PropertyDelegate>
+                                            </gpml:sourceGeometry>
+                                            <gpml:reverseOrder>false</gpml:reverseOrder>
+                                        </gpml:TopologicalLineSection>
+                                    </gpml:section>
+                                    <gpml:section>
+                                        <gpml:TopologicalLineSection>
+                                            <gpml:sourceGeometry>
+                                                <gpml:PropertyDelegate>
+                                                    <gpml:targetFeature>GPlates-4e7195ae-67f0-4b0f-8e41-038ac23bb5a4</gpml:targetFeature>
+                                                    <gpml:targetProperty xmlns:gpml="http://www.gplates.org/gplates">gpml:boundary</gpml:targetProperty>
+                                                    <gpml:valueType xmlns:gml="http://www.opengis.net/gml">gml:LineString</gpml:valueType>
+                                                </gpml:PropertyDelegate>
+                                            </gpml:sourceGeometry>
+                                            <gpml:reverseOrder>false</gpml:reverseOrder>
+                                        </gpml:TopologicalLineSection>
+                                    </gpml:section>
+                                    <gpml:section>
+                                        <gpml:TopologicalLineSection>
+                                            <gpml:sourceGeometry>
+                                                <gpml:PropertyDelegate>
+                                                    <gpml:targetFeature>GPlates-6aa75d01-dfc0-48d2-8d6c-656c998729de</gpml:targetFeature>
+                                                    <gpml:targetProperty xmlns:gpml="http://www.gplates.org/gplates">gpml:boundary</gpml:targetProperty>
+                                                    <gpml:valueType xmlns:gml="http://www.opengis.net/gml">gml:LineString</gpml:valueType>
+                                                </gpml:PropertyDelegate>
+                                            </gpml:sourceGeometry>
+                                            <gpml:reverseOrder>true</gpml:reverseOrder>
+                                        </gpml:TopologicalLineSection>
+                                    </gpml:section>
+                                    <gpml:section>
+                                        <gpml:TopologicalLineSection>
+                                            <gpml:sourceGeometry>
+                                                <gpml:PropertyDelegate>
+                                                    <gpml:targetFeature>GPlates-18d83884-7a75-4313-85dd-954251ca3523</gpml:targetFeature>
+                                                    <gpml:targetProperty xmlns:gpml="http://www.gplates.org/gplates">gpml:boundary</gpml:targetProperty>
+                                                    <gpml:valueType xmlns:gml="http://www.opengis.net/gml">gml:LineString</gpml:valueType>
+                                                </gpml:PropertyDelegate>
+                                            </gpml:sourceGeometry>
+                                            <gpml:reverseOrder>false</gpml:reverseOrder>
+                                        </gpml:TopologicalLineSection>
+                                    </gpml:section>
+                                </gpml:TopologicalSections>
+                            </gpml:boundary>
+                        </gpml:TopologicalNetwork>
+                    </gpml:value>
+                    <gml:description></gml:description>
+                    <gpml:valueType xmlns:gpml="http://www.gplates.org/gplates">gpml:TopologicalNetwork</gpml:valueType>
+                </gpml:ConstantValue>
+            </gpml:network>
+        </gpml:TopologicalNetwork>
+    </gml:featureMember>
+    <gml:featureMember>
+        <gpml:TopologicalNetwork>
+            <gpml:identity>GPlates-d5a18efa-c6f4-482a-ab07-ac3f0ab8e37a</gpml:identity>
+            <gpml:revision>GPlates-28b08178-bf78-4551-9288-14a4b20ec856</gpml:revision>
+            <gml:name>South_China_Sea_Deformation_Network</gml:name>
+            <gml:validTime>
+                <gml:TimePeriod>
+                    <gml:begin>
+                        <gml:TimeInstant>
+                            <gml:timePosition gml:frame="http://gplates.org/TRS/flat">9</gml:timePosition>
+                        </gml:TimeInstant>
+                    </gml:begin>
+                    <gml:end>
+                        <gml:TimeInstant>
+                            <gml:timePosition gml:frame="http://gplates.org/TRS/flat">0</gml:timePosition>
+                        </gml:TimeInstant>
+                    </gml:end>
+                </gml:TimePeriod>
+            </gml:validTime>
+            <gpml:reconstructionPlateId>
+                <gpml:ConstantValue>
+                    <gpml:value>602</gpml:value>
+                    <gml:description></gml:description>
+                    <gpml:valueType xmlns:gpml="http://www.gplates.org/gplates">gpml:plateId</gpml:valueType>
+                </gpml:ConstantValue>
+            </gpml:reconstructionPlateId>
+            <gpml:network>
+                <gpml:ConstantValue>
+                    <gpml:value>
+                        <gpml:TopologicalNetwork>
+                            <gpml:boundary>
+                                <gpml:TopologicalSections>
+                                    <gpml:section>
+                                        <gpml:TopologicalLineSection>
+                                            <gpml:sourceGeometry>
+                                                <gpml:PropertyDelegate>
+                                                    <gpml:targetFeature>GPlates-7cb9aae0-6fda-4c50-b763-4372b1d8834c</gpml:targetFeature>
+                                                    <gpml:targetProperty xmlns:gpml="http://www.gplates.org/gplates">gpml:boundary</gpml:targetProperty>
+                                                    <gpml:valueType xmlns:gml="http://www.opengis.net/gml">gml:LineString</gpml:valueType>
+                                                </gpml:PropertyDelegate>
+                                            </gpml:sourceGeometry>
+                                            <gpml:reverseOrder>true</gpml:reverseOrder>
+                                        </gpml:TopologicalLineSection>
+                                    </gpml:section>
+                                    <gpml:section>
+                                        <gpml:TopologicalLineSection>
+                                            <gpml:sourceGeometry>
+                                                <gpml:PropertyDelegate>
+                                                    <gpml:targetFeature>GPlates-8b253860-9f33-4d8f-864b-36098d621988</gpml:targetFeature>
+                                                    <gpml:targetProperty xmlns:gpml="http://www.gplates.org/gplates">gpml:boundary</gpml:targetProperty>
+                                                    <gpml:valueType xmlns:gml="http://www.opengis.net/gml">gml:LineString</gpml:valueType>
+                                                </gpml:PropertyDelegate>
+                                            </gpml:sourceGeometry>
+                                            <gpml:reverseOrder>true</gpml:reverseOrder>
+                                        </gpml:TopologicalLineSection>
+                                    </gpml:section>
+                                    <gpml:section>
+                                        <gpml:TopologicalLineSection>
+                                            <gpml:sourceGeometry>
+                                                <gpml:PropertyDelegate>
+                                                    <gpml:targetFeature>GPlates-b2e9effa-a2de-4dfb-bf79-4833d08e73af</gpml:targetFeature>
+                                                    <gpml:targetProperty xmlns:gpml="http://www.gplates.org/gplates">gpml:boundary</gpml:targetProperty>
+                                                    <gpml:valueType xmlns:gml="http://www.opengis.net/gml">gml:LineString</gpml:valueType>
+                                                </gpml:PropertyDelegate>
+                                            </gpml:sourceGeometry>
+                                            <gpml:reverseOrder>true</gpml:reverseOrder>
+                                        </gpml:TopologicalLineSection>
+                                    </gpml:section>
+                                    <gpml:section>
+                                        <gpml:TopologicalLineSection>
+                                            <gpml:sourceGeometry>
+                                                <gpml:PropertyDelegate>
+                                                    <gpml:targetFeature>GPlates-4e7195ae-67f0-4b0f-8e41-038ac23bb5a4</gpml:targetFeature>
+                                                    <gpml:targetProperty xmlns:gpml="http://www.gplates.org/gplates">gpml:boundary</gpml:targetProperty>
+                                                    <gpml:valueType xmlns:gml="http://www.opengis.net/gml">gml:LineString</gpml:valueType>
+                                                </gpml:PropertyDelegate>
+                                            </gpml:sourceGeometry>
+                                            <gpml:reverseOrder>true</gpml:reverseOrder>
+                                        </gpml:TopologicalLineSection>
+                                    </gpml:section>
+                                    <gpml:section>
+                                        <gpml:TopologicalLineSection>
+                                            <gpml:sourceGeometry>
+                                                <gpml:PropertyDelegate>
+                                                    <gpml:targetFeature>GPlates-29f9850c-1310-45f6-a649-7f48757d72bd</gpml:targetFeature>
+                                                    <gpml:targetProperty xmlns:gpml="http://www.gplates.org/gplates">gpml:centerLineOf</gpml:targetProperty>
+                                                    <gpml:valueType xmlns:gml="http://www.opengis.net/gml">gml:LineString</gpml:valueType>
+                                                </gpml:PropertyDelegate>
+                                            </gpml:sourceGeometry>
+                                            <gpml:reverseOrder>true</gpml:reverseOrder>
+                                        </gpml:TopologicalLineSection>
+                                    </gpml:section>
+                                    <gpml:section>
+                                        <gpml:TopologicalLineSection>
+                                            <gpml:sourceGeometry>
+                                                <gpml:PropertyDelegate>
+                                                    <gpml:targetFeature>GPlates-dee534f0-026a-4803-8666-ccbb339ec268</gpml:targetFeature>
+                                                    <gpml:targetProperty xmlns:gpml="http://www.gplates.org/gplates">gpml:centerLineOf</gpml:targetProperty>
+                                                    <gpml:valueType xmlns:gml="http://www.opengis.net/gml">gml:LineString</gpml:valueType>
+                                                </gpml:PropertyDelegate>
+                                            </gpml:sourceGeometry>
+                                            <gpml:reverseOrder>true</gpml:reverseOrder>
+                                        </gpml:TopologicalLineSection>
+                                    </gpml:section>
+                                    <gpml:section>
+                                        <gpml:TopologicalLineSection>
+                                            <gpml:sourceGeometry>
+                                                <gpml:PropertyDelegate>
+                                                    <gpml:targetFeature>GPlates-8dd6a57e-05a2-4ae5-9608-2157108d41ae</gpml:targetFeature>
+                                                    <gpml:targetProperty xmlns:gpml="http://www.gplates.org/gplates">gpml:centerLineOf</gpml:targetProperty>
+                                                    <gpml:valueType xmlns:gml="http://www.opengis.net/gml">gml:LineString</gpml:valueType>
+                                                </gpml:PropertyDelegate>
+                                            </gpml:sourceGeometry>
+                                            <gpml:reverseOrder>true</gpml:reverseOrder>
+                                        </gpml:TopologicalLineSection>
+                                    </gpml:section>
+                                    <gpml:section>
+                                        <gpml:TopologicalLineSection>
+                                            <gpml:sourceGeometry>
+                                                <gpml:PropertyDelegate>
+                                                    <gpml:targetFeature>GPlates-21e5af00-6580-40c4-bd0b-fd295f69b207</gpml:targetFeature>
+                                                    <gpml:targetProperty xmlns:gpml="http://www.gplates.org/gplates">gpml:boundary</gpml:targetProperty>
+                                                    <gpml:valueType xmlns:gml="http://www.opengis.net/gml">gml:LineString</gpml:valueType>
+                                                </gpml:PropertyDelegate>
+                                            </gpml:sourceGeometry>
+                                            <gpml:reverseOrder>true</gpml:reverseOrder>
+                                        </gpml:TopologicalLineSection>
+                                    </gpml:section>
+                                    <gpml:section>
+                                        <gpml:TopologicalLineSection>
+                                            <gpml:sourceGeometry>
+                                                <gpml:PropertyDelegate>
+                                                    <gpml:targetFeature>GPlates-33921c41-7110-4751-9de2-30e75573c579</gpml:targetFeature>
+                                                    <gpml:targetProperty xmlns:gpml="http://www.gplates.org/gplates">gpml:boundary</gpml:targetProperty>
+                                                    <gpml:valueType xmlns:gml="http://www.opengis.net/gml">gml:LineString</gpml:valueType>
+                                                </gpml:PropertyDelegate>
+                                            </gpml:sourceGeometry>
+                                            <gpml:reverseOrder>true</gpml:reverseOrder>
+                                        </gpml:TopologicalLineSection>
+                                    </gpml:section>
+                                    <gpml:section>
+                                        <gpml:TopologicalLineSection>
+                                            <gpml:sourceGeometry>
+                                                <gpml:PropertyDelegate>
+                                                    <gpml:targetFeature>GPlates-e9071f6c-d08d-4783-bfc7-6be1742b99dd</gpml:targetFeature>
+                                                    <gpml:targetProperty xmlns:gpml="http://www.gplates.org/gplates">gpml:boundary</gpml:targetProperty>
+                                                    <gpml:valueType xmlns:gml="http://www.opengis.net/gml">gml:LineString</gpml:valueType>
+                                                </gpml:PropertyDelegate>
+                                            </gpml:sourceGeometry>
+                                            <gpml:reverseOrder>true</gpml:reverseOrder>
+                                        </gpml:TopologicalLineSection>
+                                    </gpml:section>
+                                    <gpml:section>
+                                        <gpml:TopologicalLineSection>
+                                            <gpml:sourceGeometry>
+                                                <gpml:PropertyDelegate>
+                                                    <gpml:targetFeature>GPlates-6504fd3b-4356-4414-ac62-a446a95892ee</gpml:targetFeature>
+                                                    <gpml:targetProperty xmlns:gpml="http://www.gplates.org/gplates">gpml:boundary</gpml:targetProperty>
+                                                    <gpml:valueType xmlns:gml="http://www.opengis.net/gml">gml:LineString</gpml:valueType>
+                                                </gpml:PropertyDelegate>
+                                            </gpml:sourceGeometry>
+                                            <gpml:reverseOrder>true</gpml:reverseOrder>
+                                        </gpml:TopologicalLineSection>
+                                    </gpml:section>
+                                    <gpml:section>
+                                        <gpml:TopologicalLineSection>
+                                            <gpml:sourceGeometry>
+                                                <gpml:PropertyDelegate>
+                                                    <gpml:targetFeature>GPlates-29a82fad-add4-47cd-abd0-09e7c3ef11bf</gpml:targetFeature>
+                                                    <gpml:targetProperty xmlns:gpml="http://www.gplates.org/gplates">gpml:boundary</gpml:targetProperty>
+                                                    <gpml:valueType xmlns:gml="http://www.opengis.net/gml">gml:LineString</gpml:valueType>
+                                                </gpml:PropertyDelegate>
+                                            </gpml:sourceGeometry>
+                                            <gpml:reverseOrder>true</gpml:reverseOrder>
+                                        </gpml:TopologicalLineSection>
+                                    </gpml:section>
+                                    <gpml:section>
+                                        <gpml:TopologicalLineSection>
+                                            <gpml:sourceGeometry>
+                                                <gpml:PropertyDelegate>
+                                                    <gpml:targetFeature>GPlates-9c53637e-103c-47f8-967e-9911c1bd5ae1</gpml:targetFeature>
+                                                    <gpml:targetProperty xmlns:gpml="http://www.gplates.org/gplates">gpml:boundary</gpml:targetProperty>
+                                                    <gpml:valueType xmlns:gml="http://www.opengis.net/gml">gml:LineString</gpml:valueType>
+                                                </gpml:PropertyDelegate>
+                                            </gpml:sourceGeometry>
+                                            <gpml:reverseOrder>true</gpml:reverseOrder>
+                                        </gpml:TopologicalLineSection>
+                                    </gpml:section>
+                                    <gpml:section>
+                                        <gpml:TopologicalLineSection>
+                                            <gpml:sourceGeometry>
+                                                <gpml:PropertyDelegate>
+                                                    <gpml:targetFeature>GPlates-6e9ec050-32a3-42cf-a3fd-2c3f29b6315e</gpml:targetFeature>
+                                                    <gpml:targetProperty xmlns:gpml="http://www.gplates.org/gplates">gpml:boundary</gpml:targetProperty>
+                                                    <gpml:valueType xmlns:gml="http://www.opengis.net/gml">gml:LineString</gpml:valueType>
+                                                </gpml:PropertyDelegate>
+                                            </gpml:sourceGeometry>
+                                            <gpml:reverseOrder>false</gpml:reverseOrder>
+                                        </gpml:TopologicalLineSection>
+                                    </gpml:section>
+                                    <gpml:section>
+                                        <gpml:TopologicalLineSection>
+                                            <gpml:sourceGeometry>
+                                                <gpml:PropertyDelegate>
+                                                    <gpml:targetFeature>GPlates-f22cbf1f-00a8-4784-b654-c281c8d0a295</gpml:targetFeature>
+                                                    <gpml:targetProperty xmlns:gpml="http://www.gplates.org/gplates">gpml:boundary</gpml:targetProperty>
+                                                    <gpml:valueType xmlns:gml="http://www.opengis.net/gml">gml:LineString</gpml:valueType>
+                                                </gpml:PropertyDelegate>
+                                            </gpml:sourceGeometry>
+                                            <gpml:reverseOrder>false</gpml:reverseOrder>
+                                        </gpml:TopologicalLineSection>
+                                    </gpml:section>
+                                    <gpml:section>
+                                        <gpml:TopologicalLineSection>
+                                            <gpml:sourceGeometry>
+                                                <gpml:PropertyDelegate>
+                                                    <gpml:targetFeature>GPlates-89b2efa9-4484-473a-9b94-7d3b43307c67</gpml:targetFeature>
+                                                    <gpml:targetProperty xmlns:gpml="http://www.gplates.org/gplates">gpml:boundary</gpml:targetProperty>
+                                                    <gpml:valueType xmlns:gml="http://www.opengis.net/gml">gml:LineString</gpml:valueType>
+                                                </gpml:PropertyDelegate>
+                                            </gpml:sourceGeometry>
+                                            <gpml:reverseOrder>true</gpml:reverseOrder>
+                                        </gpml:TopologicalLineSection>
+                                    </gpml:section>
+                                    <gpml:section>
+                                        <gpml:TopologicalLineSection>
+                                            <gpml:sourceGeometry>
+                                                <gpml:PropertyDelegate>
+                                                    <gpml:targetFeature>GPlates-ea6f13f2-f0e9-41fb-9382-2f148f8124b3</gpml:targetFeature>
+                                                    <gpml:targetProperty xmlns:gpml="http://www.gplates.org/gplates">gpml:boundary</gpml:targetProperty>
+                                                    <gpml:valueType xmlns:gml="http://www.opengis.net/gml">gml:LineString</gpml:valueType>
+                                                </gpml:PropertyDelegate>
+                                            </gpml:sourceGeometry>
+                                            <gpml:reverseOrder>false</gpml:reverseOrder>
+                                        </gpml:TopologicalLineSection>
+                                    </gpml:section>
+                                    <gpml:section>
+                                        <gpml:TopologicalLineSection>
+                                            <gpml:sourceGeometry>
+                                                <gpml:PropertyDelegate>
+                                                    <gpml:targetFeature>GPlates-36e945c1-b39e-4cc6-8401-ab138622270c</gpml:targetFeature>
+                                                    <gpml:targetProperty xmlns:gpml="http://www.gplates.org/gplates">gpml:boundary</gpml:targetProperty>
+                                                    <gpml:valueType xmlns:gml="http://www.opengis.net/gml">gml:LineString</gpml:valueType>
+                                                </gpml:PropertyDelegate>
+                                            </gpml:sourceGeometry>
+                                            <gpml:reverseOrder>false</gpml:reverseOrder>
+                                        </gpml:TopologicalLineSection>
+                                    </gpml:section>
+                                    <gpml:section>
+                                        <gpml:TopologicalLineSection>
+                                            <gpml:sourceGeometry>
+                                                <gpml:PropertyDelegate>
+                                                    <gpml:targetFeature>GPlates-8d9fcabb-2281-494a-bebf-3e59134349df</gpml:targetFeature>
+                                                    <gpml:targetProperty xmlns:gpml="http://www.gplates.org/gplates">gpml:boundary</gpml:targetProperty>
+                                                    <gpml:valueType xmlns:gml="http://www.opengis.net/gml">gml:LineString</gpml:valueType>
+                                                </gpml:PropertyDelegate>
+                                            </gpml:sourceGeometry>
+                                            <gpml:reverseOrder>true</gpml:reverseOrder>
+                                        </gpml:TopologicalLineSection>
+                                    </gpml:section>
+                                    <gpml:section>
+                                        <gpml:TopologicalLineSection>
+                                            <gpml:sourceGeometry>
+                                                <gpml:PropertyDelegate>
+                                                    <gpml:targetFeature>GPlates-e1984708-713b-402c-8b1c-c3a38b072795</gpml:targetFeature>
+                                                    <gpml:targetProperty xmlns:gpml="http://www.gplates.org/gplates">gpml:boundary</gpml:targetProperty>
+                                                    <gpml:valueType xmlns:gml="http://www.opengis.net/gml">gml:LineString</gpml:valueType>
+                                                </gpml:PropertyDelegate>
+                                            </gpml:sourceGeometry>
+                                            <gpml:reverseOrder>true</gpml:reverseOrder>
+                                        </gpml:TopologicalLineSection>
+                                    </gpml:section>
+                                    <gpml:section>
+                                        <gpml:TopologicalLineSection>
+                                            <gpml:sourceGeometry>
+                                                <gpml:PropertyDelegate>
+                                                    <gpml:targetFeature>GPlates-29a82fad-add4-47cd-abd0-09e7c3ef11bf</gpml:targetFeature>
+                                                    <gpml:targetProperty xmlns:gpml="http://www.gplates.org/gplates">gpml:boundary</gpml:targetProperty>
+                                                    <gpml:valueType xmlns:gml="http://www.opengis.net/gml">gml:LineString</gpml:valueType>
+                                                </gpml:PropertyDelegate>
+                                            </gpml:sourceGeometry>
+                                            <gpml:reverseOrder>false</gpml:reverseOrder>
+                                        </gpml:TopologicalLineSection>
+                                    </gpml:section>
+                                    <gpml:section>
+                                        <gpml:TopologicalLineSection>
+                                            <gpml:sourceGeometry>
+                                                <gpml:PropertyDelegate>
+                                                    <gpml:targetFeature>GPlates-7c4a86e1-a3f3-4481-9c91-8dd96fc8a1f8</gpml:targetFeature>
+                                                    <gpml:targetProperty xmlns:gpml="http://www.gplates.org/gplates">gpml:boundary</gpml:targetProperty>
+                                                    <gpml:valueType xmlns:gml="http://www.opengis.net/gml">gml:LineString</gpml:valueType>
+                                                </gpml:PropertyDelegate>
+                                            </gpml:sourceGeometry>
+                                            <gpml:reverseOrder>true</gpml:reverseOrder>
+                                        </gpml:TopologicalLineSection>
+                                    </gpml:section>
+                                    <gpml:section>
+                                        <gpml:TopologicalLineSection>
+                                            <gpml:sourceGeometry>
+                                                <gpml:PropertyDelegate>
+                                                    <gpml:targetFeature>GPlates-84bb37f8-0e97-4c0a-8095-53ca8eab6c0d</gpml:targetFeature>
+                                                    <gpml:targetProperty xmlns:gpml="http://www.gplates.org/gplates">gpml:boundary</gpml:targetProperty>
+                                                    <gpml:valueType xmlns:gml="http://www.opengis.net/gml">gml:LineString</gpml:valueType>
+                                                </gpml:PropertyDelegate>
+                                            </gpml:sourceGeometry>
+                                            <gpml:reverseOrder>false</gpml:reverseOrder>
+                                        </gpml:TopologicalLineSection>
+                                    </gpml:section>
+                                    <gpml:section>
+                                        <gpml:TopologicalLineSection>
+                                            <gpml:sourceGeometry>
+                                                <gpml:PropertyDelegate>
+                                                    <gpml:targetFeature>GPlates-5a2f1b5e-43c3-480d-86a9-3e97257c1fe3</gpml:targetFeature>
+                                                    <gpml:targetProperty xmlns:gpml="http://www.gplates.org/gplates">gpml:boundary</gpml:targetProperty>
+                                                    <gpml:valueType xmlns:gml="http://www.opengis.net/gml">gml:LineString</gpml:valueType>
+                                                </gpml:PropertyDelegate>
+                                            </gpml:sourceGeometry>
+                                            <gpml:reverseOrder>true</gpml:reverseOrder>
+                                        </gpml:TopologicalLineSection>
+                                    </gpml:section>
+                                    <gpml:section>
+                                        <gpml:TopologicalLineSection>
+                                            <gpml:sourceGeometry>
+                                                <gpml:PropertyDelegate>
+                                                    <gpml:targetFeature>GPlates-6504fd3b-4356-4414-ac62-a446a95892ee</gpml:targetFeature>
+                                                    <gpml:targetProperty xmlns:gpml="http://www.gplates.org/gplates">gpml:boundary</gpml:targetProperty>
+                                                    <gpml:valueType xmlns:gml="http://www.opengis.net/gml">gml:LineString</gpml:valueType>
+                                                </gpml:PropertyDelegate>
+                                            </gpml:sourceGeometry>
+                                            <gpml:reverseOrder>false</gpml:reverseOrder>
+                                        </gpml:TopologicalLineSection>
+                                    </gpml:section>
+                                    <gpml:section>
+                                        <gpml:TopologicalLineSection>
+                                            <gpml:sourceGeometry>
+                                                <gpml:PropertyDelegate>
+                                                    <gpml:targetFeature>GPlates-a1dc49ce-ccee-428d-b474-0e9010c2d9c9</gpml:targetFeature>
+                                                    <gpml:targetProperty xmlns:gpml="http://www.gplates.org/gplates">gpml:boundary</gpml:targetProperty>
+                                                    <gpml:valueType xmlns:gml="http://www.opengis.net/gml">gml:LineString</gpml:valueType>
+                                                </gpml:PropertyDelegate>
+                                            </gpml:sourceGeometry>
+                                            <gpml:reverseOrder>true</gpml:reverseOrder>
+                                        </gpml:TopologicalLineSection>
+                                    </gpml:section>
+                                    <gpml:section>
+                                        <gpml:TopologicalLineSection>
+                                            <gpml:sourceGeometry>
+                                                <gpml:PropertyDelegate>
+                                                    <gpml:targetFeature>GPlates-17419d22-d5ef-415a-af3f-af55936a9b5b</gpml:targetFeature>
+                                                    <gpml:targetProperty xmlns:gpml="http://www.gplates.org/gplates">gpml:boundary</gpml:targetProperty>
+                                                    <gpml:valueType xmlns:gml="http://www.opengis.net/gml">gml:LineString</gpml:valueType>
+                                                </gpml:PropertyDelegate>
+                                            </gpml:sourceGeometry>
+                                            <gpml:reverseOrder>true</gpml:reverseOrder>
+                                        </gpml:TopologicalLineSection>
+                                    </gpml:section>
+                                    <gpml:section>
+                                        <gpml:TopologicalLineSection>
+                                            <gpml:sourceGeometry>
+                                                <gpml:PropertyDelegate>
+                                                    <gpml:targetFeature>GPlates-18d83884-7a75-4313-85dd-954251ca3523</gpml:targetFeature>
+                                                    <gpml:targetProperty xmlns:gpml="http://www.gplates.org/gplates">gpml:boundary</gpml:targetProperty>
+                                                    <gpml:valueType xmlns:gml="http://www.opengis.net/gml">gml:LineString</gpml:valueType>
+                                                </gpml:PropertyDelegate>
+                                            </gpml:sourceGeometry>
+                                            <gpml:reverseOrder>true</gpml:reverseOrder>
+                                        </gpml:TopologicalLineSection>
+                                    </gpml:section>
+                                    <gpml:section>
+                                        <gpml:TopologicalLineSection>
+                                            <gpml:sourceGeometry>
+                                                <gpml:PropertyDelegate>
+                                                    <gpml:targetFeature>GPlates-7eaec4ff-2c84-4aaf-85bf-d86db6e71f5b</gpml:targetFeature>
+                                                    <gpml:targetProperty xmlns:gpml="http://www.gplates.org/gplates">gpml:boundary</gpml:targetProperty>
+                                                    <gpml:valueType xmlns:gml="http://www.opengis.net/gml">gml:LineString</gpml:valueType>
+                                                </gpml:PropertyDelegate>
+                                            </gpml:sourceGeometry>
+                                            <gpml:reverseOrder>true</gpml:reverseOrder>
+                                        </gpml:TopologicalLineSection>
+                                    </gpml:section>
+                                    <gpml:section>
+                                        <gpml:TopologicalLineSection>
+                                            <gpml:sourceGeometry>
+                                                <gpml:PropertyDelegate>
+                                                    <gpml:targetFeature>GPlates-4906f804-00f3-4772-993e-0548ef3fabb5</gpml:targetFeature>
+                                                    <gpml:targetProperty xmlns:gpml="http://www.gplates.org/gplates">gpml:boundary</gpml:targetProperty>
+                                                    <gpml:valueType xmlns:gml="http://www.opengis.net/gml">gml:LineString</gpml:valueType>
+                                                </gpml:PropertyDelegate>
+                                            </gpml:sourceGeometry>
+                                            <gpml:reverseOrder>false</gpml:reverseOrder>
+                                        </gpml:TopologicalLineSection>
+                                    </gpml:section>
+                                    <gpml:section>
+                                        <gpml:TopologicalLineSection>
+                                            <gpml:sourceGeometry>
+                                                <gpml:PropertyDelegate>
+                                                    <gpml:targetFeature>GPlates-137c1f64-c35f-4d64-bb5b-068f854f74e8</gpml:targetFeature>
+                                                    <gpml:targetProperty xmlns:gpml="http://www.gplates.org/gplates">gpml:boundary</gpml:targetProperty>
+                                                    <gpml:valueType xmlns:gml="http://www.opengis.net/gml">gml:LineString</gpml:valueType>
+                                                </gpml:PropertyDelegate>
+                                            </gpml:sourceGeometry>
+                                            <gpml:reverseOrder>true</gpml:reverseOrder>
+                                        </gpml:TopologicalLineSection>
+                                    </gpml:section>
+                                    <gpml:section>
+                                        <gpml:TopologicalLineSection>
+                                            <gpml:sourceGeometry>
+                                                <gpml:PropertyDelegate>
+                                                    <gpml:targetFeature>GPlates-c6fd59e5-9c4b-4635-a8ef-5c721b05e621</gpml:targetFeature>
+                                                    <gpml:targetProperty xmlns:gpml="http://www.gplates.org/gplates">gpml:boundary</gpml:targetProperty>
+                                                    <gpml:valueType xmlns:gml="http://www.opengis.net/gml">gml:LineString</gpml:valueType>
+                                                </gpml:PropertyDelegate>
+                                            </gpml:sourceGeometry>
+                                            <gpml:reverseOrder>true</gpml:reverseOrder>
+                                        </gpml:TopologicalLineSection>
+                                    </gpml:section>
+                                    <gpml:section>
+                                        <gpml:TopologicalLineSection>
+                                            <gpml:sourceGeometry>
+                                                <gpml:PropertyDelegate>
+                                                    <gpml:targetFeature>GPlates-8aba20e9-1fca-491c-be78-85e5d8a5552a</gpml:targetFeature>
+                                                    <gpml:targetProperty xmlns:gpml="http://www.gplates.org/gplates">gpml:centerLineOf</gpml:targetProperty>
+                                                    <gpml:valueType xmlns:gml="http://www.opengis.net/gml">gml:LineString</gpml:valueType>
+                                                </gpml:PropertyDelegate>
+                                            </gpml:sourceGeometry>
+                                            <gpml:reverseOrder>true</gpml:reverseOrder>
+                                        </gpml:TopologicalLineSection>
+                                    </gpml:section>
+                                    <gpml:section>
+                                        <gpml:TopologicalLineSection>
+                                            <gpml:sourceGeometry>
+                                                <gpml:PropertyDelegate>
+                                                    <gpml:targetFeature>GPlates-ac1ae7d8-1e82-4266-8e60-41d0fa7813ff</gpml:targetFeature>
+                                                    <gpml:targetProperty xmlns:gpml="http://www.gplates.org/gplates">gpml:centerLineOf</gpml:targetProperty>
+                                                    <gpml:valueType xmlns:gml="http://www.opengis.net/gml">gml:LineString</gpml:valueType>
+                                                </gpml:PropertyDelegate>
+                                            </gpml:sourceGeometry>
+                                            <gpml:reverseOrder>true</gpml:reverseOrder>
+                                        </gpml:TopologicalLineSection>
+                                    </gpml:section>
+                                    <gpml:section>
+                                        <gpml:TopologicalLineSection>
+                                            <gpml:sourceGeometry>
+                                                <gpml:PropertyDelegate>
+                                                    <gpml:targetFeature>GPlates-8082a08a-d594-4172-9bf6-984efdd50f99</gpml:targetFeature>
+                                                    <gpml:targetProperty xmlns:gpml="http://www.gplates.org/gplates">gpml:centerLineOf</gpml:targetProperty>
+                                                    <gpml:valueType xmlns:gml="http://www.opengis.net/gml">gml:LineString</gpml:valueType>
+                                                </gpml:PropertyDelegate>
+                                            </gpml:sourceGeometry>
+                                            <gpml:reverseOrder>true</gpml:reverseOrder>
+                                        </gpml:TopologicalLineSection>
+                                    </gpml:section>
+                                    <gpml:section>
+                                        <gpml:TopologicalLineSection>
+                                            <gpml:sourceGeometry>
+                                                <gpml:PropertyDelegate>
+                                                    <gpml:targetFeature>GPlates-01743c3b-a1e9-421c-80a0-7095da8c601f</gpml:targetFeature>
+                                                    <gpml:targetProperty xmlns:gpml="http://www.gplates.org/gplates">gpml:boundary</gpml:targetProperty>
+                                                    <gpml:valueType xmlns:gml="http://www.opengis.net/gml">gml:LineString</gpml:valueType>
+                                                </gpml:PropertyDelegate>
+                                            </gpml:sourceGeometry>
+                                            <gpml:reverseOrder>true</gpml:reverseOrder>
+                                        </gpml:TopologicalLineSection>
+                                    </gpml:section>
+                                    <gpml:section>
+                                        <gpml:TopologicalLineSection>
+                                            <gpml:sourceGeometry>
+                                                <gpml:PropertyDelegate>
+                                                    <gpml:targetFeature>GPlates-8082a08a-d594-4172-9bf6-984efdd50f99</gpml:targetFeature>
+                                                    <gpml:targetProperty xmlns:gpml="http://www.gplates.org/gplates">gpml:centerLineOf</gpml:targetProperty>
+                                                    <gpml:valueType xmlns:gml="http://www.opengis.net/gml">gml:LineString</gpml:valueType>
+                                                </gpml:PropertyDelegate>
+                                            </gpml:sourceGeometry>
+                                            <gpml:reverseOrder>true</gpml:reverseOrder>
+                                        </gpml:TopologicalLineSection>
+                                    </gpml:section>
+                                </gpml:TopologicalSections>
+                            </gpml:boundary>
+                        </gpml:TopologicalNetwork>
+                    </gpml:value>
+                    <gml:description></gml:description>
+                    <gpml:valueType xmlns:gpml="http://www.gplates.org/gplates">gpml:TopologicalNetwork</gpml:valueType>
+                </gpml:ConstantValue>
+            </gpml:network>
+        </gpml:TopologicalNetwork>
+    </gml:featureMember>
+    <gml:featureMember>
+        <gpml:TopologicalNetwork>
+            <gpml:identity>GPlates-7c11d7ba-b58d-425f-9ffe-da8173e7c2db</gpml:identity>
+            <gpml:revision>GPlates-fa159b62-1ddb-4dfc-88a5-5ff0af29cbca</gpml:revision>
+            <gml:name>South_China_Sea_Deformation_Network</gml:name>
+            <gml:validTime>
+                <gml:TimePeriod>
+                    <gml:begin>
+                        <gml:TimeInstant>
+                            <gml:timePosition gml:frame="http://gplates.org/TRS/flat">10</gml:timePosition>
+                        </gml:TimeInstant>
+                    </gml:begin>
+                    <gml:end>
+                        <gml:TimeInstant>
+                            <gml:timePosition gml:frame="http://gplates.org/TRS/flat">9.0999999999999996</gml:timePosition>
+                        </gml:TimeInstant>
+                    </gml:end>
+                </gml:TimePeriod>
+            </gml:validTime>
+            <gpml:reconstructionPlateId>
+                <gpml:ConstantValue>
+                    <gpml:value>602</gpml:value>
+                    <gml:description></gml:description>
+                    <gpml:valueType xmlns:gpml="http://www.gplates.org/gplates">gpml:plateId</gpml:valueType>
+                </gpml:ConstantValue>
+            </gpml:reconstructionPlateId>
+            <gpml:network>
+                <gpml:ConstantValue>
+                    <gpml:value>
+                        <gpml:TopologicalNetwork>
+                            <gpml:boundary>
+                                <gpml:TopologicalSections>
+                                    <gpml:section>
+                                        <gpml:TopologicalLineSection>
+                                            <gpml:sourceGeometry>
+                                                <gpml:PropertyDelegate>
+                                                    <gpml:targetFeature>GPlates-7cb9aae0-6fda-4c50-b763-4372b1d8834c</gpml:targetFeature>
+                                                    <gpml:targetProperty xmlns:gpml="http://www.gplates.org/gplates">gpml:boundary</gpml:targetProperty>
+                                                    <gpml:valueType xmlns:gml="http://www.opengis.net/gml">gml:LineString</gpml:valueType>
+                                                </gpml:PropertyDelegate>
+                                            </gpml:sourceGeometry>
+                                            <gpml:reverseOrder>true</gpml:reverseOrder>
+                                        </gpml:TopologicalLineSection>
+                                    </gpml:section>
+                                    <gpml:section>
+                                        <gpml:TopologicalLineSection>
+                                            <gpml:sourceGeometry>
+                                                <gpml:PropertyDelegate>
+                                                    <gpml:targetFeature>GPlates-8b253860-9f33-4d8f-864b-36098d621988</gpml:targetFeature>
+                                                    <gpml:targetProperty xmlns:gpml="http://www.gplates.org/gplates">gpml:boundary</gpml:targetProperty>
+                                                    <gpml:valueType xmlns:gml="http://www.opengis.net/gml">gml:LineString</gpml:valueType>
+                                                </gpml:PropertyDelegate>
+                                            </gpml:sourceGeometry>
+                                            <gpml:reverseOrder>true</gpml:reverseOrder>
+                                        </gpml:TopologicalLineSection>
+                                    </gpml:section>
+                                    <gpml:section>
+                                        <gpml:TopologicalLineSection>
+                                            <gpml:sourceGeometry>
+                                                <gpml:PropertyDelegate>
+                                                    <gpml:targetFeature>GPlates-b2e9effa-a2de-4dfb-bf79-4833d08e73af</gpml:targetFeature>
+                                                    <gpml:targetProperty xmlns:gpml="http://www.gplates.org/gplates">gpml:boundary</gpml:targetProperty>
+                                                    <gpml:valueType xmlns:gml="http://www.opengis.net/gml">gml:LineString</gpml:valueType>
+                                                </gpml:PropertyDelegate>
+                                            </gpml:sourceGeometry>
+                                            <gpml:reverseOrder>true</gpml:reverseOrder>
+                                        </gpml:TopologicalLineSection>
+                                    </gpml:section>
+                                    <gpml:section>
+                                        <gpml:TopologicalLineSection>
+                                            <gpml:sourceGeometry>
+                                                <gpml:PropertyDelegate>
+                                                    <gpml:targetFeature>GPlates-4e7195ae-67f0-4b0f-8e41-038ac23bb5a4</gpml:targetFeature>
+                                                    <gpml:targetProperty xmlns:gpml="http://www.gplates.org/gplates">gpml:boundary</gpml:targetProperty>
+                                                    <gpml:valueType xmlns:gml="http://www.opengis.net/gml">gml:LineString</gpml:valueType>
+                                                </gpml:PropertyDelegate>
+                                            </gpml:sourceGeometry>
+                                            <gpml:reverseOrder>true</gpml:reverseOrder>
+                                        </gpml:TopologicalLineSection>
+                                    </gpml:section>
+                                    <gpml:section>
+                                        <gpml:TopologicalLineSection>
+                                            <gpml:sourceGeometry>
+                                                <gpml:PropertyDelegate>
+                                                    <gpml:targetFeature>GPlates-29f9850c-1310-45f6-a649-7f48757d72bd</gpml:targetFeature>
+                                                    <gpml:targetProperty xmlns:gpml="http://www.gplates.org/gplates">gpml:centerLineOf</gpml:targetProperty>
+                                                    <gpml:valueType xmlns:gml="http://www.opengis.net/gml">gml:LineString</gpml:valueType>
+                                                </gpml:PropertyDelegate>
+                                            </gpml:sourceGeometry>
+                                            <gpml:reverseOrder>true</gpml:reverseOrder>
+                                        </gpml:TopologicalLineSection>
+                                    </gpml:section>
+                                    <gpml:section>
+                                        <gpml:TopologicalLineSection>
+                                            <gpml:sourceGeometry>
+                                                <gpml:PropertyDelegate>
+                                                    <gpml:targetFeature>GPlates-dee534f0-026a-4803-8666-ccbb339ec268</gpml:targetFeature>
+                                                    <gpml:targetProperty xmlns:gpml="http://www.gplates.org/gplates">gpml:centerLineOf</gpml:targetProperty>
+                                                    <gpml:valueType xmlns:gml="http://www.opengis.net/gml">gml:LineString</gpml:valueType>
+                                                </gpml:PropertyDelegate>
+                                            </gpml:sourceGeometry>
+                                            <gpml:reverseOrder>true</gpml:reverseOrder>
+                                        </gpml:TopologicalLineSection>
+                                    </gpml:section>
+                                    <gpml:section>
+                                        <gpml:TopologicalLineSection>
+                                            <gpml:sourceGeometry>
+                                                <gpml:PropertyDelegate>
+                                                    <gpml:targetFeature>GPlates-8dd6a57e-05a2-4ae5-9608-2157108d41ae</gpml:targetFeature>
+                                                    <gpml:targetProperty xmlns:gpml="http://www.gplates.org/gplates">gpml:centerLineOf</gpml:targetProperty>
+                                                    <gpml:valueType xmlns:gml="http://www.opengis.net/gml">gml:LineString</gpml:valueType>
+                                                </gpml:PropertyDelegate>
+                                            </gpml:sourceGeometry>
+                                            <gpml:reverseOrder>true</gpml:reverseOrder>
+                                        </gpml:TopologicalLineSection>
+                                    </gpml:section>
+                                    <gpml:section>
+                                        <gpml:TopologicalLineSection>
+                                            <gpml:sourceGeometry>
+                                                <gpml:PropertyDelegate>
+                                                    <gpml:targetFeature>GPlates-21e5af00-6580-40c4-bd0b-fd295f69b207</gpml:targetFeature>
+                                                    <gpml:targetProperty xmlns:gpml="http://www.gplates.org/gplates">gpml:boundary</gpml:targetProperty>
+                                                    <gpml:valueType xmlns:gml="http://www.opengis.net/gml">gml:LineString</gpml:valueType>
+                                                </gpml:PropertyDelegate>
+                                            </gpml:sourceGeometry>
+                                            <gpml:reverseOrder>true</gpml:reverseOrder>
+                                        </gpml:TopologicalLineSection>
+                                    </gpml:section>
+                                    <gpml:section>
+                                        <gpml:TopologicalLineSection>
+                                            <gpml:sourceGeometry>
+                                                <gpml:PropertyDelegate>
+                                                    <gpml:targetFeature>GPlates-33921c41-7110-4751-9de2-30e75573c579</gpml:targetFeature>
+                                                    <gpml:targetProperty xmlns:gpml="http://www.gplates.org/gplates">gpml:boundary</gpml:targetProperty>
+                                                    <gpml:valueType xmlns:gml="http://www.opengis.net/gml">gml:LineString</gpml:valueType>
+                                                </gpml:PropertyDelegate>
+                                            </gpml:sourceGeometry>
+                                            <gpml:reverseOrder>true</gpml:reverseOrder>
+                                        </gpml:TopologicalLineSection>
+                                    </gpml:section>
+                                    <gpml:section>
+                                        <gpml:TopologicalLineSection>
+                                            <gpml:sourceGeometry>
+                                                <gpml:PropertyDelegate>
+                                                    <gpml:targetFeature>GPlates-e9071f6c-d08d-4783-bfc7-6be1742b99dd</gpml:targetFeature>
+                                                    <gpml:targetProperty xmlns:gpml="http://www.gplates.org/gplates">gpml:boundary</gpml:targetProperty>
+                                                    <gpml:valueType xmlns:gml="http://www.opengis.net/gml">gml:LineString</gpml:valueType>
+                                                </gpml:PropertyDelegate>
+                                            </gpml:sourceGeometry>
+                                            <gpml:reverseOrder>true</gpml:reverseOrder>
+                                        </gpml:TopologicalLineSection>
+                                    </gpml:section>
+                                    <gpml:section>
+                                        <gpml:TopologicalLineSection>
+                                            <gpml:sourceGeometry>
+                                                <gpml:PropertyDelegate>
+                                                    <gpml:targetFeature>GPlates-6504fd3b-4356-4414-ac62-a446a95892ee</gpml:targetFeature>
+                                                    <gpml:targetProperty xmlns:gpml="http://www.gplates.org/gplates">gpml:boundary</gpml:targetProperty>
+                                                    <gpml:valueType xmlns:gml="http://www.opengis.net/gml">gml:LineString</gpml:valueType>
+                                                </gpml:PropertyDelegate>
+                                            </gpml:sourceGeometry>
+                                            <gpml:reverseOrder>true</gpml:reverseOrder>
+                                        </gpml:TopologicalLineSection>
+                                    </gpml:section>
+                                    <gpml:section>
+                                        <gpml:TopologicalLineSection>
+                                            <gpml:sourceGeometry>
+                                                <gpml:PropertyDelegate>
+                                                    <gpml:targetFeature>GPlates-29a82fad-add4-47cd-abd0-09e7c3ef11bf</gpml:targetFeature>
+                                                    <gpml:targetProperty xmlns:gpml="http://www.gplates.org/gplates">gpml:boundary</gpml:targetProperty>
+                                                    <gpml:valueType xmlns:gml="http://www.opengis.net/gml">gml:LineString</gpml:valueType>
+                                                </gpml:PropertyDelegate>
+                                            </gpml:sourceGeometry>
+                                            <gpml:reverseOrder>true</gpml:reverseOrder>
+                                        </gpml:TopologicalLineSection>
+                                    </gpml:section>
+                                    <gpml:section>
+                                        <gpml:TopologicalLineSection>
+                                            <gpml:sourceGeometry>
+                                                <gpml:PropertyDelegate>
+                                                    <gpml:targetFeature>GPlates-9c53637e-103c-47f8-967e-9911c1bd5ae1</gpml:targetFeature>
+                                                    <gpml:targetProperty xmlns:gpml="http://www.gplates.org/gplates">gpml:boundary</gpml:targetProperty>
+                                                    <gpml:valueType xmlns:gml="http://www.opengis.net/gml">gml:LineString</gpml:valueType>
+                                                </gpml:PropertyDelegate>
+                                            </gpml:sourceGeometry>
+                                            <gpml:reverseOrder>true</gpml:reverseOrder>
+                                        </gpml:TopologicalLineSection>
+                                    </gpml:section>
+                                    <gpml:section>
+                                        <gpml:TopologicalLineSection>
+                                            <gpml:sourceGeometry>
+                                                <gpml:PropertyDelegate>
+                                                    <gpml:targetFeature>GPlates-6e9ec050-32a3-42cf-a3fd-2c3f29b6315e</gpml:targetFeature>
+                                                    <gpml:targetProperty xmlns:gpml="http://www.gplates.org/gplates">gpml:boundary</gpml:targetProperty>
+                                                    <gpml:valueType xmlns:gml="http://www.opengis.net/gml">gml:LineString</gpml:valueType>
+                                                </gpml:PropertyDelegate>
+                                            </gpml:sourceGeometry>
+                                            <gpml:reverseOrder>false</gpml:reverseOrder>
+                                        </gpml:TopologicalLineSection>
+                                    </gpml:section>
+                                    <gpml:section>
+                                        <gpml:TopologicalLineSection>
+                                            <gpml:sourceGeometry>
+                                                <gpml:PropertyDelegate>
+                                                    <gpml:targetFeature>GPlates-f22cbf1f-00a8-4784-b654-c281c8d0a295</gpml:targetFeature>
+                                                    <gpml:targetProperty xmlns:gpml="http://www.gplates.org/gplates">gpml:boundary</gpml:targetProperty>
+                                                    <gpml:valueType xmlns:gml="http://www.opengis.net/gml">gml:LineString</gpml:valueType>
+                                                </gpml:PropertyDelegate>
+                                            </gpml:sourceGeometry>
+                                            <gpml:reverseOrder>false</gpml:reverseOrder>
+                                        </gpml:TopologicalLineSection>
+                                    </gpml:section>
+                                    <gpml:section>
+                                        <gpml:TopologicalLineSection>
+                                            <gpml:sourceGeometry>
+                                                <gpml:PropertyDelegate>
+                                                    <gpml:targetFeature>GPlates-89b2efa9-4484-473a-9b94-7d3b43307c67</gpml:targetFeature>
+                                                    <gpml:targetProperty xmlns:gpml="http://www.gplates.org/gplates">gpml:boundary</gpml:targetProperty>
+                                                    <gpml:valueType xmlns:gml="http://www.opengis.net/gml">gml:LineString</gpml:valueType>
+                                                </gpml:PropertyDelegate>
+                                            </gpml:sourceGeometry>
+                                            <gpml:reverseOrder>true</gpml:reverseOrder>
+                                        </gpml:TopologicalLineSection>
+                                    </gpml:section>
+                                    <gpml:section>
+                                        <gpml:TopologicalLineSection>
+                                            <gpml:sourceGeometry>
+                                                <gpml:PropertyDelegate>
+                                                    <gpml:targetFeature>GPlates-ea6f13f2-f0e9-41fb-9382-2f148f8124b3</gpml:targetFeature>
+                                                    <gpml:targetProperty xmlns:gpml="http://www.gplates.org/gplates">gpml:boundary</gpml:targetProperty>
+                                                    <gpml:valueType xmlns:gml="http://www.opengis.net/gml">gml:LineString</gpml:valueType>
+                                                </gpml:PropertyDelegate>
+                                            </gpml:sourceGeometry>
+                                            <gpml:reverseOrder>false</gpml:reverseOrder>
+                                        </gpml:TopologicalLineSection>
+                                    </gpml:section>
+                                    <gpml:section>
+                                        <gpml:TopologicalLineSection>
+                                            <gpml:sourceGeometry>
+                                                <gpml:PropertyDelegate>
+                                                    <gpml:targetFeature>GPlates-36e945c1-b39e-4cc6-8401-ab138622270c</gpml:targetFeature>
+                                                    <gpml:targetProperty xmlns:gpml="http://www.gplates.org/gplates">gpml:boundary</gpml:targetProperty>
+                                                    <gpml:valueType xmlns:gml="http://www.opengis.net/gml">gml:LineString</gpml:valueType>
+                                                </gpml:PropertyDelegate>
+                                            </gpml:sourceGeometry>
+                                            <gpml:reverseOrder>false</gpml:reverseOrder>
+                                        </gpml:TopologicalLineSection>
+                                    </gpml:section>
+                                    <gpml:section>
+                                        <gpml:TopologicalLineSection>
+                                            <gpml:sourceGeometry>
+                                                <gpml:PropertyDelegate>
+                                                    <gpml:targetFeature>GPlates-8d9fcabb-2281-494a-bebf-3e59134349df</gpml:targetFeature>
+                                                    <gpml:targetProperty xmlns:gpml="http://www.gplates.org/gplates">gpml:boundary</gpml:targetProperty>
+                                                    <gpml:valueType xmlns:gml="http://www.opengis.net/gml">gml:LineString</gpml:valueType>
+                                                </gpml:PropertyDelegate>
+                                            </gpml:sourceGeometry>
+                                            <gpml:reverseOrder>true</gpml:reverseOrder>
+                                        </gpml:TopologicalLineSection>
+                                    </gpml:section>
+                                    <gpml:section>
+                                        <gpml:TopologicalLineSection>
+                                            <gpml:sourceGeometry>
+                                                <gpml:PropertyDelegate>
+                                                    <gpml:targetFeature>GPlates-e1984708-713b-402c-8b1c-c3a38b072795</gpml:targetFeature>
+                                                    <gpml:targetProperty xmlns:gpml="http://www.gplates.org/gplates">gpml:boundary</gpml:targetProperty>
+                                                    <gpml:valueType xmlns:gml="http://www.opengis.net/gml">gml:LineString</gpml:valueType>
+                                                </gpml:PropertyDelegate>
+                                            </gpml:sourceGeometry>
+                                            <gpml:reverseOrder>true</gpml:reverseOrder>
+                                        </gpml:TopologicalLineSection>
+                                    </gpml:section>
+                                    <gpml:section>
+                                        <gpml:TopologicalLineSection>
+                                            <gpml:sourceGeometry>
+                                                <gpml:PropertyDelegate>
+                                                    <gpml:targetFeature>GPlates-29a82fad-add4-47cd-abd0-09e7c3ef11bf</gpml:targetFeature>
+                                                    <gpml:targetProperty xmlns:gpml="http://www.gplates.org/gplates">gpml:boundary</gpml:targetProperty>
+                                                    <gpml:valueType xmlns:gml="http://www.opengis.net/gml">gml:LineString</gpml:valueType>
+                                                </gpml:PropertyDelegate>
+                                            </gpml:sourceGeometry>
+                                            <gpml:reverseOrder>false</gpml:reverseOrder>
+                                        </gpml:TopologicalLineSection>
+                                    </gpml:section>
+                                    <gpml:section>
+                                        <gpml:TopologicalLineSection>
+                                            <gpml:sourceGeometry>
+                                                <gpml:PropertyDelegate>
+                                                    <gpml:targetFeature>GPlates-7c4a86e1-a3f3-4481-9c91-8dd96fc8a1f8</gpml:targetFeature>
+                                                    <gpml:targetProperty xmlns:gpml="http://www.gplates.org/gplates">gpml:boundary</gpml:targetProperty>
+                                                    <gpml:valueType xmlns:gml="http://www.opengis.net/gml">gml:LineString</gpml:valueType>
+                                                </gpml:PropertyDelegate>
+                                            </gpml:sourceGeometry>
+                                            <gpml:reverseOrder>true</gpml:reverseOrder>
+                                        </gpml:TopologicalLineSection>
+                                    </gpml:section>
+                                    <gpml:section>
+                                        <gpml:TopologicalLineSection>
+                                            <gpml:sourceGeometry>
+                                                <gpml:PropertyDelegate>
+                                                    <gpml:targetFeature>GPlates-84bb37f8-0e97-4c0a-8095-53ca8eab6c0d</gpml:targetFeature>
+                                                    <gpml:targetProperty xmlns:gpml="http://www.gplates.org/gplates">gpml:boundary</gpml:targetProperty>
+                                                    <gpml:valueType xmlns:gml="http://www.opengis.net/gml">gml:LineString</gpml:valueType>
+                                                </gpml:PropertyDelegate>
+                                            </gpml:sourceGeometry>
+                                            <gpml:reverseOrder>false</gpml:reverseOrder>
+                                        </gpml:TopologicalLineSection>
+                                    </gpml:section>
+                                    <gpml:section>
+                                        <gpml:TopologicalLineSection>
+                                            <gpml:sourceGeometry>
+                                                <gpml:PropertyDelegate>
+                                                    <gpml:targetFeature>GPlates-aa7c0912-0e9c-42ba-bb96-bf94f22aa845</gpml:targetFeature>
+                                                    <gpml:targetProperty xmlns:gpml="http://www.gplates.org/gplates">gpml:boundary</gpml:targetProperty>
+                                                    <gpml:valueType xmlns:gml="http://www.opengis.net/gml">gml:LineString</gpml:valueType>
+                                                </gpml:PropertyDelegate>
+                                            </gpml:sourceGeometry>
+                                            <gpml:reverseOrder>false</gpml:reverseOrder>
+                                        </gpml:TopologicalLineSection>
+                                    </gpml:section>
+                                    <gpml:section>
+                                        <gpml:TopologicalLineSection>
+                                            <gpml:sourceGeometry>
+                                                <gpml:PropertyDelegate>
+                                                    <gpml:targetFeature>GPlates-f508cae8-ff01-43e5-b8c8-ffe7cb6db768</gpml:targetFeature>
+                                                    <gpml:targetProperty xmlns:gpml="http://www.gplates.org/gplates">gpml:centerLineOf</gpml:targetProperty>
+                                                    <gpml:valueType xmlns:gml="http://www.opengis.net/gml">gml:LineString</gpml:valueType>
+                                                </gpml:PropertyDelegate>
+                                            </gpml:sourceGeometry>
+                                            <gpml:reverseOrder>false</gpml:reverseOrder>
+                                        </gpml:TopologicalLineSection>
+                                    </gpml:section>
+                                    <gpml:section>
+                                        <gpml:TopologicalLineSection>
+                                            <gpml:sourceGeometry>
+                                                <gpml:PropertyDelegate>
+                                                    <gpml:targetFeature>GPlates-1b759278-426a-481c-bdf7-dd9860cdf5a2</gpml:targetFeature>
+                                                    <gpml:targetProperty xmlns:gpml="http://www.gplates.org/gplates">gpml:centerLineOf</gpml:targetProperty>
+                                                    <gpml:valueType xmlns:gml="http://www.opengis.net/gml">gml:LineString</gpml:valueType>
+                                                </gpml:PropertyDelegate>
+                                            </gpml:sourceGeometry>
+                                            <gpml:reverseOrder>false</gpml:reverseOrder>
+                                        </gpml:TopologicalLineSection>
+                                    </gpml:section>
+                                    <gpml:section>
+                                        <gpml:TopologicalLineSection>
+                                            <gpml:sourceGeometry>
+                                                <gpml:PropertyDelegate>
+                                                    <gpml:targetFeature>GPlates-6504fd3b-4356-4414-ac62-a446a95892ee</gpml:targetFeature>
+                                                    <gpml:targetProperty xmlns:gpml="http://www.gplates.org/gplates">gpml:boundary</gpml:targetProperty>
+                                                    <gpml:valueType xmlns:gml="http://www.opengis.net/gml">gml:LineString</gpml:valueType>
+                                                </gpml:PropertyDelegate>
+                                            </gpml:sourceGeometry>
+                                            <gpml:reverseOrder>false</gpml:reverseOrder>
+                                        </gpml:TopologicalLineSection>
+                                    </gpml:section>
+                                    <gpml:section>
+                                        <gpml:TopologicalLineSection>
+                                            <gpml:sourceGeometry>
+                                                <gpml:PropertyDelegate>
+                                                    <gpml:targetFeature>GPlates-a1dc49ce-ccee-428d-b474-0e9010c2d9c9</gpml:targetFeature>
+                                                    <gpml:targetProperty xmlns:gpml="http://www.gplates.org/gplates">gpml:boundary</gpml:targetProperty>
+                                                    <gpml:valueType xmlns:gml="http://www.opengis.net/gml">gml:LineString</gpml:valueType>
+                                                </gpml:PropertyDelegate>
+                                            </gpml:sourceGeometry>
+                                            <gpml:reverseOrder>true</gpml:reverseOrder>
+                                        </gpml:TopologicalLineSection>
+                                    </gpml:section>
+                                    <gpml:section>
+                                        <gpml:TopologicalLineSection>
+                                            <gpml:sourceGeometry>
+                                                <gpml:PropertyDelegate>
+                                                    <gpml:targetFeature>GPlates-17419d22-d5ef-415a-af3f-af55936a9b5b</gpml:targetFeature>
+                                                    <gpml:targetProperty xmlns:gpml="http://www.gplates.org/gplates">gpml:boundary</gpml:targetProperty>
+                                                    <gpml:valueType xmlns:gml="http://www.opengis.net/gml">gml:LineString</gpml:valueType>
+                                                </gpml:PropertyDelegate>
+                                            </gpml:sourceGeometry>
+                                            <gpml:reverseOrder>true</gpml:reverseOrder>
+                                        </gpml:TopologicalLineSection>
+                                    </gpml:section>
+                                    <gpml:section>
+                                        <gpml:TopologicalLineSection>
+                                            <gpml:sourceGeometry>
+                                                <gpml:PropertyDelegate>
+                                                    <gpml:targetFeature>GPlates-18d83884-7a75-4313-85dd-954251ca3523</gpml:targetFeature>
+                                                    <gpml:targetProperty xmlns:gpml="http://www.gplates.org/gplates">gpml:boundary</gpml:targetProperty>
+                                                    <gpml:valueType xmlns:gml="http://www.opengis.net/gml">gml:LineString</gpml:valueType>
+                                                </gpml:PropertyDelegate>
+                                            </gpml:sourceGeometry>
+                                            <gpml:reverseOrder>true</gpml:reverseOrder>
+                                        </gpml:TopologicalLineSection>
+                                    </gpml:section>
+                                    <gpml:section>
+                                        <gpml:TopologicalLineSection>
+                                            <gpml:sourceGeometry>
+                                                <gpml:PropertyDelegate>
+                                                    <gpml:targetFeature>GPlates-7eaec4ff-2c84-4aaf-85bf-d86db6e71f5b</gpml:targetFeature>
+                                                    <gpml:targetProperty xmlns:gpml="http://www.gplates.org/gplates">gpml:boundary</gpml:targetProperty>
+                                                    <gpml:valueType xmlns:gml="http://www.opengis.net/gml">gml:LineString</gpml:valueType>
+                                                </gpml:PropertyDelegate>
+                                            </gpml:sourceGeometry>
+                                            <gpml:reverseOrder>true</gpml:reverseOrder>
+                                        </gpml:TopologicalLineSection>
+                                    </gpml:section>
+                                    <gpml:section>
+                                        <gpml:TopologicalLineSection>
+                                            <gpml:sourceGeometry>
+                                                <gpml:PropertyDelegate>
+                                                    <gpml:targetFeature>GPlates-4906f804-00f3-4772-993e-0548ef3fabb5</gpml:targetFeature>
+                                                    <gpml:targetProperty xmlns:gpml="http://www.gplates.org/gplates">gpml:boundary</gpml:targetProperty>
+                                                    <gpml:valueType xmlns:gml="http://www.opengis.net/gml">gml:LineString</gpml:valueType>
+                                                </gpml:PropertyDelegate>
+                                            </gpml:sourceGeometry>
+                                            <gpml:reverseOrder>false</gpml:reverseOrder>
+                                        </gpml:TopologicalLineSection>
+                                    </gpml:section>
+                                    <gpml:section>
+                                        <gpml:TopologicalLineSection>
+                                            <gpml:sourceGeometry>
+                                                <gpml:PropertyDelegate>
+                                                    <gpml:targetFeature>GPlates-137c1f64-c35f-4d64-bb5b-068f854f74e8</gpml:targetFeature>
+                                                    <gpml:targetProperty xmlns:gpml="http://www.gplates.org/gplates">gpml:boundary</gpml:targetProperty>
+                                                    <gpml:valueType xmlns:gml="http://www.opengis.net/gml">gml:LineString</gpml:valueType>
+                                                </gpml:PropertyDelegate>
+                                            </gpml:sourceGeometry>
+                                            <gpml:reverseOrder>true</gpml:reverseOrder>
+                                        </gpml:TopologicalLineSection>
+                                    </gpml:section>
+                                    <gpml:section>
+                                        <gpml:TopologicalLineSection>
+                                            <gpml:sourceGeometry>
+                                                <gpml:PropertyDelegate>
+                                                    <gpml:targetFeature>GPlates-c6fd59e5-9c4b-4635-a8ef-5c721b05e621</gpml:targetFeature>
+                                                    <gpml:targetProperty xmlns:gpml="http://www.gplates.org/gplates">gpml:boundary</gpml:targetProperty>
+                                                    <gpml:valueType xmlns:gml="http://www.opengis.net/gml">gml:LineString</gpml:valueType>
+                                                </gpml:PropertyDelegate>
+                                            </gpml:sourceGeometry>
+                                            <gpml:reverseOrder>true</gpml:reverseOrder>
+                                        </gpml:TopologicalLineSection>
+                                    </gpml:section>
+                                    <gpml:section>
+                                        <gpml:TopologicalLineSection>
+                                            <gpml:sourceGeometry>
+                                                <gpml:PropertyDelegate>
+                                                    <gpml:targetFeature>GPlates-8aba20e9-1fca-491c-be78-85e5d8a5552a</gpml:targetFeature>
+                                                    <gpml:targetProperty xmlns:gpml="http://www.gplates.org/gplates">gpml:centerLineOf</gpml:targetProperty>
+                                                    <gpml:valueType xmlns:gml="http://www.opengis.net/gml">gml:LineString</gpml:valueType>
+                                                </gpml:PropertyDelegate>
+                                            </gpml:sourceGeometry>
+                                            <gpml:reverseOrder>true</gpml:reverseOrder>
+                                        </gpml:TopologicalLineSection>
+                                    </gpml:section>
+                                    <gpml:section>
+                                        <gpml:TopologicalLineSection>
+                                            <gpml:sourceGeometry>
+                                                <gpml:PropertyDelegate>
+                                                    <gpml:targetFeature>GPlates-ac1ae7d8-1e82-4266-8e60-41d0fa7813ff</gpml:targetFeature>
+                                                    <gpml:targetProperty xmlns:gpml="http://www.gplates.org/gplates">gpml:centerLineOf</gpml:targetProperty>
+                                                    <gpml:valueType xmlns:gml="http://www.opengis.net/gml">gml:LineString</gpml:valueType>
+                                                </gpml:PropertyDelegate>
+                                            </gpml:sourceGeometry>
+                                            <gpml:reverseOrder>true</gpml:reverseOrder>
+                                        </gpml:TopologicalLineSection>
+                                    </gpml:section>
+                                    <gpml:section>
+                                        <gpml:TopologicalLineSection>
+                                            <gpml:sourceGeometry>
+                                                <gpml:PropertyDelegate>
+                                                    <gpml:targetFeature>GPlates-8082a08a-d594-4172-9bf6-984efdd50f99</gpml:targetFeature>
+                                                    <gpml:targetProperty xmlns:gpml="http://www.gplates.org/gplates">gpml:centerLineOf</gpml:targetProperty>
+                                                    <gpml:valueType xmlns:gml="http://www.opengis.net/gml">gml:LineString</gpml:valueType>
+                                                </gpml:PropertyDelegate>
+                                            </gpml:sourceGeometry>
+                                            <gpml:reverseOrder>true</gpml:reverseOrder>
+                                        </gpml:TopologicalLineSection>
+                                    </gpml:section>
+                                    <gpml:section>
+                                        <gpml:TopologicalLineSection>
+                                            <gpml:sourceGeometry>
+                                                <gpml:PropertyDelegate>
+                                                    <gpml:targetFeature>GPlates-01743c3b-a1e9-421c-80a0-7095da8c601f</gpml:targetFeature>
+                                                    <gpml:targetProperty xmlns:gpml="http://www.gplates.org/gplates">gpml:boundary</gpml:targetProperty>
+                                                    <gpml:valueType xmlns:gml="http://www.opengis.net/gml">gml:LineString</gpml:valueType>
+                                                </gpml:PropertyDelegate>
+                                            </gpml:sourceGeometry>
+                                            <gpml:reverseOrder>true</gpml:reverseOrder>
+                                        </gpml:TopologicalLineSection>
+                                    </gpml:section>
+                                    <gpml:section>
+                                        <gpml:TopologicalLineSection>
+                                            <gpml:sourceGeometry>
+                                                <gpml:PropertyDelegate>
+                                                    <gpml:targetFeature>GPlates-8082a08a-d594-4172-9bf6-984efdd50f99</gpml:targetFeature>
+                                                    <gpml:targetProperty xmlns:gpml="http://www.gplates.org/gplates">gpml:centerLineOf</gpml:targetProperty>
+                                                    <gpml:valueType xmlns:gml="http://www.opengis.net/gml">gml:LineString</gpml:valueType>
+                                                </gpml:PropertyDelegate>
+                                            </gpml:sourceGeometry>
+                                            <gpml:reverseOrder>true</gpml:reverseOrder>
+                                        </gpml:TopologicalLineSection>
+                                    </gpml:section>
+                                </gpml:TopologicalSections>
+                            </gpml:boundary>
+                        </gpml:TopologicalNetwork>
+                    </gpml:value>
+                    <gml:description></gml:description>
+                    <gpml:valueType xmlns:gpml="http://www.gplates.org/gplates">gpml:TopologicalNetwork</gpml:valueType>
+                </gpml:ConstantValue>
+            </gpml:network>
+        </gpml:TopologicalNetwork>
+    </gml:featureMember>
+    <gml:featureMember>
+        <gpml:TopologicalNetwork>
+            <gpml:identity>GPlates-b972b212-63c3-4384-a9c7-2016f4b3f669</gpml:identity>
+            <gpml:revision>GPlates-7476abcf-fa93-421c-ae8b-34a6e78e7725</gpml:revision>
+            <gml:name>South_China_Sea_Deformation_Network</gml:name>
+            <gml:validTime>
+                <gml:TimePeriod>
+                    <gml:begin>
+                        <gml:TimeInstant>
+                            <gml:timePosition gml:frame="http://gplates.org/TRS/flat">36</gml:timePosition>
+                        </gml:TimeInstant>
+                    </gml:begin>
+                    <gml:end>
+                        <gml:TimeInstant>
+                            <gml:timePosition gml:frame="http://gplates.org/TRS/flat">27.100000000000001</gml:timePosition>
+                        </gml:TimeInstant>
+                    </gml:end>
+                </gml:TimePeriod>
+            </gml:validTime>
+            <gpml:reconstructionPlateId>
+                <gpml:ConstantValue>
+                    <gpml:value>602</gpml:value>
+                    <gml:description></gml:description>
+                    <gpml:valueType xmlns:gpml="http://www.gplates.org/gplates">gpml:plateId</gpml:valueType>
+                </gpml:ConstantValue>
+            </gpml:reconstructionPlateId>
+            <gpml:network>
+                <gpml:ConstantValue>
+                    <gpml:value>
+                        <gpml:TopologicalNetwork>
+                            <gpml:boundary>
+                                <gpml:TopologicalSections>
+                                    <gpml:section>
+                                        <gpml:TopologicalLineSection>
+                                            <gpml:sourceGeometry>
+                                                <gpml:PropertyDelegate>
+                                                    <gpml:targetFeature>GPlates-b2e9effa-a2de-4dfb-bf79-4833d08e73af</gpml:targetFeature>
+                                                    <gpml:targetProperty xmlns:gpml="http://www.gplates.org/gplates">gpml:boundary</gpml:targetProperty>
+                                                    <gpml:valueType xmlns:gml="http://www.opengis.net/gml">gml:LineString</gpml:valueType>
+                                                </gpml:PropertyDelegate>
+                                            </gpml:sourceGeometry>
+                                            <gpml:reverseOrder>true</gpml:reverseOrder>
+                                        </gpml:TopologicalLineSection>
+                                    </gpml:section>
+                                    <gpml:section>
+                                        <gpml:TopologicalLineSection>
+                                            <gpml:sourceGeometry>
+                                                <gpml:PropertyDelegate>
+                                                    <gpml:targetFeature>GPlates-29f9850c-1310-45f6-a649-7f48757d72bd</gpml:targetFeature>
+                                                    <gpml:targetProperty xmlns:gpml="http://www.gplates.org/gplates">gpml:centerLineOf</gpml:targetProperty>
+                                                    <gpml:valueType xmlns:gml="http://www.opengis.net/gml">gml:LineString</gpml:valueType>
+                                                </gpml:PropertyDelegate>
+                                            </gpml:sourceGeometry>
+                                            <gpml:reverseOrder>true</gpml:reverseOrder>
+                                        </gpml:TopologicalLineSection>
+                                    </gpml:section>
+                                    <gpml:section>
+                                        <gpml:TopologicalLineSection>
+                                            <gpml:sourceGeometry>
+                                                <gpml:PropertyDelegate>
+                                                    <gpml:targetFeature>GPlates-dee534f0-026a-4803-8666-ccbb339ec268</gpml:targetFeature>
+                                                    <gpml:targetProperty xmlns:gpml="http://www.gplates.org/gplates">gpml:centerLineOf</gpml:targetProperty>
+                                                    <gpml:valueType xmlns:gml="http://www.opengis.net/gml">gml:LineString</gpml:valueType>
+                                                </gpml:PropertyDelegate>
+                                            </gpml:sourceGeometry>
+                                            <gpml:reverseOrder>true</gpml:reverseOrder>
+                                        </gpml:TopologicalLineSection>
+                                    </gpml:section>
+                                    <gpml:section>
+                                        <gpml:TopologicalLineSection>
+                                            <gpml:sourceGeometry>
+                                                <gpml:PropertyDelegate>
+                                                    <gpml:targetFeature>GPlates-8dd6a57e-05a2-4ae5-9608-2157108d41ae</gpml:targetFeature>
+                                                    <gpml:targetProperty xmlns:gpml="http://www.gplates.org/gplates">gpml:centerLineOf</gpml:targetProperty>
+                                                    <gpml:valueType xmlns:gml="http://www.opengis.net/gml">gml:LineString</gpml:valueType>
+                                                </gpml:PropertyDelegate>
+                                            </gpml:sourceGeometry>
+                                            <gpml:reverseOrder>true</gpml:reverseOrder>
+                                        </gpml:TopologicalLineSection>
+                                    </gpml:section>
+                                    <gpml:section>
+                                        <gpml:TopologicalLineSection>
+                                            <gpml:sourceGeometry>
+                                                <gpml:PropertyDelegate>
+                                                    <gpml:targetFeature>GPlates-21e5af00-6580-40c4-bd0b-fd295f69b207</gpml:targetFeature>
+                                                    <gpml:targetProperty xmlns:gpml="http://www.gplates.org/gplates">gpml:boundary</gpml:targetProperty>
+                                                    <gpml:valueType xmlns:gml="http://www.opengis.net/gml">gml:LineString</gpml:valueType>
+                                                </gpml:PropertyDelegate>
+                                            </gpml:sourceGeometry>
+                                            <gpml:reverseOrder>true</gpml:reverseOrder>
+                                        </gpml:TopologicalLineSection>
+                                    </gpml:section>
+                                    <gpml:section>
+                                        <gpml:TopologicalLineSection>
+                                            <gpml:sourceGeometry>
+                                                <gpml:PropertyDelegate>
+                                                    <gpml:targetFeature>GPlates-60c17e04-5ba7-4202-b0a8-32c7612ac18a</gpml:targetFeature>
+                                                    <gpml:targetProperty xmlns:gpml="http://www.gplates.org/gplates">gpml:boundary</gpml:targetProperty>
+                                                    <gpml:valueType xmlns:gml="http://www.opengis.net/gml">gml:LineString</gpml:valueType>
+                                                </gpml:PropertyDelegate>
+                                            </gpml:sourceGeometry>
+                                            <gpml:reverseOrder>true</gpml:reverseOrder>
+                                        </gpml:TopologicalLineSection>
+                                    </gpml:section>
+                                    <gpml:section>
+                                        <gpml:TopologicalLineSection>
+                                            <gpml:sourceGeometry>
+                                                <gpml:PropertyDelegate>
+                                                    <gpml:targetFeature>GPlates-fa499901-ab47-4f0e-85e1-77eab7696b50</gpml:targetFeature>
+                                                    <gpml:targetProperty xmlns:gpml="http://www.gplates.org/gplates">gpml:boundary</gpml:targetProperty>
+                                                    <gpml:valueType xmlns:gml="http://www.opengis.net/gml">gml:LineString</gpml:valueType>
+                                                </gpml:PropertyDelegate>
+                                            </gpml:sourceGeometry>
+                                            <gpml:reverseOrder>true</gpml:reverseOrder>
+                                        </gpml:TopologicalLineSection>
+                                    </gpml:section>
+                                    <gpml:section>
+                                        <gpml:TopologicalLineSection>
+                                            <gpml:sourceGeometry>
+                                                <gpml:PropertyDelegate>
+                                                    <gpml:targetFeature>GPlates-05b9c65b-8a7c-451f-a685-da9d2e6c2b2b</gpml:targetFeature>
+                                                    <gpml:targetProperty xmlns:gpml="http://www.gplates.org/gplates">gpml:boundary</gpml:targetProperty>
+                                                    <gpml:valueType xmlns:gml="http://www.opengis.net/gml">gml:LineString</gpml:valueType>
+                                                </gpml:PropertyDelegate>
+                                            </gpml:sourceGeometry>
+                                            <gpml:reverseOrder>true</gpml:reverseOrder>
+                                        </gpml:TopologicalLineSection>
+                                    </gpml:section>
+                                    <gpml:section>
+                                        <gpml:TopologicalLineSection>
+                                            <gpml:sourceGeometry>
+                                                <gpml:PropertyDelegate>
+                                                    <gpml:targetFeature>GPlates-e9071f6c-d08d-4783-bfc7-6be1742b99dd</gpml:targetFeature>
+                                                    <gpml:targetProperty xmlns:gpml="http://www.gplates.org/gplates">gpml:boundary</gpml:targetProperty>
+                                                    <gpml:valueType xmlns:gml="http://www.opengis.net/gml">gml:LineString</gpml:valueType>
+                                                </gpml:PropertyDelegate>
+                                            </gpml:sourceGeometry>
+                                            <gpml:reverseOrder>true</gpml:reverseOrder>
+                                        </gpml:TopologicalLineSection>
+                                    </gpml:section>
+                                    <gpml:section>
+                                        <gpml:TopologicalLineSection>
+                                            <gpml:sourceGeometry>
+                                                <gpml:PropertyDelegate>
+                                                    <gpml:targetFeature>GPlates-6504fd3b-4356-4414-ac62-a446a95892ee</gpml:targetFeature>
+                                                    <gpml:targetProperty xmlns:gpml="http://www.gplates.org/gplates">gpml:boundary</gpml:targetProperty>
+                                                    <gpml:valueType xmlns:gml="http://www.opengis.net/gml">gml:LineString</gpml:valueType>
+                                                </gpml:PropertyDelegate>
+                                            </gpml:sourceGeometry>
+                                            <gpml:reverseOrder>true</gpml:reverseOrder>
+                                        </gpml:TopologicalLineSection>
+                                    </gpml:section>
+                                    <gpml:section>
+                                        <gpml:TopologicalLineSection>
+                                            <gpml:sourceGeometry>
+                                                <gpml:PropertyDelegate>
+                                                    <gpml:targetFeature>GPlates-29a82fad-add4-47cd-abd0-09e7c3ef11bf</gpml:targetFeature>
+                                                    <gpml:targetProperty xmlns:gpml="http://www.gplates.org/gplates">gpml:boundary</gpml:targetProperty>
+                                                    <gpml:valueType xmlns:gml="http://www.opengis.net/gml">gml:LineString</gpml:valueType>
+                                                </gpml:PropertyDelegate>
+                                            </gpml:sourceGeometry>
+                                            <gpml:reverseOrder>true</gpml:reverseOrder>
+                                        </gpml:TopologicalLineSection>
+                                    </gpml:section>
+                                    <gpml:section>
+                                        <gpml:TopologicalLineSection>
+                                            <gpml:sourceGeometry>
+                                                <gpml:PropertyDelegate>
+                                                    <gpml:targetFeature>GPlates-9c53637e-103c-47f8-967e-9911c1bd5ae1</gpml:targetFeature>
+                                                    <gpml:targetProperty xmlns:gpml="http://www.gplates.org/gplates">gpml:boundary</gpml:targetProperty>
+                                                    <gpml:valueType xmlns:gml="http://www.opengis.net/gml">gml:LineString</gpml:valueType>
+                                                </gpml:PropertyDelegate>
+                                            </gpml:sourceGeometry>
+                                            <gpml:reverseOrder>true</gpml:reverseOrder>
+                                        </gpml:TopologicalLineSection>
+                                    </gpml:section>
+                                    <gpml:section>
+                                        <gpml:TopologicalLineSection>
+                                            <gpml:sourceGeometry>
+                                                <gpml:PropertyDelegate>
+                                                    <gpml:targetFeature>GPlates-6e9ec050-32a3-42cf-a3fd-2c3f29b6315e</gpml:targetFeature>
+                                                    <gpml:targetProperty xmlns:gpml="http://www.gplates.org/gplates">gpml:boundary</gpml:targetProperty>
+                                                    <gpml:valueType xmlns:gml="http://www.opengis.net/gml">gml:LineString</gpml:valueType>
+                                                </gpml:PropertyDelegate>
+                                            </gpml:sourceGeometry>
+                                            <gpml:reverseOrder>false</gpml:reverseOrder>
+                                        </gpml:TopologicalLineSection>
+                                    </gpml:section>
+                                    <gpml:section>
+                                        <gpml:TopologicalLineSection>
+                                            <gpml:sourceGeometry>
+                                                <gpml:PropertyDelegate>
+                                                    <gpml:targetFeature>GPlates-f22cbf1f-00a8-4784-b654-c281c8d0a295</gpml:targetFeature>
+                                                    <gpml:targetProperty xmlns:gpml="http://www.gplates.org/gplates">gpml:boundary</gpml:targetProperty>
+                                                    <gpml:valueType xmlns:gml="http://www.opengis.net/gml">gml:LineString</gpml:valueType>
+                                                </gpml:PropertyDelegate>
+                                            </gpml:sourceGeometry>
+                                            <gpml:reverseOrder>false</gpml:reverseOrder>
+                                        </gpml:TopologicalLineSection>
+                                    </gpml:section>
+                                    <gpml:section>
+                                        <gpml:TopologicalLineSection>
+                                            <gpml:sourceGeometry>
+                                                <gpml:PropertyDelegate>
+                                                    <gpml:targetFeature>GPlates-89b2efa9-4484-473a-9b94-7d3b43307c67</gpml:targetFeature>
+                                                    <gpml:targetProperty xmlns:gpml="http://www.gplates.org/gplates">gpml:boundary</gpml:targetProperty>
+                                                    <gpml:valueType xmlns:gml="http://www.opengis.net/gml">gml:LineString</gpml:valueType>
+                                                </gpml:PropertyDelegate>
+                                            </gpml:sourceGeometry>
+                                            <gpml:reverseOrder>true</gpml:reverseOrder>
+                                        </gpml:TopologicalLineSection>
+                                    </gpml:section>
+                                    <gpml:section>
+                                        <gpml:TopologicalLineSection>
+                                            <gpml:sourceGeometry>
+                                                <gpml:PropertyDelegate>
+                                                    <gpml:targetFeature>GPlates-ea6f13f2-f0e9-41fb-9382-2f148f8124b3</gpml:targetFeature>
+                                                    <gpml:targetProperty xmlns:gpml="http://www.gplates.org/gplates">gpml:boundary</gpml:targetProperty>
+                                                    <gpml:valueType xmlns:gml="http://www.opengis.net/gml">gml:LineString</gpml:valueType>
+                                                </gpml:PropertyDelegate>
+                                            </gpml:sourceGeometry>
+                                            <gpml:reverseOrder>false</gpml:reverseOrder>
+                                        </gpml:TopologicalLineSection>
+                                    </gpml:section>
+                                    <gpml:section>
+                                        <gpml:TopologicalLineSection>
+                                            <gpml:sourceGeometry>
+                                                <gpml:PropertyDelegate>
+                                                    <gpml:targetFeature>GPlates-36e945c1-b39e-4cc6-8401-ab138622270c</gpml:targetFeature>
+                                                    <gpml:targetProperty xmlns:gpml="http://www.gplates.org/gplates">gpml:boundary</gpml:targetProperty>
+                                                    <gpml:valueType xmlns:gml="http://www.opengis.net/gml">gml:LineString</gpml:valueType>
+                                                </gpml:PropertyDelegate>
+                                            </gpml:sourceGeometry>
+                                            <gpml:reverseOrder>false</gpml:reverseOrder>
+                                        </gpml:TopologicalLineSection>
+                                    </gpml:section>
+                                    <gpml:section>
+                                        <gpml:TopologicalLineSection>
+                                            <gpml:sourceGeometry>
+                                                <gpml:PropertyDelegate>
+                                                    <gpml:targetFeature>GPlates-8d9fcabb-2281-494a-bebf-3e59134349df</gpml:targetFeature>
+                                                    <gpml:targetProperty xmlns:gpml="http://www.gplates.org/gplates">gpml:boundary</gpml:targetProperty>
+                                                    <gpml:valueType xmlns:gml="http://www.opengis.net/gml">gml:LineString</gpml:valueType>
+                                                </gpml:PropertyDelegate>
+                                            </gpml:sourceGeometry>
+                                            <gpml:reverseOrder>true</gpml:reverseOrder>
+                                        </gpml:TopologicalLineSection>
+                                    </gpml:section>
+                                    <gpml:section>
+                                        <gpml:TopologicalLineSection>
+                                            <gpml:sourceGeometry>
+                                                <gpml:PropertyDelegate>
+                                                    <gpml:targetFeature>GPlates-e1984708-713b-402c-8b1c-c3a38b072795</gpml:targetFeature>
+                                                    <gpml:targetProperty xmlns:gpml="http://www.gplates.org/gplates">gpml:boundary</gpml:targetProperty>
+                                                    <gpml:valueType xmlns:gml="http://www.opengis.net/gml">gml:LineString</gpml:valueType>
+                                                </gpml:PropertyDelegate>
+                                            </gpml:sourceGeometry>
+                                            <gpml:reverseOrder>true</gpml:reverseOrder>
+                                        </gpml:TopologicalLineSection>
+                                    </gpml:section>
+                                    <gpml:section>
+                                        <gpml:TopologicalLineSection>
+                                            <gpml:sourceGeometry>
+                                                <gpml:PropertyDelegate>
+                                                    <gpml:targetFeature>GPlates-29a82fad-add4-47cd-abd0-09e7c3ef11bf</gpml:targetFeature>
+                                                    <gpml:targetProperty xmlns:gpml="http://www.gplates.org/gplates">gpml:boundary</gpml:targetProperty>
+                                                    <gpml:valueType xmlns:gml="http://www.opengis.net/gml">gml:LineString</gpml:valueType>
+                                                </gpml:PropertyDelegate>
+                                            </gpml:sourceGeometry>
+                                            <gpml:reverseOrder>false</gpml:reverseOrder>
+                                        </gpml:TopologicalLineSection>
+                                    </gpml:section>
+                                    <gpml:section>
+                                        <gpml:TopologicalLineSection>
+                                            <gpml:sourceGeometry>
+                                                <gpml:PropertyDelegate>
+                                                    <gpml:targetFeature>GPlates-7c4a86e1-a3f3-4481-9c91-8dd96fc8a1f8</gpml:targetFeature>
+                                                    <gpml:targetProperty xmlns:gpml="http://www.gplates.org/gplates">gpml:boundary</gpml:targetProperty>
+                                                    <gpml:valueType xmlns:gml="http://www.opengis.net/gml">gml:LineString</gpml:valueType>
+                                                </gpml:PropertyDelegate>
+                                            </gpml:sourceGeometry>
+                                            <gpml:reverseOrder>true</gpml:reverseOrder>
+                                        </gpml:TopologicalLineSection>
+                                    </gpml:section>
+                                    <gpml:section>
+                                        <gpml:TopologicalLineSection>
+                                            <gpml:sourceGeometry>
+                                                <gpml:PropertyDelegate>
+                                                    <gpml:targetFeature>GPlates-84bb37f8-0e97-4c0a-8095-53ca8eab6c0d</gpml:targetFeature>
+                                                    <gpml:targetProperty xmlns:gpml="http://www.gplates.org/gplates">gpml:boundary</gpml:targetProperty>
+                                                    <gpml:valueType xmlns:gml="http://www.opengis.net/gml">gml:LineString</gpml:valueType>
+                                                </gpml:PropertyDelegate>
+                                            </gpml:sourceGeometry>
+                                            <gpml:reverseOrder>false</gpml:reverseOrder>
+                                        </gpml:TopologicalLineSection>
+                                    </gpml:section>
+                                    <gpml:section>
+                                        <gpml:TopologicalLineSection>
+                                            <gpml:sourceGeometry>
+                                                <gpml:PropertyDelegate>
+                                                    <gpml:targetFeature>GPlates-bbea6caa-9aee-40b1-a70d-7d55c995f839</gpml:targetFeature>
+                                                    <gpml:targetProperty xmlns:gpml="http://www.gplates.org/gplates">gpml:boundary</gpml:targetProperty>
+                                                    <gpml:valueType xmlns:gml="http://www.opengis.net/gml">gml:LineString</gpml:valueType>
+                                                </gpml:PropertyDelegate>
+                                            </gpml:sourceGeometry>
+                                            <gpml:reverseOrder>false</gpml:reverseOrder>
+                                        </gpml:TopologicalLineSection>
+                                    </gpml:section>
+                                    <gpml:section>
+                                        <gpml:TopologicalLineSection>
+                                            <gpml:sourceGeometry>
+                                                <gpml:PropertyDelegate>
+                                                    <gpml:targetFeature>GPlates-812a1f32-bc86-406c-ae8e-3a71b6e2179f</gpml:targetFeature>
+                                                    <gpml:targetProperty xmlns:gpml="http://www.gplates.org/gplates">gpml:boundary</gpml:targetProperty>
+                                                    <gpml:valueType xmlns:gml="http://www.opengis.net/gml">gml:LineString</gpml:valueType>
+                                                </gpml:PropertyDelegate>
+                                            </gpml:sourceGeometry>
+                                            <gpml:reverseOrder>false</gpml:reverseOrder>
+                                        </gpml:TopologicalLineSection>
+                                    </gpml:section>
+                                    <gpml:section>
+                                        <gpml:TopologicalLineSection>
+                                            <gpml:sourceGeometry>
+                                                <gpml:PropertyDelegate>
+                                                    <gpml:targetFeature>GPlates-aa7c0912-0e9c-42ba-bb96-bf94f22aa845</gpml:targetFeature>
+                                                    <gpml:targetProperty xmlns:gpml="http://www.gplates.org/gplates">gpml:boundary</gpml:targetProperty>
+                                                    <gpml:valueType xmlns:gml="http://www.opengis.net/gml">gml:LineString</gpml:valueType>
+                                                </gpml:PropertyDelegate>
+                                            </gpml:sourceGeometry>
+                                            <gpml:reverseOrder>false</gpml:reverseOrder>
+                                        </gpml:TopologicalLineSection>
+                                    </gpml:section>
+                                    <gpml:section>
+                                        <gpml:TopologicalLineSection>
+                                            <gpml:sourceGeometry>
+                                                <gpml:PropertyDelegate>
+                                                    <gpml:targetFeature>GPlates-6504fd3b-4356-4414-ac62-a446a95892ee</gpml:targetFeature>
+                                                    <gpml:targetProperty xmlns:gpml="http://www.gplates.org/gplates">gpml:boundary</gpml:targetProperty>
+                                                    <gpml:valueType xmlns:gml="http://www.opengis.net/gml">gml:LineString</gpml:valueType>
+                                                </gpml:PropertyDelegate>
+                                            </gpml:sourceGeometry>
+                                            <gpml:reverseOrder>false</gpml:reverseOrder>
+                                        </gpml:TopologicalLineSection>
+                                    </gpml:section>
+                                    <gpml:section>
+                                        <gpml:TopologicalLineSection>
+                                            <gpml:sourceGeometry>
+                                                <gpml:PropertyDelegate>
+                                                    <gpml:targetFeature>GPlates-a1dc49ce-ccee-428d-b474-0e9010c2d9c9</gpml:targetFeature>
+                                                    <gpml:targetProperty xmlns:gpml="http://www.gplates.org/gplates">gpml:boundary</gpml:targetProperty>
+                                                    <gpml:valueType xmlns:gml="http://www.opengis.net/gml">gml:LineString</gpml:valueType>
+                                                </gpml:PropertyDelegate>
+                                            </gpml:sourceGeometry>
+                                            <gpml:reverseOrder>true</gpml:reverseOrder>
+                                        </gpml:TopologicalLineSection>
+                                    </gpml:section>
+                                    <gpml:section>
+                                        <gpml:TopologicalLineSection>
+                                            <gpml:sourceGeometry>
+                                                <gpml:PropertyDelegate>
+                                                    <gpml:targetFeature>GPlates-17419d22-d5ef-415a-af3f-af55936a9b5b</gpml:targetFeature>
+                                                    <gpml:targetProperty xmlns:gpml="http://www.gplates.org/gplates">gpml:boundary</gpml:targetProperty>
+                                                    <gpml:valueType xmlns:gml="http://www.opengis.net/gml">gml:LineString</gpml:valueType>
+                                                </gpml:PropertyDelegate>
+                                            </gpml:sourceGeometry>
+                                            <gpml:reverseOrder>true</gpml:reverseOrder>
+                                        </gpml:TopologicalLineSection>
+                                    </gpml:section>
+                                    <gpml:section>
+                                        <gpml:TopologicalLineSection>
+                                            <gpml:sourceGeometry>
+                                                <gpml:PropertyDelegate>
+                                                    <gpml:targetFeature>GPlates-18d83884-7a75-4313-85dd-954251ca3523</gpml:targetFeature>
+                                                    <gpml:targetProperty xmlns:gpml="http://www.gplates.org/gplates">gpml:boundary</gpml:targetProperty>
+                                                    <gpml:valueType xmlns:gml="http://www.opengis.net/gml">gml:LineString</gpml:valueType>
+                                                </gpml:PropertyDelegate>
+                                            </gpml:sourceGeometry>
+                                            <gpml:reverseOrder>true</gpml:reverseOrder>
+                                        </gpml:TopologicalLineSection>
+                                    </gpml:section>
+                                    <gpml:section>
+                                        <gpml:TopologicalLineSection>
+                                            <gpml:sourceGeometry>
+                                                <gpml:PropertyDelegate>
+                                                    <gpml:targetFeature>GPlates-7eaec4ff-2c84-4aaf-85bf-d86db6e71f5b</gpml:targetFeature>
+                                                    <gpml:targetProperty xmlns:gpml="http://www.gplates.org/gplates">gpml:boundary</gpml:targetProperty>
+                                                    <gpml:valueType xmlns:gml="http://www.opengis.net/gml">gml:LineString</gpml:valueType>
+                                                </gpml:PropertyDelegate>
+                                            </gpml:sourceGeometry>
+                                            <gpml:reverseOrder>true</gpml:reverseOrder>
+                                        </gpml:TopologicalLineSection>
+                                    </gpml:section>
+                                    <gpml:section>
+                                        <gpml:TopologicalLineSection>
+                                            <gpml:sourceGeometry>
+                                                <gpml:PropertyDelegate>
+                                                    <gpml:targetFeature>GPlates-8aba20e9-1fca-491c-be78-85e5d8a5552a</gpml:targetFeature>
+                                                    <gpml:targetProperty xmlns:gpml="http://www.gplates.org/gplates">gpml:centerLineOf</gpml:targetProperty>
+                                                    <gpml:valueType xmlns:gml="http://www.opengis.net/gml">gml:LineString</gpml:valueType>
+                                                </gpml:PropertyDelegate>
+                                            </gpml:sourceGeometry>
+                                            <gpml:reverseOrder>true</gpml:reverseOrder>
+                                        </gpml:TopologicalLineSection>
+                                    </gpml:section>
+                                    <gpml:section>
+                                        <gpml:TopologicalLineSection>
+                                            <gpml:sourceGeometry>
+                                                <gpml:PropertyDelegate>
+                                                    <gpml:targetFeature>GPlates-ac1ae7d8-1e82-4266-8e60-41d0fa7813ff</gpml:targetFeature>
+                                                    <gpml:targetProperty xmlns:gpml="http://www.gplates.org/gplates">gpml:centerLineOf</gpml:targetProperty>
+                                                    <gpml:valueType xmlns:gml="http://www.opengis.net/gml">gml:LineString</gpml:valueType>
+                                                </gpml:PropertyDelegate>
+                                            </gpml:sourceGeometry>
+                                            <gpml:reverseOrder>true</gpml:reverseOrder>
+                                        </gpml:TopologicalLineSection>
+                                    </gpml:section>
+                                    <gpml:section>
+                                        <gpml:TopologicalLineSection>
+                                            <gpml:sourceGeometry>
+                                                <gpml:PropertyDelegate>
+                                                    <gpml:targetFeature>GPlates-8082a08a-d594-4172-9bf6-984efdd50f99</gpml:targetFeature>
+                                                    <gpml:targetProperty xmlns:gpml="http://www.gplates.org/gplates">gpml:centerLineOf</gpml:targetProperty>
+                                                    <gpml:valueType xmlns:gml="http://www.opengis.net/gml">gml:LineString</gpml:valueType>
+                                                </gpml:PropertyDelegate>
+                                            </gpml:sourceGeometry>
+                                            <gpml:reverseOrder>true</gpml:reverseOrder>
+                                        </gpml:TopologicalLineSection>
+                                    </gpml:section>
+                                    <gpml:section>
+                                        <gpml:TopologicalLineSection>
+                                            <gpml:sourceGeometry>
+                                                <gpml:PropertyDelegate>
+                                                    <gpml:targetFeature>GPlates-e759e244-1da0-4933-b65b-6d1f6fd4ae8e</gpml:targetFeature>
+                                                    <gpml:targetProperty xmlns:gpml="http://www.gplates.org/gplates">gpml:boundary</gpml:targetProperty>
+                                                    <gpml:valueType xmlns:gml="http://www.opengis.net/gml">gml:LineString</gpml:valueType>
+                                                </gpml:PropertyDelegate>
+                                            </gpml:sourceGeometry>
+                                            <gpml:reverseOrder>true</gpml:reverseOrder>
+                                        </gpml:TopologicalLineSection>
+                                    </gpml:section>
+                                    <gpml:section>
+                                        <gpml:TopologicalLineSection>
+                                            <gpml:sourceGeometry>
+                                                <gpml:PropertyDelegate>
+                                                    <gpml:targetFeature>GPlates-01743c3b-a1e9-421c-80a0-7095da8c601f</gpml:targetFeature>
+                                                    <gpml:targetProperty xmlns:gpml="http://www.gplates.org/gplates">gpml:boundary</gpml:targetProperty>
+                                                    <gpml:valueType xmlns:gml="http://www.opengis.net/gml">gml:LineString</gpml:valueType>
+                                                </gpml:PropertyDelegate>
+                                            </gpml:sourceGeometry>
+                                            <gpml:reverseOrder>true</gpml:reverseOrder>
+                                        </gpml:TopologicalLineSection>
+                                    </gpml:section>
+                                    <gpml:section>
+                                        <gpml:TopologicalLineSection>
+                                            <gpml:sourceGeometry>
+                                                <gpml:PropertyDelegate>
+                                                    <gpml:targetFeature>GPlates-8082a08a-d594-4172-9bf6-984efdd50f99</gpml:targetFeature>
+                                                    <gpml:targetProperty xmlns:gpml="http://www.gplates.org/gplates">gpml:centerLineOf</gpml:targetProperty>
+                                                    <gpml:valueType xmlns:gml="http://www.opengis.net/gml">gml:LineString</gpml:valueType>
+                                                </gpml:PropertyDelegate>
+                                            </gpml:sourceGeometry>
+                                            <gpml:reverseOrder>false</gpml:reverseOrder>
+                                        </gpml:TopologicalLineSection>
+                                    </gpml:section>
+                                    <gpml:section>
+                                        <gpml:TopologicalLineSection>
+                                            <gpml:sourceGeometry>
+                                                <gpml:PropertyDelegate>
+                                                    <gpml:targetFeature>GPlates-6aa75d01-dfc0-48d2-8d6c-656c998729de</gpml:targetFeature>
+                                                    <gpml:targetProperty xmlns:gpml="http://www.gplates.org/gplates">gpml:boundary</gpml:targetProperty>
+                                                    <gpml:valueType xmlns:gml="http://www.opengis.net/gml">gml:LineString</gpml:valueType>
+                                                </gpml:PropertyDelegate>
+                                            </gpml:sourceGeometry>
+                                            <gpml:reverseOrder>false</gpml:reverseOrder>
+                                        </gpml:TopologicalLineSection>
+                                    </gpml:section>
+                                    <gpml:section>
+                                        <gpml:TopologicalLineSection>
+                                            <gpml:sourceGeometry>
+                                                <gpml:PropertyDelegate>
+                                                    <gpml:targetFeature>GPlates-4e7195ae-67f0-4b0f-8e41-038ac23bb5a4</gpml:targetFeature>
+                                                    <gpml:targetProperty xmlns:gpml="http://www.gplates.org/gplates">gpml:boundary</gpml:targetProperty>
+                                                    <gpml:valueType xmlns:gml="http://www.opengis.net/gml">gml:LineString</gpml:valueType>
+                                                </gpml:PropertyDelegate>
+                                            </gpml:sourceGeometry>
+                                            <gpml:reverseOrder>true</gpml:reverseOrder>
+                                        </gpml:TopologicalLineSection>
+                                    </gpml:section>
+                                </gpml:TopologicalSections>
+                            </gpml:boundary>
+                        </gpml:TopologicalNetwork>
+                    </gpml:value>
+                    <gml:description></gml:description>
+                    <gpml:valueType xmlns:gpml="http://www.gplates.org/gplates">gpml:TopologicalNetwork</gpml:valueType>
+                </gpml:ConstantValue>
+            </gpml:network>
+        </gpml:TopologicalNetwork>
+    </gml:featureMember>
+</gpml:FeatureCollection>

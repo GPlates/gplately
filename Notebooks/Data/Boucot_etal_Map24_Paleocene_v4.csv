@@ -1,0 +1,263 @@
+LithologyCode,LithNumber,OldIDNumber,,LAT,NS,LONG,EW,Continent,Country,,GeogComments,LMU,Period,Stage,AgeComments,Lithology,Formation,LithComments,PrimaryReference,SeeAlso
+E,1,E5466,,29,N,17,E,Africa,Libya,,,Lower,Paleogene,,,Evaporites,Hofra(?),,Claypool et al.(1980),
+E,2,E5467,,28,N,22,E,Africa,Libya,,Sirte Basin,Lower,Paleogene,,,Evaporites,,,"Gillespie,Sanford(1967)","see also Gumati(1992),Mresah(1993)"
+E,3,E5468,,28,N,17,E,Africa,Libya,,Sirte Basin,Lower,Paleogene,,Montian,Evaporites,,,Abushagur(1992),
+E,4,E5469,,28,N,18,E,Africa,Libya,,,Lower,Paleogene,,Montian,Evaporites,Beda Dolomite,,"Garea,Braithwaite(1996)",
+E,5,E5469.1,,31,N,21,E,Africa,Libya,,Al Jabar al Akhdar,Lower,Paleogene,,Late Paleocene,Evaporites,,in well DI-41,Abdul-Samad(2000),
+E,6,E5470,,32,N,-7,W,Africa,Morocco,,,Lower,Paleogene,,Paleocene,Evaporites,,,Salvan(1972),
+E,7,E5471,,13,N,6,E,Africa,Nigeria,,northwestern Nigeria,Lower,Paleogene,,,Gypsum,Thanetian Dange,,Petters(1979),
+E,8,E5471.1,,15,N,5.5,E,Africa,Nigeria,,Sokoto Basin,Lower,Paleogene,,Paleocene,Evaporites,Unit B of Paleocene age,,Alam(1986),
+E,9,E5472,,5,N,47,E,Africa,Somalia,,coastal Somalia,Lower,Paleogene,,Paleocene,Evaporites,,,Barnes(1976),
+E,10,E5472.1,,-33,S,28,E,Africa,South Africa,,Fort Gray,Lower,Paleogene,,Paleocene,Evaporites,Knysna,,Dingle et al.(1983),
+E,11,E5472.2,,34.3,N,8.5,E,Africa,Tunisia,,Metlaoui region,Lower,Paleogene,,,Evaporites,Tselja,,"Moody,Buffetaut(1981)",
+E,12,E5473,,40,N,75,E,Asia,China,,Northwest China:Wuchai,Lower,Paleogene,,Paleocene,Evaporites,,gypsum and rock salt,Chu Xu-chun(1986),
+E,13,E5474,,39,N,80,E,Asia,China,,Northwest China:Mazatake,Lower,Paleogene,,Paleocene,Evaporites,,gypsum and rock salt,Chu Xu-chun(1986),
+E,14,E5475,,41.5,N,81.5,E,Asia,China,,Northwest China:Wenshu-Kuche,L - M,Paleogene,,Paleocene to Eocene,Evaporites,,gypsum ore,Chu Xu-chun(1986),
+E,15,E5476,,33,N,119,E,Asia,China,,North China:Hongzhe,L - M,Paleogene,,Paleocene to early Eocene,Evaporites,Funing,salt ore,Chu Xu-chun(1986),
+E,16,E5477,,36,N,117,E,Asia,China,,North China:Daewenkou,Lower,Paleogene,,Paleocene,Gypsum,Guanzhuang,,Chu Xu-chun(1986)
+E,17,E5478,,35,N,116.5,E,Asia,China,,North China:Fengxian,Lower,Paleogene,,Paleocene,Gypsum,Guanzhuang,,Chu Xu-chun(1986)
+E,18,E5479,,31.25,N,114,E,Asia,China,,South China:Yunmeng-Yincheng,L - M,Paleogene,,Paleocene to early Eocene,Evaporites,,rock salt,Chu Xu-chun(1986)
+E,19,E5480,,29.5,N,112,E,Asia,China,,South China:Lixian,L - M,Paleogene,,Paleocene to early Eocene,Evaporites,,rock salt,Chu Xu-chun(1986)
+E,20,E5481,,30.5,N,113,E,Asia,China,,South China:Qianjiang,Lower,Paleogene,,Paleocene,Evaporites,,rock salt,Chu Xu-chun(1986)
+E,21,E5482,,28,N,115.5,E,Asia,China,,South China:Qingjiang,Lower,Paleogene,,Paleocene,Evaporites,Qingjiang,rock salt ore(with gypsum),Chu Xu-chun(1986)
+E,22,E5483,,27,N,112.5,E,Asia,China,,South China:Qingjiang,L - M,Paleogene,,Paleocene-Eocene,Evaporites,Hengyang,rock salt ore(with gypsum),Chu Xu-chun(1986)
+E,23,E5484,,23,N,101,E,Asia,China,,"South China:Simao,Yunnan",Lower,Paleogene,,,Evaporites,Mengyjing,,Wei Dong-yan(1991)
+E,24,E5484.1,,30.1,N,103,E,Asia,China,,South China:Sichuan-Mingshan,L - M,Paleogene,,Paleocene to Eocene,Evaporites,Mingshan,,"Wang Meng-jun,Zeng Liang-kui(1982)"
+E,25,E5484.2,,29.9,N,102.9,E,Asia,China,,South China:Sichuan-Yanan,L - M,Paleogene,,Paleocene to Eocene,Evaporites,Mingshan,,"Wang Meng-jun,Zeng Liang-kui(1982)"
+E,26,E5484.3,,29.9,N,103.3,E,Asia,China,,South China:Sichuan-Hongya,L - M,Paleogene,,Paleocene to Eocene,Evaporites,Mingshan,,"Wang Meng-jun,Zeng Liang-kui(1982)"
+E,27,E5484.4,,31.7,N,119.5,E,Asia,China,,South China:Jintan,Lower,Paleogene,,Paleocene,Evaporites,Funing,,"Xu Xue-si,Hu Lian-ying(2000)"
+E,28,E5485,,22.5,N,101.5,E,Asia,China,,Tibet and Western Yunnan:Simao-Jiangcheng area,Lower,Paleogene,,Paleocene,Evaporites,,potash salt ore,Chu Xu-chun(1986)
+E,29,E5486,,26.5,N,99.5,E,Asia,China,,Tibet and Western Yunnan:Lanping,Lower,Paleogene,,Paleocene,Evaporites,,rock salt ore ,Chu Xu-chun(1986)
+E,30,E5487,,26,N,100,E,Asia,China,,Tibet and Western Yunnan:Eryuan,Lower,Paleogene,,Paleocene,Evaporites,,rock salt ore,Chu Xu-chun(1986)
+E,31,E5488,,22,N,101.5,E,Asia,China,,Tibet and Western Yunnan:Zhendong,Lower,Paleogene,,Paleocene,Evaporites,,rock salt ore,Chu Xu-chun(1986)
+E,32,E5489,,22.5,N,102,E,Asia,China,,Tibet and Western Yunnan:Jiangcheng,Lower,Paleogene,,Paleocene,Evaporites,,rock salt ore,Chu Xu-chun(1986),
+E,33,E5490,,43,N,60,E,Asia,C.I.S.(frm U.S.S.R.),, Uzebekistan,Lower,Paleogene,,Paleocene,Evaporites,,,Ruckmick et al.(1979),
+E,34,E5492,,28,N,54,E,Asia,Iran,,,Lower,Paleogene,,Paleocene,Evaporites,Sachun,anhydrite,Haynes(1989),
+E,35,E5492.1,,37,N,59,E,Asia,Iran,,noertheastern Iran,Lower,Paleogene,,Late Paleocene,Evaporites,,,Mahboubi et al.(2001),
+E,36,E5493,,20,N,58,E,Asia,Middle East,,eastern Arabia and the southern Zagos,Lower,Paleogene,,Paleocene,Evaporites,,,Murris(1980),
+E,37,E5494,,37,N,41,E,Asia,Turkey,,,Lower,Paleogene,,,Evaporites,Kayakoy and Gercus Frms,,"Cordey(1971, Fig.4)",
+E,38,E5495,,43.5,N,6.75,E,Europe,France,,Provence,Lower,Paleogene,Danian,Paleocene,Evaporites,,evaporitic material,"Colson,Cojan(1996)",
+E,39,E5495.1,,43,N,1,E,Europe,France,,,Lower,Paleogene,,,Evaporites,Cassagnau,,Laurent et al.(2002),
+E,40,E5496,,41,N,0,,Europe,Spain,,"Tremp-Graus Basin,northeastern Spain",Lower,Paleogene,,Paleocene,Evaporites,Claret Frm-Tremp Group,,Dreyer(1993),
+E,41,E5497,,20,N,-88,W,North America,Mexico,,Yucatan,L - M,Paleogene,,Eocene-Paleocene,Evaporites,Icaiche,,"Claypool et al.(1980,Appendix)",see also Lopez Ramos(1975)
+E,42,E5498,,27,N,-81,W,North America,United States,,Florida:South Florida,L  -M-U?,Paleogene,,,Evaporites,,,Spencer(1967),see also Jounson et al.(1989)
+E,43,E5499,,37,N,-113,W,North America,United States,,Utah:central Utah,Lower,Paleogene,,Paleocene-Lower Eocene,Evaporites,Flagstaff Limestone,,"Stanley,Collinson(1979)",
+E,44,E5500,,-38,S,-67,W,South America,Argentina,,,L  -M-U?,Paleogene,,,Evaporites,Roca,,Barrio(1990),
+E,45,E5500.1,,-36.25,S,-68.5,W,South America,Argentina,,Patagonia,Lower,Paleogene,Danian,Paleocene,Evaporites,,,"Malumian,Carames(1995)",
+E,46,E5500.2,,-25,S,-66,W,South America,Argentina,,,Lower,Paleogene,,Paleocene,Evaporites,Olmeda and Mealla Frms,,Gomez Omil et al.(1989),"see also del Papa,Salfity(1999)"
+E,47,E5501,,-20,S,-67,W,South America,Bolivia,,,Lower,Paleogene,Thanetian,Paleocene,Evaporites,Santa Lucia,,Gayet et al.(1993),
+E,48,E5502,,-14,S,-72,W,South America,Peru,,,L  -M-U?,Paleogene,,,Evaporites,Chilca,,Jailard et al.(1994),
+E,49,E5501.1,,10,N,-67,W,South America,Venezuela,,"Guarico State,Altagracia de Orituca",L  -M-U?,Paleogene,,,Evaporites,,rejected because of lack of supporting data and local abundance of coal that are contradictory,"Claypool et al.(1980,Appendix)",
+CA,50,CA5502.1,,46,N,67,E,Asia,C.I.S.(frm U.S.S.R.),,,L - M,Paleogene,,Maastrichtian-middle Eocene,Calcretes,,humid-arid zone boundary,"Erofeev,Tsekhovskii(1982,1983)",
+CA,51,CA5502.2,,48,N,82.5,E,,,,,,,,,,,,,
+CA,52,CA5503,,44,N,4,E,Europe,France,,Languedoc,Lower,Paleogene,,Viltrollian,Calcretes,,,"Freyet,Plaziat(1982)",
+CA,53,CA5504,,45,N,3,W,Europe,France,,Corbieres,Lower,Paleogene,,Paleocene,Calcretes,,,"Freyet,Plaziat(1982)",
+CA,54,CA5505,,49,N,2,E,Europe,France,,Limay area,L - M,Paleogene,,Sparnnacian(latest Paleocene-possibly earliest Eocene),Calcretes,,,"Sinha,Stott(1994)",
+CA,55,CA5506,,43.5,N,6.75,E,Europe,France,,Provence,Lower,Paleogene,Danian,,Calcretes,,calcrete and dolocrete,"Colson,Cojan(1996)",
+CA,56,CA5507,,41,N,0,,Europe,Spain,,northeastern Spain,L  -M-U?,Paleogene,,,Calcretes,Esplugafreda Frm-Tremp Group,,Dreyer(1993),
+CA,57,CA5508,,50,N,-114.5,W,North America,Canada,,Alberta:south-central Alberta,Lower,Paleogene,,Paleocene,Calcretes,,,"Jerzykiewicz,Sweet(1988)",
+CA,58,CA5508.2,,29.5,N,-104,W,,,,,,,,,,,,,
+CA,59,CA5508.1,,37.5,N,-112.75,W,North America,United States,,Utah:southwestern Utah,L - M,Paleogene,,Paleocene-Eocene,Calcretes,,,"Goldstrand,Mullett(1997)",
+CA,60,CA5509,,44.5,N,-109,W,North America,United States,,Wyoming:Bighorn Basin,Lower,Paleogene,,Late Paleocene,Calcretes,Fort Union,"limey nodules,calcretes",Kraus(1988),
+CA,61,CA5510,,-38,S,-69,W,South America,Argentina,,,Lower,Paleogene,,Late Paleocene,Calcretes,Pircala,,Barrio(1990),
+E,62,E5510.1,,-25,S,-65,W,South America,Argentina,,,Lower,Paleogene,"Danian,(Selandian)",Paleocene,Evaporites,"Olmedo, Tual,(Mealla) Frms",lacustrine evaporites,"Quattrocchio,Volkheimer(2000)","see also del Papa,Salfity(1999)"
+CA,63,CA5510.2,,-19,S,66,E,South America,Bolivia,,,Lower,Paleogene,Selandian,Gayet et al.(1991) cites the Impora as Thanetian,Calcretes,Impora,,Sempere et al.(1997),
+CA,64,CA5511,,-23,S,-43,W,South America,Brazil,,Bacia de Itaborai,Lower,Paleogene,,Late Paleocene,Calcretes,,,Tibana et al.(1984)
+D,65,D5512,,77,N,17,E,Europe,Svalbard,,,L  -M-U?,Paleogene,,,Dropstones,,possibly derived from sea ice,"Pickton(in Hambrey,Harland, 1981)"
+D,66,D5513,,-40,S,176,E,Europe,New Zealand,,North Island,Lower,Paleogene,Danian,,Dropstones,,,Leckie et al.(1995)
+C,67,C5514,,4,N,10,E,Africa,Cameroon,,coast near Douala,Lower,Paleogene,,Paleocene,Coals,,"see also Dunoyer de Segonac(1969), Fig. 8 Formation de Dizangue",Weaver et al.(1990)
+C,68,C5515,,7,N,2,E,Africa,Dahomey,,,Lower,Paleogene,,Maastrichtian-Paleocene,Coals,Nigerian Upper Coal Measurses,,"Feys,Fabre(1966)"
+C,69,C5516,,12,N,3,E,Africa,Nigeria,,southern part of the Benin Trough,Lower,Paleogene,,Paleocene,Coals,,lignites,Simpson(1954)
+C,70,C5517,,7,N,7,E,Africa,Nigeria,,,Lower,Paleogene,Danian,,Coals,Nsukka,,Akande et al.(1992)
+C,71,C5518,,-64.5,S,-56.7,W,Antarctica,,,Seymour Island,L  -M-U?,Paleogene,,"see Fleming,Askin(1982) for age",Coals,,lignites,"Rose,McElroy(1987)"
+C,72,C5519,,-62,S,-59,W,Antarctica,,,"King George Island,South Shetlands",L  -M-U?,Paleogene,,,Coals,Petrified Forest Member,,Birkenmajer(1987)
+C,73,C5520,,43,N,130,E,Asia,China,,"North China:Hunchun,Jilin",L  -M-U?,Paleogene,,,Coals,,,The Beijing Acad. Of Coal Sci.(1959)
+C,74,C5521,,42,N,124,E,Asia,China,,"North China:Fushun,Liaoning",L  -M-U?,Paleogene,,,Coals,,,The Beijing Acad. Of Coal Sci.(1959)
+C,75,C5522,,42,N,124,E,Asia,China,,North China:Fushun ,Lower,Paleogene,,Paleocene,Coals,"Laohutai,Lizigou Frms",,Chu Xu-chun(1986)
+C,76,C5523,,44.5,N,130,E,Asia,China,,North China:Mudanjiang,Lower,Paleogene,,Paleocene,Coals,Huanghua,,Chu Xu-chun(1986)
+C,77,C5524,,42,N,125,E,Asia,China,,North China:Qingyuan,Lower,Paleogene,,Paleocene,Coals,,,Chu Xu-chun(1986)
+C,78,C5525,,49.2,N,119.7,E,Asia,China,,North China:Hailar,Lower,Paleogene,,Paleocene,Coals,,,"Huang Ben-hong(oral comm.,1994)"
+C,79,C5526,,45,N,123.5,E,Asia,China,,North China:Huolinhe,Lower,Paleogene,,Paleocene,Coals,,,"Huang Ben-hong(oral comm.,1994)"
+C,80,C5527,,26.7,N,121.5,E,Asia,China,,"North China:Taibei Depression,East China Sea Basin",Lower,Paleogene,,Paleocene,Coals,Mingyuefeng,,"Li Peilian,Hu Zhongheng(1966)",
+C,81,C5532.1,,27,N,122,E,Asia,China,,"Tungyintao Basin, to the north of Taiwan",Lower,Paleogene,,Paleocene,Coals,,,"Yu,Chow(1997)",
+C,82,C5528,,61,N,151,E,Asia,C.I.S.(frm U.S.S.R.),,,Lower,Paleogene,Danian,Paleocene,Coals,Pervomayskoye,,Petroconsultants(1977),
+C,83,C5529,,64,N,169,E,Asia,C.I.S.(frm U.S.S.R.),,Markovskaya Area,Lower,Paleogene,Danian,Paleocene,Coals,Rarytinskaya Suite,,The Rijks Geologische Dienst(1982),
+C,84,C5530,,64,N,178.5,E,Asia,C.I.S.(frm U.S.S.R.),,Anadyr Area,Lower,Paleogene,Danian,Paleocene,Coals,Rarytinskaya Suite,,The Rijks Geologische Dienst(1982),
+C,85,C5531,,65,N,178,E,Asia,C.I.S.(frm U.S.S.R.),,Anadyr Coalfield,Lower,Paleogene,Danian,Paleocene,Coals,Anadyskaya and Rarytkinskaya Suites,,The Rijks Geologische Dienst(1982),
+C,86,C5532 ,,63,N,179,E,Asia,C.I.S.(frm U.S.S.R.),,Beringovskaya Area,Lower,Paleogene,(Danian0,Paleocene,Coals,"(Koryakskaya), Chukotskaya Suites",,The Rijks Geologische Dienst(1982),
+C,87,C5532.1,,61,N,163,E,Asia,C.I.S.(frm U.S.S.R.),,northern Kamchatka,L  -M-U?,Paleogene,,,Coals,Kamchikskaya Svita,,Serova et al.(1989),
+C,88,C5532.2,,52,N,130,E,,,,,,,,,,,,,
+C,89,C5533,,31,N,91,E,Asia,India,,Assam,Lower,Paleogene,,Paleocene,Coals,,,Dutta(1971),
+C,90,C5534,,27,N,74,E,Asia,India,,,Lower,Paleogene,,Paleocene,Coals,Pala,lignites,"Kalia, Banerjee(1995)",
+C,91,C5534.1,,25.5,N,91,E,Asia,India,,"Khasi Hills,Meghalaya",L  -M-U?,Paleogene,,,Coals,Laitryngow Coal,,Kumar(1995),
+C,92,C5534.2,,22,N,88,E,Asia,India,,Bengal Basin,Lower,Paleogene,,Paleocene,Coals,Jalangi,,"Chari,Banerjee(1993)",see also Das Sharma et al.(1993)
+C,93,C5534.3,,33,N,75,E,Asia,India,,,Lower,Paleogene,,Paleocene,Coals,Beragua Member,,"Singh,Andotra(2000)",
+C,94,C5535.1,,35,N,75,E,Asia,India-Pakistan,,Jammu & Kashmir,L  -M-U?,Paleogene,,,Coals,,,"Singh,Tandon(2002)",
+C,95,C5535,,4,N,115.5,E,Asia,Eastern Malaysia,,,L  -M-U?,Paleogene,,,Coals,Lurah,,Sunarjo et al.(1998),
+C,96,C5536,,-11,S,89,E,Asia,,,Nineyeast Ridge,Lower,Paleogene,,,Coals,,lignite- site 214,Luyendyk(1997),
+C,97,C5537,,28,N,68,E,Asia,Pakistan,,Kirthar Province,Lower,Paleogene,,Paleocene,Coals,,,"Kazmi,Jan(1997, p. 245)",
+C,98,C5538,,33,N,71,E,Asia,Pakistan,,"Markerwal,Lunjab",Lower,Paleogene,,,Coals,,"Warwick,Husain(1990) cite the Hangu Frm",Petroconsultants(1977),see also Hussain et al.(1990)
+C,99,C5539,,25,N,68,E,Asia,Pakistan,,"Lakha,Sind",Lower,Paleogene,,,Coals,,,Petroconsultants(1977),
+C,100,C5538.1,,33.5,N,71,E,Asia,Pakistan,,western Salt Range,Lower,Paleogene,,,Coals,Hangu,,"Kazmi,Jan(1997, p. 249,483)",
+C,101,C5539.1,,33.5,N,74,E,Asia,Pakistan,,Azad Kashmir,L  -M-U?,Paleogene,,,Coals,Patala,,"Warwick,Husain(1990)",
+C,102,C5539.2,,10.5,N,123.8,E,,,,,,,,,,,,,
+C,103,C5540,,-35,S,149,E,Asia,Australia,,New South Wales,Lower,Paleogene,,Paleocene,Coals,,,Taylor et al.(1990b),
+C,104,C5541,,-35,S,143,E,Asia,Australia,,New South Wales:Murray Basin region,L-M-U,Paleogene,,Paleocene through mid-Miocene,Coals,,,Macphail et al.(1993a),
+C,105,C5541.1,,-30,S,135,E,Asia,Australia,,South Australia,L  -M-U?,Paleogene,,,Coals,Eyre,lignite,Alley(1998),
+C,106,C5541.2,,-36.7,S,140,E,Asia,Australia,,South Australia:Kingston,L  -M-U?,Paleogene,,,Coals,Dilwyn Frm -Kingston coal deposit,,"Drexel,Preiss(eds.,1995)",
+C,107,C5542,,-38,S,147,E,Asia,Australia,,Victoria:Gippsland Basin of Victoria,Lower,Paleogene,,Paleocene,Coals,,,G.C. Smith(1982),"see also Bodard et al.(1986);see also Norvick et al.(2001, Fig. 4)"
+C,108,C5543,,-40,S,146,E,Asia,Australia,,Victoria:Bass Basin,Lower,Paleogene,,,Coals,Bass Basin coals,,"Williamson,Pigram(1986)",
+C,109,C5543.1,,47,N,14,E,Europe,Austria,,Carinthia,L  -M-U?,Paleogene,,,Coals,,,"Hofmann,Zetter(2001)",
+C,110,C5544,,51,N,5,E,Europe,Belgium,,,Lower,Paleogene,,Late Paleocene,Coals,,,"Vinken(1988, Fig. 12)",
+C,111,C5545,,55,N,-7,W,Europe,Britain,,"Antrim,Northern Ireland",Lower,Paleogene,,"Mussett(1988)-61 my for the L.Basalts,60my-Interrappian Horizon,58my-U. Basalts",Coals,,,Eyles(1952),"see also Wilson,Manning(1978, pp.23, 119)"
+C,112,C5546,,52,N,-1,W,Europe,Britain,,southern England,Lower,Paleogene,Thanetian,,Coals,,lignites,Collinson(1990),
+C,113,C5548,,58,N,-1,W,Europe,Britain,,Moray Firth region,Lower,Paleogene,,,Coals,Moray Region region subsurface,"see also Andrews et al.(1990), Thanetian Moray Group","Jolley,Morton(1992)",
+C,114,C5549,,42,N,14,E,Europe,Bulgaria,,Rhodopes,L  -M-U?,Paleogene,,,Coals,,,"Tchoumatchenco et al.(1990, p. 115)",
+C,115,C5550,,61,N,-7,W,Europe,Denmark,,Faeroes,Lower,Paleogene,,Late Paleocene,Coals,,,Waagstein(1988),
+C,116,C5551,,49,N,3,E,Europe,France,,Valois,Lower,Paleogene,Thanetian,Late Paleocene,Coals,,lignites,Megnien(1980),
+C,117,C5552,,44,N,2,E,Europe,France,,Fumel Basin,Lower,Paleogene,Thanetian,,Coals,,lignites,Simon-Coincon(1994),
+C,118,C5553,,51,N,6,E,Europe,Germany,,,L  -M-U?,Paleogene,,,Coals,Antweiler Member,,"Vinken(1988, Figs.18,19)",see also Pflug(1959)
+C,119,C5554,,53,N,10,E,Europe,Germany,,,L  -M-U?,Paleogene,,,Coals,Sohlingen,,"Vinken(1988, Figs.18,19)",see also Pflug(1959)
+C,120,C5555,,53,N,14,E,Europe,Germany,,,L  -M-U?,Paleogene,,,Coals,Nassenheide and Linda Frms,,"Vinken(1988, Fig.28)",
+C,121,C5556,,53,N,6,E,Europe,Netherlands,,,L  -M-U?,Paleogene,,,Coals,Heers Sand Member,lignites,"Van Staalduinen et al.(1979, p.24)",
+C,122,C5557,,53,N,14,E,Europe,Poland,,,L  -M-U?,Paleogene,,,Coals,Goleniow Odra Frms,,"Vinken(1988, Fig.29)",
+C,123,C5558,,42,N,2,E,Europe,Spain,,Berga,Lower,Paleogene,Danian,Paleocene,Coals,,,Petroconsultants(1977),
+C,124,C5559,,78,N,15,E,Europe,Svalbard,,,Lower,Paleogene,,Paleocene,Coals,Firkanten,,"Dowdeswell(1988, Fig.5)",
+C,125,C5559.1,,46.8,N,7.5,E,,,,,,,,,,,,,
+C,126,C5560,,42,N,22,E,Europe,Frm Yugloslavia,,Dobra Sreca in eastern Serbia,Lower,Paleogene,,Paleocene,Coals,,,Mihajlovic(1990),
+C,127,C5561,,45,N,14,E,Europe,Frm Yugloslavia,,Rasa,L  -M-U?,Paleogene,,,Coals,,,The Rijks Geologische Dienst(1982),
+C,128,C5562,,-45,S,170,E,Europe,New Zealand,,southern part of South Island ,Lower,Paleogene,,Paleocene,Coals,,,Suggate(1978),
+C,129,C5563,,-42,S,171.75,E,Europe,New Zealand,,northern South Island,Lower,Paleogene,,Paleocene to Lower Oligocene,Coals,,,Suggate(1978),
+C,130,C5564,,-44,S,171.5,E,Europe,New Zealand,,Christchurch region,Lower,Paleogene,,,Coals,,,Suggate(1978),
+C,131,C5565,,-42.5,S,171,E,Europe,New Zealand,,Nelson-Westland Coal Region of the Greymouth Coalfields,Lower,Paleogene,,Paleocene,Coals,Paparoa Coal Measures,,Sherwood(1986),
+C,132,C5566,,53,N,-110,W,North America,Canada,,Alberta & Saskatchewan,Lower,Paleogene,,(Paleocene),Coals,"(Paskapoo), Ravenscrag Frms",,"Douglas et al.(1970, p. 479)",
+C,133,C5567,,52,N,-116,W,North America,Canada,,Alberta & Saskatchewan:central Alberta,Lower,Paleogene,,Paleocene,Coals,,,"Jerzykiewicz,Sweet(1988)",
+C,134,C5568,,58,N,-127,W,North America,Canada,,Arctic:northwestern Tintina Trench,L - M,Paleogene,,Paleocene or Upper Eocene,Coals,,,"Douglas et al.(1970, p. 478)",
+C,135,C5569,,77,N,-120,W,North America,Canada,,Arctic:Arctic Coastal Plain,Lower,Paleogene,,Paleocene to Eocene,Coals,Reindeer,"contains coal(p. 478;see also Dixon,1992)","Douglas et al.(1970, p. 478)",
+C,136,C5570,,69,N,-135,W,North America,Canada,,Arctic:Mackenzie Plain,Lower,Paleogene,,Paleocene to Eocene,Coals,Reindeer,,"Douglas et al.(1970, p. 478)",
+C,137,C5571,,73,N,-120,W,North America,Canada,,Arctic:Banks,Lower,Paleogene,,Paleocene,Coals,,,"Plauchut,Jutard(1976)",
+C,138,C5572,,79,N,-82,W,North America,Canada,,Arctic,Lower,Paleogene,,Paleocene,Coals,Eureka Sound,,Bustin(1986),"see also Bustin,Miall(1991),Miall(1986)"
+C,139,C5573,,78,N,-82,W,North America,Canada,,Arctic:Strathcona Fiord region of southwestern Ellesmere,Lower,Paleogene,,Paleocene,Coals,Eureka Sound,,Ricketts(1989),
+C,140,C5574,,69,N,-139,W,North America,Canada,,Arctic:Moose River Area,L  -M-U?,Paleogene,,,Coals,,,Petroconsultants(1977),
+C,141,C5575,,62,N,-135,W,North America,Canada,,Arctic:Bonnet Plume Area,L  -M-U?,Paleogene,,,Coals,,,Petroconsultants(1977),
+C,142,C5576,,62,N,-135,W,North America,Canada,,Arctic:Big Salmon Coalfield,L  -M-U?,Paleogene,,,Coals,,,The Rijks Geologische Dienst(1982),
+C,143,C5577,,69,N,-136,W,North America,Canada,,Arctic,L  -M-U?,Paleogene,,,Coals,Moose Channel,,Dixon(1992),
+C,144,C5578,,79,N,-92,W,North America,Canada,,Arctic:Meighen Basin,L  -M-U?,Paleogene,,,Coals,,,Miall(1984),
+C,145,C5578.1,,67,N,-62.1,W,North America,Canada,,Arctic:Baffin Island,Lower,Paleogene,,Paleocene,Coals,,,"Clarke,Upton(1971)",
+C,146,C5578.2,,67.2,N,-62.5,W,North America,Canada,,Arctic:Baffin Island,Lower,Paleogene,,Paleocene,Coals,,,"Clarke,Upton(1971)",
+C,147,C5579,,54,N,-12,W,North America,Canada,,British Columbia:Bowron River Coalfield,L  -M-U?,Paleogene,,,Coals,,,The Rijks Geologische Dienst(1982),
+C,148,C5579.1,,49,N,-123.5,W,North America,Canada,,British Columbia:Georgia Basin,L  -M-U?,Paleogene,,,Coals,Huntingdon/Chuckanut Frms,,Hannigan et al.(2001),
+C,149,C5580,,50,N,-98,W,North America,Canada,,Manitoba,Lower,Paleogene,,probably of Paleocene age,Coals,Turle Mountian,,"Douglas et al.(1970, p. 479)",
+C,150,C5581,,50,N,-105,W,North America,Canada,,Saskatchewan:southern Saskatchewan,Lower,Paleogene,,Paleocene,Coals,,,Irvine et al.(1978),
+C,151,C5582,,70,N,-52,W,North America,Greenland,,west-central Greenland,Lower,Paleogene,,Paleocene,Coals,,,Henderson et al.(1976),
+C,152,C5583,,68.5,N,-31,W,North America,Greenland,,East Greenland,Lower,Paleogene,,Paleocene,Coals,,,Larsen et al.(1996),
+C,153,C5584,,32,N,-87,W,North America,United States,,Alabama,Lower,Paleogene,,Paleocene,Coals,,,Cullbertson(1964),
+C,154,C5585,,60,N,-145,W,North America,United States,,Alaska:Cook Inlet,L - M,Paleogene,,Paleocene-?early Eocene,Coals,Chickaloon and Wishbone Frms,,Wahrhaftig et al.(1994),
+C,155,C5586,,70,N,-150,W,North America,United States,,Alaska ,L - M,Paleogene,,Paleocene-Eocene,Coals,Sagavanirktok,,"Merritt,Hawley(1986)",see also Roberts et al.(1992)
+C,156,C5586.1,,63,N,-155,W,North America,United States,,Alaska:McGrath Quadrangle,Lower,Paleogene,,Paleocene,Coals,,,Dickey(1984),
+C,157,C5586.2,,58,N,-134.5,W,North America,United States,,Alaska:Admiralty Island,L-M-U,Paleogene,,Paleocene-Miocene,Coals,Kootznahoo,,Lathram et al.(1965),
+C,158,C5586.3,,63.5,N,-150,W,North America,United States,,Alaska:central Alaska Range,L  -M-U?,Paleogene,,,Coals,Cantwell,,"Wolfe,Wahrhaftig(1970)",
+C,159,C5587,,35,N,-92,W,North America,United States,,Arkansas,L  -M-U?,Paleogene,,,Coals,Kincaid and Wills Point,in the Arkansas bauxite region,Gordon et al.(1958),
+C,160,C5587.1,,33.5,N,-117,W,North America,United States,,California:Santa Ana Mountians and San  Joaquin Hills,L  -M-U?,Paleogene,,,Coals,Silverado,,Ramirez et al.(2002)
+C,161,C5588,,38,N,-105,W,North America,United States,,Colorado,L  -M-U?,Paleogene,,,Coals,"Raton,Fort Union,Denver and Coalmont Frms and Dawson Arkose",,Landis(1959)
+C,162,C5589,,46,N,-108,W,North America,United States,,Montana,Lower,Paleogene,,Paleocene,Coals,,,Warren(1959)
+C,163,C5590,,34,N,-107,W,North America,United States,,New Mexico,Lower,Paleogene,,Paleocene,Coals,,,Read et al.(1950)
+C,164,C5591,,48,N,-103,W,North America,United States,,North Dakota,Lower,Paleogene,,Paleocene,Coals,,lignites,Brant(1953)
+C,165,C5592,,45,N,-103,W,North America,United States,,South Dakota,Lower,Paleogene,,Paleocene,Coals,,,Brown(1952)
+C,166,C5593,,36,N,-89,W,North America,United States,,Tennesse & Kentucky:western Tennesse and adj. Kentucky,Lower,Paleogene,,Paleocene,Coals,,lignites,Potter(1976)
+C,167,C5594,,29,N,-97,W,North America,United States,,Texas:Texas Coastal Plain,Lower,Paleogene,,Paleocene,Coals,,,Fisher(1963)
+C,168,C5595,,40,N,-109,W,North America,United States,,Utah:northwestern Utah and northwestern Colorado,Lower,Paleogene,,Paleocene,Coals,,,Gale(1909)
+C,169,C5595.1,,41,N,-110,W,North America,United States,,Utah:Henry Fork Coal Field of northeastern Utah,L  -M-U?,Paleogene,,,Coals,Fort Union,,"Doelling,Graham(1972a, p. 360)"
+C,170,C5595.2,,38.5,N,-111.5,W,North America,United States,,Utah,Lower,Paleogene,Danian,Paleocene,Coals,North Horn,,Doelling(1972)
+C,171,C5595.3,,39.2,N,-110.3,W,North America,United States,,Utah,Lower,Paleogene,Danian,and younger Paleocene,Coals,North Horn,,Doelling(1972)
+C,172,C5596,,48,N,-121,W,North America,United States,,Washington:Skagit County Coalfields,L  -M-U?,Paleogene,,,Coals,,,The Rijks Geologische Dienst(1982)
+C,173,C5597,,43,N,-108,W,North America,United States,,Wyoming:Powder River Basin in Wyoming and Montana,Lower,Paleogene,,Paleocene,Coals,,,"Ayers,Kaiser(1984)"
+C,174,C5598,,-37,S,-72,W,South America,Chile ,,"Tome,Coronel and Curnilahue Coalfields,Consepcion Province",L  -M-U?,Paleogene,,,Coals,,,Petroconsultants(1977)
+C,175,C5598.1,,-46.75,N,-77.8,W,South America,Chile ,,,Lower,Paleogene,,Late Paleocene,Coals,Ligorio Marquez,,Suarez et al.(2000)
+C,176,C5599,,5,N,-75,W,South America,Colombia,,,Lower,Paleogene,,Maastrichtian-Paleocene,Coals,Guaduas,"see Van der Hammen(1957), for biostratigraphic information","Hiltmann,Korn(1988)"
+C,177,C5600,,11,N,-73,W,South America,Colombia,,La Guajira Department,L  -M-U?,Paleogene,,,Coals,Cerrejon,,Duran(1984)
+C,178,C5601,,9,N,-74,W,South America,Colombia,,Cesar Department,Lower,Paleogene,,Paleocene,Coals,,,Duran(1984)
+C,179,C5602,,4,N,-77,W,South America,Colombia,,Valle del Caua between Yumbo and Suarez,L-M-U,Paleogene,,Paleocene-Upper Oligocene,Coals,Cauca,,Duran(1984)
+C,180,C5603,,9,N,-73,W,South America,Colombia,,Los Cuervos,L - M,Paleogene,,Paleocene-Eocene,Coals,,,Stauffer(1982)
+C,181,C5603.1,,7,N,-58,W,South America,Guiana,,Georgetown region,L  -M-U?,Paleogene,,,Coals,,lignites,"Wijmstra,van derHammen(1964)"
+C,182,C5603.2,,5,N,-55,W,South America,Surinam,,,L  -M-U?,Paleogene,,,Coals,,lignites,"Wijmstra,van derHammen(1964)"
+C,183,C5604,,10,N,-69,W,South America,Venezuela,,,Lower,Paleogene,,Paleocene,Coals,,,Olive(1978)
+C,184,C5605,,11,N,-75,W,South America,Venezuela,,"Guasare Area,Zulia",L - M,Paleogene,,Paleocene-Lower Eocene,Coals,Marcelina,,Petroconsultants(1977)
+C,185,C5606,,8,N,-72,W,South America,Venezuela,,"Lobatera Coalfield,Tachira",L - M,Paleogene,,Paleocene-Eocene,Coals,Carbonera and Orucure Frms,,Petroconsultants(1977)
+C,186,C5607,,7.5,N,-72,W,South America,Venezuela,,Tachiri Depression,Lower,Paleogene,,Paleocene,Coals,Los Cuervos,see also Martinez et al.(1996); lignites,"Macellari(1984, Fig. 2)"
+C,187,C5607.1,,4.6,N,-72.9,W,South America,Venezuela,,Perija region,Lower,Paleogene,,Paleocene,Coals,Orocoe,lignites,Gallango et al.(2002)
+B,188,B5608,,12,N,0,E,Africa,Niger ,,southwestern Niger,L - M,Paleogene,,Late Cretaceous-Eocene,Bauxites,,,Lang et al.(1986)
+B,189,B5609,,55,N,75,E,Asia,C.I.S.(frm U.S.S.R.),,"Ivanovsk area, the Tatarsk area",Lower,Paleogene,,Paleocene(Hyp.),Bauxites,,karst bauxites,"Bardossy(1982, Appendix 1)"
+B,190,B5610,,49,N,59,E,Asia,C.I.S.(frm U.S.S.R.),,Arkalyk,L - M,Paleogene,,Paleocene-Eocene(Hyp.),Bauxites,,karst bauxites,"Bardossy(1982, Appendix 1)"
+B,191,B5611,,71,N,113,E,Asia,C.I.S.(frm U.S.S.R.),,Anabar-Olenek anteclise,L - M,Paleogene,,Paleocene-Eocene,Bauxites,,karst bauxites,"Tsykin(1989, p. 286-287)"
+B,192,B5612,,51,N,92,E,Asia,C.I.S.(frm U.S.S.R.),,eastern Sayan,Lower,Paleogene,Danian,Paleocene,Bauxites,,karst bauxites,"Tsykin(1989, p. 286-287)",
+B,193,B5613,,39,N,75,E,Asia,India-Pakistan,,Jammu & Kashmir:Jammu,L - M,Paleogene,,Paleocene-Eocene(Quest.),Bauxites,,karst bauxites,"Bardossy(1982, Appendix 1)",
+B,194,B5612.1,,35,N,75,E,Asia,India-Pakistan,,Jammu & Kashmir:Jammu Kalakot area-check,Lower,Paleogene,,Paleocene,Bauxites,Subathu,,"Singh,Tandon(2002)",
+B,195,B5614,,30,N,68,E,Asia,Pakistan,,Salt Range and Sargodha,Lower,Paleogene,,Paleocene,Bauxites,,"Karmi,Jan(1997, p.463) cite the base of the Hangu Frm where it rests on the Permian;karst baukites","Bardossy(1982, Appendix 1)",
+B,196,B5614.1,,33.8,N,72,E,Asia,Pakistan,,Attock-Cherat Range,L  -M-U?,Paleogene,,,Bauxites,,"lateritic material, with bauxitic content",Hussain et al.(1990),
+B,197,B5614.2,,34.3,N,73.5,E,Asia,Pakistan,,near Muzaffarabad,L  -M-U?,Paleogene,,,Bauxites,beneath the Patala,,"Kazmi,Jan(1997, p. 464)",
+B,198,B5615,,-35,S,149,E,Asia,Australia,,New South Wales,Lower,Paleogene,,Paleocene,Bauxites,,"Bardossy(see Itroduction"")-theseare not true bauxites because of their mineral composition","Taylor et al.(1990a,b)",
+B,199,B5616,,41,N,20,E,Europe,Albania,,,Lower,Paleogene,,between The Paleocene and the Maastrichtian,Bauxites,,,"Peza(1989, Text-fig. 4)",
+B,200,B5617,,55,N,-6,W,Europe,Britain,,"Antrim,Northern Ireland",Lower,Paleogene,,"were assigned to U. Miocene-L.Pliocene but(Mussett et al.,1988) placed in the Paleocene following radiometric age data",Bauxites,,bauxites associated with some lignites,Eyles(1952),"see also Hill et al.(2000) for some mineralogical information, including the presence of gibbsite;also Preston(2001)"
+B,201,B5618,,44,N,6,E,Europe,France,,Haut-Var,L  -M-U?,Paleogene,,,Bauxites,,,"Bardossy,Dercourt(1990)",
+B,202,B5619,,44,N,4,E,Europe,France,,La Bossiere,L  -M-U?,Paleogene,,,Bauxites,,,"Bardossy,Dercourt(1990)",
+B,203,B5620,,47,N,21,E,Europe,Hungary,,Kislod and Ajka,Lower,Paleogene,,Paleocene,Bauxites,,karst bauxites,"Bardossy(1982, Appendix 1)",
+B,204,B5621,,48,N,19,E,Europe,Hungary,,Nagyegyhaza,Lower,Paleogene,,Paleocene,Bauxites,,,"Bardossy,Dercourt(1990)",
+B,205,B5622,,47,N,21,E,Europe,Hungary,,Nyirad-Szoc,Lower,Paleogene,,Paleocene,Bauxites,,,"Bardossy,Dercourt(1990)",
+B,206,B5623,,49,N,21,E,Europe,Slovakia,,Markusovce,Lower,Paleogene,,Paleocene,Bauxites,,with Middle Eocene cover,"Bardossy,Dercourt(1990)",
+B,207,B5624,,49,N,18,E,Europe,Slovakia,,Mojtin,Lower,Paleogene,,Paleocene,Bauxites,,with Middle Eocene cover,"Bardossy,Dercourt(1990)",
+B,208,B5625,,41,N,0,,Europe,Spain,,Ebro Massif,Lower,Paleogene,,Paleocene(Hyp.),Bauxites,,karst bauxites,"Bardossy(1982, Appendix 1)"
+B,209,B5626,,46,N,14,E,Europe,Frm Yugloslavia,,Kozina,Lower,Paleogene,,Paleocene(Cert.),Bauxites,,karst bauxites,"Bardossy(1982, Appendix 1)"
+B,210,B5627,,45,N,14,E,Europe,Frm Yugloslavia,,central and southern Istria,Lower,Paleogene,,Paleocene(Cert.),Bauxites,,karst bauxites,"Bardossy(1982, Appendix 1)"
+B,211,B5628,,44,N,16,E,Europe,Frm Yugloslavia,,"Obrovac,Novigrad",Lower,Paleogene,,Paleocene(Cert.),Bauxites,,karst bauxites,"Bardossy(1982, Appendix 1)"
+B,212,B5629,,43,N,17,E,Europe,Frm Yugloslavia,,Imotski,Lower,Paleogene,,Paleocene(Hyp.),Bauxites,,karst bauxites,"Bardossy(1982, Appendix 1)"
+B,213,B5630,,42,N,19,E,Europe,Frm Yugloslavia,,Ulcinj,Lower,Paleogene,,Paleocene(Hyp.),Bauxites,,karst bauxites,"Bardossy(1982, Appendix 1)"
+B,214,B5631,,34,N,-86,W,North America,United States,,western and eastern Coastal Plain,L - M,Paleogene,,Paleocene-Eocene(Hyp.),Bauxites,,,"Bardossy(1982, Appendix 1)"
+B,215,B5632,,31,N,-85,W,North America,United States,,Alabama,Lower,Paleogene,,upper Paleocene,Bauxites,Baker Hill Frm-Alabama Wilcox Group,bauxitic clay,Gibson(1992)
+B,216,B5633,,33,N,-82,E,North America,United States,,Georgia:Georgia and South Carolina,Lower,Paleogene,,Paleocene,Bauxites,Tuscaloosa,bauxites associated with the kaolin belt,"Kesler(1951,1952)"
+O,217,O5633.1,,34.5,N,73.5,E,Asia,Pakistan,,"Murree Road,Hazara",L  -M-U?,Paleogene,,,Oolitic Ironstone,Langrial ironstone,hematite and chamosite,Maynard(1983)
+M,218,M5633.1,,-3,S,-50,E,South America,Brazil,,State of Para,Lower,Paleogene,,Paleocene,Lateritic Manganese,,,Vasconcelos et al.(1994)
+K,219,K5633.2,,7,N,2,E,Africa,Benin,,,Lower,Paleogene,Danian,Paleocene,Kaolinites,,detrital kaolinite,Bio-Lokoto et al.(1998)
+K,220,K5634,,4,N,9.5,E,Africa,Cameroon,,,L  -M-U?,Paleogene,,,Kaolinites,Formation de Dzianque,,"Dunoyer de Segonzac(1969, Fig. 8)"
+K,221,K5634.1,,26.5,N,32.5,E,Africa,Egypt,,Gebel Qreuya,Lower,Paleogene,Danian,Paleocene,Kaolinites,,abundant kaolin,Keller( et al.(2002)
+K,222,K5635,,12,N,5,E,Africa,Niger,,eastern part of the Trans-Saharan Seaway,Lower,Paleogene,,Paleocene,Kaolinites,,,Trichet et al.(1986)
+K,223,K5636,,13.5,N,5.75,E,Africa,Nigeria,,Trans-Saharan Seaway,Lower,Paleogene,,Paleocene,Kaolinites,,,"Adetunji,Kogbe(1987)"
+K,224,K5337,,-69,S,1,E,Antarctica,,,Southern Ocean ,L - M,Paleogene,,Paleocene-Eocene boundary,Kaolinites,,,"Robert,Kennett(1994)",
+K,225,K5637.1,,46,N,67,E,Asia,C.I.S.(frm U.S.S.R.),,,L - M,Paleogene,,Maastrichtian-middle Eocene,Kaolinites,,,"Erofeev,Tsekhovskii(1982,1983)",
+K,226,K5637.2,,48,N,82.5,E,Asia,C.I.S.(frm U.S.S.R.),,,L - M,Paleogene,,Maastrichtian-middle Eocene,Kaolinites,,,"Erofeev,Tsekhovskii(1982,1983)",
+K,227,K5637.3,,31,N,35,E,Asia,Israel,,,Lower,Paleogene,Danian,Paleocene,Kaolinites,two Negev sections,,Bolle et al(2000),
+K,228,K5637.4,,32.6,N,72.5,E,Asia,Pakistan,,Salt Range region,L  -M-U?,Paleogene,,,Kaolinites,Patala,fireclay is beneath the Patala,"Kazmi,Jan(1997, p. 466)",
+K,229,K5638,,49,N,3,E,Europe,France,,northeastern part of the Paris Basin,Lower,Paleogene,Thanetian,,Kaolinites,,sedimentary kaolinite,Trauth et al.(1969),
+K,230,K5639,,44,N,2,E,Europe,France,,Fumel Basin,Lower,Paleogene,,Late Paleocene,Kaolinites,,kaolinitic claystone,Simon-Coincon(1994),
+K,231,K5640,,51,N,6,E,Europe,Germany,,Antweiler area,L  -M-U?,Paleogene,,,Kaolinites,,kaolinitic sands,Pfug(1985),
+K,232,K5641,,43,N,12,E,Europe,Italy,,southern Apennines,Lower,Paleogene,,probably of Paleocene age,Kaolinites,,flint clays,Boni et al.(1979),
+K,233,K5642,,41,N,-5.5,W,Europe,Spain,,,Lower,Paleogene,,beneath the Paleocene,Kaolinites,,,"Molina,Blanco(1980)",
+K,234,K5643,,51,N,-4,W,Europe,United Kingdom,,England:Devon,Lower,Paleogene,,Paleocene,Kaolinites,,kaolins,Isaac(1983),"see also Sellwood,Sladen(1981, Fig. 20)"
+K,235,K5644,,80,N,-87,W,North America,Canada,,Arctic,Lower,Paleogene,,Paleocene,Kaolinites,Eureka Sound,,"Bustin,Bayliss(1979)",
+K,236,K5644.1,,53,N,-110,W,North America,Canada,,Saskatchewan:southern Saskatchewan,L  -M-U?,Paleogene,,,Kaolinites,Ravenscrag,,Guliov(1984),
+K,237,K5644.2,,70,N,-53,E,North America,Greenland,,West Greenland,Lower,Paleogene,,Paleocene,Kaolinites,,kaolinitic sediments in the nonmarine,Pedersen et al.(1998),
+K,238,K5644.3,,31,N,-85,W,North America,United States,,"Alabama:near Fort Gaines,Georgia",Lower,Paleogene,,Late Paleocene,Kaolinites,Baker Hill  ,kaolinitic sediments,Gibson(1992),
+K,239,K5645,,34,N,-117.5,W,North America,United States,,California:Aberhill,L  -M-U?,Paleogene,,,Kaolinites,,,"Murray,Patterson(1975)",see also Cleveland(1957)
+K,240,K5646,,33.5,N,-117,W,North America,United States,,"California:Orange County,in the Santa Ana Mountians ",L  -M-U?,Paleogene,,,Kaolinites,Martinez,,"Turner(1957, in Wright)",
+K,241,K5647,,33,N,-84.75,W,North America,United States,,Georgia:Warm Springs,Lower,Paleogene,,Late Paleocene,Kaolinites,Republic Mines Beds,with minor gibbsite,Reinhardt et al.(1984),
+K,242,K5647.1,,38,N,-78,W,North America,United States,,"New Jersey,Martland,Virginia",L - M,Paleogene,,Late Paleocene and early Eocene,Kaolinites,Coastal Plain sequence,detrital kaolin,Gibson et al.(2000),
+K,243,K5648,,46,N,-108,W,North America,United States,,Montana:Tullock Creek,L  -M-U?,Paleogene,,Tertiary,Kaolinites,,tonstein,Burger(1978-1980),
+K,244,K5649,,36.75,N,-105,W,North America,United States,,"New Mexico:Raton Coal Field, Colfax County",L  -M-U?,Paleogene,,,Kaolinites,Raton ,Raton Frm tonstein,"Bohor,Pillmore(1976)",
+K,245,K5650,,-26,S,-49,W,South America,Brazil,,southeastern Brazil,Lower,Paleogene,,Paleocene,Kaolinites,,,Riccomini et al.(1996),
+L,246,L5650.2,,21.2,N,41.5,E,Asia,Saudi Arabia,,,Lower,Paleogene,,Paleocene,Lateritic Beds,lower member of the Umm Jimar,,"Whitmore,Madden(1995)",
+L,247,L5650.3,,17.5,N,18.25,E,Asia,Saudi Arabia,,southwestern Saudi Arabia,Lower,Paleogene,,Paleocene,Lateritic Beds,,"Hadley et al.(1983), cite the As Sarat laterite","Coleman(1993, Fig. 2.6),Hadley et al.(1983)",
+L,248,L5650.1,,16.5,N,43,E,Asia,Republic of Yemen,,,L - M,Paleogene,,late Paleocene or early Eocene,Lateritic Beds,Madak Laterite,,Kruck et al.(1996),
+L,249,L5651,,57,N,-6,W,Europe,United Kingdom,,Inner Hebrides,L  -M-U?,Paleogene,,,Lateritic Beds,,,Emeleus et al.(1996),
+L,250,L5652,,57.5,N,6.5,W,Europe,United Kingdom,,northern Skye,L  -M-U?,Paleogene,,,Lateritic Beds,,lateritic materials,Bell et al.(1996),
+L,251,L5652.1,,-6,S,-49,W,South America,Brazil,,500km south of Belem,Lower,Paleogene,,Late Cretaceous to the Miocene,Lateritic Manganese,,,Ruffet et al.(1996),
+PA,252,Pa5653,,72,N,-52,W,North America,Greenland,,Nugssuak Peninsula,Lower,Paleogene,Danian,Paleocene,Palms,Agatdal,,Koch(1972),see also Daglian(1981)
+PA,253,Pa5653.1,,62,N,-149,W,North America,United States,,Alaska,Lower,Paleogene,,Paleocene,Palms,,,"Wolfe(1977, p. 54)",
+PA,254,Pa5654,,48.5,N,-122,W,North America,United States,,"Washington:near Bellingham,Washington",L  -M-U?,Paleogene,,,Palms,"Chuckanut Frm, older part of the Puget Group",,"Smiley(oral comm.,1995)",
+PA,255,Pa5655,,-50,S,-69,W,South America,Argentina,,Cerro Abigrrado in Chubut Province,Lower,Paleogene,Danian,Paleocene,Palms,Salamanca,Palmoxylon patagonicum,Romero(1968),
+M,256,M5657,,-43,S,146,E,Australia,,,Tanmania,L  -M-U?,Paleogene,,,Mangroves,,Nypa pollen,Gee(1990) accepts Cookson and Eienack's(1967) occurrence
+M,257,M5657.1,,47,N,14,E,Europe,Austria,,Carinthia in the Krappfeld area,L  -M-U?,Paleogene,,,Mangroves,,Nypa pollen,"Hofmann,Zetter(2001)"
+M,258,M5658,,-46,S,170,E,Europe,New Zealand,,South Island,L  -M-U?,Paleogene,,,Mangroves,,Nypa pollen,Gee(1990) accepts MeIntyre's(1965) occurrence
+CR,259,Cr5659,,56,N,13,E,Europe,Sweden,,Limhamm,Lower,Paleogene,Danian,Paleocene,Crocodilians,,,Floris(1964)
+CR,260,Cr5659.1,,48.75,N,44.5,E,Europe,Russia,,Volgograd region,L  -M-U?,Paleogene,,,Crocodilians,,,"Efmov,Yarkov(1993)"
+CR,261,Cr5660,,51,N,-114,W,North America,Canada,,Alberta:Elbow River,L  -M-U?,Paleogene,,,Crocodilians,,,Russel(1929)
+CR,262,Cr5661,,-41.5,S,-66,W,South America,Argentina,,Chubut,M - L,Paleogene,,Paleocene,Crocodilians,,,Gasparini(1981)

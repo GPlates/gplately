@@ -1,0 +1,50 @@
+201117  0.0   90.0    0.0    0.0  201 !Leading Edge of Pampean Flat Slab  
+201117  1.0   60.81  -62.15   -0.51  201 !Calculated interactively by GPlates
+201117  2.0   59.75  -53.07   -1.0  201 !Calculated interactively by GPlates
+201117  5.0   58.79  -66.65   -1.02  201 !Calculated interactively by GPlates 
+201117  7.0   59.25  -69.79   -1.04  201 !Calculated interactively by GPlates 
+201117 11.0   59.55  -65.31   -2.67  201 !Calculated interactively by GPlates 
+201117 11.0   63.32 -107.55    7.38  911 !Cross-over to 911 
+201117 14.0   63.32 -107.55    7.38  911 !Leading Edge of Pampean Flat Slab 
+201118  0.0   90.0    0.0    0.0  201117 !Leading Edge of Payenia Flat Slab  
+201118  5.0   53.8  -59.32    0.79  201117 !Calculated interactively by GPlates 
+201118 12.0   54.96  -56.83    0.79  201117 !Calculated interactively by GPlates 
+201118 13.0   54.59  -55.94    0.79  201117 !Calculated interactively by GPlates 
+201118 14.0   90.0    0.0    0.0  201117 ! fixed to leading edge of Pampean flat slab 
+201119  0.0   90.0    0.0    0.0  201 !Leading Edge of Peruvian Flat Slab  
+201119  1.0  -72.64   49.58    0.38  201 !Calculated interactively by GPlates
+201119  2.0  -72.75   51.57    0.95  201 !Calculated interactively by GPlates
+201119  3.0  -81.23   91.1    1.56  201 !Calculated interactively by GPlates
+201119  4.0  -81.26  121.21    1.85  201 !Calculated interactively by GPlates
+201119  5.0  -73.35   77.69    2.39  201 !Calculated interactively by GPlates
+201119  6.0  -68.98   53.54    2.49  201 !Calculated interactively by GPlates
+201119  8.0  -77.51   47.98    4.57  201 !Calculated interactively by GPlates 
+201120 12.0   90.0    0.0    0.0  201 !Leading Edge of Puna Flat Slab  
+201120 15.0   65.96  -73.85   -2.1  201 !Calculated interactively by GPlates 
+201120 15.0   63.69  -96.25   12.15  911 !Cross-over to 911 
+201120 18.0   63.69  -96.25   12.15  911 !Leading Edge of Puna Flat Slab 
+201121 27.0   90.0    0.0    0.0  201 !Leading Edge of Altiplano Flat Slab  
+201121 32.0   72.2  -74.55   -1.96  201 !Calculated interactively by GPlates 
+201121 41.0   60.65  121.33  -10.32  201 ! Modified sw 2013/06/11 to avoid crossover problems related to changes in Pacific
+201121 42.0   60.26  121.6  -11.63  201 !Leading Edge of Puna Flat Slab 
+201122  0.0   90.0    0.0    0.0  201 ! 
+201122 10.0   -0.59  -80.93   -2.18  201 !Calculated interactively by GPlates 
+201123  0.0   90.0    0.0    0.0  201 ! 
+201123  6.0   90.0    0.0    0.0  201 ! 
+201123 12.0  -44.1  -77.21    0.15  201 !Calculated interactively by GPlates 
+201123 18.0  -39.33  -71.05    1.37  201 !Calculated interactively by GPlates 
+201124  0.0   90.0    0.0    0.0  201 ! 
+201124  5.0  -34.68  -71.12    1.14  201 !Calculated interactively by GPlates 
+201124 10.0  -34.47  -72.49    3.3  201 !Calculated interactively by GPlates 
+201124 12.0  -34.51  -72.74    3.84  201 !Calculated interactively by GPlates 
+201125  0.0   90.0    0.0    0.0  201 ! 
+201125  5.0  -46.55  -35.22    0.48  201 !Calculated interactively by GPlates 
+201125 12.0  -40.1  -55.73    2.48  201 !Calculated interactively by GPlates 
+201125 18.0  -36.02  -61.5    5.15  201 !Calculated interactively by GPlates 
+201126  0.0   90.0    0.0    0.0  201 ! 
+201126 26.0   -5.07  -77.7   -9.29  201 !Calculated interactively by GPlates 
+201126 42.0   -5.85  -77.68  -15.06  201 !Calculated interactively by GPlates 
+201127  0.0   90.0    0.0    0.0  201 !Leading Edge of Columbian Flat Slab 
+201127  4.0   75.3553   40.7206   -0.0653  201 !
+201127  5.9   -6.4564  109.4355  -12.9312  201 !
+201127  9.0    0.2798  -70.9038   18.5416  201 !Calculated interactively by GPlates 
