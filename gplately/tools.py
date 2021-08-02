@@ -49,6 +49,7 @@ def plate_isotherm_depth(
     temp=_DEFAULT_T_MANTLE,
     plate_thickness=_DEFAULT_PLATE_THICKNESS,
     n=20,
+    rtol=0.001,
 ):
     """
     Computes the depth to the temp - isotherm in a cooling plate mode.
@@ -62,7 +63,6 @@ def plate_isotherm_depth(
     age = np.atleast_1d(age)
 
     zi = np.atleast_1d(np.zeros_like(age, dtype=float))  # starting depth is 0
-    rtol = 0.001  # error tolerance
 
     z_too_small = np.atleast_1d(np.zeros_like(age, dtype=float))
     z_too_big = np.atleast_1d(np.full_like(age, plate_thickness, dtype=float))
@@ -77,9 +77,11 @@ def plate_isotherm_depth(
 
         if (np.abs(t_diff) < rtol).all():
             break
-    else:
-        # TODO: raise a warning that the value did not converge?
-        pass
+
+    # convergence warning
+    if np.abs(t_diff) > rtol:
+        import warnings
+        warnings.warn("Iterations did not converge below rtol={}".format(rtol))
 
     # protect against negative ages
     zi[age <= 0] = 0
@@ -137,7 +139,7 @@ def extract_feature_lonlat(features):
     return rlon, rlat
 
 
-def lonlat2xyz(lon, lat, degrees=False):
+def lonlat2xyz(lon, lat, degrees=True):
     """
     Convert lon / lat (radians) for the spherical triangulation into x, y, z
     on the unit sphere
@@ -160,7 +162,7 @@ def lonlat2xyz(lon, lat, degrees=False):
     return xs, ys, zs
 
 
-def xyz2lonlat(x, y, z, validate=False, degrees=False):
+def xyz2lonlat(x, y, z, validate=False, degrees=True):
     """
     Convert x,y,z representation of points *on the unit sphere* of the
     spherical triangulation to lon / lat (in radians, by default).

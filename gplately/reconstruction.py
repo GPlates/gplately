@@ -136,7 +136,7 @@ class Points(object):
         self.time = time
 
         # get Cartesian coordinates
-        self.x, self.y, self.z = _tools.lonlat2xyz(lons, lats)
+        self.x, self.y, self.z = _tools.lonlat2xyz(lons, lats, degrees=False)
 
         # scale by average radius of the Earth
         self.x *= _tools.EARTH_RADIUS
