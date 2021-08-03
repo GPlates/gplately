@@ -478,12 +478,12 @@ class Points(object):
         self.time = time
 
         # get Cartesian coordinates
-        self.x, self.y, self.z = _tools.lonlat2xyz(lons, lats)
+        self.x, self.y, self.z = _tools.lonlat2xyz(lons, lats, degrees=False)
 
         # scale by average radius of the Earth
-        self.x *= pygplates.Earth.mean_radius_in_kms
-        self.y *= pygplates.Earth.mean_radius_in_kms
-        self.z *= pygplates.Earth.mean_radius_in_kms
+        self.x *= _tools.EARTH_RADIUS
+        self.y *= _tools.EARTH_RADIUS
+        self.z *= _tools.EARTH_RADIUS
 
         # store concatenated arrays
         self.lonlat = np.c_[self.lons, self.lats]

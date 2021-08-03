@@ -3,7 +3,21 @@
 import numpy as np
 import pygplates
 
-def plate_temp(age, z, PLATE_THICKNESS) :
+EARTH_RADIUS = pygplates.Earth.mean_radius_in_kms
+
+_DEFAULT_PLATE_THICKNESS = 125.0e3
+_DEFAULT_T_MANTLE = 1350.0
+_DEFAULT_KAPPA = 8.04e-7
+_SEC_PER_MYR = 3.15576e13
+
+def plate_temp(
+    age,
+    z,
+    plate_thickness,
+    kappa=_DEFAULT_KAPPA,
+    t_mantle=_DEFAULT_T_MANTLE,
+    t_surface=0.0,
+):
     """Computes the temperature in a cooling plate for a given age and plate thickness at a depth = z. 
 
     Assumes a mantle temperature of 1380 degrees, and a 0 degree surface temperature. Kappa is 0.804e-6. 
@@ -25,18 +39,29 @@ def plate_temp(age, z, PLATE_THICKNESS) :
         A list enclosing ONE floating-point number equal to plate temperature (e.g. [1367.33962383]).
     """
 
-    KAPPA = 0.804e-6
-    T_MANTLE = 1350.0
-    T_SURFACE = 0.0
+    age = age * _SEC_PER_MYR
 
-    sine_arg = np.pi * z / PLATE_THICKNESS
-    exp_arg = -KAPPA * np.pi * np.pi * age / (PLATE_THICKNESS * PLATE_THICKNESS)
-    k = np.ones_like(age)*np.arange(1, 20).reshape(-1,1)
-    cumsum = ( np.sin(k * sine_arg) * np.exp(k*k*exp_arg)/k ).sum(axis=0)
+    sine_arg = np.pi * z / plate_thickness
+    exp_arg = -kappa * (np.pi ** 2) * age / (plate_thickness ** 2)
+    k = np.arange(1, 20).reshape(-1, 1)
+    cumsum = (np.sin(k * sine_arg) * np.exp((k ** 2) * exp_arg) / k).sum(axis=0)
 
-    return T_SURFACE + 2.0 * cumsum * (T_MANTLE - T_SURFACE)/np.pi + (T_MANTLE - T_SURFACE) * z/PLATE_THICKNESS
+    result = (
+        t_surface
+        + 2.0 * cumsum * (t_mantle - t_surface) / np.pi
+        + (t_mantle - t_surface) * z / plate_thickness
+    )
+    if result.size == 1:
+        return result[0]
+    return result
 
-def plate_isotherm_depth(age, temp=1350.0):
+def plate_isotherm_depth(
+    age,
+    temp=_DEFAULT_T_MANTLE,
+    plate_thickness=_DEFAULT_PLATE_THICKNESS,
+    n=20,
+    rtol=0.001,
+):
     """Computes the depth to the temp - isotherm in a cooling plate mode. Solution by iteration. 
 
     By default the plate thickness is 125 km as in Parsons/Sclater.
@@ -54,27 +79,36 @@ def plate_isotherm_depth(age, temp=1350.0):
     zi : ndarray
         An array of depths to the chosen temperature isotherm. Each entry corresponds to each unique ‘age’ given. 
     """
-    PLATE_THICKNESS = 125e3
-    
-    z = 0.0 # starting depth is 0
-    rtol = 0.001 # error tolerance
-    
-    z_too_small = np.atleast_1d(np.zeros_like(age, dtype=np.float))
-    z_too_big = np.atleast_1d(np.full_like(age, PLATE_THICKNESS, dtype=np.float))
-    
-    for i in range(20):
+    n = int(n)
+    if n <= 0:
+        raise ValueError("n must be greater than zero (n = {})".format(n))
+    age = np.atleast_1d(age)
+
+    zi = np.atleast_1d(np.zeros_like(age, dtype=float))  # starting depth is 0
+
+    z_too_small = np.atleast_1d(np.zeros_like(age, dtype=float))
+    z_too_big = np.atleast_1d(np.full_like(age, plate_thickness, dtype=float))
+
+    func = np.vectorize(plate_temp)
+    for _ in range(n):
         zi = 0.5 * (z_too_small + z_too_big)
-        ti = plate_temp (age, zi, PLATE_THICKNESS)
+        ti = func(age, zi, plate_thickness)
         t_diff = temp - ti
         z_too_big[t_diff < -rtol] = zi[t_diff < -rtol]
         z_too_small[t_diff > rtol] = zi[t_diff > rtol]
-        
+
         if (np.abs(t_diff) < rtol).all():
             break
-            
+
+    # convergence warning
+    if np.abs(t_diff) > rtol:
+        import warnings
+        warnings.warn("Iterations did not converge below rtol={}".format(rtol))
+
     # protect against negative ages
     zi[age <= 0] = 0
-    return np.squeeze(zi)
+    zi = np.squeeze(zi)
+    return zi
 
 def points_to_features(lons, lats, plate_ID=None):
     """Creates point features represented on a unit length sphere in 3D cartesian coordinates from a latitude and 
@@ -96,15 +130,38 @@ def points_to_features(lons, lats, plate_ID=None):
     point_features : list
         Topological point features resolved from the given lists of lat-lon point coordinates.
     """
+    try:
+        len(lons)
+    except TypeError:
+        lons = [lons]
+    try:
+        len(lats)
+    except TypeError:
+        lats = [lats]
+    if len(lons) != len(lats):
+        raise ValueError(
+            "'lons' and 'lats' must be of equal length"
+            + " ({} != {})".format(len(lons), len(lats))
+        )
+    if len(lons) == 0:
+        raise ValueError("'lons' and 'lats' must be provided")
+
+    try:
+        len(plate_ID)
+    except TypeError:
+        plate_ID = [plate_ID] * len(lons)
+
     # create point features
     point_features = []
-    for lon, lat in zip(lons, lats):
+    for lon, lat, id in zip(lons, lats, plate_ID):
         point_feature = pygplates.Feature()
         point_feature.set_geometry(pygplates.PointOnSphere(lat, lon))
-        if plate_ID:
-            point_feature.set_reconstruction_plate_id(plate_ID)
+        if id is not None:
+            point_feature.set_reconstruction_plate_id(id)
         point_features.append(point_feature)
 
+    if len(point_features) == 1:
+        return point_features[0]
     return point_features
 
 def extract_feature_lonlat(features):
@@ -131,7 +188,7 @@ def extract_feature_lonlat(features):
     return rlon, rlat
 
 
-def lonlat2xyz(lon, lat):
+def lonlat2xyz(lon, lat, degrees=True):
     """Convert lon / lat (radians) for spherical triangulation into Cartesian (x,y,z) coordinates on the unit sphere.
 
     Parameters
@@ -144,13 +201,16 @@ def lonlat2xyz(lon, lat):
     xs, ys, zs : lists
         Cartesian coordinates of each feature point in all 3 dimensions.
     """
+    if degrees:
+        lon = np.deg2rad(lon)
+        lat = np.deg2rad(lat)
     cosphi = np.cos(lat)
-    xs = cosphi*np.cos(lon)
-    ys = cosphi*np.sin(lon)
+    xs = cosphi * np.cos(lon)
+    ys = cosphi * np.sin(lon)
     zs = np.sin(lat)
     return xs, ys, zs
 
-def xyz2lonlat(x,y,z):
+def xyz2lonlat(x, y, z, validate=False, degrees=True):
     """Converts Cartesian (x,y,z) representation of points (on the unit sphere) for spherical triangulation into 
     lon / lat (radians).
 
@@ -165,13 +225,32 @@ def xyz2lonlat(x,y,z):
     -------
     lon, lat : lists
         Longitudes and latitudes of feature points in radians.
+
+    Notes
+    -----
+    No check is made here that (x,y,z) are unit vectors, unless validate=True is specified
     """
-    lons = np.arctan2(ys, xs)
-    lats = np.arcsin(zs)
+    x = np.atleast_1d(x)
+    y = np.atleast_1d(y)
+    z = np.atleast_1d(z)
+    if validate:
+        mags = np.sqrt(x ** 2 + y ** 2 + z ** 2)
+        ones = np.full_like(mags, 1)
+        if not np.all(np.equal(mags, ones)):
+            raise ValueError("All (x, y, z) must be unit vectors")
+    lons = np.arctan2(y, x)
+    lats = np.arcsin(z)
+    if degrees:
+        lons = np.rad2deg(lons)
+        lats = np.rad2deg(lats)
+    if lons.size == 1:
+        lons = np.atleast_1d(np.squeeze(lons))[0]
+    if lats.size == 1:
+        lats = np.atleast_1d(np.squeeze(lats))[0]
     return lons, lats
 
 
-def haversine_distance(lon1, lon2, lat1, lat2):
+def haversine_distance(lon1, lon2, lat1, lat2, degrees=True):
     """Computes the Haversine distance (the shortest distance on the surface of an ideal spherical Earth) between two 
     points given their latitudes and longitudes.
 
@@ -192,11 +271,23 @@ def haversine_distance(lon1, lon2, lat1, lat2):
     -------
     d : float
         The Haversine distance in metres.
+
+    Notes
+    -----
+    Default behaviour assumes values in degrees; for radians specify degrees=False
     """
-    R = 6378.137 # radius of earth in km
-    dLat = lat2*np.pi/180 - lat1*np.pi/180
-    dLon = lon2*np.pi/180 - lon1*np.pi/180
-    a = np.sin(dLat/2)**2 + np.cos(lat1*np.pi/180)*np.cos(lat2*np.pi/180) * np.sin(dLon/2)**2
-    c = 2.0*np.arctan2(np.sqrt(a), np.sqrt(1.0 - a))
-    d = R*c
-    return d*1000
+    if degrees:
+        dLat = np.deg2rad(lat2) - np.deg2rad(lat1)
+        dLon = np.deg2rad(lon2) - np.deg2rad(lon1)
+    else:
+        dLat = lat2 - lat1
+        dLon = lon2 - lon1
+    a = (
+        np.sin(dLat / 2) ** 2
+        + np.cos(lat1 * np.pi / 180)
+        * np.cos(lat2 * np.pi / 180)
+        * np.sin(dLon / 2) ** 2
+    )
+    c = 2.0 * np.arctan2(np.sqrt(a), np.sqrt(1.0 - a))
+    d = EARTH_RADIUS * c
+    return d * 1000
