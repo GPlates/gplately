@@ -155,7 +155,7 @@ def points_to_features(lons, lats, plate_ID=None):
     point_features = []
     for lon, lat, id in zip(lons, lats, plate_ID):
         point_feature = pygplates.Feature()
-        point_feature.set_geometry(pygplates.PointOnSphere(lat, lon))
+        point_feature.set_geometry(pygplates.PointOnSphere(float(lat), float(lon)))
         if id is not None:
             point_feature.set_reconstruction_plate_id(id)
         point_features.append(point_feature)
