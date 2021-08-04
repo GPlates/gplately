@@ -1,6 +1,6 @@
 # To install locally: python setup.py build && python setup.py install
 # (If there are problems with installation of the documentation, the
-#  egg file may be out of sync and will need to be manually deleted 
+#  egg file may be out of sync and will need to be manually deleted
 #  - see error message for details of the corrupted zip file. )
 #
 # To push a version through to pip.
@@ -17,7 +17,7 @@
 
 from setuptools import dist, setup, find_packages
 
-# try: 
+# try:
 #     from distutils.command import bdist_conda
 # except ImportError:
 #     pass
@@ -26,20 +26,20 @@ from os import path
 import io
 import os
 import subprocess
-import platform 
+import platform
 
 link_args = []
- 
+
 if "Windows" in platform.system():
     link_args = ["-static"]
 
 # in development set version to none and ...
-PYPI_VERSION = "0.1"  # Note: don't add any dashes if you want to use conda, use b1 not .b1 
+PYPI_VERSION = "0.1"  # Note: don't add any dashes if you want to use conda, use b1 not .b1
 
 # Return the git revision as a string (from numpy)
 
 def git_version():
-    
+
     def _minimal_ext_cmd(cmd):
         # construct minimal environment
         env = {}
@@ -81,7 +81,14 @@ if __name__ == "__main__":
           description       = "Object-orientated Python interface to pyGPlates for plate tectonic reconstructions",
           long_description  = long_description,
           long_description_content_type='text/markdown',
-          install_requires  = ['numpy>=1.16.0', 'scipy>=1.0.0', 'shapely'],
+          install_requires  = ['numpy>=1.16.0',
+                               'scipy>=1.0.0',
+                               'shapely',
+                               'pooch<=0.6.0;python_version<="2.7"',
+                               'pooch<=1.2.0;python_version<="3.5"',
+                               'pooch>=1.2.0;python_version>"3.5"',
+                               'tqdm'
+                               ],
           packages          = ['gplately'],
           package_data      = {'gplately': ['Notebooks/*ipynb', # Worked Examples is not currently used
                                             'Notebooks/Data/*'] },
