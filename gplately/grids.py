@@ -97,10 +97,11 @@ def read_netcdf_grid(filename, return_grids=False, resample=None):
             cdf_lat = cdf['y'][:]
             
         cdf_lon_mask = cdf_lon[:] > 180
+        dlon = np.diff(cdf_lon[:]).mean()
         
         if cdf_lon_mask.any():
             cdf_grid_z = np.hstack([cdf_grid[:,cdf_lon_mask], cdf_grid[:,~cdf_lon_mask]])
-            cdf_lon = np.hstack([cdf_lon[cdf_lon_mask], cdf_lon[~cdf_lon_mask]])
+            cdf_lon = np.hstack([cdf_lon[cdf_lon_mask]-360-dlon, cdf_lon[~cdf_lon_mask]])
         else:
             cdf_grid_z = cdf_grid[:]
 
