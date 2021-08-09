@@ -557,6 +557,32 @@ class Points(object):
         rlons, rlats = _tools.extract_feature_lonlat(reconstructed_features)
         return rlons, rlats
 
+
+    def reconstruct_to_birth_age(self, ages, anchor_plate_id=0, **kwargs):
+        from_time = self.time
+        ages = np.array(ages)
+
+        if len(ages) != len(self.features):
+            raise ValueError("Number of points and ages must be identical")
+
+        unique_ages = np.unique(ages)
+        rlons = np.zeros(ages.shape)
+        rlats = np.zeros(ages.shape)
+
+        for age in unique_ages:
+            mask_age = ages == age
+
+            reconstructed_features = self.PlateReconstruction_object.reconstruct(
+                self.features, age, from_time, anchor_plate_id=anchor_plate_id, **kwargs)
+
+            lons, lats = _tools.extract_feature_lonlat(reconstructed_features)
+
+            rlons[mask_age] = lons[mask_age]
+            rlats[mask_age] = lats[mask_age]
+
+
+        return rlons, rlats
+
     def plate_velocity(self, time, delta_time=1):
         """Calculates the x and y components of tectonic plate velocities at a particular geological time.
 
