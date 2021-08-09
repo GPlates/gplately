@@ -101,7 +101,7 @@ def plate_isotherm_depth(
             break
 
     # convergence warning
-    if np.abs(t_diff) > rtol:
+    if np.abs(t_diff).any() > rtol:
         import warnings
         warnings.warn("Iterations did not converge below rtol={}".format(rtol))
 
