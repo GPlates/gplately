@@ -1,0 +1,48 @@
+﻿Deposit,Scale,Country,Longitude,Latitude,Tectonic_Province,Deposit_Type,Resource,Total_Tonnage_Mt,Au_Grade_g_t,Au_Tonnage_Moz,Cu_Grade_percent,Cu_Tonnage_Mt,Age,FROMAGE,TOAGE,Dating_Method,Age_for_plot_Ma,Age_group,Age_Reference
+Gold Ridge,Mine,Solomon Islands,160.14,-9.58,Island Arcs,Epithermal,Au-Ag,64.2,1.5,3.4,NaN,NaN,1.6-1.5 Ma,1.6,1.5,Ar-Ar (Adl),0-3,1,This study
+Hidden Valley (PNG),Mine,PNG,146.67,-7.46,NGO,Epithermal-porphyry,Au-Ag,42,1.6,2.4,NaN,NaN,4.2 Ma,4.2,4.2,K-Ar (Adl),3-6,2,"Nelson et al., 1990"
+Kainantu,Mine,PNG,145.86,-6.2,NGO,Porphyry,Cu-Au,5.5,7.2,1.4,1.8,0.1,9.4-6.2 Ma,9.4,6.2,U-Pb (zircon),6-9,3,"Holm et al., 2015"
+Ladolam (Lihir),Mine,PNG,152.63,-3.13,Island Arcs,Epithermal-porphyry,Au,820,2.2,63.6,NaN,NaN,0.7-0.15 Ma,0.7,0.15,K-Ar (WR Bt Ilt Kfs),0-3,1,"Moyle et al., 1990"
+Ok Tedi,Mine,PNG,141.14,-5.21,NGO,Porphyry-skarn,Cu-Au,911,0.52,16.7,0.43,3.9,1.4-1.1 Ma,1.4,1.1,U-Pb (zircon),0-3,1,"van Dongen et al., 2010b"
+Panguna,Mine,PNG,155.5,-6.33,Island Arcs,Porphyry,Cu-Au,1838,0.34,22,0.3,5.5,3.4 Ma,3.4,3.4,K-Ar (WR Bt Kfs Pl),3-6,2,"Page and McDougall, 1972a"
+Porgera,Mine,PNG,143.08,-5.46,NGO,Porphyry,Au,68.2,4.4,10.6,NaN,NaN,6.1-5.1 Ma,6.1,5.1,Ar-Ar (Bt Hbl),3-6,2,"Richards and McDougall, 1990"
+Simberi,Mine,PNG,151.97,-2.75,Island Arcs,Epithermal,Au,120.9,1.3,5.5,NaN,NaN,3.6-1.9 Ma,3.6,1.9,H-Ar (WR Alu Pl) Ar-Ar (Amp Cpx),0-3,1,"McInnes, 1992; Rytube et al., 1993"
+Sinivit (Wild Dog),Mine,PNG,152.05,-4.61,Island Arcs,Epithermal,Au,0.96,5.83,0.2,NaN,NaN,> Middle Miocene,24,21,Stratigraphic,21-24,6,"Lindley, 1990"
+Tolukuma,Mine,PNG,147.13,-8.56,NGO,Epithermal,Au,0.3,29.9,0.3,NaN,NaN,Pliocene,5.3,2.6,K-Ar (WR?),3-6,2,"Langmead and McLeod, 1990"
+Umuna (Misima),Mine,PNG,152.81,-10.66,NGO,Epithermal,Au,43,1.1,1.7,NaN,NaN,4.0-3.2 Ma,4,3.2,K-Ar (Ser) Ar-Ar (Ser),3-6,2,"Adshead, 1997"
+Woodlark,Mine,PNG,152.72,-9.19,NGO,Epithermal,Au,45.1,1.5,2.4,NaN,NaN,11.5-10.5 Ma,11.5,10.5,NaN,9-12,4,"Burkett et al., 2015"
+Arie,Deposit,PNG,146.88,-2.02,Island Arcs,Porphyry,Cu-Au,165,NaN,NaN,0.32,0.5,15 Ma,15,15,K-Ar,12-15,5,"Singer et al., 2008"
+Crater Mountain,Deposit,PNG,145.17,-6.49,NGO,Epithermal-porphyry,Au,24,1,0.8,NaN,NaN,NaN,0,0,NaN,0-3,1,NaN
+Frieda River,Deposit (Feasibility),PNG,141.73,-4.66,NGO,Porphyry,Cu-Au,2777,0.23,22.5,0.47,13.1,13.6-11.5 Ma,13.6,11.5,K-Ar (Bt Hbl Pl Ser),9-12,4,"Whalen et al., 1982"
+Gameta,Deposit,PNG,150.79,-9.42,NGO,Epithermal,Au,5.1,1.8,0.3,NaN,NaN,Pleistocene,2.6,0.01,NaN,0-3,1,"Chapple and Ibil, 1998; Garwin et al., 2005"
+Kabang (Feni Island),Deposit,PNG,153.61,-4.09,Island Arcs,Epithermal-porphyry,Au-Cu,19.9,1.01,0.7,NaN,NaN,< 0.5 Ma,0.5,0,K-Ar,0-3,1,"Sillitoe, 1989; Garwin et al., 2005"
+Kerimenge,Deposit,PNG,146.72,-7.42,NGO,Epithermal,Au,55,1,1.9,NaN,NaN,3.8-2.4 Ma,3.8,2.4,K-Ar (Bt Pl),3-6,2,"Hutton et al., 1990; Page and McDougall, 1972b"
+Kodu (Mount Bini),Deposit,PNG,147.58,-9.3,NGO,Porphyry-epithermal,Cu-Au-Mo,276,0.3,2.9,0.27,0.7,4.4 Ma,4.4,4.4,NaN,3-6,2,"Dugmore and Leaman, 1998; garwin et al., 2005"
+Koloula,Deposit,Solomon Islands,160.03,-9.78,Island Arcs,Porphyry,Cu-Au,50,NaN,NaN,0.17,0.1,1.6-1.4 Ma,1.6,1.4,U-Pb (zircon),0-3,1,"Tapster et al., 2016"
+Legusulum,Deposit,PNG,151.65,-3.18,Island Arcs,Porphyry,Cu,NaN,NaN,NaN,NaN,NaN,Oligocene-Miocene,33.9,5.3,NaN,21-24,6,"Singer et al., 2008"
+Mbetilonga,Deposit,Solomon Islands,160.16,-9.61,Island Arcs,Porphyry,Cu,NaN,NaN,NaN,NaN,NaN,23-20 Ma,23,20,NaN,21-24,6,"Hackman, 1980"
+Mount Kare,Deposit,PNG,142.97,-5.54,NGO,Epithermal,Au,42.5,1.54,2.3,NaN,NaN,NaN,0,0,NaN,3-6,2,Inferred from Porgera
+Mount Kren,Deposit,PNG,146.94,-2.16,Island Arcs,Porphyry,Cu-Au,NaN,NaN,NaN,NaN,NaN,13.5 Ma,13.5,13.5,K-Ar,12-15,5,"Singer et al., 2008"
+Mount Nakru,Deposit,PNG,150.47,-5.97,Island Arcs,VHMS,Cu-Au-Mo,38.4,0.28,0.4,0.61,0.2,24 Ma,24,24,K-Ar,21-24,6,"Singer et al., 2008"
+Nena,Deposit,PNG,141.73,-4.65,NGO,Epithermal,Cu-Au,45,0.6,1,2.55,1.1,13.6-11.5 Ma,13.6,11.5,K-Ar (Bt Hbl Pl Ser),9-12,4,"Hall et al., 1990; Whalen et al., 1982"
+Plesyumi,Deposit,PNG,150.38,-5.97,Island Arcs,Epithermal-porphyry,Cu-Au,NaN,NaN,NaN,NaN,NaN,25-24 Ma,25,24,K-Ar,24-27,7,"Titley 1978; Garwin et al., 2005"
+Sehuela-Sinada,Deposit,PNG,151.16,-9.99,NGO,NaN,Au,10,0.5,0.2,NaN,NaN,NaN,0,0,NaN,NaN,NaN,NaN
+Simuku,Deposit,PNG,150.02,-5.72,Island Arcs,Porphry,Cu-Mo,200,0.06,0.4,0.36,0.7,24.1-20.2 Ma,24.1,20.2,U-Pb (zircon),21-24,6,"Holm et al., 2013"
+Solwara 1,Deposit,PNG,152.1,-3.79,Island Arcs,SMS,Cu-Au-Ag-Zn,2.6,5.9,0.5,7.7,0.2,NaN,0,0,NaN,0-3,1,NaN
+Solwara 12,Deposit,PNG,151.88,-3.71,Island Arcs,SMS,Cu-Au-Ag-Zn,0.23,3.6,0.03,7.3,0.02,NaN,0,0,NaN,0-3,1,NaN
+Star Mountains (Futik),Deposit,PNG,141.33,-5.07,NGO,Porphyry-skarn,Cu-Au,65,0.1,0.2,0.54,0.4,1.6 Ma,1.6,1.6,K-Ar,0-3,1,"Arnold and Griffin, 1978; Garwin et al., 2005"
+Wafi-Golpu,Deposit (Feasibility),PNG,146.45,-6.88,NGO,Porphyry-epithermal,Cu-Au,996,0.83,29.2,0.83,8.3,8.6-6.8 Ma,8.6,6.8,Ar-Ar (Bt),6-9,3,Lunge Bawasu 2013
+Wapolu,Deposit,PNG,150.5,-9.36,NGO,Epithermal,Au,2,2.4,0.2,NaN,NaN,Pliocene,5.3,2.6,NaN,3-6,2,"McNell, 1990"
+Wau (Edie Creek),Deposit,PNG,146.66,-7.36,NGO,Epithermal,Au-Cu,7.5,3.7,1,NaN,NaN,3.8-2.4 Ma,3.8,2.4,K-Ar (Bt Pl),3-6,2,"Carswell, 1990; Page and McDougall, 1972b"
+Yandera,Deposit,PNG,145.13,-5.74,NGO,Porphyry,Cu-Au,747,0.061,1.6,0.33,2.5,7 Ma,7,7,K-Ar,6-9,3,"Singer et al., 2008"
+Baia,Prospect,PNG,142.53,-5.95,NGO,Porphyry,Cu-Au,NaN,NaN,NaN,NaN,NaN,1.7 Ma,1.7,1.7,U-Pb (zircon),0-3,1,This study
+Esis,Prospect,PNG,151.74,-5.04,Island Arcs,Porphyry,Cu-Au,NaN,NaN,NaN,NaN,NaN,25 Ma,25,25,K-Ar,24-27,7,"Hine et al., 1978; Garwin et al., 2005"
+Fauro Island,Prospect,Solomon Islands,156.04,-6.84,Island Arcs,Epithermal-porphyry,Au,NaN,NaN,NaN,NaN,NaN,3.5 Ma,3.5,3.5,U-Pb (zircon),3-6,2,This study
+Hidden Valley (Solomon),Prospect,Solomon Islands,159.73,-9.37,Island Arcs,Porphyry,Cu-Au,NaN,NaN,NaN,NaN,NaN,24-21 Ma,24,21,K-Ar U-Pb (zircon),21-24,6,"Hackman, 1980; Tapster et al., 2014"
+Ipi River,Prospect,PNG,146.71,-8.25,NGO,Porphyry,Au-Cu-Mo,NaN,NaN,NaN,NaN,NaN,4.9 Ma,4.9,4.9,U-Pb (zircon),3-6,2,This study
+Kele River,Prospect,Solomon Islands,158.07,-8.75,Island Arcs,Porphyry,Cu-Au,1.5,1.8,0.1,NaN,NaN,< 2.5 Ma,2.5,0,NaN,0-3,1,"Dunkley, 1986"
+Mase,Prospect,Solomon Islands,157.52,-8.08,Island Arcs,Porphyry,Cu-Au,NaN,NaN,NaN,NaN,NaN,3.5 Ma,3.5,3.5,NaN,3-6,2,"Singer et al., 2008"
+Poha,Prospect,Solomon Islands,159.83,-9.43,Island Arcs,Porphyry,Cu,NaN,NaN,NaN,NaN,NaN,24.4-21 Ma,24.4,21,K-Ar (Hbl),21-24,6,"Chivas and McDougall, 1978"
+Sutakiki,Prospect,Solomon Islands,160.08,-9.69,Island Arcs,Porphyry-epithermal-skarn,Au-Cu,NaN,NaN,NaN,NaN,NaN,< 1.5 Ma,1.5,0,U-Pb (zircon),0-3,1,This study
+Tirua,Prospect,Solomon Islands,157.79,-8.47,Island Arcs,Epithermal,Au,NaN,NaN,NaN,NaN,NaN,< 2.5 Ma,2.5,0,U-Pb (zircon),0-3,1,This study
+Wamum,Prospect,PNG,146.28,-6.75,NGO,Porphyry,Cu-Au,45,0.12,0.2,0.3,0.1,12.1-11.9 Ma,12.1,11.9,U-Pb (zircon),9-12,4,"Holm et al., 2015"
