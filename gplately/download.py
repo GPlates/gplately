@@ -31,6 +31,8 @@ fetch_from_zip(zip_url, file_ext=None, substring=None)
     Identifies and downloads a specific file from a zip file download URL using a file extension and a filename substring.
 fetch_from_single_file(file_url, file_ext=None, substring=None)
     Identifies and downloads a specific file from a single file download URL using a file extension and a filename substring.
+ignore_macOSX(filenames)
+    Omits any files extracted from a MacOSX folder (for Mac users only).
  
 Sources
 -------
@@ -46,6 +48,27 @@ from pooch import HTTPDownloader as _HTTPDownloader
 from pooch import Unzip as _Unzip
 import glob, os
 import pygplates
+
+def ignore_macOSX(filenames):
+    """For Mac users: filters out duplicate filenames extracted from the __MACOSX folder.
+
+    Parameters
+    ----------
+    filenames : list
+        A list of full file paths that may include filenames in the __MACOSX directory.
+
+    Returns
+    -------
+    filenames : list
+        A list of full file paths ignoring filenames from the __MAC0SX directory.
+    """
+    fnames = filenames
+    for fname in fnames:
+        if fname.find("__MACOSX") != -1:
+            fnames.remove(fname)
+    if len(fnames) < len(filenames):
+        print("There are no __MaCOSX files in this list.")
+    return fnames
 
 def fetch_from_zip(zip_url, file_ext=None, substring=None):
     """Uses Pooch to download a file from a zip folder. Its filename must contain a specific substring and end
@@ -98,24 +121,32 @@ def fetch_from_zip(zip_url, file_ext=None, substring=None):
                 else:
                     raise ValueError("Please supply a file extension and/or substring to extract.")
                             
-        # If the user wants to extract .gpml file(s) from this zip file and none were found, try to look for a .shp
-        # equivalent instead. 
-        if file_ext == ".gpml" and len(feature_filenames) == 0: 
-            if substring is not None:
-                print(".gpml %s files were not found. Attempting to find .shp versions instead..." % (substring))
-            else:
-                print(".gpml files not found. Attempting to find .shp instead...")
-            for subdir, dirs, files in os.walk(dirname):
-                for file in files:
-                    if file.endswith(".shp"):
-                        if substring is not None:
-                            if file.lower().find(substring) != -1:
-                                feature_filenames.append(subdir+"/"+file) 
-                        else:
-                            feature_filenames.append(subdir+"/"+file)   
+    # If the user wants to extract .gpml file(s) from this zip file and none were found, try to look for a .shp
+    # equivalent instead. 
+    if file_ext == ".gpml" and len(feature_filenames) == 0: 
+        if substring is not None:
+            print(".gpml %s files were not found. Attempting to find .shp versions instead..." % (substring))
+        else:
+            print(".gpml files not found. Attempting to find .shp instead...")
+        for subdir, dirs, files in os.walk(dirname):
+            for file in files:
+                if file.endswith(".shp"):
+                    if substring is not None:
+                        if file.lower().find(substring) != -1:
+                            feature_filenames.append(subdir+"/"+file) 
+                            print("Found a %s file with a .shp extension." %(substring))
+                    else:
+                        feature_filenames.append(subdir+"/"+file)
+                        print("Found a file with a .shp extension." %(substring))   
 
-            if len(feature_filenames) != 0:
-                print("Found %i .shp version(s) of %s files." % (len(feature_filenames), substring))                          
+    if len(feature_filenames) == 0:
+        if substring is not None:
+            print("Could not find %s files in this file collection." %(substring)) 
+        else:
+            print("Could not find files in this file collection.")
+
+    feature_filenames = ignore_macOSX(feature_filenames)
+
     return feature_filenames
         
 
@@ -159,6 +190,8 @@ def fetch_from_single_link(file_url, file_ext=None, substring=None):
                 feature_filenames.append(fname)
         else:
             feature_filenames.append(fname)
+
+    feature_filenames = ignore_macOSX(feature_filenames)
     return feature_filenames
 
 
@@ -224,6 +257,7 @@ def _extract_geom(file_collection, database_link, feature_type):
                     os.rename(fname, new_path)
                     if fname.endswith(".shp"):
                         geometries.append(new_path)
+                        print("Found a %s file with a .shp extension." %(feature_type))
             else:
                 for fname in filenames:
                     if fname.endswith(".gpml"):
@@ -231,29 +265,9 @@ def _extract_geom(file_collection, database_link, feature_type):
                         
     else:
         print("The %s collection has no %s files." % (file_collection, feature_type))
+
+    geometries = ignore_macOSX(geometries)
     return geometries
-
-
-def ignore_macOSX(filenames):
-    """For Mac users: filters out duplicate filenames extracted from the __MACOSX folder.
-
-    Parameters
-    ----------
-    filenames : list
-        A list of full file paths that may include filenames in the __MACOSX directory.
-
-    Returns
-    -------
-    filenames : list
-        A list of full file paths ignoring filenames from the __MAC0SX directory.
-    """
-    fnames = filenames
-    for fname in fnames:
-        if fname.find("__MACOSX") != -1:
-            fnames.remove(fname)
-    if len(fnames) < len(filenames):
-        print("There are no __MaCOSX files in this list.")
-    return fnames
 
 
 class DataServer(object):
