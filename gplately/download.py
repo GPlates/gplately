@@ -208,31 +208,29 @@ def _extract_geom(file_collection, database_link, feature_type):
             filenames = []
             for url in database_link:
                 filename = fetch_from_single_link(url)
-                filenames.append(filename)
+                filenames.append(filename[0])
                 # Filepaths will each have an embedded hash; removes them to ensure consistency in filenames
                 # Get the path to the cache
-                cache_path = os.path.split(filenames[0])[0] + '/'
-                # Use to rename extracted files (Namely remove 32-character hash and additional dash from filenames)
-                slicer = len(cache_path)+33
-                
+                #print(filenames[0][0])
+                    
+        
             is_gpml = any(".gpml" in fname for fname in filenames)
             if not is_gpml:
                 print("No .gpml %s features found in %s. Attempting to find .shp instead" % (feature_type, file_collection))
-                
-            for fname in filenames:
-                newname = cache_path+fname[slicer:]
-                os.rename(fname, newname)
-                if is_gpml:
+                for index, fname in enumerate(filenames):
+                    split_paths = fname.split("-")
+                    cache_path = split_paths[0][:-32]
+                    new_path = cache_path + split_paths[1]
+                    os.rename(fname, new_path)
+                    if fname.endswith(".shp"):
+                        geometries.append(new_path)
+            else:
+                for fname in filenames:
                     if fname.endswith(".gpml"):
-                        geometries.append(newname)
-                else:
-                    # Assume that the database has all the necessary extensions (shp,dbf,xml,prj,shx). Download all
-                    # into cache but only return the .shp file to the user; that is all pygplates needs for reading.
-                    if newname.endswith(".shp"):
-                        geometries.append(newname) 
+                        geometries.append(fname)
                         
     else:
-        print("The %s collection has no continent files." % (file_collection))
+        print("The %s collection has no %s files." % (file_collection, feature_type))
     return geometries
 
 
@@ -247,18 +245,14 @@ def ignore_macOSX(filenames):
     Returns
     -------
     filenames : list
-        A list of full file paths ignoring filenames from the __MACOSX directory.
-        
-    Raises
-    ------
-    A general notice if no __MACOSX files were found in the filename list.
+        A list of full file paths ignoring filenames from the __MAC0SX directory.
     """
     fnames = filenames
     for fname in fnames:
         if fname.find("__MACOSX") != -1:
             fnames.remove(fname)
     if len(fnames) < len(filenames):
-        print("There are no __MACOSX files in this list.")
+        print("There are no __MaCOSX files in this list.")
     return fnames
 
 
@@ -339,6 +333,9 @@ class DataServer(object):
                     "Seton2012" : ["https://www.earthbyte.org/webdav/ftp/Data_Collections/Seton_etal_2012_ESR/Rotations/Seton_etal_ESR2012_2012.1.rot",
                                    "https://www.earthbyte.org/webdav/ftp/Data_Collections/Seton_etal_2012_ESR/Plate_polygons/Seton_etal_ESR2012_PP_2012.1.gpml",
                                   None], 
+                    "Merdith2021" : ["https://zenodo.org/record/4320873/files/SM2-Merdith_et_al_1_Ga_reconstruction.zip?download=1"],
+                    "Matthews2016" : ["https://www.earthbyte.org/webdav/ftp/Data_Collections/Matthews_etal_2016_Global_Plate_Model_GPC.zip"], 
+                    "Merdith2017" : ["https://www.earthbyte.org/webdav/ftp/Data_Collections/Merdith_etal_2017_GR.zip"], 
                    }
 
         # Set to true if we find the given collection in our database
@@ -468,6 +465,9 @@ class DataServer(object):
                                    "https://www.earthbyte.org/webdav/ftp/Data_Collections/Seton_etal_2012_ESR/Continent-ocean_boundaries/Seton_etal_ESR2012_ContinentOceanBoundaries_2012.1.prj",
                                    "https://www.earthbyte.org/webdav/ftp/Data_Collections/Seton_etal_2012_ESR/Continent-ocean_boundaries/Seton_etal_ESR2012_ContinentOceanBoundaries_2012.1.shp",
                                    "https://www.earthbyte.org/webdav/ftp/Data_Collections/Seton_etal_2012_ESR/Continent-ocean_boundaries/Seton_etal_ESR2012_ContinentOceanBoundaries_2012.1.shx"]], 
+                    "Merdith2021" : ["https://zenodo.org/record/4320873/files/SM2-Merdith_et_al_1_Ga_reconstruction.zip?download=1"],
+                    "Matthews2016" : ["https://www.earthbyte.org/webdav/ftp/Data_Collections/Matthews_etal_2016_Global_Plate_Model_GPC.zip"], 
+                    "Merdith2017" : ["https://www.earthbyte.org/webdav/ftp/Data_Collections/Merdith_etal_2017_GR.zip"],              
                    }
 
         # Set to true if we find the given collection in our database
@@ -490,9 +490,9 @@ class DataServer(object):
                 # If the collection is not contained in a single zip folder, download data from all unique zip 
                 # folders/files (i.e. as is for Seton2012)
                 else:                
-                    coastlines = extract_geom(file_collection, zip_url[0], "coastline")               
-                    continents = extract_geom(file_collection, zip_url[1], "continent")
-                    COBs = extract_geom(file_collection, zip_url[2], "cob")                               
+                    coastlines = _extract_geom(self.file_collection, zip_url[0], "coastline")               
+                    continents = _extract_geom(self.file_collection, zip_url[1], "continent")
+                    COBs = _extract_geom(self.file_collection, zip_url[2], "cob")                               
                     files = coastlines, continents, COBs
                                     
                 # Break the loop once all plate model data have been extracted
@@ -503,3 +503,5 @@ class DataServer(object):
             raise ValueError("%s not in collection database." % (self.file_collection))
 
         return files
+
+
