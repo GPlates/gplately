@@ -13,6 +13,8 @@ TimeRaster
 import numpy as np
 from scipy.interpolate import RegularGridInterpolator as _RGI
 from scipy.ndimage import distance_transform_edt
+from .reconstruction import Points as _Points
+from .tools import EARTH_RADIUS as _EARTH_RADIUS
 
 def fill_raster(data,invalid=None):
     """Searches grid for invalid ‘data’ cells containing NaN-type entries (as indicated by ‘invalid’), locates the index 
@@ -366,7 +368,7 @@ class Raster(object):
 
     Attributes
     ----------
-    self
+    PlateReconstruction_object : object pointer
     filename
     array
     extent
@@ -398,13 +400,18 @@ class Raster(object):
         Searches for invalid ‘data’ cells containing NaN-type entries and replaces NaNs with the value of the nearest
         valid data cell.
     """
-    def __init__(self, filename=None, array=None, extent=None, resample=None):
+    def __init__(self, PlateReconstruction_object=None, filename=None, array=None, extent=None, resample=None):
         """Constructs all necessary attributes for the raster object.
 
         Note: either a str path to a netCDF file OR an ndarray representing a grid must be specified. 
 
         Parameters
         ----------
+        PlateReconstruction_object : object pointer
+            Allows for the accessibility of PlateReconstruction object attributes. Namely, PlateReconstruction object 
+            attributes rotation_model, topology_featues and static_polygons can be used in the points object if called using
+            “self.PlateReconstruction_object.X”, where X is the attribute.
+
         filename : str, default=None
             Path to netCDF file
         OR
@@ -440,6 +447,12 @@ class Raster(object):
             Stored as _interpolator, this samples the “data” attribute at a set of point coordinates (generated from the 
             attributes “lats” & “lons”). Uses linear interpolation.
         """
+
+        self.PlateReconstruction_object = PlateReconstruction_object
+
+        # we initialise an empty points object as we do not want to build this before any resampling takes place.
+        self.points = None
+
         if filename is None and array is None:
             raise ValueError("Supply either a filename or numpy array")
 
@@ -461,6 +474,9 @@ class Raster(object):
             self.lats = np.linspace(extent[2], extent[3], self.data.shape[0])
 
         self._update()
+
+        if array is not None and resample is not None:
+            self.resample(*resample, override=True)
 
 
     def _update(self):
@@ -629,9 +645,58 @@ class Raster(object):
         return data
 
 
-    def save_to_NetCDF4(filename):
+    def save_to_NetCDF4(self, filename):
         """ Saves file to netCDF4 format"""
-        pass
+        write_netcdf_grid(str(filename), self.data, self.extent)
+
+
+    def reconstruct(self, to_time, from_time=0, anchor_plate_id=0, **kwargs):
+
+        import stripy
+
+        lonq, latq = np.meshgrid(self.lons, self.lats)
+        lonq_ = lonq.ravel()
+        latq_ = latq.ravel()
+
+        if self.points is None:
+            self.points = _Points(self.PlateReconstruction_object, lonq_, latq_, from_time, anchor_plate_id)
+
+        lons, lats = self.points.reconstruct(to_time, anchor_plate_id=anchor_plate_id, **kwargs)
+
+        # also remove duplicate entries - # BUT this sorts the indices!!
+        _, uindex = np.unique(np.c_[lons,lats], return_index=True, axis=0)
+        uindex_sorted = sorted(uindex)
+        ilons = lons[uindex_sorted]
+        ilats = lats[uindex_sorted]
+        idata = self.data.flat[uindex_sorted]
+
+
+        # interpolate onto sphere
+        # this is not very elegant - need to work out why stripy is struggling here.
+        for i in range(10):
+            try:
+                mesh = stripy.sTriangulation(np.radians(ilons), np.radians(ilats), tree=True, permute=True)
+            except ValueError:
+                pass
+            else:
+                break
+        zi, ierr = mesh.interpolate(np.radians(lonq_), np.radians(latq_), idata, order=1)
+
+        # get cell spacing
+        dx = np.diff(self.lons).mean()
+        dy = np.diff(self.lats).mean()
+        dxy = np.hypot(dx,dy)
+        rxy = np.radians(dxy)
+
+        # find angular separation / great circle distance between mesh and reconstructed points
+        angles, idx = mesh.nearest_vertices(np.radians(lonq_), np.radians(latq_))
+
+        zi[angles.ravel() > rxy] = np.nan
+        zi = zi.reshape(lonq.shape)
+        return zi
+
+
+
 
 
 class TimeRaster(Raster):
