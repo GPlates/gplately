@@ -530,6 +530,7 @@ class Raster(object):
             Alerts user which dimension (index) the point is located. 
         """
         interp = self._interpolator
+        interp.values = self.data
         data_interp = interp((lats,lons), method=method, return_indices=return_indices, return_distances=return_distances)
         return data_interp
 
