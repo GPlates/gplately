@@ -468,7 +468,7 @@ class Raster(object):
         elif array is not None:
             if extent is None:
                 extent = [-180,180,-90,90]
-            self.data = np.array(array)
+            self.data = array
             self.extent = extent
             self.lons = np.linspace(extent[0], extent[1], self.data.shape[1])
             self.lats = np.linspace(extent[2], extent[3], self.data.shape[0])
