@@ -390,6 +390,160 @@ class PlateReconstruction(object):
         return np.array(all_velocities)
 
 
+    def test_plate_tectonic_stats(self, min_time=0, max_time, timestep_size=1): 
+        """ Calculates plate tectonic statistics of a topology feature collection for a given reconstruction time
+        and determines whether obtained stats are realistic.
+
+        Finds total subduction zone, mid-ocean ridge and transform boundary lengths (km), crustal surface
+        area production and deformation rates (km^2/yr), and convergence and spreading rates (cm/yr). Note that 
+        this method uses the rotation model and feature collection ascribed to the PlateReconstruction object.
+
+        Parameters
+        ----------
+        min_time : int, default = 0
+            The starting time for obtaining plate tectonics stats. By default, it assumes present day (0 Ma).
+
+        max_time : int
+            The maximum reconstruction time to obtain plate tectonics stats for (Ma).
+
+        timestep_size : int
+            Used to obtain plate tectonics stats every timestep_size Ma years. By default, it assumes calculation
+            every 1Ma.
+
+        Returns
+        -------
+        data_array : array
+            An array with the number of rows equal to the number of reconstruction times surveyed. It has 10 columns
+            that hold the following data (IN ORDER):
+
+            1. Reconstruction time (Ma)
+            2. Total length of all mid-ocean ridges (km)
+            3. Ridge mean spreading velocity (spreading rate) (cm/yr)
+            4. Ridge mean spreading velocity standard deviation (cm/yr)
+            5. Custal surface area produced over 1 yr at ridges (km^2/yr)
+            6. Total length of all subduction zones  (km)
+            7. Subduction mean velocity (convergence rate) (cm/yr)
+            8. Subduction mean velocity standard deviation (cm/yr) 
+            9. Crustal surface area subducted by trenches over 1 yr (km^2/yr)
+            10. Length of all transform boundaries (km)
+
+        """
+        # Initialise some common variables
+        extent_globe = [-180, 180, -90, 90]
+        earth_radius = 6371.0e3
+        earth_surface_area = 4.0*np.pi*earth_radius**2
+        tessellation_threshold_radians = np.radians(0.01)
+        
+        # Load the rotation file
+        rotation_model = self.rotation_model
+        
+        # Create an empty feature collection to fill in now
+        topology_features = self.topology_features
+            
+        # Reverse: start at the specified maximum time in the past, and end in the present day)
+        reconstruction_times = np.arange(min_time+timestep_size, max_time+timestep_size, timestep_size)
+
+
+        # Obtain plate tectonic stats at a specified reconstruction time: length of MOR, mean velocity of the MOR, 
+        # standard deviation of MOR velocity, MOR surface area, length of subduction zone, mean velocity of the subduction
+        # zone, standard deviation of subduction zone velocity, subduction zone surface area, and the length of any 
+        # transform plate boundaries.
+        def plate_tectonic_stats(reconstruction_time):
+        
+            # calculate arc lengths
+            # Create topological plate polygons 
+            boundary_features = ptt.resolve_topologies.resolve_topologies_into_features(
+                rotation_model, topology_features, reconstruction_time)
+            boundary_features = list(boundary_features)
+            boundary_features.pop(0)
+            
+            len_ridge_transform, len_ridge, len_transform, len_subd, len_subd_l, len_subd_r, len_other =  \
+                ptt.resolve_topologies.find_total_boundary_length_in_kms(*boundary_features)
+
+            # calculate ridge spreading rates
+            with warnings.catch_warnings():
+                warnings.simplefilter("ignore")
+                
+                ridge_data = ptt.ridge_spreading_rate.spreading_rates(
+                    rotation_model,
+                    topology_features,
+                    reconstruction_time,
+                    tessellation_threshold_radians,
+                    [pygplates.FeatureType.gpml_mid_ocean_ridge],
+                    anchor_plate_id=0)
+                ridge_data = np.vstack(ridge_data)
+                ridge_data = ridge_data[ridge_data[:,2] >= 0]
+                ridge_lon = ridge_data[:,0]
+                ridge_lat = ridge_data[:,1]
+                ridge_vel = ridge_data[:,2]*1e-2 # m/yr
+                ridge_len = np.radians(ridge_data[:,3]) * 1e3 * pygplates.Earth.mean_radius_in_kms
+
+            ridge_vel_mean, ridge_vel_std = np.mean(ridge_vel), np.std(ridge_vel)
+
+            # crustal surface area produced over 1 yr
+            ridge_surface_area = np.sum(ridge_vel * ridge_len)
+
+            # calculate subduction convergence
+            with warnings.catch_warnings():
+                warnings.simplefilter("ignore")
+                subduction_data = ptt.subduction_convergence.subduction_convergence(
+                    rotation_model,
+                    topology_features,
+                    tessellation_threshold_radians,
+                    reconstruction_time,
+                    anchor_plate_id=0)
+                subduction_data = np.vstack(subduction_data)
+                subduction_lon  = subduction_data[:,0]
+                subduction_lat  = subduction_data[:,1]
+                subduction_len  = np.radians(subduction_data[:,6]) * 1e3 * pygplates.Earth.mean_radius_in_kms
+
+            # protect against "negative" subduction
+            subduction_data[:,2] = np.clip(subduction_data[:,2], 0.0, 1e99)
+            subduction_vel = np.fabs(subduction_data[:,2])*1e-2 * np.cos(np.radians(subduction_data[:,3]))
+            subd_vel_mean, subd_vel_std = np.mean(subduction_vel), np.std(subduction_vel)
+
+            # area subducted by trenches over 1 yr
+            subd_surface_area = np.sum(subduction_vel * subduction_len)
+
+            return(len_ridge, ridge_vel_mean, ridge_vel_std, ridge_surface_area, \
+                   len_subd,  subd_vel_mean,   subd_vel_std, subd_surface_area, \
+                   len_transform)
+        
+        def get_plate_tectonic_stats(time):
+            # Obtain plate tectonic stats as an array for the current geological time.    
+            print('Current timestep:', time, 'Ma')
+            len_ridge, ridge_vel_mean, ridge_vel_std, ridge_surface_area, \
+            len_subd, subd_vel_mean, subd_vel_std, subd_surface_area, \
+            len_transform = plate_tectonic_stats(time)
+
+            # Format units
+            len_ridge      = len_ridge * 1e-3 # m to km
+            ridge_vel_mean     = ridge_vel_mean * 100  # m/yr to cm/yr
+            ridge_vel_std      = ridge_vel_std * 100  # m/yr to cm/yr
+            ridge_surface_area = ridge_surface_area * 1e-6 # m^2/a to km^2/a
+            len_subd       = len_subd * 1e-3 # m to km
+            subd_vel_mean      = subd_vel_mean * 100  # m/yr to cm/yr
+            subd_vel_std       = subd_vel_std * 100  # m/yr to cm/yr
+            subd_surface_area  = subd_surface_area * 1e-6 # m^2 /a to km^2/a
+            len_transform  = len_transform * 1e-3 # m to km
+
+
+            # Append all obtained attributes into a 1D numpy array.
+            data_for_this_reconstruction_time = np.array([int(time), len_ridge, ridge_vel_mean, ridge_vel_std, \
+                                                          ridge_surface_area, len_subd,  subd_vel_mean,   subd_vel_std, \
+                                                          subd_surface_area, len_transform])
+            return data_for_this_reconstruction_time
+      
+        # Initialise empty array to fill with plate tectonic stats.
+        data_array = get_plate_tectonic_stats(min_time)
+        # Stack all stats for successive years under the array above:
+        for time in reconstruction_times:
+            data_array = np.vstack((data_array, get_plate_tectonic_stats(time)))
+        
+        # Returns a numpy array with each row being a new reconstruction time, and all columns being each obtained 
+        # attribute for that reconstruction time.
+        return data_array
+
 
 class Points(object):
     """The Points class offers simple methods to work with point data. It reconstructs geological features and can extract their
@@ -559,12 +713,34 @@ class Points(object):
 
 
     def reconstruct_to_birth_age(self, ages, anchor_plate_id=0, **kwargs):
+        """ Reconstructs point features in a topology feature collection to all birth times (Ma) given in an
+        array of reconstruction times and returns the lat-lon coordinates of these point features.
+
+        Parameters
+        ----------
+        ages : array
+            An array of times (Ma) to reconstruct to. Must have a length equal to the number of point features
+            in the Points object. 
+
+        anchor_plate_id : int, default=0
+            The anchor plate ID to reconstruct with respect to. Default is 0.
+
+        **kwargs
+            For the pygplates.reconstruct function.
+
+
+        Returns
+        -------
+        rlons, rlats : tuple of arrays
+            Longitudes and latitudes of point features reconstructed to the times specified in `ages`. 
+        """
         from_time = self.time
         ages = np.array(ages)
 
         if len(ages) != len(self.features):
             raise ValueError("Number of points and ages must be identical")
 
+        # Lists unique ages in ascending order
         unique_ages = np.unique(ages)
         rlons = np.zeros(ages.shape)
         rlats = np.zeros(ages.shape)
