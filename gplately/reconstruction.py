@@ -9,6 +9,7 @@ import pygplates
 import numpy as np
 import ptt
 import warnings
+import matplotlib.pyplot as plt
 
 from . import tools as _tools
 
@@ -390,8 +391,8 @@ class PlateReconstruction(object):
         return np.array(all_velocities)
 
 
-    def test_plate_tectonic_stats(self, min_time=0, max_time, timestep_size=1): 
-        """ Calculates plate tectonic statistics of a topology feature collection for a given reconstruction time
+    def get_plate_tectonic_stats(self, min_time, max_time, timestep_size, return_csv = False, csv_directory=None):   
+        """Calculates plate tectonic statistics of a topology feature collection for a given reconstruction time
         and determines whether obtained stats are realistic.
 
         Finds total subduction zone, mid-ocean ridge and transform boundary lengths (km), crustal surface
@@ -428,16 +429,15 @@ class PlateReconstruction(object):
             10. Length of all transform boundaries (km)
 
         """
+
         # Initialise some common variables
         extent_globe = [-180, 180, -90, 90]
         earth_radius = 6371.0e3
         earth_surface_area = 4.0*np.pi*earth_radius**2
         tessellation_threshold_radians = np.radians(0.01)
         
-        # Load the rotation file
+        # Get the plate model's rotation file(s) and topology features
         rotation_model = self.rotation_model
-        
-        # Create an empty feature collection to fill in now
         topology_features = self.topology_features
             
         # Reverse: start at the specified maximum time in the past, and end in the present day)
@@ -448,70 +448,69 @@ class PlateReconstruction(object):
         # standard deviation of MOR velocity, MOR surface area, length of subduction zone, mean velocity of the subduction
         # zone, standard deviation of subduction zone velocity, subduction zone surface area, and the length of any 
         # transform plate boundaries.
-        def plate_tectonic_stats(reconstruction_time):
+        def plate_tectonic_stats(time):
         
             # calculate arc lengths
             # Create topological plate polygons 
             boundary_features = ptt.resolve_topologies.resolve_topologies_into_features(
-                rotation_model, topology_features, reconstruction_time)
+                rotation_model, topology_features, time)
             boundary_features = list(boundary_features)
             boundary_features.pop(0)
             
             len_ridge_transform, len_ridge, len_transform, len_subd, len_subd_l, len_subd_r, len_other =  \
                 ptt.resolve_topologies.find_total_boundary_length_in_kms(*boundary_features)
 
-            # calculate ridge spreading rates
+            # calculate ridge spreading rates (ignore warnings for now to help w diagnosis)  
             with warnings.catch_warnings():
                 warnings.simplefilter("ignore")
-                
                 ridge_data = ptt.ridge_spreading_rate.spreading_rates(
-                    rotation_model,
-                    topology_features,
-                    reconstruction_time,
-                    tessellation_threshold_radians,
-                    [pygplates.FeatureType.gpml_mid_ocean_ridge],
-                    anchor_plate_id=0)
+                        rotation_model,
+                        topology_features,
+                        time,
+                        tessellation_threshold_radians,
+                        [pygplates.FeatureType.gpml_mid_ocean_ridge],
+                        anchor_plate_id=0)
                 ridge_data = np.vstack(ridge_data)
                 ridge_data = ridge_data[ridge_data[:,2] >= 0]
                 ridge_lon = ridge_data[:,0]
                 ridge_lat = ridge_data[:,1]
                 ridge_vel = ridge_data[:,2]*1e-2 # m/yr
                 ridge_len = np.radians(ridge_data[:,3]) * 1e3 * pygplates.Earth.mean_radius_in_kms
+                ridge_vel_mean, ridge_vel_std = np.mean(ridge_vel), np.std(ridge_vel)
+                # crustal surface area produced over 1 yr
+                ridge_surface_area = np.sum(ridge_vel * ridge_len)
 
-            ridge_vel_mean, ridge_vel_std = np.mean(ridge_vel), np.std(ridge_vel)
-
-            # crustal surface area produced over 1 yr
-            ridge_surface_area = np.sum(ridge_vel * ridge_len)
-
-            # calculate subduction convergence
+            
+            # calculate subduction convergence (ignore warnings)
             with warnings.catch_warnings():
                 warnings.simplefilter("ignore")
                 subduction_data = ptt.subduction_convergence.subduction_convergence(
-                    rotation_model,
-                    topology_features,
-                    tessellation_threshold_radians,
-                    reconstruction_time,
-                    anchor_plate_id=0)
+                        rotation_model,
+                        topology_features,
+                        tessellation_threshold_radians,
+                        time,
+                        anchor_plate_id=0)
                 subduction_data = np.vstack(subduction_data)
                 subduction_lon  = subduction_data[:,0]
                 subduction_lat  = subduction_data[:,1]
                 subduction_len  = np.radians(subduction_data[:,6]) * 1e3 * pygplates.Earth.mean_radius_in_kms
 
-            # protect against "negative" subduction
-            subduction_data[:,2] = np.clip(subduction_data[:,2], 0.0, 1e99)
-            subduction_vel = np.fabs(subduction_data[:,2])*1e-2 * np.cos(np.radians(subduction_data[:,3]))
-            subd_vel_mean, subd_vel_std = np.mean(subduction_vel), np.std(subduction_vel)
+                # protect against "negative" subduction
+                subduction_data[:,2] = np.clip(subduction_data[:,2], 0.0, 1e99)
+                subduction_vel = np.fabs(subduction_data[:,2])*1e-2 * np.cos(np.radians(subduction_data[:,3]))
+                subd_vel_mean, subd_vel_std = np.mean(subduction_vel), np.std(subduction_vel)
 
-            # area subducted by trenches over 1 yr
-            subd_surface_area = np.sum(subduction_vel * subduction_len)
+                # area subducted by trenches over 1 yr
+                subd_surface_area = np.sum(subduction_vel * subduction_len)
 
             return(len_ridge, ridge_vel_mean, ridge_vel_std, ridge_surface_area, \
                    len_subd,  subd_vel_mean,   subd_vel_std, subd_surface_area, \
                    len_transform)
         
-        def get_plate_tectonic_stats(time):
+        def calculate_plate_tectonic_stats(time):
             # Obtain plate tectonic stats as an array for the current geological time.    
             print('Current timestep:', time, 'Ma')
+
             len_ridge, ridge_vel_mean, ridge_vel_std, ridge_surface_area, \
             len_subd, subd_vel_mean, subd_vel_std, subd_surface_area, \
             len_transform = plate_tectonic_stats(time)
@@ -527,22 +526,285 @@ class PlateReconstruction(object):
             subd_surface_area  = subd_surface_area * 1e-6 # m^2 /a to km^2/a
             len_transform  = len_transform * 1e-3 # m to km
 
-
             # Append all obtained attributes into a 1D numpy array.
             data_for_this_reconstruction_time = np.array([int(time), len_ridge, ridge_vel_mean, ridge_vel_std, \
                                                           ridge_surface_area, len_subd,  subd_vel_mean,   subd_vel_std, \
                                                           subd_surface_area, len_transform])
             return data_for_this_reconstruction_time
       
+
         # Initialise empty array to fill with plate tectonic stats.
-        data_array = get_plate_tectonic_stats(min_time)
-        # Stack all stats for successive years under the array above:
-        for time in reconstruction_times:
-            data_array = np.vstack((data_array, get_plate_tectonic_stats(time)))
+        data_array = calculate_plate_tectonic_stats(min_time)
         
-        # Returns a numpy array with each row being a new reconstruction time, and all columns being each obtained 
-        # attribute for that reconstruction time.
-        return data_array
+        for time in reconstruction_times:
+            current_data = calculate_plate_tectonic_stats(time)
+            if len(current_data) > 0:
+                data_array = np.vstack((data_array, current_data))
+            else:
+                print("No data obtained for %i Ma" %time)
+        
+
+        if not return_csv:
+            # Returns a 2d numpy array with each row being a new reconstruction time, and all columns being each obtained 
+            # attribute for that reconstruction time.
+            return data_array
+        
+        else:
+            # get the data into individual arrays
+            reconst_time = data_array[:,0]
+            tot_ridge_length = data_array[:,1]
+            spreading_rate = data_array[:,2]
+            spreading_rate_sd = data_array[:,3]
+            crust_produced = data_array[:,4]
+            tot_sz_length = data_array[:,5]
+            convergence_rate = data_array[:,6]
+            convergence_rate_sd = data_array[:,7]
+            crust_destroyed = data_array[:,8]
+            tot_transform_length = data_array[:,9]
+
+            # Processing for CSV format
+            time_array_int = [int(item) for item in reconst_time]
+            np.set_printoptions(suppress=True)
+            data_for_csv = np.column_stack((time_array_int, tot_ridge_length, spreading_rate, spreading_rate_sd,
+                                           crust_produced, tot_sz_length, convergence_rate, convergence_rate_sd, crust_destroyed,
+                                           tot_transform_length))
+            import csv
+            # open the file in the write mode
+            with open(csv_directory, 'w', encoding='UTF8', newline='') as f:
+                # create the csv writer
+                writer = csv.writer(f)
+                writer.writerow(['Time (Ma)', 'Total ridge length (km)', 'Mean ridge spreading rate (cm/yr)', 
+                                 'Mean ridge spreading rate SD (cm/yr)', 'Crustal formation rate (km^2/yr)',
+                                 'Total subduction zone length (km)', 'Mean trench convergence rate (cm/yr)',
+                                 'Mean trench convergence rate SD (cm/year)', 'Crustal subduction rate (km^2/yr)',
+                                 'Total transform length (km)'])
+                # write a row to the csv file
+                writer.writerows(data_for_csv)
+            print('CSV file saved to specified directory. Returned array of plate tectonic stats.')
+            return data_array
+
+
+    def plot_plate_tectonic_stats_differences(self, data_indices, min_time, max_time, delta_time, save_location, 
+                                               CSV_directory1=None, CSV_directory2=None, plot_og_stats=True,
+                                               save_fig=True, **kwargs):
+        """Compares two plate models' plate tectonic stats (PTS) through geological time and plots their differences.
+        
+        Designed to work with the CSV output(s) of gplately.PlateReconstruction.get_plate_tectonic_stats. Takes a
+        data_indices array of any combination of integers from 1-9 (e.g. [2,5,7]) each representing a subset of PTS data: 
+        
+        - 1 = Total ridge length (km)
+        - 2 = Mean ridge spreading rate (cm/yr)
+        - 3 = Mean ridge spreading rate SD (cm/yr)
+        - 4 = Crustal surface area formation rate (km^2/yr)
+        - 5 = Total subduction zone length (km)
+        - 6 = Mean trench convergence rate (cm/yr)
+        - 7 = Mean trench convergence rate SD (cm/year)
+        - 8 = Crustal surface area subduction rate (km^2/yr)
+        - 9 = Total transform length (km)
+        
+        The function takes two CSV files of PTS data, each for a different plate model. If only one is given, it 
+        compares stats to the Muller et al. 2019 plate model by default.
+        
+        If plot_og_stats = True, this function plots:
+            - the chosen PTS data of both models on one plot;
+            - the difference between both models' chosen PTS data on another plot; 
+        If set to False, the function just plots the difference between chosen PTS data for both models. 
+        
+        If save_fig = True, the function saves all plots to a chosen save_location (no need to specify a filename;
+        the function names it for you).
+        
+        Parameters
+        ----------
+        data_incides : arr
+            An array of indices specifying the plate tectonics stats that a comparison is needed for, as explained 
+            above.
+            
+        min_time : int
+            The starting time (Ma) at which to compare stats for both models.
+            
+        max_time : int
+            The end time (Ma) at which to compare stats for both models. 
+            
+        delta_time : int
+            The time interval (Ma) used to compare stats for both models (i.e. every 1 Ma years)
+            
+        save_location : str
+            The path to a location (e.g. folder) to save plots to. 
+            
+        CSV_directory1, CSV_directory2 : str, default=None
+            The full path to a CSV file containing PTS data for a plate model. This can be obtained with 
+            gplately.PlateReconstruction.get_plate_tectonic_stats. If only one path is given, the function compares
+            the given plate model data to Muller et al. 2019 data.
+
+        file_type : str
+            The image type to save to. 
+            
+        plot_og_stats : bool, default = True
+            Choose whether to plot original stats of both models over each other along with their differences.
+            
+        save_fig : bool, default = True
+            Choose whether to save plots to a save_location. 
+        
+        
+        Returns
+        -------
+        Matplotlib 2D LinePlot
+            Plots of plate tectonics stats and their differences for two different plate models.
+            
+        Raises
+        ------
+        ValueError
+            If no CSV directories are provided
+            If save_fig is set to True, but no save_location is provided
+            If the chosen geologal times to analyse PT stats for are not included in the provided CSV files
+        """
+        import csv
+        import warnings
+        
+        # Make sure CSV directories have been given; if not, return error message. if only one is given, assume the other
+        # CSV file of stats is from the Muller et al. 2019 plate model
+        directories = [CSV_directory1, CSV_directory2]
+        if CSV_directory1 is None and CSV_directory2 is None:
+            raise ValueError("Please supply at least ONE directory to a plate tectonic stats CSV file.")
+        elif None in directories:
+			Muller_directory = "./Data/plate_tectonic_stats_Muller2019_0-249.csv"
+            directories = [Muller_directory if directory is None else directory for directory in directories]
+        
+        # Set data labels for plots
+        for index, entry in enumerate(directories):
+            if index == 0 and "Muller2019" in entry:
+                CSV_directory1 = directories[0]
+                CSV_directory2 = directories[1]
+                labels = ["Muller2019", "Model 2"]
+            elif index == 1 and "Muller2019" in entry:
+                CSV_directory1 = directories[1]
+                CSV_directory2 = directories[0]
+                labels = ["Muller2019", "Model 2"]
+            else:
+                CSV_directory1 = directories[0]
+                CSV_directory2 = directories[1]
+                labels = ["Model 1", "Model 2"]
+        
+        # Read CSV files
+        pt_stats1 = []
+        with open(CSV_directory1) as file:
+            csvreader = csv.reader(file)
+            header = next(csvreader)
+            for row in csvreader:
+                pt_stats1.append(row)
+        pt_stats2 = []
+        with open(CSV_directory2) as file:
+            csvreader = csv.reader(file)
+            header = next(csvreader)
+            for row in csvreader:
+                pt_stats2.append(row)
+             
+        # If a filename for the plots was given, alerts the user that a default one will be used instead
+        if save_fig:
+            if save_location is None:
+                raise ValueError("Please provide a save_location to save all plots to.")
+            else:
+                save_formats = ['eps', 'jpg', 'jpeg', 'pdf', 'pgf', 'png', 'ps', 'raw', 'rgba', 'svg', 'svgz', 'tif', 'tiff']
+                for save_format in save_formats:
+                    filetype = "."+save_format
+                    if save_location.endswith(filetype):
+                        save_location = save_location + "/"
+                        givenfilename = save_location.rsplit('/')[-2]
+                        print("Filename detected as %s. Saving images with default names instead." %givenfilename)
+                        save_location = save_location[:-1]
+            
+        # Function for saving-figure instructions
+        def saveFigInstructions(save_fig, save_location, data_index, min_time, max_time):
+            save_formats = ['eps', 'jpg', 'jpeg', 'pdf', 'pgf', 'png', 'ps', 'raw', 'rgba', 'svg', 'svgz', 'tif', 'tiff']
+            has_filename = False
+            for save_format in save_formats:
+                filetype = "."+save_format
+                if save_location.endswith(filetype):
+                    save_location = save_location + "/"
+                    save_location = save_location.rsplit('/',2)[0]+"/PltTecStats_Data%i-%i-%i_Ma.%s" %(data_index, min_time, max_time, file_type)
+                    plt.savefig(save_location, bbox_inches = "tight", dpi=300)
+                    print("Image saved in the directory: " + save_location)
+                    has_filename = True
+
+            if has_filename == False:
+                plt.savefig(save_location+"/PltTecStats_Data%i-%i-%i_Ma.png" %(data_index, min_time, max_time), 
+                        bbox_inches = "tight", dpi=300)
+                print("Image saved in the directory: " + save_location+"/PltTecStats_Data%i-%i-%i_Ma.png" %(data_index, min_time, max_time))
+                    
+        # Exit if plate tectonic stats do not exist for the given reconstruction times
+        if len(pt_stats1) < max_time or len(pt_stats2) < max_time:
+            raise ValueError("One or more CSV files do not contain plate tectonics stats up to %i Ma." % time)
+            
+        # Else, slice stats arrays according to the time parameters given
+        pt_stats1 = pt_stats1[min_time:max_time:delta_time]
+        pt_stats2 = pt_stats2[min_time:max_time:delta_time]
+        
+        # Each row in rows corresponds to each Ma! 
+        num_cols = len(data_indices)
+        time_arr1 = [sublist[0] for sublist in pt_stats1]
+        time_arr1 = [int(float(entry)) for entry in time_arr1]
+        time_arr2 = [sublist[0] for sublist in pt_stats2]
+        time_arr2 = [int(float(entry)) for entry in time_arr2]
+
+        # Useful for subplot dimensions
+        plot_properties = {"1": "Tot MOR length (km)",
+                          "2": "Spreading rate (cm/yr)",
+                          "3": "Spreading rate SD (cm/yr)",
+                          "4": "Crust produced (km^2/yr)",
+                          "5": "Tot SZ length  (km)",
+                          "6": "Mean convergence rate (cm/yr)",
+                          "7": "Convergence rate SD (cm/yr) ",
+                          "8": "Crust subducted (km^2/yr)",
+                          "9": "Tot transform length (km)"
+                          }
+
+        # Isolate all needed data and plot them
+        for i, data_index in enumerate(data_indices):
+            i = i+1
+            data_subset1 = [sublist[data_index] for sublist in pt_stats1]
+            data_subset1 = [float(entry) for entry in data_subset1]
+            data_subset2 = [sublist[data_index] for sublist in pt_stats2]
+            data_subset2 = [float(entry) for entry in data_subset2]
+
+            # If the user wants both plots of the original data, as well as their differences through geological time
+            if plot_og_stats:
+
+                with warnings.catch_warnings():
+                    warnings.simplefilter("ignore")
+                    # Plot original data
+                    plt.figure(figsize=(20, 6), dpi=80)
+                    plt.subplot(2, num_cols, i)
+                    plot1 = plt.plot(time_arr1, data_subset1, **kwargs)
+                    plot2 = plt.plot(time_arr2, data_subset2, **kwargs)
+                    plt.title(plot_properties[str(data_index)])           
+                    plt.tight_layout()
+                    plt.legend([plot1, plot2], labels=labels, loc="upper left")
+
+                    # Plot difference on 2nd subplot
+                    plt.subplot(2,num_cols,i+num_cols)
+                    difference = np.subtract(data_subset1, data_subset2) 
+                    difference = np.absolute(difference)
+                    plt.plot(time_arr1, difference, **kwargs)
+                    plt.tight_layout()
+                    plt.xlabel("Reconstruction time (Ma)")
+                    plt.ylabel("Difference")
+                    saveFigInstructions(save_fig, save_location, data_index, min_time, max_time)
+                
+            else:
+                with warnings.catch_warnings():
+                    warnings.simplefilter("ignore")
+                    plt.figure(figsize=(20, 6), dpi=300)
+                    plt.subplot(1,num_cols,i)
+                    difference = np.subtract(data_subset1, data_subset2) 
+                    difference = np.absolute(difference)
+                    plt.plot(time_arr1, difference, **kwargs)
+                    plt.xlabel("Reconstruction time (Ma)")
+                    plt.ylabel("Difference")
+                    plt.title(plot_properties[str(data_index)])
+                    plt.tight_layout()
+                    saveFigInstructions(save_fig, save_location, data_index, min_time, max_time)
+
+
 
 
 class Points(object):
@@ -727,7 +989,6 @@ class Points(object):
 
         **kwargs
             For the pygplates.reconstruct function.
-
 
         Returns
         -------
