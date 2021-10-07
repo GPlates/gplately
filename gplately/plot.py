@@ -54,10 +54,20 @@ Classes
 -------
 PlotTopologies
 """
-import ptt
-import numpy as np
-import matplotlib.pyplot as plt
+import re
+
 import pygplates
+import cartopy.crs as ccrs
+from fiona.errors import DriverError
+import geopandas as gpd
+from matplotlib.patches import Polygon as PolygonPatch
+import matplotlib.pyplot as plt
+import numpy as np
+import ptt
+from shapely.geometry import Point
+from shapely.geometry.base import BaseGeometry, BaseMultipartGeometry
+from shapely.ops import linemerge
+
 
 def get_valid_geometries(shape_filename):
     """Reads a shapefile of feature geometries and obtains only valid geometries.
@@ -354,46 +364,342 @@ def tesselate_triangles(shapefilename, tesselation_radians, triangle_base_length
     """
 
     import shapefile
-    shp = shapefile.Reader(shapefilename)
+    with shapefile.Reader(shapefilename) as shp:
+        tesselation_degrees = np.degrees(tesselation_radians)
+        triangle_pointsX = []
+        triangle_pointsY = []
 
-    tesselation_degrees = np.degrees(tesselation_radians)
-    triangle_pointsX = []
-    triangle_pointsY = []
+        for i in range(len(shp)):
+            pts = np.array(shp.shape(i).points)
 
-    for i in range(len(shp)):
-        pts = np.array(shp.shape(i).points)
+            cum_distance = 0.0
+            for p in range(len(pts) - 1):
 
-        cum_distance = 0.0
-        for p in range(len(pts) - 1):
+                A = pts[p]
+                B = pts[p+1]
 
-            A = pts[p]
-            B = pts[p+1]
+                AB_dist = B - A
+                AB_norm = AB_dist / np.hypot(*AB_dist)
+                cum_distance += np.hypot(*AB_dist)
 
-            AB_dist = B - A
-            AB_norm = AB_dist / np.hypot(*AB_dist)
-            cum_distance += np.hypot(*AB_dist)
+                # create a new triangle if cumulative distance is exceeded.
+                if cum_distance >= tesselation_degrees:
 
-            # create a new triangle if cumulative distance is exceeded.
-            if cum_distance >= tesselation_degrees:
+                    C = A + triangle_base_length*AB_norm
 
-                C = A + triangle_base_length*AB_norm
+                    # find normal vector
+                    AD_dist = np.array([AB_norm[1], -AB_norm[0]])
+                    AD_norm = AD_dist / np.linalg.norm(AD_dist)
 
-                # find normal vector
-                AD_dist = np.array([AB_norm[1], -AB_norm[0]])
-                AD_norm = AD_dist / np.linalg.norm(AD_dist)
+                    C0 = A + 0.5*triangle_base_length*AB_norm
 
-                C0 = A + 0.5*triangle_base_length*AB_norm
+                    # project point along normal vector
+                    D = C0 + triangle_base_length*triangle_aspect*AD_norm
 
-                # project point along normal vector
-                D = C0 + triangle_base_length*triangle_aspect*AD_norm
+                    triangle_pointsX.append( [A[0], C[0], D[0]] )
+                    triangle_pointsY.append( [A[1], C[1], D[1]] )
 
-                triangle_pointsX.append( [A[0], C[0], D[0]] )
-                triangle_pointsY.append( [A[1], C[1], D[1]] )
+                    cum_distance = 0.0
 
-                cum_distance = 0.0
-
-    shp.close()
     return np.array(triangle_pointsX), np.array(triangle_pointsY)
+
+
+def plot_subduction_teeth(
+    geometries,
+    width,
+    polarity=None,
+    height=None,
+    projection="auto",
+    transform=None,
+    nprocs=1,
+    ax=None,
+    **kwargs
+):
+    if ax is None:
+        ax = plt.gca()
+
+    if projection == "auto":
+        try:
+            projection = ax.projection
+        except AttributeError:
+            projection = None
+    elif isinstance(projection, str):
+        raise ValueError("Invalid projection: {}".format(projection))
+
+    if polarity is None:
+        if not isinstance(geometries, gpd.GeoDataFrame):
+            raise ValueError("If `polarity` is not given, `geometries` must be" + " a geopandas.GeoDataFrame")
+        polarity_column = _find_polarity_column(geometries.columns.values)
+        if polarity_column is None:
+            raise ValueError("Could not automatically determine polarity; " + "it must be defined manually instead.")
+        triangles = []
+        for p in geometries[polarity_column].unique():
+            if p.lower() not in {"left", "l", "right", "r"}:
+                continue
+            gdf_polarity = geometries[geometries[polarity_column] == p]
+            triangles.extend(
+                _tesselate_triangles(
+                    gdf_polarity,
+                    width,
+                    p,
+                    height,
+                    projection,
+                    transform,
+                    nprocs,
+                )
+            )
+    else:
+        triangles = _tesselate_triangles(
+            geometries,
+            width,
+            polarity,
+            height,
+            projection,
+            transform,
+            nprocs,
+        )
+
+    for triangle in triangles:
+        patch = PolygonPatch(
+            triangle,
+            closed=True,
+            **kwargs
+        )
+        ax.add_patch(patch)
+
+
+def _tesselate_triangles(
+    geometries,
+    spacing,
+    polarity="left",
+    height=None,
+    projection=None,
+    transform=None,
+    nprocs=1,
+):
+    if spacing <= 0.0:
+        raise ValueError("Invalid `width` argument: {}".format(spacing))
+    polarity = _parse_polarity(polarity)
+    geometries = _parse_geometries(geometries)
+    if height is None:
+        height = spacing * 0.6
+
+    nprocs = max([nprocs, 1])
+    nprocs = min([nprocs, len(geometries)])
+
+    if nprocs > 1 and len(geometries) > 20:
+        from itertools import repeat
+        from multiprocessing import cpu_count, Pool, set_start_method
+        from platform import system
+        try:
+            if system() == "Darwin":
+                set_start_method("spawn")
+        except RuntimeError:
+            pass
+        nprocs = min([nprocs, cpu_count()])
+        chunk_size = int(len(geometries) / nprocs)
+        n = len(geometries)
+        spacings = repeat(spacing, n)
+        projections = repeat(projection, n)
+        transforms = repeat(transform, n)
+        heights = repeat(height, n)
+        polarities = repeat(polarity, n)
+        with Pool(nprocs) as pool:
+            if projection is not None:
+                geometries = pool.starmap(
+                    _project_geometry,
+                    zip(geometries, projections, transforms),
+                    chunksize=chunk_size,
+                )
+                geometries_new = []
+                for i in geometries:
+                    geometries_new.extend(i)
+                geometries = geometries_new
+                del geometries_new
+            geometries = linemerge(geometries)
+            if isinstance(geometries, BaseMultipartGeometry):
+                geometries = list(geometries)
+            elif isinstance(geometries, BaseGeometry):
+                geometries = [geometries]
+            pool.close()
+            pool.join()
+        with Pool(nprocs) as pool:
+            args = zip(
+                geometries,
+                spacings,
+                heights,
+                polarities,
+            )
+            results = pool.starmap(
+                _calculate_triangle_vertices,
+                args,
+                chunksize=chunk_size,
+            )
+            pool.close()
+            pool.join()
+        results_new = []
+        for i in results:
+            results_new.extend(i)
+        results = results_new
+        del results_new
+    else:
+        if projection is not None:
+            geometries_new = []
+            for i in geometries:
+                geometries_new.extend(_project_geometry(i, projection, transform))
+            geometries = geometries_new
+            del geometries_new
+        geometries = linemerge(geometries)
+        if isinstance(geometries, BaseMultipartGeometry):
+            geometries = list(geometries)
+        elif isinstance(geometries, BaseGeometry):
+            geometries = [geometries]
+        results = _calculate_triangle_vertices(
+            geometries,
+            spacing,
+            height,
+            polarity,
+        )
+    return results
+
+
+def _project_geometry(geometry, projection, transform=None):
+    if transform is None:
+        transform = ccrs.PlateCarree()
+    result = [projection.project_geometry(geometry, transform)]
+    projected = []
+    for i in result:
+        if isinstance(i, BaseMultipartGeometry):
+            projected.extend(list(i))
+        else:
+            projected.append(i)
+    return projected
+
+
+def _calculate_triangle_vertices(
+    geometries,
+    spacing,
+    height,
+    polarity,
+):
+    if isinstance(geometries, BaseGeometry):
+        geometries = [geometries]
+    triangles = []
+    for geometry in geometries:
+        if not isinstance(geometry, BaseGeometry):
+            continue
+        length = geometry.length
+        tesselated_x = []
+        tesselated_y = []
+        for distance in np.arange(0.0, length, spacing):
+            point = Point(geometry.interpolate(distance))
+            tesselated_x.append(point.x)
+            tesselated_y.append(point.y)
+        tesselated_x = np.array(tesselated_x)
+        tesselated_y = np.array(tesselated_y)
+
+        for i in range(len(tesselated_x) - 1):
+            normal_x = tesselated_y[i] - tesselated_y[i + 1]
+            normal_y = tesselated_x[i + 1] - tesselated_x[i]
+            normal_mag = np.sqrt(normal_x ** 2 + normal_y ** 2)
+            if normal_mag == 0:
+                continue
+            normal_x *= height / normal_mag
+            normal_y *= height / normal_mag
+            midpoint_x = 0.5 * (tesselated_x[i] + tesselated_x[i + 1])
+            midpoint_y = 0.5 * (tesselated_y[i] + tesselated_y[i + 1])
+            if polarity == "right":
+                normal_x *= -1.0
+                normal_y *= -1.0
+            apex_x = normal_x + midpoint_x
+            apex_y = normal_y + midpoint_y
+            triangle_points = np.array([
+                (tesselated_x[i], tesselated_y[i]),
+                (tesselated_x[i + 1], tesselated_y[i + 1]),
+                (apex_x, apex_y),
+            ])
+            triangles.append(triangle_points)
+    return triangles
+
+
+def _parse_polarity(polarity):
+    if not isinstance(polarity, str):
+        raise TypeError("Invalid `polarity` argument type: {}".format(type(polarity)))
+    if polarity.lower() in {"left", "l"}:
+        polarity = "left"
+    elif polarity.lower() in {"right", "r"}:
+        polarity = "right"
+    else:
+        valid_args = {"left", "l", "right", "r"}
+        err_msg = (
+            "Invalid `polarity` argument: {}".format(polarity)
+            + "\n(must be one of: {})".format(valid_args)
+        )
+        raise ValueError(err_msg)
+    return polarity
+
+
+def _find_polarity_column(columns):
+    pattern = "polarity"
+    for column in columns:
+        if re.fullmatch(pattern, column) is not None:
+            return column
+    return None
+
+
+def _parse_geometries(geometries):
+    # Check common formats
+    if isinstance(geometries, gpd.GeoDataFrame):
+        pass
+    elif isinstance(geometries, gpd.GeoSeries):
+        pass
+    else:  # filename, file object, or sequence of geometries
+        sequence_geometries = False
+        try:
+            for i in geometries:
+                if isinstance(i, BaseGeometry):
+                    sequence_geometries = True
+                break
+        except TypeError:
+            pass
+        if not sequence_geometries:
+            try:  # filename or file-like object
+                geometries = gpd.read_file(geometries)
+            except (AttributeError, TypeError) as e:
+                err_msg = "Could not extract `geometries`: {}".format(geometries)
+                raise TypeError(err_msg) from e
+            except DriverError as e:
+                err_msg = "Invalid filename or file object: {}".format(geometries)
+                raise ValueError(err_msg) from e
+
+    if isinstance(geometries, gpd.GeoDataFrame):
+        geometries = geometries.geometry
+    if isinstance(geometries, gpd.GeoSeries):
+        geometries = list(geometries)
+
+    # Explode multi-part geometries
+    # Weirdly the following seems to be faster than
+    # the equivalent explode() method from GeoPandas:
+    tmp = []
+    for i in geometries:
+        if isinstance(i, BaseMultipartGeometry):
+            tmp.extend(list(i))
+        else:
+            tmp.append(i)
+    geometries = tmp
+
+    try:
+        for i in geometries:  # sequence of geometries
+            if not isinstance(i, BaseGeometry):
+                raise TypeError
+            break
+    except TypeError:  # not a sequence, or not a sequence of geometries
+        if not isinstance(geometries, BaseGeometry):
+            err_msg = "Could not extract `geometries`: {}".format(geometries)
+            raise TypeError(err_msg)
+        geometries = [geometries]  # sequence of geometries; length 1
+    return geometries
+
 
 def shapelify_feature_polygons(features):
     """Generates shapely MultiPolygon geometries from reconstructed feature polygons. 
