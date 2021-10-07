@@ -415,6 +415,56 @@ def plot_subduction_teeth(
     ax=None,
     **kwargs
 ):
+    """Add subduction teeth to a plot.
+
+    The subduction polarity used for subduction teeth can be specified
+    manually or detected automatically if `geometries` is a
+    `geopandas.GeoDataFrame` object with a `polarity` column.
+
+    Parameters
+    ----------
+    geometries : geopandas.GeoDataFrame, sequence of shapely geometries, or str
+        If a `geopandas.GeoDataFrame` is given, its geometry attribute
+        will be used. If `geometries` is a string, it must be the path to
+        a file, which will be loaded with `geopandas.read_file`. Otherwise,
+        `geometries` must be a sequence of shapely geometry objects (instances
+        of the `shapely.geometry.base.BaseGeometry` class).
+    width : float
+        The (approximate) width of the subduction teeth. If a projection is
+        used, this value will be in projected units.
+    polarity : {"left", "l", "right", "r", None}, default None
+        The subduction polarity of the geometries. If no polarity is provided,
+        and `geometries` is a `geopandas.GeoDataFrame`, this function will
+        attempt to find a `polarity` column in the data frame and use the
+        values given there. If `polarity` is not manually specified and no
+        appropriate column can be found, an error will be raised.
+    height : float, default None
+        If provided, the height of the subduction teeth. As with `width`,
+        this value should be given in projected units. If no value is given,
+        the height of the teeth will be equal to 0.6 * `width`.
+    projection : cartopy.crs.Transform, "auto", or None, default "auto"
+        The projection of the plot. If the plot has no projection, this value
+        can be explicitly given as `None`. The default value is "auto", which
+        will acquire the projection automatically from the plot axes.
+    transform : cartopy.crs.Transform, or None, default None
+        If the plot is projected, a `transform` value is usually needed.
+        Frequently, the appropriate value is an instance of
+        `cartopy.crs.PlateCarree`.
+    nprocs : int, default 1
+        The number of processes to use.
+    ax : matplotlib.axes.Axes, or None, default None
+        The axes on which the subduction teeth will be drawn. By default,
+        the current axes will be acquired using `matplotlib.pyplot.gca`.
+    **kwargs
+        Any further keyword arguments will be passed to
+        `matplotlib.patches.Polygon`.
+
+    Raises
+    ------
+    ValueError
+        If `width` <= 0, or if `polarity` is an invalid value or could not
+        be determined.
+    """
     if ax is None:
         ax = plt.gca()
 
