@@ -364,6 +364,7 @@ def tesselate_triangles(shapefilename, tesselation_radians, triangle_base_length
     """
 
     import shapefile
+
     with shapefile.Reader(shapefilename) as shp:
         tesselation_degrees = np.degrees(tesselation_radians)
         triangle_pointsX = []
@@ -376,7 +377,7 @@ def tesselate_triangles(shapefilename, tesselation_radians, triangle_base_length
             for p in range(len(pts) - 1):
 
                 A = pts[p]
-                B = pts[p+1]
+                B = pts[p + 1]
 
                 AB_dist = B - A
                 AB_norm = AB_dist / np.hypot(*AB_dist)
@@ -385,19 +386,19 @@ def tesselate_triangles(shapefilename, tesselation_radians, triangle_base_length
                 # create a new triangle if cumulative distance is exceeded.
                 if cum_distance >= tesselation_degrees:
 
-                    C = A + triangle_base_length*AB_norm
+                    C = A + triangle_base_length * AB_norm
 
                     # find normal vector
                     AD_dist = np.array([AB_norm[1], -AB_norm[0]])
                     AD_norm = AD_dist / np.linalg.norm(AD_dist)
 
-                    C0 = A + 0.5*triangle_base_length*AB_norm
+                    C0 = A + 0.5 * triangle_base_length * AB_norm
 
                     # project point along normal vector
-                    D = C0 + triangle_base_length*triangle_aspect*AD_norm
+                    D = C0 + triangle_base_length * triangle_aspect * AD_norm
 
-                    triangle_pointsX.append( [A[0], C[0], D[0]] )
-                    triangle_pointsY.append( [A[1], C[1], D[1]] )
+                    triangle_pointsX.append([A[0], C[0], D[0]])
+                    triangle_pointsY.append([A[1], C[1], D[1]])
 
                     cum_distance = 0.0
 
@@ -478,10 +479,16 @@ def plot_subduction_teeth(
 
     if polarity is None:
         if not isinstance(geometries, gpd.GeoDataFrame):
-            raise ValueError("If `polarity` is not given, `geometries` must be" + " a geopandas.GeoDataFrame")
+            raise ValueError(
+                "If `polarity` is not given, `geometries` must be"
+                + " a geopandas.GeoDataFrame"
+            )
         polarity_column = _find_polarity_column(geometries.columns.values)
         if polarity_column is None:
-            raise ValueError("Could not automatically determine polarity; " + "it must be defined manually instead.")
+            raise ValueError(
+                "Could not automatically determine polarity; "
+                + "it must be defined manually instead."
+            )
         triangles = []
         for p in geometries[polarity_column].unique():
             if p.lower() not in {"left", "l", "right", "r"}:
@@ -510,11 +517,7 @@ def plot_subduction_teeth(
         )
 
     for triangle in triangles:
-        patch = PolygonPatch(
-            triangle,
-            closed=True,
-            **kwargs
-        )
+        patch = PolygonPatch(triangle, closed=True, **kwargs)
         ax.add_patch(patch)
 
 
@@ -541,6 +544,7 @@ def _tesselate_triangles(
         from itertools import repeat
         from multiprocessing import cpu_count, Pool, set_start_method
         from platform import system
+
         try:
             if system() == "Darwin":
                 set_start_method("spawn")
@@ -596,7 +600,9 @@ def _tesselate_triangles(
         if projection is not None:
             geometries_new = []
             for i in geometries:
-                geometries_new.extend(_project_geometry(i, projection, transform))
+                geometries_new.extend(
+                    _project_geometry(i, projection, transform)
+                )
             geometries = geometries_new
             del geometries_new
         geometries = linemerge(geometries)
@@ -663,28 +669,31 @@ def _calculate_triangle_vertices(
                 normal_y *= -1.0
             apex_x = normal_x + midpoint_x
             apex_y = normal_y + midpoint_y
-            triangle_points = np.array([
-                (tesselated_x[i], tesselated_y[i]),
-                (tesselated_x[i + 1], tesselated_y[i + 1]),
-                (apex_x, apex_y),
-            ])
+            triangle_points = np.array(
+                [
+                    (tesselated_x[i], tesselated_y[i]),
+                    (tesselated_x[i + 1], tesselated_y[i + 1]),
+                    (apex_x, apex_y),
+                ]
+            )
             triangles.append(triangle_points)
     return triangles
 
 
 def _parse_polarity(polarity):
     if not isinstance(polarity, str):
-        raise TypeError("Invalid `polarity` argument type: {}".format(type(polarity)))
+        raise TypeError(
+            "Invalid `polarity` argument type: {}".format(type(polarity))
+        )
     if polarity.lower() in {"left", "l"}:
         polarity = "left"
     elif polarity.lower() in {"right", "r"}:
         polarity = "right"
     else:
         valid_args = {"left", "l", "right", "r"}
-        err_msg = (
-            "Invalid `polarity` argument: {}".format(polarity)
-            + "\n(must be one of: {})".format(valid_args)
-        )
+        err_msg = "Invalid `polarity` argument: {}".format(
+            polarity
+        ) + "\n(must be one of: {})".format(valid_args)
         raise ValueError(err_msg)
     return polarity
 
@@ -716,10 +725,14 @@ def _parse_geometries(geometries):
             try:  # filename or file-like object
                 geometries = gpd.read_file(geometries)
             except (AttributeError, TypeError) as e:
-                err_msg = "Could not extract `geometries`: {}".format(geometries)
+                err_msg = "Could not extract `geometries`: {}".format(
+                    geometries
+                )
                 raise TypeError(err_msg) from e
             except DriverError as e:
-                err_msg = "Invalid filename or file object: {}".format(geometries)
+                err_msg = "Invalid filename or file object: {}".format(
+                    geometries
+                )
                 raise ValueError(err_msg) from e
 
     if isinstance(geometries, gpd.GeoDataFrame):
