@@ -39,10 +39,10 @@ def plate_temp(
         A list enclosing ONE floating-point number equal to plate temperature (e.g. [1367.33962383]).
     """
 
-    age = age * _SEC_PER_MYR
+    aged = age * _SEC_PER_MYR
 
     sine_arg = np.pi * z / plate_thickness
-    exp_arg = -kappa * (np.pi ** 2) * age / (plate_thickness ** 2)
+    exp_arg = -kappa * (np.pi ** 2) * aged / (plate_thickness ** 2)
     k = np.arange(1, 20).reshape(-1, 1)
     cumsum = (np.sin(k * sine_arg) * np.exp((k ** 2) * exp_arg) / k).sum(axis=0)
 
@@ -89,10 +89,9 @@ def plate_isotherm_depth(
     z_too_small = np.atleast_1d(np.zeros_like(age, dtype=float))
     z_too_big = np.atleast_1d(np.full_like(age, plate_thickness, dtype=float))
 
-    func = np.vectorize(plate_temp)
     for _ in range(n):
         zi = 0.5 * (z_too_small + z_too_big)
-        ti = func(age, zi, plate_thickness)
+        ti = plate_temp(age, zi, plate_thickness)
         t_diff = temp - ti
         z_too_big[t_diff < -rtol] = zi[t_diff < -rtol]
         z_too_small[t_diff > rtol] = zi[t_diff > rtol]

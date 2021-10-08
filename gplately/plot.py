@@ -1003,7 +1003,7 @@ class PlotTopologies(object):
             shp = shapely.geometry.Polygon(triangle_xy_points)
             teeth.append(shp)
 
-        ax.add_geometries(teeth, crs=self.base_projection, color=color, **kwargs)
+        return ax.add_geometries(teeth, crs=self.base_projection, color=color, **kwargs)
 
     def plot_grid(self, ax, grid, extent=[-180,180,-90,90], **kwargs):
         """Plots an ndarray of gridded data onto a standard map. 
