@@ -24,7 +24,7 @@ def get_geometries(filename, buffer=None):
     Parameters
     ----------
     filename : str
-        Shapefile filename.
+        Path to the file to be read.
 
     Returns
     -------
@@ -40,7 +40,7 @@ def get_geometries(filename, buffer=None):
 
 
 def get_valid_geometries(filename):
-    """Read a shapefile and return valid feature geometries.
+    """Read a file and return valid feature geometries.
 
     If `geopandas` is available, it will be used to read the file,
     returning a `geopandas.GeoSeries`. If `geopandas` is not found,
@@ -50,7 +50,7 @@ def get_valid_geometries(filename):
     Parameters
     ----------
     filename : str
-        Shapefile filename.
+        Path to the file to be read.
 
     Returns
     -------
