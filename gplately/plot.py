@@ -59,26 +59,8 @@ import numpy as np
 import matplotlib.pyplot as plt
 import pygplates
 
-def get_valid_geometries(shape_filename):
-    """Reads a shapefile of feature geometries and obtains only valid geometries.
+from .io import get_valid_geometries  # included for backwards compatibility
 
-    Parameters
-    ----------
-    shape_filename : str
-        Path to a filename for a shape file of feature geometries
-
-    Returns
-    -------
-    geometries : ndarray 
-        Valid shapely polygons that define the feature geometry held in the shape file. Can be plotted directly using
-        add_geometries.
-    """
-    import cartopy.io.shapereader as shpreader
-    shp_geom = shpreader.Reader(shape_filename).geometries()
-    geometries = []
-    for record in shp_geom:
-        geometries.append(record.buffer(0.0))
-    return geometries
     
 def add_coastlines(ax, reconstruction_time, **kwargs):
     """Reconstructs coastline geometries and plots them onto a standard map. 
