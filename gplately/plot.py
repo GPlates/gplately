@@ -69,26 +69,8 @@ from shapely.geometry.base import BaseGeometry, BaseMultipartGeometry
 from shapely.ops import linemerge
 
 
-def get_valid_geometries(shape_filename):
-    """Reads a shapefile of feature geometries and obtains only valid geometries.
+from .io import get_valid_geometries  # included for backwards compatibility
 
-    Parameters
-    ----------
-    shape_filename : str
-        Path to a filename for a shape file of feature geometries
-
-    Returns
-    -------
-    geometries : ndarray 
-        Valid shapely polygons that define the feature geometry held in the shape file. Can be plotted directly using
-        add_geometries.
-    """
-    import cartopy.io.shapereader as shpreader
-    shp_geom = shpreader.Reader(shape_filename).geometries()
-    geometries = []
-    for record in shp_geom:
-        geometries.append(record.buffer(0.0))
-    return geometries
     
 def add_coastlines(ax, reconstruction_time, **kwargs):
     """Reconstructs coastline geometries and plots them onto a standard map. 
@@ -1372,7 +1354,7 @@ class PlotTopologies(object):
             shp = shapely.geometry.Polygon(triangle_xy_points)
             teeth.append(shp)
 
-        ax.add_geometries(teeth, crs=self.base_projection, color=color, **kwargs)
+        return ax.add_geometries(teeth, crs=self.base_projection, color=color, **kwargs)
 
     def plot_grid(self, ax, grid, extent=[-180,180,-90,90], **kwargs):
         """Plots an ndarray of gridded data onto a standard map. 

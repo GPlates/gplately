@@ -83,13 +83,11 @@ if __name__ == "__main__":
           long_description_content_type='text/markdown',
           install_requires  = ['numpy>=1.16.0',
                                'scipy>=1.0.0',
-                               'matplotlib',
-                               'platetectonictools',
                                'shapely',
+                               'matplotlib',
                                'cartopy',
-                               'fiona',
-                               'geopandas'
-                              ],
+                               'PlateTectonicTools'
+                               ],
           packages          = ['gplately'],
           package_data      = {'gplately': ['Notebooks/*ipynb', # Worked Examples is not currently used
                                             'Notebooks/Data/*'] },

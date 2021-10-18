@@ -91,7 +91,7 @@ class PlateReconstruction(object):
         self.static_polygons = static_polygons
 
 
-    def tesselate_subduction_zones(self, time, tessellation_threshold_radians=0.001, anchor_plate_id=0):
+    def tesselate_subduction_zones(self, time, tessellation_threshold_radians=0.001, ignore_warnings=False, **kwargs):
         """Samples points along subduction zone trenches and obtains both convergence and absolute velocities at a particular
         geological time.
         
@@ -129,9 +129,6 @@ class PlateReconstruction(object):
         tessellation_threshold_radians : float, default=0.001 
             The threshold sampling distance along the subducting trench (in radians).
 
-        anchor_plate_id : int, default=0
-            The anchor plate of the reconstruction model.
-
         Returns
         -------
         subduction_data : a list of vertically-stacked tuples
@@ -167,19 +164,29 @@ class PlateReconstruction(object):
 
         The trench normal (at each arc segment mid-point) always points *towards* the overriding plate.
         """
-        with warnings.catch_warnings():
-            warnings.simplefilter('ignore')
+        if ignore_warnings:
+            with warnings.catch_warnings():
+                warnings.simplefilter('ignore')
+                subduction_data = ptt.subduction_convergence.subduction_convergence(
+                    self.rotation_model,
+                    self.topology_features,
+                    tessellation_threshold_radians,
+                    float(time),
+                    **kwargs)
+
+        else:
             subduction_data = ptt.subduction_convergence.subduction_convergence(
                 self.rotation_model,
                 self.topology_features,
                 tessellation_threshold_radians,
                 float(time),
-                anchor_plate_id=anchor_plate_id)
+                **kwargs)
+
         subduction_data = np.vstack(subduction_data)
         return subduction_data
 
 
-    def tesselate_mid_ocean_ridges(self, time, tessellation_threshold_radians=0.001, anchor_plate_id=0):
+    def tesselate_mid_ocean_ridges(self, time, tessellation_threshold_radians=0.001, ignore_warnings=False, **kwargs):
         """Samples points along resolved spreading features (e.g. mid-ocean ridges) and calculates spreading rate and 
         length of ridge segments at a particular geological time.
          
@@ -218,14 +225,24 @@ class PlateReconstruction(object):
             * spreading velocity magnitude (in cm/yr)
             * length of arc segment (in degrees) that current point is on
         """
-        with warnings.catch_warnings():
-            warnings.simplefilter('ignore')
+        if ignore_warnings:
+            with warnings.catch_warnings():
+                warnings.simplefilter('ignore')
+                ridge_data = ptt.ridge_spreading_rate.spreading_rates(
+                    self.rotation_model,
+                    self.topology_features,
+                    float(time),
+                    tessellation_threshold_radians,
+                    **kwargs)
+
+        else:
             ridge_data = ptt.ridge_spreading_rate.spreading_rates(
                 self.rotation_model,
                 self.topology_features,
                 float(time),
                 tessellation_threshold_radians,
-                anchor_plate_id=anchor_plate_id)
+                **kwargs)
+
         ridge_data = np.vstack(ridge_data)
         return ridge_data
 
