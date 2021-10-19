@@ -62,7 +62,7 @@ from matplotlib.patches import Polygon as PolygonPatch
 import matplotlib.pyplot as plt
 import numpy as np
 import ptt
-from shapely.geometry import Point
+from shapely.geometry import Point, Polygon
 from shapely.geometry.base import BaseGeometry, BaseMultipartGeometry
 from shapely.ops import linemerge
 
@@ -507,9 +507,11 @@ def plot_subduction_teeth(
             transform,
         )
 
-    for triangle in triangles:
-        patch = PolygonPatch(triangle, closed=True, **kwargs)
-        ax.add_patch(patch)
+    if hasattr(ax, "add_geometries") and projection is not None:
+        ax.add_geometries(triangles, crs=projection, **kwargs)
+    else:
+        for triangle in triangles:
+            ax.fill(*triangle.exterior.xy, **kwargs)
 
 
 def _tesselate_triangles(
@@ -597,10 +599,6 @@ def _calculate_triangle_vertices(
             if normal_mag == 0:
                 continue
             normal *= height / normal_mag
-            # midpoint_x = 0.5 * (tesselated_x[i] + tesselated_x[i + 1])
-            # midpoint_y = 0.5 * (tesselated_y[i] + tesselated_y[i + 1])
-            # midpoint_x = tesselated_x[i]
-            # midpoint_y = tesselated_y[i]
             midpoint = np.array((tesselated_x[i], tesselated_y[i]))
             if polarity == "right":
                 normal *= -1.0
@@ -619,14 +617,7 @@ def _calculate_triangle_vertices(
                     apex,
                 )
             )
-            # triangle_points = np.array(
-            #     [
-            #         (tesselated_x[i], tesselated_y[i]),
-            #         (tesselated_x[i + 1], tesselated_y[i + 1]),
-            #         (apex_x, apex_y),
-            #     ]
-            # )
-            triangles.append(triangle_points)
+            triangles.append(Polygon(triangle_points))
     return triangles
 
 
