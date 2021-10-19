@@ -1276,7 +1276,7 @@ class PlotTopologies(object):
         return ax.add_geometries(teeth, crs=self.base_projection, color=color, **kwargs)
 
 
-    def plot_subduction_teeth(self, ax, spacing=4.0, size=None, aspect=None, color='black', **kwargs):
+    def plot_subduction_teeth(self, ax, spacing=0.07, size=None, aspect=None, color='black', **kwargs):
         """Plots subduction teeth onto a standard map. 
 
         To plot subduction teeth, the left and right sides of resolved subduction boundary sections must be accessible
@@ -1290,7 +1290,7 @@ class PlotTopologies(object):
             Should be set at a particular Cartopy map projection.
 
         spacing : float, default=0.1 
-            The tessellation threshold (in degrees). Parametrises subduction tooth density. Triangles are generated only
+            The tessellation threshold (in radians). Parametrises subduction tooth density. Triangles are generated only
             along line segments with distances that exceed the given threshold ‘spacing’.
 
         size : float, default=None
@@ -1311,7 +1311,7 @@ class PlotTopologies(object):
             The map with subduction teeth plotted onto the chosen projection (transformed using PlateCarree).
         """
 
-        spacing = np.radians(spacing) * EARTH_RADIUS * 1e3
+        spacing = spacing * EARTH_RADIUS * 1e3
 
         if aspect is None:
             aspect = 2.0/3.0
