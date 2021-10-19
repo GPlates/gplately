@@ -1,3 +1,4 @@
+from shapely.geometry.base import BaseGeometry
 try:
     import geopandas as gpd
 
@@ -63,20 +64,51 @@ def get_valid_geometries(filename):
 
 
 def _get_geometries_geopandas(filename, buffer=None):
+    def buffer_func(geoms, buffer=None):
+        if buffer is not None:
+            geoms = geoms.buffer(buffer)
+        return geoms
+
+    if isinstance(filename, gpd.GeoDataFrame):
+        return buffer_func(filename.geometry, buffer)
+    if isinstance(filename, gpd.GeoSeries):
+        return buffer_func(filename, buffer)
+    if isinstance(filename, BaseGeometry):
+        return buffer_func(gpd.GeoSeries([filename]), buffer)
+    try:
+        for i in filename:
+            if isinstance(i, BaseGeometry):
+                # Iterable of geometries
+                return buffer_func(gpd.GeoSeries(filename), buffer)
+            break
+    except TypeError:
+        # Not an iterable
+        # Since strings are iterable, anything that's not an iterable
+        # will probably fail at the next step anyway
+        pass
+    # If it gets to this line, `filename` should actually be a filename
     gdf = gpd.read_file(filename)
-    geoms = gdf.geometry
-    if buffer is not None:
-        geoms = geoms.buffer(buffer)
-    return geoms
+    return buffer_func(gdf.geometry, buffer)
 
 
 def _get_geometries_cartopy(filename, buffer=None):
+    def buffer_func(geoms, buffer=None):
+        if buffer is None:
+            return list(geoms)
+        out = []
+        for i in geoms:
+            out.append(i.buffer(buffer))
+        return out
+
+    if isinstance(filename, BaseGeometry):
+        return buffer_func([filename], buffer)
+    try:
+        for i in filename:
+            if isinstance(i, BaseGeometry):
+                return buffer_func(filename, buffer)
+            break
+    except TypeError:
+        pass
+
     reader = shpreader.Reader(filename)
-    shp_geom = reader.geometries()
-    geometries = []
-    for record in shp_geom:
-        if buffer is not None:
-            geometries.append(record.buffer(0.0))
-        else:
-            geometries.append(record)
-    return geometries
+    return buffer_func(reader.geometries(), buffer)

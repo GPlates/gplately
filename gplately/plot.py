@@ -58,8 +58,6 @@ import re
 
 import pygplates
 import cartopy.crs as ccrs
-from fiona.errors import DriverError
-import geopandas as gpd
 from matplotlib.patches import Polygon as PolygonPatch
 import matplotlib.pyplot as plt
 import numpy as np
@@ -68,8 +66,14 @@ from shapely.geometry import Point
 from shapely.geometry.base import BaseGeometry, BaseMultipartGeometry
 from shapely.ops import linemerge
 
+from .io import (
+    get_valid_geometries,  # included for backwards compatibility
+    GEOPANDAS_AVAILABLE as _GEOPANDAS_AVAILABLE,
+    get_geometries as _get_geometries,
+)
 
-from .io import get_valid_geometries  # included for backwards compatibility
+if _GEOPANDAS_AVAILABLE:
+    import geopandas as gpd
 
     
 def add_coastlines(ax, reconstruction_time, **kwargs):
@@ -392,6 +396,7 @@ def plot_subduction_teeth(
     width,
     polarity=None,
     height=None,
+    spacing=0.0,
     projection="auto",
     transform=None,
     nprocs=1,
@@ -425,6 +430,11 @@ def plot_subduction_teeth(
         If provided, the height of the subduction teeth. As with `width`,
         this value should be given in projected units. If no value is given,
         the height of the teeth will be equal to 0.6 * `width`.
+    spacing : float, default None
+        If provided, the spacing between the subduction teeth. As with
+        `width` and `height`, this value should be given in projected units.
+        If no value is given, `spacing` will default to `width`, producing
+        tightly packed subduction teeth.
     projection : cartopy.crs.Transform, "auto", or None, default "auto"
         The projection of the plot. If the plot has no projection, this value
         can be explicitly given as `None`. The default value is "auto", which
@@ -460,10 +470,12 @@ def plot_subduction_teeth(
         raise ValueError("Invalid projection: {}".format(projection))
 
     if polarity is None:
-        if not isinstance(geometries, gpd.GeoDataFrame):
+        if not (
+            _GEOPANDAS_AVAILABLE and isinstance(geometries, gpd.GeoDataFrame)
+        ):
             raise ValueError(
                 "If `polarity` is not given, `geometries` must be"
-                + " a geopandas.GeoDataFrame"
+                + " a `geopandas.GeoDataFrame`"
             )
         polarity_column = _find_polarity_column(geometries.columns.values)
         if polarity_column is None:
@@ -482,6 +494,7 @@ def plot_subduction_teeth(
                     width,
                     p,
                     height,
+                    spacing,
                     projection,
                     transform,
                     nprocs,
@@ -493,6 +506,7 @@ def plot_subduction_teeth(
             width,
             polarity,
             height,
+            spacing,
             projection,
             transform,
             nprocs,
@@ -505,19 +519,22 @@ def plot_subduction_teeth(
 
 def _tesselate_triangles(
     geometries,
-    spacing,
+    width,
     polarity="left",
     height=None,
+    spacing=None,
     projection=None,
     transform=None,
     nprocs=1,
 ):
-    if spacing <= 0.0:
-        raise ValueError("Invalid `width` argument: {}".format(spacing))
+    if width <= 0.0:
+        raise ValueError("Invalid `width` argument: {}".format(width))
     polarity = _parse_polarity(polarity)
     geometries = _parse_geometries(geometries)
     if height is None:
-        height = spacing * 0.6
+        height = width * 0.6
+    if spacing is None:
+        spacing = width
 
     nprocs = max([nprocs, 1])
     nprocs = min([nprocs, len(geometries)])
@@ -535,6 +552,7 @@ def _tesselate_triangles(
         nprocs = min([nprocs, cpu_count()])
         chunk_size = int(len(geometries) / nprocs)
         n = len(geometries)
+        widths = repeat(width, n)
         spacings = repeat(spacing, n)
         projections = repeat(projection, n)
         transforms = repeat(transform, n)
@@ -562,6 +580,7 @@ def _tesselate_triangles(
         with Pool(nprocs) as pool:
             args = zip(
                 geometries,
+                widths,
                 spacings,
                 heights,
                 polarities,
@@ -594,6 +613,7 @@ def _tesselate_triangles(
             geometries = [geometries]
         results = _calculate_triangle_vertices(
             geometries,
+            width,
             spacing,
             height,
             polarity,
@@ -616,6 +636,7 @@ def _project_geometry(geometry, projection, transform=None):
 
 def _calculate_triangle_vertices(
     geometries,
+    width,
     spacing,
     height,
     polarity,
@@ -629,7 +650,7 @@ def _calculate_triangle_vertices(
         length = geometry.length
         tesselated_x = []
         tesselated_y = []
-        for distance in np.arange(0.0, length, spacing):
+        for distance in np.arange(spacing, length, spacing):
             point = Point(geometry.interpolate(distance))
             tesselated_x.append(point.x)
             tesselated_y.append(point.y)
@@ -639,25 +660,40 @@ def _calculate_triangle_vertices(
         for i in range(len(tesselated_x) - 1):
             normal_x = tesselated_y[i] - tesselated_y[i + 1]
             normal_y = tesselated_x[i + 1] - tesselated_x[i]
-            normal_mag = np.sqrt(normal_x ** 2 + normal_y ** 2)
+            normal = np.array((normal_x, normal_y))
+            normal_mag = np.sqrt((normal ** 2).sum())
             if normal_mag == 0:
                 continue
-            normal_x *= height / normal_mag
-            normal_y *= height / normal_mag
-            midpoint_x = 0.5 * (tesselated_x[i] + tesselated_x[i + 1])
-            midpoint_y = 0.5 * (tesselated_y[i] + tesselated_y[i + 1])
+            normal *= height / normal_mag
+            # midpoint_x = 0.5 * (tesselated_x[i] + tesselated_x[i + 1])
+            # midpoint_y = 0.5 * (tesselated_y[i] + tesselated_y[i + 1])
+            # midpoint_x = tesselated_x[i]
+            # midpoint_y = tesselated_y[i]
+            midpoint = np.array((tesselated_x[i], tesselated_y[i]))
             if polarity == "right":
-                normal_x *= -1.0
-                normal_y *= -1.0
-            apex_x = normal_x + midpoint_x
-            apex_y = normal_y + midpoint_y
+                normal *= -1.0
+            apex = midpoint + normal
+
+            next_midpoint = np.array((tesselated_x[i + 1], tesselated_y[i + 1]))
+            line_vector = np.array(next_midpoint - midpoint)
+            line_vector_mag = np.sqrt((line_vector ** 2).sum())
+            line_vector /= line_vector_mag
+            triangle_point_a = midpoint + width * 0.5 * line_vector
+            triangle_point_b = midpoint - width * 0.5 * line_vector
             triangle_points = np.array(
-                [
-                    (tesselated_x[i], tesselated_y[i]),
-                    (tesselated_x[i + 1], tesselated_y[i + 1]),
-                    (apex_x, apex_y),
-                ]
+                (
+                    triangle_point_a,
+                    triangle_point_b,
+                    apex,
+                )
             )
+            # triangle_points = np.array(
+            #     [
+            #         (tesselated_x[i], tesselated_y[i]),
+            #         (tesselated_x[i + 1], tesselated_y[i + 1]),
+            #         (apex_x, apex_y),
+            #     ]
+            # )
             triangles.append(triangle_points)
     return triangles
 
@@ -689,61 +725,20 @@ def _find_polarity_column(columns):
 
 
 def _parse_geometries(geometries):
-    # Check common formats
-    if isinstance(geometries, gpd.GeoDataFrame):
-        pass
-    elif isinstance(geometries, gpd.GeoSeries):
-        pass
-    else:  # filename, file object, or sequence of geometries
-        sequence_geometries = False
-        try:
-            for i in geometries:
-                if isinstance(i, BaseGeometry):
-                    sequence_geometries = True
-                break
-        except TypeError:
-            pass
-        if not sequence_geometries:
-            try:  # filename or file-like object
-                geometries = gpd.read_file(geometries)
-            except (AttributeError, TypeError) as e:
-                err_msg = "Could not extract `geometries`: {}".format(
-                    geometries
-                )
-                raise TypeError(err_msg) from e
-            except DriverError as e:
-                err_msg = "Invalid filename or file object: {}".format(
-                    geometries
-                )
-                raise ValueError(err_msg) from e
-
-    if isinstance(geometries, gpd.GeoDataFrame):
-        geometries = geometries.geometry
-    if isinstance(geometries, gpd.GeoSeries):
+    geometries = _get_geometries(geometries)
+    if _GEOPANDAS_AVAILABLE and isinstance(geometries, gpd.GeoSeries):
         geometries = list(geometries)
 
     # Explode multi-part geometries
     # Weirdly the following seems to be faster than
     # the equivalent explode() method from GeoPandas:
-    tmp = []
+    out = []
     for i in geometries:
         if isinstance(i, BaseMultipartGeometry):
-            tmp.extend(list(i))
+            out.extend(list(i))
         else:
-            tmp.append(i)
-    geometries = tmp
-
-    try:
-        for i in geometries:  # sequence of geometries
-            if not isinstance(i, BaseGeometry):
-                raise TypeError
-            break
-    except TypeError:  # not a sequence, or not a sequence of geometries
-        if not isinstance(geometries, BaseGeometry):
-            err_msg = "Could not extract `geometries`: {}".format(geometries)
-            raise TypeError(err_msg)
-        geometries = [geometries]  # sequence of geometries; length 1
-    return geometries
+            out.append(i)
+    return out
 
 
 def shapelify_feature_polygons(features):
