@@ -65,6 +65,7 @@ import ptt
 from shapely.geometry import Point, Polygon
 from shapely.geometry.base import BaseGeometry, BaseMultipartGeometry
 from shapely.ops import linemerge
+from .tools import EARTH_RADIUS
 
 from .io import (
     get_valid_geometries,  # included for backwards compatibility
@@ -396,7 +397,7 @@ def plot_subduction_teeth(
     width,
     polarity=None,
     height=None,
-    spacing=0.0,
+    spacing=None,
     projection="auto",
     transform=None,
     ax=None,
@@ -528,7 +529,7 @@ def _tesselate_triangles(
     polarity = _parse_polarity(polarity)
     geometries = _parse_geometries(geometries)
     if height is None:
-        height = width * 0.6
+        height = width * 2.0/3.0
     if spacing is None:
         spacing = width
 
@@ -1213,7 +1214,7 @@ class PlotTopologies(object):
         trench_lines = self._get_feature_lines(self.trenches)
         return ax.add_geometries(trench_lines, crs=self.base_projection, facecolor='none', edgecolor=color, **kwargs)
 
-    def plot_subduction_teeth(self, ax, spacing=0.1, size=2.0, aspect=1, color='black', **kwargs):
+    def plot_subduction_teeth_deprecated(self, ax, spacing=0.1, size=2.0, aspect=1, color='black', **kwargs):
         """Plots subduction teeth onto a standard map. 
 
         To plot subduction teeth, the left and right sides of resolved subduction boundary sections must be accessible
@@ -1273,6 +1274,58 @@ class PlotTopologies(object):
             teeth.append(shp)
 
         return ax.add_geometries(teeth, crs=self.base_projection, color=color, **kwargs)
+
+
+    def plot_subduction_teeth(self, ax, spacing=4.0, size=None, aspect=None, color='black', **kwargs):
+        """Plots subduction teeth onto a standard map. 
+
+        To plot subduction teeth, the left and right sides of resolved subduction boundary sections must be accessible
+        from the “left_trench” and “right_trench” attributes. Teeth are created and transformed into Shapely polygons for
+        plotting. 
+
+        Parameters
+        ----------
+        ax : GeoAxis
+            A standard map for lat-lon data built on a matplotlib figure. Can be for a single plot or for multiple subplots.
+            Should be set at a particular Cartopy map projection.
+
+        spacing : float, default=0.1 
+            The tessellation threshold (in degrees). Parametrises subduction tooth density. Triangles are generated only
+            along line segments with distances that exceed the given threshold ‘spacing’.
+
+        size : float, default=None
+            Length of teeth triangle base (in degrees). If None then size=0.5*spacing
+
+        aspect : float, default=None
+            Aspect ratio of teeth triangles. If None then aspect=2/3*size
+
+        color = str, default=’black’
+            The colour of the teeth. By default, it is set to black.
+
+        **kwargs 
+            Keyword arguments that allow control over parameters such as ‘alpha’, etc. for plotting subduction tooth polygons.
+
+        Returns
+        -------
+        ax : GeoAxis
+            The map with subduction teeth plotted onto the chosen projection (transformed using PlateCarree).
+        """
+
+        spacing = np.radians(spacing) * EARTH_RADIUS * 1e3
+
+        if aspect is None:
+            aspect = 2.0/3.0
+        if size is None:
+            size = spacing*0.5
+
+        height = size*aspect
+
+        trench_left_features  = self._get_feature_lines(self.trench_left)
+        trench_right_features = self._get_feature_lines(self.trench_right)
+
+        plot_subduction_teeth(trench_left_features,  size, 'l', height, spacing, ax=ax, color=color, **kwargs)
+        plot_subduction_teeth(trench_right_features,  size, 'r', height, spacing, ax=ax, color=color, **kwargs)
+
 
     def plot_grid(self, ax, grid, extent=[-180,180,-90,90], **kwargs):
         """Plots an ndarray of gridded data onto a standard map. 
