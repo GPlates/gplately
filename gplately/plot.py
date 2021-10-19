@@ -399,7 +399,6 @@ def plot_subduction_teeth(
     spacing=0.0,
     projection="auto",
     transform=None,
-    nprocs=1,
     ax=None,
     **kwargs
 ):
@@ -443,8 +442,6 @@ def plot_subduction_teeth(
         If the plot is projected, a `transform` value is usually needed.
         Frequently, the appropriate value is an instance of
         `cartopy.crs.PlateCarree`.
-    nprocs : int, default 1
-        The number of processes to use.
     ax : matplotlib.axes.Axes, or None, default None
         The axes on which the subduction teeth will be drawn. By default,
         the current axes will be acquired using `matplotlib.pyplot.gca`.
@@ -497,7 +494,6 @@ def plot_subduction_teeth(
                     spacing,
                     projection,
                     transform,
-                    nprocs,
                 )
             )
     else:
@@ -509,7 +505,6 @@ def plot_subduction_teeth(
             spacing,
             projection,
             transform,
-            nprocs,
         )
 
     for triangle in triangles:
@@ -525,7 +520,6 @@ def _tesselate_triangles(
     spacing=None,
     projection=None,
     transform=None,
-    nprocs=1,
 ):
     if width <= 0.0:
         raise ValueError("Invalid `width` argument: {}".format(width))
@@ -536,88 +530,26 @@ def _tesselate_triangles(
     if spacing is None:
         spacing = width
 
-    nprocs = max([nprocs, 1])
-    nprocs = min([nprocs, len(geometries)])
-
-    if nprocs > 1 and len(geometries) > 20:
-        from itertools import repeat
-        from multiprocessing import cpu_count, Pool, set_start_method
-        from platform import system
-
-        try:
-            if system() == "Darwin":
-                set_start_method("spawn")
-        except RuntimeError:
-            pass
-        nprocs = min([nprocs, cpu_count()])
-        chunk_size = int(len(geometries) / nprocs)
-        n = len(geometries)
-        widths = repeat(width, n)
-        spacings = repeat(spacing, n)
-        projections = repeat(projection, n)
-        transforms = repeat(transform, n)
-        heights = repeat(height, n)
-        polarities = repeat(polarity, n)
-        with Pool(nprocs) as pool:
-            if projection is not None:
-                geometries = pool.starmap(
-                    _project_geometry,
-                    zip(geometries, projections, transforms),
-                    chunksize=chunk_size,
-                )
-                geometries_new = []
-                for i in geometries:
-                    geometries_new.extend(i)
-                geometries = geometries_new
-                del geometries_new
-            geometries = linemerge(geometries)
-            if isinstance(geometries, BaseMultipartGeometry):
-                geometries = list(geometries)
-            elif isinstance(geometries, BaseGeometry):
-                geometries = [geometries]
-            pool.close()
-            pool.join()
-        with Pool(nprocs) as pool:
-            args = zip(
-                geometries,
-                widths,
-                spacings,
-                heights,
-                polarities,
+    if projection is not None:
+        geometries_new = []
+        for i in geometries:
+            geometries_new.extend(
+                _project_geometry(i, projection, transform)
             )
-            results = pool.starmap(
-                _calculate_triangle_vertices,
-                args,
-                chunksize=chunk_size,
-            )
-            pool.close()
-            pool.join()
-        results_new = []
-        for i in results:
-            results_new.extend(i)
-        results = results_new
-        del results_new
-    else:
-        if projection is not None:
-            geometries_new = []
-            for i in geometries:
-                geometries_new.extend(
-                    _project_geometry(i, projection, transform)
-                )
-            geometries = geometries_new
-            del geometries_new
-        geometries = linemerge(geometries)
-        if isinstance(geometries, BaseMultipartGeometry):
-            geometries = list(geometries)
-        elif isinstance(geometries, BaseGeometry):
-            geometries = [geometries]
-        results = _calculate_triangle_vertices(
-            geometries,
-            width,
-            spacing,
-            height,
-            polarity,
-        )
+        geometries = geometries_new
+        del geometries_new
+    geometries = linemerge(geometries)
+    if isinstance(geometries, BaseMultipartGeometry):
+        geometries = list(geometries)
+    elif isinstance(geometries, BaseGeometry):
+        geometries = [geometries]
+    results = _calculate_triangle_vertices(
+        geometries,
+        width,
+        spacing,
+        height,
+        polarity,
+    )
     return results
 
 
