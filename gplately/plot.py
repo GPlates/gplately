@@ -1294,7 +1294,7 @@ class PlotTopologies(object):
             along line segments with distances that exceed the given threshold ‘spacing’.
 
         size : float, default=None
-            Length of teeth triangle base (in degrees). If None then size=0.5*spacing
+            Length of teeth triangle base (in radians). If None then size=0.5*spacing
 
         aspect : float, default=None
             Aspect ratio of teeth triangles. If None then aspect=2/3*size
