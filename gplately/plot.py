@@ -54,31 +54,28 @@ Classes
 -------
 PlotTopologies
 """
-import ptt
-import numpy as np
-import matplotlib.pyplot as plt
+import re
+
 import pygplates
+import cartopy.crs as ccrs
+from matplotlib.patches import Polygon as PolygonPatch
+import matplotlib.pyplot as plt
+import numpy as np
+import ptt
+from shapely.geometry import Point, Polygon
+from shapely.geometry.base import BaseGeometry, BaseMultipartGeometry
+from shapely.ops import linemerge
+from .tools import EARTH_RADIUS
 
-def get_valid_geometries(shape_filename):
-    """Reads a shapefile of feature geometries and obtains only valid geometries.
+from .io import (
+    get_valid_geometries,  # included for backwards compatibility
+    GEOPANDAS_AVAILABLE as _GEOPANDAS_AVAILABLE,
+    get_geometries as _get_geometries,
+)
 
-    Parameters
-    ----------
-    shape_filename : str
-        Path to a filename for a shape file of feature geometries
+if _GEOPANDAS_AVAILABLE:
+    import geopandas as gpd
 
-    Returns
-    -------
-    geometries : ndarray 
-        Valid shapely polygons that define the feature geometry held in the shape file. Can be plotted directly using
-        add_geometries.
-    """
-    import cartopy.io.shapereader as shpreader
-    shp_geom = shpreader.Reader(shape_filename).geometries()
-    geometries = []
-    for record in shp_geom:
-        geometries.append(record.buffer(0.0))
-    return geometries
     
 def add_coastlines(ax, reconstruction_time, **kwargs):
     """Reconstructs coastline geometries and plots them onto a standard map. 
@@ -354,46 +351,319 @@ def tesselate_triangles(shapefilename, tesselation_radians, triangle_base_length
     """
 
     import shapefile
-    shp = shapefile.Reader(shapefilename)
 
-    tesselation_degrees = np.degrees(tesselation_radians)
-    triangle_pointsX = []
-    triangle_pointsY = []
+    with shapefile.Reader(shapefilename) as shp:
+        tesselation_degrees = np.degrees(tesselation_radians)
+        triangle_pointsX = []
+        triangle_pointsY = []
 
-    for i in range(len(shp)):
-        pts = np.array(shp.shape(i).points)
+        for i in range(len(shp)):
+            pts = np.array(shp.shape(i).points)
 
-        cum_distance = 0.0
-        for p in range(len(pts) - 1):
+            cum_distance = 0.0
+            for p in range(len(pts) - 1):
 
-            A = pts[p]
-            B = pts[p+1]
+                A = pts[p]
+                B = pts[p + 1]
 
-            AB_dist = B - A
-            AB_norm = AB_dist / np.hypot(*AB_dist)
-            cum_distance += np.hypot(*AB_dist)
+                AB_dist = B - A
+                AB_norm = AB_dist / np.hypot(*AB_dist)
+                cum_distance += np.hypot(*AB_dist)
 
-            # create a new triangle if cumulative distance is exceeded.
-            if cum_distance >= tesselation_degrees:
+                # create a new triangle if cumulative distance is exceeded.
+                if cum_distance >= tesselation_degrees:
 
-                C = A + triangle_base_length*AB_norm
+                    C = A + triangle_base_length * AB_norm
 
-                # find normal vector
-                AD_dist = np.array([AB_norm[1], -AB_norm[0]])
-                AD_norm = AD_dist / np.linalg.norm(AD_dist)
+                    # find normal vector
+                    AD_dist = np.array([AB_norm[1], -AB_norm[0]])
+                    AD_norm = AD_dist / np.linalg.norm(AD_dist)
 
-                C0 = A + 0.5*triangle_base_length*AB_norm
+                    C0 = A + 0.5 * triangle_base_length * AB_norm
 
-                # project point along normal vector
-                D = C0 + triangle_base_length*triangle_aspect*AD_norm
+                    # project point along normal vector
+                    D = C0 + triangle_base_length * triangle_aspect * AD_norm
 
-                triangle_pointsX.append( [A[0], C[0], D[0]] )
-                triangle_pointsY.append( [A[1], C[1], D[1]] )
+                    triangle_pointsX.append([A[0], C[0], D[0]])
+                    triangle_pointsY.append([A[1], C[1], D[1]])
 
-                cum_distance = 0.0
+                    cum_distance = 0.0
 
-    shp.close()
     return np.array(triangle_pointsX), np.array(triangle_pointsY)
+
+
+def plot_subduction_teeth(
+    geometries,
+    width,
+    polarity=None,
+    height=None,
+    spacing=None,
+    projection="auto",
+    transform=None,
+    ax=None,
+    **kwargs
+):
+    """Add subduction teeth to a plot.
+
+    The subduction polarity used for subduction teeth can be specified
+    manually or detected automatically if `geometries` is a
+    `geopandas.GeoDataFrame` object with a `polarity` column.
+
+    Parameters
+    ----------
+    geometries : geopandas.GeoDataFrame, sequence of shapely geometries, or str
+        If a `geopandas.GeoDataFrame` is given, its geometry attribute
+        will be used. If `geometries` is a string, it must be the path to
+        a file, which will be loaded with `geopandas.read_file`. Otherwise,
+        `geometries` must be a sequence of shapely geometry objects (instances
+        of the `shapely.geometry.base.BaseGeometry` class).
+    width : float
+        The (approximate) width of the subduction teeth. If a projection is
+        used, this value will be in projected units.
+    polarity : {"left", "l", "right", "r", None}, default None
+        The subduction polarity of the geometries. If no polarity is provided,
+        and `geometries` is a `geopandas.GeoDataFrame`, this function will
+        attempt to find a `polarity` column in the data frame and use the
+        values given there. If `polarity` is not manually specified and no
+        appropriate column can be found, an error will be raised.
+    height : float, default None
+        If provided, the height of the subduction teeth. As with `width`,
+        this value should be given in projected units. If no value is given,
+        the height of the teeth will be equal to 0.6 * `width`.
+    spacing : float, default None
+        If provided, the spacing between the subduction teeth. As with
+        `width` and `height`, this value should be given in projected units.
+        If no value is given, `spacing` will default to `width`, producing
+        tightly packed subduction teeth.
+    projection : cartopy.crs.Transform, "auto", or None, default "auto"
+        The projection of the plot. If the plot has no projection, this value
+        can be explicitly given as `None`. The default value is "auto", which
+        will acquire the projection automatically from the plot axes.
+    transform : cartopy.crs.Transform, or None, default None
+        If the plot is projected, a `transform` value is usually needed.
+        Frequently, the appropriate value is an instance of
+        `cartopy.crs.PlateCarree`.
+    ax : matplotlib.axes.Axes, or None, default None
+        The axes on which the subduction teeth will be drawn. By default,
+        the current axes will be acquired using `matplotlib.pyplot.gca`.
+    **kwargs
+        Any further keyword arguments will be passed to
+        `matplotlib.patches.Polygon`.
+
+    Raises
+    ------
+    ValueError
+        If `width` <= 0, or if `polarity` is an invalid value or could not
+        be determined.
+    """
+    if ax is None:
+        ax = plt.gca()
+
+    if projection == "auto":
+        try:
+            projection = ax.projection
+        except AttributeError:
+            projection = None
+    elif isinstance(projection, str):
+        raise ValueError("Invalid projection: {}".format(projection))
+
+    if polarity is None:
+        if not (
+            _GEOPANDAS_AVAILABLE and isinstance(geometries, gpd.GeoDataFrame)
+        ):
+            raise ValueError(
+                "If `polarity` is not given, `geometries` must be"
+                + " a `geopandas.GeoDataFrame`"
+            )
+        polarity_column = _find_polarity_column(geometries.columns.values)
+        if polarity_column is None:
+            raise ValueError(
+                "Could not automatically determine polarity; "
+                + "it must be defined manually instead."
+            )
+        triangles = []
+        for p in geometries[polarity_column].unique():
+            if p.lower() not in {"left", "l", "right", "r"}:
+                continue
+            gdf_polarity = geometries[geometries[polarity_column] == p]
+            triangles.extend(
+                _tesselate_triangles(
+                    gdf_polarity,
+                    width,
+                    p,
+                    height,
+                    spacing,
+                    projection,
+                    transform,
+                )
+            )
+    else:
+        triangles = _tesselate_triangles(
+            geometries,
+            width,
+            polarity,
+            height,
+            spacing,
+            projection,
+            transform,
+        )
+
+    if hasattr(ax, "add_geometries") and projection is not None:
+        ax.add_geometries(triangles, crs=projection, **kwargs)
+    else:
+        for triangle in triangles:
+            ax.fill(*triangle.exterior.xy, **kwargs)
+
+
+def _tesselate_triangles(
+    geometries,
+    width,
+    polarity="left",
+    height=None,
+    spacing=None,
+    projection=None,
+    transform=None,
+):
+    if width <= 0.0:
+        raise ValueError("Invalid `width` argument: {}".format(width))
+    polarity = _parse_polarity(polarity)
+    geometries = _parse_geometries(geometries)
+    if height is None:
+        height = width * 2.0/3.0
+    if spacing is None:
+        spacing = width
+
+    if projection is not None:
+        geometries_new = []
+        for i in geometries:
+            geometries_new.extend(
+                _project_geometry(i, projection, transform)
+            )
+        geometries = geometries_new
+        del geometries_new
+    geometries = linemerge(geometries)
+    if isinstance(geometries, BaseMultipartGeometry):
+        geometries = list(geometries)
+    elif isinstance(geometries, BaseGeometry):
+        geometries = [geometries]
+    results = _calculate_triangle_vertices(
+        geometries,
+        width,
+        spacing,
+        height,
+        polarity,
+    )
+    return results
+
+
+def _project_geometry(geometry, projection, transform=None):
+    if transform is None:
+        transform = ccrs.PlateCarree()
+    result = [projection.project_geometry(geometry, transform)]
+    projected = []
+    for i in result:
+        if isinstance(i, BaseMultipartGeometry):
+            projected.extend(list(i))
+        else:
+            projected.append(i)
+    return projected
+
+
+def _calculate_triangle_vertices(
+    geometries,
+    width,
+    spacing,
+    height,
+    polarity,
+):
+    if isinstance(geometries, BaseGeometry):
+        geometries = [geometries]
+    triangles = []
+    for geometry in geometries:
+        if not isinstance(geometry, BaseGeometry):
+            continue
+        length = geometry.length
+        tesselated_x = []
+        tesselated_y = []
+        for distance in np.arange(spacing, length, spacing):
+            point = Point(geometry.interpolate(distance))
+            tesselated_x.append(point.x)
+            tesselated_y.append(point.y)
+        tesselated_x = np.array(tesselated_x)
+        tesselated_y = np.array(tesselated_y)
+
+        for i in range(len(tesselated_x) - 1):
+            normal_x = tesselated_y[i] - tesselated_y[i + 1]
+            normal_y = tesselated_x[i + 1] - tesselated_x[i]
+            normal = np.array((normal_x, normal_y))
+            normal_mag = np.sqrt((normal ** 2).sum())
+            if normal_mag == 0:
+                continue
+            normal *= height / normal_mag
+            midpoint = np.array((tesselated_x[i], tesselated_y[i]))
+            if polarity == "right":
+                normal *= -1.0
+            apex = midpoint + normal
+
+            next_midpoint = np.array((tesselated_x[i + 1], tesselated_y[i + 1]))
+            line_vector = np.array(next_midpoint - midpoint)
+            line_vector_mag = np.sqrt((line_vector ** 2).sum())
+            line_vector /= line_vector_mag
+            triangle_point_a = midpoint + width * 0.5 * line_vector
+            triangle_point_b = midpoint - width * 0.5 * line_vector
+            triangle_points = np.array(
+                (
+                    triangle_point_a,
+                    triangle_point_b,
+                    apex,
+                )
+            )
+            triangles.append(Polygon(triangle_points))
+    return triangles
+
+
+def _parse_polarity(polarity):
+    if not isinstance(polarity, str):
+        raise TypeError(
+            "Invalid `polarity` argument type: {}".format(type(polarity))
+        )
+    if polarity.lower() in {"left", "l"}:
+        polarity = "left"
+    elif polarity.lower() in {"right", "r"}:
+        polarity = "right"
+    else:
+        valid_args = {"left", "l", "right", "r"}
+        err_msg = "Invalid `polarity` argument: {}".format(
+            polarity
+        ) + "\n(must be one of: {})".format(valid_args)
+        raise ValueError(err_msg)
+    return polarity
+
+
+def _find_polarity_column(columns):
+    pattern = "polarity"
+    for column in columns:
+        if re.fullmatch(pattern, column) is not None:
+            return column
+    return None
+
+
+def _parse_geometries(geometries):
+    geometries = _get_geometries(geometries)
+    if _GEOPANDAS_AVAILABLE and isinstance(geometries, gpd.GeoSeries):
+        geometries = list(geometries)
+
+    # Explode multi-part geometries
+    # Weirdly the following seems to be faster than
+    # the equivalent explode() method from GeoPandas:
+    out = []
+    for i in geometries:
+        if isinstance(i, BaseMultipartGeometry):
+            out.extend(list(i))
+        else:
+            out.append(i)
+    return out
+
 
 def shapelify_feature_polygons(features):
     """Generates shapely MultiPolygon geometries from reconstructed feature polygons. 
@@ -944,7 +1214,7 @@ class PlotTopologies(object):
         trench_lines = self._get_feature_lines(self.trenches)
         return ax.add_geometries(trench_lines, crs=self.base_projection, facecolor='none', edgecolor=color, **kwargs)
 
-    def plot_subduction_teeth(self, ax, spacing=0.1, size=2.0, aspect=1, color='black', **kwargs):
+    def plot_subduction_teeth_deprecated(self, ax, spacing=0.1, size=2.0, aspect=1, color='black', **kwargs):
         """Plots subduction teeth onto a standard map. 
 
         To plot subduction teeth, the left and right sides of resolved subduction boundary sections must be accessible
@@ -1004,6 +1274,58 @@ class PlotTopologies(object):
             teeth.append(shp)
 
         return ax.add_geometries(teeth, crs=self.base_projection, color=color, **kwargs)
+
+
+    def plot_subduction_teeth(self, ax, spacing=0.07, size=None, aspect=None, color='black', **kwargs):
+        """Plots subduction teeth onto a standard map. 
+
+        To plot subduction teeth, the left and right sides of resolved subduction boundary sections must be accessible
+        from the “left_trench” and “right_trench” attributes. Teeth are created and transformed into Shapely polygons for
+        plotting. 
+
+        Parameters
+        ----------
+        ax : GeoAxis
+            A standard map for lat-lon data built on a matplotlib figure. Can be for a single plot or for multiple subplots.
+            Should be set at a particular Cartopy map projection.
+
+        spacing : float, default=0.1 
+            The tessellation threshold (in radians). Parametrises subduction tooth density. Triangles are generated only
+            along line segments with distances that exceed the given threshold ‘spacing’.
+
+        size : float, default=None
+            Length of teeth triangle base (in radians). If None then size=0.5*spacing
+
+        aspect : float, default=None
+            Aspect ratio of teeth triangles. If None then aspect=2/3*size
+
+        color = str, default=’black’
+            The colour of the teeth. By default, it is set to black.
+
+        **kwargs 
+            Keyword arguments that allow control over parameters such as ‘alpha’, etc. for plotting subduction tooth polygons.
+
+        Returns
+        -------
+        ax : GeoAxis
+            The map with subduction teeth plotted onto the chosen projection (transformed using PlateCarree).
+        """
+
+        spacing = spacing * EARTH_RADIUS * 1e3
+
+        if aspect is None:
+            aspect = 2.0/3.0
+        if size is None:
+            size = spacing*0.5
+
+        height = size*aspect
+
+        trench_left_features  = self._get_feature_lines(self.trench_left)
+        trench_right_features = self._get_feature_lines(self.trench_right)
+
+        plot_subduction_teeth(trench_left_features,  size, 'l', height, spacing, ax=ax, color=color, **kwargs)
+        plot_subduction_teeth(trench_right_features,  size, 'r', height, spacing, ax=ax, color=color, **kwargs)
+
 
     def plot_grid(self, ax, grid, extent=[-180,180,-90,90], **kwargs):
         """Plots an ndarray of gridded data onto a standard map. 
