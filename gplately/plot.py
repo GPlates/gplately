@@ -690,7 +690,16 @@ def shapelify_feature_polygons(features):
     for feature in features:
 
         rings = []
-        wrapped_polygons = date_line_wrapper.wrap(feature.get_reconstructed_geometry())
+
+        # ascertain whether reconstructed feature or plain feature type
+        if type(feature) is pygplates.Feature:
+            geometry = feature.get_geometry()
+        elif type(feature) is pygplates.ReconstructedFeatureGeometry:
+            geometry = feature.get_reconstructed_geometry()
+        else:
+            raise ValueError("Not sure what to do with a {} feature type".format(str(type(feature))))
+
+        wrapped_polygons = date_line_wrapper.wrap(geometry)
         for poly in wrapped_polygons:
             ring = np.array([(p.get_longitude(), p.get_latitude()) for p in poly.get_exterior_points()])
             ring[:,1] = np.clip(ring[:,1], -89, 89) # anything approaching the poles creates artefacts
@@ -735,7 +744,16 @@ def shapelify_feature_lines(features):
     for feature in features:
 
         rings = []
-        wrapped_lines = date_line_wrapper.wrap(feature.get_reconstructed_geometry())
+
+        # ascertain whether reconstructed feature or plain feature type
+        if type(feature) is pygplates.Feature:
+            geometry = feature.get_geometry()
+        elif type(feature) is pygplates.ReconstructedFeatureGeometry:
+            geometry = feature.get_reconstructed_geometry()
+        else:
+            raise ValueError("Not sure what to do with a {} feature type".format(str(type(feature))))
+
+        wrapped_lines = date_line_wrapper.wrap(geometry)
         for line in wrapped_lines:
             ring = np.array([(p.get_longitude(), p.get_latitude()) for p in line.get_points()])
             ring[:,1] = np.clip(ring[:,1], -89, 89) # anything approaching the poles creates artefacts
