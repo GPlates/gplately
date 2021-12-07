@@ -692,31 +692,33 @@ def shapelify_feature_polygons(features):
         rings = []
 
         # ascertain whether reconstructed feature or plain feature type
+        # get_all_geometries() seems to capture more coordinates than just get_geometry()
         if type(feature) is pygplates.Feature:
-            geometry = feature.get_geometry()
+            geometries = feature.get_all_geometries()
         elif type(feature) is pygplates.ReconstructedFeatureGeometry:
-            geometry = feature.get_reconstructed_geometry()
+            geometries = [feature.get_reconstructed_geometry()]
         else:
             raise ValueError("Not sure what to do with a {} feature type".format(str(type(feature))))
 
-        wrapped_polygons = date_line_wrapper.wrap(geometry)
-        for poly in wrapped_polygons:
-            ring = np.array([(p.get_longitude(), p.get_latitude()) for p in poly.get_exterior_points()])
-            ring[:,1] = np.clip(ring[:,1], -89, 89) # anything approaching the poles creates artefacts
-            ring_polygon = shapely.geometry.Polygon(ring)
+        for geometry in geometries:
+            wrapped_polygons = date_line_wrapper.wrap(geometry)
+            for poly in wrapped_polygons:
+                ring = np.array([(p.get_longitude(), p.get_latitude()) for p in poly.get_exterior_points()])
+                ring[:,1] = np.clip(ring[:,1], -89, 89) # anything approaching the poles creates artefacts
+                ring_polygon = shapely.geometry.Polygon(ring)
+
+                # we need to make sure the exterior coordinates are ordered anti-clockwise
+                # and the geometry is valid otherwise it will screw with cartopy
+                if not ring_polygon.exterior.is_ccw:
+                    ring_polygon.exterior.coords = list(ring[::-1])
+
+                rings.append(ring_polygon)
+
+            geom = shapely.geometry.MultiPolygon(rings)
 
             # we need to make sure the exterior coordinates are ordered anti-clockwise
             # and the geometry is valid otherwise it will screw with cartopy
-            if not ring_polygon.exterior.is_ccw:
-                ring_polygon.exterior.coords = list(ring[::-1])
-
-            rings.append(ring_polygon)
-
-        geom = shapely.geometry.MultiPolygon(rings)
-
-        # we need to make sure the exterior coordinates are ordered anti-clockwise
-        # and the geometry is valid otherwise it will screw with cartopy
-        all_geometries.append(geom.buffer(0.0)) # add 0.0 buffer to deal with artefacts
+            all_geometries.append(geom.buffer(0.0)) # add 0.0 buffer to deal with artefacts
 
     return all_geometries
 
@@ -746,26 +748,28 @@ def shapelify_feature_lines(features):
         rings = []
 
         # ascertain whether reconstructed feature or plain feature type
+        # get_all_geometries() seems to capture more coordinates than just get_geometry()
         if type(feature) is pygplates.Feature:
-            geometry = feature.get_geometry()
+            geometries = feature.get_all_geometries()
         elif type(feature) is pygplates.ReconstructedFeatureGeometry:
-            geometry = feature.get_reconstructed_geometry()
+            geometries = [feature.get_reconstructed_geometry()]
         else:
             raise ValueError("Not sure what to do with a {} feature type".format(str(type(feature))))
 
-        wrapped_lines = date_line_wrapper.wrap(geometry)
-        for line in wrapped_lines:
-            ring = np.array([(p.get_longitude(), p.get_latitude()) for p in line.get_points()])
-            ring[:,1] = np.clip(ring[:,1], -89, 89) # anything approaching the poles creates artefacts
-            ring_linestring = shapely.geometry.LineString(ring)
+        for geometry in geometries:
+            wrapped_lines = date_line_wrapper.wrap(geometry)
+            for line in wrapped_lines:
+                ring = np.array([(p.get_longitude(), p.get_latitude()) for p in line.get_points()])
+                ring[:,1] = np.clip(ring[:,1], -89, 89) # anything approaching the poles creates artefacts
+                ring_linestring = shapely.geometry.LineString(ring)
 
-            rings.append(ring_linestring)
+                rings.append(ring_linestring)
 
-        # construct shapely geometry
-        geom = shapely.geometry.MultiLineString(rings)
+            # construct shapely geometry
+            geom = shapely.geometry.MultiLineString(rings)
 
-        if geom.is_valid:
-            all_geometries.append(geom)
+            if geom.is_valid:
+                all_geometries.append(geom)
 
     return all_geometries
 
