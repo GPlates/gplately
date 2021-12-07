@@ -186,6 +186,164 @@ class PlateReconstruction(object):
         return subduction_data
 
 
+    def total_subduction_zone_length(self, time, use_pygplates=False, use_ptt=False, ignore_warnings=False):
+        """Calculates the total length of all subduction zones (km) at the specified geological time (Ma).
+
+        Uses one of two methods at user's discretion:
+        1) "pyGPlates": 
+            Resolves topology features of the PlateReconstruction model and extracts their shared boundary sections.
+            The lengths of each GPML subduction zone shared boundary section are appended to the total subduction zone length.
+            Scales lengths to km using the geocentric radius.
+        2) "PTT"
+            Uses Plate Tectonic Tools' subduction_convergence workflow to calculate trench segment lengths. Scales lengths to
+            km using the geocentric radius.
+
+        Parameters
+        ----------
+        time : int
+            The geological time at which to calculate total subduction zone lengths.
+        use_pygplates : bool, default=False
+            Choose whether to use the pyGPlates method.
+        use_ptt : bool, default=False
+            Choose whether to use the PTT method. 
+        ignore_warnings : bool, default=False
+            Choose whether to ignore warning messages from PTT's subduction_convergence workflow that alerts the user of subduction
+            sub-segments that are ignored due to unidentified polarities and/or subducting plates. 
+
+
+        Raises
+        ------
+        ValueError
+            If neither use_pygplates or use_ptt have been set to True.
+
+        Returns
+        -------
+        total_subduction_zone_length_kms : float
+            The total subduction zone length (in km) at the specified time.
+
+        """
+        if use_pygplates is True:
+            resolved_topologies = []
+            shared_boundary_sections = []
+            pygplates.resolve_topologies(self.topology_features, self.rotation_model, resolved_topologies, time, shared_boundary_sections)
+
+            total_subduction_zone_length_kms = 0.0
+            for shared_boundary_section in shared_boundary_sections:
+                if shared_boundary_section.get_feature().get_feature_type() != pygplates.FeatureType.gpml_subduction_zone:
+                    continue
+                for shared_sub_segment in shared_boundary_section.get_shared_sub_segments():
+                    clat, clon = shared_sub_segment.get_resolved_geometry().get_centroid().to_lat_lon()
+                    earth_radius = _tools.geocentric_radius(clat) / 1e3
+                    total_subduction_zone_length_kms += shared_sub_segment.get_resolved_geometry().get_arc_length()*earth_radius
+
+            return total_subduction_zone_length_kms
+        
+        elif use_ptt is True:
+            with warnings.catch_warnings():
+                warnings.simplefilter('ignore')
+                subduction_data = self.tesselate_subduction_zones(time, ignore_warnings=ignore_warnings)
+
+            trench_arcseg = subduction_data[:,6]
+            trench_pt_lat = subduction_data[:,1]
+            
+            total_subduction_zone_length_kms = 0
+            for i, segment in enumerate(trench_arcseg):
+                earth_radius = _tools.geocentric_radius(trench_pt_lat[i])/1e3
+                total_subduction_zone_length_kms += np.deg2rad(segment)*earth_radius 
+                
+            return total_subduction_zone_length_kms
+        elif use_pygplates is True and use_ptt is True:
+            raise ValueError("Please set either use_pygplates or use_ptt to True.")
+        else:
+            raise ValueError("Please set either use_pygplates or use_ptt to True.")
+
+
+    def total_continental_arc_length(self, time, continental_grid_directory=None, trench_arc_distance=0.0, ignore_warnings=True):
+        """Calculates the total length of all continental arcs (km) at the specified geological time (Ma).
+
+        Uses Plate Tectonic Tools' subduction_convergence workflow to resolve a plate model's trench features into 
+        points and obtain their subduction polarities. The resolved points are projected out by the trench_arc_distance
+        and their new locations are linearly interpolated onto the supplied continental grid. If the projected trench 
+        points lie in the grid, they are considered continental arc points, and their arc segment lengths are appended 
+        to the total continental arc length for the specified Ma. The total length is scaled to km using the geocentric 
+        Earth radius. 
+
+        Parameters
+        ----------
+        time : int
+            The geological time at which to calculate total continental arc lengths.
+        continental_grid_directory : str, default=None
+            Path to a continental grid file with which to interpolate projected trench points (thereby identifying 
+            continental arc points). 
+        trench_arc_distance : float, default=0.0
+            The trench-to-arc distance (km) to project trench points out by in the direction of their subduction
+            polarities. 
+        ignore_warnings : bool, default=False
+            Choose whether to ignore warning messages from PTT's subduction_convergence workflow that alerts the user of 
+            subduction sub-segments that are ignored due to unidentified polarities and/or subducting plates. 
+
+        Raises
+        ------
+        ValueError
+            If a continental grid directory is not supplied.
+            If the trench_arc_distance is not supplied or kept at 0.0km.
+
+        Returns
+        -------
+        total_continental_arc_length_kms : float
+            The continental arc length (in km) at the specified time.
+        """
+        from . import grids as _grids
+        if continental_grid_directory is None:
+            raise ValueError("Please provide a directory to a continental grid for the current time.")
+            
+        # Process the continental grids + obtain trench data with Plate Tectonic Tools
+        graster = _grids.Raster(PlateReconstruction, continental_grid_directory, extent=[-180,180,-90,90])
+        trench_data = self.tesselate_subduction_zones(time, ignore_warnings=ignore_warnings)
+        
+        # Extract trench data
+        trench_normal_azimuthal_angle = trench_data[:,7]
+        trench_arcseg = trench_data[:,6]
+        trench_pt_lon = trench_data[:,0]
+        trench_pt_lat = trench_data[:,1]
+        
+        # Modify the trench-arc distance using the geocentric radius
+        arc_distance = trench_arc_distance / (_tools.geocentric_radius(trench_pt_lat)/1000)
+        
+        # Project trench points out along trench-arc distance, and obtain their new lat-lon coordinates
+        dlon = arc_distance*np.sin(np.radians(trench_normal_azimuthal_angle))
+        dlat = arc_distance*np.cos(np.radians(trench_normal_azimuthal_angle))
+        ilon = trench_pt_lon + np.degrees(dlon)
+        ilat = trench_pt_lat + np.degrees(dlat)
+        
+        # Linearly interpolate projected points onto continental grids, and collect the indices of points that lie
+        # within the grids.
+        sampled_points = graster.interpolate(ilon, ilat, method='linear', return_indices=True, return_distances=False)     
+        in_raster = [i for i, point in enumerate(sampled_points[0]) if point > 0]
+        
+        # Define arrays + total arc length
+        lat_in = []
+        lon_in = []
+        total_continental_arc_length_kms = 0
+        subd_we_count_lat = []
+        subd_we_count_lon = []
+        
+        # Loop through all successful in-raster indices
+        for index in in_raster:
+            
+            # Get the lat-lon coordinate of the in-raster point, and the corresponding trench point
+            lat_in.append(ilat[index])
+            lon_in.append(ilon[index])
+            subd_we_count_lat.append(trench_pt_lat[index])
+            subd_we_count_lon.append(trench_pt_lon[index])
+
+            # Append the continental trench segment to the total arc length
+            earth_radius = _tools.geocentric_radius(trench_pt_lat[index])/1000
+            total_continental_arc_length_kms += np.deg2rad(trench_data[:,6][index])*earth_radius
+            
+        return total_continental_arc_length_kms
+
+
     def tesselate_mid_ocean_ridges(self, time, tessellation_threshold_radians=0.001, ignore_warnings=False, **kwargs):
         """Samples points along resolved spreading features (e.g. mid-ocean ridges) and calculates spreading rate and 
         length of ridge segments at a particular geological time.
@@ -210,8 +368,8 @@ class PlateReconstruction(object):
         tessellation_threshold_radians : float, default=0.001 
             The threshold sampling distance along the subducting trench (in radians).
 
-        anchor_plate_id : int, default=0
-            The anchor plate of the reconstruction model.
+        ignore_warnings : bool, default=False
+            Choose to ignore warnings from Plate Tectonic Tools' ridge_spreading_rate workflow. 
 
         Returns
         -------
@@ -246,6 +404,74 @@ class PlateReconstruction(object):
         ridge_data = np.vstack(ridge_data)
         return ridge_data
 
+
+    def total_ridge_length(self, time, use_pygplates=False, use_ptt=False, ignore_warnings=False):
+        """Calculates the total length of all mid-ocean ridges (km) at the specified geological time (Ma).
+
+        Uses one of two methods at user's discretion:
+        1) "pyGPlates": 
+            Resolves topology features of the PlateReconstruction model and extracts their shared boundary sections.
+            The lengths of each GPML mid-ocean ridge shared boundary section are appended to the total ridge length.
+            Scales lengths to km using the geocentric radius.
+        2) "PTT"
+            Uses Plate Tectonic Tools' ridge_spreading_rate workflow to calculate ridge segment lengths. Scales lengths to
+            km using the geocentric radius.
+
+        Parameters
+        ----------
+        time : int
+            The geological time at which to calculate total mid-ocean ridge lengths.
+        use_pygplates : bool, default=False
+            Choose whether to use the pyGPlates method.
+        use_ptt : bool, default=False
+            Choose whether to use the PTT method. 
+        ignore_warnings : bool, default=False
+            Choose whether to ignore warning messages from PTT's ridge_spreading_rate workflow.
+
+        Raises
+        ------
+        ValueError
+            If neither use_pygplates or use_ptt have been set to True.
+
+        Returns
+        -------
+        total_ridge_length_kms : float
+            The mid-ocean ridge (in km) at the specified time.
+        """
+        if use_pygplates is True:
+            resolved_topologies = []
+            shared_boundary_sections = []
+            pygplates.resolve_topologies(self.topology_features, self.rotation_model, resolved_topologies, time, shared_boundary_sections)
+
+            total_ridge_length_kms = 0.0
+            for shared_boundary_section in shared_boundary_sections:
+                if shared_boundary_section.get_feature().get_feature_type() != pygplates.FeatureType.gpml_mid_ocean_ridge:
+                    continue
+                for shared_sub_segment in shared_boundary_section.get_shared_sub_segments():
+                    clat, clon = shared_sub_segment.get_resolved_geometry().get_centroid().to_lat_lon()
+                    earth_radius = _tools.geocentric_radius(clat) / 1e3
+                    total_ridge_length_kms += shared_sub_segment.get_resolved_geometry().get_arc_length()*earth_radius
+
+            return total_ridge_length_kms
+
+        elif use_ptt is True:
+            with warnings.catch_warnings():
+                warnings.simplefilter('ignore')
+                ridge_data = self.tesselate_mid_ocean_ridges(time)
+
+            ridge_arcseg = ridge_data[:,3]
+            ridge_pt_lat = ridge_data[:,1]
+
+            total_ridge_length_kms = 0
+            for i, segment in enumerate(ridge_arcseg):
+                earth_radius = _tools.geocentric_radius(ridge_pt_lat[i])/1e3
+                total_ridge_length_kms += np.deg2rad(segment)*earth_radius 
+
+            return total_ridge_length_kms
+        else:
+            raise ValueError("Please set either use_pygplates or use_ptt to True.")
+
+
     def reconstruct(self, feature, to_time, from_time=0, anchor_plate_id=0, **kwargs):
         """Reconstructs regular geological features, motion paths or flowlines to a specific geological time.
         
@@ -265,7 +491,7 @@ class PlateReconstruction(object):
             NotImplementedError if from_time not equal to 0.0.
 
         anchor_plate_id : int, default=0
-            The anchor plate of the reconstruction model.
+            Reconstruct features with respect to a certain anchor plate. By default it is 0.
 
         **reconstruct_type : ReconstructType, default=ReconstructType.feature_geometry
             The specific reconstruction type to generate based on input feature geometry type. Can be provided as 
@@ -537,7 +763,7 @@ class Points(object):
             The specific geological time (Ma) to reconstruct features to.
 
         anchor_plate_id : int, default=0
-            The anchor plate of the reconstruction model.
+            Reconstruct features with respect to a certain anchor plate. By default it is 0.
 
         **reconstruct_type : ReconstructType, default=ReconstructType.feature_geometry
             The specific reconstruction type to generate based on input feature geometry type. Can be provided as
@@ -576,6 +802,46 @@ class Points(object):
 
 
     def reconstruct_to_birth_age(self, ages, anchor_plate_id=0, **kwargs):
+        """ Reconstructs point features supplied to the Points object from the supplied initial time (the Points object time attribute)
+        to a range of times. The number of supplied times must equal the number of point features supplied to the Points object. 
+
+        Attributes
+        ----------
+        ages : array
+            Geological times to reconstruct features to. Must have the same length as the Points object's self.features attribute 
+            (which holds the object's supplied point features represented on a unit length sphere in 3D Cartesian coordinates).
+        anchor_plate_id : int, default=0
+            Reconstruct features with respect to a certain anchor plate. By default it is 0.
+        **kwargs 
+            Additional keyword arguments for the gplately.PlateReconstruction.reconstruct method.
+
+        Raises
+        ------
+        ValueError
+            If the number of ages and number of point features supplied to the Points object are not identical.
+
+        Returns
+        -------
+        rlons, rlats : float
+            The longitude and latitude coordinate lists of all point features reconstructed to all specified ages.
+
+        Examples
+        --------
+        To reconstruct n seed points' locations to B Ma (for this example n=2, with (lon,lat) = (78,30) and (56,22) at time=0 Ma,
+        and we reconstruct to B=10 Ma):
+
+            # Longitude and latitude of n=2 seed points
+            pt_lon = np.array([78., 56])
+            pt_lat = np.array([30., 22])
+
+            # Call the Points object!
+            gpts = gplately.Points(model, pt_lon, pt_lat)
+            print(gpts.features[0].get_all_geometries())   # Confirms we have features represented as points on a sphere
+
+            ages = numpy.linspace(10,10, len(pt_lon))
+            rlons, rlats = gpts.reconstruct_to_birth_age(ages)
+
+        """
         from_time = self.time
         ages = np.array(ages)
 
