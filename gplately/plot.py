@@ -814,9 +814,6 @@ class PlotTopologies(object):
         Constructs all necessary attributes for the PlotTopologies object. 
         
     update_time(self, time)
-    
-    _get_feature_lines(self, features)
-        Generates shapely MultiLineString geometries from reconstructed linestring features.
         
     _tesselate_triangles(self, features, tesselation_radians, triangle_base_length, triangle_aspect=1.0)
         Places subduction teeth along subduction boundary line segments within a MultiLineString shapefile.
@@ -914,48 +911,6 @@ class PlotTopologies(object):
             self.COBs = self.PlateReconstruction_object.reconstruct(
                 self.COB_filename, self.time, from_time=0, anchor_plate_id=0)
 
-    def _get_feature_lines(self, features):
-        """Generates shapely MultiLineString geometries from reconstructed linestring features. 
-
-        Wraps geometries to the dateline by splitting a polyline into multiple polylines at the dateline. This is to 
-        avoid horizontal lines being formed between polylines at longitudes of -180 and 180 degrees. Note: Lat-lon feature
-        points near the poles (-89 & 89 latitude) are clipped to ensure compatibility with Cartopy. 
-
-        Parameters
-        ----------
-        features : list
-            Contains reconstructed linestring features.
-
-        Returns
-        -------
-        all_geometries : list
-            Shapely MultiLineString geometries generated from the given reconstructed features.
-        """
-        import shapely
-        
-        date_line_wrapper = pygplates.DateLineWrapper()
-
-        all_geometries = []
-        for feature in features:
-
-            # get geometry in lon lat order
-            rings = []
-            for geometry in feature.get_geometries():
-                wrapped_lines = date_line_wrapper.wrap(geometry)
-                for line in wrapped_lines:
-                    ring = np.array([(p.get_longitude(), p.get_latitude()) for p in line.get_points()])
-                    ring[:,1] = np.clip(ring[:,1], -89, 89) # anything approaching the poles creates artefacts
-                    ring_linestring = shapely.geometry.LineString(ring)
-                    
-                    rings.append(ring_linestring)
-                
-            # construct shapely geometry
-            geom = shapely.geometry.MultiLineString(rings)
-
-            if geom.is_valid:
-                all_geometries.append(geom)
-
-        return all_geometries
 
     # subduction teeth
     def _tesselate_triangles(self, features, tesselation_radians, triangle_base_length, triangle_aspect=1.0):
@@ -1140,7 +1095,7 @@ class PlotTopologies(object):
         ax : GeoAxis
             The map with ridge features plotted onto the chosen projection (transformed using PlateCarree). 
         """
-        ridge_lines = self._get_feature_lines(self.ridges)
+        ridge_lines = shapelify_feature_lines(self.ridges)
         return ax.add_geometries(ridge_lines, crs=self.base_projection, facecolor='none', edgecolor=color, **kwargs)
 
     def plot_ridges_and_transforms(self, ax, color='black', **kwargs):
@@ -1171,7 +1126,7 @@ class PlotTopologies(object):
         ax : GeoAxis
             The map with ridge & transform features plotted onto the chosen projection (transformed using PlateCarree).
         """
-        ridge_transform_lines = self._get_feature_lines(self.ridge_transforms)
+        ridge_transform_lines = shapelify_feature_lines(self.ridge_transforms)
         return ax.add_geometries(ridge_transform_lines, crs=self.base_projection, facecolor='none', edgecolor=color, **kwargs)
 
     def plot_transforms(self, ax, color='black', **kwargs):
@@ -1202,7 +1157,7 @@ class PlotTopologies(object):
         ax : GeoAxis
             The map with transform features plotted onto the chosen projection (transformed using PlateCarree).
         """
-        transform_lines = self._get_feature_lines(self.transforms)
+        transform_lines = shapelify_feature_lines(self.transforms)
         return ax.add_geometries(transform_lines, crs=self.base_projection, facecolor='none', edgecolor=color, **kwargs)
 
     def plot_trenches(self, ax, color='black', **kwargs):
@@ -1233,7 +1188,7 @@ class PlotTopologies(object):
         ax : GeoAxis
             The map with subduction trench features plotted onto the chosen projection (transformed using PlateCarree).
         """
-        trench_lines = self._get_feature_lines(self.trenches)
+        trench_lines = shapelify_feature_lines(self.trenches)
         return ax.add_geometries(trench_lines, crs=self.base_projection, facecolor='none', edgecolor=color, **kwargs)
 
     def plot_subduction_teeth_deprecated(self, ax, spacing=0.1, size=2.0, aspect=1, color='black', **kwargs):
@@ -1342,8 +1297,8 @@ class PlotTopologies(object):
 
         height = size*aspect
 
-        trench_left_features  = self._get_feature_lines(self.trench_left)
-        trench_right_features = self._get_feature_lines(self.trench_right)
+        trench_left_features  = shapelify_feature_lines(self.trench_left)
+        trench_right_features = shapelify_feature_lines(self.trench_right)
 
         plot_subduction_teeth(trench_left_features,  size, 'l', height, spacing, ax=ax, color=color, **kwargs)
         plot_subduction_teeth(trench_right_features,  size, 'r', height, spacing, ax=ax, color=color, **kwargs)
