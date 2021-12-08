@@ -6,7 +6,7 @@ Pooch is a data manager that downloads these files only when necessary and store
 a file has been downloaded once (and if it's a zip folder, if it's been unzipped once), Pooch will not redownload it - 
 it will just re-access it from the cache.
 
-Methods in this module provide all necessary files for GPlately's PlateReconstruction and PlotTopologies objects.
+Methods in this module provide all necessary files for GPlately's PlateReconstruction, Raster and PlotTopologies objects.
 The 'DataServer' object accepts a user-input string specifying the data collection to extract from (i.e. "Muller2019").
 It searches the GPlately data server for this string.
 
@@ -14,8 +14,8 @@ Classes
 -------
 DataServer
     A class to access GPlately's data server. Its only attribute is a string specifying the data collection to extract 
-    from (i.e. "Muller2019"). It searches the GPlately data server for this string and downloads rotation models, 
-    topology features, static polygons and polygon/polyline geometries from it.
+    from (i.e. "Muller2019"). It searches the GPlately DataServer for this string and downloads rotation models, 
+    topology features, static polygons, netCDF4 rasters and polygon/polyline geometries from it.
 
 Methods
 -------
@@ -24,7 +24,9 @@ get_plate_reconstruction_files
     are the three parameters needed for GPlately's PlateReconstruction object.
 get_topology_geometries
     Extracts a set of coastline, continent and COB geometries from the specified collection - these are the three parameters
-     needed for GPlately's PlotTopologies object.
+    needed for GPlately's PlotTopologies object.
+get_netcdf_rasters
+    Extracts netCDF rasters from the specified collection - these are parameters for GPlately's Raster object.
 
 Other auxiliary methods include:
 fetch_from_zip(zip_url, file_ext=None, substring=None)
@@ -33,6 +35,10 @@ fetch_from_single_file(file_url, file_ext=None, substring=None)
     Identifies and downloads a specific file from a single file download URL using a file extension and a filename substring.
 ignore_macOSX(filenames)
     Omits any files extracted from a MacOSX folder (for Mac users only).
+remove_hash(filenames):
+    Removes hashes used to identify web-based data on local caches from a filename path.
+order_filenames_by_time(list_of_filenames):
+    Orders a list of full file paths (typically rasters or other topology features) from recent to deep geological time. 
  
 Sources
 -------
@@ -69,6 +75,59 @@ def ignore_macOSX(filenames):
     if len(fnames) < len(filenames):
         print("There are no __MaCOSX files in this list.")
     return fnames
+
+
+def remove_hash(filename):
+    """Removes the identification hash ascribed to a cached file path. Useful for renaming directories.
+
+    Attributes
+    ----------
+    filename : str
+        A single string path to a cached file.
+
+    Returns
+    -------
+    new_path : str
+        The provided string path without its ID hash.
+    """
+    split_paths = filename.split("-")
+    cache_path = split_paths[0][:-32]
+    new_path = cache_path + "-".join(split_paths[1:])
+    return new_path
+
+
+def order_filenames_by_time(list_of_filenames):
+    """Orders cached files in the same directory from recent to deep geological time (Ma) and stores files in an ordered 
+    list (by default files labelled by time are not processed in time order). Useful for accessing netcdf4 raster data.
+
+    Attributes
+    ----------
+    list_of_filenames : list of str
+        A list of full paths to time-labelled files (e.g. continental_grid_0_Ma.nc). Should all have the same parent
+        directory.
+
+    Returns
+    -------
+    filenames_sorted : list of str
+        The same list of provided paths, but ordered from present day (0 Ma) into deep geological time.
+
+    """
+    filenames_unsorted_indices = []
+    # To sort by time, all digits in the file paths are identified. Hashes of file paths are removed for easy identification. 
+    for i, file in enumerate(list_of_filenames):
+        file = [int(str(element)) for element in re.split('([0-9]+)', remove_hash(file)) if element.isdigit()]
+        filenames_unsorted_indices.append(file)
+
+    # Digits that are common to all full file paths are ignored, leaving behind the files' geological time label.
+    filenames_t = np.array(filenames_unsorted_indices).T
+    filenames_t = [arr for arr in filenames_t if not all(element == arr[0] for element in arr)]
+
+    # Remember the indices of the original list order, sort times in increasing order and sort the files in this order.
+    sorted_filenames = sorted(enumerate(filenames_t[0]), key=lambda x: x[1])
+    sorted_filename_indices = [file[0] for file in sorted_filenames]
+    filenames_sorted = [list_of_filenames[index] for index in sorted_filename_indices]
+    return filenames_sorted
+
 
 def fetch_from_zip(zip_url, file_ext=None, substring=None):
     """Uses Pooch to download a file from a zip folder. Its filename must contain a specific substring and end
@@ -517,5 +576,52 @@ class DataServer(object):
             raise ValueError("%s not in collection database." % (self.file_collection))
 
         return files
+
+
+    def get_netcdf_rasters(self):
+        """Downloads netCDF rasters stored in GPlately's DataServer from a web server. These rasters are optimal for use 
+        in GPlately's Raster object. To access rasters from a certain data collection, pass a label (i.e. "Muller2019") to
+        the DataServer object. 
+
+        Returns
+        -------
+        raster_filenames : list of str
+            A list of all netCDF rasters for each Ma belonging to a particular data collection. The file path strings are
+            ordered from recent to deep geological time (Ma).
+
+        Raises
+        ------
+        ValueError
+            If a data collection label is not supplied to the DataServer object. 
+        """
+        if self.file_collection is None:
+            raise ValueError("Please supply a file collection to fetch.")
+
+        #
+        # ---------------------------------- GPLATELY RASTER DATA SERVER ---------------------------------------
+        # A list of EarthByte rasters available for extraction (append this if there is a needed collection!).
+        # Dictionary values are lists of zip file URLs from EarthByte's WebDAV server. If a list has one URL, it is a zip folder all raster
+        # grids belonging to a particular data collection.
+        #
+        database = {"Muller2019" : ["https://www.earthbyte.org/webdav/ftp/Data_Collections/Muller_etal_2019_Tectonics/Muller_etal_2019_Agegrids/Muller_etal_2019_Tectonics_v2.0_netCDF.zip"]
+           }
+
+        # Set to true if we find the given collection in database
+        found_collection = False
+        for collection, zip_url in database.items():
+
+            # Only continue if the user's chosen collection exists in database
+            if self.file_collection.lower() == collection.lower():
+                found_collection = True
+
+                # If there is only one link under the collection name, assume all rasters are contained in it
+                raster_filenames = fetch_from_zip(zip_url[0], ".nc")
+            break
+
+            if found_collection is False: 
+                raise ValueError("%s not in collection database." % (self.file_collection))
+
+        raster_filenames = order_filenames_by_time(raster_filenames)
+        return raster_filenames
 
 

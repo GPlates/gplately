@@ -290,3 +290,33 @@ def haversine_distance(lon1, lon2, lat1, lat2, degrees=True):
     c = 2.0 * np.arctan2(np.sqrt(a), np.sqrt(1.0 - a))
     d = EARTH_RADIUS * c
     return d * 1000
+
+
+def geocentric_radius(lat, degrees=True):
+    """ Calculates the latitude-dependent radius of an ellipsoid Earth. 
+
+    Parameters
+    ----------
+    lat : float
+        The geodetic latitude at which to calculate the Earth's radius
+    degrees : bool, default=True
+        Specify whether the given latitude is in degrees.
+
+    Returns
+    -------
+    earth_radius : float
+        The Earth's geocentric radius (in metres) at the given geodetic latitude.
+    """
+    if degrees:
+        rlat = np.radians(lat)
+    else:
+        rlat = lat
+
+    coslat = np.cos(rlat)
+    sinlat = np.sin(rlat)
+    r1 = 6384.4e3
+    r2 = 6352.8e3
+    num = (r1**2*coslat)**2 + (r2**2*sinlat)**2
+    den = (r1*coslat)**2 + (r2*sinlat)**2
+    earth_radius = np.sqrt(num/den)
+    return earth_radius
