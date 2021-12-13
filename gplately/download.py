@@ -149,6 +149,9 @@ def fetch_from_zip(zip_url, file_ext=None, substring=None, order_by_time=False):
         The file extension to extract (i.e. ".rot" for rotation files)
     substring : str
         A certain filename substring to look for (i.e "static" for static polygons)
+    order_by_time : bool, default False
+        Choose whether to order cached filenames by natsort order. Useful for filenames labelled by geological
+        time, i.e. agegrids.
         
     Returns
     -------
@@ -584,7 +587,7 @@ class DataServer(object):
         return files
 
 
-    def get_netcdf_rasters(self):
+    def get_netcdf_rasters(self, time=None):
         """Downloads netCDF rasters stored in GPlately's DataServer from a web server. These rasters are optimal for use 
         in GPlately's Raster object. To access rasters from a certain data collection, pass a label (i.e. "Muller2019") to
         the DataServer object. 
@@ -594,6 +597,9 @@ class DataServer(object):
         raster_filenames : list of str
             A list of all netCDF rasters for each Ma belonging to a particular data collection. The file path strings are
             ordered from recent to deep geological time (Ma).
+        time : int, default None
+            Choose whether to return a netCDF grid at a particular geological time. By default the full list of agegrid
+            file paths is returned. 
 
         Raises
         ------
@@ -628,6 +634,10 @@ class DataServer(object):
                 raise ValueError("%s not in collection database." % (self.file_collection))
 
         raster_filenames = order_filenames_by_time(raster_filenames)
-        return raster_filenames
+
+        if time is None:
+            return raster_filenames
+        else:
+            return raster_filenames[time]
 
 
