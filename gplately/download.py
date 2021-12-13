@@ -54,6 +54,8 @@ from pooch import HTTPDownloader as _HTTPDownloader
 from pooch import Unzip as _Unzip
 import glob, os
 import pygplates
+import re
+import numpy as np
 
 def ignore_macOSX(filenames):
     """For Mac users: filters out duplicate filenames extracted from the __MACOSX folder.
@@ -129,7 +131,7 @@ def order_filenames_by_time(list_of_filenames):
     return filenames_sorted
 
 
-def fetch_from_zip(zip_url, file_ext=None, substring=None):
+def fetch_from_zip(zip_url, file_ext=None, substring=None, order_by_time=False):
     """Uses Pooch to download a file from a zip folder. Its filename must contain a specific substring and end
     with a specific file extension. Stores in local cache.
     
@@ -206,7 +208,11 @@ def fetch_from_zip(zip_url, file_ext=None, substring=None):
 
     feature_filenames = ignore_macOSX(feature_filenames)
 
-    return feature_filenames
+    if order_by_time is True:
+        feature_filenames = order_filenames_by_time(feature_filenames)
+        return feature_filenames
+    else:
+        return feature_filenames
         
 
 def fetch_from_single_link(file_url, file_ext=None, substring=None):
