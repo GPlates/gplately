@@ -29,7 +29,7 @@ get_netcdf_rasters
     Extracts netCDF rasters from the specified collection - these are parameters for GPlately's Raster object.
 
 Other auxiliary methods include:
-fetch_from_zip(zip_url, file_ext=None, substring=None)
+fetch_from_zip(zip_url, file_ext_list=None, substring=None)
     Identifies and downloads a specific file from a zip file download URL using a file extension and a filename substring.
 fetch_from_single_file(file_url, file_ext=None, substring=None)
     Identifies and downloads a specific file from a single file download URL using a file extension and a filename substring.
@@ -52,6 +52,7 @@ from pooch import os_cache as _os_cache
 from pooch import retrieve as _retrieve
 from pooch import HTTPDownloader as _HTTPDownloader
 from pooch import Unzip as _Unzip
+from pooch import Decompress as _Decompress
 import glob, os
 import pygplates
 import re
@@ -131,7 +132,25 @@ def order_filenames_by_time(list_of_filenames):
     return filenames_sorted
 
 
-def fetch_from_zip(zip_url, file_ext=None, substring=None, order_by_time=False):
+def _is_gpml_or_shp(filename_list, file_type):
+    """Alerts user whether DataServer has found GPML files and/or shapefiles.
+    """
+    count_shp = 0
+    count_gpml = 0
+    for file in filename_list:
+        if file.endswith(".gpml"):
+            count_gpml += 1
+        elif file.endswith(".shp"):
+            count_shp += 1
+    if count_gpml == len(filename_list):
+        print("Downloaded GPML %s to the GPlately cache!" %file_type)
+    elif count_shp == len(filename_list):
+        print("Downloaded shapefile %s to the GPlately cache!" %file_type)
+    else:
+        print("Downloaded GPML and shapefile %s to the GPlately cache!" %file_type)
+
+
+def fetch_from_zip(zip_url, file_ext_list=None, substring=None, order_by_time=False):
     """Uses Pooch to download a file from a zip folder. Its filename must contain a specific substring and end
     with a specific file extension. Stores in local cache.
     
@@ -171,13 +190,14 @@ def fetch_from_zip(zip_url, file_ext=None, substring=None, order_by_time=False):
     feature_filenames = []
     for subdir, dirs, files in os.walk(dirname):
         for file in files:
-            if file_ext is not None:
-                if file.endswith(file_ext):
-                    if substring is not None:
-                        if file.lower().find(substring) != -1:
-                            feature_filenames.append(subdir+"/"+file)
-                    else:
-                        feature_filenames.append(subdir+"/"+file)                
+            if file_ext_list is not None:
+                for file_ext in file_ext_list:
+                    if file.endswith(file_ext):
+                        if substring is not None:
+                            if file.lower().find(substring) != -1:
+                                feature_filenames.append(subdir+"/"+file)
+                        else:
+                            feature_filenames.append(subdir+"/"+file)                
             else:
                 if substring is not None:
                     if file.lower().find(substring) != -1:
@@ -187,27 +207,20 @@ def fetch_from_zip(zip_url, file_ext=None, substring=None, order_by_time=False):
                             
     # If the user wants to extract .gpml file(s) from this zip file and none were found, try to look for a .shp
     # equivalent instead. 
-    if file_ext == ".gpml" and len(feature_filenames) == 0: 
-        if substring is not None:
-            print(".gpml %s files were not found. Attempting to find .shp versions instead..." % (substring))
-        else:
-            print(".gpml files not found. Attempting to find .shp instead...")
-        for subdir, dirs, files in os.walk(dirname):
-            for file in files:
-                if file.endswith(".shp"):
-                    if substring is not None:
-                        if file.lower().find(substring) != -1:
-                            feature_filenames.append(subdir+"/"+file) 
-                            print("Found a %s file with a .shp extension." %(substring))
-                    else:
-                        feature_filenames.append(subdir+"/"+file)
-                        print("Found a file with a .shp extension." %(substring))   
-
-    if len(feature_filenames) == 0:
-        if substring is not None:
-            print("Could not find %s files in this file collection." %(substring)) 
-        else:
-            print("Could not find files in this file collection.")
+    if file_ext == ".gpml": 
+        if len(feature_filenames) == 0: 
+            #if substring is not None:
+            #print("GPML %s files not found. Looking for shapefiles (.shp) instead..." % (substring))
+            #else:
+            #print("GPML files not found. Looking for shapefiles (.shp) instead...")
+            for subdir, dirs, files in os.walk(dirname):
+                for file in files:
+                    if file.endswith(".shp"):
+                        if substring is not None:
+                            if file.lower().find(substring) != -1:
+                                feature_filenames.append(subdir+"/"+file) 
+                        else:
+                            feature_filenames.append(subdir+"/"+file)
 
     feature_filenames = ignore_macOSX(feature_filenames)
 
@@ -302,7 +315,7 @@ def _extract_geom(file_collection, database_link, feature_type):
             if database_link.endswith(".zip"):
                 # Searches for gpml geometries by default... if it cannot be found, .shp will be
                 # searched for instead. 
-                geometries = fetch_from_zip(database_link, ".gpml", feature_type)
+                geometries = fetch_from_zip(database_link, [".gpml"], feature_type)
 
         # If there are >1 links in this list, loop through all links and download them.
         else:
@@ -310,14 +323,11 @@ def _extract_geom(file_collection, database_link, feature_type):
             for url in database_link:
                 filename = fetch_from_single_link(url)
                 filenames.append(filename[0])
-                # Filepaths will each have an embedded hash; removes them to ensure consistency in filenames
-                # Get the path to the cache
-                #print(filenames[0][0])
                     
         
             is_gpml = any(".gpml" in fname for fname in filenames)
             if not is_gpml:
-                print("No .gpml %s features found in %s. Attempting to find .shp instead" % (feature_type, file_collection))
+                print("No GPML %s features in %s. Looking for shapefiles (.shp)..." % (feature_type, file_collection))
                 for index, fname in enumerate(filenames):
                     split_paths = fname.split("-")
                     cache_path = split_paths[0][:-32]
@@ -325,7 +335,7 @@ def _extract_geom(file_collection, database_link, feature_type):
                     os.rename(fname, new_path)
                     if fname.endswith(".shp"):
                         geometries.append(new_path)
-                        print("Found a %s file with a .shp extension." %(feature_type))
+                        print("Found a %s shapefile!" %(feature_type))
             else:
                 for fname in filenames:
                     if fname.endswith(".gpml"):
@@ -434,16 +444,28 @@ class DataServer(object):
                 # If there is only one zip folder under the collection name, we assume everything we need is contained
                 # inside it. Continue
                 if len(zip_url) == 1:
-                    rotation_filenames = fetch_from_zip(zip_url[0], ".rot")
+                    rotation_filenames = fetch_from_zip(zip_url[0], [".rot"])
                     rotation_model = pygplates.RotationModel(rotation_filenames)
-                    
-                    topology_filenames = fetch_from_zip(zip_url[0], ".gpml")
+                    if rotation_model:
+                        print("Rotation model from %s created!" %collection)
+                    else:
+                        print("Rotation model not in %s." %collection)
+
+                    topology_filenames = fetch_from_zip(zip_url[0], [".gpml"])
                     for file in topology_filenames:
                         if "Inactive" not in file:
                             topology_features.add(pygplates.FeatureCollection(file))
+                    if topology_features:
+                        print("Topology feature collection from %s created!" %collection)  
+                    else:
+                        print("Topology feature collection not in %s." %collection)
                             
-                    static_polygons = fetch_from_zip(zip_url[0], ".gpml", "static")
-                   
+                    static_polygons = fetch_from_zip(zip_url[0], [".gpml"], "static")
+                    if static_polygons:
+                        print("Static polygons from %s downloaded!" %collection)
+                    else:
+                        print("Static polygons not in %s." %collection)
+
                     files = rotation_model, topology_features, static_polygons
 
                 # If the collection is not contained in a single zip folder, download data from all unique zip 
@@ -452,7 +474,9 @@ class DataServer(object):
                     # If the rotation models exist and are contained in their own zip file
                     if zip_url[0] is not None:
                         rotation_filenames = fetch_from_single_link(zip_url[0], ".rot")  
-                        rotation_model = pygplates.RotationModel(rotation_filenames)                
+                        rotation_model = pygplates.RotationModel(rotation_filenames)
+                        if rotation_model:
+                            print("Rotation model from %s created!" %collection)                 
                     else:
                         print("The %s collection has no .rot files." % (self.file_collection))
 
@@ -461,7 +485,9 @@ class DataServer(object):
                         topology_filenames = fetch_from_single_link(zip_url[1], ".gpml")
                         for topology in topology_filenames:
                             if "Inactive" not in topology:
-                                topology_features.add(pygplates.FeatureCollection(topology))                 
+                                topology_features.add(pygplates.FeatureCollection(topology))
+                        if topology_features:
+                            print("Topology feature collection from %s created!" %collection)                 
                     else:
                         print("The %s collection has no topology files." % (self.file_collection))
 
@@ -473,9 +499,13 @@ class DataServer(object):
                         for statpoly in static_polygons:
                             if statpoly.endswith(".shp"): 
                                 if statpoly.lower().find("static") != -1:
-                                    static_polygons.append(statpoly)                       
+                                    static_polygons.append(statpoly)
+                        if static_polygons:
+                            print("Static polygons from %s downloaded!" %collection)                       
+                    
                     else:
                         print("The %s collection has no static polygon files." % (self.file_collection))
+                    
                     files = rotation_model, topology_features, static_polygons
 
                 # Break the loop once all plate model data have been extracted
@@ -564,9 +594,12 @@ class DataServer(object):
                 COBs = []
 
                 if len(zip_url) == 1:
-                    coastlines = fetch_from_zip(zip_url[0], ".gpml", "coastline")
-                    continents = fetch_from_zip(zip_url[0], ".gpml", "continent")
-                    COBs = fetch_from_zip(zip_url[0], ".gpml", "cob")                   
+                    coastlines = fetch_from_zip(zip_url[0], [".gpml"], "coastline")
+                    _is_gpml_or_shp(coastlines, "coastlines")
+                    continents = fetch_from_zip(zip_url[0], [".gpml"], "continent")
+                    _is_gpml_or_shp(continents, "continents")
+                    COBs = fetch_from_zip(zip_url[0], [".gpml"], "cob")
+                    _is_gpml_or_shp(COBs, "COBs")                   
                     files = coastlines, continents, COBs
 
                 # If the collection is not contained in a single zip folder, download data from all unique zip 
@@ -615,25 +648,34 @@ class DataServer(object):
         # Dictionary values are lists of zip file URLs from EarthByte's WebDAV server. If a list has one URL, it is a zip folder all raster
         # grids belonging to a particular data collection.
         #
-        database = {"Muller2019" : ["https://www.earthbyte.org/webdav/ftp/Data_Collections/Muller_etal_2019_Tectonics/Muller_etal_2019_Agegrids/Muller_etal_2019_Tectonics_v2.0_netCDF.zip"]
+        database = {"Muller2019" : ["https://www.earthbyte.org/webdav/ftp/Data_Collections/Muller_etal_2019_Tectonics/Muller_etal_2019_Agegrids/Muller_etal_2019_Tectonics_v2.0_netCDF.zip"],
+                    "ETOPO1" : ["https://www.ngdc.noaa.gov/mgg/global/relief/ETOPO1/data/ice_surface/grid_registered/netcdf/ETOPO1_Ice_g_gmt4.grd.gz"],
+                    "ETOPO1_tif" : ["https://www.ngdc.noaa.gov/mgg/global/relief/ETOPO1/image/color_etopo1_ice_low.tif.gz"]
+                   
            }
 
         # Set to true if we find the given collection in database
         found_collection = False
+        raster_filenames = []
+        archive_formats = tuple([".gz", ".xz", ".bz2"])
+
         for collection, zip_url in database.items():
 
             # Only continue if the user's chosen collection exists in database
             if self.file_collection.lower() == collection.lower():
                 found_collection = True
 
-                # If there is only one link under the collection name, assume all rasters are contained in it
-                raster_filenames = fetch_from_zip(zip_url[0], ".nc")
-            break
+                # If there is only one link under the collection name, check if zip
+                if zip_url[0].endswith(".zip"):
+                    raster_filenames = fetch_from_zip(zip_url[0], [".nc", ".grd"])
+                    raster_filenames = order_filenames_by_time(raster_filenames)
+                elif zip_url[0].endswith(archive_formats):
+                    raster_filenames = _retrieve(url=zip_url[0], known_hash=None, downloader=_HTTPDownloader(progressbar=True),
+                        path=_os_cache('gplately'), processor=_Decompress()) 
+                break
 
-            if found_collection is False: 
-                raise ValueError("%s not in collection database." % (self.file_collection))
-
-        raster_filenames = order_filenames_by_time(raster_filenames)
+        if found_collection is False:
+            raise ValueError("%s not in collection database." % (self.file_collection))
 
         if time is None:
             return raster_filenames
