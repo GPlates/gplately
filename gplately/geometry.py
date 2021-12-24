@@ -16,11 +16,11 @@ from shapely.geometry.base import (
 
 __all__ = [
     "GeometryOnSphere",
-    "PointOnSphere",
-    "MultiPointOnSphere",
-    "PolylineOnSphere",
-    "PolygonOnSphere",
     "LatLonPoint",
+    "MultiPointOnSphere",
+    "PointOnSphere",
+    "PolygonOnSphere",
+    "PolylineOnSphere",
     "pygplates_to_shapely",
     "shapely_to_pygplates",
     "wrap_geometries",
@@ -60,35 +60,40 @@ class GeometryOnSphere(pygplates.GeometryOnSphere):
 
 class PointOnSphere(pygplates.PointOnSphere, GeometryOnSphere):
     """GPlately equivalent of `pygplates.PointOnSphere`, incorporating
-    `to_shapely` method"""
+    `to_shapely` method
+    """
 
     pass
 
 
 class MultiPointOnSphere(pygplates.MultiPointOnSphere, GeometryOnSphere):
     """GPlately equivalent of `pygplates.MultiPointOnSphere`, incorporating
-    `to_shapely` method"""
+    `to_shapely` method
+    """
 
     pass
 
 
 class PolylineOnSphere(pygplates.PolylineOnSphere, GeometryOnSphere):
     """GPlately equivalent of `pygplates.PolylineOnSphere`, incorporating
-    `to_shapely` method"""
+    `to_shapely` method
+    """
 
     pass
 
 
 class PolygonOnSphere(pygplates.PolygonOnSphere, GeometryOnSphere):
     """GPlately equivalent of `pygplates.PolygonOnSphere`, incorporating
-    `to_shapely` method"""
+    `to_shapely` method
+    """
 
     pass
 
 
 class LatLonPoint(pygplates.LatLonPoint):
     """GPlately equivalent of `pygplates.LatLonPoint`, incorporating
-    `to_shapely` method"""
+    `to_shapely` method
+    """
 
     def to_shapely(self, central_meridian=0.0, tessellate_degrees=None):
         return pygplates_to_shapely(
