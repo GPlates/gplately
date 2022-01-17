@@ -524,6 +524,52 @@ def _tesselate_triangles(
     projection=None,
     transform=None,
 ):
+    """Generates subduction teeth triangles for plotting.
+
+    Forms continuous trench geometries and identifies their subduction polarities.
+    Subduction teeth triangles can be customised with a given spacing and width.  
+    Their apexes point in the identified polarity directions.
+
+    Parameters
+    ----------
+    geometries : geopandas.GeoDataFrame, sequence of shapely geometries, or str
+        If a `geopandas.GeoDataFrame` is given, its geometry attribute
+        will be used. If `geometries` is a string, it must be the path to
+        a file, which will be loaded with `geopandas.read_file`. Otherwise,
+        `geometries` must be a sequence of shapely geometry objects (instances
+        of the `shapely.geometry.base.BaseGeometry` class).
+    width : float
+        The (approximate) width of the subduction teeth. If a projection is
+        used, this value will be in projected units.
+    polarity : {"left", "l", "right", "r", None}, default "left"
+        The subduction polarity of the geometries. If no polarity is provided,
+        and `geometries` is a `geopandas.GeoDataFrame`, this function will
+        attempt to find a `polarity` column in the data frame and use the
+        values given there. If `polarity` is not manually specified and no
+        appropriate column can be found, an error will be raised.
+    height : float, default None
+        If provided, the height of the subduction teeth. As with `width`,
+        this value should be given in projected units. If no value is given,
+        the height of the teeth will be equal to 0.6 * `width`.
+    spacing : float, default None
+        If provided, the spacing between the subduction teeth. As with
+        `width` and `height`, this value should be given in projected units.
+        If no value is given, `spacing` will default to `width`, producing
+        tightly packed subduction teeth.
+    projection : cartopy.crs.Transform, "auto", or None, default None
+        The projection of the plot. If the plot has no projection, this value
+        can be explicitly given as `None`. The default value is "auto", which
+        will acquire the projection automatically from the plot axes.
+    transform : cartopy.crs.Transform, or None, default None
+        If the plot is projected, a `transform` value is usually needed.
+        Frequently, the appropriate value is an instance of
+        `cartopy.crs.PlateCarree`.
+
+    Returns
+    -------
+    results : list of shapely Polygon objects
+        Subduction teeth generated for the given geometries. 
+    """
     if width <= 0.0:
         raise ValueError("Invalid `width` argument: {}".format(width))
     polarity = _parse_polarity(polarity)
@@ -557,6 +603,26 @@ def _tesselate_triangles(
 
 
 def _project_geometry(geometry, projection, transform=None):
+    """Projects shapely geometries onto a certain Cartopy CRS map projection. 
+
+    Uses a coordinate system ("transform"), if given. 
+
+    Parameters
+    ----------
+    geometry : shapely.geometry.base.BaseGeometry
+        An instance of a shapely geometry.
+    projection : cartopy.crs.Transform, 
+        The projection of the plot. 
+    transform : cartopy.crs.Transform or None, default None
+        If the plot is projected, a `transform` value is usually needed.
+        Frequently, the appropriate value is an instance of
+        `cartopy.crs.PlateCarree`.
+
+    Returns
+    -------
+    projected : list
+        The provided shapely geometries projected onto a Cartopy CRS map projection.
+    """
     if transform is None:
         transform = ccrs.PlateCarree()
     result = [projection.project_geometry(geometry, transform)]
@@ -576,6 +642,38 @@ def _calculate_triangle_vertices(
     height,
     polarity,
 ):
+    """Generates vertices of subduction teeth triangles.
+
+    Triangle bases are set on shapely BaseGeometry trench instances with their apexes 
+    pointing in directions of subduction polarity. Triangle dimensions are set by a 
+    specified width, spacing and height (either provided by the user or set as default
+    values from _tesselate_triangles). The teeth are returned as shapely polygons.
+
+    Parameters
+    ----------
+    geometries : list of shapely geometries (instances of the
+        shapely.geometry.base.BaseGeometry or shapely.geometry.base.BaseMultipartGeometry
+        class)
+        Trench geometries projected onto a certain map projection (using a 
+        coordinate system if specified), each with identified subduction polarities. 
+        Teeth triangles will be generated only on the BaseGeometry instances. 
+    width : float
+        The (approximate) width of the subduction teeth. If a projection is
+        used, this value will be in projected units.
+    spacing : float,
+        The spacing between the subduction teeth. As with
+        `width` and `height`, this value should be given in projected units.
+    height : float, default None
+        The height of the subduction teeth. This value should also be given in projected
+        units.
+    polarity : {"left", "right"}
+        The subduction polarity of the shapely geometries. 
+    
+    Returns
+    -------
+    triangles : list of shapely polygons
+        The subduction teeth generated along the supplied trench geometries. 
+    """
     if isinstance(geometries, BaseGeometry):
         geometries = [geometries]
     triangles = []
@@ -623,6 +721,31 @@ def _calculate_triangle_vertices(
 
 
 def _parse_polarity(polarity):
+    """Ensures subduction polarities are valid strings - either "left", "l", "right" or "r".
+
+    The geometries' subduction polarities are either provided by the user in plot_subduction_teeth
+    or found automatically in a geopandas.GeoDataFrame column by _find_polarity_column, if such a
+    column exists.
+ 
+    Parameters
+    ----------
+    polarity : {"left", "l", "right", "r"}
+        The subduction polarity of the geometries (either set by the user or found automatically
+        from the geometries' data frame). 
+
+    Returns
+    -------
+    polarity : {"left", "right"}
+        Returned if the provided polarity string is one of {"left", "l", "right", "r"}. "l" and "r"
+        are classified and returned as "left" and "right" respectively.  
+
+    Raises
+    ------
+    TypeError
+        If the provided polarity is not a string type.
+    ValueError
+        If the provided polarity is not valid ("left", "l", "right" or "r").
+    """
     if not isinstance(polarity, str):
         raise TypeError(
             "Invalid `polarity` argument type: {}".format(type(polarity))
@@ -641,6 +764,26 @@ def _parse_polarity(polarity):
 
 
 def _find_polarity_column(columns):
+    """Searches for a 'polarity' column in a geopandas.GeoDataFrame to extract subduction
+    polarity values.
+
+    Subduction polarities can be used for tessellating subduction teeth.
+
+    Parameters
+    ----------
+    columns : geopandas.GeoDataFrame.columns.values instance
+        A list of geopandas.GeoDataFrame column header strings.
+
+    Returns
+    -------
+    column : list
+        If found, returns a list of all subduction polarities ascribed to the supplied
+        geometry data frame.
+    None
+        if a 'polarity' column was not found in the data frame. In this case, subduction
+        polarities will have to be manually provided to plot_subduction_teeth.
+
+    """
     pattern = "polarity"
     for column in columns:
         if re.fullmatch(pattern, column) is not None:
@@ -649,6 +792,23 @@ def _find_polarity_column(columns):
 
 
 def _parse_geometries(geometries):
+    """Resolves a geopandas.GeoSeries object into shapely BaseGeometry and/or
+    BaseMutipartGeometry instances.
+
+    Parameters
+    ----------
+    geometries : geopandas.GeoDataFrame, sequence of shapely geometries, or str
+        If a `geopandas.GeoDataFrame` is given, its geometry attribute
+        will be used. If `geometries` is a string, it must be the path to
+        a file, which will be loaded with `geopandas.read_file`. Otherwise,
+        `geometries` must be a sequence of shapely geometry objects (instances
+        of the `shapely.geometry.base.BaseGeometry` class).
+
+    Returns
+    -------
+    out : list
+        Resolved shapely BaseMutipartGeometry and/or BaseGeometry instances.
+    """
     geometries = _get_geometries(geometries)
     if _GEOPANDAS_AVAILABLE and isinstance(geometries, gpd.GeoSeries):
         geometries = list(geometries)
