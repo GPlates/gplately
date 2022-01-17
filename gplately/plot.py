@@ -58,20 +58,20 @@ import re
 
 import pygplates
 import cartopy.crs as ccrs
-from matplotlib.patches import Polygon as PolygonPatch
 import matplotlib.pyplot as plt
 import numpy as np
 import ptt
 from shapely.geometry import Point, Polygon
 from shapely.geometry.base import BaseGeometry, BaseMultipartGeometry
 from shapely.ops import linemerge
-from .tools import EARTH_RADIUS
 
+from .geometry import pygplates_to_shapely
 from .io import (
     get_valid_geometries,  # included for backwards compatibility
     GEOPANDAS_AVAILABLE as _GEOPANDAS_AVAILABLE,
     get_geometries as _get_geometries,
 )
+from .tools import EARTH_RADIUS
 
 if _GEOPANDAS_AVAILABLE:
     import geopandas as gpd
@@ -543,7 +543,7 @@ def _tesselate_triangles(
         del geometries_new
     geometries = linemerge(geometries)
     if isinstance(geometries, BaseMultipartGeometry):
-        geometries = list(geometries)
+        geometries = list(geometries.geoms)
     elif isinstance(geometries, BaseGeometry):
         geometries = [geometries]
     results = _calculate_triangle_vertices(
@@ -563,7 +563,7 @@ def _project_geometry(geometry, projection, transform=None):
     projected = []
     for i in result:
         if isinstance(i, BaseMultipartGeometry):
-            projected.extend(list(i))
+            projected.extend(list(i.geoms))
         else:
             projected.append(i)
     return projected
@@ -659,120 +659,93 @@ def _parse_geometries(geometries):
     out = []
     for i in geometries:
         if isinstance(i, BaseMultipartGeometry):
-            out.extend(list(i))
+            out.extend(list(i.geoms))
         else:
             out.append(i)
     return out
 
 
-def shapelify_feature_polygons(features):
-    """Generates shapely MultiPolygon geometries from reconstructed feature polygons. 
+def shapelify_features(features, central_meridian=0.0, tessellate_degrees=None):
+    """Generates shapely MultiPolygon or MultiLineString geometries
+    from reconstructed feature polygons.
     
-    Wraps geometries to the dateline by splitting a polygon into multiple polygons at the dateline. This is to avoid 
-    horizontal lines being formed between polygons at longitudes of -180 and 180 degrees. Exterior coordinates are 
-    ordered anti-clockwise and only valid geometries are passed to ensure compatibility with Cartopy. 
+    Wraps geometries around a central meridian by splitting a polygon into
+    multiple polygons at the antimeridian. This is to avoid horizontal lines
+    being formed between geometries at longitudes of -180 and 180 degrees.
+    Exterior coordinates are ordered anti-clockwise and only valid geometries
+    are passed to ensure compatibility with Cartopy.
 
     Parameters
     ----------
-    features : list
-        Contains reconstructed polygon features.
+    features : iterable of `pygplates.Feature`, `ReconstructedFeatureGeometry`,
+    or `GeometryOnSphere`
+        Iterable containing reconstructed polygon features.
+    central_meridian : float
+        Central meridian around which to perform wrapping; default: 0.0.
+    tessellate_degrees : float or None
+        If provided, geometries will be tessellated to this resolution prior
+        to wrapping.
 
     Returns
     -------
-    all_geometries : list
-        Shapely multi-polygon geometries generated from the given reconstructed features.
+    all_geometries : list of `shapely.geometry.BaseGeometry`
+        Shapely geometries converted from the given reconstructed features.
+
+    See Also
+    --------
+    geometry.pygplates_to_shapely : convert PyGPlates geometry objects to
+    Shapely geometries.
     """
-    import shapely
+    if isinstance(
+        features,
+        (
+            pygplates.Feature,
+            pygplates.ReconstructedFeatureGeometry,
+            pygplates.GeometryOnSphere,
+        ),
+    ):
+        features = [features]
 
-    date_line_wrapper = pygplates.DateLineWrapper()
-
-    all_geometries = []
+    geometries = []
     for feature in features:
+        if isinstance(feature, pygplates.Feature):
+            geometries.extend(feature.get_all_geometries())
+        elif isinstance(feature, pygplates.ReconstructedFeatureGeometry):
+            geometries.append(feature.get_reconstructed_geometry())
+        elif isinstance(feature, (pygplates.GeometryOnSphere, pygplates.LatLonPoint)):
+            geometries.append(feature)
+        elif isinstance(feature, pygplates.DateLineWrapper.LatLonMultiPoint):
+            geometries.append(
+                pygplates.MultiPointOnSphere(
+                    [i.to_lat_lon() for i in feature.get_points()]
+                )
+            )
+        elif isinstance(feature, pygplates.DateLineWrapper.LatLonPolyline):
+            geometries.append(pygplates.PolylineOnSphere(feature.get_points()))
+        elif isinstance(feature, pygplates.DateLineWrapper.LatLonPolygon):
+            geometries.append(
+                pygplates.PolygonOnSphere(
+                    [i.to_lat_lon() for i in feature.get_exterior_points()]
+                )
+            )
 
-        rings = []
+    return [
+        pygplates_to_shapely(
+            i,
+            force_ccw=True,
+            validate=True,
+            central_meridian=central_meridian,
+            tessellate_degrees=tessellate_degrees,
+            explode=False,
+        )
+        for i in geometries
+    ]
 
-        # ascertain whether reconstructed feature or plain feature type
-        # get_all_geometries() seems to capture more coordinates than just get_geometry()
-        if type(feature) is pygplates.Feature:
-            geometries = feature.get_all_geometries()
-        elif type(feature) is pygplates.ReconstructedFeatureGeometry:
-            geometries = [feature.get_reconstructed_geometry()]
-        else:
-            raise ValueError("Not sure what to do with a {} feature type".format(str(type(feature))))
 
-        for geometry in geometries:
-            wrapped_polygons = date_line_wrapper.wrap(geometry)
-            for poly in wrapped_polygons:
-                ring = np.array([(p.get_longitude(), p.get_latitude()) for p in poly.get_exterior_points()])
-                ring[:,1] = np.clip(ring[:,1], -89, 89) # anything approaching the poles creates artefacts
-                ring_polygon = shapely.geometry.Polygon(ring)
+shapelify_feature_polygons = shapelify_features
 
-                # we need to make sure the exterior coordinates are ordered anti-clockwise
-                # and the geometry is valid otherwise it will screw with cartopy
-                if not ring_polygon.exterior.is_ccw:
-                    ring_polygon.exterior.coords = list(ring[::-1])
 
-                rings.append(ring_polygon)
-
-            geom = shapely.geometry.MultiPolygon(rings)
-
-            # we need to make sure the exterior coordinates are ordered anti-clockwise
-            # and the geometry is valid otherwise it will screw with cartopy
-            all_geometries.append(geom.buffer(0.0)) # add 0.0 buffer to deal with artefacts
-
-    return all_geometries
-
-def shapelify_feature_lines(features):
-    """Generates shapely MultiLineString geometries from reconstructed linestring features. 
-
-    Wraps geometries to the dateline by splitting a polyline into multiple polylines at the dateline. This is to avoid
-    horizontal lines being formed between polylines at longitudes of -180 and 180 degrees. 
-
-    Parameters
-    ----------
-    features : list
-        Contains reconstructed linestring features.
-
-    Returns
-    -------
-    all_geometries : list
-        Shapely MultiLineString geometries generated from the given reconstructed features.
-    """
-    import shapely
-
-    date_line_wrapper = pygplates.DateLineWrapper()
-
-    all_geometries = []
-    for feature in features:
-
-        rings = []
-
-        # ascertain whether reconstructed feature or plain feature type
-        # get_all_geometries() seems to capture more coordinates than just get_geometry()
-        if type(feature) is pygplates.Feature:
-            geometries = feature.get_all_geometries()
-        elif type(feature) is pygplates.ReconstructedFeatureGeometry:
-            geometries = [feature.get_reconstructed_geometry()]
-        else:
-            raise ValueError("Not sure what to do with a {} feature type".format(str(type(feature))))
-
-        for geometry in geometries:
-            wrapped_lines = date_line_wrapper.wrap(geometry)
-            for line in wrapped_lines:
-                ring = np.array([(p.get_longitude(), p.get_latitude()) for p in line.get_points()])
-                ring[:,1] = np.clip(ring[:,1], -89, 89) # anything approaching the poles creates artefacts
-                ring_linestring = shapely.geometry.LineString(ring)
-
-                rings.append(ring_linestring)
-
-            # construct shapely geometry
-            geom = shapely.geometry.MultiLineString(rings)
-
-            if geom.is_valid:
-                all_geometries.append(geom)
-
-    return all_geometries
-
+shapelify_feature_lines = shapelify_features
 
 
 class PlotTopologies(object):

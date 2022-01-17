@@ -1,5 +1,6 @@
 from . import (
     download,
+    geometry,
     gpml,
     grids,
     io,
