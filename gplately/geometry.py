@@ -190,8 +190,6 @@ def pygplates_to_shapely(
     for i in wrapped:
         if isinstance(i, pygplates.DateLineWrapper.LatLonPolyline):
             tmp = _LineString([j.to_lat_lon()[::-1] for j in i.get_points()])
-            if validate:
-                tmp = tmp.buffer(0.0)
             output_geoms.append(tmp)
             output_type = _MultiLineString
         elif isinstance(i, pygplates.DateLineWrapper.LatLonPolygon):
