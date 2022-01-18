@@ -1324,6 +1324,37 @@ class PlotTopologies(object):
         trench_lines = shapelify_feature_lines(self.trenches)
         return ax.add_geometries(trench_lines, crs=self.base_projection, facecolor='none', edgecolor=color, **kwargs)
 
+    def plot_misc_boundaries(self, ax, color="black", **kwargs):
+        """Plots reconstructed miscellaneous plate boundary polylines onto a standard map.
+
+        The reconstructed boundaries for plotting must be a list held in the `other` attribute. These sections are
+        transformed into shapely geometries and added onto the chosen map for a specific geological time (supplied to the
+        PlotTopologies object). Map presentation details (e.g. color, alpha…) are permitted.
+
+        Note: Boundary geometries are wrapped to the dateline by splitting a polyline into multiple polylines at the dateline.
+        This is to avoid horizontal lines being formed between polylines at longitudes of -180 and 180 degrees. Lat-lon
+        feature points near the poles (-89 & 89 latitude) are clipped to ensure compatibility with Cartopy.
+
+        Parameters
+        ----------
+        ax : GeoAxis
+            A standard map for lat-lon data built on a matplotlib figure. Can be for a single plot or for multiple subplots.
+            Should be set at a particular Cartopy map projection.
+
+        color = str, default=’black’
+            The colour of the trench lines. By default, it is set to black.
+
+        **kwargs
+            Keyword arguments that allow control over parameters such as ‘alpha’, etc. for plotting trench geometries.
+
+        Returns
+        -------
+        ax : GeoAxis
+            The map with subduction trench features plotted onto the chosen projection (transformed using PlateCarree).
+        """
+        lines = shapelify_features(self.other)
+        return ax.add_geometries(lines, crs=self.base_projection, facecolor="none", edgecolor=color, **kwargs)
+
     def plot_subduction_teeth_deprecated(self, ax, spacing=0.1, size=2.0, aspect=1, color='black', **kwargs):
         """Plots subduction teeth onto a standard map. 
 
