@@ -1136,8 +1136,8 @@ class PlotTopologies(object):
 
         Returns
         -------
-        ax : GeoAxis
-            The map with coastline features plotted onto the chosen projection (transformed using PlateCarree). 
+        cartopy.mpl.feature_artist.FeatureArtist
+            The `FeatureArtist` instance responsible for drawing the geometries.
         """
         if self.coastline_filename is None:
             raise ValueError("Supply coastline_filename to PlotTopologies object")
@@ -1164,8 +1164,8 @@ class PlotTopologies(object):
 
         Returns
         -------
-        ax : GeoAxis
-            The map with continental features plotted onto the chosen projection (transformed using PlateCarree). 
+        cartopy.mpl.feature_artist.FeatureArtist
+            The `FeatureArtist` instance responsible for drawing the geometries.
         """
         if self.continent_filename is None:
             raise ValueError("Supply continent_filename to PlotTopologies object")
@@ -1191,8 +1191,8 @@ class PlotTopologies(object):
 
         Returns
         -------
-        ax : GeoAxis
-            The map with coastline features plotted onto the chosen projection (transformed using PlateCarree). 
+        cartopy.mpl.feature_artist.FeatureArtist
+            The `FeatureArtist` instance responsible for drawing the geometries.
         """
         if self.COB_filename is None:
             raise ValueError("Supply COB_filename to PlotTopologies object")
@@ -1225,8 +1225,8 @@ class PlotTopologies(object):
 
         Returns
         -------
-        ax : GeoAxis
-            The map with ridge features plotted onto the chosen projection (transformed using PlateCarree). 
+        cartopy.mpl.feature_artist.FeatureArtist
+            The `FeatureArtist` instance responsible for drawing the geometries.
         """
         ridge_lines = shapelify_feature_lines(self.ridges)
         return ax.add_geometries(ridge_lines, crs=self.base_projection, facecolor='none', edgecolor=color, **kwargs)
@@ -1256,8 +1256,8 @@ class PlotTopologies(object):
 
         Returns
         -------
-        ax : GeoAxis
-            The map with ridge & transform features plotted onto the chosen projection (transformed using PlateCarree).
+        cartopy.mpl.feature_artist.FeatureArtist
+            The `FeatureArtist` instance responsible for drawing the geometries.
         """
         ridge_transform_lines = shapelify_feature_lines(self.ridge_transforms)
         return ax.add_geometries(ridge_transform_lines, crs=self.base_projection, facecolor='none', edgecolor=color, **kwargs)
@@ -1287,8 +1287,8 @@ class PlotTopologies(object):
 
         Returns
         -------
-        ax : GeoAxis
-            The map with transform features plotted onto the chosen projection (transformed using PlateCarree).
+        cartopy.mpl.feature_artist.FeatureArtist
+            The `FeatureArtist` instance responsible for drawing the geometries.
         """
         transform_lines = shapelify_feature_lines(self.transforms)
         return ax.add_geometries(transform_lines, crs=self.base_projection, facecolor='none', edgecolor=color, **kwargs)
@@ -1318,8 +1318,8 @@ class PlotTopologies(object):
 
         Returns
         -------
-        ax : GeoAxis
-            The map with subduction trench features plotted onto the chosen projection (transformed using PlateCarree).
+        cartopy.mpl.feature_artist.FeatureArtist
+            The `FeatureArtist` instance responsible for drawing the geometries.
         """
         trench_lines = shapelify_feature_lines(self.trenches)
         return ax.add_geometries(trench_lines, crs=self.base_projection, facecolor='none', edgecolor=color, **kwargs)
@@ -1342,15 +1342,15 @@ class PlotTopologies(object):
             Should be set at a particular Cartopy map projection.
 
         color = str, default=’black’
-            The colour of the trench lines. By default, it is set to black.
+            The colour of the boundary lines. By default, it is set to black.
 
         **kwargs
-            Keyword arguments that allow control over parameters such as ‘alpha’, etc. for plotting trench geometries.
+            Keyword arguments that allow control over parameters such as ‘alpha’, etc. for plotting boundary geometries.
 
         Returns
         -------
-        ax : GeoAxis
-            The map with subduction trench features plotted onto the chosen projection (transformed using PlateCarree).
+        cartopy.mpl.feature_artist.FeatureArtist
+            The `FeatureArtist` instance responsible for drawing the geometries.
         """
         lines = shapelify_features(self.other)
         return ax.add_geometries(lines, crs=self.base_projection, facecolor="none", edgecolor=color, **kwargs)
@@ -1445,11 +1445,6 @@ class PlotTopologies(object):
 
         **kwargs 
             Keyword arguments that allow control over parameters such as ‘alpha’, etc. for plotting subduction tooth polygons.
-
-        Returns
-        -------
-        ax : GeoAxis
-            The map with subduction teeth plotted onto the chosen projection (transformed using PlateCarree).
         """
 
         spacing = spacing * EARTH_RADIUS * 1e3
