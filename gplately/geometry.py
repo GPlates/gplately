@@ -202,10 +202,13 @@ def pygplates_to_shapely(
                 and not tmp.exterior.is_ccw
             ):
                 tmp = _Polygon(list(tmp.exterior.coords)[::-1])
-                # tmp.exterior.coords = list(tmp.exterior.coords)[::-1]
             if validate:
                 tmp = tmp.buffer(0.0)
-            output_geoms.append(tmp)
+            if isinstance(tmp, _BaseMultipartGeometry):
+                # Buffering can sometimes result in a MultiPolygon
+                output_geoms.extend(tmp.geoms)
+            else:
+                output_geoms.append(tmp)
             output_type = _MultiPolygon
         else:
             raise TypeError(
