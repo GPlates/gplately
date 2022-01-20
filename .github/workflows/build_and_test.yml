@@ -1,7 +1,7 @@
 # This workflow will install Python dependencies, run tests and lint with a single version of Python
 # For more information see: https://help.github.com/actions/language-and-framework-guides/using-python-with-github-actions
 
-name: Python application
+name: Test GPlately
 
 on:
   push:
@@ -25,8 +25,8 @@ jobs:
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
         sudo apt-get update
         sudo apt-get install wget
-        wget https://sourceforge.net/projects/gplates/files/pygplates/beta-revision-28/ubuntu/pygplates-py3-ubuntu-focal_2.2_1_amd64.deb/download
-        sudo dpkg -i pygplates-py3-ubuntu-focal_2.2_1_amd64.deb -y
+        wget https://sourceforge.net/projects/gplates/files/pygplates/beta-revision-28/ubuntu/pygplates-py3-ubuntu-focal_2.2_1_amd64.deb/download pygplates_package.deb
+        sudo dpkg -i pygplates_package.deb -y
     - name: Install gplately
       run: |
         pip install .
