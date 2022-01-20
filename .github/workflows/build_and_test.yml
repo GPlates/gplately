@@ -23,7 +23,8 @@ jobs:
         python -m pip install --upgrade pip
         pip install flake8 pytest
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
-        apt-get install wget
+        sudo apt-get update
+        sudo apt-get install wget
         wget https://sourceforge.net/projects/gplates/files/pygplates/beta-revision-28/ubuntu/pygplates-py3-ubuntu-focal_2.2_1_amd64.deb/download
         sudo dpkg -i pygplates-py3-ubuntu-focal_2.2_1_amd64.deb -y
     - name: Install gplately
