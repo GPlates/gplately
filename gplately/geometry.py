@@ -193,9 +193,9 @@ def pygplates_to_shapely(
             output_geoms.append(tmp)
             output_type = _MultiLineString
         elif isinstance(i, pygplates.DateLineWrapper.LatLonPolygon):
-            tmp = _Polygon(
-                [j.to_lat_lon()[::-1] for j in i.get_exterior_points()]
-            )
+            tmp = np.array([j.to_lat_lon()[::-1] for j in i.get_exterior_points()])
+            tmp[:,1] = np.clip(tmp[:,1], -89, 89) # clip polygons near poles
+            tmp = _Polygon(tmp)
             if (
                 force_ccw
                 and tmp.exterior is not None
@@ -205,7 +205,12 @@ def pygplates_to_shapely(
                 # tmp.exterior.coords = list(tmp.exterior.coords)[::-1]
             if validate:
                 tmp = tmp.buffer(0.0)
-            output_geoms.append(tmp)
+            # this is for pole-clipped polygons turned into MultiPolygons
+            if isinstance(tmp, _MultiPolygon):
+                for geom in list(tmp):
+                    output_geoms.append(geom)
+            else:
+                output_geoms.append(tmp)
             output_type = _MultiPolygon
         else:
             raise TypeError(
