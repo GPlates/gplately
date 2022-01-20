@@ -6,8 +6,6 @@ name: Python application
 on:
   push:
 
-  pull_request:
-
 
 jobs:
   build:
@@ -27,7 +25,7 @@ jobs:
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
         apt-get install wget
         wget https://sourceforge.net/projects/gplates/files/pygplates/beta-revision-28/ubuntu/pygplates-py3-ubuntu-focal_2.2_1_amd64.deb/download
-        dpkg -i pygplates-py3-ubuntu-focal_2.2_1_amd64.deb
+        sudo dpkg -i pygplates-py3-ubuntu-focal_2.2_1_amd64.deb
     - name: Install gplately
       run: |
         pip install .
