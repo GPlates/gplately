@@ -58,20 +58,20 @@ import re
 
 import pygplates
 import cartopy.crs as ccrs
-from matplotlib.patches import Polygon as PolygonPatch
 import matplotlib.pyplot as plt
 import numpy as np
 import ptt
 from shapely.geometry import Point, Polygon
 from shapely.geometry.base import BaseGeometry, BaseMultipartGeometry
 from shapely.ops import linemerge
-from .tools import EARTH_RADIUS
 
+from .geometry import pygplates_to_shapely
 from .io import (
     get_valid_geometries,  # included for backwards compatibility
     GEOPANDAS_AVAILABLE as _GEOPANDAS_AVAILABLE,
     get_geometries as _get_geometries,
 )
+from .tools import EARTH_RADIUS
 
 if _GEOPANDAS_AVAILABLE:
     import geopandas as gpd
@@ -524,6 +524,52 @@ def _tesselate_triangles(
     projection=None,
     transform=None,
 ):
+    """Generates subduction teeth triangles for plotting.
+
+    Forms continuous trench geometries and identifies their subduction polarities.
+    Subduction teeth triangles can be customised with a given spacing and width.  
+    Their apexes point in the identified polarity directions.
+
+    Parameters
+    ----------
+    geometries : geopandas.GeoDataFrame, sequence of shapely geometries, or str
+        If a `geopandas.GeoDataFrame` is given, its geometry attribute
+        will be used. If `geometries` is a string, it must be the path to
+        a file, which will be loaded with `geopandas.read_file`. Otherwise,
+        `geometries` must be a sequence of shapely geometry objects (instances
+        of the `shapely.geometry.base.BaseGeometry` class).
+    width : float
+        The (approximate) width of the subduction teeth. If a projection is
+        used, this value will be in projected units.
+    polarity : {"left", "l", "right", "r", None}, default "left"
+        The subduction polarity of the geometries. If no polarity is provided,
+        and `geometries` is a `geopandas.GeoDataFrame`, this function will
+        attempt to find a `polarity` column in the data frame and use the
+        values given there. If `polarity` is not manually specified and no
+        appropriate column can be found, an error will be raised.
+    height : float, default None
+        If provided, the height of the subduction teeth. As with `width`,
+        this value should be given in projected units. If no value is given,
+        the height of the teeth will be equal to 0.6 * `width`.
+    spacing : float, default None
+        If provided, the spacing between the subduction teeth. As with
+        `width` and `height`, this value should be given in projected units.
+        If no value is given, `spacing` will default to `width`, producing
+        tightly packed subduction teeth.
+    projection : cartopy.crs.Transform, "auto", or None, default None
+        The projection of the plot. If the plot has no projection, this value
+        can be explicitly given as `None`. The default value is "auto", which
+        will acquire the projection automatically from the plot axes.
+    transform : cartopy.crs.Transform, or None, default None
+        If the plot is projected, a `transform` value is usually needed.
+        Frequently, the appropriate value is an instance of
+        `cartopy.crs.PlateCarree`.
+
+    Returns
+    -------
+    results : list of shapely Polygon objects
+        Subduction teeth generated for the given geometries. 
+    """
     if width <= 0.0:
         raise ValueError("Invalid `width` argument: {}".format(width))
     polarity = _parse_polarity(polarity)
@@ -543,7 +589,7 @@ def _tesselate_triangles(
         del geometries_new
     geometries = linemerge(geometries)
     if isinstance(geometries, BaseMultipartGeometry):
-        geometries = list(geometries)
+        geometries = list(geometries.geoms)
     elif isinstance(geometries, BaseGeometry):
         geometries = [geometries]
     results = _calculate_triangle_vertices(
@@ -557,13 +603,33 @@ def _tesselate_triangles(
 
 
 def _project_geometry(geometry, projection, transform=None):
+    """Projects shapely geometries onto a certain Cartopy CRS map projection. 
+
+    Uses a coordinate system ("transform"), if given. 
+
+    Parameters
+    ----------
+    geometry : shapely.geometry.base.BaseGeometry
+        An instance of a shapely geometry.
+    projection : cartopy.crs.Transform, 
+        The projection of the plot. 
+    transform : cartopy.crs.Transform or None, default None
+        If the plot is projected, a `transform` value is usually needed.
+        Frequently, the appropriate value is an instance of
+        `cartopy.crs.PlateCarree`.
+
+    Returns
+    -------
+    projected : list
+        The provided shapely geometries projected onto a Cartopy CRS map projection.
+    """
     if transform is None:
         transform = ccrs.PlateCarree()
     result = [projection.project_geometry(geometry, transform)]
     projected = []
     for i in result:
         if isinstance(i, BaseMultipartGeometry):
-            projected.extend(list(i))
+            projected.extend(list(i.geoms))
         else:
             projected.append(i)
     return projected
@@ -576,6 +642,38 @@ def _calculate_triangle_vertices(
     height,
     polarity,
 ):
+    """Generates vertices of subduction teeth triangles.
+
+    Triangle bases are set on shapely BaseGeometry trench instances with their apexes 
+    pointing in directions of subduction polarity. Triangle dimensions are set by a 
+    specified width, spacing and height (either provided by the user or set as default
+    values from _tesselate_triangles). The teeth are returned as shapely polygons.
+
+    Parameters
+    ----------
+    geometries : list of shapely geometries (instances of the
+        shapely.geometry.base.BaseGeometry or shapely.geometry.base.BaseMultipartGeometry
+        class)
+        Trench geometries projected onto a certain map projection (using a 
+        coordinate system if specified), each with identified subduction polarities. 
+        Teeth triangles will be generated only on the BaseGeometry instances. 
+    width : float
+        The (approximate) width of the subduction teeth. If a projection is
+        used, this value will be in projected units.
+    spacing : float,
+        The spacing between the subduction teeth. As with
+        `width` and `height`, this value should be given in projected units.
+    height : float, default None
+        The height of the subduction teeth. This value should also be given in projected
+        units.
+    polarity : {"left", "right"}
+        The subduction polarity of the shapely geometries. 
+    
+    Returns
+    -------
+    triangles : list of shapely polygons
+        The subduction teeth generated along the supplied trench geometries. 
+    """
     if isinstance(geometries, BaseGeometry):
         geometries = [geometries]
     triangles = []
@@ -623,6 +721,31 @@ def _calculate_triangle_vertices(
 
 
 def _parse_polarity(polarity):
+    """Ensures subduction polarities are valid strings - either "left", "l", "right" or "r".
+
+    The geometries' subduction polarities are either provided by the user in plot_subduction_teeth
+    or found automatically in a geopandas.GeoDataFrame column by _find_polarity_column, if such a
+    column exists.
+ 
+    Parameters
+    ----------
+    polarity : {"left", "l", "right", "r"}
+        The subduction polarity of the geometries (either set by the user or found automatically
+        from the geometries' data frame). 
+
+    Returns
+    -------
+    polarity : {"left", "right"}
+        Returned if the provided polarity string is one of {"left", "l", "right", "r"}. "l" and "r"
+        are classified and returned as "left" and "right" respectively.  
+
+    Raises
+    ------
+    TypeError
+        If the provided polarity is not a string type.
+    ValueError
+        If the provided polarity is not valid ("left", "l", "right" or "r").
+    """
     if not isinstance(polarity, str):
         raise TypeError(
             "Invalid `polarity` argument type: {}".format(type(polarity))
@@ -641,6 +764,26 @@ def _parse_polarity(polarity):
 
 
 def _find_polarity_column(columns):
+    """Searches for a 'polarity' column in a geopandas.GeoDataFrame to extract subduction
+    polarity values.
+
+    Subduction polarities can be used for tessellating subduction teeth.
+
+    Parameters
+    ----------
+    columns : geopandas.GeoDataFrame.columns.values instance
+        A list of geopandas.GeoDataFrame column header strings.
+
+    Returns
+    -------
+    column : list
+        If found, returns a list of all subduction polarities ascribed to the supplied
+        geometry data frame.
+    None
+        if a 'polarity' column was not found in the data frame. In this case, subduction
+        polarities will have to be manually provided to plot_subduction_teeth.
+
+    """
     pattern = "polarity"
     for column in columns:
         if re.fullmatch(pattern, column) is not None:
@@ -649,6 +792,23 @@ def _find_polarity_column(columns):
 
 
 def _parse_geometries(geometries):
+    """Resolves a geopandas.GeoSeries object into shapely BaseGeometry and/or
+    BaseMutipartGeometry instances.
+
+    Parameters
+    ----------
+    geometries : geopandas.GeoDataFrame, sequence of shapely geometries, or str
+        If a `geopandas.GeoDataFrame` is given, its geometry attribute
+        will be used. If `geometries` is a string, it must be the path to
+        a file, which will be loaded with `geopandas.read_file`. Otherwise,
+        `geometries` must be a sequence of shapely geometry objects (instances
+        of the `shapely.geometry.base.BaseGeometry` class).
+
+    Returns
+    -------
+    out : list
+        Resolved shapely BaseMutipartGeometry and/or BaseGeometry instances.
+    """
     geometries = _get_geometries(geometries)
     if _GEOPANDAS_AVAILABLE and isinstance(geometries, gpd.GeoSeries):
         geometries = list(geometries)
@@ -659,120 +819,93 @@ def _parse_geometries(geometries):
     out = []
     for i in geometries:
         if isinstance(i, BaseMultipartGeometry):
-            out.extend(list(i))
+            out.extend(list(i.geoms))
         else:
             out.append(i)
     return out
 
 
-def shapelify_feature_polygons(features):
-    """Generates shapely MultiPolygon geometries from reconstructed feature polygons. 
+def shapelify_features(features, central_meridian=0.0, tessellate_degrees=None):
+    """Generates shapely MultiPolygon or MultiLineString geometries
+    from reconstructed feature polygons.
     
-    Wraps geometries to the dateline by splitting a polygon into multiple polygons at the dateline. This is to avoid 
-    horizontal lines being formed between polygons at longitudes of -180 and 180 degrees. Exterior coordinates are 
-    ordered anti-clockwise and only valid geometries are passed to ensure compatibility with Cartopy. 
+    Wraps geometries around a central meridian by splitting a polygon into
+    multiple polygons at the antimeridian. This is to avoid horizontal lines
+    being formed between geometries at longitudes of -180 and 180 degrees.
+    Exterior coordinates are ordered anti-clockwise and only valid geometries
+    are passed to ensure compatibility with Cartopy.
 
     Parameters
     ----------
-    features : list
-        Contains reconstructed polygon features.
+    features : iterable of `pygplates.Feature`, `ReconstructedFeatureGeometry`,
+    or `GeometryOnSphere`
+        Iterable containing reconstructed polygon features.
+    central_meridian : float
+        Central meridian around which to perform wrapping; default: 0.0.
+    tessellate_degrees : float or None
+        If provided, geometries will be tessellated to this resolution prior
+        to wrapping.
 
     Returns
     -------
-    all_geometries : list
-        Shapely multi-polygon geometries generated from the given reconstructed features.
+    all_geometries : list of `shapely.geometry.BaseGeometry`
+        Shapely geometries converted from the given reconstructed features.
+
+    See Also
+    --------
+    geometry.pygplates_to_shapely : convert PyGPlates geometry objects to
+    Shapely geometries.
     """
-    import shapely
+    if isinstance(
+        features,
+        (
+            pygplates.Feature,
+            pygplates.ReconstructedFeatureGeometry,
+            pygplates.GeometryOnSphere,
+        ),
+    ):
+        features = [features]
 
-    date_line_wrapper = pygplates.DateLineWrapper()
-
-    all_geometries = []
+    geometries = []
     for feature in features:
+        if isinstance(feature, pygplates.Feature):
+            geometries.extend(feature.get_all_geometries())
+        elif isinstance(feature, pygplates.ReconstructedFeatureGeometry):
+            geometries.append(feature.get_reconstructed_geometry())
+        elif isinstance(feature, (pygplates.GeometryOnSphere, pygplates.LatLonPoint)):
+            geometries.append(feature)
+        elif isinstance(feature, pygplates.DateLineWrapper.LatLonMultiPoint):
+            geometries.append(
+                pygplates.MultiPointOnSphere(
+                    [i.to_lat_lon() for i in feature.get_points()]
+                )
+            )
+        elif isinstance(feature, pygplates.DateLineWrapper.LatLonPolyline):
+            geometries.append(pygplates.PolylineOnSphere(feature.get_points()))
+        elif isinstance(feature, pygplates.DateLineWrapper.LatLonPolygon):
+            geometries.append(
+                pygplates.PolygonOnSphere(
+                    [i.to_lat_lon() for i in feature.get_exterior_points()]
+                )
+            )
 
-        rings = []
+    return [
+        pygplates_to_shapely(
+            i,
+            force_ccw=True,
+            validate=True,
+            central_meridian=central_meridian,
+            tessellate_degrees=tessellate_degrees,
+            explode=False,
+        )
+        for i in geometries
+    ]
 
-        # ascertain whether reconstructed feature or plain feature type
-        # get_all_geometries() seems to capture more coordinates than just get_geometry()
-        if type(feature) is pygplates.Feature:
-            geometries = feature.get_all_geometries()
-        elif type(feature) is pygplates.ReconstructedFeatureGeometry:
-            geometries = [feature.get_reconstructed_geometry()]
-        else:
-            raise ValueError("Not sure what to do with a {} feature type".format(str(type(feature))))
 
-        for geometry in geometries:
-            wrapped_polygons = date_line_wrapper.wrap(geometry)
-            for poly in wrapped_polygons:
-                ring = np.array([(p.get_longitude(), p.get_latitude()) for p in poly.get_exterior_points()])
-                ring[:,1] = np.clip(ring[:,1], -89, 89) # anything approaching the poles creates artefacts
-                ring_polygon = shapely.geometry.Polygon(ring)
+shapelify_feature_polygons = shapelify_features
 
-                # we need to make sure the exterior coordinates are ordered anti-clockwise
-                # and the geometry is valid otherwise it will screw with cartopy
-                if not ring_polygon.exterior.is_ccw:
-                    ring_polygon.exterior.coords = list(ring[::-1])
 
-                rings.append(ring_polygon)
-
-            geom = shapely.geometry.MultiPolygon(rings)
-
-            # we need to make sure the exterior coordinates are ordered anti-clockwise
-            # and the geometry is valid otherwise it will screw with cartopy
-            all_geometries.append(geom.buffer(0.0)) # add 0.0 buffer to deal with artefacts
-
-    return all_geometries
-
-def shapelify_feature_lines(features):
-    """Generates shapely MultiLineString geometries from reconstructed linestring features. 
-
-    Wraps geometries to the dateline by splitting a polyline into multiple polylines at the dateline. This is to avoid
-    horizontal lines being formed between polylines at longitudes of -180 and 180 degrees. 
-
-    Parameters
-    ----------
-    features : list
-        Contains reconstructed linestring features.
-
-    Returns
-    -------
-    all_geometries : list
-        Shapely MultiLineString geometries generated from the given reconstructed features.
-    """
-    import shapely
-
-    date_line_wrapper = pygplates.DateLineWrapper()
-
-    all_geometries = []
-    for feature in features:
-
-        rings = []
-
-        # ascertain whether reconstructed feature or plain feature type
-        # get_all_geometries() seems to capture more coordinates than just get_geometry()
-        if type(feature) is pygplates.Feature:
-            geometries = feature.get_all_geometries()
-        elif type(feature) is pygplates.ReconstructedFeatureGeometry:
-            geometries = [feature.get_reconstructed_geometry()]
-        else:
-            raise ValueError("Not sure what to do with a {} feature type".format(str(type(feature))))
-
-        for geometry in geometries:
-            wrapped_lines = date_line_wrapper.wrap(geometry)
-            for line in wrapped_lines:
-                ring = np.array([(p.get_longitude(), p.get_latitude()) for p in line.get_points()])
-                ring[:,1] = np.clip(ring[:,1], -89, 89) # anything approaching the poles creates artefacts
-                ring_linestring = shapely.geometry.LineString(ring)
-
-                rings.append(ring_linestring)
-
-            # construct shapely geometry
-            geom = shapely.geometry.MultiLineString(rings)
-
-            if geom.is_valid:
-                all_geometries.append(geom)
-
-    return all_geometries
-
+shapelify_feature_lines = shapelify_features
 
 
 class PlotTopologies(object):
@@ -1003,8 +1136,8 @@ class PlotTopologies(object):
 
         Returns
         -------
-        ax : GeoAxis
-            The map with coastline features plotted onto the chosen projection (transformed using PlateCarree). 
+        cartopy.mpl.feature_artist.FeatureArtist
+            The `FeatureArtist` instance responsible for drawing the geometries.
         """
         if self.coastline_filename is None:
             raise ValueError("Supply coastline_filename to PlotTopologies object")
@@ -1031,8 +1164,8 @@ class PlotTopologies(object):
 
         Returns
         -------
-        ax : GeoAxis
-            The map with continental features plotted onto the chosen projection (transformed using PlateCarree). 
+        cartopy.mpl.feature_artist.FeatureArtist
+            The `FeatureArtist` instance responsible for drawing the geometries.
         """
         if self.continent_filename is None:
             raise ValueError("Supply continent_filename to PlotTopologies object")
@@ -1058,8 +1191,8 @@ class PlotTopologies(object):
 
         Returns
         -------
-        ax : GeoAxis
-            The map with coastline features plotted onto the chosen projection (transformed using PlateCarree). 
+        cartopy.mpl.feature_artist.FeatureArtist
+            The `FeatureArtist` instance responsible for drawing the geometries.
         """
         if self.COB_filename is None:
             raise ValueError("Supply COB_filename to PlotTopologies object")
@@ -1092,8 +1225,8 @@ class PlotTopologies(object):
 
         Returns
         -------
-        ax : GeoAxis
-            The map with ridge features plotted onto the chosen projection (transformed using PlateCarree). 
+        cartopy.mpl.feature_artist.FeatureArtist
+            The `FeatureArtist` instance responsible for drawing the geometries.
         """
         ridge_lines = shapelify_feature_lines(self.ridges)
         return ax.add_geometries(ridge_lines, crs=self.base_projection, facecolor='none', edgecolor=color, **kwargs)
@@ -1123,8 +1256,8 @@ class PlotTopologies(object):
 
         Returns
         -------
-        ax : GeoAxis
-            The map with ridge & transform features plotted onto the chosen projection (transformed using PlateCarree).
+        cartopy.mpl.feature_artist.FeatureArtist
+            The `FeatureArtist` instance responsible for drawing the geometries.
         """
         ridge_transform_lines = shapelify_feature_lines(self.ridge_transforms)
         return ax.add_geometries(ridge_transform_lines, crs=self.base_projection, facecolor='none', edgecolor=color, **kwargs)
@@ -1154,8 +1287,8 @@ class PlotTopologies(object):
 
         Returns
         -------
-        ax : GeoAxis
-            The map with transform features plotted onto the chosen projection (transformed using PlateCarree).
+        cartopy.mpl.feature_artist.FeatureArtist
+            The `FeatureArtist` instance responsible for drawing the geometries.
         """
         transform_lines = shapelify_feature_lines(self.transforms)
         return ax.add_geometries(transform_lines, crs=self.base_projection, facecolor='none', edgecolor=color, **kwargs)
@@ -1185,11 +1318,42 @@ class PlotTopologies(object):
 
         Returns
         -------
-        ax : GeoAxis
-            The map with subduction trench features plotted onto the chosen projection (transformed using PlateCarree).
+        cartopy.mpl.feature_artist.FeatureArtist
+            The `FeatureArtist` instance responsible for drawing the geometries.
         """
         trench_lines = shapelify_feature_lines(self.trenches)
         return ax.add_geometries(trench_lines, crs=self.base_projection, facecolor='none', edgecolor=color, **kwargs)
+
+    def plot_misc_boundaries(self, ax, color="black", **kwargs):
+        """Plots reconstructed miscellaneous plate boundary polylines onto a standard map.
+
+        The reconstructed boundaries for plotting must be a list held in the `other` attribute. These sections are
+        transformed into shapely geometries and added onto the chosen map for a specific geological time (supplied to the
+        PlotTopologies object). Map presentation details (e.g. color, alpha…) are permitted.
+
+        Note: Boundary geometries are wrapped to the dateline by splitting a polyline into multiple polylines at the dateline.
+        This is to avoid horizontal lines being formed between polylines at longitudes of -180 and 180 degrees. Lat-lon
+        feature points near the poles (-89 & 89 latitude) are clipped to ensure compatibility with Cartopy.
+
+        Parameters
+        ----------
+        ax : GeoAxis
+            A standard map for lat-lon data built on a matplotlib figure. Can be for a single plot or for multiple subplots.
+            Should be set at a particular Cartopy map projection.
+
+        color = str, default=’black’
+            The colour of the boundary lines. By default, it is set to black.
+
+        **kwargs
+            Keyword arguments that allow control over parameters such as ‘alpha’, etc. for plotting boundary geometries.
+
+        Returns
+        -------
+        cartopy.mpl.feature_artist.FeatureArtist
+            The `FeatureArtist` instance responsible for drawing the geometries.
+        """
+        lines = shapelify_features(self.other)
+        return ax.add_geometries(lines, crs=self.base_projection, facecolor="none", edgecolor=color, **kwargs)
 
     def plot_subduction_teeth_deprecated(self, ax, spacing=0.1, size=2.0, aspect=1, color='black', **kwargs):
         """Plots subduction teeth onto a standard map. 
@@ -1281,11 +1445,6 @@ class PlotTopologies(object):
 
         **kwargs 
             Keyword arguments that allow control over parameters such as ‘alpha’, etc. for plotting subduction tooth polygons.
-
-        Returns
-        -------
-        ax : GeoAxis
-            The map with subduction teeth plotted onto the chosen projection (transformed using PlateCarree).
         """
 
         spacing = spacing * EARTH_RADIUS * 1e3
