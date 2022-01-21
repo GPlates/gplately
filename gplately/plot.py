@@ -901,22 +901,8 @@ def shapelify_features(features, central_meridian=0.0, tessellate_degrees=None):
     ]
 
 
-def shapelify_feature_polygons(reconstructed_polygons):
-    polygon_geometries = shapelify_features(reconstructed_polygons)
-    new_polygon_geometries = _validate_polygon_areas(polygon_geometries)
-    return new_polygon_geometries
-
-
 shapelify_feature_lines = shapelify_features
-
-
-def _validate_polygon_areas(polygon_geometries, threshold_area=1e-11):
-    """Clip polygons with near-zero area to further shapelify polygon geometries."""
-    new_polygon_geometries = []
-    for p in polygon_geometries:
-        if p.area > threshold_area:
-            new_polygon_geometries.append(p)
-    return new_polygon_geometries
+shapelify_feature_polygons = shapelify_features
 
 
 class PlotTopologies(object):

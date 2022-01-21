@@ -110,6 +110,7 @@ def pygplates_to_shapely(
     validate=False,
     force_ccw=False,
     explode=False,
+    area_threshold=1e-6
 ):
     """Convert one or more PyGPlates or GPlately geometries to Shapely format.
 
@@ -194,7 +195,7 @@ def pygplates_to_shapely(
             output_type = _MultiLineString
         elif isinstance(i, pygplates.DateLineWrapper.LatLonPolygon):
             tmp = np.array([j.to_lat_lon()[::-1] for j in i.get_exterior_points()])
-            tmp[:,1] = np.clip(tmp[:,1], -89, 89) # clip polygons near poles
+            # tmp[:,1] = np.clip(tmp[:,1], -89, 89) # clip polygons near poles
             tmp = _Polygon(tmp)
             if (
                 force_ccw
@@ -208,9 +209,11 @@ def pygplates_to_shapely(
             # this is for pole-clipped polygons turned into MultiPolygons
             if isinstance(tmp, _MultiPolygon):
                 for geom in list(tmp):
-                    output_geoms.append(geom)
+                    if geom.area > area_threshold:
+                        output_geoms.append(geom)
             else:
-                output_geoms.append(tmp)
+                if tmp.area > area_threshold:
+                    output_geoms.append(tmp)
             output_type = _MultiPolygon
         else:
             raise TypeError(
