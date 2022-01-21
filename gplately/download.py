@@ -1,15 +1,14 @@
-import pooch
+import pooch as _pooch
 from pooch import os_cache as _os_cache
 from pooch import retrieve as _retrieve
 from pooch import HTTPDownloader as _HTTPDownloader
 from pooch import Unzip as _Unzip
 from pooch import Decompress as _Decompress
-import glob, os
-import pygplates
-import re
-import numpy as np
+import pygplates as _pygplates
+import re as _re
+import numpy as _np
 
-def fetch_from_web(url):
+def _fetch_from_web(url):
     """Download file(s) in a given url to the 'gplately' cache folder. Processes
     compressed files using either Pooch's Unzip (if .zip) or Decompress (if .gz, 
     .xz or .bz2)."""
@@ -33,7 +32,7 @@ def fetch_from_web(url):
     return fnames
 
 
-def collect_file_extension(fnames, file_extension):
+def _collect_file_extension(fnames, file_extension):
     """Searches cached directory for filenames with a specified extension(s)."""
     sorted_fnames = []
     file_extension=tuple(file_extension)
@@ -43,7 +42,7 @@ def collect_file_extension(fnames, file_extension):
     return sorted_fnames
 
 
-def str_in_folder(fnames, strings_to_include=None, strings_to_ignore=None):
+def _str_in_folder(fnames, strings_to_include=None, strings_to_ignore=None):
     """Filter though files with/without """
     sorted_fnames = []
     for i, fname in enumerate(fnames):
@@ -57,32 +56,33 @@ def str_in_folder(fnames, strings_to_include=None, strings_to_ignore=None):
                 sorted_fnames.append(fname)
         else:
             sorted_fnames.append(fname)
-    if sorted_fnames:
-        return sorted_fnames
-    else:
-        return fnames
+    #if sorted_fnames:
+        #return sorted_fnames
+    #else:
+    return sorted_fnames
     
 
-def str_in_filename(fnames, strings_to_include=None, strings_to_ignore=None):
+def _str_in_filename(fnames, strings_to_include=None, strings_to_ignore=None):
     sorted_fnames = []
-    for i, fname in enumerate(fnames):
-        filename = fname.split("/")[-1]
-        if strings_to_ignore is not None:
-            check = [s for s in strings_to_ignore if s in fname]
-            if check:
-                continue
-        if strings_to_include is not None:
-            if any(x.lower() in filename.lower() for x in strings_to_include):
-                sorted_fnames.append(fname)
-        else:
-            sorted_fnames.append(fname)
-    if sorted_fnames:
-        return sorted_fnames
-    else:
-        return fnames
+    if strings_to_ignore is not None:
+        for f in fnames:
+            f = f.split("/")[-1]
+            check = [s for s in strings_to_ignore if s.lower() in f.lower()]
+    if strings_to_include is not None:
+        for s in strings_to_include:
+            for f in fnames:
+                fname = f.split("/")[-1]
+                if s.lower() in fname.lower():
+                    sorted_fnames.append(f)
+            if sorted_fnames:
+                break
+    #if sorted_fnames:
+        #return sorted_fnames
+    #else:
+    return sorted_fnames
 
 
-def check_gpml_or_shp(fnames):
+def _check_gpml_or_shp(fnames):
     """For topology features, returns GPML by default. Searches for ESRI Shapefiles 
     instead if GPML files not found."""
     sorted_fnames = []
@@ -104,14 +104,14 @@ def _remove_hash(fname):
     return new_path
 
 
-def order_filenames_by_time(fnames):
+def _order_filenames_by_time(fnames):
     """Orders filenames in a list from present day to deeper geological time if they
     are labelled by time."""
     # Collect all digits in each filename.
     filepath_digits=[]
     for i, file in enumerate(fnames):
         digits = []
-        for element in re.split('([0-9]+)', _remove_hash(file)):
+        for element in _re.split('([0-9]+)', _remove_hash(file)):
             if element.isdigit():
                 digits.append(int(str(element)))
         filepath_digits.append(digits)
@@ -119,7 +119,7 @@ def order_filenames_by_time(fnames):
     # Ignore digits common to all full file paths. This leaves behind the files' 
     # geological time label.
     geological_times = []
-    filepath_digits = np.array(filepath_digits).T
+    filepath_digits = _np.array(filepath_digits).T
     for digit_array in filepath_digits:
         if not all(digit == digit_array[0] for digit in digit_array):
             geological_times.append(digit_array)
@@ -139,10 +139,10 @@ def order_filenames_by_time(fnames):
     return filenames_sorted
 
 
-def collection_sorter(fnames, string_identifier):
+def _collection_sorter(fnames, string_identifier):
     """If multiple file collections or plate reconstruction models are downloaded from
     a single zip folder, only return the needed model."""
-    studyname = re.findall(r'[A-Za-z]+|\d+', string_identifier)[0]
+    studyname = _re.findall(r'[A-Za-z]+|\d+', string_identifier)[0]
     newfnames = []
     for files in fnames:
         if studyname not in files:
@@ -151,7 +151,7 @@ def collection_sorter(fnames, string_identifier):
     return newfnames
 
 
-def ignore_macOSX(fnames):
+def _ignore_macOSX(fnames):
     """For Mac users: filters out duplicate filenames extracted from the __MACOSX folder."""
     for fname in fnames:
         if fname.find("__MACOSX") != -1:
@@ -236,11 +236,11 @@ class DataServer(object):
         database = {
 
             "Muller2019" : ["https://www.earthbyte.org/webdav/ftp/Data_Collections/Muller_etal_2019_Tectonics/Muller_etal_2019_PlateMotionModel/Muller_etal_2019_PlateMotionModel_v2.0_Tectonics.zip"], 
+            "Muller2016" : ["https://www.earthbyte.org/webdav/ftp/Data_Collections/Muller_etal_2016_AREPS/Muller_etal_2016_AREPS_Supplement/Muller_etal_2016_AREPS_Supplement_v1.17.zip"],
             "Seton2012" : ["https://www.earthbyte.org/webdav/ftp/Data_Collections/Seton_etal_2012_ESR/Rotations/Seton_etal_ESR2012_2012.1.rot",
                            "https://www.earthbyte.org/webdav/ftp/Data_Collections/Seton_etal_2012_ESR/Plate_polygons/Seton_etal_ESR2012_PP_2012.1.gpml",
                           None], 
-            #"Merdith2021" : ["https://zenodo.org/record/4320873/files/SM2-Merdith_et_al_1_Ga_reconstruction.zip?download=1"],
-            "Merdith2021" : ["https://www.earthbyte.org/webdav/ftp/earthbyte/GPlates/GPlates2.3_GeoData/Individual/AltPlateReconstructions.zip"],
+            "Merdith2021" : ["https://zenodo.org/record/4485738/files/SM2_4485738_V2.zip"],
             "Matthews2016" : ["https://www.earthbyte.org/webdav/ftp/Data_Collections/Matthews_etal_2016_Global_Plate_Model_GPC.zip"], 
             "Merdith2017" : ["https://www.earthbyte.org/webdav/ftp/Data_Collections/Merdith_etal_2017_GR.zip"], 
 
@@ -254,59 +254,59 @@ class DataServer(object):
             if self.file_collection.lower() == collection.lower():
                 found_collection = True
                 rotation_filenames = []
-                topology_features = pygplates.FeatureCollection()
+                topology_features = _pygplates.FeatureCollection()
                 static_polygons = []
 
                 if len(url) == 1:
-                    fnames = collection_sorter(
-                        fetch_from_web(url[0]), self.file_collection
+                    fnames = _collection_sorter(
+                        _fetch_from_web(url[0]), self.file_collection
                     )
-                    rotation_filenames = collect_file_extension(
+                    rotation_filenames = _collect_file_extension(
                         fnames, [".rot"]
                     )
-                    rotation_model = pygplates.RotationModel(rotation_filenames)
+                    rotation_model = _pygplates.RotationModel(rotation_filenames)
 
-                    topology_filenames = collect_file_extension(
-                        str_in_filename(fnames, strings_to_ignore=["__MACOSX"]),
+                    topology_filenames = _collect_file_extension(
+                        _str_in_folder(fnames, strings_to_ignore=["__MACOSX"]),
                         [".gpml", ".gpmlz"]
                     )
                     for file in topology_filenames:
-                        topology_features.add(pygplates.FeatureCollection(file))
+                        topology_features.add(_pygplates.FeatureCollection(file))
 
-                    static_polygons = check_gpml_or_shp(
-                        str_in_filename(
-                            fnames, 
-                            strings_to_include=["Static", "StaticPolygon", "Static_Polygon"],
+                    static_polygons = _check_gpml_or_shp(
+                        _str_in_folder(
+                            _str_in_filename(fnames, 
+                                strings_to_include=["Static", "StaticPolygon", "Static_Polygon"]
+                            ),
                             strings_to_ignore=["__MACOSX"]
                         )
                     )
                 else:
                     for file in url[0]:
                         rotation_filenames.append(
-                            collect_file_extension(
-                                fetch_from_web(file),
-                                [".rot"])
+                            _collect_file_extension(
+                                _fetch_from_web(file), [".rot"])
                         )
-                        rotation_model = pygplates.RotationModel(rotation_filenames)
+                        rotation_model = _pygplates.RotationModel(rotation_filenames)
 
                     for file in url[1]:
                         topology_filenames.append(
-                            collect_file_extension(
-                                fetch_from_web(file),
-                                [".gpml"])
+                            _collect_file_extension(
+                                _fetch_from_web(file), [".gpml"])
                         )
                         for file in topology_filenames:
                             topology_features.add(
-                                pygplates.FeatureCollection(file)
+                                _pygplates.FeatureCollection(file)
                             )
 
                     for file in url[2]:
                         static_polygons.append(
-                            check_gpml_or_shp(
-                                str_in_filename(
-                                    fetch_from_web(url[0]), 
-                                    strings_to_include=["Static", "StaticPolygon", "Static_Polygon"],
-                                    strings_to_ignore=["__MACOSX"]
+                            _check_gpml_or_shp(
+                                _str_in_folder(
+                                    _str_in_filename(_fetch_from_web(url[0]), 
+                                        strings_to_include=["Static", "StaticPolygon", "Static_Polygon"]
+                                    ),    
+                                        strings_to_ignore=["__MACOSX"]
                                 )
                             )   
                         )
@@ -343,6 +343,7 @@ class DataServer(object):
         database = {
 
             "Muller2019" : ["https://www.earthbyte.org/webdav/ftp/Data_Collections/Muller_etal_2019_Tectonics/Muller_etal_2019_PlateMotionModel/Muller_etal_2019_PlateMotionModel_v2.0_Tectonics.zip"], 
+            "Muller2016" : ["https://www.earthbyte.org/webdav/ftp/Data_Collections/Muller_etal_2016_AREPS/Muller_etal_2016_AREPS_Supplement/Muller_etal_2016_AREPS_Supplement_v1.17.zip"],
             "Seton2012" : [["https://www.earthbyte.org/webdav/ftp/Data_Collections/Seton_etal_2012_ESR/Coastlines/Seton_etal_ESR2012_Coastline_2012.1.gpml",
                            "https://www.earthbyte.org/webdav/ftp/Data_Collections/Seton_etal_2012_ESR/Coastlines/Seton_etal_ESR2012_Coastline_2012.1_polyline.dbf",
                            "https://www.earthbyte.org/webdav/ftp/Data_Collections/Seton_etal_2012_ESR/Coastlines/Seton_etal_ESR2012_Coastline_2012.1_polyline.kml",
@@ -356,7 +357,7 @@ class DataServer(object):
                            "https://www.earthbyte.org/webdav/ftp/Data_Collections/Seton_etal_2012_ESR/Continent-ocean_boundaries/Seton_etal_ESR2012_ContinentOceanBoundaries_2012.1.prj",
                            "https://www.earthbyte.org/webdav/ftp/Data_Collections/Seton_etal_2012_ESR/Continent-ocean_boundaries/Seton_etal_ESR2012_ContinentOceanBoundaries_2012.1.shp",
                            "https://www.earthbyte.org/webdav/ftp/Data_Collections/Seton_etal_2012_ESR/Continent-ocean_boundaries/Seton_etal_ESR2012_ContinentOceanBoundaries_2012.1.shx"]], 
-            "Merdith2021" : ["https://zenodo.org/record/4320873/files/SM2-Merdith_et_al_1_Ga_reconstruction.zip?download=1"],
+            "Merdith2021" : ["https://zenodo.org/record/4485738/files/SM2_4485738_V2.zip"],
             "Matthews2016" : ["https://www.earthbyte.org/webdav/ftp/Data_Collections/Matthews_etal_2016_Global_Plate_Model_GPC.zip"], 
             "Merdith2017" : ["https://www.earthbyte.org/webdav/ftp/Data_Collections/Merdith_etal_2017_GR.zip"],              
         }
@@ -373,48 +374,48 @@ class DataServer(object):
                 COBs = []
 
                 if len(url) == 1:
-                    fnames = fetch_from_web(url[0])
-                    coastlines = check_gpml_or_shp(
-                        str_in_filename(
-                            fnames, 
-                            strings_to_include=["coastline"], 
-                            strings_to_ignore=["__MACOSX"])
+                    fnames = _fetch_from_web(url[0])
+                    coastlines = _check_gpml_or_shp(
+                        _str_in_folder(
+                            _str_in_filename(fnames, strings_to_include=["coastline"]), 
+                            strings_to_ignore=["__MACOSX"]
+                        )
                     )
-                    continents = check_gpml_or_shp(
-                        str_in_filename(
-                            fnames, 
-                            strings_to_include=["continent"], 
-                            strings_to_ignore=["__MACOSX"])
+                    continents = _check_gpml_or_shp(
+                        _str_in_folder(
+                            _str_in_filename(fnames, strings_to_include=["continent"]), 
+                            strings_to_ignore=["__MACOSX"]
+                        )
                     )
-                    COBs = check_gpml_or_shp(
-                        str_in_filename(
-                            fnames, 
-                            strings_to_include=["cob"],
-                            strings_to_ignore=["__MACOSX"])
+                    COBs = _check_gpml_or_shp(
+                        _str_in_folder(
+                            _str_in_filename(fnames, strings_to_include=["cob", "boundaries"]), 
+                            strings_to_ignore=["__MACOSX"]
+                        )
                     )
                     files = coastlines, continents, COBs
 
                 else:
                     for file in url[0]:
-                        coastlines.append(str_in_filename(
-                            fetch_from_web(file), 
+                        coastlines.append(_str_in_filename(
+                            _fetch_from_web(file), 
                             strings_to_include=["coastline"])
                         )
-                        coastlines = check_gpml_or_shp(coastlines)
+                        coastlines = _check_gpml_or_shp(coastlines)
 
                     for file in url[1]:
-                        continents.append(str_in_filename(
-                            fetch_from_web(file), 
+                        continents.append(_str_in_filename(
+                            _fetch_from_web(file), 
                             strings_to_include=["continent"])
                         )
-                        continents = check_gpml_or_shp(continents)
+                        continents = _check_gpml_or_shp(continents)
 
                     for file in url[2]:
-                        COBs.append(str_in_filename(
-                            fetch_from_web(file), 
+                        COBs.append(_str_in_filename(
+                            _fetch_from_web(file), 
                             strings_to_include=["cob"])
                         )
-                        COBs = check_gpml_or_shp(COBs)
+                        COBs = _check_gpml_or_shp(COBs)
 
                     files = coastlines, continents, COBs
                 break
@@ -524,24 +525,24 @@ class DataServer(object):
         for collection, zip_url in database.items():
             if raster_id_string.lower() == collection.lower():
                 found_collection = True
-                raster_filenames = fetch_from_web(zip_url[0])
+                raster_filenames = _fetch_from_web(zip_url[0])
                 if collection.endswith("nc"):
-                    raster_filenames = order_filenames_by_time(
-                        collect_file_extension(
+                    raster_filenames = _order_filenames_by_time(
+                        _collect_file_extension(
                             raster_filenames, [".nc", ".grd"])
                     )
                 elif collection.endswith("jpeg"):
-                    raster_filenames = order_filenames_by_time(
-                        collect_file_extension(
+                    raster_filenames = _order_filenames_by_time(
+                        _collect_file_extension(
                             raster_filenames, [".jpg"])
                     )
                 elif collection.endswith("png"):
-                    raster_filenames = order_filenames_by_time(
-                        collect_file_extension(
+                    raster_filenames = _order_filenames_by_time(
+                        _collect_file_extension(
                             raster_filenames, [".png"])
                     )
                 if time is not None:
-                    raster_filenames = order_filenames_by_time(raster_filenames)[time]
+                    raster_filenames = _order_filenames_by_time(raster_filenames)[time]
                 break
 
         if found_collection is False:
@@ -627,8 +628,8 @@ class DataServer(object):
         for collection, zip_url in database.items():
             if feature_data_id_string.lower() == collection.lower():
                 found_collection = True
-                feature_data_filenames = collect_file_extension(
-                    fetch_from_web(zip_url[0]), [".gpml", ".gpmlz"]
+                feature_data_filenames = _collect_file_extension(
+                    _fetch_from_web(zip_url[0]), [".gpml", ".gpmlz"]
                 )
                 break
         return feature_data_filenames
