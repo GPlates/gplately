@@ -111,7 +111,6 @@ def add_coastlines(ax, reconstruction_time, **kwargs):
     pygplates.reconstruct(coastlines, rotation_model, reconstructed_coastlines, float(reconstruction_time),
                           export_wrap_to_dateline=True)
     coastlines_geometries = shapelify_feature_polygons(reconstructed_coastlines)
-    
     ax.add_geometries(coastlines_geometries, crs=ccrs.PlateCarree(), **kwargs)
     
 def add_continents(ax, reconstruction_time, **kwargs):
@@ -147,8 +146,8 @@ def add_continents(ax, reconstruction_time, **kwargs):
     pygplates.reconstruct(continents, rotation_model, reconstructed_continents, float(reconstruction_time),
                           export_wrap_to_dateline=True)
     continent_geometries = shapelify_feature_polygons(reconstructed_continents)
-    
     ax.add_geometries(continent_geometries, crs=ccrs.PlateCarree(), **kwargs)
+
     
 def add_ridges(ax, reconstruction_time, **kwargs):
     """Reconstructs ridge features to a specific geological time, converts them into shapely geometries and plots them 
@@ -902,10 +901,22 @@ def shapelify_features(features, central_meridian=0.0, tessellate_degrees=None):
     ]
 
 
-shapelify_feature_polygons = shapelify_features
+def shapelify_feature_polygons(reconstructed_polygons):
+    polygon_geometries = shapelify_features(reconstructed_polygons)
+    new_polygon_geometries = _validate_polygon_areas(polygon_geometries)
+    return new_polygon_geometries
 
 
 shapelify_feature_lines = shapelify_features
+
+
+def _validate_polygon_areas(polygon_geometries, threshold_area=1e-11):
+    """Clip polygons with near-zero area to further shapelify polygon geometries."""
+    new_polygon_geometries = []
+    for p in polygon_geometries:
+        if p.area > threshold_area:
+            new_polygon_geometries.append(p)
+    return new_polygon_geometries
 
 
 class PlotTopologies(object):
