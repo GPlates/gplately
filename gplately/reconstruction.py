@@ -747,6 +747,11 @@ class Points(object):
             partitioned_features = pygplates.partition_into_plates(static_polygons, rotation_model, features)
             self.features = partitioned_features
 
+            plate_id = np.empty(len(self.lons), dtype=int)
+            for i, feature in enumerate(partitioned_features):
+                plate_id[i] = feature.get_reconstruction_plate_id()
+
+        self.plate_id = plate_id
         self.FeatureCollection = pygplates.FeatureCollection(self.features)
 
 
