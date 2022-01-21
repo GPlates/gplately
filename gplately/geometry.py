@@ -196,12 +196,6 @@ def pygplates_to_shapely(
             tmp = _Polygon(
                 [j.to_lat_lon()[::-1] for j in i.get_exterior_points()]
             )
-            if (
-                force_ccw
-                and tmp.exterior is not None
-                and not tmp.exterior.is_ccw
-            ):
-                tmp = _Polygon(list(tmp.exterior.coords)[::-1])
             if validate:
                 tmp = tmp.buffer(0.0)
             if isinstance(tmp, _BaseMultipartGeometry):
@@ -220,11 +214,26 @@ def pygplates_to_shapely(
             "Unrecognised output from `pygplates.DateLineWrapper.wrap`: "
             + str(type(wrapped[0]))
         )
+    # Empty geometries can sometimes occur by this point, causing nearly all
+    # subsequent geometric operations to fail
+    output_geoms = [i for i in output_geoms if not i.is_empty]
+    if force_ccw:
+        output_geoms = [_ensure_ccw(i) for i in output_geoms]
     if len(output_geoms) == 1:
         return output_geoms[0]
     if explode:
         return output_geoms
     return output_type(output_geoms)
+
+
+def _ensure_ccw(geometry):
+    if (
+        isinstance(geometry, _Polygon)
+        and geometry.exterior is not None
+        and not geometry.exterior.is_ccw
+    ):
+        return _Polygon(list(geometry.exterior.coords)[::-1])
+    return geometry
 
 
 def shapely_to_pygplates(geometry):
