@@ -377,6 +377,10 @@ class DataServer(object):
             "Merdith2017" : ["https://www.earthbyte.org/webdav/ftp/Data_Collections/Merdith_etal_2017_GR.zip"],              
         }
 
+        coastlines = []
+        continents = []
+        COBs = []
+        
         # Set to true if we find the given collection in our database
         found_collection = False
         for collection, url in database.items():
@@ -384,9 +388,6 @@ class DataServer(object):
             # Only continue if the user's chosen collection exists in our database
             if self.file_collection.lower() == collection.lower():
                 found_collection = True
-                coastlines = []
-                continents = []
-                COBs = []
 
                 if len(url) == 1:
                     fnames = _fetch_from_web(url[0])
