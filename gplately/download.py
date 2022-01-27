@@ -159,6 +159,19 @@ def _ignore_macOSX(fnames):
     return fnames
 
 
+def _match_filetype_to_extension(filetype):
+    extensions = []
+    if filetype == "netCDF":
+        extensions.append(".nc")
+    elif filetype == "jpeg":
+        extensions.append(".jpg")
+    elif filetype == "png":
+        extensions.append(".png")
+    elif filetype == "TIFF":
+        extensions.append(".tif")
+    return extensions
+
+
 class DataServer(object):
     """Uses Pooch to download geological feature data from plate reconstruction models and other studies
     that are stored on web servers (e.g. EarthByte's webDAV server). Downloaded files are kept in
@@ -245,6 +258,11 @@ class DataServer(object):
             "Merdith2017" : ["https://www.earthbyte.org/webdav/ftp/Data_Collections/Merdith_etal_2017_GR.zip"], 
 
         }
+        rotation_filenames = []
+        rotation_model = []
+        topology_filenames = []
+        topology_features = _pygplates.FeatureCollection()
+        static_polygons = []
 
         # Set to true if we find the given collection in our database
         found_collection = False
@@ -253,9 +271,6 @@ class DataServer(object):
             # Only continue if the user's chosen collection exists in our database
             if self.file_collection.lower() == collection.lower():
                 found_collection = True
-                rotation_filenames = []
-                topology_features = _pygplates.FeatureCollection()
-                static_polygons = []
 
                 if len(url) == 1:
                     fnames = _collection_sorter(
@@ -430,8 +445,9 @@ class DataServer(object):
         return files
 
 
-    def get_rasters(self, raster_id_string=None, time=None):
-        """Downloads rasters and images from the web into the "gplately" cache.
+    def get_age_grid(self, time=None, filetype="netCDF"):
+        """Downloads age grids from plate reconstruction files on GPlately's DataServer into the "gplately"
+        cache.
 
         Currently supports the following rasters and images:
         +--------------+------------------------+---------------------------------------+-------------------+
@@ -444,12 +460,91 @@ class DataServer(object):
         |              | and PNG (.png) image   | Tetley, M. G., Heine, C.,             |                   |
         |              | equivalents.           | Le Breton, E., Liu, S.,               | "Muller2019_png"  |
         |              |                        | Russell, S. H. J., Yang, T.,          |                   |
-        |              |                        | Leonard, J., and Gurnis, M. (2019),   |                   |
+        |              | 0-250 Ma               | Leonard, J., and Gurnis, M. (2019),   |                   |
         |              |                        | A global plate model including        |                   |
         |              |                        | lithospheric deformation along major  |                   |
         |              |                        | rifts and orogens since the Triassic. |                   |
         |              |                        | Tectonics, vol. 38,                   |                   |
         |              |                        | https://doi.org/10.1029/2018TC005462. |                   |
+        +--------------+------------------------+---------------------------------------+-------------------+
+        | Muller et    | Seafloor age grid      |
+        | al. 2016     | netCDF (.nc) rasters,  |
+        |              | as well as JPEG (.jpg) |
+        |              | ang PNG (.png) image   |
+        |              | equivalents.   
+        |              | 
+        |              | 0-240 Ma       
+        +--------------+------------------------+---------------------------------------+-------------------+
+        
+        Parameters
+        ----------
+        time : int, default None
+            Request an age grid from a particular reconstruction time. If not supplied, all
+            available age grids from the chosen plate model on DataServer will be returned.
+        filetype : str, default = "netCDF"
+            A string to request an age grid of a particular filetype. Currently supports
+                - netCDF
+                - JPEG
+                - PNG
+
+        Returns
+        -------
+        raster_filenames : list of str
+            A list containing the full path(s) to the age grid(s) at the requested time (if provided)
+            and with the requested filetype. 
+
+        Notes
+        -----
+        By default, get_netcdf_rasters will attempt to download age grids for each Ma timestep. For
+        example, Muller et al. 2019 has 251 rasters for 0-250Ma. If the `time` parameter is passed, 
+        only the raster for that timestep is returned. Otherwise, if `time` is not provided, full 
+        paths to all agegrids from the plate model will be returned. If `filetype` is not provided, 
+        age grids in netCDF format will be returned.
+        """
+
+        database = {
+
+            "Muller2019_netCDF" : ["https://www.earthbyte.org/webdav/ftp/Data_Collections/Muller_etal_2019_Tectonics/Muller_etal_2019_Agegrids/Muller_etal_2019_Tectonics_v2.0_netCDF.zip"],
+            "Muller2019_jpeg" : ["https://www.earthbyte.org/webdav/ftp/Data_Collections/Muller_etal_2019_Tectonics/Muller_etal_2019_Agegrids/Muller_etal_2019_Tectonics_v2.0_jpgs.zip"],
+            "Muller2019_png" : ["https://www.earthbyte.org/webdav/ftp/Data_Collections/Muller_etal_2019_Tectonics/Muller_etal_2019_Agegrids/Muller_etal_2019_Tectonics_v2.0_pngs.zip"],
+            "Muller2016_netCDF" : ["https://www.earthbyte.org/webdav/ftp/Data_Collections/Muller_etal_2016_AREPS/Muller_etal_2016_AREPS_Agegrids/Muller_etal_2016_AREPS_Agegrids_v1.17/Muller_etal_2016_AREPS_v1.17_netCDF.zip"],
+            "Muller2016_jpeg" : ["https://www.earthbyte.org/webdav/ftp/Data_Collections/Muller_etal_2016_AREPS/Muller_etal_2016_AREPS_Agegrids/Muller_etal_2016_AREPS_Agegrids_v1.17/Muller_etal_2016_AREPS_v1.17_jpgs.zip"],
+            "Muller2016_png" : ["https://www.earthbyte.org/webdav/ftp/Data_Collections/Muller_etal_2016_AREPS/Muller_etal_2016_AREPS_Agegrids/Muller_etal_2016_AREPS_Agegrids_v1.17/Muller_etal_2016_AREPS_v1.17_pngs.zip"],
+        }
+
+        archive_formats = tuple([".gz", ".xz", ".bz2"])
+        # Set to true if we find the given collection in database
+        found_collection = False
+        raster_filenames = []
+        for collection, zip_url in database.items():
+            # Isolate the plate model and the file type
+            plate_model = collection.split("_")[0]
+            raster_type = collection.split("_")[-1]
+            if (self.file_collection.lower() == plate_model.lower()
+                and filetype.lower() == raster_type.lower()
+                ):
+                found_collection = True
+                raster_filenames = _order_filenames_by_time(
+                    _collect_file_extension(
+                        _fetch_from_web(zip_url[0]), _match_filetype_to_extension(filetype))
+                )
+                
+                if time is not None:
+                    raster_filenames = _order_filenames_by_time(raster_filenames)[time]
+                break
+
+        if found_collection is False:
+            raise ValueError("%s not in collection database." % (raster_id_string))
+        return raster_filenames
+
+
+    def get_raster(self, raster_id_string=None, filetype=None):
+        """Downloads assorted rasters and images from the web into the "gplately" cache.
+
+        Currently supports the following rasters and images:
+        +--------------+------------------------+---------------------------------------+-------------------+
+        | Raster/image | Description            | Citation                              | String identifier |
+        | name         |                        |                                       |                   |
         +--------------+------------------------+---------------------------------------+-------------------+
         | ETOPO1       | A 1-arc minute global  | doi:10.7289/V5C8276M                  | "ETOPO1_grd"      |
         |              | relief model combining |                                       |                   |
@@ -464,10 +559,13 @@ class DataServer(object):
 
         Parameters
         ----------
-        raster_id_string : str, default=None
+        raster_id_string : str, defaultNone
             A string to identify which raster to download.
-        time : int, default=None
-            For time-reconstructed rasters, specify which time to extract.
+        filetype : str, default None
+            A string to request an age grid of a particular filetype. Currently supports
+                - netCDF
+                - JPEG
+                - PNG
 
         Returns
         -------
@@ -478,43 +576,26 @@ class DataServer(object):
         ------
         ValueError
             if a raster_id_string is not supplied.
+            if a filetype is not supplied.
 
         Notes
         -----
-        By default, if rasters exist for each timestep (typically every 1 Ma), get_netcdf_rasters will return
-        the full list of all rasters. For example, Muller et al. 2019 has 251 rasters for 0-250Ma. If the
-        `time` parameter is passed, only the raster for that timestep is returned. This will be useful in time
-        for loops.
-
-        Examples
-        --------
-        1) Downloading the Muller et al. 2019 netCDF raster for 0-10 Ma:
-
-                gdownload = gplately.download.DataServer("Muller2019")
-                for time in arange(0,10):
-                    time_raster = gdownload.get_raster("Muller2019_nc", time=time)
-
-        2) Plotting a TIF global relief model on a GeoAxis instance
-
-                etopo = gdownload.get_rasters("ETOPO1_tif")
-                etopo_tif_img = image.imread(etopo)
-                fig = plt.figure(figsize=(18,14), dpi=600)
-                ax = fig.add_subplot(111, projection=ccrs.Mollweide(central_longitude = -150))
-                ax.imshow(etopo_tif_img, extent=[-180,180,-90,90], transform=ccrs.PlateCarree())
-
+        Rasters obtained by this method are (so far) only reconstructed to present-day. 
         """
         if raster_id_string is None:
             raise ValueError(
-                "Please specify which raster data to fetch."
+                "Please specify which raster to download."
             )
+        if filetype is None:
+            raise ValueError(
+                "Please specify which raster filetype to download (i.e. 'tif')."
+            )
+        filetype = "."+filetype
 
         database = {
 
-            "Muller2019_nc" : ["https://www.earthbyte.org/webdav/ftp/Data_Collections/Muller_etal_2019_Tectonics/Muller_etal_2019_Agegrids/Muller_etal_2019_Tectonics_v2.0_netCDF.zip"],
-            "Muller2019_jpeg" : ["https://www.earthbyte.org/webdav/ftp/Data_Collections/Muller_etal_2019_Tectonics/Muller_etal_2019_Agegrids/Muller_etal_2019_Tectonics_v2.0_jpgs.zip"],
-            "Muller2019_png" : ["https://www.earthbyte.org/webdav/ftp/Data_Collections/Muller_etal_2019_Tectonics/Muller_etal_2019_Agegrids/Muller_etal_2019_Tectonics_v2.0_pngs.zip"],
             "ETOPO1_grd" : ["https://www.ngdc.noaa.gov/mgg/global/relief/ETOPO1/data/ice_surface/grid_registered/netcdf/ETOPO1_Ice_g_gmt4.grd.gz"],
-            "ETOPO1_tif" : ["https://www.ngdc.noaa.gov/mgg/global/relief/ETOPO1/image/color_etopo1_ice_low.tif.gz"]
+            "ETOPO1_tif" : ["https://www.ngdc.noaa.gov/mgg/global/relief/ETOPO1/image/color_etopo1_ice_low.tif.gz"],
         }
 
         archive_formats = tuple([".gz", ".xz", ".bz2"])
@@ -523,26 +604,14 @@ class DataServer(object):
         raster_filenames = []
 
         for collection, zip_url in database.items():
-            if raster_id_string.lower() == collection.lower():
-                found_collection = True
+            # Isolate the raster name and the file type
+            raster_name = collection.split("_")[0]
+            raster_type = "."+collection.split("_")[-1]
+            if (raster_id_string.lower() == raster_name.lower()
+                and filetype.lower() == raster_type.lower()
+                ):
                 raster_filenames = _fetch_from_web(zip_url[0])
-                if collection.endswith("nc"):
-                    raster_filenames = _order_filenames_by_time(
-                        _collect_file_extension(
-                            raster_filenames, [".nc", ".grd"])
-                    )
-                elif collection.endswith("jpeg"):
-                    raster_filenames = _order_filenames_by_time(
-                        _collect_file_extension(
-                            raster_filenames, [".jpg"])
-                    )
-                elif collection.endswith("png"):
-                    raster_filenames = _order_filenames_by_time(
-                        _collect_file_extension(
-                            raster_filenames, [".png"])
-                    )
-                if time is not None:
-                    raster_filenames = _order_filenames_by_time(raster_filenames)[time]
+                found_collection = True
                 break
 
         if found_collection is False:
