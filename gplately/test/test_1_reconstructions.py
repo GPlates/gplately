@@ -1,7 +1,7 @@
 import pytest
 import gplately
 
-from conftest import generic_reconstuction_object as model
+from .conftest import generic_reconstuction_object as model
 
 def test_gplately_reconstruction_object(model):
 
