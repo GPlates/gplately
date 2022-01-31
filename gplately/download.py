@@ -4,6 +4,9 @@ from pooch import retrieve as _retrieve
 from pooch import HTTPDownloader as _HTTPDownloader
 from pooch import Unzip as _Unzip
 from pooch import Decompress as _Decompress
+from matplotlib import image as _image
+from .data import DataCollection
+import gplately as _gplately
 import pygplates as _pygplates
 import re as _re
 import numpy as _np
@@ -42,11 +45,12 @@ def _collect_file_extension(fnames, file_extension):
     return sorted_fnames
 
 
-def _str_in_folder(fnames, strings_to_include=None, strings_to_ignore=None):
-    """Filter though files with/without """
+def _str_in_folders(fnames, strings_to_include=None, strings_to_ignore=None):
+    """Collect and ignore file paths with strings to include and/or ignore
+    from their parent directories."""
     sorted_fnames = []
     for i, fname in enumerate(fnames):
-        parent_directory = fname.split("/")[:-1]
+        parent_directory = '/'.join(fname.split("/")[:-1])
         if strings_to_ignore is not None:
             check = [s for s in strings_to_ignore if s in parent_directory]
             if check:
@@ -60,7 +64,29 @@ def _str_in_folder(fnames, strings_to_include=None, strings_to_ignore=None):
         #return sorted_fnames
     #else:
     return sorted_fnames
-    
+
+
+def _str_in_folder(fnames, strings_to_include=None, strings_to_ignore=None):
+    fnames_to_ignore = []
+    fnames_to_include = []
+    sorted_fnames = []
+    for i, fname in enumerate(fnames):
+        parent_directory = '/'.join(fname.split("/")[:-1])
+        if strings_to_ignore is not None:
+            for s in strings_to_ignore:
+                if s in parent_directory:
+                    fnames_to_ignore.append(fname)
+            sorted_fnames = list(set(fnames) - set(fnames_to_ignore))
+
+    if strings_to_include is not None:
+        for fname in sorted_fnames:
+            parent_directory = '/'.join(fname.split("/")[:-1])
+            for s in strings_to_include:
+                if s in parent_directory:
+                    fnames_to_include.append(fname)
+        sorted_fnames = list(set(sorted_fnames).intersection(set(fnames_to_include)))
+    return sorted_fnames
+
 
 def _str_in_filename(fnames, strings_to_include=None, strings_to_ignore=None):
     sorted_fnames = []
@@ -74,11 +100,6 @@ def _str_in_filename(fnames, strings_to_include=None, strings_to_ignore=None):
                 fname = f.split("/")[-1]
                 if s.lower() in fname.lower():
                     sorted_fnames.append(f)
-            if sorted_fnames:
-                break
-    #if sorted_fnames:
-        #return sorted_fnames
-    #else:
     return sorted_fnames
 
 
@@ -141,22 +162,23 @@ def _order_filenames_by_time(fnames):
 
 def _collection_sorter(fnames, string_identifier):
     """If multiple file collections or plate reconstruction models are downloaded from
-    a single zip folder, only return the needed model."""
-    studyname = _re.findall(r'[A-Za-z]+|\d+', string_identifier)[0]
-    newfnames = []
-    for files in fnames:
-        if studyname not in files:
-            continue
-        newfnames.append(files)
-    return newfnames
+    a single zip folder, only return the needed model. 
 
+    The plate models that need separating are listed."""
 
-def _ignore_macOSX(fnames):
-    """For Mac users: filters out duplicate filenames extracted from the __MACOSX folder."""
-    for fname in fnames:
-        if fname.find("__MACOSX") != -1:
-            fnames.remove(fname)
-    return fnames
+    needs_sorting = [
+        "merdith2021"
+    ]
+    if string_identifier.lower() in needs_sorting:
+        studyname = _re.findall(r'[A-Za-z]+|\d+', string_identifier)[0]
+        newfnames = []
+        for files in fnames:
+            if studyname not in files:
+                continue
+            newfnames.append(files)
+        return newfnames
+    else:
+        return fnames
 
 
 def _match_filetype_to_extension(filetype):
@@ -173,9 +195,9 @@ def _match_filetype_to_extension(filetype):
 
 
 class DataServer(object):
-    """Uses Pooch to download geological feature data from plate reconstruction models and other studies
-    that are stored on web servers (e.g. EarthByte's webDAV server). Downloaded files are kept in
-    a 'gplately' cache folder. 
+    """Uses Pooch to download geological feature data from plate reconstruction models 
+    and other studies that are stored on web servers (e.g. EarthByte's webDAV server). 
+    Downloaded files are kept in a 'gplately' cache folder. 
 
     Currently,DataServer supports the following plate reconstruction models:
     +-----------------------+-----------------------------------------------------------+-------------------+
@@ -207,8 +229,8 @@ class DataServer(object):
     Methods
     -------
     get_plate_reconstruction_files
-        Downloads the `rotation_model`, `topology_features`, and `static_polygons` needed to create an
-        instance of the gplately.reconstruct.PlateReconstruction object.
+        Downloads the `rotation_model`, `topology_features`, and `static_polygons` 
+        needed to create an instance of the gplately.reconstruct.PlateReconstruction object.
     get_topology_geometries
         Downloads the `coastlines`, `continents` and `COBs` needed to create an instance of the
         gplately.plot.PlotTopologies object.
@@ -228,15 +250,18 @@ class DataServer(object):
                 "Please supply a file collection to fetch."
             )
         self.file_collection = file_collection
+        self.data_collection = DataCollection(self.file_collection)
+
 
     def get_plate_reconstruction_files(self):
-        """Downloads and constructs a rotation model, a pygplates.FeatureCollection and a set of 
-        static polygons needed to call the gplately.PlateReconstruction object.
+        """Downloads and constructs a rotation model, a pygplates.FeatureCollection 
+        and a set of static polygons needed to call the gplately.PlateReconstruction 
+        object.
 
         Notes
         -----
-        This method accesses the plate reconstruction model requested in the gplately.DataServer
-        object. For example, if the object was called as:
+        This method accesses the plate reconstruction model requested in the 
+        gplately.DataServer object. For example, if the object was called as:
 
             gDownload = gplately.download.DataServer("Muller2019")
 
@@ -246,23 +271,15 @@ class DataServer(object):
             - static polygons
         from the Muller et al. (2019) plate reconstruction model.
         """
-        database = {
 
-            "Muller2019" : ["https://www.earthbyte.org/webdav/ftp/Data_Collections/Muller_etal_2019_Tectonics/Muller_etal_2019_PlateMotionModel/Muller_etal_2019_PlateMotionModel_v2.0_Tectonics.zip"], 
-            "Muller2016" : ["https://www.earthbyte.org/webdav/ftp/Data_Collections/Muller_etal_2016_AREPS/Muller_etal_2016_AREPS_Supplement/Muller_etal_2016_AREPS_Supplement_v1.17.zip"],
-            "Seton2012" : ["https://www.earthbyte.org/webdav/ftp/Data_Collections/Seton_etal_2012_ESR/Rotations/Seton_etal_ESR2012_2012.1.rot",
-                           "https://www.earthbyte.org/webdav/ftp/Data_Collections/Seton_etal_2012_ESR/Plate_polygons/Seton_etal_ESR2012_PP_2012.1.gpml",
-                          None], 
-            "Merdith2021" : ["https://zenodo.org/record/4485738/files/SM2_4485738_V2.zip"],
-            "Matthews2016" : ["https://www.earthbyte.org/webdav/ftp/Data_Collections/Matthews_etal_2016_Global_Plate_Model_GPC.zip"], 
-            "Merdith2017" : ["https://www.earthbyte.org/webdav/ftp/Data_Collections/Merdith_etal_2017_GR.zip"], 
-
-        }
         rotation_filenames = []
         rotation_model = []
         topology_filenames = []
         topology_features = _pygplates.FeatureCollection()
         static_polygons = []
+
+        # Locate all plate reconstruction files from GPlately's DataCollection
+        database = DataCollection.plate_reconstruction_files(self)
 
         # Set to true if we find the given collection in our database
         found_collection = False
@@ -271,31 +288,40 @@ class DataServer(object):
             # Only continue if the user's chosen collection exists in our database
             if self.file_collection.lower() == collection.lower():
                 found_collection = True
-
                 if len(url) == 1:
                     fnames = _collection_sorter(
                         _fetch_from_web(url[0]), self.file_collection
                     )
-                    rotation_filenames = _collect_file_extension(
-                        fnames, [".rot"]
+                    rotation_filenames = _str_in_folder(
+                        _collect_file_extension(fnames, [".rot"]),
+                        strings_to_ignore=DataCollection.rotation_strings_to_ignore(self)
                     )
+
+                    print(rotation_filenames)
                     rotation_model = _pygplates.RotationModel(rotation_filenames)
 
                     topology_filenames = _collect_file_extension(
-                        _str_in_folder(fnames, strings_to_ignore=["__MACOSX"]),
+                        _str_in_folder(
+                            _str_in_filename(fnames, 
+                                strings_to_include=DataCollection.dynamic_polygon_strings_to_include(self)
+                            ), 
+                            strings_to_ignore=DataCollection.dynamic_polygon_strings_to_ignore(self)
+                        ),
                         [".gpml", ".gpmlz"]
                     )
+                    print(topology_filenames)
                     for file in topology_filenames:
                         topology_features.add(_pygplates.FeatureCollection(file))
 
                     static_polygons = _check_gpml_or_shp(
                         _str_in_folder(
                             _str_in_filename(fnames, 
-                                strings_to_include=["Static", "StaticPolygon", "Static_Polygon"]
+                                strings_to_include=DataCollection.static_polygon_strings_to_include(self)
                             ),
-                            strings_to_ignore=["__MACOSX"]
+                            strings_to_ignore=DataCollection.static_polygon_strings_to_ignore(self)
                         )
                     )
+                    print(static_polygons)
                 else:
                     for file in url[0]:
                         rotation_filenames.append(
@@ -319,32 +345,37 @@ class DataServer(object):
                             _check_gpml_or_shp(
                                 _str_in_folder(
                                     _str_in_filename(_fetch_from_web(url[0]), 
-                                        strings_to_include=["Static", "StaticPolygon", "Static_Polygon"]
+                                        strings_to_include=DataCollection.static_polygon_strings_to_include(self)
                                     ),    
-                                        strings_to_ignore=["__MACOSX"]
+                                        strings_to_ignore=DataCollection.static_polygon_strings_to_ignore(self)
                                 )
                             )   
                         )
                 break
 
         if not rotation_filenames:
-            print("No .rot files in %s. No rotation model created." %self.file_collection)
+            print("No .rot files in {}. No rotation model created.".format(self.file_collection))
         if not topology_filenames:
-            print("No topology features in %s. No FeatureCollection created." %self.file_collection)
+            print("No topology features in {}. No FeatureCollection created.".format(self.file_collection))
         if not static_polygons:
-            print("No static polygons in %s." %self.file_collection)
+            print("No static polygons in {}.".format(self.file_collection))
 
         return rotation_model, topology_features, static_polygons
 
 
     def get_topology_geometries(self):
-        """Downloads coastline, continent and continent-ocean boundary geometries needed to call
-        the gplately.PlotTopologies object.
+        """Downloads coastline, continent and continent-ocean boundary geometries from the 
+        requested plate model. These are needed to call the <gplately.plot.PlotTopologies> 
+        object.
+
+        Returns
+        -------
+        continents, coastlines, COBs : instance of <pygplates.FeatureCollection>
 
         Notes
         -----
-        This method accesses the plate reconstruction model requested in the gplately.DataServer
-        object. For example, if the object was called as:
+        This method accesses the plate reconstruction model requested when calling the 
+        <gplately.data.DataServer> object. For example, if the object was called as:
 
             gDownload = gplately.download.DataServer("Muller2019")
 
@@ -353,39 +384,21 @@ class DataServer(object):
             - Continents: cookie-cutting polygons for non-oceanic regions (continents, 
                           intra-oceanic arcs, etc.)
             - COBs: COB line segments
-        from the Muller et al. (2019) plate reconstruction model.
+        from the Muller et al. (2019) plate reconstruction model. They are returned as 
+        individual pyGPlates Feature Collections. 
         """
-        database = {
 
-            "Muller2019" : ["https://www.earthbyte.org/webdav/ftp/Data_Collections/Muller_etal_2019_Tectonics/Muller_etal_2019_PlateMotionModel/Muller_etal_2019_PlateMotionModel_v2.0_Tectonics.zip"], 
-            "Muller2016" : ["https://www.earthbyte.org/webdav/ftp/Data_Collections/Muller_etal_2016_AREPS/Muller_etal_2016_AREPS_Supplement/Muller_etal_2016_AREPS_Supplement_v1.17.zip"],
-            "Seton2012" : [["https://www.earthbyte.org/webdav/ftp/Data_Collections/Seton_etal_2012_ESR/Coastlines/Seton_etal_ESR2012_Coastline_2012.1.gpml",
-                           "https://www.earthbyte.org/webdav/ftp/Data_Collections/Seton_etal_2012_ESR/Coastlines/Seton_etal_ESR2012_Coastline_2012.1_polyline.dbf",
-                           "https://www.earthbyte.org/webdav/ftp/Data_Collections/Seton_etal_2012_ESR/Coastlines/Seton_etal_ESR2012_Coastline_2012.1_polyline.kml",
-                           "https://www.earthbyte.org/webdav/ftp/Data_Collections/Seton_etal_2012_ESR/Coastlines/Seton_etal_ESR2012_Coastline_2012.1_polyline.prj",
-                           "https://www.earthbyte.org/webdav/ftp/Data_Collections/Seton_etal_2012_ESR/Coastlines/Seton_etal_ESR2012_Coastline_2012.1_polyline.shp",
-                           "https://www.earthbyte.org/webdav/ftp/Data_Collections/Seton_etal_2012_ESR/Coastlines/Seton_etal_ESR2012_Coastline_2012.1_polyline.shx"],
-                           None,
-                           ["https://www.earthbyte.org/webdav/ftp/Data_Collections/Seton_etal_2012_ESR/Continent-ocean_boundaries/Seton_etal_ESR2012_ContinentOceanBoundaries_2012.1.dbf",
-                           "https://www.earthbyte.org/webdav/ftp/Data_Collections/Seton_etal_2012_ESR/Continent-ocean_boundaries/Seton_etal_ESR2012_ContinentOceanBoundaries_2012.1.gpml",
-                           "https://www.earthbyte.org/webdav/ftp/Data_Collections/Seton_etal_2012_ESR/Continent-ocean_boundaries/Seton_etal_ESR2012_ContinentOceanBoundaries_2012.1.kml",
-                           "https://www.earthbyte.org/webdav/ftp/Data_Collections/Seton_etal_2012_ESR/Continent-ocean_boundaries/Seton_etal_ESR2012_ContinentOceanBoundaries_2012.1.prj",
-                           "https://www.earthbyte.org/webdav/ftp/Data_Collections/Seton_etal_2012_ESR/Continent-ocean_boundaries/Seton_etal_ESR2012_ContinentOceanBoundaries_2012.1.shp",
-                           "https://www.earthbyte.org/webdav/ftp/Data_Collections/Seton_etal_2012_ESR/Continent-ocean_boundaries/Seton_etal_ESR2012_ContinentOceanBoundaries_2012.1.shx"]], 
-            "Merdith2021" : ["https://zenodo.org/record/4485738/files/SM2_4485738_V2.zip"],
-            "Matthews2016" : ["https://www.earthbyte.org/webdav/ftp/Data_Collections/Matthews_etal_2016_Global_Plate_Model_GPC.zip"], 
-            "Merdith2017" : ["https://www.earthbyte.org/webdav/ftp/Data_Collections/Merdith_etal_2017_GR.zip"],              
-        }
+        # Locate all topology geometries from GPlately's DataCollection
+        database = DataCollection.topology_geometries(self)
 
         coastlines = []
         continents = []
         COBs = []
         
-        # Set to true if we find the given collection in our database
+        # Find the requested plate model data collection
         found_collection = False
         for collection, url in database.items():
 
-            # Only continue if the user's chosen collection exists in our database
             if self.file_collection.lower() == collection.lower():
                 found_collection = True
 
@@ -393,24 +406,32 @@ class DataServer(object):
                     fnames = _fetch_from_web(url[0])
                     coastlines = _check_gpml_or_shp(
                         _str_in_folder(
-                            _str_in_filename(fnames, strings_to_include=["coastline"]), 
-                            strings_to_ignore=["__MACOSX"]
+                            _str_in_filename(
+                                fnames,
+                                strings_to_include=DataCollection.coastline_strings_to_include(self)
+                            ), 
+                            strings_to_ignore=DataCollection.coastline_strings_to_ignore(self)
                         )
                     )
+                    #print(coastlines)
                     continents = _check_gpml_or_shp(
                         _str_in_folder(
-                            _str_in_filename(fnames, strings_to_include=["continent"]), 
-                            strings_to_ignore=["__MACOSX"]
+                            _str_in_filename(
+                                fnames, 
+                                strings_to_include=DataCollection.continent_strings_to_include(self)
+                            ), 
+                            strings_to_ignore=DataCollection.continent_strings_to_ignore(self)
                         )
                     )
                     COBs = _check_gpml_or_shp(
                         _str_in_folder(
-                            _str_in_filename(fnames, strings_to_include=["cob", "boundaries"]), 
-                            strings_to_ignore=["__MACOSX"]
+                            _str_in_filename(
+                                fnames,
+                                strings_to_include=DataCollection.COB_strings_to_include(self)
+                            ), 
+                            strings_to_ignore=DataCollection.COB_strings_to_ignore(self)
                         )
                     )
-                    files = coastlines, continents, COBs
-
                 else:
                     for file in url[0]:
                         coastlines.append(_str_in_filename(
@@ -432,23 +453,39 @@ class DataServer(object):
                             strings_to_include=["cob"])
                         )
                         COBs = _check_gpml_or_shp(COBs)
-
-                    files = coastlines, continents, COBs
                 break
 
         if not coastlines:
-            print("No coastlines in %s." %self.file_collection)
+            print("No coastlines in {}.".format(self.file_collection))
+        else:
+            print(coastlines)
+            coastlines_featurecollection = _pygplates.FeatureCollection()
+            for coastline in coastlines:
+                coastlines_featurecollection.add(_pygplates.FeatureCollection(coastline))
+        
         if not continents:
-            print("No continents in %s." %self.file_collection)
+            print("No continents in {}.".format(self.file_collection))
+        else:
+            print(continents)
+            continents_featurecollection = _pygplates.FeatureCollection()
+            for continent in continents:
+                continents_featurecollection.add(_pygplates.FeatureCollection(continent))
+        
         if not COBs:
-            print("No continent-ocean boundaries in %s." %self.file_collection)
-            
-        return files
+            print("No continent-ocean boundaries in {}.".format(self.file_collection))
+        else:
+            print(COBs)
+            COBs_featurecollection = _pygplates.FeatureCollection()
+            for COB in COBs:
+                COBs_featurecollection.add(_pygplates.FeatureCollection(COB))
+        
+        geometries = coastlines, continents, COBs
+        return geometries
 
 
-    def get_age_grid(self, time=None, filetype="netCDF"):
-        """Downloads age grids from plate reconstruction files on GPlately's DataServer into the "gplately"
-        cache.
+    def get_age_grids(self, times=None):
+        """Downloads age grids from plate reconstruction files on GPlately's DataServer 
+        into the "gplately" cache.
 
         Currently supports the following rasters and images:
         +--------------+------------------------+---------------------------------------+-------------------+
@@ -479,64 +516,123 @@ class DataServer(object):
         
         Parameters
         ----------
-        time : int, default None
-            Request an age grid from a particular reconstruction time. If not supplied, all
-            available age grids from the chosen plate model on DataServer will be returned.
-        filetype : str, default = "netCDF"
-            A string to request an age grid of a particular filetype. Currently supports
-                - netCDF
-                - JPEG
-                - PNG
+        times : list of int, default None
+            Request an age grid from one or more reconstruction times, e.g. from 0-5 Ma
+            requires time=np.arange(0,5).
 
         Returns
         -------
-        raster_filenames : list of str
-            A list containing the full path(s) to the age grid(s) at the requested time (if provided)
-            and with the requested filetype. 
+        raster_array : ndarray
+            A masked array containing the read netCDF4 grid, ready for plotting.
+
+        Raises
+        -----
+        ValueError
+            If `times` (a list of reconstruction times to extract the age grids from) is 
+            not passed.
 
         Notes
         -----
-        By default, get_netcdf_rasters will attempt to download age grids for each Ma timestep. For
-        example, Muller et al. 2019 has 251 rasters for 0-250Ma. If the `time` parameter is passed, 
-        only the raster for that timestep is returned. Otherwise, if `time` is not provided, full 
-        paths to all agegrids from the plate model will be returned. If `filetype` is not provided, 
-        age grids in netCDF format will be returned.
+        Once the requested age grid(s) are downloaded to the cache, the grid(s) are read 
+        by GPlately's Raster object and returned as a masked array
+        objects. 
+
         """
+        if times is None:
+            raise ValueError("Please supply a list of times.")
 
-        database = {
+        age_grids = []
+        age_grid_links = DataCollection.netcdf4_age_grids(self, times)
+        for link in age_grid_links:
+            age_grid_file = _fetch_from_web(link)
+            age_grid = _gplately.grids.read_netcdf_grid(age_grid_file)
+            age_grids.append(age_grid)
 
-            "Muller2019_netCDF" : ["https://www.earthbyte.org/webdav/ftp/Data_Collections/Muller_etal_2019_Tectonics/Muller_etal_2019_Agegrids/Muller_etal_2019_Tectonics_v2.0_netCDF.zip"],
-            "Muller2019_jpeg" : ["https://www.earthbyte.org/webdav/ftp/Data_Collections/Muller_etal_2019_Tectonics/Muller_etal_2019_Agegrids/Muller_etal_2019_Tectonics_v2.0_jpgs.zip"],
-            "Muller2019_png" : ["https://www.earthbyte.org/webdav/ftp/Data_Collections/Muller_etal_2019_Tectonics/Muller_etal_2019_Agegrids/Muller_etal_2019_Tectonics_v2.0_pngs.zip"],
-            "Muller2016_netCDF" : ["https://www.earthbyte.org/webdav/ftp/Data_Collections/Muller_etal_2016_AREPS/Muller_etal_2016_AREPS_Agegrids/Muller_etal_2016_AREPS_Agegrids_v1.17/Muller_etal_2016_AREPS_v1.17_netCDF.zip"],
-            "Muller2016_jpeg" : ["https://www.earthbyte.org/webdav/ftp/Data_Collections/Muller_etal_2016_AREPS/Muller_etal_2016_AREPS_Agegrids/Muller_etal_2016_AREPS_Agegrids_v1.17/Muller_etal_2016_AREPS_v1.17_jpgs.zip"],
-            "Muller2016_png" : ["https://www.earthbyte.org/webdav/ftp/Data_Collections/Muller_etal_2016_AREPS/Muller_etal_2016_AREPS_Agegrids/Muller_etal_2016_AREPS_Agegrids_v1.17/Muller_etal_2016_AREPS_v1.17_pngs.zip"],
-        }
+        if not age_grids:
+            raise ValueError("{} netCDF4 age grids not found.".format())
 
-        archive_formats = tuple([".gz", ".xz", ".bz2"])
-        # Set to true if we find the given collection in database
-        found_collection = False
-        raster_filenames = []
-        for collection, zip_url in database.items():
-            # Isolate the plate model and the file type
-            plate_model = collection.split("_")[0]
-            raster_type = collection.split("_")[-1]
-            if (self.file_collection.lower() == plate_model.lower()
-                and filetype.lower() == raster_type.lower()
-                ):
-                found_collection = True
-                raster_filenames = _order_filenames_by_time(
-                    _collect_file_extension(
-                        _fetch_from_web(zip_url[0]), _match_filetype_to_extension(filetype))
-                )
-                
-                if time is not None:
-                    raster_filenames = _order_filenames_by_time(raster_filenames)[time]
-                break
+        if len(age_grids) == 0:
+            return age_grids[0]
+        else: 
+            return age_grids
 
-        if found_collection is False:
-            raise ValueError("%s not in collection database." % (raster_id_string))
-        return raster_filenames
+
+    def get_jpeg_age_grids(self, times=None):
+        """Download age grids in jpeg format and read them as numpy arrays.
+
+        Parameters
+        ----------
+        times : list
+            Request a JPEG age grid from one or more reconstruction times, e.g. from 0-5 Ma
+            requires time=np.arange(0,5).
+
+        Returns
+        -------
+        age_grids : list of np.arrays
+            Each array is an instance of <matplotlib.image.imread>.
+        
+        Raises
+        ------
+        ValueError
+            If `times` (a list of reconstruction times to extract the age grids from) is 
+            not passed.
+        """
+        if times is None:
+            raise ValueError("Please supply a list of times.")
+
+        age_grid_links = DataCollection.jpeg_agegrids(self, times)
+        age_grids = []
+        for link in age_grid_links:
+            age_grid_file = _fetch_from_web(link)
+            age_grid = _image.imread(age_grid_file)
+            age_grids.append(age_grid)
+
+        if not age_grids:
+            raise ValueError("{} JPEG age grids not found.".format())
+
+        if len(age_grids) == 0:
+            return age_grids[0]
+        else: 
+            return age_grids
+
+
+    def get_png_age_grids(self, times=None):
+        """Download age grids in PNG format and read them as numpy arrays.
+
+        Parameters
+        ----------
+        times : list
+            Request a PNG age grid from one or more reconstruction times, e.g. from 0-5 Ma
+            requires time=np.arange(0,5).
+
+        Returns
+        -------
+        age_grids : list of np.arrays
+            Each array is an instance of <matplotlib.image.imread>.
+        
+        Raises
+        ------
+        ValueError
+            If `times` (a list of reconstruction times to extract the age grids from) is 
+            not passed.
+        """
+        if times is None:
+            raise ValueError("Please supply a list of times.")
+
+        age_grids = []
+        age_grid_links = DataCollection.png_agegrids(self, times)
+        for link in age_grid_links:
+            age_grid_file = _fetch_from_web(link)
+            age_grid = _image.imread(age_grid_file)
+            age_grids.append(age_grid)
+
+        if not age_grids:
+            raise ValueError("{} PNG age grids not found.".format())
+
+        if len(age_grids) == 0:
+            return age_grids[0]
+        else: 
+            return age_grids
 
 
     def get_raster(self, raster_id_string=None, filetype=None):
@@ -593,16 +689,11 @@ class DataServer(object):
             )
         filetype = "."+filetype
 
-        database = {
-
-            "ETOPO1_grd" : ["https://www.ngdc.noaa.gov/mgg/global/relief/ETOPO1/data/ice_surface/grid_registered/netcdf/ETOPO1_Ice_g_gmt4.grd.gz"],
-            "ETOPO1_tif" : ["https://www.ngdc.noaa.gov/mgg/global/relief/ETOPO1/image/color_etopo1_ice_low.tif.gz"],
-        }
-
         archive_formats = tuple([".gz", ".xz", ".bz2"])
         # Set to true if we find the given collection in database
         found_collection = False
         raster_filenames = []
+        database = DataCollection.rasters(self)
 
         for collection, zip_url in database.items():
             # Isolate the raster name and the file type
@@ -687,12 +778,7 @@ class DataServer(object):
                 "Please specify which feature data to fetch."
             )
 
-        database = {
-
-            "SeafloorFabric" : ["https://www.earthbyte.org/webdav/ftp/earthbyte/GPlates/GPlates2.3_GeoData/Individual/SeafloorFabric.zip"],
-            "LIP_VolcanicProvinces" : ["https://www.earthbyte.org/webdav/ftp/earthbyte/GPlates/GPlates2.3_GeoData/Individual/IgneousProvinces.zip"],
-            "Hotspots" : ["https://www.earthbyte.org/webdav/ftp/earthbyte/GPlates/GPlates2.3_GeoData/Individual/Hotspots.zip"]
-        }
+        database = DataCollection.feature_data(self)
 
         found_collection = False
         for collection, zip_url in database.items():

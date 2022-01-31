@@ -1,4 +1,5 @@
 from . import (
+    data,
     download,
     geometry,
     gpml,
@@ -6,6 +7,7 @@ from . import (
     io,
     plot,
 )
+from .data import DataCollection
 from .download import DataServer
 from .grids import Raster, TimeRaster
 from .io import get_geometries, get_valid_geometries
