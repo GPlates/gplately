@@ -1,0 +1,3287 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
+<meta name="generator" content="pdoc 0.10.0" />
+<title>gplately.reconstruction API documentation</title>
+<meta name="description" content="The “reconstruction” module offers simple shortcuts to pyGplates and Plate Tectonic Tools functionalities for reconstructing features, working with …" />
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
+<link rel="stylesheet preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/styles/github.min.css" crossorigin>
+<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:30px;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:1em 0 .50em 0}h3{font-size:1.4em;margin:25px 0 10px 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .3s ease-in-out}a:hover{color:#e82}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900}pre code{background:#f8f8f8;font-size:.8em;line-height:1.4em}code{background:#f2f2f1;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{background:#f8f8f8;border:0;border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0;padding:1ex}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-weight:bold;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em .5em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.item .name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul{padding-left:1.5em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+<script async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS_CHTML" integrity="sha256-kZafAc6mZvK3W3v1pHOcUix30OHQN6pU/NO2oFkqZVw=" crossorigin></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/highlight.min.js" integrity="sha256-Uv3H6lx7dJmRfRvH8TH6kJD1TSK1aFcwgx+mdg3epi8=" crossorigin></script>
+<script>window.addEventListener('DOMContentLoaded', () => hljs.initHighlighting())</script>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>gplately.reconstruction</code></h1>
+</header>
+<section id="section-intro">
+<p>The “reconstruction” module offers simple shortcuts to pyGplates and Plate Tectonic Tools functionalities for reconstructing features, working with point data, and calculating plate velocities at specific geological times. </p>
+<h2 id="classes">Classes</h2>
+<p>PlateReconstruction
+Points</p>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">&#34;&#34;&#34;The “reconstruction” module offers simple shortcuts to pyGplates and Plate Tectonic Tools functionalities for reconstructing features, working with point data, and calculating plate velocities at specific geological times. 
+
+Classes
+-------
+PlateReconstruction
+Points
+&#34;&#34;&#34;
+import pygplates
+import numpy as np
+import ptt
+import warnings
+
+from . import tools as _tools
+
+
+
+class PlateReconstruction(object):
+    &#34;&#34;&#34;The PlateReconstruction class contains methods to reconstruct topology features at a specific geological time using
+    a given rotation model, a feature/feature collection and a set of static polygons. Velocity data for specific times can
+    also be extracted from these reconstructed features. 
+
+    Attributes
+    ----------
+    rotation_model : str or list
+        A pygplates rotation model
+    topology_features : list
+        A feature collection list containing pygplates features (aggregated using pygplates.FeatureCollection())
+    static_polygons : str 
+        Path to static polygon file
+        
+    Methods
+    -------
+    __init__(self, rotation_model=None, topology_features=None, static_polygons=None)
+        Constructs all necessary attributes for the plate reconstruction object.
+
+    tesselate_subduction_zones(self, time, tessellation_threshold_radians=0.001, anchor_plate_id=0) 
+        Samples points along subduction zone trenches and obtains both convergence and absolute velocities at a
+        particular geological time.
+
+    tesselate_mid_ocean_ridges(self, time, tessellation_threshold_radians=0.001, anchor_plate_id=0)
+        Samples points along resolved spreading features (e.g. mid-ocean ridges) and calculates spreading rate and length
+        of ridge segments at a particular geological time.
+
+    reconstruct(self, feature, to_time, from_time=0, anchor_plate_id=0, **kwargs)
+        Reconstructs regular geological features, motion paths or flowlines to a specific geological time.
+
+    get_point_velocities(self, lons, lats, time, delta_time=1.0)
+        Generates a velocity domain feature collection, resolves them into points, and calculates the north and east 
+        components of the velocity vector for each point in the domain at a particular geological time. 
+    &#34;&#34;&#34;
+    
+    def __init__(self, rotation_model=None, topology_features=None, static_polygons=None):
+        &#34;&#34;&#34;Constructs all necessary attributes for the plate reconstruction object.
+
+        Parameters
+        ----------
+        rotation_model : str, or :class:`FeatureCollection`, or :class:`Feature`, or sequence of :class:`Feature`, 
+        or sequence of any combination of those four types, default=None 
+            Can be provided as a rotation filename, or rotation feature collection, or rotation feature, or sequence of 
+            rotation features, or a sequence (eg, a list or tuple) of any combination of those four types.
+
+        topology_features : str, or a sequence (eg, ``list`` or ``tuple``) of :class:`Feature`, or a single :class:`Feature`,
+        default=None
+            Can be provided as an optional topology-feature filename, or sequence of features, or a single feature. 
+            Note: since a :class:`FeatureCollection` is an iterable sequence of features it can be used in the 
+            *features* argument.
+
+        static_polygons : :class:`FeatureCollection`, or str, or :class:`Feature`, or sequence of :class:`Feature`, 
+        or a sequence of any combination of those four types, default=None
+            Can be provided as a static polygon feature collection, or optional filename, or a single feature, or a sequence of
+            features.
+
+
+        Raises
+        ------
+        OpenFileForReadingError 
+            if any file is not readable (when filenames specified)
+
+        FileFormatNotSupportedError 
+            if any file format (identified by the filename extensions) does not support reading (when filenames specified)
+        &#34;&#34;&#34;
+
+        rotation_model = pygplates.RotationModel(rotation_model)
+
+        default_topology_features = pygplates.FeatureCollection()
+        for topology in topology_features:
+            default_topology_features.add( pygplates.FeatureCollection(topology) )
+
+        self.rotation_model = rotation_model
+        self.topology_features = default_topology_features
+        self.static_polygons = static_polygons
+
+
+    def tesselate_subduction_zones(self, time, tessellation_threshold_radians=0.001, ignore_warnings=False, **kwargs):
+        &#34;&#34;&#34;Samples points along subduction zone trenches and obtains both convergence and absolute velocities at a particular
+        geological time.
+        
+        Resolves topologies at &#39;time&#39;, tessellates all resolved subducting features to within &#39;tessellation_threshold_radians&#39;
+        radians and obtains the following information for each sampled point along a trench:
+    
+        0 - longitude of sampled point
+        1 - latitude of sampled point
+        2 - subducting convergence (relative to trench) velocity magnitude (in cm/yr)
+        3 - subducting convergence velocity obliquity angle (angle between trench normal vector and convergence velocity vector)
+        4 - trench absolute (relative to anchor plate) velocity magnitude (in cm/yr)
+        5 - trench absolute velocity obliquity angle (angle between trench normal vector and trench absolute velocity vector)
+        6 - length of arc segment (in degrees) that current point is on
+        7 - trench normal azimuth angle (clockwise starting at North, ie, 0 to 360 degrees) at current point
+        8 - subducting plate ID
+        9 - trench plate ID
+
+        The obliquity angles are in the range (-180 180). The range (0, 180) goes clockwise (when viewed from above the Earth)
+        from the trench normal direction to the velocity vector. The range (0, -180) goes counter-clockwise.
+        You can change the range (-180, 180) to the range (0, 360) by adding 360 to negative angles.
+        The trench normal is perpendicular to the trench and pointing toward the overriding plate.
+    
+        Note that the convergence velocity magnitude is negative if the plates are diverging (if convergence obliquity angle 
+        is greater than 90 or less than -90). And note that the absolute velocity magnitude is negative if the trench 
+        (subduction zone) is moving towards the overriding plate (if absolute obliquity angle is less than 90 or greater 
+        than -90) - note that this ignores the kinematics of the subducting plate.
+        
+        The delta time interval used for velocity calculations is, by default, assumed to be 1Ma.
+
+        Parameters
+        ----------
+        time : float
+            The reconstruction time (Ma) at which to query subduction convergence.
+
+        tessellation_threshold_radians : float, default=0.001 
+            The threshold sampling distance along the subducting trench (in radians).
+
+        Returns
+        -------
+        subduction_data : a list of vertically-stacked tuples
+            The results for all tessellated points sampled along the trench.
+            The size of the returned list is equal to the number of tessellated points.
+            Each tuple in the list corresponds to a tessellated point and has the following tuple items:
+
+            * longitude of sampled point
+            * latitude of sampled point
+            * subducting convergence (relative to trench) velocity magnitude (in cm/yr)
+            * subducting convergence velocity obliquity angle (angle between trench normal vector and convergence 
+            velocity vector)
+            * trench absolute (relative to anchor plate) velocity magnitude (in cm/yr)
+            * trench absolute velocity obliquity angle (angle between trench normal vector and trench absolute 
+            velocity vector)
+            * length of arc segment (in degrees) that current point is on
+            * trench normal azimuth angle (clockwise starting at North, ie, 0 to 360 degrees) at current point
+            * subducting plate ID
+            * trench plate ID
+
+
+        Notes
+        -----
+        Each point in the output is the midpoint of a great circle arc between two adjacent points in the trench polyline.
+        The trench normal vector used in the obliquity calculations is perpendicular to the great circle arc of each point 
+        (arc midpoint) and pointing towards the overriding plate (rather than away from it).
+
+        Each trench is sampled at approximately uniform intervals along its length (specified via a threshold sampling distance).
+        The sampling along the entire length of a trench is not exactly uniform. Each segment along a trench is sampled
+        such that the samples have a uniform spacing that is less than or equal to the threshold sampling distance. However each
+        segment in a trench might have a slightly different spacing distance (since segment lengths are not integer multiples of
+        the threshold sampling distance).
+
+        The trench normal (at each arc segment mid-point) always points *towards* the overriding plate.
+        &#34;&#34;&#34;
+        if ignore_warnings:
+            with warnings.catch_warnings():
+                warnings.simplefilter(&#39;ignore&#39;)
+                subduction_data = ptt.subduction_convergence.subduction_convergence(
+                    self.rotation_model,
+                    self.topology_features,
+                    tessellation_threshold_radians,
+                    float(time),
+                    **kwargs)
+
+        else:
+            subduction_data = ptt.subduction_convergence.subduction_convergence(
+                self.rotation_model,
+                self.topology_features,
+                tessellation_threshold_radians,
+                float(time),
+                **kwargs)
+
+        subduction_data = np.vstack(subduction_data)
+        return subduction_data
+
+
+    def total_subduction_zone_length(self, time, use_pygplates=False, use_ptt=False, ignore_warnings=False):
+        &#34;&#34;&#34;Calculates the total length of all subduction zones (km) at the specified geological time (Ma).
+
+        Uses one of two methods at user&#39;s discretion:
+        1) &#34;pyGPlates&#34;: 
+            Resolves topology features of the PlateReconstruction model and extracts their shared boundary sections.
+            The lengths of each GPML subduction zone shared boundary section are appended to the total subduction zone length.
+            Scales lengths to km using the geocentric radius.
+        2) &#34;PTT&#34;
+            Uses Plate Tectonic Tools&#39; subduction_convergence workflow to calculate trench segment lengths. Scales lengths to
+            km using the geocentric radius.
+
+        Parameters
+        ----------
+        time : int
+            The geological time at which to calculate total subduction zone lengths.
+        use_pygplates : bool, default=False
+            Choose whether to use the pyGPlates method.
+        use_ptt : bool, default=False
+            Choose whether to use the PTT method. 
+        ignore_warnings : bool, default=False
+            Choose whether to ignore warning messages from PTT&#39;s subduction_convergence workflow that alerts the user of subduction
+            sub-segments that are ignored due to unidentified polarities and/or subducting plates. 
+
+
+        Raises
+        ------
+        ValueError
+            If neither use_pygplates or use_ptt have been set to True.
+
+        Returns
+        -------
+        total_subduction_zone_length_kms : float
+            The total subduction zone length (in km) at the specified time.
+
+        &#34;&#34;&#34;
+        if use_pygplates is True:
+            resolved_topologies = []
+            shared_boundary_sections = []
+            pygplates.resolve_topologies(self.topology_features, self.rotation_model, resolved_topologies, time, shared_boundary_sections)
+
+            total_subduction_zone_length_kms = 0.0
+            for shared_boundary_section in shared_boundary_sections:
+                if shared_boundary_section.get_feature().get_feature_type() != pygplates.FeatureType.gpml_subduction_zone:
+                    continue
+                for shared_sub_segment in shared_boundary_section.get_shared_sub_segments():
+                    clat, clon = shared_sub_segment.get_resolved_geometry().get_centroid().to_lat_lon()
+                    earth_radius = _tools.geocentric_radius(clat) / 1e3
+                    total_subduction_zone_length_kms += shared_sub_segment.get_resolved_geometry().get_arc_length()*earth_radius
+
+            return total_subduction_zone_length_kms
+        
+        elif use_ptt is True:
+            with warnings.catch_warnings():
+                warnings.simplefilter(&#39;ignore&#39;)
+                subduction_data = self.tesselate_subduction_zones(time, ignore_warnings=ignore_warnings)
+
+            trench_arcseg = subduction_data[:,6]
+            trench_pt_lat = subduction_data[:,1]
+            
+            total_subduction_zone_length_kms = 0
+            for i, segment in enumerate(trench_arcseg):
+                earth_radius = _tools.geocentric_radius(trench_pt_lat[i])/1e3
+                total_subduction_zone_length_kms += np.deg2rad(segment)*earth_radius 
+                
+            return total_subduction_zone_length_kms
+        elif use_pygplates is True and use_ptt is True:
+            raise ValueError(&#34;Please set either use_pygplates or use_ptt to True.&#34;)
+        else:
+            raise ValueError(&#34;Please set either use_pygplates or use_ptt to True.&#34;)
+
+
+    def total_continental_arc_length(self, time, continental_grid_directory=None, trench_arc_distance=0.0, ignore_warnings=True):
+        &#34;&#34;&#34;Calculates the total length of all continental arcs (km) at the specified geological time (Ma).
+
+        Uses Plate Tectonic Tools&#39; subduction_convergence workflow to resolve a plate model&#39;s trench features into 
+        points and obtain their subduction polarities. The resolved points are projected out by the trench_arc_distance
+        and their new locations are linearly interpolated onto the supplied continental grid. If the projected trench 
+        points lie in the grid, they are considered continental arc points, and their arc segment lengths are appended 
+        to the total continental arc length for the specified Ma. The total length is scaled to km using the geocentric 
+        Earth radius. 
+
+        Parameters
+        ----------
+        time : int
+            The geological time at which to calculate total continental arc lengths.
+        continental_grid_directory : str, default=None
+            Path to a continental grid file with which to interpolate projected trench points (thereby identifying 
+            continental arc points). 
+        trench_arc_distance : float, default=0.0
+            The trench-to-arc distance (km) to project trench points out by in the direction of their subduction
+            polarities. 
+        ignore_warnings : bool, default=False
+            Choose whether to ignore warning messages from PTT&#39;s subduction_convergence workflow that alerts the user of 
+            subduction sub-segments that are ignored due to unidentified polarities and/or subducting plates. 
+
+        Raises
+        ------
+        ValueError
+            If a continental grid directory is not supplied.
+            If the trench_arc_distance is not supplied or kept at 0.0km.
+
+        Returns
+        -------
+        total_continental_arc_length_kms : float
+            The continental arc length (in km) at the specified time.
+        &#34;&#34;&#34;
+        from . import grids as _grids
+        if continental_grid_directory is None:
+            raise ValueError(&#34;Please provide a directory to a continental grid for the current time.&#34;)
+            
+        # Process the continental grids + obtain trench data with Plate Tectonic Tools
+        graster = _grids.Raster(PlateReconstruction, continental_grid_directory, extent=[-180,180,-90,90])
+        trench_data = self.tesselate_subduction_zones(time, ignore_warnings=ignore_warnings)
+        
+        # Extract trench data
+        trench_normal_azimuthal_angle = trench_data[:,7]
+        trench_arcseg = trench_data[:,6]
+        trench_pt_lon = trench_data[:,0]
+        trench_pt_lat = trench_data[:,1]
+        
+        # Modify the trench-arc distance using the geocentric radius
+        arc_distance = trench_arc_distance / (_tools.geocentric_radius(trench_pt_lat)/1000)
+        
+        # Project trench points out along trench-arc distance, and obtain their new lat-lon coordinates
+        dlon = arc_distance*np.sin(np.radians(trench_normal_azimuthal_angle))
+        dlat = arc_distance*np.cos(np.radians(trench_normal_azimuthal_angle))
+        ilon = trench_pt_lon + np.degrees(dlon)
+        ilat = trench_pt_lat + np.degrees(dlat)
+        
+        # Linearly interpolate projected points onto continental grids, and collect the indices of points that lie
+        # within the grids.
+        sampled_points = graster.interpolate(ilon, ilat, method=&#39;linear&#39;, return_indices=True, return_distances=False)     
+        in_raster = [i for i, point in enumerate(sampled_points[0]) if point &gt; 0]
+        
+        # Define arrays + total arc length
+        lat_in = []
+        lon_in = []
+        total_continental_arc_length_kms = 0
+        subd_we_count_lat = []
+        subd_we_count_lon = []
+        
+        # Loop through all successful in-raster indices
+        for index in in_raster:
+            
+            # Get the lat-lon coordinate of the in-raster point, and the corresponding trench point
+            lat_in.append(ilat[index])
+            lon_in.append(ilon[index])
+            subd_we_count_lat.append(trench_pt_lat[index])
+            subd_we_count_lon.append(trench_pt_lon[index])
+
+            # Append the continental trench segment to the total arc length
+            earth_radius = _tools.geocentric_radius(trench_pt_lat[index])/1000
+            total_continental_arc_length_kms += np.deg2rad(trench_data[:,6][index])*earth_radius
+            
+        return total_continental_arc_length_kms
+
+
+    def tesselate_mid_ocean_ridges(self, time, tessellation_threshold_radians=0.001, ignore_warnings=False, **kwargs):
+        &#34;&#34;&#34;Samples points along resolved spreading features (e.g. mid-ocean ridges) and calculates spreading rate and 
+        length of ridge segments at a particular geological time.
+         
+        Resolves topologies at &#39;time&#39;, tessellates all resolved spreading features to within &#39;tessellation_threshold_radians&#39;
+        radians and obtains the following data:
+    
+        0 - longitude of sampled point
+        1 - latitude of sampled point
+        2 - spreading velocity magnitude (in cm/yr)
+        3 - length of arc segment (in degrees) that current point is on
+        
+        All spreading feature types are considered. The transform segments of spreading features are ignored. 
+        Note: by default, the function assumes that a segment can deviate 45 degrees from the stage pole before it is 
+        considered a transform segment.
+
+        Parameters
+        ----------
+        time : float
+            The reconstruction time (Ma) at which to query subduction convergence.
+
+        tessellation_threshold_radians : float, default=0.001 
+            The threshold sampling distance along the subducting trench (in radians).
+
+        ignore_warnings : bool, default=False
+            Choose to ignore warnings from Plate Tectonic Tools&#39; ridge_spreading_rate workflow. 
+
+        Returns
+        -------
+        ridge_data : a list of vertically-stacked tuples
+            The results for all tessellated points sampled along the trench.
+            The size of the returned list is equal to the number of tessellated points.
+            Each tuple in the list corresponds to a tessellated point and has the following tuple items:
+            
+            * longitude of sampled point
+            * latitude of sampled point
+            * spreading velocity magnitude (in cm/yr)
+            * length of arc segment (in degrees) that current point is on
+        &#34;&#34;&#34;
+        if ignore_warnings:
+            with warnings.catch_warnings():
+                warnings.simplefilter(&#39;ignore&#39;)
+                ridge_data = ptt.ridge_spreading_rate.spreading_rates(
+                    self.rotation_model,
+                    self.topology_features,
+                    float(time),
+                    tessellation_threshold_radians,
+                    **kwargs)
+
+        else:
+            ridge_data = ptt.ridge_spreading_rate.spreading_rates(
+                self.rotation_model,
+                self.topology_features,
+                float(time),
+                tessellation_threshold_radians,
+                **kwargs)
+
+        ridge_data = np.vstack(ridge_data)
+        return ridge_data
+
+
+    def total_ridge_length(self, time, use_pygplates=False, use_ptt=False, ignore_warnings=False):
+        &#34;&#34;&#34;Calculates the total length of all mid-ocean ridges (km) at the specified geological time (Ma).
+
+        Uses one of two methods at user&#39;s discretion:
+        1) &#34;pyGPlates&#34;: 
+            Resolves topology features of the PlateReconstruction model and extracts their shared boundary sections.
+            The lengths of each GPML mid-ocean ridge shared boundary section are appended to the total ridge length.
+            Scales lengths to km using the geocentric radius.
+        2) &#34;PTT&#34;
+            Uses Plate Tectonic Tools&#39; ridge_spreading_rate workflow to calculate ridge segment lengths. Scales lengths to
+            km using the geocentric radius.
+
+        Parameters
+        ----------
+        time : int
+            The geological time at which to calculate total mid-ocean ridge lengths.
+        use_pygplates : bool, default=False
+            Choose whether to use the pyGPlates method.
+        use_ptt : bool, default=False
+            Choose whether to use the PTT method. 
+        ignore_warnings : bool, default=False
+            Choose whether to ignore warning messages from PTT&#39;s ridge_spreading_rate workflow.
+
+        Raises
+        ------
+        ValueError
+            If neither use_pygplates or use_ptt have been set to True.
+
+        Returns
+        -------
+        total_ridge_length_kms : float
+            The mid-ocean ridge (in km) at the specified time.
+        &#34;&#34;&#34;
+        if use_pygplates is True:
+            resolved_topologies = []
+            shared_boundary_sections = []
+            pygplates.resolve_topologies(self.topology_features, self.rotation_model, resolved_topologies, time, shared_boundary_sections)
+
+            total_ridge_length_kms = 0.0
+            for shared_boundary_section in shared_boundary_sections:
+                if shared_boundary_section.get_feature().get_feature_type() != pygplates.FeatureType.gpml_mid_ocean_ridge:
+                    continue
+                for shared_sub_segment in shared_boundary_section.get_shared_sub_segments():
+                    clat, clon = shared_sub_segment.get_resolved_geometry().get_centroid().to_lat_lon()
+                    earth_radius = _tools.geocentric_radius(clat) / 1e3
+                    total_ridge_length_kms += shared_sub_segment.get_resolved_geometry().get_arc_length()*earth_radius
+
+            return total_ridge_length_kms
+
+        elif use_ptt is True:
+            with warnings.catch_warnings():
+                warnings.simplefilter(&#39;ignore&#39;)
+                ridge_data = self.tesselate_mid_ocean_ridges(time)
+
+            ridge_arcseg = ridge_data[:,3]
+            ridge_pt_lat = ridge_data[:,1]
+
+            total_ridge_length_kms = 0
+            for i, segment in enumerate(ridge_arcseg):
+                earth_radius = _tools.geocentric_radius(ridge_pt_lat[i])/1e3
+                total_ridge_length_kms += np.deg2rad(segment)*earth_radius 
+
+            return total_ridge_length_kms
+        else:
+            raise ValueError(&#34;Please set either use_pygplates or use_ptt to True.&#34;)
+
+
+    def reconstruct(self, feature, to_time, from_time=0, anchor_plate_id=0, **kwargs):
+        &#34;&#34;&#34;Reconstructs regular geological features, motion paths or flowlines to a specific geological time.
+        
+        Parameters
+        ----------
+        feature : :class:`FeatureCollection`, or string, or :class:`Feature`, or sequence of :class:`Feature`, or sequence 
+        of any combination of those four types.
+            The features to reconstruct. Can be provided as a feature collection, or filename, or feature, or sequence of
+            features, 
+            or a sequence (eg, a list or tuple) of any combination of those four types.
+
+        to_time : float, or :class:`GeoTimeInstant`
+            The specific geological time to reconstruct to.
+
+        from_time : float, default=0
+            The specific geological time to reconstruct from. By default, this is set to present day. Raises 
+            NotImplementedError if from_time not equal to 0.0.
+
+        anchor_plate_id : int, default=0
+            Reconstruct features with respect to a certain anchor plate. By default it is 0.
+
+        **reconstruct_type : ReconstructType, default=ReconstructType.feature_geometry
+            The specific reconstruction type to generate based on input feature geometry type. Can be provided as 
+            pygplates.ReconstructType.feature_geometry to only reconstruct regular feature geometries, or
+            pygplates.ReconstructType.motion_path to only reconstruct motion path features, or 
+            pygplates.ReconstructType.flowline to only reconstruct flowline features. 
+            Generates :class:`reconstructed feature geometries&lt;ReconstructedFeatureGeometry&gt;’, or :class:`reconstructed 
+            motion paths&lt;ReconstructedMotionPath&gt;’, or :class:`reconstructed flowlines&lt;ReconstructedFlowline&gt;’ respectively.
+
+        **group_with_feature : bool, default=False
+            Used to group reconstructed geometries with their features. This can be useful when a feature has more than one
+            geometry and hence more than one reconstructed geometry. The output *reconstructed_geometries* then becomes a 
+            list of tuples where each tuple contains a :class:`feature&lt;Feature&gt;` and a ``list`` of reconstructed geometries. 
+            Note: this keyword argument only applies when *reconstructed_geometries* is a list because exported files are 
+            always grouped with their features. This is applicable to all ReconstructType features.
+        
+        **export_wrap_to_dateline : bool, default=True
+            Wrap/clip reconstructed geometries to the dateline (currently ignored).
+
+        Returns
+        -------
+        reconstructed_features : list
+            Reconstructed geometrical features (generated by the reconstruction) are appended to the Python list.
+            The reconstructed geometries are output in the same order as that of their respective input features (in the 
+            parameter “features”). The order across input feature collections is also retained. This happens regardless 
+            of whether *features* and *reconstructed_features* include files or not. Note: if keyword argument 
+            group_with_feature=True then the list contains tuples that group each :class:`feature&lt;Feature&gt;` with a list 
+            of its reconstructed geometries.
+
+        Raises
+        ------
+        NotImplementedError
+            if the starting time for reconstruction “from_time” not equal to 0.0
+        &#34;&#34;&#34;
+        from_time, to_time = float(from_time), float(to_time)
+        if from_time != 0.0:
+            raise NotImplementedError(&#34;Soon...&#34;)
+
+        reconstructed_features = []
+        pygplates.reconstruct(feature, self.rotation_model, reconstructed_features, to_time,\
+            anchor_plate_id=anchor_plate_id, **kwargs)
+        return reconstructed_features
+
+
+    def get_point_velocities(self, lons, lats, time, delta_time=1.0):
+        &#34;&#34;&#34;Generates a velocity domain feature collection, resolves them into points, and calculates the north and east 
+        components of the velocity vector for each point in the domain at a particular geological time. 
+        
+        Velocity domain feature collections are MeshNode-type features. These are produced from lat-lon points represented as
+        multi-point geometries (projections onto the surface of the unit length sphere). These features are resolved into 
+        domain points and assigned plate IDs, which are used to obtain the equivalent stage rotations of identified tectonic
+        plates over a time interval. Each velocity domain point and its stage rotation are used to calculate its velocity at 
+        a particular geological time. Obtained velocities for each domain point are represented in the north-east-down 
+        coordinate system. 
+
+        Parameters
+        ----------
+        lons : array
+            A 1D array of longitude points.
+
+        lats : array
+            A 1D array of latitude points.
+
+        time : float
+            The specific geological time (Ma) at which to calculate plate velocities.
+
+        delta_time : float, default=1.0
+            The time increment used for generating partitioning plate stage rotations. 1.0Ma by default.
+
+        Returns
+        -------
+        all_velocities : 1D list of tuples
+            For each velocity domain feature point, a tuple of (north, east, down) velocity components is generated and 
+            appended to a list of velocity data. The length of all_velocities is equivalent to the number of domain points
+            resolved from the lat-lon array parameters.
+        &#34;&#34;&#34;
+        # Add points to a multipoint geometry
+
+        time = float(time)
+
+        multi_point = pygplates.MultiPointOnSphere([(float(lat),float(lon)) for lat, lon in zip(lats,lons)])
+
+        # Create a feature containing the multipoint feature, and defined as MeshNode type
+        meshnode_feature = pygplates.Feature(pygplates.FeatureType.create_from_qualified_string(&#39;gpml:MeshNode&#39;))
+        meshnode_feature.set_geometry(multi_point)
+        meshnode_feature.set_name(&#39;Velocity Mesh Nodes from pygplates&#39;)
+
+        velocity_domain_features = pygplates.FeatureCollection(meshnode_feature)
+        
+        # NB: at this point, the feature could be written to a file using
+        # output_feature_collection.write(&#39;myfilename.gpmlz&#39;)
+        
+        
+        # All domain points and associated (magnitude, azimuth, inclination) velocities for the current time.
+        all_domain_points = []
+        all_velocities = []
+
+        # Partition our velocity domain features into our topological plate polygons at the current &#39;time&#39;.
+        plate_partitioner = pygplates.PlatePartitioner(self.topology_features, self.rotation_model, time)
+
+        for velocity_domain_feature in velocity_domain_features:
+            # A velocity domain feature usually has a single geometry but we&#39;ll assume it can be any number.
+            # Iterate over them all.
+            for velocity_domain_geometry in velocity_domain_feature.get_geometries():
+
+                for velocity_domain_point in velocity_domain_geometry.get_points():
+
+                    all_domain_points.append(velocity_domain_point)
+
+                    partitioning_plate = plate_partitioner.partition_point(velocity_domain_point)
+                    if partitioning_plate:
+
+                        # We need the newly assigned plate ID
+                        # to get the equivalent stage rotation of that tectonic plate.
+                        partitioning_plate_id = partitioning_plate.get_feature().get_reconstruction_plate_id()
+
+                        # Get the stage rotation of partitioning plate from &#39;time + delta_time&#39; to &#39;time&#39;.
+                        equivalent_stage_rotation = self.rotation_model.get_rotation(time,
+                                                                                     partitioning_plate_id,
+                                                                                     time + delta_time)
+
+                        # Calculate velocity at the velocity domain point.
+                        # This is from &#39;time + delta_time&#39; to &#39;time&#39; on the partitioning plate.
+                        velocity_vectors = pygplates.calculate_velocities(
+                            [velocity_domain_point],
+                            equivalent_stage_rotation,
+                            delta_time)
+
+                        # Convert global 3D velocity vectors to local (magnitude, azimuth, inclination) tuples
+                        # (one tuple per point).
+                        velocities =pygplates.LocalCartesian.convert_from_geocentric_to_north_east_down(
+                                [velocity_domain_point],
+                                velocity_vectors)
+                        all_velocities.append((velocities[0].get_x(), velocities[0].get_y()))
+
+                    else:
+                        all_velocities.append((0,0))
+                        
+        return np.array(all_velocities)
+
+
+
+class Points(object):
+    &#34;&#34;&#34;The Points class offers simple methods to work with point data. It reconstructs geological features and can extract their
+    plate velocities at a specific geological time. Note that the Points class must be used with the PlateReconstruction class
+    since the rotation model and static polygons needed for Point object methods are sourced from the PlateReconstruction
+    class.
+
+    Attributes
+    ----------
+    PlateReconstruction_object : object pointer
+    lons, lats : 1d array
+    time : float
+    plate_id : int
+    x, y, z : 1d array
+    lonlat, xyz : list
+    rotation_model : str, or list (accessed using PlateReconstruction_object.rotation_model)
+    static_polygons : str, or list (accessed using PlateReconstruction_object.static_polygons)
+    features : list
+    FeatureCollection : list 
+
+    Methods
+    -------
+     __init__(self, PlateReconstruction_object, lons, lats, time=0, plate_id=None)
+        Constructs all necessary attributes for the points object.
+        
+    reconstruct(self, time, anchor_plate_id=0, **kwargs)
+        Reconstructs regular geological features, motion paths or flowlines to a specific geological time and extracts
+        the latitudinal and longitudinal points of these features.
+        
+    plate_velocity(self, time, delta_time=1)
+        Calculates the x and y components of tectonic plate velocities at a particular geological time.
+        
+    save(self, filename)
+        Saves the feature collection used in the Points object under a given filename to the current directory. 
+    &#34;&#34;&#34;
+    def __init__(self, PlateReconstruction_object, lons, lats, time=0, plate_id=None):
+        &#34;&#34;&#34;Constructs all necessary attributes for the points object.
+
+        Parameters
+        ----------
+        PlateReconstruction_object : object pointer
+            Allows for the accessibility of PlateReconstruction object attributes. Namely, PlateReconstruction object 
+            attributes rotation_model, topology_featues and static_polygons can be used in the points object if called using
+            “self.PlateReconstruction_object.X”, where X is the attribute.
+
+        lons : float, or 1D array
+            A single point, or a 1D array of longitude points.
+
+        lats : float 1D array
+            A single point, or a 1D array of latitude points.
+
+        time : float, default=0
+            The specific geological time (Ma) at which to start reconstructing. Default time is present day (0).
+
+        plate_id : int, default=None
+            The plate ID of a particular tectonic plate. Defaults to none.
+
+        Returns
+        -------
+        An extension of accessible points object attributes, such as:
+
+        x, y, z : float, or 1D array
+            Cartesian coordinate equivalents of supplied lat, lon points scaled to mean Earth radius in km.
+
+        lonlat, xyz : list
+            Concatenated arrays of [lat, lon] points or their [x, y, z] Cartesian coordinate equivalents. Each list element 
+            can be a float or 1D array.
+
+        rotation_model, static_polygons : :class:`FeatureCollection`, or str, or :class:`Feature`, or sequence of
+        :class:`Feature`, or a sequence of any combination of those four types, default=None
+            Can be provided as a rotation model / static polygon feature collection, or optional filename, or a single feature, 
+            or a sequence of features. Accessible with the points object after calling 
+            “PlateReconstruction_object.rotation_model”, or “PlateReconstruction_object.static_polygons”.
+
+        features : a sequence (eg, list or tuple) of :class:`Feature`, or a single :class:`Feature`
+            A single, or list of point features with spherical geometry generated from a given tectonic plate ID 
+            (default=None) elsewhere (eg. in another method) and given a set of lat-lon point(s). 
+            If a plate ID is not supplied, &#34;features&#34; is instead a single set or list of features partitioned using 
+            static polygons. 
+
+        FeatureCollection : list
+            A list of a set of features aggregated into a feature collection. 
+        &#34;&#34;&#34;
+        self.lons = lons
+        self.lats = lats
+        self.time = time
+
+        # get Cartesian coordinates
+        self.x, self.y, self.z = _tools.lonlat2xyz(lons, lats, degrees=False)
+
+        # scale by average radius of the Earth
+        self.x *= _tools.EARTH_RADIUS
+        self.y *= _tools.EARTH_RADIUS
+        self.z *= _tools.EARTH_RADIUS
+
+        # store concatenated arrays
+        self.lonlat = np.c_[self.lons, self.lats]
+        self.xyz = np.c_[self.x, self.y, self.z]
+
+
+        rotation_model = PlateReconstruction_object.rotation_model
+        static_polygons = PlateReconstruction_object.static_polygons
+        self.PlateReconstruction_object = PlateReconstruction_object
+
+        features = _tools.points_to_features(lons, lats, plate_id)
+
+        if plate_id:
+            self.features = features
+        else:
+            # partition using static polygons
+            # being careful to observe &#39;from time&#39;
+            partitioned_features = pygplates.partition_into_plates(static_polygons, rotation_model, features)
+            self.features = partitioned_features
+
+            plate_id = np.empty(len(self.lons), dtype=int)
+            for i, feature in enumerate(partitioned_features):
+                plate_id[i] = feature.get_reconstruction_plate_id()
+
+        self.plate_id = plate_id
+        self.FeatureCollection = pygplates.FeatureCollection(self.features)
+
+
+    def reconstruct(self, time, anchor_plate_id=0, **kwargs):
+        &#34;&#34;&#34;Reconstructs regular geological features, motion paths or flowlines to a specific geological time and extracts 
+        the latitudinal and longitudinal points of these features.
+
+        Note: this method accesses and uses the rotation model attribute from the PointReconstruction object, and reconstructs 
+        the feature lat-lon point attributes of the Points object.
+
+        Parameters
+        ----------
+        time : float
+            The specific geological time (Ma) to reconstruct features to.
+
+        anchor_plate_id : int, default=0
+            Reconstruct features with respect to a certain anchor plate. By default it is 0.
+
+        **reconstruct_type : ReconstructType, default=ReconstructType.feature_geometry
+            The specific reconstruction type to generate based on input feature geometry type. Can be provided as
+            ReconstructType.feature_geometry to only reconstruct regular feature geometries, or ReconstructType.MotionPath to
+            only reconstruct motion path features, or ReconstructType.Flowline to only reconstruct flowline features. Generates
+            :class:`reconstructed feature geometries&lt;ReconstructedFeatureGeometry&gt;’, or :class:`reconstructed motion
+            paths&lt;ReconstructedMotionPath&gt;’, or :class:`reconstructed flowlines&lt;ReconstructedFlowline&gt;’ respectively.
+
+        **group_with_feature : bool, default=False
+            Used to group reconstructed geometries with their features. This can be useful when a feature has more than one
+            geometry and hence more than one reconstructed geometry. The output *reconstructed_geometries* then becomes a 
+            list of tuples where each tuple contains a :class:`feature&lt;Feature&gt;` and a ``list`` of reconstructed geometries. 
+            Note: this keyword argument only applies when *reconstructed_geometries* is a list because exported files are 
+            always grouped with their features. This is applicable to all ReconstructType features.
+
+        **export_wrap_to_dateline : bool, default=True
+            Wrap/clip reconstructed geometries to the dateline (currently ignored).
+
+        Returns
+        -------
+        rlons, rlats : lists
+            Two 1D numpy arrays enclosing all reconstructed feature points transformed into lat-lon points. 
+
+        Raises
+        ------
+        NotImplementedError
+            if the starting time for reconstruction “from_time” not equal to 0.0
+        &#34;&#34;&#34;
+        from_time = self.time
+        to_time = time
+        reconstructed_features = self.PlateReconstruction_object.reconstruct(
+            self.features, to_time, from_time, anchor_plate_id=anchor_plate_id, **kwargs)
+
+        rlons, rlats = _tools.extract_feature_lonlat(reconstructed_features)
+        return rlons, rlats
+
+
+    def reconstruct_to_birth_age(self, ages, anchor_plate_id=0, **kwargs):
+        &#34;&#34;&#34; Reconstructs point features supplied to the Points object from the supplied initial time (the Points object time attribute)
+        to a range of times. The number of supplied times must equal the number of point features supplied to the Points object. 
+
+        Attributes
+        ----------
+        ages : array
+            Geological times to reconstruct features to. Must have the same length as the Points object&#39;s self.features attribute 
+            (which holds the object&#39;s supplied point features represented on a unit length sphere in 3D Cartesian coordinates).
+        anchor_plate_id : int, default=0
+            Reconstruct features with respect to a certain anchor plate. By default it is 0.
+        **kwargs 
+            Additional keyword arguments for the gplately.PlateReconstruction.reconstruct method.
+
+        Raises
+        ------
+        ValueError
+            If the number of ages and number of point features supplied to the Points object are not identical.
+
+        Returns
+        -------
+        rlons, rlats : float
+            The longitude and latitude coordinate lists of all point features reconstructed to all specified ages.
+
+        Examples
+        --------
+        To reconstruct n seed points&#39; locations to B Ma (for this example n=2, with (lon,lat) = (78,30) and (56,22) at time=0 Ma,
+        and we reconstruct to B=10 Ma):
+
+            # Longitude and latitude of n=2 seed points
+            pt_lon = np.array([78., 56])
+            pt_lat = np.array([30., 22])
+
+            # Call the Points object!
+            gpts = gplately.Points(model, pt_lon, pt_lat)
+            print(gpts.features[0].get_all_geometries())   # Confirms we have features represented as points on a sphere
+
+            ages = numpy.linspace(10,10, len(pt_lon))
+            rlons, rlats = gpts.reconstruct_to_birth_age(ages)
+
+        &#34;&#34;&#34;
+        from_time = self.time
+        ages = np.array(ages)
+
+        if len(ages) != len(self.features):
+            raise ValueError(&#34;Number of points and ages must be identical&#34;)
+
+        unique_ages = np.unique(ages)
+        rlons = np.zeros(ages.shape)
+        rlats = np.zeros(ages.shape)
+
+        for age in unique_ages:
+            mask_age = ages == age
+
+            reconstructed_features = self.PlateReconstruction_object.reconstruct(
+                self.features, age, from_time, anchor_plate_id=anchor_plate_id, **kwargs)
+
+            lons, lats = _tools.extract_feature_lonlat(reconstructed_features)
+
+            rlons[mask_age] = lons[mask_age]
+            rlats[mask_age] = lats[mask_age]
+
+
+        return rlons, rlats
+
+    def plate_velocity(self, time, delta_time=1):
+        &#34;&#34;&#34;Calculates the x and y components of tectonic plate velocities at a particular geological time.
+
+        This method accesses and uses the rotation_model attribute from the PointReconstruction object, and uses the features
+        attribute of this Points object. Feature points are extracted and assigned plate IDs that are used to obtain the
+        equivalent stage rotations of identified tectonic plates over a time interval. Each feature point and its stage rotation
+        are used to calculate its plate velocity at a particular geological time. Obtained velocities for each domain point are
+        represented in the north-east-down coordinate system, and their x,y Cartesian coordinate components are extracted. 
+
+        Parameters
+        ----------
+        time : float
+            The specific geological time (Ma) at which to calculate plate velocities.
+
+        delta_time : float, default=1.0
+            The time increment used for generating partitioning plate stage rotations. 1.0Ma by default.
+            
+
+        Returns
+        -------
+        all_velocities.T : 2D numpy list
+            A transposed 2D numpy list with two rows and a number of columns equal to the number of x,y Cartesian velocity 
+            components obtained (and thus the number of feature points extracted from a supplied feature). Each list column 
+            stores one point’s x,y, velocity components along its two rows.
+        &#34;&#34;&#34;
+        rotation_model = self.PlateReconstruction_object.rotation_model
+        all_velocities = np.empty((len(self.features), 2))
+
+        for i, feature in enumerate(self.features):
+            geometry = feature.get_geometry()
+            partitioning_plate_id = feature.get_reconstruction_plate_id()
+            equivalent_stage_rotation = rotation_model.get_rotation(time, partitioning_plate_id, time+delta_time)
+            
+            velocity_vectors = pygplates.calculate_velocities(
+                [geometry],
+                equivalent_stage_rotation,
+                delta_time,
+                pygplates.VelocityUnits.cms_per_yr)
+            
+            velocities = pygplates.LocalCartesian.convert_from_geocentric_to_north_east_down(
+                [geometry],
+                velocity_vectors)
+
+            all_velocities[i] = velocities[0].get_x(), velocities[0].get_y()
+
+        return list(all_velocities.T)
+
+
+    def save(self, filename):
+        &#34;&#34;&#34;Saves the feature collection used in the Points object under a given filename to the current directory. 
+
+        The needed file format to save to is determined from the filename extension. 
+
+        Parameters
+        ----------
+        filename : string
+            Can be provided as a string including the filename and the file format needed.
+
+        Returns
+        -------
+        Feature collection saved under given filename to current directory.
+        &#34;&#34;&#34;
+        self.FeatureCollection.save(filename)</code></pre>
+</details>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-classes">Classes</h2>
+<dl>
+<dt id="gplately.reconstruction.PlateReconstruction"><code class="flex name class">
+<span>class <span class="ident">PlateReconstruction</span></span>
+<span>(</span><span>rotation_model=None, topology_features=None, static_polygons=None)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>The PlateReconstruction class contains methods to reconstruct topology features at a specific geological time using
+a given rotation model, a feature/feature collection and a set of static polygons. Velocity data for specific times can
+also be extracted from these reconstructed features. </p>
+<h2 id="attributes">Attributes</h2>
+<dl>
+<dt><strong><code>rotation_model</code></strong> :&ensp;<code>str</code> or <code>list</code></dt>
+<dd>A pygplates rotation model</dd>
+<dt><strong><code>topology_features</code></strong> :&ensp;<code>list</code></dt>
+<dd>A feature collection list containing pygplates features (aggregated using pygplates.FeatureCollection())</dd>
+<dt><strong><code>static_polygons</code></strong> :&ensp;<code>str </code></dt>
+<dd>Path to static polygon file</dd>
+</dl>
+<h2 id="methods">Methods</h2>
+<p><strong>init</strong>(self, rotation_model=None, topology_features=None, static_polygons=None)
+Constructs all necessary attributes for the plate reconstruction object.</p>
+<p>tesselate_subduction_zones(self, time, tessellation_threshold_radians=0.001, anchor_plate_id=0)
+Samples points along subduction zone trenches and obtains both convergence and absolute velocities at a
+particular geological time.</p>
+<p>tesselate_mid_ocean_ridges(self, time, tessellation_threshold_radians=0.001, anchor_plate_id=0)
+Samples points along resolved spreading features (e.g. mid-ocean ridges) and calculates spreading rate and length
+of ridge segments at a particular geological time.</p>
+<p>reconstruct(self, feature, to_time, from_time=0, anchor_plate_id=0, **kwargs)
+Reconstructs regular geological features, motion paths or flowlines to a specific geological time.</p>
+<p>get_point_velocities(self, lons, lats, time, delta_time=1.0)
+Generates a velocity domain feature collection, resolves them into points, and calculates the north and east
+components of the velocity vector for each point in the domain at a particular geological time. </p>
+<p>Constructs all necessary attributes for the plate reconstruction object.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>rotation_model</code></strong> :&ensp;<code>str,</code> or <code>:class:</code>FeatureCollection<code>,</code> or <code>:class:</code>Feature<code>,</code> or <code>sequence</code> of <code>:class:</code>Feature<code>, </code></dt>
+<dd>&nbsp;</dd>
+</dl>
+<p>or sequence of any combination of those four types, default=None
+Can be provided as a rotation filename, or rotation feature collection, or rotation feature, or sequence of
+rotation features, or a sequence (eg, a list or tuple) of any combination of those four types.</p>
+<dl>
+<dt><strong><code>topology_features</code></strong> :&ensp;<code>str,</code> or <code>a sequence (eg, <code>list``` or ```tuple</code>)</code> of <code>:class:</code>Feature<code>,</code> or <code>a single :class:</code>Feature<code>,</code></dt>
+<dd>&nbsp;</dd>
+</dl>
+<p>default=None
+Can be provided as an optional topology-feature filename, or sequence of features, or a single feature.
+Note: since a :class:<code>FeatureCollection</code> is an iterable sequence of features it can be used in the
+<em>features</em> argument.</p>
+<dl>
+<dt><strong><code>static_polygons</code></strong> :&ensp;<code>:class:</code>FeatureCollection<code>,</code> or <code>str,</code> or <code>:class:</code>Feature<code>,</code> or <code>sequence</code> of <code>:class:</code>Feature<code>, </code></dt>
+<dd>&nbsp;</dd>
+</dl>
+<p>or a sequence of any combination of those four types, default=None
+Can be provided as a static polygon feature collection, or optional filename, or a single feature, or a sequence of
+features.</p>
+<h2 id="raises">Raises</h2>
+<dl>
+<dt><code>OpenFileForReadingError </code></dt>
+<dd>if any file is not readable (when filenames specified)</dd>
+<dt><code>FileFormatNotSupportedError </code></dt>
+<dd>if any file format (identified by the filename extensions) does not support reading (when filenames specified)</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class PlateReconstruction(object):
+    &#34;&#34;&#34;The PlateReconstruction class contains methods to reconstruct topology features at a specific geological time using
+    a given rotation model, a feature/feature collection and a set of static polygons. Velocity data for specific times can
+    also be extracted from these reconstructed features. 
+
+    Attributes
+    ----------
+    rotation_model : str or list
+        A pygplates rotation model
+    topology_features : list
+        A feature collection list containing pygplates features (aggregated using pygplates.FeatureCollection())
+    static_polygons : str 
+        Path to static polygon file
+        
+    Methods
+    -------
+    __init__(self, rotation_model=None, topology_features=None, static_polygons=None)
+        Constructs all necessary attributes for the plate reconstruction object.
+
+    tesselate_subduction_zones(self, time, tessellation_threshold_radians=0.001, anchor_plate_id=0) 
+        Samples points along subduction zone trenches and obtains both convergence and absolute velocities at a
+        particular geological time.
+
+    tesselate_mid_ocean_ridges(self, time, tessellation_threshold_radians=0.001, anchor_plate_id=0)
+        Samples points along resolved spreading features (e.g. mid-ocean ridges) and calculates spreading rate and length
+        of ridge segments at a particular geological time.
+
+    reconstruct(self, feature, to_time, from_time=0, anchor_plate_id=0, **kwargs)
+        Reconstructs regular geological features, motion paths or flowlines to a specific geological time.
+
+    get_point_velocities(self, lons, lats, time, delta_time=1.0)
+        Generates a velocity domain feature collection, resolves them into points, and calculates the north and east 
+        components of the velocity vector for each point in the domain at a particular geological time. 
+    &#34;&#34;&#34;
+    
+    def __init__(self, rotation_model=None, topology_features=None, static_polygons=None):
+        &#34;&#34;&#34;Constructs all necessary attributes for the plate reconstruction object.
+
+        Parameters
+        ----------
+        rotation_model : str, or :class:`FeatureCollection`, or :class:`Feature`, or sequence of :class:`Feature`, 
+        or sequence of any combination of those four types, default=None 
+            Can be provided as a rotation filename, or rotation feature collection, or rotation feature, or sequence of 
+            rotation features, or a sequence (eg, a list or tuple) of any combination of those four types.
+
+        topology_features : str, or a sequence (eg, ``list`` or ``tuple``) of :class:`Feature`, or a single :class:`Feature`,
+        default=None
+            Can be provided as an optional topology-feature filename, or sequence of features, or a single feature. 
+            Note: since a :class:`FeatureCollection` is an iterable sequence of features it can be used in the 
+            *features* argument.
+
+        static_polygons : :class:`FeatureCollection`, or str, or :class:`Feature`, or sequence of :class:`Feature`, 
+        or a sequence of any combination of those four types, default=None
+            Can be provided as a static polygon feature collection, or optional filename, or a single feature, or a sequence of
+            features.
+
+
+        Raises
+        ------
+        OpenFileForReadingError 
+            if any file is not readable (when filenames specified)
+
+        FileFormatNotSupportedError 
+            if any file format (identified by the filename extensions) does not support reading (when filenames specified)
+        &#34;&#34;&#34;
+
+        rotation_model = pygplates.RotationModel(rotation_model)
+
+        default_topology_features = pygplates.FeatureCollection()
+        for topology in topology_features:
+            default_topology_features.add( pygplates.FeatureCollection(topology) )
+
+        self.rotation_model = rotation_model
+        self.topology_features = default_topology_features
+        self.static_polygons = static_polygons
+
+
+    def tesselate_subduction_zones(self, time, tessellation_threshold_radians=0.001, ignore_warnings=False, **kwargs):
+        &#34;&#34;&#34;Samples points along subduction zone trenches and obtains both convergence and absolute velocities at a particular
+        geological time.
+        
+        Resolves topologies at &#39;time&#39;, tessellates all resolved subducting features to within &#39;tessellation_threshold_radians&#39;
+        radians and obtains the following information for each sampled point along a trench:
+    
+        0 - longitude of sampled point
+        1 - latitude of sampled point
+        2 - subducting convergence (relative to trench) velocity magnitude (in cm/yr)
+        3 - subducting convergence velocity obliquity angle (angle between trench normal vector and convergence velocity vector)
+        4 - trench absolute (relative to anchor plate) velocity magnitude (in cm/yr)
+        5 - trench absolute velocity obliquity angle (angle between trench normal vector and trench absolute velocity vector)
+        6 - length of arc segment (in degrees) that current point is on
+        7 - trench normal azimuth angle (clockwise starting at North, ie, 0 to 360 degrees) at current point
+        8 - subducting plate ID
+        9 - trench plate ID
+
+        The obliquity angles are in the range (-180 180). The range (0, 180) goes clockwise (when viewed from above the Earth)
+        from the trench normal direction to the velocity vector. The range (0, -180) goes counter-clockwise.
+        You can change the range (-180, 180) to the range (0, 360) by adding 360 to negative angles.
+        The trench normal is perpendicular to the trench and pointing toward the overriding plate.
+    
+        Note that the convergence velocity magnitude is negative if the plates are diverging (if convergence obliquity angle 
+        is greater than 90 or less than -90). And note that the absolute velocity magnitude is negative if the trench 
+        (subduction zone) is moving towards the overriding plate (if absolute obliquity angle is less than 90 or greater 
+        than -90) - note that this ignores the kinematics of the subducting plate.
+        
+        The delta time interval used for velocity calculations is, by default, assumed to be 1Ma.
+
+        Parameters
+        ----------
+        time : float
+            The reconstruction time (Ma) at which to query subduction convergence.
+
+        tessellation_threshold_radians : float, default=0.001 
+            The threshold sampling distance along the subducting trench (in radians).
+
+        Returns
+        -------
+        subduction_data : a list of vertically-stacked tuples
+            The results for all tessellated points sampled along the trench.
+            The size of the returned list is equal to the number of tessellated points.
+            Each tuple in the list corresponds to a tessellated point and has the following tuple items:
+
+            * longitude of sampled point
+            * latitude of sampled point
+            * subducting convergence (relative to trench) velocity magnitude (in cm/yr)
+            * subducting convergence velocity obliquity angle (angle between trench normal vector and convergence 
+            velocity vector)
+            * trench absolute (relative to anchor plate) velocity magnitude (in cm/yr)
+            * trench absolute velocity obliquity angle (angle between trench normal vector and trench absolute 
+            velocity vector)
+            * length of arc segment (in degrees) that current point is on
+            * trench normal azimuth angle (clockwise starting at North, ie, 0 to 360 degrees) at current point
+            * subducting plate ID
+            * trench plate ID
+
+
+        Notes
+        -----
+        Each point in the output is the midpoint of a great circle arc between two adjacent points in the trench polyline.
+        The trench normal vector used in the obliquity calculations is perpendicular to the great circle arc of each point 
+        (arc midpoint) and pointing towards the overriding plate (rather than away from it).
+
+        Each trench is sampled at approximately uniform intervals along its length (specified via a threshold sampling distance).
+        The sampling along the entire length of a trench is not exactly uniform. Each segment along a trench is sampled
+        such that the samples have a uniform spacing that is less than or equal to the threshold sampling distance. However each
+        segment in a trench might have a slightly different spacing distance (since segment lengths are not integer multiples of
+        the threshold sampling distance).
+
+        The trench normal (at each arc segment mid-point) always points *towards* the overriding plate.
+        &#34;&#34;&#34;
+        if ignore_warnings:
+            with warnings.catch_warnings():
+                warnings.simplefilter(&#39;ignore&#39;)
+                subduction_data = ptt.subduction_convergence.subduction_convergence(
+                    self.rotation_model,
+                    self.topology_features,
+                    tessellation_threshold_radians,
+                    float(time),
+                    **kwargs)
+
+        else:
+            subduction_data = ptt.subduction_convergence.subduction_convergence(
+                self.rotation_model,
+                self.topology_features,
+                tessellation_threshold_radians,
+                float(time),
+                **kwargs)
+
+        subduction_data = np.vstack(subduction_data)
+        return subduction_data
+
+
+    def total_subduction_zone_length(self, time, use_pygplates=False, use_ptt=False, ignore_warnings=False):
+        &#34;&#34;&#34;Calculates the total length of all subduction zones (km) at the specified geological time (Ma).
+
+        Uses one of two methods at user&#39;s discretion:
+        1) &#34;pyGPlates&#34;: 
+            Resolves topology features of the PlateReconstruction model and extracts their shared boundary sections.
+            The lengths of each GPML subduction zone shared boundary section are appended to the total subduction zone length.
+            Scales lengths to km using the geocentric radius.
+        2) &#34;PTT&#34;
+            Uses Plate Tectonic Tools&#39; subduction_convergence workflow to calculate trench segment lengths. Scales lengths to
+            km using the geocentric radius.
+
+        Parameters
+        ----------
+        time : int
+            The geological time at which to calculate total subduction zone lengths.
+        use_pygplates : bool, default=False
+            Choose whether to use the pyGPlates method.
+        use_ptt : bool, default=False
+            Choose whether to use the PTT method. 
+        ignore_warnings : bool, default=False
+            Choose whether to ignore warning messages from PTT&#39;s subduction_convergence workflow that alerts the user of subduction
+            sub-segments that are ignored due to unidentified polarities and/or subducting plates. 
+
+
+        Raises
+        ------
+        ValueError
+            If neither use_pygplates or use_ptt have been set to True.
+
+        Returns
+        -------
+        total_subduction_zone_length_kms : float
+            The total subduction zone length (in km) at the specified time.
+
+        &#34;&#34;&#34;
+        if use_pygplates is True:
+            resolved_topologies = []
+            shared_boundary_sections = []
+            pygplates.resolve_topologies(self.topology_features, self.rotation_model, resolved_topologies, time, shared_boundary_sections)
+
+            total_subduction_zone_length_kms = 0.0
+            for shared_boundary_section in shared_boundary_sections:
+                if shared_boundary_section.get_feature().get_feature_type() != pygplates.FeatureType.gpml_subduction_zone:
+                    continue
+                for shared_sub_segment in shared_boundary_section.get_shared_sub_segments():
+                    clat, clon = shared_sub_segment.get_resolved_geometry().get_centroid().to_lat_lon()
+                    earth_radius = _tools.geocentric_radius(clat) / 1e3
+                    total_subduction_zone_length_kms += shared_sub_segment.get_resolved_geometry().get_arc_length()*earth_radius
+
+            return total_subduction_zone_length_kms
+        
+        elif use_ptt is True:
+            with warnings.catch_warnings():
+                warnings.simplefilter(&#39;ignore&#39;)
+                subduction_data = self.tesselate_subduction_zones(time, ignore_warnings=ignore_warnings)
+
+            trench_arcseg = subduction_data[:,6]
+            trench_pt_lat = subduction_data[:,1]
+            
+            total_subduction_zone_length_kms = 0
+            for i, segment in enumerate(trench_arcseg):
+                earth_radius = _tools.geocentric_radius(trench_pt_lat[i])/1e3
+                total_subduction_zone_length_kms += np.deg2rad(segment)*earth_radius 
+                
+            return total_subduction_zone_length_kms
+        elif use_pygplates is True and use_ptt is True:
+            raise ValueError(&#34;Please set either use_pygplates or use_ptt to True.&#34;)
+        else:
+            raise ValueError(&#34;Please set either use_pygplates or use_ptt to True.&#34;)
+
+
+    def total_continental_arc_length(self, time, continental_grid_directory=None, trench_arc_distance=0.0, ignore_warnings=True):
+        &#34;&#34;&#34;Calculates the total length of all continental arcs (km) at the specified geological time (Ma).
+
+        Uses Plate Tectonic Tools&#39; subduction_convergence workflow to resolve a plate model&#39;s trench features into 
+        points and obtain their subduction polarities. The resolved points are projected out by the trench_arc_distance
+        and their new locations are linearly interpolated onto the supplied continental grid. If the projected trench 
+        points lie in the grid, they are considered continental arc points, and their arc segment lengths are appended 
+        to the total continental arc length for the specified Ma. The total length is scaled to km using the geocentric 
+        Earth radius. 
+
+        Parameters
+        ----------
+        time : int
+            The geological time at which to calculate total continental arc lengths.
+        continental_grid_directory : str, default=None
+            Path to a continental grid file with which to interpolate projected trench points (thereby identifying 
+            continental arc points). 
+        trench_arc_distance : float, default=0.0
+            The trench-to-arc distance (km) to project trench points out by in the direction of their subduction
+            polarities. 
+        ignore_warnings : bool, default=False
+            Choose whether to ignore warning messages from PTT&#39;s subduction_convergence workflow that alerts the user of 
+            subduction sub-segments that are ignored due to unidentified polarities and/or subducting plates. 
+
+        Raises
+        ------
+        ValueError
+            If a continental grid directory is not supplied.
+            If the trench_arc_distance is not supplied or kept at 0.0km.
+
+        Returns
+        -------
+        total_continental_arc_length_kms : float
+            The continental arc length (in km) at the specified time.
+        &#34;&#34;&#34;
+        from . import grids as _grids
+        if continental_grid_directory is None:
+            raise ValueError(&#34;Please provide a directory to a continental grid for the current time.&#34;)
+            
+        # Process the continental grids + obtain trench data with Plate Tectonic Tools
+        graster = _grids.Raster(PlateReconstruction, continental_grid_directory, extent=[-180,180,-90,90])
+        trench_data = self.tesselate_subduction_zones(time, ignore_warnings=ignore_warnings)
+        
+        # Extract trench data
+        trench_normal_azimuthal_angle = trench_data[:,7]
+        trench_arcseg = trench_data[:,6]
+        trench_pt_lon = trench_data[:,0]
+        trench_pt_lat = trench_data[:,1]
+        
+        # Modify the trench-arc distance using the geocentric radius
+        arc_distance = trench_arc_distance / (_tools.geocentric_radius(trench_pt_lat)/1000)
+        
+        # Project trench points out along trench-arc distance, and obtain their new lat-lon coordinates
+        dlon = arc_distance*np.sin(np.radians(trench_normal_azimuthal_angle))
+        dlat = arc_distance*np.cos(np.radians(trench_normal_azimuthal_angle))
+        ilon = trench_pt_lon + np.degrees(dlon)
+        ilat = trench_pt_lat + np.degrees(dlat)
+        
+        # Linearly interpolate projected points onto continental grids, and collect the indices of points that lie
+        # within the grids.
+        sampled_points = graster.interpolate(ilon, ilat, method=&#39;linear&#39;, return_indices=True, return_distances=False)     
+        in_raster = [i for i, point in enumerate(sampled_points[0]) if point &gt; 0]
+        
+        # Define arrays + total arc length
+        lat_in = []
+        lon_in = []
+        total_continental_arc_length_kms = 0
+        subd_we_count_lat = []
+        subd_we_count_lon = []
+        
+        # Loop through all successful in-raster indices
+        for index in in_raster:
+            
+            # Get the lat-lon coordinate of the in-raster point, and the corresponding trench point
+            lat_in.append(ilat[index])
+            lon_in.append(ilon[index])
+            subd_we_count_lat.append(trench_pt_lat[index])
+            subd_we_count_lon.append(trench_pt_lon[index])
+
+            # Append the continental trench segment to the total arc length
+            earth_radius = _tools.geocentric_radius(trench_pt_lat[index])/1000
+            total_continental_arc_length_kms += np.deg2rad(trench_data[:,6][index])*earth_radius
+            
+        return total_continental_arc_length_kms
+
+
+    def tesselate_mid_ocean_ridges(self, time, tessellation_threshold_radians=0.001, ignore_warnings=False, **kwargs):
+        &#34;&#34;&#34;Samples points along resolved spreading features (e.g. mid-ocean ridges) and calculates spreading rate and 
+        length of ridge segments at a particular geological time.
+         
+        Resolves topologies at &#39;time&#39;, tessellates all resolved spreading features to within &#39;tessellation_threshold_radians&#39;
+        radians and obtains the following data:
+    
+        0 - longitude of sampled point
+        1 - latitude of sampled point
+        2 - spreading velocity magnitude (in cm/yr)
+        3 - length of arc segment (in degrees) that current point is on
+        
+        All spreading feature types are considered. The transform segments of spreading features are ignored. 
+        Note: by default, the function assumes that a segment can deviate 45 degrees from the stage pole before it is 
+        considered a transform segment.
+
+        Parameters
+        ----------
+        time : float
+            The reconstruction time (Ma) at which to query subduction convergence.
+
+        tessellation_threshold_radians : float, default=0.001 
+            The threshold sampling distance along the subducting trench (in radians).
+
+        ignore_warnings : bool, default=False
+            Choose to ignore warnings from Plate Tectonic Tools&#39; ridge_spreading_rate workflow. 
+
+        Returns
+        -------
+        ridge_data : a list of vertically-stacked tuples
+            The results for all tessellated points sampled along the trench.
+            The size of the returned list is equal to the number of tessellated points.
+            Each tuple in the list corresponds to a tessellated point and has the following tuple items:
+            
+            * longitude of sampled point
+            * latitude of sampled point
+            * spreading velocity magnitude (in cm/yr)
+            * length of arc segment (in degrees) that current point is on
+        &#34;&#34;&#34;
+        if ignore_warnings:
+            with warnings.catch_warnings():
+                warnings.simplefilter(&#39;ignore&#39;)
+                ridge_data = ptt.ridge_spreading_rate.spreading_rates(
+                    self.rotation_model,
+                    self.topology_features,
+                    float(time),
+                    tessellation_threshold_radians,
+                    **kwargs)
+
+        else:
+            ridge_data = ptt.ridge_spreading_rate.spreading_rates(
+                self.rotation_model,
+                self.topology_features,
+                float(time),
+                tessellation_threshold_radians,
+                **kwargs)
+
+        ridge_data = np.vstack(ridge_data)
+        return ridge_data
+
+
+    def total_ridge_length(self, time, use_pygplates=False, use_ptt=False, ignore_warnings=False):
+        &#34;&#34;&#34;Calculates the total length of all mid-ocean ridges (km) at the specified geological time (Ma).
+
+        Uses one of two methods at user&#39;s discretion:
+        1) &#34;pyGPlates&#34;: 
+            Resolves topology features of the PlateReconstruction model and extracts their shared boundary sections.
+            The lengths of each GPML mid-ocean ridge shared boundary section are appended to the total ridge length.
+            Scales lengths to km using the geocentric radius.
+        2) &#34;PTT&#34;
+            Uses Plate Tectonic Tools&#39; ridge_spreading_rate workflow to calculate ridge segment lengths. Scales lengths to
+            km using the geocentric radius.
+
+        Parameters
+        ----------
+        time : int
+            The geological time at which to calculate total mid-ocean ridge lengths.
+        use_pygplates : bool, default=False
+            Choose whether to use the pyGPlates method.
+        use_ptt : bool, default=False
+            Choose whether to use the PTT method. 
+        ignore_warnings : bool, default=False
+            Choose whether to ignore warning messages from PTT&#39;s ridge_spreading_rate workflow.
+
+        Raises
+        ------
+        ValueError
+            If neither use_pygplates or use_ptt have been set to True.
+
+        Returns
+        -------
+        total_ridge_length_kms : float
+            The mid-ocean ridge (in km) at the specified time.
+        &#34;&#34;&#34;
+        if use_pygplates is True:
+            resolved_topologies = []
+            shared_boundary_sections = []
+            pygplates.resolve_topologies(self.topology_features, self.rotation_model, resolved_topologies, time, shared_boundary_sections)
+
+            total_ridge_length_kms = 0.0
+            for shared_boundary_section in shared_boundary_sections:
+                if shared_boundary_section.get_feature().get_feature_type() != pygplates.FeatureType.gpml_mid_ocean_ridge:
+                    continue
+                for shared_sub_segment in shared_boundary_section.get_shared_sub_segments():
+                    clat, clon = shared_sub_segment.get_resolved_geometry().get_centroid().to_lat_lon()
+                    earth_radius = _tools.geocentric_radius(clat) / 1e3
+                    total_ridge_length_kms += shared_sub_segment.get_resolved_geometry().get_arc_length()*earth_radius
+
+            return total_ridge_length_kms
+
+        elif use_ptt is True:
+            with warnings.catch_warnings():
+                warnings.simplefilter(&#39;ignore&#39;)
+                ridge_data = self.tesselate_mid_ocean_ridges(time)
+
+            ridge_arcseg = ridge_data[:,3]
+            ridge_pt_lat = ridge_data[:,1]
+
+            total_ridge_length_kms = 0
+            for i, segment in enumerate(ridge_arcseg):
+                earth_radius = _tools.geocentric_radius(ridge_pt_lat[i])/1e3
+                total_ridge_length_kms += np.deg2rad(segment)*earth_radius 
+
+            return total_ridge_length_kms
+        else:
+            raise ValueError(&#34;Please set either use_pygplates or use_ptt to True.&#34;)
+
+
+    def reconstruct(self, feature, to_time, from_time=0, anchor_plate_id=0, **kwargs):
+        &#34;&#34;&#34;Reconstructs regular geological features, motion paths or flowlines to a specific geological time.
+        
+        Parameters
+        ----------
+        feature : :class:`FeatureCollection`, or string, or :class:`Feature`, or sequence of :class:`Feature`, or sequence 
+        of any combination of those four types.
+            The features to reconstruct. Can be provided as a feature collection, or filename, or feature, or sequence of
+            features, 
+            or a sequence (eg, a list or tuple) of any combination of those four types.
+
+        to_time : float, or :class:`GeoTimeInstant`
+            The specific geological time to reconstruct to.
+
+        from_time : float, default=0
+            The specific geological time to reconstruct from. By default, this is set to present day. Raises 
+            NotImplementedError if from_time not equal to 0.0.
+
+        anchor_plate_id : int, default=0
+            Reconstruct features with respect to a certain anchor plate. By default it is 0.
+
+        **reconstruct_type : ReconstructType, default=ReconstructType.feature_geometry
+            The specific reconstruction type to generate based on input feature geometry type. Can be provided as 
+            pygplates.ReconstructType.feature_geometry to only reconstruct regular feature geometries, or
+            pygplates.ReconstructType.motion_path to only reconstruct motion path features, or 
+            pygplates.ReconstructType.flowline to only reconstruct flowline features. 
+            Generates :class:`reconstructed feature geometries&lt;ReconstructedFeatureGeometry&gt;’, or :class:`reconstructed 
+            motion paths&lt;ReconstructedMotionPath&gt;’, or :class:`reconstructed flowlines&lt;ReconstructedFlowline&gt;’ respectively.
+
+        **group_with_feature : bool, default=False
+            Used to group reconstructed geometries with their features. This can be useful when a feature has more than one
+            geometry and hence more than one reconstructed geometry. The output *reconstructed_geometries* then becomes a 
+            list of tuples where each tuple contains a :class:`feature&lt;Feature&gt;` and a ``list`` of reconstructed geometries. 
+            Note: this keyword argument only applies when *reconstructed_geometries* is a list because exported files are 
+            always grouped with their features. This is applicable to all ReconstructType features.
+        
+        **export_wrap_to_dateline : bool, default=True
+            Wrap/clip reconstructed geometries to the dateline (currently ignored).
+
+        Returns
+        -------
+        reconstructed_features : list
+            Reconstructed geometrical features (generated by the reconstruction) are appended to the Python list.
+            The reconstructed geometries are output in the same order as that of their respective input features (in the 
+            parameter “features”). The order across input feature collections is also retained. This happens regardless 
+            of whether *features* and *reconstructed_features* include files or not. Note: if keyword argument 
+            group_with_feature=True then the list contains tuples that group each :class:`feature&lt;Feature&gt;` with a list 
+            of its reconstructed geometries.
+
+        Raises
+        ------
+        NotImplementedError
+            if the starting time for reconstruction “from_time” not equal to 0.0
+        &#34;&#34;&#34;
+        from_time, to_time = float(from_time), float(to_time)
+        if from_time != 0.0:
+            raise NotImplementedError(&#34;Soon...&#34;)
+
+        reconstructed_features = []
+        pygplates.reconstruct(feature, self.rotation_model, reconstructed_features, to_time,\
+            anchor_plate_id=anchor_plate_id, **kwargs)
+        return reconstructed_features
+
+
+    def get_point_velocities(self, lons, lats, time, delta_time=1.0):
+        &#34;&#34;&#34;Generates a velocity domain feature collection, resolves them into points, and calculates the north and east 
+        components of the velocity vector for each point in the domain at a particular geological time. 
+        
+        Velocity domain feature collections are MeshNode-type features. These are produced from lat-lon points represented as
+        multi-point geometries (projections onto the surface of the unit length sphere). These features are resolved into 
+        domain points and assigned plate IDs, which are used to obtain the equivalent stage rotations of identified tectonic
+        plates over a time interval. Each velocity domain point and its stage rotation are used to calculate its velocity at 
+        a particular geological time. Obtained velocities for each domain point are represented in the north-east-down 
+        coordinate system. 
+
+        Parameters
+        ----------
+        lons : array
+            A 1D array of longitude points.
+
+        lats : array
+            A 1D array of latitude points.
+
+        time : float
+            The specific geological time (Ma) at which to calculate plate velocities.
+
+        delta_time : float, default=1.0
+            The time increment used for generating partitioning plate stage rotations. 1.0Ma by default.
+
+        Returns
+        -------
+        all_velocities : 1D list of tuples
+            For each velocity domain feature point, a tuple of (north, east, down) velocity components is generated and 
+            appended to a list of velocity data. The length of all_velocities is equivalent to the number of domain points
+            resolved from the lat-lon array parameters.
+        &#34;&#34;&#34;
+        # Add points to a multipoint geometry
+
+        time = float(time)
+
+        multi_point = pygplates.MultiPointOnSphere([(float(lat),float(lon)) for lat, lon in zip(lats,lons)])
+
+        # Create a feature containing the multipoint feature, and defined as MeshNode type
+        meshnode_feature = pygplates.Feature(pygplates.FeatureType.create_from_qualified_string(&#39;gpml:MeshNode&#39;))
+        meshnode_feature.set_geometry(multi_point)
+        meshnode_feature.set_name(&#39;Velocity Mesh Nodes from pygplates&#39;)
+
+        velocity_domain_features = pygplates.FeatureCollection(meshnode_feature)
+        
+        # NB: at this point, the feature could be written to a file using
+        # output_feature_collection.write(&#39;myfilename.gpmlz&#39;)
+        
+        
+        # All domain points and associated (magnitude, azimuth, inclination) velocities for the current time.
+        all_domain_points = []
+        all_velocities = []
+
+        # Partition our velocity domain features into our topological plate polygons at the current &#39;time&#39;.
+        plate_partitioner = pygplates.PlatePartitioner(self.topology_features, self.rotation_model, time)
+
+        for velocity_domain_feature in velocity_domain_features:
+            # A velocity domain feature usually has a single geometry but we&#39;ll assume it can be any number.
+            # Iterate over them all.
+            for velocity_domain_geometry in velocity_domain_feature.get_geometries():
+
+                for velocity_domain_point in velocity_domain_geometry.get_points():
+
+                    all_domain_points.append(velocity_domain_point)
+
+                    partitioning_plate = plate_partitioner.partition_point(velocity_domain_point)
+                    if partitioning_plate:
+
+                        # We need the newly assigned plate ID
+                        # to get the equivalent stage rotation of that tectonic plate.
+                        partitioning_plate_id = partitioning_plate.get_feature().get_reconstruction_plate_id()
+
+                        # Get the stage rotation of partitioning plate from &#39;time + delta_time&#39; to &#39;time&#39;.
+                        equivalent_stage_rotation = self.rotation_model.get_rotation(time,
+                                                                                     partitioning_plate_id,
+                                                                                     time + delta_time)
+
+                        # Calculate velocity at the velocity domain point.
+                        # This is from &#39;time + delta_time&#39; to &#39;time&#39; on the partitioning plate.
+                        velocity_vectors = pygplates.calculate_velocities(
+                            [velocity_domain_point],
+                            equivalent_stage_rotation,
+                            delta_time)
+
+                        # Convert global 3D velocity vectors to local (magnitude, azimuth, inclination) tuples
+                        # (one tuple per point).
+                        velocities =pygplates.LocalCartesian.convert_from_geocentric_to_north_east_down(
+                                [velocity_domain_point],
+                                velocity_vectors)
+                        all_velocities.append((velocities[0].get_x(), velocities[0].get_y()))
+
+                    else:
+                        all_velocities.append((0,0))
+                        
+        return np.array(all_velocities)</code></pre>
+</details>
+<h3>Methods</h3>
+<dl>
+<dt id="gplately.reconstruction.PlateReconstruction.get_point_velocities"><code class="name flex">
+<span>def <span class="ident">get_point_velocities</span></span>(<span>self, lons, lats, time, delta_time=1.0)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Generates a velocity domain feature collection, resolves them into points, and calculates the north and east
+components of the velocity vector for each point in the domain at a particular geological time. </p>
+<p>Velocity domain feature collections are MeshNode-type features. These are produced from lat-lon points represented as
+multi-point geometries (projections onto the surface of the unit length sphere). These features are resolved into
+domain points and assigned plate IDs, which are used to obtain the equivalent stage rotations of identified tectonic
+plates over a time interval. Each velocity domain point and its stage rotation are used to calculate its velocity at
+a particular geological time. Obtained velocities for each domain point are represented in the north-east-down
+coordinate system. </p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>lons</code></strong> :&ensp;<code>array</code></dt>
+<dd>A 1D array of longitude points.</dd>
+<dt><strong><code>lats</code></strong> :&ensp;<code>array</code></dt>
+<dd>A 1D array of latitude points.</dd>
+<dt><strong><code>time</code></strong> :&ensp;<code>float</code></dt>
+<dd>The specific geological time (Ma) at which to calculate plate velocities.</dd>
+<dt><strong><code>delta_time</code></strong> :&ensp;<code>float</code>, default=<code>1.0</code></dt>
+<dd>The time increment used for generating partitioning plate stage rotations. 1.0Ma by default.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><strong><code>all_velocities</code></strong> :&ensp;<code>1D list</code> of <code>tuples</code></dt>
+<dd>For each velocity domain feature point, a tuple of (north, east, down) velocity components is generated and
+appended to a list of velocity data. The length of all_velocities is equivalent to the number of domain points
+resolved from the lat-lon array parameters.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_point_velocities(self, lons, lats, time, delta_time=1.0):
+    &#34;&#34;&#34;Generates a velocity domain feature collection, resolves them into points, and calculates the north and east 
+    components of the velocity vector for each point in the domain at a particular geological time. 
+    
+    Velocity domain feature collections are MeshNode-type features. These are produced from lat-lon points represented as
+    multi-point geometries (projections onto the surface of the unit length sphere). These features are resolved into 
+    domain points and assigned plate IDs, which are used to obtain the equivalent stage rotations of identified tectonic
+    plates over a time interval. Each velocity domain point and its stage rotation are used to calculate its velocity at 
+    a particular geological time. Obtained velocities for each domain point are represented in the north-east-down 
+    coordinate system. 
+
+    Parameters
+    ----------
+    lons : array
+        A 1D array of longitude points.
+
+    lats : array
+        A 1D array of latitude points.
+
+    time : float
+        The specific geological time (Ma) at which to calculate plate velocities.
+
+    delta_time : float, default=1.0
+        The time increment used for generating partitioning plate stage rotations. 1.0Ma by default.
+
+    Returns
+    -------
+    all_velocities : 1D list of tuples
+        For each velocity domain feature point, a tuple of (north, east, down) velocity components is generated and 
+        appended to a list of velocity data. The length of all_velocities is equivalent to the number of domain points
+        resolved from the lat-lon array parameters.
+    &#34;&#34;&#34;
+    # Add points to a multipoint geometry
+
+    time = float(time)
+
+    multi_point = pygplates.MultiPointOnSphere([(float(lat),float(lon)) for lat, lon in zip(lats,lons)])
+
+    # Create a feature containing the multipoint feature, and defined as MeshNode type
+    meshnode_feature = pygplates.Feature(pygplates.FeatureType.create_from_qualified_string(&#39;gpml:MeshNode&#39;))
+    meshnode_feature.set_geometry(multi_point)
+    meshnode_feature.set_name(&#39;Velocity Mesh Nodes from pygplates&#39;)
+
+    velocity_domain_features = pygplates.FeatureCollection(meshnode_feature)
+    
+    # NB: at this point, the feature could be written to a file using
+    # output_feature_collection.write(&#39;myfilename.gpmlz&#39;)
+    
+    
+    # All domain points and associated (magnitude, azimuth, inclination) velocities for the current time.
+    all_domain_points = []
+    all_velocities = []
+
+    # Partition our velocity domain features into our topological plate polygons at the current &#39;time&#39;.
+    plate_partitioner = pygplates.PlatePartitioner(self.topology_features, self.rotation_model, time)
+
+    for velocity_domain_feature in velocity_domain_features:
+        # A velocity domain feature usually has a single geometry but we&#39;ll assume it can be any number.
+        # Iterate over them all.
+        for velocity_domain_geometry in velocity_domain_feature.get_geometries():
+
+            for velocity_domain_point in velocity_domain_geometry.get_points():
+
+                all_domain_points.append(velocity_domain_point)
+
+                partitioning_plate = plate_partitioner.partition_point(velocity_domain_point)
+                if partitioning_plate:
+
+                    # We need the newly assigned plate ID
+                    # to get the equivalent stage rotation of that tectonic plate.
+                    partitioning_plate_id = partitioning_plate.get_feature().get_reconstruction_plate_id()
+
+                    # Get the stage rotation of partitioning plate from &#39;time + delta_time&#39; to &#39;time&#39;.
+                    equivalent_stage_rotation = self.rotation_model.get_rotation(time,
+                                                                                 partitioning_plate_id,
+                                                                                 time + delta_time)
+
+                    # Calculate velocity at the velocity domain point.
+                    # This is from &#39;time + delta_time&#39; to &#39;time&#39; on the partitioning plate.
+                    velocity_vectors = pygplates.calculate_velocities(
+                        [velocity_domain_point],
+                        equivalent_stage_rotation,
+                        delta_time)
+
+                    # Convert global 3D velocity vectors to local (magnitude, azimuth, inclination) tuples
+                    # (one tuple per point).
+                    velocities =pygplates.LocalCartesian.convert_from_geocentric_to_north_east_down(
+                            [velocity_domain_point],
+                            velocity_vectors)
+                    all_velocities.append((velocities[0].get_x(), velocities[0].get_y()))
+
+                else:
+                    all_velocities.append((0,0))
+                    
+    return np.array(all_velocities)</code></pre>
+</details>
+</dd>
+<dt id="gplately.reconstruction.PlateReconstruction.reconstruct"><code class="name flex">
+<span>def <span class="ident">reconstruct</span></span>(<span>self, feature, to_time, from_time=0, anchor_plate_id=0, **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Reconstructs regular geological features, motion paths or flowlines to a specific geological time.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>feature</code></strong> :&ensp;<code>:class:</code>FeatureCollection<code>,</code> or <code>string,</code> or <code>:class:</code>Feature<code>,</code> or <code>sequence</code> of <code>:class:</code>Feature<code>,</code> or <code>sequence </code></dt>
+<dd>&nbsp;</dd>
+</dl>
+<p>of any combination of those four types.
+The features to reconstruct. Can be provided as a feature collection, or filename, or feature, or sequence of
+features,
+or a sequence (eg, a list or tuple) of any combination of those four types.</p>
+<dl>
+<dt><strong><code>to_time</code></strong> :&ensp;<code>float,</code> or <code>:class:</code>GeoTimeInstant``</dt>
+<dd>The specific geological time to reconstruct to.</dd>
+<dt><strong><code>from_time</code></strong> :&ensp;<code>float</code>, default=<code>0</code></dt>
+<dd>The specific geological time to reconstruct from. By default, this is set to present day. Raises
+NotImplementedError if from_time not equal to 0.0.</dd>
+<dt><strong><code>anchor_plate_id</code></strong> :&ensp;<code>int</code>, default=<code>0</code></dt>
+<dd>Reconstruct features with respect to a certain anchor plate. By default it is 0.</dd>
+<dt><strong><code>**reconstruct_type</code></strong> :&ensp;<code>ReconstructType</code>, default=<code>ReconstructType.feature_geometry</code></dt>
+<dd>The specific reconstruction type to generate based on input feature geometry type. Can be provided as
+pygplates.ReconstructType.feature_geometry to only reconstruct regular feature geometries, or
+pygplates.ReconstructType.motion_path to only reconstruct motion path features, or
+pygplates.ReconstructType.flowline to only reconstruct flowline features.
+Generates :class:<code>reconstructed feature geometries&lt;ReconstructedFeatureGeometry&gt;’, or :class:</code>reconstructed
+motion paths<ReconstructedMotionPath>’, or :class:`reconstructed flowlines<ReconstructedFlowline>’ respectively.</dd>
+<dt><strong><code>**group_with_feature</code></strong> :&ensp;<code>bool</code>, default=<code>False</code></dt>
+<dd>Used to group reconstructed geometries with their features. This can be useful when a feature has more than one
+geometry and hence more than one reconstructed geometry. The output <em>reconstructed_geometries</em> then becomes a
+list of tuples where each tuple contains a :class:<code>feature&lt;Feature&gt;</code> and a <code>list</code> of reconstructed geometries.
+Note: this keyword argument only applies when <em>reconstructed_geometries</em> is a list because exported files are
+always grouped with their features. This is applicable to all ReconstructType features.</dd>
+<dt><strong><code>**export_wrap_to_dateline</code></strong> :&ensp;<code>bool</code>, default=<code>True</code></dt>
+<dd>Wrap/clip reconstructed geometries to the dateline (currently ignored).</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><strong><code>reconstructed_features</code></strong> :&ensp;<code>list</code></dt>
+<dd>Reconstructed geometrical features (generated by the reconstruction) are appended to the Python list.
+The reconstructed geometries are output in the same order as that of their respective input features (in the
+parameter “features”). The order across input feature collections is also retained. This happens regardless
+of whether <em>features</em> and <em>reconstructed_features</em> include files or not. Note: if keyword argument
+group_with_feature=True then the list contains tuples that group each :class:<code>feature&lt;Feature&gt;</code> with a list
+of its reconstructed geometries.</dd>
+</dl>
+<h2 id="raises">Raises</h2>
+<dl>
+<dt><code>NotImplementedError</code></dt>
+<dd>if the starting time for reconstruction “from_time” not equal to 0.0</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def reconstruct(self, feature, to_time, from_time=0, anchor_plate_id=0, **kwargs):
+    &#34;&#34;&#34;Reconstructs regular geological features, motion paths or flowlines to a specific geological time.
+    
+    Parameters
+    ----------
+    feature : :class:`FeatureCollection`, or string, or :class:`Feature`, or sequence of :class:`Feature`, or sequence 
+    of any combination of those four types.
+        The features to reconstruct. Can be provided as a feature collection, or filename, or feature, or sequence of
+        features, 
+        or a sequence (eg, a list or tuple) of any combination of those four types.
+
+    to_time : float, or :class:`GeoTimeInstant`
+        The specific geological time to reconstruct to.
+
+    from_time : float, default=0
+        The specific geological time to reconstruct from. By default, this is set to present day. Raises 
+        NotImplementedError if from_time not equal to 0.0.
+
+    anchor_plate_id : int, default=0
+        Reconstruct features with respect to a certain anchor plate. By default it is 0.
+
+    **reconstruct_type : ReconstructType, default=ReconstructType.feature_geometry
+        The specific reconstruction type to generate based on input feature geometry type. Can be provided as 
+        pygplates.ReconstructType.feature_geometry to only reconstruct regular feature geometries, or
+        pygplates.ReconstructType.motion_path to only reconstruct motion path features, or 
+        pygplates.ReconstructType.flowline to only reconstruct flowline features. 
+        Generates :class:`reconstructed feature geometries&lt;ReconstructedFeatureGeometry&gt;’, or :class:`reconstructed 
+        motion paths&lt;ReconstructedMotionPath&gt;’, or :class:`reconstructed flowlines&lt;ReconstructedFlowline&gt;’ respectively.
+
+    **group_with_feature : bool, default=False
+        Used to group reconstructed geometries with their features. This can be useful when a feature has more than one
+        geometry and hence more than one reconstructed geometry. The output *reconstructed_geometries* then becomes a 
+        list of tuples where each tuple contains a :class:`feature&lt;Feature&gt;` and a ``list`` of reconstructed geometries. 
+        Note: this keyword argument only applies when *reconstructed_geometries* is a list because exported files are 
+        always grouped with their features. This is applicable to all ReconstructType features.
+    
+    **export_wrap_to_dateline : bool, default=True
+        Wrap/clip reconstructed geometries to the dateline (currently ignored).
+
+    Returns
+    -------
+    reconstructed_features : list
+        Reconstructed geometrical features (generated by the reconstruction) are appended to the Python list.
+        The reconstructed geometries are output in the same order as that of their respective input features (in the 
+        parameter “features”). The order across input feature collections is also retained. This happens regardless 
+        of whether *features* and *reconstructed_features* include files or not. Note: if keyword argument 
+        group_with_feature=True then the list contains tuples that group each :class:`feature&lt;Feature&gt;` with a list 
+        of its reconstructed geometries.
+
+    Raises
+    ------
+    NotImplementedError
+        if the starting time for reconstruction “from_time” not equal to 0.0
+    &#34;&#34;&#34;
+    from_time, to_time = float(from_time), float(to_time)
+    if from_time != 0.0:
+        raise NotImplementedError(&#34;Soon...&#34;)
+
+    reconstructed_features = []
+    pygplates.reconstruct(feature, self.rotation_model, reconstructed_features, to_time,\
+        anchor_plate_id=anchor_plate_id, **kwargs)
+    return reconstructed_features</code></pre>
+</details>
+</dd>
+<dt id="gplately.reconstruction.PlateReconstruction.tesselate_mid_ocean_ridges"><code class="name flex">
+<span>def <span class="ident">tesselate_mid_ocean_ridges</span></span>(<span>self, time, tessellation_threshold_radians=0.001, ignore_warnings=False, **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Samples points along resolved spreading features (e.g. mid-ocean ridges) and calculates spreading rate and
+length of ridge segments at a particular geological time.</p>
+<p>Resolves topologies at 'time', tessellates all resolved spreading features to within 'tessellation_threshold_radians'
+radians and obtains the following data:</p>
+<p>0 - longitude of sampled point
+1 - latitude of sampled point
+2 - spreading velocity magnitude (in cm/yr)
+3 - length of arc segment (in degrees) that current point is on</p>
+<p>All spreading feature types are considered. The transform segments of spreading features are ignored.
+Note: by default, the function assumes that a segment can deviate 45 degrees from the stage pole before it is
+considered a transform segment.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>time</code></strong> :&ensp;<code>float</code></dt>
+<dd>The reconstruction time (Ma) at which to query subduction convergence.</dd>
+<dt><strong><code>tessellation_threshold_radians</code></strong> :&ensp;<code>float</code>, default=<code>0.001 </code></dt>
+<dd>The threshold sampling distance along the subducting trench (in radians).</dd>
+<dt><strong><code>ignore_warnings</code></strong> :&ensp;<code>bool</code>, default=<code>False</code></dt>
+<dd>Choose to ignore warnings from Plate Tectonic Tools' ridge_spreading_rate workflow.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><strong><code>ridge_data</code></strong> :&ensp;<code>a list</code> of <code>vertically-stacked tuples</code></dt>
+<dd>
+<p>The results for all tessellated points sampled along the trench.
+The size of the returned list is equal to the number of tessellated points.
+Each tuple in the list corresponds to a tessellated point and has the following tuple items:</p>
+<ul>
+<li>longitude of sampled point</li>
+<li>latitude of sampled point</li>
+<li>spreading velocity magnitude (in cm/yr)</li>
+<li>length of arc segment (in degrees) that current point is on</li>
+</ul>
+</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def tesselate_mid_ocean_ridges(self, time, tessellation_threshold_radians=0.001, ignore_warnings=False, **kwargs):
+    &#34;&#34;&#34;Samples points along resolved spreading features (e.g. mid-ocean ridges) and calculates spreading rate and 
+    length of ridge segments at a particular geological time.
+     
+    Resolves topologies at &#39;time&#39;, tessellates all resolved spreading features to within &#39;tessellation_threshold_radians&#39;
+    radians and obtains the following data:
+
+    0 - longitude of sampled point
+    1 - latitude of sampled point
+    2 - spreading velocity magnitude (in cm/yr)
+    3 - length of arc segment (in degrees) that current point is on
+    
+    All spreading feature types are considered. The transform segments of spreading features are ignored. 
+    Note: by default, the function assumes that a segment can deviate 45 degrees from the stage pole before it is 
+    considered a transform segment.
+
+    Parameters
+    ----------
+    time : float
+        The reconstruction time (Ma) at which to query subduction convergence.
+
+    tessellation_threshold_radians : float, default=0.001 
+        The threshold sampling distance along the subducting trench (in radians).
+
+    ignore_warnings : bool, default=False
+        Choose to ignore warnings from Plate Tectonic Tools&#39; ridge_spreading_rate workflow. 
+
+    Returns
+    -------
+    ridge_data : a list of vertically-stacked tuples
+        The results for all tessellated points sampled along the trench.
+        The size of the returned list is equal to the number of tessellated points.
+        Each tuple in the list corresponds to a tessellated point and has the following tuple items:
+        
+        * longitude of sampled point
+        * latitude of sampled point
+        * spreading velocity magnitude (in cm/yr)
+        * length of arc segment (in degrees) that current point is on
+    &#34;&#34;&#34;
+    if ignore_warnings:
+        with warnings.catch_warnings():
+            warnings.simplefilter(&#39;ignore&#39;)
+            ridge_data = ptt.ridge_spreading_rate.spreading_rates(
+                self.rotation_model,
+                self.topology_features,
+                float(time),
+                tessellation_threshold_radians,
+                **kwargs)
+
+    else:
+        ridge_data = ptt.ridge_spreading_rate.spreading_rates(
+            self.rotation_model,
+            self.topology_features,
+            float(time),
+            tessellation_threshold_radians,
+            **kwargs)
+
+    ridge_data = np.vstack(ridge_data)
+    return ridge_data</code></pre>
+</details>
+</dd>
+<dt id="gplately.reconstruction.PlateReconstruction.tesselate_subduction_zones"><code class="name flex">
+<span>def <span class="ident">tesselate_subduction_zones</span></span>(<span>self, time, tessellation_threshold_radians=0.001, ignore_warnings=False, **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Samples points along subduction zone trenches and obtains both convergence and absolute velocities at a particular
+geological time.</p>
+<p>Resolves topologies at 'time', tessellates all resolved subducting features to within 'tessellation_threshold_radians'
+radians and obtains the following information for each sampled point along a trench:</p>
+<p>0 - longitude of sampled point
+1 - latitude of sampled point
+2 - subducting convergence (relative to trench) velocity magnitude (in cm/yr)
+3 - subducting convergence velocity obliquity angle (angle between trench normal vector and convergence velocity vector)
+4 - trench absolute (relative to anchor plate) velocity magnitude (in cm/yr)
+5 - trench absolute velocity obliquity angle (angle between trench normal vector and trench absolute velocity vector)
+6 - length of arc segment (in degrees) that current point is on
+7 - trench normal azimuth angle (clockwise starting at North, ie, 0 to 360 degrees) at current point
+8 - subducting plate ID
+9 - trench plate ID</p>
+<p>The obliquity angles are in the range (-180 180). The range (0, 180) goes clockwise (when viewed from above the Earth)
+from the trench normal direction to the velocity vector. The range (0, -180) goes counter-clockwise.
+You can change the range (-180, 180) to the range (0, 360) by adding 360 to negative angles.
+The trench normal is perpendicular to the trench and pointing toward the overriding plate.</p>
+<p>Note that the convergence velocity magnitude is negative if the plates are diverging (if convergence obliquity angle
+is greater than 90 or less than -90). And note that the absolute velocity magnitude is negative if the trench
+(subduction zone) is moving towards the overriding plate (if absolute obliquity angle is less than 90 or greater
+than -90) - note that this ignores the kinematics of the subducting plate.</p>
+<p>The delta time interval used for velocity calculations is, by default, assumed to be 1Ma.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>time</code></strong> :&ensp;<code>float</code></dt>
+<dd>The reconstruction time (Ma) at which to query subduction convergence.</dd>
+<dt><strong><code>tessellation_threshold_radians</code></strong> :&ensp;<code>float</code>, default=<code>0.001 </code></dt>
+<dd>The threshold sampling distance along the subducting trench (in radians).</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><strong><code>subduction_data</code></strong> :&ensp;<code>a list</code> of <code>vertically-stacked tuples</code></dt>
+<dd>
+<p>The results for all tessellated points sampled along the trench.
+The size of the returned list is equal to the number of tessellated points.
+Each tuple in the list corresponds to a tessellated point and has the following tuple items:</p>
+<ul>
+<li>longitude of sampled point</li>
+<li>latitude of sampled point</li>
+<li>subducting convergence (relative to trench) velocity magnitude (in cm/yr)</li>
+<li>subducting convergence velocity obliquity angle (angle between trench normal vector and convergence
+velocity vector)</li>
+<li>trench absolute (relative to anchor plate) velocity magnitude (in cm/yr)</li>
+<li>trench absolute velocity obliquity angle (angle between trench normal vector and trench absolute
+velocity vector)</li>
+<li>length of arc segment (in degrees) that current point is on</li>
+<li>trench normal azimuth angle (clockwise starting at North, ie, 0 to 360 degrees) at current point</li>
+<li>subducting plate ID</li>
+<li>trench plate ID</li>
+</ul>
+</dd>
+</dl>
+<h2 id="notes">Notes</h2>
+<p>Each point in the output is the midpoint of a great circle arc between two adjacent points in the trench polyline.
+The trench normal vector used in the obliquity calculations is perpendicular to the great circle arc of each point
+(arc midpoint) and pointing towards the overriding plate (rather than away from it).</p>
+<p>Each trench is sampled at approximately uniform intervals along its length (specified via a threshold sampling distance).
+The sampling along the entire length of a trench is not exactly uniform. Each segment along a trench is sampled
+such that the samples have a uniform spacing that is less than or equal to the threshold sampling distance. However each
+segment in a trench might have a slightly different spacing distance (since segment lengths are not integer multiples of
+the threshold sampling distance).</p>
+<p>The trench normal (at each arc segment mid-point) always points <em>towards</em> the overriding plate.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def tesselate_subduction_zones(self, time, tessellation_threshold_radians=0.001, ignore_warnings=False, **kwargs):
+    &#34;&#34;&#34;Samples points along subduction zone trenches and obtains both convergence and absolute velocities at a particular
+    geological time.
+    
+    Resolves topologies at &#39;time&#39;, tessellates all resolved subducting features to within &#39;tessellation_threshold_radians&#39;
+    radians and obtains the following information for each sampled point along a trench:
+
+    0 - longitude of sampled point
+    1 - latitude of sampled point
+    2 - subducting convergence (relative to trench) velocity magnitude (in cm/yr)
+    3 - subducting convergence velocity obliquity angle (angle between trench normal vector and convergence velocity vector)
+    4 - trench absolute (relative to anchor plate) velocity magnitude (in cm/yr)
+    5 - trench absolute velocity obliquity angle (angle between trench normal vector and trench absolute velocity vector)
+    6 - length of arc segment (in degrees) that current point is on
+    7 - trench normal azimuth angle (clockwise starting at North, ie, 0 to 360 degrees) at current point
+    8 - subducting plate ID
+    9 - trench plate ID
+
+    The obliquity angles are in the range (-180 180). The range (0, 180) goes clockwise (when viewed from above the Earth)
+    from the trench normal direction to the velocity vector. The range (0, -180) goes counter-clockwise.
+    You can change the range (-180, 180) to the range (0, 360) by adding 360 to negative angles.
+    The trench normal is perpendicular to the trench and pointing toward the overriding plate.
+
+    Note that the convergence velocity magnitude is negative if the plates are diverging (if convergence obliquity angle 
+    is greater than 90 or less than -90). And note that the absolute velocity magnitude is negative if the trench 
+    (subduction zone) is moving towards the overriding plate (if absolute obliquity angle is less than 90 or greater 
+    than -90) - note that this ignores the kinematics of the subducting plate.
+    
+    The delta time interval used for velocity calculations is, by default, assumed to be 1Ma.
+
+    Parameters
+    ----------
+    time : float
+        The reconstruction time (Ma) at which to query subduction convergence.
+
+    tessellation_threshold_radians : float, default=0.001 
+        The threshold sampling distance along the subducting trench (in radians).
+
+    Returns
+    -------
+    subduction_data : a list of vertically-stacked tuples
+        The results for all tessellated points sampled along the trench.
+        The size of the returned list is equal to the number of tessellated points.
+        Each tuple in the list corresponds to a tessellated point and has the following tuple items:
+
+        * longitude of sampled point
+        * latitude of sampled point
+        * subducting convergence (relative to trench) velocity magnitude (in cm/yr)
+        * subducting convergence velocity obliquity angle (angle between trench normal vector and convergence 
+        velocity vector)
+        * trench absolute (relative to anchor plate) velocity magnitude (in cm/yr)
+        * trench absolute velocity obliquity angle (angle between trench normal vector and trench absolute 
+        velocity vector)
+        * length of arc segment (in degrees) that current point is on
+        * trench normal azimuth angle (clockwise starting at North, ie, 0 to 360 degrees) at current point
+        * subducting plate ID
+        * trench plate ID
+
+
+    Notes
+    -----
+    Each point in the output is the midpoint of a great circle arc between two adjacent points in the trench polyline.
+    The trench normal vector used in the obliquity calculations is perpendicular to the great circle arc of each point 
+    (arc midpoint) and pointing towards the overriding plate (rather than away from it).
+
+    Each trench is sampled at approximately uniform intervals along its length (specified via a threshold sampling distance).
+    The sampling along the entire length of a trench is not exactly uniform. Each segment along a trench is sampled
+    such that the samples have a uniform spacing that is less than or equal to the threshold sampling distance. However each
+    segment in a trench might have a slightly different spacing distance (since segment lengths are not integer multiples of
+    the threshold sampling distance).
+
+    The trench normal (at each arc segment mid-point) always points *towards* the overriding plate.
+    &#34;&#34;&#34;
+    if ignore_warnings:
+        with warnings.catch_warnings():
+            warnings.simplefilter(&#39;ignore&#39;)
+            subduction_data = ptt.subduction_convergence.subduction_convergence(
+                self.rotation_model,
+                self.topology_features,
+                tessellation_threshold_radians,
+                float(time),
+                **kwargs)
+
+    else:
+        subduction_data = ptt.subduction_convergence.subduction_convergence(
+            self.rotation_model,
+            self.topology_features,
+            tessellation_threshold_radians,
+            float(time),
+            **kwargs)
+
+    subduction_data = np.vstack(subduction_data)
+    return subduction_data</code></pre>
+</details>
+</dd>
+<dt id="gplately.reconstruction.PlateReconstruction.total_continental_arc_length"><code class="name flex">
+<span>def <span class="ident">total_continental_arc_length</span></span>(<span>self, time, continental_grid_directory=None, trench_arc_distance=0.0, ignore_warnings=True)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Calculates the total length of all continental arcs (km) at the specified geological time (Ma).</p>
+<p>Uses Plate Tectonic Tools' subduction_convergence workflow to resolve a plate model's trench features into
+points and obtain their subduction polarities. The resolved points are projected out by the trench_arc_distance
+and their new locations are linearly interpolated onto the supplied continental grid. If the projected trench
+points lie in the grid, they are considered continental arc points, and their arc segment lengths are appended
+to the total continental arc length for the specified Ma. The total length is scaled to km using the geocentric
+Earth radius. </p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>time</code></strong> :&ensp;<code>int</code></dt>
+<dd>The geological time at which to calculate total continental arc lengths.</dd>
+<dt><strong><code>continental_grid_directory</code></strong> :&ensp;<code>str</code>, default=<code>None</code></dt>
+<dd>Path to a continental grid file with which to interpolate projected trench points (thereby identifying
+continental arc points).</dd>
+<dt><strong><code>trench_arc_distance</code></strong> :&ensp;<code>float</code>, default=<code>0.0</code></dt>
+<dd>The trench-to-arc distance (km) to project trench points out by in the direction of their subduction
+polarities.</dd>
+<dt><strong><code>ignore_warnings</code></strong> :&ensp;<code>bool</code>, default=<code>False</code></dt>
+<dd>Choose whether to ignore warning messages from PTT's subduction_convergence workflow that alerts the user of
+subduction sub-segments that are ignored due to unidentified polarities and/or subducting plates.</dd>
+</dl>
+<h2 id="raises">Raises</h2>
+<dl>
+<dt><code>ValueError</code></dt>
+<dd>If a continental grid directory is not supplied.
+If the trench_arc_distance is not supplied or kept at 0.0km.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><strong><code>total_continental_arc_length_kms</code></strong> :&ensp;<code>float</code></dt>
+<dd>The continental arc length (in km) at the specified time.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def total_continental_arc_length(self, time, continental_grid_directory=None, trench_arc_distance=0.0, ignore_warnings=True):
+    &#34;&#34;&#34;Calculates the total length of all continental arcs (km) at the specified geological time (Ma).
+
+    Uses Plate Tectonic Tools&#39; subduction_convergence workflow to resolve a plate model&#39;s trench features into 
+    points and obtain their subduction polarities. The resolved points are projected out by the trench_arc_distance
+    and their new locations are linearly interpolated onto the supplied continental grid. If the projected trench 
+    points lie in the grid, they are considered continental arc points, and their arc segment lengths are appended 
+    to the total continental arc length for the specified Ma. The total length is scaled to km using the geocentric 
+    Earth radius. 
+
+    Parameters
+    ----------
+    time : int
+        The geological time at which to calculate total continental arc lengths.
+    continental_grid_directory : str, default=None
+        Path to a continental grid file with which to interpolate projected trench points (thereby identifying 
+        continental arc points). 
+    trench_arc_distance : float, default=0.0
+        The trench-to-arc distance (km) to project trench points out by in the direction of their subduction
+        polarities. 
+    ignore_warnings : bool, default=False
+        Choose whether to ignore warning messages from PTT&#39;s subduction_convergence workflow that alerts the user of 
+        subduction sub-segments that are ignored due to unidentified polarities and/or subducting plates. 
+
+    Raises
+    ------
+    ValueError
+        If a continental grid directory is not supplied.
+        If the trench_arc_distance is not supplied or kept at 0.0km.
+
+    Returns
+    -------
+    total_continental_arc_length_kms : float
+        The continental arc length (in km) at the specified time.
+    &#34;&#34;&#34;
+    from . import grids as _grids
+    if continental_grid_directory is None:
+        raise ValueError(&#34;Please provide a directory to a continental grid for the current time.&#34;)
+        
+    # Process the continental grids + obtain trench data with Plate Tectonic Tools
+    graster = _grids.Raster(PlateReconstruction, continental_grid_directory, extent=[-180,180,-90,90])
+    trench_data = self.tesselate_subduction_zones(time, ignore_warnings=ignore_warnings)
+    
+    # Extract trench data
+    trench_normal_azimuthal_angle = trench_data[:,7]
+    trench_arcseg = trench_data[:,6]
+    trench_pt_lon = trench_data[:,0]
+    trench_pt_lat = trench_data[:,1]
+    
+    # Modify the trench-arc distance using the geocentric radius
+    arc_distance = trench_arc_distance / (_tools.geocentric_radius(trench_pt_lat)/1000)
+    
+    # Project trench points out along trench-arc distance, and obtain their new lat-lon coordinates
+    dlon = arc_distance*np.sin(np.radians(trench_normal_azimuthal_angle))
+    dlat = arc_distance*np.cos(np.radians(trench_normal_azimuthal_angle))
+    ilon = trench_pt_lon + np.degrees(dlon)
+    ilat = trench_pt_lat + np.degrees(dlat)
+    
+    # Linearly interpolate projected points onto continental grids, and collect the indices of points that lie
+    # within the grids.
+    sampled_points = graster.interpolate(ilon, ilat, method=&#39;linear&#39;, return_indices=True, return_distances=False)     
+    in_raster = [i for i, point in enumerate(sampled_points[0]) if point &gt; 0]
+    
+    # Define arrays + total arc length
+    lat_in = []
+    lon_in = []
+    total_continental_arc_length_kms = 0
+    subd_we_count_lat = []
+    subd_we_count_lon = []
+    
+    # Loop through all successful in-raster indices
+    for index in in_raster:
+        
+        # Get the lat-lon coordinate of the in-raster point, and the corresponding trench point
+        lat_in.append(ilat[index])
+        lon_in.append(ilon[index])
+        subd_we_count_lat.append(trench_pt_lat[index])
+        subd_we_count_lon.append(trench_pt_lon[index])
+
+        # Append the continental trench segment to the total arc length
+        earth_radius = _tools.geocentric_radius(trench_pt_lat[index])/1000
+        total_continental_arc_length_kms += np.deg2rad(trench_data[:,6][index])*earth_radius
+        
+    return total_continental_arc_length_kms</code></pre>
+</details>
+</dd>
+<dt id="gplately.reconstruction.PlateReconstruction.total_ridge_length"><code class="name flex">
+<span>def <span class="ident">total_ridge_length</span></span>(<span>self, time, use_pygplates=False, use_ptt=False, ignore_warnings=False)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Calculates the total length of all mid-ocean ridges (km) at the specified geological time (Ma).</p>
+<p>Uses one of two methods at user's discretion:
+1) "pyGPlates":
+Resolves topology features of the PlateReconstruction model and extracts their shared boundary sections.
+The lengths of each GPML mid-ocean ridge shared boundary section are appended to the total ridge length.
+Scales lengths to km using the geocentric radius.
+2) "PTT"
+Uses Plate Tectonic Tools' ridge_spreading_rate workflow to calculate ridge segment lengths. Scales lengths to
+km using the geocentric radius.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>time</code></strong> :&ensp;<code>int</code></dt>
+<dd>The geological time at which to calculate total mid-ocean ridge lengths.</dd>
+<dt><strong><code>use_pygplates</code></strong> :&ensp;<code>bool</code>, default=<code>False</code></dt>
+<dd>Choose whether to use the pyGPlates method.</dd>
+<dt><strong><code>use_ptt</code></strong> :&ensp;<code>bool</code>, default=<code>False</code></dt>
+<dd>Choose whether to use the PTT method.</dd>
+<dt><strong><code>ignore_warnings</code></strong> :&ensp;<code>bool</code>, default=<code>False</code></dt>
+<dd>Choose whether to ignore warning messages from PTT's ridge_spreading_rate workflow.</dd>
+</dl>
+<h2 id="raises">Raises</h2>
+<dl>
+<dt><code>ValueError</code></dt>
+<dd>If neither use_pygplates or use_ptt have been set to True.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><strong><code>total_ridge_length_kms</code></strong> :&ensp;<code>float</code></dt>
+<dd>The mid-ocean ridge (in km) at the specified time.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def total_ridge_length(self, time, use_pygplates=False, use_ptt=False, ignore_warnings=False):
+    &#34;&#34;&#34;Calculates the total length of all mid-ocean ridges (km) at the specified geological time (Ma).
+
+    Uses one of two methods at user&#39;s discretion:
+    1) &#34;pyGPlates&#34;: 
+        Resolves topology features of the PlateReconstruction model and extracts their shared boundary sections.
+        The lengths of each GPML mid-ocean ridge shared boundary section are appended to the total ridge length.
+        Scales lengths to km using the geocentric radius.
+    2) &#34;PTT&#34;
+        Uses Plate Tectonic Tools&#39; ridge_spreading_rate workflow to calculate ridge segment lengths. Scales lengths to
+        km using the geocentric radius.
+
+    Parameters
+    ----------
+    time : int
+        The geological time at which to calculate total mid-ocean ridge lengths.
+    use_pygplates : bool, default=False
+        Choose whether to use the pyGPlates method.
+    use_ptt : bool, default=False
+        Choose whether to use the PTT method. 
+    ignore_warnings : bool, default=False
+        Choose whether to ignore warning messages from PTT&#39;s ridge_spreading_rate workflow.
+
+    Raises
+    ------
+    ValueError
+        If neither use_pygplates or use_ptt have been set to True.
+
+    Returns
+    -------
+    total_ridge_length_kms : float
+        The mid-ocean ridge (in km) at the specified time.
+    &#34;&#34;&#34;
+    if use_pygplates is True:
+        resolved_topologies = []
+        shared_boundary_sections = []
+        pygplates.resolve_topologies(self.topology_features, self.rotation_model, resolved_topologies, time, shared_boundary_sections)
+
+        total_ridge_length_kms = 0.0
+        for shared_boundary_section in shared_boundary_sections:
+            if shared_boundary_section.get_feature().get_feature_type() != pygplates.FeatureType.gpml_mid_ocean_ridge:
+                continue
+            for shared_sub_segment in shared_boundary_section.get_shared_sub_segments():
+                clat, clon = shared_sub_segment.get_resolved_geometry().get_centroid().to_lat_lon()
+                earth_radius = _tools.geocentric_radius(clat) / 1e3
+                total_ridge_length_kms += shared_sub_segment.get_resolved_geometry().get_arc_length()*earth_radius
+
+        return total_ridge_length_kms
+
+    elif use_ptt is True:
+        with warnings.catch_warnings():
+            warnings.simplefilter(&#39;ignore&#39;)
+            ridge_data = self.tesselate_mid_ocean_ridges(time)
+
+        ridge_arcseg = ridge_data[:,3]
+        ridge_pt_lat = ridge_data[:,1]
+
+        total_ridge_length_kms = 0
+        for i, segment in enumerate(ridge_arcseg):
+            earth_radius = _tools.geocentric_radius(ridge_pt_lat[i])/1e3
+            total_ridge_length_kms += np.deg2rad(segment)*earth_radius 
+
+        return total_ridge_length_kms
+    else:
+        raise ValueError(&#34;Please set either use_pygplates or use_ptt to True.&#34;)</code></pre>
+</details>
+</dd>
+<dt id="gplately.reconstruction.PlateReconstruction.total_subduction_zone_length"><code class="name flex">
+<span>def <span class="ident">total_subduction_zone_length</span></span>(<span>self, time, use_pygplates=False, use_ptt=False, ignore_warnings=False)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Calculates the total length of all subduction zones (km) at the specified geological time (Ma).</p>
+<p>Uses one of two methods at user's discretion:
+1) "pyGPlates":
+Resolves topology features of the PlateReconstruction model and extracts their shared boundary sections.
+The lengths of each GPML subduction zone shared boundary section are appended to the total subduction zone length.
+Scales lengths to km using the geocentric radius.
+2) "PTT"
+Uses Plate Tectonic Tools' subduction_convergence workflow to calculate trench segment lengths. Scales lengths to
+km using the geocentric radius.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>time</code></strong> :&ensp;<code>int</code></dt>
+<dd>The geological time at which to calculate total subduction zone lengths.</dd>
+<dt><strong><code>use_pygplates</code></strong> :&ensp;<code>bool</code>, default=<code>False</code></dt>
+<dd>Choose whether to use the pyGPlates method.</dd>
+<dt><strong><code>use_ptt</code></strong> :&ensp;<code>bool</code>, default=<code>False</code></dt>
+<dd>Choose whether to use the PTT method.</dd>
+<dt><strong><code>ignore_warnings</code></strong> :&ensp;<code>bool</code>, default=<code>False</code></dt>
+<dd>Choose whether to ignore warning messages from PTT's subduction_convergence workflow that alerts the user of subduction
+sub-segments that are ignored due to unidentified polarities and/or subducting plates.</dd>
+</dl>
+<h2 id="raises">Raises</h2>
+<dl>
+<dt><code>ValueError</code></dt>
+<dd>If neither use_pygplates or use_ptt have been set to True.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><strong><code>total_subduction_zone_length_kms</code></strong> :&ensp;<code>float</code></dt>
+<dd>The total subduction zone length (in km) at the specified time.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def total_subduction_zone_length(self, time, use_pygplates=False, use_ptt=False, ignore_warnings=False):
+    &#34;&#34;&#34;Calculates the total length of all subduction zones (km) at the specified geological time (Ma).
+
+    Uses one of two methods at user&#39;s discretion:
+    1) &#34;pyGPlates&#34;: 
+        Resolves topology features of the PlateReconstruction model and extracts their shared boundary sections.
+        The lengths of each GPML subduction zone shared boundary section are appended to the total subduction zone length.
+        Scales lengths to km using the geocentric radius.
+    2) &#34;PTT&#34;
+        Uses Plate Tectonic Tools&#39; subduction_convergence workflow to calculate trench segment lengths. Scales lengths to
+        km using the geocentric radius.
+
+    Parameters
+    ----------
+    time : int
+        The geological time at which to calculate total subduction zone lengths.
+    use_pygplates : bool, default=False
+        Choose whether to use the pyGPlates method.
+    use_ptt : bool, default=False
+        Choose whether to use the PTT method. 
+    ignore_warnings : bool, default=False
+        Choose whether to ignore warning messages from PTT&#39;s subduction_convergence workflow that alerts the user of subduction
+        sub-segments that are ignored due to unidentified polarities and/or subducting plates. 
+
+
+    Raises
+    ------
+    ValueError
+        If neither use_pygplates or use_ptt have been set to True.
+
+    Returns
+    -------
+    total_subduction_zone_length_kms : float
+        The total subduction zone length (in km) at the specified time.
+
+    &#34;&#34;&#34;
+    if use_pygplates is True:
+        resolved_topologies = []
+        shared_boundary_sections = []
+        pygplates.resolve_topologies(self.topology_features, self.rotation_model, resolved_topologies, time, shared_boundary_sections)
+
+        total_subduction_zone_length_kms = 0.0
+        for shared_boundary_section in shared_boundary_sections:
+            if shared_boundary_section.get_feature().get_feature_type() != pygplates.FeatureType.gpml_subduction_zone:
+                continue
+            for shared_sub_segment in shared_boundary_section.get_shared_sub_segments():
+                clat, clon = shared_sub_segment.get_resolved_geometry().get_centroid().to_lat_lon()
+                earth_radius = _tools.geocentric_radius(clat) / 1e3
+                total_subduction_zone_length_kms += shared_sub_segment.get_resolved_geometry().get_arc_length()*earth_radius
+
+        return total_subduction_zone_length_kms
+    
+    elif use_ptt is True:
+        with warnings.catch_warnings():
+            warnings.simplefilter(&#39;ignore&#39;)
+            subduction_data = self.tesselate_subduction_zones(time, ignore_warnings=ignore_warnings)
+
+        trench_arcseg = subduction_data[:,6]
+        trench_pt_lat = subduction_data[:,1]
+        
+        total_subduction_zone_length_kms = 0
+        for i, segment in enumerate(trench_arcseg):
+            earth_radius = _tools.geocentric_radius(trench_pt_lat[i])/1e3
+            total_subduction_zone_length_kms += np.deg2rad(segment)*earth_radius 
+            
+        return total_subduction_zone_length_kms
+    elif use_pygplates is True and use_ptt is True:
+        raise ValueError(&#34;Please set either use_pygplates or use_ptt to True.&#34;)
+    else:
+        raise ValueError(&#34;Please set either use_pygplates or use_ptt to True.&#34;)</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+<dt id="gplately.reconstruction.Points"><code class="flex name class">
+<span>class <span class="ident">Points</span></span>
+<span>(</span><span>PlateReconstruction_object, lons, lats, time=0, plate_id=None)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>The Points class offers simple methods to work with point data. It reconstructs geological features and can extract their
+plate velocities at a specific geological time. Note that the Points class must be used with the PlateReconstruction class
+since the rotation model and static polygons needed for Point object methods are sourced from the PlateReconstruction
+class.</p>
+<h2 id="attributes">Attributes</h2>
+<dl>
+<dt><strong><code>PlateReconstruction_object</code></strong> :&ensp;<code>object pointer</code></dt>
+<dd>&nbsp;</dd>
+<dt><strong><code>lons</code></strong>, <strong><code>lats</code></strong> :&ensp;<code>1d array</code></dt>
+<dd>&nbsp;</dd>
+<dt><strong><code>time</code></strong> :&ensp;<code>float</code></dt>
+<dd>&nbsp;</dd>
+<dt><strong><code>plate_id</code></strong> :&ensp;<code>int</code></dt>
+<dd>&nbsp;</dd>
+<dt><strong><code>x</code></strong>, <strong><code>y</code></strong>, <strong><code>z</code></strong> :&ensp;<code>1d array</code></dt>
+<dd>&nbsp;</dd>
+<dt><strong><code>lonlat</code></strong>, <strong><code>xyz</code></strong> :&ensp;<code>list</code></dt>
+<dd>&nbsp;</dd>
+<dt><strong><code>rotation_model</code></strong> :&ensp;<code>str,</code> or <code>list (accessed using PlateReconstruction_object.rotation_model)</code></dt>
+<dd>&nbsp;</dd>
+<dt><strong><code>static_polygons</code></strong> :&ensp;<code>str,</code> or <code>list (accessed using PlateReconstruction_object.static_polygons)</code></dt>
+<dd>&nbsp;</dd>
+<dt><strong><code>features</code></strong> :&ensp;<code>list</code></dt>
+<dd>&nbsp;</dd>
+<dt><strong><code>FeatureCollection</code></strong> :&ensp;<code>list </code></dt>
+<dd>&nbsp;</dd>
+</dl>
+<h2 id="methods">Methods</h2>
+<p><strong>init</strong>(self, PlateReconstruction_object, lons, lats, time=0, plate_id=None)
+Constructs all necessary attributes for the points object.</p>
+<p>reconstruct(self, time, anchor_plate_id=0, **kwargs)
+Reconstructs regular geological features, motion paths or flowlines to a specific geological time and extracts
+the latitudinal and longitudinal points of these features.</p>
+<p>plate_velocity(self, time, delta_time=1)
+Calculates the x and y components of tectonic plate velocities at a particular geological time.</p>
+<p>save(self, filename)
+Saves the feature collection used in the Points object under a given filename to the current directory. </p>
+<p>Constructs all necessary attributes for the points object.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>PlateReconstruction_object</code></strong> :&ensp;<code>object pointer</code></dt>
+<dd>Allows for the accessibility of PlateReconstruction object attributes. Namely, PlateReconstruction object
+attributes rotation_model, topology_featues and static_polygons can be used in the points object if called using
+“self.PlateReconstruction_object.X”, where X is the attribute.</dd>
+<dt><strong><code>lons</code></strong> :&ensp;<code>float,</code> or <code>1D array</code></dt>
+<dd>A single point, or a 1D array of longitude points.</dd>
+<dt><strong><code>lats</code></strong> :&ensp;<code>float 1D array</code></dt>
+<dd>A single point, or a 1D array of latitude points.</dd>
+<dt><strong><code>time</code></strong> :&ensp;<code>float</code>, default=<code>0</code></dt>
+<dd>The specific geological time (Ma) at which to start reconstructing. Default time is present day (0).</dd>
+<dt><strong><code>plate_id</code></strong> :&ensp;<code>int</code>, default=<code>None</code></dt>
+<dd>The plate ID of a particular tectonic plate. Defaults to none.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>An extension</code> of <code>accessible points object attributes, such as:</code></dt>
+<dd>&nbsp;</dd>
+<dt><strong><code>x</code></strong>, <strong><code>y</code></strong>, <strong><code>z</code></strong> :&ensp;<code>float,</code> or <code>1D array</code></dt>
+<dd>Cartesian coordinate equivalents of supplied lat, lon points scaled to mean Earth radius in km.</dd>
+<dt><strong><code>lonlat</code></strong>, <strong><code>xyz</code></strong> :&ensp;<code>list</code></dt>
+<dd>Concatenated arrays of [lat, lon] points or their [x, y, z] Cartesian coordinate equivalents. Each list element
+can be a float or 1D array.</dd>
+<dt><strong><code>rotation_model</code></strong>, <strong><code>static_polygons</code></strong> :&ensp;<code>:class:</code>FeatureCollection<code>,</code> or <code>str,</code> or <code>:class:</code>Feature<code>,</code> or <code>sequence of</code></dt>
+<dd>&nbsp;</dd>
+</dl>
+<p>:class:<code>Feature</code>, or a sequence of any combination of those four types, default=None
+Can be provided as a rotation model / static polygon feature collection, or optional filename, or a single feature,
+or a sequence of features. Accessible with the points object after calling
+“PlateReconstruction_object.rotation_model”, or “PlateReconstruction_object.static_polygons”.</p>
+<dl>
+<dt><strong><code>features</code></strong> :&ensp;<code>a sequence (eg, list</code> or <code>tuple)</code> of <code>:class:</code>Feature<code>,</code> or <code>a single :class:</code>Feature``</dt>
+<dd>A single, or list of point features with spherical geometry generated from a given tectonic plate ID
+(default=None) elsewhere (eg. in another method) and given a set of lat-lon point(s).
+If a plate ID is not supplied, "features" is instead a single set or list of features partitioned using
+static polygons.</dd>
+<dt><strong><code>FeatureCollection</code></strong> :&ensp;<code>list</code></dt>
+<dd>A list of a set of features aggregated into a feature collection.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class Points(object):
+    &#34;&#34;&#34;The Points class offers simple methods to work with point data. It reconstructs geological features and can extract their
+    plate velocities at a specific geological time. Note that the Points class must be used with the PlateReconstruction class
+    since the rotation model and static polygons needed for Point object methods are sourced from the PlateReconstruction
+    class.
+
+    Attributes
+    ----------
+    PlateReconstruction_object : object pointer
+    lons, lats : 1d array
+    time : float
+    plate_id : int
+    x, y, z : 1d array
+    lonlat, xyz : list
+    rotation_model : str, or list (accessed using PlateReconstruction_object.rotation_model)
+    static_polygons : str, or list (accessed using PlateReconstruction_object.static_polygons)
+    features : list
+    FeatureCollection : list 
+
+    Methods
+    -------
+     __init__(self, PlateReconstruction_object, lons, lats, time=0, plate_id=None)
+        Constructs all necessary attributes for the points object.
+        
+    reconstruct(self, time, anchor_plate_id=0, **kwargs)
+        Reconstructs regular geological features, motion paths or flowlines to a specific geological time and extracts
+        the latitudinal and longitudinal points of these features.
+        
+    plate_velocity(self, time, delta_time=1)
+        Calculates the x and y components of tectonic plate velocities at a particular geological time.
+        
+    save(self, filename)
+        Saves the feature collection used in the Points object under a given filename to the current directory. 
+    &#34;&#34;&#34;
+    def __init__(self, PlateReconstruction_object, lons, lats, time=0, plate_id=None):
+        &#34;&#34;&#34;Constructs all necessary attributes for the points object.
+
+        Parameters
+        ----------
+        PlateReconstruction_object : object pointer
+            Allows for the accessibility of PlateReconstruction object attributes. Namely, PlateReconstruction object 
+            attributes rotation_model, topology_featues and static_polygons can be used in the points object if called using
+            “self.PlateReconstruction_object.X”, where X is the attribute.
+
+        lons : float, or 1D array
+            A single point, or a 1D array of longitude points.
+
+        lats : float 1D array
+            A single point, or a 1D array of latitude points.
+
+        time : float, default=0
+            The specific geological time (Ma) at which to start reconstructing. Default time is present day (0).
+
+        plate_id : int, default=None
+            The plate ID of a particular tectonic plate. Defaults to none.
+
+        Returns
+        -------
+        An extension of accessible points object attributes, such as:
+
+        x, y, z : float, or 1D array
+            Cartesian coordinate equivalents of supplied lat, lon points scaled to mean Earth radius in km.
+
+        lonlat, xyz : list
+            Concatenated arrays of [lat, lon] points or their [x, y, z] Cartesian coordinate equivalents. Each list element 
+            can be a float or 1D array.
+
+        rotation_model, static_polygons : :class:`FeatureCollection`, or str, or :class:`Feature`, or sequence of
+        :class:`Feature`, or a sequence of any combination of those four types, default=None
+            Can be provided as a rotation model / static polygon feature collection, or optional filename, or a single feature, 
+            or a sequence of features. Accessible with the points object after calling 
+            “PlateReconstruction_object.rotation_model”, or “PlateReconstruction_object.static_polygons”.
+
+        features : a sequence (eg, list or tuple) of :class:`Feature`, or a single :class:`Feature`
+            A single, or list of point features with spherical geometry generated from a given tectonic plate ID 
+            (default=None) elsewhere (eg. in another method) and given a set of lat-lon point(s). 
+            If a plate ID is not supplied, &#34;features&#34; is instead a single set or list of features partitioned using 
+            static polygons. 
+
+        FeatureCollection : list
+            A list of a set of features aggregated into a feature collection. 
+        &#34;&#34;&#34;
+        self.lons = lons
+        self.lats = lats
+        self.time = time
+
+        # get Cartesian coordinates
+        self.x, self.y, self.z = _tools.lonlat2xyz(lons, lats, degrees=False)
+
+        # scale by average radius of the Earth
+        self.x *= _tools.EARTH_RADIUS
+        self.y *= _tools.EARTH_RADIUS
+        self.z *= _tools.EARTH_RADIUS
+
+        # store concatenated arrays
+        self.lonlat = np.c_[self.lons, self.lats]
+        self.xyz = np.c_[self.x, self.y, self.z]
+
+
+        rotation_model = PlateReconstruction_object.rotation_model
+        static_polygons = PlateReconstruction_object.static_polygons
+        self.PlateReconstruction_object = PlateReconstruction_object
+
+        features = _tools.points_to_features(lons, lats, plate_id)
+
+        if plate_id:
+            self.features = features
+        else:
+            # partition using static polygons
+            # being careful to observe &#39;from time&#39;
+            partitioned_features = pygplates.partition_into_plates(static_polygons, rotation_model, features)
+            self.features = partitioned_features
+
+            plate_id = np.empty(len(self.lons), dtype=int)
+            for i, feature in enumerate(partitioned_features):
+                plate_id[i] = feature.get_reconstruction_plate_id()
+
+        self.plate_id = plate_id
+        self.FeatureCollection = pygplates.FeatureCollection(self.features)
+
+
+    def reconstruct(self, time, anchor_plate_id=0, **kwargs):
+        &#34;&#34;&#34;Reconstructs regular geological features, motion paths or flowlines to a specific geological time and extracts 
+        the latitudinal and longitudinal points of these features.
+
+        Note: this method accesses and uses the rotation model attribute from the PointReconstruction object, and reconstructs 
+        the feature lat-lon point attributes of the Points object.
+
+        Parameters
+        ----------
+        time : float
+            The specific geological time (Ma) to reconstruct features to.
+
+        anchor_plate_id : int, default=0
+            Reconstruct features with respect to a certain anchor plate. By default it is 0.
+
+        **reconstruct_type : ReconstructType, default=ReconstructType.feature_geometry
+            The specific reconstruction type to generate based on input feature geometry type. Can be provided as
+            ReconstructType.feature_geometry to only reconstruct regular feature geometries, or ReconstructType.MotionPath to
+            only reconstruct motion path features, or ReconstructType.Flowline to only reconstruct flowline features. Generates
+            :class:`reconstructed feature geometries&lt;ReconstructedFeatureGeometry&gt;’, or :class:`reconstructed motion
+            paths&lt;ReconstructedMotionPath&gt;’, or :class:`reconstructed flowlines&lt;ReconstructedFlowline&gt;’ respectively.
+
+        **group_with_feature : bool, default=False
+            Used to group reconstructed geometries with their features. This can be useful when a feature has more than one
+            geometry and hence more than one reconstructed geometry. The output *reconstructed_geometries* then becomes a 
+            list of tuples where each tuple contains a :class:`feature&lt;Feature&gt;` and a ``list`` of reconstructed geometries. 
+            Note: this keyword argument only applies when *reconstructed_geometries* is a list because exported files are 
+            always grouped with their features. This is applicable to all ReconstructType features.
+
+        **export_wrap_to_dateline : bool, default=True
+            Wrap/clip reconstructed geometries to the dateline (currently ignored).
+
+        Returns
+        -------
+        rlons, rlats : lists
+            Two 1D numpy arrays enclosing all reconstructed feature points transformed into lat-lon points. 
+
+        Raises
+        ------
+        NotImplementedError
+            if the starting time for reconstruction “from_time” not equal to 0.0
+        &#34;&#34;&#34;
+        from_time = self.time
+        to_time = time
+        reconstructed_features = self.PlateReconstruction_object.reconstruct(
+            self.features, to_time, from_time, anchor_plate_id=anchor_plate_id, **kwargs)
+
+        rlons, rlats = _tools.extract_feature_lonlat(reconstructed_features)
+        return rlons, rlats
+
+
+    def reconstruct_to_birth_age(self, ages, anchor_plate_id=0, **kwargs):
+        &#34;&#34;&#34; Reconstructs point features supplied to the Points object from the supplied initial time (the Points object time attribute)
+        to a range of times. The number of supplied times must equal the number of point features supplied to the Points object. 
+
+        Attributes
+        ----------
+        ages : array
+            Geological times to reconstruct features to. Must have the same length as the Points object&#39;s self.features attribute 
+            (which holds the object&#39;s supplied point features represented on a unit length sphere in 3D Cartesian coordinates).
+        anchor_plate_id : int, default=0
+            Reconstruct features with respect to a certain anchor plate. By default it is 0.
+        **kwargs 
+            Additional keyword arguments for the gplately.PlateReconstruction.reconstruct method.
+
+        Raises
+        ------
+        ValueError
+            If the number of ages and number of point features supplied to the Points object are not identical.
+
+        Returns
+        -------
+        rlons, rlats : float
+            The longitude and latitude coordinate lists of all point features reconstructed to all specified ages.
+
+        Examples
+        --------
+        To reconstruct n seed points&#39; locations to B Ma (for this example n=2, with (lon,lat) = (78,30) and (56,22) at time=0 Ma,
+        and we reconstruct to B=10 Ma):
+
+            # Longitude and latitude of n=2 seed points
+            pt_lon = np.array([78., 56])
+            pt_lat = np.array([30., 22])
+
+            # Call the Points object!
+            gpts = gplately.Points(model, pt_lon, pt_lat)
+            print(gpts.features[0].get_all_geometries())   # Confirms we have features represented as points on a sphere
+
+            ages = numpy.linspace(10,10, len(pt_lon))
+            rlons, rlats = gpts.reconstruct_to_birth_age(ages)
+
+        &#34;&#34;&#34;
+        from_time = self.time
+        ages = np.array(ages)
+
+        if len(ages) != len(self.features):
+            raise ValueError(&#34;Number of points and ages must be identical&#34;)
+
+        unique_ages = np.unique(ages)
+        rlons = np.zeros(ages.shape)
+        rlats = np.zeros(ages.shape)
+
+        for age in unique_ages:
+            mask_age = ages == age
+
+            reconstructed_features = self.PlateReconstruction_object.reconstruct(
+                self.features, age, from_time, anchor_plate_id=anchor_plate_id, **kwargs)
+
+            lons, lats = _tools.extract_feature_lonlat(reconstructed_features)
+
+            rlons[mask_age] = lons[mask_age]
+            rlats[mask_age] = lats[mask_age]
+
+
+        return rlons, rlats
+
+    def plate_velocity(self, time, delta_time=1):
+        &#34;&#34;&#34;Calculates the x and y components of tectonic plate velocities at a particular geological time.
+
+        This method accesses and uses the rotation_model attribute from the PointReconstruction object, and uses the features
+        attribute of this Points object. Feature points are extracted and assigned plate IDs that are used to obtain the
+        equivalent stage rotations of identified tectonic plates over a time interval. Each feature point and its stage rotation
+        are used to calculate its plate velocity at a particular geological time. Obtained velocities for each domain point are
+        represented in the north-east-down coordinate system, and their x,y Cartesian coordinate components are extracted. 
+
+        Parameters
+        ----------
+        time : float
+            The specific geological time (Ma) at which to calculate plate velocities.
+
+        delta_time : float, default=1.0
+            The time increment used for generating partitioning plate stage rotations. 1.0Ma by default.
+            
+
+        Returns
+        -------
+        all_velocities.T : 2D numpy list
+            A transposed 2D numpy list with two rows and a number of columns equal to the number of x,y Cartesian velocity 
+            components obtained (and thus the number of feature points extracted from a supplied feature). Each list column 
+            stores one point’s x,y, velocity components along its two rows.
+        &#34;&#34;&#34;
+        rotation_model = self.PlateReconstruction_object.rotation_model
+        all_velocities = np.empty((len(self.features), 2))
+
+        for i, feature in enumerate(self.features):
+            geometry = feature.get_geometry()
+            partitioning_plate_id = feature.get_reconstruction_plate_id()
+            equivalent_stage_rotation = rotation_model.get_rotation(time, partitioning_plate_id, time+delta_time)
+            
+            velocity_vectors = pygplates.calculate_velocities(
+                [geometry],
+                equivalent_stage_rotation,
+                delta_time,
+                pygplates.VelocityUnits.cms_per_yr)
+            
+            velocities = pygplates.LocalCartesian.convert_from_geocentric_to_north_east_down(
+                [geometry],
+                velocity_vectors)
+
+            all_velocities[i] = velocities[0].get_x(), velocities[0].get_y()
+
+        return list(all_velocities.T)
+
+
+    def save(self, filename):
+        &#34;&#34;&#34;Saves the feature collection used in the Points object under a given filename to the current directory. 
+
+        The needed file format to save to is determined from the filename extension. 
+
+        Parameters
+        ----------
+        filename : string
+            Can be provided as a string including the filename and the file format needed.
+
+        Returns
+        -------
+        Feature collection saved under given filename to current directory.
+        &#34;&#34;&#34;
+        self.FeatureCollection.save(filename)</code></pre>
+</details>
+<h3>Methods</h3>
+<dl>
+<dt id="gplately.reconstruction.Points.plate_velocity"><code class="name flex">
+<span>def <span class="ident">plate_velocity</span></span>(<span>self, time, delta_time=1)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Calculates the x and y components of tectonic plate velocities at a particular geological time.</p>
+<p>This method accesses and uses the rotation_model attribute from the PointReconstruction object, and uses the features
+attribute of this Points object. Feature points are extracted and assigned plate IDs that are used to obtain the
+equivalent stage rotations of identified tectonic plates over a time interval. Each feature point and its stage rotation
+are used to calculate its plate velocity at a particular geological time. Obtained velocities for each domain point are
+represented in the north-east-down coordinate system, and their x,y Cartesian coordinate components are extracted. </p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>time</code></strong> :&ensp;<code>float</code></dt>
+<dd>The specific geological time (Ma) at which to calculate plate velocities.</dd>
+<dt><strong><code>delta_time</code></strong> :&ensp;<code>float</code>, default=<code>1.0</code></dt>
+<dd>The time increment used for generating partitioning plate stage rotations. 1.0Ma by default.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>all_velocities.T : 2D numpy list</code></dt>
+<dd>A transposed 2D numpy list with two rows and a number of columns equal to the number of x,y Cartesian velocity
+components obtained (and thus the number of feature points extracted from a supplied feature). Each list column
+stores one point’s x,y, velocity components along its two rows.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def plate_velocity(self, time, delta_time=1):
+    &#34;&#34;&#34;Calculates the x and y components of tectonic plate velocities at a particular geological time.
+
+    This method accesses and uses the rotation_model attribute from the PointReconstruction object, and uses the features
+    attribute of this Points object. Feature points are extracted and assigned plate IDs that are used to obtain the
+    equivalent stage rotations of identified tectonic plates over a time interval. Each feature point and its stage rotation
+    are used to calculate its plate velocity at a particular geological time. Obtained velocities for each domain point are
+    represented in the north-east-down coordinate system, and their x,y Cartesian coordinate components are extracted. 
+
+    Parameters
+    ----------
+    time : float
+        The specific geological time (Ma) at which to calculate plate velocities.
+
+    delta_time : float, default=1.0
+        The time increment used for generating partitioning plate stage rotations. 1.0Ma by default.
+        
+
+    Returns
+    -------
+    all_velocities.T : 2D numpy list
+        A transposed 2D numpy list with two rows and a number of columns equal to the number of x,y Cartesian velocity 
+        components obtained (and thus the number of feature points extracted from a supplied feature). Each list column 
+        stores one point’s x,y, velocity components along its two rows.
+    &#34;&#34;&#34;
+    rotation_model = self.PlateReconstruction_object.rotation_model
+    all_velocities = np.empty((len(self.features), 2))
+
+    for i, feature in enumerate(self.features):
+        geometry = feature.get_geometry()
+        partitioning_plate_id = feature.get_reconstruction_plate_id()
+        equivalent_stage_rotation = rotation_model.get_rotation(time, partitioning_plate_id, time+delta_time)
+        
+        velocity_vectors = pygplates.calculate_velocities(
+            [geometry],
+            equivalent_stage_rotation,
+            delta_time,
+            pygplates.VelocityUnits.cms_per_yr)
+        
+        velocities = pygplates.LocalCartesian.convert_from_geocentric_to_north_east_down(
+            [geometry],
+            velocity_vectors)
+
+        all_velocities[i] = velocities[0].get_x(), velocities[0].get_y()
+
+    return list(all_velocities.T)</code></pre>
+</details>
+</dd>
+<dt id="gplately.reconstruction.Points.reconstruct"><code class="name flex">
+<span>def <span class="ident">reconstruct</span></span>(<span>self, time, anchor_plate_id=0, **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Reconstructs regular geological features, motion paths or flowlines to a specific geological time and extracts
+the latitudinal and longitudinal points of these features.</p>
+<p>Note: this method accesses and uses the rotation model attribute from the PointReconstruction object, and reconstructs
+the feature lat-lon point attributes of the Points object.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>time</code></strong> :&ensp;<code>float</code></dt>
+<dd>The specific geological time (Ma) to reconstruct features to.</dd>
+<dt><strong><code>anchor_plate_id</code></strong> :&ensp;<code>int</code>, default=<code>0</code></dt>
+<dd>Reconstruct features with respect to a certain anchor plate. By default it is 0.</dd>
+<dt><strong><code>**reconstruct_type</code></strong> :&ensp;<code>ReconstructType</code>, default=<code>ReconstructType.feature_geometry</code></dt>
+<dd>The specific reconstruction type to generate based on input feature geometry type. Can be provided as
+ReconstructType.feature_geometry to only reconstruct regular feature geometries, or ReconstructType.MotionPath to
+only reconstruct motion path features, or ReconstructType.Flowline to only reconstruct flowline features. Generates
+:class:<code>reconstructed feature geometries&lt;ReconstructedFeatureGeometry&gt;’, or :class:</code>reconstructed motion
+paths<ReconstructedMotionPath>’, or :class:`reconstructed flowlines<ReconstructedFlowline>’ respectively.</dd>
+<dt><strong><code>**group_with_feature</code></strong> :&ensp;<code>bool</code>, default=<code>False</code></dt>
+<dd>Used to group reconstructed geometries with their features. This can be useful when a feature has more than one
+geometry and hence more than one reconstructed geometry. The output <em>reconstructed_geometries</em> then becomes a
+list of tuples where each tuple contains a :class:<code>feature&lt;Feature&gt;</code> and a <code>list</code> of reconstructed geometries.
+Note: this keyword argument only applies when <em>reconstructed_geometries</em> is a list because exported files are
+always grouped with their features. This is applicable to all ReconstructType features.</dd>
+<dt><strong><code>**export_wrap_to_dateline</code></strong> :&ensp;<code>bool</code>, default=<code>True</code></dt>
+<dd>Wrap/clip reconstructed geometries to the dateline (currently ignored).</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><strong><code>rlons</code></strong>, <strong><code>rlats</code></strong> :&ensp;<code>lists</code></dt>
+<dd>Two 1D numpy arrays enclosing all reconstructed feature points transformed into lat-lon points.</dd>
+</dl>
+<h2 id="raises">Raises</h2>
+<dl>
+<dt><code>NotImplementedError</code></dt>
+<dd>if the starting time for reconstruction “from_time” not equal to 0.0</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def reconstruct(self, time, anchor_plate_id=0, **kwargs):
+    &#34;&#34;&#34;Reconstructs regular geological features, motion paths or flowlines to a specific geological time and extracts 
+    the latitudinal and longitudinal points of these features.
+
+    Note: this method accesses and uses the rotation model attribute from the PointReconstruction object, and reconstructs 
+    the feature lat-lon point attributes of the Points object.
+
+    Parameters
+    ----------
+    time : float
+        The specific geological time (Ma) to reconstruct features to.
+
+    anchor_plate_id : int, default=0
+        Reconstruct features with respect to a certain anchor plate. By default it is 0.
+
+    **reconstruct_type : ReconstructType, default=ReconstructType.feature_geometry
+        The specific reconstruction type to generate based on input feature geometry type. Can be provided as
+        ReconstructType.feature_geometry to only reconstruct regular feature geometries, or ReconstructType.MotionPath to
+        only reconstruct motion path features, or ReconstructType.Flowline to only reconstruct flowline features. Generates
+        :class:`reconstructed feature geometries&lt;ReconstructedFeatureGeometry&gt;’, or :class:`reconstructed motion
+        paths&lt;ReconstructedMotionPath&gt;’, or :class:`reconstructed flowlines&lt;ReconstructedFlowline&gt;’ respectively.
+
+    **group_with_feature : bool, default=False
+        Used to group reconstructed geometries with their features. This can be useful when a feature has more than one
+        geometry and hence more than one reconstructed geometry. The output *reconstructed_geometries* then becomes a 
+        list of tuples where each tuple contains a :class:`feature&lt;Feature&gt;` and a ``list`` of reconstructed geometries. 
+        Note: this keyword argument only applies when *reconstructed_geometries* is a list because exported files are 
+        always grouped with their features. This is applicable to all ReconstructType features.
+
+    **export_wrap_to_dateline : bool, default=True
+        Wrap/clip reconstructed geometries to the dateline (currently ignored).
+
+    Returns
+    -------
+    rlons, rlats : lists
+        Two 1D numpy arrays enclosing all reconstructed feature points transformed into lat-lon points. 
+
+    Raises
+    ------
+    NotImplementedError
+        if the starting time for reconstruction “from_time” not equal to 0.0
+    &#34;&#34;&#34;
+    from_time = self.time
+    to_time = time
+    reconstructed_features = self.PlateReconstruction_object.reconstruct(
+        self.features, to_time, from_time, anchor_plate_id=anchor_plate_id, **kwargs)
+
+    rlons, rlats = _tools.extract_feature_lonlat(reconstructed_features)
+    return rlons, rlats</code></pre>
+</details>
+</dd>
+<dt id="gplately.reconstruction.Points.reconstruct_to_birth_age"><code class="name flex">
+<span>def <span class="ident">reconstruct_to_birth_age</span></span>(<span>self, ages, anchor_plate_id=0, **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Reconstructs point features supplied to the Points object from the supplied initial time (the Points object time attribute)
+to a range of times. The number of supplied times must equal the number of point features supplied to the Points object. </p>
+<h2 id="attributes">Attributes</h2>
+<dl>
+<dt><strong><code>ages</code></strong> :&ensp;<code>array</code></dt>
+<dd>Geological times to reconstruct features to. Must have the same length as the Points object's self.features attribute
+(which holds the object's supplied point features represented on a unit length sphere in 3D Cartesian coordinates).</dd>
+<dt><strong><code>anchor_plate_id</code></strong> :&ensp;<code>int</code>, default=<code>0</code></dt>
+<dd>Reconstruct features with respect to a certain anchor plate. By default it is 0.</dd>
+</dl>
+<p>**kwargs
+Additional keyword arguments for the gplately.PlateReconstruction.reconstruct method.</p>
+<h2 id="raises">Raises</h2>
+<dl>
+<dt><code>ValueError</code></dt>
+<dd>If the number of ages and number of point features supplied to the Points object are not identical.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><strong><code>rlons</code></strong>, <strong><code>rlats</code></strong> :&ensp;<code>float</code></dt>
+<dd>The longitude and latitude coordinate lists of all point features reconstructed to all specified ages.</dd>
+</dl>
+<h2 id="examples">Examples</h2>
+<p>To reconstruct n seed points' locations to B Ma (for this example n=2, with (lon,lat) = (78,30) and (56,22) at time=0 Ma,
+and we reconstruct to B=10 Ma):</p>
+<pre><code># Longitude and latitude of n=2 seed points
+pt_lon = np.array([78., 56])
+pt_lat = np.array([30., 22])
+
+# Call the Points object!
+gpts = gplately.Points(model, pt_lon, pt_lat)
+print(gpts.features[0].get_all_geometries())   # Confirms we have features represented as points on a sphere
+
+ages = numpy.linspace(10,10, len(pt_lon))
+rlons, rlats = gpts.reconstruct_to_birth_age(ages)
+</code></pre></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def reconstruct_to_birth_age(self, ages, anchor_plate_id=0, **kwargs):
+    &#34;&#34;&#34; Reconstructs point features supplied to the Points object from the supplied initial time (the Points object time attribute)
+    to a range of times. The number of supplied times must equal the number of point features supplied to the Points object. 
+
+    Attributes
+    ----------
+    ages : array
+        Geological times to reconstruct features to. Must have the same length as the Points object&#39;s self.features attribute 
+        (which holds the object&#39;s supplied point features represented on a unit length sphere in 3D Cartesian coordinates).
+    anchor_plate_id : int, default=0
+        Reconstruct features with respect to a certain anchor plate. By default it is 0.
+    **kwargs 
+        Additional keyword arguments for the gplately.PlateReconstruction.reconstruct method.
+
+    Raises
+    ------
+    ValueError
+        If the number of ages and number of point features supplied to the Points object are not identical.
+
+    Returns
+    -------
+    rlons, rlats : float
+        The longitude and latitude coordinate lists of all point features reconstructed to all specified ages.
+
+    Examples
+    --------
+    To reconstruct n seed points&#39; locations to B Ma (for this example n=2, with (lon,lat) = (78,30) and (56,22) at time=0 Ma,
+    and we reconstruct to B=10 Ma):
+
+        # Longitude and latitude of n=2 seed points
+        pt_lon = np.array([78., 56])
+        pt_lat = np.array([30., 22])
+
+        # Call the Points object!
+        gpts = gplately.Points(model, pt_lon, pt_lat)
+        print(gpts.features[0].get_all_geometries())   # Confirms we have features represented as points on a sphere
+
+        ages = numpy.linspace(10,10, len(pt_lon))
+        rlons, rlats = gpts.reconstruct_to_birth_age(ages)
+
+    &#34;&#34;&#34;
+    from_time = self.time
+    ages = np.array(ages)
+
+    if len(ages) != len(self.features):
+        raise ValueError(&#34;Number of points and ages must be identical&#34;)
+
+    unique_ages = np.unique(ages)
+    rlons = np.zeros(ages.shape)
+    rlats = np.zeros(ages.shape)
+
+    for age in unique_ages:
+        mask_age = ages == age
+
+        reconstructed_features = self.PlateReconstruction_object.reconstruct(
+            self.features, age, from_time, anchor_plate_id=anchor_plate_id, **kwargs)
+
+        lons, lats = _tools.extract_feature_lonlat(reconstructed_features)
+
+        rlons[mask_age] = lons[mask_age]
+        rlats[mask_age] = lats[mask_age]
+
+
+    return rlons, rlats</code></pre>
+</details>
+</dd>
+<dt id="gplately.reconstruction.Points.save"><code class="name flex">
+<span>def <span class="ident">save</span></span>(<span>self, filename)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Saves the feature collection used in the Points object under a given filename to the current directory. </p>
+<p>The needed file format to save to is determined from the filename extension. </p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>filename</code></strong> :&ensp;<code>string</code></dt>
+<dd>Can be provided as a string including the filename and the file format needed.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<p>Feature collection saved under given filename to current directory.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def save(self, filename):
+    &#34;&#34;&#34;Saves the feature collection used in the Points object under a given filename to the current directory. 
+
+    The needed file format to save to is determined from the filename extension. 
+
+    Parameters
+    ----------
+    filename : string
+        Can be provided as a string including the filename and the file format needed.
+
+    Returns
+    -------
+    Feature collection saved under given filename to current directory.
+    &#34;&#34;&#34;
+    self.FeatureCollection.save(filename)</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+</dl>
+</section>
+</article>
+<nav id="sidebar">
+<h1>Index</h1>
+<div class="toc">
+<ul>
+<li><a href="#classes">Classes</a></li>
+</ul>
+</div>
+<ul id="index">
+<li><h3>Super-module</h3>
+<ul>
+<li><code><a title="gplately" href="index.html">gplately</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-classes">Classes</a></h3>
+<ul>
+<li>
+<h4><code><a title="gplately.reconstruction.PlateReconstruction" href="#gplately.reconstruction.PlateReconstruction">PlateReconstruction</a></code></h4>
+<ul class="">
+<li><code><a title="gplately.reconstruction.PlateReconstruction.get_point_velocities" href="#gplately.reconstruction.PlateReconstruction.get_point_velocities">get_point_velocities</a></code></li>
+<li><code><a title="gplately.reconstruction.PlateReconstruction.reconstruct" href="#gplately.reconstruction.PlateReconstruction.reconstruct">reconstruct</a></code></li>
+<li><code><a title="gplately.reconstruction.PlateReconstruction.tesselate_mid_ocean_ridges" href="#gplately.reconstruction.PlateReconstruction.tesselate_mid_ocean_ridges">tesselate_mid_ocean_ridges</a></code></li>
+<li><code><a title="gplately.reconstruction.PlateReconstruction.tesselate_subduction_zones" href="#gplately.reconstruction.PlateReconstruction.tesselate_subduction_zones">tesselate_subduction_zones</a></code></li>
+<li><code><a title="gplately.reconstruction.PlateReconstruction.total_continental_arc_length" href="#gplately.reconstruction.PlateReconstruction.total_continental_arc_length">total_continental_arc_length</a></code></li>
+<li><code><a title="gplately.reconstruction.PlateReconstruction.total_ridge_length" href="#gplately.reconstruction.PlateReconstruction.total_ridge_length">total_ridge_length</a></code></li>
+<li><code><a title="gplately.reconstruction.PlateReconstruction.total_subduction_zone_length" href="#gplately.reconstruction.PlateReconstruction.total_subduction_zone_length">total_subduction_zone_length</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="gplately.reconstruction.Points" href="#gplately.reconstruction.Points">Points</a></code></h4>
+<ul class="">
+<li><code><a title="gplately.reconstruction.Points.plate_velocity" href="#gplately.reconstruction.Points.plate_velocity">plate_velocity</a></code></li>
+<li><code><a title="gplately.reconstruction.Points.reconstruct" href="#gplately.reconstruction.Points.reconstruct">reconstruct</a></code></li>
+<li><code><a title="gplately.reconstruction.Points.reconstruct_to_birth_age" href="#gplately.reconstruction.Points.reconstruct_to_birth_age">reconstruct_to_birth_age</a></code></li>
+<li><code><a title="gplately.reconstruction.Points.save" href="#gplately.reconstruction.Points.save">save</a></code></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.10.0</a>.</p>
+</footer>
+</body>
+</html>

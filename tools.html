@@ -1,0 +1,893 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
+<meta name="generator" content="pdoc 0.10.0" />
+<title>gplately.tools API documentation</title>
+<meta name="description" content="A module that offers tools for executing common geological calculations, mathematical conversions and numpy conversions." />
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
+<link rel="stylesheet preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/styles/github.min.css" crossorigin>
+<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:30px;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:1em 0 .50em 0}h3{font-size:1.4em;margin:25px 0 10px 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .3s ease-in-out}a:hover{color:#e82}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900}pre code{background:#f8f8f8;font-size:.8em;line-height:1.4em}code{background:#f2f2f1;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{background:#f8f8f8;border:0;border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0;padding:1ex}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-weight:bold;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em .5em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.item .name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul{padding-left:1.5em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+<script async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS_CHTML" integrity="sha256-kZafAc6mZvK3W3v1pHOcUix30OHQN6pU/NO2oFkqZVw=" crossorigin></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/highlight.min.js" integrity="sha256-Uv3H6lx7dJmRfRvH8TH6kJD1TSK1aFcwgx+mdg3epi8=" crossorigin></script>
+<script>window.addEventListener('DOMContentLoaded', () => hljs.initHighlighting())</script>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>gplately.tools</code></h1>
+</header>
+<section id="section-intro">
+<p>A module that offers tools for executing common geological calculations, mathematical conversions and numpy conversions.</p>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">&#34;&#34;&#34;A module that offers tools for executing common geological calculations, mathematical conversions and numpy conversions.
+&#34;&#34;&#34;
+import numpy as np
+import pygplates
+
+EARTH_RADIUS = pygplates.Earth.mean_radius_in_kms
+
+_DEFAULT_PLATE_THICKNESS = 125.0e3
+_DEFAULT_T_MANTLE = 1350.0
+_DEFAULT_KAPPA = 8.04e-7
+_SEC_PER_MYR = 3.15576e13
+
+def plate_temp(
+    age,
+    z,
+    plate_thickness,
+    kappa=_DEFAULT_KAPPA,
+    t_mantle=_DEFAULT_T_MANTLE,
+    t_surface=0.0,
+):
+    &#34;&#34;&#34;Computes the temperature in a cooling plate for a given age and plate thickness at a depth = z. 
+
+    Assumes a mantle temperature of 1380 degrees, and a 0 degree surface temperature. Kappa is 0.804e-6. 
+
+    Parameters
+    ----------
+    age : float
+        The geological time (Ma) at which to calculate plate temperature.
+
+    z : float
+        The plate depth (m) at which to calculate temperature.
+
+    PLATE_THICKNESS : float
+        The thickness (m) of the plate in consideration.
+
+    Returns
+    -------
+    list
+        A list enclosing ONE floating-point number equal to plate temperature (e.g. [1367.33962383]).
+    &#34;&#34;&#34;
+
+    aged = age * _SEC_PER_MYR
+
+    sine_arg = np.pi * z / plate_thickness
+    exp_arg = -kappa * (np.pi ** 2) * aged / (plate_thickness ** 2)
+    k = np.arange(1, 20).reshape(-1, 1)
+    cumsum = (np.sin(k * sine_arg) * np.exp((k ** 2) * exp_arg) / k).sum(axis=0)
+
+    result = (
+        t_surface
+        + 2.0 * cumsum * (t_mantle - t_surface) / np.pi
+        + (t_mantle - t_surface) * z / plate_thickness
+    )
+    if result.size == 1:
+        return result[0]
+    return result
+
+def plate_isotherm_depth(
+    age,
+    temp=_DEFAULT_T_MANTLE,
+    plate_thickness=_DEFAULT_PLATE_THICKNESS,
+    n=20,
+    rtol=0.001,
+):
+    &#34;&#34;&#34;Computes the depth to the temp - isotherm in a cooling plate mode. Solution by iteration. 
+
+    By default the plate thickness is 125 km as in Parsons/Sclater.
+
+    Parameters
+    ----------
+    age : ndarray
+        An array of geological ages (Ma) at which to compute depths. 
+
+    temp : float, default=1350.0
+        The temperature of a temp-isotherm to calculate the depth to. Defaults to 1350 degrees.
+
+    Returns
+    -------
+    zi : ndarray
+        An array of depths to the chosen temperature isotherm. Each entry corresponds to each unique ‘age’ given. 
+    &#34;&#34;&#34;
+    n = int(n)
+    if n &lt;= 0:
+        raise ValueError(&#34;n must be greater than zero (n = {})&#34;.format(n))
+    age = np.atleast_1d(age)
+
+    zi = np.atleast_1d(np.zeros_like(age, dtype=float))  # starting depth is 0
+
+    z_too_small = np.atleast_1d(np.zeros_like(age, dtype=float))
+    z_too_big = np.atleast_1d(np.full_like(age, plate_thickness, dtype=float))
+
+    for _ in range(n):
+        zi = 0.5 * (z_too_small + z_too_big)
+        ti = plate_temp(age, zi, plate_thickness)
+        t_diff = temp - ti
+        z_too_big[t_diff &lt; -rtol] = zi[t_diff &lt; -rtol]
+        z_too_small[t_diff &gt; rtol] = zi[t_diff &gt; rtol]
+
+        if (np.abs(t_diff) &lt; rtol).all():
+            break
+
+    # convergence warning
+    if np.abs(t_diff).any() &gt; rtol:
+        import warnings
+        warnings.warn(&#34;Iterations did not converge below rtol={}&#34;.format(rtol))
+
+    # protect against negative ages
+    zi[age &lt;= 0] = 0
+    zi = np.squeeze(zi)
+    return zi
+
+def points_to_features(lons, lats, plate_ID=None):
+    &#34;&#34;&#34;Creates point features represented on a unit length sphere in 3D cartesian coordinates from a latitude and 
+    longitude list.
+
+    Parameters
+    ----------
+    lons : list
+        The longitudes of needed point features.
+        
+    lats : list
+        The latitudes of needed point features.
+        
+    plate_ID : int, default=None
+        The reconstruction plate ID to assign to the needed point features.
+
+    Returns
+    -------
+    point_features : list
+        Topological point features resolved from the given lists of lat-lon point coordinates.
+    &#34;&#34;&#34;
+    try:
+        len(lons)
+    except TypeError:
+        lons = [lons]
+    try:
+        len(lats)
+    except TypeError:
+        lats = [lats]
+    if len(lons) != len(lats):
+        raise ValueError(
+            &#34;&#39;lons&#39; and &#39;lats&#39; must be of equal length&#34;
+            + &#34; ({} != {})&#34;.format(len(lons), len(lats))
+        )
+    if len(lons) == 0:
+        raise ValueError(&#34;&#39;lons&#39; and &#39;lats&#39; must be provided&#34;)
+
+    try:
+        len(plate_ID)
+    except TypeError:
+        plate_ID = [plate_ID] * len(lons)
+
+    # create point features
+    point_features = []
+    for lon, lat, id in zip(lons, lats, plate_ID):
+        point_feature = pygplates.Feature()
+        point_feature.set_geometry(pygplates.PointOnSphere(float(lat), float(lon)))
+        if id is not None:
+            point_feature.set_reconstruction_plate_id(id)
+        point_features.append(point_feature)
+
+    if len(point_features) == 1:
+        return point_features[0]
+    return point_features
+
+def extract_feature_lonlat(features):
+    &#34;&#34;&#34;Extracts the latitudes and longitudes of topological feature points.
+
+    Parameters
+    ----------
+    features : list
+        A list of topological point features to extract lat-lon coordinates from.
+
+    Returns
+    -------
+    rlon, rlat : lists
+        Extracted longitudes and latitudes of feature points. Each index corresponds to different points. Same length
+        as the input feature array.
+    &#34;&#34;&#34;
+    rlon = np.zeros(len(features))
+    rlat = np.zeros(len(features))
+
+    for i, feature in enumerate(features):
+        geometry = feature.get_reconstructed_geometry()
+        rlat[i], rlon[i] = geometry.to_lat_lon()
+
+    return rlon, rlat
+
+
+def lonlat2xyz(lon, lat, degrees=True):
+    &#34;&#34;&#34;Convert lon / lat (radians) for spherical triangulation into Cartesian (x,y,z) coordinates on the unit sphere.
+
+    Parameters
+    ----------
+    lon, lat : lists
+        Longitudes and latitudes of feature points in radians.
+
+    Returns
+    -------
+    xs, ys, zs : lists
+        Cartesian coordinates of each feature point in all 3 dimensions.
+    &#34;&#34;&#34;
+    if degrees:
+        lon = np.deg2rad(lon)
+        lat = np.deg2rad(lat)
+    cosphi = np.cos(lat)
+    xs = cosphi * np.cos(lon)
+    ys = cosphi * np.sin(lon)
+    zs = np.sin(lat)
+    return xs, ys, zs
+
+def xyz2lonlat(x, y, z, validate=False, degrees=True):
+    &#34;&#34;&#34;Converts Cartesian (x,y,z) representation of points (on the unit sphere) for spherical triangulation into 
+    lon / lat (radians).
+
+    Note: No check is made here that (x,y,z) are unit vectors - it is assumed.
+
+    Parameters
+    ----------
+    x, y, z : lists
+        Cartesian coordinates of each feature point in all 3 dimensions.
+
+    Returns
+    -------
+    lon, lat : lists
+        Longitudes and latitudes of feature points in radians.
+
+    Notes
+    -----
+    No check is made here that (x,y,z) are unit vectors, unless validate=True is specified
+    &#34;&#34;&#34;
+    x = np.atleast_1d(x)
+    y = np.atleast_1d(y)
+    z = np.atleast_1d(z)
+    if validate:
+        mags = np.sqrt(x ** 2 + y ** 2 + z ** 2)
+        ones = np.full_like(mags, 1)
+        if not np.all(np.equal(mags, ones)):
+            raise ValueError(&#34;All (x, y, z) must be unit vectors&#34;)
+    lons = np.arctan2(y, x)
+    lats = np.arcsin(z)
+    if degrees:
+        lons = np.rad2deg(lons)
+        lats = np.rad2deg(lats)
+    if lons.size == 1:
+        lons = np.atleast_1d(np.squeeze(lons))[0]
+    if lats.size == 1:
+        lats = np.atleast_1d(np.squeeze(lats))[0]
+    return lons, lats
+
+
+def haversine_distance(lon1, lon2, lat1, lat2, degrees=True):
+    &#34;&#34;&#34;Computes the Haversine distance (the shortest distance on the surface of an ideal spherical Earth) between two 
+    points given their latitudes and longitudes.
+
+    Sources
+    -------
+    https://en.wikipedia.org/wiki/Haversine_formula
+    https://stackoverflow.com/questions/639695/how-to-convert-latitude-or-longitude-to-meters
+
+    Parameters
+    ----------
+    lon1, lon2 : float
+        Longitudes of both points
+
+    lat1, lat2 : float
+        Latitudes of both points
+
+    Returns
+    -------
+    d : float
+        The Haversine distance in metres.
+
+    Notes
+    -----
+    Default behaviour assumes values in degrees; for radians specify degrees=False
+    &#34;&#34;&#34;
+    if degrees:
+        dLat = np.deg2rad(lat2) - np.deg2rad(lat1)
+        dLon = np.deg2rad(lon2) - np.deg2rad(lon1)
+    else:
+        dLat = lat2 - lat1
+        dLon = lon2 - lon1
+    a = (
+        np.sin(dLat / 2) ** 2
+        + np.cos(lat1 * np.pi / 180)
+        * np.cos(lat2 * np.pi / 180)
+        * np.sin(dLon / 2) ** 2
+    )
+    c = 2.0 * np.arctan2(np.sqrt(a), np.sqrt(1.0 - a))
+    d = EARTH_RADIUS * c
+    return d * 1000
+
+
+def geocentric_radius(lat, degrees=True):
+    &#34;&#34;&#34; Calculates the latitude-dependent radius of an ellipsoid Earth. 
+
+    Parameters
+    ----------
+    lat : float
+        The geodetic latitude at which to calculate the Earth&#39;s radius
+    degrees : bool, default=True
+        Specify whether the given latitude is in degrees.
+
+    Returns
+    -------
+    earth_radius : float
+        The Earth&#39;s geocentric radius (in metres) at the given geodetic latitude.
+    &#34;&#34;&#34;
+    if degrees:
+        rlat = np.radians(lat)
+    else:
+        rlat = lat
+
+    coslat = np.cos(rlat)
+    sinlat = np.sin(rlat)
+    r1 = 6384.4e3
+    r2 = 6352.8e3
+    num = (r1**2*coslat)**2 + (r2**2*sinlat)**2
+    den = (r1*coslat)**2 + (r2*sinlat)**2
+    earth_radius = np.sqrt(num/den)
+    return earth_radius</code></pre>
+</details>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-functions">Functions</h2>
+<dl>
+<dt id="gplately.tools.extract_feature_lonlat"><code class="name flex">
+<span>def <span class="ident">extract_feature_lonlat</span></span>(<span>features)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Extracts the latitudes and longitudes of topological feature points.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>features</code></strong> :&ensp;<code>list</code></dt>
+<dd>A list of topological point features to extract lat-lon coordinates from.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><strong><code>rlon</code></strong>, <strong><code>rlat</code></strong> :&ensp;<code>lists</code></dt>
+<dd>Extracted longitudes and latitudes of feature points. Each index corresponds to different points. Same length
+as the input feature array.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def extract_feature_lonlat(features):
+    &#34;&#34;&#34;Extracts the latitudes and longitudes of topological feature points.
+
+    Parameters
+    ----------
+    features : list
+        A list of topological point features to extract lat-lon coordinates from.
+
+    Returns
+    -------
+    rlon, rlat : lists
+        Extracted longitudes and latitudes of feature points. Each index corresponds to different points. Same length
+        as the input feature array.
+    &#34;&#34;&#34;
+    rlon = np.zeros(len(features))
+    rlat = np.zeros(len(features))
+
+    for i, feature in enumerate(features):
+        geometry = feature.get_reconstructed_geometry()
+        rlat[i], rlon[i] = geometry.to_lat_lon()
+
+    return rlon, rlat</code></pre>
+</details>
+</dd>
+<dt id="gplately.tools.geocentric_radius"><code class="name flex">
+<span>def <span class="ident">geocentric_radius</span></span>(<span>lat, degrees=True)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Calculates the latitude-dependent radius of an ellipsoid Earth. </p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>lat</code></strong> :&ensp;<code>float</code></dt>
+<dd>The geodetic latitude at which to calculate the Earth's radius</dd>
+<dt><strong><code>degrees</code></strong> :&ensp;<code>bool</code>, default=<code>True</code></dt>
+<dd>Specify whether the given latitude is in degrees.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><strong><code>earth_radius</code></strong> :&ensp;<code>float</code></dt>
+<dd>The Earth's geocentric radius (in metres) at the given geodetic latitude.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def geocentric_radius(lat, degrees=True):
+    &#34;&#34;&#34; Calculates the latitude-dependent radius of an ellipsoid Earth. 
+
+    Parameters
+    ----------
+    lat : float
+        The geodetic latitude at which to calculate the Earth&#39;s radius
+    degrees : bool, default=True
+        Specify whether the given latitude is in degrees.
+
+    Returns
+    -------
+    earth_radius : float
+        The Earth&#39;s geocentric radius (in metres) at the given geodetic latitude.
+    &#34;&#34;&#34;
+    if degrees:
+        rlat = np.radians(lat)
+    else:
+        rlat = lat
+
+    coslat = np.cos(rlat)
+    sinlat = np.sin(rlat)
+    r1 = 6384.4e3
+    r2 = 6352.8e3
+    num = (r1**2*coslat)**2 + (r2**2*sinlat)**2
+    den = (r1*coslat)**2 + (r2*sinlat)**2
+    earth_radius = np.sqrt(num/den)
+    return earth_radius</code></pre>
+</details>
+</dd>
+<dt id="gplately.tools.haversine_distance"><code class="name flex">
+<span>def <span class="ident">haversine_distance</span></span>(<span>lon1, lon2, lat1, lat2, degrees=True)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Computes the Haversine distance (the shortest distance on the surface of an ideal spherical Earth) between two
+points given their latitudes and longitudes.</p>
+<h2 id="sources">Sources</h2>
+<p><a href="https://en.wikipedia.org/wiki/Haversine_formula">https://en.wikipedia.org/wiki/Haversine_formula</a>
+<a href="https://stackoverflow.com/questions/639695/how-to-convert-latitude-or-longitude-to-meters">https://stackoverflow.com/questions/639695/how-to-convert-latitude-or-longitude-to-meters</a></p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>lon1</code></strong>, <strong><code>lon2</code></strong> :&ensp;<code>float</code></dt>
+<dd>Longitudes of both points</dd>
+<dt><strong><code>lat1</code></strong>, <strong><code>lat2</code></strong> :&ensp;<code>float</code></dt>
+<dd>Latitudes of both points</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><strong><code>d</code></strong> :&ensp;<code>float</code></dt>
+<dd>The Haversine distance in metres.</dd>
+</dl>
+<h2 id="notes">Notes</h2>
+<p>Default behaviour assumes values in degrees; for radians specify degrees=False</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def haversine_distance(lon1, lon2, lat1, lat2, degrees=True):
+    &#34;&#34;&#34;Computes the Haversine distance (the shortest distance on the surface of an ideal spherical Earth) between two 
+    points given their latitudes and longitudes.
+
+    Sources
+    -------
+    https://en.wikipedia.org/wiki/Haversine_formula
+    https://stackoverflow.com/questions/639695/how-to-convert-latitude-or-longitude-to-meters
+
+    Parameters
+    ----------
+    lon1, lon2 : float
+        Longitudes of both points
+
+    lat1, lat2 : float
+        Latitudes of both points
+
+    Returns
+    -------
+    d : float
+        The Haversine distance in metres.
+
+    Notes
+    -----
+    Default behaviour assumes values in degrees; for radians specify degrees=False
+    &#34;&#34;&#34;
+    if degrees:
+        dLat = np.deg2rad(lat2) - np.deg2rad(lat1)
+        dLon = np.deg2rad(lon2) - np.deg2rad(lon1)
+    else:
+        dLat = lat2 - lat1
+        dLon = lon2 - lon1
+    a = (
+        np.sin(dLat / 2) ** 2
+        + np.cos(lat1 * np.pi / 180)
+        * np.cos(lat2 * np.pi / 180)
+        * np.sin(dLon / 2) ** 2
+    )
+    c = 2.0 * np.arctan2(np.sqrt(a), np.sqrt(1.0 - a))
+    d = EARTH_RADIUS * c
+    return d * 1000</code></pre>
+</details>
+</dd>
+<dt id="gplately.tools.lonlat2xyz"><code class="name flex">
+<span>def <span class="ident">lonlat2xyz</span></span>(<span>lon, lat, degrees=True)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Convert lon / lat (radians) for spherical triangulation into Cartesian (x,y,z) coordinates on the unit sphere.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>lon</code></strong>, <strong><code>lat</code></strong> :&ensp;<code>lists</code></dt>
+<dd>Longitudes and latitudes of feature points in radians.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><strong><code>xs</code></strong>, <strong><code>ys</code></strong>, <strong><code>zs</code></strong> :&ensp;<code>lists</code></dt>
+<dd>Cartesian coordinates of each feature point in all 3 dimensions.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def lonlat2xyz(lon, lat, degrees=True):
+    &#34;&#34;&#34;Convert lon / lat (radians) for spherical triangulation into Cartesian (x,y,z) coordinates on the unit sphere.
+
+    Parameters
+    ----------
+    lon, lat : lists
+        Longitudes and latitudes of feature points in radians.
+
+    Returns
+    -------
+    xs, ys, zs : lists
+        Cartesian coordinates of each feature point in all 3 dimensions.
+    &#34;&#34;&#34;
+    if degrees:
+        lon = np.deg2rad(lon)
+        lat = np.deg2rad(lat)
+    cosphi = np.cos(lat)
+    xs = cosphi * np.cos(lon)
+    ys = cosphi * np.sin(lon)
+    zs = np.sin(lat)
+    return xs, ys, zs</code></pre>
+</details>
+</dd>
+<dt id="gplately.tools.plate_isotherm_depth"><code class="name flex">
+<span>def <span class="ident">plate_isotherm_depth</span></span>(<span>age, temp=1350.0, plate_thickness=125000.0, n=20, rtol=0.001)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Computes the depth to the temp - isotherm in a cooling plate mode. Solution by iteration. </p>
+<p>By default the plate thickness is 125 km as in Parsons/Sclater.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>age</code></strong> :&ensp;<code>ndarray</code></dt>
+<dd>An array of geological ages (Ma) at which to compute depths.</dd>
+<dt><strong><code>temp</code></strong> :&ensp;<code>float</code>, default=<code>1350.0</code></dt>
+<dd>The temperature of a temp-isotherm to calculate the depth to. Defaults to 1350 degrees.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><strong><code>zi</code></strong> :&ensp;<code>ndarray</code></dt>
+<dd>An array of depths to the chosen temperature isotherm. Each entry corresponds to each unique ‘age’ given.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def plate_isotherm_depth(
+    age,
+    temp=_DEFAULT_T_MANTLE,
+    plate_thickness=_DEFAULT_PLATE_THICKNESS,
+    n=20,
+    rtol=0.001,
+):
+    &#34;&#34;&#34;Computes the depth to the temp - isotherm in a cooling plate mode. Solution by iteration. 
+
+    By default the plate thickness is 125 km as in Parsons/Sclater.
+
+    Parameters
+    ----------
+    age : ndarray
+        An array of geological ages (Ma) at which to compute depths. 
+
+    temp : float, default=1350.0
+        The temperature of a temp-isotherm to calculate the depth to. Defaults to 1350 degrees.
+
+    Returns
+    -------
+    zi : ndarray
+        An array of depths to the chosen temperature isotherm. Each entry corresponds to each unique ‘age’ given. 
+    &#34;&#34;&#34;
+    n = int(n)
+    if n &lt;= 0:
+        raise ValueError(&#34;n must be greater than zero (n = {})&#34;.format(n))
+    age = np.atleast_1d(age)
+
+    zi = np.atleast_1d(np.zeros_like(age, dtype=float))  # starting depth is 0
+
+    z_too_small = np.atleast_1d(np.zeros_like(age, dtype=float))
+    z_too_big = np.atleast_1d(np.full_like(age, plate_thickness, dtype=float))
+
+    for _ in range(n):
+        zi = 0.5 * (z_too_small + z_too_big)
+        ti = plate_temp(age, zi, plate_thickness)
+        t_diff = temp - ti
+        z_too_big[t_diff &lt; -rtol] = zi[t_diff &lt; -rtol]
+        z_too_small[t_diff &gt; rtol] = zi[t_diff &gt; rtol]
+
+        if (np.abs(t_diff) &lt; rtol).all():
+            break
+
+    # convergence warning
+    if np.abs(t_diff).any() &gt; rtol:
+        import warnings
+        warnings.warn(&#34;Iterations did not converge below rtol={}&#34;.format(rtol))
+
+    # protect against negative ages
+    zi[age &lt;= 0] = 0
+    zi = np.squeeze(zi)
+    return zi</code></pre>
+</details>
+</dd>
+<dt id="gplately.tools.plate_temp"><code class="name flex">
+<span>def <span class="ident">plate_temp</span></span>(<span>age, z, plate_thickness, kappa=8.04e-07, t_mantle=1350.0, t_surface=0.0)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Computes the temperature in a cooling plate for a given age and plate thickness at a depth = z. </p>
+<p>Assumes a mantle temperature of 1380 degrees, and a 0 degree surface temperature. Kappa is 0.804e-6. </p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>age</code></strong> :&ensp;<code>float</code></dt>
+<dd>The geological time (Ma) at which to calculate plate temperature.</dd>
+<dt><strong><code>z</code></strong> :&ensp;<code>float</code></dt>
+<dd>The plate depth (m) at which to calculate temperature.</dd>
+<dt><strong><code>PLATE_THICKNESS</code></strong> :&ensp;<code>float</code></dt>
+<dd>The thickness (m) of the plate in consideration.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>list</code></dt>
+<dd>A list enclosing ONE floating-point number equal to plate temperature (e.g. [1367.33962383]).</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def plate_temp(
+    age,
+    z,
+    plate_thickness,
+    kappa=_DEFAULT_KAPPA,
+    t_mantle=_DEFAULT_T_MANTLE,
+    t_surface=0.0,
+):
+    &#34;&#34;&#34;Computes the temperature in a cooling plate for a given age and plate thickness at a depth = z. 
+
+    Assumes a mantle temperature of 1380 degrees, and a 0 degree surface temperature. Kappa is 0.804e-6. 
+
+    Parameters
+    ----------
+    age : float
+        The geological time (Ma) at which to calculate plate temperature.
+
+    z : float
+        The plate depth (m) at which to calculate temperature.
+
+    PLATE_THICKNESS : float
+        The thickness (m) of the plate in consideration.
+
+    Returns
+    -------
+    list
+        A list enclosing ONE floating-point number equal to plate temperature (e.g. [1367.33962383]).
+    &#34;&#34;&#34;
+
+    aged = age * _SEC_PER_MYR
+
+    sine_arg = np.pi * z / plate_thickness
+    exp_arg = -kappa * (np.pi ** 2) * aged / (plate_thickness ** 2)
+    k = np.arange(1, 20).reshape(-1, 1)
+    cumsum = (np.sin(k * sine_arg) * np.exp((k ** 2) * exp_arg) / k).sum(axis=0)
+
+    result = (
+        t_surface
+        + 2.0 * cumsum * (t_mantle - t_surface) / np.pi
+        + (t_mantle - t_surface) * z / plate_thickness
+    )
+    if result.size == 1:
+        return result[0]
+    return result</code></pre>
+</details>
+</dd>
+<dt id="gplately.tools.points_to_features"><code class="name flex">
+<span>def <span class="ident">points_to_features</span></span>(<span>lons, lats, plate_ID=None)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Creates point features represented on a unit length sphere in 3D cartesian coordinates from a latitude and
+longitude list.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>lons</code></strong> :&ensp;<code>list</code></dt>
+<dd>The longitudes of needed point features.</dd>
+<dt><strong><code>lats</code></strong> :&ensp;<code>list</code></dt>
+<dd>The latitudes of needed point features.</dd>
+<dt><strong><code>plate_ID</code></strong> :&ensp;<code>int</code>, default=<code>None</code></dt>
+<dd>The reconstruction plate ID to assign to the needed point features.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><strong><code>point_features</code></strong> :&ensp;<code>list</code></dt>
+<dd>Topological point features resolved from the given lists of lat-lon point coordinates.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def points_to_features(lons, lats, plate_ID=None):
+    &#34;&#34;&#34;Creates point features represented on a unit length sphere in 3D cartesian coordinates from a latitude and 
+    longitude list.
+
+    Parameters
+    ----------
+    lons : list
+        The longitudes of needed point features.
+        
+    lats : list
+        The latitudes of needed point features.
+        
+    plate_ID : int, default=None
+        The reconstruction plate ID to assign to the needed point features.
+
+    Returns
+    -------
+    point_features : list
+        Topological point features resolved from the given lists of lat-lon point coordinates.
+    &#34;&#34;&#34;
+    try:
+        len(lons)
+    except TypeError:
+        lons = [lons]
+    try:
+        len(lats)
+    except TypeError:
+        lats = [lats]
+    if len(lons) != len(lats):
+        raise ValueError(
+            &#34;&#39;lons&#39; and &#39;lats&#39; must be of equal length&#34;
+            + &#34; ({} != {})&#34;.format(len(lons), len(lats))
+        )
+    if len(lons) == 0:
+        raise ValueError(&#34;&#39;lons&#39; and &#39;lats&#39; must be provided&#34;)
+
+    try:
+        len(plate_ID)
+    except TypeError:
+        plate_ID = [plate_ID] * len(lons)
+
+    # create point features
+    point_features = []
+    for lon, lat, id in zip(lons, lats, plate_ID):
+        point_feature = pygplates.Feature()
+        point_feature.set_geometry(pygplates.PointOnSphere(float(lat), float(lon)))
+        if id is not None:
+            point_feature.set_reconstruction_plate_id(id)
+        point_features.append(point_feature)
+
+    if len(point_features) == 1:
+        return point_features[0]
+    return point_features</code></pre>
+</details>
+</dd>
+<dt id="gplately.tools.xyz2lonlat"><code class="name flex">
+<span>def <span class="ident">xyz2lonlat</span></span>(<span>x, y, z, validate=False, degrees=True)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Converts Cartesian (x,y,z) representation of points (on the unit sphere) for spherical triangulation into
+lon / lat (radians).</p>
+<p>Note: No check is made here that (x,y,z) are unit vectors - it is assumed.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>x</code></strong>, <strong><code>y</code></strong>, <strong><code>z</code></strong> :&ensp;<code>lists</code></dt>
+<dd>Cartesian coordinates of each feature point in all 3 dimensions.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><strong><code>lon</code></strong>, <strong><code>lat</code></strong> :&ensp;<code>lists</code></dt>
+<dd>Longitudes and latitudes of feature points in radians.</dd>
+</dl>
+<h2 id="notes">Notes</h2>
+<p>No check is made here that (x,y,z) are unit vectors, unless validate=True is specified</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def xyz2lonlat(x, y, z, validate=False, degrees=True):
+    &#34;&#34;&#34;Converts Cartesian (x,y,z) representation of points (on the unit sphere) for spherical triangulation into 
+    lon / lat (radians).
+
+    Note: No check is made here that (x,y,z) are unit vectors - it is assumed.
+
+    Parameters
+    ----------
+    x, y, z : lists
+        Cartesian coordinates of each feature point in all 3 dimensions.
+
+    Returns
+    -------
+    lon, lat : lists
+        Longitudes and latitudes of feature points in radians.
+
+    Notes
+    -----
+    No check is made here that (x,y,z) are unit vectors, unless validate=True is specified
+    &#34;&#34;&#34;
+    x = np.atleast_1d(x)
+    y = np.atleast_1d(y)
+    z = np.atleast_1d(z)
+    if validate:
+        mags = np.sqrt(x ** 2 + y ** 2 + z ** 2)
+        ones = np.full_like(mags, 1)
+        if not np.all(np.equal(mags, ones)):
+            raise ValueError(&#34;All (x, y, z) must be unit vectors&#34;)
+    lons = np.arctan2(y, x)
+    lats = np.arcsin(z)
+    if degrees:
+        lons = np.rad2deg(lons)
+        lats = np.rad2deg(lats)
+    if lons.size == 1:
+        lons = np.atleast_1d(np.squeeze(lons))[0]
+    if lats.size == 1:
+        lats = np.atleast_1d(np.squeeze(lats))[0]
+    return lons, lats</code></pre>
+</details>
+</dd>
+</dl>
+</section>
+<section>
+</section>
+</article>
+<nav id="sidebar">
+<h1>Index</h1>
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3>Super-module</h3>
+<ul>
+<li><code><a title="gplately" href="index.html">gplately</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-functions">Functions</a></h3>
+<ul class="">
+<li><code><a title="gplately.tools.extract_feature_lonlat" href="#gplately.tools.extract_feature_lonlat">extract_feature_lonlat</a></code></li>
+<li><code><a title="gplately.tools.geocentric_radius" href="#gplately.tools.geocentric_radius">geocentric_radius</a></code></li>
+<li><code><a title="gplately.tools.haversine_distance" href="#gplately.tools.haversine_distance">haversine_distance</a></code></li>
+<li><code><a title="gplately.tools.lonlat2xyz" href="#gplately.tools.lonlat2xyz">lonlat2xyz</a></code></li>
+<li><code><a title="gplately.tools.plate_isotherm_depth" href="#gplately.tools.plate_isotherm_depth">plate_isotherm_depth</a></code></li>
+<li><code><a title="gplately.tools.plate_temp" href="#gplately.tools.plate_temp">plate_temp</a></code></li>
+<li><code><a title="gplately.tools.points_to_features" href="#gplately.tools.points_to_features">points_to_features</a></code></li>
+<li><code><a title="gplately.tools.xyz2lonlat" href="#gplately.tools.xyz2lonlat">xyz2lonlat</a></code></li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.10.0</a>.</p>
+</footer>
+</body>
+</html>
