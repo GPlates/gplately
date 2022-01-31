@@ -28,6 +28,7 @@ jobs:
         pip install .
     - name : Generate documentation with pdoc3
       run : |
+        export PYTHONPATH=$PYTHONPATH:/usr/lib/
         pdoc --config latex_math=True --html -o api --force gplately
     - name : Deploy to gh-pages
       uses: JamesIves/github-pages-deploy-action@v4.2.2
