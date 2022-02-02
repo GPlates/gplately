@@ -109,8 +109,7 @@ def pygplates_to_shapely(
     tessellate_degrees=None,
     validate=False,
     force_ccw=False,
-    explode=False,
-    area_threshold=1e-6
+    explode=False
 ):
     """Convert one or more PyGPlates or GPlately geometries to Shapely format.
 
@@ -209,11 +208,9 @@ def pygplates_to_shapely(
             # this is for pole-clipped polygons turned into MultiPolygons
             if isinstance(tmp, _MultiPolygon):
                 for geom in list(tmp):
-                    if geom.area > area_threshold:
-                        output_geoms.append(geom)
+                    output_geoms.append(geom)
             else:
-                if tmp.area > area_threshold:
-                    output_geoms.append(tmp)
+                output_geoms.append(tmp)
             output_type = _MultiPolygon
         else:
             raise TypeError(
