@@ -560,8 +560,6 @@ class PlateReconstruction(object):
             if the starting time for reconstruction “from_time” not equal to 0.0
         &#34;&#34;&#34;
         from_time, to_time = float(from_time), float(to_time)
-        if from_time != 0.0:
-            raise NotImplementedError(&#34;Soon...&#34;)
 
         reconstructed_features = []
         pygplates.reconstruct(feature, self.rotation_model, reconstructed_features, to_time,\
@@ -777,7 +775,11 @@ class Points(object):
         else:
             # partition using static polygons
             # being careful to observe &#39;from time&#39;
-            partitioned_features = pygplates.partition_into_plates(static_polygons, rotation_model, features)
+            partitioned_features = pygplates.partition_into_plates(
+                static_polygons,
+                rotation_model,
+                features,
+                reconstruction_time=time)
             self.features = partitioned_features
 
             plate_id = np.empty(len(self.lons), dtype=int)
@@ -1557,8 +1559,6 @@ features.</p>
             if the starting time for reconstruction “from_time” not equal to 0.0
         &#34;&#34;&#34;
         from_time, to_time = float(from_time), float(to_time)
-        if from_time != 0.0:
-            raise NotImplementedError(&#34;Soon...&#34;)
 
         reconstructed_features = []
         pygplates.reconstruct(feature, self.rotation_model, reconstructed_features, to_time,\
@@ -1907,8 +1907,6 @@ of its reconstructed geometries.</dd>
         if the starting time for reconstruction “from_time” not equal to 0.0
     &#34;&#34;&#34;
     from_time, to_time = float(from_time), float(to_time)
-    if from_time != 0.0:
-        raise NotImplementedError(&#34;Soon...&#34;)
 
     reconstructed_features = []
     pygplates.reconstruct(feature, self.rotation_model, reconstructed_features, to_time,\
@@ -2727,7 +2725,11 @@ static polygons.</dd>
         else:
             # partition using static polygons
             # being careful to observe &#39;from time&#39;
-            partitioned_features = pygplates.partition_into_plates(static_polygons, rotation_model, features)
+            partitioned_features = pygplates.partition_into_plates(
+                static_polygons,
+                rotation_model,
+                features,
+                reconstruction_time=time)
             self.features = partitioned_features
 
             plate_id = np.empty(len(self.lons), dtype=int)
