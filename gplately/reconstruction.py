@@ -527,8 +527,6 @@ class PlateReconstruction(object):
             if the starting time for reconstruction “from_time” not equal to 0.0
         """
         from_time, to_time = float(from_time), float(to_time)
-        if from_time != 0.0:
-            raise NotImplementedError("Soon...")
 
         reconstructed_features = []
         pygplates.reconstruct(feature, self.rotation_model, reconstructed_features, to_time,\
@@ -744,9 +742,18 @@ class Points(object):
         else:
             # partition using static polygons
             # being careful to observe 'from time'
-            partitioned_features = pygplates.partition_into_plates(static_polygons, rotation_model, features)
+            partitioned_features = pygplates.partition_into_plates(
+                static_polygons,
+                rotation_model,
+                features,
+                reconstruction_time=time)
             self.features = partitioned_features
 
+            plate_id = np.empty(len(self.lons), dtype=int)
+            for i, feature in enumerate(partitioned_features):
+                plate_id[i] = feature.get_reconstruction_plate_id()
+
+        self.plate_id = plate_id
         self.FeatureCollection = pygplates.FeatureCollection(self.features)
 
 

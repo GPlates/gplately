@@ -86,6 +86,7 @@ if __name__ == "__main__":
                                'shapely',
                                'matplotlib',
                                'cartopy',
+                               'geopandas',
                                'PlateTectonicTools',
                                'pooch',
                                'tqdm'
