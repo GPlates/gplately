@@ -66,13 +66,18 @@ from shapely.geometry.base import BaseGeometry, BaseMultipartGeometry
 from shapely.ops import linemerge
 
 from .geometry import pygplates_to_shapely
-import geopandas as gpd
 from .io import (
     get_valid_geometries,  # included for backwards compatibility
+    GEOPANDAS_AVAILABLE as _GEOPANDAS_AVAILABLE,
     get_geometries as _get_geometries,
 )
+
 from .tools import EARTH_RADIUS
 from .plotting_geopandas import *
+
+if _GEOPANDAS_AVAILABLE:
+    import geopandas as gpd
+    # plot_series = gpd.plotting.plot_series
 
     
 def add_coastlines(ax, reconstruction_time, **kwargs):
@@ -465,6 +470,13 @@ def plot_subduction_teeth(
         raise ValueError("Invalid projection: {}".format(projection))
 
     if polarity is None:
+        if not (
+            _GEOPANDAS_AVAILABLE and isinstance(geometries, gpd.GeoDataFrame)
+        ):
+            raise ValueError(
+                "If `polarity` is not given, `geometries` must be"
+                + " a `geopandas.GeoDataFrame`"
+            )
         polarity_column = _find_polarity_column(geometries.columns.values)
         if polarity_column is None:
             raise ValueError(
@@ -800,8 +812,9 @@ def _parse_geometries(geometries):
         Resolved shapely BaseMutipartGeometry and/or BaseGeometry instances.
     """
     geometries = _get_geometries(geometries)
-    if isinstance(geometries, gpd.GeoSeries):
-        geometries = list(geometries)
+    if _GEOPANDAS_AVAILABLE:
+        if isinstance(geometries, gpd.GeoSeries):
+            geometries = list(geometries)
 
     # Explode multi-part geometries
     # Weirdly the following seems to be faster than

@@ -1,5 +1,12 @@
 from shapely.geometry.base import BaseGeometry
-import geopandas as gpd
+try:
+    import geopandas as gpd
+
+    GEOPANDAS_AVAILABLE = True
+except ImportError:
+    import cartopy.io.shapereader as shpreader
+
+    GEOPANDAS_AVAILABLE = False
 
 __all__ = [
     "get_geometries",
@@ -27,7 +34,10 @@ def get_geometries(filename, buffer=None):
         shapefile. Can be plotted directly using
         `gplately.plot.add_geometries`.
     """
-    return _get_geometries_geopandas(filename, buffer=buffer)
+    if GEOPANDAS_AVAILABLE:
+        return _get_geometries_geopandas(filename, buffer=buffer)
+    else:
+        return _get_geometries_cartopy(filename, buffer=buffer)
 
 
 def get_valid_geometries(filename):
