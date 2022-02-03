@@ -228,28 +228,44 @@ class DataServer(object):
             Gondwana Research. 50: pp. 84-134. DOI: 10.1016/j.gr.2017.04.001
 
         - Li et al. 2008 : string identifier "Li2008"
-            Citation: Rodinia reconstruction from Li et al (2008), doi: 10.1016/j.precamres.2007.04.021
+            Citation: Rodinia reconstruction from Li et al (2008), Assembly, configuration, and break-up 
+            history of Rodinia: A synthesis. Precambrian Research. 160. 179-210. 
+            DOI: 10.1016/j.precamres.2007.04.021.
 
         - Pehrsson et al. 2015 : string identifier "Pehrsson2015"
-            Citation:
+            Citation: Pehrsson, S.J., Eglington, B.M., Evans, D.A.D., Huston, D., and Reddy, S.M., (2015),
+            Metallogeny and its link to orogenic style during the Nuna supercontinent cycle. Geological 
+            Society, London, Special Publications, 424, 83-94. DOI: https://doi.org/10.1144/SP424.5
 
         - Torsvik and Cocks et al. 2017 : string identifier "TorsvikCocks2017"
-            Citation:
+            Citation: Torsvik, T., & Cocks, L. (2016). Earth History and Palaeogeography. Cambridge: 
+            Cambridge University Press. doi:10.1017/9781316225523
 
         - Young et al. 2019 : string identifier "Young2019"
-            Citation:
+            Citation: Young, A., Flament, N., Maloney, K., Williams, S., Matthews, K., Zahirovic, S.,
+            Müller, R.D., (2019), Global kinematics of tectonic plates and subduction zones since the late 
+            Paleozoic Era, Geoscience Frontiers, Volume 10, Issue 3, pp. 989-1013, ISSN 1674-9871,
+            DOI: https://doi.org/10.1016/j.gsf.2018.05.011.
 
         - Scotese et al. 2008 : string identifier "Scotese2008"
-            Citation: 
+            Citation: Scotese, C.R. 2008. The PALEOMAP Project PaleoAtlas for ArcGIS, Volume 2, Cretaceous 
+            paleogeographic and plate tectonic reconstructions. PALEOMAP Project, Arlington, Texas.
 
         - Golonka et al. 2007 : string identifier "Golonka2007"
-            Citation:
+            Citation: Golonka, J. 2007. Late Triassic and Early Jurassic palaeogeography of the world. 
+            Palaeogeography, Palaeoclimatology, Palaeoecology 244(1–4), 297–307.
 
         - Clennett et al. 2020 (based on Muller et al. 2019) : string identifier "Clennett2020_M2019"
-            Citation:
+            Citation: Clennett, E.J., Sigloch, K., Mihalynuk, M.G., Seton, M., Henderson, M.A., Hosseini, K.,
+            Mohammadzaheri, A., Johnston, S.T., Müller, R.D., (2020), A Quantitative Tomotectonic Plate 
+            Reconstruction of Western North America and the Eastern Pacific Basin. Geochemistry, Geophysics, 
+            Geosystems, 21, e2020GC009117. DOI: https://doi.org/10.1029/2020GC009117
 
         - Clennett et al. 2020 (rigid topological model based on Shephard et al, 2013) : string identifier "Clennett2020_S2013"
-            Citation:
+            Citation: Clennett, E.J., Sigloch, K., Mihalynuk, M.G., Seton, M., Henderson, M.A., Hosseini, K.,
+            Mohammadzaheri, A., Johnston, S.T., Müller, R.D., (2020), A Quantitative Tomotectonic Plate 
+            Reconstruction of Western North America and the Eastern Pacific Basin. Geochemistry, Geophysics, 
+            Geosystems, 21, e2020GC009117. DOI: https://doi.org/10.1029/2020GC009117
 
 
     When calling the object, just supply one of these string identifiers. The object
