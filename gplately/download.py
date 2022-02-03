@@ -292,11 +292,8 @@ class DataServer(object):
         gDownload = gplately.download.DataServer("Muller2019")
 
     """
-    def __init__(self, file_collection=None):
-        if file_collection is None:
-            raise ValueError(
-                "Please supply a file collection to fetch."
-            )
+    def __init__(self, file_collection):
+
         self.file_collection = file_collection
         self.data_collection = DataCollection(self.file_collection)
 
@@ -586,7 +583,7 @@ class DataServer(object):
         return geometries
 
 
-    def get_age_grids(self, times=None):
+    def get_age_grid(self, time):
         """Downloads age grids from plate reconstruction files on GPlately's DataServer 
         into the "gplately" cache.
 
@@ -636,11 +633,8 @@ class DataServer(object):
         re-downloaded if the same workflow (or even a different one!) requires them. Rather,
         DataServer fetches them from the cache.
         """
-        if times is None:
-            raise ValueError("Please supply a list of times.")
-
         age_grids = []
-        age_grid_links = DataCollection.netcdf4_age_grids(self, times)
+        age_grid_links = DataCollection.netcdf4_age_grids(self, time)
         for link in age_grid_links:
             age_grid_file = _fetch_from_web(link)
             age_grid = _gplately.grids.read_netcdf_grid(age_grid_file)
@@ -721,7 +715,7 @@ class DataServer(object):
                 break
 
         if found_collection is False:
-            raise ValueError("%s not in collection database." % (raster_id_string))
+            raise ValueError("{} not in collection database.".format(raster_id_string))
         return raster_filenames
 
 

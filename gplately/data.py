@@ -1,4 +1,5 @@
 import re as _re
+from numpy import size as _size
 
 # ============ LINKS FOR DOWNLOADING PLATE RECONSTRUCTION FILES ON-THE-FLY ==============
 """ This auxiliary script contains links to download plate model data from web servers
@@ -9,7 +10,7 @@ and downloaded into the "gplately" folder in your machine's cache via Pooch.
 def _find_needed_collection(
     collection_identifier,
     data_dictionary,
-    times=None
+    time=None
     ):
     """Search through link databases and time arrays (or single integer
     time) for requested download links."""
@@ -17,13 +18,13 @@ def _find_needed_collection(
     all_urls = []
     for collection, url in data_dictionary.items():
         if collection_identifier.lower() == collection.lower():
-            if times is not None:
-                if isinstance(times, int):
-                    all_urls.append(url[0].format(str(times)))
+            if time is not None:
+                if _size(time) == 1:
+                    all_urls.append(url[0].format(str(int(time))))
                     return all_urls
-                elif isinstance(times, list):
-                    for t in times:
-                        url_current_time = url[0].format(str(t))
+                else:
+                    for t in time:
+                        url_current_time = url[0].format(str(int(t)))
                         all_urls.append(url_current_time)
                     return all_urls
             else:
@@ -47,7 +48,7 @@ class DataCollection(object):
         self.file_collection = file_collection
 
 
-    def netcdf4_age_grids(self, times):
+    def netcdf4_age_grids(self, time):
 
         age_grid_links = {
 
@@ -58,7 +59,7 @@ class DataCollection(object):
         links_to_download = _find_needed_collection(
             self.file_collection, 
             age_grid_links,
-            times)
+            time)
 
         return links_to_download
 
