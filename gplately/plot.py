@@ -72,6 +72,7 @@ from .io import (
     get_geometries as _get_geometries,
 )
 from .tools import EARTH_RADIUS
+from .plotting_geopandas import *
 
     
 def add_coastlines(ax, reconstruction_time, **kwargs):
@@ -1130,8 +1131,7 @@ class PlotTopologies(object):
             raise ValueError("Supply coastline_filename to PlotTopologies object")
 
         coastline_polygons = shapelify_feature_polygons(self.coastlines)
-        gdf = gpd.GeoDataFrame({"geometry": coastline_polygons}, geometry="geometry")
-        return gdf.plot(ax=ax, transform=self.base_projection, **kwargs)
+        return plot_series(coastline_polygons, ax=ax, transform=self.base_projection, **kwargs)
 
     def plot_continents(self, ax, **kwargs):
         """Plots reconstructed continental polygons onto a standard map. 
@@ -1159,8 +1159,7 @@ class PlotTopologies(object):
             raise ValueError("Supply continent_filename to PlotTopologies object")
 
         continent_polygons = shapelify_feature_polygons(self.continents)
-        gdf = gpd.GeoDataFrame({"geometry": continent_polygons}, geometry="geometry")
-        return gdf.plot(ax=ax, transform=self.base_projection, **kwargs)
+        return plot_series(continent_polygons, ax=ax, transform=self.base_projection, **kwargs)
 
     def plot_continent_ocean_boundaries(self, ax, **kwargs):
         """Plots reconstructed continent-ocean boundary (COB) polygons onto a standard map. 
@@ -1187,8 +1186,7 @@ class PlotTopologies(object):
             raise ValueError("Supply COB_filename to PlotTopologies object")
 
         COB_lines = shapelify_feature_lines(self.COBs)
-        gdf = gpd.GeoDataFrame({"geometry": COB_lines}, geometry="geometry")
-        return gdf.plot(ax=ax, transform=self.base_projection, **kwargs)
+        return plot_series(COB_lines, ax=ax, transform=self.base_projection, **kwargs)
 
     def plot_ridges(self, ax, color='black', **kwargs):
         """Plots reconstructed ridge polylines onto a standard map. 
@@ -1219,8 +1217,7 @@ class PlotTopologies(object):
             The `FeatureArtist` instance responsible for drawing the geometries.
         """
         ridge_lines = shapelify_feature_lines(self.ridges)
-        gdf = gpd.GeoDataFrame({"geometry": ridge_lines}, geometry="geometry")
-        return gdf.plot(ax=ax, facecolor='none', edgecolor=color, transform=self.base_projection, **kwargs)
+        return plot_series(ridge_lines, ax=ax, facecolor='none', edgecolor=color, transform=self.base_projection, **kwargs)
 
     def plot_ridges_and_transforms(self, ax, color='black', **kwargs):
         """Plots reconstructed ridge & transform boundary polylines onto a standard map. 
@@ -1251,8 +1248,7 @@ class PlotTopologies(object):
             The `FeatureArtist` instance responsible for drawing the geometries.
         """
         ridge_transform_lines = shapelify_feature_lines(self.ridge_transforms)
-        gdf = gpd.GeoDataFrame({"geometry": ridge_transform_lines}, geometry="geometry")
-        return gdf.plot(ax=ax, facecolor='none', edgecolor=color, transform=self.base_projection, **kwargs)
+        return plot_series(ridge_transform_lines, ax=ax, facecolor='none', edgecolor=color, transform=self.base_projection, **kwargs)
 
     def plot_transforms(self, ax, color='black', **kwargs):
         """Plots reconstructed transform boundary polylines onto a standard map. 
@@ -1283,8 +1279,7 @@ class PlotTopologies(object):
             The `FeatureArtist` instance responsible for drawing the geometries.
         """
         transform_lines = shapelify_feature_lines(self.transforms)
-        gdf = gpd.GeoDataFrame({"geometry": transform_lines}, geometry="geometry")
-        return gdf.plot(ax=ax, facecolor='none', edgecolor=color, transform=self.base_projection, **kwargs)
+        return plot_series(transform_lines, ax=ax, facecolor='none', edgecolor=color, transform=self.base_projection, **kwargs)
 
     def plot_trenches(self, ax, color='black', **kwargs):
         """Plots reconstructed subduction trench polylines onto a standard map. 
@@ -1315,8 +1310,7 @@ class PlotTopologies(object):
             The `FeatureArtist` instance responsible for drawing the geometries.
         """
         trench_lines = shapelify_feature_lines(self.trenches)
-        gdf = gpd.GeoDataFrame({"geometry": trench_lines}, geometry="geometry")
-        return gdf.plot(ax=ax, facecolor='none', edgecolor=color, transform=self.base_projection, **kwargs)
+        return plot_series(trench_lines, ax=ax, facecolor='none', edgecolor=color, transform=self.base_projection, **kwargs)
 
     def plot_misc_boundaries(self, ax, color="black", **kwargs):
         """Plots reconstructed miscellaneous plate boundary polylines onto a standard map.
@@ -1347,8 +1341,7 @@ class PlotTopologies(object):
             The `FeatureArtist` instance responsible for drawing the geometries.
         """
         lines = shapelify_features(self.other)
-        gdf = gpd.GeoDataFrame({"geometry": lines}, geometry="geometry")
-        return gdf.plot(ax=ax, facecolor='none', edgecolor=color, transform=self.base_projection, **kwargs)
+        return plot_series(lines, ax=ax, facecolor='none', edgecolor=color, transform=self.base_projection, **kwargs)
 
     def plot_subduction_teeth_deprecated(self, ax, spacing=0.1, size=2.0, aspect=1, color='black', **kwargs):
         """Plots subduction teeth onto a standard map. 
