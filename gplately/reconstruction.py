@@ -935,4 +935,21 @@ class Points(object):
         -------
         Feature collection saved under given filename to current directory.
         """
-        self.FeatureCollection.save(filename)
+        filename = str(filename)
+
+        numpy_types = {'.csv': ',', '.txt': ' ', '.dat': ' '}
+
+        if filename.endswith(tuple(numpy_types.keys())):
+            data = np.c_[self.lons, self.lats, self.plate_id]
+
+            # find appropriate delimiter
+            delimiter = numpy_types[filename[filename.index('.'):]]
+
+            header = "Longitude{0}Latitude{0}Plate_ID".format(delimiter)
+            np.savetxt(filename, data, header=header, delimiter=delimiter, comments='')
+
+        elif filename.endswith('.gpml'):
+            self.FeatureCollection.write(filename)
+
+        else:
+            raise ValueError("Cannot save to specified file type, use csv or gpml file extension.")
