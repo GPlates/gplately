@@ -207,7 +207,8 @@ def pygplates_to_shapely(
                 tmp = tmp.buffer(0.0)
             # this is for pole-clipped polygons turned into MultiPolygons
             if isinstance(tmp, _MultiPolygon):
-                for geom in list(tmp):
+                #for geom in list(tmp):
+                for geom in tmp.geoms:
                     output_geoms.append(geom)
             else:
                 output_geoms.append(tmp)
