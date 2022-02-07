@@ -147,7 +147,9 @@ def _collection_sorter(fnames, string_identifier):
         "merdith2021",
         "scotese2008",
         "golonka2007",
-        "clennett2020"
+        "clennett2020",
+        "johansson2018",
+        "whittaker2015"
     ]
     if string_identifier.lower() in needs_sorting:
         studyname = _re.findall(r'[A-Za-z]+|\d+', string_identifier)[0]
@@ -649,7 +651,7 @@ class DataServer(object):
             return age_grids
 
 
-    def get_raster(self, raster_id_string=None, filetype=None):
+    def get_raster(self, raster_id_string=None):
         """Downloads assorted rasters and images from the web that are not associated with
         a plate reconstruction model in DataServer into the "gplately" cache.
 
@@ -687,15 +689,12 @@ class DataServer(object):
         -----
         Rasters obtained by this method are (so far) only reconstructed to present-day. 
         """
+        from matplotlib import image
         if raster_id_string is None:
             raise ValueError(
                 "Please specify which raster to download."
             )
-        if filetype is None:
-            raise ValueError(
-                "Please specify which raster filetype to download (i.e. 'tif')."
-            )
-        filetype = "."+filetype
+        #filetype = "."+"_".split(raster_id_string)[-1]
 
         archive_formats = tuple([".gz", ".xz", ".bz2"])
         # Set to true if we find the given collection in database
@@ -705,18 +704,18 @@ class DataServer(object):
 
         for collection, zip_url in database.items():
             # Isolate the raster name and the file type
-            raster_name = collection.split("_")[0]
-            raster_type = "."+collection.split("_")[-1]
-            if (raster_id_string.lower() == raster_name.lower()
-                and filetype.lower() == raster_type.lower()
-                ):
+            #raster_name = collection.split("_")[0]
+            #raster_type = "."+collection.split("_")[-1]
+            if (raster_id_string.lower() == collection.lower()):
                 raster_filenames = _fetch_from_web(zip_url[0])
                 found_collection = True
                 break
 
         if found_collection is False:
             raise ValueError("{} not in collection database.".format(raster_id_string))
-        return raster_filenames
+        else:
+            raster_matrix = image.imread(raster_filenames)
+        return raster_matrix
 
 
     def get_feature_data(self, feature_data_id_string=None):
@@ -726,15 +725,15 @@ class DataServer(object):
 
         - Large igneous provinces from Johansson et al. (2018)
             Formats: .gpmlz
-            String identifier: "LIP_VolcanicProvinces"
+            String identifier: "Johansson2018"
             Citation: Johansson, L., Zahirovic, S., and Müller, R. D., In Prep, The 
             interplay between the eruption and weathering of Large Igneous Provinces and 
             the deep-time carbon cycle: Geophysical Research Letters.
 
         - Large igneous province products interpreted as plume products from Whittaker 
         et al. (2015).
-            Formats: .gpmla, .shp
-            String identifier: "LIP_VolcanicProvinces"
+            Formats: .gpmlz, .shp
+            String identifier: "Whittaker2015"
             Citation: Whittaker, J. M., Afonso, J. C., Masterton, S., Müller, R. D., 
             Wessel, P., Williams, S. E., & Seton, M. (2015). Long-term interaction between 
             mid-ocean ridges and mantle plumes. Nature Geoscience, 8(6), 479-483. 
@@ -784,9 +783,22 @@ class DataServer(object):
         for collection, zip_url in database.items():
             if feature_data_id_string.lower() == collection.lower():
                 found_collection = True
-                feature_data_filenames = _collect_file_extension(
+                feature_data_filenames = _collection_sorter(
+                    _collect_file_extension(
                     _fetch_from_web(zip_url[0]), [".gpml", ".gpmlz"]
+                    ),
+                    collection
                 )
+
                 break
-        return feature_data_filenames
+
+        feat_data = _pygplates.FeatureCollection()
+        if len(feature_data_filenames) == 1:
+                feat_data.add(_pygplates.FeatureCollection(feature_data_filenames[0]))
+                return feat_data
+        else:    
+            feat_data=[]
+            for file in feature_data_filenames:
+                feat_data.append(_pygplates.FeatureCollection(file))
+            return feat_data
     
