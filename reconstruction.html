@@ -968,7 +968,24 @@ class Points(object):
         -------
         Feature collection saved under given filename to current directory.
         &#34;&#34;&#34;
-        self.FeatureCollection.save(filename)</code></pre>
+        filename = str(filename)
+
+        numpy_types = {&#39;.csv&#39;: &#39;,&#39;, &#39;.txt&#39;: &#39; &#39;, &#39;.dat&#39;: &#39; &#39;}
+
+        if filename.endswith(tuple(numpy_types.keys())):
+            data = np.c_[self.lons, self.lats, self.plate_id]
+
+            # find appropriate delimiter
+            delimiter = numpy_types[filename[filename.index(&#39;.&#39;):]]
+
+            header = &#34;Longitude{0}Latitude{0}Plate_ID&#34;.format(delimiter)
+            np.savetxt(filename, data, header=header, delimiter=delimiter, comments=&#39;&#39;)
+
+        elif filename.endswith(&#39;.gpml&#39;):
+            self.FeatureCollection.write(filename)
+
+        else:
+            raise ValueError(&#34;Cannot save to specified file type, use csv or gpml file extension.&#34;)</code></pre>
 </details>
 </section>
 <section>
@@ -2918,7 +2935,24 @@ static polygons.</dd>
         -------
         Feature collection saved under given filename to current directory.
         &#34;&#34;&#34;
-        self.FeatureCollection.save(filename)</code></pre>
+        filename = str(filename)
+
+        numpy_types = {&#39;.csv&#39;: &#39;,&#39;, &#39;.txt&#39;: &#39; &#39;, &#39;.dat&#39;: &#39; &#39;}
+
+        if filename.endswith(tuple(numpy_types.keys())):
+            data = np.c_[self.lons, self.lats, self.plate_id]
+
+            # find appropriate delimiter
+            delimiter = numpy_types[filename[filename.index(&#39;.&#39;):]]
+
+            header = &#34;Longitude{0}Latitude{0}Plate_ID&#34;.format(delimiter)
+            np.savetxt(filename, data, header=header, delimiter=delimiter, comments=&#39;&#39;)
+
+        elif filename.endswith(&#39;.gpml&#39;):
+            self.FeatureCollection.write(filename)
+
+        else:
+            raise ValueError(&#34;Cannot save to specified file type, use csv or gpml file extension.&#34;)</code></pre>
 </details>
 <h3>Methods</h3>
 <dl>
@@ -3233,7 +3267,24 @@ rlons, rlats = gpts.reconstruct_to_birth_age(ages)
     -------
     Feature collection saved under given filename to current directory.
     &#34;&#34;&#34;
-    self.FeatureCollection.save(filename)</code></pre>
+    filename = str(filename)
+
+    numpy_types = {&#39;.csv&#39;: &#39;,&#39;, &#39;.txt&#39;: &#39; &#39;, &#39;.dat&#39;: &#39; &#39;}
+
+    if filename.endswith(tuple(numpy_types.keys())):
+        data = np.c_[self.lons, self.lats, self.plate_id]
+
+        # find appropriate delimiter
+        delimiter = numpy_types[filename[filename.index(&#39;.&#39;):]]
+
+        header = &#34;Longitude{0}Latitude{0}Plate_ID&#34;.format(delimiter)
+        np.savetxt(filename, data, header=header, delimiter=delimiter, comments=&#39;&#39;)
+
+    elif filename.endswith(&#39;.gpml&#39;):
+        self.FeatureCollection.write(filename)
+
+    else:
+        raise ValueError(&#34;Cannot save to specified file type, use csv or gpml file extension.&#34;)</code></pre>
 </details>
 </dd>
 </dl>
