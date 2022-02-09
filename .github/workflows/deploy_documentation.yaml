@@ -29,6 +29,7 @@ jobs:
     - name : Generate documentation with pdoc3
       run : |
         export PYTHONPATH=$PYTHONPATH:/usr/lib/
+        export LD_PRELOAD=/lib/x86_64-linux-gnu/libstdc++.so.6:$LD_PRELOAD
         pdoc --config latex_math=True --html -o api --force gplately
     - name : Deploy to gh-pages
       uses: JamesIves/github-pages-deploy-action@v4.2.2
