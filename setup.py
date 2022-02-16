@@ -88,8 +88,9 @@ if __name__ == "__main__":
                                'cartopy',
                                'PlateTectonicTools',
                                'pooch',
-                               'tqdm'
-                               "netcdf4",
+                               'tqdm',
+                               'netcdf4',
+                               'rasterio',
                                ],
           packages          = ['gplately'],
           package_data      = {'gplately': ['Notebooks/*ipynb', # Worked Examples is not currently used

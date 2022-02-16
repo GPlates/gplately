@@ -12,21 +12,18 @@ TimeRaster
 """
 import concurrent.futures
 from multiprocessing import cpu_count
-import tempfile
-import os
 import warnings
 
 import pygplates
-from geocube.api.core import make_geocube
-import geopandas as gpd
 import numpy as np
+from rasterio.enums import MergeAlg
+from rasterio.features import rasterize as _rasterize
+from rasterio.transform import from_bounds as _from_bounds
 from scipy.interpolate import RegularGridInterpolator as _RGI
 from scipy.ndimage import distance_transform_edt, map_coordinates
-from shapely.geometry import box
-from skimage.transform import resize
 
+from .geometry import pygplates_to_shapely
 from .reconstruction import Points as _Points
-from .tools import EARTH_RADIUS as _EARTH_RADIUS
 
 
 def fill_raster(data,invalid=None):
@@ -372,9 +369,9 @@ def sample_grid(lon, lat, grid, extent=[-180,180,-90,90], return_indices=False, 
 
 def reconstruct_grid(
     grid,
-    partitioning_features,
-    rotation_model,
-    to_time,
+    partitioning_features=None,
+    rotation_model=None,
+    to_time=0.0,
     from_time=0.0,
     extent="global",
     origin="upper",
@@ -433,6 +430,11 @@ def reconstruct_grid(
         pass
     if to_time == from_time:
         return grid
+    elif rotation_model is None:
+        raise TypeError(
+            "`rotation_model` must be provided if `to_time` != `from_time`"
+        )
+
     if plate_ids is not None:
         plate_ids = np.array(plate_ids)
     if plate_ids is not None and plate_ids.shape != grid.shape:
@@ -487,15 +489,14 @@ def reconstruct_grid(
         plate_ids = rasterise(
             features=partitioning_features,
             rotation_model=rotation_model,
-            key="PLATEID1",
-            resx=resx,
-            resy=resy,
-            time=to_time,
+            key="plate_id",
+            time=None if to_time == 0.0 and rotation_model is None else to_time,
             extent=extent,
             shape=grid.shape,
-        ).flatten()
-    else:
-        plate_ids = plate_ids.flatten()
+        )
+        if origin == "upper":
+            plate_ids = np.flipud(plate_ids)
+    plate_ids = plate_ids.flatten()
 
     unique_plate_ids = np.unique(plate_ids)
     rotations_dict = {}
@@ -604,12 +605,12 @@ def reconstruct_grid(
 def rasterise(
     features,
     rotation_model=None,
-    key="PLATEID1",
-    time=0.0,
+    key="plate_id",
+    time=None,
     resx=1.0,
     resy=1.0,
-    extent="global",
     shape=None,
+    extent="global",
 ):
     """Rasterise GPlates objects at a given reconstruction time.
 
@@ -629,29 +630,29 @@ def rasterise(
         (`str`), a rotation feature (`pygplates.Feature`), a sequence of
         rotation features, or a (potentially nested) sequence of any
         combination of the above types.
-        Alternatively, if time == 0 (present-day), a rotation model is
+        Alternatively, if time not given, a rotation model is
         not usually required.
-    key : str, default "PLATEID1"
-        `key` may be any one of the following values:
-        "PLATEID1" (plate ID),
-        "PLATEID2" (conjugate plate ID),
-        "FROMAGE" (time of appearance),
-        "TOAGE" (time of disappearance),
-        "L_PLATE" (left plate ID),
-        "R_PLATE" (right plate ID),
-        "SPREAD_ASY" (spreading asymmetry),
-        "IMPORT_AGE" (time of geometry import)
-    time : float, default 0.0
-        Reconstruction time at which to perform rasterisation.
+    key : str, default "plate_id"
+        The value used to create the rasterised grid. May be any of
+        the following values:
+        - "plate_id"
+        - "conjugate_plate_id"
+        - "from_age"
+        - "to_age"
+        - "left_plate"
+        - "right_plate"
+    time : float, optional
+        Reconstruction time at which to perform rasterisation. If given,
+        `rotation_model` must also be specified.
     resx, resy : float, default 1.0
         Resolution (in degrees) of the rasterised grid.
+    shape : tuple, optional
+        If given, the output grid will have the specified shape,
+        overriding `resx` and `resy`.
     extent : tuple or "global", default "global"
         Extent of the rasterised grid. Valid arguments are a tuple of
         the form (xmin, xmax, ymin, ymax), or the string "global",
         equivalent to (-180.0, 180.0, -90.0, 90.0).
-    shape : tuple, optional
-        If given, force the output grid to have the specified shape.
-        The result will potentially be padded or shrunk accordingly.
 
     Returns
     -------
@@ -663,131 +664,108 @@ def rasterise(
     Raises
     ------
     ValueError
-        If an invalid `key` value is passed, or if `rotation_model` is not
-        supplied and `time` != 0.0.
+        If an invalid `key` value is passed.
+    TypeError
+        If `rotation_model` is not supplied and `time` is not `None`.
 
     Notes
     -----
     This function is used by gplately.grids.reconstruct_grids to rasterise
-    static polygons, extracting their plate IDs.
+    static polygons in order to extract their plate IDs.
     """
-    # Valid numerical values are as follows
-    # N.B. only PLATEID1, TOAGE, and FROMAGE values
-    # are particularly meaningful
     valid_keys = {
-        "PLATEID1",
-        "TOAGE",
-        "FROMAGE",
-        "PLATEID2",
-        "L_PLATE",
-        "R_PLATE",
-        "SPREAD_ASY",
-        "IMPORT_AGE",
+        "plate_id",
+        "conjugate_plate_id",
+        "from_age",
+        "to_age",
+        "left_plate",
+        "right_plate",
     }
-    key_dtypes = {
-        "PLATEID1": int,
-        "TOAGE": float,
-        "FROMAGE": float,
-        "PLATEID2": int,
-        "L_PLATE": int,
-        "R_PLATE": int,
-        "SPREAD_ASY": float,
-        "IMPORT_AGE": float,
-    }
+    try:
+        key = key.lower()
+    except AttributeError as err:
+        raise TypeError("Invalid key type: {}".format(type(key))) from err
     if key not in valid_keys:
         raise ValueError(
-            "`key` must be one of the following:" + "{}".format(valid_keys)
+            "Invalid key: {}".format(key)
+            + "\nkey must be one of {}".format(valid_keys)
         )
+
+    try:
+        extent = extent.lower()
+    except AttributeError:
+        pass
     if extent == "global":
         extent = (-180.0, 180.0, -90.0, 90.0)
-    if extent[1] < extent[0]:
-        extent = (extent[1], extent[0], extent[2], extent[3])
-    if extent[3] < extent[2]:
-        extent = (extent[0], extent[1], extent[3], extent[2])
-    features = pygplates.FeaturesFunctionArgument(features).get_features()
-    time = float(time)
+    minx, maxx, miny, maxy = extent
+
+    if shape is not None:
+        lons = np.linspace(minx, maxx, shape[1], endpoint=True)
+        lats = np.linspace(miny, maxy, shape[0], endpoint=True)
+    else:
+        lons = np.arange(minx, maxx + resx, resx)
+        lats = np.arange(miny, maxy + resy, resy)
+    nx = lons.size
+    ny = lats.size
+
     if rotation_model is None:
-        if time != 0.0:
-            raise ValueError(
-                "If `rotation_model` is not provided, `time` must not"
-                + " be zero ({} != 0)".format(time)
+        if time is not None:
+            raise TypeError(
+                "Rotation model must be provided if `time` is not `None`"
             )
         rotation_model = pygplates.RotationModel(pygplates.Feature())
-    else:
-        rotation_model = pygplates.RotationModel(rotation_model)
-    with tempfile.TemporaryDirectory() as tmpdir:
-        out = os.path.join(tmpdir, "{}.shp".format(time))
-        pygplates.reconstruct(
-            features,
-            rotation_model,
-            out,
-            float(time),
-        )
-        if not os.path.isfile(out):
-            out = os.path.join(
-                tmpdir,
-                "{}".format(time),
-                "{}_polygon.shp".format(time),
-            )
-        gdf = gpd.read_file(out)
-    # This step could raise problems, as GPlates often produces
-    # geometries which are technically invalid and thus
-    # cause geometric operations like clip to fail
-    if extent is not None and extent != (-180, 180, -90, 90):
-        gdf = gpd.clip(
-            gdf,
-            box(extent[0], extent[2], extent[1], extent[3]),
-        )
-    dtype = key_dtypes[key]
-    if dtype is int:
+        time = 0.0
+    features = pygplates.FeaturesFunctionArgument(features).get_features()
+    time = float(time)
+
+    reconstructed = []
+    pygplates.reconstruct(
+        features,
+        rotation_model,
+        reconstructed,
+        time,
+    )
+    geometries = pygplates_to_shapely(reconstructed)
+
+    if key == "plate_id":
+        values = [i.get_feature().get_reconstruction_plate_id() for i in reconstructed]
         fill_value = -1
-    else:
+        dtype = np.int32
+    elif key == "conjugate_plate_id":
+        values = [i.get_feature().get_conjugate_plate_id() for i in reconstructed]
+        fill_value = -1
+        dtype = np.int32
+    elif key == "from_age":
+        values = [i.get_feature().get_valid_time()[0] for i in reconstructed]
         fill_value = np.nan
-    gdf[key] = gdf[key].astype(dtype)
+        dtype = np.float32
+    elif key == "to_age":
+        values = [i.get_feature().get_valid_time()[1] for i in reconstructed]
+        fill_value = np.nan
+        dtype = np.float32
+    elif key == "left_plate":
+        values = [i.get_feature().get_left_plate() for i in reconstructed]
+        fill_value = -1
+        dtype = np.int32
+    elif key == "right_plate":
+        values = [i.get_feature().get_right_plate() for i in reconstructed]
+        fill_value = -1
+        dtype = np.int32
+    else:
+        raise ValueError(
+            "Invalid key: {}".format(key)
+            + "\nkey must be one of {}".format(valid_keys)
+        )
 
-    dset = make_geocube(
-        gdf,
-        [key],
-        resolution=(resy, resx),
+    out = _rasterize(
+        shapes=zip(geometries, values),
+        out_shape=(ny, nx),
         fill=fill_value,
-        align=(np.abs(resy) * 0.5, np.abs(resx) * 0.5),
+        dtype=dtype,
+        merge_alg=MergeAlg.replace,
+        transform=_from_bounds(minx, miny, maxx, maxy, nx, ny),
     )
-    data = dset[key]
-
-    if extent is None or shape is None or data.shape == shape:
-        return np.array(data, dtype=dtype)
-
-    size = shape[0] * shape[1]
-    if data.size < size:
-        # Often we need to pad the result of make_geocube by
-        # one or two rows or columns
-        dset_extent = (
-            float(dset["x"].min()),
-            float(dset["x"].max()),
-            float(dset["y"].min()),
-            float(dset["y"].max()),
-        )
-        pad_left = int(np.abs((dset_extent[0] - extent[0]) / resx))
-        pad_right = int(np.abs((dset_extent[1] - extent[1] + 1) / resx))
-        pad_bottom = int(np.abs((dset_extent[2] - extent[2]) / resy))
-        pad_top = int(np.abs((dset_extent[3] - extent[3] + 1) / resy))
-        data = data.pad(
-            {
-                "x": (pad_left, pad_right),
-                "y": (pad_bottom, pad_top),
-            },
-            constant_values=fill_value,
-        )
-
-    data = np.array(data, dtype=dtype)
-    data = resize(
-        data,
-        shape,
-        order=0,
-        mode="wrap",
-        preserve_range=True,
-    )
-    return data
+    return out
 
 
 rasterize = rasterise
