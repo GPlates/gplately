@@ -497,6 +497,10 @@ def plot_subduction_teeth(
             transform,
         )
 
+    if projection is not None:
+        domain = projection.domain
+        triangles = [domain.intersection(i) for i in triangles]
+
     if hasattr(ax, "add_geometries") and projection is not None:
         ax.add_geometries(triangles, crs=projection, **kwargs)
     else:
