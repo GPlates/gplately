@@ -25,6 +25,19 @@ from scipy.ndimage import distance_transform_edt, map_coordinates
 from .geometry import pygplates_to_shapely
 from .reconstruction import Points as _Points
 
+__all__ = [
+    "fill_raster",
+    "read_netcdf_grid",
+    "write_netcdf_grid",
+    "RegularGridInterpolator",
+    "sample_grid",
+    "reconstruct_grid",
+    "rasterise",
+    "rasterize",
+    "Raster",
+    "TimeRaster",
+]
+
 
 def fill_raster(data,invalid=None):
     """Searches grid for invalid ‘data’ cells containing NaN-type entries (as indicated by ‘invalid’), locates the index 
@@ -183,7 +196,6 @@ def write_netcdf_grid(filename, grid, extent=[-180,180,-90,90]):
 
         cdf_data = cdf.createVariable('z', grid.dtype, ('y','x'), zlib=True)
         cdf_data[:,:] = grid
-
 
 
 class RegularGridInterpolator(_RGI):
@@ -364,7 +376,6 @@ def sample_grid(lon, lat, grid, extent=[-180,180,-90,90], return_indices=False, 
                                             grid, method=method)
 
     return interpolator(np.c_[lat, lon], return_indices=return_indices, return_distances=return_distances)
-
 
 
 def reconstruct_grid(
@@ -1298,9 +1309,6 @@ class Raster(object):
         zi[angles.ravel() > rxy] = np.nan
         zi = zi.reshape(lonq.shape)
         return zi
-
-
-
 
 
 class TimeRaster(Raster):
