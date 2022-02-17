@@ -173,6 +173,8 @@ def pygplates_to_shapely(
 
     if isinstance(geometry, pygplates.LatLonPoint):
         geometry = geometry.to_point_on_sphere()
+    if isinstance(geometry, pygplates.ReconstructedFeatureGeometry):
+        geometry = geometry.get_reconstructed_geometry()
     if not isinstance(geometry, pygplates.GeometryOnSphere):
         raise TypeError("Invalid geometry type: " + str(type(geometry)))
 
@@ -474,17 +476,25 @@ def _contains_shapely_geometries(i):
     return False
 
 
+def _is_pygplates_geometry(geom):
+    return isinstance(
+        geom,
+        (
+            pygplates.GeometryOnSphere,
+            pygplates.LatLonPoint,
+            pygplates.ReconstructedFeatureGeometry,
+        ),
+    )
+
+
 def _contains_pygplates_geometries(i):
     """Check if input is an iterable containing only PyGPlates geometries."""
-    is_pygplates_geometry = lambda x: isinstance(
-        x, (pygplates.GeometryOnSphere, pygplates.LatLonPoint)
-    )
-    if is_pygplates_geometry(i):
+    if _is_pygplates_geometry(i):
         return False
     try:
         # Check all elements in i are PyGPlates geometries
         for j in i:
-            if not is_pygplates_geometry(j):
+            if not _is_pygplates_geometry(j):
                 break
         else:
             return True

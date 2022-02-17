@@ -10,11 +10,34 @@ RegularGridInterpolator
 Raster
 TimeRaster
 """
+import concurrent.futures
+from multiprocessing import cpu_count
+import warnings
+
+import pygplates
 import numpy as np
+from rasterio.enums import MergeAlg
+from rasterio.features import rasterize as _rasterize
+from rasterio.transform import from_bounds as _from_bounds
 from scipy.interpolate import RegularGridInterpolator as _RGI
-from scipy.ndimage import distance_transform_edt
+from scipy.ndimage import distance_transform_edt, map_coordinates
+
+from .geometry import pygplates_to_shapely
 from .reconstruction import Points as _Points
-from .tools import EARTH_RADIUS as _EARTH_RADIUS
+
+__all__ = [
+    "fill_raster",
+    "read_netcdf_grid",
+    "write_netcdf_grid",
+    "RegularGridInterpolator",
+    "sample_grid",
+    "reconstruct_grid",
+    "rasterise",
+    "rasterize",
+    "Raster",
+    "TimeRaster",
+]
+
 
 def fill_raster(data,invalid=None):
     """Searches grid for invalid ‘data’ cells containing NaN-type entries (as indicated by ‘invalid’), locates the index 
@@ -173,7 +196,6 @@ def write_netcdf_grid(filename, grid, extent=[-180,180,-90,90]):
 
         cdf_data = cdf.createVariable('z', grid.dtype, ('y','x'), zlib=True)
         cdf_data[:,:] = grid
-
 
 
 class RegularGridInterpolator(_RGI):
@@ -356,6 +378,598 @@ def sample_grid(lon, lat, grid, extent=[-180,180,-90,90], return_indices=False, 
     return interpolator(np.c_[lat, lon], return_indices=return_indices, return_distances=return_distances)
 
 
+def reconstruct_grid(
+    grid,
+    partitioning_features=None,
+    rotation_model=None,
+    to_time=0.0,
+    from_time=0.0,
+    extent="global",
+    origin="upper",
+    plate_ids=None,
+    threads=1,
+):
+    """Reconstruct a gridded dataset to a given reconstruction time.
+
+    Parameters
+    ----------
+    grid : array_like, or str
+        The grid to be reconstructed. If `grid` is a filename, it will be
+        loaded using `gplately.grids.read_netcdf_grid`.
+    partitioning_features : valid argument to pygplates.FeaturesFunctionArgument
+        Features used to partition `grid` by plate ID, usually a static
+        polygons file. `partitioning_features` may be a single
+        feature (`pygplates.Feature`), a feature collection
+        (`pygplates.FeatureCollection`), a filename (`str`), or a (potentially
+        nested) sequence of any combination of the above types.
+    rotation_model : valid argument to pygplates.RotationModel
+        The rotation model used to reconstruct `grid`.
+        `rotation_model` may be a rotation model object
+        (`pygplates.RotationModel`), a rotation feature collection
+        (`pygplates.FeatureCollection`), a rotation filename
+        (`str`), a rotation feature (`pygplates.Feature`), a sequence of
+        rotation features, or a (potentially nested) sequence of any
+        combination of the above types.
+    to_time : float
+        Time to which `grid` will be reconstructed.
+    from_time : float, default 0.0
+        Time from which to reconstruct `grid`.
+    extent : tuple or "global", default "global"
+        Extent of `grid`. Valid arguments are a tuple of
+        the form (xmin, xmax, ymin, ymax), or the string "global",
+        equivalent to (-180.0, 180.0, -90.0, 90.0).
+    origin : {"upper", "lower"}
+        Origin of `grid` - either lower-left or upper-left.
+    plate_ids : array_like, optional
+        If a rasterised grid of plate IDs has already been obtained
+        (e.g. using `gplately.grids.rasterise`), it can be provided here
+        in order to avoid repeatedly rasterising `partitioning_features`.
+        `plate_ids` must be of the same shape as `grid`.
+    threads : int, default 1
+        Number of threads to use for certain computationally heavy subroutines.
+
+    Returns
+    -------
+    numpy.ndarray
+        The reconstructed grid. Areas for which no plate ID could be obtained
+        from `partitioning_features` will be filled with either `-1` or
+        `np.nan`, depending on the dtype of `grid`.
+    """
+    try:
+        grid = np.array(read_netcdf_grid(grid))
+    except Exception:
+        pass
+    if to_time == from_time:
+        return grid
+    elif rotation_model is None:
+        raise TypeError(
+            "`rotation_model` must be provided if `to_time` != `from_time`"
+        )
+
+    if plate_ids is not None:
+        plate_ids = np.array(plate_ids)
+    if plate_ids is not None and plate_ids.shape != grid.shape:
+        raise ValueError(
+            "Shape mismatch: "
+            + "`grid.shape` == {}, ".format(grid.shape)
+            + "`plate_ids.shape` == {}".format(plate_ids.shape)
+        )
+    if origin.lower() not in {"lower", "upper"}:
+        raise ValueError("Invalid `origin` value: {}".format(origin))
+    origin = origin.lower()
+    dtype = grid.dtype
+    if dtype.kind in ("b", "u"):
+        grid = grid.astype(int)
+        dtype = grid.dtype
+
+    if isinstance(threads, str):
+        if threads.lower() in {"all", "max"}:
+            threads = cpu_count()
+        else:
+            raise ValueError("Invalid `threads` value: {}".format(threads))
+    threads = min([int(threads), cpu_count()])
+    threads = max([threads, 1])
+
+    grid = grid.squeeze()
+    if grid.ndim != 2:
+        raise ValueError("`grid` has invalid shape {}".format(grid.shape))
+    if extent == "global":
+        extent = (-180, 180, -90, 90)
+    xmin, xmax, ymin, ymax = extent
+    if xmin > xmax:
+        xmin, xmax = xmax, xmin
+    if ymin > ymax:
+        ymin, ymax = ymax, ymin
+    ny, nx = grid.shape
+    resx = (xmax - xmin) / nx
+    resy = (ymax - ymin) / ny
+
+    if not isinstance(partitioning_features, pygplates.FeatureCollection):
+        partitioning_features = pygplates.FeatureCollection(
+            pygplates.FeaturesFunctionArgument(
+                partitioning_features
+            ).get_features()
+        )
+    if not isinstance(rotation_model, pygplates.RotationModel):
+        rotation_model = pygplates.RotationModel(rotation_model)
+
+    lats = np.arange(ymin + resy * 0.5, ymax, resy)
+    lons = np.arange(xmin + resx * 0.5, xmax, resx)
+    lons, lats = np.meshgrid(lons, lats)
+    if plate_ids is None:
+        plate_ids = rasterise(
+            features=partitioning_features,
+            rotation_model=rotation_model,
+            key="plate_id",
+            time=None if to_time == 0.0 and rotation_model is None else to_time,
+            extent=extent,
+            shape=grid.shape,
+        )
+        if origin == "upper":
+            plate_ids = np.flipud(plate_ids)
+    plate_ids = plate_ids.flatten()
+
+    unique_plate_ids = np.unique(plate_ids)
+    rotations_dict = {}
+    for plate in unique_plate_ids:
+        if plate == -1:
+            continue
+        rot = rotation_model.get_rotation(
+            float(from_time),
+            int(plate),
+            float(to_time),
+        )
+        if not isinstance(rot, pygplates.FiniteRotation):
+            continue
+        lat, lon, angle = rot.get_lat_lon_euler_pole_and_angle_degrees()
+        angle = np.deg2rad(angle)
+        vec = _lat_lon_to_vector(lat, lon, degrees=True)
+        rotations_dict[plate] = (vec, angle)
+
+    point_vecs = _lat_lon_to_vector(
+        lats,
+        lons,
+        degrees=True,
+        threads=threads,
+    )
+
+    rotated_vecs = np.full_like(point_vecs, np.nan)
+    if threads > 1:
+        executor = concurrent.futures.ThreadPoolExecutor(threads)
+        plate_ids_divided = np.array_split(unique_plate_ids, threads)
+
+        def _fill(ids, out):
+            for id in ids:
+                if id == -1:
+                    continue
+                index = plate_ids == id
+                vec_subset = point_vecs[index, :]
+                rotation, angle = rotations_dict[id]
+                rotated = _rotate(vec_subset, rotation, angle)
+                out[index] = rotated
+
+        futures = {}
+        for i in range(threads):
+            args = (
+                _fill,
+                plate_ids_divided[i],
+                rotated_vecs,
+            )
+            futures[executor.submit(*args)] = i
+        concurrent.futures.wait(futures)
+        executor.shutdown(False)
+    else:
+        for plate_id in unique_plate_ids:
+            if plate_id == -1:
+                continue
+            index = plate_ids == plate_id
+            vec_subset = point_vecs[index, :]
+            rotation, angle = rotations_dict[plate_id]
+            rotated = _rotate(vec_subset, rotation, angle)
+            rotated_vecs[index] = rotated
+
+    x = rotated_vecs[:, 0]
+    y = rotated_vecs[:, 1]
+    z = rotated_vecs[:, 2]
+    rotated_lats, rotated_lons = _vector_to_lat_lon(
+        x,
+        y,
+        z,
+        degrees=True,
+        return_array=True,
+        threads=threads,
+    )
+    if origin == "upper":
+        rotated_y = (ymax - rotated_lats) / resy
+    else:
+        rotated_y = (rotated_lats - ymin) / resy
+    rotated_x = np.abs((rotated_lons - xmin) / resx)
+
+    mask = plate_ids != -1
+    interp_coords = np.vstack(
+        (
+            rotated_y.reshape((1, -1)),
+            rotated_x.reshape((1, -1)),
+        )
+    )
+    # data = np.full(rotated_lats.size, np.nan)
+    if dtype.kind == "i":
+        fill_value = -1
+    elif dtype.kind in ("f", "c"):
+        fill_value = np.nan
+    else:
+        fill_value = np.nan
+    data = np.full(rotated_lats.size, fill_value, dtype=dtype)
+    tmp = map_coordinates(
+        grid,
+        interp_coords[:, mask],
+        mode="grid-wrap",
+        order=0,
+    ).squeeze()
+    data[mask] = tmp
+    data = data.reshape(grid.shape)
+    if origin == "upper":
+        data = np.flipud(data)
+    return data
+
+
+def rasterise(
+    features,
+    rotation_model=None,
+    key="plate_id",
+    time=None,
+    resx=1.0,
+    resy=1.0,
+    shape=None,
+    extent="global",
+):
+    """Rasterise GPlates objects at a given reconstruction time.
+
+    This function is particularly useful for rasterising static polygons
+    to extract a grid of plate IDs.
+
+    Parameters
+    ----------
+    features : valid argument for pygplates.FeaturesFunctionArgument
+        `features` may be a single `pygplates.Feature`, a
+        `pygplates.FeatureCollection`, a `str` filename,
+        or a (potentially nested) sequence of any combination of the
+        above types.
+    rotation_model : valid argument for pygplates.RotationModel, optional
+        `rotation_model` may be a `pygplates.RotationModel`, a rotation
+        feature collection (pygplates.FeatureCollection), a rotation filename
+        (`str`), a rotation feature (`pygplates.Feature`), a sequence of
+        rotation features, or a (potentially nested) sequence of any
+        combination of the above types.
+        Alternatively, if time not given, a rotation model is
+        not usually required.
+    key : str, default "plate_id"
+        The value used to create the rasterised grid. May be any of
+        the following values:
+        - "plate_id"
+        - "conjugate_plate_id"
+        - "from_age"
+        - "to_age"
+        - "left_plate"
+        - "right_plate"
+    time : float, optional
+        Reconstruction time at which to perform rasterisation. If given,
+        `rotation_model` must also be specified.
+    resx, resy : float, default 1.0
+        Resolution (in degrees) of the rasterised grid.
+    shape : tuple, optional
+        If given, the output grid will have the specified shape,
+        overriding `resx` and `resy`.
+    extent : tuple or "global", default "global"
+        Extent of the rasterised grid. Valid arguments are a tuple of
+        the form (xmin, xmax, ymin, ymax), or the string "global",
+        equivalent to (-180.0, 180.0, -90.0, 90.0).
+
+    Returns
+    -------
+    grid : numpy.ndarray
+        The output array will have the shape specified in `shape`, if given.
+        The origin of the array will be in the lower-left corner of
+        the area specified in `extent`, unless `resx` or `resy` is negative.
+
+    Raises
+    ------
+    ValueError
+        If an invalid `key` value is passed.
+    TypeError
+        If `rotation_model` is not supplied and `time` is not `None`.
+
+    Notes
+    -----
+    This function is used by gplately.grids.reconstruct_grids to rasterise
+    static polygons in order to extract their plate IDs.
+    """
+    valid_keys = {
+        "plate_id",
+        "conjugate_plate_id",
+        "from_age",
+        "to_age",
+        "left_plate",
+        "right_plate",
+    }
+    try:
+        key = key.lower()
+    except AttributeError as err:
+        raise TypeError("Invalid key type: {}".format(type(key))) from err
+    if key not in valid_keys:
+        raise ValueError(
+            "Invalid key: {}".format(key)
+            + "\nkey must be one of {}".format(valid_keys)
+        )
+
+    try:
+        extent = extent.lower()
+    except AttributeError:
+        pass
+    if extent == "global":
+        extent = (-180.0, 180.0, -90.0, 90.0)
+    minx, maxx, miny, maxy = extent
+
+    if shape is not None:
+        lons = np.linspace(minx, maxx, shape[1], endpoint=True)
+        lats = np.linspace(miny, maxy, shape[0], endpoint=True)
+    else:
+        lons = np.arange(minx, maxx + resx, resx)
+        lats = np.arange(miny, maxy + resy, resy)
+    nx = lons.size
+    ny = lats.size
+
+    if rotation_model is None:
+        if time is not None:
+            raise TypeError(
+                "Rotation model must be provided if `time` is not `None`"
+            )
+        rotation_model = pygplates.RotationModel(pygplates.Feature())
+        time = 0.0
+    features = pygplates.FeaturesFunctionArgument(features).get_features()
+    time = float(time)
+
+    reconstructed = []
+    pygplates.reconstruct(
+        features,
+        rotation_model,
+        reconstructed,
+        time,
+    )
+    geometries = pygplates_to_shapely(reconstructed)
+
+    if key == "plate_id":
+        values = [i.get_feature().get_reconstruction_plate_id() for i in reconstructed]
+        fill_value = -1
+        dtype = np.int32
+    elif key == "conjugate_plate_id":
+        values = [i.get_feature().get_conjugate_plate_id() for i in reconstructed]
+        fill_value = -1
+        dtype = np.int32
+    elif key == "from_age":
+        values = [i.get_feature().get_valid_time()[0] for i in reconstructed]
+        fill_value = np.nan
+        dtype = np.float32
+    elif key == "to_age":
+        values = [i.get_feature().get_valid_time()[1] for i in reconstructed]
+        fill_value = np.nan
+        dtype = np.float32
+    elif key == "left_plate":
+        values = [i.get_feature().get_left_plate() for i in reconstructed]
+        fill_value = -1
+        dtype = np.int32
+    elif key == "right_plate":
+        values = [i.get_feature().get_right_plate() for i in reconstructed]
+        fill_value = -1
+        dtype = np.int32
+    else:
+        raise ValueError(
+            "Invalid key: {}".format(key)
+            + "\nkey must be one of {}".format(valid_keys)
+        )
+
+    out = _rasterize(
+        shapes=zip(geometries, values),
+        out_shape=(ny, nx),
+        fill=fill_value,
+        dtype=dtype,
+        merge_alg=MergeAlg.replace,
+        transform=_from_bounds(minx, miny, maxx, maxy, nx, ny),
+    )
+    return out
+
+
+rasterize = rasterise
+
+
+def _lat_lon_to_vector(lat, lon, degrees=False, threads=1):
+    """Convert (lat, lon) coordinates (degrees or radians) to vectors on
+    the unit sphere. Returns a vector of shape (3,) if `lat` and `lon` are
+    single values, else an array of shape (N, 3) containing N (x, y, z)
+    row vectors, where N is the size of `lat` and `lon`.
+    """
+    lon = np.atleast_1d(lon).flatten()
+    lat = np.atleast_1d(lat).flatten()
+    if degrees:
+        lat = np.deg2rad(lat)
+        lon = np.deg2rad(lon)
+
+    if threads == 1:
+        x = np.cos(lat) * np.cos(lon)
+        y = np.cos(lat) * np.sin(lon)
+        z = np.sin(lat)
+    else:
+        n = lat.size
+        step = np.ceil(n / threads).astype(np.int_)
+        executor = concurrent.futures.ThreadPoolExecutor(threads)
+
+        def _fill(out_x, out_y, out_z, first, last):
+            np.multiply(
+                np.cos(lat[first:last]),
+                np.cos(lon[first:last]),
+                out=out_x[first:last],
+            )
+            np.multiply(
+                np.cos(lat[first:last]),
+                np.sin(lon[first:last]),
+                out=out_y[first:last],
+            )
+            np.sin(lat[first:last], out=out_z[first:last])
+
+        futures = {}
+        x = np.zeros_like(lat)
+        y = np.zeros_like(x)
+        z = np.zeros_like(x)
+        for i in range(threads):
+            args = (
+                _fill,
+                x,
+                y,
+                z,
+                i * step,
+                (i + 1) * step,
+            )
+            futures[executor.submit(*args)] = i
+        concurrent.futures.wait(futures)
+        executor.shutdown(False)
+
+    size = x.size
+    if size == 1:
+        x = np.atleast_1d(np.squeeze(x))[0]
+        y = np.atleast_1d(np.squeeze(y))[0]
+        z = np.atleast_1d(np.squeeze(z))[0]
+        return np.array((x, y, z))
+
+    x = x.reshape((-1, 1))
+    y = y.reshape((-1, 1))
+    z = z.reshape((-1, 1))
+    return np.hstack((x, y, z))
+
+
+def _vector_to_lat_lon(
+    x,
+    y,
+    z,
+    degrees=False,
+    return_array=False,
+    threads=1,
+):
+    """Convert one or more (x, y, z) vectors (on the unit sphere) to
+    (lat, lon) coordinate pairs, in degrees or radians. Optionally, use
+    more than one thread.
+    """
+    x = np.atleast_1d(x).flatten()
+    y = np.atleast_1d(y).flatten()
+    z = np.atleast_1d(z).flatten()
+
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", RuntimeWarning)
+        if threads == 1:
+            lat = np.arcsin(z)
+            lon = np.arctan2(y, x)
+            if degrees:
+                lat = np.rad2deg(lat)
+                lon = np.rad2deg(lon)
+        else:
+            n = x.size
+            step = np.ceil(n / threads).astype(np.int_)
+            executor = concurrent.futures.ThreadPoolExecutor(threads)
+
+            def _fill(out_lat, out_lon, first, last, degrees=False):
+                if degrees:
+                    np.rad2deg(
+                        np.arcsin(z[first:last]),
+                        out=out_lat[first:last],
+                    )
+                    np.rad2deg(
+                        np.arctan2(
+                            y[first:last],
+                            x[first:last],
+                        ),
+                        out=out_lon[first:last],
+                    )
+                else:
+                    np.arcsin(z[first:last], out=out_lat[first:last])
+                    np.arctan2(
+                        y[first:last],
+                        x[first:last],
+                        out=out_lon[first:last],
+                    )
+
+            futures = {}
+            lat = np.zeros_like(x)
+            lon = np.zeros_like(lat)
+            for i in range(threads):
+                args = (
+                    _fill,
+                    lat,
+                    lon,
+                    i * step,
+                    (i + 1) * step,
+                    degrees,
+                )
+                futures[executor.submit(*args)] = i
+            concurrent.futures.wait(futures)
+            executor.shutdown(False)
+
+    if lat.size == 1 and not return_array:
+        lat = np.atleast_1d(np.squeeze(lat))[0]
+        lon = np.atleast_1d(np.squeeze(lon))[0]
+        return (lat, lon)
+
+    lat = lat.reshape((-1, 1))
+    lon = lon.reshape((-1, 1))
+    return lat, lon
+
+
+def _rotate(vectors, rotation, angle):
+    cross = _cross_products
+    dot = np.dot
+
+    invalid_dims_err = ValueError(
+        "Invalid shapes: {}, {}".format(vectors.shape, rotation.shape)
+    )
+    vectors = np.atleast_2d(vectors)
+    rotation = np.squeeze(rotation)
+    if vectors.shape[1] != 3:
+        vectors = vectors.T
+    if vectors.shape[1] != 3 or rotation.shape != (3,):
+        raise invalid_dims_err
+
+    angle = float(angle)
+
+    t1 = np.cos(angle) * vectors
+    t2 = np.sin(angle) * cross(rotation, vectors)
+    t3 = (
+        (1.0 - np.cos(angle))
+        * dot(vectors, rotation.reshape((-1, 1))).reshape((-1, 1))
+        * vectors
+    )
+    return t1 + t2 + t3
+
+
+def _cross_products(a, b):
+    """Cross products of a vector and a list of vectors."""
+    if a.ndim == 2 and b.ndim == 1:
+        return -1.0 * _cross_products(b, a)
+    vec = a
+    arr = b
+    invalid_dims_err = ValueError(
+        "Invalid dimensions: {}, {}".format(vec.ndim, arr.ndim)
+    )
+    if vec.ndim != 1 or arr.ndim != 2:
+        raise invalid_dims_err
+
+    if arr.shape[1] != 3:
+        arr = arr.T
+    if arr.shape[1] != 3:
+        raise invalid_dims_err
+
+    out = np.zeros_like(arr)
+    out[:, 0] = vec[1] * arr[:, 2] - vec[2] * arr[:, 1]
+    out[:, 1] = vec[2] * arr[:, 0] - vec[0] * arr[:, 2]
+    out[:, 2] = vec[0] * arr[:, 1] - vec[1] * arr[:, 0]
+    return out
 
 
 class Raster(object):
@@ -695,9 +1309,6 @@ class Raster(object):
         zi[angles.ravel() > rxy] = np.nan
         zi = zi.reshape(lonq.shape)
         return zi
-
-
-
 
 
 class TimeRaster(Raster):

@@ -86,10 +86,12 @@ if __name__ == "__main__":
                                'shapely',
                                'matplotlib',
                                'cartopy',
-                               'geopandas',
                                'PlateTectonicTools',
                                'pooch',
-                               'tqdm'
+                               'tqdm',
+                               'netcdf4',
+                               'rasterio',
+                               'geopandas',
                                ],
           packages          = ['gplately'],
           package_data      = {'gplately': ['Notebooks/*ipynb', # Worked Examples is not currently used

@@ -1,5 +1,11 @@
+from shapely.geometry import shape
 from shapely.geometry.base import BaseGeometry
-import geopandas as gpd
+try:
+    import geopandas as gpd
+    USE_GEOPANDAS = True
+except ImportError:
+    import shapefile as shpreader
+    USE_GEOPANDAS = False
 
 __all__ = [
     "get_geometries",
@@ -27,7 +33,9 @@ def get_geometries(filename, buffer=None):
         shapefile. Can be plotted directly using
         `gplately.plot.add_geometries`.
     """
-    return _get_geometries_geopandas(filename, buffer=buffer)
+    if USE_GEOPANDAS:
+        return _get_geometries_geopandas(filename, buffer=buffer)
+    return _get_geometries_cartopy(filename, buffer=buffer)
 
 
 def get_valid_geometries(filename):
@@ -100,5 +108,8 @@ def _get_geometries_cartopy(filename, buffer=None):
     except TypeError:
         pass
 
-    reader = shpreader.Reader(filename)
-    return buffer_func(reader.geometries(), buffer)
+    with shpreader.Reader(filename) as reader:
+        shape_records = reader.shapeRecords()
+        shapes = [i.shape for i in shape_records]
+        geoms = [shape(i.__geo_interface__) for i in shapes]
+    return buffer_func(geoms, buffer)
