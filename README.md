@@ -120,6 +120,9 @@ time = 0
 agegrid = gdownload.get_age_grid(time)
 graster = gplately.Raster(model, array=agegrid, extent=[-180,180,-90,90])
 ```
+
+Below is a plot of the original Müller et al. (2019) age grid (L) and an age-grid resampled with the `Raster` object (R):
+
 ![RasterImg](./Notebooks/NotebookFiles/ReadMe_Files/muller19_raster_resample.png)
 
 
