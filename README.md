@@ -48,6 +48,7 @@ GPlately uses objects to accomplish a variety of common tasks. The common object
 ### The `DataServer` object
 
 `GPlately`'s `DataServer` object can be used to download:
+
     - rotation models
     - topology features
     - static polygons
@@ -99,6 +100,13 @@ seafloor age grids!
 ... can be used to reconstruct the positions of seed point data and calculate their underlying plates' velocities through 
 geological time. 
 
+```python
+pt_lon = np.array([-107.662152, -58.082792, 17.483189, 133.674590, 80.412876])
+pt_lat = np.array([48.797807, -12.654857, 11.884395, -26.415630, 31.368509])
+
+# Call the Points object: pass the PlateReconstruction object, and the latitudes and longitudes of the seed points!
+gpts = gplately.Points(model, pt_lon, pt_lat)
+```
 ![SeedPointGIF](./Notebooks/NotebookFiles/ReadMe_Files/muller19_seedpoints.gif)
 
 
@@ -107,6 +115,11 @@ geological time.
 ...can be used to read, resample and resize assorted raster data like `netCDF4` seafloor age grids, continental grids and ETOPO
 relief rasters. You can also reconstruct raster data back through geological time!
 
+```python
+time = 0
+agegrid = gdownload.get_age_grid(time)
+graster = gplately.Raster(model, array=agegrid, extent=[-180,180,-90,90])
+```
 ![RasterImg](./Notebooks/NotebookFiles/ReadMe_Files/muller19_raster_resample.png)
 
 
