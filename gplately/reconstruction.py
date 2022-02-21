@@ -258,7 +258,7 @@ class PlateReconstruction(object):
             raise ValueError("Please set either use_pygplates or use_ptt to True.")
 
 
-    def total_continental_arc_length(self, time, continental_grid_directory=None, trench_arc_distance=0.0, ignore_warnings=True):
+    def total_continental_arc_length(self, time, continental_grid=None, trench_arc_distance=0.0, ignore_warnings=True):
         """Calculates the total length of all continental arcs (km) at the specified geological time (Ma).
 
         Uses Plate Tectonic Tools' subduction_convergence workflow to resolve a plate model's trench features into 
@@ -294,11 +294,19 @@ class PlateReconstruction(object):
             The continental arc length (in km) at the specified time.
         """
         from . import grids as _grids
-        if continental_grid_directory is None:
-            raise ValueError("Please provide a directory to a continental grid for the current time.")
-            
-        # Process the continental grids + obtain trench data with Plate Tectonic Tools
-        graster = _grids.Raster(PlateReconstruction, continental_grid_directory, extent=[-180,180,-90,90])
+        # Right now, raster reconstruction is not supported.
+        if continental_grid is None:
+            raise ValueError("Please provide a directory to a continental grid or a masked array for the current time.")
+        
+        elif isinstance(continental_grid, np.ma.MaskedArray):
+            # Process the masked continental grid
+            graster = _grids.Raster(PlateReconstruction, array=continental_grid, extent=[-180,180,-90,90])
+
+        elif isinstance(continental_grid, str):
+            # Process the continental grid directory
+            graster = _grids.Raster(PlateReconstruction, array=continental_grid, extent=[-180,180,-90,90])
+
+        # Obtain trench data with Plate Tectonic Tools
         trench_data = self.tesselate_subduction_zones(time, ignore_warnings=ignore_warnings)
         
         # Extract trench data
