@@ -49,14 +49,14 @@ GPlately uses objects to accomplish a variety of common tasks. The common object
 
 `GPlately`'s `DataServer` object can be used to download:
 
-    - rotation models
-    - topology features
-    - static polygons
-    - coastlines
-    - continents
-    - continent-ocean boundaries
-    - age grids and rasters
-    - geological feature data
+- rotation models
+- topology features
+- static polygons
+- coastlines
+- continents
+- continent-ocean boundaries
+- age grids and rasters
+- geological feature data
 
 from assorted plate reconstruction models. These files are needed to construct most of `GPlately`'s objects. For example,
 we can download a `rotation model`, a set of `topology features` and some `static polygons` from the [Müller et al. 2019](https://www.earthbyte.org/muller-et-al-2019-deforming-plate-reconstruction-and-seafloor-age-grids-tectonics/) 
