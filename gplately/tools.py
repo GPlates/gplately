@@ -1,7 +1,12 @@
 """A module that offers tools for executing common geological calculations, mathematical conversions and numpy conversions.
 """
+from itertools import repeat
+from multiprocessing import cpu_count, Pool, set_start_method
+from platform import system
+
 import numpy as np
 import pygplates
+from scipy.optimize import root_scalar
 
 EARTH_RADIUS = pygplates.Earth.mean_radius_in_kms
 
@@ -9,6 +14,7 @@ _DEFAULT_PLATE_THICKNESS = 125.0e3
 _DEFAULT_T_MANTLE = 1350.0
 _DEFAULT_KAPPA = 8.04e-7
 _SEC_PER_MYR = 3.15576e13
+
 
 def plate_temp(
     age,
@@ -20,7 +26,7 @@ def plate_temp(
 ):
     """Computes the temperature in a cooling plate for a given age and plate thickness at a depth = z. 
 
-    Assumes a mantle temperature of 1380 degrees, and a 0 degree surface temperature. Kappa is 0.804e-6. 
+    Assumes a mantle temperature of 1350 degrees, and a 0 degree surface temperature. Kappa is 0.804e-6.
 
     Parameters
     ----------
@@ -30,19 +36,21 @@ def plate_temp(
     z : float
         The plate depth (m) at which to calculate temperature.
 
-    PLATE_THICKNESS : float
+    plate_thickness : float
         The thickness (m) of the plate in consideration.
 
     Returns
     -------
-    list
-        A list enclosing ONE floating-point number equal to plate temperature (e.g. [1367.33962383]).
+    float
+        Plate temperature at given age and depth.
     """
 
-    aged = age * _SEC_PER_MYR
+    age = age * _SEC_PER_MYR
+    if age <= 0.0:
+        return t_mantle
 
     sine_arg = np.pi * z / plate_thickness
-    exp_arg = -kappa * (np.pi ** 2) * aged / (plate_thickness ** 2)
+    exp_arg = -kappa * (np.pi ** 2) * age / (plate_thickness ** 2)
     k = np.arange(1, 20).reshape(-1, 1)
     cumsum = (np.sin(k * sine_arg) * np.exp((k ** 2) * exp_arg) / k).sum(axis=0)
 
@@ -51,63 +59,153 @@ def plate_temp(
         + 2.0 * cumsum * (t_mantle - t_surface) / np.pi
         + (t_mantle - t_surface) * z / plate_thickness
     )
-    if result.size == 1:
-        return result[0]
     return result
 
+
 def plate_isotherm_depth(
-    age,
+    ages,
     temp=_DEFAULT_T_MANTLE,
     plate_thickness=_DEFAULT_PLATE_THICKNESS,
-    n=20,
-    rtol=0.001,
+    kappa=_DEFAULT_KAPPA,
+    t_mantle=_DEFAULT_T_MANTLE,
+    t_surface=0.0,
+    n_jobs=1,
+    **kwargs
 ):
-    """Computes the depth to the temp - isotherm in a cooling plate mode. Solution by iteration. 
+    """Compute the depth to the temp - isotherm in a cooling plate model.
 
-    By default the plate thickness is 125 km as in Parsons/Sclater.
+    This function uses `scipy.optimize.root_scalar` to efficiently solve
+    `gplately.tools.plate_temp` to find the appropriate depths for the
+    given ages.
 
     Parameters
     ----------
-    age : ndarray
-        An array of geological ages (Ma) at which to compute depths. 
-
-    temp : float, default=1350.0
-        The temperature of a temp-isotherm to calculate the depth to. Defaults to 1350 degrees.
+    ages : array_like
+        Geological ages (Ma) at which to compute depths.
+    temp : float, default: 1350.0
+        Temperature for which to calculate the isotherm depth.
+    plate_thickness : float, default: 125.0e3
+        Thickness of the plate, in metres. Defaults to 125 km, as in
+        Parsons/Sclater.
+    kappa : float, default: 8.04e-7
+        Thermal diffusivity coefficient, in metres per second.
+    t_mantle : float, default: 1350.0
+        Mantle temperature, in degrees Celsius or kelvin.
+    t_surface : float, default: 0.0
+        Crust surface temperature, in degrees Celsius or kelvin.
+    n_jobs : int, default: 1
+        Number of processes to use; -1 corresponds to all processes.
+        Uses `multiprocessing` module.
+    **kwargs
+        Any further keyword arguments are passed to
+        `scipy.optimize.root_scalar`.
 
     Returns
     -------
-    zi : ndarray
-        An array of depths to the chosen temperature isotherm. Each entry corresponds to each unique ‘age’ given. 
+    depths : ndarray
+        The calculated isotherm depths. This is a scalar if `ages` is a scalar.
     """
-    n = int(n)
-    if n <= 0:
-        raise ValueError("n must be greater than zero (n = {})".format(n))
-    age = np.atleast_1d(age)
+    ages = np.atleast_1d(ages)
+    if ages.size == 1:
+        age = np.atleast_1d(ages.squeeze())[0]
+        return _plate_isotherm_depth_single(
+            age,
+            temp=temp,
+            plate_thickness=plate_thickness,
+            kappa=kappa,
+            t_mantle=t_mantle,
+            t_surface=t_surface,
+            **kwargs
+        )
 
-    zi = np.atleast_1d(np.zeros_like(age, dtype=float))  # starting depth is 0
+    if n_jobs == -1:
+        n_jobs = cpu_count()
+    elif n_jobs == 0:
+        n_jobs = 1
 
-    z_too_small = np.atleast_1d(np.zeros_like(age, dtype=float))
-    z_too_big = np.atleast_1d(np.full_like(age, plate_thickness, dtype=float))
+    if n_jobs == 1:
+        return np.array(
+            [
+                _plate_isotherm_depth_single(
+                    age=age,
+                    temp=temp,
+                    plate_thickness=plate_thickness,
+                    kappa=kappa,
+                    t_mantle=t_mantle,
+                    t_surface=t_surface,
+                    **kwargs
+                )
+                for age in ages
+            ]
+        )
+    if system() == "Darwin":
+        # Avoid multiprocessing errors on MacOS
+        try:
+            set_start_method("spawn")
+        except RuntimeError:
+            pass
 
-    for _ in range(n):
-        zi = 0.5 * (z_too_small + z_too_big)
-        ti = plate_temp(age, zi, plate_thickness)
-        t_diff = temp - ti
-        z_too_big[t_diff < -rtol] = zi[t_diff < -rtol]
-        z_too_small[t_diff > rtol] = zi[t_diff > rtol]
+    n = len(ages)
+    chunk_size = max([int(n / n_jobs / 2), 1])
+    fn_args = []
+    fn_kwargs = []
+    for age in ages:
+        fn_args.append(
+            (
+                age,
+                temp,
+                plate_thickness,
+                kappa,
+                t_mantle,
+                t_surface,
+            )
+        )
+        fn_kwargs.append(kwargs)
 
-        if (np.abs(t_diff) < rtol).all():
-            break
+    with Pool(n_jobs) as pool:
+        out = _starstarmap(
+            pool,
+            _plate_isotherm_depth_single,
+            fn_args,
+            fn_kwargs,
+            chunksize=chunk_size,
+        )
+        pool.close()
+        pool.join()
+    out = np.array(out).reshape(ages.shape)
+    return out
 
-    # convergence warning
-    if np.abs(t_diff).any() > rtol:
-        import warnings
-        warnings.warn("Iterations did not converge below rtol={}".format(rtol))
 
-    # protect against negative ages
-    zi[age <= 0] = 0
-    zi = np.squeeze(zi)
-    return zi
+def _plate_isotherm_depth_single(
+    age,
+    temp=_DEFAULT_T_MANTLE,
+    plate_thickness=_DEFAULT_PLATE_THICKNESS,
+    kappa=_DEFAULT_KAPPA,
+    t_mantle=_DEFAULT_T_MANTLE,
+    t_surface=0.0,
+    **kwargs
+):
+    if age == 0.0:
+        return 0.0
+
+    f = lambda z: (
+        plate_temp(
+            age=age,
+            z=z,
+            plate_thickness=plate_thickness,
+            kappa=kappa,
+            t_mantle=t_mantle,
+            t_surface=t_surface,
+        )
+        - temp
+    )
+    solution = root_scalar(f, bracket=[0.0, plate_thickness], **kwargs)
+    if not solution.converged:
+        err = "Solution did not converge for age {} Ma".format(age)
+        err += "\n\t{}".format(solution.flag)
+        raise RuntimeError(err)
+    return solution.root
+
 
 def points_to_features(lons, lats, plate_ID=None):
     """Creates point features represented on a unit length sphere in 3D cartesian coordinates from a latitude and 
@@ -320,3 +418,16 @@ def geocentric_radius(lat, degrees=True):
     den = (r1*coslat)**2 + (r2*sinlat)**2
     earth_radius = np.sqrt(num/den)
     return earth_radius
+
+
+def _apply_fn_args_kwargs(fn, args, kwargs):
+    """Needed for _starstarmap function."""
+    return fn(*args, **kwargs)
+
+
+def _starstarmap(pool, fn, fn_args, fn_kwargs, **starmap_kwargs):
+    """Use kwargs with Pool.starmap.
+
+    https://stackoverflow.com/q/45718523"""
+    starmap_args = zip(repeat(fn), fn_args, fn_kwargs)
+    return pool.starmap(_apply_fn_args_kwargs, starmap_args, **starmap_kwargs)
