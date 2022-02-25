@@ -185,7 +185,7 @@ def _plate_isotherm_depth_single(
     t_surface=0.0,
     **kwargs
 ):
-    if age == 0.0:
+    if age <= 0.0:
         return 0.0
 
     f = lambda z: (
