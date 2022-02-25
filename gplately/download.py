@@ -352,7 +352,8 @@ class DataServer(object):
         rotation_model = []
         topology_filenames = []
         topology_features = _pygplates.FeatureCollection()
-        static_polygons = []
+        static_polygons= _pygplates.FeatureCollection()
+        static_polygon_filenames = []
 
         # Locate all plate reconstruction files from GPlately's DataCollection
         database = DataCollection.plate_reconstruction_files(self)
@@ -389,7 +390,7 @@ class DataServer(object):
                     for file in topology_filenames:
                         topology_features.add(_pygplates.FeatureCollection(file))
 
-                    static_polygons = _check_gpml_or_shp(
+                    static_polygon_filenames = _check_gpml_or_shp(
                         _str_in_folder(
                             _str_in_filename(fnames, 
                                 strings_to_include=DataCollection.static_polygon_strings_to_include(self)
@@ -397,6 +398,8 @@ class DataServer(object):
                             strings_to_ignore=DataCollection.static_polygon_strings_to_ignore(self)
                         )
                     )
+                    for stat in static_polygon_filenames:
+                        static_polygons.add(_pygplates.FeatureCollection(stat))
                     #print(static_polygons)
                 else:
                     for file in url[0]:
@@ -417,7 +420,7 @@ class DataServer(object):
                             )
 
                     for file in url[2]:
-                        static_polygons.append(
+                        static_polygon_filenames.append(
                             _check_gpml_or_shp(
                                 _str_in_folder(
                                     _str_in_filename(_fetch_from_web(url[0]), 
@@ -427,6 +430,8 @@ class DataServer(object):
                                 )
                             )   
                         )
+                        for stat in static_polygon_filenames:
+                            static_polygons.add(_pygplates.FeatureCollection(stat))
                 break
 
         if found_collection is False:
@@ -501,36 +506,40 @@ class DataServer(object):
                 found_collection = True
 
                 if len(url) == 1:
-                    fnames = _collection_sorter(
-                        _fetch_from_web(url[0]), self.file_collection
-                    )
-                    coastlines = _check_gpml_or_shp(
-                        _str_in_folder(
-                            _str_in_filename(
-                                fnames,
-                                strings_to_include=DataCollection.coastline_strings_to_include(self)
-                            ), 
-                            strings_to_ignore=DataCollection.coastline_strings_to_ignore(self)
+                    # Some plate models do not have reconstructable geometries i.e. Li et al. 2008
+                    if url[0] is None:
+                        break
+                    else:
+                        fnames = _collection_sorter(
+                            _fetch_from_web(url[0]), self.file_collection
                         )
-                    )
-                    continents = _check_gpml_or_shp(
-                        _str_in_folder(
-                            _str_in_filename(
-                                fnames, 
-                                strings_to_include=DataCollection.continent_strings_to_include(self)
-                            ), 
-                            strings_to_ignore=DataCollection.continent_strings_to_ignore(self)
+                        coastlines = _check_gpml_or_shp(
+                            _str_in_folder(
+                                _str_in_filename(
+                                    fnames,
+                                    strings_to_include=DataCollection.coastline_strings_to_include(self)
+                                ), 
+                                strings_to_ignore=DataCollection.coastline_strings_to_ignore(self)
+                            )
                         )
-                    )
-                    COBs = _check_gpml_or_shp(
-                        _str_in_folder(
-                            _str_in_filename(
-                                fnames,
-                                strings_to_include=DataCollection.COB_strings_to_include(self)
-                            ), 
-                            strings_to_ignore=DataCollection.COB_strings_to_ignore(self)
+                        continents = _check_gpml_or_shp(
+                            _str_in_folder(
+                                _str_in_filename(
+                                    fnames, 
+                                    strings_to_include=DataCollection.continent_strings_to_include(self)
+                                ), 
+                                strings_to_ignore=DataCollection.continent_strings_to_ignore(self)
+                            )
                         )
-                    )
+                        COBs = _check_gpml_or_shp(
+                            _str_in_folder(
+                                _str_in_filename(
+                                    fnames,
+                                    strings_to_include=DataCollection.COB_strings_to_include(self)
+                                ), 
+                                strings_to_ignore=DataCollection.COB_strings_to_ignore(self)
+                            )
+                        )
                 else:
                     for file in url[0]:
                         coastlines.append(_str_in_filename(
@@ -581,7 +590,7 @@ class DataServer(object):
             for COB in COBs:
                 COBs_featurecollection.add(_pygplates.FeatureCollection(COB))
         
-        geometries = coastlines, continents, COBs
+        geometries = coastlines_featurecollection, continents_featurecollection, COBs_featurecollection
         return geometries
 
 
