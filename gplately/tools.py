@@ -57,7 +57,7 @@ def plate_temp(
 
 def plate_isotherm_depth(
     age,
-    temp=_DEFAULT_T_MANTLE,
+    temp=1150.,
     plate_thickness=_DEFAULT_PLATE_THICKNESS,
     n=20,
     rtol=0.001,
