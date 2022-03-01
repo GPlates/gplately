@@ -1,3 +1,12 @@
+""" Functions for downloading assorted plate reconstruction data to use with GPlately's
+main objects. Files are stored in the user's cache and can be reused after being
+downloaded once. 
+
+These data have been created and used in plate reconstruction models and studies, and
+are available from public web servers (like EarthByte's webDAV server, or the GPlates 
+2.3 sample dataset library).
+
+"""
 import pooch as _pooch
 from pooch import os_cache as _os_cache
 from pooch import retrieve as _retrieve
@@ -177,121 +186,290 @@ def _match_filetype_to_extension(filetype):
 
 
 class DataServer(object):
-    """Uses Pooch to download plate reconstruction feature data from plate models 
-    and other studies that are stored on web servers (e.g. EarthByte's webDAV server). 
+    """Uses [Pooch](https://www.fatiando.org/pooch/latest/) to download plate reconstruction 
+    feature data from plate models and other studies that are stored on web servers 
+    (e.g. EarthByte's [webDAV server](https://www.earthbyte.org/webdav/ftp/Data_Collections/)). 
     
-    All requested files are downloaded once into a 'gplately' cache folder. When 
-    workflows requiring these files are rerun, they will be accessed from the cache. 
+    If the `DataServer` object and its methods are called for the first time, i.e. by:
 
-    Currently, DataServer supports the following plate reconstruction models:
-
-        - Muller et al. 2019 : string identifier "Muller2019"
-            Citation: Müller, R. D., Zahirovic, S., Williams, S. E., Cannon, J., Seton, M., 
-            Bower, D. J., Tetley, M. G., Heine, C., Le Breton, E., Liu, S., Russell, S. H. J., 
-            Yang, T., Leonard, J., and Gurnis, M., 2019, A global plate model including 
-            lithospheric deformation along major rifts and orogens since the Triassic: 
-            Tectonics, v. 38, no. Fifty Years of Plate Tectonics: Then, Now, and Beyond.
-                
-        - Muller et al. 2016 : string identifier "Muller2016"
-            Citation: Müller R.D., Seton, M., Zahirovic, S., Williams, S.E., Matthews, K.J.,
-             Wright, N.M., Shephard, G.E., Maloney, K.T., Barnett-Moore, N., Hosseinpour, M., 
-             Bower, D.J., Cannon, J., InPress. Ocean basin evolution and global-scale plate 
-             reorganization events since Pangea breakup, Annual Review of Earth and Planetary 
-             Sciences, Vol 44, 107-138. DOI: 10.1146/annurev-earth-060115-012211.
-
-        - Merdith et al. 2021 : string identifier "Merdith2021"
-            Citation: Merdith et al. (in review), 'A continuous, kinematic full-plate motion model
-             from 1 Ga to present'
-
-        - Cao et al. 2020 : string identifier "Cao2020"
-            Citation: Toy Billion-year reconstructions from Cao et al (2020). 
-            Coupled Evolution of Plate Tectonics and Basal Mantle Structure Tectonics, 
-            doi: 10.1029/2020GC009244
-
-        - Mather et al. 2021 : string identifier "Mather2021"
-            Citation: Mather, B., Müller, R.D.,; Alfonso, C.P., Seton, M., 2021, Kimberlite eruption 
-            driven by slab flux and subduction angle. DOI: 10.5281/zenodo.5769002
-
-        - Seton et al. 2012 : string identifier "Seton2012"
-            Citation: M. Seton, R.D. Müller, S. Zahirovic, C. Gaina, T.H. Torsvik, G. Shephard, A. Talsma, 
-            M. Gurnis, M. Turner, S. Maus, M. Chandler, Global continental and ocean basin reconstructions 
-            since 200 Ma, Earth-Science Reviews, Volume 113, Issues 3-4, July 2012, Pages 212-270, 
-            ISSN 0012-8252, 10.1016/j.earscirev.2012.03.002.
-
-        - Matthews et al. 2016 : string identifier "Matthews2016"
-            Citation: Matthews, K.J., Maloney, K.T., Zahirovic, S., Williams, S.E., Seton, M.,
-            and Müller, R.D. (2016). Global plate boundary evolution and kinematics since the 
-            late Paleozoic, Global and Planetary Change, 146, 226-250. 
-            DOI: 10.1016/j.gloplacha.2016.10.002
-
-        - Merdith et al. 2017 : string identifier "Merdith2017"
-            Citation: Merdith, A., Collins, A., Williams, S., Pisarevskiy, S., Foden, J., Archibald, D. 
-            and Blades, M. et al. 2016. A full-plate global reconstruction of the Neoproterozoic. 
-            Gondwana Research. 50: pp. 84-134. DOI: 10.1016/j.gr.2017.04.001
-
-        - Li et al. 2008 : string identifier "Li2008"
-            Citation: Rodinia reconstruction from Li et al (2008), Assembly, configuration, and break-up 
-            history of Rodinia: A synthesis. Precambrian Research. 160. 179-210. 
-            DOI: 10.1016/j.precamres.2007.04.021.
-
-        - Pehrsson et al. 2015 : string identifier "Pehrsson2015"
-            Citation: Pehrsson, S.J., Eglington, B.M., Evans, D.A.D., Huston, D., and Reddy, S.M., (2015),
-            Metallogeny and its link to orogenic style during the Nuna supercontinent cycle. Geological 
-            Society, London, Special Publications, 424, 83-94. DOI: https://doi.org/10.1144/SP424.5
-
-        - Torsvik and Cocks et al. 2017 : string identifier "TorsvikCocks2017"
-            Citation: Torsvik, T., & Cocks, L. (2016). Earth History and Palaeogeography. Cambridge: 
-            Cambridge University Press. doi:10.1017/9781316225523
-
-        - Young et al. 2019 : string identifier "Young2019"
-            Citation: Young, A., Flament, N., Maloney, K., Williams, S., Matthews, K., Zahirovic, S.,
-            Müller, R.D., (2019), Global kinematics of tectonic plates and subduction zones since the late 
-            Paleozoic Era, Geoscience Frontiers, Volume 10, Issue 3, pp. 989-1013, ISSN 1674-9871,
-            DOI: https://doi.org/10.1016/j.gsf.2018.05.011.
-
-        - Scotese et al. 2008 : string identifier "Scotese2008"
-            Citation: Scotese, C.R. 2008. The PALEOMAP Project PaleoAtlas for ArcGIS, Volume 2, Cretaceous 
-            paleogeographic and plate tectonic reconstructions. PALEOMAP Project, Arlington, Texas.
-
-        - Golonka et al. 2007 : string identifier "Golonka2007"
-            Citation: Golonka, J. 2007. Late Triassic and Early Jurassic palaeogeography of the world. 
-            Palaeogeography, Palaeoclimatology, Palaeoecology 244(1–4), 297–307.
-
-        - Clennett et al. 2020 (based on Muller et al. 2019) : string identifier "Clennett2020_M2019"
-            Citation: Clennett, E.J., Sigloch, K., Mihalynuk, M.G., Seton, M., Henderson, M.A., Hosseini, K.,
-            Mohammadzaheri, A., Johnston, S.T., Müller, R.D., (2020), A Quantitative Tomotectonic Plate 
-            Reconstruction of Western North America and the Eastern Pacific Basin. Geochemistry, Geophysics, 
-            Geosystems, 21, e2020GC009117. DOI: https://doi.org/10.1029/2020GC009117
-
-        - Clennett et al. 2020 (rigid topological model based on Shephard et al, 2013) : string identifier "Clennett2020_S2013"
-            Citation: Clennett, E.J., Sigloch, K., Mihalynuk, M.G., Seton, M., Henderson, M.A., Hosseini, K.,
-            Mohammadzaheri, A., Johnston, S.T., Müller, R.D., (2020), A Quantitative Tomotectonic Plate 
-            Reconstruction of Western North America and the Eastern Pacific Basin. Geochemistry, Geophysics, 
-            Geosystems, 21, e2020GC009117. DOI: https://doi.org/10.1029/2020GC009117
-
-
-    When calling the object, just supply one of these string identifiers. The object
-    will look through the requested plate model when calling the following methods:
-
-    Methods
-    -------
-    get_plate_reconstruction_files
-        Downloads the `rotation_model`, `topology_features`, and `static_polygons` 
-        needed to create an instance of the <gplately.reconstruction.PlateReconstruction> 
-        object. Returns them as <pygplates.RotationModel> and <pygplates.FeatureCollection> 
-        instances respectively.
-    get_topology_geometries
-        Downloads the `coastlines`, `continents` and `COBs` needed to create an instance of the
-        <gplately.plot.PlotTopologies> object. These geometries are returned as 
-        <pygplates.FeatureCollection> objects.
-    get_age_grids
-        Downloads netCDF (.nc) and .grd rasters, as well as .tif images
-
-    Examples
-    --------
-    Calling the object: 
         # string identifier to access the Muller et al. 2019 model
         gDownload = gplately.download.DataServer("Muller2019")
+
+    all requested files are downloaded into the user's 'gplately' cache folder only _once_. If the same
+    object and method(s) are re-run, the files will be re-accessed from the cache provided they have not been 
+    moved or deleted. 
+
+    Currently, `DataServer` supports a number of plate reconstruction models. To call the object,
+    supply a `file_collection` string from one of the following models:
+
+    * __[Müller et al. 2019](https://www.earthbyte.org/muller-et-al-2019-deforming-plate-reconstruction-and-seafloor-age-grids-tectonics/):__ 
+
+        file_collection = `Muller2019`
+    
+        Information
+        -----------
+        * Downloadable files: a `rotation_model`, `topology_features`, `static_polygons`, `coastlines`, `continents`, `COBs`, and
+        seafloor `age_grids` from 0 to 250 Ma. 
+        * Maximum reconstruction time: 250 Ma
+
+        Citations
+        ---------
+        Müller, R. D., Zahirovic, S., Williams, S. E., Cannon, J., Seton, M., 
+        Bower, D. J., Tetley, M. G., Heine, C., Le Breton, E., Liu, S., Russell, S. H. J., 
+        Yang, T., Leonard, J., and Gurnis, M. (2019), A global plate model including 
+        lithospheric deformation along major rifts and orogens since the Triassic. 
+        Tectonics, vol. 38, https://doi.org/10.1029/2018TC005462.
+            
+
+    * __Müller et al. 2016__:
+
+        file_collection = `Muller2016`
+
+        Information
+        -----------
+        * Downloadable files: a `rotation_model`, `topology_features`, `static_polygons`, `coastlines`, and
+        seafloor `age_grids` from 0-230 Ma. 
+        * Maximum reconstruction time: 230 Ma
+
+        Citations
+        ---------
+        * Müller R.D., Seton, M., Zahirovic, S., Williams, S.E., Matthews, K.J.,
+        Wright, N.M., Shephard, G.E., Maloney, K.T., Barnett-Moore, N., Hosseinpour, M., 
+        Bower, D.J., Cannon, J., InPress. Ocean basin evolution and global-scale plate 
+        reorganization events since Pangea breakup, Annual Review of Earth and Planetary 
+        Sciences, Vol 44, 107-138. DOI: 10.1146/annurev-earth-060115-012211.
+
+
+    * __[Merdith et al. 2021](https://zenodo.org/record/4485738#.Yhrm8hNBzA0)__: 
+
+        file_collection = `Merdith2021`
+
+        Information
+        -----------
+        * Downloadable files: a `rotation_model`, `topology_features`, `static_polygons`, `coastlines`
+        and `continents`.
+        * Maximum reconstruction time: 1 Ga (however, `PlotTopologies` correctly visualises up to 410 Ma) 
+
+        Citations: 
+        ----------
+        * Merdith et al. (in review), 'A continuous, kinematic full-plate motion model
+        from 1 Ga to present'. 
+        * Andrew Merdith. (2020). Plate model for 'Extending Full-Plate Tectonic Models 
+        into Deep Time: Linking the Neoproterozoic and the Phanerozoic ' (1.1b) [Data set]. 
+        Zenodo. https://doi.org/10.5281/zenodo.4485738
+
+
+    * __Cao et al. 2020__: 
+
+        file_collection = `Cao2020`
+
+        Information
+        -----------
+        * Downloadable files: `rotation_model`, `topology_features`, `static_polygons`, `coastlines`
+        and `continents`.
+        * Maximum reconstruction time: 1 Ga
+
+        Citations
+        ---------
+        * Toy Billion-year reconstructions from Cao et al (2020). 
+        Coupled Evolution of Plate Tectonics and Basal Mantle Structure Tectonics, 
+        doi: 10.1029/2020GC009244
+
+
+    - __Mather et al. 2021__ : 
+
+        file_collection = `Mather2021`
+        
+        Information
+        -----------
+        * Downloadable files: `rotation_model`, `topology_features`, and `coastlines`
+        * Maximum reconstruction time: 170 Ma
+
+        Citations
+        ---------
+        * Mather, B., Müller, R.D.,; Alfonso, C.P., Seton, M., 2021, Kimberlite eruption 
+        driven by slab flux and subduction angle. DOI: 10.5281/zenodo.5769002
+
+
+    - __Seton et al. 2012__:
+
+        file_collection = `Seton2012`
+
+        Information
+        -----------
+        * Downloadable files: `rotation_model`, `topology_features`, `coastlines`,
+        `COBs`, and paleo-age grids (0-200 Ma)
+        * Maximum reconstruction time: 200 Ma
+
+        Citations
+        ---------
+        * M. Seton, R.D. Müller, S. Zahirovic, C. Gaina, T.H. Torsvik, G. Shephard, A. Talsma, 
+        M. Gurnis, M. Turner, S. Maus, M. Chandler, Global continental and ocean basin reconstructions 
+        since 200 Ma, Earth-Science Reviews, Volume 113, Issues 3-4, July 2012, Pages 212-270, 
+        ISSN 0012-8252, 10.1016/j.earscirev.2012.03.002.
+
+
+    - __Matthews et al. 2016__: 
+
+        file_collection = `Matthews2016`
+
+        Information
+        -----------
+        * Downloadable files: `rotation_model`, `topology_features`, `static_polygons`, `coastlines`,
+        and `continents`
+        * Maximum reconstruction time(s): 410-250 Ma, 250-0 Ma
+
+        Citations
+        ---------
+        * Matthews, K.J., Maloney, K.T., Zahirovic, S., Williams, S.E., Seton, M.,
+        and Müller, R.D. (2016). Global plate boundary evolution and kinematics since the 
+        late Paleozoic, Global and Planetary Change, 146, 226-250. 
+        DOI: 10.1016/j.gloplacha.2016.10.002
+
+
+    - __Merdith et al. 2017__: 
+
+        file_collection = `Merdith2017`
+
+        Information
+        -----------
+        * Downloadable files: `rotation_files` and `topology_features`
+        * Maximum reconstruction time: 410 Ma
+
+        Citations
+        ---------
+        * Merdith, A., Collins, A., Williams, S., Pisarevskiy, S., Foden, J., Archibald, D. 
+        and Blades, M. et al. 2016. A full-plate global reconstruction of the Neoproterozoic. 
+        Gondwana Research. 50: pp. 84-134. DOI: 10.1016/j.gr.2017.04.001
+
+
+    - __Li et al. 2008__: 
+
+        file_collection = `Li2008`
+
+        Information
+        -----------
+        * Downloadable files: `rotation_model` and `static_polygons`
+        * Maximum reconstruction time: 410 Ma
+
+        Citations
+        ---------
+        * Rodinia reconstruction from Li et al (2008), Assembly, configuration, and break-up 
+        history of Rodinia: A synthesis. Precambrian Research. 160. 179-210. 
+        DOI: 10.1016/j.precamres.2007.04.021.
+
+
+    - __Pehrsson et al. 2015__: 
+
+        file_collection = `Pehrsson2015`
+
+        Information
+        -----------
+        * Downloadable files: `rotation_model` and `static_polygons`
+        * Maximum reconstruction time: N/A
+
+        Citations
+        ---------
+        * Pehrsson, S.J., Eglington, B.M., Evans, D.A.D., Huston, D., and Reddy, S.M., (2015),
+        Metallogeny and its link to orogenic style during the Nuna supercontinent cycle. Geological 
+        Society, London, Special Publications, 424, 83-94. DOI: https://doi.org/10.1144/SP424.5
+
+
+    - __Torsvik and Cocks et al. 2017__: 
+
+        file_collection = `TorsvikCocks2017`
+
+        Information
+        -----------
+        * Downloadable files: `rotation_model`, and `coastlines`
+        * Maximum reconstruction time: 410 Ma
+
+        Citations
+        ---------
+        * Torsvik, T., & Cocks, L. (2016). Earth History and Palaeogeography. Cambridge: 
+        Cambridge University Press. doi:10.1017/9781316225523
+
+
+    - __Young et al. 2019__: 
+
+        file_collection = `Young2019`
+
+        Information
+        -----------
+        * Downloadable files: `rotation_model`, `topology_features`, `static_polygons`, `coastlines`
+        and `continents`.
+        * Maximum reconstruction time: 410-250 Ma, 250-0 Ma
+        
+        Citations
+        ---------
+        * Young, A., Flament, N., Maloney, K., Williams, S., Matthews, K., Zahirovic, S.,
+        Müller, R.D., (2019), Global kinematics of tectonic plates and subduction zones since the late 
+        Paleozoic Era, Geoscience Frontiers, Volume 10, Issue 3, pp. 989-1013, ISSN 1674-9871,
+        DOI: https://doi.org/10.1016/j.gsf.2018.05.011.
+
+
+    - __Scotese et al. 2008__: 
+
+        file_collection = `Scotese2008`
+
+        Information
+        -----------
+        * Downloadable files: `rotation_model`, `static_polygons`, and `continents`
+        * Maximum reconstruction time: 
+        
+        Citations
+        ---------
+        * Scotese, C.R. 2008. The PALEOMAP Project PaleoAtlas for ArcGIS, Volume 2, Cretaceous 
+        paleogeographic and plate tectonic reconstructions. PALEOMAP Project, Arlington, Texas.
+
+
+    - __Golonka et al. 2007__: 
+
+        file_collection = `Golonka2007`
+
+        Information
+        -----------
+        * Downloadable files: `rotation_model`, `static_polygons`, and `continents`
+        * Maximum reconstruction time: 410 Ma
+        
+        Citations
+        ---------
+        * Golonka, J. 2007. Late Triassic and Early Jurassic palaeogeography of the world. 
+        Palaeogeography, Palaeoclimatology, Palaeoecology 244(1–4), 297–307.
+
+
+    - __Clennett et al. 2020 (based on Müller et al. 2019)__: 
+
+        file_collection = `Clennett2020_M2019`
+
+        Information
+        -----------
+        * Downloadable files: `rotation_model`, `topology_features`, `continents` and `coastlines`
+        * Maximum reconstruction time: 250 Ma
+        
+        Citations
+        ---------
+        * Clennett, E.J., Sigloch, K., Mihalynuk, M.G., Seton, M., Henderson, M.A., Hosseini, K.,
+        Mohammadzaheri, A., Johnston, S.T., Müller, R.D., (2020), A Quantitative Tomotectonic Plate 
+        Reconstruction of Western North America and the Eastern Pacific Basin. Geochemistry, Geophysics, 
+        Geosystems, 21, e2020GC009117. DOI: https://doi.org/10.1029/2020GC009117
+
+
+    - __Clennett et al. 2020 (rigid topological model based on Shephard et al, 2013)__: 
+
+        file_collection = `Clennett2020_S2013`
+
+        Information
+        -----------
+        * Downloadable files: `rotation_model`, `topology_features`, `continents` and `coastlines`
+        * Maximum reconstruction time: 
+        
+        Citations
+        ---------
+        * Clennett, E.J., Sigloch, K., Mihalynuk, M.G., Seton, M., Henderson, M.A., Hosseini, K.,
+        Mohammadzaheri, A., Johnston, S.T., Müller, R.D., (2020), A Quantitative Tomotectonic Plate 
+        Reconstruction of Western North America and the Eastern Pacific Basin. Geochemistry, Geophysics, 
+        Geosystems, 21, e2020GC009117. DOI: https://doi.org/10.1029/2020GC009117
 
     """
     def __init__(self, file_collection):
@@ -301,9 +479,8 @@ class DataServer(object):
 
 
     def get_plate_reconstruction_files(self):
-        """Downloads and constructs a rotation model, a set of dynamic polygons and
-        and a set of static polygons needed to call the gplately.PlateReconstruction 
-        object.
+        """Downloads and constructs a `rotation model`, a set of `topology_features` and
+        and a set of `static_polygons` needed to call the `PlateReconstruction` object.
 
         Returns
         -------
@@ -311,7 +488,8 @@ class DataServer(object):
             A rotation model to query equivalent and/or relative topological plate rotations
             from a time in the past relative to another time in the past or to present day.
         topology_features : instance of <pygplates.FeatureCollection>
-            Point, polyline and/or polygon feature data in motion through geological time.
+            Point, polyline and/or polygon feature data that are reconstructable through 
+            geological time.
         static_polygons : instance of <pygplates.FeatureCollection>
             Present-day polygons whose shapes do not change through geological time. They are
             used to cookie-cut dynamic polygons into identifiable topological plates (assigned 
@@ -319,33 +497,26 @@ class DataServer(object):
 
         Notes
         -----
-        This method accesses the plate reconstruction model requested in the 
-        gplately.DataServer object. For example, if the object was called as:
+        This method accesses the plate reconstruction model ascribed to the `file_collection` string passed 
+        into the `DataServer` object. For example, if the object was called with `"Muller2019"`:
 
             gDownload = gplately.download.DataServer("Muller2019")
+            rotation_model, topology_features, static_polygons = gDownload.get_plate_reconstruction_files()
 
-        the method will download:
-            - a rotation file
-                returned as a <pygplates.RotationModel>
-            - GPML topology features
-                returned as a <pygplates.FeatureCollection>
-            - static polygons
-                returned as a <pygplates.FeatureCollection>
+        the method will download a `rotation_model`, `topology_features` and `static_polygons` from the 
+        Müller et al. (2019) plate reconstruction model. Once the reconstruction objects are returned, 
+        they can be passed into:
 
-        from the Muller et al. (2019) plate reconstruction model. If the requested plate 
-        model does not have a certain files, say `static_polygons`, a message will be printed 
-        to alert the user. 
+            model = gplately.reconstruction.PlateReconstruction(rotation_model, topology_features, static_polygons)
 
-        Once the reconstruction objects are returned, they can be passed into:
+        * Note: If the requested plate model does not have a certain file(s), a message will be printed 
+        to alert the user. For example, using `get_plate_reconstruction_files()`
+        for the Torsvik and Cocks (2017) plate reconstruction model yields the printed message:
 
-            model = gplately.reconstruction.PlateReconstruction(
-                rotation_model
-                topology_features,
-                coastlines,
-                COBs)
+                No topology features in TorsvikCocks2017. No FeatureCollection created - unable to 
+                plot trenches, ridges and transforms.
+                No continent-ocean boundaries in TorsvikCocks2017.
 
-        the <gplately.reconstruction.PlateReconstruction> object reconstructs features
-        to certain geological times (see documentation for more info).
         """
 
         rotation_filenames = []
@@ -439,56 +610,63 @@ class DataServer(object):
 
         if not rotation_filenames:
             print("No .rot files in {}. No rotation model created.".format(self.file_collection))
+            rotation_model = []
         if not topology_filenames:
             print("No topology features in {}. No FeatureCollection created - unable to plot trenches, ridges and transforms.".format(self.file_collection))
+            topology_features = []
         if not static_polygons:
             print("No static polygons in {}.".format(self.file_collection))
+            static_polygons = []
 
         return rotation_model, topology_features, static_polygons
 
 
     def get_topology_geometries(self):
-        """Downloads coastline, continent and continent-ocean boundary geometries from the 
-        requested plate model. These are needed to call the <gplately.plot.PlotTopologies> 
-        object.
+        """Uses Pooch to download coastline, continent and COB (continent-ocean boundary)
+        Shapely geometries from the requested plate model. These are needed to call the `PlotTopologies`
+        object and visualise topological plates through time.
 
         Returns
         -------
-        continents, coastlines, COBs : instance of <pygplates.FeatureCollection>
-            Shapely polygons and polylines resolved from .shp and/or .gpml topology files,
-            ready for reconstruction to a particular geological time and plotting.
+        coastlines : instance of <pygplates.FeatureCollection>
+            Present-day global coastline Shapely polylines cookie-cut using static polygons. Ready for
+            reconstruction to a particular geological time and for plotting.
+
+        continents : instance of <pygplates.FeatureCollection>
+            Cookie-cutting Shapely polygons for non-oceanic regions (continents, inta-oceanic arcs, etc.)
+            ready for reconstruction to a particular geological time and for plotting.
+
+        COBs : instance of <pygplates.FeatureCollection>
+            Shapely polylines resolved from .shp and/or .gpml topology files that represent the 
+            locations of the boundaries between oceanic and continental crust.
+            Ready for reconstruction to a particular geological time and for plotting.
 
         Notes
         -----
-        This function searches for the plate model requested when calling the 
-        <gplately.data.DataServer> object. For example, if the object was called as:
+        This method accesses the plate reconstruction model ascribed to the `file_collection` 
+        string passed into the `DataServer` object. For example, if the object was called with
+        `"Muller2019"`:
 
             gDownload = gplately.download.DataServer("Muller2019")
+            coastlines, continents, COBs = gDownload.get_topology_geometries()
 
-        the method will attempt to download:
-            - Coastlines: present-day coastlines cookie-cut using static polygons
-            - Continents: cookie-cutting polygons for non-oceanic regions (continents, 
-                          intra-oceanic arcs, etc.)
-            - COBs: COB line segments
-        from the Muller et al. (2019) plate reconstruction model. If found, these files are 
-        returned as individual pyGPlates Feature Collections. 
+        the method will attempt to download `coastlines`, `continents` and `COBs` from the Müller
+        et al. (2019) plate reconstruction model. If found, these files are returned as individual 
+        pyGPlates Feature Collections. They can be passed into:
 
-        If the requested plate model does not have a certain geometry, say `continents`, a
-        message will be printed to alert the user. 
+            gPlot = gplately.plot.PlotTopologies(gplately.reconstruction.PlateReconstruction, time, continents, coastlines, COBs)
 
-        Once the continents, coastlines and COBs Feature Collections are returned, they can 
-        be passed into:
-
-            gPlot = gplately.plot.PlotTopologies(
-                <gplately.reconstruction.PlateReconstruction>,
-                time,
-                continents,
-                coastlines,
-                COBs)
-
-        to reconstruct features to a certain geological time. The <gplately.plot.PlotTopologies> 
+        to reconstruct features to a certain geological time. The `PlotTopologies`
         object provides simple methods to plot these geometries along with trenches, ridges and 
-        transforms (see documentation for more info).
+        transforms (see documentation for more info). Note that the `PlateReconstruction` object 
+        is a parameter.
+
+        * Note: If the requested plate model does not have a certain geometry, a
+        message will be printed to alert the user. For example, if `get_topology_geometries()` 
+        is used with the `"Matthews2016"` plate model, the workflow will print the following 
+        message: 
+
+                No continent-ocean boundaries in Matthews2016.
         """
 
         # Locate all topology geometries from GPlately's DataCollection
@@ -542,25 +720,34 @@ class DataServer(object):
                         )
                 else:
                     for file in url[0]:
-                        coastlines.append(_str_in_filename(
-                            _fetch_from_web(file), 
-                            strings_to_include=["coastline"])
-                        )
-                        coastlines = _check_gpml_or_shp(coastlines)
+                        if url[0] is not None:
+                            coastlines.append(_str_in_filename(
+                                _fetch_from_web(file), 
+                                strings_to_include=["coastline"])
+                            )
+                            coastlines = _check_gpml_or_shp(coastlines)
+                        else:
+                            coastlines = []
 
                     for file in url[1]:
-                        continents.append(_str_in_filename(
-                            _fetch_from_web(file), 
-                            strings_to_include=["continent"])
-                        )
-                        continents = _check_gpml_or_shp(continents)
+                        if url[1] is not None:
+                            continents.append(_str_in_filename(
+                                _fetch_from_web(file), 
+                                strings_to_include=["continent"])
+                            )
+                            continents = _check_gpml_or_shp(continents)
+                        else:
+                            continents = []
 
                     for file in url[2]:
-                        COBs.append(_str_in_filename(
-                            _fetch_from_web(file), 
-                            strings_to_include=["cob"])
-                        )
-                        COBs = _check_gpml_or_shp(COBs)
+                        if url[2] is not None:
+                            COBs.append(_str_in_filename(
+                                _fetch_from_web(file), 
+                                strings_to_include=["cob"])
+                            )
+                            COBs = _check_gpml_or_shp(COBs)
+                        else:
+                            COBs = []
                 break
 
         if found_collection is False:
@@ -568,6 +755,7 @@ class DataServer(object):
 
         if not coastlines:
             print("No coastlines in {}.".format(self.file_collection))
+            coastlines_featurecollection = []
         else:
             #print(coastlines)
             coastlines_featurecollection = _pygplates.FeatureCollection()
@@ -576,6 +764,7 @@ class DataServer(object):
         
         if not continents:
             print("No continents in {}.".format(self.file_collection))
+            continents_featurecollection = []
         else:
             #print(continents)
             continents_featurecollection = _pygplates.FeatureCollection()
@@ -584,6 +773,7 @@ class DataServer(object):
         
         if not COBs:
             print("No continent-ocean boundaries in {}.".format(self.file_collection))
+            COBs_featurecollection = []
         else:
             #print(COBs)
             COBs_featurecollection = _pygplates.FeatureCollection()
@@ -595,54 +785,70 @@ class DataServer(object):
 
 
     def get_age_grid(self, time):
-        """Downloads age grids from plate reconstruction files on GPlately's DataServer 
-        into the "gplately" cache.
+        """Downloads seafloor and paleo-age grids from the plate reconstruction model (`file_collection`)
+        passed into the `DataServer` object. Stores grids in the "gplately" cache.
 
-        Currently, DataServer supports the following rasters and images:
+        Currently, `DataServer` supports the following age grids:
 
-        - Muller et al. 2019
-            Time range: 0-250 Ma
-            Seafloor age grid rasters in netCDF format.
+        * __Muller et al. 2019__
 
-        - Muller et al. 2016
-            Time range: 0-240 Ma
-            Seafloor age grid rasters in netCDF format. 
+            * `file_collection` = `Muller2019`
+            * Time range: 0-250 Ma
+            * Seafloor age grid rasters in netCDF format.
 
-        Note that this function will download the age grid(s) from the plate model 
-        requested via the string identifer passed into the DataServer object. For example, 
-        if the object was called as:
+        * __Muller et al. 2016__
+            
+            * `file_collection` = `Muller2016`
+            * Time range: 0-240 Ma
+            * Seafloor age grid rasters in netCDF format. 
 
-            gDownload = gplately.download.DataServer("Muller2019")
+        * __Seton et al. 2012__
 
-        the method will attempt to download age grid(s) from the Muller et al. (2019) plate
-        reconstruction model from the geological time(s) requested in the `times` parameter. 
-        If found, these age grids are returned as masked arrays. 
+            * `file_collection` = `Seton2012`
+            * Time range: 0-200 Ma
+            * Paleo-age grid rasters in netCDF format.
+
         
         Parameters
         ----------
-        times : int, or list of int, default=None
-            Request an age grid from one or more reconstruction times, e.g. from 0-5 Ma
-            requires times=np.arange(0,5). If a single integer is passed, a single raster
-            masked array is returned. If a list of integers is passed, a list of raster
-            masked arrays is returned.
+        time : int, or list of int, default=None
+            Request an age grid from one (an integer) or multiple reconstruction times (a
+            list of integers).
 
         Returns
         -------
-        raster_array : ndarray
-            A masked array containing the read netCDF4 grid, ready for plotting or for
-            passing into the <gplately.grid.Raster> object for raster manipulation.
+        raster_array : MaskedArray
+            A masked array containing the netCDF4 age grid ready for plotting or for
+            passing into GPlately's `Raster` object for raster manipulation.
 
         Raises
         -----
         ValueError
-            If `times` (a list of reconstruction times to extract the age grids from) is 
-            not passed.
+            If `time` (a single integer, or a list of integers representing reconstruction
+            times to extract the age grids from) is not passed.
 
         Notes
         -----
-        Once requested age grid(s) are downloaded to the gplately cache once, they are not 
-        re-downloaded if the same workflow (or even a different one!) requires them. Rather,
-        DataServer fetches them from the cache.
+        The first time that `get_age_grid` is called for a specific time(s), the age grid(s) 
+        will be downloaded into the GPlately cache once. Upon successive calls of `get_age_grid`
+        for the same reconstruction time(s), the age grids will not be re-downloaded; rather, 
+        they are re-accessed from the same cache provided the age grid(s) have not been moved or deleted. 
+
+        Examples
+        --------
+        if the `DataServer` object was called with the `Muller2019` `file_collection` string:
+
+            gDownload = gplately.download.DataServer("Muller2019")
+
+        `get_age_grid` will download seafloor age grids from the Müller et al. (2019) plate 
+        reconstruction model for the geological time(s) requested in the `time` parameter. 
+        If found, these age grids are returned as masked arrays. 
+
+        For example, to download  Müller et al. (2019) seafloor age grids for 0Ma, 1Ma and
+        100 Ma:
+
+            age_grids = gDownload.get_age_grid([0, 1, 100])
+            
         """
         age_grids = []
         age_grid_links = DataCollection.netcdf4_age_grids(self, time)
@@ -661,42 +867,54 @@ class DataServer(object):
 
 
     def get_raster(self, raster_id_string=None):
-        """Downloads assorted rasters and images from the web that are not associated with
-        a plate reconstruction model in DataServer into the "gplately" cache.
+        """Downloads assorted raster data that are not associated with the plate 
+        reconstruction models supported by GPlately's `DataServer`. Stores rasters in the 
+        "gplately" cache.
 
-        Currently supports the following rasters and images:
+        Currently, `DataServer` supports the following rasters and images:
 
-        - ETOPO1 
-            Filetypes available : TIF, netCDF (GRD)
-            string identifiers : "ETOPO1_grd", "ETOPO1_tif"
-            A 1-arc minute global relief model combining lang topography and ocean bathymetry.
-            Available in netCDF (in .grd) and TIFF (.tif) format. 
+        * __[ETOPO1](https://www.ngdc.noaa.gov/mgg/global/)__: 
+            * Filetypes available : TIF, netCDF (GRD)
+            * `raster_id_string` = `"ETOPO1_grd"`, `"ETOPO1_tif"` (depending on the requested format)
+            * A 1-arc minute global relief model combining lang topography and ocean bathymetry.
+            * Citation: doi:10.7289/V5C8276M
 
 
         Parameters
         ----------
         raster_id_string : str, default=None
             A string to identify which raster to download.
-        filetype : str, default None
-            A string to request an age grid of a particular filetype. Currently supports
-                - netCDF
-                - JPEG
-                - PNG
 
         Returns
         -------
-        raster_filenames : list of str
-            A list containing the full path to the cached raster(s).
+        raster_filenames : ndarray
+            An ndarray of the cached raster. This can be plotted using `matplotlib.pyplot.imshow` on
+            a `cartopy.mpl.GeoAxis` GeoAxesSubplot (see example below).
 
         Raises
         ------
         ValueError
-            if a raster_id_string is not supplied.
-            if a filetype is not supplied.
+            * if a `raster_id_string` is not supplied.
 
         Notes
         -----
         Rasters obtained by this method are (so far) only reconstructed to present-day. 
+
+        Examples
+        --------
+        To download ETOPO1 and plot it on a Mollweide projection:
+
+            import gplately
+            import numpy as np
+            import matplotlib.pyplot as plt
+            import cartopy.crs as ccrs
+
+            gdownload = gplately.DataServer("Muller2019")
+            etopo1 = gdownload.get_raster("ETOPO1_tif")
+            fig = plt.figure(figsize=(18,14), dpi=300)
+            ax = fig.add_subplot(111, projection=ccrs.Mollweide(central_longitude = -150))
+            ax2.imshow(etopo1, extent=[-180,180,-90,90], transform=ccrs.PlateCarree()) 
+
         """
         from matplotlib import image
         if raster_id_string is None:
@@ -728,39 +946,68 @@ class DataServer(object):
 
 
     def get_feature_data(self, feature_data_id_string=None):
-        """Downloads geological feature data from the web into the "gplately" cache.
+        """Downloads assorted geological feature data from web servers (i.e. 
+        [GPlates 2.3 sample data](https://www.earthbyte.org/gplates-2-3-software-and-data-sets/))
+        into the "gplately" cache.
 
-        Currently supports the following feature data:
+        Currently, `DataServer` supports the following feature data:
 
-        - Large igneous provinces from Johansson et al. (2018)
-            Formats: .gpmlz
-            String identifier: "Johansson2018"
-            Citation: Johansson, L., Zahirovic, S., and Müller, R. D., In Prep, The 
+        * __Large igneous provinces from Johansson et al. (2018)__
+
+            Information
+            -----------
+            * Formats: .gpmlz
+            * `feature_data_id_string` = `Johansson2018`
+
+            Citations
+            ---------
+            * Johansson, L., Zahirovic, S., and Müller, R. D., In Prep, The 
             interplay between the eruption and weathering of Large Igneous Provinces and 
             the deep-time carbon cycle: Geophysical Research Letters.
 
-        - Large igneous province products interpreted as plume products from Whittaker 
-        et al. (2015).
-            Formats: .gpmlz, .shp
-            String identifier: "Whittaker2015"
-            Citation: Whittaker, J. M., Afonso, J. C., Masterton, S., Müller, R. D., 
+
+        - __Large igneous province products interpreted as plume products from Whittaker 
+        et al. (2015)__.
+
+            Information
+            -----------
+            * Formats: .gpmlz, .shp
+            * `feature_data_id_string` = `Whittaker2015`
+            
+            Citations
+            ---------
+            * Whittaker, J. M., Afonso, J. C., Masterton, S., Müller, R. D., 
             Wessel, P., Williams, S. E., & Seton, M. (2015). Long-term interaction between 
             mid-ocean ridges and mantle plumes. Nature Geoscience, 8(6), 479-483. 
             doi:10.1038/ngeo2437.
 
-        - Seafloor tectonic fabric (fracture zones, discordant zones, V-shaped structures, 
+
+        - __Seafloor tectonic fabric (fracture zones, discordant zones, V-shaped structures, 
         unclassified V-anomalies, propagating ridge lineations and extinct ridges) from 
-        Matthews et al. (2011)
-            Formats: .gpml
-            String identifier: "SeafloorFabric"
-            Citation: Matthews, K.J., Müller, R.D., Wessel, P. and Whittaker, J.M., 2011. The 
+        Matthews et al. (2011)__
+
+            Information
+            -----------
+            * Formats: .gpml
+            * `feature_data_id_string` = `SeafloorFabric`
+
+            Citations
+            ---------
+            * Matthews, K.J., Müller, R.D., Wessel, P. and Whittaker, J.M., 2011. The 
             tectonic fabric of the ocean basins. Journal of Geophysical Research, 116(B12): 
             B12109, DOI: 10.1029/2011JB008413. 
 
-        - Present day surface hotspot/plume locations from Whittaker et al, (2013)
-            Formats: .gpmlz
-            String identifier: "Hotspots"
-            Citation: Whittaker, J., Afonso, J., Masterton, S., Müller, R., Wessel, P., 
+
+        - __Present day surface hotspot/plume locations from Whittaker et al. (2013)__
+
+            Information
+            -----------
+            * Formats: .gpmlz
+            * `feature_data_id_string` = `Hotspots`
+
+            Citation
+            --------
+            * Whittaker, J., Afonso, J., Masterton, S., Müller, R., Wessel, P., 
             Williams, S., and Seton, M., 2015, Long-term interaction between mid-ocean ridges and 
             mantle plumes: Nature Geoscience, v. 8, no. 6, p. 479-483, doi:10.1038/ngeo2437.
 
@@ -768,18 +1015,26 @@ class DataServer(object):
         Parameters
         ----------
         feature_data_id_string : str, default=None
-            A string to identify which feature data to download to the cache. See table above.
+            A string to identify which feature data to download to the cache (see list of supported
+            feature data above).
 
         Returns
         -------
-        feature_data_filenames : list of str
-            A list containing the full path to the requested feature data. This is ready to be turned
-            into a pygplates.FeatureCollection.
+        feature_data_filenames : instance of <pygplates.FeatureCollection>, or list of instance <pygplates.FeatureCollection>
+            If a single set of feature data is downloaded, a single pyGPlates `FeatureCollection` 
+            object is returned. Otherwise, a list containing multiple pyGPlates `FeatureCollection` 
+            objects is returned (like for `SeafloorFabric`). In the latter case, feature reconstruction 
+            and plotting may have to be done iteratively.
 
         Raises
         ------
         ValueError
-            If a feature_data_id_string is not provided.
+            If a `feature_data_id_string` is not provided.
+
+        Examples
+        --------
+        For examples of plotting data downloaded with `get_feature_data`, see GPlately's sample 
+        notebook 05 - Working With Feature Geometries [here](https://github.com/GPlates/gplately/blob/master/Notebooks/05-WorkingWithFeatureGeometries.ipynb).
         """
         if feature_data_id_string is None:
             raise ValueError(
