@@ -40,44 +40,36 @@ _DEFAULT_T_MANTLE = 1350.0
 _DEFAULT_KAPPA = 8.04e-7
 _SEC_PER_MYR = 3.15576e13
 
-
 def plate_temp(
     age,
     z,
-    plate_thickness=_DEFAULT_PLATE_THICKNESS,
+    plate_thickness,
     kappa=_DEFAULT_KAPPA,
     t_mantle=_DEFAULT_T_MANTLE,
     t_surface=0.0,
 ):
-    &#34;&#34;&#34;Compute the temperature in a cooling plate for a given age, plate
-    thickness, and depth.
+    &#34;&#34;&#34;Computes the temperature in a cooling plate for a given age and plate thickness at a depth = z. 
 
-    By default, assumes a mantle temperature of 1350 degrees, and a 0 degree
-    surface temperature. Kappa defaults to 0.804e-6.
+    Assumes a mantle temperature of 1380 degrees, and a 0 degree surface temperature. Kappa is 0.804e-6. 
 
     Parameters
     ----------
     age : float
         The geological time (Ma) at which to calculate plate temperature.
-    z : array_like
-        The plate depth(s) (m) at which to calculate temperature.
-    plate_thickness : float, default: 125.0e3
+
+    z : float
+        The plate depth (m) at which to calculate temperature.
+
+    PLATE_THICKNESS : float
         The thickness (m) of the plate in consideration.
-    kappa : float, default: 0.804e-6
-    t_mantle : float, default: 1350.0
-        Mantle temperature at the Moho, in degrees Celsius.
-    t_surface : float, default: 0.0
-        Temperature at the surface, in degrees Celsius.
 
     Returns
     -------
-    ndarray
-        The plate temperature at the given age and depth. This is a scalar
-        if `z` is a scalar.
+    list
+        A list enclosing ONE floating-point number equal to plate temperature (e.g. [1367.33962383]).
     &#34;&#34;&#34;
-    aged = age * _SEC_PER_MYR
 
-    z = np.atleast_1d(z)
+    aged = age * _SEC_PER_MYR
 
     sine_arg = np.pi * z / plate_thickness
     exp_arg = -kappa * (np.pi ** 2) * aged / (plate_thickness ** 2)
@@ -89,20 +81,16 @@ def plate_temp(
         + 2.0 * cumsum * (t_mantle - t_surface) / np.pi
         + (t_mantle - t_surface) * z / plate_thickness
     )
-    result = result.reshape(z.shape)
-    if result.size == 1:  # input was a scalar
-        return result.flatten()[0]
+    if result.size == 1:
+        return result[0]
     return result
-
 
 def plate_isotherm_depth(
     age,
     temp=1150.,
     plate_thickness=_DEFAULT_PLATE_THICKNESS,
-    maxiter=50,
-    tol=0.001,
-    require_convergence=False,
-    **kwargs
+    n=20,
+    rtol=0.001,
 ):
     &#34;&#34;&#34;Computes the depth to the temp - isotherm in a cooling plate mode. Solution by iteration. 
 
@@ -110,91 +98,46 @@ def plate_isotherm_depth(
 
     Parameters
     ----------
-    age : array_like
-        Geological ages (Ma) at which to compute depths.
-    temp : float, default: 1150.0
-        The temperature of a temp-isotherm for which to calculate depth,
-        in degrees Celsius.
-    plate_thickness : float, default: 125.0e3
-        Thickness of the plate, in metres.
-    maxiter : int, default: 50
-        Maximum number of iterations.
-    tol: float, default: 0.001
-        Tolerance for convergence of `plate_temp`.
-    require_convergence: bool, default: False
-        If True, raise a `RuntimeError` if convergence is not reached within
-        `maxiter` iterations; if False, a `RuntimeWarning` is issued instead.
-    **kwargs
-        Any further keyword arguments are passed on to `plate_temp`.
+    age : ndarray
+        An array of geological ages (Ma) at which to compute depths. 
+
+    temp : float, default=1350.0
+        The temperature of a temp-isotherm to calculate the depth to. Defaults to 1350 degrees.
 
     Returns
     -------
-    z : ndarray
-        Array of depths to the chosen temperature isotherm at the given ages.
-        This is a scalar if `age` is a scalar.
-
-    Raises
-    ------
-    RuntimeError
-        If `require_convergence` is True and convergence is not reached within
-        `maxiter` iterations.
+    zi : ndarray
+        An array of depths to the chosen temperature isotherm. Each entry corresponds to each unique ‘age’ given. 
     &#34;&#34;&#34;
-
-    # If `rtol` is passed, use that as `tol`
-    # `rtol` actually means &#39;relative tolerance&#39; in scipy,
-    # while `xtol` is used for absolute tolerance
-    tol = kwargs.pop(&#34;rtol&#34;, tol)
-
-    # For backwards compatibility, also allow `n` as a keyword argument
-    maxiter = kwargs.pop(&#34;n&#34;, maxiter)
-
-    maxiter = int(maxiter)
-    if maxiter &lt;= 0:
-        raise ValueError(
-            &#34;`maxiter` must be greater than zero ({})&#34;.format(maxiter)
-        )
+    n = int(n)
+    if n &lt;= 0:
+        raise ValueError(&#34;n must be greater than zero (n = {})&#34;.format(n))
     age = np.atleast_1d(age)
 
-    non_zero_ages = age[age &gt; 0.0]
+    zi = np.atleast_1d(np.zeros_like(age, dtype=float))  # starting depth is 0
 
-    zi = np.zeros_like(non_zero_ages, dtype=float)  # starting depth is 0
+    z_too_small = np.atleast_1d(np.zeros_like(age, dtype=float))
+    z_too_big = np.atleast_1d(np.full_like(age, plate_thickness, dtype=float))
 
-    z_too_small = np.zeros_like(non_zero_ages, dtype=float)
-    z_too_big = np.full_like(non_zero_ages, plate_thickness, dtype=float)
-
-    t_diff = np.full_like(non_zero_ages, np.nan)
-    for _ in range(maxiter):
+    for _ in range(n):
         zi = 0.5 * (z_too_small + z_too_big)
-        ti = plate_temp(non_zero_ages, zi, plate_thickness, **kwargs)
+        ti = plate_temp(age, zi, plate_thickness)
         t_diff = temp - ti
-        z_too_big[t_diff &lt; -tol] = zi[t_diff &lt; -tol]
-        z_too_small[t_diff &gt; tol] = zi[t_diff &gt; tol]
+        z_too_big[t_diff &lt; -rtol] = zi[t_diff &lt; -rtol]
+        z_too_small[t_diff &gt; rtol] = zi[t_diff &gt; rtol]
 
-        if (np.abs(t_diff) &lt; tol).all():
+        if (np.abs(t_diff) &lt; rtol).all():
             break
 
     # convergence warning
-    if (np.abs(t_diff) &gt; tol).any():
-        failed_ages = non_zero_ages[np.abs(t_diff) &gt; tol]
-        message = (
-            &#34;Solution did not converge below tol={}&#34;.format(tol)
-            + &#34; within maxiter={} iterations&#34;.format(maxiter)
-            + &#34; for the following ages: {}&#34;.format(failed_ages)
-        )
-        if require_convergence:
-            raise RuntimeError(message)
+    if np.abs(t_diff).any() &gt; rtol:
         import warnings
-
-        warnings.warn(message, category=RuntimeWarning)
+        warnings.warn(&#34;Iterations did not converge below rtol={}&#34;.format(rtol))
 
     # protect against negative ages
-    out = np.zeros_like(age)
-    out[age &gt; 0.0] = zi
-    out = out.reshape(age.shape)
-    if out.size == 1:  # input age was a scalar
-        return out.flatten()[0]
-    return out
-
+    zi[age &lt;= 0] = 0
+    zi = np.squeeze(zi)
+    return zi
 
 def points_to_features(lons, lats, plate_ID=None):
     &#34;&#34;&#34;Creates point features represented on a unit length sphere in 3D cartesian coordinates from a latitude and 
@@ -624,41 +567,22 @@ points given their latitudes and longitudes.</p>
 </details>
 </dd>
 <dt id="gplately.tools.plate_isotherm_depth"><code class="name flex">
-<span>def <span class="ident">plate_isotherm_depth</span></span>(<span>age, temp=1150.0, plate_thickness=125000.0, maxiter=50, tol=0.001, require_convergence=False, **kwargs)</span>
+<span>def <span class="ident">plate_isotherm_depth</span></span>(<span>age, temp=1150.0, plate_thickness=125000.0, n=20, rtol=0.001)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Computes the depth to the temp - isotherm in a cooling plate mode. Solution by iteration. </p>
 <p>By default the plate thickness is 125 km as in Parsons/Sclater.</p>
 <h2 id="parameters">Parameters</h2>
 <dl>
-<dt><strong><code>age</code></strong> :&ensp;<code>array_like</code></dt>
-<dd>Geological ages (Ma) at which to compute depths.</dd>
-<dt><strong><code>temp</code></strong> :&ensp;<code>float</code>, default<code>: 1150.0</code></dt>
-<dd>The temperature of a temp-isotherm for which to calculate depth,
-in degrees Celsius.</dd>
-<dt><strong><code>plate_thickness</code></strong> :&ensp;<code>float</code>, default<code>: 125.0e3</code></dt>
-<dd>Thickness of the plate, in metres.</dd>
-<dt><strong><code>maxiter</code></strong> :&ensp;<code>int</code>, default<code>: 50</code></dt>
-<dd>Maximum number of iterations.</dd>
-<dt><strong><code>tol</code></strong> :&ensp;<code>float</code>, default<code>: 0.001</code></dt>
-<dd>Tolerance for convergence of <code><a title="gplately.tools.plate_temp" href="#gplately.tools.plate_temp">plate_temp()</a></code>.</dd>
-<dt><strong><code>require_convergence</code></strong> :&ensp;<code>bool</code>, default<code>: False</code></dt>
-<dd>If True, raise a <code>RuntimeError</code> if convergence is not reached within
-<code>maxiter</code> iterations; if False, a <code>RuntimeWarning</code> is issued instead.</dd>
-<dt><strong><code>**kwargs</code></strong></dt>
-<dd>Any further keyword arguments are passed on to <code><a title="gplately.tools.plate_temp" href="#gplately.tools.plate_temp">plate_temp()</a></code>.</dd>
+<dt><strong><code>age</code></strong> :&ensp;<code>ndarray</code></dt>
+<dd>An array of geological ages (Ma) at which to compute depths.</dd>
+<dt><strong><code>temp</code></strong> :&ensp;<code>float</code>, default=<code>1350.0</code></dt>
+<dd>The temperature of a temp-isotherm to calculate the depth to. Defaults to 1350 degrees.</dd>
 </dl>
 <h2 id="returns">Returns</h2>
 <dl>
-<dt><strong><code>z</code></strong> :&ensp;<code>ndarray</code></dt>
-<dd>Array of depths to the chosen temperature isotherm at the given ages.
-This is a scalar if <code>age</code> is a scalar.</dd>
-</dl>
-<h2 id="raises">Raises</h2>
-<dl>
-<dt><code>RuntimeError</code></dt>
-<dd>If <code>require_convergence</code> is True and convergence is not reached within
-<code>maxiter</code> iterations.</dd>
+<dt><strong><code>zi</code></strong> :&ensp;<code>ndarray</code></dt>
+<dd>An array of depths to the chosen temperature isotherm. Each entry corresponds to each unique ‘age’ given.</dd>
 </dl></div>
 <details class="source">
 <summary>
@@ -668,10 +592,8 @@ This is a scalar if <code>age</code> is a scalar.</dd>
     age,
     temp=1150.,
     plate_thickness=_DEFAULT_PLATE_THICKNESS,
-    maxiter=50,
-    tol=0.001,
-    require_convergence=False,
-    **kwargs
+    n=20,
+    rtol=0.001,
 ):
     &#34;&#34;&#34;Computes the depth to the temp - isotherm in a cooling plate mode. Solution by iteration. 
 
@@ -679,120 +601,67 @@ This is a scalar if <code>age</code> is a scalar.</dd>
 
     Parameters
     ----------
-    age : array_like
-        Geological ages (Ma) at which to compute depths.
-    temp : float, default: 1150.0
-        The temperature of a temp-isotherm for which to calculate depth,
-        in degrees Celsius.
-    plate_thickness : float, default: 125.0e3
-        Thickness of the plate, in metres.
-    maxiter : int, default: 50
-        Maximum number of iterations.
-    tol: float, default: 0.001
-        Tolerance for convergence of `plate_temp`.
-    require_convergence: bool, default: False
-        If True, raise a `RuntimeError` if convergence is not reached within
-        `maxiter` iterations; if False, a `RuntimeWarning` is issued instead.
-    **kwargs
-        Any further keyword arguments are passed on to `plate_temp`.
+    age : ndarray
+        An array of geological ages (Ma) at which to compute depths. 
+
+    temp : float, default=1350.0
+        The temperature of a temp-isotherm to calculate the depth to. Defaults to 1350 degrees.
 
     Returns
     -------
-    z : ndarray
-        Array of depths to the chosen temperature isotherm at the given ages.
-        This is a scalar if `age` is a scalar.
-
-    Raises
-    ------
-    RuntimeError
-        If `require_convergence` is True and convergence is not reached within
-        `maxiter` iterations.
+    zi : ndarray
+        An array of depths to the chosen temperature isotherm. Each entry corresponds to each unique ‘age’ given. 
     &#34;&#34;&#34;
-
-    # If `rtol` is passed, use that as `tol`
-    # `rtol` actually means &#39;relative tolerance&#39; in scipy,
-    # while `xtol` is used for absolute tolerance
-    tol = kwargs.pop(&#34;rtol&#34;, tol)
-
-    # For backwards compatibility, also allow `n` as a keyword argument
-    maxiter = kwargs.pop(&#34;n&#34;, maxiter)
-
-    maxiter = int(maxiter)
-    if maxiter &lt;= 0:
-        raise ValueError(
-            &#34;`maxiter` must be greater than zero ({})&#34;.format(maxiter)
-        )
+    n = int(n)
+    if n &lt;= 0:
+        raise ValueError(&#34;n must be greater than zero (n = {})&#34;.format(n))
     age = np.atleast_1d(age)
 
-    non_zero_ages = age[age &gt; 0.0]
+    zi = np.atleast_1d(np.zeros_like(age, dtype=float))  # starting depth is 0
 
-    zi = np.zeros_like(non_zero_ages, dtype=float)  # starting depth is 0
+    z_too_small = np.atleast_1d(np.zeros_like(age, dtype=float))
+    z_too_big = np.atleast_1d(np.full_like(age, plate_thickness, dtype=float))
 
-    z_too_small = np.zeros_like(non_zero_ages, dtype=float)
-    z_too_big = np.full_like(non_zero_ages, plate_thickness, dtype=float)
-
-    t_diff = np.full_like(non_zero_ages, np.nan)
-    for _ in range(maxiter):
+    for _ in range(n):
         zi = 0.5 * (z_too_small + z_too_big)
-        ti = plate_temp(non_zero_ages, zi, plate_thickness, **kwargs)
+        ti = plate_temp(age, zi, plate_thickness)
         t_diff = temp - ti
-        z_too_big[t_diff &lt; -tol] = zi[t_diff &lt; -tol]
-        z_too_small[t_diff &gt; tol] = zi[t_diff &gt; tol]
+        z_too_big[t_diff &lt; -rtol] = zi[t_diff &lt; -rtol]
+        z_too_small[t_diff &gt; rtol] = zi[t_diff &gt; rtol]
 
-        if (np.abs(t_diff) &lt; tol).all():
+        if (np.abs(t_diff) &lt; rtol).all():
             break
 
     # convergence warning
-    if (np.abs(t_diff) &gt; tol).any():
-        failed_ages = non_zero_ages[np.abs(t_diff) &gt; tol]
-        message = (
-            &#34;Solution did not converge below tol={}&#34;.format(tol)
-            + &#34; within maxiter={} iterations&#34;.format(maxiter)
-            + &#34; for the following ages: {}&#34;.format(failed_ages)
-        )
-        if require_convergence:
-            raise RuntimeError(message)
+    if np.abs(t_diff).any() &gt; rtol:
         import warnings
-
-        warnings.warn(message, category=RuntimeWarning)
+        warnings.warn(&#34;Iterations did not converge below rtol={}&#34;.format(rtol))
 
     # protect against negative ages
-    out = np.zeros_like(age)
-    out[age &gt; 0.0] = zi
-    out = out.reshape(age.shape)
-    if out.size == 1:  # input age was a scalar
-        return out.flatten()[0]
-    return out</code></pre>
+    zi[age &lt;= 0] = 0
+    zi = np.squeeze(zi)
+    return zi</code></pre>
 </details>
 </dd>
 <dt id="gplately.tools.plate_temp"><code class="name flex">
-<span>def <span class="ident">plate_temp</span></span>(<span>age, z, plate_thickness=125000.0, kappa=8.04e-07, t_mantle=1350.0, t_surface=0.0)</span>
+<span>def <span class="ident">plate_temp</span></span>(<span>age, z, plate_thickness, kappa=8.04e-07, t_mantle=1350.0, t_surface=0.0)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Compute the temperature in a cooling plate for a given age, plate
-thickness, and depth.</p>
-<p>By default, assumes a mantle temperature of 1350 degrees, and a 0 degree
-surface temperature. Kappa defaults to 0.804e-6.</p>
+<div class="desc"><p>Computes the temperature in a cooling plate for a given age and plate thickness at a depth = z. </p>
+<p>Assumes a mantle temperature of 1380 degrees, and a 0 degree surface temperature. Kappa is 0.804e-6. </p>
 <h2 id="parameters">Parameters</h2>
 <dl>
 <dt><strong><code>age</code></strong> :&ensp;<code>float</code></dt>
 <dd>The geological time (Ma) at which to calculate plate temperature.</dd>
-<dt><strong><code>z</code></strong> :&ensp;<code>array_like</code></dt>
-<dd>The plate depth(s) (m) at which to calculate temperature.</dd>
-<dt><strong><code>plate_thickness</code></strong> :&ensp;<code>float</code>, default<code>: 125.0e3</code></dt>
+<dt><strong><code>z</code></strong> :&ensp;<code>float</code></dt>
+<dd>The plate depth (m) at which to calculate temperature.</dd>
+<dt><strong><code>PLATE_THICKNESS</code></strong> :&ensp;<code>float</code></dt>
 <dd>The thickness (m) of the plate in consideration.</dd>
-<dt><strong><code>kappa</code></strong> :&ensp;<code>float</code>, default<code>: 0.804e-6</code></dt>
-<dd>&nbsp;</dd>
-<dt><strong><code>t_mantle</code></strong> :&ensp;<code>float</code>, default<code>: 1350.0</code></dt>
-<dd>Mantle temperature at the Moho, in degrees Celsius.</dd>
-<dt><strong><code>t_surface</code></strong> :&ensp;<code>float</code>, default<code>: 0.0</code></dt>
-<dd>Temperature at the surface, in degrees Celsius.</dd>
 </dl>
 <h2 id="returns">Returns</h2>
 <dl>
-<dt><code>ndarray</code></dt>
-<dd>The plate temperature at the given age and depth. This is a scalar
-if <code>z</code> is a scalar.</dd>
+<dt><code>list</code></dt>
+<dd>A list enclosing ONE floating-point number equal to plate temperature (e.g. [1367.33962383]).</dd>
 </dl></div>
 <details class="source">
 <summary>
@@ -801,40 +670,33 @@ if <code>z</code> is a scalar.</dd>
 <pre><code class="python">def plate_temp(
     age,
     z,
-    plate_thickness=_DEFAULT_PLATE_THICKNESS,
+    plate_thickness,
     kappa=_DEFAULT_KAPPA,
     t_mantle=_DEFAULT_T_MANTLE,
     t_surface=0.0,
 ):
-    &#34;&#34;&#34;Compute the temperature in a cooling plate for a given age, plate
-    thickness, and depth.
+    &#34;&#34;&#34;Computes the temperature in a cooling plate for a given age and plate thickness at a depth = z. 
 
-    By default, assumes a mantle temperature of 1350 degrees, and a 0 degree
-    surface temperature. Kappa defaults to 0.804e-6.
+    Assumes a mantle temperature of 1380 degrees, and a 0 degree surface temperature. Kappa is 0.804e-6. 
 
     Parameters
     ----------
     age : float
         The geological time (Ma) at which to calculate plate temperature.
-    z : array_like
-        The plate depth(s) (m) at which to calculate temperature.
-    plate_thickness : float, default: 125.0e3
+
+    z : float
+        The plate depth (m) at which to calculate temperature.
+
+    PLATE_THICKNESS : float
         The thickness (m) of the plate in consideration.
-    kappa : float, default: 0.804e-6
-    t_mantle : float, default: 1350.0
-        Mantle temperature at the Moho, in degrees Celsius.
-    t_surface : float, default: 0.0
-        Temperature at the surface, in degrees Celsius.
 
     Returns
     -------
-    ndarray
-        The plate temperature at the given age and depth. This is a scalar
-        if `z` is a scalar.
+    list
+        A list enclosing ONE floating-point number equal to plate temperature (e.g. [1367.33962383]).
     &#34;&#34;&#34;
-    aged = age * _SEC_PER_MYR
 
-    z = np.atleast_1d(z)
+    aged = age * _SEC_PER_MYR
 
     sine_arg = np.pi * z / plate_thickness
     exp_arg = -kappa * (np.pi ** 2) * aged / (plate_thickness ** 2)
@@ -846,9 +708,8 @@ if <code>z</code> is a scalar.</dd>
         + 2.0 * cumsum * (t_mantle - t_surface) / np.pi
         + (t_mantle - t_surface) * z / plate_thickness
     )
-    result = result.reshape(z.shape)
-    if result.size == 1:  # input was a scalar
-        return result.flatten()[0]
+    if result.size == 1:
+        return result[0]
     return result</code></pre>
 </details>
 </dd>

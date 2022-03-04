@@ -83,6 +83,7 @@ class DataCollection(object):
 
             &#34;Muller2019&#34; : [&#34;https://www.earthbyte.org/webdav/ftp/Data_Collections/Muller_etal_2019_Tectonics/Muller_etal_2019_Agegrids/Muller_etal_2019_Tectonics_v2.0_netCDF/Muller_etal_2019_Tectonics_v2.0_AgeGrid-{}.nc&#34;],
             &#34;Muller2016&#34; : [&#34;https://www.earthbyte.org/webdav/ftp/Data_Collections/Muller_etal_2016_AREPS/Muller_etal_2016_AREPS_Agegrids/Muller_etal_2016_AREPS_Agegrids_v1.17/Muller_etal_2016_AREPS_v1.17_netCDF/Muller_etal_2016_AREPS_v1.17_AgeGrid-{}.nc&#34;],
+            &#34;Seton2012&#34; : [&#34;https://www.earthbyte.org/webdav/ftp/Data_Collections/Seton_etal_2012_ESR/Seton_etal_2012_ESR_Agegrids/netCDF_0-200Ma/agegrid_{}.nc&#34;]
         }
 
         links_to_download = _find_needed_collection(
@@ -119,6 +120,31 @@ class DataCollection(object):
         return database
 
 
+    def plate_model_max_reconstruction_times(self):
+
+        database = {
+
+            &#34;Cao2020&#34; : [1000],
+            &#34;Muller2019&#34; : [250], 
+            &#34;Muller2016&#34; : [240],
+            &#34;Mather2021&#34; : [170],
+            &#34;Seton2012&#34; : [200],
+            &#34;Merdith2021&#34; : [1000],
+            &#34;Matthews2016&#34; : [410], 
+            &#34;Merdith2017&#34; : [410], 
+            &#34;Li2008&#34; : [410],
+            # &#34;Pehrsson2015&#34; : [25], (First implement continuous rotation)
+            &#34;TorsvikCocks2017&#34; : [410],
+            &#34;Young2019&#34; : [410], 
+            &#34;Scotese2008&#34; : [410],      
+            &#34;Golonka2007&#34; : [410],
+            &#34;Clennett2020_M2019&#34; : [170],
+            &#34;Clennett2020_S2013&#34; : [170],
+
+        }  
+        return database
+
+
     def rotation_strings_to_ignore(self):
 
         strings = [
@@ -139,9 +165,13 @@ class DataCollection(object):
             &#34;Convergence&#34;,
             &#34;Topologies&#34;,
             &#34;Topology&#34;,
+            &#34;_PP_&#34;, # for Seton 2012
             #&#34;ContinentOceanBoundaries&#34;,
             &#34;Seton_etal_ESR2012_Coastline_2012&#34;,
             &#34;Deforming_Mesh&#34;,
+            &#34;Deforming&#34;,
+            &#34;Flat_Slabs&#34;,
+            &#34;Feature_Geometries&#34;,
             &#34;boundaries&#34;,
             &#34;Clennett_etal_2020_Plates&#34;, # For Clennett 2020 (M2019)
 
@@ -199,6 +229,7 @@ class DataCollection(object):
             &#34;Merdith2021&#34; : [&#34;https://zenodo.org/record/4485738/files/SM2_4485738_V2.zip&#34;],
             &#34;Matthews2016&#34; : [&#34;https://www.earthbyte.org/webdav/ftp/Data_Collections/Matthews_etal_2016_Global_Plate_Model_GPC.zip&#34;], 
             &#34;Merdith2017&#34; : [&#34;https://www.earthbyte.org/webdav/ftp/Data_Collections/Merdith_etal_2017_GR.zip&#34;],  
+            &#34;Li2008&#34; : [None],
             &#34;Pehrsson2015&#34; : [&#34;https://www.geolsoc.org.uk/~/media/Files/GSL/shared/Sup_pubs/2015/18822_7.zip&#34;],
             &#34;TorsvikCocks2017&#34; : [&#34;http://www.earthdynamics.org/earthhistory/bookdata/CEED6.zip&#34;],
             &#34;Young2019&#34; : [&#34;https://www.earthbyte.org/webdav/ftp/Data_Collections/Young_etal_2018_GeoscienceFrontiers/Young_etal_2018_GeoscienceFrontiers_GPlatesPlateMotionModel.zip&#34;],
@@ -341,6 +372,7 @@ lists containing any relevant file download links.</p>
 
             &#34;Muller2019&#34; : [&#34;https://www.earthbyte.org/webdav/ftp/Data_Collections/Muller_etal_2019_Tectonics/Muller_etal_2019_Agegrids/Muller_etal_2019_Tectonics_v2.0_netCDF/Muller_etal_2019_Tectonics_v2.0_AgeGrid-{}.nc&#34;],
             &#34;Muller2016&#34; : [&#34;https://www.earthbyte.org/webdav/ftp/Data_Collections/Muller_etal_2016_AREPS/Muller_etal_2016_AREPS_Agegrids/Muller_etal_2016_AREPS_Agegrids_v1.17/Muller_etal_2016_AREPS_v1.17_netCDF/Muller_etal_2016_AREPS_v1.17_AgeGrid-{}.nc&#34;],
+            &#34;Seton2012&#34; : [&#34;https://www.earthbyte.org/webdav/ftp/Data_Collections/Seton_etal_2012_ESR/Seton_etal_2012_ESR_Agegrids/netCDF_0-200Ma/agegrid_{}.nc&#34;]
         }
 
         links_to_download = _find_needed_collection(
@@ -377,6 +409,31 @@ lists containing any relevant file download links.</p>
         return database
 
 
+    def plate_model_max_reconstruction_times(self):
+
+        database = {
+
+            &#34;Cao2020&#34; : [1000],
+            &#34;Muller2019&#34; : [250], 
+            &#34;Muller2016&#34; : [240],
+            &#34;Mather2021&#34; : [170],
+            &#34;Seton2012&#34; : [200],
+            &#34;Merdith2021&#34; : [1000],
+            &#34;Matthews2016&#34; : [410], 
+            &#34;Merdith2017&#34; : [410], 
+            &#34;Li2008&#34; : [410],
+            # &#34;Pehrsson2015&#34; : [25], (First implement continuous rotation)
+            &#34;TorsvikCocks2017&#34; : [410],
+            &#34;Young2019&#34; : [410], 
+            &#34;Scotese2008&#34; : [410],      
+            &#34;Golonka2007&#34; : [410],
+            &#34;Clennett2020_M2019&#34; : [170],
+            &#34;Clennett2020_S2013&#34; : [170],
+
+        }  
+        return database
+
+
     def rotation_strings_to_ignore(self):
 
         strings = [
@@ -397,9 +454,13 @@ lists containing any relevant file download links.</p>
             &#34;Convergence&#34;,
             &#34;Topologies&#34;,
             &#34;Topology&#34;,
+            &#34;_PP_&#34;, # for Seton 2012
             #&#34;ContinentOceanBoundaries&#34;,
             &#34;Seton_etal_ESR2012_Coastline_2012&#34;,
             &#34;Deforming_Mesh&#34;,
+            &#34;Deforming&#34;,
+            &#34;Flat_Slabs&#34;,
+            &#34;Feature_Geometries&#34;,
             &#34;boundaries&#34;,
             &#34;Clennett_etal_2020_Plates&#34;, # For Clennett 2020 (M2019)
 
@@ -457,6 +518,7 @@ lists containing any relevant file download links.</p>
             &#34;Merdith2021&#34; : [&#34;https://zenodo.org/record/4485738/files/SM2_4485738_V2.zip&#34;],
             &#34;Matthews2016&#34; : [&#34;https://www.earthbyte.org/webdav/ftp/Data_Collections/Matthews_etal_2016_Global_Plate_Model_GPC.zip&#34;], 
             &#34;Merdith2017&#34; : [&#34;https://www.earthbyte.org/webdav/ftp/Data_Collections/Merdith_etal_2017_GR.zip&#34;],  
+            &#34;Li2008&#34; : [None],
             &#34;Pehrsson2015&#34; : [&#34;https://www.geolsoc.org.uk/~/media/Files/GSL/shared/Sup_pubs/2015/18822_7.zip&#34;],
             &#34;TorsvikCocks2017&#34; : [&#34;http://www.earthdynamics.org/earthhistory/bookdata/CEED6.zip&#34;],
             &#34;Young2019&#34; : [&#34;https://www.earthbyte.org/webdav/ftp/Data_Collections/Young_etal_2018_GeoscienceFrontiers/Young_etal_2018_GeoscienceFrontiers_GPlatesPlateMotionModel.zip&#34;],
@@ -719,9 +781,13 @@ lists containing any relevant file download links.</p>
         &#34;Convergence&#34;,
         &#34;Topologies&#34;,
         &#34;Topology&#34;,
+        &#34;_PP_&#34;, # for Seton 2012
         #&#34;ContinentOceanBoundaries&#34;,
         &#34;Seton_etal_ESR2012_Coastline_2012&#34;,
         &#34;Deforming_Mesh&#34;,
+        &#34;Deforming&#34;,
+        &#34;Flat_Slabs&#34;,
+        &#34;Feature_Geometries&#34;,
         &#34;boundaries&#34;,
         &#34;Clennett_etal_2020_Plates&#34;, # For Clennett 2020 (M2019)
 
@@ -766,6 +832,7 @@ lists containing any relevant file download links.</p>
 
         &#34;Muller2019&#34; : [&#34;https://www.earthbyte.org/webdav/ftp/Data_Collections/Muller_etal_2019_Tectonics/Muller_etal_2019_Agegrids/Muller_etal_2019_Tectonics_v2.0_netCDF/Muller_etal_2019_Tectonics_v2.0_AgeGrid-{}.nc&#34;],
         &#34;Muller2016&#34; : [&#34;https://www.earthbyte.org/webdav/ftp/Data_Collections/Muller_etal_2016_AREPS/Muller_etal_2016_AREPS_Agegrids/Muller_etal_2016_AREPS_Agegrids_v1.17/Muller_etal_2016_AREPS_v1.17_netCDF/Muller_etal_2016_AREPS_v1.17_AgeGrid-{}.nc&#34;],
+        &#34;Seton2012&#34; : [&#34;https://www.earthbyte.org/webdav/ftp/Data_Collections/Seton_etal_2012_ESR/Seton_etal_2012_ESR_Agegrids/netCDF_0-200Ma/agegrid_{}.nc&#34;]
     }
 
     links_to_download = _find_needed_collection(
@@ -774,6 +841,40 @@ lists containing any relevant file download links.</p>
         time)
 
     return links_to_download</code></pre>
+</details>
+</dd>
+<dt id="gplately.data.DataCollection.plate_model_max_reconstruction_times"><code class="name flex">
+<span>def <span class="ident">plate_model_max_reconstruction_times</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def plate_model_max_reconstruction_times(self):
+
+    database = {
+
+        &#34;Cao2020&#34; : [1000],
+        &#34;Muller2019&#34; : [250], 
+        &#34;Muller2016&#34; : [240],
+        &#34;Mather2021&#34; : [170],
+        &#34;Seton2012&#34; : [200],
+        &#34;Merdith2021&#34; : [1000],
+        &#34;Matthews2016&#34; : [410], 
+        &#34;Merdith2017&#34; : [410], 
+        &#34;Li2008&#34; : [410],
+        # &#34;Pehrsson2015&#34; : [25], (First implement continuous rotation)
+        &#34;TorsvikCocks2017&#34; : [410],
+        &#34;Young2019&#34; : [410], 
+        &#34;Scotese2008&#34; : [410],      
+        &#34;Golonka2007&#34; : [410],
+        &#34;Clennett2020_M2019&#34; : [170],
+        &#34;Clennett2020_S2013&#34; : [170],
+
+    }  
+    return database</code></pre>
 </details>
 </dd>
 <dt id="gplately.data.DataCollection.plate_reconstruction_files"><code class="name flex">
@@ -916,6 +1017,7 @@ lists containing any relevant file download links.</p>
         &#34;Merdith2021&#34; : [&#34;https://zenodo.org/record/4485738/files/SM2_4485738_V2.zip&#34;],
         &#34;Matthews2016&#34; : [&#34;https://www.earthbyte.org/webdav/ftp/Data_Collections/Matthews_etal_2016_Global_Plate_Model_GPC.zip&#34;], 
         &#34;Merdith2017&#34; : [&#34;https://www.earthbyte.org/webdav/ftp/Data_Collections/Merdith_etal_2017_GR.zip&#34;],  
+        &#34;Li2008&#34; : [None],
         &#34;Pehrsson2015&#34; : [&#34;https://www.geolsoc.org.uk/~/media/Files/GSL/shared/Sup_pubs/2015/18822_7.zip&#34;],
         &#34;TorsvikCocks2017&#34; : [&#34;http://www.earthdynamics.org/earthhistory/bookdata/CEED6.zip&#34;],
         &#34;Young2019&#34; : [&#34;https://www.earthbyte.org/webdav/ftp/Data_Collections/Young_etal_2018_GeoscienceFrontiers/Young_etal_2018_GeoscienceFrontiers_GPlatesPlateMotionModel.zip&#34;],
@@ -959,6 +1061,7 @@ lists containing any relevant file download links.</p>
 <li><code><a title="gplately.data.DataCollection.dynamic_polygon_strings_to_include" href="#gplately.data.DataCollection.dynamic_polygon_strings_to_include">dynamic_polygon_strings_to_include</a></code></li>
 <li><code><a title="gplately.data.DataCollection.feature_data" href="#gplately.data.DataCollection.feature_data">feature_data</a></code></li>
 <li><code><a title="gplately.data.DataCollection.netcdf4_age_grids" href="#gplately.data.DataCollection.netcdf4_age_grids">netcdf4_age_grids</a></code></li>
+<li><code><a title="gplately.data.DataCollection.plate_model_max_reconstruction_times" href="#gplately.data.DataCollection.plate_model_max_reconstruction_times">plate_model_max_reconstruction_times</a></code></li>
 <li><code><a title="gplately.data.DataCollection.plate_reconstruction_files" href="#gplately.data.DataCollection.plate_reconstruction_files">plate_reconstruction_files</a></code></li>
 <li><code><a title="gplately.data.DataCollection.rasters" href="#gplately.data.DataCollection.rasters">rasters</a></code></li>
 <li><code><a title="gplately.data.DataCollection.rotation_strings_to_ignore" href="#gplately.data.DataCollection.rotation_strings_to_ignore">rotation_strings_to_ignore</a></code></li>
