@@ -870,6 +870,8 @@ class Points(object):
             components obtained (and thus the number of feature points extracted from a supplied feature). Each list column 
             stores one point’s x,y, velocity components along its two rows.
         &#34;&#34;&#34;
+        time = float(time)
+
         rotation_model = self.PlateReconstruction_object.rotation_model
         all_velocities = np.empty((len(self.features), 2))
 
@@ -888,7 +890,7 @@ class Points(object):
                 [geometry],
                 velocity_vectors)
 
-            all_velocities[i] = velocities[0].get_x(), velocities[0].get_y()
+            all_velocities[i] = velocities[0].get_y(), velocities[0].get_x()
 
         return list(all_velocities.T)
 
@@ -2751,6 +2753,8 @@ if not provided.</dd>
             components obtained (and thus the number of feature points extracted from a supplied feature). Each list column 
             stores one point’s x,y, velocity components along its two rows.
         &#34;&#34;&#34;
+        time = float(time)
+
         rotation_model = self.PlateReconstruction_object.rotation_model
         all_velocities = np.empty((len(self.features), 2))
 
@@ -2769,7 +2773,7 @@ if not provided.</dd>
                 [geometry],
                 velocity_vectors)
 
-            all_velocities[i] = velocities[0].get_x(), velocities[0].get_y()
+            all_velocities[i] = velocities[0].get_y(), velocities[0].get_x()
 
         return list(all_velocities.T)
 
@@ -2862,6 +2866,8 @@ stores one point’s x,y, velocity components along its two rows.</dd>
         components obtained (and thus the number of feature points extracted from a supplied feature). Each list column 
         stores one point’s x,y, velocity components along its two rows.
     &#34;&#34;&#34;
+    time = float(time)
+
     rotation_model = self.PlateReconstruction_object.rotation_model
     all_velocities = np.empty((len(self.features), 2))
 
@@ -2880,7 +2886,7 @@ stores one point’s x,y, velocity components along its two rows.</dd>
             [geometry],
             velocity_vectors)
 
-        all_velocities[i] = velocities[0].get_x(), velocities[0].get_y()
+        all_velocities[i] = velocities[0].get_y(), velocities[0].get_x()
 
     return list(all_velocities.T)</code></pre>
 </details>

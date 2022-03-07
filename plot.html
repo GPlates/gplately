@@ -1669,7 +1669,74 @@ class PlotTopologies(object):
             U /= mag
             V /= mag
 
-        return ax.quiver(X, Y, U, V, transform=self.base_projection, **kwargs)</code></pre>
+        return ax.quiver(X, Y, U, V, transform=self.base_projection, **kwargs)
+
+
+    def plot_plate_motion_streamlines(self, ax, spacingX=10, spacingY=10, normalise=False, **kwargs):
+        &#34;&#34;&#34;Calculates plate motion velocity vector fields at a particular geological time and plots them onto a 
+        standard map. 
+        
+        Generates velocity domain feature collections (MeshNode-type features) from given spacing in the X and Y 
+        directions. Domain points are extracted from these features and assigned plate IDs, which are used to obtain
+        equivalent stage rotations of identified tectonic plates over a 5 Ma time interval. Each point and its stage 
+        rotation are used to calculate plate velocities at a particular geological time. Obtained velocities for each
+        domain point are represented in the north-east-down coordinate system.
+        
+        Vector fields can be optionally normalised to have uniform arrow lengths. 
+
+        Parameters
+        ----------
+        ax : GeoAxis
+            A standard map for lat-lon data built on a matplotlib figure. Can be for a single plot or for multiple subplots.
+            Should be set at a particular Cartopy map projection.
+
+        spacingX : int, default=10
+            The spacing in the X direction used to make the latitude-longitude velocity domain feature mesh. 
+
+        spacingY : int, default=10
+            The spacing in the Y direction used to make the latitude-longitude velocity domain feature mesh. 
+
+        normalise : bool, default=False
+            Choose whether to normalise the velocity magnitudes so that vector lengths are all equal. 
+
+        **kwargs
+            Keyword arguments that allow control over quiver presentation parameters such as ‘alpha’, etc. for plotting
+            the vector field.
+
+        Returns
+        -------
+        ax : GeoAxis
+            The map with the plate velocity vector field plotted onto the chosen projection (transformed using PlateCarree).
+        &#34;&#34;&#34;
+        
+        lons = np.arange(-180, 180+spacingX, spacingX)
+        lats = np.arange(-90, 90+spacingY, spacingY)
+        lonq, latq = np.meshgrid(lons, lats)
+
+        # create a feature from all the points
+        velocity_domain_features = ptt.velocity_tools.make_GPML_velocity_feature(lonq.ravel(), latq.ravel())
+
+        rotation_model = self.PlateReconstruction_object.rotation_model
+        topology_features = self.PlateReconstruction_object.topology_features
+
+        delta_time = 5.0
+        all_velocities = ptt.velocity_tools.get_plate_velocities(
+            velocity_domain_features,
+            topology_features,
+            rotation_model,
+            self.time,
+            delta_time,
+            &#39;vector_comp&#39;)
+
+        X, Y, U, V = ptt.velocity_tools.get_x_y_u_v(lons, lats, all_velocities)
+
+        if normalise:
+            mag = np.hypot(U, V)
+            mag[mag == 0] = 1
+            U /= mag
+            V /= mag
+
+        return ax.streamlines(X, Y, U, V, transform=self.base_projection, **kwargs)</code></pre>
 </details>
 </section>
 <section>
@@ -3411,7 +3478,74 @@ plot_plate_motion_vectors(self, ax, spacingX=10, spacingY=10, normalise=False, *
             U /= mag
             V /= mag
 
-        return ax.quiver(X, Y, U, V, transform=self.base_projection, **kwargs)</code></pre>
+        return ax.quiver(X, Y, U, V, transform=self.base_projection, **kwargs)
+
+
+    def plot_plate_motion_streamlines(self, ax, spacingX=10, spacingY=10, normalise=False, **kwargs):
+        &#34;&#34;&#34;Calculates plate motion velocity vector fields at a particular geological time and plots them onto a 
+        standard map. 
+        
+        Generates velocity domain feature collections (MeshNode-type features) from given spacing in the X and Y 
+        directions. Domain points are extracted from these features and assigned plate IDs, which are used to obtain
+        equivalent stage rotations of identified tectonic plates over a 5 Ma time interval. Each point and its stage 
+        rotation are used to calculate plate velocities at a particular geological time. Obtained velocities for each
+        domain point are represented in the north-east-down coordinate system.
+        
+        Vector fields can be optionally normalised to have uniform arrow lengths. 
+
+        Parameters
+        ----------
+        ax : GeoAxis
+            A standard map for lat-lon data built on a matplotlib figure. Can be for a single plot or for multiple subplots.
+            Should be set at a particular Cartopy map projection.
+
+        spacingX : int, default=10
+            The spacing in the X direction used to make the latitude-longitude velocity domain feature mesh. 
+
+        spacingY : int, default=10
+            The spacing in the Y direction used to make the latitude-longitude velocity domain feature mesh. 
+
+        normalise : bool, default=False
+            Choose whether to normalise the velocity magnitudes so that vector lengths are all equal. 
+
+        **kwargs
+            Keyword arguments that allow control over quiver presentation parameters such as ‘alpha’, etc. for plotting
+            the vector field.
+
+        Returns
+        -------
+        ax : GeoAxis
+            The map with the plate velocity vector field plotted onto the chosen projection (transformed using PlateCarree).
+        &#34;&#34;&#34;
+        
+        lons = np.arange(-180, 180+spacingX, spacingX)
+        lats = np.arange(-90, 90+spacingY, spacingY)
+        lonq, latq = np.meshgrid(lons, lats)
+
+        # create a feature from all the points
+        velocity_domain_features = ptt.velocity_tools.make_GPML_velocity_feature(lonq.ravel(), latq.ravel())
+
+        rotation_model = self.PlateReconstruction_object.rotation_model
+        topology_features = self.PlateReconstruction_object.topology_features
+
+        delta_time = 5.0
+        all_velocities = ptt.velocity_tools.get_plate_velocities(
+            velocity_domain_features,
+            topology_features,
+            rotation_model,
+            self.time,
+            delta_time,
+            &#39;vector_comp&#39;)
+
+        X, Y, U, V = ptt.velocity_tools.get_x_y_u_v(lons, lats, all_velocities)
+
+        if normalise:
+            mag = np.hypot(U, V)
+            mag[mag == 0] = 1
+            U /= mag
+            V /= mag
+
+        return ax.streamlines(X, Y, U, V, transform=self.base_projection, **kwargs)</code></pre>
 </details>
 <h3>Instance variables</h3>
 <dl>
@@ -3789,6 +3923,109 @@ The colour of the boundary lines. By default, it is set to black.</p>
         if feature.get_reconstruction_plate_id() == plate_id:
             ft_plate = shapelify_feature_polygons([feature])
             return ax.add_geometries(ft_plate, crs=self.base_projection, **kwargs)</code></pre>
+</details>
+</dd>
+<dt id="gplately.plot.PlotTopologies.plot_plate_motion_streamlines"><code class="name flex">
+<span>def <span class="ident">plot_plate_motion_streamlines</span></span>(<span>self, ax, spacingX=10, spacingY=10, normalise=False, **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Calculates plate motion velocity vector fields at a particular geological time and plots them onto a
+standard map. </p>
+<p>Generates velocity domain feature collections (MeshNode-type features) from given spacing in the X and Y
+directions. Domain points are extracted from these features and assigned plate IDs, which are used to obtain
+equivalent stage rotations of identified tectonic plates over a 5 Ma time interval. Each point and its stage
+rotation are used to calculate plate velocities at a particular geological time. Obtained velocities for each
+domain point are represented in the north-east-down coordinate system.</p>
+<p>Vector fields can be optionally normalised to have uniform arrow lengths. </p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>ax</code></strong> :&ensp;<code>GeoAxis</code></dt>
+<dd>A standard map for lat-lon data built on a matplotlib figure. Can be for a single plot or for multiple subplots.
+Should be set at a particular Cartopy map projection.</dd>
+<dt><strong><code>spacingX</code></strong> :&ensp;<code>int</code>, default=<code>10</code></dt>
+<dd>The spacing in the X direction used to make the latitude-longitude velocity domain feature mesh.</dd>
+<dt><strong><code>spacingY</code></strong> :&ensp;<code>int</code>, default=<code>10</code></dt>
+<dd>The spacing in the Y direction used to make the latitude-longitude velocity domain feature mesh.</dd>
+<dt><strong><code>normalise</code></strong> :&ensp;<code>bool</code>, default=<code>False</code></dt>
+<dd>Choose whether to normalise the velocity magnitudes so that vector lengths are all equal.</dd>
+<dt><strong><code>**kwargs</code></strong></dt>
+<dd>Keyword arguments that allow control over quiver presentation parameters such as ‘alpha’, etc. for plotting
+the vector field.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><strong><code>ax</code></strong> :&ensp;<code>GeoAxis</code></dt>
+<dd>The map with the plate velocity vector field plotted onto the chosen projection (transformed using PlateCarree).</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def plot_plate_motion_streamlines(self, ax, spacingX=10, spacingY=10, normalise=False, **kwargs):
+    &#34;&#34;&#34;Calculates plate motion velocity vector fields at a particular geological time and plots them onto a 
+    standard map. 
+    
+    Generates velocity domain feature collections (MeshNode-type features) from given spacing in the X and Y 
+    directions. Domain points are extracted from these features and assigned plate IDs, which are used to obtain
+    equivalent stage rotations of identified tectonic plates over a 5 Ma time interval. Each point and its stage 
+    rotation are used to calculate plate velocities at a particular geological time. Obtained velocities for each
+    domain point are represented in the north-east-down coordinate system.
+    
+    Vector fields can be optionally normalised to have uniform arrow lengths. 
+
+    Parameters
+    ----------
+    ax : GeoAxis
+        A standard map for lat-lon data built on a matplotlib figure. Can be for a single plot or for multiple subplots.
+        Should be set at a particular Cartopy map projection.
+
+    spacingX : int, default=10
+        The spacing in the X direction used to make the latitude-longitude velocity domain feature mesh. 
+
+    spacingY : int, default=10
+        The spacing in the Y direction used to make the latitude-longitude velocity domain feature mesh. 
+
+    normalise : bool, default=False
+        Choose whether to normalise the velocity magnitudes so that vector lengths are all equal. 
+
+    **kwargs
+        Keyword arguments that allow control over quiver presentation parameters such as ‘alpha’, etc. for plotting
+        the vector field.
+
+    Returns
+    -------
+    ax : GeoAxis
+        The map with the plate velocity vector field plotted onto the chosen projection (transformed using PlateCarree).
+    &#34;&#34;&#34;
+    
+    lons = np.arange(-180, 180+spacingX, spacingX)
+    lats = np.arange(-90, 90+spacingY, spacingY)
+    lonq, latq = np.meshgrid(lons, lats)
+
+    # create a feature from all the points
+    velocity_domain_features = ptt.velocity_tools.make_GPML_velocity_feature(lonq.ravel(), latq.ravel())
+
+    rotation_model = self.PlateReconstruction_object.rotation_model
+    topology_features = self.PlateReconstruction_object.topology_features
+
+    delta_time = 5.0
+    all_velocities = ptt.velocity_tools.get_plate_velocities(
+        velocity_domain_features,
+        topology_features,
+        rotation_model,
+        self.time,
+        delta_time,
+        &#39;vector_comp&#39;)
+
+    X, Y, U, V = ptt.velocity_tools.get_x_y_u_v(lons, lats, all_velocities)
+
+    if normalise:
+        mag = np.hypot(U, V)
+        mag[mag == 0] = 1
+        U /= mag
+        V /= mag
+
+    return ax.streamlines(X, Y, U, V, transform=self.base_projection, **kwargs)</code></pre>
 </details>
 </dd>
 <dt id="gplately.plot.PlotTopologies.plot_plate_motion_vectors"><code class="name flex">
@@ -4435,6 +4672,7 @@ reconstructions/resolutions accordingly whenever the time attribute is changed.<
 <li><code><a title="gplately.plot.PlotTopologies.plot_grid_from_netCDF" href="#gplately.plot.PlotTopologies.plot_grid_from_netCDF">plot_grid_from_netCDF</a></code></li>
 <li><code><a title="gplately.plot.PlotTopologies.plot_misc_boundaries" href="#gplately.plot.PlotTopologies.plot_misc_boundaries">plot_misc_boundaries</a></code></li>
 <li><code><a title="gplately.plot.PlotTopologies.plot_plate_id" href="#gplately.plot.PlotTopologies.plot_plate_id">plot_plate_id</a></code></li>
+<li><code><a title="gplately.plot.PlotTopologies.plot_plate_motion_streamlines" href="#gplately.plot.PlotTopologies.plot_plate_motion_streamlines">plot_plate_motion_streamlines</a></code></li>
 <li><code><a title="gplately.plot.PlotTopologies.plot_plate_motion_vectors" href="#gplately.plot.PlotTopologies.plot_plate_motion_vectors">plot_plate_motion_vectors</a></code></li>
 <li><code><a title="gplately.plot.PlotTopologies.plot_ridges" href="#gplately.plot.PlotTopologies.plot_ridges">plot_ridges</a></code></li>
 <li><code><a title="gplately.plot.PlotTopologies.plot_ridges_and_transforms" href="#gplately.plot.PlotTopologies.plot_ridges_and_transforms">plot_ridges_and_transforms</a></code></li>
