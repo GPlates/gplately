@@ -838,6 +838,8 @@ class Points(object):
             components obtained (and thus the number of feature points extracted from a supplied feature). Each list column 
             stores one point’s x,y, velocity components along its two rows.
         """
+        time = float(time)
+
         rotation_model = self.PlateReconstruction_object.rotation_model
         all_velocities = np.empty((len(self.features), 2))
 
@@ -856,7 +858,7 @@ class Points(object):
                 [geometry],
                 velocity_vectors)
 
-            all_velocities[i] = velocities[0].get_x(), velocities[0].get_y()
+            all_velocities[i] = velocities[0].get_y(), velocities[0].get_x()
 
         return list(all_velocities.T)
 
