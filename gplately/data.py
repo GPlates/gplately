@@ -54,6 +54,7 @@ class DataCollection(object):
 
             "Muller2019" : ["https://www.earthbyte.org/webdav/ftp/Data_Collections/Muller_etal_2019_Tectonics/Muller_etal_2019_Agegrids/Muller_etal_2019_Tectonics_v2.0_netCDF/Muller_etal_2019_Tectonics_v2.0_AgeGrid-{}.nc"],
             "Muller2016" : ["https://www.earthbyte.org/webdav/ftp/Data_Collections/Muller_etal_2016_AREPS/Muller_etal_2016_AREPS_Agegrids/Muller_etal_2016_AREPS_Agegrids_v1.17/Muller_etal_2016_AREPS_v1.17_netCDF/Muller_etal_2016_AREPS_v1.17_AgeGrid-{}.nc"],
+            "Seton2012" : ["https://www.earthbyte.org/webdav/ftp/Data_Collections/Seton_etal_2012_ESR/Seton_etal_2012_ESR_Agegrids/netCDF_0-200Ma/agegrid_{}.nc"]
         }
 
         links_to_download = _find_needed_collection(
@@ -90,6 +91,31 @@ class DataCollection(object):
         return database
 
 
+    def plate_model_max_reconstruction_times(self):
+
+        database = {
+
+            "Cao2020" : [1000],
+            "Muller2019" : [250], 
+            "Muller2016" : [240],
+            "Mather2021" : [170],
+            "Seton2012" : [200],
+            "Merdith2021" : [1000],
+            "Matthews2016" : [410], 
+            "Merdith2017" : [410], 
+            "Li2008" : [410],
+            # "Pehrsson2015" : [25], (First implement continuous rotation)
+            "TorsvikCocks2017" : [410],
+            "Young2019" : [410], 
+            "Scotese2008" : [410],      
+            "Golonka2007" : [410],
+            "Clennett2020_M2019" : [170],
+            "Clennett2020_S2013" : [170],
+
+        }  
+        return database
+
+
     def rotation_strings_to_ignore(self):
 
         strings = [
@@ -110,9 +136,13 @@ class DataCollection(object):
             "Convergence",
             "Topologies",
             "Topology",
+            "_PP_", # for Seton 2012
             #"ContinentOceanBoundaries",
             "Seton_etal_ESR2012_Coastline_2012",
             "Deforming_Mesh",
+            "Deforming",
+            "Flat_Slabs",
+            "Feature_Geometries",
             "boundaries",
             "Clennett_etal_2020_Plates", # For Clennett 2020 (M2019)
 
@@ -170,6 +200,7 @@ class DataCollection(object):
             "Merdith2021" : ["https://zenodo.org/record/4485738/files/SM2_4485738_V2.zip"],
             "Matthews2016" : ["https://www.earthbyte.org/webdav/ftp/Data_Collections/Matthews_etal_2016_Global_Plate_Model_GPC.zip"], 
             "Merdith2017" : ["https://www.earthbyte.org/webdav/ftp/Data_Collections/Merdith_etal_2017_GR.zip"],  
+            "Li2008" : [None],
             "Pehrsson2015" : ["https://www.geolsoc.org.uk/~/media/Files/GSL/shared/Sup_pubs/2015/18822_7.zip"],
             "TorsvikCocks2017" : ["http://www.earthdynamics.org/earthhistory/bookdata/CEED6.zip"],
             "Young2019" : ["https://www.earthbyte.org/webdav/ftp/Data_Collections/Young_etal_2018_GeoscienceFrontiers/Young_etal_2018_GeoscienceFrontiers_GPlatesPlateMotionModel.zip"],

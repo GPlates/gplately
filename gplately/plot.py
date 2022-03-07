@@ -1458,16 +1458,17 @@ class PlotTopologies(object):
         trench_left_features  = shapelify_feature_lines(self.trench_left)
         trench_right_features = shapelify_feature_lines(self.trench_right)
 
-        plot_subduction_teeth(trench_left_features,  size, 'l', height, spacing, ax=ax, color=color, **kwargs)
-        plot_subduction_teeth(trench_right_features,  size, 'r', height, spacing, ax=ax, color=color, **kwargs)
-
+        return(
+            plot_subduction_teeth(trench_left_features,  size, 'l', height, spacing, ax=ax, color=color, **kwargs),
+            plot_subduction_teeth(trench_right_features,  size, 'r', height, spacing, ax=ax, color=color, **kwargs)
+        )
 
     def plot_plate_id(self, ax, plate_id, **kwargs):
         """Plot a plate ID"""
         for feature in self.topologies:
             if feature.get_reconstruction_plate_id() == plate_id:
                 ft_plate = shapelify_feature_polygons([feature])
-                ax.add_geometries(ft_plate, crs=self.base_projection, **kwargs)
+                return ax.add_geometries(ft_plate, crs=self.base_projection, **kwargs)
 
 
     def plot_grid(self, ax, grid, extent=[-180,180,-90,90], **kwargs):
