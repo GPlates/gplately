@@ -4,8 +4,6 @@ GPlately is an object-oriented interface to common pyGPlates and PlateTectonicTo
 
 ![SeedPointGIF](./Notebooks/NotebookFiles/ReadMe_Files/muller19_seedpoints.gif)
 
-___This repository is under active developement and the API is liable to change!___
-
 ## Dependencies
 
 - [pyGPlates](https://www.gplates.org/docs/pygplates/pygplates_getting_started.html#installation)
@@ -26,7 +24,7 @@ ___This repository is under active developement and the API is liable to change!
 You can install `GPlately` using the pip package manager,
 
 ```python
-pip3 install --user gplately
+pip install gplately
 ```
 
 ... you can also install the most updated version of the `GPlately` repository with pip:
@@ -145,7 +143,4 @@ To see GPlately in action, launch a Jupyter Notebook environment and check out t
 ## API Documentation
 
 Documentation of GPlately's objects and methods can be found [here](https://gplates.github.io/gplately/)!
-
-
-
 
