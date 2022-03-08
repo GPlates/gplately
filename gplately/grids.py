@@ -1014,7 +1014,7 @@ class Raster(object):
         Searches for invalid ‘data’ cells containing NaN-type entries and replaces NaNs with the value of the nearest
         valid data cell.
     """
-    def __init__(self, PlateReconstruction_object=None, filename=None, array=None, extent=None, resample=None):
+    def __init__(self, PlateReconstruction_object=None, filename=None, array=None, extent=None, resample=None, time=0):
         """Constructs all necessary attributes for the raster object.
 
         Note: either a str path to a netCDF file OR an ndarray representing a grid must be specified. 
@@ -1066,6 +1066,7 @@ class Raster(object):
 
         # we initialise an empty points object as we do not want to build this before any resampling takes place.
         self.points = None
+        self.time = time
 
         if filename is None and array is None:
             raise ValueError("Supply either a filename or numpy array")
@@ -1265,50 +1266,10 @@ class Raster(object):
         write_netcdf_grid(str(filename), self.data, self.extent)
 
 
-    def reconstruct(self, to_time, from_time=0, anchor_plate_id=0, **kwargs):
-
-        import stripy
-
-        lonq, latq = np.meshgrid(self.lons, self.lats)
-        lonq_ = lonq.ravel()
-        latq_ = latq.ravel()
-
-        if self.points is None:
-            self.points = _Points(self.PlateReconstruction_object, lonq_, latq_, from_time, anchor_plate_id)
-
-        lons, lats = self.points.reconstruct(to_time, anchor_plate_id=anchor_plate_id, **kwargs)
-
-        # also remove duplicate entries - # BUT this sorts the indices!!
-        _, uindex = np.unique(np.c_[lons,lats], return_index=True, axis=0)
-        uindex_sorted = sorted(uindex)
-        ilons = lons[uindex_sorted]
-        ilats = lats[uindex_sorted]
-        idata = self.data.flat[uindex_sorted]
-
-
-        # interpolate onto sphere
-        # this is not very elegant - need to work out why stripy is struggling here.
-        for i in range(10):
-            try:
-                mesh = stripy.sTriangulation(np.radians(ilons), np.radians(ilats), tree=True, permute=True)
-            except ValueError:
-                pass
-            else:
-                break
-        zi, ierr = mesh.interpolate(np.radians(lonq_), np.radians(latq_), idata, order=1)
-
-        # get cell spacing
-        dx = np.diff(self.lons).mean()
-        dy = np.diff(self.lats).mean()
-        dxy = np.hypot(dx,dy)
-        rxy = np.radians(dxy)
-
-        # find angular separation / great circle distance between mesh and reconstructed points
-        angles, idx = mesh.nearest_vertices(np.radians(lonq_), np.radians(latq_))
-
-        zi[angles.ravel() > rxy] = np.nan
-        zi = zi.reshape(lonq.shape)
-        return zi
+    def reconstruct(self, time):
+        rotation_model = self.PlateReconstruction_object.rotation_model
+        static_polygons = self.PlateReconstruction_object.static_polygons
+        return reconstruct_grid(self.data, static_polygons, rotation_model, from_time=self.time, to_time=float(time), extent=self.extent)
 
 
 class TimeRaster(Raster):
