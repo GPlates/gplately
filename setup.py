@@ -86,7 +86,7 @@ if __name__ == "__main__":
                                'shapely',
                                'matplotlib',
                                'cartopy',
-                               'PlateTectonicTools',
+                               'PlateTectonicTools @ https://github.com/EarthByte/PlateTectonicTools/archive/master.zip',
                                'pooch',
                                'tqdm',
                                'netcdf4',
