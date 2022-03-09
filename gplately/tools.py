@@ -10,36 +10,44 @@ _DEFAULT_T_MANTLE = 1350.0
 _DEFAULT_KAPPA = 8.04e-7
 _SEC_PER_MYR = 3.15576e13
 
+
 def plate_temp(
     age,
     z,
-    plate_thickness,
+    plate_thickness=_DEFAULT_PLATE_THICKNESS,
     kappa=_DEFAULT_KAPPA,
     t_mantle=_DEFAULT_T_MANTLE,
     t_surface=0.0,
 ):
-    """Computes the temperature in a cooling plate for a given age and plate thickness at a depth = z. 
+    """Compute the temperature in a cooling plate for a given age, plate
+    thickness, and depth.
 
-    Assumes a mantle temperature of 1380 degrees, and a 0 degree surface temperature. Kappa is 0.804e-6. 
+    By default, assumes a mantle temperature of 1350 degrees, and a 0 degree
+    surface temperature. Kappa defaults to 0.804e-6.
 
     Parameters
     ----------
     age : float
         The geological time (Ma) at which to calculate plate temperature.
-
-    z : float
-        The plate depth (m) at which to calculate temperature.
-
-    PLATE_THICKNESS : float
+    z : array_like
+        The plate depth(s) (m) at which to calculate temperature.
+    plate_thickness : float, default: 125.0e3
         The thickness (m) of the plate in consideration.
+    kappa : float, default: 0.804e-6
+    t_mantle : float, default: 1350.0
+        Mantle temperature at the Moho, in degrees Celsius.
+    t_surface : float, default: 0.0
+        Temperature at the surface, in degrees Celsius.
 
     Returns
     -------
-    list
-        A list enclosing ONE floating-point number equal to plate temperature (e.g. [1367.33962383]).
+    ndarray
+        The plate temperature at the given age and depth. This is a scalar
+        if `z` is a scalar.
     """
-
     aged = age * _SEC_PER_MYR
+
+    z = np.atleast_1d(z)
 
     sine_arg = np.pi * z / plate_thickness
     exp_arg = -kappa * (np.pi ** 2) * aged / (plate_thickness ** 2)
@@ -51,16 +59,20 @@ def plate_temp(
         + 2.0 * cumsum * (t_mantle - t_surface) / np.pi
         + (t_mantle - t_surface) * z / plate_thickness
     )
-    if result.size == 1:
-        return result[0]
+    result = result.reshape(z.shape)
+    if result.size == 1:  # input was a scalar
+        return result.flatten()[0]
     return result
+
 
 def plate_isotherm_depth(
     age,
     temp=1150.,
     plate_thickness=_DEFAULT_PLATE_THICKNESS,
-    n=20,
-    rtol=0.001,
+    maxiter=50,
+    tol=0.001,
+    require_convergence=False,
+    **kwargs
 ):
     """Computes the depth to the temp - isotherm in a cooling plate mode. Solution by iteration. 
 
@@ -68,46 +80,91 @@ def plate_isotherm_depth(
 
     Parameters
     ----------
-    age : ndarray
-        An array of geological ages (Ma) at which to compute depths. 
-
-    temp : float, default=1350.0
-        The temperature of a temp-isotherm to calculate the depth to. Defaults to 1350 degrees.
+    age : array_like
+        Geological ages (Ma) at which to compute depths.
+    temp : float, default: 1150.0
+        The temperature of a temp-isotherm for which to calculate depth,
+        in degrees Celsius.
+    plate_thickness : float, default: 125.0e3
+        Thickness of the plate, in metres.
+    maxiter : int, default: 50
+        Maximum number of iterations.
+    tol: float, default: 0.001
+        Tolerance for convergence of `plate_temp`.
+    require_convergence: bool, default: False
+        If True, raise a `RuntimeError` if convergence is not reached within
+        `maxiter` iterations; if False, a `RuntimeWarning` is issued instead.
+    **kwargs
+        Any further keyword arguments are passed on to `plate_temp`.
 
     Returns
     -------
-    zi : ndarray
-        An array of depths to the chosen temperature isotherm. Each entry corresponds to each unique ‘age’ given. 
+    z : ndarray
+        Array of depths to the chosen temperature isotherm at the given ages.
+        This is a scalar if `age` is a scalar.
+
+    Raises
+    ------
+    RuntimeError
+        If `require_convergence` is True and convergence is not reached within
+        `maxiter` iterations.
     """
-    n = int(n)
-    if n <= 0:
-        raise ValueError("n must be greater than zero (n = {})".format(n))
+
+    # If `rtol` is passed, use that as `tol`
+    # `rtol` actually means 'relative tolerance' in scipy,
+    # while `xtol` is used for absolute tolerance
+    tol = kwargs.pop("rtol", tol)
+
+    # For backwards compatibility, also allow `n` as a keyword argument
+    maxiter = kwargs.pop("n", maxiter)
+
+    maxiter = int(maxiter)
+    if maxiter <= 0:
+        raise ValueError(
+            "`maxiter` must be greater than zero ({})".format(maxiter)
+        )
     age = np.atleast_1d(age)
 
-    zi = np.atleast_1d(np.zeros_like(age, dtype=float))  # starting depth is 0
+    non_zero_ages = age[age > 0.0]
 
-    z_too_small = np.atleast_1d(np.zeros_like(age, dtype=float))
-    z_too_big = np.atleast_1d(np.full_like(age, plate_thickness, dtype=float))
+    zi = np.zeros_like(non_zero_ages, dtype=float)  # starting depth is 0
 
-    for _ in range(n):
+    z_too_small = np.zeros_like(non_zero_ages, dtype=float)
+    z_too_big = np.full_like(non_zero_ages, plate_thickness, dtype=float)
+
+    t_diff = np.full_like(non_zero_ages, np.nan)
+    for _ in range(maxiter):
         zi = 0.5 * (z_too_small + z_too_big)
-        ti = plate_temp(age, zi, plate_thickness)
+        ti = plate_temp(non_zero_ages, zi, plate_thickness, **kwargs)
         t_diff = temp - ti
-        z_too_big[t_diff < -rtol] = zi[t_diff < -rtol]
-        z_too_small[t_diff > rtol] = zi[t_diff > rtol]
+        z_too_big[t_diff < -tol] = zi[t_diff < -tol]
+        z_too_small[t_diff > tol] = zi[t_diff > tol]
 
-        if (np.abs(t_diff) < rtol).all():
+        if (np.abs(t_diff) < tol).all():
             break
 
     # convergence warning
-    if np.abs(t_diff).any() > rtol:
+    if (np.abs(t_diff) > tol).any():
+        failed_ages = non_zero_ages[np.abs(t_diff) > tol]
+        message = (
+            "Solution did not converge below tol={}".format(tol)
+            + " within maxiter={} iterations".format(maxiter)
+            + " for the following ages: {}".format(failed_ages)
+        )
+        if require_convergence:
+            raise RuntimeError(message)
         import warnings
-        warnings.warn("Iterations did not converge below rtol={}".format(rtol))
+
+        warnings.warn(message, category=RuntimeWarning)
 
     # protect against negative ages
-    zi[age <= 0] = 0
-    zi = np.squeeze(zi)
-    return zi
+    out = np.zeros_like(age)
+    out[age > 0.0] = zi
+    out = out.reshape(age.shape)
+    if out.size == 1:  # input age was a scalar
+        return out.flatten()[0]
+    return out
+
 
 def points_to_features(lons, lats, plate_ID=None):
     """Creates point features represented on a unit length sphere in 3D cartesian coordinates from a latitude and 
