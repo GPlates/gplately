@@ -141,34 +141,27 @@ class PlateReconstruction(object):
         return subduction_data
 
 
-    def total_subduction_zone_length(self, time, use_pygplates=False, use_ptt=False, ignore_warnings=False):
-        """Calculates the total length of all global subduction zones (km) at the specified geological time (Ma).
+    def total_subduction_zone_length(self, time, use_ptt=False, ignore_warnings=False):
+        """Calculates the total length of all mid-ocean ridges (km) at the specified geological time (Ma).
 
-        Uses one of two methods depending on user choice:
+        if `use_ptt` is True
+        
+        Uses Plate Tectonic Tools' `subduction_convergence` module to calculate trench segment lengths on a unit sphere. 
+        The aggregated total subduction zone length is scaled to kilometres using the geocentric radius.
 
-        * `pyGPlates`: 
+        Otherwise
 
-            * Set `use_pygplates = True`
+        Resolves topology features ascribed to the `PlateReconstruction` model and extracts their shared boundary sections.
+        The lengths of each trench boundary section are appended to the total subduction zone length.
+        The total length is scaled to kilometres using a latitude-dependent (geocentric) Earth radius.
 
-            Resolves topology features ascribed to the `PlateReconstruction` model and extracts their shared boundary sections.
-            The lengths of each trench boundary section are appended to the total subduction zone length.
-            The total length is scaled to kilometres using a latitude-dependent (geocentric) Earth radius.
-
-        * `PTT`:
-
-            * Set `use_ptt = True`
-
-            Uses Plate Tectonic Tools' `subduction_convergence` module to calculate trench segment lengths on a unit sphere. 
-            The aggregated total subduction zone length is scaled to kilometres using the geocentric radius.
 
         Parameters
         ----------
         time : int
-            The geological time at which to calculate total subduction zone lengths.
-        use_pygplates : bool, default=False
-            If set to `True`, the pyGPlates method is used.
+            The geological time at which to calculate total mid-ocean ridge lengths.
         use_ptt : bool, default=False
-            If set to `True`, the PTT method is used. 
+            If set to `True`, the PTT method is used.
         ignore_warnings : bool, default=False
             Choose whether to ignore warning messages from PTT's `subduction_convergence` workflow. These warnings alert the user 
             when certain subduction sub-segments are ignored - this happens when the trench segments have unidentifiable subduction 
@@ -185,7 +178,22 @@ class PlateReconstruction(object):
             The total subduction zone length (in km) at the specified `time`.
 
         """
-        if use_pygplates is True:
+        if use_ptt:
+            with warnings.catch_warnings():
+                warnings.simplefilter('ignore')
+                subduction_data = self.tesselate_subduction_zones(time, ignore_warnings=ignore_warnings)
+
+            trench_arcseg = subduction_data[:,6]
+            trench_pt_lat = subduction_data[:,1]
+            
+            total_subduction_zone_length_kms = 0
+            for i, segment in enumerate(trench_arcseg):
+                earth_radius = _tools.geocentric_radius(trench_pt_lat[i])/1e3
+                total_subduction_zone_length_kms += np.deg2rad(segment)*earth_radius 
+                
+            return total_subduction_zone_length_kms
+
+        else:
             resolved_topologies = []
             shared_boundary_sections = []
             pygplates.resolve_topologies(self.topology_features, self.rotation_model, resolved_topologies, time, shared_boundary_sections)
@@ -200,25 +208,6 @@ class PlateReconstruction(object):
                     total_subduction_zone_length_kms += shared_sub_segment.get_resolved_geometry().get_arc_length()*earth_radius
 
             return total_subduction_zone_length_kms
-        
-        elif use_ptt is True:
-            with warnings.catch_warnings():
-                warnings.simplefilter('ignore')
-                subduction_data = self.tesselate_subduction_zones(time, ignore_warnings=ignore_warnings)
-
-            trench_arcseg = subduction_data[:,6]
-            trench_pt_lat = subduction_data[:,1]
-            
-            total_subduction_zone_length_kms = 0
-            for i, segment in enumerate(trench_arcseg):
-                earth_radius = _tools.geocentric_radius(trench_pt_lat[i])/1e3
-                total_subduction_zone_length_kms += np.deg2rad(segment)*earth_radius 
-                
-            return total_subduction_zone_length_kms
-        elif use_pygplates is True and use_ptt is True:
-            raise ValueError("Please set either use_pygplates or use_ptt to True.")
-        else:
-            raise ValueError("Please set either use_pygplates or use_ptt to True.")
 
 
     def total_continental_arc_length(self, time, continental_grid=None, trench_arc_distance=0.0, ignore_warnings=True):
@@ -380,32 +369,25 @@ class PlateReconstruction(object):
         return ridge_data
 
 
-    def total_ridge_length(self, time, use_pygplates=False, use_ptt=False, ignore_warnings=False):
+    def total_ridge_length(self, time, use_ptt=False, ignore_warnings=False):
         """Calculates the total length of all mid-ocean ridges (km) at the specified geological time (Ma).
 
-        Uses one of two methods depending on user choise:
+        if `use_ptt` is True
+        
+        Uses Plate Tectonic Tools' `ridge_spreading_rate` workflow to calculate ridge segment lengths. Scales lengths to
+        kilometres using the geocentric radius.
 
-        * `pyGPlates`:
+        Otherwise
 
-            * Set `use_pygplates = True` 
+        Resolves topology features of the PlateReconstruction model and extracts their shared boundary sections.
+        The lengths of each GPML mid-ocean ridge shared boundary section are appended to the total ridge length.
+        Scales lengths to kilometres using the geocentric radius.
 
-            Resolves topology features of the PlateReconstruction model and extracts their shared boundary sections.
-            The lengths of each GPML mid-ocean ridge shared boundary section are appended to the total ridge length.
-            Scales lengths to kilometres using the geocentric radius.
-
-        * `PTT`
-
-            * Set `use_ptt = True`
-
-            Uses Plate Tectonic Tools' `ridge_spreading_rate` workflow to calculate ridge segment lengths. Scales lengths to
-            kilometres using the geocentric radius.
 
         Parameters
         ----------
         time : int
             The geological time at which to calculate total mid-ocean ridge lengths.
-        use_pygplates : bool, default=False
-            If set to `True`, the pyGPlates method is used.
         use_ptt : bool, default=False
             If set to `True`, the PTT method is used. 
         ignore_warnings : bool, default=False
@@ -421,7 +403,23 @@ class PlateReconstruction(object):
         total_ridge_length_kms : float
             The total length of global mid-ocean ridges (in kilometres) at the specified time.
         """
-        if use_pygplates is True:
+
+        if use_ptt is True:
+            with warnings.catch_warnings():
+                warnings.simplefilter('ignore')
+                ridge_data = self.tesselate_mid_ocean_ridges(time)
+
+            ridge_arcseg = ridge_data[:,3]
+            ridge_pt_lat = ridge_data[:,1]
+
+            total_ridge_length_kms = 0
+            for i, segment in enumerate(ridge_arcseg):
+                earth_radius = _tools.geocentric_radius(ridge_pt_lat[i])/1e3
+                total_ridge_length_kms += np.deg2rad(segment)*earth_radius 
+
+            return total_ridge_length_kms
+
+        else:
             resolved_topologies = []
             shared_boundary_sections = []
             pygplates.resolve_topologies(self.topology_features, self.rotation_model, resolved_topologies, time, shared_boundary_sections)
@@ -436,23 +434,6 @@ class PlateReconstruction(object):
                     total_ridge_length_kms += shared_sub_segment.get_resolved_geometry().get_arc_length()*earth_radius
 
             return total_ridge_length_kms
-
-        elif use_ptt is True:
-            with warnings.catch_warnings():
-                warnings.simplefilter('ignore')
-                ridge_data = self.tesselate_mid_ocean_ridges(time)
-
-            ridge_arcseg = ridge_data[:,3]
-            ridge_pt_lat = ridge_data[:,1]
-
-            total_ridge_length_kms = 0
-            for i, segment in enumerate(ridge_arcseg):
-                earth_radius = _tools.geocentric_radius(ridge_pt_lat[i])/1e3
-                total_ridge_length_kms += np.deg2rad(segment)*earth_radius 
-
-            return total_ridge_length_kms
-        else:
-            raise ValueError("Please set either use_pygplates or use_ptt to True.")
 
 
     def reconstruct(self, feature, to_time, from_time=0, anchor_plate_id=0, **kwargs):
