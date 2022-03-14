@@ -1070,6 +1070,7 @@ class Raster(object):
     Attributes
     ----------
     PlateReconstruction_object : object pointer
+&lt;&lt;&lt;&lt;&lt;&lt;&lt; HEAD
         A pointer to GPlately&#39;s `PlateReconstruction` object and its attributes, like the 
         `rotation_model`, a set of reconstructable `topology_featues` and `static_polygons`
         that belong to a particular plate model. These attributes can be used in the `Points` 
@@ -1086,17 +1087,86 @@ class Raster(object):
     extent : 1D numpy array, default=None
         Four-element array to specify [min lon, max lon, min lat, max lat] extents of any sampling 
         points. If no extents are supplied, full global extent [-180,180,-90,90] is assumed. 
+=======
+    filename
+    array
+    extent
+    Resample
+    data 
+    lons
+    lats
+    method
+
+    Methods
+    -------
+    __init__(self, filename=None, array=None, extent=None, resample=None)
+        Constructs all necessary attributes for the Raster object.
+        
+    _update(self)
+        Allows RegularGridInterpolator attributes ((self.lats, self.lons), self.data, method=&#39;linear&#39;) and methods 
+        (__call__(), or RegularGridInterpolator) to be accessible from the Raster object.
+        
+    interpolate(self, lons, lats, method=&#39;linear&#39;, return_indices=False, return_distances=False)
+        Sample gridded data on a set of points using interpolation from RegularGridInterpolator.
+        
+    resample(self, spacingX, spacingY, overwrite=False)
+        Resamples the grid using X &amp; Y-spaced lat-lon arrays, meshed with linear interpolation.
+        
+    resize(self, resX, resY, overwrite=False)
+        Resizes the grid with a specific resolution and samples points using linear interpolation.
+        
+    fill_NaNs(self, overwrite=False)
+        Searches for invalid ‘data’ cells containing NaN-type entries and replaces NaNs with the value of the nearest
+        valid data cell.
+    &#34;&#34;&#34;
+    def __init__(self, PlateReconstruction_object=None, filename=None, array=None, extent=None, resample=None, time=0):
+        &#34;&#34;&#34;Constructs all necessary attributes for the raster object.
+
+        Note: either a str path to a netCDF file OR an ndarray representing a grid must be specified. 
+
+        Parameters
+        ----------
+        PlateReconstruction_object : object pointer
+            Allows for the accessibility of PlateReconstruction object attributes. Namely, PlateReconstruction object 
+            attributes rotation_model, topology_featues and static_polygons can be used in the points object if called using
+            “self.PlateReconstruction_object.X”, where X is the attribute.
+
+        filename : str, default=None
+            Path to netCDF file
+        OR
+        array : ndarray, default=None
+            An array with elements that define a grid. The number of rows corresponds to the number of latitudinal points, while
+            the number of columns corresponds to the number of longitudinal points.
+
+        extent : 1D numpy array, default=None
+            Four-element array to specify [min lon, max lon, min lat, max lat] extents of any sampling points. If no extents are 
+            supplied, full global extent [-180,180,-90,90] is assumed. 
+
+        resample : tuple, default=None
+            Optionally resample grid, pass spacing in X and Y direction as a tuple
+            e.g. resample=(spacingX, spacingY)
+
+        Returns
+        -------
+        __init__ generates the following attributes for the raster object:
+        data : ndarray
+            The grid - either a read netCDF4 file, or the ndarray supplied to __init__.
+
+        extent : 1d array
+            The [min lon, max lon, min lat, max lat] extents supplied to __init__. If not supplied, it is taken to be
+            [-180,180,-90,90].
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; raster-reconstruction
 
     resample : tuple, default=None
         Optionally resample grid, pass spacing in X and Y direction as a tuple
         e.g. resample=(spacingX, spacingY)
 
     &#34;&#34;&#34;
-    def __init__(self, PlateReconstruction_object=None, filename=None, array=None, extent=None, resample=None):
+    def __init__(self, PlateReconstruction_object=None, filename=None, array=None, extent=None, resample=None, time=0):
         self.PlateReconstruction_object = PlateReconstruction_object
 
         # we initialise an empty points object as we do not want to build this before any resampling takes place.
-        self.points = None
+        self.time = float(time)
 
         if filename is None and array is None:
             raise ValueError(&#34;Supply either a filename or numpy array&#34;)
@@ -1339,56 +1409,10 @@ class Raster(object):
         write_netcdf_grid(str(filename), self.data, self.extent)
 
 
-    def reconstruct(self, to_time, from_time=0, anchor_plate_id=0, **kwargs):
-        &#34;&#34;&#34; Reconstruct the raster passed to the `Raster` object through geological time 
-        relative to another frame of reference.
-
-        Notes
-        -----
-        Uses Stripy.
-        &#34;&#34;&#34;
-        import stripy
-
-        lonq, latq = np.meshgrid(self.lons, self.lats)
-        lonq_ = lonq.ravel()
-        latq_ = latq.ravel()
-
-        if self.points is None:
-            self.points = _Points(self.PlateReconstruction_object, lonq_, latq_, from_time, anchor_plate_id)
-
-        lons, lats = self.points.reconstruct(to_time, anchor_plate_id=anchor_plate_id, **kwargs)
-
-        # also remove duplicate entries - # BUT this sorts the indices!!
-        _, uindex = np.unique(np.c_[lons,lats], return_index=True, axis=0)
-        uindex_sorted = sorted(uindex)
-        ilons = lons[uindex_sorted]
-        ilats = lats[uindex_sorted]
-        idata = self.data.flat[uindex_sorted]
-
-
-        # interpolate onto sphere
-        # this is not very elegant - need to work out why stripy is struggling here.
-        for i in range(10):
-            try:
-                mesh = stripy.sTriangulation(np.radians(ilons), np.radians(ilats), tree=True, permute=True)
-            except ValueError:
-                pass
-            else:
-                break
-        zi, ierr = mesh.interpolate(np.radians(lonq_), np.radians(latq_), idata, order=1)
-
-        # get cell spacing
-        dx = np.diff(self.lons).mean()
-        dy = np.diff(self.lats).mean()
-        dxy = np.hypot(dx,dy)
-        rxy = np.radians(dxy)
-
-        # find angular separation / great circle distance between mesh and reconstructed points
-        angles, idx = mesh.nearest_vertices(np.radians(lonq_), np.radians(latq_))
-
-        zi[angles.ravel() &gt; rxy] = np.nan
-        zi = zi.reshape(lonq.shape)
-        return zi
+    def reconstruct(self, time):
+        rotation_model = self.PlateReconstruction_object.rotation_model
+        static_polygons = self.PlateReconstruction_object.static_polygons
+        return reconstruct_grid(self.data, static_polygons, rotation_model, from_time=self.time, to_time=float(time), extent=self.extent)
 
 
 class TimeRaster(Raster):
@@ -2616,36 +2640,67 @@ is assumed.</dd>
 <dl>
 <dt id="gplately.grids.Raster"><code class="flex name class">
 <span>class <span class="ident">Raster</span></span>
-<span>(</span><span>PlateReconstruction_object=None, filename=None, array=None, extent=None, resample=None)</span>
+<span>(</span><span>PlateReconstruction_object=None, filename=None, array=None, extent=None, resample=None, time=0)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>A class for working with raster data. </p>
-<p><code><a title="gplately.grids.Raster" href="#gplately.grids.Raster">Raster</a></code>'s functionalities inclue interpolating point data on rasters using Scipy’s
-RegularGridInterpolator, resampling rasters with new X and Y-direction spacings and
+<pre><code>&lt;code&gt;&lt;a title="gplately.grids.Raster" href="#gplately.grids.Raster"&gt;Raster&lt;/a&gt;&lt;/code&gt;'s functionalities inclue interpolating point data on rasters using Scipy’s 
+RegularGridInterpolator, resampling rasters with new X and Y-direction spacings and 
 resizing rasters using new X and Y grid pixel resolutions. NaN-type data in rasters
-can be replaced with the values of their nearest valid neighbours. </p>
-<h2 id="attributes">Attributes</h2>
-<dl>
-<dt><strong><code>PlateReconstruction_object</code></strong> :&ensp;<code>object pointer</code></dt>
-<dd>A pointer to GPlately's <code>PlateReconstruction</code> object and its attributes, like the
+can be replaced with the values of their nearest valid neighbours.
+
+Attributes
+----------
+PlateReconstruction_object : object pointer
+</code></pre>
+<p>&lt;&lt;&lt;&lt;&lt;&lt;&lt; HEAD
+A pointer to GPlately's <code>PlateReconstruction</code> object and its attributes, like the
 <code>rotation_model</code>, a set of reconstructable <code>topology_featues</code> and <code>static_polygons</code>
 that belong to a particular plate model. These attributes can be used in the <code>Points</code>
-object if called using “self.PlateReconstruction_object.X”, where X is the attribute.</dd>
-<dt><strong><code>filename</code></strong> :&ensp;<code>str</code>, default=<code>None</code></dt>
-<dd>Full string path to netCDF raster file</dd>
-<dt><strong><code>OR</code></strong></dt>
-<dd>&nbsp;</dd>
-<dt><strong><code>array</code></strong> :&ensp;<code>ndarray</code>, default=<code>None</code></dt>
-<dd>An array with elements that define a grid. The number of rows corresponds to the number of
-latitudinal points, while the number of columns corresponds to the number of longitudinal
-points.</dd>
-<dt><strong><code>extent</code></strong> :&ensp;<code>1D numpy array</code>, default=<code>None</code></dt>
-<dd>Four-element array to specify [min lon, max lon, min lat, max lat] extents of any sampling
-points. If no extents are supplied, full global extent [-180,180,-90,90] is assumed.</dd>
-<dt><strong><code>resample</code></strong> :&ensp;<code>tuple</code>, default=<code>None</code></dt>
-<dd>Optionally resample grid, pass spacing in X and Y direction as a tuple
-e.g. resample=(spacingX, spacingY)</dd>
-</dl></div>
+object if called using “self.PlateReconstruction_object.X”, where X is the attribute.</p>
+<pre><code>filename : str, default=None
+    Full string path to netCDF raster file
+OR
+array : ndarray, default=None
+    An array with elements that define a grid. The number of rows corresponds to the number of 
+    latitudinal points, while the number of columns corresponds to the number of longitudinal 
+    points.
+
+extent : 1D numpy array, default=None
+    Four-element array to specify [min lon, max lon, min lat, max lat] extents of any sampling 
+    points. If no extents are supplied, full global extent [-180,180,-90,90] is assumed.
+</code></pre>
+<p>=======
+filename
+array
+extent
+Resample
+data
+lons
+lats
+method</p>
+<pre><code>Methods
+-------
+__init__(self, filename=None, array=None, extent=None, resample=None)
+    Constructs all necessary attributes for the Raster object.
+
+_update(self)
+    Allows RegularGridInterpolator attributes ((self.lats, self.lons), self.data, method='linear') and methods 
+    (__call__(), or RegularGridInterpolator) to be accessible from the Raster object.
+
+interpolate(self, lons, lats, method='linear', return_indices=False, return_distances=False)
+    Sample gridded data on a set of points using interpolation from RegularGridInterpolator.
+
+resample(self, spacingX, spacingY, overwrite=False)
+    Resamples the grid using X &amp; Y-spaced lat-lon arrays, meshed with linear interpolation.
+
+resize(self, resX, resY, overwrite=False)
+    Resizes the grid with a specific resolution and samples points using linear interpolation.
+
+fill_NaNs(self, overwrite=False)
+    Searches for invalid ‘data’ cells containing NaN-type entries and replaces NaNs with the value of the nearest
+    valid data cell.
+</code></pre></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -2661,6 +2716,7 @@ e.g. resample=(spacingX, spacingY)</dd>
     Attributes
     ----------
     PlateReconstruction_object : object pointer
+&lt;&lt;&lt;&lt;&lt;&lt;&lt; HEAD
         A pointer to GPlately&#39;s `PlateReconstruction` object and its attributes, like the 
         `rotation_model`, a set of reconstructable `topology_featues` and `static_polygons`
         that belong to a particular plate model. These attributes can be used in the `Points` 
@@ -2677,17 +2733,86 @@ e.g. resample=(spacingX, spacingY)</dd>
     extent : 1D numpy array, default=None
         Four-element array to specify [min lon, max lon, min lat, max lat] extents of any sampling 
         points. If no extents are supplied, full global extent [-180,180,-90,90] is assumed. 
+=======
+    filename
+    array
+    extent
+    Resample
+    data 
+    lons
+    lats
+    method
+
+    Methods
+    -------
+    __init__(self, filename=None, array=None, extent=None, resample=None)
+        Constructs all necessary attributes for the Raster object.
+        
+    _update(self)
+        Allows RegularGridInterpolator attributes ((self.lats, self.lons), self.data, method=&#39;linear&#39;) and methods 
+        (__call__(), or RegularGridInterpolator) to be accessible from the Raster object.
+        
+    interpolate(self, lons, lats, method=&#39;linear&#39;, return_indices=False, return_distances=False)
+        Sample gridded data on a set of points using interpolation from RegularGridInterpolator.
+        
+    resample(self, spacingX, spacingY, overwrite=False)
+        Resamples the grid using X &amp; Y-spaced lat-lon arrays, meshed with linear interpolation.
+        
+    resize(self, resX, resY, overwrite=False)
+        Resizes the grid with a specific resolution and samples points using linear interpolation.
+        
+    fill_NaNs(self, overwrite=False)
+        Searches for invalid ‘data’ cells containing NaN-type entries and replaces NaNs with the value of the nearest
+        valid data cell.
+    &#34;&#34;&#34;
+    def __init__(self, PlateReconstruction_object=None, filename=None, array=None, extent=None, resample=None, time=0):
+        &#34;&#34;&#34;Constructs all necessary attributes for the raster object.
+
+        Note: either a str path to a netCDF file OR an ndarray representing a grid must be specified. 
+
+        Parameters
+        ----------
+        PlateReconstruction_object : object pointer
+            Allows for the accessibility of PlateReconstruction object attributes. Namely, PlateReconstruction object 
+            attributes rotation_model, topology_featues and static_polygons can be used in the points object if called using
+            “self.PlateReconstruction_object.X”, where X is the attribute.
+
+        filename : str, default=None
+            Path to netCDF file
+        OR
+        array : ndarray, default=None
+            An array with elements that define a grid. The number of rows corresponds to the number of latitudinal points, while
+            the number of columns corresponds to the number of longitudinal points.
+
+        extent : 1D numpy array, default=None
+            Four-element array to specify [min lon, max lon, min lat, max lat] extents of any sampling points. If no extents are 
+            supplied, full global extent [-180,180,-90,90] is assumed. 
+
+        resample : tuple, default=None
+            Optionally resample grid, pass spacing in X and Y direction as a tuple
+            e.g. resample=(spacingX, spacingY)
+
+        Returns
+        -------
+        __init__ generates the following attributes for the raster object:
+        data : ndarray
+            The grid - either a read netCDF4 file, or the ndarray supplied to __init__.
+
+        extent : 1d array
+            The [min lon, max lon, min lat, max lat] extents supplied to __init__. If not supplied, it is taken to be
+            [-180,180,-90,90].
+&gt;&gt;&gt;&gt;&gt;&gt;&gt; raster-reconstruction
 
     resample : tuple, default=None
         Optionally resample grid, pass spacing in X and Y direction as a tuple
         e.g. resample=(spacingX, spacingY)
 
     &#34;&#34;&#34;
-    def __init__(self, PlateReconstruction_object=None, filename=None, array=None, extent=None, resample=None):
+    def __init__(self, PlateReconstruction_object=None, filename=None, array=None, extent=None, resample=None, time=0):
         self.PlateReconstruction_object = PlateReconstruction_object
 
         # we initialise an empty points object as we do not want to build this before any resampling takes place.
-        self.points = None
+        self.time = float(time)
 
         if filename is None and array is None:
             raise ValueError(&#34;Supply either a filename or numpy array&#34;)
@@ -2930,56 +3055,10 @@ e.g. resample=(spacingX, spacingY)</dd>
         write_netcdf_grid(str(filename), self.data, self.extent)
 
 
-    def reconstruct(self, to_time, from_time=0, anchor_plate_id=0, **kwargs):
-        &#34;&#34;&#34; Reconstruct the raster passed to the `Raster` object through geological time 
-        relative to another frame of reference.
-
-        Notes
-        -----
-        Uses Stripy.
-        &#34;&#34;&#34;
-        import stripy
-
-        lonq, latq = np.meshgrid(self.lons, self.lats)
-        lonq_ = lonq.ravel()
-        latq_ = latq.ravel()
-
-        if self.points is None:
-            self.points = _Points(self.PlateReconstruction_object, lonq_, latq_, from_time, anchor_plate_id)
-
-        lons, lats = self.points.reconstruct(to_time, anchor_plate_id=anchor_plate_id, **kwargs)
-
-        # also remove duplicate entries - # BUT this sorts the indices!!
-        _, uindex = np.unique(np.c_[lons,lats], return_index=True, axis=0)
-        uindex_sorted = sorted(uindex)
-        ilons = lons[uindex_sorted]
-        ilats = lats[uindex_sorted]
-        idata = self.data.flat[uindex_sorted]
-
-
-        # interpolate onto sphere
-        # this is not very elegant - need to work out why stripy is struggling here.
-        for i in range(10):
-            try:
-                mesh = stripy.sTriangulation(np.radians(ilons), np.radians(ilats), tree=True, permute=True)
-            except ValueError:
-                pass
-            else:
-                break
-        zi, ierr = mesh.interpolate(np.radians(lonq_), np.radians(latq_), idata, order=1)
-
-        # get cell spacing
-        dx = np.diff(self.lons).mean()
-        dy = np.diff(self.lats).mean()
-        dxy = np.hypot(dx,dy)
-        rxy = np.radians(dxy)
-
-        # find angular separation / great circle distance between mesh and reconstructed points
-        angles, idx = mesh.nearest_vertices(np.radians(lonq_), np.radians(latq_))
-
-        zi[angles.ravel() &gt; rxy] = np.nan
-        zi = zi.reshape(lonq.shape)
-        return zi</code></pre>
+    def reconstruct(self, time):
+        rotation_model = self.PlateReconstruction_object.rotation_model
+        static_polygons = self.PlateReconstruction_object.static_polygons
+        return reconstruct_grid(self.data, static_polygons, rotation_model, from_time=self.time, to_time=float(time), extent=self.extent)</code></pre>
 </details>
 <h3>Subclasses</h3>
 <ul class="hlist">
@@ -3184,67 +3263,18 @@ Alerts user which dimension (index) the point is located.</li>
 </details>
 </dd>
 <dt id="gplately.grids.Raster.reconstruct"><code class="name flex">
-<span>def <span class="ident">reconstruct</span></span>(<span>self, to_time, from_time=0, anchor_plate_id=0, **kwargs)</span>
+<span>def <span class="ident">reconstruct</span></span>(<span>self, time)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Reconstruct the raster passed to the <code><a title="gplately.grids.Raster" href="#gplately.grids.Raster">Raster</a></code> object through geological time
-relative to another frame of reference.</p>
-<h2 id="notes">Notes</h2>
-<p>Uses Stripy.</p></div>
+<div class="desc"></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def reconstruct(self, to_time, from_time=0, anchor_plate_id=0, **kwargs):
-    &#34;&#34;&#34; Reconstruct the raster passed to the `Raster` object through geological time 
-    relative to another frame of reference.
-
-    Notes
-    -----
-    Uses Stripy.
-    &#34;&#34;&#34;
-    import stripy
-
-    lonq, latq = np.meshgrid(self.lons, self.lats)
-    lonq_ = lonq.ravel()
-    latq_ = latq.ravel()
-
-    if self.points is None:
-        self.points = _Points(self.PlateReconstruction_object, lonq_, latq_, from_time, anchor_plate_id)
-
-    lons, lats = self.points.reconstruct(to_time, anchor_plate_id=anchor_plate_id, **kwargs)
-
-    # also remove duplicate entries - # BUT this sorts the indices!!
-    _, uindex = np.unique(np.c_[lons,lats], return_index=True, axis=0)
-    uindex_sorted = sorted(uindex)
-    ilons = lons[uindex_sorted]
-    ilats = lats[uindex_sorted]
-    idata = self.data.flat[uindex_sorted]
-
-
-    # interpolate onto sphere
-    # this is not very elegant - need to work out why stripy is struggling here.
-    for i in range(10):
-        try:
-            mesh = stripy.sTriangulation(np.radians(ilons), np.radians(ilats), tree=True, permute=True)
-        except ValueError:
-            pass
-        else:
-            break
-    zi, ierr = mesh.interpolate(np.radians(lonq_), np.radians(latq_), idata, order=1)
-
-    # get cell spacing
-    dx = np.diff(self.lons).mean()
-    dy = np.diff(self.lats).mean()
-    dxy = np.hypot(dx,dy)
-    rxy = np.radians(dxy)
-
-    # find angular separation / great circle distance between mesh and reconstructed points
-    angles, idx = mesh.nearest_vertices(np.radians(lonq_), np.radians(latq_))
-
-    zi[angles.ravel() &gt; rxy] = np.nan
-    zi = zi.reshape(lonq.shape)
-    return zi</code></pre>
+<pre><code class="python">def reconstruct(self, time):
+    rotation_model = self.PlateReconstruction_object.rotation_model
+    static_polygons = self.PlateReconstruction_object.static_polygons
+    return reconstruct_grid(self.data, static_polygons, rotation_model, from_time=self.time, to_time=float(time), extent=self.extent)</code></pre>
 </details>
 </dd>
 <dt id="gplately.grids.Raster.resample"><code class="name flex">
@@ -3600,7 +3630,6 @@ with the <code>fill_value</code> (defined below) if supplied.</dd>
 <ul class="hlist">
 <li><code><a title="gplately.grids.Raster.fill_NaNs" href="#gplately.grids.Raster.fill_NaNs">fill_NaNs</a></code></li>
 <li><code><a title="gplately.grids.Raster.interpolate" href="#gplately.grids.Raster.interpolate">interpolate</a></code></li>
-<li><code><a title="gplately.grids.Raster.reconstruct" href="#gplately.grids.Raster.reconstruct">reconstruct</a></code></li>
 <li><code><a title="gplately.grids.Raster.resample" href="#gplately.grids.Raster.resample">resample</a></code></li>
 <li><code><a title="gplately.grids.Raster.resize" href="#gplately.grids.Raster.resize">resize</a></code></li>
 <li><code><a title="gplately.grids.Raster.save_to_NetCDF4" href="#gplately.grids.Raster.save_to_NetCDF4">save_to_NetCDF4</a></code></li>
