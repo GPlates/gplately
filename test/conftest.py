@@ -14,47 +14,26 @@ pt_lon = np.array([-155.4696, 164.3])
 pt_lat = np.array([19.8202, 53.5])
 
 
-# SET UP ALL MAIN GPLATELY OBJECTS FOR TESTING 
 @pytest.fixture(scope="module")
-def gplately_data_server_object():
+def gplately_plate_reconstruction_object():
     gdownload = gplately.download.DataServer("Muller2019")
-    return gdownload
-
-
-@pytest.fixture(scope="module")
-def gplately_plate_reconstruction_object(gplately_data_server_object):
-    gdownload = gplately_data_server_object
     rotation_model, topology_features, static_polygons = gdownload.get_plate_reconstruction_files()
-    model = gplately.PlateReconstruction(
-        rotation_model, 
-        topology_features, 
-        static_polygons
-    )
+    model = gplately.PlateReconstruction(rotation_model, topology_features, static_polygons)
     return model
 
 
 @pytest.fixture(scope="module")
-def gplately_plot_topologies_object(
-    gplately_plate_reconstruction_object, 
-    gplately_data_server_object
-    ):
+def gplately_plot_topologies_object(gplately_plate_reconstruction_object):
     model = gplately_plate_reconstruction_object
     time = 0 #Ma, will change to 100 when called in test_3.
-    gdownload = gplately_data_server_object
+    gdownload = gplately.download.DataServer("Muller2019")
     coastlines, continents, COBs = gdownload.get_topology_geometries()
     gplot = gplately.plot.PlotTopologies(model, time, coastlines, continents, COBs)
     return gplot
 
 
 @pytest.fixture(scope="module")
-def gplately_geo_axis_param():
-    fig = plt.figure(figsize=(16,12), dpi=100)
-    ax = fig.add_subplot(111, projection=ccrs.Mollweide(central_longitude = 20))
-    return ax
-
-
-@pytest.fixture(scope="module")
-def gplately_points_object(request, gplately_plate_reconstruction_object):
+def gplately_points_object(gplately_plate_reconstruction_object):
     model = gplately_plate_reconstruction_object
     time = 0 #Ma, will change to 100 Ma in test 2.
 
@@ -68,14 +47,12 @@ def gplately_points_object(request, gplately_plate_reconstruction_object):
 
 
 @pytest.fixture(scope="module")
-def download_multifeature_gplates_sample_data(gplately_data_server_object):
-    gdownload = gplately_data_server_object
-    johansson_2018 = gdownload.get_feature_data("Johannson2018")
-    assert isinstance(johansson_2018, pygplates.FeatureCollection), "Cached GPlates 2.3 sample data not an instance of <pygplates.FeatureCollection>."
+def gplately_raster_object(gplately_plate_reconstruction_object):
+    model = gplately_plate_reconstruction_object
+    time = 0
 
+    gdownload = gplately.download.DataServer("Muller2019")
+    masked_age_grid = gdownload.get_age_grid(time)
 
-@pytest.fixture(scope="module")
-def download_multifeature_gplates_sample_data(gplately_data_server_object):
-    gdownload = gplately_data_server_object
-    seafloor_fabric = gdownload.get_feature_data("SeafloorFabric")
-    assert [isinstance(sf, pygplates.FeatureCollection) for sf in seafloor_fabric], "Cached GPlates 2.3 sample data not an instance of <pygplates.FeatureCollection>."
+    graster = gplately.Raster(model, array=masked_age_grid, extent=[-180,180,-90,90])
+    return graster

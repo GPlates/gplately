@@ -1,13 +1,8 @@
 import pytest
 import gplately
 import numpy as np
-import cartopy.crs as ccrs
-import matplotlib.pyplot as plt
 from conftest import reconstruction_times
-from conftest import gplately_data_server_object as gdownload
-from conftest import gplately_plate_reconstruction_object as model
 from conftest import gplately_plot_topologies_object as gplot
-from conftest import gplately_geo_axis_param as ax
 
 # ========================================= <gplately.PlotTopologies> =========================================
 
@@ -101,98 +96,3 @@ def test_PlotTopologies_trench_L(time, gplot):
 def test_PlotTopologies_trench_R(time, gplot):
     assert gplot.trench_right, "No trench (R) features from Müller et al. (2019) at {} Ma are attributed to <gplately.PlotTopologies>.".format(time)
     assert [trench_r.get_feature_type() == "gpml:SubductionZone" for trench_r in gplot.trench_right], "<gplately.PlotTopologies> trenches (R) are not all of type gpml:SubductionZone in Müller et al. (2019) at {} Ma.".format(time)
-
-
-# ================================================================================================================================================================================================================
-
-# TEST PLOT TOPOLOGIES METHODS
-@pytest.mark.parametrize("time", reconstruction_times)
-def test_plot_coastlines(time, gplot, ax):
-    gplot.time = time
-    assert gplot.plot_continents(ax)
-
-@pytest.mark.parametrize("time", reconstruction_times)
-def test_plot_continents(time, gplot, ax):
-    gplot.time = time
-    assert gplot.plot_coastlines(ax)
-
-@pytest.mark.parametrize("time", reconstruction_times)
-def test_plot_continent_ocean_boundaries(time, gplot, ax):
-    gplot.time = time
-    assert gplot.plot_continent_ocean_boundaries(ax)
-
-@pytest.mark.parametrize("time", reconstruction_times)
-def test_plot_ridges(time, gplot, ax):   
-    gplot.time = time
-    assert gplot.plot_ridges(ax)
-
-@pytest.mark.parametrize("time", reconstruction_times)
-def test_plot_ridges_and_transforms(time, gplot, ax):
-    gplot.time = time
-    assert gplot.plot_ridges_and_transforms(ax)
-
-@pytest.mark.parametrize("time", reconstruction_times)
-def test_plot_transforms(time, gplot, ax):
-    gplot.time = time
-    assert gplot.plot_transforms(ax)
-
-@pytest.mark.parametrize("time", reconstruction_times)
-def test_plot_trenches(time, gplot, ax):  
-    gplot.time = time
-    assert gplot.plot_trenches(ax)
-
-@pytest.mark.parametrize("time", reconstruction_times)
-def test_plot_misc_boundaries(time, gplot, ax):
-    gplot.time = time
-    assert gplot.plot_misc_boundaries(ax)
-
-@pytest.mark.parametrize("time", reconstruction_times)
-def test_plot_plate_id(time, gplot, ax):
-    gplot.time = time
-    # for the test, plot ID 901
-    assert gplot.plot_plate_id(ax, plate_id=901)
-
-@pytest.mark.parametrize("time", reconstruction_times)
-def test_plot_subduction_teeth(time, gplot, ax):
-    gplot.time = time
-    assert gplot.plot_subduction_teeth(ax)
-
-@pytest.mark.parametrize("time", reconstruction_times)
-def test_plot_grid(time, gdownload, model, gplot, ax):
-    gplot.time = time
-    masked_age_grid = gdownload.get_age_grid(time)
-    graster = gplately.Raster(model, array=masked_age_grid, extent=[-180,180,-90,90])
-    assert gplot.plot_grid(ax, graster.data)
-
-# this one needs a manual path to a .nc file (which is not currently in DataServer)
-# @pytest.mark.parametrize("time", reconstruction_times)
-# def test_plot_grid_from_netCDF(time, gplot):
-
-@pytest.mark.parametrize("time", reconstruction_times)
-def test_plot_plate_motion_vectors(time, gplot, ax):
-    gplot.time = time
-    assert gplot.plot_plate_motion_vectors(ax)
-
-"""
-@pytest.mark.parametrize("time", reconstruction_times)
-def test_plotting_functions(time, gplot, ax):
-    gplot.plot_coastlines(ax)
-    gplot.plot_continents(ax)
-    gplot.plot_continent_ocean_boundaries(ax)
-    gplot.plot_ridges(ax)
-    gplot.plot_ridges_and_transforms(ax)
-    gplot.plot_transforms(ax)
-    gplot.plot_trenches(ax)
-    gplot.plot_subduction_teeth(ax)
-    gplot.plot_misc_boundaries(ax)
-    gplot.plot_plate_id(ax)
-    gplot.plot_grid(ax)
-    gplot.plot_plate_motion_vectors(ax)
-
-"""
-# ================================================================================================================================================================================================================
-
-# ASSORTED PLOTTING TESTS
-
-# TEST PLACEMENTS OF MID-OCEAN RIDGES
-
