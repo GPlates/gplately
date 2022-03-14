@@ -1,54 +1,9 @@
-"""The “plot” module offers simple shortcuts to pyGplates functionalities for reconstructing geological features,
-transforming them into Shapely geometries and plotting them onto maps.
+"""Tools for reconstructing and plotting geological features and feature data through time.
 
-Methods in this module perform a combination of reconstructing topological features, generating and sorting through 
-valid Shapely geometries, and plotting them. Some methods conduct all the steps above, while others only accept 
-reconstructed features as parameters. The methods that reconstruct geometries using pyGplates before plotting include:
-    * add_coastlines
-    * add_continents
-    * add_ridges
-The features to reconstruct must be defined above where these methods are called under the variable names ‘coastlines’,
-‘continents’ and ‘topology_features’ respectively. 
-
-The methods that assume geometries are reconstructed already are:
-    * another version of add_ridges
-    * add_trenches
-For both methods, reconstructed ridges and topologies are assumed to be defined in the specific shapefile paths:
-    * "reconstructed_topologies/ridge_transform_boundaries_{reconstruction_time}Ma.shp"
-    * "reconstructed_topologies/subduction_boundaries_{reconstruction_time}Ma.shp"
-    * "reconstructed_topologies/subduction_boundaries_sL_{reconstruction_time}Ma.shp"
-    * "reconstructed_topologies/subduction_boundaries_sR_{reconstruction_time}Ma.shp"
-for a specific reconstruction_time. For example, reconstructed ridges at 40Ma should be contained in the path:
-reconstructed_topologies/ridge_transform_boundaries_40Ma.shp
-
-add_quiver calculates and plots plate motion velocity vectors, executing Plate Tectonic Tools’ velocity vector
-functionalities in a single line. A rotation model and topology feature must be defined above this method as 
-“rotation_model” and “topology_features” respectively (if using GPlately, these would be held in the
-PlateReconstruction object).
-
-shapelify_feature_lines and shapelify_feature_polygons turn reconstructed features into Shapely geometries for plotting. 
-
-In the PlotTopologies class, 
-    * plot_coastlines
-    * plot_continents
-    * Plot_continent_ocean_boundaries
-are plotting methods that use shapefile strings given to the PlotTopologies object. Moreover,
-    * plot_ridges
-    * plot_ridges_and_transforms
-    * plot_transforms
-    * plot_trenches
-    * plot_subduction_teeth
-are plotting methods that use the PlotTopologies feature attributes: self.topologies, self.ridge_transforms,
-self.ridges, self.transforms, self.trenches, self.trench_left, self.trench_right and self.other. These features
-have been resolved using Plate Tectonics Tools’ ptt.resolve_topologies.resolve_topologies_into_features method. 
-
-The following methods:
-    *plot_grid
-    *plot_grid_from_netCDF
-plot ndarray-like and netCDF grids respectively onto maps. The latter method uses GPlately’s grids module to
-extract a grid from a given netCDF file path.
-
-The method ‘plot_plate_motion_vectors’ constructs and plots plate motion velocity vectors using Plate Tectonics Tools functionalities. 
+Methods in `plot.py` reconstruct geological features using 
+[pyGPlates' `reconstruct` function](https://www.gplates.org/docs/pygplates/generated/pygplates.reconstruct.html),
+turns them into plottable Shapely geometries, and plots them onto 
+Cartopy GeoAxes using Shapely and GeoPandas.
 
 Classes
 -------
@@ -75,33 +30,43 @@ from .tools import EARTH_RADIUS
 
     
 def add_coastlines(ax, reconstruction_time, **kwargs):
-    """Reconstructs coastline geometries and plots them onto a standard map. 
+    """Reconstruct coastline features to a `reconstruction_time` and plot them as 
+    Shapely geometries onto a standard map Projection. 
 
-    The coastlines for plotting must be defined in a variable "coastlines" above the method, along with a "rotation_model".
-    "coastlines" should be a feature collection, or filename, or feature, or sequence of features, 
-    or a list or tuple of any combination of those four types. These coastlines are reconstructed, transformed into shapely
-    geometries and added onto the chosen map. Map presentation details (e.g. facecolor, edgecolor, alpha…) permitted.
+    Notes
+    -----
+    `add_coastlines` can be used as part of the `PlotTopologies` object. In this case, the `coastlines` 
+    and `rotation_model` needed for plotting will be accessed from the `PlotTopologies` object. 
+    Otherwise, `add_coastlines` can be used as a standalone method. In this case, the coastlines for 
+    plotting must be defined in a variable `coastlines` above the method, along with a `rotation_model`.
+
+    `coastlines` should be a pyGPlates FeatureCollection, or a filename string, or a pyGPlates Feature, 
+    or a a sequence of features, or a list or tuple of any combination of those four types. 
+
 
     Parameters
     ----------
-    ax : GeoAxis
-        A standard map for lat-lon data built on a matplotlib figure. Can be for a single plot or for multiple subplots. 
-        Should be set at a particular Cartopy map projection.
+    ax : instance of <cartopy.mpl.geoaxes.GeoAxes> or <cartopy.mpl.geoaxes.GeoAxesSubplot>
+        A subclass of `matplotlib.axes.Axes` which represents a map Projection.
+        The map should be set at a particular Cartopy projection.
 
     reconstruction_time : float
-        A particular geological time (Ma) at which to reconstruct the feature coastlines. 
+        A particular geological time (Ma) at which to reconstruct the coastline features. 
 
-    **export_wrap_to_dateline : bool, default=True
-        Wrap/clip reconstructed geometries to the dateline.
+    **export_wrap_to_dateline : bool, optional, default=True
+        Wrap/clip reconstructed geometries to the dateline using pyGPlates' 
+        [DateLineWrapper](https://www.gplates.org/docs/pygplates/generated/pygplates.datelinewrapper).
 
-    **kwargs 
-        Keyword arguments that allow control over parameters such as ‘facecolor’, ‘alpha’, etc. for plotting coastline 
-        geometries.
+    **kwargs : 
+        Keyword arguments for parameters such as `‘facecolor’`, `‘alpha’`, etc. for 
+        plotting coastline geometries.
+        See `Matplotlib` keyword arguments 
+        [here](https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html).
 
     Returns
     -------
-    ax : GeoAxis
-        The map with coastline features plotted onto the chosen projection. 
+    ax : instance of <cartopy.mpl.geoaxes.GeoAxes> or <cartopy.mpl.geoaxes.GeoAxesSubplot>
+        A standard GeoAxis map with coastline features plotted onto the chosen projection. 
     """
     # write shapefile
     reconstructed_coastlines = []
@@ -111,33 +76,42 @@ def add_coastlines(ax, reconstruction_time, **kwargs):
     ax.add_geometries(coastlines_geometries, crs=ccrs.PlateCarree(), **kwargs)
     
 def add_continents(ax, reconstruction_time, **kwargs):
-    """Reconstructs continental geometries and plots them onto a standard map. 
+    """Reconstruct continental features to a `reconstruction_time` and plot them as 
+    Shapely geometries onto a standard map Projection. 
 
-    The continents for plotting must be defined in a variable "continents" above the method, along with a "rotation_model".
-    "continents" should be a feature collection, or filename, or feature, or sequence of features, or a list or tuple 
-    of any combination of those four types. These coastlines are reconstructed, transformed into shapely
-    geometries and added onto the chosen map. Map presentation details (e.g. facecolor, edgecolor, alpha…) permitted.
+    Notes
+    -----
+    `add_continents` can be used as part of the `PlotTopologies` object. In this case, the `continents` 
+    and `rotation_model` needed for plotting will be accessed from the `PlotTopologies` object. 
+    Otherwise, `add_continents` can be used as a standalone method. In this case, the continents for 
+    plotting must be defined in a variable `continents` above the method, along with a `rotation_model`.
+
+    `continents` should be a pyGPlates FeatureCollection, or a filename string, or a pyGPlates Feature, 
+    or a a sequence of features, or a list or tuple of any combination of those four types. 
 
     Parameters
     ----------
-    ax : GeoAxis
-        A standard map for lat-lon data built on a matplotlib figure. Can be for a single plot or for multiple subplots. 
-        Should be set at a particular Cartopy map projection.
+    ax : instance of <cartopy.mpl.geoaxes.GeoAxes> or <cartopy.mpl.geoaxes.GeoAxesSubplot>
+        A subclass of `matplotlib.axes.Axes` which represents a map Projection.
+        The map should be set at a particular Cartopy projection.
 
     reconstruction_time : float
-        A particular geological time (Ma) at which to reconstruct the feature continents. 
+        A particular geological time (Ma) at which to reconstruct the continent features. 
 
-    **export_wrap_to_dateline : bool, default=True
-        Wrap/clip reconstructed geometries to the dateline.
+    **export_wrap_to_dateline : bool, optional, default=True
+        Wrap/clip reconstructed geometries to the dateline using pyGPlates' 
+        [DateLineWrapper](https://www.gplates.org/docs/pygplates/generated/pygplates.datelinewrapper).
 
-    **kwargs 
-        Keyword arguments that allow control over parameters such as ‘facecolor’, ‘alpha’, etc. for plotting continental
-        geometries.
+    **kwargs : 
+        Keyword arguments for parameters such as `‘facecolor’`, `‘alpha’`, etc. for 
+        plotting continent geometries.
+        See `Matplotlib` keyword arguments 
+        [here](https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html).
 
     Returns
     -------
-    ax : GeoAxis
-        The map with continental features plotted onto the chosen projection. 
+    ax : instance of <cartopy.mpl.geoaxes.GeoAxes> or <cartopy.mpl.geoaxes.GeoAxesSubplot>
+        A standard GeoAxis map with continental features plotted onto the chosen projection. 
     """
     reconstructed_continents = []
     pygplates.reconstruct(continents, rotation_model, reconstructed_continents, float(reconstruction_time),
@@ -147,33 +121,44 @@ def add_continents(ax, reconstruction_time, **kwargs):
 
     
 def add_ridges(ax, reconstruction_time, **kwargs):
-    """Reconstructs ridge features to a specific geological time, converts them into shapely geometries and plots them 
-    onto a standard map.
+    """Reconstruct ridge features to a specific `reconstruction_time` and plot them as 
+    Shapely geometries onto a standard map Projection. 
     
-    The ridges for plotting must be defined in a variable "topology_features" above the method, along with a "rotation_model".
-    "topology_features" must be a feature collection, or filename, or feature, or sequence of features, 
-    or a list or tuple of any combination of those four types. Map presentation details (e.g. facecolor, edgecolor, alpha…)
-    permitted.
+    Notes
+    -----
+    `add_ridges` can be used as part of the `PlotTopologies` object. In this case, the `ridges` 
+    and `rotation_model` needed for plotting will be accessed from the `PlotTopologies` object. 
+    Otherwise, `add_ridges` can be used as a standalone method. In this case, the ridges for 
+    plotting must be contained in a variable `topology_features` above the method, along with a 
+    `rotation_model`.
 
-    Exterior coordinates are ordered anti-clockwise and only valid geometries are passed to ensure compatibility with Cartopy.
+    `topology_features` should be a pyGPlates FeatureCollection, or a filename string, 
+    or a pyGPlates Feature, or a a sequence of features, or a list or tuple of any combination 
+    of those four types. 
+
+    Exterior coordinates of ridge polylines are ordered anti-clockwise and only valid geometries 
+    are passed to ensure compatibility with Cartopy.
 
     Parameters
     ----------
-    ax : GeoAxis
-        A standard map for lat-lon data built on a matplotlib figure. Can be for a single plot or for multiple subplots. 
-        Should be set at a particular Cartopy map projection.
+    ax : instance of <cartopy.mpl.geoaxes.GeoAxes> or <cartopy.mpl.geoaxes.GeoAxesSubplot>
+        A subclass of `matplotlib.axes.Axes` which represents a map Projection.
+        The map should be set at a particular Cartopy projection.
 
     reconstruction_time : float
-        A particular geological time (Ma) at which to reconstruct the feature ridges. 
+        A particular geological time (Ma) at which to reconstruct the ridge features. 
 
-    **kwargs 
-        Keyword arguments that allow control over parameters such as ‘facecolor’, ‘alpha’, etc. for plotting ridge geometries.
+    **kwargs : 
+        Keyword arguments for parameters such as `‘facecolor’`, 
+        `‘alpha’`, etc. for plotting ridge geometries.
+        See `Matplotlib` keyword arguments 
+        [here](https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html).
+
 
     Returns
     -------
-    ax
-        The map with ridge features plotted onto the chosen projection. 
-
+    ax : instance of <cartopy.mpl.geoaxes.GeoAxes> or <cartopy.mpl.geoaxes.GeoAxesSubplot>
+        A standard GeoAxis map with ridge features plotted onto the chosen projection.
     """
     import shapely
     reconstructed_ridges = get_ridge_transforms(topology_features, rotation_model, float(reconstruction_time))
@@ -192,31 +177,36 @@ def add_ridges(ax, reconstruction_time, **kwargs):
     ax.add_geometries(all_geometries, crs=ccrs.PlateCarree(), **kwargs)
     
 def add_ridges(ax, reconstruction_time, **kwargs):
-    """Reads a shapefile containing reconstructed ridge features. Plots them onto a standard map.
+    """Read a shapefile containing ridge features already reconstructed to a 
+    `reconstruction_time`. Plots them as Shapely geometries onto a standard map Projection. 
 
-    Ridge features to be plotted must be reconstructed to a specific geological time already. These are assumed to be 
-    held in the filename string
-    "reconstructed_topologies/ridge_transform_boundaries_{reconstruction_time}Ma.shp" for each reconstruction time. This
-    shape filename is read and its ridge geometries are extracted, turned into shapely geometries, and plotted onto the 
-    given map.
+    Notes
+    -----
+    The ridge features to be plotted must be reconstructed to a specific geological time already. 
+    These are assumed to be held in the filename string
+    `"reconstructed_topologies/ridge_transform_boundaries_{reconstruction_time}Ma.shp"` for each 
+    reconstruction time. This filename is read and its ridge geometries are extracted, turned 
+    into Shapely geometries, and plotted onto the given map `ax`.
 
     Parameters
     ----------
-    ax : GeoAxis
-        A standard map for lat-lon data built on a matplotlib figure. Can be for a single plot or for multiple subplots.
-        Should be set at a particular Cartopy map projection.
+    ax : instance of <cartopy.mpl.geoaxes.GeoAxes> or <cartopy.mpl.geoaxes.GeoAxesSubplot>
+        A subclass of `matplotlib.axes.Axes` which represents a map Projection.
+        The map should be set at a particular Cartopy projection.
 
     reconstruction_time : float
-        A particular geological time (Ma) at which to reconstruct the feature ridges. 
+        A particular geological time (Ma) at which to reconstruct the ridge features. 
 
-    **kwargs 
-        Keyword arguments that allow control over parameters such as ‘facecolor’, ‘alpha’, etc. for plotting ridge 
-        geometries.
+    **kwargs : 
+        Keyword arguments for parameters such as `‘facecolor’`, 
+        `‘alpha’`, etc. for plotting ridge geometries.
+        See `Matplotlib` keyword arguments 
+        [here](https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html).
 
     Returns
     -------
-    ax : GeoAxis
-        The map with ridge features plotted onto the chosen projection.
+    ax : instance of <cartopy.mpl.geoaxes.GeoAxes> or <cartopy.mpl.geoaxes.GeoAxesSubplot>
+        A standard GeoAxis map with ridge features plotted onto the chosen projection. 
     """
     shp_name = "reconstructed_topologies/ridge_transform_boundaries_{:.2f}Ma.shp".format(reconstruction_time)
     shp_continents = shpreader.Reader(shp_name).geometries()
@@ -224,40 +214,51 @@ def add_ridges(ax, reconstruction_time, **kwargs):
     ax.add_feature(ft_continents, **kwargs)
 
 def add_trenches(ax, reconstruction_time, color='k', linewidth=2, **kwargs):
-    """Reads 3 shapefile containing reconstructed subduction boundaries, left subduction trenches and right subduction
-    trenches. Generates subduction teeth along these boundaries and plots both subduction zones and teeth onto a standard map.
+    """Generate subduction teeth along subduction boundaries and plot both subduction 
+    zones and teeth onto a standard map Projection.
 
-    The subduction boundary features to be plotted should be reconstructed to a specific geological time already. They are
-    assumed to be held in the filename string "reconstructed_topologies/subduction_boundaries_{reconstruction_time}Ma.shp"
-    for a specific reconstruction time. 
-    
-    The left subduction features are assumed to be held in the filename string: 
-    "reconstructed_topologies/subduction_boundaries_sL_{reconstruction_time}Ma.shp", while the right subduction features are
-    assumed to be held in the filename string: "reconstructed_topologies/subduction_boundaries_sR_{reconstruction_time}Ma.shp".
-    These left and right features are tessellated into subduction teeth. 
+    Notes
+    -----
+    To tessellate trenches and their teeth (which visualise their subduction polarities), 
+    `add_trenches` reads 3 shapefiles: 
+
+    * reconstructed subduction boundaries in 
+    `reconstructed_topologies/subduction_boundaries_{reconstruction_time}Ma.shp`
+    * left subduction trenches in
+    `"reconstructed_topologies/subduction_boundaries_sL_{reconstruction_time}Ma.shp"`
+    * right subduction trenches in
+    `"reconstructed_topologies/subduction_boundaries_sR_{reconstruction_time}Ma.shp"`
 
     Parameters
     ----------
-    ax : GeoAxis
-        A standard map for lat-lon data built on a matplotlib figure. Can be for a single plot or for multiple subplots.
-        Should be set at a particular Cartopy map projection.
+    ax : instance of <cartopy.mpl.geoaxes.GeoAxes> or <cartopy.mpl.geoaxes.GeoAxesSubplot>
+        A subclass of `matplotlib.axes.Axes` which represents a map Projection.
+        The map should be set at a particular Cartopy projection.
 
     reconstruction_time : float
-        A particular geological time (Ma) at which to reconstruct the feature ridges.
+        A particular geological time (Ma) used to identify the correct trench filenames.
+        This is substituted into:
+
+        * `reconstructed_topologies/subduction_boundaries_{reconstruction_time}Ma.shp`
+        * `reconstructed_topologies/subduction_boundaries_sL_{reconstruction_time}Ma.shp`
+        * `reconstructed_topologies/subduction_boundaries_sR_{reconstruction_time}Ma.shp`
 
     color : str, default='k'
         Sets the subduction boundaries to a specific edge color.
 
     linewidth : float, default=2
-        Defines the thickness of the subduction boundaries 
+        Defines the thickness of the subduction boundaries.
 
-    **kwargs 
-        Keyword arguments that allow control over map features like ‘alpha’, etc. for plotting trench geometries.
+    **kwargs :
+        Keyword arguments for map features like ‘alpha’, etc. for plotting 
+        trench geometries.
+        See `Matplotlib` keyword arguments 
+        [here](https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html).
 
     Returns
     -------
-    ax : GeoAxis
-        The map with subduction boundary features & subduction teeth plotted onto the chosen projection.
+    ax : instance of <cartopy.mpl.geoaxes.GeoAxes> or <cartopy.mpl.geoaxes.GeoAxesSubplot>
+        A standard GeoAxis map with trench features plotted onto the chosen Projection. 
     """
     shp_name = "reconstructed_topologies/subduction_boundaries_{:.2f}Ma.shp".format(reconstruction_time)
     shp_subd = shpreader.Reader(shp_name).geometries()
@@ -282,29 +283,43 @@ def add_trenches(ax, reconstruction_time, color='k', linewidth=2, **kwargs):
     
     
 def add_quiver(ax, reconstruction_time, **kwargs):
-    """Calculates velocity data for a specific reconstruction time and plots velocity vectors onto a map. 
+    """Plot a topological plate velocity vector field onto a standard map Projection for a 
+    specific `reconstruction_time`. 
 
-    A rotation model and topology feature must be defined above this method as “rotation_model” and “topology_features”
-    respectively. These are used to generate velocity domain feature points. Velocities at each domain point are calculated
-    for a specific geological time. X and Y nodes (coordinates of domain points) and u and v components of velocity are
-    generated to plot velocity vectors onto the given map. Velocity magnitudes are not normalised. 
+    Notes
+    -----
+    `add_quiver` uses 
+    [Plate Tectonic Tools](https://github.com/EarthByte/PlateTectonicTools), a `rotation_model` 
+    and a set of `topology_features` to generate a domain of point features on a GeoAxes `ax`. 
+    Plate velocities are calculated for each point in the domain at a specific `reconstruction_time`. 
+    These velocities are visualised on a cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot 
+    as a vector field. Velocity magnitudes are not normalised. 
+
+    `add_quiver` can be used as part of the `PlotTopologies` object. In this case, the 
+    `rotation_model` and set of `topology_features` needed to generate the velocity vector field
+    are automatically accessed from the object's attributes. Otherwise, a `rotation_model` and set 
+    of `topology_features` must be defined above this method. 
 
     Parameters
     -----------
-    ax : GeoAxis
-        A standard map for lat-lon data built on a matplotlib figure. Can be for a single plot or for multiple subplots.
-        Should be set at a particular Cartopy map projection.
+    ax : instance of <cartopy.mpl.geoaxes.GeoAxes> or <cartopy.mpl.geoaxes.GeoAxesSubplot>
+        A subclass of `matplotlib.axes.Axes` which represents a map Projection.
+        The map should be set at a particular Cartopy projection.
 
     reconstruction_time : float
-        A particular geological time (Ma) at which to reconstruct the feature ridges.
+        A particular geological time (Ma) at which to reconstruct global topological plates and
+        calculate their velocities.
 
-    **kwargs 
-        Keyword arguments that allow control over quiver features like ‘alpha’, etc. for velocity vectors.
+    **kwargs : 
+        Keyword arguments for quiver features like ‘alpha’, etc. for velocity 
+        vectors.
+        See `Matplotlib` quiver keyword arguments 
+        [here](https://matplotlib.org/3.5.1/api/_as_gen/matplotlib.axes.Axes.quiver.html).
 
     Returns
     -------
-    ax : GeoAxis
-        The map with velocity vectors plotted onto the chosen projection.
+    ax : instance of <cartopy.mpl.geoaxes.GeoAxes> or <cartopy.mpl.geoaxes.GeoAxesSubplot>
+        A standard GeoAxis map with velocity vector fields plotted onto the chosen Projection. 
     """
     Xnodes, Ynodes, U, V = ptt.velocity_tools.get_velocity_x_y_u_v(reconstruction_time, rotation_model,
                                                                    topology_features)
@@ -321,19 +336,20 @@ def add_quiver(ax, reconstruction_time, **kwargs):
 
 # subduction teeth
 def tesselate_triangles(shapefilename, tesselation_radians, triangle_base_length, triangle_aspect=1.0):
-    """Places subduction teeth along subduction boundary line segments within a MultiLineString shapefile. 
+    """Place subduction teeth along subduction boundary line segments read from a 
+    MultiLineString `shapefilename`. 
 
     Parameters
     ----------
-    shapefilename  : str  
-       Path to shapefile containing the reconstructed subduction boundary features.
+    shapefilename : str
+        Path to shapefile containing the reconstructed subduction boundary features.
 
     tesselation_radians : float
-        Parametrises subduction teeth density. Triangles are generated only along line segments with distances that 
-        exceed the given threshold tessellation_radians.
+        Parametrises subduction teeth density. Triangles are generated only along line 
+        segments with distances that exceed the given threshold `tessellation_radians`.
 
     triangle_base_length : float  
-        Length of teeth triangle base
+        Length of teeth triangle base.
         
     triangle_aspect : float, default=1.0  
         Aspect ratio of teeth triangles. Ratio is 1.0 by default.
@@ -341,9 +357,9 @@ def tesselate_triangles(shapefilename, tesselation_radians, triangle_base_length
     Returns
     -------
     X_points : (n,3) array
-        X points that define the teeth triangles
+        X (longitudinal) coordinates of points that define subduction teeth triangles.
     Y_points : (n,3) array 
-        Y points that define the teeth triangles
+        Y (latitudinal) coordinates of points that define subduction teeth triangles.
     """
 
     import shapefile
@@ -517,7 +533,7 @@ def _tesselate_triangles(
     projection=None,
     transform=None,
 ):
-    """Generates subduction teeth triangles for plotting.
+    """Generate subduction teeth triangles for plotting.
 
     Forms continuous trench geometries and identifies their subduction polarities.
     Subduction teeth triangles can be customised with a given spacing and width.  
@@ -596,7 +612,7 @@ def _tesselate_triangles(
 
 
 def _project_geometry(geometry, projection, transform=None):
-    """Projects shapely geometries onto a certain Cartopy CRS map projection. 
+    """Project shapely geometries onto a certain Cartopy CRS map projection. 
 
     Uses a coordinate system ("transform"), if given. 
 
@@ -635,7 +651,7 @@ def _calculate_triangle_vertices(
     height,
     polarity,
 ):
-    """Generates vertices of subduction teeth triangles.
+    """Generate vertices of subduction teeth triangles.
 
     Triangle bases are set on shapely BaseGeometry trench instances with their apexes 
     pointing in directions of subduction polarity. Triangle dimensions are set by a 
@@ -714,7 +730,7 @@ def _calculate_triangle_vertices(
 
 
 def _parse_polarity(polarity):
-    """Ensures subduction polarities are valid strings - either "left", "l", "right" or "r".
+    """Ensure subduction polarities have valid strings as labels - either "left", "l", "right" or "r".
 
     The geometries' subduction polarities are either provided by the user in plot_subduction_teeth
     or found automatically in a geopandas.GeoDataFrame column by _find_polarity_column, if such a
@@ -757,7 +773,7 @@ def _parse_polarity(polarity):
 
 
 def _find_polarity_column(columns):
-    """Searches for a 'polarity' column in a geopandas.GeoDataFrame to extract subduction
+    """Search for a 'polarity' column in a geopandas.GeoDataFrame to extract subduction
     polarity values.
 
     Subduction polarities can be used for tessellating subduction teeth.
@@ -785,7 +801,7 @@ def _find_polarity_column(columns):
 
 
 def _parse_geometries(geometries):
-    """Resolves a geopandas.GeoSeries object into shapely BaseGeometry and/or
+    """Resolve a geopandas.GeoSeries object into shapely BaseGeometry and/or
     BaseMutipartGeometry instances.
 
     Parameters
@@ -819,19 +835,25 @@ def _parse_geometries(geometries):
 
 
 def shapelify_features(features, central_meridian=0.0, tessellate_degrees=None):
-    """Generates shapely MultiPolygon or MultiLineString geometries
+    """Generate Shapely `MultiPolygon` or `MultiLineString` geometries
     from reconstructed feature polygons.
     
-    Wraps geometries around a central meridian by splitting a polygon into
-    multiple polygons at the antimeridian. This is to avoid horizontal lines
-    being formed between geometries at longitudes of -180 and 180 degrees.
-    Exterior coordinates are ordered anti-clockwise and only valid geometries
-    are passed to ensure compatibility with Cartopy.
+    Notes
+    -----
+    Some Shapely polygons generated by `shapelify_features` cut longitudes of 180 
+    or -180 degrees. These features may appear unclosed at the dateline, so Shapely 
+    "closes" these polygons by connecting any of their open ends with lines. These 
+    lines may manifest on GeoAxes plots as horizontal lines that span the entire 
+    global extent. To prevent this, `shapelify_features` uses pyGPlates' 
+    [DateLineWrapper](https://www.gplates.org/docs/pygplates/generated/pygplates.datelinewrapper)
+    to split a feature polygon into multiple closed polygons if it happens to cut the 
+    antimeridian.
+    Another measure taken to ensure features are valid is to order exterior coordinates 
+    of Shapely polygons anti-clockwise. 
 
     Parameters
     ----------
-    features : iterable of `pygplates.Feature`, `ReconstructedFeatureGeometry`,
-    or `GeometryOnSphere`
+    features : iterable of <pygplates.Feature>, <ReconstructedFeatureGeometry> or <GeometryOnSphere>
         Iterable containing reconstructed polygon features.
     central_meridian : float
         Central meridian around which to perform wrapping; default: 0.0.
@@ -842,7 +864,8 @@ def shapelify_features(features, central_meridian=0.0, tessellate_degrees=None):
     Returns
     -------
     all_geometries : list of `shapely.geometry.BaseGeometry`
-        Shapely geometries converted from the given reconstructed features.
+        Shapely geometries converted from the given reconstructed features. Any
+        geometries at the dateline are split. 
 
     See Also
     --------
@@ -900,63 +923,144 @@ shapelify_feature_polygons = shapelify_features
 
 
 class PlotTopologies(object):
-    """Provides methods to read, reconstruct and plot geological topology features.
+    """A class with tools to read, reconstruct and plot topology features at specific
+    reconstruction times.
 
-    Accesses PyGplates and Shapely functionalities to reconstruct feature shapefiles to specific geological times. A
-    variety of geological features can be plotted on GeoAxes maps as Shapely MultiLineString or MultiPolygon geometries,
-    including subduction trenches & subduction teeth, mid-ocean ridge boundaries, transform boundaries, coastlines,
-    continents and COBs. Moreover, netCDF4 and ndarray grids can be plotted onto GeoAxes maps. Plate motion velocity
-    vectors can be generated and plotted using this object.
+    `PlotTopologies` is a shorthand for PyGPlates and Shapely functionalities that:
 
-    The rotation models and topology features are used with pyGplates to extract resolved topology features, ridge and
-    transform boundary sections, ridge boundary sections, transform boundary sections, subduction boundary sections,
-    left subduction boundary sections, right subduction boundary sections and other boundary sections that are not
-    subduction zones or mid-ocean ridges (ridge/transform). The continents, coastlines and COBs are read from file
-    names given to this class.
+    * Read features held in GPlates GPML (GPlates Markup Language) files and 
+    ESRI shapefiles;
+    * Reconstruct the locations of these features as they migrate through
+    geological time; 
+    * Turn these reconstructed features into Shapely geometries for plotting 
+    on `cartopy.mpl.geoaxes.GeoAxes` or `cartopy.mpl.geoaxes.GeoAxesSubplot` map 
+    Projections. 
 
+    To call the `PlotTopologies` object, supply: 
+
+    * an instance of the GPlately `PlateReconstruction_object`
+    * a reconstruction `time`
+
+    and optionally, 
+
+    * a `coastline_filename`, 
+    * a `continent_filename`, 
+    * a `COB_filename`
+
+    For example:
+
+        # Calling the PlotTopologies object
+        gplot = gplately.plot.PlotTopologies(plate_reconstruction_object,
+                                            time,
+                                            coastline_filename,
+                                            continent_filename,
+                                            COB_filename
+                )
+
+    The `coastline_filename`, `continent_filename` and `COB_filename` can be single
+    strings to GPML and/or shapefiles, as well as instances of `pygplates.FeatureCollection`. 
+    If using GPlately's `DataServer` object to source these files, they will be passed as 
+    `pygplates.FeatureCollection` items.
+
+    Some features for plotting (like plate boundaries) are taken from the `PlateReconstruction` 
+    object's`topology_features` attribute. They have already been reconstructed to the given
+    `time` using [Plate Tectonic Tools](https://github.com/EarthByte/PlateTectonicTools).
+
+
+    A variety of geological features can be plotted on GeoAxes/GeoAxesSubplot maps 
+    as Shapely `MultiLineString` or `MultiPolygon` geometries, including:
+    
+    * subduction boundaries & subduction polarity teeth
+    * mid-ocean ridge boundaries
+    * transform boundaries
+    * miscellaneous boundaries
+    * coastline polylines
+    * continental polygons and 
+    * continent-ocean boundary polylines
+    * topological plate velocity vector fields
+    * netCDF4 MaskedArray or ndarray raster data:
+        - seafloor age grids 
+        - paleo-age grids
+        - global relief (topography and bathymetry)
+    * assorted reconstructable feature data, for example:
+        - seafloor fabric
+        - large igneous provinces 
+        - volcanic provinces
 
     Attributes
     ----------
-    self.PlateReconstruction_object
-    self.base_projection
-    self.coastline_filename
-    self.continent_filename
-    self.COB_filename
-    self.time
-    self.topologies
-    self.ridge_transforms
-    self.ridges
-    self.transforms
-    self.trenches
-    self.trench_left
-    self.trench_right
-    self.other
+    PlateReconstruction_object : instance of <gplately.reconstruction.PlateReconstruction>
+        The GPlately `PlateReconstruction` object will be used to access a plate 
+        `rotation_model` and a set of `topology_features` which contains plate boundary 
+        features like trenches, ridges and transforms.
 
-    Methods
-    ---------
-    __init__(self, PlateReconstruction_object, time, coastline_filename=None, continent_filename=None, COB_filename=None)
-        Constructs all necessary attributes for the PlotTopologies object. 
-        
-    update_time(self, time)
-        
-    _tesselate_triangles(self, features, tesselation_radians, triangle_base_length, triangle_aspect=1.0)
-        Places subduction teeth along subduction boundary line segments within a MultiLineString shapefile.
-        
-    plot_coastlines(self, ax, **kwargs)
-    plot_continents(self, ax, **kwargs)
-    plot_continent_ocean_boundaries(self, ax, **kwargs)
-    plot_ridges(self, ax, color='black', **kwargs)
-    plot_ridges_and_transforms(self, ax, color='black', **kwargs)
-    plot_transforms(self, ax, color='black', **kwargs)
-    plot_trenches(self, ax, color='black', **kwargs)
-    plot_subduction_teeth(self, ax, spacing=0.1, size=2.0, aspect=1, color='black', **kwargs)
-    plot_grid(self, ax, grid, extent=[-180,180,-90,90], **kwargs)
-    plot_grid_from_netCDF(self, ax, filename, **kwargs)
-    plot_plate_motion_vectors(self, ax, spacingX=10, spacingY=10, normalise=False, **kwargs)
+    base_projection : instance of <cartopy.crs.{transform}>, default <cartopy.crs.PlateCarree> object
+        where {transform} is the map Projection to use on the Cartopy GeoAxes. 
+        By default, the base projection is set to cartopy.crs.PlateCarree. See the 
+        [Cartopy projection list](https://scitools.org.uk/cartopy/docs/v0.15/crs/projections.html)
+        for all supported Projection types.
+
+    coastline_filename : str, or instance of <pygplates.FeatureCollection>
+        The full string path to a coastline feature file. Coastline features can also 
+        be passed as instances of the `pygplates.FeatureCollection` object (this is 
+        the case if these features are sourced from the `DataServer` object).
+
+    continent_filename : str, or instance of <pygplates.FeatureCollection>
+        The full string path to a continent feature file. Continent features can also 
+        be passed as instances of the `pygplates.FeatureCollection` object (this is 
+        the case if these features are sourced from the `DataServer` object).
+
+    COB_filename : str, or instance of <pygplates.FeatureCollection>
+        The full string path to a COB feature file. COB features can also be passed 
+        as instances of the `pygplates.FeatureCollection` object (this is the case 
+        if these features are sourced from the `DataServer` object).
+
+    coastlines : iterable/list of <pygplates.ReconstructedFeatureGeometry>
+        A list containing coastline features reconstructed to the specified `time` attribute. 
+
+    continents : iterable/list of <pygplates.ReconstructedFeatureGeometry>
+        A list containing continent features reconstructed to the specified `time` attribute. 
+
+    COBs : iterable/list of <pygplates.ReconstructedFeatureGeometry>
+        A list containing COB features reconstructed to the specified `time` attribute.
+
+    time : float
+        The time (Ma) to reconstruct and plot geological features to.
+
+    topologies : iterable/list of <pygplates.Feature>
+        A list containing assorted topologies like:
+
+        - pygplates.FeatureType.gpml_topological_network
+        - pygplates.FeatureType.gpml_oceanic_crust
+        - pygplates.FeatureType.gpml_topological_slab_boundary
+        - pygplates.FeatureType.gpml_topological_closed_plate_boundary
+
+    ridge_transforms : iterable/list of <pygplates.Feature>
+        A list containing ridge and transform boundary sections of type 
+        pygplates.FeatureType.gpml_mid_ocean_ridge
+
+    ridges : iterable/list of <pygplates.Feature>
+        A list containing ridge boundary sections of type pygplates.FeatureType.gpml_mid_ocean_ridge
+    
+    transforms : iterable/list of <pygplates.Feature>
+        A list containing transform boundary sections of type pygplates.FeatureType.gpml_mid_ocean_ridge
+
+    trenches : iterable/list of <pygplates.Feature>
+        A list containing trench boundary sections of type pygplates.FeatureType.gpml_subduction_zone
+
+    trench_left : iterable/list of <pygplates.Feature>
+        A list containing left subduction boundary sections of type pygplates.FeatureType.gpml_subduction_zone
+
+    trench_right : iterable/list of <pygplates.Feature>
+        A list containing right subduction boundary sections of type pygplates.FeatureType.gpml_subduction_zone
+
+    other : iterable/list of <pygplates.Feature>
+        A list containing other geological features like unclassified features, extended continental crusts,
+        continental rifts, faults, orogenic belts, fracture zones, inferred paleo boundaries, terrane 
+        boundaries and passive continental boundaries.
+
     """
     def __init__(self, PlateReconstruction_object, time, coastline_filename=None, continent_filename=None, COB_filename=None):
-        """Constructs all necessary attributes for the PlateTopologies object.
-        """
         import ptt
         import cartopy.crs as ccrs
 
@@ -973,7 +1077,7 @@ class PlotTopologies(object):
 
     @property
     def time(self):
-        """ Reconstruction time """
+        """ The reconstruction time."""
         return self._time
 
     @time.setter
@@ -993,26 +1097,24 @@ class PlotTopologies(object):
 
 
     def update_time(self, time):
-        """Reconstructs features and resolves important topologies at the set reconstruction time. Updates all
-        reconstructions/resolutions accordingly whenever the time attribute is changed.
+        """Re-reconstruct features and topologies to the time specified by the `PlotTopologies` `time` attribute 
+        whenever it is updated.
 
-        Returns
-        -------
-        The following class attributes are generated and updated whenever a reconstruction time attribute is set:
-        topologies, ridge_transforms, ridges, transforms, trenches, trench_left, trench_right, or other : lists 
-            Common topology features resolved to the set geological time. Specifically, these are lists of:
-                - resolved topology features (topological plates and networks)
-                - ridge and transform boundary sections (resolved features)
-                - ridge boundary sections (resolved features)
-                - transform boundary sections (resolved features)
-                - subduction boundary sections (resolved features)
-                - left subduction boundary sections (resolved features)
-                - right subduction boundary sections (resolved features)
-                - other boundary sections (resolved features) that are not subduction zones or mid-ocean ridges 
-                (ridge/transform)
+        Notes
+        -----
+        The following `PlotTopologies` attributes are updated whenever a reconstruction `time` attribute is set:
 
-        coastlines, continents, COBs : lists
-            Reconstructed features appended to a Python list. 
+        - resolved topology features (topological plates and networks)
+        - ridge and transform boundary sections (resolved features)
+        - ridge boundary sections (resolved features)
+        - transform boundary sections (resolved features)
+        - subduction boundary sections (resolved features)
+        - left subduction boundary sections (resolved features)
+        - right subduction boundary sections (resolved features)
+        - other boundary sections (resolved features) that are not subduction zones or mid-ocean ridges 
+        (ridge/transform)
+
+        Moreover, coastlines, continents and COBs are reconstructed to the new specified `time`.
         """
         self._time = float(time)
         resolved_topologies = ptt.resolve_topologies.resolve_topologies_into_features(
@@ -1109,27 +1211,37 @@ class PlotTopologies(object):
         return np.array(triangle_pointsX), np.array(triangle_pointsY)
 
     def plot_coastlines(self, ax, **kwargs):
-        """Plots reconstructed coastline polygons onto a standard map. 
+        """Plot reconstructed coastline polygons onto a standard map Projection. 
 
-        The reconstructed coastlines for plotting must be contained in a shape filename. These coastlines are transformed
-        into shapely geometries and added onto the chosen map for a specific geological time (supplied to the PlotTopologies
-        object). Map presentation details (e.g. facecolor, edgecolor, alpha…) are permitted.
+        Notes
+        -----
+        The `coastlines` for plotting are accessed from the `PlotTopologies` object's
+        `coastlines` attribute. These `coastlines` are reconstructed to the `time` 
+        passed to the `PlotTopologies` object and converted into Shapely polylines. The
+        reconstructed `coastlines` are added onto the GeoAxes or GeoAxesSubplot map `ax` using
+        GeoPandas.
+        Map resentation details (e.g. facecolor, edgecolor, alpha…) are permitted as keyword
+        arguments.
 
         Parameters
         ----------
-        ax : GeoAxis
-            A standard map for lat-lon data built on a matplotlib figure. Can be for a single plot or for multiple subplots.
-            Should be set at a particular Cartopy map projection.
+        ax : instance of <cartopy.mpl.geoaxes.GeoAxes> or <cartopy.mpl.geoaxes.GeoAxesSubplot>
+            A subclass of `matplotlib.axes.Axes` which represents a map Projection.
+            The map should be set at a particular Cartopy projection.
 
-        **kwargs 
-            Keyword arguments that allow control over parameters such as ‘facecolor’, ‘alpha’, etc. for plotting 
-            coastline geometries.
+        **kwargs : 
+            Keyword arguments for parameters such as `facecolor`, `alpha`, 
+            etc. for plotting coastline geometries.
+            See `Matplotlib` keyword arguments 
+            [here](https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html).
 
         Returns
         -------
-        cartopy.mpl.feature_artist.FeatureArtist
-            The `FeatureArtist` instance responsible for drawing the geometries.
+        ax : instance of <geopandas.GeoDataFrame.plot>
+            A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map 
+            with coastline features plotted onto the chosen map projection. 
         """
+
         if self.coastline_filename is None:
             raise ValueError("Supply coastline_filename to PlotTopologies object")
 
@@ -1138,26 +1250,35 @@ class PlotTopologies(object):
         return gdf.plot(ax=ax, transform=self.base_projection, **kwargs)
 
     def plot_continents(self, ax, **kwargs):
-        """Plots reconstructed continental polygons onto a standard map. 
+        """Plot reconstructed continental polygons onto a standard map Projection. 
 
-        The reconstructed continents for plotting must be contained in a shape filename. These continents are transformed
-        into shapely geometries and added onto the chosen map for a specific geological time (supplied to the PlotTopologies
-        object). Map presentation details (e.g. facecolor, edgecolor, alpha…) are permitted.
+        Notes
+        -----
+        The `continents` for plotting are accessed from the `PlotTopologies` object's
+        `continents` attribute. These `continents` are reconstructed to the `time` 
+        passed to the `PlotTopologies` object and converted into Shapely polygons. 
+        The reconstructed `coastlines` are plotted onto the GeoAxes or GeoAxesSubplot map `ax` using
+        GeoPandas.
+        Map presentation details (e.g. facecolor, edgecolor, alpha…) are permitted as
+        keyword arguments.
 
         Parameters
         ----------
-        ax : GeoAxis
-            A standard map for lat-lon data built on a matplotlib figure. Can be for a single plot or for multiple subplots.
-            Should be set at a particular Cartopy map projection.
+        ax : instance of <cartopy.mpl.geoaxes.GeoAxes> or <cartopy.mpl.geoaxes.GeoAxesSubplot>
+            A subclass of `matplotlib.axes.Axes` which represents a map Projection.
+            The map should be set at a particular Cartopy projection.
 
-        **kwargs 
-            Keyword arguments that allow control over parameters such as ‘facecolor’, ‘alpha’, etc. for plotting continental
-            geometries.
+        **kwargs : 
+            Keyword arguments for parameters such as `facecolor`, `alpha`, 
+            etc. for plotting continental geometries.
+            See `Matplotlib` keyword arguments 
+            [here](https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html).
 
         Returns
         -------
-        cartopy.mpl.feature_artist.FeatureArtist
-            The `FeatureArtist` instance responsible for drawing the geometries.
+        ax : instance of <geopandas.GeoDataFrame.plot>
+            A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map 
+            with continent features plotted onto the chosen map projection. 
         """
         if self.continent_filename is None:
             raise ValueError("Supply continent_filename to PlotTopologies object")
@@ -1167,25 +1288,40 @@ class PlotTopologies(object):
         return gdf.plot(ax=ax, transform=self.base_projection, **kwargs)
 
     def plot_continent_ocean_boundaries(self, ax, **kwargs):
-        """Plots reconstructed continent-ocean boundary (COB) polygons onto a standard map. 
+        """Plot reconstructed continent-ocean boundary (COB) polygons onto a standard 
+        map Projection. 
 
-        The reconstructed COBs for plotting must be contained in a shape filename. These COBs are transformed into shapely
-        geometries and added onto the chosen map for a specific geological time (supplied to the PlotTopologies object). Map
-        presentation details (e.g. facecolor, edgecolor, alpha…) are permitted.
+        Notes
+        -----
+        The `COBs` for plotting are accessed from the `PlotTopologies` object's
+        `COBs` attribute. These `COBs` are reconstructed to the `time` 
+        passed to the `PlotTopologies` object and converted into Shapely polylines. 
+        The reconstructed `COBs` are plotted onto the GeoAxes or GeoAxesSubplot map 
+        `ax` using GeoPandas. Map presentation details (e.g. `facecolor`, `edgecolor`, `alpha`…) 
+        are permitted as keyword arguments.
+
+        These COBs are transformed into shapely
+        geometries and added onto the chosen map for a specific geological time (supplied to the 
+        PlotTopologies object). Map presentation details (e.g. facecolor, edgecolor, alpha…) 
+        are permitted.
 
         Parameters
         ----------
-        ax : GeoAxis
-            A standard map for lat-lon data built on a matplotlib figure. Can be for a single plot or for multiple subplots.
-            Should be set at a particular Cartopy map projection.
+        ax : instance of <cartopy.mpl.geoaxes.GeoAxes> or <cartopy.mpl.geoaxes.GeoAxesSubplot>
+            A subclass of `matplotlib.axes.Axes` which represents a map Projection.
+            The map should be set at a particular Cartopy projection.
 
-        **kwargs 
-            Keyword arguments that allow control over parameters such as ‘facecolor’, ‘alpha’, etc. for plotting COBs.
+        **kwargs : 
+            Keyword arguments for parameters such as `facecolor`, `alpha`, 
+            etc. for plotting COB geometries.
+            See `Matplotlib` keyword arguments 
+            [here](https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html).
 
         Returns
         -------
-        cartopy.mpl.feature_artist.FeatureArtist
-            The `FeatureArtist` instance responsible for drawing the geometries.
+        ax : instance of <geopandas.GeoDataFrame.plot>
+            A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map 
+            with COB features plotted onto the chosen map projection. 
         """
         if self.COB_filename is None:
             raise ValueError("Supply COB_filename to PlotTopologies object")
@@ -1195,181 +1331,246 @@ class PlotTopologies(object):
         return gdf.plot(ax=ax, transform=self.base_projection, **kwargs)
 
     def plot_ridges(self, ax, color='black', **kwargs):
-        """Plots reconstructed ridge polylines onto a standard map. 
+        """Plot reconstructed ridge polylines onto a standard map Projection. 
+        
+        Notes
+        -----
+        The `ridges` for plotting are accessed from the `PlotTopologies` object's
+        `ridges` attribute. These `ridges` are reconstructed to the `time` 
+        passed to the `PlotTopologies` object and converted into Shapely polylines. 
+        The reconstructed `ridges` are plotted onto the GeoAxes or GeoAxesSubplot map 
+        `ax` using GeoPandas. Map presentation details (e.g. `facecolor`, `edgecolor`, `alpha`…) 
+        are permitted as keyword arguments.
 
-        The reconstructed ridges for plotting must be a list held in the ‘ridges’ attribute. These ridges are transformed 
-        into shapely geometries and added onto the chosen map for a specific geological time (supplied to the PlotTopologies
-        object). Map presentation details (e.g. color, alpha…) are permitted.
-
-        Note: Ridge geometries are wrapped to the dateline by splitting a polyline into multiple polylines at the dateline.
-        This is to avoid horizontal lines being formed between polylines at longitudes of -180 and 180 degrees. Lat-lon 
-        feature points near the poles (-89 & 89 latitude) are clipped to ensure compatibility with Cartopy. 
+        Ridge geometries are wrapped to the dateline using
+        pyGPlates' [DateLineWrapper](https://www.gplates.org/docs/pygplates/generated/pygplates.datelinewrapper) 
+        by splitting a polyline into multiple polylines at the dateline. This is to avoid 
+        horizontal lines being formed between polylines at longitudes of -180 and 180 degrees. 
+        Point features near the poles (-89 & 89 degree latitude) are also clipped to ensure 
+        compatibility with Cartopy. 
 
         Parameters
         ----------
-        ax : GeoAxis
-            A standard map for lat-lon data built on a matplotlib figure. Can be for a single plot or for multiple subplots.
-            Should be set at a particular Cartopy map projection.
+        ax : instance of <cartopy.mpl.geoaxes.GeoAxes> or <cartopy.mpl.geoaxes.GeoAxesSubplot>
+            A subclass of `matplotlib.axes.Axes` which represents a map Projection.
+            The map should be set at a particular Cartopy projection.
 
         color : str, default=’black’
             The colour of the ridge lines. By default, it is set to black.
 
-        **kwargs 
-            Keyword arguments that allow control over parameters such as ‘alpha’, etc. for plotting ridge geometries.
+        **kwargs : 
+            Keyword arguments for parameters such as `alpha`, etc. for 
+            plotting ridge geometries.
+            See `Matplotlib` keyword arguments 
+            [here](https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html).
 
         Returns
         -------
-        cartopy.mpl.feature_artist.FeatureArtist
-            The `FeatureArtist` instance responsible for drawing the geometries.
+        ax : instance of <geopandas.GeoDataFrame.plot>
+            A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map 
+            with ridge features plotted onto the chosen map projection. 
         """
         ridge_lines = shapelify_feature_lines(self.ridges)
         gdf = gpd.GeoDataFrame({"geometry": ridge_lines}, geometry="geometry")
         return gdf.plot(ax=ax, facecolor='none', edgecolor=color, transform=self.base_projection, **kwargs)
 
     def plot_ridges_and_transforms(self, ax, color='black', **kwargs):
-        """Plots reconstructed ridge & transform boundary polylines onto a standard map. 
+        """Plot reconstructed ridge & transform boundary polylines onto a standard map
+        Projection. 
 
-        The reconstructed ridge & transform sections for plotting must be a list held in the ‘ridge_transforms’ attribute. 
-        These sections are transformed into shapely geometries and added onto the chosen map for a specific geological time
-        (supplied to the PlotTopologies object). Map presentation details (e.g. color, alpha…) are permitted.
+        Notes
+        -----
+        The ridge & transform sections for plotting are accessed from the 
+        `PlotTopologies` object's `ridge_transforms` attribute. These `ridge_transforms` 
+        are reconstructed to the `time` passed to the `PlotTopologies` object and converted 
+        into Shapely polylines. The reconstructed `ridge_transforms` are plotted onto the 
+        GeoAxes or GeoAxesSubplot map `ax` using GeoPandas. Map presentation details 
+        (e.g. `facecolor`, `edgecolor`, `alpha`…) are permitted as keyword arguments.
 
-        Note: Ridge & transform geometries are wrapped to the dateline by splitting a polyline into multiple polylines at 
-        the dateline. This is to avoid horizontal lines being formed between polylines at longitudes of -180 and 180 degrees.
-        Lat-lon feature points near the poles (-89 & 89 latitude) are clipped to ensure compatibility with Cartopy. 
+        Note: Ridge & transform geometries are wrapped to the dateline using
+        pyGPlates' [DateLineWrapper](https://www.gplates.org/docs/pygplates/generated/pygplates.datelinewrapper) 
+        by splitting a polyline into multiple polylines at the dateline. This is to avoid 
+        horizontal lines being formed between polylines at longitudes of -180 and 180 degrees.
+        Point features near the poles (-89 & 89 degree latitude) are also clipped to ensure 
+        compatibility with Cartopy. 
 
         Parameters
         ----------
-        ax : GeoAxis
-            A standard map for lat-lon data built on a matplotlib figure. Can be for a single plot or for multiple subplots.
-            Should be set at a particular Cartopy map projection.
+        ax : instance of <cartopy.mpl.geoaxes.GeoAxes> or <cartopy.mpl.geoaxes.GeoAxesSubplot>
+            A subclass of `matplotlib.axes.Axes` which represents a map Projection.
+            The map should be set at a particular Cartopy projection.
 
         color : str, default=’black’
             The colour of the ridge & transform lines. By default, it is set to black.
 
-        **kwargs 
-            Keyword arguments that allow control over parameters such as ‘alpha’, etc. for plotting ridge & transform geometries.
+        **kwargs : 
+            Keyword arguments for parameters such as ‘alpha’, etc. for 
+            plotting ridge & transform geometries.
+            See `Matplotlib` keyword arguments 
+            [here](https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html).
 
         Returns
         -------
-        cartopy.mpl.feature_artist.FeatureArtist
-            The `FeatureArtist` instance responsible for drawing the geometries.
+        ax : instance of <geopandas.GeoDataFrame.plot>
+            A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map 
+            with ridge & transform features plotted onto the chosen map projection. 
         """
         ridge_transform_lines = shapelify_feature_lines(self.ridge_transforms)
         gdf = gpd.GeoDataFrame({"geometry": ridge_transform_lines}, geometry="geometry")
         return gdf.plot(ax=ax, facecolor='none', edgecolor=color, transform=self.base_projection, **kwargs)
 
     def plot_transforms(self, ax, color='black', **kwargs):
-        """Plots reconstructed transform boundary polylines onto a standard map. 
+        """Plot reconstructed transform boundary polylines onto a standard map. 
 
-        The reconstructed transform sections for plotting must be a list held in the ‘transforms’ attribute. These sections
-        are transformed into shapely geometries and added onto the chosen map for a specific geological time (supplied to
-        the PlotTopologies object). Map presentation details (e.g. color, alpha…) are permitted.
+        Notes
+        -----
+        The transform sections for plotting are accessed from the 
+        `PlotTopologies` object's `transforms` attribute. These `transforms` 
+        are reconstructed to the `time` passed to the `PlotTopologies` object and converted 
+        into Shapely polylines. The reconstructed `transforms` are plotted onto the 
+        GeoAxes or GeoAxesSubplot map `ax` using GeoPandas. Map presentation details 
+        (e.g. `facecolor`, `edgecolor`, `alpha`…) are permitted as keyword arguments.
 
-        Note: Transform geometries are wrapped to the dateline by splitting a polyline into multiple polylines at the dateline.
-        This is to avoid horizontal lines being formed between polylines at longitudes of -180 and 180 degrees. Lat-lon feature
-        points near the poles (-89 & 89 latitude) are clipped to ensure compatibility with Cartopy. 
+        Transform geometries are wrapped to the dateline using
+        pyGPlates' [DateLineWrapper](https://www.gplates.org/docs/pygplates/generated/pygplates.datelinewrapper)
+        by splitting a polyline into multiple polylines at the dateline. This is to avoid 
+        horizontal lines being formed between polylines at longitudes of -180 and 180 degrees. 
+        Point features near the poles (-89 & 89 degree latitude) are also clipped to ensure 
+        compatibility with Cartopy. 
 
         Parameters
         ----------
-        ax : GeoAxis
-            A standard map for lat-lon data built on a matplotlib figure. Can be for a single plot or for multiple subplots.
-            Should be set at a particular Cartopy map projection.
+        ax : instance of <cartopy.mpl.geoaxes.GeoAxes> or <cartopy.mpl.geoaxes.GeoAxesSubplot>
+            A subclass of `matplotlib.axes.Axes` which represents a map Projection.
+            The map should be set at a particular Cartopy projection.
 
-        color = str, default=’black’
+        color : str, default=’black’
             The colour of the transform lines. By default, it is set to black.
 
-        **kwargs 
-            Keyword arguments that allow control over parameters such as ‘alpha’, etc. for plotting transform geometries.
+        **kwargs : 
+            Keyword arguments for parameters such as `alpha`, etc. 
+            for plotting transform geometries.
+            See `Matplotlib` keyword arguments 
+            [here](https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html).
 
         Returns
         -------
-        cartopy.mpl.feature_artist.FeatureArtist
-            The `FeatureArtist` instance responsible for drawing the geometries.
+        ax : instance of <geopandas.GeoDataFrame.plot>
+            A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map 
+            with transform features plotted onto the chosen map projection.
         """
         transform_lines = shapelify_feature_lines(self.transforms)
         gdf = gpd.GeoDataFrame({"geometry": transform_lines}, geometry="geometry")
         return gdf.plot(ax=ax, facecolor='none', edgecolor=color, transform=self.base_projection, **kwargs)
 
     def plot_trenches(self, ax, color='black', **kwargs):
-        """Plots reconstructed subduction trench polylines onto a standard map. 
+        """Plot reconstructed subduction trench polylines onto a standard map
+        Projection. 
 
-        The reconstructed trenches for plotting must be a list held in the ‘trenches’ attribute. These sections are 
-        transformed into shapely geometries and added onto the chosen map for a specific geological time (supplied to the
-        PlotTopologies object). Map presentation details (e.g. color, alpha…) are permitted.
+        Notes
+        -----
+        The trench sections for plotting are accessed from the 
+        `PlotTopologies` object's `trenches` attribute. These `trenches` 
+        are reconstructed to the `time` passed to the `PlotTopologies` object and converted 
+        into Shapely polylines. The reconstructed `trenches` are plotted onto the 
+        GeoAxes or GeoAxesSubplot map `ax` using GeoPandas. Map presentation details 
+        (e.g. `facecolor`, `edgecolor`, `alpha`…) are permitted as keyword arguments.
 
-        Note: Trench geometries are wrapped to the dateline by splitting a polyline into multiple polylines at the dateline.
-        This is to avoid horizontal lines being formed between polylines at longitudes of -180 and 180 degrees. Lat-lon 
-        feature points near the poles (-89 & 89 latitude) are clipped to ensure compatibility with Cartopy. 
+        Trench geometries are wrapped to the dateline using
+        pyGPlates' [DateLineWrapper](https://www.gplates.org/docs/pygplates/generated/pygplates.datelinewrapper)
+        by splitting a polyline into multiple polylines at the dateline. This is to avoid 
+        horizontal lines being formed between polylines at longitudes of -180 and 180 degrees. 
+        Point features near the poles (-89 & 89 degree latitude) are also clipped to ensure 
+        compatibility with Cartopy. 
 
         Parameters
         ----------
-        ax : GeoAxis
-            A standard map for lat-lon data built on a matplotlib figure. Can be for a single plot or for multiple subplots.
-            Should be set at a particular Cartopy map projection.
+        ax : instance of <cartopy.mpl.geoaxes.GeoAxes> or <cartopy.mpl.geoaxes.GeoAxesSubplot>
+            A subclass of `matplotlib.axes.Axes` which represents a map Projection.
+            The map should be set at a particular Cartopy projection.
 
-        color = str, default=’black’
+        color : str, default=’black’
             The colour of the trench lines. By default, it is set to black.
 
-        **kwargs 
-            Keyword arguments that allow control over parameters such as ‘alpha’, etc. for plotting trench geometries.
+        **kwargs : 
+            Keyword arguments for parameters such as `alpha`, etc. 
+            for plotting trench geometries.
+            See `Matplotlib` keyword arguments 
+            [here](https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html).
 
         Returns
         -------
-        cartopy.mpl.feature_artist.FeatureArtist
-            The `FeatureArtist` instance responsible for drawing the geometries.
+        ax : instance of <geopandas.GeoDataFrame.plot>
+            A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map 
+            with transform features plotted onto the chosen map projection.
         """
         trench_lines = shapelify_feature_lines(self.trenches)
         gdf = gpd.GeoDataFrame({"geometry": trench_lines}, geometry="geometry")
         return gdf.plot(ax=ax, facecolor='none', edgecolor=color, transform=self.base_projection, **kwargs)
 
     def plot_misc_boundaries(self, ax, color="black", **kwargs):
-        """Plots reconstructed miscellaneous plate boundary polylines onto a standard map.
+        """Plot reconstructed miscellaneous plate boundary polylines onto a standard 
+        map Projection.
 
-        The reconstructed boundaries for plotting must be a list held in the `other` attribute. These sections are
-        transformed into shapely geometries and added onto the chosen map for a specific geological time (supplied to the
-        PlotTopologies object). Map presentation details (e.g. color, alpha…) are permitted.
+        Notes
+        -----
+        The miscellaneous boundary sections for plotting are accessed from the 
+        `PlotTopologies` object's `other` attribute. These `other` boundaries
+        are reconstructed to the `time` passed to the `PlotTopologies` object and converted 
+        into Shapely polylines. The reconstructed `other` boundaries are plotted onto the 
+        GeoAxes or GeoAxesSubplot map `ax` using GeoPandas. Map presentation details 
+        (e.g. `facecolor`, `edgecolor`, `alpha`…) are permitted as keyword arguments.
 
-        Note: Boundary geometries are wrapped to the dateline by splitting a polyline into multiple polylines at the dateline.
-        This is to avoid horizontal lines being formed between polylines at longitudes of -180 and 180 degrees. Lat-lon
-        feature points near the poles (-89 & 89 latitude) are clipped to ensure compatibility with Cartopy.
+        Miscellaneous boundary geometries are wrapped to the dateline using
+        pyGPlates' [DateLineWrapper](https://www.gplates.org/docs/pygplates/generated/pygplates.datelinewrapper)
+        by splitting a polyline into multiple polylines at the dateline. This is to avoid 
+        horizontal lines being formed between polylines at longitudes of -180 and 180 degrees. 
+        Point features near the poles (-89 & 89 degree latitude) are also clipped to ensure 
+        compatibility with Cartopy. 
 
         Parameters
         ----------
-        ax : GeoAxis
-            A standard map for lat-lon data built on a matplotlib figure. Can be for a single plot or for multiple subplots.
-            Should be set at a particular Cartopy map projection.
+        ax : instance of <cartopy.mpl.geoaxes.GeoAxes> or <cartopy.mpl.geoaxes.GeoAxesSubplot>
+            A subclass of `matplotlib.axes.Axes` which represents a map Projection.
+            The map should be set at a particular Cartopy projection.
 
-        color = str, default=’black’
+        color : str, default=’black’
             The colour of the boundary lines. By default, it is set to black.
 
-        **kwargs
-            Keyword arguments that allow control over parameters such as ‘alpha’, etc. for plotting boundary geometries.
+        **kwargs : 
+            Keyword arguments for parameters such as ‘alpha’, etc. for 
+            plotting miscellaneous boundary geometries.
+            See `Matplotlib` keyword arguments 
+            [here](https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html).
 
         Returns
         -------
-        cartopy.mpl.feature_artist.FeatureArtist
-            The `FeatureArtist` instance responsible for drawing the geometries.
+        ax : instance of <geopandas.GeoDataFrame.plot>
+            A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map 
+            with miscellaneous boundary features plotted onto the chosen map projection.
         """
         lines = shapelify_features(self.other)
         gdf = gpd.GeoDataFrame({"geometry": lines}, geometry="geometry")
         return gdf.plot(ax=ax, facecolor='none', edgecolor=color, transform=self.base_projection, **kwargs)
 
     def plot_subduction_teeth_deprecated(self, ax, spacing=0.1, size=2.0, aspect=1, color='black', **kwargs):
-        """Plots subduction teeth onto a standard map. 
+        """Plot subduction teeth onto a standard map Projection. 
 
-        To plot subduction teeth, the left and right sides of resolved subduction boundary sections must be accessible
-        from the “left_trench” and “right_trench” attributes. Teeth are created and transformed into Shapely polygons for
-        plotting. 
+        Notes
+        -----
+        Subduction teeth are tessellated from `PlotTopologies` object attributes `trench_left` and 
+        `trench_right`, and transformed into Shapely polygons for plotting. 
 
         Parameters
         ----------
-        ax : GeoAxis
-            A standard map for lat-lon data built on a matplotlib figure. Can be for a single plot or for multiple subplots.
-            Should be set at a particular Cartopy map projection.
+        ax : instance of <cartopy.mpl.geoaxes.GeoAxes> or <cartopy.mpl.geoaxes.GeoAxesSubplot>
+            A subclass of `matplotlib.axes.Axes` which represents a map Projection.
+            The map should be set at a particular Cartopy projection.
 
         spacing : float, default=0.1 
-            The tessellation threshold (in radians). Parametrises subduction tooth density. Triangles are generated only
-            along line segments with distances that exceed the given threshold ‘spacing’.
+            The tessellation threshold (in radians). Parametrises subduction tooth density. 
+            Triangles are generated only along line segments with distances that exceed 
+            the given threshold ‘spacing’.
 
         size : float, default=2.0
             Length of teeth triangle base.
@@ -1377,16 +1578,20 @@ class PlotTopologies(object):
         aspect : float, default=1
             Aspect ratio of teeth triangles. Ratio is 1.0 by default. 
 
-        color = str, default=’black’
+        color : str, default=’black’
             The colour of the teeth. By default, it is set to black.
 
-        **kwargs 
-            Keyword arguments that allow control over parameters such as ‘alpha’, etc. for plotting subduction tooth polygons.
+        **kwargs : 
+            Keyword arguments for parameters such as ‘alpha’, etc. for 
+            plotting subduction tooth polygons.
+            See `Matplotlib` keyword arguments 
+            [here](https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html).
 
         Returns
         -------
-        ax : GeoAxis
-            The map with subduction teeth plotted onto the chosen projection (transformed using PlateCarree).
+        ax : instance of <geopandas.GeoDataFrame.plot>
+            A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map 
+            with subduction teeth plotted onto the chosen map projection.
         """
         import shapely
 
@@ -1417,33 +1622,45 @@ class PlotTopologies(object):
 
 
     def plot_subduction_teeth(self, ax, spacing=0.07, size=None, aspect=None, color='black', **kwargs):
-        """Plots subduction teeth onto a standard map. 
+        """Plot subduction teeth onto a standard map Projection.  
 
-        To plot subduction teeth, the left and right sides of resolved subduction boundary sections must be accessible
-        from the “left_trench” and “right_trench” attributes. Teeth are created and transformed into Shapely polygons for
-        plotting. 
+        Notes
+        -----
+        Subduction teeth are tessellated from `PlotTopologies` object attributes `trench_left` and 
+        `trench_right`, and transformed into Shapely polygons for plotting. 
 
         Parameters
         ----------
-        ax : GeoAxis
-            A standard map for lat-lon data built on a matplotlib figure. Can be for a single plot or for multiple subplots.
-            Should be set at a particular Cartopy map projection.
+        ax : instance of <cartopy.mpl.geoaxes.GeoAxes> or <cartopy.mpl.geoaxes.GeoAxesSubplot>
+            A subclass of `matplotlib.axes.Axes` which represents a map Projection.
+            The map should be set at a particular Cartopy projection.
 
         spacing : float, default=0.1 
-            The tessellation threshold (in radians). Parametrises subduction tooth density. Triangles are generated only
-            along line segments with distances that exceed the given threshold ‘spacing’.
+            The tessellation threshold (in radians). Parametrises subduction tooth density. 
+            Triangles are generated only along line segments with distances that exceed 
+            the given threshold ‘spacing’.
 
         size : float, default=None
-            Length of teeth triangle base (in radians). If None then size=0.5*spacing
+            Length of teeth triangle base (in radians). If kept at `None`, then
+            `size = 0.5*spacing`.
 
         aspect : float, default=None
-            Aspect ratio of teeth triangles. If None then aspect=2/3*size
+            Aspect ratio of teeth triangles. If kept at `None`, then `aspect = 2/3*size`.
 
-        color = str, default=’black’
+        color : str, default=’black’
             The colour of the teeth. By default, it is set to black.
 
-        **kwargs 
-            Keyword arguments that allow control over parameters such as ‘alpha’, etc. for plotting subduction tooth polygons.
+        **kwargs : 
+            Keyword arguments parameters such as ‘alpha’, etc. 
+            for plotting subduction tooth polygons.
+            See `Matplotlib` keyword arguments 
+            [here](https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html).
+
+        Returns
+        -------
+        ax : instance of <geopandas.GeoDataFrame.plot>
+            A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map 
+            with subduction teeth plotted onto the chosen map projection.
         """
 
         spacing = spacing * EARTH_RADIUS * 1e3
@@ -1464,7 +1681,26 @@ class PlotTopologies(object):
         )
 
     def plot_plate_id(self, ax, plate_id, **kwargs):
-        """Plot a plate ID"""
+        """Plot a plate polygon with an associated `plate_id` onto a standard map Projection. 
+
+        Parameters
+        ----------
+        ax : instance of <cartopy.mpl.geoaxes.GeoAxes> or <cartopy.mpl.geoaxes.GeoAxesSubplot>
+            A subclass of `matplotlib.axes.Axes` which represents a map Projection.
+            The map should be set at a particular Cartopy projection.
+
+        plate_id : int
+            A plate ID that identifies the continental polygon to plot. See the 
+            [Global EarthByte plate IDs list](https://www.earthbyte.org/webdav/ftp/earthbyte/GPlates/SampleData/FeatureCollections/Rotations/Global_EarthByte_PlateIDs_20071218.pdf)
+            for a full list of plate IDs to plot.
+
+        **kwargs : 
+            Keyword arguments for map presentation parameters such as 
+            `alpha`, etc. for plotting the grid.
+            See `Matplotlib`'s `imshow` keyword arguments 
+            [here](https://matplotlib.org/3.5.1/api/_as_gen/matplotlib.axes.Axes.imshow.html).
+
+        """
         for feature in self.topologies:
             if feature.get_reconstruction_plate_id() == plate_id:
                 ft_plate = shapelify_feature_polygons([feature])
@@ -1472,55 +1708,72 @@ class PlotTopologies(object):
 
 
     def plot_grid(self, ax, grid, extent=[-180,180,-90,90], **kwargs):
-        """Plots an ndarray of gridded data onto a standard map. 
+        """Plot a `MaskedArray` raster or grid onto a standard map Projection. 
+
+        Notes
+        -----
+        Uses Matplotlib's `imshow` 
+        [function](https://matplotlib.org/3.5.1/api/_as_gen/matplotlib.axes.Axes.imshow.html).
 
         Parameters
         ----------
-        ax : GeoAxis
-            A standard map for lat-lon data built on a matplotlib figure. Can be for a single plot or for multiple subplots.
-            Should be set at a particular Cartopy map projection.
+        ax : instance of <cartopy.mpl.geoaxes.GeoAxes> or <cartopy.mpl.geoaxes.GeoAxesSubplot>
+            A subclass of `matplotlib.axes.Axes` which represents a map Projection.
+            The map should be set at a particular Cartopy projection.
 
-        grid : ndarray
-            An array with elements that define a grid. The number of rows corresponds to the number of latitudinal points, 
-            while the number of columns corresponds to the number of longitudinal points.
+        grid : MaskedArray
+            A `MaskedArray` with elements that define a grid. The number of rows in the raster
+            corresponds to the number of latitudinal coordinates, while the number of raster 
+            columns corresponds to the number of longitudinal coordinates.
 
         extent : 1d array, default=[-180,180,-90,90]
-            A four-element array to specify the [min lon, max lon, min lat, max lat] with which to constrain the grid image.
-            If no extents are supplied, full global extent is assumed. 
+            A four-element array to specify the [min lon, max lon, min lat, max lat] with 
+            which to constrain the grid image. If no extents are supplied, full global 
+            extent is assumed. 
 
-        **kwargs
-            Keyword arguments that allow control over map presentation parameters such as ‘alpha’, etc. for plotting the grid.
+        **kwargs : 
+            Keyword arguments for map presentation parameters such as 
+            `alpha`, etc. for plotting the grid.
+            See `Matplotlib`'s `imshow` keyword arguments 
+            [here](https://matplotlib.org/3.5.1/api/_as_gen/matplotlib.axes.Axes.imshow.html).
 
         Returns
         -------
-        ax : GeoAxis
-            The map with the grid plotted onto the chosen projection (transformed using PlateCarree).
+        ax : instance of <geopandas.GeoDataFrame.plot>
+            A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map 
+            with the grid plotted onto the chosen map projection.
         """
         return ax.imshow(grid, origin='lower', extent=extent, transform=self.base_projection, **kwargs)
 
 
     def plot_grid_from_netCDF(self, ax, filename, **kwargs):
-        """Reads in a netCDF file, extracts a raster grid and its associated latitude and longitude arrays and plots the
-        raster grid onto a standard map. 
+        """Read a raster from a netCDF file, convert it to a `MaskedArray` and plot it 
+        onto a standard map Projection. 
 
-        The lat-lon arrays are used to define the extent of the grid image.
+        Notes
+        -----
+        `plot_grid_from_netCDF` uses Matplotlib's `imshow` 
+        [function](https://matplotlib.org/3.5.1/api/_as_gen/matplotlib.axes.Axes.imshow.html).
 
         Parameters
         ----------
-        ax : GeoAxis
-            A standard map for lat-lon data built on a matplotlib figure. Can be for a single plot or for multiple subplots.
-            Should be set at a particular Cartopy map projection.
+        ax : instance of <cartopy.mpl.geoaxes.GeoAxes> or <cartopy.mpl.geoaxes.GeoAxesSubplot>
+            A subclass of `matplotlib.axes.Axes` which represents a map Projection.
+            The map should be set at a particular Cartopy projection.
 
         filename : str
-            Path to a netCDF filename.
+            Full path to a netCDF filename.
 
-        **kwargs
-            Keyword arguments that allow control over map presentation parameters such as ‘alpha’, etc. for plotting the grid.
+        **kwargs : 
+            Keyword arguments for map presentation parameters for 
+            plotting the grid. See `Matplotlib`'s `imshow` keyword arguments 
+            [here](https://matplotlib.org/3.5.1/api/_as_gen/matplotlib.axes.Axes.imshow.html).
 
         Returns
         -------
-        ax : GeoAxis
-            The map with the extracted grid plotted onto the chosen projection (transformed using PlateCarree).
+        ax : instance of <geopandas.GeoDataFrame.plot>
+            A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map 
+            with the netCDF grid plotted onto the chosen map projection.
         """
         from .grids import read_netcdf_grid
 
@@ -1530,40 +1783,48 @@ class PlotTopologies(object):
 
 
     def plot_plate_motion_vectors(self, ax, spacingX=10, spacingY=10, normalise=False, **kwargs):
-        """Calculates plate motion velocity vector fields at a particular geological time and plots them onto a 
-        standard map. 
+        """Calculate plate motion velocity vector fields at a particular geological time 
+        and plot them onto a standard map Projection. 
         
-        Generates velocity domain feature collections (MeshNode-type features) from given spacing in the X and Y 
-        directions. Domain points are extracted from these features and assigned plate IDs, which are used to obtain
-        equivalent stage rotations of identified tectonic plates over a 5 Ma time interval. Each point and its stage 
-        rotation are used to calculate plate velocities at a particular geological time. Obtained velocities for each
-        domain point are represented in the north-east-down coordinate system.
+        Notes
+        -----
+        `plot_plate_motion_vectors` generates a MeshNode domain of point features using 
+        given spacings in the X and Y directions (`spacingX` and `spacingY`). Each point in
+        the domain is assigned a plate ID, and these IDs are used to obtain equivalent stage 
+        rotations of identified tectonic plates over a 5 Ma time interval. Each point and 
+        its stage rotation are used to calculate plate velocities at a particular geological 
+        time. Velocities for each domain point are represented in the north-east-down 
+        coordinate system and plotted on a GeoAxes.
         
-        Vector fields can be optionally normalised to have uniform arrow lengths. 
+        Vector fields can be optionally normalised by setting `normalise` to `True`. This
+        makes vector arrow lengths uniform. 
 
         Parameters
         ----------
-        ax : GeoAxis
-            A standard map for lat-lon data built on a matplotlib figure. Can be for a single plot or for multiple subplots.
-            Should be set at a particular Cartopy map projection.
+        ax : instance of <cartopy.mpl.geoaxes.GeoAxes> or <cartopy.mpl.geoaxes.GeoAxesSubplot>
+            A subclass of `matplotlib.axes.Axes` which represents a map Projection.
+            The map should be set at a particular Cartopy projection.
 
         spacingX : int, default=10
-            The spacing in the X direction used to make the latitude-longitude velocity domain feature mesh. 
+            The spacing in the X direction used to make the velocity domain point feature mesh. 
 
         spacingY : int, default=10
-            The spacing in the Y direction used to make the latitude-longitude velocity domain feature mesh. 
+            The spacing in the Y direction used to make the velocity domain point feature mesh. 
 
         normalise : bool, default=False
-            Choose whether to normalise the velocity magnitudes so that vector lengths are all equal. 
+            Choose whether to normalise the velocity magnitudes so that vector lengths are 
+            all equal. 
 
-        **kwargs
-            Keyword arguments that allow control over quiver presentation parameters such as ‘alpha’, etc. for plotting
-            the vector field.
+        **kwargs : 
+            Keyword arguments for quiver presentation parameters for plotting 
+            the velocity vector field. See `Matplotlib` quiver keyword arguments 
+            [here](https://matplotlib.org/3.5.1/api/_as_gen/matplotlib.axes.Axes.quiver.html).
 
         Returns
         -------
-        ax : GeoAxis
-            The map with the plate velocity vector field plotted onto the chosen projection (transformed using PlateCarree).
+        ax : instance of <geopandas.GeoDataFrame.plot>
+            A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map 
+            with the velocity vector field plotted onto the chosen map projection.
         """
         
         lons = np.arange(-180, 180+spacingX, spacingX)
@@ -1594,70 +1855,3 @@ class PlotTopologies(object):
             V /= mag
 
         return ax.quiver(X, Y, U, V, transform=self.base_projection, **kwargs)
-
-
-    def plot_plate_motion_streamlines(self, ax, spacingX=10, spacingY=10, normalise=False, **kwargs):
-        """Calculates plate motion velocity vector fields at a particular geological time and plots them onto a 
-        standard map. 
-        
-        Generates velocity domain feature collections (MeshNode-type features) from given spacing in the X and Y 
-        directions. Domain points are extracted from these features and assigned plate IDs, which are used to obtain
-        equivalent stage rotations of identified tectonic plates over a 5 Ma time interval. Each point and its stage 
-        rotation are used to calculate plate velocities at a particular geological time. Obtained velocities for each
-        domain point are represented in the north-east-down coordinate system.
-        
-        Vector fields can be optionally normalised to have uniform arrow lengths. 
-
-        Parameters
-        ----------
-        ax : GeoAxis
-            A standard map for lat-lon data built on a matplotlib figure. Can be for a single plot or for multiple subplots.
-            Should be set at a particular Cartopy map projection.
-
-        spacingX : int, default=10
-            The spacing in the X direction used to make the latitude-longitude velocity domain feature mesh. 
-
-        spacingY : int, default=10
-            The spacing in the Y direction used to make the latitude-longitude velocity domain feature mesh. 
-
-        normalise : bool, default=False
-            Choose whether to normalise the velocity magnitudes so that vector lengths are all equal. 
-
-        **kwargs
-            Keyword arguments that allow control over quiver presentation parameters such as ‘alpha’, etc. for plotting
-            the vector field.
-
-        Returns
-        -------
-        ax : GeoAxis
-            The map with the plate velocity vector field plotted onto the chosen projection (transformed using PlateCarree).
-        """
-        
-        lons = np.arange(-180, 180+spacingX, spacingX)
-        lats = np.arange(-90, 90+spacingY, spacingY)
-        lonq, latq = np.meshgrid(lons, lats)
-
-        # create a feature from all the points
-        velocity_domain_features = ptt.velocity_tools.make_GPML_velocity_feature(lonq.ravel(), latq.ravel())
-
-        rotation_model = self.PlateReconstruction_object.rotation_model
-        topology_features = self.PlateReconstruction_object.topology_features
-
-        delta_time = 5.0
-        all_velocities = ptt.velocity_tools.get_plate_velocities(
-            velocity_domain_features,
-            topology_features,
-            rotation_model,
-            self.time,
-            delta_time,
-            'vector_comp')
-
-        X, Y, U, V = ptt.velocity_tools.get_x_y_u_v(lons, lats, all_velocities)
-
-        if normalise:
-            mag = np.hypot(U, V)
-            mag[mag == 0] = 1
-            U /= mag
-            V /= mag
-
-        return ax.streamlines(X, Y, U, V, transform=self.base_projection, **kwargs)
