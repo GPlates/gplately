@@ -175,6 +175,15 @@ def pygplates_to_shapely(
         geometry = geometry.to_point_on_sphere()
     if isinstance(geometry, pygplates.ReconstructedFeatureGeometry):
         geometry = geometry.get_reconstructed_geometry()
+    if isinstance(
+        geometry,
+        (
+            pygplates.ResolvedTopologicalLine,
+            pygplates.ResolvedTopologicalBoundary,
+            pygplates.ResolvedTopologicalNetwork,
+        ),
+    ):
+        geometry = geometry.get_resolved_geometry()
     if not isinstance(geometry, pygplates.GeometryOnSphere):
         raise TypeError("Invalid geometry type: " + str(type(geometry)))
 
@@ -483,6 +492,9 @@ def _is_pygplates_geometry(geom):
             pygplates.GeometryOnSphere,
             pygplates.LatLonPoint,
             pygplates.ReconstructedFeatureGeometry,
+            pygplates.ResolvedTopologicalLine,
+            pygplates.ResolvedTopologicalBoundary,
+            pygplates.ResolvedTopologicalNetwork,
         ),
     )
 
