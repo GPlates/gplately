@@ -46,6 +46,7 @@ are available from public web servers (like EarthByte&#39;s webDAV server, or th
 import pooch as _pooch
 from pooch import os_cache as _os_cache
 from pooch import retrieve as _retrieve
+from pooch import utils as _utils
 from pooch import HTTPDownloader as _HTTPDownloader
 from pooch import Unzip as _Unzip
 from pooch import Decompress as _Decompress
@@ -56,27 +57,76 @@ import pygplates as _pygplates
 import re as _re
 import numpy as _np
 
-def _fetch_from_web(url):
-    &#34;&#34;&#34;Download file(s) in a given url to the &#39;gplately&#39; cache folder. Processes
-    compressed files using either Pooch&#39;s Unzip (if .zip) or Decompress (if .gz, 
-    .xz or .bz2).&#34;&#34;&#34;
-    def pooch_retrieve(url, processor):
-        &#34;&#34;&#34;Downloads file(s) from a URL using Pooch.&#34;&#34;&#34;
-        fnames = _retrieve(
-            url=url,
-            known_hash=None,  
-            downloader=_HTTPDownloader(progressbar=True),
-            path=_os_cache(&#39;gplately&#39;),
-            processor=processor)
-        return fnames
-
+def _determine_processor(url):
+    &#34;&#34;&#34;Set instructions for how to process/unpack a file depending on
+    its filetype.&#34;&#34;&#34;
     archive_formats = tuple([&#34;.gz&#34;, &#34;.xz&#34;, &#34;.bz2&#34;])
     if url.endswith(&#34;.zip&#34;):
-        fnames = pooch_retrieve(url, processor=_Unzip())
+        processor=_Unzip()
     elif url.endswith(archive_formats):
-        fnames = pooch_retrieve(url, processor=_Decompress())
+        processor=_Decompress()
     else:
-        fnames = pooch_retrieve(url, processor=None)
+        processor=None
+    return processor
+
+
+def download_from_web(url, download_changes=True):
+    &#34;&#34;&#34;Downloads a file from a download `url` into the `gplately` cache.
+    
+    Notes
+    -----
+    When the file belonging to the given `url` is downloaded to the cache
+    once, subsequent runs of `download_from_web` with this `url` will not
+    redownload the file provided no changes have been made to the file on
+    the web server. Instead, the file will be re-accessed from the cache 
+    location it was downloaded to. However, if the file has been updated
+    remotely and still has the same download `url`, the updated file will
+    be downloaded and the following message will be displayed to the user:
+    
+        Updating data from `url` to file `cache location`.
+    
+    
+    Parameters
+    ----------
+    url : str
+        The full URL to a file to download from a public web server.
+    download_changes : bool, default=True
+        Re-download/update the file belonging to `url` if it has been 
+        updated.
+        
+    Returns
+    -------
+    fnames : list of str
+        A list of strings representing the full paths to all cached data
+        downloaded from the given `url`.
+    &#34;&#34;&#34;
+    path = _os_cache(&#39;gplately&#39;)
+    if download_changes is True:
+        # Determine the filename of the file in `url` once it is cached
+        cached_filename = _utils.unique_file_name(url)
+        path = _utils.cache_location(path, env=None, version=None)
+        _utils.make_local_storage(path)
+        full_path = path.resolve() / cached_filename
+        
+        # Download the file to a temporary folder (before the cache) 
+        # to safely determine its hash
+        with _utils.temporary_file(path=str(full_path.parent)) as tmp:
+            downloader=_HTTPDownloader(progressbar=False)
+            downloader(url, tmp, _pooch)
+            known_hash = _pooch.file_hash(tmp, alg=&#34;sha256&#34;)
+    else:
+        known_hash = None
+        
+    # Download the file to the cache. If the file has been download before
+    # and is updated, it will have a different hash to the file already cached.
+    # If this is the case, overwrite the cached file with the updated file.
+    fnames = _retrieve(
+            url=url,
+            known_hash=known_hash,  
+            downloader=_HTTPDownloader(progressbar=True),
+            path=_os_cache(&#39;gplately&#39;),
+            processor=_determine_processor(url)
+    )
     return fnames
 
 
@@ -574,7 +624,7 @@ class DataServer(object):
                 found_collection = True
                 if len(url) == 1:
                     fnames = _collection_sorter(
-                        _fetch_from_web(url[0]), self.file_collection
+                        download_from_web(url[0]), self.file_collection
                     )
                     rotation_filenames = _str_in_folder(
                         _collect_file_extension(fnames, [&#34;.rot&#34;]),
@@ -612,14 +662,14 @@ class DataServer(object):
                     for file in url[0]:
                         rotation_filenames.append(
                             _collect_file_extension(
-                                _fetch_from_web(file), [&#34;.rot&#34;])
+                                download_from_web(file), [&#34;.rot&#34;])
                         )
                         rotation_model = _pygplates.RotationModel(rotation_filenames)
 
                     for file in url[1]:
                         topology_filenames.append(
                             _collect_file_extension(
-                                _fetch_from_web(file), [&#34;.gpml&#34;])
+                                download_from_web(file), [&#34;.gpml&#34;])
                         )
                         for file in topology_filenames:
                             topology_features.add(
@@ -630,7 +680,7 @@ class DataServer(object):
                         static_polygon_filenames.append(
                             _check_gpml_or_shp(
                                 _str_in_folder(
-                                    _str_in_filename(_fetch_from_web(url[0]), 
+                                    _str_in_filename(download_from_web(url[0]), 
                                         strings_to_include=DataCollection.static_polygon_strings_to_include(self)
                                     ),    
                                         strings_to_ignore=DataCollection.static_polygon_strings_to_ignore(self)
@@ -725,7 +775,7 @@ class DataServer(object):
                         break
                     else:
                         fnames = _collection_sorter(
-                            _fetch_from_web(url[0]), self.file_collection
+                            download_from_web(url[0]), self.file_collection
                         )
                         coastlines = _check_gpml_or_shp(
                             _str_in_folder(
@@ -758,7 +808,7 @@ class DataServer(object):
                     for file in url[0]:
                         if url[0] is not None:
                             coastlines.append(_str_in_filename(
-                                _fetch_from_web(file), 
+                                download_from_web(file), 
                                 strings_to_include=[&#34;coastline&#34;])
                             )
                             coastlines = _check_gpml_or_shp(coastlines)
@@ -768,7 +818,7 @@ class DataServer(object):
                     for file in url[1]:
                         if url[1] is not None:
                             continents.append(_str_in_filename(
-                                _fetch_from_web(file), 
+                                download_from_web(file), 
                                 strings_to_include=[&#34;continent&#34;])
                             )
                             continents = _check_gpml_or_shp(continents)
@@ -778,7 +828,7 @@ class DataServer(object):
                     for file in url[2]:
                         if url[2] is not None:
                             COBs.append(_str_in_filename(
-                                _fetch_from_web(file), 
+                                download_from_web(file), 
                                 strings_to_include=[&#34;cob&#34;])
                             )
                             COBs = _check_gpml_or_shp(COBs)
@@ -889,7 +939,7 @@ class DataServer(object):
         age_grids = []
         age_grid_links = DataCollection.netcdf4_age_grids(self, time)
         for link in age_grid_links:
-            age_grid_file = _fetch_from_web(link)
+            age_grid_file = download_from_web(link)
             age_grid = _gplately.grids.read_netcdf_grid(age_grid_file)
             age_grids.append(age_grid)
 
@@ -970,7 +1020,7 @@ class DataServer(object):
             #raster_name = collection.split(&#34;_&#34;)[0]
             #raster_type = &#34;.&#34;+collection.split(&#34;_&#34;)[-1]
             if (raster_id_string.lower() == collection.lower()):
-                raster_filenames = _fetch_from_web(zip_url[0])
+                raster_filenames = download_from_web(zip_url[0])
                 found_collection = True
                 break
 
@@ -1085,7 +1135,7 @@ class DataServer(object):
                 found_collection = True
                 feature_data_filenames = _collection_sorter(
                     _collect_file_extension(
-                    _fetch_from_web(zip_url[0]), [&#34;.gpml&#34;, &#34;.gpmlz&#34;]
+                    download_from_web(zip_url[0]), [&#34;.gpml&#34;, &#34;.gpmlz&#34;]
                     ),
                     collection
                 )
@@ -1109,6 +1159,102 @@ class DataServer(object):
 <section>
 </section>
 <section>
+<h2 class="section-title" id="header-functions">Functions</h2>
+<dl>
+<dt id="gplately.download.download_from_web"><code class="name flex">
+<span>def <span class="ident">download_from_web</span></span>(<span>url, download_changes=True)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Downloads a file from a download <code>url</code> into the <code><a title="gplately" href="index.html">gplately</a></code> cache.</p>
+<h2 id="notes">Notes</h2>
+<p>When the file belonging to the given <code>url</code> is downloaded to the cache
+once, subsequent runs of <code><a title="gplately.download.download_from_web" href="#gplately.download.download_from_web">download_from_web()</a></code> with this <code>url</code> will not
+redownload the file provided no changes have been made to the file on
+the web server. Instead, the file will be re-accessed from the cache
+location it was downloaded to. However, if the file has been updated
+remotely and still has the same download <code>url</code>, the updated file will
+be downloaded and the following message will be displayed to the user:</p>
+<pre><code>Updating data from &lt;code&gt;url&lt;/code&gt; to file &lt;code&gt;cache location&lt;/code&gt;.
+</code></pre>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>url</code></strong> :&ensp;<code>str</code></dt>
+<dd>The full URL to a file to download from a public web server.</dd>
+<dt><strong><code>download_changes</code></strong> :&ensp;<code>bool</code>, default=<code>True</code></dt>
+<dd>Re-download/update the file belonging to <code>url</code> if it has been
+updated.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><strong><code>fnames</code></strong> :&ensp;<code>list</code> of <code>str</code></dt>
+<dd>A list of strings representing the full paths to all cached data
+downloaded from the given <code>url</code>.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def download_from_web(url, download_changes=True):
+    &#34;&#34;&#34;Downloads a file from a download `url` into the `gplately` cache.
+    
+    Notes
+    -----
+    When the file belonging to the given `url` is downloaded to the cache
+    once, subsequent runs of `download_from_web` with this `url` will not
+    redownload the file provided no changes have been made to the file on
+    the web server. Instead, the file will be re-accessed from the cache 
+    location it was downloaded to. However, if the file has been updated
+    remotely and still has the same download `url`, the updated file will
+    be downloaded and the following message will be displayed to the user:
+    
+        Updating data from `url` to file `cache location`.
+    
+    
+    Parameters
+    ----------
+    url : str
+        The full URL to a file to download from a public web server.
+    download_changes : bool, default=True
+        Re-download/update the file belonging to `url` if it has been 
+        updated.
+        
+    Returns
+    -------
+    fnames : list of str
+        A list of strings representing the full paths to all cached data
+        downloaded from the given `url`.
+    &#34;&#34;&#34;
+    path = _os_cache(&#39;gplately&#39;)
+    if download_changes is True:
+        # Determine the filename of the file in `url` once it is cached
+        cached_filename = _utils.unique_file_name(url)
+        path = _utils.cache_location(path, env=None, version=None)
+        _utils.make_local_storage(path)
+        full_path = path.resolve() / cached_filename
+        
+        # Download the file to a temporary folder (before the cache) 
+        # to safely determine its hash
+        with _utils.temporary_file(path=str(full_path.parent)) as tmp:
+            downloader=_HTTPDownloader(progressbar=False)
+            downloader(url, tmp, _pooch)
+            known_hash = _pooch.file_hash(tmp, alg=&#34;sha256&#34;)
+    else:
+        known_hash = None
+        
+    # Download the file to the cache. If the file has been download before
+    # and is updated, it will have a different hash to the file already cached.
+    # If this is the case, overwrite the cached file with the updated file.
+    fnames = _retrieve(
+            url=url,
+            known_hash=known_hash,  
+            downloader=_HTTPDownloader(progressbar=True),
+            path=_os_cache(&#39;gplately&#39;),
+            processor=_determine_processor(url)
+    )
+    return fnames</code></pre>
+</details>
+</dd>
+</dl>
 </section>
 <section>
 <h2 class="section-title" id="header-classes">Classes</h2>
@@ -1741,7 +1887,7 @@ Geosystems, 21, e2020GC009117. DOI: <a href="https://doi.org/10.1029/2020GC00911
                 found_collection = True
                 if len(url) == 1:
                     fnames = _collection_sorter(
-                        _fetch_from_web(url[0]), self.file_collection
+                        download_from_web(url[0]), self.file_collection
                     )
                     rotation_filenames = _str_in_folder(
                         _collect_file_extension(fnames, [&#34;.rot&#34;]),
@@ -1779,14 +1925,14 @@ Geosystems, 21, e2020GC009117. DOI: <a href="https://doi.org/10.1029/2020GC00911
                     for file in url[0]:
                         rotation_filenames.append(
                             _collect_file_extension(
-                                _fetch_from_web(file), [&#34;.rot&#34;])
+                                download_from_web(file), [&#34;.rot&#34;])
                         )
                         rotation_model = _pygplates.RotationModel(rotation_filenames)
 
                     for file in url[1]:
                         topology_filenames.append(
                             _collect_file_extension(
-                                _fetch_from_web(file), [&#34;.gpml&#34;])
+                                download_from_web(file), [&#34;.gpml&#34;])
                         )
                         for file in topology_filenames:
                             topology_features.add(
@@ -1797,7 +1943,7 @@ Geosystems, 21, e2020GC009117. DOI: <a href="https://doi.org/10.1029/2020GC00911
                         static_polygon_filenames.append(
                             _check_gpml_or_shp(
                                 _str_in_folder(
-                                    _str_in_filename(_fetch_from_web(url[0]), 
+                                    _str_in_filename(download_from_web(url[0]), 
                                         strings_to_include=DataCollection.static_polygon_strings_to_include(self)
                                     ),    
                                         strings_to_ignore=DataCollection.static_polygon_strings_to_ignore(self)
@@ -1892,7 +2038,7 @@ Geosystems, 21, e2020GC009117. DOI: <a href="https://doi.org/10.1029/2020GC00911
                         break
                     else:
                         fnames = _collection_sorter(
-                            _fetch_from_web(url[0]), self.file_collection
+                            download_from_web(url[0]), self.file_collection
                         )
                         coastlines = _check_gpml_or_shp(
                             _str_in_folder(
@@ -1925,7 +2071,7 @@ Geosystems, 21, e2020GC009117. DOI: <a href="https://doi.org/10.1029/2020GC00911
                     for file in url[0]:
                         if url[0] is not None:
                             coastlines.append(_str_in_filename(
-                                _fetch_from_web(file), 
+                                download_from_web(file), 
                                 strings_to_include=[&#34;coastline&#34;])
                             )
                             coastlines = _check_gpml_or_shp(coastlines)
@@ -1935,7 +2081,7 @@ Geosystems, 21, e2020GC009117. DOI: <a href="https://doi.org/10.1029/2020GC00911
                     for file in url[1]:
                         if url[1] is not None:
                             continents.append(_str_in_filename(
-                                _fetch_from_web(file), 
+                                download_from_web(file), 
                                 strings_to_include=[&#34;continent&#34;])
                             )
                             continents = _check_gpml_or_shp(continents)
@@ -1945,7 +2091,7 @@ Geosystems, 21, e2020GC009117. DOI: <a href="https://doi.org/10.1029/2020GC00911
                     for file in url[2]:
                         if url[2] is not None:
                             COBs.append(_str_in_filename(
-                                _fetch_from_web(file), 
+                                download_from_web(file), 
                                 strings_to_include=[&#34;cob&#34;])
                             )
                             COBs = _check_gpml_or_shp(COBs)
@@ -2056,7 +2202,7 @@ Geosystems, 21, e2020GC009117. DOI: <a href="https://doi.org/10.1029/2020GC00911
         age_grids = []
         age_grid_links = DataCollection.netcdf4_age_grids(self, time)
         for link in age_grid_links:
-            age_grid_file = _fetch_from_web(link)
+            age_grid_file = download_from_web(link)
             age_grid = _gplately.grids.read_netcdf_grid(age_grid_file)
             age_grids.append(age_grid)
 
@@ -2137,7 +2283,7 @@ Geosystems, 21, e2020GC009117. DOI: <a href="https://doi.org/10.1029/2020GC00911
             #raster_name = collection.split(&#34;_&#34;)[0]
             #raster_type = &#34;.&#34;+collection.split(&#34;_&#34;)[-1]
             if (raster_id_string.lower() == collection.lower()):
-                raster_filenames = _fetch_from_web(zip_url[0])
+                raster_filenames = download_from_web(zip_url[0])
                 found_collection = True
                 break
 
@@ -2252,7 +2398,7 @@ Geosystems, 21, e2020GC009117. DOI: <a href="https://doi.org/10.1029/2020GC00911
                 found_collection = True
                 feature_data_filenames = _collection_sorter(
                     _collect_file_extension(
-                    _fetch_from_web(zip_url[0]), [&#34;.gpml&#34;, &#34;.gpmlz&#34;]
+                    download_from_web(zip_url[0]), [&#34;.gpml&#34;, &#34;.gpmlz&#34;]
                     ),
                     collection
                 )
@@ -2412,7 +2558,7 @@ Müller et al. (2019) seafloor age grids for 0Ma, 1Ma and
     age_grids = []
     age_grid_links = DataCollection.netcdf4_age_grids(self, time)
     for link in age_grid_links:
-        age_grid_file = _fetch_from_web(link)
+        age_grid_file = download_from_web(link)
         age_grid = _gplately.grids.read_netcdf_grid(age_grid_file)
         age_grids.append(age_grid)
 
@@ -2625,7 +2771,7 @@ notebook 05 - Working With Feature Geometries <a href="https://github.com/GPlate
             found_collection = True
             feature_data_filenames = _collection_sorter(
                 _collect_file_extension(
-                _fetch_from_web(zip_url[0]), [&#34;.gpml&#34;, &#34;.gpmlz&#34;]
+                download_from_web(zip_url[0]), [&#34;.gpml&#34;, &#34;.gpmlz&#34;]
                 ),
                 collection
             )
@@ -2746,7 +2892,7 @@ No continent-ocean boundaries in TorsvikCocks2017.
             found_collection = True
             if len(url) == 1:
                 fnames = _collection_sorter(
-                    _fetch_from_web(url[0]), self.file_collection
+                    download_from_web(url[0]), self.file_collection
                 )
                 rotation_filenames = _str_in_folder(
                     _collect_file_extension(fnames, [&#34;.rot&#34;]),
@@ -2784,14 +2930,14 @@ No continent-ocean boundaries in TorsvikCocks2017.
                 for file in url[0]:
                     rotation_filenames.append(
                         _collect_file_extension(
-                            _fetch_from_web(file), [&#34;.rot&#34;])
+                            download_from_web(file), [&#34;.rot&#34;])
                     )
                     rotation_model = _pygplates.RotationModel(rotation_filenames)
 
                 for file in url[1]:
                     topology_filenames.append(
                         _collect_file_extension(
-                            _fetch_from_web(file), [&#34;.gpml&#34;])
+                            download_from_web(file), [&#34;.gpml&#34;])
                     )
                     for file in topology_filenames:
                         topology_features.add(
@@ -2802,7 +2948,7 @@ No continent-ocean boundaries in TorsvikCocks2017.
                     static_polygon_filenames.append(
                         _check_gpml_or_shp(
                             _str_in_folder(
-                                _str_in_filename(_fetch_from_web(url[0]), 
+                                _str_in_filename(download_from_web(url[0]), 
                                     strings_to_include=DataCollection.static_polygon_strings_to_include(self)
                                 ),    
                                     strings_to_ignore=DataCollection.static_polygon_strings_to_ignore(self)
@@ -2953,7 +3099,7 @@ ax2.imshow(etopo1, extent=[-180,180,-90,90], transform=ccrs.PlateCarree())
         #raster_name = collection.split(&#34;_&#34;)[0]
         #raster_type = &#34;.&#34;+collection.split(&#34;_&#34;)[-1]
         if (raster_id_string.lower() == collection.lower()):
-            raster_filenames = _fetch_from_web(zip_url[0])
+            raster_filenames = download_from_web(zip_url[0])
             found_collection = True
             break
 
@@ -3080,7 +3226,7 @@ message: <pre><code>No continent-ocean boundaries in Matthews2016.
                     break
                 else:
                     fnames = _collection_sorter(
-                        _fetch_from_web(url[0]), self.file_collection
+                        download_from_web(url[0]), self.file_collection
                     )
                     coastlines = _check_gpml_or_shp(
                         _str_in_folder(
@@ -3113,7 +3259,7 @@ message: <pre><code>No continent-ocean boundaries in Matthews2016.
                 for file in url[0]:
                     if url[0] is not None:
                         coastlines.append(_str_in_filename(
-                            _fetch_from_web(file), 
+                            download_from_web(file), 
                             strings_to_include=[&#34;coastline&#34;])
                         )
                         coastlines = _check_gpml_or_shp(coastlines)
@@ -3123,7 +3269,7 @@ message: <pre><code>No continent-ocean boundaries in Matthews2016.
                 for file in url[1]:
                     if url[1] is not None:
                         continents.append(_str_in_filename(
-                            _fetch_from_web(file), 
+                            download_from_web(file), 
                             strings_to_include=[&#34;continent&#34;])
                         )
                         continents = _check_gpml_or_shp(continents)
@@ -3133,7 +3279,7 @@ message: <pre><code>No continent-ocean boundaries in Matthews2016.
                 for file in url[2]:
                     if url[2] is not None:
                         COBs.append(_str_in_filename(
-                            _fetch_from_web(file), 
+                            download_from_web(file), 
                             strings_to_include=[&#34;cob&#34;])
                         )
                         COBs = _check_gpml_or_shp(COBs)
@@ -3189,6 +3335,11 @@ message: <pre><code>No continent-ocean boundaries in Matthews2016.
 <li><h3>Super-module</h3>
 <ul>
 <li><code><a title="gplately" href="index.html">gplately</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-functions">Functions</a></h3>
+<ul class="">
+<li><code><a title="gplately.download.download_from_web" href="#gplately.download.download_from_web">download_from_web</a></code></li>
 </ul>
 </li>
 <li><h3><a href="#header-classes">Classes</a></h3>
