@@ -69,20 +69,30 @@ def _path_of_cached_file(url):
         
     
 def download_from_web(url, download_changes=True):
-    """Downloads a file from a download `url` into the `gplately` cache.
+    """Download a file from a `url` into the `gplately` cache.
     
     Notes
     -----
-    When the file belonging to the given `url` is downloaded to the cache
+    After the file belonging to the given `url` is downloaded to the cache
     once, subsequent runs of `download_from_web` with this `url` will not
-    redownload the file provided no changes have been made to the file on
-    the web server. Instead, the file will be re-accessed from the cache 
-    location it was downloaded to. However, if the file has been updated
-    remotely and still has the same download `url`, the updated file will
+    redownload the file as long as it has not been updated on the web server. 
+    Instead, the file will be re-accessed from the `gplately` cache it was 
+    downloaded to. However, if the file has been updated on the web server 
+    and still has the same download `url`, the updated file will be
     be downloaded and the following message will be displayed to the user:
     
-        Updating data from `url` to file `cache location`.
+        "Updating data from url to file cache location."
     
+    If a connection to the web server (and the file(s)) in `url` is unsuccessful,
+    this is likely because:
+
+    * An internet connection could not be established; or
+    * The `url` passed to `download_from_web` is incorrect
+
+    In either case, `download_from_web` attempts to find a version of the file(s) 
+    in `url` already stored in the `gplately` cache (assuming it has been downloaded 
+    from the same `url` once before). If the file(s) are not cached, a `ConnectionError`
+    is raised.
     
     Parameters
     ----------
@@ -97,6 +107,14 @@ def download_from_web(url, download_changes=True):
     fnames : list of str
         A list of strings representing the full paths to all cached data
         downloaded from the given `url`.
+
+    Raises
+    ------
+    ConnectionError
+        If a connection to the web server and file(s) in the given `url` is
+        unsuccessful (because there is no internet access, and/or the `url`
+        is incorrect) and no version of the requested file(s) have been
+        cached before. In this case, nothing is returned. 
     """
     path = _os_cache('gplately')
     if download_changes is True:
