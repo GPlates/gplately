@@ -6,13 +6,13 @@ from . import (
     grids,
     io,
     plot,
-    dataprivate,
 )
 from .data import DataCollection
-from .data import _DataCollection
 from .download import DataServer
 from .grids import Raster, TimeRaster
 from .io import get_geometries, get_valid_geometries
 from .plot import PlotTopologies
 from .reconstruction import PlateReconstruction, Points
 from .tools import EARTH_RADIUS
+
+__pdoc__ = {"data" : False}
