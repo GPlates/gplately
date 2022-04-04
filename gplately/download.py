@@ -10,6 +10,7 @@ are available from public web servers (like EarthByte's webDAV server, or the GP
 import pooch as _pooch
 from pooch import os_cache as _os_cache
 from pooch import retrieve as _retrieve
+from pooch import utils as _utils
 from pooch import HTTPDownloader as _HTTPDownloader
 from pooch import Unzip as _Unzip
 from pooch import Decompress as _Decompress
@@ -18,29 +19,139 @@ from .data import DataCollection
 import gplately as _gplately
 import pygplates as _pygplates
 import re as _re
+import os as _os
 import numpy as _np
+import urllib.request as _request
 
-def _fetch_from_web(url):
-    """Download file(s) in a given url to the 'gplately' cache folder. Processes
-    compressed files using either Pooch's Unzip (if .zip) or Decompress (if .gz, 
-    .xz or .bz2)."""
-    def pooch_retrieve(url, processor):
-        """Downloads file(s) from a URL using Pooch."""
-        fnames = _retrieve(
-            url=url,
-            known_hash=None,  
-            downloader=_HTTPDownloader(progressbar=True),
-            path=_os_cache('gplately'),
-            processor=processor)
-        return fnames
 
+def _test_internet_connection(url):
+    """Test whether a connection to the required web server
+    can be made given a `url`.
+    
+    Returns `False` the `url` is incorrect, and/or if there
+    is no internet connection."""
+    try:
+        _request.urlopen(url) 
+        return True
+    except:
+        return False
+    
+
+def _determine_processor(url):
+    """Set instructions for how to process/unpack a file depending on
+    its filetype. The unpacked file paths will have an .unzip, or 
+    .decomp, or no file extension in their processed form."""
     archive_formats = tuple([".gz", ".xz", ".bz2"])
     if url.endswith(".zip"):
-        fnames = pooch_retrieve(url, processor=_Unzip())
+        processor=_Unzip()
+        ext = ".unzip/"
     elif url.endswith(archive_formats):
-        fnames = pooch_retrieve(url, processor=_Decompress())
+        processor=_Decompress()
+        ext = ".decomp/"
     else:
-        fnames = pooch_retrieve(url, processor=None)
+        processor = None
+        ext = ""
+    return processor, ext
+
+
+def _path_of_cached_file(url):
+    """Determine the full path to the cache where the file in `url` 
+    will be downloaded to."""
+    cached_filename = _pooch.utils.unique_file_name(url)
+    path = _pooch.utils.cache_location(
+        _os_cache('gplately'), 
+        env=None, 
+        version=None
+    )
+    _pooch.utils.make_local_storage(path)
+    full_path = path.resolve() / cached_filename
+    return full_path
+        
+    
+def download_from_web(url, download_changes=True):
+    """Downloads a file from a download `url` into the `gplately` cache.
+    
+    Notes
+    -----
+    When the file belonging to the given `url` is downloaded to the cache
+    once, subsequent runs of `download_from_web` with this `url` will not
+    redownload the file provided no changes have been made to the file on
+    the web server. Instead, the file will be re-accessed from the cache 
+    location it was downloaded to. However, if the file has been updated
+    remotely and still has the same download `url`, the updated file will
+    be downloaded and the following message will be displayed to the user:
+    
+        Updating data from `url` to file `cache location`.
+    
+    
+    Parameters
+    ----------
+    url : str
+        The full URL to a file to download from a public web server.
+    download_changes : bool, default=True
+        Permit the re-downloading/update of the file from `url` if 
+        it has been updated on the web server since the last download.
+        
+    Returns
+    -------
+    fnames : list of str
+        A list of strings representing the full paths to all cached data
+        downloaded from the given `url`.
+    """
+    path = _os_cache('gplately')
+    if download_changes is True:
+        
+        # Determine the full path that the file in `url` will be cached to
+        full_path = _path_of_cached_file(url)
+        
+        # If there is no detected internet connection...
+        if not _test_internet_connection(url):
+            print("No internet")
+            # Depending on the processor: decompress, unzip or do nothing
+            cache_path = str(full_path) + _determine_processor(url)[1]
+
+            # If the file, unzipped file(s) etc. in `url` exists on the 
+            # user's cache, return it.
+            if _os.path.exists(str(cache_path)):
+                print("No connection to {} established. The requested file(s) (potentially older versions) exist in the GPlately cache ({}) and have been collected.".format(url, full_path.parent))
+                
+                # If the url encodes a single file, return the single file path
+                if _os.path.isfile(str(cache_path)):
+                    return cache_path
+                # Otherwise, search the child directories and return all files in it
+                elif _os.path.isdir(str(cache_path)):
+                    fnames = []
+                    for root, dirs, files in _os.walk(str(cache_path)):
+                        for file in files:
+                            fnames.append(_os.path.join(root,file))
+                    return fnames
+            
+            # If the file has never been cached before, raise an error. It 
+            # is possible that the URL is incorrect as well.
+            else:
+                raise ConnectionError(
+                    "A connection to {} could not be made. Please check your internet connection and/or ensure the URL is correct. No file from {} has been cached to {} yet - nothing has been returned.".format(url, url, full_path.parent))
+                
+        # If there is an internet connection detected...
+        else:
+            # Download the required file(s) temporarily and determine their hash(es)
+            with _pooch.utils.temporary_file(path=str(full_path.parent)) as tmp:
+                downloader=_HTTPDownloader(progressbar=False)
+                downloader(url, tmp, _pooch)
+                known_hash = _pooch.file_hash(tmp, alg="sha256")
+    else:
+        known_hash = None
+
+    # Download the file to the cache for the first time, or re-access it if 
+    # downloading the same file again. If a new hash was identified, it is 
+    # assumed the file needs updating, so update the file.
+    fnames = _retrieve(
+            url=url,
+            known_hash=known_hash,  
+            downloader=_HTTPDownloader(progressbar=True),
+            path=_os_cache('gplately'),
+            processor=_determine_processor(url)[0]
+    )
     return fnames
 
 
@@ -538,7 +649,7 @@ class DataServer(object):
                 found_collection = True
                 if len(url) == 1:
                     fnames = _collection_sorter(
-                        _fetch_from_web(url[0]), self.file_collection
+                        download_from_web(url[0]), self.file_collection
                     )
                     rotation_filenames = _str_in_folder(
                         _collect_file_extension(fnames, [".rot"]),
@@ -576,14 +687,14 @@ class DataServer(object):
                     for file in url[0]:
                         rotation_filenames.append(
                             _collect_file_extension(
-                                _fetch_from_web(file), [".rot"])
+                                download_from_web(file), [".rot"])
                         )
                         rotation_model = _pygplates.RotationModel(rotation_filenames)
 
                     for file in url[1]:
                         topology_filenames.append(
                             _collect_file_extension(
-                                _fetch_from_web(file), [".gpml"])
+                                download_from_web(file), [".gpml"])
                         )
                         for file in topology_filenames:
                             topology_features.add(
@@ -594,7 +705,7 @@ class DataServer(object):
                         static_polygon_filenames.append(
                             _check_gpml_or_shp(
                                 _str_in_folder(
-                                    _str_in_filename(_fetch_from_web(url[0]), 
+                                    _str_in_filename(download_from_web(url[0]), 
                                         strings_to_include=DataCollection.static_polygon_strings_to_include(self)
                                     ),    
                                         strings_to_ignore=DataCollection.static_polygon_strings_to_ignore(self)
@@ -689,7 +800,7 @@ class DataServer(object):
                         break
                     else:
                         fnames = _collection_sorter(
-                            _fetch_from_web(url[0]), self.file_collection
+                            download_from_web(url[0]), self.file_collection
                         )
                         coastlines = _check_gpml_or_shp(
                             _str_in_folder(
@@ -722,7 +833,7 @@ class DataServer(object):
                     for file in url[0]:
                         if url[0] is not None:
                             coastlines.append(_str_in_filename(
-                                _fetch_from_web(file), 
+                                download_from_web(file), 
                                 strings_to_include=["coastline"])
                             )
                             coastlines = _check_gpml_or_shp(coastlines)
@@ -732,7 +843,7 @@ class DataServer(object):
                     for file in url[1]:
                         if url[1] is not None:
                             continents.append(_str_in_filename(
-                                _fetch_from_web(file), 
+                                download_from_web(file), 
                                 strings_to_include=["continent"])
                             )
                             continents = _check_gpml_or_shp(continents)
@@ -742,7 +853,7 @@ class DataServer(object):
                     for file in url[2]:
                         if url[2] is not None:
                             COBs.append(_str_in_filename(
-                                _fetch_from_web(file), 
+                                download_from_web(file), 
                                 strings_to_include=["cob"])
                             )
                             COBs = _check_gpml_or_shp(COBs)
@@ -853,7 +964,7 @@ class DataServer(object):
         age_grids = []
         age_grid_links = DataCollection.netcdf4_age_grids(self, time)
         for link in age_grid_links:
-            age_grid_file = _fetch_from_web(link)
+            age_grid_file = download_from_web(link)
             age_grid = _gplately.grids.read_netcdf_grid(age_grid_file)
             age_grids.append(age_grid)
 
@@ -934,7 +1045,7 @@ class DataServer(object):
             #raster_name = collection.split("_")[0]
             #raster_type = "."+collection.split("_")[-1]
             if (raster_id_string.lower() == collection.lower()):
-                raster_filenames = _fetch_from_web(zip_url[0])
+                raster_filenames = download_from_web(zip_url[0])
                 found_collection = True
                 break
 
@@ -1049,7 +1160,7 @@ class DataServer(object):
                 found_collection = True
                 feature_data_filenames = _collection_sorter(
                     _collect_file_extension(
-                    _fetch_from_web(zip_url[0]), [".gpml", ".gpmlz"]
+                    download_from_web(zip_url[0]), [".gpml", ".gpmlz"]
                     ),
                     collection
                 )
