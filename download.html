@@ -55,77 +55,156 @@ from .data import DataCollection
 import gplately as _gplately
 import pygplates as _pygplates
 import re as _re
+import os as _os
 import numpy as _np
+import urllib.request as _request
+
+
+def _test_internet_connection(url):
+    &#34;&#34;&#34;Test whether a connection to the required web server
+    can be made given a `url`.
+    
+    Returns `False` the `url` is incorrect, and/or if there
+    is no internet connection.&#34;&#34;&#34;
+    try:
+        _request.urlopen(url) 
+        return True
+    except:
+        return False
+    
 
 def _determine_processor(url):
     &#34;&#34;&#34;Set instructions for how to process/unpack a file depending on
-    its filetype.&#34;&#34;&#34;
+    its filetype. The unpacked file paths will have an .unzip, or 
+    .decomp, or no file extension in their processed form.&#34;&#34;&#34;
     archive_formats = tuple([&#34;.gz&#34;, &#34;.xz&#34;, &#34;.bz2&#34;])
     if url.endswith(&#34;.zip&#34;):
         processor=_Unzip()
+        ext = &#34;.unzip/&#34;
     elif url.endswith(archive_formats):
         processor=_Decompress()
+        ext = &#34;.decomp/&#34;
     else:
-        processor=None
-    return processor
+        processor = None
+        ext = &#34;&#34;
+    return processor, ext
 
 
+def _path_of_cached_file(url):
+    &#34;&#34;&#34;Determine the full path to the cache where the file in `url` 
+    will be downloaded to.&#34;&#34;&#34;
+    cached_filename = _pooch.utils.unique_file_name(url)
+    path = _pooch.utils.cache_location(
+        _os_cache(&#39;gplately&#39;), 
+        env=None, 
+        version=None
+    )
+    _pooch.utils.make_local_storage(path)
+    full_path = path.resolve() / cached_filename
+    return full_path
+        
+    
 def download_from_web(url, download_changes=True):
-    &#34;&#34;&#34;Downloads a file from a download `url` into the `gplately` cache.
+    &#34;&#34;&#34;Download a file from a `url` into the `gplately` cache.
     
     Notes
     -----
-    When the file belonging to the given `url` is downloaded to the cache
+    After the file belonging to the given `url` is downloaded to the cache
     once, subsequent runs of `download_from_web` with this `url` will not
-    redownload the file provided no changes have been made to the file on
-    the web server. Instead, the file will be re-accessed from the cache 
-    location it was downloaded to. However, if the file has been updated
-    remotely and still has the same download `url`, the updated file will
+    redownload the file as long as it has not been updated on the web server. 
+    Instead, the file will be re-accessed from the `gplately` cache it was 
+    downloaded to. However, if the file has been updated on the web server 
+    and still has the same download `url`, the updated file will be
     be downloaded and the following message will be displayed to the user:
     
-        Updating data from `url` to file `cache location`.
+        &#34;Updating data from url to file cache location.&#34;
     
+    If a connection to the web server (and the file(s)) in `url` is unsuccessful,
+    this is likely because:
+
+    * An internet connection could not be established; or
+    * The `url` passed to `download_from_web` is incorrect
+
+    In either case, `download_from_web` attempts to find a version of the file(s) 
+    in `url` already stored in the `gplately` cache (assuming it has been downloaded 
+    from the same `url` once before). If the file(s) are not cached, a `ConnectionError`
+    is raised.
     
     Parameters
     ----------
     url : str
         The full URL to a file to download from a public web server.
     download_changes : bool, default=True
-        Re-download/update the file belonging to `url` if it has been 
-        updated.
+        Permit the re-downloading/update of the file from `url` if 
+        it has been updated on the web server since the last download.
         
     Returns
     -------
     fnames : list of str
         A list of strings representing the full paths to all cached data
         downloaded from the given `url`.
+
+    Raises
+    ------
+    ConnectionError
+        If a connection to the web server and file(s) in the given `url` is
+        unsuccessful (because there is no internet access, and/or the `url`
+        is incorrect) and no version of the requested file(s) have been
+        cached before. In this case, nothing is returned. 
     &#34;&#34;&#34;
     path = _os_cache(&#39;gplately&#39;)
     if download_changes is True:
-        # Determine the filename of the file in `url` once it is cached
-        cached_filename = _utils.unique_file_name(url)
-        path = _utils.cache_location(path, env=None, version=None)
-        _utils.make_local_storage(path)
-        full_path = path.resolve() / cached_filename
         
-        # Download the file to a temporary folder (before the cache) 
-        # to safely determine its hash
-        with _utils.temporary_file(path=str(full_path.parent)) as tmp:
-            downloader=_HTTPDownloader(progressbar=False)
-            downloader(url, tmp, _pooch)
-            known_hash = _pooch.file_hash(tmp, alg=&#34;sha256&#34;)
+        # Determine the full path that the file in `url` will be cached to
+        full_path = _path_of_cached_file(url)
+        
+        # If there is no detected internet connection...
+        if not _test_internet_connection(url):
+            print(&#34;No internet&#34;)
+            # Depending on the processor: decompress, unzip or do nothing
+            cache_path = str(full_path) + _determine_processor(url)[1]
+
+            # If the file, unzipped file(s) etc. in `url` exists on the 
+            # user&#39;s cache, return it.
+            if _os.path.exists(str(cache_path)):
+                print(&#34;No connection to {} established. The requested file(s) (potentially older versions) exist in the GPlately cache ({}) and have been collected.&#34;.format(url, full_path.parent))
+                
+                # If the url encodes a single file, return the single file path
+                if _os.path.isfile(str(cache_path)):
+                    return cache_path
+                # Otherwise, search the child directories and return all files in it
+                elif _os.path.isdir(str(cache_path)):
+                    fnames = []
+                    for root, dirs, files in _os.walk(str(cache_path)):
+                        for file in files:
+                            fnames.append(_os.path.join(root,file))
+                    return fnames
+            
+            # If the file has never been cached before, raise an error. It 
+            # is possible that the URL is incorrect as well.
+            else:
+                raise ConnectionError(
+                    &#34;A connection to {} could not be made. Please check your internet connection and/or ensure the URL is correct. No file from {} has been cached to {} yet - nothing has been returned.&#34;.format(url, url, full_path.parent))
+                
+        # If there is an internet connection detected...
+        else:
+            # Download the required file(s) temporarily and determine their hash(es)
+            with _pooch.utils.temporary_file(path=str(full_path.parent)) as tmp:
+                downloader=_HTTPDownloader(progressbar=False)
+                downloader(url, tmp, _pooch)
+                known_hash = _pooch.file_hash(tmp, alg=&#34;sha256&#34;)
     else:
         known_hash = None
-        
-    # Download the file to the cache. If the file has been download before
-    # and is updated, it will have a different hash to the file already cached.
-    # If this is the case, overwrite the cached file with the updated file.
+
+    # Download the file to the cache for the first time, or re-access it if 
+    # downloading the same file again. If a new hash was identified, it is 
+    # assumed the file needs updating, so update the file.
     fnames = _retrieve(
             url=url,
             known_hash=known_hash,  
             downloader=_HTTPDownloader(progressbar=True),
             path=_os_cache(&#39;gplately&#39;),
-            processor=_determine_processor(url)
+            processor=_determine_processor(url)[0]
     )
     return fnames
 
@@ -1165,91 +1244,154 @@ class DataServer(object):
 <span>def <span class="ident">download_from_web</span></span>(<span>url, download_changes=True)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Downloads a file from a download <code>url</code> into the <code><a title="gplately" href="index.html">gplately</a></code> cache.</p>
+<div class="desc"><p>Download a file from a <code>url</code> into the <code><a title="gplately" href="index.html">gplately</a></code> cache.</p>
 <h2 id="notes">Notes</h2>
-<p>When the file belonging to the given <code>url</code> is downloaded to the cache
+<p>After the file belonging to the given <code>url</code> is downloaded to the cache
 once, subsequent runs of <code><a title="gplately.download.download_from_web" href="#gplately.download.download_from_web">download_from_web()</a></code> with this <code>url</code> will not
-redownload the file provided no changes have been made to the file on
-the web server. Instead, the file will be re-accessed from the cache
-location it was downloaded to. However, if the file has been updated
-remotely and still has the same download <code>url</code>, the updated file will
+redownload the file as long as it has not been updated on the web server.
+Instead, the file will be re-accessed from the <code><a title="gplately" href="index.html">gplately</a></code> cache it was
+downloaded to. However, if the file has been updated on the web server
+and still has the same download <code>url</code>, the updated file will be
 be downloaded and the following message will be displayed to the user:</p>
-<pre><code>Updating data from &lt;code&gt;url&lt;/code&gt; to file &lt;code&gt;cache location&lt;/code&gt;.
+<pre><code>"Updating data from url to file cache location."
 </code></pre>
+<p>If a connection to the web server (and the file(s)) in <code>url</code> is unsuccessful,
+this is likely because:</p>
+<ul>
+<li>An internet connection could not be established; or</li>
+<li>The <code>url</code> passed to <code><a title="gplately.download.download_from_web" href="#gplately.download.download_from_web">download_from_web()</a></code> is incorrect</li>
+</ul>
+<p>In either case, <code><a title="gplately.download.download_from_web" href="#gplately.download.download_from_web">download_from_web()</a></code> attempts to find a version of the file(s)
+in <code>url</code> already stored in the <code><a title="gplately" href="index.html">gplately</a></code> cache (assuming it has been downloaded
+from the same <code>url</code> once before). If the file(s) are not cached, a <code>ConnectionError</code>
+is raised.</p>
 <h2 id="parameters">Parameters</h2>
 <dl>
 <dt><strong><code>url</code></strong> :&ensp;<code>str</code></dt>
 <dd>The full URL to a file to download from a public web server.</dd>
 <dt><strong><code>download_changes</code></strong> :&ensp;<code>bool</code>, default=<code>True</code></dt>
-<dd>Re-download/update the file belonging to <code>url</code> if it has been
-updated.</dd>
+<dd>Permit the re-downloading/update of the file from <code>url</code> if
+it has been updated on the web server since the last download.</dd>
 </dl>
 <h2 id="returns">Returns</h2>
 <dl>
 <dt><strong><code>fnames</code></strong> :&ensp;<code>list</code> of <code>str</code></dt>
 <dd>A list of strings representing the full paths to all cached data
 downloaded from the given <code>url</code>.</dd>
+</dl>
+<h2 id="raises">Raises</h2>
+<dl>
+<dt><code>ConnectionError</code></dt>
+<dd>If a connection to the web server and file(s) in the given <code>url</code> is
+unsuccessful (because there is no internet access, and/or the <code>url</code>
+is incorrect) and no version of the requested file(s) have been
+cached before. In this case, nothing is returned.</dd>
 </dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def download_from_web(url, download_changes=True):
-    &#34;&#34;&#34;Downloads a file from a download `url` into the `gplately` cache.
+    &#34;&#34;&#34;Download a file from a `url` into the `gplately` cache.
     
     Notes
     -----
-    When the file belonging to the given `url` is downloaded to the cache
+    After the file belonging to the given `url` is downloaded to the cache
     once, subsequent runs of `download_from_web` with this `url` will not
-    redownload the file provided no changes have been made to the file on
-    the web server. Instead, the file will be re-accessed from the cache 
-    location it was downloaded to. However, if the file has been updated
-    remotely and still has the same download `url`, the updated file will
+    redownload the file as long as it has not been updated on the web server. 
+    Instead, the file will be re-accessed from the `gplately` cache it was 
+    downloaded to. However, if the file has been updated on the web server 
+    and still has the same download `url`, the updated file will be
     be downloaded and the following message will be displayed to the user:
     
-        Updating data from `url` to file `cache location`.
+        &#34;Updating data from url to file cache location.&#34;
     
+    If a connection to the web server (and the file(s)) in `url` is unsuccessful,
+    this is likely because:
+
+    * An internet connection could not be established; or
+    * The `url` passed to `download_from_web` is incorrect
+
+    In either case, `download_from_web` attempts to find a version of the file(s) 
+    in `url` already stored in the `gplately` cache (assuming it has been downloaded 
+    from the same `url` once before). If the file(s) are not cached, a `ConnectionError`
+    is raised.
     
     Parameters
     ----------
     url : str
         The full URL to a file to download from a public web server.
     download_changes : bool, default=True
-        Re-download/update the file belonging to `url` if it has been 
-        updated.
+        Permit the re-downloading/update of the file from `url` if 
+        it has been updated on the web server since the last download.
         
     Returns
     -------
     fnames : list of str
         A list of strings representing the full paths to all cached data
         downloaded from the given `url`.
+
+    Raises
+    ------
+    ConnectionError
+        If a connection to the web server and file(s) in the given `url` is
+        unsuccessful (because there is no internet access, and/or the `url`
+        is incorrect) and no version of the requested file(s) have been
+        cached before. In this case, nothing is returned. 
     &#34;&#34;&#34;
     path = _os_cache(&#39;gplately&#39;)
     if download_changes is True:
-        # Determine the filename of the file in `url` once it is cached
-        cached_filename = _utils.unique_file_name(url)
-        path = _utils.cache_location(path, env=None, version=None)
-        _utils.make_local_storage(path)
-        full_path = path.resolve() / cached_filename
         
-        # Download the file to a temporary folder (before the cache) 
-        # to safely determine its hash
-        with _utils.temporary_file(path=str(full_path.parent)) as tmp:
-            downloader=_HTTPDownloader(progressbar=False)
-            downloader(url, tmp, _pooch)
-            known_hash = _pooch.file_hash(tmp, alg=&#34;sha256&#34;)
+        # Determine the full path that the file in `url` will be cached to
+        full_path = _path_of_cached_file(url)
+        
+        # If there is no detected internet connection...
+        if not _test_internet_connection(url):
+            print(&#34;No internet&#34;)
+            # Depending on the processor: decompress, unzip or do nothing
+            cache_path = str(full_path) + _determine_processor(url)[1]
+
+            # If the file, unzipped file(s) etc. in `url` exists on the 
+            # user&#39;s cache, return it.
+            if _os.path.exists(str(cache_path)):
+                print(&#34;No connection to {} established. The requested file(s) (potentially older versions) exist in the GPlately cache ({}) and have been collected.&#34;.format(url, full_path.parent))
+                
+                # If the url encodes a single file, return the single file path
+                if _os.path.isfile(str(cache_path)):
+                    return cache_path
+                # Otherwise, search the child directories and return all files in it
+                elif _os.path.isdir(str(cache_path)):
+                    fnames = []
+                    for root, dirs, files in _os.walk(str(cache_path)):
+                        for file in files:
+                            fnames.append(_os.path.join(root,file))
+                    return fnames
+            
+            # If the file has never been cached before, raise an error. It 
+            # is possible that the URL is incorrect as well.
+            else:
+                raise ConnectionError(
+                    &#34;A connection to {} could not be made. Please check your internet connection and/or ensure the URL is correct. No file from {} has been cached to {} yet - nothing has been returned.&#34;.format(url, url, full_path.parent))
+                
+        # If there is an internet connection detected...
+        else:
+            # Download the required file(s) temporarily and determine their hash(es)
+            with _pooch.utils.temporary_file(path=str(full_path.parent)) as tmp:
+                downloader=_HTTPDownloader(progressbar=False)
+                downloader(url, tmp, _pooch)
+                known_hash = _pooch.file_hash(tmp, alg=&#34;sha256&#34;)
     else:
         known_hash = None
-        
-    # Download the file to the cache. If the file has been download before
-    # and is updated, it will have a different hash to the file already cached.
-    # If this is the case, overwrite the cached file with the updated file.
+
+    # Download the file to the cache for the first time, or re-access it if 
+    # downloading the same file again. If a new hash was identified, it is 
+    # assumed the file needs updating, so update the file.
     fnames = _retrieve(
             url=url,
             known_hash=known_hash,  
             downloader=_HTTPDownloader(progressbar=True),
             path=_os_cache(&#39;gplately&#39;),
-            processor=_determine_processor(url)
+            processor=_determine_processor(url)[0]
     )
     return fnames</code></pre>
 </details>
