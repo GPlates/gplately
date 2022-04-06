@@ -591,9 +591,8 @@ def reconstruct_grid(
             time=None if to_time == 0.0 and rotation_model is None else to_time,
             extent=extent,
             shape=grid.shape,
+            origin=origin,
         )
-        if origin == &#34;upper&#34;:
-            plate_ids = np.flipud(plate_ids)
     plate_ids = plate_ids.flatten()
 
     unique_plate_ids = np.unique(plate_ids)
@@ -709,6 +708,7 @@ def rasterise(
     resy=1.0,
     shape=None,
     extent=&#34;global&#34;,
+    origin=&#34;upper&#34;,
 ):
     &#34;&#34;&#34;Rasterise GPlates objects at a given reconstruction time.
 
@@ -751,6 +751,8 @@ def rasterise(
         Extent of the rasterised grid. Valid arguments are a tuple of
         the form (xmin, xmax, ymin, ymax), or the string &#34;global&#34;,
         equivalent to (-180.0, 180.0, -90.0, 90.0).
+    origin : {&#34;upper&#34;, &#34;lower&#34;}
+        Origin (upper-left or lower-left) of the output array.
 
     Returns
     -------
@@ -771,6 +773,9 @@ def rasterise(
     This function is used by gplately.grids.reconstruct_grids to rasterise
     static polygons in order to extract their plate IDs.
     &#34;&#34;&#34;
+    if origin.lower() not in {&#34;upper&#34;, &#34;lower&#34;}:
+        raise ValueError(&#34;Invalid `origin`: {}&#34;.format(origin))
+    origin = origin.lower()
     valid_keys = {
         &#34;plate_id&#34;,
         &#34;conjugate_plate_id&#34;,
@@ -863,6 +868,8 @@ def rasterise(
         merge_alg=MergeAlg.replace,
         transform=_from_bounds(minx, miny, maxx, maxy, nx, ny),
     )
+    if origin == &#34;lower&#34;:
+        out = np.flipud(out)
     return out
 
 
@@ -1525,7 +1532,7 @@ of its nearest valid neighbour.</dd>
 </details>
 </dd>
 <dt id="gplately.grids.rasterise"><code class="name flex">
-<span>def <span class="ident">rasterise</span></span>(<span>features, rotation_model=None, key='plate_id', time=None, resx=1.0, resy=1.0, shape=None, extent='global')</span>
+<span>def <span class="ident">rasterise</span></span>(<span>features, rotation_model=None, key='plate_id', time=None, resx=1.0, resy=1.0, shape=None, extent='global', origin='upper')</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Rasterise GPlates objects at a given reconstruction time.</p>
@@ -1567,6 +1574,8 @@ overriding <code>resx</code> and <code>resy</code>.</dd>
 <dd>Extent of the rasterised grid. Valid arguments are a tuple of
 the form (xmin, xmax, ymin, ymax), or the string "global",
 equivalent to (-180.0, 180.0, -90.0, 90.0).</dd>
+<dt><strong><code>origin</code></strong> :&ensp;<code>{"upper", "lower"}</code></dt>
+<dd>Origin (upper-left or lower-left) of the output array.</dd>
 </dl>
 <h2 id="returns">Returns</h2>
 <dl>
@@ -1598,6 +1607,7 @@ static polygons in order to extract their plate IDs.</p></div>
     resy=1.0,
     shape=None,
     extent=&#34;global&#34;,
+    origin=&#34;upper&#34;,
 ):
     &#34;&#34;&#34;Rasterise GPlates objects at a given reconstruction time.
 
@@ -1640,6 +1650,8 @@ static polygons in order to extract their plate IDs.</p></div>
         Extent of the rasterised grid. Valid arguments are a tuple of
         the form (xmin, xmax, ymin, ymax), or the string &#34;global&#34;,
         equivalent to (-180.0, 180.0, -90.0, 90.0).
+    origin : {&#34;upper&#34;, &#34;lower&#34;}
+        Origin (upper-left or lower-left) of the output array.
 
     Returns
     -------
@@ -1660,6 +1672,9 @@ static polygons in order to extract their plate IDs.</p></div>
     This function is used by gplately.grids.reconstruct_grids to rasterise
     static polygons in order to extract their plate IDs.
     &#34;&#34;&#34;
+    if origin.lower() not in {&#34;upper&#34;, &#34;lower&#34;}:
+        raise ValueError(&#34;Invalid `origin`: {}&#34;.format(origin))
+    origin = origin.lower()
     valid_keys = {
         &#34;plate_id&#34;,
         &#34;conjugate_plate_id&#34;,
@@ -1752,11 +1767,13 @@ static polygons in order to extract their plate IDs.</p></div>
         merge_alg=MergeAlg.replace,
         transform=_from_bounds(minx, miny, maxx, maxy, nx, ny),
     )
+    if origin == &#34;lower&#34;:
+        out = np.flipud(out)
     return out</code></pre>
 </details>
 </dd>
 <dt id="gplately.grids.rasterize"><code class="name flex">
-<span>def <span class="ident">rasterize</span></span>(<span>features, rotation_model=None, key='plate_id', time=None, resx=1.0, resy=1.0, shape=None, extent='global')</span>
+<span>def <span class="ident">rasterize</span></span>(<span>features, rotation_model=None, key='plate_id', time=None, resx=1.0, resy=1.0, shape=None, extent='global', origin='upper')</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Rasterise GPlates objects at a given reconstruction time.</p>
@@ -1798,6 +1815,8 @@ overriding <code>resx</code> and <code>resy</code>.</dd>
 <dd>Extent of the rasterised grid. Valid arguments are a tuple of
 the form (xmin, xmax, ymin, ymax), or the string "global",
 equivalent to (-180.0, 180.0, -90.0, 90.0).</dd>
+<dt><strong><code>origin</code></strong> :&ensp;<code>{"upper", "lower"}</code></dt>
+<dd>Origin (upper-left or lower-left) of the output array.</dd>
 </dl>
 <h2 id="returns">Returns</h2>
 <dl>
@@ -1829,6 +1848,7 @@ static polygons in order to extract their plate IDs.</p></div>
     resy=1.0,
     shape=None,
     extent=&#34;global&#34;,
+    origin=&#34;upper&#34;,
 ):
     &#34;&#34;&#34;Rasterise GPlates objects at a given reconstruction time.
 
@@ -1871,6 +1891,8 @@ static polygons in order to extract their plate IDs.</p></div>
         Extent of the rasterised grid. Valid arguments are a tuple of
         the form (xmin, xmax, ymin, ymax), or the string &#34;global&#34;,
         equivalent to (-180.0, 180.0, -90.0, 90.0).
+    origin : {&#34;upper&#34;, &#34;lower&#34;}
+        Origin (upper-left or lower-left) of the output array.
 
     Returns
     -------
@@ -1891,6 +1913,9 @@ static polygons in order to extract their plate IDs.</p></div>
     This function is used by gplately.grids.reconstruct_grids to rasterise
     static polygons in order to extract their plate IDs.
     &#34;&#34;&#34;
+    if origin.lower() not in {&#34;upper&#34;, &#34;lower&#34;}:
+        raise ValueError(&#34;Invalid `origin`: {}&#34;.format(origin))
+    origin = origin.lower()
     valid_keys = {
         &#34;plate_id&#34;,
         &#34;conjugate_plate_id&#34;,
@@ -1983,6 +2008,8 @@ static polygons in order to extract their plate IDs.</p></div>
         merge_alg=MergeAlg.replace,
         transform=_from_bounds(minx, miny, maxx, maxy, nx, ny),
     )
+    if origin == &#34;lower&#34;:
+        out = np.flipud(out)
     return out</code></pre>
 </details>
 </dd>
@@ -2286,9 +2313,8 @@ from <code>partitioning_features</code> will be filled with either <code>-1</cod
             time=None if to_time == 0.0 and rotation_model is None else to_time,
             extent=extent,
             shape=grid.shape,
+            origin=origin,
         )
-        if origin == &#34;upper&#34;:
-            plate_ids = np.flipud(plate_ids)
     plate_ids = plate_ids.flatten()
 
     unique_plate_ids = np.unique(plate_ids)
