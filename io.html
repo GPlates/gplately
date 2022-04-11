@@ -5,7 +5,9 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
 <meta name="generator" content="pdoc 0.10.0" />
 <title>gplately.io API documentation</title>
-<meta name="description" content="" />
+<meta name="description" content="Tools to read geometry data from input files and output them as `Shapely`
+geometries. These geometries can be plotted directly with GPlately&#39;s
+…" />
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
 <link rel="stylesheet preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/styles/github.min.css" crossorigin>
@@ -23,11 +25,28 @@
 <h1 class="title">Module <code>gplately.io</code></h1>
 </header>
 <section id="section-intro">
+<p>Tools to read geometry data from input files and output them as <code>Shapely</code>
+geometries. These geometries can be plotted directly with GPlately's
+<code>PlotTopologies</code> object.</p>
+<p>By default, input files are read with <code>GeoPandas</code> and output as a
+<code>geopandas.GeoSeries</code> object that contains <code>Shapely</code> geometries.
+If <code>GeoPandas</code> is not found on the system, input files are read with
+<code>Shapely</code> instead and are still returned as <code>Shapely</code> geometries.</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">from shapely.geometry import shape
+<pre><code class="python">&#34;&#34;&#34;Tools to read geometry data from input files and output them as `Shapely` 
+geometries. These geometries can be plotted directly with GPlately&#39;s 
+`PlotTopologies` object.
+
+By default, input files are read with `GeoPandas` and output as a 
+`geopandas.GeoSeries` object that contains `Shapely` geometries.
+If `GeoPandas` is not found on the system, input files are read with 
+`Shapely` instead and are still returned as `Shapely` geometries.
+
+&#34;&#34;&#34;
+from shapely.geometry import shape
 from shapely.geometry.base import BaseGeometry
 try:
     import geopandas as gpd

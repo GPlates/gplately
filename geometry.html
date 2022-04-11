@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
 <meta name="generator" content="pdoc 0.10.0" />
 <title>gplately.geometry API documentation</title>
-<meta name="description" content="" />
+<meta name="description" content="Tools for converting PyGPlates or GPlately geometries to Shapely geometries for mapping (and vice versa) …" />
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
 <link rel="stylesheet preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/styles/github.min.css" crossorigin>
@@ -23,11 +23,126 @@
 <h1 class="title">Module <code>gplately.geometry</code></h1>
 </header>
 <section id="section-intro">
+<p>Tools for converting PyGPlates or GPlately geometries to Shapely geometries for mapping (and vice versa). </p>
+<p>Supported PyGPlates geometries inherit from the following classes:</p>
+<ul>
+<li>
+<p><a href="https://www.gplates.org/docs/pygplates/generated/pygplates.geometryonsphere">pygplates.GeometryOnSphere</a>: This
+class has the following derived GeometryOnSphere classes:</p>
+<ul>
+<li><a href="https://www.gplates.org/docs/pygplates/generated/pygplates.pointonsphere#pygplates.PointOnSphere">pygplates.PointOnSphere</a></li>
+<li><a href="https://www.gplates.org/docs/pygplates/generated/pygplates.multipointonsphere#pygplates.MultiPointOnSphere">pygplates.MultiPointOnSphere</a></li>
+<li><a href="https://www.gplates.org/docs/pygplates/generated/pygplates.polylineonsphere#pygplates.PolylineOnSphere">pygplates.PolylineOnSphere</a></li>
+<li><a href="https://www.gplates.org/docs/pygplates/generated/pygplates.polygononsphere#pygplates.PolygonOnSphere">pygplates.PolygonOnSphere</a></li>
+</ul>
+</li>
+<li>
+<p><a href="https://www.gplates.org/docs/pygplates/generated/pygplates.latlonpoint">pygplates.LatLonPoint</a></p>
+</li>
+<li><a href="https://www.gplates.org/docs/pygplates/generated/pygplates.reconstructedfeaturegeometry">pygplates.ReconstructedFeatureGeometry</a></li>
+<li><a href="https://www.gplates.org/docs/pygplates/generated/pygplates.resolvedtopologicalline">pygplates.ResolvedTopologicalLine</a></li>
+<li><a href="https://www.gplates.org/docs/pygplates/generated/pygplates.resolvedtopologicalboundary">pygplates.ResolvedTopologicalBoundary</a></li>
+<li><a href="https://www.gplates.org/docs/pygplates/generated/pygplates.resolvedtopologicalnetwork">pygplates.ResolvedTopologicalNetwork</a></li>
+</ul>
+<p>Note: GPlately geometries derive from the <code><a title="gplately.geometry.GeometryOnSphere" href="#gplately.geometry.GeometryOnSphere">GeometryOnSphere</a></code> and <code>pygplates.GeometryOnSphere</code> base classes. </p>
+<p>Supported Shapely geometric objects include:</p>
+<ul>
+<li><strong>Point</strong>: a single point in 2D space with coordinate tuple (x,y) or 3D space with coordinate tuple (x,y,z).</li>
+<li><strong>LineString</strong>: a sequence of points joined together to form a line (a list of point coordinate tuples).</li>
+<li><strong>Polygon</strong>: a sequence of points joined together to form the outer ring of a filled area, or a hole (a list of at least
+three point coordinate tuples).</li>
+</ul>
+<p>Also supported are collections of geometric objects, such as:</p>
+<ul>
+<li><strong>MultiPoint</strong>: a list of <strong>Point</strong> objects (a list of point coordinate tuples).</li>
+<li><strong>MultiLineString</strong>: a list of <strong>LineString</strong> objects (a list containing lists of point coordinate tuples).</li>
+<li><strong>MultiPolygon</strong>:
+a list of <strong>Polygon</strong> objects (a list containing lists of point coordinate tuples that define exterior rings and/or holes).</li>
+</ul>
+<p><strong>Converting PyGPlates geometries into Shapely geometries</strong> involves:</p>
+<ul>
+<li><strong>wrapping geometries at the dateline</strong>: this involves splitting a polygon, MultiPolygon, line segment or MultiLine segment between
+connecting points at the dateline. This is to ensure the geometry's points are joined along the short path rather than
+the long path horizontally across the 2D map projection display.</li>
+<li><strong>ordering geometries counter-clockwise</strong></li>
+</ul>
+<p>Input PyGPlates geometries are converted to the following Shapely geometries:</p>
+<ul>
+<li><code><a title="gplately.geometry.PointOnSphere" href="#gplately.geometry.PointOnSphere">PointOnSphere</a></code> or <code><a title="gplately.geometry.LatLonPoint" href="#gplately.geometry.LatLonPoint">LatLonPoint</a></code>: <code>Point</code></li>
+<li><code><a title="gplately.geometry.MultiPointOnSphere" href="#gplately.geometry.MultiPointOnSphere">MultiPointOnSphere</a></code>: <code>MultiPoint</code></li>
+<li><code><a title="gplately.geometry.PolylineOnSphere" href="#gplately.geometry.PolylineOnSphere">PolylineOnSphere</a></code>: <code>LineString</code> or <code>MultiLineString</code></li>
+<li><code><a title="gplately.geometry.PolygonOnSphere" href="#gplately.geometry.PolygonOnSphere">PolygonOnSphere</a></code>: <code>Polygon</code> or <code>MultiPolygon</code></li>
+</ul>
+<p><strong>Converting Shapely geometries into PyGPlates geometries</strong>:
+Input Shapely geometries are converted to the following PyGPlates geometries:</p>
+<ul>
+<li><code>Point</code>: <code><a title="gplately.geometry.PointOnSphere" href="#gplately.geometry.PointOnSphere">PointOnSphere</a></code></li>
+<li><code>MultiPoint</code>: <code><a title="gplately.geometry.MultiPointOnSphere" href="#gplately.geometry.MultiPointOnSphere">MultiPointOnSphere</a></code></li>
+<li><code>LineString</code>: <code><a title="gplately.geometry.PolylineOnSphere" href="#gplately.geometry.PolylineOnSphere">PolylineOnSphere</a></code></li>
+<li><code>LinearRing</code> or <code>Polygon</code>: <code><a title="gplately.geometry.PolygonOnSphere" href="#gplately.geometry.PolygonOnSphere">PolygonOnSphere</a></code></li>
+</ul>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">import numpy as np
+<pre><code class="python">&#34;&#34;&#34;Tools for converting PyGPlates or GPlately geometries to Shapely geometries for mapping (and vice versa). 
+
+Supported PyGPlates geometries inherit from the following classes:
+
+* [pygplates.GeometryOnSphere](https://www.gplates.org/docs/pygplates/generated/pygplates.geometryonsphere): This 
+class has the following derived GeometryOnSphere classes:
+    * [pygplates.PointOnSphere](https://www.gplates.org/docs/pygplates/generated/pygplates.pointonsphere#pygplates.PointOnSphere)
+    * [pygplates.MultiPointOnSphere](https://www.gplates.org/docs/pygplates/generated/pygplates.multipointonsphere#pygplates.MultiPointOnSphere)
+    * [pygplates.PolylineOnSphere](https://www.gplates.org/docs/pygplates/generated/pygplates.polylineonsphere#pygplates.PolylineOnSphere)
+    * [pygplates.PolygonOnSphere](https://www.gplates.org/docs/pygplates/generated/pygplates.polygononsphere#pygplates.PolygonOnSphere)
+    
+
+* [pygplates.LatLonPoint](https://www.gplates.org/docs/pygplates/generated/pygplates.latlonpoint)
+* [pygplates.ReconstructedFeatureGeometry](https://www.gplates.org/docs/pygplates/generated/pygplates.reconstructedfeaturegeometry)
+* [pygplates.ResolvedTopologicalLine](https://www.gplates.org/docs/pygplates/generated/pygplates.resolvedtopologicalline)
+* [pygplates.ResolvedTopologicalBoundary](https://www.gplates.org/docs/pygplates/generated/pygplates.resolvedtopologicalboundary)
+* [pygplates.ResolvedTopologicalNetwork](https://www.gplates.org/docs/pygplates/generated/pygplates.resolvedtopologicalnetwork)
+
+Note: GPlately geometries derive from the `GeometryOnSphere` and `pygplates.GeometryOnSphere` base classes. 
+
+Supported Shapely geometric objects include:
+
+* __Point__: a single point in 2D space with coordinate tuple (x,y) or 3D space with coordinate tuple (x,y,z).
+* __LineString__: a sequence of points joined together to form a line (a list of point coordinate tuples).
+* __Polygon__: a sequence of points joined together to form the outer ring of a filled area, or a hole (a list of at least
+three point coordinate tuples).
+
+Also supported are collections of geometric objects, such as:
+
+* __MultiPoint__: a list of __Point__ objects (a list of point coordinate tuples).
+* __MultiLineString__: a list of __LineString__ objects (a list containing lists of point coordinate tuples).
+* __MultiPolygon__:  a list of __Polygon__ objects (a list containing lists of point coordinate tuples that define exterior rings and/or holes).
+
+
+__Converting PyGPlates geometries into Shapely geometries__ involves:
+
+* __wrapping geometries at the dateline__: this involves splitting a polygon, MultiPolygon, line segment or MultiLine segment between
+connecting points at the dateline. This is to ensure the geometry&#39;s points are joined along the short path rather than 
+the long path horizontally across the 2D map projection display.
+* __ordering geometries counter-clockwise__
+
+Input PyGPlates geometries are converted to the following Shapely geometries:
+
+- `PointOnSphere` or `LatLonPoint`: `Point`
+- `MultiPointOnSphere`: `MultiPoint`
+- `PolylineOnSphere`: `LineString` or `MultiLineString`
+- `PolygonOnSphere`: `Polygon` or `MultiPolygon`
+
+__Converting Shapely geometries into PyGPlates geometries__: 
+Input Shapely geometries are converted to the following PyGPlates geometries:
+
+- `Point`: `PointOnSphere`
+- `MultiPoint`: `MultiPointOnSphere`
+- `LineString`: `PolylineOnSphere`
+- `LinearRing` or `Polygon`: `PolygonOnSphere`
+
+&#34;&#34;&#34;
+import numpy as np
 import pygplates
 from shapely.geometry import (
     LinearRing as _LinearRing,

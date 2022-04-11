@@ -5,7 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
 <meta name="generator" content="pdoc 0.10.0" />
 <title>gplately.parallel API documentation</title>
-<meta name="description" content="" />
+<meta name="description" content="Tools to execute routines efficiently by parallelising
+them over several threads. This uses multiple processing units." />
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
 <link rel="stylesheet preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/styles/github.min.css" crossorigin>
@@ -23,22 +24,57 @@
 <h1 class="title">Module <code>gplately.parallel</code></h1>
 </header>
 <section id="section-intro">
+<p>Tools to execute routines efficiently by parallelising
+them over several threads. This uses multiple processing units.</p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">from multiprocessing import Pool, Process, Queue, cpu_count 
+<pre><code class="python">&#34;&#34;&#34;Tools to execute routines efficiently by parallelising 
+them over several threads. This uses multiple processing units.
+&#34;&#34;&#34;
+from multiprocessing import Pool, Process, Queue, cpu_count 
 
 
 class Parallel(object):
-
+    &#34;&#34;&#34;A class that uses multiple processors with `multiprocessing` 
+    to execute routines in parallel over several threads.
+    
+    Parameters
+    -----------
+    nprocs : int, default=1
+        The number of separate executions of a process. By default,
+        a single thread is run. 
+    &#34;&#34;&#34;
     def __init__(self, nprocs=1):
 
         self.nprocs = nprocs
 
 
     def parallelise_routine(self, function, *args, **kwargs):
+        &#34;&#34;&#34;Execute a routine over multiple threads on different 
+        processors, ultimately reducing computation time.
 
+        `parallelise_routine` permits one item through the process 
+        queue when an executed item is extracted with get(). 
+
+        Parameters
+        ----------
+        self.nprocs : int, default=1
+            The number of separate executions of a process. By 
+            default, a single thread is run.
+
+        function : method from an instance of an object
+            The process to be executed in parallel. Should be 
+            supplied as module.class.method (if belonging to a class)
+            or module.method. 
+
+        *args : tuple
+            Contains all necessary input parameters for the ‘function’.
+
+        **kwargs : dict
+            Keyword arguments for the ‘function’.
+        &#34;&#34;&#34;
         if self.nprocs == 1:
             # single thread
             result = function(*args, **kwargs)
@@ -105,20 +141,57 @@ class Parallel(object):
 <span>(</span><span>nprocs=1)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>A class that uses multiple processors with <code>multiprocessing</code>
+to execute routines in parallel over several threads.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>nprocs</code></strong> :&ensp;<code>int</code>, default=<code>1</code></dt>
+<dd>The number of separate executions of a process. By default,
+a single thread is run.</dd>
+</dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class Parallel(object):
-
+    &#34;&#34;&#34;A class that uses multiple processors with `multiprocessing` 
+    to execute routines in parallel over several threads.
+    
+    Parameters
+    -----------
+    nprocs : int, default=1
+        The number of separate executions of a process. By default,
+        a single thread is run. 
+    &#34;&#34;&#34;
     def __init__(self, nprocs=1):
 
         self.nprocs = nprocs
 
 
     def parallelise_routine(self, function, *args, **kwargs):
+        &#34;&#34;&#34;Execute a routine over multiple threads on different 
+        processors, ultimately reducing computation time.
 
+        `parallelise_routine` permits one item through the process 
+        queue when an executed item is extracted with get(). 
+
+        Parameters
+        ----------
+        self.nprocs : int, default=1
+            The number of separate executions of a process. By 
+            default, a single thread is run.
+
+        function : method from an instance of an object
+            The process to be executed in parallel. Should be 
+            supplied as module.class.method (if belonging to a class)
+            or module.method. 
+
+        *args : tuple
+            Contains all necessary input parameters for the ‘function’.
+
+        **kwargs : dict
+            Keyword arguments for the ‘function’.
+        &#34;&#34;&#34;
         if self.nprocs == 1:
             # single thread
             result = function(*args, **kwargs)
@@ -176,13 +249,52 @@ class Parallel(object):
 <span>def <span class="ident">parallelise_routine</span></span>(<span>self, function, *args, **kwargs)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Execute a routine over multiple threads on different
+processors, ultimately reducing computation time.</p>
+<p><code>parallelise_routine</code> permits one item through the process
+queue when an executed item is extracted with get(). </p>
+<h2 id="parameters">Parameters</h2>
+<p>self.nprocs : int, default=1
+The number of separate executions of a process. By
+default, a single thread is run.</p>
+<dl>
+<dt><strong><code>function</code></strong> :&ensp;<code>method from an instance</code> of <code>an object</code></dt>
+<dd>The process to be executed in parallel. Should be
+supplied as module.class.method (if belonging to a class)
+or module.method.</dd>
+<dt><strong><code>*args</code></strong> :&ensp;<code>tuple</code></dt>
+<dd>Contains all necessary input parameters for the ‘function’.</dd>
+<dt><strong><code>**kwargs</code></strong> :&ensp;<code>dict</code></dt>
+<dd>Keyword arguments for the ‘function’.</dd>
+</dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def parallelise_routine(self, function, *args, **kwargs):
+    &#34;&#34;&#34;Execute a routine over multiple threads on different 
+    processors, ultimately reducing computation time.
 
+    `parallelise_routine` permits one item through the process 
+    queue when an executed item is extracted with get(). 
+
+    Parameters
+    ----------
+    self.nprocs : int, default=1
+        The number of separate executions of a process. By 
+        default, a single thread is run.
+
+    function : method from an instance of an object
+        The process to be executed in parallel. Should be 
+        supplied as module.class.method (if belonging to a class)
+        or module.method. 
+
+    *args : tuple
+        Contains all necessary input parameters for the ‘function’.
+
+    **kwargs : dict
+        Keyword arguments for the ‘function’.
+    &#34;&#34;&#34;
     if self.nprocs == 1:
         # single thread
         result = function(*args, **kwargs)
