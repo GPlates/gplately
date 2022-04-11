@@ -1,15 +1,48 @@
+"""Tools to execute routines efficiently by parallelising 
+them over several threads. This uses multiple processing units.
+"""
 from multiprocessing import Pool, Process, Queue, cpu_count 
 
 
 class Parallel(object):
-
+    """A class that uses multiple processors with `multiprocessing` 
+    to execute routines in parallel over several threads.
+    
+    Parameters
+    -----------
+    nprocs : int, default=1
+        The number of separate executions of a process. By default,
+        a single thread is run. 
+    """
     def __init__(self, nprocs=1):
 
         self.nprocs = nprocs
 
 
     def parallelise_routine(self, function, *args, **kwargs):
+        """Execute a routine over multiple threads on different 
+        processors, ultimately reducing computation time.
 
+        `parallelise_routine` permits one item through the process 
+        queue when an executed item is extracted with get(). 
+
+        Parameters
+        ----------
+        self.nprocs : int, default=1
+            The number of separate executions of a process. By 
+            default, a single thread is run.
+
+        function : method from an instance of an object
+            The process to be executed in parallel. Should be 
+            supplied as module.class.method (if belonging to a class)
+            or module.method. 
+
+        *args : tuple
+            Contains all necessary input parameters for the ‘function’.
+
+        **kwargs : dict
+            Keyword arguments for the ‘function’.
+        """
         if self.nprocs == 1:
             # single thread
             result = function(*args, **kwargs)
