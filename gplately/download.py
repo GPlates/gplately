@@ -44,10 +44,10 @@ def _determine_processor(url):
     archive_formats = tuple([".gz", ".xz", ".bz2"])
     if url.endswith(".zip"):
         processor=_Unzip()
-        ext = ".unzip/"
+        ext = ".unzip"
     elif url.endswith(archive_formats):
         processor=_Decompress()
-        ext = ".decomp/"
+        ext = ".decomp"
     else:
         processor = None
         ext = ""
@@ -124,7 +124,7 @@ def download_from_web(url, download_changes=True):
         
         # If there is no detected internet connection...
         if not _test_internet_connection(url):
-            print("No internet")
+            
             # Depending on the processor: decompress, unzip or do nothing
             cache_path = str(full_path) + _determine_processor(url)[1]
 
@@ -987,12 +987,86 @@ class DataServer(object):
             age_grids.append(age_grid)
 
         if not age_grids:
-            raise ValueError("{} netCDF4 age grids not found.".format())
+            raise ValueError("{} netCDF4 age grids not found.".format(self.file_collection))
 
         if len(age_grids) == 1:
             return age_grids[0]
         else: 
             return age_grids
+
+
+    def get_spreading_rate_grid(self, time):
+        """Downloads seafloor spreading rate grids from the plate reconstruction 
+        model (`file_collection`) passed into the `DataServer` object. Stores 
+        grids in the "gplately" cache.
+
+        Currently, `DataServer` supports spreading rate grids from the following plate
+        models:
+
+        * __Clennett et al. 2020__
+
+            * `file_collection` = `Clennett2020`
+            * Time range: 0-250 Ma
+            * Seafloor spreading rate grids in netCDF format.
+
+        
+        Parameters
+        ----------
+        time : int, or list of int, default=None
+            Request a spreading grid from one (an integer) or multiple reconstruction 
+            times (a list of integers).
+
+        Returns
+        -------
+        raster_array : MaskedArray
+            A masked array containing the netCDF4 spreading rate grid ready for 
+            plotting or for passing into GPlately's `Raster` object.
+
+        Raises
+        -----
+        ValueError
+            If `time` (a single integer, or a list of integers representing reconstruction
+            times to extract the spreading rate grids from) is not passed.
+
+        Notes
+        -----
+        The first time that `get_spreading_rate_grid` is called for a specific time(s), 
+        the spreading rate grid(s) will be downloaded into the GPlately cache once. 
+        Upon successive calls of `get_spreading_rate_grid` for the same reconstruction 
+        time(s), the grids will not be re-downloaded; rather, they are re-accessed from 
+        the same cache location provided they have not been moved or deleted. 
+
+        Examples
+        --------
+        if the `DataServer` object was called with the `Clennett2020` `file_collection` string:
+
+            gDownload = gplately.download.DataServer("Clennett2020")
+
+        `get_spreading_rate_grid` will download seafloor spreading rate grids from the 
+        Clennett et al. (2020) plate reconstruction model for the geological time(s) 
+        requested in the `time` parameter. When found, these spreading rate grids are 
+        returned as masked arrays. 
+
+        For example, to download Clennett et al. (2020) seafloor spreading rate grids for 
+        0Ma, 1Ma and 100 Ma as MaskedArray objects:
+
+            spreading_rate_grids = gDownload.get_spreading_rate_grid([0, 1, 100])
+            
+        """
+        spreading_rate_grids = []
+        spreading_rate_grid_links = DataCollection.netcdf4_spreading_rate_grids(self, time)
+        for link in spreading_rate_grid_links:
+            spreading_rate_grid_file = download_from_web(link)
+            spreading_rate_grid = _gplately.grids.read_netcdf_grid(spreading_rate_grid_file)
+            spreading_rate_grids.append(spreading_rate_grid)
+
+        if not spreading_rate_grids:
+            raise ValueError("{} netCDF4 seafloor spreading rate grids not found.".format(self.file_collection))
+
+        if len(spreading_rate_grids) == 1:
+            return spreading_rate_grids[0]
+        else: 
+            return spreading_rate_grids
 
 
     def get_raster(self, raster_id_string=None):

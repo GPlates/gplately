@@ -65,6 +65,21 @@ class DataCollection(object):
         return links_to_download
 
 
+    def netcdf4_spreading_rate_grids(self, time):
+
+        spread_grid_links = {
+
+            "Clennett2020" : ["https://www.earthbyte.org/webdav/ftp/Data_Collections/Clennett_etal_2020_G3/Clennett_etal_2020_SpreadRate_Grids/rategrid_final_mask_{}.nc"]
+        }
+
+        links_to_download = _find_needed_collection(
+            self.file_collection, 
+            spread_grid_links,
+            time)
+
+        return links_to_download
+
+        
     def plate_reconstruction_files(self):
 
         database = {
@@ -72,7 +87,7 @@ class DataCollection(object):
             "Cao2020" : ["https://zenodo.org/record/3854549/files/1000Myr_synthetic_tectonic_reconstructions.zip"],
             "Muller2019" : ["https://www.earthbyte.org/webdav/ftp/Data_Collections/Muller_etal_2019_Tectonics/Muller_etal_2019_PlateMotionModel/Muller_etal_2019_PlateMotionModel_v2.0_Tectonics_Updated.zip"], 
             "Muller2016" : ["https://www.earthbyte.org/webdav/ftp/Data_Collections/Muller_etal_2016_AREPS/Muller_etal_2016_AREPS_Supplement/Muller_etal_2016_AREPS_Supplement_v1.17.zip"],
-            "Mather2021" : ["https://zenodo.org/record/5769002/files/plate_model.zip"],
+            "Clennett2020" : ["https://zenodo.org/record/5769002/files/plate_model.zip"],
             "Seton2012" : ["https://www.earthbyte.org/webdav/ftp/Data_Collections/Seton_etal_2012_ESR.zip"],
             "Merdith2021" : ["https://zenodo.org/record/4485738/files/SM2_4485738_V2.zip"],
             "Matthews2016" : ["https://www.earthbyte.org/webdav/ftp/Data_Collections/Matthews_etal_2016_Global_Plate_Model_GPC.zip"], 
@@ -98,7 +113,7 @@ class DataCollection(object):
             "Cao2020" : [1000],
             "Muller2019" : [250], 
             "Muller2016" : [240],
-            "Mather2021" : [170],
+            "Clennett2020" : [170],
             "Seton2012" : [200],
             "Merdith2021" : [1000],
             "Matthews2016" : [410], 
@@ -195,7 +210,7 @@ class DataCollection(object):
             "Cao2020" : ["https://zenodo.org/record/3854549/files/1000Myr_synthetic_tectonic_reconstructions.zip"],
             "Muller2019" : ["https://www.earthbyte.org/webdav/ftp/Data_Collections/Muller_etal_2019_Tectonics/Muller_etal_2019_PlateMotionModel/Muller_etal_2019_PlateMotionModel_v2.0_Tectonics_Updated.zip"], 
             "Muller2016" : ["https://www.earthbyte.org/webdav/ftp/Data_Collections/Muller_etal_2016_AREPS/Muller_etal_2016_AREPS_Supplement/Muller_etal_2016_AREPS_Supplement_v1.17.zip"],
-            "Mather2021" : ["https://zenodo.org/record/5769002/files/plate_model.zip"],
+            "Clennett2020" : ["https://zenodo.org/record/5769002/files/plate_model.zip"],
             "Seton2012" : ["https://www.earthbyte.org/webdav/ftp/Data_Collections/Seton_etal_2012_ESR.zip"],
             "Merdith2021" : ["https://zenodo.org/record/4485738/files/SM2_4485738_V2.zip"],
             "Matthews2016" : ["https://www.earthbyte.org/webdav/ftp/Data_Collections/Matthews_etal_2016_Global_Plate_Model_GPC.zip"], 
