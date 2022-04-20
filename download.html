@@ -80,10 +80,10 @@ def _determine_processor(url):
     archive_formats = tuple([&#34;.gz&#34;, &#34;.xz&#34;, &#34;.bz2&#34;])
     if url.endswith(&#34;.zip&#34;):
         processor=_Unzip()
-        ext = &#34;.unzip/&#34;
+        ext = &#34;.unzip&#34;
     elif url.endswith(archive_formats):
         processor=_Decompress()
-        ext = &#34;.decomp/&#34;
+        ext = &#34;.decomp&#34;
     else:
         processor = None
         ext = &#34;&#34;
@@ -160,7 +160,7 @@ def download_from_web(url, download_changes=True):
         
         # If there is no detected internet connection...
         if not _test_internet_connection(url):
-            print(&#34;No internet&#34;)
+            
             # Depending on the processor: decompress, unzip or do nothing
             cache_path = str(full_path) + _determine_processor(url)[1]
 
@@ -1023,12 +1023,86 @@ class DataServer(object):
             age_grids.append(age_grid)
 
         if not age_grids:
-            raise ValueError(&#34;{} netCDF4 age grids not found.&#34;.format())
+            raise ValueError(&#34;{} netCDF4 age grids not found.&#34;.format(self.file_collection))
 
         if len(age_grids) == 1:
             return age_grids[0]
         else: 
             return age_grids
+
+
+    def get_spreading_rate_grid(self, time):
+        &#34;&#34;&#34;Downloads seafloor spreading rate grids from the plate reconstruction 
+        model (`file_collection`) passed into the `DataServer` object. Stores 
+        grids in the &#34;gplately&#34; cache.
+
+        Currently, `DataServer` supports spreading rate grids from the following plate
+        models:
+
+        * __Clennett et al. 2020__
+
+            * `file_collection` = `Clennett2020`
+            * Time range: 0-250 Ma
+            * Seafloor spreading rate grids in netCDF format.
+
+        
+        Parameters
+        ----------
+        time : int, or list of int, default=None
+            Request a spreading grid from one (an integer) or multiple reconstruction 
+            times (a list of integers).
+
+        Returns
+        -------
+        raster_array : MaskedArray
+            A masked array containing the netCDF4 spreading rate grid ready for 
+            plotting or for passing into GPlately&#39;s `Raster` object.
+
+        Raises
+        -----
+        ValueError
+            If `time` (a single integer, or a list of integers representing reconstruction
+            times to extract the spreading rate grids from) is not passed.
+
+        Notes
+        -----
+        The first time that `get_spreading_rate_grid` is called for a specific time(s), 
+        the spreading rate grid(s) will be downloaded into the GPlately cache once. 
+        Upon successive calls of `get_spreading_rate_grid` for the same reconstruction 
+        time(s), the grids will not be re-downloaded; rather, they are re-accessed from 
+        the same cache location provided they have not been moved or deleted. 
+
+        Examples
+        --------
+        if the `DataServer` object was called with the `Clennett2020` `file_collection` string:
+
+            gDownload = gplately.download.DataServer(&#34;Clennett2020&#34;)
+
+        `get_spreading_rate_grid` will download seafloor spreading rate grids from the 
+        Clennett et al. (2020) plate reconstruction model for the geological time(s) 
+        requested in the `time` parameter. When found, these spreading rate grids are 
+        returned as masked arrays. 
+
+        For example, to download Clennett et al. (2020) seafloor spreading rate grids for 
+        0Ma, 1Ma and 100 Ma as MaskedArray objects:
+
+            spreading_rate_grids = gDownload.get_spreading_rate_grid([0, 1, 100])
+            
+        &#34;&#34;&#34;
+        spreading_rate_grids = []
+        spreading_rate_grid_links = DataCollection.netcdf4_spreading_rate_grids(self, time)
+        for link in spreading_rate_grid_links:
+            spreading_rate_grid_file = download_from_web(link)
+            spreading_rate_grid = _gplately.grids.read_netcdf_grid(spreading_rate_grid_file)
+            spreading_rate_grids.append(spreading_rate_grid)
+
+        if not spreading_rate_grids:
+            raise ValueError(&#34;{} netCDF4 seafloor spreading rate grids not found.&#34;.format(self.file_collection))
+
+        if len(spreading_rate_grids) == 1:
+            return spreading_rate_grids[0]
+        else: 
+            return spreading_rate_grids
 
 
     def get_raster(self, raster_id_string=None):
@@ -1347,7 +1421,7 @@ cached before. In this case, nothing is returned.</dd>
         
         # If there is no detected internet connection...
         if not _test_internet_connection(url):
-            print(&#34;No internet&#34;)
+            
             # Depending on the processor: decompress, unzip or do nothing
             cache_path = str(full_path) + _determine_processor(url)[1]
 
@@ -2349,12 +2423,86 @@ Geosystems, 21, e2020GC009117. DOI: <a href="https://doi.org/10.1029/2020GC00911
             age_grids.append(age_grid)
 
         if not age_grids:
-            raise ValueError(&#34;{} netCDF4 age grids not found.&#34;.format())
+            raise ValueError(&#34;{} netCDF4 age grids not found.&#34;.format(self.file_collection))
 
         if len(age_grids) == 1:
             return age_grids[0]
         else: 
             return age_grids
+
+
+    def get_spreading_rate_grid(self, time):
+        &#34;&#34;&#34;Downloads seafloor spreading rate grids from the plate reconstruction 
+        model (`file_collection`) passed into the `DataServer` object. Stores 
+        grids in the &#34;gplately&#34; cache.
+
+        Currently, `DataServer` supports spreading rate grids from the following plate
+        models:
+
+        * __Clennett et al. 2020__
+
+            * `file_collection` = `Clennett2020`
+            * Time range: 0-250 Ma
+            * Seafloor spreading rate grids in netCDF format.
+
+        
+        Parameters
+        ----------
+        time : int, or list of int, default=None
+            Request a spreading grid from one (an integer) or multiple reconstruction 
+            times (a list of integers).
+
+        Returns
+        -------
+        raster_array : MaskedArray
+            A masked array containing the netCDF4 spreading rate grid ready for 
+            plotting or for passing into GPlately&#39;s `Raster` object.
+
+        Raises
+        -----
+        ValueError
+            If `time` (a single integer, or a list of integers representing reconstruction
+            times to extract the spreading rate grids from) is not passed.
+
+        Notes
+        -----
+        The first time that `get_spreading_rate_grid` is called for a specific time(s), 
+        the spreading rate grid(s) will be downloaded into the GPlately cache once. 
+        Upon successive calls of `get_spreading_rate_grid` for the same reconstruction 
+        time(s), the grids will not be re-downloaded; rather, they are re-accessed from 
+        the same cache location provided they have not been moved or deleted. 
+
+        Examples
+        --------
+        if the `DataServer` object was called with the `Clennett2020` `file_collection` string:
+
+            gDownload = gplately.download.DataServer(&#34;Clennett2020&#34;)
+
+        `get_spreading_rate_grid` will download seafloor spreading rate grids from the 
+        Clennett et al. (2020) plate reconstruction model for the geological time(s) 
+        requested in the `time` parameter. When found, these spreading rate grids are 
+        returned as masked arrays. 
+
+        For example, to download Clennett et al. (2020) seafloor spreading rate grids for 
+        0Ma, 1Ma and 100 Ma as MaskedArray objects:
+
+            spreading_rate_grids = gDownload.get_spreading_rate_grid([0, 1, 100])
+            
+        &#34;&#34;&#34;
+        spreading_rate_grids = []
+        spreading_rate_grid_links = DataCollection.netcdf4_spreading_rate_grids(self, time)
+        for link in spreading_rate_grid_links:
+            spreading_rate_grid_file = download_from_web(link)
+            spreading_rate_grid = _gplately.grids.read_netcdf_grid(spreading_rate_grid_file)
+            spreading_rate_grids.append(spreading_rate_grid)
+
+        if not spreading_rate_grids:
+            raise ValueError(&#34;{} netCDF4 seafloor spreading rate grids not found.&#34;.format(self.file_collection))
+
+        if len(spreading_rate_grids) == 1:
+            return spreading_rate_grids[0]
+        else: 
+            return spreading_rate_grids
 
 
     def get_raster(self, raster_id_string=None):
@@ -2705,7 +2853,7 @@ Müller et al. (2019) seafloor age grids for 0Ma, 1Ma and
         age_grids.append(age_grid)
 
     if not age_grids:
-        raise ValueError(&#34;{} netCDF4 age grids not found.&#34;.format())
+        raise ValueError(&#34;{} netCDF4 age grids not found.&#34;.format(self.file_collection))
 
     if len(age_grids) == 1:
         return age_grids[0]
@@ -3252,6 +3400,139 @@ ax2.imshow(etopo1, extent=[-180,180,-90,90], transform=ccrs.PlateCarree())
     return raster_matrix</code></pre>
 </details>
 </dd>
+<dt id="gplately.download.DataServer.get_spreading_rate_grid"><code class="name flex">
+<span>def <span class="ident">get_spreading_rate_grid</span></span>(<span>self, time)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Downloads seafloor spreading rate grids from the plate reconstruction
+model (<code>file_collection</code>) passed into the <code><a title="gplately.download.DataServer" href="#gplately.download.DataServer">DataServer</a></code> object. Stores
+grids in the "gplately" cache.</p>
+<p>Currently, <code><a title="gplately.download.DataServer" href="#gplately.download.DataServer">DataServer</a></code> supports spreading rate grids from the following plate
+models:</p>
+<ul>
+<li>
+<p><strong>Clennett et al. 2020</strong></p>
+<ul>
+<li><code>file_collection</code> = <code>Clennett2020</code></li>
+<li>Time range: 0-250 Ma</li>
+<li>Seafloor spreading rate grids in netCDF format.</li>
+</ul>
+</li>
+</ul>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>time</code></strong> :&ensp;<code>int,</code> or <code>list</code> of <code>int</code>, default=<code>None</code></dt>
+<dd>Request a spreading grid from one (an integer) or multiple reconstruction
+times (a list of integers).</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><strong><code>raster_array</code></strong> :&ensp;<code>MaskedArray</code></dt>
+<dd>A masked array containing the netCDF4 spreading rate grid ready for
+plotting or for passing into GPlately's <code>Raster</code> object.</dd>
+</dl>
+<h2 id="raises">Raises</h2>
+<dl>
+<dt><code>ValueError</code></dt>
+<dd>If <code>time</code> (a single integer, or a list of integers representing reconstruction
+times to extract the spreading rate grids from) is not passed.</dd>
+</dl>
+<h2 id="notes">Notes</h2>
+<p>The first time that <code>get_spreading_rate_grid</code> is called for a specific time(s),
+the spreading rate grid(s) will be downloaded into the GPlately cache once.
+Upon successive calls of <code>get_spreading_rate_grid</code> for the same reconstruction
+time(s), the grids will not be re-downloaded; rather, they are re-accessed from
+the same cache location provided they have not been moved or deleted. </p>
+<h2 id="examples">Examples</h2>
+<p>if the <code><a title="gplately.download.DataServer" href="#gplately.download.DataServer">DataServer</a></code> object was called with the <code>Clennett2020</code> <code>file_collection</code> string:</p>
+<pre><code>gDownload = gplately.download.DataServer("Clennett2020")
+</code></pre>
+<p><code>get_spreading_rate_grid</code> will download seafloor spreading rate grids from the
+Clennett et al. (2020) plate reconstruction model for the geological time(s)
+requested in the <code>time</code> parameter. When found, these spreading rate grids are
+returned as masked arrays. </p>
+<p>For example, to download Clennett et al. (2020) seafloor spreading rate grids for
+0Ma, 1Ma and 100 Ma as MaskedArray objects:</p>
+<pre><code>spreading_rate_grids = gDownload.get_spreading_rate_grid([0, 1, 100])
+</code></pre></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_spreading_rate_grid(self, time):
+    &#34;&#34;&#34;Downloads seafloor spreading rate grids from the plate reconstruction 
+    model (`file_collection`) passed into the `DataServer` object. Stores 
+    grids in the &#34;gplately&#34; cache.
+
+    Currently, `DataServer` supports spreading rate grids from the following plate
+    models:
+
+    * __Clennett et al. 2020__
+
+        * `file_collection` = `Clennett2020`
+        * Time range: 0-250 Ma
+        * Seafloor spreading rate grids in netCDF format.
+
+    
+    Parameters
+    ----------
+    time : int, or list of int, default=None
+        Request a spreading grid from one (an integer) or multiple reconstruction 
+        times (a list of integers).
+
+    Returns
+    -------
+    raster_array : MaskedArray
+        A masked array containing the netCDF4 spreading rate grid ready for 
+        plotting or for passing into GPlately&#39;s `Raster` object.
+
+    Raises
+    -----
+    ValueError
+        If `time` (a single integer, or a list of integers representing reconstruction
+        times to extract the spreading rate grids from) is not passed.
+
+    Notes
+    -----
+    The first time that `get_spreading_rate_grid` is called for a specific time(s), 
+    the spreading rate grid(s) will be downloaded into the GPlately cache once. 
+    Upon successive calls of `get_spreading_rate_grid` for the same reconstruction 
+    time(s), the grids will not be re-downloaded; rather, they are re-accessed from 
+    the same cache location provided they have not been moved or deleted. 
+
+    Examples
+    --------
+    if the `DataServer` object was called with the `Clennett2020` `file_collection` string:
+
+        gDownload = gplately.download.DataServer(&#34;Clennett2020&#34;)
+
+    `get_spreading_rate_grid` will download seafloor spreading rate grids from the 
+    Clennett et al. (2020) plate reconstruction model for the geological time(s) 
+    requested in the `time` parameter. When found, these spreading rate grids are 
+    returned as masked arrays. 
+
+    For example, to download Clennett et al. (2020) seafloor spreading rate grids for 
+    0Ma, 1Ma and 100 Ma as MaskedArray objects:
+
+        spreading_rate_grids = gDownload.get_spreading_rate_grid([0, 1, 100])
+        
+    &#34;&#34;&#34;
+    spreading_rate_grids = []
+    spreading_rate_grid_links = DataCollection.netcdf4_spreading_rate_grids(self, time)
+    for link in spreading_rate_grid_links:
+        spreading_rate_grid_file = download_from_web(link)
+        spreading_rate_grid = _gplately.grids.read_netcdf_grid(spreading_rate_grid_file)
+        spreading_rate_grids.append(spreading_rate_grid)
+
+    if not spreading_rate_grids:
+        raise ValueError(&#34;{} netCDF4 seafloor spreading rate grids not found.&#34;.format(self.file_collection))
+
+    if len(spreading_rate_grids) == 1:
+        return spreading_rate_grids[0]
+    else: 
+        return spreading_rate_grids</code></pre>
+</details>
+</dd>
 <dt id="gplately.download.DataServer.get_topology_geometries"><code class="name flex">
 <span>def <span class="ident">get_topology_geometries</span></span>(<span>self)</span>
 </code></dt>
@@ -3493,6 +3774,7 @@ message: <pre><code>No continent-ocean boundaries in Matthews2016.
 <li><code><a title="gplately.download.DataServer.get_feature_data" href="#gplately.download.DataServer.get_feature_data">get_feature_data</a></code></li>
 <li><code><a title="gplately.download.DataServer.get_plate_reconstruction_files" href="#gplately.download.DataServer.get_plate_reconstruction_files">get_plate_reconstruction_files</a></code></li>
 <li><code><a title="gplately.download.DataServer.get_raster" href="#gplately.download.DataServer.get_raster">get_raster</a></code></li>
+<li><code><a title="gplately.download.DataServer.get_spreading_rate_grid" href="#gplately.download.DataServer.get_spreading_rate_grid">get_spreading_rate_grid</a></code></li>
 <li><code><a title="gplately.download.DataServer.get_topology_geometries" href="#gplately.download.DataServer.get_topology_geometries">get_topology_geometries</a></code></li>
 </ul>
 </li>
