@@ -207,17 +207,25 @@ def _str_in_folder(fnames, strings_to_include=None, strings_to_ignore=None):
 
 def _str_in_filename(fnames, strings_to_include=None, strings_to_ignore=None):
     sorted_fnames = []
-    if strings_to_ignore is not None:
-        for f in fnames:
-            f = f.split("/")[-1]
-            check = [s for s in strings_to_ignore if s.lower() in f.lower()]
     if strings_to_include is not None:
-        for s in strings_to_include:
-            for f in fnames:
-                fname = f.split("/")[-1]
-                if s.lower() in fname.lower():
-                    sorted_fnames.append(f)
-    return sorted_fnames
+        for f in fnames:
+            f_splitted = f.split("/")[-1]
+            check = [s for s in strings_to_include if s.lower() in f_splitted.lower()]
+            if check:
+                sorted_fnames.append(f)
+    else:
+        sorted_fnames = fnames
+    
+    if strings_to_ignore is not None:
+        more_sorted = []
+        for f in sorted_fnames:
+            f_splitted = f.split("/")[-1]
+            check = [s for s in strings_to_ignore if s.lower() in f_splitted.lower()]
+            if not check:
+                more_sorted.append(f)
+        return(more_sorted)
+    else:
+        return(sorted_fnames)
 
 
 def _check_gpml_or_shp(fnames):
@@ -405,13 +413,14 @@ class DataServer(object):
         doi: 10.1029/2020GC009244
 
 
-    - __Mather et al. 2021__ : 
+    - __Clennett et al. 2020__ : 
 
-        file_collection = `Mather2021`
+        file_collection = `Clennett2020`
         
         Information
         -----------
-        * Downloadable files: `rotation_model`, `topology_features`, and `coastlines`
+        * Downloadable files: `rotation_model`, `topology_features`, `static_polygons`, `coastlines`
+        and `continents`
         * Maximum reconstruction time: 170 Ma
 
         Citations
@@ -669,18 +678,23 @@ class DataServer(object):
                     fnames = _collection_sorter(
                         download_from_web(url[0]), self.file_collection
                     )
-                    rotation_filenames = _str_in_folder(
-                        _collect_file_extension(fnames, [".rot"]),
+                    rotation_filenames = _collect_file_extension(
+                        _str_in_folder(
+                            _str_in_filename(fnames,
+                                strings_to_ignore=DataCollection.rotation_strings_to_ignore(self)
+                            ),
                         strings_to_ignore=DataCollection.rotation_strings_to_ignore(self)
+                        ),
+                        [".rot"]
                     )
-
                     #print(rotation_filenames)
                     rotation_model = _pygplates.RotationModel(rotation_filenames)
 
                     topology_filenames = _collect_file_extension(
                         _str_in_folder(
                             _str_in_filename(fnames, 
-                                strings_to_include=DataCollection.dynamic_polygon_strings_to_include(self)
+                                strings_to_include=DataCollection.dynamic_polygon_strings_to_include(self),
+                                strings_to_ignore=DataCollection.dynamic_polygon_strings_to_ignore(self)
                             ), 
                             strings_to_ignore=DataCollection.dynamic_polygon_strings_to_ignore(self)
                         ),
@@ -693,14 +707,16 @@ class DataServer(object):
                     static_polygon_filenames = _check_gpml_or_shp(
                         _str_in_folder(
                             _str_in_filename(fnames, 
-                                strings_to_include=DataCollection.static_polygon_strings_to_include(self)
+                                strings_to_include=DataCollection.static_polygon_strings_to_include(self),
+                                strings_to_ignore=DataCollection.static_polygon_strings_to_ignore(self)
                             ),
                             strings_to_ignore=DataCollection.static_polygon_strings_to_ignore(self)
                         )
                     )
+                    #print(static_polygon_filenames)
                     for stat in static_polygon_filenames:
                         static_polygons.add(_pygplates.FeatureCollection(stat))
-                    #print(static_polygons)
+
                 else:
                     for file in url[0]:
                         rotation_filenames.append(
@@ -824,7 +840,8 @@ class DataServer(object):
                             _str_in_folder(
                                 _str_in_filename(
                                     fnames,
-                                    strings_to_include=DataCollection.coastline_strings_to_include(self)
+                                    strings_to_include=DataCollection.coastline_strings_to_include(self),
+                                    strings_to_ignore=DataCollection.coastline_strings_to_ignore(self)
                                 ), 
                                 strings_to_ignore=DataCollection.coastline_strings_to_ignore(self)
                             )
@@ -833,7 +850,8 @@ class DataServer(object):
                             _str_in_folder(
                                 _str_in_filename(
                                     fnames, 
-                                    strings_to_include=DataCollection.continent_strings_to_include(self)
+                                    strings_to_include=DataCollection.continent_strings_to_include(self),
+                                    strings_to_ignore=DataCollection.continent_strings_to_ignore(self)
                                 ), 
                                 strings_to_ignore=DataCollection.continent_strings_to_ignore(self)
                             )
@@ -842,7 +860,8 @@ class DataServer(object):
                             _str_in_folder(
                                 _str_in_filename(
                                     fnames,
-                                    strings_to_include=DataCollection.COB_strings_to_include(self)
+                                    strings_to_include=DataCollection.COB_strings_to_include(self),
+                                    strings_to_ignore=DataCollection.COB_strings_to_ignore(self)
                                 ), 
                                 strings_to_ignore=DataCollection.COB_strings_to_ignore(self)
                             )

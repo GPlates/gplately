@@ -87,7 +87,7 @@ class DataCollection(object):
             "Cao2020" : ["https://zenodo.org/record/3854549/files/1000Myr_synthetic_tectonic_reconstructions.zip"],
             "Muller2019" : ["https://www.earthbyte.org/webdav/ftp/Data_Collections/Muller_etal_2019_Tectonics/Muller_etal_2019_PlateMotionModel/Muller_etal_2019_PlateMotionModel_v2.0_Tectonics_Updated.zip"], 
             "Muller2016" : ["https://www.earthbyte.org/webdav/ftp/Data_Collections/Muller_etal_2016_AREPS/Muller_etal_2016_AREPS_Supplement/Muller_etal_2016_AREPS_Supplement_v1.17.zip"],
-            "Clennett2020" : ["https://zenodo.org/record/5769002/files/plate_model.zip"],
+            "Clennett2020" : ["https://www.earthbyte.org/webdav/ftp/Data_Collections/Clennett_etal_2020_G3/Global_Model_WD_Internal_Release_2019_v2_Clennett_NE_Pacific.zip"],
             "Seton2012" : ["https://www.earthbyte.org/webdav/ftp/Data_Collections/Seton_etal_2012_ESR.zip"],
             "Merdith2021" : ["https://zenodo.org/record/4485738/files/SM2_4485738_V2.zip"],
             "Matthews2016" : ["https://www.earthbyte.org/webdav/ftp/Data_Collections/Matthews_etal_2016_Global_Plate_Model_GPC.zip"], 
@@ -137,6 +137,7 @@ class DataCollection(object):
             "OLD",
             "__MACOSX",
             "DO_NOT",
+            "Blocks_crossing_Poles"
         ]    
         return strings
 
@@ -160,6 +161,20 @@ class DataCollection(object):
             "Feature_Geometries",
             "boundaries",
             "Clennett_etal_2020_Plates", # For Clennett 2020 (M2019)
+            "Clennett_2020_Plates", # For topologies in Clennett et al 2020 (Pacific)
+            "Clennett_2020_Terranes", # For topologies in Clennett et al 2020 (Pacific)
+            "Angayucham",
+            "Farallon",
+            "Guerrero",
+            "Insular",
+            "Intermontane",
+            "Kula",
+            "North_America",
+            "South_America",
+            "Western_Jurassic",
+            "Clennett_2020_Isochrons",
+            "Clennett_2020_Coastlines",
+            "Clennett_2020_NAm_boundaries",
 
         ]
         return strings 
@@ -171,6 +186,9 @@ class DataCollection(object):
             "OLD",
             "__MACOSX",
             "DO_NOT",
+            "9_Point_Density", # Clennett et al 2020
+            "Density", # Clennett et al 2020
+            "Inactive_Meshes_and_Topologies", # Clennett et al 2020
         ]
         return strings
 
@@ -178,11 +196,11 @@ class DataCollection(object):
     def static_polygon_strings_to_include(self):
 
         strings = [
-            "Static",
             "StaticPolygon",
             "Static_Polygon",
+            "StaticPlatePolygons_",
             "RodiniaBlocks_WithPlateIDColumnAndIDs",
-            "PlatePolygons.shp",
+            # "PlatePolygons.shp",
             "CEED6_TERRANES.shp",
             "CEED6_MICROCONTINENTS.shp",
             "CEED6_LAND.gpml",
@@ -198,7 +216,9 @@ class DataCollection(object):
 
             "DO_NOT",
             "OLD",
-            "__MACOSX"
+            "__MACOSX",
+            "Global_Model_WD_Internal_Release_2019_v2_Clennett_NE_Pacific/StaticGeometries/StaticPolygons/Global_EarthByte_GPlates_PresentDay_StaticPlatePolygons.shp" # Clennett 2020
+
         ]
         return strings
 
@@ -210,7 +230,7 @@ class DataCollection(object):
             "Cao2020" : ["https://zenodo.org/record/3854549/files/1000Myr_synthetic_tectonic_reconstructions.zip"],
             "Muller2019" : ["https://www.earthbyte.org/webdav/ftp/Data_Collections/Muller_etal_2019_Tectonics/Muller_etal_2019_PlateMotionModel/Muller_etal_2019_PlateMotionModel_v2.0_Tectonics_Updated.zip"], 
             "Muller2016" : ["https://www.earthbyte.org/webdav/ftp/Data_Collections/Muller_etal_2016_AREPS/Muller_etal_2016_AREPS_Supplement/Muller_etal_2016_AREPS_Supplement_v1.17.zip"],
-            "Clennett2020" : ["https://zenodo.org/record/5769002/files/plate_model.zip"],
+            "Clennett2020" : ["https://www.earthbyte.org/webdav/ftp/Data_Collections/Clennett_etal_2020_G3/Global_Model_WD_Internal_Release_2019_v2_Clennett_NE_Pacific.zip"],
             "Seton2012" : ["https://www.earthbyte.org/webdav/ftp/Data_Collections/Seton_etal_2012_ESR.zip"],
             "Merdith2021" : ["https://zenodo.org/record/4485738/files/SM2_4485738_V2.zip"],
             "Matthews2016" : ["https://www.earthbyte.org/webdav/ftp/Data_Collections/Matthews_etal_2016_Global_Plate_Model_GPC.zip"], 
@@ -244,7 +264,8 @@ class DataCollection(object):
 
             "DO_NOT",
             "OLD",
-            "__MACOSX"
+            "__MACOSX",
+            "Clennett_2020_Coastlines", # Clennett et al. 2020
         ]
         return strings
 
@@ -257,7 +278,7 @@ class DataCollection(object):
             "COBfile_1000_0_Toy_introversion",
             "continental",
             "Scotese_2008_PresentDay_ContinentalPolygons.shp", # Scotese 2008
-            "Terrane"
+            # "Terrane",
         ]
         return strings
 
@@ -269,7 +290,8 @@ class DataCollection(object):
             "DO_NOT",
             "OLD",
             "__MACOSX",
-            "Continent-ocean_boundaries"
+            "Continent-ocean_boundaries",
+            "COB",
         ]
         return strings
 
@@ -280,6 +302,7 @@ class DataCollection(object):
 
             "cob",
             "ContinentOceanBoundaries",
+            "COBLineSegments",
         ]
         return strings
 
@@ -290,7 +313,7 @@ class DataCollection(object):
 
             "DO_NOT",
             "OLD",
-            "__MACOSX"
+            "__MACOSX",
         ]
         return strings
 
