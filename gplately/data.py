@@ -54,7 +54,8 @@ class DataCollection(object):
 
             "Muller2019" : ["https://www.earthbyte.org/webdav/ftp/Data_Collections/Muller_etal_2019_Tectonics/Muller_etal_2019_Agegrids/Muller_etal_2019_Tectonics_v2.0_netCDF/Muller_etal_2019_Tectonics_v2.0_AgeGrid-{}.nc"],
             "Muller2016" : ["https://www.earthbyte.org/webdav/ftp/Data_Collections/Muller_etal_2016_AREPS/Muller_etal_2016_AREPS_Agegrids/Muller_etal_2016_AREPS_Agegrids_v1.17/Muller_etal_2016_AREPS_v1.17_netCDF/Muller_etal_2016_AREPS_v1.17_AgeGrid-{}.nc"],
-            "Seton2012" : ["https://www.earthbyte.org/webdav/ftp/Data_Collections/Seton_etal_2012_ESR/Seton_etal_2012_ESR_Agegrids/netCDF_0-200Ma/agegrid_{}.nc"]
+            "Seton2012" : ["https://www.earthbyte.org/webdav/ftp/Data_Collections/Seton_etal_2012_ESR/Seton_etal_2012_ESR_Agegrids/netCDF_0-200Ma/agegrid_{}.nc"],
+            "Clennett2020" : ["https://www.earthbyte.org/webdav/ftp/Data_Collections/Clennett_etal_2020_G3/Clennet_AgeGrids_0.1d_masked/seafloor_age_mask_{}.0Ma.nc"]
         }
 
         links_to_download = _find_needed_collection(
