@@ -1,3 +1,13 @@
+"""Tools to read geometry data from input files and output them as `Shapely` 
+geometries. These geometries can be plotted directly with GPlately's 
+`PlotTopologies` object.
+
+By default, input files are read with `GeoPandas` and output as a 
+`geopandas.GeoSeries` object that contains `Shapely` geometries.
+If `GeoPandas` is not found on the system, input files are read with 
+`Shapely` instead and are still returned as `Shapely` geometries.
+
+"""
 from shapely.geometry import shape
 from shapely.geometry.base import BaseGeometry
 try:
