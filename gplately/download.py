@@ -15,14 +15,17 @@ from pooch import HTTPDownloader as _HTTPDownloader
 from pooch import Unzip as _Unzip
 from pooch import Decompress as _Decompress
 from matplotlib import image as _image
-from .data import DataCollection
+from gplately.data import DataCollection
 import gplately as _gplately
 import pygplates as _pygplates
 import re as _re
 import os as _os
 import numpy as _np
 import urllib.request as _request
-
+import hashlib as _hashlib
+import pathlib as _pathlib
+import shutil as _shutil
+import requests as _requests
 
 def _test_internet_connection(url):
     """Test whether a connection to the required web server
@@ -66,38 +69,118 @@ def _path_of_cached_file(url):
     _pooch.utils.make_local_storage(path)
     full_path = path.resolve() / cached_filename
     return full_path
-        
+
+
+def _extract_processed_files(processed_directory):
+    """Return a list of all full filenames from a given directory 
+    in the GPlately cache.
+    """
+    if _os.path.isdir(processed_directory):
+        fnames = []
+        for root, dirs, files in _os.walk(processed_directory):
+            for file in files:
+                fnames.append(_os.path.join(root,file))
+        return(fnames)
+    elif _os.path.isfile(str(processed_directory)):
+        return(processed_directory)
+
+    
+def _get_url_etag(url):
+    """Obtain the E-Tag of a web server URL. 
+    
+    The E-Tag identifies a resource under a URL. If the resource
+    is modified, a new E-Tag is generated. DataServer uses the
+    E-Tag to determine whether local copies of plate model files
+    available from a web server need to be updated to match the
+    version on the web server.
+    """
+    # Determine E-Tag of the URL
+    etag = str(_requests.head(url).headers.get("ETag"))
+
+    # Determine the filename of an E-Tag txt file
+    md5 = _hashlib.md5(url.encode()).hexdigest()
+    fname = _pooch.utils.parse_url(url)["path"].split("/")[-1]
+    fname = fname[-(255 - len(md5) - 1) :]
+    unique_name = f"{md5}-{fname}".split(".")[0]+"-ETAG.txt"
+    cachepath = str(
+        _pathlib.Path(
+            _os.path.expanduser(str(_os_cache('gplately'))))
+    )
+    text_path = cachepath+"/"+unique_name 
+    return(etag, text_path)
+    
+    
+def _save_url_etag_to_txt(etag, text_path):
+    """Write an E-Tag to a text file.
+    """       
+    # Write E-Tag to a text file on the GPlately cache. 
+    text_file = open(text_path, "w")
+    text_file.write(etag)
+    text_file.close()
+    
+    
+def _first_time_download_from_web(url):
+    """
+    # Provided a web connection to a server can be established,
+    download the files from the URL into the GPlately cache.
+    """
+    if _test_internet_connection(url):
+        fnames = _retrieve(
+                url=url,
+                known_hash=None,  
+                downloader=_HTTPDownloader(progressbar=True),
+                path=_os_cache('gplately'),
+                processor=_determine_processor(url)[0]
+        )
+        # Get the URL's E-Tag for the first time
+        etag, textfilename = _get_url_etag(url)
+        _save_url_etag_to_txt(etag, textfilename)
+        return(fnames, etag, textfilename)
+    
     
 def download_from_web(url, download_changes=True):
     """Download a file from a `url` into the `gplately` cache.
     
     Notes
     -----
-    After the file belonging to the given `url` is downloaded to the cache
-    once, subsequent runs of `download_from_web` with this `url` will not
-    redownload the file as long as it has not been updated on the web server. 
-    Instead, the file will be re-accessed from the `gplately` cache it was 
-    downloaded to. However, if the file has been updated on the web server 
-    and still has the same download `url`, the updated file will be
-    be downloaded and the following message will be displayed to the user:
+    After the file belonging to the given `url` is downloaded 
+    to the `gplately` cache once, subsequent runs of 
+    `download_from_web` with this `url` will not redownload 
+    the file as long as:
     
-        "Updating data from url to file cache location."
+    * The file has not been updated on the web server,
+    * The file has not been removed from the `gplately` cache.
     
-    If a connection to the web server (and the file(s)) in `url` is unsuccessful,
-    this is likely because:
+    Instead, the file will be re-accessed from the `gplately` 
+    cache it was downloaded to. 
+    
+    However, if the file has been updated on the web server,
+    `download_from_web` overwrites the cached file with the 
+    updated version. The following messages will be displayed 
+    to the user:
+    
+        "Checking whether the requested files need to be updated..."
+        "Yes - updating requested files..."
+        "Requested files downloaded to the GPlately cache folder!"
+    
+    If ever a connection to the web server (and the file(s)) in 
+    `url` is unsuccessful, this is likely because:
 
     * An internet connection could not be established; or
     * The `url` passed to `download_from_web` is incorrect
 
-    In either case, `download_from_web` attempts to find a version of the file(s) 
-    in `url` already stored in the `gplately` cache (assuming it has been downloaded 
-    from the same `url` once before). If the file(s) are not cached, a `ConnectionError`
-    is raised.
+    In either case, `download_from_web` attempts to find a version 
+    of the requested file(s) in `url` already stored in the 
+    `gplately` cache (assuming it has been downloaded from the same 
+    `url` once before). This version may not match the one on the web
+    server. If a copy of the file(s) cannot be found in the `gplately`
+    cache, a `ConnectionError` is raised.
     
     Parameters
     ----------
     url : str
-        The full URL to a file to download from a public web server.
+        The full URL used to download a file from a public web server
+        like webDAV.
     download_changes : bool, default=True
         Permit the re-downloading/update of the file from `url` if 
         it has been updated on the web server since the last download.
@@ -116,61 +199,95 @@ def download_from_web(url, download_changes=True):
         is incorrect) and no version of the requested file(s) have been
         cached before. In this case, nothing is returned. 
     """
-    path = _os_cache('gplately')
-    if download_changes is True:
+    # Identify the final filename from the given url within the GPlately cache
+    full_path = _path_of_cached_file(url)
+    
+    # If the files are not yet on the cache,
+    if not _os.path.isfile(str(full_path)):
         
-        # Determine the full path that the file in `url` will be cached to
-        full_path = _path_of_cached_file(url)
-        
-        # If there is no detected internet connection...
-        if not _test_internet_connection(url):
-            
-            # Depending on the processor: decompress, unzip or do nothing
-            cache_path = str(full_path) + _determine_processor(url)[1]
-
-            # If the file, unzipped file(s) etc. in `url` exists on the 
-            # user's cache, return it.
-            if _os.path.exists(str(cache_path)):
-                print("No connection to {} established. The requested file(s) (potentially older versions) exist in the GPlately cache ({}) and have been collected.".format(url, full_path.parent))
-                
-                # If the url encodes a single file, return the single file path
-                if _os.path.isfile(str(cache_path)):
-                    return cache_path
-                # Otherwise, search the child directories and return all files in it
-                elif _os.path.isdir(str(cache_path)):
-                    fnames = []
-                    for root, dirs, files in _os.walk(str(cache_path)):
-                        for file in files:
-                            fnames.append(_os.path.join(root,file))
-                    return fnames
-            
-            # If the file has never been cached before, raise an error. It 
-            # is possible that the URL is incorrect as well.
-            else:
-                raise ConnectionError(
-                    "A connection to {} could not be made. Please check your internet connection and/or ensure the URL is correct. No file from {} has been cached to {} yet - nothing has been returned.".format(url, url, full_path.parent))
-                
-        # If there is an internet connection detected...
+        # ...and if a connection to the web server can be established,
+        # download files from the URL and create a textfile for this URL's E-Tag
+        if _test_internet_connection(url):
+            fnames, etag, textfilename = _first_time_download_from_web(url)
+            print("Requested files downloaded to the GPlately cache folder!")
+            return(fnames)
+    
+        # ... if a connection to the web server cannot be established
         else:
-            # Download the required file(s) temporarily and determine their hash(es)
-            with _pooch.utils.temporary_file(path=str(full_path.parent)) as tmp:
-                downloader=_HTTPDownloader(progressbar=False)
-                downloader(url, tmp, _pooch)
-                known_hash = _pooch.file_hash(tmp, alg="sha256")
-    else:
-        known_hash = None
+            raise ConnectionError(
+                    "A connection to {} could not be made. Please check your internet connection and/or ensure the URL is correct. No file from the given URL has been cached to {} yet - nothing has been returned.".format(url, full_path.parent))
 
-    # Download the file to the cache for the first time, or re-access it if 
-    # downloading the same file again. If a new hash was identified, it is 
-    # assumed the file needs updating, so update the file.
-    fnames = _retrieve(
-            url=url,
-            known_hash=known_hash,  
-            downloader=_HTTPDownloader(progressbar=True),
-            path=_os_cache('gplately'),
-            processor=_determine_processor(url)[0]
-    )
-    return fnames
+    # If the files have been downloaded before...
+    else:
+        #... and if a connection to the web server can be made...
+        if _test_internet_connection(url):
+            
+            # If the newest version of the files in `url` must be cached 
+            # at all times, perform E-Tag comparisons:
+            if download_changes:
+
+                # Get the path to the file's E-Tag textfile
+                local_etag_txtfile = str(full_path).split(".")[0]+"-ETAG.txt"
+
+                # If an e-tag text file does not exist, erase the cached files
+                # and download the latest version from the web server. This, in turn,
+                # creates an e-tag textfile for this version.
+                if not _os.path.isfile(local_etag_txtfile):
+                    _os.remove(str(full_path))
+                    fnames, etag, local_etag_txtfile = _first_time_download_from_web(url)
+                    return(fnames)
+
+                # If the e-tag textfile exists for the local files,
+                else: 
+                    print("Checking whether the requested files need to be updated...")
+
+                    # Determine the local file's URL e-tag from the textfile
+                    with open(local_etag_txtfile) as f:
+                        local_etag = str(f.readlines()[0])
+
+                    # Get the e-tag of the web server URL at current time
+                    remote_etag, remote_etag_textfile = _get_url_etag(url)
+
+                    # If the local and remote e-tags are unequal, the web-server URL 
+                    # contains an updated version of the cached files.
+                    if str(remote_etag) != str(local_etag):
+                        print("Yes - updating requested files...")
+                        
+                        # Update the e-tag textfile with this newly-identified URL e-tag
+                        _save_url_etag_to_txt(remote_etag, remote_etag_textfile)
+
+                        # Re-download the file, and process it if need-be.
+                        with _pooch.utils.temporary_file(path=str(full_path.parent)) as tmp:
+                            downloader = _HTTPDownloader(progressbar=True)
+                            downloader(url, tmp, _pooch) 
+                            _shutil.move(tmp, str(full_path))
+                            processor=_determine_processor(url)[0]
+                            processor(str(full_path), "update", None)
+                            # determine_processor gives the file its processed filename
+                            processed_file = str(full_path)+_determine_processor(url)[1]
+
+                        print("Requested files downloaded to the GPlately cache folder!")
+                        return(_extract_processed_files(processed_file))
+
+                    # If the e-tags are equal, the local and remote files are the same.
+                    # Just return the file(s) as-is.
+                    else:
+                        print("Requested files are up-to-date!")
+                        return(_extract_processed_files(
+                            str(full_path)+_determine_processor(url)[1]))
+            
+            # If file versioning doesn't matter, just keep returning the cached files.
+            else:
+                fnames, etag, local_etag_txtfile = _first_time_download_from_web(url)
+                return(fnames)
+                
+        # If a connection to the web server could not be made, and the files exist in
+        # the GPlately cache, just return the files as-is.
+        else:
+            print("No connection to {} established. The requested file(s) (potentially older versions) exist in the GPlately cache ({}) and have been returned.".format(url, full_path.parent))
+            return(_extract_processed_files(
+                    str(full_path)+_determine_processor(url)[1]))
+
 
 
 def _collect_file_extension(fnames, file_extension):
