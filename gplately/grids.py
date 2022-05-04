@@ -1030,29 +1030,15 @@ class Raster(object):
     Attributes
     ----------
     PlateReconstruction_object : object pointer
-<<<<<<< HEAD
         A pointer to GPlately's `PlateReconstruction` object and its attributes, like the 
         `rotation_model`, a set of reconstructable `topology_featues` and `static_polygons`
         that belong to a particular plate model. These attributes can be used in the `Points` 
         object if called using “self.PlateReconstruction_object.X”, where X is the attribute.
 
-    filename : str, default=None
-        Full string path to netCDF raster file
-    OR
-    array : ndarray, default=None
-        An array with elements that define a grid. The number of rows corresponds to the number of 
-        latitudinal points, while the number of columns corresponds to the number of longitudinal 
-        points.
-
     extent : 1D numpy array, default=None
         Four-element array to specify [min lon, max lon, min lat, max lat] extents of any sampling 
         points. If no extents are supplied, full global extent [-180,180,-90,90] is assumed. 
-=======
-    filename
-    array
-    extent
-    Resample
-    data 
+    data
     lons
     lats
     method
@@ -1076,9 +1062,11 @@ class Raster(object):
         Resizes the grid with a specific resolution and samples points using linear interpolation.
         
     fill_NaNs(self, overwrite=False)
-        Searches for invalid ‘data’ cells containing NaN-type entries and replaces NaNs with the value of the nearest
+        Searches for invalid 'data' cells containing NaN-type entries and replaces NaNs with the value of the nearest
         valid data cell.
     """
+
+
     def __init__(self, PlateReconstruction_object=None, filename=None, array=None, extent=None, resample=None, time=0):
         """Constructs all necessary attributes for the raster object.
 
@@ -1115,14 +1103,7 @@ class Raster(object):
         extent : 1d array
             The [min lon, max lon, min lat, max lat] extents supplied to __init__. If not supplied, it is taken to be
             [-180,180,-90,90].
->>>>>>> raster-reconstruction
-
-    resample : tuple, default=None
-        Optionally resample grid, pass spacing in X and Y direction as a tuple
-        e.g. resample=(spacingX, spacingY)
-
-    """
-    def __init__(self, PlateReconstruction_object=None, filename=None, array=None, extent=None, resample=None, time=0):
+        """
         self.PlateReconstruction_object = PlateReconstruction_object
 
         # we initialise an empty points object as we do not want to build this before any resampling takes place.
@@ -1151,11 +1132,11 @@ class Raster(object):
         self._update()
 
         if array is not None and resample is not None:
-            self.resample(*resample, override=True)
+            self.resample(*resample, overwrite=True)
 
 
     def _update(self):
-        """Stores the RegularGridInterpolator object’s method for sampling gridded data at a set of 
+        """Stores the RegularGridInterpolator object's method for sampling gridded data at a set of 
         point coordinates. 
 
         Allows methods of the Raster object to access grid sampling functionalities. The gridded data 
@@ -1207,7 +1188,7 @@ class Raster(object):
             1d arrays containing the longitudes and latitudes of the points to interpolate onto the
             gridded data. 
 
-        method : str, default=’linear’
+        method : str, default='linear'
             The method of interpolation to perform. Supported are `linear` and `Nearest`. Assumes 
             `linear` interpolation if `None` provided.  
 
