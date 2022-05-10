@@ -406,7 +406,25 @@ def geocentric_radius(lat, degrees=True):
     num = (r1**2*coslat)**2 + (r2**2*sinlat)**2
     den = (r1*coslat)**2 + (r2*sinlat)**2
     earth_radius = np.sqrt(num/den)
-    return earth_radius</code></pre>
+    return earth_radius
+
+
+def plate_partitioner_for_point(lat_lon_tuple, topology_features, rotation_model):
+    &#34;&#34;&#34; Determine the present-day plate ID of a (lat, lon) coordinate pair if 
+    it is not specified.
+    &#34;&#34;&#34;
+    plate_partitioner = pygplates.PlatePartitioner(
+        pygplates.FeatureCollection(topology_features), 
+        pygplates.RotationModel(rotation_model), 
+        reconstruction_time=float(0)
+    )
+    partitioning_plate = plate_partitioner.partition_point(
+        pygplates.PointOnSphere(
+            (float(lat_lon_tuple[0]), float(lat_lon_tuple[1]))
+        )
+    )
+    plate_id_at_present_day = partitioning_plate.get_feature().get_reconstruction_plate_id()
+    return(plate_id_at_present_day)</code></pre>
 </details>
 </section>
 <section>
@@ -765,6 +783,34 @@ This is a scalar if <code>age</code> is a scalar.</dd>
     return out</code></pre>
 </details>
 </dd>
+<dt id="gplately.tools.plate_partitioner_for_point"><code class="name flex">
+<span>def <span class="ident">plate_partitioner_for_point</span></span>(<span>lat_lon_tuple, topology_features, rotation_model)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Determine the present-day plate ID of a (lat, lon) coordinate pair if
+it is not specified.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def plate_partitioner_for_point(lat_lon_tuple, topology_features, rotation_model):
+    &#34;&#34;&#34; Determine the present-day plate ID of a (lat, lon) coordinate pair if 
+    it is not specified.
+    &#34;&#34;&#34;
+    plate_partitioner = pygplates.PlatePartitioner(
+        pygplates.FeatureCollection(topology_features), 
+        pygplates.RotationModel(rotation_model), 
+        reconstruction_time=float(0)
+    )
+    partitioning_plate = plate_partitioner.partition_point(
+        pygplates.PointOnSphere(
+            (float(lat_lon_tuple[0]), float(lat_lon_tuple[1]))
+        )
+    )
+    plate_id_at_present_day = partitioning_plate.get_feature().get_reconstruction_plate_id()
+    return(plate_id_at_present_day)</code></pre>
+</details>
+</dd>
 <dt id="gplately.tools.plate_temp"><code class="name flex">
 <span>def <span class="ident">plate_temp</span></span>(<span>age, z, plate_thickness=125000.0, kappa=8.04e-07, t_mantle=1350.0, t_surface=0.0)</span>
 </code></dt>
@@ -1017,6 +1063,7 @@ lon / lat (radians).</p>
 <li><code><a title="gplately.tools.haversine_distance" href="#gplately.tools.haversine_distance">haversine_distance</a></code></li>
 <li><code><a title="gplately.tools.lonlat2xyz" href="#gplately.tools.lonlat2xyz">lonlat2xyz</a></code></li>
 <li><code><a title="gplately.tools.plate_isotherm_depth" href="#gplately.tools.plate_isotherm_depth">plate_isotherm_depth</a></code></li>
+<li><code><a title="gplately.tools.plate_partitioner_for_point" href="#gplately.tools.plate_partitioner_for_point">plate_partitioner_for_point</a></code></li>
 <li><code><a title="gplately.tools.plate_temp" href="#gplately.tools.plate_temp">plate_temp</a></code></li>
 <li><code><a title="gplately.tools.points_to_features" href="#gplately.tools.points_to_features">points_to_features</a></code></li>
 <li><code><a title="gplately.tools.xyz2lonlat" href="#gplately.tools.xyz2lonlat">xyz2lonlat</a></code></li>
