@@ -598,7 +598,7 @@ class PlateReconstruction(object):
         return np.array(all_velocities)
 
 
-    def create_motion_path(self, lons, lats, time_array, reconstruction_plate_ID, relative_plate_ID=None):
+    def create_motion_path(self, lons, lats, time_array, reconstruction_plate_ID, relative_plate_ID=None, return_rate_of_motion=False):
         """ Create a path of points to mark the trajectory of a plate's motion 
         through geological time.
         
@@ -623,6 +623,8 @@ class PlateReconstruction(object):
         relative_plate_ID : int, default=None
             The ID of the moving plate. If this is not passed, the plate ID of the 
             seed points are ascertained using pygplates' `PlatePartitioner`.
+        return_rate_of_motion : bool, default=False
+            Choose whether to return the rate of plate motion through time for each
             
         Returns
         -------
@@ -644,9 +646,11 @@ class PlateReconstruction(object):
                 current_lats = lat[:,i]
         """
         
-        # ndarrays to fill with reconstructed points
+        # ndarrays to fill with reconstructed points and 
+        # rates of motion (if requested)
         rlons = np.empty((len(time_array), len(lons)))
         rlats = np.empty((len(time_array), len(lons)))
+        rates = np.empty((len(time_array)-1, len(lons)))
         
         seed_points = list(zip(lats,lons))
         for i, lat_lon in enumerate(seed_points):
@@ -665,7 +669,7 @@ class PlateReconstruction(object):
             # Create the motion path feature
             motion_path_feature = pygplates.Feature.create_motion_path(
                 seed_points_at_digitisation_time, 
-                [int(t) for t in time_array], 
+                [float(t) for t in time_array], 
                 valid_time=(1000., 0.),
                 relative_plate=relative_plate_ID,
                 reconstruction_plate_id=reconstruction_plate_ID)
@@ -689,7 +693,22 @@ class PlateReconstruction(object):
             rlons[:,i] = np.array(lon_360)
             rlats[:,i] = np.array(lat)
         
-        return (rlons, rlats)
+            if return_rate_of_motion is True:
+                distance = []
+                for reconstructed_motion_path in reconstructed_motion_paths:
+                    for segment in reconstructed_motion_path.get_motion_path().get_segments():
+                        # multiply arc length of the motion path segment by a latitude-dependent Earth radius
+                        # use latitude of the segment start point
+                        distance.append(
+                            segment.get_arc_length() * _tools.geocentric_radius(segment.get_start_point().to_lat_lon()[0]) / 1e3
+                        )
+                rate = np.asarray(distance)/(time_array[1]-time_array[0])
+                rates[:,i] = np.flipud(rate)
+        
+        if return_rate_of_motion is True:
+            return (rlons, rlats, rates)
+        else:
+            return(rlons, rlats)
 
 
     def create_flowline(self, lons, lats, left_plate_ID, right_plate_ID,time_array):
