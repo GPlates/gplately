@@ -943,9 +943,10 @@ class PlotTopologies(object):
 
     and optionally, 
 
-    * a `coastline_filename`, 
-    * a `continent_filename`, 
+    * a `coastline_filename`
+    * a `continent_filename`
     * a `COB_filename`
+    * an `anchor_plate_id`
 
     For example:
 
@@ -954,7 +955,8 @@ class PlotTopologies(object):
                                             time,
                                             coastline_filename,
                                             continent_filename,
-                                            COB_filename
+                                            COB_filename,
+                                            anchor_plate_id,
                 )
 
     The `coastline_filename`, `continent_filename` and `COB_filename` can be single
@@ -993,6 +995,9 @@ class PlotTopologies(object):
         The GPlately `PlateReconstruction` object will be used to access a plate 
         `rotation_model` and a set of `topology_features` which contains plate boundary 
         features like trenches, ridges and transforms.
+
+    anchor_plate_id : int, default 0
+        The anchor plate ID used for reconstruction.
 
     base_projection : instance of <cartopy.crs.{transform}>, default <cartopy.crs.PlateCarree> object
         where {transform} is the map Projection to use on the Cartopy GeoAxes. 
@@ -1103,7 +1108,7 @@ class PlotTopologies(object):
 
     @property
     def anchor_plate_id(self):
-        """Anchor plate ID for reconstruction."""
+        """Anchor plate ID for reconstruction. Must be an integer >= 0."""
         return self._anchor_plate_id
 
     @anchor_plate_id.setter
