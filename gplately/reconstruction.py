@@ -598,7 +598,7 @@ class PlateReconstruction(object):
         return np.array(all_velocities)
 
 
-    def create_motion_path(self, lons, lats, time_array, reconstruction_plate_ID, relative_plate_ID=None, return_rate_of_motion=False):
+    def create_motion_path(self, lons, lats, time_array, plate_id=None, anchor_plate_id=0, return_rate_of_motion=False):
         """ Create a path of points to mark the trajectory of a plate's motion 
         through geological time.
         
@@ -618,11 +618,11 @@ class PlateReconstruction(object):
                 time_step = 2.5
                 time_array = np.arange(min_time, max_time + time_step, time_step)
 
-        reconstruction_plate_ID : int
-            The ID of the anchor plate.
-        relative_plate_ID : int, default=None
+        plate_id : int, default=None
             The ID of the moving plate. If this is not passed, the plate ID of the 
             seed points are ascertained using pygplates' `PlatePartitioner`.
+        anchor_plate_id : int, default=0
+            The ID of the anchor plate.
         return_rate_of_motion : bool, default=False
             Choose whether to return the rate of plate motion through time for each
             
@@ -645,6 +645,10 @@ class PlateReconstruction(object):
                 current_lons = lon[:,i]
                 current_lats = lat[:,i]
         """
+
+        lons = np.atleast_1d(lons)
+        lats = np.atleast_1d(lats)
+        time_array = np.atleast_1d(time_array)
         
         # ndarrays to fill with reconstructed points and 
         # rates of motion (if requested)
@@ -660,8 +664,8 @@ class PlateReconstruction(object):
             )
             # Allocate the present-day plate ID to the PointOnSphere if 
             # it was not given.
-            if relative_plate_ID is None:
-                relative_plate_ID = _tools.plate_partitioner_for_point(
+            if plate_id is None:
+                plate_id = _tools.plate_partitioner_for_point(
                     lat_lon,
                     self.topology_features,
                     self.rotation_model
@@ -669,10 +673,10 @@ class PlateReconstruction(object):
             # Create the motion path feature
             motion_path_feature = pygplates.Feature.create_motion_path(
                 seed_points_at_digitisation_time, 
-                [float(t) for t in time_array], 
-                valid_time=(1000., 0.),
-                relative_plate=relative_plate_ID,
-                reconstruction_plate_id=reconstruction_plate_ID)
+                time_array.tolist(), 
+                valid_time=(max(time_array), min(time_array)),
+                relative_plate=plate_id,
+                reconstruction_plate_id=anchor_plate_id)
 
             reconstructed_motion_paths = self.reconstruct(
                 motion_path_feature, 
@@ -686,12 +690,8 @@ class PlateReconstruction(object):
 
             lon, lat = np.flipud(trail[:, 1]), np.flipud(trail[:, 0])
 
-            # Convert lons to 360 format, and add lats and lons to ndarray
-            lon_360 = []
-            for l in lon:
-                lon_360.append(l + 360 if l < 0 else l)
-            rlons[:,i] = np.array(lon_360)
-            rlats[:,i] = np.array(lat)
+            rlons[:,i] = lon
+            rlats[:,i] = lat
         
             if return_rate_of_motion is True:
                 distance = []
@@ -702,13 +702,13 @@ class PlateReconstruction(object):
                         distance.append(
                             segment.get_arc_length() * _tools.geocentric_radius(segment.get_start_point().to_lat_lon()[0]) / 1e3
                         )
-                rate = np.asarray(distance)/(time_array[1]-time_array[0])
+                rate = np.asarray(distance)/np.diff(time_array)
                 rates[:,i] = np.flipud(rate)
         
         if return_rate_of_motion is True:
-            return (rlons, rlats, rates)
+            return np.squeeze(rlons), np.squeeze(rlats), np.squeeze(rates)
         else:
-            return(rlons, rlats)
+            return np.squeeze(rlons), np.squeeze(rlats)
 
 
     def create_flowline(self, lons, lats, left_plate_ID, right_plate_ID,time_array):
@@ -894,6 +894,7 @@ class Points(object):
         features = _tools.points_to_features(lons, lats, plate_id)
 
         if plate_id:
+            plate_id = np.atleast_1d(plate_id)
             self.features = features
         else:
             # partition using static polygons
@@ -1084,6 +1085,88 @@ class Points(object):
             all_velocities[i] = velocities[0].get_y(), velocities[0].get_x()
 
         return list(all_velocities.T)
+
+    def motion_path(self, time_array, anchor_plate_id=0, return_rate_of_motion=False):
+        """ Create a path of points to mark the trajectory of a plate's motion 
+        through geological time.
+        
+        Parameters
+        ----------
+        time_array : arr
+            An array of reconstruction times at which to determine the trajectory 
+            of a point on a plate. For example:
+                
+                import numpy as np
+                min_time = 30
+                max_time = 100
+                time_step = 2.5
+                time_array = np.arange(min_time, max_time + time_step, time_step)
+
+        anchor_plate_id : int, default=0
+            The ID of the anchor plate.
+        return_rate_of_motion : bool, default=False
+            Choose whether to return the rate of plate motion through time for each
+            
+        Returns
+        -------
+        rlons : ndarray
+            An n-dimensional array with columns containing the longitudes of 
+            the seed points at each timestep in `time_array`. There are n 
+            columns for n seed points. 
+        rlats : ndarray
+            An n-dimensional array with columns containing the latitudes of 
+            the seed points at each timestep in `time_array`. There are n 
+            columns for n seed points. 
+        """
+        time_array = np.atleast_1d(time_array)
+        
+        # ndarrays to fill with reconstructed points and 
+        # rates of motion (if requested)
+        rlons = np.empty((len(time_array),   len(self.lons)))
+        rlats = np.empty((len(time_array),   len(self.lons)))
+        rates = np.empty((len(time_array)-1, len(self.lons)))
+
+        for i, feature in enumerate(self.FeatureCollection):
+
+            # Create the motion path feature
+            motion_path_feature = pygplates.Feature.create_motion_path(
+                feature.get_geometry(), 
+                time_array.tolist(), 
+                valid_time=(max(time_array), min(time_array)),
+                relative_plate=self.plate_id[i],
+                reconstruction_plate_id=anchor_plate_id)
+
+            reconstructed_motion_paths = self.PlateReconstruction_object.reconstruct(
+                motion_path_feature, 
+                to_time=0, 
+                #from_time=0, 
+                reconstruct_type=pygplates.ReconstructType.motion_path)
+
+            # Turn motion paths in to lat-lon coordinates
+            for reconstructed_motion_path in reconstructed_motion_paths:
+                trail = reconstructed_motion_path.get_motion_path().to_lat_lon_array()
+
+            lon, lat = np.flipud(trail[:, 1]), np.flipud(trail[:, 0])
+
+            rlons[:,i] = lon
+            rlats[:,i] = lat
+        
+            if return_rate_of_motion is True:
+                distance = []
+                for reconstructed_motion_path in reconstructed_motion_paths:
+                    for segment in reconstructed_motion_path.get_motion_path().get_segments():
+                        # multiply arc length of the motion path segment by a latitude-dependent Earth radius
+                        # use latitude of the segment start point
+                        distance.append(
+                            segment.get_arc_length() * _tools.geocentric_radius(segment.get_start_point().to_lat_lon()[0]) / 1e3
+                        )
+                rate = np.asarray(distance)/np.diff(time_array)
+                rates[:,i] = np.flipud(rate)
+        
+        if return_rate_of_motion is True:
+            return np.squeeze(rlons), np.squeeze(rlats), np.squeeze(rates)
+        else:
+            return np.squeeze(rlons), np.squeeze(rlats)
 
 
     def save(self, filename):
