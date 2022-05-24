@@ -6,6 +6,7 @@ from . import (
     grids,
     io,
     plot,
+    oceans
 )
 from .data import DataCollection
 from .download import DataServer
@@ -14,5 +15,6 @@ from .io import get_geometries, get_valid_geometries
 from .plot import PlotTopologies
 from .reconstruction import PlateReconstruction, Points
 from .tools import EARTH_RADIUS
+from .oceans import SeafloorGrid
 
 __pdoc__ = {"data" : False}
