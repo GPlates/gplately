@@ -377,3 +377,87 @@ def geocentric_radius(lat, degrees=True):
     den = (r1*coslat)**2 + (r2*sinlat)**2
     earth_radius = np.sqrt(num/den)
     return earth_radius
+
+
+def plate_partitioner_for_point(lat_lon_tuple, topology_features, rotation_model):
+    """ Determine the present-day plate ID of a (lat, lon) coordinate pair if 
+    it is not specified.
+    """
+    plate_partitioner = pygplates.PlatePartitioner(
+        pygplates.FeatureCollection(topology_features), 
+        pygplates.RotationModel(rotation_model), 
+        reconstruction_time=float(0)
+    )
+    partitioning_plate = plate_partitioner.partition_point(
+        pygplates.PointOnSphere(
+            (float(lat_lon_tuple[0]), float(lat_lon_tuple[1]))
+        )
+    )
+    plate_id_at_present_day = partitioning_plate.get_feature().get_reconstruction_plate_id()
+    return(plate_id_at_present_day)
+
+
+
+# From Simon Williams' GPRM
+def find_distance_to_nearest_ridge(resolved_topologies,shared_boundary_sections,
+                                   point_features,fill_value=5000.):
+
+    all_point_distance_to_ridge = []
+    all_point_lats = []
+    all_point_lons = []
+
+    for topology in resolved_topologies:
+        plate_id = topology.get_resolved_feature().get_reconstruction_plate_id()
+
+        # Section to isolate the mid-ocean ridge segments that bound the current plate
+        mid_ocean_ridges_on_plate = []
+        for shared_boundary_section in shared_boundary_sections:
+
+            if shared_boundary_section.get_feature().get_feature_type() == pygplates.FeatureType.create_gpml('MidOceanRidge'):
+                for shared_subsegment in shared_boundary_section.get_shared_sub_segments():
+                    sharing_resolved_topologies = shared_subsegment.get_sharing_resolved_topologies()
+                    for resolved_polygon in sharing_resolved_topologies:
+                        if resolved_polygon.get_feature().get_reconstruction_plate_id() == plate_id:
+                            mid_ocean_ridges_on_plate.append(shared_subsegment.get_resolved_geometry())
+
+        point_distance_to_ridge = []
+        point_lats = []
+        point_lons = []
+
+        for point_feature in point_features:
+
+            for points in point_feature.get_geometries():
+                for point in points:
+
+                    if topology.get_resolved_geometry().is_point_in_polygon(point):
+
+                        if len(mid_ocean_ridges_on_plate)>0:
+
+                            min_distance_to_ridge = None
+
+                            for ridge in mid_ocean_ridges_on_plate:
+                                distance_to_ridge = pygplates.GeometryOnSphere.distance(point,ridge,min_distance_to_ridge)
+
+                                if distance_to_ridge is not None:
+                                    min_distance_to_ridge = distance_to_ridge
+
+                            point_distance_to_ridge.append(min_distance_to_ridge*pygplates.Earth.mean_radius_in_kms)
+                            point_lats.append(point.to_lat_lon()[0])
+                            point_lons.append(point.to_lat_lon()[1])
+
+                        else:
+
+                            point_distance_to_ridge.append(fill_value)
+                            point_lats.append(point.to_lat_lon()[0])
+                            point_lons.append(point.to_lat_lon()[1])
+
+        all_point_distance_to_ridge.extend(point_distance_to_ridge)
+        all_point_lats.extend(point_lats)
+        all_point_lons.extend(point_lons)
+
+
+    return all_point_lons,all_point_lats,all_point_distance_to_ridge
+
+
+
+
