@@ -10,8 +10,8 @@ from skimage import measure
 from . import reconstruction
 from . import plot
 from . import grids
+from . import tools
 from ptt import separate_ridge_transform_segments
-from gplately.utils import reconstruct_by_topologies as rbt
 
 
 def _create_icosahedral_mesh(refinement_levels):
@@ -125,9 +125,12 @@ def _point_in_polygon_routine(multi_point, COB_polygons):
     # Turn ocean basin points into a FeatureCollection of MultiPointOnSphere geometries
     multi_point_features_in = []
     multi_point_features_out = []
-    multi_point_feature_in = pygplates.Feature()
-    multi_point_feature_out = pygplates.Feature()
-
+    multi_point_feature_in = pygplates.Feature(
+        pygplates.FeatureType.create_from_qualified_string('gpml:MeshNode')
+    )
+    multi_point_feature_out = pygplates.Feature(
+        pygplates.FeatureType.create_from_qualified_string('gpml:MeshNode')
+    )
     multi_point_feature_in.set_geometry(
         pygplates.MultiPointOnSphere(points_in_arr)
     )
@@ -136,24 +139,26 @@ def _point_in_polygon_routine(multi_point, COB_polygons):
     )
     multi_point_features_in.append(multi_point_feature_in)
     multi_point_features_out.append(multi_point_feature_out)
-    point_mesh_in = pygplates.FeatureCollection(multi_point_features_in)
-    point_mesh_out = pygplates.FeatureCollection(multi_point_features_out)
+    #point_mesh_in = pygplates.FeatureCollection(multi_point_features_in)
+    #point_mesh_out = pygplates.FeatureCollection(multi_point_features_out)
 
-    return point_mesh_in, point_mesh_out, zvals
+    #return point_mesh_in, point_mesh_out, zvals
+    return pygplates.MultiPointOnSphere(points_in_arr), pygplates.MultiPointOnSphere(points_out_arr), zvals
 
 
-def _extract_point_feature_attributes(point_feature_collections):
+def _extract_point_feature_attributes_for_rbt(ocean_basin, mor_all_times, time_arr):
     """ Used to extract feature attributes from point features, like ocean basin
     seed points or MOR segment points.
     """
     # Attributes to extract
-    active_points = []  # current_point # TODO more verbose names for cp and at
-    appearance_time = []  # appearance_time
+    active_points = []  
+    appearance_time = []  
     birth_lat = []  # latitude_of_crust_formation
     prev_lat = []
     prev_lon = []
 
-    for point_feature_collection in point_feature_collections:
+  
+    for point_feature_collection in ocean_basin:
         for feature in point_feature_collection:
             active_points.append(
                 feature.get_geometry()
@@ -170,6 +175,31 @@ def _extract_point_feature_attributes(point_feature_collections):
             prev_lon.append(
                 feature.get_geometry().to_lat_lon_list()[0][1]
             )
+    del ocean_basin
+
+    for i, time in enumerate(time_arr):
+        features = pygplates.FeatureCollection(
+            mor_all_times[i]
+        )
+        for feature in features:
+            # seeds_from_topologies.append(feature)
+            if feature.get_valid_time()[0]<time_arr[0]:
+                active_points.append(
+                    feature.get_geometry()
+                )
+                appearance_time.append(
+                    feature.get_valid_time()[0]
+                )
+                birth_lat.append(
+                    feature.get_geometry().to_lat_lon_list()[0][0]
+                )
+                prev_lat.append(
+                    feature.get_geometry().to_lat_lon_list()[0][0]
+                )
+                prev_lon.append(
+                    feature.get_geometry().to_lat_lon_list()[0][1]
+                )
+
     return active_points, appearance_time, birth_lat, prev_lat, prev_lon
 
 
@@ -191,7 +221,8 @@ class SeafloorGrid(object):
         ridge_time_step,
         refinement_levels=5, 
         ridge_sampling=0.1,
-        subduction_collision_parameters = (5.0, 10.0), #Should raise an error if not supplied.
+        subduction_collision_parameters = (5.0, 10.0),
+        initial_ocean_mean_spreading_rate = 75.
         ):
 
         # Provides a rotation model, topology features and reconstruction time for 
@@ -207,6 +238,7 @@ class SeafloorGrid(object):
         self.refinement_levels = refinement_levels
         self.ridge_sampling = ridge_sampling
         self.subduction_collision_parameters = subduction_collision_parameters
+        self.initial_ocean_mean_spreading_rate = initial_ocean_mean_spreading_rate
 
         # Temporal parameters
         self._max_time = max_time
@@ -279,18 +311,74 @@ class SeafloorGrid(object):
         )
         # zval is a binary array encoding whether a point 
         # coordinate is within a COB terrane polygon or not
-        ocean_basin_point_mesh, _, _ = _point_in_polygon_routine(
+        ocean_basin_point_mesh, _, zvals = _point_in_polygon_routine(
             multi_point, 
             COB_polygons
         )
-        ### PREPARE THE OCEAN BASIN SEED POINTS
+        
+        # Plates to partition with
+        plate_partitioner = pygplates.PlatePartitioner(
+            _ensure_polygon_geometry(
+                self._PlotTopologies_object.continents, self.rotation_model, self._max_time
+            ),
+            self.rotation_model, 
+            #self._max_time
+        )
+
+        # Plate partition the ocean basin points
+        meshnode_feature = pygplates.Feature(
+            pygplates.FeatureType.create_from_qualified_string('gpml:MeshNode')
+        )
+        meshnode_feature.set_geometry(
+            ocean_basin_point_mesh
+        )
+        ocean_basin_meshnode = pygplates.FeatureCollection(meshnode_feature)
+
+        paleogeography = plate_partitioner.partition_features(
+            ocean_basin_meshnode, partition_return = pygplates.PartitionReturn.separate_partitioned_and_unpartitioned,
+            properties_to_copy=[pygplates.PropertyName.gpml_shapefile_attributes]
+        )
+        ocean_points = paleogeography[1]  # Separate those inside polygons
+
+
+        # Determine age of ocean basin points using their proximity to MOR features
+        resolved_topologies = []
+        shared_boundary_sections = []
+        pygplates.resolve_topologies(
+            self.topology_features, 
+            self.rotation_model, 
+            resolved_topologies, 
+            self.max_time, 
+            shared_boundary_sections
+        )
+        pX,pY,pZ = tools.find_distance_to_nearest_ridge(
+            resolved_topologies, 
+            shared_boundary_sections, 
+            ocean_points
+        )
+
+        # Divide spreading rate by 2 to use half spreading rate
+        pAge = np.array(pZ) / (self.initial_ocean_mean_spreading_rate/2.)
+
+        initial_ocean_point_features = []
+
+        for point in zip(pX,pY,pAge):
+
+            point_feature = pygplates.Feature()
+            #point_feature.set_name(str(initial_ocean_mean_spreading_rate))
+            point_feature.set_geometry(pygplates.PointOnSphere(point[1], point[0]))
+
+            # note that we add 'time' to the age at the time of computation
+            # to get the valid time in Ma
+            point_feature.set_valid_time(point[2]+time, -1)
+            initial_ocean_point_features.append(point_feature)
+
         if save_directory:
-            full_directory = save_directory+"/ocean_basin_seed_points_{}Ma.gpml".format(self._max_time)
-            ocean_basin_point_mesh.write(filename)
-        return ocean_basin_point_mesh
+            full_directory = "{}/ocean_basin_seed_points_{}Ma.gpml".format(save_directory, self._max_time)
+            pygplates.FeatureCollection(initial_ocean_point_features).write(full_directory)
+        return initial_ocean_point_features
 
 
-    ### FUNCTIONS TO REPEAT IN TIME LOOPS/POOL? 
     def _get_mid_ocean_ridge_seedpoints(self, time):
         """ Resolve mid-ocean ridges to the current `time`, and shift their shared sub-segments
         them slightly off the ridge using their stage rotation. 
@@ -384,7 +472,7 @@ class SeafloorGrid(object):
         return mor_point_features
 
 
-    def _create_continental_mask(self, time, save_directory=None):
+    def create_continental_mask(self, time, save_directory=None):
         """ Create a continental mask for use as a specified collision type in 
         `ReconstructByTopologies`. 
 
@@ -441,9 +529,9 @@ class SeafloorGrid(object):
         # Ensure the PIP binaries are integers
         final_grid = np.rint(grid_z1)
 
-        if save_directory:
-            full_directory = save_directory+"/continent_mask_{}Ma.nc".format(self._max_time)
-            gplately.grids.write_netcdf_grid(
+        if save_directory is not None:
+            full_directory = "{}/continent_mask_{}Ma.nc".format(save_directory, time)
+            grids.write_netcdf_grid(
                 full_directory, final_grid, extent=[-180,180,-90,90]
             )
         return final_grid
@@ -468,14 +556,14 @@ class SeafloorGrid(object):
             )
             print("Finished building MOR seedpoints at {} Ma!".format(time))
             all_continental_masks.append(
-                self._create_continental_mask(time, save_directory)
+                self.create_continental_mask(time, save_directory)
             )
             print("Finished building a continental mask at {} Ma!".format(time))
         return initial_ocean_seed_points, all_mor_features, all_continental_masks
 
 
 
-    def reconstruct_by_topologies(self):
+    def reconstruct_by_topologies(self, save_directory):
         """ Obtain all active ocean seed points at `time` - these are 
         points that have not been consumed at subduction zones or have not
         collided with continental polygons.
@@ -484,34 +572,36 @@ class SeafloorGrid(object):
 
         # Obtain all info from the ocean seed points and MOR, store in
         # one array.
-        seeds_at_start_time, continent_mask_file_pattern = self._get_initial_ocean_seed_points_and_continental_mask()
-        mor_at_start_time = self.get_mid_ocean_ridge_seedpoints()
+        initial_ocean_seed_points, all_mor_features, all_continental_masks = self.prepare_for_reconstruction_by_topologies(save_directory)
 
         active_points, appearance_time, \
-        birth_lat, prev_lat, prev_lon = _extract_point_feature_attributes(
-            [seeds_at_start_time, mor_at_start_time]
+        birth_lat, prev_lat, prev_lon = _extract_point_feature_attributes_for_rbt(
+            initial_ocean_seed_points,
+            all_mor_features,
+            self.time_array
         )
+
         # Conserve memory by deleting ocean seeds
-        del seeds_at_start_time
+        #del seeds_at_start_time
 
         ####  Begin reconstruction by topology process:
         # Indices for all active points at the current time step
         point_id = range(len(active_points))
 
         # Specify the collision detection
-        default_collision = rbt.DefaultCollision(
+        default_collision = reconstruction.DefaultCollision(
             feature_specific_collision_parameters = [
             (pygplates.FeatureType.gpml_subduction_zone, self.subduction_collision_parameters)
             ]
         )
         # In addition to the default subduction detection, also detect
         # continental collisions
-        collision_spec = rbt.ContinentCollision(
-            continent_mask_file_pattern, default_collision
+        collision_spec = reconstruction.ContinentCollision(
+            save_directory+"/continent_mask_{}Ma.nc", default_collision
         )
 
         # Call the reconstruct by topologies object
-        topology_reconstruction = rbt.ReconstructByTopologies(
+        topology_reconstruction = reconstruction.ReconstructByTopologies(
             self.rotation_model, 
             self.topology_features,
             self._max_time, 
@@ -528,7 +618,7 @@ class SeafloorGrid(object):
         # all points have entered their valid time range *and* either exited their time range or
         # have been deactivated (subducted forward in time or consumed by MOR backward in time).
         while True:
-            print('reconstruct by topologies: working on time {:0.2f} Ma'.format(
+            print('Reconstruct by topologies: working on time {:0.2f} Ma'.format(
                 topology_reconstruction.get_current_time())
             )
 
@@ -567,6 +657,7 @@ class SeafloorGrid(object):
 
                 # TO-DO: Remove .xy dependency, move straight to gplately grids object, or if more convenient
                 # save as file for now since each array is renewed per reconstruction time. 
+                """
                 write_xyz_file('{:s}/gridding_input/gridding_input_{:0.1f}Ma.xy'.format("/Users/laurenilano/Downloads",
                                                                          topology_reconstruction.get_current_time()),
                                zip(curr_longitudes,
@@ -575,12 +666,13 @@ class SeafloorGrid(object):
                                birth_lat_snapshot,
                                point_id_snapshot,
                                spreading_rate_snapshot))
+                """
 
             if not topology_reconstruction.reconstruct_to_next_time():
                 break
 
-        print('done')
-        return curr_longitudes, curr_latitudes, seafloor_age, birth_lat_snapshot, point_id_snapshot, spreading_rate_snapshot
+        print('Reconstruction done for {}!'.format(topology_reconstruction.get_current_time()))
+        return curr_longitudes, curr_latitudes, seafloor_age, birth_lat_snapshot, point_id_snapshot
 
 
 
