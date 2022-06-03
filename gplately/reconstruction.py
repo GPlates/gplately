@@ -1367,7 +1367,8 @@ class ContinentCollision(object):
         # Import locally so that we only get import errors if we use this class (and don't have the required dependencies).
         # Not sure if importing locally like this will slow down executation a lot ?
         from scipy.interpolate import RegularGridInterpolator
-        from gprm.utils.fileio import load_netcdf
+        # from gprm.utils.fileio import load_netcdf
+        from .grids import read_netcdf_grid
 
         # Load the grid for the current time if encountering a new time.
         if time != self.grid_time:
@@ -1378,7 +1379,7 @@ class ContinentCollision(object):
             # The grid is sampled at each point, and in NaN retrurned, the point is set to inactive
             filename = '{:s}'.format(self.grd_output_dir.format(time))
             print('Points masked against grid: {0}'.format(filename))
-            gridX,gridY,gridZ = load_netcdf(filename)
+            gridZ,gridX,gridY = read_netcdf_grid(filename, return_grids=True)
             self.continent_deletion_count = 0
 
             self.f = RegularGridInterpolator((gridX,gridY), gridZ.T, method='nearest')
@@ -1782,3 +1783,5 @@ class ReconstructByTopologies(object):
             
             # Set the plate ID of resolved topology containing current point.
             self.curr_topology_plate_ids[point_index] = curr_polygon.get_feature().get_reconstruction_plate_id()
+
+

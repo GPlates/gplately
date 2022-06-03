@@ -143,6 +143,7 @@ def _point_in_polygon_routine(multi_point, COB_polygons):
     #point_mesh_out = pygplates.FeatureCollection(multi_point_features_out)
 
     #return point_mesh_in, point_mesh_out, zvals
+    # print(points_out_arr)
     return pygplates.MultiPointOnSphere(points_in_arr), pygplates.MultiPointOnSphere(points_out_arr), zvals
 
 
@@ -157,8 +158,9 @@ def _extract_point_feature_attributes_for_rbt(ocean_basin, mor_all_times, time_a
     prev_lat = []
     prev_lon = []
 
-  
+    """
     for point_feature_collection in ocean_basin:
+        print(point_feature_collection)
         for feature in point_feature_collection:
             active_points.append(
                 feature.get_geometry()
@@ -175,6 +177,22 @@ def _extract_point_feature_attributes_for_rbt(ocean_basin, mor_all_times, time_a
             prev_lon.append(
                 feature.get_geometry().to_lat_lon_list()[0][1]
             )
+    """
+
+    # These are PointOnSphere objects already
+    for feature in ocean_basin:
+        active_points.append(feature.get_geometry())
+        appearance_time.append(feature.get_valid_time()[0])
+        birth_lat.append(
+            feature.get_geometry().to_lat_lon_list()[0][0]
+        )
+        prev_lat.append(
+            feature.get_geometry().to_lat_lon_list()[0][0]
+        )
+        prev_lon.append(
+            feature.get_geometry().to_lat_lon_list()[0][1]
+        )
+
     del ocean_basin
 
     for i, time in enumerate(time_arr):
@@ -311,7 +329,7 @@ class SeafloorGrid(object):
         )
         # zval is a binary array encoding whether a point 
         # coordinate is within a COB terrane polygon or not
-        ocean_basin_point_mesh, _, zvals = _point_in_polygon_routine(
+        _, ocean_basin_point_mesh, zvals = _point_in_polygon_routine(
             multi_point, 
             COB_polygons
         )
@@ -348,7 +366,7 @@ class SeafloorGrid(object):
             self.topology_features, 
             self.rotation_model, 
             resolved_topologies, 
-            self.max_time, 
+            self._max_time, 
             shared_boundary_sections
         )
         pX,pY,pZ = tools.find_distance_to_nearest_ridge(
@@ -361,6 +379,7 @@ class SeafloorGrid(object):
         pAge = np.array(pZ) / (self.initial_ocean_mean_spreading_rate/2.)
 
         initial_ocean_point_features = []
+        initial_ocean_multipoints = []
 
         for point in zip(pX,pY,pAge):
 
@@ -370,13 +389,17 @@ class SeafloorGrid(object):
 
             # note that we add 'time' to the age at the time of computation
             # to get the valid time in Ma
-            point_feature.set_valid_time(point[2]+time, -1)
+            point_feature.set_valid_time(point[2]+self._max_time, -1)
             initial_ocean_point_features.append(point_feature)
+            initial_ocean_multipoints.append(point_feature.get_geometry())
+
+        # print(initial_ocean_point_features)
+        multi_point_feature = pygplates.MultiPointOnSphere(initial_ocean_multipoints)
 
         if save_directory:
             full_directory = "{}/ocean_basin_seed_points_{}Ma.gpml".format(save_directory, self._max_time)
             pygplates.FeatureCollection(initial_ocean_point_features).write(full_directory)
-        return initial_ocean_point_features
+        return pygplates.FeatureCollection(initial_ocean_point_features), multi_point_feature
 
 
     def _get_mid_ocean_ridge_seedpoints(self, time):
@@ -544,7 +567,7 @@ class SeafloorGrid(object):
         * Continental masks (from `max_time` to `min_time`)
         """
 
-        initial_ocean_seed_points = self._create_initial_ocean_seed_points(save_directory)
+        initial_ocean_seed_points, initial_ocean_seed_points_mp = self._create_initial_ocean_seed_points(save_directory)
         print("Finished building initial_ocean_seed_points!")
         time_array = np.arange(self._max_time, self.min_time-1, -self.ridge_time_step)
         all_mor_features = []
