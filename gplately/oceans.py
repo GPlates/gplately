@@ -640,6 +640,7 @@ class SeafloorGrid(object):
         # Loop over the reconstruction times until reached end of the reconstruction time span, or
         # all points have entered their valid time range *and* either exited their time range or
         # have been deactivated (subducted forward in time or consumed by MOR backward in time).
+        reconstruction_data = []
         while True:
             print('Reconstruct by topologies: working on time {:0.2f} Ma'.format(
                 topology_reconstruction.get_current_time())
@@ -678,24 +679,31 @@ class SeafloorGrid(object):
                         prev_lon[point_index] = current_point.to_lat_lon()[1]
 
 
-                # TO-DO: Remove .xy dependency, move straight to gplately grids object, or if more convenient
-                # save as file for now since each array is renewed per reconstruction time. 
-                """
-                write_xyz_file('{:s}/gridding_input/gridding_input_{:0.1f}Ma.xy'.format("/Users/laurenilano/Downloads",
-                                                                         topology_reconstruction.get_current_time()),
-                               zip(curr_longitudes,
-                               curr_latitudes,
-                               seafloor_age,
-                               birth_lat_snapshot,
-                               point_id_snapshot,
-                               spreading_rate_snapshot))
-                """
+                # TO-DO: save as file for now since each array is renewed per reconstruction time. 
+                header = 'CURRENT_LONGITUDES,'\
+                'CURRENT_LATITUDES,'\
+                'SEAFLOOR_AGE,'\
+                'BIRTH_LAT_SNAPSHOT,'\
+                'POINT_ID_SNAPSHOT'
 
+                zippeddata = list(zip(curr_longitudes, curr_latitudes, seafloor_age, birth_lat_snapshot, point_id_snapshot, 
+                #any extra user-input data here), 
+                ))
+                np.savetxt('{:s}/gridding_input_{:0.1f}Ma.csv'.format(save_directory, topology_reconstruction.get_current_time()), 
+                    zippeddata, header=header, delimiter=',', comments='', fmt='%s'
+                )
+            """
+            reconstruction_data.append(
+                list(zip(curr_longitudes, curr_latitudes, seafloor_age, birth_lat_snapshot, point_id_snapshot, 
+                #any extra user-input data here), 
+                ))
+            )
+            """
             if not topology_reconstruction.reconstruct_to_next_time():
                 break
 
         print('Reconstruction done for {}!'.format(topology_reconstruction.get_current_time()))
-        return curr_longitudes, curr_latitudes, seafloor_age, birth_lat_snapshot, point_id_snapshot
+        # return reconstruction_data
 
 
 
