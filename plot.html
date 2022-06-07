@@ -1246,6 +1246,11 @@ class PlotTopologies(object):
 
         return np.array(triangle_pointsX), np.array(triangle_pointsY)
 
+    def plot_feature(self, ax, feature, **kwargs):
+        shp = shapelify_features(feature)
+        gdf = gpd.GeoDataFrame({&#39;geometry&#39;: shp}, geometry=&#39;geometry&#39;)
+        return gdf.plot(ax=ax, transform=self.base_projection, **kwargs)
+
     def plot_coastlines(self, ax, **kwargs):
         &#34;&#34;&#34;Plot reconstructed coastline polygons onto a standard map Projection. 
 
@@ -3435,6 +3440,11 @@ boundaries and passive continental boundaries.</dd>
 
         return np.array(triangle_pointsX), np.array(triangle_pointsY)
 
+    def plot_feature(self, ax, feature, **kwargs):
+        shp = shapelify_features(feature)
+        gdf = gpd.GeoDataFrame({&#39;geometry&#39;: shp}, geometry=&#39;geometry&#39;)
+        return gdf.plot(ax=ax, transform=self.base_projection, **kwargs)
+
     def plot_coastlines(self, ax, **kwargs):
         &#34;&#34;&#34;Plot reconstructed coastline polygons onto a standard map Projection. 
 
@@ -4325,6 +4335,21 @@ with continent features plotted onto the chosen map projection.</dd>
 
     continent_polygons = shapelify_feature_polygons(self.continents)
     gdf = gpd.GeoDataFrame({&#34;geometry&#34;: continent_polygons}, geometry=&#34;geometry&#34;)
+    return gdf.plot(ax=ax, transform=self.base_projection, **kwargs)</code></pre>
+</details>
+</dd>
+<dt id="gplately.plot.PlotTopologies.plot_feature"><code class="name flex">
+<span>def <span class="ident">plot_feature</span></span>(<span>self, ax, feature, **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def plot_feature(self, ax, feature, **kwargs):
+    shp = shapelify_features(feature)
+    gdf = gpd.GeoDataFrame({&#39;geometry&#39;: shp}, geometry=&#39;geometry&#39;)
     return gdf.plot(ax=ax, transform=self.base_projection, **kwargs)</code></pre>
 </details>
 </dd>
@@ -5390,6 +5415,7 @@ whenever it is updated.</p>
 <li><code><a title="gplately.plot.PlotTopologies.plot_coastlines" href="#gplately.plot.PlotTopologies.plot_coastlines">plot_coastlines</a></code></li>
 <li><code><a title="gplately.plot.PlotTopologies.plot_continent_ocean_boundaries" href="#gplately.plot.PlotTopologies.plot_continent_ocean_boundaries">plot_continent_ocean_boundaries</a></code></li>
 <li><code><a title="gplately.plot.PlotTopologies.plot_continents" href="#gplately.plot.PlotTopologies.plot_continents">plot_continents</a></code></li>
+<li><code><a title="gplately.plot.PlotTopologies.plot_feature" href="#gplately.plot.PlotTopologies.plot_feature">plot_feature</a></code></li>
 <li><code><a title="gplately.plot.PlotTopologies.plot_grid" href="#gplately.plot.PlotTopologies.plot_grid">plot_grid</a></code></li>
 <li><code><a title="gplately.plot.PlotTopologies.plot_grid_from_netCDF" href="#gplately.plot.PlotTopologies.plot_grid_from_netCDF">plot_grid_from_netCDF</a></code></li>
 <li><code><a title="gplately.plot.PlotTopologies.plot_misc_boundaries" href="#gplately.plot.PlotTopologies.plot_misc_boundaries">plot_misc_boundaries</a></code></li>
