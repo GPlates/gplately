@@ -702,19 +702,20 @@ class PlateReconstruction(object):
                     self.topology_features,
                     self.rotation_model
                 )
-            # Create the motion path feature
+            # Create the motion path feature. enforce float and int for C++ signature.
             motion_path_feature = pygplates.Feature.create_motion_path(
                 seed_points_at_digitisation_time, 
-                time_array.tolist(), 
-                valid_time=(max(time_array), min(time_array)),
-                relative_plate=plate_id,
-                reconstruction_plate_id=anchor_plate_id)
+                [float(time) for time in time_array], 
+                valid_time=(float(max(time_array)), float(min(time_array))),
+                relative_plate=int(anchor_plate_id),
+                reconstruction_plate_id=int(plate_id))
 
             reconstructed_motion_paths = self.reconstruct(
                 motion_path_feature, 
                 to_time=0, 
                 #from_time=0, 
-                reconstruct_type=pygplates.ReconstructType.motion_path
+                reconstruct_type=pygplates.ReconstructType.motion_path,
+                anchor_plate_id=int(anchor_plate_id),
             )
             # Turn motion paths in to lat-lon coordinates
             for reconstructed_motion_path in reconstructed_motion_paths:
@@ -743,7 +744,7 @@ class PlateReconstruction(object):
             return np.squeeze(rlons), np.squeeze(rlats)
 
 
-    def create_flowline(self, lons, lats, left_plate_ID, right_plate_ID,time_array):
+    def create_flowline(self, lons, lats, left_plate_ID, right_plate_ID, time_array):
         &#34;&#34;&#34; Create a path of points to track plate motion away from 
         spreading ridges over time using half-stage rotations.
         
@@ -1118,6 +1119,7 @@ class Points(object):
 
         return list(all_velocities.T)
 
+
     def motion_path(self, time_array, anchor_plate_id=0, return_rate_of_motion=False):
         &#34;&#34;&#34; Create a path of points to mark the trajectory of a plate&#39;s motion 
         through geological time.
@@ -1158,15 +1160,19 @@ class Points(object):
         rlats = np.empty((len(time_array),   len(self.lons)))
         rates = np.empty((len(time_array)-1, len(self.lons)))
 
-        for i, feature in enumerate(self.FeatureCollection):
+        feature_collection = pygplates.FeaturesFunctionArgument(self.FeatureCollection).get_features()
+
+        for i, feature in enumerate(feature_collection):
 
             # Create the motion path feature
             motion_path_feature = pygplates.Feature.create_motion_path(
                 feature.get_geometry(), 
-                time_array.tolist(), 
-                valid_time=(max(time_array), min(time_array)),
-                relative_plate=self.plate_id[i],
-                reconstruction_plate_id=anchor_plate_id)
+                [float(t) for t in time_array],
+                valid_time=(float(max(time_array)), float(min(time_array))),
+                #relative_plate=int(self.plate_id[i]),
+                #reconstruction_plate_id=int(anchor_plate_id))
+                relative_plate=int(anchor_plate_id),
+                reconstruction_plate_id=int(self.plate_id[i]))
 
             reconstructed_motion_paths = self.PlateReconstruction_object.reconstruct(
                 motion_path_feature, 
@@ -1199,6 +1205,138 @@ class Points(object):
             return np.squeeze(rlons), np.squeeze(rlats), np.squeeze(rates)
         else:
             return np.squeeze(rlons), np.squeeze(rlats)
+
+
+    def flow_line(self, left_plate_ID, right_plate_ID, time_array):
+        &#34;&#34;&#34; Create a path of points to track plate motion away from 
+        spreading ridges over time using half-stage rotations.
+        
+        Parameters
+        ----------
+        lons : arr
+            An array of longitudes of points along spreading ridges.
+        lats : arr
+            An array of latitudes of points along spreading ridges.
+        left_plate_ID : int
+            The plate ID of the polygon to the left of the spreading
+            ridge.
+        right_plate_ID : int
+            The plate ID of the polygon to the right of the spreading
+            ridge.
+        time_array : arr
+            A list of times to obtain seed point locations at.
+            
+        Returns
+        -------
+        left_lon : ndarray
+            The longitudes of the __left__ flowline for n seed points.
+            There are n columns for n seed points, and m rows
+            for m time steps in `time_array`. 
+        left_lat : ndarray
+            The latitudes of the __left__ flowline of n seed points.
+            There are n columns for n seed points, and m rows
+            for m time steps in `time_array`.
+        right_lon : ndarray
+            The longitudes of the __right__ flowline of n seed points.
+            There are n columns for n seed points, and m rows
+            for m time steps in `time_array`.
+        right_lat : ndarray
+            The latitudes of the __right__ flowline of n seed points.
+            There are n columns for n seed points, and m rows
+            for m time steps in `time_array`.
+        
+        Examples
+        --------
+        To access the ith seed point&#39;s left and right latitudes and
+        longitudes:
+        
+            for i in np.arange(0,len(seed_points)):
+                left_flowline_longitudes = left_lon[:,i] 
+                left_flowline_latitudes = left_lat[:,i] 
+                right_flowline_longitudes = right_lon[:,i]
+                right_flowline_latitudes = right_lat[:,i]
+        &#34;&#34;&#34;
+
+        # Make a MultiPointOnSphere feature from attributed lons and lats
+        seed_points = list(zip(self.lats, self.lons))
+        multi_point = pygplates.MultiPointOnSphere(seed_points)
+        
+        # Reconstruct flowline in present day coordinates, even if the 
+        # input time array does not start at 0 Ma. 
+        if time_array[0] != 0:
+            extend_to_present_day = np.arange(
+                0,
+                time_array[0], 
+                time_array[1]-time_array[0]
+            )
+            reconst_time_array = np.concatenate(
+                (extend_to_present_day, time_array), 
+                axis=0
+            )
+        else:
+            reconst_time_array = time_array
+            
+        # Create the flowline feature
+        flowline_feature = pygplates.Feature.create_flowline(
+            multi_point,
+            [int(t) for t in reconst_time_array],
+            valid_time=(float(np.max(reconst_time_array)), 
+                     float(np.min(reconst_time_array))),
+            left_plate=left_plate_ID,
+            right_plate=right_plate_ID
+        )
+        
+        # reconstruct the flowline in present-day coordinates 
+        # (to_time=time by default in Points.reconstruct)
+        reconstructed_flowlines = self.PlateReconstruction_object.reconstruct(
+            flowline_feature, 
+            to_time=0,
+            reconstruct_type=pygplates.ReconstructType.flowline
+        )
+
+        # Wrap things to the dateline, to avoid plotting artefacts.
+        date_line_wrapper = pygplates.DateLineWrapper()
+        
+        # Create lat-lon ndarrays to store the left and right lats and lons of flowlines
+        left_lon = np.empty((len(reconst_time_array), len(self.lons)))
+        left_lat = np.empty((len(reconst_time_array), len(self.lons)))
+        right_lon = np.empty((len(reconst_time_array), len(self.lons)))
+        right_lat = np.empty((len(reconst_time_array), len(self.lons)))
+        
+        # Iterate over the reconstructed flowlines. Each seed point results in a &#39;left&#39; and &#39;right&#39; flowline 
+        for i, reconstructed_flowline in enumerate(reconstructed_flowlines):
+                
+            flowline_times = reconstructed_flowline.get_feature().get_times()
+
+            # --- left flowline
+            flowline_left = []
+
+            # Get the points for the left flowline only
+            for left_point in reconstructed_flowline.get_left_flowline():
+                # append lat-lon points to our empty array 
+                flowline_left = np.append(
+                    flowline_left, 
+                    left_point.to_lat_lon_array()
+                ) 
+            # Repeat for the right flowline points
+            flowline_right = []
+            for right_point in reconstructed_flowline.get_right_flowline():
+                flowline_right = np.append(
+                    flowline_right, 
+                    right_point.to_lat_lon_array()
+                )
+
+            # get the lat and lon coordinates
+            flowline_left_lon, flowline_left_lat = flowline_left[1::2], flowline_left[::2]
+            flowline_right_lon, flowline_right_lat = flowline_right[1::2], flowline_right[::2]
+            
+            # Return only the coordinates requested in time_array
+            left_lon[-len(reconst_time_array):,i] = np.array(flowline_left_lon)[-len(reconst_time_array):]
+            left_lat[-len(reconst_time_array):,i] = np.array(flowline_left_lat)[-len(reconst_time_array):]
+            right_lon[-len(reconst_time_array):,i] = np.array(flowline_right_lon)[-len(reconst_time_array):]
+            right_lat[-len(reconst_time_array):,i] = np.array(flowline_right_lat)[-len(reconst_time_array):]
+            
+        return left_lon, left_lat, right_lon, right_lat
 
 
     def save(self, filename):
@@ -1935,19 +2073,20 @@ features.</dd>
                     self.topology_features,
                     self.rotation_model
                 )
-            # Create the motion path feature
+            # Create the motion path feature. enforce float and int for C++ signature.
             motion_path_feature = pygplates.Feature.create_motion_path(
                 seed_points_at_digitisation_time, 
-                time_array.tolist(), 
-                valid_time=(max(time_array), min(time_array)),
-                relative_plate=plate_id,
-                reconstruction_plate_id=anchor_plate_id)
+                [float(time) for time in time_array], 
+                valid_time=(float(max(time_array)), float(min(time_array))),
+                relative_plate=int(anchor_plate_id),
+                reconstruction_plate_id=int(plate_id))
 
             reconstructed_motion_paths = self.reconstruct(
                 motion_path_feature, 
                 to_time=0, 
                 #from_time=0, 
-                reconstruct_type=pygplates.ReconstructType.motion_path
+                reconstruct_type=pygplates.ReconstructType.motion_path,
+                anchor_plate_id=int(anchor_plate_id),
             )
             # Turn motion paths in to lat-lon coordinates
             for reconstructed_motion_path in reconstructed_motion_paths:
@@ -1976,7 +2115,7 @@ features.</dd>
             return np.squeeze(rlons), np.squeeze(rlats)
 
 
-    def create_flowline(self, lons, lats, left_plate_ID, right_plate_ID,time_array):
+    def create_flowline(self, lons, lats, left_plate_ID, right_plate_ID, time_array):
         &#34;&#34;&#34; Create a path of points to track plate motion away from 
         spreading ridges over time using half-stage rotations.
         
@@ -2160,7 +2299,7 @@ longitudes:</p>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def create_flowline(self, lons, lats, left_plate_ID, right_plate_ID,time_array):
+<pre><code class="python">def create_flowline(self, lons, lats, left_plate_ID, right_plate_ID, time_array):
     &#34;&#34;&#34; Create a path of points to track plate motion away from 
     spreading ridges over time using half-stage rotations.
     
@@ -2412,19 +2551,20 @@ columns for n seed points.</dd>
                 self.topology_features,
                 self.rotation_model
             )
-        # Create the motion path feature
+        # Create the motion path feature. enforce float and int for C++ signature.
         motion_path_feature = pygplates.Feature.create_motion_path(
             seed_points_at_digitisation_time, 
-            time_array.tolist(), 
-            valid_time=(max(time_array), min(time_array)),
-            relative_plate=plate_id,
-            reconstruction_plate_id=anchor_plate_id)
+            [float(time) for time in time_array], 
+            valid_time=(float(max(time_array)), float(min(time_array))),
+            relative_plate=int(anchor_plate_id),
+            reconstruction_plate_id=int(plate_id))
 
         reconstructed_motion_paths = self.reconstruct(
             motion_path_feature, 
             to_time=0, 
             #from_time=0, 
-            reconstruct_type=pygplates.ReconstructType.motion_path
+            reconstruct_type=pygplates.ReconstructType.motion_path,
+            anchor_plate_id=int(anchor_plate_id),
         )
         # Turn motion paths in to lat-lon coordinates
         for reconstructed_motion_path in reconstructed_motion_paths:
@@ -3605,6 +3745,7 @@ if not provided.</dd>
 
         return list(all_velocities.T)
 
+
     def motion_path(self, time_array, anchor_plate_id=0, return_rate_of_motion=False):
         &#34;&#34;&#34; Create a path of points to mark the trajectory of a plate&#39;s motion 
         through geological time.
@@ -3645,15 +3786,19 @@ if not provided.</dd>
         rlats = np.empty((len(time_array),   len(self.lons)))
         rates = np.empty((len(time_array)-1, len(self.lons)))
 
-        for i, feature in enumerate(self.FeatureCollection):
+        feature_collection = pygplates.FeaturesFunctionArgument(self.FeatureCollection).get_features()
+
+        for i, feature in enumerate(feature_collection):
 
             # Create the motion path feature
             motion_path_feature = pygplates.Feature.create_motion_path(
                 feature.get_geometry(), 
-                time_array.tolist(), 
-                valid_time=(max(time_array), min(time_array)),
-                relative_plate=self.plate_id[i],
-                reconstruction_plate_id=anchor_plate_id)
+                [float(t) for t in time_array],
+                valid_time=(float(max(time_array)), float(min(time_array))),
+                #relative_plate=int(self.plate_id[i]),
+                #reconstruction_plate_id=int(anchor_plate_id))
+                relative_plate=int(anchor_plate_id),
+                reconstruction_plate_id=int(self.plate_id[i]))
 
             reconstructed_motion_paths = self.PlateReconstruction_object.reconstruct(
                 motion_path_feature, 
@@ -3686,6 +3831,138 @@ if not provided.</dd>
             return np.squeeze(rlons), np.squeeze(rlats), np.squeeze(rates)
         else:
             return np.squeeze(rlons), np.squeeze(rlats)
+
+
+    def flow_line(self, left_plate_ID, right_plate_ID, time_array):
+        &#34;&#34;&#34; Create a path of points to track plate motion away from 
+        spreading ridges over time using half-stage rotations.
+        
+        Parameters
+        ----------
+        lons : arr
+            An array of longitudes of points along spreading ridges.
+        lats : arr
+            An array of latitudes of points along spreading ridges.
+        left_plate_ID : int
+            The plate ID of the polygon to the left of the spreading
+            ridge.
+        right_plate_ID : int
+            The plate ID of the polygon to the right of the spreading
+            ridge.
+        time_array : arr
+            A list of times to obtain seed point locations at.
+            
+        Returns
+        -------
+        left_lon : ndarray
+            The longitudes of the __left__ flowline for n seed points.
+            There are n columns for n seed points, and m rows
+            for m time steps in `time_array`. 
+        left_lat : ndarray
+            The latitudes of the __left__ flowline of n seed points.
+            There are n columns for n seed points, and m rows
+            for m time steps in `time_array`.
+        right_lon : ndarray
+            The longitudes of the __right__ flowline of n seed points.
+            There are n columns for n seed points, and m rows
+            for m time steps in `time_array`.
+        right_lat : ndarray
+            The latitudes of the __right__ flowline of n seed points.
+            There are n columns for n seed points, and m rows
+            for m time steps in `time_array`.
+        
+        Examples
+        --------
+        To access the ith seed point&#39;s left and right latitudes and
+        longitudes:
+        
+            for i in np.arange(0,len(seed_points)):
+                left_flowline_longitudes = left_lon[:,i] 
+                left_flowline_latitudes = left_lat[:,i] 
+                right_flowline_longitudes = right_lon[:,i]
+                right_flowline_latitudes = right_lat[:,i]
+        &#34;&#34;&#34;
+
+        # Make a MultiPointOnSphere feature from attributed lons and lats
+        seed_points = list(zip(self.lats, self.lons))
+        multi_point = pygplates.MultiPointOnSphere(seed_points)
+        
+        # Reconstruct flowline in present day coordinates, even if the 
+        # input time array does not start at 0 Ma. 
+        if time_array[0] != 0:
+            extend_to_present_day = np.arange(
+                0,
+                time_array[0], 
+                time_array[1]-time_array[0]
+            )
+            reconst_time_array = np.concatenate(
+                (extend_to_present_day, time_array), 
+                axis=0
+            )
+        else:
+            reconst_time_array = time_array
+            
+        # Create the flowline feature
+        flowline_feature = pygplates.Feature.create_flowline(
+            multi_point,
+            [int(t) for t in reconst_time_array],
+            valid_time=(float(np.max(reconst_time_array)), 
+                     float(np.min(reconst_time_array))),
+            left_plate=left_plate_ID,
+            right_plate=right_plate_ID
+        )
+        
+        # reconstruct the flowline in present-day coordinates 
+        # (to_time=time by default in Points.reconstruct)
+        reconstructed_flowlines = self.PlateReconstruction_object.reconstruct(
+            flowline_feature, 
+            to_time=0,
+            reconstruct_type=pygplates.ReconstructType.flowline
+        )
+
+        # Wrap things to the dateline, to avoid plotting artefacts.
+        date_line_wrapper = pygplates.DateLineWrapper()
+        
+        # Create lat-lon ndarrays to store the left and right lats and lons of flowlines
+        left_lon = np.empty((len(reconst_time_array), len(self.lons)))
+        left_lat = np.empty((len(reconst_time_array), len(self.lons)))
+        right_lon = np.empty((len(reconst_time_array), len(self.lons)))
+        right_lat = np.empty((len(reconst_time_array), len(self.lons)))
+        
+        # Iterate over the reconstructed flowlines. Each seed point results in a &#39;left&#39; and &#39;right&#39; flowline 
+        for i, reconstructed_flowline in enumerate(reconstructed_flowlines):
+                
+            flowline_times = reconstructed_flowline.get_feature().get_times()
+
+            # --- left flowline
+            flowline_left = []
+
+            # Get the points for the left flowline only
+            for left_point in reconstructed_flowline.get_left_flowline():
+                # append lat-lon points to our empty array 
+                flowline_left = np.append(
+                    flowline_left, 
+                    left_point.to_lat_lon_array()
+                ) 
+            # Repeat for the right flowline points
+            flowline_right = []
+            for right_point in reconstructed_flowline.get_right_flowline():
+                flowline_right = np.append(
+                    flowline_right, 
+                    right_point.to_lat_lon_array()
+                )
+
+            # get the lat and lon coordinates
+            flowline_left_lon, flowline_left_lat = flowline_left[1::2], flowline_left[::2]
+            flowline_right_lon, flowline_right_lat = flowline_right[1::2], flowline_right[::2]
+            
+            # Return only the coordinates requested in time_array
+            left_lon[-len(reconst_time_array):,i] = np.array(flowline_left_lon)[-len(reconst_time_array):]
+            left_lat[-len(reconst_time_array):,i] = np.array(flowline_left_lat)[-len(reconst_time_array):]
+            right_lon[-len(reconst_time_array):,i] = np.array(flowline_right_lon)[-len(reconst_time_array):]
+            right_lat[-len(reconst_time_array):,i] = np.array(flowline_right_lat)[-len(reconst_time_array):]
+            
+        return left_lon, left_lat, right_lon, right_lat
 
 
     def save(self, filename):
@@ -3723,6 +4000,191 @@ if not provided.</dd>
 </details>
 <h3>Methods</h3>
 <dl>
+<dt id="gplately.reconstruction.Points.flow_line"><code class="name flex">
+<span>def <span class="ident">flow_line</span></span>(<span>self, left_plate_ID, right_plate_ID, time_array)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Create a path of points to track plate motion away from
+spreading ridges over time using half-stage rotations.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>lons</code></strong> :&ensp;<code>arr</code></dt>
+<dd>An array of longitudes of points along spreading ridges.</dd>
+<dt><strong><code>lats</code></strong> :&ensp;<code>arr</code></dt>
+<dd>An array of latitudes of points along spreading ridges.</dd>
+<dt><strong><code>left_plate_ID</code></strong> :&ensp;<code>int</code></dt>
+<dd>The plate ID of the polygon to the left of the spreading
+ridge.</dd>
+<dt><strong><code>right_plate_ID</code></strong> :&ensp;<code>int</code></dt>
+<dd>The plate ID of the polygon to the right of the spreading
+ridge.</dd>
+<dt><strong><code>time_array</code></strong> :&ensp;<code>arr</code></dt>
+<dd>A list of times to obtain seed point locations at.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><strong><code>left_lon</code></strong> :&ensp;<code>ndarray</code></dt>
+<dd>The longitudes of the <strong>left</strong> flowline for n seed points.
+There are n columns for n seed points, and m rows
+for m time steps in <code>time_array</code>.</dd>
+<dt><strong><code>left_lat</code></strong> :&ensp;<code>ndarray</code></dt>
+<dd>The latitudes of the <strong>left</strong> flowline of n seed points.
+There are n columns for n seed points, and m rows
+for m time steps in <code>time_array</code>.</dd>
+<dt><strong><code>right_lon</code></strong> :&ensp;<code>ndarray</code></dt>
+<dd>The longitudes of the <strong>right</strong> flowline of n seed points.
+There are n columns for n seed points, and m rows
+for m time steps in <code>time_array</code>.</dd>
+<dt><strong><code>right_lat</code></strong> :&ensp;<code>ndarray</code></dt>
+<dd>The latitudes of the <strong>right</strong> flowline of n seed points.
+There are n columns for n seed points, and m rows
+for m time steps in <code>time_array</code>.</dd>
+</dl>
+<h2 id="examples">Examples</h2>
+<p>To access the ith seed point's left and right latitudes and
+longitudes:</p>
+<pre><code>for i in np.arange(0,len(seed_points)):
+    left_flowline_longitudes = left_lon[:,i] 
+    left_flowline_latitudes = left_lat[:,i] 
+    right_flowline_longitudes = right_lon[:,i]
+    right_flowline_latitudes = right_lat[:,i]
+</code></pre></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def flow_line(self, left_plate_ID, right_plate_ID, time_array):
+    &#34;&#34;&#34; Create a path of points to track plate motion away from 
+    spreading ridges over time using half-stage rotations.
+    
+    Parameters
+    ----------
+    lons : arr
+        An array of longitudes of points along spreading ridges.
+    lats : arr
+        An array of latitudes of points along spreading ridges.
+    left_plate_ID : int
+        The plate ID of the polygon to the left of the spreading
+        ridge.
+    right_plate_ID : int
+        The plate ID of the polygon to the right of the spreading
+        ridge.
+    time_array : arr
+        A list of times to obtain seed point locations at.
+        
+    Returns
+    -------
+    left_lon : ndarray
+        The longitudes of the __left__ flowline for n seed points.
+        There are n columns for n seed points, and m rows
+        for m time steps in `time_array`. 
+    left_lat : ndarray
+        The latitudes of the __left__ flowline of n seed points.
+        There are n columns for n seed points, and m rows
+        for m time steps in `time_array`.
+    right_lon : ndarray
+        The longitudes of the __right__ flowline of n seed points.
+        There are n columns for n seed points, and m rows
+        for m time steps in `time_array`.
+    right_lat : ndarray
+        The latitudes of the __right__ flowline of n seed points.
+        There are n columns for n seed points, and m rows
+        for m time steps in `time_array`.
+    
+    Examples
+    --------
+    To access the ith seed point&#39;s left and right latitudes and
+    longitudes:
+    
+        for i in np.arange(0,len(seed_points)):
+            left_flowline_longitudes = left_lon[:,i] 
+            left_flowline_latitudes = left_lat[:,i] 
+            right_flowline_longitudes = right_lon[:,i]
+            right_flowline_latitudes = right_lat[:,i]
+    &#34;&#34;&#34;
+
+    # Make a MultiPointOnSphere feature from attributed lons and lats
+    seed_points = list(zip(self.lats, self.lons))
+    multi_point = pygplates.MultiPointOnSphere(seed_points)
+    
+    # Reconstruct flowline in present day coordinates, even if the 
+    # input time array does not start at 0 Ma. 
+    if time_array[0] != 0:
+        extend_to_present_day = np.arange(
+            0,
+            time_array[0], 
+            time_array[1]-time_array[0]
+        )
+        reconst_time_array = np.concatenate(
+            (extend_to_present_day, time_array), 
+            axis=0
+        )
+    else:
+        reconst_time_array = time_array
+        
+    # Create the flowline feature
+    flowline_feature = pygplates.Feature.create_flowline(
+        multi_point,
+        [int(t) for t in reconst_time_array],
+        valid_time=(float(np.max(reconst_time_array)), 
+                 float(np.min(reconst_time_array))),
+        left_plate=left_plate_ID,
+        right_plate=right_plate_ID
+    )
+    
+    # reconstruct the flowline in present-day coordinates 
+    # (to_time=time by default in Points.reconstruct)
+    reconstructed_flowlines = self.PlateReconstruction_object.reconstruct(
+        flowline_feature, 
+        to_time=0,
+        reconstruct_type=pygplates.ReconstructType.flowline
+    )
+
+    # Wrap things to the dateline, to avoid plotting artefacts.
+    date_line_wrapper = pygplates.DateLineWrapper()
+    
+    # Create lat-lon ndarrays to store the left and right lats and lons of flowlines
+    left_lon = np.empty((len(reconst_time_array), len(self.lons)))
+    left_lat = np.empty((len(reconst_time_array), len(self.lons)))
+    right_lon = np.empty((len(reconst_time_array), len(self.lons)))
+    right_lat = np.empty((len(reconst_time_array), len(self.lons)))
+    
+    # Iterate over the reconstructed flowlines. Each seed point results in a &#39;left&#39; and &#39;right&#39; flowline 
+    for i, reconstructed_flowline in enumerate(reconstructed_flowlines):
+            
+        flowline_times = reconstructed_flowline.get_feature().get_times()
+
+        # --- left flowline
+        flowline_left = []
+
+        # Get the points for the left flowline only
+        for left_point in reconstructed_flowline.get_left_flowline():
+            # append lat-lon points to our empty array 
+            flowline_left = np.append(
+                flowline_left, 
+                left_point.to_lat_lon_array()
+            ) 
+        # Repeat for the right flowline points
+        flowline_right = []
+        for right_point in reconstructed_flowline.get_right_flowline():
+            flowline_right = np.append(
+                flowline_right, 
+                right_point.to_lat_lon_array()
+            )
+
+        # get the lat and lon coordinates
+        flowline_left_lon, flowline_left_lat = flowline_left[1::2], flowline_left[::2]
+        flowline_right_lon, flowline_right_lat = flowline_right[1::2], flowline_right[::2]
+        
+        # Return only the coordinates requested in time_array
+        left_lon[-len(reconst_time_array):,i] = np.array(flowline_left_lon)[-len(reconst_time_array):]
+        left_lat[-len(reconst_time_array):,i] = np.array(flowline_left_lat)[-len(reconst_time_array):]
+        right_lon[-len(reconst_time_array):,i] = np.array(flowline_right_lon)[-len(reconst_time_array):]
+        right_lat[-len(reconst_time_array):,i] = np.array(flowline_right_lat)[-len(reconst_time_array):]
+        
+    return left_lon, left_lat, right_lon, right_lat</code></pre>
+</details>
+</dd>
 <dt id="gplately.reconstruction.Points.motion_path"><code class="name flex">
 <span>def <span class="ident">motion_path</span></span>(<span>self, time_array, anchor_plate_id=0, return_rate_of_motion=False)</span>
 </code></dt>
@@ -3800,15 +4262,19 @@ columns for n seed points.</dd>
     rlats = np.empty((len(time_array),   len(self.lons)))
     rates = np.empty((len(time_array)-1, len(self.lons)))
 
-    for i, feature in enumerate(self.FeatureCollection):
+    feature_collection = pygplates.FeaturesFunctionArgument(self.FeatureCollection).get_features()
+
+    for i, feature in enumerate(feature_collection):
 
         # Create the motion path feature
         motion_path_feature = pygplates.Feature.create_motion_path(
             feature.get_geometry(), 
-            time_array.tolist(), 
-            valid_time=(max(time_array), min(time_array)),
-            relative_plate=self.plate_id[i],
-            reconstruction_plate_id=anchor_plate_id)
+            [float(t) for t in time_array],
+            valid_time=(float(max(time_array)), float(min(time_array))),
+            #relative_plate=int(self.plate_id[i]),
+            #reconstruction_plate_id=int(anchor_plate_id))
+            relative_plate=int(anchor_plate_id),
+            reconstruction_plate_id=int(self.plate_id[i]))
 
         reconstructed_motion_paths = self.PlateReconstruction_object.reconstruct(
             motion_path_feature, 
@@ -4224,6 +4690,7 @@ rlons, rlats = gpts.reconstruct_to_birth_age(ages)
 <li>
 <h4><code><a title="gplately.reconstruction.Points" href="#gplately.reconstruction.Points">Points</a></code></h4>
 <ul class="">
+<li><code><a title="gplately.reconstruction.Points.flow_line" href="#gplately.reconstruction.Points.flow_line">flow_line</a></code></li>
 <li><code><a title="gplately.reconstruction.Points.motion_path" href="#gplately.reconstruction.Points.motion_path">motion_path</a></code></li>
 <li><code><a title="gplately.reconstruction.Points.plate_velocity" href="#gplately.reconstruction.Points.plate_velocity">plate_velocity</a></code></li>
 <li><code><a title="gplately.reconstruction.Points.reconstruct" href="#gplately.reconstruction.Points.reconstruct">reconstruct</a></code></li>
