@@ -1210,6 +1210,11 @@ class PlotTopologies(object):
 
         return np.array(triangle_pointsX), np.array(triangle_pointsY)
 
+    def plot_feature(self, ax, feature, **kwargs):
+        shp = shapelify_features(feature)
+        gdf = gpd.GeoDataFrame({'geometry': shp}, geometry='geometry')
+        return gdf.plot(ax=ax, transform=self.base_projection, **kwargs)
+
     def plot_coastlines(self, ax, **kwargs):
         """Plot reconstructed coastline polygons onto a standard map Projection. 
 
