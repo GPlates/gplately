@@ -1160,6 +1160,65 @@ class PlotTopologies(object):
 
         self.topologies, self.ridge_transforms, self.ridges, self.transforms, self.trenches, self.trench_left, self.trench_right, self.other = resolved_topologies
 
+        # miscellaneous boundaries
+        self.continental_rifts = []
+        self.faults = []
+        self.fracture_zones = []
+        self.inferred_paleo_boundaries = []
+        self.terrane_boundaries = []
+        self.transitional_crusts = []
+        self.orogenic_belts = []
+        self.sutures = []
+        self.continental_crusts = []
+        self.extended_continental_crusts = []
+        self.passive_continental_boundaries = []
+        self.slab_edges = []
+        self.misc_transforms = []
+        self.unclassified_features = []
+
+        for topol in self.other:
+            if topol.get_feature_type() == pygplates.FeatureType.gpml_continental_rift:
+                self.continental_rifts.append(topol)
+
+            elif topol.get_feature_type() == pygplates.FeatureType.gpml_fault:
+                self.faults.append(topol)
+                    
+            elif topol.get_feature_type() == pygplates.FeatureType.gpml_fracture_zone:
+                self.fracture_zones.append(topol)
+                
+            elif topol.get_feature_type() == pygplates.FeatureType.gpml_inferred_paleo_boundary:
+                self.inferred_paleo_boundaries.append(topol)
+
+            elif topol.get_feature_type() == pygplates.FeatureType.gpml_terrane_boundary:
+                self.terrane_boundaries.append(topol)
+                
+            elif topol.get_feature_type() == pygplates.FeatureType.gpml_transitional_crust:
+                self.transitional_crusts.append(topol)
+            
+            elif topol.get_feature_type() == pygplates.FeatureType.gpml_orogenic_belt:
+                self.orogenic_belts.append(topol)
+                
+            elif topol.get_feature_type() == pygplates.FeatureType.gpml_suture:
+                self.sutures.append(topol)
+                
+            elif topol.get_feature_type() == pygplates.FeatureType.gpml_continental_crust:
+                self.continental_crusts.append(topol)
+            
+            elif topol.get_feature_type() == pygplates.FeatureType.gpml_extended_continental_crust:
+                self.extended_continental_crusts.append(topol)
+            
+            elif topol.get_feature_type() == pygplates.FeatureType.gpml_passive_continental_boundary:
+                self.passive_continental_boundaries.append(topol)
+            
+            elif topol.get_feature_type() == pygplates.FeatureType.gpml_slab_edge:
+                self.slab_edges.append(topol)
+                
+            elif topol.get_feature_type() == pygplates.FeatureType.gpml_transform:
+                self.misc_transforms.append(topol)
+                
+            elif topol.get_feature_type() == pygplates.FeatureType.gpml_unclassified_feature:
+                self.unclassified_features.append(topol)
+
         # reconstruct other important polygons and lines
         if self.coastline_filename:
             self.coastlines = self.PlateReconstruction_object.reconstruct(
@@ -1895,7 +1954,413 @@ class PlotTopologies(object):
             U /= mag
             V /= mag
 
-        return ax.quiver(X, Y, U, V, transform=self.base_projection, **kwargs)</code></pre>
+        return ax.quiver(X, Y, U, V, transform=self.base_projection, **kwargs)
+
+
+    def plot_continental_rifts(self, ax, color=&#39;black&#39;, **kwargs):
+        &#34;&#34;&#34;Plot continental rifts on a standard map projection.
+
+        Parameters
+        ----------
+        ax : instance of &lt;cartopy.mpl.geoaxes.GeoAxes&gt; or &lt;cartopy.mpl.geoaxes.GeoAxesSubplot&gt;
+            A subclass of `matplotlib.axes.Axes` which represents a map Projection.
+            The map should be set at a particular Cartopy projection.
+
+        color : str, default=’black’
+            The colour of the trench lines. By default, it is set to black.
+
+        **kwargs : 
+            Keyword arguments for parameters such as `alpha`, etc. 
+            for plotting trench geometries.
+            See `Matplotlib` keyword arguments 
+            [here](https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html).
+
+        Returns
+        -------
+        ax : instance of &lt;geopandas.GeoDataFrame.plot&gt;
+            A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map 
+            with continental rifts plotted onto the chosen map projection.
+        &#34;&#34;&#34;
+        continental_rift_lines = shapelify_feature_lines(self.continental_rifts)
+        gdf = gpd.GeoDataFrame({&#34;geometry&#34;: continental_rift_lines}, geometry=&#34;geometry&#34;)
+        return gdf.plot(ax=ax, facecolor=&#39;none&#39;, edgecolor=color, transform=self.base_projection, **kwargs)
+
+
+    def plot_faults(self, ax, color=&#39;black&#39;, **kwargs):
+        &#34;&#34;&#34;Plot faults on a standard map projection.
+
+        Parameters
+        ----------
+        ax : instance of &lt;cartopy.mpl.geoaxes.GeoAxes&gt; or &lt;cartopy.mpl.geoaxes.GeoAxesSubplot&gt;
+            A subclass of `matplotlib.axes.Axes` which represents a map Projection.
+            The map should be set at a particular Cartopy projection.
+
+        color : str, default=’black’
+            The colour of the trench lines. By default, it is set to black.
+
+        **kwargs : 
+            Keyword arguments for parameters such as `alpha`, etc. 
+            for plotting trench geometries.
+            See `Matplotlib` keyword arguments 
+            [here](https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html).
+
+        Returns
+        -------
+        ax : instance of &lt;geopandas.GeoDataFrame.plot&gt;
+            A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map 
+            with faults plotted onto the chosen map projection.
+        &#34;&#34;&#34;
+        fault_lines = shapelify_feature_lines(self.faults)
+        gdf = gpd.GeoDataFrame({&#34;geometry&#34;: fault_lines}, geometry=&#34;geometry&#34;)
+        return gdf.plot(ax=ax, facecolor=&#39;none&#39;, edgecolor=color, transform=self.base_projection, **kwargs)
+
+
+    def plot_fracture_zones(self, ax, color=&#39;black&#39;, **kwargs):
+        &#34;&#34;&#34;Plot fracture zones on a standard map projection.
+
+        Parameters
+        ----------
+        ax : instance of &lt;cartopy.mpl.geoaxes.GeoAxes&gt; or &lt;cartopy.mpl.geoaxes.GeoAxesSubplot&gt;
+            A subclass of `matplotlib.axes.Axes` which represents a map Projection.
+            The map should be set at a particular Cartopy projection.
+
+        color : str, default=’black’
+            The colour of the trench lines. By default, it is set to black.
+
+        **kwargs : 
+            Keyword arguments for parameters such as `alpha`, etc. 
+            for plotting trench geometries.
+            See `Matplotlib` keyword arguments 
+            [here](https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html).
+
+        Returns
+        -------
+        ax : instance of &lt;geopandas.GeoDataFrame.plot&gt;
+            A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map 
+            with fracture zones plotted onto the chosen map projection.
+        &#34;&#34;&#34;
+        fracture_zone_lines = shapelify_feature_lines(self.fracture_zones)
+        gdf = gpd.GeoDataFrame({&#34;geometry&#34;: fracture_zone_lines}, geometry=&#34;geometry&#34;)
+        return gdf.plot(ax=ax, facecolor=&#39;none&#39;, edgecolor=color, transform=self.base_projection, **kwargs)
+
+
+    def plot_inferred_paleo_boundaries(self, ax, color=&#39;black&#39;, **kwargs):
+        &#34;&#34;&#34;Plot inferred paleo boundaries on a standard map projection.
+
+        Parameters
+        ----------
+        ax : instance of &lt;cartopy.mpl.geoaxes.GeoAxes&gt; or &lt;cartopy.mpl.geoaxes.GeoAxesSubplot&gt;
+            A subclass of `matplotlib.axes.Axes` which represents a map Projection.
+            The map should be set at a particular Cartopy projection.
+
+        color : str, default=’black’
+            The colour of the trench lines. By default, it is set to black.
+
+        **kwargs : 
+            Keyword arguments for parameters such as `alpha`, etc. 
+            for plotting trench geometries.
+            See `Matplotlib` keyword arguments 
+            [here](https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html).
+
+        Returns
+        -------
+        ax : instance of &lt;geopandas.GeoDataFrame.plot&gt;
+            A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map 
+            with inferred paleo boundaries plotted onto the chosen map projection.
+        &#34;&#34;&#34;
+        inferred_paleo_boundary_lines = shapelify_feature_lines(self.inferred_paleo_boundaries)
+        gdf = gpd.GeoDataFrame({&#34;geometry&#34;: inferred_paleo_boundary_lines}, geometry=&#34;geometry&#34;)
+        return gdf.plot(ax=ax, facecolor=&#39;none&#39;, edgecolor=color, transform=self.base_projection, **kwargs)
+
+
+    def plot_terrane_boundaries(self, ax, color=&#39;black&#39;, **kwargs):
+        &#34;&#34;&#34;Plot terrane boundaries on a standard map projection.
+
+        Parameters
+        ----------
+        ax : instance of &lt;cartopy.mpl.geoaxes.GeoAxes&gt; or &lt;cartopy.mpl.geoaxes.GeoAxesSubplot&gt;
+            A subclass of `matplotlib.axes.Axes` which represents a map Projection.
+            The map should be set at a particular Cartopy projection.
+
+        color : str, default=’black’
+            The colour of the trench lines. By default, it is set to black.
+
+        **kwargs : 
+            Keyword arguments for parameters such as `alpha`, etc. 
+            for plotting trench geometries.
+            See `Matplotlib` keyword arguments 
+            [here](https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html).
+
+        Returns
+        -------
+        ax : instance of &lt;geopandas.GeoDataFrame.plot&gt;
+            A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map 
+            with terrane boundaries plotted onto the chosen map projection.
+        &#34;&#34;&#34;
+        terrane_boundary_lines = shapelify_feature_lines(self.terrane_boundaries)
+        gdf = gpd.GeoDataFrame({&#34;geometry&#34;: terrane_boundary_lines}, geometry=&#34;geometry&#34;)
+        return gdf.plot(ax=ax, facecolor=&#39;none&#39;, edgecolor=color, transform=self.base_projection, **kwargs)
+
+
+    def plot_transitional_crusts(self, ax, color=&#39;black&#39;, **kwargs):
+        &#34;&#34;&#34;Plot transitional crust on a standard map projection.
+
+        Parameters
+        ----------
+        ax : instance of &lt;cartopy.mpl.geoaxes.GeoAxes&gt; or &lt;cartopy.mpl.geoaxes.GeoAxesSubplot&gt;
+            A subclass of `matplotlib.axes.Axes` which represents a map Projection.
+            The map should be set at a particular Cartopy projection.
+
+        color : str, default=’black’
+            The colour of the trench lines. By default, it is set to black.
+
+        **kwargs : 
+            Keyword arguments for parameters such as `alpha`, etc. 
+            for plotting trench geometries.
+            See `Matplotlib` keyword arguments 
+            [here](https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html).
+
+        Returns
+        -------
+        ax : instance of &lt;geopandas.GeoDataFrame.plot&gt;
+            A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map 
+            with transitional crust plotted onto the chosen map projection.
+        &#34;&#34;&#34;
+        transitional_crust_lines = shapelify_feature_lines(self.transitional_crusts)
+        gdf = gpd.GeoDataFrame({&#34;geometry&#34;: transitional_crust_lines}, geometry=&#34;geometry&#34;)
+        return gdf.plot(ax=ax, facecolor=&#39;none&#39;, edgecolor=color, transform=self.base_projection, **kwargs)
+
+
+    def plot_orogenic_belts(self, ax, color=&#39;black&#39;, **kwargs):
+        &#34;&#34;&#34;Plot orogenic belts on a standard map projection.
+
+        Parameters
+        ----------
+        ax : instance of &lt;cartopy.mpl.geoaxes.GeoAxes&gt; or &lt;cartopy.mpl.geoaxes.GeoAxesSubplot&gt;
+            A subclass of `matplotlib.axes.Axes` which represents a map Projection.
+            The map should be set at a particular Cartopy projection.
+
+        color : str, default=’black’
+            The colour of the trench lines. By default, it is set to black.
+
+        **kwargs : 
+            Keyword arguments for parameters such as `alpha`, etc. 
+            for plotting trench geometries.
+            See `Matplotlib` keyword arguments 
+            [here](https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html).
+
+        Returns
+        -------
+        ax : instance of &lt;geopandas.GeoDataFrame.plot&gt;
+            A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map 
+            with orogenic belts plotted onto the chosen map projection.
+        &#34;&#34;&#34;
+        orogenic_belt_lines = shapelify_feature_lines(self.orogenic_belts)
+        gdf = gpd.GeoDataFrame({&#34;geometry&#34;: transitional_crust_lines}, geometry=&#34;geometry&#34;)
+        return gdf.plot(ax=ax, facecolor=&#39;none&#39;, edgecolor=color, transform=self.base_projection, **kwargs)
+
+
+    def plot_sutures(self, ax, color=&#39;black&#39;, **kwargs):
+        &#34;&#34;&#34;Plot sutures on a standard map projection.
+
+        Parameters
+        ----------
+        ax : instance of &lt;cartopy.mpl.geoaxes.GeoAxes&gt; or &lt;cartopy.mpl.geoaxes.GeoAxesSubplot&gt;
+            A subclass of `matplotlib.axes.Axes` which represents a map Projection.
+            The map should be set at a particular Cartopy projection.
+
+        color : str, default=’black’
+            The colour of the trench lines. By default, it is set to black.
+
+        **kwargs : 
+            Keyword arguments for parameters such as `alpha`, etc. 
+            for plotting trench geometries.
+            See `Matplotlib` keyword arguments 
+            [here](https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html).
+
+        Returns
+        -------
+        ax : instance of &lt;geopandas.GeoDataFrame.plot&gt;
+            A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map 
+            with sutures plotted onto the chosen map projection.
+        &#34;&#34;&#34;
+        suture_lines = shapelify_feature_lines(self.sutures)
+        gdf = gpd.GeoDataFrame({&#34;geometry&#34;: suture_lines}, geometry=&#34;geometry&#34;)
+        return gdf.plot(ax=ax, facecolor=&#39;none&#39;, edgecolor=color, transform=self.base_projection, **kwargs)
+
+
+    def plot_continental_crusts(self, ax, color=&#39;black&#39;, **kwargs):
+        &#34;&#34;&#34;Plot continental crust lines on a standard map projection.
+
+        Parameters
+        ----------
+        ax : instance of &lt;cartopy.mpl.geoaxes.GeoAxes&gt; or &lt;cartopy.mpl.geoaxes.GeoAxesSubplot&gt;
+            A subclass of `matplotlib.axes.Axes` which represents a map Projection.
+            The map should be set at a particular Cartopy projection.
+
+        color : str, default=’black’
+            The colour of the trench lines. By default, it is set to black.
+
+        **kwargs : 
+            Keyword arguments for parameters such as `alpha`, etc. 
+            for plotting trench geometries.
+            See `Matplotlib` keyword arguments 
+            [here](https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html).
+
+        Returns
+        -------
+        ax : instance of &lt;geopandas.GeoDataFrame.plot&gt;
+            A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map 
+            with continental crust lines plotted onto the chosen map projection.
+        &#34;&#34;&#34;
+        continental_crust_lines = shapelify_feature_lines(self.continental_crusts)
+        gdf = gpd.GeoDataFrame({&#34;geometry&#34;: continental_crust_lines}, geometry=&#34;geometry&#34;)
+        return gdf.plot(ax=ax, facecolor=&#39;none&#39;, edgecolor=color, transform=self.base_projection, **kwargs)
+
+
+    def plot_extended_continental_crusts(self, ax, color=&#39;black&#39;, **kwargs): 
+        &#34;&#34;&#34;Plot extended continental crust lines on a standard map projection.
+
+        Parameters
+        ----------
+        ax : instance of &lt;cartopy.mpl.geoaxes.GeoAxes&gt; or &lt;cartopy.mpl.geoaxes.GeoAxesSubplot&gt;
+            A subclass of `matplotlib.axes.Axes` which represents a map Projection.
+            The map should be set at a particular Cartopy projection.
+
+        color : str, default=’black’
+            The colour of the trench lines. By default, it is set to black.
+
+        **kwargs : 
+            Keyword arguments for parameters such as `alpha`, etc. 
+            for plotting trench geometries.
+            See `Matplotlib` keyword arguments 
+            [here](https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html).
+
+        Returns
+        -------
+        ax : instance of &lt;geopandas.GeoDataFrame.plot&gt;
+            A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map 
+            with extended continental crust lines plotted onto the chosen map projection.
+        &#34;&#34;&#34;
+        extended_continental_crust_lines = shapelify_feature_lines(self.extended_continental_crusts)
+        gdf = gpd.GeoDataFrame({&#34;geometry&#34;: extended_continental_crust_lines}, geometry=&#34;geometry&#34;)
+        return gdf.plot(ax=ax, facecolor=&#39;none&#39;, edgecolor=color, transform=self.base_projection, **kwargs)
+
+
+    def plot_passive_continental_boundaries(self, ax, color=&#39;black&#39;, **kwargs): 
+        &#34;&#34;&#34;Plot passive continental boundaries on a standard map projection.
+
+        Parameters
+        ----------
+        ax : instance of &lt;cartopy.mpl.geoaxes.GeoAxes&gt; or &lt;cartopy.mpl.geoaxes.GeoAxesSubplot&gt;
+            A subclass of `matplotlib.axes.Axes` which represents a map Projection.
+            The map should be set at a particular Cartopy projection.
+
+        color : str, default=’black’
+            The colour of the trench lines. By default, it is set to black.
+
+        **kwargs : 
+            Keyword arguments for parameters such as `alpha`, etc. 
+            for plotting trench geometries.
+            See `Matplotlib` keyword arguments 
+            [here](https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html).
+
+        Returns
+        -------
+        ax : instance of &lt;geopandas.GeoDataFrame.plot&gt;
+            A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map 
+            with passive continental boundaries plotted onto the chosen map projection.
+        &#34;&#34;&#34;
+        passive_continental_boundary_lines = shapelify_feature_lines(self.passive_continental_boundaries)
+        gdf = gpd.GeoDataFrame({&#34;geometry&#34;: passive_continental_boundary_lines}, geometry=&#34;geometry&#34;)
+        return gdf.plot(ax=ax, facecolor=&#39;none&#39;, edgecolor=color, transform=self.base_projection, **kwargs)
+
+
+    def plot_slab_edges(self, ax, color=&#39;black&#39;, **kwargs): 
+        &#34;&#34;&#34;Plot slab edges on a standard map projection.
+
+        Parameters
+        ----------
+        ax : instance of &lt;cartopy.mpl.geoaxes.GeoAxes&gt; or &lt;cartopy.mpl.geoaxes.GeoAxesSubplot&gt;
+            A subclass of `matplotlib.axes.Axes` which represents a map Projection.
+            The map should be set at a particular Cartopy projection.
+
+        color : str, default=’black’
+            The colour of the trench lines. By default, it is set to black.
+
+        **kwargs : 
+            Keyword arguments for parameters such as `alpha`, etc. 
+            for plotting trench geometries.
+            See `Matplotlib` keyword arguments 
+            [here](https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html).
+
+        Returns
+        -------
+        ax : instance of &lt;geopandas.GeoDataFrame.plot&gt;
+            A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map 
+            with slab edges plotted onto the chosen map projection.
+        &#34;&#34;&#34;
+        slab_edge_lines = shapelify_feature_lines(self.slab_edges)
+        gdf = gpd.GeoDataFrame({&#34;geometry&#34;: slab_edge_lines}, geometry=&#34;geometry&#34;)
+        return gdf.plot(ax=ax, facecolor=&#39;none&#39;, edgecolor=color, transform=self.base_projection, **kwargs)
+
+
+    def plot_misc_transforms(self, ax, color=&#39;black&#39;, **kwargs): 
+        &#34;&#34;&#34;Plot miscellaneous transform boundaries on a standard map projection.
+
+        Parameters
+        ----------
+        ax : instance of &lt;cartopy.mpl.geoaxes.GeoAxes&gt; or &lt;cartopy.mpl.geoaxes.GeoAxesSubplot&gt;
+            A subclass of `matplotlib.axes.Axes` which represents a map Projection.
+            The map should be set at a particular Cartopy projection.
+
+        color : str, default=’black’
+            The colour of the trench lines. By default, it is set to black.
+
+        **kwargs : 
+            Keyword arguments for parameters such as `alpha`, etc. 
+            for plotting trench geometries.
+            See `Matplotlib` keyword arguments 
+            [here](https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html).
+
+        Returns
+        -------
+        ax : instance of &lt;geopandas.GeoDataFrame.plot&gt;
+            A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map 
+            with miscellaneous transform boundaries plotted onto the chosen map projection.
+        &#34;&#34;&#34;
+        misc_transform_lines = shapelify_feature_lines(self.misc_transforms)
+        gdf = gpd.GeoDataFrame({&#34;geometry&#34;: misc_transform_lines}, geometry=&#34;geometry&#34;)
+        return gdf.plot(ax=ax, facecolor=&#39;none&#39;, edgecolor=color, transform=self.base_projection, **kwargs)
+
+
+    def plot_unclassified_features(self, ax, color=&#39;black&#39;, **kwargs): 
+        &#34;&#34;&#34;Plot GPML unclassified features on a standard map projection.
+
+        Parameters
+        ----------
+        ax : instance of &lt;cartopy.mpl.geoaxes.GeoAxes&gt; or &lt;cartopy.mpl.geoaxes.GeoAxesSubplot&gt;
+            A subclass of `matplotlib.axes.Axes` which represents a map Projection.
+            The map should be set at a particular Cartopy projection.
+
+        color : str, default=’black’
+            The colour of the trench lines. By default, it is set to black.
+
+        **kwargs : 
+            Keyword arguments for parameters such as `alpha`, etc. 
+            for plotting trench geometries.
+            See `Matplotlib` keyword arguments 
+            [here](https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html).
+
+        Returns
+        -------
+        ax : instance of &lt;geopandas.GeoDataFrame.plot&gt;
+            A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map 
+            with unclassified features plotted onto the chosen map projection.
+        &#34;&#34;&#34;
+        unclassified_feature_lines = shapelify_feature_lines(self.unclassified_features)
+        gdf = gpd.GeoDataFrame({&#34;geometry&#34;: unclassified_feature_lines}, geometry=&#34;geometry&#34;)
+        return gdf.plot(ax=ax, facecolor=&#39;none&#39;, edgecolor=color, transform=self.base_projection, **kwargs)</code></pre>
 </details>
 </section>
 <section>
@@ -3354,6 +3819,65 @@ boundaries and passive continental boundaries.</dd>
 
         self.topologies, self.ridge_transforms, self.ridges, self.transforms, self.trenches, self.trench_left, self.trench_right, self.other = resolved_topologies
 
+        # miscellaneous boundaries
+        self.continental_rifts = []
+        self.faults = []
+        self.fracture_zones = []
+        self.inferred_paleo_boundaries = []
+        self.terrane_boundaries = []
+        self.transitional_crusts = []
+        self.orogenic_belts = []
+        self.sutures = []
+        self.continental_crusts = []
+        self.extended_continental_crusts = []
+        self.passive_continental_boundaries = []
+        self.slab_edges = []
+        self.misc_transforms = []
+        self.unclassified_features = []
+
+        for topol in self.other:
+            if topol.get_feature_type() == pygplates.FeatureType.gpml_continental_rift:
+                self.continental_rifts.append(topol)
+
+            elif topol.get_feature_type() == pygplates.FeatureType.gpml_fault:
+                self.faults.append(topol)
+                    
+            elif topol.get_feature_type() == pygplates.FeatureType.gpml_fracture_zone:
+                self.fracture_zones.append(topol)
+                
+            elif topol.get_feature_type() == pygplates.FeatureType.gpml_inferred_paleo_boundary:
+                self.inferred_paleo_boundaries.append(topol)
+
+            elif topol.get_feature_type() == pygplates.FeatureType.gpml_terrane_boundary:
+                self.terrane_boundaries.append(topol)
+                
+            elif topol.get_feature_type() == pygplates.FeatureType.gpml_transitional_crust:
+                self.transitional_crusts.append(topol)
+            
+            elif topol.get_feature_type() == pygplates.FeatureType.gpml_orogenic_belt:
+                self.orogenic_belts.append(topol)
+                
+            elif topol.get_feature_type() == pygplates.FeatureType.gpml_suture:
+                self.sutures.append(topol)
+                
+            elif topol.get_feature_type() == pygplates.FeatureType.gpml_continental_crust:
+                self.continental_crusts.append(topol)
+            
+            elif topol.get_feature_type() == pygplates.FeatureType.gpml_extended_continental_crust:
+                self.extended_continental_crusts.append(topol)
+            
+            elif topol.get_feature_type() == pygplates.FeatureType.gpml_passive_continental_boundary:
+                self.passive_continental_boundaries.append(topol)
+            
+            elif topol.get_feature_type() == pygplates.FeatureType.gpml_slab_edge:
+                self.slab_edges.append(topol)
+                
+            elif topol.get_feature_type() == pygplates.FeatureType.gpml_transform:
+                self.misc_transforms.append(topol)
+                
+            elif topol.get_feature_type() == pygplates.FeatureType.gpml_unclassified_feature:
+                self.unclassified_features.append(topol)
+
         # reconstruct other important polygons and lines
         if self.coastline_filename:
             self.coastlines = self.PlateReconstruction_object.reconstruct(
@@ -4089,7 +4613,413 @@ boundaries and passive continental boundaries.</dd>
             U /= mag
             V /= mag
 
-        return ax.quiver(X, Y, U, V, transform=self.base_projection, **kwargs)</code></pre>
+        return ax.quiver(X, Y, U, V, transform=self.base_projection, **kwargs)
+
+
+    def plot_continental_rifts(self, ax, color=&#39;black&#39;, **kwargs):
+        &#34;&#34;&#34;Plot continental rifts on a standard map projection.
+
+        Parameters
+        ----------
+        ax : instance of &lt;cartopy.mpl.geoaxes.GeoAxes&gt; or &lt;cartopy.mpl.geoaxes.GeoAxesSubplot&gt;
+            A subclass of `matplotlib.axes.Axes` which represents a map Projection.
+            The map should be set at a particular Cartopy projection.
+
+        color : str, default=’black’
+            The colour of the trench lines. By default, it is set to black.
+
+        **kwargs : 
+            Keyword arguments for parameters such as `alpha`, etc. 
+            for plotting trench geometries.
+            See `Matplotlib` keyword arguments 
+            [here](https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html).
+
+        Returns
+        -------
+        ax : instance of &lt;geopandas.GeoDataFrame.plot&gt;
+            A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map 
+            with continental rifts plotted onto the chosen map projection.
+        &#34;&#34;&#34;
+        continental_rift_lines = shapelify_feature_lines(self.continental_rifts)
+        gdf = gpd.GeoDataFrame({&#34;geometry&#34;: continental_rift_lines}, geometry=&#34;geometry&#34;)
+        return gdf.plot(ax=ax, facecolor=&#39;none&#39;, edgecolor=color, transform=self.base_projection, **kwargs)
+
+
+    def plot_faults(self, ax, color=&#39;black&#39;, **kwargs):
+        &#34;&#34;&#34;Plot faults on a standard map projection.
+
+        Parameters
+        ----------
+        ax : instance of &lt;cartopy.mpl.geoaxes.GeoAxes&gt; or &lt;cartopy.mpl.geoaxes.GeoAxesSubplot&gt;
+            A subclass of `matplotlib.axes.Axes` which represents a map Projection.
+            The map should be set at a particular Cartopy projection.
+
+        color : str, default=’black’
+            The colour of the trench lines. By default, it is set to black.
+
+        **kwargs : 
+            Keyword arguments for parameters such as `alpha`, etc. 
+            for plotting trench geometries.
+            See `Matplotlib` keyword arguments 
+            [here](https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html).
+
+        Returns
+        -------
+        ax : instance of &lt;geopandas.GeoDataFrame.plot&gt;
+            A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map 
+            with faults plotted onto the chosen map projection.
+        &#34;&#34;&#34;
+        fault_lines = shapelify_feature_lines(self.faults)
+        gdf = gpd.GeoDataFrame({&#34;geometry&#34;: fault_lines}, geometry=&#34;geometry&#34;)
+        return gdf.plot(ax=ax, facecolor=&#39;none&#39;, edgecolor=color, transform=self.base_projection, **kwargs)
+
+
+    def plot_fracture_zones(self, ax, color=&#39;black&#39;, **kwargs):
+        &#34;&#34;&#34;Plot fracture zones on a standard map projection.
+
+        Parameters
+        ----------
+        ax : instance of &lt;cartopy.mpl.geoaxes.GeoAxes&gt; or &lt;cartopy.mpl.geoaxes.GeoAxesSubplot&gt;
+            A subclass of `matplotlib.axes.Axes` which represents a map Projection.
+            The map should be set at a particular Cartopy projection.
+
+        color : str, default=’black’
+            The colour of the trench lines. By default, it is set to black.
+
+        **kwargs : 
+            Keyword arguments for parameters such as `alpha`, etc. 
+            for plotting trench geometries.
+            See `Matplotlib` keyword arguments 
+            [here](https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html).
+
+        Returns
+        -------
+        ax : instance of &lt;geopandas.GeoDataFrame.plot&gt;
+            A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map 
+            with fracture zones plotted onto the chosen map projection.
+        &#34;&#34;&#34;
+        fracture_zone_lines = shapelify_feature_lines(self.fracture_zones)
+        gdf = gpd.GeoDataFrame({&#34;geometry&#34;: fracture_zone_lines}, geometry=&#34;geometry&#34;)
+        return gdf.plot(ax=ax, facecolor=&#39;none&#39;, edgecolor=color, transform=self.base_projection, **kwargs)
+
+
+    def plot_inferred_paleo_boundaries(self, ax, color=&#39;black&#39;, **kwargs):
+        &#34;&#34;&#34;Plot inferred paleo boundaries on a standard map projection.
+
+        Parameters
+        ----------
+        ax : instance of &lt;cartopy.mpl.geoaxes.GeoAxes&gt; or &lt;cartopy.mpl.geoaxes.GeoAxesSubplot&gt;
+            A subclass of `matplotlib.axes.Axes` which represents a map Projection.
+            The map should be set at a particular Cartopy projection.
+
+        color : str, default=’black’
+            The colour of the trench lines. By default, it is set to black.
+
+        **kwargs : 
+            Keyword arguments for parameters such as `alpha`, etc. 
+            for plotting trench geometries.
+            See `Matplotlib` keyword arguments 
+            [here](https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html).
+
+        Returns
+        -------
+        ax : instance of &lt;geopandas.GeoDataFrame.plot&gt;
+            A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map 
+            with inferred paleo boundaries plotted onto the chosen map projection.
+        &#34;&#34;&#34;
+        inferred_paleo_boundary_lines = shapelify_feature_lines(self.inferred_paleo_boundaries)
+        gdf = gpd.GeoDataFrame({&#34;geometry&#34;: inferred_paleo_boundary_lines}, geometry=&#34;geometry&#34;)
+        return gdf.plot(ax=ax, facecolor=&#39;none&#39;, edgecolor=color, transform=self.base_projection, **kwargs)
+
+
+    def plot_terrane_boundaries(self, ax, color=&#39;black&#39;, **kwargs):
+        &#34;&#34;&#34;Plot terrane boundaries on a standard map projection.
+
+        Parameters
+        ----------
+        ax : instance of &lt;cartopy.mpl.geoaxes.GeoAxes&gt; or &lt;cartopy.mpl.geoaxes.GeoAxesSubplot&gt;
+            A subclass of `matplotlib.axes.Axes` which represents a map Projection.
+            The map should be set at a particular Cartopy projection.
+
+        color : str, default=’black’
+            The colour of the trench lines. By default, it is set to black.
+
+        **kwargs : 
+            Keyword arguments for parameters such as `alpha`, etc. 
+            for plotting trench geometries.
+            See `Matplotlib` keyword arguments 
+            [here](https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html).
+
+        Returns
+        -------
+        ax : instance of &lt;geopandas.GeoDataFrame.plot&gt;
+            A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map 
+            with terrane boundaries plotted onto the chosen map projection.
+        &#34;&#34;&#34;
+        terrane_boundary_lines = shapelify_feature_lines(self.terrane_boundaries)
+        gdf = gpd.GeoDataFrame({&#34;geometry&#34;: terrane_boundary_lines}, geometry=&#34;geometry&#34;)
+        return gdf.plot(ax=ax, facecolor=&#39;none&#39;, edgecolor=color, transform=self.base_projection, **kwargs)
+
+
+    def plot_transitional_crusts(self, ax, color=&#39;black&#39;, **kwargs):
+        &#34;&#34;&#34;Plot transitional crust on a standard map projection.
+
+        Parameters
+        ----------
+        ax : instance of &lt;cartopy.mpl.geoaxes.GeoAxes&gt; or &lt;cartopy.mpl.geoaxes.GeoAxesSubplot&gt;
+            A subclass of `matplotlib.axes.Axes` which represents a map Projection.
+            The map should be set at a particular Cartopy projection.
+
+        color : str, default=’black’
+            The colour of the trench lines. By default, it is set to black.
+
+        **kwargs : 
+            Keyword arguments for parameters such as `alpha`, etc. 
+            for plotting trench geometries.
+            See `Matplotlib` keyword arguments 
+            [here](https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html).
+
+        Returns
+        -------
+        ax : instance of &lt;geopandas.GeoDataFrame.plot&gt;
+            A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map 
+            with transitional crust plotted onto the chosen map projection.
+        &#34;&#34;&#34;
+        transitional_crust_lines = shapelify_feature_lines(self.transitional_crusts)
+        gdf = gpd.GeoDataFrame({&#34;geometry&#34;: transitional_crust_lines}, geometry=&#34;geometry&#34;)
+        return gdf.plot(ax=ax, facecolor=&#39;none&#39;, edgecolor=color, transform=self.base_projection, **kwargs)
+
+
+    def plot_orogenic_belts(self, ax, color=&#39;black&#39;, **kwargs):
+        &#34;&#34;&#34;Plot orogenic belts on a standard map projection.
+
+        Parameters
+        ----------
+        ax : instance of &lt;cartopy.mpl.geoaxes.GeoAxes&gt; or &lt;cartopy.mpl.geoaxes.GeoAxesSubplot&gt;
+            A subclass of `matplotlib.axes.Axes` which represents a map Projection.
+            The map should be set at a particular Cartopy projection.
+
+        color : str, default=’black’
+            The colour of the trench lines. By default, it is set to black.
+
+        **kwargs : 
+            Keyword arguments for parameters such as `alpha`, etc. 
+            for plotting trench geometries.
+            See `Matplotlib` keyword arguments 
+            [here](https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html).
+
+        Returns
+        -------
+        ax : instance of &lt;geopandas.GeoDataFrame.plot&gt;
+            A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map 
+            with orogenic belts plotted onto the chosen map projection.
+        &#34;&#34;&#34;
+        orogenic_belt_lines = shapelify_feature_lines(self.orogenic_belts)
+        gdf = gpd.GeoDataFrame({&#34;geometry&#34;: transitional_crust_lines}, geometry=&#34;geometry&#34;)
+        return gdf.plot(ax=ax, facecolor=&#39;none&#39;, edgecolor=color, transform=self.base_projection, **kwargs)
+
+
+    def plot_sutures(self, ax, color=&#39;black&#39;, **kwargs):
+        &#34;&#34;&#34;Plot sutures on a standard map projection.
+
+        Parameters
+        ----------
+        ax : instance of &lt;cartopy.mpl.geoaxes.GeoAxes&gt; or &lt;cartopy.mpl.geoaxes.GeoAxesSubplot&gt;
+            A subclass of `matplotlib.axes.Axes` which represents a map Projection.
+            The map should be set at a particular Cartopy projection.
+
+        color : str, default=’black’
+            The colour of the trench lines. By default, it is set to black.
+
+        **kwargs : 
+            Keyword arguments for parameters such as `alpha`, etc. 
+            for plotting trench geometries.
+            See `Matplotlib` keyword arguments 
+            [here](https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html).
+
+        Returns
+        -------
+        ax : instance of &lt;geopandas.GeoDataFrame.plot&gt;
+            A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map 
+            with sutures plotted onto the chosen map projection.
+        &#34;&#34;&#34;
+        suture_lines = shapelify_feature_lines(self.sutures)
+        gdf = gpd.GeoDataFrame({&#34;geometry&#34;: suture_lines}, geometry=&#34;geometry&#34;)
+        return gdf.plot(ax=ax, facecolor=&#39;none&#39;, edgecolor=color, transform=self.base_projection, **kwargs)
+
+
+    def plot_continental_crusts(self, ax, color=&#39;black&#39;, **kwargs):
+        &#34;&#34;&#34;Plot continental crust lines on a standard map projection.
+
+        Parameters
+        ----------
+        ax : instance of &lt;cartopy.mpl.geoaxes.GeoAxes&gt; or &lt;cartopy.mpl.geoaxes.GeoAxesSubplot&gt;
+            A subclass of `matplotlib.axes.Axes` which represents a map Projection.
+            The map should be set at a particular Cartopy projection.
+
+        color : str, default=’black’
+            The colour of the trench lines. By default, it is set to black.
+
+        **kwargs : 
+            Keyword arguments for parameters such as `alpha`, etc. 
+            for plotting trench geometries.
+            See `Matplotlib` keyword arguments 
+            [here](https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html).
+
+        Returns
+        -------
+        ax : instance of &lt;geopandas.GeoDataFrame.plot&gt;
+            A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map 
+            with continental crust lines plotted onto the chosen map projection.
+        &#34;&#34;&#34;
+        continental_crust_lines = shapelify_feature_lines(self.continental_crusts)
+        gdf = gpd.GeoDataFrame({&#34;geometry&#34;: continental_crust_lines}, geometry=&#34;geometry&#34;)
+        return gdf.plot(ax=ax, facecolor=&#39;none&#39;, edgecolor=color, transform=self.base_projection, **kwargs)
+
+
+    def plot_extended_continental_crusts(self, ax, color=&#39;black&#39;, **kwargs): 
+        &#34;&#34;&#34;Plot extended continental crust lines on a standard map projection.
+
+        Parameters
+        ----------
+        ax : instance of &lt;cartopy.mpl.geoaxes.GeoAxes&gt; or &lt;cartopy.mpl.geoaxes.GeoAxesSubplot&gt;
+            A subclass of `matplotlib.axes.Axes` which represents a map Projection.
+            The map should be set at a particular Cartopy projection.
+
+        color : str, default=’black’
+            The colour of the trench lines. By default, it is set to black.
+
+        **kwargs : 
+            Keyword arguments for parameters such as `alpha`, etc. 
+            for plotting trench geometries.
+            See `Matplotlib` keyword arguments 
+            [here](https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html).
+
+        Returns
+        -------
+        ax : instance of &lt;geopandas.GeoDataFrame.plot&gt;
+            A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map 
+            with extended continental crust lines plotted onto the chosen map projection.
+        &#34;&#34;&#34;
+        extended_continental_crust_lines = shapelify_feature_lines(self.extended_continental_crusts)
+        gdf = gpd.GeoDataFrame({&#34;geometry&#34;: extended_continental_crust_lines}, geometry=&#34;geometry&#34;)
+        return gdf.plot(ax=ax, facecolor=&#39;none&#39;, edgecolor=color, transform=self.base_projection, **kwargs)
+
+
+    def plot_passive_continental_boundaries(self, ax, color=&#39;black&#39;, **kwargs): 
+        &#34;&#34;&#34;Plot passive continental boundaries on a standard map projection.
+
+        Parameters
+        ----------
+        ax : instance of &lt;cartopy.mpl.geoaxes.GeoAxes&gt; or &lt;cartopy.mpl.geoaxes.GeoAxesSubplot&gt;
+            A subclass of `matplotlib.axes.Axes` which represents a map Projection.
+            The map should be set at a particular Cartopy projection.
+
+        color : str, default=’black’
+            The colour of the trench lines. By default, it is set to black.
+
+        **kwargs : 
+            Keyword arguments for parameters such as `alpha`, etc. 
+            for plotting trench geometries.
+            See `Matplotlib` keyword arguments 
+            [here](https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html).
+
+        Returns
+        -------
+        ax : instance of &lt;geopandas.GeoDataFrame.plot&gt;
+            A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map 
+            with passive continental boundaries plotted onto the chosen map projection.
+        &#34;&#34;&#34;
+        passive_continental_boundary_lines = shapelify_feature_lines(self.passive_continental_boundaries)
+        gdf = gpd.GeoDataFrame({&#34;geometry&#34;: passive_continental_boundary_lines}, geometry=&#34;geometry&#34;)
+        return gdf.plot(ax=ax, facecolor=&#39;none&#39;, edgecolor=color, transform=self.base_projection, **kwargs)
+
+
+    def plot_slab_edges(self, ax, color=&#39;black&#39;, **kwargs): 
+        &#34;&#34;&#34;Plot slab edges on a standard map projection.
+
+        Parameters
+        ----------
+        ax : instance of &lt;cartopy.mpl.geoaxes.GeoAxes&gt; or &lt;cartopy.mpl.geoaxes.GeoAxesSubplot&gt;
+            A subclass of `matplotlib.axes.Axes` which represents a map Projection.
+            The map should be set at a particular Cartopy projection.
+
+        color : str, default=’black’
+            The colour of the trench lines. By default, it is set to black.
+
+        **kwargs : 
+            Keyword arguments for parameters such as `alpha`, etc. 
+            for plotting trench geometries.
+            See `Matplotlib` keyword arguments 
+            [here](https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html).
+
+        Returns
+        -------
+        ax : instance of &lt;geopandas.GeoDataFrame.plot&gt;
+            A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map 
+            with slab edges plotted onto the chosen map projection.
+        &#34;&#34;&#34;
+        slab_edge_lines = shapelify_feature_lines(self.slab_edges)
+        gdf = gpd.GeoDataFrame({&#34;geometry&#34;: slab_edge_lines}, geometry=&#34;geometry&#34;)
+        return gdf.plot(ax=ax, facecolor=&#39;none&#39;, edgecolor=color, transform=self.base_projection, **kwargs)
+
+
+    def plot_misc_transforms(self, ax, color=&#39;black&#39;, **kwargs): 
+        &#34;&#34;&#34;Plot miscellaneous transform boundaries on a standard map projection.
+
+        Parameters
+        ----------
+        ax : instance of &lt;cartopy.mpl.geoaxes.GeoAxes&gt; or &lt;cartopy.mpl.geoaxes.GeoAxesSubplot&gt;
+            A subclass of `matplotlib.axes.Axes` which represents a map Projection.
+            The map should be set at a particular Cartopy projection.
+
+        color : str, default=’black’
+            The colour of the trench lines. By default, it is set to black.
+
+        **kwargs : 
+            Keyword arguments for parameters such as `alpha`, etc. 
+            for plotting trench geometries.
+            See `Matplotlib` keyword arguments 
+            [here](https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html).
+
+        Returns
+        -------
+        ax : instance of &lt;geopandas.GeoDataFrame.plot&gt;
+            A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map 
+            with miscellaneous transform boundaries plotted onto the chosen map projection.
+        &#34;&#34;&#34;
+        misc_transform_lines = shapelify_feature_lines(self.misc_transforms)
+        gdf = gpd.GeoDataFrame({&#34;geometry&#34;: misc_transform_lines}, geometry=&#34;geometry&#34;)
+        return gdf.plot(ax=ax, facecolor=&#39;none&#39;, edgecolor=color, transform=self.base_projection, **kwargs)
+
+
+    def plot_unclassified_features(self, ax, color=&#39;black&#39;, **kwargs): 
+        &#34;&#34;&#34;Plot GPML unclassified features on a standard map projection.
+
+        Parameters
+        ----------
+        ax : instance of &lt;cartopy.mpl.geoaxes.GeoAxes&gt; or &lt;cartopy.mpl.geoaxes.GeoAxesSubplot&gt;
+            A subclass of `matplotlib.axes.Axes` which represents a map Projection.
+            The map should be set at a particular Cartopy projection.
+
+        color : str, default=’black’
+            The colour of the trench lines. By default, it is set to black.
+
+        **kwargs : 
+            Keyword arguments for parameters such as `alpha`, etc. 
+            for plotting trench geometries.
+            See `Matplotlib` keyword arguments 
+            [here](https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html).
+
+        Returns
+        -------
+        ax : instance of &lt;geopandas.GeoDataFrame.plot&gt;
+            A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map 
+            with unclassified features plotted onto the chosen map projection.
+        &#34;&#34;&#34;
+        unclassified_feature_lines = shapelify_feature_lines(self.unclassified_features)
+        gdf = gpd.GeoDataFrame({&#34;geometry&#34;: unclassified_feature_lines}, geometry=&#34;geometry&#34;)
+        return gdf.plot(ax=ax, facecolor=&#39;none&#39;, edgecolor=color, transform=self.base_projection, **kwargs)</code></pre>
 </details>
 <h3>Instance variables</h3>
 <dl>
@@ -4265,6 +5195,120 @@ with COB features plotted onto the chosen map projection.</dd>
     return gdf.plot(ax=ax, transform=self.base_projection, **kwargs)</code></pre>
 </details>
 </dd>
+<dt id="gplately.plot.PlotTopologies.plot_continental_crusts"><code class="name flex">
+<span>def <span class="ident">plot_continental_crusts</span></span>(<span>self, ax, color='black', **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Plot continental crust lines on a standard map projection.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>ax</code></strong> :&ensp;<code>instance</code> of <code>&lt;cartopy.mpl.geoaxes.GeoAxes&gt;</code> or <code>&lt;cartopy.mpl.geoaxes.GeoAxesSubplot&gt;</code></dt>
+<dd>A subclass of <code>matplotlib.axes.Axes</code> which represents a map Projection.
+The map should be set at a particular Cartopy projection.</dd>
+<dt><strong><code>color</code></strong> :&ensp;<code>str</code>, default=<code>’black’</code></dt>
+<dd>The colour of the trench lines. By default, it is set to black.</dd>
+<dt><strong><code>**kwargs</code></strong></dt>
+<dd>Keyword arguments for parameters such as <code>alpha</code>, etc.
+for plotting trench geometries.
+See <code>Matplotlib</code> keyword arguments
+<a href="https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html">here</a>.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><strong><code>ax</code></strong> :&ensp;<code>instance</code> of <code>&lt;geopandas.GeoDataFrame.plot&gt;</code></dt>
+<dd>A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map
+with continental crust lines plotted onto the chosen map projection.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def plot_continental_crusts(self, ax, color=&#39;black&#39;, **kwargs):
+    &#34;&#34;&#34;Plot continental crust lines on a standard map projection.
+
+    Parameters
+    ----------
+    ax : instance of &lt;cartopy.mpl.geoaxes.GeoAxes&gt; or &lt;cartopy.mpl.geoaxes.GeoAxesSubplot&gt;
+        A subclass of `matplotlib.axes.Axes` which represents a map Projection.
+        The map should be set at a particular Cartopy projection.
+
+    color : str, default=’black’
+        The colour of the trench lines. By default, it is set to black.
+
+    **kwargs : 
+        Keyword arguments for parameters such as `alpha`, etc. 
+        for plotting trench geometries.
+        See `Matplotlib` keyword arguments 
+        [here](https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html).
+
+    Returns
+    -------
+    ax : instance of &lt;geopandas.GeoDataFrame.plot&gt;
+        A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map 
+        with continental crust lines plotted onto the chosen map projection.
+    &#34;&#34;&#34;
+    continental_crust_lines = shapelify_feature_lines(self.continental_crusts)
+    gdf = gpd.GeoDataFrame({&#34;geometry&#34;: continental_crust_lines}, geometry=&#34;geometry&#34;)
+    return gdf.plot(ax=ax, facecolor=&#39;none&#39;, edgecolor=color, transform=self.base_projection, **kwargs)</code></pre>
+</details>
+</dd>
+<dt id="gplately.plot.PlotTopologies.plot_continental_rifts"><code class="name flex">
+<span>def <span class="ident">plot_continental_rifts</span></span>(<span>self, ax, color='black', **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Plot continental rifts on a standard map projection.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>ax</code></strong> :&ensp;<code>instance</code> of <code>&lt;cartopy.mpl.geoaxes.GeoAxes&gt;</code> or <code>&lt;cartopy.mpl.geoaxes.GeoAxesSubplot&gt;</code></dt>
+<dd>A subclass of <code>matplotlib.axes.Axes</code> which represents a map Projection.
+The map should be set at a particular Cartopy projection.</dd>
+<dt><strong><code>color</code></strong> :&ensp;<code>str</code>, default=<code>’black’</code></dt>
+<dd>The colour of the trench lines. By default, it is set to black.</dd>
+<dt><strong><code>**kwargs</code></strong></dt>
+<dd>Keyword arguments for parameters such as <code>alpha</code>, etc.
+for plotting trench geometries.
+See <code>Matplotlib</code> keyword arguments
+<a href="https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html">here</a>.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><strong><code>ax</code></strong> :&ensp;<code>instance</code> of <code>&lt;geopandas.GeoDataFrame.plot&gt;</code></dt>
+<dd>A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map
+with continental rifts plotted onto the chosen map projection.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def plot_continental_rifts(self, ax, color=&#39;black&#39;, **kwargs):
+    &#34;&#34;&#34;Plot continental rifts on a standard map projection.
+
+    Parameters
+    ----------
+    ax : instance of &lt;cartopy.mpl.geoaxes.GeoAxes&gt; or &lt;cartopy.mpl.geoaxes.GeoAxesSubplot&gt;
+        A subclass of `matplotlib.axes.Axes` which represents a map Projection.
+        The map should be set at a particular Cartopy projection.
+
+    color : str, default=’black’
+        The colour of the trench lines. By default, it is set to black.
+
+    **kwargs : 
+        Keyword arguments for parameters such as `alpha`, etc. 
+        for plotting trench geometries.
+        See `Matplotlib` keyword arguments 
+        [here](https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html).
+
+    Returns
+    -------
+    ax : instance of &lt;geopandas.GeoDataFrame.plot&gt;
+        A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map 
+        with continental rifts plotted onto the chosen map projection.
+    &#34;&#34;&#34;
+    continental_rift_lines = shapelify_feature_lines(self.continental_rifts)
+    gdf = gpd.GeoDataFrame({&#34;geometry&#34;: continental_rift_lines}, geometry=&#34;geometry&#34;)
+    return gdf.plot(ax=ax, facecolor=&#39;none&#39;, edgecolor=color, transform=self.base_projection, **kwargs)</code></pre>
+</details>
+</dd>
 <dt id="gplately.plot.PlotTopologies.plot_continents"><code class="name flex">
 <span>def <span class="ident">plot_continents</span></span>(<span>self, ax, **kwargs)</span>
 </code></dt>
@@ -4338,6 +5382,120 @@ with continent features plotted onto the chosen map projection.</dd>
     return gdf.plot(ax=ax, transform=self.base_projection, **kwargs)</code></pre>
 </details>
 </dd>
+<dt id="gplately.plot.PlotTopologies.plot_extended_continental_crusts"><code class="name flex">
+<span>def <span class="ident">plot_extended_continental_crusts</span></span>(<span>self, ax, color='black', **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Plot extended continental crust lines on a standard map projection.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>ax</code></strong> :&ensp;<code>instance</code> of <code>&lt;cartopy.mpl.geoaxes.GeoAxes&gt;</code> or <code>&lt;cartopy.mpl.geoaxes.GeoAxesSubplot&gt;</code></dt>
+<dd>A subclass of <code>matplotlib.axes.Axes</code> which represents a map Projection.
+The map should be set at a particular Cartopy projection.</dd>
+<dt><strong><code>color</code></strong> :&ensp;<code>str</code>, default=<code>’black’</code></dt>
+<dd>The colour of the trench lines. By default, it is set to black.</dd>
+<dt><strong><code>**kwargs</code></strong></dt>
+<dd>Keyword arguments for parameters such as <code>alpha</code>, etc.
+for plotting trench geometries.
+See <code>Matplotlib</code> keyword arguments
+<a href="https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html">here</a>.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><strong><code>ax</code></strong> :&ensp;<code>instance</code> of <code>&lt;geopandas.GeoDataFrame.plot&gt;</code></dt>
+<dd>A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map
+with extended continental crust lines plotted onto the chosen map projection.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def plot_extended_continental_crusts(self, ax, color=&#39;black&#39;, **kwargs): 
+    &#34;&#34;&#34;Plot extended continental crust lines on a standard map projection.
+
+    Parameters
+    ----------
+    ax : instance of &lt;cartopy.mpl.geoaxes.GeoAxes&gt; or &lt;cartopy.mpl.geoaxes.GeoAxesSubplot&gt;
+        A subclass of `matplotlib.axes.Axes` which represents a map Projection.
+        The map should be set at a particular Cartopy projection.
+
+    color : str, default=’black’
+        The colour of the trench lines. By default, it is set to black.
+
+    **kwargs : 
+        Keyword arguments for parameters such as `alpha`, etc. 
+        for plotting trench geometries.
+        See `Matplotlib` keyword arguments 
+        [here](https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html).
+
+    Returns
+    -------
+    ax : instance of &lt;geopandas.GeoDataFrame.plot&gt;
+        A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map 
+        with extended continental crust lines plotted onto the chosen map projection.
+    &#34;&#34;&#34;
+    extended_continental_crust_lines = shapelify_feature_lines(self.extended_continental_crusts)
+    gdf = gpd.GeoDataFrame({&#34;geometry&#34;: extended_continental_crust_lines}, geometry=&#34;geometry&#34;)
+    return gdf.plot(ax=ax, facecolor=&#39;none&#39;, edgecolor=color, transform=self.base_projection, **kwargs)</code></pre>
+</details>
+</dd>
+<dt id="gplately.plot.PlotTopologies.plot_faults"><code class="name flex">
+<span>def <span class="ident">plot_faults</span></span>(<span>self, ax, color='black', **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Plot faults on a standard map projection.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>ax</code></strong> :&ensp;<code>instance</code> of <code>&lt;cartopy.mpl.geoaxes.GeoAxes&gt;</code> or <code>&lt;cartopy.mpl.geoaxes.GeoAxesSubplot&gt;</code></dt>
+<dd>A subclass of <code>matplotlib.axes.Axes</code> which represents a map Projection.
+The map should be set at a particular Cartopy projection.</dd>
+<dt><strong><code>color</code></strong> :&ensp;<code>str</code>, default=<code>’black’</code></dt>
+<dd>The colour of the trench lines. By default, it is set to black.</dd>
+<dt><strong><code>**kwargs</code></strong></dt>
+<dd>Keyword arguments for parameters such as <code>alpha</code>, etc.
+for plotting trench geometries.
+See <code>Matplotlib</code> keyword arguments
+<a href="https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html">here</a>.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><strong><code>ax</code></strong> :&ensp;<code>instance</code> of <code>&lt;geopandas.GeoDataFrame.plot&gt;</code></dt>
+<dd>A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map
+with faults plotted onto the chosen map projection.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def plot_faults(self, ax, color=&#39;black&#39;, **kwargs):
+    &#34;&#34;&#34;Plot faults on a standard map projection.
+
+    Parameters
+    ----------
+    ax : instance of &lt;cartopy.mpl.geoaxes.GeoAxes&gt; or &lt;cartopy.mpl.geoaxes.GeoAxesSubplot&gt;
+        A subclass of `matplotlib.axes.Axes` which represents a map Projection.
+        The map should be set at a particular Cartopy projection.
+
+    color : str, default=’black’
+        The colour of the trench lines. By default, it is set to black.
+
+    **kwargs : 
+        Keyword arguments for parameters such as `alpha`, etc. 
+        for plotting trench geometries.
+        See `Matplotlib` keyword arguments 
+        [here](https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html).
+
+    Returns
+    -------
+    ax : instance of &lt;geopandas.GeoDataFrame.plot&gt;
+        A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map 
+        with faults plotted onto the chosen map projection.
+    &#34;&#34;&#34;
+    fault_lines = shapelify_feature_lines(self.faults)
+    gdf = gpd.GeoDataFrame({&#34;geometry&#34;: fault_lines}, geometry=&#34;geometry&#34;)
+    return gdf.plot(ax=ax, facecolor=&#39;none&#39;, edgecolor=color, transform=self.base_projection, **kwargs)</code></pre>
+</details>
+</dd>
 <dt id="gplately.plot.PlotTopologies.plot_feature"><code class="name flex">
 <span>def <span class="ident">plot_feature</span></span>(<span>self, ax, feature, **kwargs)</span>
 </code></dt>
@@ -4351,6 +5509,63 @@ with continent features plotted onto the chosen map projection.</dd>
     shp = shapelify_features(feature)
     gdf = gpd.GeoDataFrame({&#39;geometry&#39;: shp}, geometry=&#39;geometry&#39;)
     return gdf.plot(ax=ax, transform=self.base_projection, **kwargs)</code></pre>
+</details>
+</dd>
+<dt id="gplately.plot.PlotTopologies.plot_fracture_zones"><code class="name flex">
+<span>def <span class="ident">plot_fracture_zones</span></span>(<span>self, ax, color='black', **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Plot fracture zones on a standard map projection.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>ax</code></strong> :&ensp;<code>instance</code> of <code>&lt;cartopy.mpl.geoaxes.GeoAxes&gt;</code> or <code>&lt;cartopy.mpl.geoaxes.GeoAxesSubplot&gt;</code></dt>
+<dd>A subclass of <code>matplotlib.axes.Axes</code> which represents a map Projection.
+The map should be set at a particular Cartopy projection.</dd>
+<dt><strong><code>color</code></strong> :&ensp;<code>str</code>, default=<code>’black’</code></dt>
+<dd>The colour of the trench lines. By default, it is set to black.</dd>
+<dt><strong><code>**kwargs</code></strong></dt>
+<dd>Keyword arguments for parameters such as <code>alpha</code>, etc.
+for plotting trench geometries.
+See <code>Matplotlib</code> keyword arguments
+<a href="https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html">here</a>.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><strong><code>ax</code></strong> :&ensp;<code>instance</code> of <code>&lt;geopandas.GeoDataFrame.plot&gt;</code></dt>
+<dd>A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map
+with fracture zones plotted onto the chosen map projection.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def plot_fracture_zones(self, ax, color=&#39;black&#39;, **kwargs):
+    &#34;&#34;&#34;Plot fracture zones on a standard map projection.
+
+    Parameters
+    ----------
+    ax : instance of &lt;cartopy.mpl.geoaxes.GeoAxes&gt; or &lt;cartopy.mpl.geoaxes.GeoAxesSubplot&gt;
+        A subclass of `matplotlib.axes.Axes` which represents a map Projection.
+        The map should be set at a particular Cartopy projection.
+
+    color : str, default=’black’
+        The colour of the trench lines. By default, it is set to black.
+
+    **kwargs : 
+        Keyword arguments for parameters such as `alpha`, etc. 
+        for plotting trench geometries.
+        See `Matplotlib` keyword arguments 
+        [here](https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html).
+
+    Returns
+    -------
+    ax : instance of &lt;geopandas.GeoDataFrame.plot&gt;
+        A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map 
+        with fracture zones plotted onto the chosen map projection.
+    &#34;&#34;&#34;
+    fracture_zone_lines = shapelify_feature_lines(self.fracture_zones)
+    gdf = gpd.GeoDataFrame({&#34;geometry&#34;: fracture_zone_lines}, geometry=&#34;geometry&#34;)
+    return gdf.plot(ax=ax, facecolor=&#39;none&#39;, edgecolor=color, transform=self.base_projection, **kwargs)</code></pre>
 </details>
 </dd>
 <dt id="gplately.plot.PlotTopologies.plot_grid"><code class="name flex">
@@ -4496,6 +5711,63 @@ with the netCDF grid plotted onto the chosen map projection.</dd>
     return self.plot_grid(ax, raster, extent=extent, **kwargs)</code></pre>
 </details>
 </dd>
+<dt id="gplately.plot.PlotTopologies.plot_inferred_paleo_boundaries"><code class="name flex">
+<span>def <span class="ident">plot_inferred_paleo_boundaries</span></span>(<span>self, ax, color='black', **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Plot inferred paleo boundaries on a standard map projection.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>ax</code></strong> :&ensp;<code>instance</code> of <code>&lt;cartopy.mpl.geoaxes.GeoAxes&gt;</code> or <code>&lt;cartopy.mpl.geoaxes.GeoAxesSubplot&gt;</code></dt>
+<dd>A subclass of <code>matplotlib.axes.Axes</code> which represents a map Projection.
+The map should be set at a particular Cartopy projection.</dd>
+<dt><strong><code>color</code></strong> :&ensp;<code>str</code>, default=<code>’black’</code></dt>
+<dd>The colour of the trench lines. By default, it is set to black.</dd>
+<dt><strong><code>**kwargs</code></strong></dt>
+<dd>Keyword arguments for parameters such as <code>alpha</code>, etc.
+for plotting trench geometries.
+See <code>Matplotlib</code> keyword arguments
+<a href="https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html">here</a>.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><strong><code>ax</code></strong> :&ensp;<code>instance</code> of <code>&lt;geopandas.GeoDataFrame.plot&gt;</code></dt>
+<dd>A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map
+with inferred paleo boundaries plotted onto the chosen map projection.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def plot_inferred_paleo_boundaries(self, ax, color=&#39;black&#39;, **kwargs):
+    &#34;&#34;&#34;Plot inferred paleo boundaries on a standard map projection.
+
+    Parameters
+    ----------
+    ax : instance of &lt;cartopy.mpl.geoaxes.GeoAxes&gt; or &lt;cartopy.mpl.geoaxes.GeoAxesSubplot&gt;
+        A subclass of `matplotlib.axes.Axes` which represents a map Projection.
+        The map should be set at a particular Cartopy projection.
+
+    color : str, default=’black’
+        The colour of the trench lines. By default, it is set to black.
+
+    **kwargs : 
+        Keyword arguments for parameters such as `alpha`, etc. 
+        for plotting trench geometries.
+        See `Matplotlib` keyword arguments 
+        [here](https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html).
+
+    Returns
+    -------
+    ax : instance of &lt;geopandas.GeoDataFrame.plot&gt;
+        A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map 
+        with inferred paleo boundaries plotted onto the chosen map projection.
+    &#34;&#34;&#34;
+    inferred_paleo_boundary_lines = shapelify_feature_lines(self.inferred_paleo_boundaries)
+    gdf = gpd.GeoDataFrame({&#34;geometry&#34;: inferred_paleo_boundary_lines}, geometry=&#34;geometry&#34;)
+    return gdf.plot(ax=ax, facecolor=&#39;none&#39;, edgecolor=color, transform=self.base_projection, **kwargs)</code></pre>
+</details>
+</dd>
 <dt id="gplately.plot.PlotTopologies.plot_misc_boundaries"><code class="name flex">
 <span>def <span class="ident">plot_misc_boundaries</span></span>(<span>self, ax, color='black', **kwargs)</span>
 </code></dt>
@@ -4581,6 +5853,177 @@ with miscellaneous boundary features plotted onto the chosen map projection.</dd
     &#34;&#34;&#34;
     lines = shapelify_features(self.other)
     gdf = gpd.GeoDataFrame({&#34;geometry&#34;: lines}, geometry=&#34;geometry&#34;)
+    return gdf.plot(ax=ax, facecolor=&#39;none&#39;, edgecolor=color, transform=self.base_projection, **kwargs)</code></pre>
+</details>
+</dd>
+<dt id="gplately.plot.PlotTopologies.plot_misc_transforms"><code class="name flex">
+<span>def <span class="ident">plot_misc_transforms</span></span>(<span>self, ax, color='black', **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Plot miscellaneous transform boundaries on a standard map projection.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>ax</code></strong> :&ensp;<code>instance</code> of <code>&lt;cartopy.mpl.geoaxes.GeoAxes&gt;</code> or <code>&lt;cartopy.mpl.geoaxes.GeoAxesSubplot&gt;</code></dt>
+<dd>A subclass of <code>matplotlib.axes.Axes</code> which represents a map Projection.
+The map should be set at a particular Cartopy projection.</dd>
+<dt><strong><code>color</code></strong> :&ensp;<code>str</code>, default=<code>’black’</code></dt>
+<dd>The colour of the trench lines. By default, it is set to black.</dd>
+<dt><strong><code>**kwargs</code></strong></dt>
+<dd>Keyword arguments for parameters such as <code>alpha</code>, etc.
+for plotting trench geometries.
+See <code>Matplotlib</code> keyword arguments
+<a href="https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html">here</a>.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><strong><code>ax</code></strong> :&ensp;<code>instance</code> of <code>&lt;geopandas.GeoDataFrame.plot&gt;</code></dt>
+<dd>A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map
+with miscellaneous transform boundaries plotted onto the chosen map projection.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def plot_misc_transforms(self, ax, color=&#39;black&#39;, **kwargs): 
+    &#34;&#34;&#34;Plot miscellaneous transform boundaries on a standard map projection.
+
+    Parameters
+    ----------
+    ax : instance of &lt;cartopy.mpl.geoaxes.GeoAxes&gt; or &lt;cartopy.mpl.geoaxes.GeoAxesSubplot&gt;
+        A subclass of `matplotlib.axes.Axes` which represents a map Projection.
+        The map should be set at a particular Cartopy projection.
+
+    color : str, default=’black’
+        The colour of the trench lines. By default, it is set to black.
+
+    **kwargs : 
+        Keyword arguments for parameters such as `alpha`, etc. 
+        for plotting trench geometries.
+        See `Matplotlib` keyword arguments 
+        [here](https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html).
+
+    Returns
+    -------
+    ax : instance of &lt;geopandas.GeoDataFrame.plot&gt;
+        A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map 
+        with miscellaneous transform boundaries plotted onto the chosen map projection.
+    &#34;&#34;&#34;
+    misc_transform_lines = shapelify_feature_lines(self.misc_transforms)
+    gdf = gpd.GeoDataFrame({&#34;geometry&#34;: misc_transform_lines}, geometry=&#34;geometry&#34;)
+    return gdf.plot(ax=ax, facecolor=&#39;none&#39;, edgecolor=color, transform=self.base_projection, **kwargs)</code></pre>
+</details>
+</dd>
+<dt id="gplately.plot.PlotTopologies.plot_orogenic_belts"><code class="name flex">
+<span>def <span class="ident">plot_orogenic_belts</span></span>(<span>self, ax, color='black', **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Plot orogenic belts on a standard map projection.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>ax</code></strong> :&ensp;<code>instance</code> of <code>&lt;cartopy.mpl.geoaxes.GeoAxes&gt;</code> or <code>&lt;cartopy.mpl.geoaxes.GeoAxesSubplot&gt;</code></dt>
+<dd>A subclass of <code>matplotlib.axes.Axes</code> which represents a map Projection.
+The map should be set at a particular Cartopy projection.</dd>
+<dt><strong><code>color</code></strong> :&ensp;<code>str</code>, default=<code>’black’</code></dt>
+<dd>The colour of the trench lines. By default, it is set to black.</dd>
+<dt><strong><code>**kwargs</code></strong></dt>
+<dd>Keyword arguments for parameters such as <code>alpha</code>, etc.
+for plotting trench geometries.
+See <code>Matplotlib</code> keyword arguments
+<a href="https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html">here</a>.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><strong><code>ax</code></strong> :&ensp;<code>instance</code> of <code>&lt;geopandas.GeoDataFrame.plot&gt;</code></dt>
+<dd>A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map
+with orogenic belts plotted onto the chosen map projection.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def plot_orogenic_belts(self, ax, color=&#39;black&#39;, **kwargs):
+    &#34;&#34;&#34;Plot orogenic belts on a standard map projection.
+
+    Parameters
+    ----------
+    ax : instance of &lt;cartopy.mpl.geoaxes.GeoAxes&gt; or &lt;cartopy.mpl.geoaxes.GeoAxesSubplot&gt;
+        A subclass of `matplotlib.axes.Axes` which represents a map Projection.
+        The map should be set at a particular Cartopy projection.
+
+    color : str, default=’black’
+        The colour of the trench lines. By default, it is set to black.
+
+    **kwargs : 
+        Keyword arguments for parameters such as `alpha`, etc. 
+        for plotting trench geometries.
+        See `Matplotlib` keyword arguments 
+        [here](https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html).
+
+    Returns
+    -------
+    ax : instance of &lt;geopandas.GeoDataFrame.plot&gt;
+        A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map 
+        with orogenic belts plotted onto the chosen map projection.
+    &#34;&#34;&#34;
+    orogenic_belt_lines = shapelify_feature_lines(self.orogenic_belts)
+    gdf = gpd.GeoDataFrame({&#34;geometry&#34;: transitional_crust_lines}, geometry=&#34;geometry&#34;)
+    return gdf.plot(ax=ax, facecolor=&#39;none&#39;, edgecolor=color, transform=self.base_projection, **kwargs)</code></pre>
+</details>
+</dd>
+<dt id="gplately.plot.PlotTopologies.plot_passive_continental_boundaries"><code class="name flex">
+<span>def <span class="ident">plot_passive_continental_boundaries</span></span>(<span>self, ax, color='black', **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Plot passive continental boundaries on a standard map projection.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>ax</code></strong> :&ensp;<code>instance</code> of <code>&lt;cartopy.mpl.geoaxes.GeoAxes&gt;</code> or <code>&lt;cartopy.mpl.geoaxes.GeoAxesSubplot&gt;</code></dt>
+<dd>A subclass of <code>matplotlib.axes.Axes</code> which represents a map Projection.
+The map should be set at a particular Cartopy projection.</dd>
+<dt><strong><code>color</code></strong> :&ensp;<code>str</code>, default=<code>’black’</code></dt>
+<dd>The colour of the trench lines. By default, it is set to black.</dd>
+<dt><strong><code>**kwargs</code></strong></dt>
+<dd>Keyword arguments for parameters such as <code>alpha</code>, etc.
+for plotting trench geometries.
+See <code>Matplotlib</code> keyword arguments
+<a href="https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html">here</a>.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><strong><code>ax</code></strong> :&ensp;<code>instance</code> of <code>&lt;geopandas.GeoDataFrame.plot&gt;</code></dt>
+<dd>A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map
+with passive continental boundaries plotted onto the chosen map projection.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def plot_passive_continental_boundaries(self, ax, color=&#39;black&#39;, **kwargs): 
+    &#34;&#34;&#34;Plot passive continental boundaries on a standard map projection.
+
+    Parameters
+    ----------
+    ax : instance of &lt;cartopy.mpl.geoaxes.GeoAxes&gt; or &lt;cartopy.mpl.geoaxes.GeoAxesSubplot&gt;
+        A subclass of `matplotlib.axes.Axes` which represents a map Projection.
+        The map should be set at a particular Cartopy projection.
+
+    color : str, default=’black’
+        The colour of the trench lines. By default, it is set to black.
+
+    **kwargs : 
+        Keyword arguments for parameters such as `alpha`, etc. 
+        for plotting trench geometries.
+        See `Matplotlib` keyword arguments 
+        [here](https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html).
+
+    Returns
+    -------
+    ax : instance of &lt;geopandas.GeoDataFrame.plot&gt;
+        A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map 
+        with passive continental boundaries plotted onto the chosen map projection.
+    &#34;&#34;&#34;
+    passive_continental_boundary_lines = shapelify_feature_lines(self.passive_continental_boundaries)
+    gdf = gpd.GeoDataFrame({&#34;geometry&#34;: passive_continental_boundary_lines}, geometry=&#34;geometry&#34;)
     return gdf.plot(ax=ax, facecolor=&#39;none&#39;, edgecolor=color, transform=self.base_projection, **kwargs)</code></pre>
 </details>
 </dd>
@@ -4927,6 +6370,63 @@ with ridge &amp; transform features plotted onto the chosen map projection.</dd>
     return gdf.plot(ax=ax, facecolor=&#39;none&#39;, edgecolor=color, transform=self.base_projection, **kwargs)</code></pre>
 </details>
 </dd>
+<dt id="gplately.plot.PlotTopologies.plot_slab_edges"><code class="name flex">
+<span>def <span class="ident">plot_slab_edges</span></span>(<span>self, ax, color='black', **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Plot slab edges on a standard map projection.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>ax</code></strong> :&ensp;<code>instance</code> of <code>&lt;cartopy.mpl.geoaxes.GeoAxes&gt;</code> or <code>&lt;cartopy.mpl.geoaxes.GeoAxesSubplot&gt;</code></dt>
+<dd>A subclass of <code>matplotlib.axes.Axes</code> which represents a map Projection.
+The map should be set at a particular Cartopy projection.</dd>
+<dt><strong><code>color</code></strong> :&ensp;<code>str</code>, default=<code>’black’</code></dt>
+<dd>The colour of the trench lines. By default, it is set to black.</dd>
+<dt><strong><code>**kwargs</code></strong></dt>
+<dd>Keyword arguments for parameters such as <code>alpha</code>, etc.
+for plotting trench geometries.
+See <code>Matplotlib</code> keyword arguments
+<a href="https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html">here</a>.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><strong><code>ax</code></strong> :&ensp;<code>instance</code> of <code>&lt;geopandas.GeoDataFrame.plot&gt;</code></dt>
+<dd>A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map
+with slab edges plotted onto the chosen map projection.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def plot_slab_edges(self, ax, color=&#39;black&#39;, **kwargs): 
+    &#34;&#34;&#34;Plot slab edges on a standard map projection.
+
+    Parameters
+    ----------
+    ax : instance of &lt;cartopy.mpl.geoaxes.GeoAxes&gt; or &lt;cartopy.mpl.geoaxes.GeoAxesSubplot&gt;
+        A subclass of `matplotlib.axes.Axes` which represents a map Projection.
+        The map should be set at a particular Cartopy projection.
+
+    color : str, default=’black’
+        The colour of the trench lines. By default, it is set to black.
+
+    **kwargs : 
+        Keyword arguments for parameters such as `alpha`, etc. 
+        for plotting trench geometries.
+        See `Matplotlib` keyword arguments 
+        [here](https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html).
+
+    Returns
+    -------
+    ax : instance of &lt;geopandas.GeoDataFrame.plot&gt;
+        A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map 
+        with slab edges plotted onto the chosen map projection.
+    &#34;&#34;&#34;
+    slab_edge_lines = shapelify_feature_lines(self.slab_edges)
+    gdf = gpd.GeoDataFrame({&#34;geometry&#34;: slab_edge_lines}, geometry=&#34;geometry&#34;)
+    return gdf.plot(ax=ax, facecolor=&#39;none&#39;, edgecolor=color, transform=self.base_projection, **kwargs)</code></pre>
+</details>
+</dd>
 <dt id="gplately.plot.PlotTopologies.plot_subduction_teeth"><code class="name flex">
 <span>def <span class="ident">plot_subduction_teeth</span></span>(<span>self, ax, spacing=0.07, size=None, aspect=None, color='black', **kwargs)</span>
 </code></dt>
@@ -5135,6 +6635,120 @@ with subduction teeth plotted onto the chosen map projection.</dd>
     return ax.add_geometries(teeth, crs=self.base_projection, color=color, **kwargs)</code></pre>
 </details>
 </dd>
+<dt id="gplately.plot.PlotTopologies.plot_sutures"><code class="name flex">
+<span>def <span class="ident">plot_sutures</span></span>(<span>self, ax, color='black', **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Plot sutures on a standard map projection.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>ax</code></strong> :&ensp;<code>instance</code> of <code>&lt;cartopy.mpl.geoaxes.GeoAxes&gt;</code> or <code>&lt;cartopy.mpl.geoaxes.GeoAxesSubplot&gt;</code></dt>
+<dd>A subclass of <code>matplotlib.axes.Axes</code> which represents a map Projection.
+The map should be set at a particular Cartopy projection.</dd>
+<dt><strong><code>color</code></strong> :&ensp;<code>str</code>, default=<code>’black’</code></dt>
+<dd>The colour of the trench lines. By default, it is set to black.</dd>
+<dt><strong><code>**kwargs</code></strong></dt>
+<dd>Keyword arguments for parameters such as <code>alpha</code>, etc.
+for plotting trench geometries.
+See <code>Matplotlib</code> keyword arguments
+<a href="https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html">here</a>.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><strong><code>ax</code></strong> :&ensp;<code>instance</code> of <code>&lt;geopandas.GeoDataFrame.plot&gt;</code></dt>
+<dd>A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map
+with sutures plotted onto the chosen map projection.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def plot_sutures(self, ax, color=&#39;black&#39;, **kwargs):
+    &#34;&#34;&#34;Plot sutures on a standard map projection.
+
+    Parameters
+    ----------
+    ax : instance of &lt;cartopy.mpl.geoaxes.GeoAxes&gt; or &lt;cartopy.mpl.geoaxes.GeoAxesSubplot&gt;
+        A subclass of `matplotlib.axes.Axes` which represents a map Projection.
+        The map should be set at a particular Cartopy projection.
+
+    color : str, default=’black’
+        The colour of the trench lines. By default, it is set to black.
+
+    **kwargs : 
+        Keyword arguments for parameters such as `alpha`, etc. 
+        for plotting trench geometries.
+        See `Matplotlib` keyword arguments 
+        [here](https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html).
+
+    Returns
+    -------
+    ax : instance of &lt;geopandas.GeoDataFrame.plot&gt;
+        A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map 
+        with sutures plotted onto the chosen map projection.
+    &#34;&#34;&#34;
+    suture_lines = shapelify_feature_lines(self.sutures)
+    gdf = gpd.GeoDataFrame({&#34;geometry&#34;: suture_lines}, geometry=&#34;geometry&#34;)
+    return gdf.plot(ax=ax, facecolor=&#39;none&#39;, edgecolor=color, transform=self.base_projection, **kwargs)</code></pre>
+</details>
+</dd>
+<dt id="gplately.plot.PlotTopologies.plot_terrane_boundaries"><code class="name flex">
+<span>def <span class="ident">plot_terrane_boundaries</span></span>(<span>self, ax, color='black', **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Plot terrane boundaries on a standard map projection.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>ax</code></strong> :&ensp;<code>instance</code> of <code>&lt;cartopy.mpl.geoaxes.GeoAxes&gt;</code> or <code>&lt;cartopy.mpl.geoaxes.GeoAxesSubplot&gt;</code></dt>
+<dd>A subclass of <code>matplotlib.axes.Axes</code> which represents a map Projection.
+The map should be set at a particular Cartopy projection.</dd>
+<dt><strong><code>color</code></strong> :&ensp;<code>str</code>, default=<code>’black’</code></dt>
+<dd>The colour of the trench lines. By default, it is set to black.</dd>
+<dt><strong><code>**kwargs</code></strong></dt>
+<dd>Keyword arguments for parameters such as <code>alpha</code>, etc.
+for plotting trench geometries.
+See <code>Matplotlib</code> keyword arguments
+<a href="https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html">here</a>.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><strong><code>ax</code></strong> :&ensp;<code>instance</code> of <code>&lt;geopandas.GeoDataFrame.plot&gt;</code></dt>
+<dd>A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map
+with terrane boundaries plotted onto the chosen map projection.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def plot_terrane_boundaries(self, ax, color=&#39;black&#39;, **kwargs):
+    &#34;&#34;&#34;Plot terrane boundaries on a standard map projection.
+
+    Parameters
+    ----------
+    ax : instance of &lt;cartopy.mpl.geoaxes.GeoAxes&gt; or &lt;cartopy.mpl.geoaxes.GeoAxesSubplot&gt;
+        A subclass of `matplotlib.axes.Axes` which represents a map Projection.
+        The map should be set at a particular Cartopy projection.
+
+    color : str, default=’black’
+        The colour of the trench lines. By default, it is set to black.
+
+    **kwargs : 
+        Keyword arguments for parameters such as `alpha`, etc. 
+        for plotting trench geometries.
+        See `Matplotlib` keyword arguments 
+        [here](https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html).
+
+    Returns
+    -------
+    ax : instance of &lt;geopandas.GeoDataFrame.plot&gt;
+        A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map 
+        with terrane boundaries plotted onto the chosen map projection.
+    &#34;&#34;&#34;
+    terrane_boundary_lines = shapelify_feature_lines(self.terrane_boundaries)
+    gdf = gpd.GeoDataFrame({&#34;geometry&#34;: terrane_boundary_lines}, geometry=&#34;geometry&#34;)
+    return gdf.plot(ax=ax, facecolor=&#39;none&#39;, edgecolor=color, transform=self.base_projection, **kwargs)</code></pre>
+</details>
+</dd>
 <dt id="gplately.plot.PlotTopologies.plot_transforms"><code class="name flex">
 <span>def <span class="ident">plot_transforms</span></span>(<span>self, ax, color='black', **kwargs)</span>
 </code></dt>
@@ -5218,6 +6832,63 @@ with transform features plotted onto the chosen map projection.</dd>
     &#34;&#34;&#34;
     transform_lines = shapelify_feature_lines(self.transforms)
     gdf = gpd.GeoDataFrame({&#34;geometry&#34;: transform_lines}, geometry=&#34;geometry&#34;)
+    return gdf.plot(ax=ax, facecolor=&#39;none&#39;, edgecolor=color, transform=self.base_projection, **kwargs)</code></pre>
+</details>
+</dd>
+<dt id="gplately.plot.PlotTopologies.plot_transitional_crusts"><code class="name flex">
+<span>def <span class="ident">plot_transitional_crusts</span></span>(<span>self, ax, color='black', **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Plot transitional crust on a standard map projection.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>ax</code></strong> :&ensp;<code>instance</code> of <code>&lt;cartopy.mpl.geoaxes.GeoAxes&gt;</code> or <code>&lt;cartopy.mpl.geoaxes.GeoAxesSubplot&gt;</code></dt>
+<dd>A subclass of <code>matplotlib.axes.Axes</code> which represents a map Projection.
+The map should be set at a particular Cartopy projection.</dd>
+<dt><strong><code>color</code></strong> :&ensp;<code>str</code>, default=<code>’black’</code></dt>
+<dd>The colour of the trench lines. By default, it is set to black.</dd>
+<dt><strong><code>**kwargs</code></strong></dt>
+<dd>Keyword arguments for parameters such as <code>alpha</code>, etc.
+for plotting trench geometries.
+See <code>Matplotlib</code> keyword arguments
+<a href="https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html">here</a>.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><strong><code>ax</code></strong> :&ensp;<code>instance</code> of <code>&lt;geopandas.GeoDataFrame.plot&gt;</code></dt>
+<dd>A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map
+with transitional crust plotted onto the chosen map projection.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def plot_transitional_crusts(self, ax, color=&#39;black&#39;, **kwargs):
+    &#34;&#34;&#34;Plot transitional crust on a standard map projection.
+
+    Parameters
+    ----------
+    ax : instance of &lt;cartopy.mpl.geoaxes.GeoAxes&gt; or &lt;cartopy.mpl.geoaxes.GeoAxesSubplot&gt;
+        A subclass of `matplotlib.axes.Axes` which represents a map Projection.
+        The map should be set at a particular Cartopy projection.
+
+    color : str, default=’black’
+        The colour of the trench lines. By default, it is set to black.
+
+    **kwargs : 
+        Keyword arguments for parameters such as `alpha`, etc. 
+        for plotting trench geometries.
+        See `Matplotlib` keyword arguments 
+        [here](https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html).
+
+    Returns
+    -------
+    ax : instance of &lt;geopandas.GeoDataFrame.plot&gt;
+        A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map 
+        with transitional crust plotted onto the chosen map projection.
+    &#34;&#34;&#34;
+    transitional_crust_lines = shapelify_feature_lines(self.transitional_crusts)
+    gdf = gpd.GeoDataFrame({&#34;geometry&#34;: transitional_crust_lines}, geometry=&#34;geometry&#34;)
     return gdf.plot(ax=ax, facecolor=&#39;none&#39;, edgecolor=color, transform=self.base_projection, **kwargs)</code></pre>
 </details>
 </dd>
@@ -5309,6 +6980,63 @@ with transform features plotted onto the chosen map projection.</dd>
     return gdf.plot(ax=ax, facecolor=&#39;none&#39;, edgecolor=color, transform=self.base_projection, **kwargs)</code></pre>
 </details>
 </dd>
+<dt id="gplately.plot.PlotTopologies.plot_unclassified_features"><code class="name flex">
+<span>def <span class="ident">plot_unclassified_features</span></span>(<span>self, ax, color='black', **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Plot GPML unclassified features on a standard map projection.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>ax</code></strong> :&ensp;<code>instance</code> of <code>&lt;cartopy.mpl.geoaxes.GeoAxes&gt;</code> or <code>&lt;cartopy.mpl.geoaxes.GeoAxesSubplot&gt;</code></dt>
+<dd>A subclass of <code>matplotlib.axes.Axes</code> which represents a map Projection.
+The map should be set at a particular Cartopy projection.</dd>
+<dt><strong><code>color</code></strong> :&ensp;<code>str</code>, default=<code>’black’</code></dt>
+<dd>The colour of the trench lines. By default, it is set to black.</dd>
+<dt><strong><code>**kwargs</code></strong></dt>
+<dd>Keyword arguments for parameters such as <code>alpha</code>, etc.
+for plotting trench geometries.
+See <code>Matplotlib</code> keyword arguments
+<a href="https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html">here</a>.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><strong><code>ax</code></strong> :&ensp;<code>instance</code> of <code>&lt;geopandas.GeoDataFrame.plot&gt;</code></dt>
+<dd>A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map
+with unclassified features plotted onto the chosen map projection.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def plot_unclassified_features(self, ax, color=&#39;black&#39;, **kwargs): 
+    &#34;&#34;&#34;Plot GPML unclassified features on a standard map projection.
+
+    Parameters
+    ----------
+    ax : instance of &lt;cartopy.mpl.geoaxes.GeoAxes&gt; or &lt;cartopy.mpl.geoaxes.GeoAxesSubplot&gt;
+        A subclass of `matplotlib.axes.Axes` which represents a map Projection.
+        The map should be set at a particular Cartopy projection.
+
+    color : str, default=’black’
+        The colour of the trench lines. By default, it is set to black.
+
+    **kwargs : 
+        Keyword arguments for parameters such as `alpha`, etc. 
+        for plotting trench geometries.
+        See `Matplotlib` keyword arguments 
+        [here](https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html).
+
+    Returns
+    -------
+    ax : instance of &lt;geopandas.GeoDataFrame.plot&gt;
+        A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map 
+        with unclassified features plotted onto the chosen map projection.
+    &#34;&#34;&#34;
+    unclassified_feature_lines = shapelify_feature_lines(self.unclassified_features)
+    gdf = gpd.GeoDataFrame({&#34;geometry&#34;: unclassified_feature_lines}, geometry=&#34;geometry&#34;)
+    return gdf.plot(ax=ax, facecolor=&#39;none&#39;, edgecolor=color, transform=self.base_projection, **kwargs)</code></pre>
+</details>
+</dd>
 <dt id="gplately.plot.PlotTopologies.update_time"><code class="name flex">
 <span>def <span class="ident">update_time</span></span>(<span>self, time)</span>
 </code></dt>
@@ -5360,6 +7088,65 @@ whenever it is updated.</p>
         self.time)
 
     self.topologies, self.ridge_transforms, self.ridges, self.transforms, self.trenches, self.trench_left, self.trench_right, self.other = resolved_topologies
+
+    # miscellaneous boundaries
+    self.continental_rifts = []
+    self.faults = []
+    self.fracture_zones = []
+    self.inferred_paleo_boundaries = []
+    self.terrane_boundaries = []
+    self.transitional_crusts = []
+    self.orogenic_belts = []
+    self.sutures = []
+    self.continental_crusts = []
+    self.extended_continental_crusts = []
+    self.passive_continental_boundaries = []
+    self.slab_edges = []
+    self.misc_transforms = []
+    self.unclassified_features = []
+
+    for topol in self.other:
+        if topol.get_feature_type() == pygplates.FeatureType.gpml_continental_rift:
+            self.continental_rifts.append(topol)
+
+        elif topol.get_feature_type() == pygplates.FeatureType.gpml_fault:
+            self.faults.append(topol)
+                
+        elif topol.get_feature_type() == pygplates.FeatureType.gpml_fracture_zone:
+            self.fracture_zones.append(topol)
+            
+        elif topol.get_feature_type() == pygplates.FeatureType.gpml_inferred_paleo_boundary:
+            self.inferred_paleo_boundaries.append(topol)
+
+        elif topol.get_feature_type() == pygplates.FeatureType.gpml_terrane_boundary:
+            self.terrane_boundaries.append(topol)
+            
+        elif topol.get_feature_type() == pygplates.FeatureType.gpml_transitional_crust:
+            self.transitional_crusts.append(topol)
+        
+        elif topol.get_feature_type() == pygplates.FeatureType.gpml_orogenic_belt:
+            self.orogenic_belts.append(topol)
+            
+        elif topol.get_feature_type() == pygplates.FeatureType.gpml_suture:
+            self.sutures.append(topol)
+            
+        elif topol.get_feature_type() == pygplates.FeatureType.gpml_continental_crust:
+            self.continental_crusts.append(topol)
+        
+        elif topol.get_feature_type() == pygplates.FeatureType.gpml_extended_continental_crust:
+            self.extended_continental_crusts.append(topol)
+        
+        elif topol.get_feature_type() == pygplates.FeatureType.gpml_passive_continental_boundary:
+            self.passive_continental_boundaries.append(topol)
+        
+        elif topol.get_feature_type() == pygplates.FeatureType.gpml_slab_edge:
+            self.slab_edges.append(topol)
+            
+        elif topol.get_feature_type() == pygplates.FeatureType.gpml_transform:
+            self.misc_transforms.append(topol)
+            
+        elif topol.get_feature_type() == pygplates.FeatureType.gpml_unclassified_feature:
+            self.unclassified_features.append(topol)
 
     # reconstruct other important polygons and lines
     if self.coastline_filename:
@@ -5414,19 +7201,33 @@ whenever it is updated.</p>
 <ul class="">
 <li><code><a title="gplately.plot.PlotTopologies.plot_coastlines" href="#gplately.plot.PlotTopologies.plot_coastlines">plot_coastlines</a></code></li>
 <li><code><a title="gplately.plot.PlotTopologies.plot_continent_ocean_boundaries" href="#gplately.plot.PlotTopologies.plot_continent_ocean_boundaries">plot_continent_ocean_boundaries</a></code></li>
+<li><code><a title="gplately.plot.PlotTopologies.plot_continental_crusts" href="#gplately.plot.PlotTopologies.plot_continental_crusts">plot_continental_crusts</a></code></li>
+<li><code><a title="gplately.plot.PlotTopologies.plot_continental_rifts" href="#gplately.plot.PlotTopologies.plot_continental_rifts">plot_continental_rifts</a></code></li>
 <li><code><a title="gplately.plot.PlotTopologies.plot_continents" href="#gplately.plot.PlotTopologies.plot_continents">plot_continents</a></code></li>
+<li><code><a title="gplately.plot.PlotTopologies.plot_extended_continental_crusts" href="#gplately.plot.PlotTopologies.plot_extended_continental_crusts">plot_extended_continental_crusts</a></code></li>
+<li><code><a title="gplately.plot.PlotTopologies.plot_faults" href="#gplately.plot.PlotTopologies.plot_faults">plot_faults</a></code></li>
 <li><code><a title="gplately.plot.PlotTopologies.plot_feature" href="#gplately.plot.PlotTopologies.plot_feature">plot_feature</a></code></li>
+<li><code><a title="gplately.plot.PlotTopologies.plot_fracture_zones" href="#gplately.plot.PlotTopologies.plot_fracture_zones">plot_fracture_zones</a></code></li>
 <li><code><a title="gplately.plot.PlotTopologies.plot_grid" href="#gplately.plot.PlotTopologies.plot_grid">plot_grid</a></code></li>
 <li><code><a title="gplately.plot.PlotTopologies.plot_grid_from_netCDF" href="#gplately.plot.PlotTopologies.plot_grid_from_netCDF">plot_grid_from_netCDF</a></code></li>
+<li><code><a title="gplately.plot.PlotTopologies.plot_inferred_paleo_boundaries" href="#gplately.plot.PlotTopologies.plot_inferred_paleo_boundaries">plot_inferred_paleo_boundaries</a></code></li>
 <li><code><a title="gplately.plot.PlotTopologies.plot_misc_boundaries" href="#gplately.plot.PlotTopologies.plot_misc_boundaries">plot_misc_boundaries</a></code></li>
+<li><code><a title="gplately.plot.PlotTopologies.plot_misc_transforms" href="#gplately.plot.PlotTopologies.plot_misc_transforms">plot_misc_transforms</a></code></li>
+<li><code><a title="gplately.plot.PlotTopologies.plot_orogenic_belts" href="#gplately.plot.PlotTopologies.plot_orogenic_belts">plot_orogenic_belts</a></code></li>
+<li><code><a title="gplately.plot.PlotTopologies.plot_passive_continental_boundaries" href="#gplately.plot.PlotTopologies.plot_passive_continental_boundaries">plot_passive_continental_boundaries</a></code></li>
 <li><code><a title="gplately.plot.PlotTopologies.plot_plate_id" href="#gplately.plot.PlotTopologies.plot_plate_id">plot_plate_id</a></code></li>
 <li><code><a title="gplately.plot.PlotTopologies.plot_plate_motion_vectors" href="#gplately.plot.PlotTopologies.plot_plate_motion_vectors">plot_plate_motion_vectors</a></code></li>
 <li><code><a title="gplately.plot.PlotTopologies.plot_ridges" href="#gplately.plot.PlotTopologies.plot_ridges">plot_ridges</a></code></li>
 <li><code><a title="gplately.plot.PlotTopologies.plot_ridges_and_transforms" href="#gplately.plot.PlotTopologies.plot_ridges_and_transforms">plot_ridges_and_transforms</a></code></li>
+<li><code><a title="gplately.plot.PlotTopologies.plot_slab_edges" href="#gplately.plot.PlotTopologies.plot_slab_edges">plot_slab_edges</a></code></li>
 <li><code><a title="gplately.plot.PlotTopologies.plot_subduction_teeth" href="#gplately.plot.PlotTopologies.plot_subduction_teeth">plot_subduction_teeth</a></code></li>
 <li><code><a title="gplately.plot.PlotTopologies.plot_subduction_teeth_deprecated" href="#gplately.plot.PlotTopologies.plot_subduction_teeth_deprecated">plot_subduction_teeth_deprecated</a></code></li>
+<li><code><a title="gplately.plot.PlotTopologies.plot_sutures" href="#gplately.plot.PlotTopologies.plot_sutures">plot_sutures</a></code></li>
+<li><code><a title="gplately.plot.PlotTopologies.plot_terrane_boundaries" href="#gplately.plot.PlotTopologies.plot_terrane_boundaries">plot_terrane_boundaries</a></code></li>
 <li><code><a title="gplately.plot.PlotTopologies.plot_transforms" href="#gplately.plot.PlotTopologies.plot_transforms">plot_transforms</a></code></li>
+<li><code><a title="gplately.plot.PlotTopologies.plot_transitional_crusts" href="#gplately.plot.PlotTopologies.plot_transitional_crusts">plot_transitional_crusts</a></code></li>
 <li><code><a title="gplately.plot.PlotTopologies.plot_trenches" href="#gplately.plot.PlotTopologies.plot_trenches">plot_trenches</a></code></li>
+<li><code><a title="gplately.plot.PlotTopologies.plot_unclassified_features" href="#gplately.plot.PlotTopologies.plot_unclassified_features">plot_unclassified_features</a></code></li>
 <li><code><a title="gplately.plot.PlotTopologies.time" href="#gplately.plot.PlotTopologies.time">time</a></code></li>
 <li><code><a title="gplately.plot.PlotTopologies.update_time" href="#gplately.plot.PlotTopologies.update_time">update_time</a></code></li>
 </ul>
