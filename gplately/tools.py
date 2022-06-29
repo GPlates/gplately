@@ -459,5 +459,122 @@ def find_distance_to_nearest_ridge(resolved_topologies,shared_boundary_sections,
     return all_point_lons,all_point_lats,all_point_distance_to_ridge
 
 
+def calculate_spreading_rates(
+    time,
+    lons,
+    lats,
+    left_plates,
+    right_plates,
+    rotation_model,
+    delta_time=1.0,
+    units=pygplates.VelocityUnits.kms_per_my,
+    earth_radius=pygplates.Earth.mean_radius_in_kms,
+):
 
+    VELOCITY_UNITS = {
+    pygplates.VelocityUnits.kms_per_my,
+    pygplates.VelocityUnits.cms_per_yr,
+    }
+    SPREADING_FEATURES = {
+        "gpml:MidOceanRidge",
+        "gpml:ContinentalRift",
+    }
+
+    if units not in VELOCITY_UNITS:
+        raise ValueError("Invalid `units` argument: {}".format(units))
+
+    time = float(time)
+    #delta_time = float(time)
+    delta_time = float(delta_time)
+
+    if len(set(len(i) for i in (lons, lats, left_plates, right_plates))) > 1:
+        err_msg = (
+            "Length mismatch: len(lons) = {}".format(len(lons))
+            + ", len(lats) = {}".format(len(lats))
+            + ", len(left_plates) = {}".format(len(left_plates))
+            + ", len(right_plates) = {}".format(len(right_plates))
+        )
+        raise ValueError(err_msg)
+
+    plate_pairs = {
+        pair: {
+            "lons": [],
+            "lats": [],
+            "rotation": _get_rotation(
+                pair,
+                rotation_model,
+                time,
+                delta_time,
+                use_identity_for_missing_plate_ids=False,
+            ),
+            "indices": [],
+        }
+        for pair in set(zip(left_plates, right_plates))
+    }
+    out = {}
+    for index, (lon, lat, left_plate, right_plate) in enumerate(
+        zip(
+            lons,
+            lats,
+            left_plates,
+            right_plates,
+        )
+    ):
+        pair = (left_plate, right_plate)
+        plate_pairs[pair]["lons"].append(lon)
+        plate_pairs[pair]["lats"].append(lat)
+        plate_pairs[pair]["indices"].append(index)
+
+    for pair in plate_pairs.keys():
+        rotation = plate_pairs[pair]["rotation"]
+        pair_lons = plate_pairs[pair]["lons"]
+        pair_lats = plate_pairs[pair]["lats"]
+        pair_points = list(zip(pair_lats, pair_lons))
+        indices = plate_pairs[pair]["indices"]
+
+        if rotation is not None:
+            velocities = pygplates.calculate_velocities(
+                domain_points=pair_points,
+                finite_rotation=rotation,
+                time_interval_in_my=delta_time,
+                velocity_units=units,
+                earth_radius_in_kms=earth_radius,
+            )
+            velocities = pygplates.LocalCartesian.convert_from_geocentric_to_magnitude_azimuth_inclination(
+                local_origins=pair_points,
+                vectors=velocities,
+            )
+            velocities = np.abs(np.array([i[0] for i in velocities]))
+        else:
+            velocities = np.full(len(indices), np.nan)
+
+        for index, velocity in zip(indices, velocities):
+            out[index] = velocity
+
+    return [out[i] for i in sorted(out)]
+
+
+def _get_rotation(
+    plate_pair,
+    rotation_model,
+    time,
+    delta_time=1.0,
+    **kwargs
+):
+    to_time = time - delta_time * 0.5
+    from_time = time + delta_time * 0.5
+
+    if to_time <= 0.0:
+        to_time = 0.0
+        from_time = delta_time
+
+    rotation = rotation_model.get_rotation(
+        to_time=to_time,
+        from_time=from_time,
+        moving_plate_id=plate_pair[0],
+        anchor_plate_id=plate_pair[1],
+        **kwargs
+    )
+
+    return rotation
 
