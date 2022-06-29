@@ -1563,6 +1563,12 @@ class ReconstructByTopologies(object):
         self.curr_topology_plate_ids = [None] * self.num_points
         self.prev_resolved_plate_boundaries = [None] * self.num_points
         self.curr_resolved_plate_boundaries = [None] * self.num_points
+
+        # Array to store indices of points found in continents
+        self.in_continent_indices = [None] * self.num_points
+        self.in_continent_points = [None] * self.num_points
+
+        self.deletedpoints = []
         
         self._activate_deactivate_points()
         self._find_resolved_topologies_containing_points()
@@ -1582,6 +1588,11 @@ class ReconstructByTopologies(object):
         
         # Return only the active points (the ones that are not None).
         return [point for point in self.get_all_current_points() if point is not None]
+
+
+    def get_in_continent_indices(self):
+
+        return self.in_continent_points, self.in_continent_indices
     
     
     def reconstruct_to_next_time(self):
@@ -1692,7 +1703,9 @@ class ReconstructByTopologies(object):
                     # It may have been reconstructed from the previous time step to a valid position
                     # but now we override that result as inactive.
                     self.curr_points[point_index] = None
-        
+                    #self.curr_points.remove(self.curr_points[point_index])
+                    self.deletedpoints.append(point_index)
+                
         # We successfully reconstructed to the next time.
         return True
     
@@ -1783,5 +1796,3 @@ class ReconstructByTopologies(object):
             
             # Set the plate ID of resolved topology containing current point.
             self.curr_topology_plate_ids[point_index] = curr_polygon.get_feature().get_reconstruction_plate_id()
-
-
