@@ -5,6 +5,7 @@ import stripy
 import ptt
 import multiprocessing
 import glob
+import os
 from skimage import measure
 
 from . import reconstruction
@@ -14,25 +15,25 @@ from . import tools
 from ptt import separate_ridge_transform_segments
 
 
-def _create_icosahedral_mesh(refinement_levels):
-        # Create the ocean basin mesh using a fine icosahedral spherical mesh
-        icosahedral_global_mesh = stripy.spherical_meshes.icosahedral_mesh(
-            refinement_levels, 
-            include_face_points=False, 
-            trisection=False, 
-            tree=False
-        )
-        # Get lons and lats of mesh, and turn them into a MultiPointOnSphere
-        lats_arr = np.rad2deg(icosahedral_global_mesh.lats)
-        lons_arr = np.rad2deg(icosahedral_global_mesh.lons)
-        multi_point = pygplates.MultiPointOnSphere(zip(lats_arr,lons_arr))
+def create_icosahedral_mesh(refinement_levels):
+    # Create the ocean basin mesh using Stripy's icosahedral spherical mesh
+    icosahedral_global_mesh = stripy.spherical_meshes.icosahedral_mesh(
+        refinement_levels, 
+        include_face_points=False, 
+        trisection=False, 
+        tree=False
+    )
+    # Get lons and lats of mesh, and turn them into a MultiPointOnSphere
+    lats_arr = np.rad2deg(icosahedral_global_mesh.lats)
+    lons_arr = np.rad2deg(icosahedral_global_mesh.lons)
+    multi_point = pygplates.MultiPointOnSphere(zip(lats_arr,lons_arr))
 
-        return multi_point, icosahedral_global_mesh
+    return multi_point, icosahedral_global_mesh
 
 
-def _ensure_polygon_geometry(reconstructed_polygons, rotation_model, time):
-    """ Ensure COB terrane geometries have reconstruction plate IDs and valid times
-    before they are used to:
+def ensure_polygon_geometry(reconstructed_polygons, rotation_model, time):
+    """ Ensure COB terrane geometries are polygons with reconstruction plate 
+    IDs and valid times before they are used to:
     - identify ocean basin points, and 
     - form a continental mask for `ReconstructByTopologies`.
     """
@@ -77,7 +78,7 @@ def _ensure_polygon_geometry(reconstructed_polygons, rotation_model, time):
     return reconstructed_cobter_polygons
 
 
-def _point_in_polygon_routine(multi_point, COB_polygons):
+def point_in_polygon_routine(multi_point, COB_polygons):
     """ Perform Plate Tectonic Tools' point in polygon routine to determine
     which points from a MultiPointOnSphere feature are in or out of polygons 
     from `COB_polygons`.
@@ -122,34 +123,14 @@ def _point_in_polygon_routine(multi_point, COB_polygons):
             points_out_arr.append(multi_point[point_index])
             zvals.append(0)
 
-    # Turn ocean basin points into a FeatureCollection of MultiPointOnSphere geometries
-    multi_point_features_in = []
-    multi_point_features_out = []
-    multi_point_feature_in = pygplates.Feature(
-        pygplates.FeatureType.create_from_qualified_string('gpml:MeshNode')
-    )
-    multi_point_feature_out = pygplates.Feature(
-        pygplates.FeatureType.create_from_qualified_string('gpml:MeshNode')
-    )
-    multi_point_feature_in.set_geometry(
-        pygplates.MultiPointOnSphere(points_in_arr)
-    )
-    multi_point_feature_out.set_geometry(
-        pygplates.MultiPointOnSphere(points_out_arr)
-    )
-    multi_point_features_in.append(multi_point_feature_in)
-    multi_point_features_out.append(multi_point_feature_out)
-    #point_mesh_in = pygplates.FeatureCollection(multi_point_features_in)
-    #point_mesh_out = pygplates.FeatureCollection(multi_point_features_out)
-
-    #return point_mesh_in, point_mesh_out, zvals
-    # print(points_out_arr)
     return pygplates.MultiPointOnSphere(points_in_arr), pygplates.MultiPointOnSphere(points_out_arr), zvals
 
 
 def _extract_point_feature_attributes_for_rbt(ocean_basin, mor_all_times, time_arr):
-    """ Used to extract feature attributes from point features, like ocean basin
+    """ Used to extract feature attributes from all point features over time, like ocean basin
     seed points or MOR segment points.
+
+    TO DO: Expand this for general shapefile attribute allocation.
     """
     # Attributes to extract
     active_points = []  
@@ -157,29 +138,9 @@ def _extract_point_feature_attributes_for_rbt(ocean_basin, mor_all_times, time_a
     birth_lat = []  # latitude_of_crust_formation
     prev_lat = []
     prev_lon = []
+    spreading_rates = []
 
-    """
-    for point_feature_collection in ocean_basin:
-        print(point_feature_collection)
-        for feature in point_feature_collection:
-            active_points.append(
-                feature.get_geometry()
-            )
-            appearance_time.append(
-                feature.get_valid_time()[0]
-            )
-            birth_lat.append(
-                feature.get_geometry().to_lat_lon_list()[0][0]
-            )
-            prev_lat.append(
-                feature.get_geometry().to_lat_lon_list()[0][0]
-            )
-            prev_lon.append(
-                feature.get_geometry().to_lat_lon_list()[0][1]
-            )
-    """
-
-    # These are PointOnSphere objects already
+    # ocean_basin is a PointOnSphere object already
     for feature in ocean_basin:
         active_points.append(feature.get_geometry())
         appearance_time.append(feature.get_valid_time()[0])
@@ -192,7 +153,11 @@ def _extract_point_feature_attributes_for_rbt(ocean_basin, mor_all_times, time_a
         prev_lon.append(
             feature.get_geometry().to_lat_lon_list()[0][1]
         )
-
+        try:
+            spreading_rate = float(feature.get_shapefile_attribute("SPREADING_RATE"))
+        except Exception:
+            spreading_rate = np.nan
+        spreading_rates.append(spreading_rate)
     del ocean_basin
 
     for i, time in enumerate(time_arr):
@@ -217,17 +182,47 @@ def _extract_point_feature_attributes_for_rbt(ocean_basin, mor_all_times, time_a
                 prev_lon.append(
                     feature.get_geometry().to_lat_lon_list()[0][1]
                 )
+                try:
+                    spreading_rate = float(feature.get_shapefile_attribute("SPREADING_RATE"))
+                except Exception:
+                    spreading_rate = np.nan
+                spreading_rates.append(spreading_rate)
 
-    return active_points, appearance_time, birth_lat, prev_lat, prev_lon
+    return active_points, appearance_time, birth_lat, prev_lat, prev_lon, spreading_rates
 
 
-
+# TO-DO: extend this to >1 attribute, and consider time-dependence of attributes. Improve speed?
+def set_shapefile_attribute(
+    pygplates_feature, 
+    shapefile_attribute, 
+    shapefile_attribute_name, 
+    overwrite_attribute=False
+):
+    new_attribute = {shapefile_attribute_name : shapefile_attribute}
+    
+    # If the feature has no shapefile attribute dictionary, make one
+    if pygplates_feature.get_shapefile_attributes() is None:
+        pygplates_feature.set_shapefile_attributes()
+    
+    # If the shapefile attribute does not already exist in the dictionary, add it
+    if shapefile_attribute_name not in pygplates_feature.get_shapefile_attributes().keys():
+        pygplates_feature.set_shapefile_attributes(
+            {**pygplates_feature.get_shapefile_attributes(), **new_attribute}
+        )
+    # If the shapefile attribute exists already but needs to be overwritten
+    elif (shapefile_attribute_name in pygplates_feature.get_shapefile_attributes().keys()
+         and
+         overwrite_attribute):
+        pygplates_feature.set_shapefile_attributes(
+            {**pygplates_feature.get_shapefile_attributes(), **new_attribute}
+        )
+    return pygplates_feature
 
 
 class SeafloorGrid(object):
 
-    """A class with tools to track static and dynamic data on global ocean basins 
-    through geological time.
+    """A class to generate grids that track data atop global ocean basin points 
+    (which emerge from mid ocean ridges) through geological time.
     """
 
     def __init__(
@@ -237,6 +232,8 @@ class SeafloorGrid(object):
         max_time,
         min_time,
         ridge_time_step,
+        save_directory=None,
+        file_collection=None,
         refinement_levels=5, 
         ridge_sampling=0.1,
         subduction_collision_parameters = (5.0, 10.0),
@@ -249,8 +246,8 @@ class SeafloorGrid(object):
         self.rotation_model = self.PlateReconstruction_object.rotation_model
         self.topology_features = self.PlateReconstruction_object.topology_features
         self._PlotTopologies_object = PlotTopologies_object
-        # self._PlotTopologies_object.continents = PlotTopologies_object.continents
-
+        self.save_directory = save_directory
+        self.file_collection = file_collection
 
         # Topological parameters
         self.refinement_levels = refinement_levels
@@ -262,7 +259,17 @@ class SeafloorGrid(object):
         self._max_time = max_time
         self.min_time = min_time
         self.ridge_time_step = ridge_time_step
-        self.time_array = np.arange(self._max_time, self.min_time-1, -self.ridge_time_step)
+        self.time_array = np.arange(self._max_time, self.min_time-0.1, -self.ridge_time_step)
+
+        # If PlotTopologies' time attribute is not equal to the maximum time in the 
+        # seafloor grid reconstruction tree, make it equal. This will ensure the time
+        # for continental masking is consistent.
+        if self._PlotTopologies_object.time != self._max_time:
+            self._PlotTopologies_object.time = self._max_time
+
+        # Essential features and meshes for the SeafloorGrid
+        self._PlotTopologies_object.continents = PlotTopologies_object.continents
+        self.icosahedral_multi_point, self.icosahedral_global_mesh = create_icosahedral_mesh(self.refinement_levels)
 
 
     # Allow SeafloorGrid time to be updated, and to update the internally-used 
@@ -292,17 +299,29 @@ class SeafloorGrid(object):
         self._PlotTopologies_object.time = float(max_time)
 
 
-    def _create_initial_ocean_seed_points(self, save_directory=None):
+    def create_initial_ocean_seed_points(self):
         """ Create the initial ocean basin seed point domain (at `max_time` only) 
-        using an icosahedral triangulation with the specified 
-        `self.refinement_levels`, 
+        using Stripy's icosahedral triangulation with the specified 
+        `self.refinement_levels`. 
 
         Notes
         ----- 
-        Accesses continental polygons from the continent shapefile or GPML file 
-        attributed to the `PlotTopologies_object`. The object automatically resolves
-        the continental polygons to the `time` set in `SeafloorGrid.time` attribute
-        (see the `PlotTopologies` object for more information). 
+        This point mesh represents ocean basin seafloor that was produced
+        before `SeafloorGrid.max_time`, and thus has unknown properties like valid
+        time and spreading rate. As time passes, the plate reconstruction model sees 
+        points emerging from MORs. These new points spread to occupy the ocean basins, 
+        moving the initial filler points closer to subduction zones and continental 
+        polygons with which they can collide. If a collision is detected by 
+        `PlateReconstruction`s ReconstructByTopologies object, these points are deleted. 
+        Optimally, if a reconstruction tree spans a large time range, these initial mesh 
+        points completely disappear, leaving behind a mesh of well-defined MOR-emerged ocean
+        basin points that data can be attributed to.
+
+        `create_initial_ocean_seed_points` accesses continental polygons from the continent 
+        shapefile or GPML file  attributed to the `PlotTopologies_object`. Ideally this should 
+        be a COB terrane file. 
+        Automatically resolves continental polygons to the `SeafloorGrid.time` attribute
+        using PlotTopologies.
         Plate Tectonic Tools' point-in-polygon routine identifies ocean basin points 
         that lie:
         * outside the polygons (for the ocean basin point domain)
@@ -317,31 +336,28 @@ class SeafloorGrid(object):
         ocean_basin_point_mesh : pygplates.FeatureCollection of pygplates.MultiPointOnSphere
             A feature collection of point objects on the ocean basin.
         """
-
-        # Create MultiPointOnSphere from stripy's icosahedral spherical mesh
-        multi_point, icosahedral_global_mesh = _create_icosahedral_mesh(self.refinement_levels)
+        print("Generating global point mesh...")
 
         # Ensure COB terranes have reconstruction IDs and valid times
-        COB_polygons = _ensure_polygon_geometry(
+        COB_polygons = ensure_polygon_geometry(
             self._PlotTopologies_object.continents, 
             self.rotation_model,
             self._max_time
         )
         # zval is a binary array encoding whether a point 
-        # coordinate is within a COB terrane polygon or not
-        _, ocean_basin_point_mesh, zvals = _point_in_polygon_routine(
-            multi_point, 
+        # coordinate is within a COB terrane polygon or not.
+        # Use the icosahedral mesh MultiPointOnSphere attribute
+        _, ocean_basin_point_mesh, zvals = point_in_polygon_routine(
+            self.icosahedral_multi_point, 
             COB_polygons
         )
         
         # Plates to partition with
         plate_partitioner = pygplates.PlatePartitioner(
-            _ensure_polygon_geometry(
-                self._PlotTopologies_object.continents, self.rotation_model, self._max_time
-            ),
+            COB_polygons,
             self.rotation_model, 
-            #self._max_time
         )
+        print("Partitioning global mesh by COB terrane plate polygons...")
 
         # Plate partition the ocean basin points
         meshnode_feature = pygplates.Feature(
@@ -349,6 +365,7 @@ class SeafloorGrid(object):
         )
         meshnode_feature.set_geometry(
             ocean_basin_point_mesh
+            #multi_point
         )
         ocean_basin_meshnode = pygplates.FeatureCollection(meshnode_feature)
 
@@ -357,9 +374,12 @@ class SeafloorGrid(object):
             properties_to_copy=[pygplates.PropertyName.gpml_shapefile_attributes]
         )
         ocean_points = paleogeography[1]  # Separate those inside polygons
-
+        continent_points = paleogeography[0] # Separate those outside polygons
 
         # Determine age of ocean basin points using their proximity to MOR features
+        # and an assumed globally-uniform ocean basin mean spreading rate
+        print("Determining initial ocean basin point ages as of {} Ma...".format(self._max_time))
+
         resolved_topologies = []
         shared_boundary_sections = []
         pygplates.resolve_topologies(
@@ -372,10 +392,11 @@ class SeafloorGrid(object):
         pX,pY,pZ = tools.find_distance_to_nearest_ridge(
             resolved_topologies, 
             shared_boundary_sections, 
+            #global_points
             ocean_points
         )
 
-        # Divide spreading rate by 2 to use half spreading rate
+        # Divide spreading rate by 2 to use half the mean spreading rate
         pAge = np.array(pZ) / (self.initial_ocean_mean_spreading_rate/2.)
 
         initial_ocean_point_features = []
@@ -390,21 +411,33 @@ class SeafloorGrid(object):
             # note that we add 'time' to the age at the time of computation
             # to get the valid time in Ma
             point_feature.set_valid_time(point[2]+self._max_time, -1)
+            point_feature = set_shapefile_attribute(point_feature, self.initial_ocean_mean_spreading_rate, "SPREADING_RATE")  # Seems like static data
             initial_ocean_point_features.append(point_feature)
             initial_ocean_multipoints.append(point_feature.get_geometry())
 
         # print(initial_ocean_point_features)
         multi_point_feature = pygplates.MultiPointOnSphere(initial_ocean_multipoints)
 
-        if save_directory:
-            full_directory = "{}/ocean_basin_seed_points_{}Ma.gpml".format(save_directory, self._max_time)
+        if self.save_directory:
+            if self.file_collection is not None:
+                full_directory = "{}/{}_ocean_basin_seed_points_{}Ma.gpml".format(
+                    self.save_directory,
+                    self.file_collection, 
+                    self._max_time
+                )
+            else:
+                full_directory = "{}/ocean_basin_seed_points_{}Ma.gpml".format(
+                    self.save_directory, 
+                    self._max_time
+                )
             pygplates.FeatureCollection(initial_ocean_point_features).write(full_directory)
+
         return pygplates.FeatureCollection(initial_ocean_point_features), multi_point_feature
 
 
-    def _get_mid_ocean_ridge_seedpoints(self, time):
+    def get_mid_ocean_ridge_seedpoints(self, time):
         """ Resolve mid-ocean ridges to the current `time`, and shift their shared sub-segments
-        them slightly off the ridge using their stage rotation. 
+        them slightly off the ridge to the left and to the right using their stage rotation. 
 
         Adapted from an age gridding workflow by Simon Williams, John Cannon and Nicky Wright.
 
@@ -415,28 +448,25 @@ class SeafloorGrid(object):
             ridge locations at the current timestep.
         """
 
-        # Get the rotation model ascribed to the plate model. Topology features
-        # are already resolved to `time`. 
-        rotation_model = self.rotation_model
-        topology_features = self.topology_features
-        topology_features_extracted = pygplates.FeaturesFunctionArgument(topology_features)
+        # Topology features are already resolved to `time`. 
+        topology_features_extracted = pygplates.FeaturesFunctionArgument(self.topology_features)
 
         # Resolve topologies to the current time.
         resolved_topologies = []
         shared_boundary_sections = []
         pygplates.resolve_topologies(
             topology_features_extracted.get_features(), 
-            rotation_model, 
+            self.rotation_model, 
             resolved_topologies, 
             time, 
             shared_boundary_sections
         )
         shifted_mor_points = []
+        point_spreading_rates = []
 
         # pygplates.ResolvedTopologicalSection objects.
         for shared_boundary_section in shared_boundary_sections:
             if shared_boundary_section.get_feature().get_feature_type() == pygplates.FeatureType.create_gpml('MidOceanRidge'):
-                
                 spreading_feature = shared_boundary_section.get_feature()
 
                 # Find the stage rotation of the spreading feature in the 
@@ -445,7 +475,7 @@ class SeafloorGrid(object):
                 # The stage pole can then be directly geometrically compared 
                 # to the *reconstructed* spreading geometry.
                 stage_rotation = separate_ridge_transform_segments.get_stage_rotation_for_reconstructed_geometry(
-                    spreading_feature, rotation_model, time
+                    spreading_feature, self.rotation_model, time
                 )
                 if not stage_rotation:
                     # Skip current feature - it's not a spreading feature.
@@ -471,37 +501,62 @@ class SeafloorGrid(object):
                     mor_points = pygplates.MultiPointOnSphere(
                         shared_sub_segment.get_resolved_geometry().to_tessellated(np.radians(self.ridge_sampling))
                     )
-                    for point in mor_points.get_points()[1:-1]:
-                        # Append shifted geometries (one with points rotated one way 
-                        # and the other rotated the opposite way).
-                        shifted_mor_points.append(
-                            rotate_slightly_off_mor_one_way * point
+
+                    coords = mor_points.to_lat_lon_list()
+                    lats = [i[0] for i in coords]
+                    lons = [i[1] for i in coords]
+                    left_plate = shared_boundary_section.get_feature().get_left_plate(None)
+                    right_plate = shared_boundary_section.get_feature().get_right_plate(None)
+                    if left_plate is not None and right_plate is not None:
+                        spreading_rates = tools.calculate_spreading_rates(
+                            time=time,
+                            lons=lons,
+                            lats=lats,
+                            left_plates=[left_plate] * len(lons),
+                            right_plates=[right_plate] * len(lons),
+                            rotation_model=self.rotation_model,
+                            delta_time=self.ridge_time_step,
                         )
-                        shifted_mor_points.append(
-                            rotate_slightly_off_mor_opposite_way * point    
-                        )
+
+                    else:
+                        spreading_rates = [np.nan] * len(lons)
+                    for point, rate in zip(
+                        mor_points.get_points()[1:-1],
+                        spreading_rates[1:-1],
+                    ):
+                        shifted_mor_points.append(rotate_slightly_off_mor_one_way * point)
+                        shifted_mor_points.append(rotate_slightly_off_mor_opposite_way * point)
+                        point_spreading_rates.extend([rate] * 2)
 
         # Summarising get_isochrons_for_ridge_snapshot;
         # Write out the ridge point born at 'ridge_time' but their position at 'ridge_time - time_step'.
         mor_point_features = []
-        for curr_point in shifted_mor_points:
+        for curr_point, spreading_rate in zip(shifted_mor_points, point_spreading_rates):
             feature = pygplates.Feature()
             feature.set_geometry(curr_point)
             feature.set_valid_time(time, -999)  # delete - time_step
             #feature.set_name(str(spreading_rate))
+            feature = set_shapefile_attribute(feature, spreading_rate, "SPREADING_RATE")  # make spreading rate a shapefile attribute
             mor_point_features.append(feature)
-        pygplates.FeatureCollection(mor_point_features)
 
-        return mor_point_features
+        mor_points = pygplates.FeatureCollection(mor_point_features)
+
+        # The following file is size-intensive
+        #mor_points.write('{}/MOR_plus_one_points_{:0.2f}.gpml'.format(
+        #    self.save_directory, 
+        #    time)
+        #)
+        return mor_points
 
 
-    def create_continental_mask(self, time, save_directory=None):
+
+    def create_continental_mask(self, time):
         """ Create a continental mask for use as a specified collision type in 
         `ReconstructByTopologies`. 
 
         If `ReconstructByTopologies` identifies a continental collision 
-        between points on the ocean basin seed point domain and continental
-        mask at `time`, those points are not valid at that `time`. 
+        between oceanic points and the boundaries of this continental
+        mask at `time`, those points are deleted at `time`. 
 
         The continental mask is also saved to "/continent_mask_{}Ma.nc"
         if a `save_directory` is passed. Otherwise, the final grid is returned 
@@ -513,27 +568,25 @@ class SeafloorGrid(object):
             A masked grid with 1=continental point, and 0=ocean point, for all points
             on the full global icosahedral mesh.
         """
-        # Create MultiPointOnSphere from stripy's icosahedral spherical mesh
-        multi_point, icosahedral_global_mesh = _create_icosahedral_mesh(self.refinement_levels)
-        
+
         # Ensure COB terranes have reconstruction IDs and valid times
         self._PlotTopologies_object.time = time
-        COB_polygons = _ensure_polygon_geometry(
+        COB_polygons = ensure_polygon_geometry(
             self._PlotTopologies_object.continents,
             self.rotation_model,
             time) 
 
         # zval is a binary array encoding whether a point 
         # coordinate is within a COB terrane polygon or not
-        _, _, zvals = _point_in_polygon_routine(
-            multi_point, 
+        _, _, zvals = point_in_polygon_routine(
+            self.icosahedral_multi_point, 
             COB_polygons
         )
 
         # Interpolate the zval binaries onto the icosahedral global mesh
-        boolean_identifier, _ = icosahedral_global_mesh.interpolate(
-            icosahedral_global_mesh.lons, 
-            icosahedral_global_mesh.lats, order=3, 
+        boolean_identifier, _ = self.icosahedral_global_mesh.interpolate(
+            self.icosahedral_global_mesh.lons, 
+            self.icosahedral_global_mesh.lats, order=3, 
             zdata=np.array(zvals)
         )
 
@@ -546,28 +599,42 @@ class SeafloorGrid(object):
         grid_lat = np.linspace(extent_globe[2], extent_globe[3], resY)
 
         # Interpolate the icosahedral-meshed zval binaries onto the regular global extent grid
-        grid_z1 = icosahedral_global_mesh.interpolate_to_grid(
+        grid_z1 = self.icosahedral_global_mesh.interpolate_to_grid(
             grid_lon, grid_lat, boolean_identifier
         )
         # Ensure the PIP binaries are integers
         final_grid = np.rint(grid_z1)
 
-        if save_directory is not None:
-            full_directory = "{}/continent_mask_{}Ma.nc".format(save_directory, time)
+        if self.save_directory is not None:
+            if self.file_collection is not None:
+                full_directory = "{}/{}_continent_mask_{}Ma.nc".format(
+                    self.save_directory, 
+                    self.file_collection, 
+                    time
+                )
+            else:
+                full_directory = "{}/continent_mask_{}Ma.nc".format(
+                    self.save_directory, 
+                    time
+                )
             grids.write_netcdf_grid(
-                full_directory, final_grid, extent=[-180,180,-90,90]
+                full_directory, 
+                final_grid, 
+                extent=[-180,180,-90,90]
             )
+        #print("Continental mask for {} Ma done!".format(time))
         return final_grid
 
 
-    def prepare_for_reconstruction_by_topologies(self, save_directory=None):
+    def prepare_for_reconstruction_by_topologies(self):
         """ Prepare three main auxiliary files for seafloor data gridding:
         * Initial ocean seed points (at `max_time`)
         * MOR points (from `max_time` to `min_time`)
         * Continental masks (from `max_time` to `min_time`)
         """
 
-        initial_ocean_seed_points, initial_ocean_seed_points_mp = self._create_initial_ocean_seed_points(save_directory)
+        initial_ocean_seed_points, initial_ocean_seed_points_mp = self.create_initial_ocean_seed_points()
+
         print("Finished building initial_ocean_seed_points!")
         time_array = np.arange(self._max_time, self.min_time-1, -self.ridge_time_step)
         all_mor_features = []
@@ -575,37 +642,36 @@ class SeafloorGrid(object):
 
         for time in self.time_array:
             all_mor_features.append(
-                self._get_mid_ocean_ridge_seedpoints(time)
+                self.get_mid_ocean_ridge_seedpoints(time)
             )
             print("Finished building MOR seedpoints at {} Ma!".format(time))
+            
             all_continental_masks.append(
-                self.create_continental_mask(time, save_directory)
+                self.create_continental_mask(time)
             )
             print("Finished building a continental mask at {} Ma!".format(time))
-        return initial_ocean_seed_points, all_mor_features, all_continental_masks
-
-
-
-    def reconstruct_by_topologies(self, save_directory):
-        """ Obtain all active ocean seed points at `time` - these are 
-        points that have not been consumed at subduction zones or have not
-        collided with continental polygons.
-        """
-        rotation_model = self.rotation_model
-
-        # Obtain all info from the ocean seed points and MOR, store in
-        # one array.
-        initial_ocean_seed_points, all_mor_features, all_continental_masks = self.prepare_for_reconstruction_by_topologies(save_directory)
 
         active_points, appearance_time, \
-        birth_lat, prev_lat, prev_lon = _extract_point_feature_attributes_for_rbt(
+        birth_lat, prev_lat, prev_lon, spreading_rates  = _extract_point_feature_attributes_for_rbt(
             initial_ocean_seed_points,
             all_mor_features,
             self.time_array
         )
+        return active_points, appearance_time, birth_lat, prev_lat, prev_lon, spreading_rates
 
-        # Conserve memory by deleting ocean seeds
-        #del seeds_at_start_time
+
+    def reconstruct_by_topologies(self):
+        """ Obtain all active ocean seed points at `time` - these are 
+        points that have not been consumed at subduction zones or have not
+        collided with continental polygons.
+        """
+
+        print("Preparing all initial files...")
+
+        # Obtain all info from the ocean seed points and MOR, store in
+        # one array.
+        active_points, appearance_time, birth_lat, \
+        prev_lat, prev_lon, spreading_rates = self.prepare_for_reconstruction_by_topologies()
 
         ####  Begin reconstruction by topology process:
         # Indices for all active points at the current time step
@@ -617,11 +683,17 @@ class SeafloorGrid(object):
             (pygplates.FeatureType.gpml_subduction_zone, self.subduction_collision_parameters)
             ]
         )
-        # In addition to the default subduction detection, also detect
-        # continental collisions
-        collision_spec = reconstruction.ContinentCollision(
-            save_directory+"/continent_mask_{}Ma.nc", default_collision
-        )
+        # In addition to the default subduction detection, also detect continental collisions
+        if self.file_collection is not None:
+            collision_spec = reconstruction.ContinentCollision(
+                self.save_directory+"/"+self.file_collection+"_continent_mask_{}Ma.nc", 
+                default_collision
+            )
+        else:
+            collision_spec = reconstruction.ContinentCollision(
+                self.save_directory+"/continent_mask_{}Ma.nc", 
+                default_collision
+            )
 
         # Call the reconstruct by topologies object
         topology_reconstruction = reconstruction.ReconstructByTopologies(
@@ -648,62 +720,64 @@ class SeafloorGrid(object):
 
             # Collect latitudes and longitudes of currently active points in the ocean basin mesh
             curr_points = topology_reconstruction.get_active_current_points()
+            #nan_points, nan_point_indices = topology_reconstruction.get_in_continent_indices()
+
             curr_lat_lon_points = [point.to_lat_lon() for point in curr_points]
+
             if curr_lat_lon_points:
                 curr_latitudes, curr_longitudes = zip(*curr_lat_lon_points)
 
                 # TO BE REPLACED W/ USER-INPUT DATA LATER
                 seafloor_age = []
-                #spreading_rate_snapshot = []
+                spreading_rate_snapshot = []
 
                 # Time-dependent point attributes
                 birth_lat_snapshot = []
                 point_id_snapshot = []
                 prev_lat_snapshot = []
                 prev_lon_snapshot = []
+
                 for point_index,current_point in enumerate(topology_reconstruction.get_all_current_points()):
+
+                    # Look at all active points (these have not collided with a continent or trench)
                     if current_point is not None:
-                        #all_birth_ages.append(at[point_index])
                         seafloor_age.append(
-                            appearance_time[point_index] - topology_reconstruction.get_current_time()
-                        )
+                                appearance_time[point_index] - topology_reconstruction.get_current_time()
+                            )
                         birth_lat_snapshot.append(birth_lat[point_index])
                         point_id_snapshot.append(point_id[point_index])
                         prev_lat_snapshot.append(prev_lat[point_index])
                         prev_lon_snapshot.append(prev_lon[point_index])
                         
-                        # TO BE REPLACED W/ USER-INPUT DATA LATER
-                        #spreading_rate_snapshot.append(spreading_rates[point_index])
+                        # TO-DO: add a general method to extract shapefile attributes with user-input data
+                        spreading_rate_snapshot.append(spreading_rates[point_index])
                         
                         prev_lat[point_index] = current_point.to_lat_lon()[0]
                         prev_lon[point_index] = current_point.to_lat_lon()[1]
 
-
-                # TO-DO: save as file for now since each array is renewed per reconstruction time. 
+                # TO-DO: Look for storage-efficient alternative(s) to .csv intermediate/aux files to store 
+                # these arrays (unique to each reconstruction time).
                 header = 'CURRENT_LONGITUDES,'\
                 'CURRENT_LATITUDES,'\
                 'SEAFLOOR_AGE,'\
+                'SPREADING_RATE_SNAPSHOT,'\
                 'BIRTH_LAT_SNAPSHOT,'\
                 'POINT_ID_SNAPSHOT'
 
-                zippeddata = list(zip(curr_longitudes, curr_latitudes, seafloor_age, birth_lat_snapshot, point_id_snapshot, 
+                zippeddata = list(zip(curr_longitudes, curr_latitudes, seafloor_age, spreading_rate_snapshot, birth_lat_snapshot, point_id_snapshot, 
                 #any extra user-input data here), 
                 ))
-                np.savetxt('{:s}/gridding_input_{:0.1f}Ma.csv'.format(save_directory, topology_reconstruction.get_current_time()), 
-                    zippeddata, header=header, delimiter=',', comments='', fmt='%s'
-                )
-            """
-            reconstruction_data.append(
-                list(zip(curr_longitudes, curr_latitudes, seafloor_age, birth_lat_snapshot, point_id_snapshot, 
-                #any extra user-input data here), 
-                ))
-            )
-            """
+                if self.file_collection is not None:
+                    np.savetxt('{:s}/{}_gridding_input_{:0.1f}Ma.csv'.format(self.save_directory, self.file_collection, topology_reconstruction.get_current_time()), 
+                        zippeddata, header=header, delimiter=',', comments='', fmt='%s'
+                    )
+                else:
+                    np.savetxt('{:s}/gridding_input_{:0.1f}Ma.csv'.format(self.save_directory, topology_reconstruction.get_current_time()), 
+                        zippeddata, header=header, delimiter=',', comments='', fmt='%s'
+                    )
+
             if not topology_reconstruction.reconstruct_to_next_time():
                 break
 
         print('Reconstruction done for {}!'.format(topology_reconstruction.get_current_time()))
         # return reconstruction_data
-
-
-
