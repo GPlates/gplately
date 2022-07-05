@@ -7,6 +7,8 @@ import multiprocessing
 import glob
 import os
 from skimage import measure
+from scipy.interpolate import griddata
+import pandas as pd
 
 from . import reconstruction
 from . import plot
@@ -139,6 +141,7 @@ def _extract_point_feature_attributes_for_rbt(ocean_basin, mor_all_times, time_a
     prev_lat = []
     prev_lon = []
     spreading_rates = []
+    #p_indices = []
 
     # ocean_basin is a PointOnSphere object already
     for feature in ocean_basin:
@@ -155,9 +158,11 @@ def _extract_point_feature_attributes_for_rbt(ocean_basin, mor_all_times, time_a
         )
         try:
             spreading_rate = float(feature.get_shapefile_attribute("SPREADING_RATE"))
+            #p_index = int(feature.get_shapefile_attribute("INDEX"))
         except Exception:
             spreading_rate = np.nan
         spreading_rates.append(spreading_rate)
+        #p_indices.append(p_index)
     del ocean_basin
 
     for i, time in enumerate(time_arr):
@@ -184,9 +189,11 @@ def _extract_point_feature_attributes_for_rbt(ocean_basin, mor_all_times, time_a
                 )
                 try:
                     spreading_rate = float(feature.get_shapefile_attribute("SPREADING_RATE"))
+                    p_index = int(feature.get_shapefile_attribute("INDEX"))
                 except Exception:
                     spreading_rate = np.nan
                 spreading_rates.append(spreading_rate)
+                #p_indices.append(p_index)
 
     return active_points, appearance_time, birth_lat, prev_lat, prev_lon, spreading_rates
 
@@ -236,6 +243,8 @@ class SeafloorGrid(object):
         file_collection=None,
         refinement_levels=5, 
         ridge_sampling=0.1,
+        resX = 2000,
+        resY = 1000,
         subduction_collision_parameters = (5.0, 10.0),
         initial_ocean_mean_spreading_rate = 75.
         ):
@@ -255,6 +264,9 @@ class SeafloorGrid(object):
         self.subduction_collision_parameters = subduction_collision_parameters
         self.initial_ocean_mean_spreading_rate = initial_ocean_mean_spreading_rate
 
+        # Gridding parameters
+        self.resX = resX
+        self.resY = resY
         # Temporal parameters
         self._max_time = max_time
         self.min_time = min_time
@@ -404,6 +416,8 @@ class SeafloorGrid(object):
 
         for point in zip(pX,pY,pAge):
 
+            # pX, longitude, will be None if it's inside a plate ID without a ridge segment
+            #if point[0] is not None:
             point_feature = pygplates.Feature()
             #point_feature.set_name(str(initial_ocean_mean_spreading_rate))
             point_feature.set_geometry(pygplates.PointOnSphere(point[1], point[0]))
@@ -463,6 +477,7 @@ class SeafloorGrid(object):
         )
         shifted_mor_points = []
         point_spreading_rates = []
+        #point_indices = []
 
         # pygplates.ResolvedTopologicalSection objects.
         for shared_boundary_section in shared_boundary_sections:
@@ -494,6 +509,7 @@ class SeafloorGrid(object):
                 )
                 rotate_slightly_off_mor_opposite_way = rotate_slightly_off_mor_one_way.get_inverse()
                 
+                subsegment_index = []
                 # Iterate over the shared sub-segments.
                 for shared_sub_segment in shared_boundary_section.get_shared_sub_segments():
 
@@ -508,7 +524,7 @@ class SeafloorGrid(object):
                     left_plate = shared_boundary_section.get_feature().get_left_plate(None)
                     right_plate = shared_boundary_section.get_feature().get_right_plate(None)
                     if left_plate is not None and right_plate is not None:
-                        spreading_rates = tools.calculate_spreading_rates(
+                        spreading_rates, subsegment_index = tools.calculate_spreading_rates(
                             time=time,
                             lons=lons,
                             lats=lats,
@@ -518,6 +534,11 @@ class SeafloorGrid(object):
                             delta_time=self.ridge_time_step,
                         )
 
+                        # TEST RUN: AN INDICES DATA ARRAY
+                        #for i, lon in enumerate(lons):
+                            #subsegment_index.append(i)
+
+                        #print(subsegment_index)
                     else:
                         spreading_rates = [np.nan] * len(lons)
                     for point, rate in zip(
@@ -527,16 +548,18 @@ class SeafloorGrid(object):
                         shifted_mor_points.append(rotate_slightly_off_mor_one_way * point)
                         shifted_mor_points.append(rotate_slightly_off_mor_opposite_way * point)
                         point_spreading_rates.extend([rate] * 2)
+                        #point_indices.extend(subsegment_index)
 
         # Summarising get_isochrons_for_ridge_snapshot;
         # Write out the ridge point born at 'ridge_time' but their position at 'ridge_time - time_step'.
         mor_point_features = []
-        for curr_point, spreading_rate in zip(shifted_mor_points, point_spreading_rates):
+        for i, (curr_point, spreading_rate) in enumerate(zip(shifted_mor_points, point_spreading_rates)):
             feature = pygplates.Feature()
             feature.set_geometry(curr_point)
             feature.set_valid_time(time, -999)  # delete - time_step
             #feature.set_name(str(spreading_rate))
             feature = set_shapefile_attribute(feature, spreading_rate, "SPREADING_RATE")  # make spreading rate a shapefile attribute
+            #feature = set_shapefile_attribute(feature, point_indices[i], "INDEX")
             mor_point_features.append(feature)
 
         mor_points = pygplates.FeatureCollection(mor_point_features)
@@ -592,11 +615,9 @@ class SeafloorGrid(object):
 
         # A regular grid to interpolate the spherical mesh onto
         # TO-DO: resX, resY and extent should be user-defined?
-        resX = 200
-        resY = 100
         extent_globe = np.radians([-180,180,-90,90])
-        grid_lon = np.linspace(extent_globe[0], extent_globe[1], resX)
-        grid_lat = np.linspace(extent_globe[2], extent_globe[3], resY)
+        grid_lon = np.linspace(extent_globe[0], extent_globe[1], self.resX)
+        grid_lat = np.linspace(extent_globe[2], extent_globe[3], self.resY)
 
         # Interpolate the icosahedral-meshed zval binaries onto the regular global extent grid
         grid_z1 = self.icosahedral_global_mesh.interpolate_to_grid(
@@ -730,6 +751,7 @@ class SeafloorGrid(object):
                 # TO BE REPLACED W/ USER-INPUT DATA LATER
                 seafloor_age = []
                 spreading_rate_snapshot = []
+                #indices = []
 
                 # Time-dependent point attributes
                 birth_lat_snapshot = []
@@ -751,6 +773,7 @@ class SeafloorGrid(object):
                         
                         # TO-DO: add a general method to extract shapefile attributes with user-input data
                         spreading_rate_snapshot.append(spreading_rates[point_index])
+                        #indices.append(p_indices)
                         
                         prev_lat[point_index] = current_point.to_lat_lon()[0]
                         prev_lon[point_index] = current_point.to_lat_lon()[1]
@@ -762,7 +785,7 @@ class SeafloorGrid(object):
                 'SEAFLOOR_AGE,'\
                 'SPREADING_RATE_SNAPSHOT,'\
                 'BIRTH_LAT_SNAPSHOT,'\
-                'POINT_ID_SNAPSHOT'
+                'POINT_ID_SNAPSHOT,'
 
                 zippeddata = list(zip(curr_longitudes, curr_latitudes, seafloor_age, spreading_rate_snapshot, birth_lat_snapshot, point_id_snapshot, 
                 #any extra user-input data here), 
@@ -781,3 +804,93 @@ class SeafloorGrid(object):
 
         print('Reconstruction done for {}!'.format(topology_reconstruction.get_current_time()))
         # return reconstruction_data
+
+
+    # GRIDDING - TO DO: More high-level routine needed; Don't use pandas or gridding input intermediate files?
+    def lat_lon_z_to_netCDF(self, gridding_data_index=2, time_arr=None):
+        """ Write ndarray grids containing z values from index `gridding_data_index`
+        for a given time range in `time_arr`.
+
+        By default, `gridding_data_index` is 2, which corresponds to seafloor age.
+        `gridding_data_index` = 3 corresponds to spreading rate.
+
+        Saves all grids to netCDF format in the attributed directory. Grids
+        can be read into ndarray format using `gplately.grids.read_netcdf_grid()`.
+        """
+        # User can put any time array within SeafloorGrid bounds, but if none
+        # is provided, it defaults to the attributed time array
+        if time_arr is None:
+            time_arr = self.time_array
+        for time in time_arr:
+            # Read the gridding input made by ReconstructByTopologies:
+            if self.file_collection is not None:
+                gridding_input = '{:s}/{}_gridding_input_{:0.1f}Ma.csv'.format(
+                    self.save_directory, 
+                    self.file_collection, 
+                    time
+                )
+            else:
+                gridding_input = '{:s}/gridding_input_{:0.1f}Ma.csv'.format(self.save_directory, time)
+
+            # Use pandas to load in lons, lats and z values
+            curr_data = pd.read_csv(gridding_input)
+
+            # Drop duplicate latitudes and longitudes
+            unique_data = curr_data.drop_duplicates(subset=["CURRENT_LONGITUDES", "CURRENT_LATITUDES"])
+
+            # Acquire lons, lats and zvalues for each time
+            lons = unique_data["CURRENT_LONGITUDES"].to_list()
+            lats = unique_data["CURRENT_LATITUDES"].to_list()
+            zdata = np.array(unique_data[unique_data.columns[gridding_data_index]].to_list())
+            #zdata = np.where(zdata > 375, float("nan"), zdata), to deal with vmax in the future
+            zdata = np.nan_to_num(zdata)
+            
+            # Create a regular grid on which to interpolate lats, lons and zdata
+            extent_globe = [-180,180,-90,90]
+            grid_lon = np.linspace(extent_globe[0], extent_globe[1], self.resX)
+            grid_lat = np.linspace(extent_globe[2], extent_globe[3], self.resY)
+            X, Y = np.meshgrid(grid_lon, grid_lat)
+
+            # Interpolate lons, lats and zvals over a regular grid using nearest
+            # neighbour interpolation
+            Z = griddata((lons, lats), zdata, (X, Y), method='nearest')
+            
+            # Access continental grids from the save directory
+            if self.save_directory is not None:
+                if self.file_collection is not None:
+                    full_directory = "{}/{}_continent_mask_{}Ma.nc".format(
+                        self.save_directory, 
+                        self.file_collection, 
+                        time
+                    )
+                    grid_output_dir = "{}/{}_{}_grid_{}Ma.nc".format(
+                        self.save_directory, 
+                        self.file_collection, 
+                        str(unique_data.columns[gridding_data_index]),
+                        time
+                    )
+                else:
+                    full_directory = "{}/continent_mask_{}Ma.nc".format(
+                        self.save_directory, 
+                        time
+                    )
+                    grid_output_dir = "{}/grid{}Ma.nc".format(
+                        self.save_directory, 
+                        time
+                    )
+
+            # Identify regions in the grid in the continental mask
+            cont_mask = grids.Raster(
+                    filename=str(full_directory))
+            grd = cont_mask.interpolate(X, Y) > 0.5
+            Z[~grd] = np.nan
+
+            grids.write_netcdf_grid(
+                    grid_output_dir, 
+                    Z, 
+                    extent=[-180,180,-90,90]
+                )
+            print("netCDF grid for {} Ma complete!".format(time))
+        return
+
+
