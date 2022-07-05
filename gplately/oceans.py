@@ -883,7 +883,7 @@ class SeafloorGrid(object):
             cont_mask = grids.Raster(
                     filename=str(full_directory))
             grd = cont_mask.interpolate(X, Y) > 0.5
-            Z[~grd] = np.nan
+            Z[grd] = np.nan
 
             grids.write_netcdf_grid(
                     grid_output_dir, 
