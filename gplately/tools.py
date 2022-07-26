@@ -447,9 +447,17 @@ def find_distance_to_nearest_ridge(resolved_topologies,shared_boundary_sections,
 
                         else:
 
+                            # Originally, give points in plate IDs without MORs a fill value
                             point_distance_to_ridge.append(fill_value)
                             point_lats.append(point.to_lat_lon()[0])
                             point_lons.append(point.to_lat_lon()[1])
+
+                            # Try allocating a NoneType to points instead
+                            # point_lats.append(None)
+                            # point_lons.append(None)
+
+                            # Try skipping the point (this causes the workflow to use nearest neighbour interpolation to fill these regions)
+                            #continue
 
         all_point_distance_to_ridge.extend(point_distance_to_ridge)
         all_point_lats.extend(point_lats)
@@ -551,7 +559,11 @@ def calculate_spreading_rates(
         for index, velocity in zip(indices, velocities):
             out[index] = velocity
 
-    return [out[i] for i in sorted(out)]
+    #print(out)
+    #print(sorted(out))
+    #print("\n")
+
+    return [out[i] for i in sorted(out)], indices #[indices[i] for i in sorted(indices)]
 
 
 def _get_rotation(
