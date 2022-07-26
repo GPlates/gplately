@@ -405,7 +405,7 @@ class SeafloorGrid(object):
             resolved_topologies, 
             shared_boundary_sections, 
             #global_points
-            ocean_points
+            ocean_points,
         )
 
         # Divide spreading rate by 2 to use half the mean spreading rate
@@ -524,6 +524,7 @@ class SeafloorGrid(object):
                     left_plate = shared_boundary_section.get_feature().get_left_plate(None)
                     right_plate = shared_boundary_section.get_feature().get_right_plate(None)
                     if left_plate is not None and right_plate is not None:
+                        # Get the spreading rates for all points in this sub segment
                         spreading_rates, subsegment_index = tools.calculate_spreading_rates(
                             time=time,
                             lons=lons,
@@ -533,7 +534,6 @@ class SeafloorGrid(object):
                             rotation_model=self.rotation_model,
                             delta_time=self.ridge_time_step,
                         )
-
                         # TEST RUN: AN INDICES DATA ARRAY
                         #for i, lon in enumerate(lons):
                             #subsegment_index.append(i)
@@ -541,6 +541,8 @@ class SeafloorGrid(object):
                         #print(subsegment_index)
                     else:
                         spreading_rates = [np.nan] * len(lons)
+
+                    # Loop through all but the 1st and last points in the current sub segment
                     for point, rate in zip(
                         mor_points.get_points()[1:-1],
                         spreading_rates[1:-1],
@@ -695,7 +697,7 @@ class SeafloorGrid(object):
         prev_lat, prev_lon, spreading_rates = self.prepare_for_reconstruction_by_topologies()
 
         ####  Begin reconstruction by topology process:
-        # Indices for all active points at the current time step
+        # Indices for all MOR points that have been resolved for all times in `time_array`.
         point_id = range(len(active_points))
 
         # Specify the collision detection
@@ -739,10 +741,9 @@ class SeafloorGrid(object):
                 topology_reconstruction.get_current_time())
             )
 
-            # Collect latitudes and longitudes of currently active points in the ocean basin mesh
+            # Collect latitudes and longitudes of currently active points in the ocean basin
+            # None of these will be NoneType, unlike in topology_reconstruction.get_all_current_points().
             curr_points = topology_reconstruction.get_active_current_points()
-            #nan_points, nan_point_indices = topology_reconstruction.get_in_continent_indices()
-
             curr_lat_lon_points = [point.to_lat_lon() for point in curr_points]
 
             if curr_lat_lon_points:
@@ -759,6 +760,7 @@ class SeafloorGrid(object):
                 prev_lat_snapshot = []
                 prev_lon_snapshot = []
 
+                # Get indices and points of all points at `time`; this may include NoneType points. 
                 for point_index,current_point in enumerate(topology_reconstruction.get_all_current_points()):
 
                     # Look at all active points (these have not collided with a continent or trench)
@@ -767,7 +769,7 @@ class SeafloorGrid(object):
                                 appearance_time[point_index] - topology_reconstruction.get_current_time()
                             )
                         birth_lat_snapshot.append(birth_lat[point_index])
-                        point_id_snapshot.append(point_id[point_index])
+                        point_id_snapshot.append(point_id[point_index]) # The ID of a corresponding point from the original list of all MOR-resolved points
                         prev_lat_snapshot.append(prev_lat[point_index])
                         prev_lon_snapshot.append(prev_lon[point_index])
                         
