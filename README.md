@@ -131,13 +131,13 @@ To see GPlately in action, launch a Jupyter Notebook environment and check out t
 
 - [__01 - Getting Started__](./Notebooks/01-GettingStarted.ipynb): A brief overview of how to initialise GPlately's main objects
 - [__02 - Plate Reconstructions__](./Notebooks/02-PlateReconstructions.ipynb): Setting up a `PlateReconstruction` object, reconstructing geological data through time 
-- [__03 - Working with Points__](./Notebooks/03-WorkingWithPoints.ipynb): Setting up a `Points` object, reconstructing seed point locations through time
+- [__03 - Working with Points__](./Notebooks/03-WorkingWithPoints.ipynb): Setting up a `Points` object, reconstructing seed point locations through time with. This notebook uses point data from the Paleobiology Database (PBDB).
 - [__04 - Velocity Basics__](./Notebooks/04-VelocityBasics.ipynb): Calculating plate velocities, plotting velocity vector fields
 - [__05 - Working with Feature Geometries__](./Notebooks/05-WorkingWithFeatureGeometries.ipynb): Processing and plotting assorted polyline, polygon and point data from [GPlates 2.3's sample data sets](https://www.earthbyte.org/gplates-2-3-software-and-data-sets/)
 - [__06 - Rasters__](./Notebooks/06-Rasters.ipynb): Reading, resizing, resampling raster data, and linearly interpolating point data onto raster data
-- [__07 - Plate Tectonic Stats__](./Notebooks/07-WorkingWithPlateTectonicStats.ipynb): Using [PlateTectonicTools](https://github.com/EarthByte/PlateTectonicTools) to calculate assorted subduction convergence and ridge spreading data (velocities, subduction angles, crustal surface areas produced and subducted etc.) 
-- [__08 - Subduction Zone and Mid-ocean Ridge Lengths__](./Notebooks/08-RidgeAndTrenchLengths.ipynb): Using [PlateTectonicTools](https://github.com/EarthByte/PlateTectonicTools) to calculate the total lengths of global subduction zones and mid ocean ridges through geological time
-- [__09 - Predicting Slab Dip__](./Notebooks/09-PredictingSlabDip.ipynb): Predicting the average slab dip angle of subducting oceanic lithosphere
+- [__07 - Plate Tectonic Stats__](./Notebooks/07-WorkingWithPlateTectonicStats.ipynb): Using [PlateTectonicTools](https://github.com/EarthByte/PlateTectonicTools) to calculate and plot subduction zone and ridge data (convergence/spreading velocities, subduction angles, subduction zone and ridge lengths, crustal surface areas produced and subducted etc.) 
+- [__08 - Predicting Slab Dip__](./Notebooks/08-PredictingSlabDip.ipynb): Predicting the average slab dip angle of subducting oceanic lithosphere.
+- [__09 - Motion Paths and Flowlines__](./Notebooks/09-CreatingMotionPathsAndFlowlines.ipynb): Using pyGPlates to create motion paths and flowines of points on a tectonic plate to illustrate the plate's trajectory through geological time.
 
 
 ## API Documentation
