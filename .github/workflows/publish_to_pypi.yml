@@ -39,9 +39,10 @@ jobs:
       run: |
         pip install cartopy==0.19.0.post1
     - name: Build package
+      run: |
         export PYTHONPATH=$PYTHONPATH:/usr/lib/
         export LD_PRELOAD=/lib/x86_64-linux-gnu/libstdc++.so.6:$LD_PRELOAD
-        run: python -m build
+        python -m build
     - name: Publish package
       uses: pypa/gh-action-pypi-publish@27b31702a0e7fc50959f5ad993c78deac1bdfc29
       with:
