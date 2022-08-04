@@ -189,11 +189,9 @@ def _extract_point_feature_attributes_for_rbt(ocean_basin, mor_all_times, time_a
                 )
                 try:
                     spreading_rate = float(feature.get_shapefile_attribute("SPREADING_RATE"))
-                    p_index = int(feature.get_shapefile_attribute("INDEX"))
                 except Exception:
                     spreading_rate = np.nan
                 spreading_rates.append(spreading_rate)
-                #p_indices.append(p_index)
 
     return active_points, appearance_time, birth_lat, prev_lat, prev_lon, spreading_rates
 
