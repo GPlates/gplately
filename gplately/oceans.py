@@ -445,6 +445,10 @@ class SeafloorGrid(object):
         basin. These points will have inaccurate ages, but most of them will be phased
         out after points with plate-model prescribed ages emerge from ridges and spread 
         to push them towards collision boundaries (where they are deleted).
+    checkpoint_MORS_delta_time : float, default 5.
+        A delta time at which to checkpoint MOR seedpoints by writing them into gpmlz
+        format. If ever gridding preparation is interrupted, it will resume seed pointing
+        and continental mask building at checkpoint_MORS_delta_time + 1. Ma.  
     """
 
     def __init__(
@@ -461,7 +465,8 @@ class SeafloorGrid(object):
         resX = 2000,
         resY = 1000,
         subduction_collision_parameters = (5.0, 10.0),
-        initial_ocean_mean_spreading_rate = 75.
+        initial_ocean_mean_spreading_rate = 75.,
+        checkpoint_MORS_delta_time = 5.
         ):
 
         # Provides a rotation model, topology features and reconstruction time for 
@@ -488,6 +493,7 @@ class SeafloorGrid(object):
         self.min_time = min_time
         self.ridge_time_step = ridge_time_step
         self.time_array = np.arange(self._max_time, self.min_time-0.1, -self.ridge_time_step)
+        self.checkpoint_MORS_delta_time = checkpoint_MORS_delta_time
 
         # If PlotTopologies' time attribute is not equal to the maximum time in the 
         # seafloor grid reconstruction tree, make it equal. This will ensure the time
@@ -497,10 +503,11 @@ class SeafloorGrid(object):
 
         # Essential features and meshes for the SeafloorGrid
         self.continental_polygons = ensure_polygon_geometry(
-            PlotTopologies_object.continents
+            self._PlotTopologies_object.continents,
             self.rotation_model,
             self._max_time
         )
+        self._PlotTopologies_object.continents = PlotTopologies_object.continents
         self.icosahedral_multi_point, self.icosahedral_global_mesh = create_icosahedral_mesh(self.refinement_levels)
 
 
@@ -575,8 +582,11 @@ class SeafloorGrid(object):
         """
         print("Generating global point mesh...")
 
-        # Ensure COB terranes have reconstruction IDs and valid times
-        COB_polygons = self.continental_polygons
+        # Ensure COB terranes at max time have reconstruction IDs and valid times
+        COB_polygons = ensure_polygon_geometry(
+            self._PlotTopologies_object.continents,
+            self.rotation_model,
+            self._max_time) 
 
         # zval is a binary array encoding whether a point 
         # coordinate is within a COB terrane polygon or not.
@@ -655,19 +665,32 @@ class SeafloorGrid(object):
 
         if self.save_directory:
             if self.file_collection is not None:
-                full_directory = "{}/{}_ocean_basin_seed_points_{}Ma.gpml".format(
+                full_directory = "{}/{}_ocean_basin_seed_points_{}Ma.gpmlz".format(
                     self.save_directory,
                     self.file_collection, 
                     self._max_time
                 )
             else:
-                full_directory = "{}/ocean_basin_seed_points_{}Ma.gpml".format(
+                full_directory = "{}/ocean_basin_seed_points_{}Ma.gpmlz".format(
                     self.save_directory, 
                     self._max_time
                 )
             pygplates.FeatureCollection(initial_ocean_point_features).write(full_directory)
 
         return pygplates.FeatureCollection(initial_ocean_point_features), multi_point_feature
+
+
+    def _checkpoint_MOR(self, mor_points, time):
+        """Write MOR seed points to GPMLZ format every `delta_time` to failsafe gridding 
+        preparation if it is interrupted. 
+        """
+        if (time % self.checkpoint_MORS_delta_time == 0):
+            mor_points.write('{}/MOR_plus_one_points_{:0.2f}.gpmlz'.format(
+                self.save_directory, 
+                time
+                )
+            )
+            print("Checkpointed MOR seedpoints at {} Ma!".format(time))
 
 
     def get_mid_ocean_ridge_seedpoints(self, time):
@@ -810,11 +833,9 @@ class SeafloorGrid(object):
 
         mor_points = pygplates.FeatureCollection(mor_point_features)
 
-        # The following file is size-intensive
-        #mor_points.write('{}/MOR_plus_one_points_{:0.2f}.gpml'.format(
-        #    self.save_directory, 
-        #    time)
-        #)
+        # Checkpoint MORs if `time` is a multiple of `checkpoint_MORS`
+        self._checkpoint_MOR(mor_points, time)
+
         return mor_points
 
 
@@ -841,7 +862,10 @@ class SeafloorGrid(object):
 
         # Ensure COB terranes have reconstruction IDs and valid times
         self._PlotTopologies_object.time = time
-        COB_polygons = self.continental_polygons
+        COB_polygons = ensure_polygon_geometry(
+            self._PlotTopologies_object.continents,
+            self.rotation_model,
+            time) 
 
         # zval is a binary array encoding whether a point 
         # coordinate is within a COB terrane polygon or not
@@ -899,10 +923,12 @@ class SeafloorGrid(object):
         Returns lists of all attributes for the initial ocean point mesh and
         all ridge points for all times in the reconstruction time array.
         """
-        # Build the initial ocean seed point mesh
+
+        # INITIAL OCEAN SEED POINT MESH ----------------------------------------------------
         initial_ocean_seed_points, initial_ocean_seed_points_mp = self.create_initial_ocean_seed_points()
         print("Finished building initial_ocean_seed_points!")
 
+        # MOR SEED POINTS AND CONTINENTAL MASKS --------------------------------------------
         time_array = np.arange(self._max_time, self.min_time-1, -self.ridge_time_step)
         all_mor_features = []
         all_continental_masks = []
@@ -919,6 +945,7 @@ class SeafloorGrid(object):
             )
             print("Finished building a continental mask at {} Ma!".format(time))
 
+        # ALL-TIME POINTS AND FEATURES -----------------------------------------------------
         # Extract all feature attributes for all reconstruction times into lists
         active_points, appearance_time, \
         birth_lat, prev_lat, prev_lon, spreading_rates  = _extract_point_feature_attributes_for_rbt(
@@ -935,10 +962,8 @@ class SeafloorGrid(object):
         collided with continental polygons. 
 
         All active points' latitudes, longitues, seafloor ages, spreading rates and all 
-        other general z-values are saved to a gridding input file. Currently CSV, in 
-        future will be a compressed .npz format.
+        other general z-values are saved to a gridding input file (.npz).
         """
-
         print("Preparing all initial files...")
 
         # Obtain all info from the ocean seed points and all MOR points through time, store in
@@ -991,62 +1016,85 @@ class SeafloorGrid(object):
                 topology_reconstruction.get_current_time())
             )
 
-            # Collect latitudes and longitudes of currently active points in the ocean basin
-            # None of these will be NoneType, unlike in topology_reconstruction.get_all_current_points().
+            # NOTE:
+            # topology_reconstruction.get_active_current_points() and topology_reconstruction.get_all_current_points()
+            # are different. The former is a subset of the latter, and it represents all points at the timestep that
+            # have not collided with a continental or subduction boundary. The remainders in the latter are inactive 
+            # (NoneType) points, which represent the collided points.
+
+            # We need to access active point data from topology_reconstruction.get_all_current_points() because it has 
+            # the same length as the list of all initial ocean points and MOR seed points that have ever emerged from 
+            # spreading ridge topologies through `max_time` to `min_time`. Therefore, it protects the time and space 
+            # order in which all MOR points through time were seeded by pyGPlates. At any given timestep, not all these 
+            # points will be active, but their indices are retained. Thus, z value allocation, point latitudes and 
+            # longitudes of active points will be correctly indexed if taking it from 
+            # topology_reconstruction.get_all_current_points().
             curr_points = topology_reconstruction.get_active_current_points()
+            curr_points_including_inactive = topology_reconstruction.get_all_current_points()
+
+
+            # Collect latitudes and longitudes of currently ACTIVE points in the ocean basin
             curr_lat_lon_points = [point.to_lat_lon() for point in curr_points]
 
             if curr_lat_lon_points:
-                curr_latitudes, curr_longitudes = zip(*curr_lat_lon_points)
 
-                # TO BE REPLACED W/ USER-INPUT DATA LATER
-                seafloor_age = []
-                spreading_rate_snapshot = []
+                # Get the number of active points at this timestep. 
+                num_current_points = len(curr_points)
 
-                # Time-dependent point attributes
-                birth_lat_snapshot = []
-                point_id_snapshot = []
-                prev_lat_snapshot = []
-                prev_lon_snapshot = []
+                # ndarray to fill with active point lats, lons and zvalues
+                # FOR NOW, the number of gridding input columns is 6:
+                # 0 = longitude
+                # 1 = latitude
+                # 2 = seafloor age
+                # 3 = spreading rate
+                # 4 = birth latitude snapshot
+                # 5 = point id
+                # In future, we will add to 6 by len(input params of zvals to SeafloorGrid)
+                gridding_input_data = np.empty((num_current_points, 6))
 
-                # Get indices and points of all points at `time`; this may include NoneType points. 
-                for point_index,current_point in enumerate(topology_reconstruction.get_all_current_points()):
+                # Lons and lats are first and second columns of the ndarray respectively
+                gridding_input_data[:, 1], gridding_input_data[:,0] = zip(*curr_lat_lon_points)
+
+                # NOTE: We need a single index to access data from curr_points_including_inactive AND allocate 
+                # this data to an ndarray with a number of rows equal to num_current_points. This index will 
+                # append +1 after each loop through curr_points_including_inactive. 
+                i = 0
+
+                # Get indices and points of all points at `time`, both active and inactive (which are NoneType points that
+                # have undergone continental collision or subduction at `time`). 
+                for point_index,current_point in enumerate(curr_points_including_inactive):
 
                     # Look at all active points (these have not collided with a continent or trench)
                     if current_point is not None:
-                        seafloor_age.append(
-                                appearance_time[point_index] - topology_reconstruction.get_current_time()
-                            )
-                        birth_lat_snapshot.append(birth_lat[point_index])
-                        point_id_snapshot.append(point_id[point_index]) # The ID of a corresponding point from the original list of all MOR-resolved points
-                        prev_lat_snapshot.append(prev_lat[point_index])
-                        prev_lon_snapshot.append(prev_lon[point_index])
-                        
-                        # TO-DO: add a general method to extract shapefile attributes with user-input data
-                        spreading_rate_snapshot.append(spreading_rates[point_index])
-                        #indices.append(p_indices)
-                        
-                        prev_lat[point_index] = current_point.to_lat_lon()[0]
-                        prev_lon[point_index] = current_point.to_lat_lon()[1]
 
-                # TO-DO: Convert to numpy's compressed .npz format
-                header = 'CURRENT_LONGITUDES,'\
-                'CURRENT_LATITUDES,'\
-                'SEAFLOOR_AGE,'\
-                'SPREADING_RATE_SNAPSHOT,'\
-                'BIRTH_LAT_SNAPSHOT,'\
-                'POINT_ID_SNAPSHOT,'
+                        # Seafloor age
+                        gridding_input_data[i, 2] = appearance_time[point_index] - topology_reconstruction.get_current_time()
+                        # Birth latitude (snapshot)
+                        gridding_input_data[i, 4] = birth_lat[point_index]
+                        # Point ID (snapshot)
+                        gridding_input_data[i, 5] = point_id[point_index] # The ID of a corresponding point from the original list of all MOR-resolved points
+                        # Spreading rate
+                        gridding_input_data[i, 3] = spreading_rates[point_index]
 
-                zippeddata = list(zip(curr_longitudes, curr_latitudes, seafloor_age, spreading_rate_snapshot, birth_lat_snapshot, point_id_snapshot, 
-                #any extra user-input data here), 
-                ))
+                        i += 1
+
                 if self.file_collection is not None:
-                    np.savetxt('{:s}/{}_gridding_input_{:0.1f}Ma.csv'.format(self.save_directory, self.file_collection, topology_reconstruction.get_current_time()), 
-                        zippeddata, header=header, delimiter=',', comments='', fmt='%s'
+                    np.savez_compressed('{:s}/{}_gridding_input_{:0.1f}Ma'.format(self.save_directory, self.file_collection, topology_reconstruction.get_current_time()), 
+                        CURRENT_LONGITUDES = gridding_input_data[:,0],
+                        CURRENT_LATITUDES = gridding_input_data[:,1],
+                        SEAFLOOR_AGE = gridding_input_data[:,2],
+                        SPREADING_RATE_SNAPSHOT = gridding_input_data[:,3],
+                        BIRTH_LAT_SNAPSHOT = gridding_input_data[:,4],
+                        POINT_ID_SNAPSHOT = gridding_input_data[:,5]
                     )
                 else:
-                    np.savetxt('{:s}/gridding_input_{:0.1f}Ma.csv'.format(self.save_directory, topology_reconstruction.get_current_time()), 
-                        zippeddata, header=header, delimiter=',', comments='', fmt='%s'
+                    np.savez_compressed('{:s}/gridding_input_{:0.1f}Ma.csv'.format(self.save_directory, topology_reconstruction.get_current_time()), 
+                        CURRENT_LONGITUDES = gridding_input_data[:,0],
+                        CURRENT_LATITUDES = gridding_input_data[:,1],
+                        SEAFLOOR_AGE = gridding_input_data[:,2],
+                        SPREADING_RATE_SNAPSHOT = gridding_input_data[:,3],
+                        BIRTH_LAT_SNAPSHOT = gridding_input_data[:,4],
+                        POINT_ID_SNAPSHOT = gridding_input_data[:,5]
                     )
 
             if not topology_reconstruction.reconstruct_to_next_time():
@@ -1056,7 +1104,6 @@ class SeafloorGrid(object):
         # return reconstruction_data
 
 
-    # TO DO: Once gridding input is migrated to numpy's compressed .npz format, can pandas read-ins still work? 
     def lat_lon_z_to_netCDF(self, gridding_data_index=2, time_arr=None):
         """ Write ndarray grids containing z values from index `gridding_data_index`
         for a given time range in `time_arr`.
@@ -1078,7 +1125,7 @@ class SeafloorGrid(object):
             A time range to turn lons, lats and z-values into netCDF4 grids. If not provided,
             `time_arr` defaults to the full `time_array` provided to `SeafloorGrids`. 
         """
-        
+
         # User can put any time array within SeafloorGrid bounds, but if none
         # is provided, it defaults to the attributed time array
         if time_arr is None:
@@ -1086,16 +1133,17 @@ class SeafloorGrid(object):
         for time in time_arr:
             # Read the gridding input made by ReconstructByTopologies:
             if self.file_collection is not None:
-                gridding_input = '{:s}/{}_gridding_input_{:0.1f}Ma.csv'.format(
+                gridding_input = '{:s}/{}_gridding_input_{:0.1f}Ma.npz'.format(
                     self.save_directory, 
                     self.file_collection, 
                     time
                 )
             else:
-                gridding_input = '{:s}/gridding_input_{:0.1f}Ma.csv'.format(self.save_directory, time)
+                gridding_input = '{:s}/gridding_input_{:0.1f}Ma.npz'.format(self.save_directory, time)
 
-            # Use pandas to load in lons, lats and z values
-            curr_data = pd.read_csv(gridding_input)
+            # Use pandas to load in lons, lats and z values from npz files
+            npz = np.load(gridding_input)
+            curr_data = pd.DataFrame.from_dict({item: npz[item] for item in npz.files}, orient='index').transpose()
 
             # Drop duplicate latitudes and longitudes
             unique_data = curr_data.drop_duplicates(subset=["CURRENT_LONGITUDES", "CURRENT_LATITUDES"])
