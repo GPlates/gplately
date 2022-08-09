@@ -89,6 +89,7 @@ import ptt
 import multiprocessing
 import glob
 import os
+import re
 from skimage import measure
 from scipy.interpolate import griddata
 import pandas as pd
@@ -445,10 +446,14 @@ class SeafloorGrid(object):
         basin. These points will have inaccurate ages, but most of them will be phased
         out after points with plate-model prescribed ages emerge from ridges and spread 
         to push them towards collision boundaries (where they are deleted).
-    checkpoint_MORS_delta_time : float, default 5.
-        A delta time at which to checkpoint MOR seedpoints by writing them into gpmlz
-        format. If ever gridding preparation is interrupted, it will resume seed pointing
-        and continental mask building at checkpoint_MORS_delta_time + 1. Ma.  
+    resume_from_checkpoints : bool, default False
+        If set to `True`, and the gridding preparation stage (continental masking and/or 
+        ridge seed building) is interrupted, SeafloorGrids will resume gridding preparation
+        from the last successful preparation time.
+        If set to `False`, SeafloorGrids will automatically overwrite all files in 
+        `save_directory` if re-run after interruption, or normally re-run, thus beginning
+        gridding preparation from scratch. `False` will be useful if data allocated to the
+        MOR seed points need to be augmented.
     """
 
     def __init__(
@@ -466,7 +471,7 @@ class SeafloorGrid(object):
         resY = 1000,
         subduction_collision_parameters = (5.0, 10.0),
         initial_ocean_mean_spreading_rate = 75.,
-        checkpoint_MORS_delta_time = 5.
+        resume_from_checkpoints = False
         ):
 
         # Provides a rotation model, topology features and reconstruction time for 
@@ -487,13 +492,13 @@ class SeafloorGrid(object):
         # Gridding parameters
         self.resX = resX
         self.resY = resY
+        self.resume_from_checkpoints = resume_from_checkpoints
 
         # Temporal parameters
         self._max_time = max_time
         self.min_time = min_time
         self.ridge_time_step = ridge_time_step
         self.time_array = np.arange(self._max_time, self.min_time-0.1, -self.ridge_time_step)
-        self.checkpoint_MORS_delta_time = checkpoint_MORS_delta_time
 
         # If PlotTopologies' time attribute is not equal to the maximum time in the 
         # seafloor grid reconstruction tree, make it equal. This will ensure the time
@@ -580,7 +585,6 @@ class SeafloorGrid(object):
         ocean_basin_point_mesh : pygplates.FeatureCollection of pygplates.MultiPointOnSphere
             A feature collection of point objects on the ocean basin.
         """
-        print("Generating global point mesh...")
 
         # Ensure COB terranes at max time have reconstruction IDs and valid times
         COB_polygons = ensure_polygon_geometry(
@@ -601,7 +605,6 @@ class SeafloorGrid(object):
             COB_polygons,
             self.rotation_model, 
         )
-        print("Partitioning global mesh by PlotTopologies' continental plate polygons...")
 
         # Plate partition the ocean basin points
         meshnode_feature = pygplates.Feature(
@@ -621,9 +624,7 @@ class SeafloorGrid(object):
         continent_points = paleogeography[0] # Separate those outside polygons
 
         # Determine age of ocean basin points using their proximity to MOR features
-        # and an assumed globally-uniform ocean basin mean spreading rate
-        print("Determining initial ocean basin point ages as of {} Ma...".format(self._max_time))
-
+        # and an assumed globally-uniform ocean basin mean spreading rate.
         # We need resolved topologies at the `max_time` to pass into the proximity
         # function
         resolved_topologies = []
@@ -665,14 +666,16 @@ class SeafloorGrid(object):
 
         if self.save_directory:
             if self.file_collection is not None:
-                full_directory = "{}/{}_ocean_basin_seed_points_{}Ma.gpmlz".format(
+                full_directory = "{}/{}_ocean_basin_seed_points_{}_RLs_{}Ma.gpmlz".format(
                     self.save_directory,
                     self.file_collection, 
+                    self.refinement_levels,
                     self._max_time
                 )
             else:
-                full_directory = "{}/ocean_basin_seed_points_{}Ma.gpmlz".format(
+                full_directory = "{}/ocean_basin_seed_points_{}_RLs_{}Ma.gpmlz".format(
                     self.save_directory, 
+                    self.refinement_levels,
                     self._max_time
                 )
             pygplates.FeatureCollection(initial_ocean_point_features).write(full_directory)
@@ -680,22 +683,132 @@ class SeafloorGrid(object):
         return pygplates.FeatureCollection(initial_ocean_point_features), multi_point_feature
 
 
-    def _checkpoint_MOR(self, mor_points, time):
-        """Write MOR seed points to GPMLZ format every `delta_time` to failsafe gridding 
-        preparation if it is interrupted. 
-        """
-        if (time % self.checkpoint_MORS_delta_time == 0):
-            mor_points.write('{}/MOR_plus_one_points_{:0.2f}.gpmlz'.format(
+    def _get_mid_ocean_ridge_seedpoints(self, time_array):
+
+        # Topology features from `PlotTopologies`. 
+        topology_features_extracted = pygplates.FeaturesFunctionArgument(self.topology_features)
+
+        # Create a mask for each timestep
+        if time_array[0] != self._max_time:
+            print("MOR seed point building interrupted - resuming at {} Ma!".format(time_array[0]))
+        
+        for time in time_array:
+
+            # Points and their z values that emerge from MORs at this time. 
+            shifted_mor_points = []
+            point_spreading_rates = []
+
+            # Resolve topologies to the current time.
+            resolved_topologies = []
+            shared_boundary_sections = []
+            pygplates.resolve_topologies(
+                topology_features_extracted.get_features(), 
+                self.rotation_model, 
+                resolved_topologies, 
+                time, 
+                shared_boundary_sections
+            )
+
+            # pygplates.ResolvedTopologicalSection objects.
+            for shared_boundary_section in shared_boundary_sections:
+                if shared_boundary_section.get_feature().get_feature_type() == pygplates.FeatureType.create_gpml('MidOceanRidge'):
+                    spreading_feature = shared_boundary_section.get_feature()
+
+                    # Find the stage rotation of the spreading feature in the 
+                    # frame of reference of its geometry at the current 
+                    # reconstruction time (the MOR is currently actively spreading).
+                    # The stage pole can then be directly geometrically compared 
+                    # to the *reconstructed* spreading geometry.
+                    stage_rotation = separate_ridge_transform_segments.get_stage_rotation_for_reconstructed_geometry(
+                        spreading_feature, self.rotation_model, time
+                    )
+                    if not stage_rotation:
+                        # Skip current feature - it's not a spreading feature.
+                        continue
+
+                    # Get the stage pole of the stage rotation.
+                    # Note that the stage rotation is already in frame of 
+                    # reference of the *reconstructed* geometry at the spreading time.
+                    stage_pole, _ = stage_rotation.get_euler_pole_and_angle()
+
+                    # One way rotates left and the other right, but don't know 
+                    # which - doesn't matter in our example though.
+                    rotate_slightly_off_mor_one_way = pygplates.FiniteRotation(
+                        stage_pole, 
+                        np.radians(0.01)
+                    )
+                    rotate_slightly_off_mor_opposite_way = rotate_slightly_off_mor_one_way.get_inverse()
+                    
+                    subsegment_index = []
+                    # Iterate over the shared sub-segments.
+                    for shared_sub_segment in shared_boundary_section.get_shared_sub_segments():
+
+                        # Tessellate MOR section.
+                        mor_points = pygplates.MultiPointOnSphere(
+                            shared_sub_segment.get_resolved_geometry().to_tessellated(np.radians(self.ridge_sampling))
+                        )
+
+                        coords = mor_points.to_lat_lon_list()
+                        lats = [i[0] for i in coords]
+                        lons = [i[1] for i in coords]
+                        left_plate = shared_boundary_section.get_feature().get_left_plate(None)
+                        right_plate = shared_boundary_section.get_feature().get_right_plate(None)
+                        if left_plate is not None and right_plate is not None:
+                            # Get the spreading rates for all points in this sub segment
+                            spreading_rates, subsegment_index = tools.calculate_spreading_rates(
+                                time=time,
+                                lons=lons,
+                                lats=lats,
+                                left_plates=[left_plate] * len(lons),
+                                right_plates=[right_plate] * len(lons),
+                                rotation_model=self.rotation_model,
+                                delta_time=self.ridge_time_step,
+                            )
+
+                        else:
+                            spreading_rates = [np.nan] * len(lons)
+
+                        # Loop through all but the 1st and last points in the current sub segment
+                        for point, rate in zip(
+                            mor_points.get_points()[1:-1],
+                            spreading_rates[1:-1],
+                        ):
+                            # Add the point "twice" to the main shifted_mor_points list; once for a L-side
+                            # spread, another for a R-side spread. Then add the same spreading rate twice
+                            # to the list - this therefore assumes spreading rate is symmetric. 
+                            shifted_mor_points.append(rotate_slightly_off_mor_one_way * point)
+                            shifted_mor_points.append(rotate_slightly_off_mor_opposite_way * point)
+                            point_spreading_rates.extend([rate] * 2)
+                            #point_indices.extend(subsegment_index)
+
+            # Summarising get_isochrons_for_ridge_snapshot;
+            # Write out the ridge point born at 'ridge_time' but their position at 'ridge_time - time_step'.
+            mor_point_features = []
+            for i, (curr_point, spreading_rate) in enumerate(zip(shifted_mor_points, point_spreading_rates)):
+                feature = pygplates.Feature()
+                feature.set_geometry(curr_point)
+                feature.set_valid_time(time, -999)  # delete - time_step
+                #feature.set_name(str(spreading_rate))
+                feature = set_shapefile_attribute(feature, spreading_rate, "SPREADING_RATE")  # make spreading rate a shapefile attribute
+                #feature = set_shapefile_attribute(feature, point_indices[i], "INDEX")
+                mor_point_features.append(feature)
+
+            mor_points = pygplates.FeatureCollection(mor_point_features)
+
+            # Write MOR points at `time` to gpmlz
+            mor_points.write('{}/{}_MOR_plus_one_points_{:0.2f}.gpmlz'.format(
                 self.save_directory, 
+                self.file_collection,
                 time
                 )
             )
-            print("Checkpointed MOR seedpoints at {} Ma!".format(time))
+            print("Finished building MOR seedpoints at {} Ma!".format(time))
+        return
 
 
-    def get_mid_ocean_ridge_seedpoints(self, time):
-        """ Resolve mid-ocean ridges to the current `time`, divide them into their shared 
-        sub-segments, and further divide them into points. Rotate these points to the left
+    def build_all_MOR_seedpoints(self):
+        """ Resolve mid-ocean ridges for all times between `min_time` and `max_time`, divide them 
+        into points that make up their shared sub-segments. Rotate these points to the left
         and right of the ridge using their stage rotation so that they spread from the ridge.
 
         Z-value allocation to each point is done here. In future, a function (like
@@ -703,6 +816,9 @@ class SeafloorGrid(object):
 
         Notes
         -----
+        If MOR seed point building is interrupted, progress is safeguarded as long as 
+        `resume_from_checkpoints` is set to `True`.
+        
         This assumes that points spread from ridges symmetrically, with the exception of 
         large ridge jumps at successive timesteps. Therefore, z-values allocated to ridge-emerging
         points will appear symmetrical until changes in spreading ridge geometries create 
@@ -730,120 +846,111 @@ class SeafloorGrid(object):
         https://github.com/siwill22/agegrid-0.1/blob/master/automatic_age_grid_seeding.py#L117.
         """
 
-        # Topology features from `PlotTopologies`. 
-        topology_features_extracted = pygplates.FeaturesFunctionArgument(self.topology_features)
+        # If we mustn't overwrite existing files in the `save_directory`, check the status of MOR seeding
+        # to know where to start/continue seeding 
+        if not self.resume_from_checkpoints:
 
-        # Resolve topologies to the current time.
-        resolved_topologies = []
-        shared_boundary_sections = []
-        pygplates.resolve_topologies(
-            topology_features_extracted.get_features(), 
-            self.rotation_model, 
-            resolved_topologies, 
-            time, 
-            shared_boundary_sections
-        )
-        shifted_mor_points = []
-        point_spreading_rates = []
-        #point_indices = []
+            # Check the last MOR seedpoint gpmlz file that was built
+            checkpointed_MOR_seedpoints = [s.split("/")[-1] for s in glob.glob(self.save_directory+"/"+"*MOR_plus_one_points*")]
+            try:
+                last_seed_time = [float(re.findall("\d+", s)[0]) for s in checkpointed_MOR_seedpoints][-1]
+            # If none were built yet
+            except:
+                last_seed_time = "nil"
 
-        # pygplates.ResolvedTopologicalSection objects.
-        for shared_boundary_section in shared_boundary_sections:
-            if shared_boundary_section.get_feature().get_feature_type() == pygplates.FeatureType.create_gpml('MidOceanRidge'):
-                spreading_feature = shared_boundary_section.get_feature()
+            # If MOR seeding has not started, start it from the top
+            if last_seed_time == "nil":
+                time_array = self.time_array
 
-                # Find the stage rotation of the spreading feature in the 
-                # frame of reference of its geometry at the current 
-                # reconstruction time (the MOR is currently actively spreading).
-                # The stage pole can then be directly geometrically compared 
-                # to the *reconstructed* spreading geometry.
-                stage_rotation = separate_ridge_transform_segments.get_stage_rotation_for_reconstructed_geometry(
-                    spreading_feature, self.rotation_model, time
-                )
-                if not stage_rotation:
-                    # Skip current feature - it's not a spreading feature.
-                    continue
+            # If seeding was done to the min_time, we are finished 
+            elif last_seed_time == self.min_time:
+                return
+            # If seeding to `min_time` has been interrupted, resume it at last_masked_time-1. Ma.
+            else:
+                time_array = np.arange(last_seed_time-1., self.min_time-0.1, -self.ridge_time_step)
 
-                # Get the stage pole of the stage rotation.
-                # Note that the stage rotation is already in frame of 
-                # reference of the *reconstructed* geometry at the spreading time.
-                stage_pole, _ = stage_rotation.get_euler_pole_and_angle()
+        # If we must overwrite all files in `save_directory`, start from `max_time`.
+        else:
+            time_array = self.time_array
 
-                # One way rotates left and the other right, but don't know 
-                # which - doesn't matter in our example though.
-                rotate_slightly_off_mor_one_way = pygplates.FiniteRotation(
-                    stage_pole, 
-                    np.radians(0.01)
-                )
-                rotate_slightly_off_mor_opposite_way = rotate_slightly_off_mor_one_way.get_inverse()
-                
-                subsegment_index = []
-                # Iterate over the shared sub-segments.
-                for shared_sub_segment in shared_boundary_section.get_shared_sub_segments():
+        # Build all continental masks and spreading ridge points (with z values)
+        self._get_mid_ocean_ridge_seedpoints(time_array)
+        return
 
-                    # Tessellate MOR section.
-                    mor_points = pygplates.MultiPointOnSphere(
-                        shared_sub_segment.get_resolved_geometry().to_tessellated(np.radians(self.ridge_sampling))
+
+    def _create_continental_mask(self, time_array):
+
+        # Create a mask for each timestep
+        if time_array[0] != self._max_time:
+            print("Masking interrupted - resuming continental mask building at {} Ma!".format(time_array[0]))
+
+        for time in time_array:
+            self._PlotTopologies_object.time = time
+
+            # Ensure COB terranes have reconstruction IDs and valid times
+            COB_polygons = ensure_polygon_geometry(
+                self._PlotTopologies_object.continents,
+                self.rotation_model,
+                time) 
+
+            # zval is a binary array encoding whether a point 
+            # coordinate is within a COB terrane polygon or not
+            _, _, zvals = point_in_polygon_routine(
+                self.icosahedral_multi_point, 
+                COB_polygons
+            )
+
+            # Interpolate the zval binaries onto the icosahedral global mesh
+            boolean_identifier, _ = self.icosahedral_global_mesh.interpolate(
+                self.icosahedral_global_mesh.lons, 
+                self.icosahedral_global_mesh.lats, order=3, 
+                zdata=np.array(zvals)
+            )
+
+            # A regular grid to interpolate the icosahedral mesh onto
+            extent_globe = np.radians([-180,180,-90,90])
+            grid_lon = np.linspace(extent_globe[0], extent_globe[1], self.resX)
+            grid_lat = np.linspace(extent_globe[2], extent_globe[3], self.resY)
+
+            # Interpolate the icosahedral-meshed zval binaries onto the regular global extent grid
+            grid_z1 = self.icosahedral_global_mesh.interpolate_to_grid(
+                grid_lon, grid_lat, boolean_identifier
+            )
+            # Ensure the PIP binaries are integers
+            final_grid = np.rint(grid_z1)
+
+            if self.save_directory is not None:
+                if self.file_collection is not None:
+                    full_directory = "{}/{}_continent_mask_{}Ma.nc".format(
+                        self.save_directory, 
+                        self.file_collection, 
+                        time
                     )
+                else:
+                    full_directory = "{}/continent_mask_{}Ma.nc".format(
+                        self.save_directory, 
+                        time
+                    )
+                grids.write_netcdf_grid(
+                    full_directory, 
+                    final_grid, 
+                    extent=[-180,180,-90,90]
+                )
+            #all_continental_masks.append(final_grid)
+            print("Finished building a continental mask at {} Ma!".format(time))
 
-                    coords = mor_points.to_lat_lon_list()
-                    lats = [i[0] for i in coords]
-                    lons = [i[1] for i in coords]
-                    left_plate = shared_boundary_section.get_feature().get_left_plate(None)
-                    right_plate = shared_boundary_section.get_feature().get_right_plate(None)
-                    if left_plate is not None and right_plate is not None:
-                        # Get the spreading rates for all points in this sub segment
-                        spreading_rates, subsegment_index = tools.calculate_spreading_rates(
-                            time=time,
-                            lons=lons,
-                            lats=lats,
-                            left_plates=[left_plate] * len(lons),
-                            right_plates=[right_plate] * len(lons),
-                            rotation_model=self.rotation_model,
-                            delta_time=self.ridge_time_step,
-                        )
-
-                    else:
-                        spreading_rates = [np.nan] * len(lons)
-
-                    # Loop through all but the 1st and last points in the current sub segment
-                    for point, rate in zip(
-                        mor_points.get_points()[1:-1],
-                        spreading_rates[1:-1],
-                    ):
-                        # Add the point "twice" to the main shifted_mor_points list; once for a L-side
-                        # spread, another for a R-side spread. Then add the same spreading rate twice
-                        # to the list - this therefore assumes spreading rate is symmetric. 
-                        shifted_mor_points.append(rotate_slightly_off_mor_one_way * point)
-                        shifted_mor_points.append(rotate_slightly_off_mor_opposite_way * point)
-                        point_spreading_rates.extend([rate] * 2)
-                        #point_indices.extend(subsegment_index)
-
-        # Summarising get_isochrons_for_ridge_snapshot;
-        # Write out the ridge point born at 'ridge_time' but their position at 'ridge_time - time_step'.
-        mor_point_features = []
-        for i, (curr_point, spreading_rate) in enumerate(zip(shifted_mor_points, point_spreading_rates)):
-            feature = pygplates.Feature()
-            feature.set_geometry(curr_point)
-            feature.set_valid_time(time, -999)  # delete - time_step
-            #feature.set_name(str(spreading_rate))
-            feature = set_shapefile_attribute(feature, spreading_rate, "SPREADING_RATE")  # make spreading rate a shapefile attribute
-            #feature = set_shapefile_attribute(feature, point_indices[i], "INDEX")
-            mor_point_features.append(feature)
-
-        mor_points = pygplates.FeatureCollection(mor_point_features)
-
-        # Checkpoint MORs if `time` is a multiple of `checkpoint_MORS`
-        self._checkpoint_MOR(mor_points, time)
-
-        return mor_points
+        return
 
 
+    def build_all_continental_masks(self):
+        """Create a continental mask to define the ocean basin for all times between 
+        `min_time` and `max_time`.  as well as to use as continental collision 
+        boundaries in `ReconstructByTopologies`. 
 
-    def create_continental_mask(self, time):
-        """ Create a continental mask to define the ocean basin, as well as
-        use as a set of continental collision boundaries in 
-        `ReconstructByTopologies`. 
+        Notes
+        -----
+        Continental masking progress is safeguarded if ever masking is interrupted,
+        provided that `resume_from_checkpoints` is set to `True`. 
 
         If `ReconstructByTopologies` identifies a continental collision 
         between oceanic points and the boundaries of this continental
@@ -855,70 +962,48 @@ class SeafloorGrid(object):
 
         Returns
         -------
-        final_grid : ndarray
-            A masked grid with 1=continental point, and 0=ocean point, for all points
-            on the full global icosahedral mesh.
+        all_continental_masks : list of ndarray
+            A masked grid per timestep in `time_array` with 1=continental point, 
+            and 0=ocean point, for all points on the full global icosahedral mesh.
         """
 
-        # Ensure COB terranes have reconstruction IDs and valid times
-        self._PlotTopologies_object.time = time
-        COB_polygons = ensure_polygon_geometry(
-            self._PlotTopologies_object.continents,
-            self.rotation_model,
-            time) 
+        # If we mustn't overwrite existing files in the `save_directory`, check the status 
+        # of continental masking to know where to start/continue masking
+        if not self.resume_from_checkpoints:
 
-        # zval is a binary array encoding whether a point 
-        # coordinate is within a COB terrane polygon or not
-        _, _, zvals = point_in_polygon_routine(
-            self.icosahedral_multi_point, 
-            COB_polygons
-        )
+            # Check the last continental mask that could be built
+            checkpointed_continental_masks = [s.split("/")[-1] for s in glob.glob(self.save_directory+"/"+"*continent_mask*")]
+            try:
+                last_masked_time = [float(re.findall("\d+", s)[0]) for s in checkpointed_continental_masks][-1]
+            # If none were built yet
+            except:
+                last_masked_time = "nil"
 
-        # Interpolate the zval binaries onto the icosahedral global mesh
-        boolean_identifier, _ = self.icosahedral_global_mesh.interpolate(
-            self.icosahedral_global_mesh.lons, 
-            self.icosahedral_global_mesh.lats, order=3, 
-            zdata=np.array(zvals)
-        )
+            # If masking has not started, start it from the top
+            if last_masked_time == "nil":
+                time_array = self.time_array
 
-        # A regular grid to interpolate the icosahedral mesh onto
-        extent_globe = np.radians([-180,180,-90,90])
-        grid_lon = np.linspace(extent_globe[0], extent_globe[1], self.resX)
-        grid_lat = np.linspace(extent_globe[2], extent_globe[3], self.resY)
-
-        # Interpolate the icosahedral-meshed zval binaries onto the regular global extent grid
-        grid_z1 = self.icosahedral_global_mesh.interpolate_to_grid(
-            grid_lon, grid_lat, boolean_identifier
-        )
-        # Ensure the PIP binaries are integers
-        final_grid = np.rint(grid_z1)
-
-        if self.save_directory is not None:
-            if self.file_collection is not None:
-                full_directory = "{}/{}_continent_mask_{}Ma.nc".format(
-                    self.save_directory, 
-                    self.file_collection, 
-                    time
-                )
+            # If masking was done to the min_time, we are finished 
+            elif last_masked_time == self.min_time:
+                return
+            # If masking to `min_time` has been interrupted, resume it at last_masked_time-1. Ma.
             else:
-                full_directory = "{}/continent_mask_{}Ma.nc".format(
-                    self.save_directory, 
-                    time
-                )
-            grids.write_netcdf_grid(
-                full_directory, 
-                final_grid, 
-                extent=[-180,180,-90,90]
-            )
-        #print("Continental mask for {} Ma done!".format(time))
-        return final_grid
+                time_array = np.arange(last_masked_time-1., self.min_time-0.1, -self.ridge_time_step)
+
+        # If we must overwrite all files in `save_directory`, start from `max_time`.
+        else:
+            time_array = self.time_array
+
+        # Build all continental masks and spreading ridge points (with z values)
+        self._create_continental_mask(time_array)
+        return
 
 
     def prepare_for_reconstruction_by_topologies(self):
         """ Prepare three main auxiliary files for seafloor data gridding:
         * Initial ocean seed points (at `max_time`)
-        * MOR points (from `max_time` to `min_time`)
         * Continental masks (from `max_time` to `min_time`)
+        * MOR points (from `max_time` to `min_time`)
 
         Returns lists of all attributes for the initial ocean point mesh and
         all ridge points for all times in the reconstruction time array.
@@ -929,21 +1014,27 @@ class SeafloorGrid(object):
         print("Finished building initial_ocean_seed_points!")
 
         # MOR SEED POINTS AND CONTINENTAL MASKS --------------------------------------------
-        time_array = np.arange(self._max_time, self.min_time-1, -self.ridge_time_step)
-        all_mor_features = []
-        all_continental_masks = []
 
-        # Build all continental masks and spreading ridge points (with z values)
+        # The start time for seeding is controlled by whether the overwrite_existing_gridding_inputs
+        # parameter is set to `True` (in which case the start time is `max_time`). If it is `False` 
+        # and;
+        # - a run of seeding and continental masking was interrupted, and ridge points were 
+        # checkpointed at n Ma, seeding resumes at n-1 Ma until `min_time` or another interruption 
+        # occurs;
+        # - seeding was completed but the subsequent gridding input creation was interrupted, 
+        # seeding is assumed completed and skipped. The workflow automatically proceeds to re-gridding. 
+
+        self.build_all_continental_masks()
+        self.build_all_MOR_seedpoints()
+
+        all_mor_features = []
         for time in self.time_array:
-            all_mor_features.append(
-                self.get_mid_ocean_ridge_seedpoints(time)
-            )
-            print("Finished building MOR seedpoints at {} Ma!".format(time))
-            
-            all_continental_masks.append(
-                self.create_continental_mask(time)
-            )
-            print("Finished building a continental mask at {} Ma!".format(time))
+            mor_directory = '{}/{}_MOR_plus_one_points_{:0.2f}.gpmlz'.format(
+                self.save_directory, 
+                self.file_collection,
+                time
+                )
+            all_mor_features.append(pygplates.FeatureCollection(mor_directory))
 
         # ALL-TIME POINTS AND FEATURES -----------------------------------------------------
         # Extract all feature attributes for all reconstruction times into lists
