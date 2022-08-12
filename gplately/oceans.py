@@ -366,7 +366,7 @@ class SeafloorGrid(object):
         resY = 1000,
         subduction_collision_parameters = (5.0, 10.0),
         initial_ocean_mean_spreading_rate = 75.,
-        resume_from_checkpoints = False,
+        resume_from_checkpoints = True,
         zval_names = ['SPREADING_RATE']
         ):
 
@@ -376,6 +376,7 @@ class SeafloorGrid(object):
         self.rotation_model = self.PlateReconstruction_object.rotation_model
         self.topology_features = self.PlateReconstruction_object.topology_features
         self._PlotTopologies_object = PlotTopologies_object
+        #self.save_directory = str(os.path.abspath(save_directory))
         self.save_directory = save_directory
         self.file_collection = file_collection
 
@@ -391,9 +392,9 @@ class SeafloorGrid(object):
         self.resume_from_checkpoints = resume_from_checkpoints
 
         # Temporal parameters
-        self._max_time = max_time
-        self.min_time = min_time
-        self.ridge_time_step = ridge_time_step
+        self._max_time = float(max_time)
+        self.min_time = float(min_time)
+        self.ridge_time_step = float(ridge_time_step)
         self.time_array = np.arange(self._max_time, self.min_time-0.1, -self.ridge_time_step)
 
         # If PlotTopologies' time attribute is not equal to the maximum time in the 
@@ -743,11 +744,13 @@ class SeafloorGrid(object):
                 self.file_collection, 
                 time
             )
-            self._collect_point_data_in_dataframe(
-                mor_points, 
-                point_spreading_rates, 
-                time    
-            )
+            # Make sure the max time dataframe is for the initial ocean points only
+            if time != self._max_time:
+                self._collect_point_data_in_dataframe(
+                    mor_points, 
+                    point_spreading_rates, 
+                    time    
+                )
             print("Finished building MOR seedpoints at {} Ma!".format(time))
         return
 
@@ -794,12 +797,13 @@ class SeafloorGrid(object):
 
         # If we mustn't overwrite existing files in the `save_directory`, check the status of MOR seeding
         # to know where to start/continue seeding 
-        if not self.resume_from_checkpoints:
+        if self.resume_from_checkpoints:
 
             # Check the last MOR seedpoint gpmlz file that was built
             checkpointed_MOR_seedpoints = [s.split("/")[-1] for s in glob.glob(self.save_directory+"/"+"*MOR_plus_one_points*")]
             try:
-                last_seed_time = [float(re.findall("\d+", s)[0]) for s in checkpointed_MOR_seedpoints][-1]
+                # -2 as an index accesses the age (float type), safeguards against identifying numbers in the SeafloorGrid.file_collection string
+                last_seed_time = np.sort([float(re.findall("\d+", s)[-2]) for s in checkpointed_MOR_seedpoints])[0]
             # If none were built yet
             except:
                 last_seed_time = "nil"
@@ -811,9 +815,10 @@ class SeafloorGrid(object):
             # If seeding was done to the min_time, we are finished 
             elif last_seed_time == self.min_time:
                 return
-            # If seeding to `min_time` has been interrupted, resume it at last_masked_time-1. Ma.
+
+            # If seeding to `min_time` has been interrupted, resume it at last_masked_time.
             else:
-                time_array = np.arange(last_seed_time-1., self.min_time-0.1, -self.ridge_time_step)
+                time_array = np.arange(last_seed_time, self.min_time-0.1, -self.ridge_time_step)
 
         # If we must overwrite all files in `save_directory`, start from `max_time`.
         else:
@@ -915,12 +920,13 @@ class SeafloorGrid(object):
 
         # If we mustn't overwrite existing files in the `save_directory`, check the status 
         # of continental masking to know where to start/continue masking
-        if not self.resume_from_checkpoints:
+        if self.resume_from_checkpoints:
 
             # Check the last continental mask that could be built
             checkpointed_continental_masks = [s.split("/")[-1] for s in glob.glob(self.save_directory+"/"+"*continent_mask*")]
             try:
-                last_masked_time = [float(re.findall("\d+", s)[0]) for s in checkpointed_continental_masks][-1]
+                # -2 as an index accesses the age (float type), safeguards against identifying numbers in the SeafloorGrid.file_collection string
+                last_masked_time = np.sort([float(re.findall("\d+", s)[-2]) for s in checkpointed_continental_masks])[0]
             # If none were built yet
             except:
                 last_masked_time = "nil"
@@ -932,9 +938,9 @@ class SeafloorGrid(object):
             # If masking was done to the min_time, we are finished 
             elif last_masked_time == self.min_time:
                 return
-            # If masking to `min_time` has been interrupted, resume it at last_masked_time-1. Ma.
+            # If masking to `min_time` has been interrupted, resume it at last_masked_time.
             else:
-                time_array = np.arange(last_masked_time-1., self.min_time-0.1, -self.ridge_time_step)
+                time_array = np.arange(last_masked_time, self.min_time-0.1, -self.ridge_time_step)
 
         # If we must overwrite all files in `save_directory`, start from `max_time`.
         else:
@@ -1215,23 +1221,21 @@ class SeafloorGrid(object):
         # return reconstruction_data
 
 
-    def lat_lon_z_to_netCDF(self, gridding_data_index=2, time_arr=None):
-        """ Write ndarray grids containing z values from index `gridding_data_index`
-        for a given time range in `time_arr`.
+    def lat_lon_z_to_netCDF(self, zval_name, time_arr=None):
+        """ Produce a netCDF4 grid of a z-value identified by its `zval_name` for a 
+        given time range in `time_arr`.
 
-        By default, `gridding_data_index` is 2, which corresponds to seafloor age.
-        `gridding_data_index` = 3 corresponds to spreading rate.
+        Seafloor age can be gridded by passing `zval_name` as `SEAFLOOR_AGE`, and spreading
+        rate can be gridded with `SPREADING_RATE`.
 
         Saves all grids to compressed netCDF format in the attributed directory. Grids
         can be read into ndarray format using `gplately.grids.read_netcdf_grid()`.
 
         Parameters
         ----------
-        gridding_data_index : int, default 2
-            An index for a column in the ReconstructByTopologies gridding input files.
-            * 2 = seafloor age
-            * 3 = spreading rate
-            * 6 and onwards will be the general data.
+        zval_name : str
+            A string identifiers for a column in the ReconstructByTopologies gridding 
+            input files.
         time_arr : list of float, default None
             A time range to turn lons, lats and z-values into netCDF4 grids. If not provided,
             `time_arr` defaults to the full `time_array` provided to `SeafloorGrids`. 
@@ -1263,7 +1267,8 @@ class SeafloorGrid(object):
             # Acquire lons, lats and zvalues for each time
             lons = unique_data["CURRENT_LONGITUDES"].to_list()
             lats = unique_data["CURRENT_LATITUDES"].to_list()
-            zdata = np.array(unique_data[unique_data.columns[gridding_data_index]].to_list())
+            zdata = np.array(unique_data[zval_name].to_list())
+
             #zdata = np.where(zdata > 375, float("nan"), zdata), to deal with vmax in the future
             zdata = np.nan_to_num(zdata)
             
@@ -1288,7 +1293,7 @@ class SeafloorGrid(object):
                     grid_output_dir = "{}/{}_{}_grid_{}Ma.nc".format(
                         self.save_directory, 
                         self.file_collection, 
-                        str(unique_data.columns[gridding_data_index]),
+                        str(zval_name),
                         time
                     )
                 else:
