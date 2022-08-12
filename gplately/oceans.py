@@ -298,114 +298,6 @@ def point_in_polygon_routine(multi_point, COB_polygons):
     return pygplates.MultiPointOnSphere(points_in_arr), pygplates.MultiPointOnSphere(points_out_arr), zvals
 
 
-def _extract_point_feature_attributes_for_rbt(ocean_basin, mor_all_times, time_arr):
-    """ Collect all properties (like latitude, longitude, 
-    geometry, shapefile attributes, and valid times) of features in the
-    pygplates.MultiPointOnSphere object containing the 
-    initial ocean basin seed points, and a list of all tessellated 
-    points from mid-ocean ridges resolved for all times in `time_arr`.
-
-    Both the initial points and all-time MOR points form the entirety
-    of ocean basin points through `time_arr` to reconstruct. 
-
-    TO DO: Expand this for general shapefile attribute allocation, or
-    use pandas data frames instead?
-    """
-    # Attributes to extract
-    active_points = []  
-    appearance_time = []  
-    birth_lat = []  # latitude_of_crust_formation
-    prev_lat = []
-    prev_lon = []
-    spreading_rates = []
-    #p_indices = []
-
-    # ocean_basin is a PointOnSphere object already
-    for feature in ocean_basin:
-        active_points.append(feature.get_geometry())
-        appearance_time.append(feature.get_valid_time()[0])
-        birth_lat.append(
-            feature.get_geometry().to_lat_lon_list()[0][0]
-        )
-        prev_lat.append(
-            feature.get_geometry().to_lat_lon_list()[0][0]
-        )
-        prev_lon.append(
-            feature.get_geometry().to_lat_lon_list()[0][1]
-        )
-        try:
-            spreading_rate = float(feature.get_shapefile_attribute("SPREADING_RATE"))
-            #p_index = int(feature.get_shapefile_attribute("INDEX"))
-        except Exception:
-            spreading_rate = np.nan
-        spreading_rates.append(spreading_rate)
-        #p_indices.append(p_index)
-    del ocean_basin
-
-    # Extract all MOR properties per timestep
-    for i, time in enumerate(time_arr):
-        features = pygplates.FeatureCollection(
-            mor_all_times[i]
-        )
-        for feature in features:
-            # seeds_from_topologies.append(feature)
-            if feature.get_valid_time()[0]<time_arr[0]:
-                active_points.append(
-                    feature.get_geometry()
-                )
-                appearance_time.append(
-                    feature.get_valid_time()[0]
-                )
-                birth_lat.append(
-                    feature.get_geometry().to_lat_lon_list()[0][0]
-                )
-                prev_lat.append(
-                    feature.get_geometry().to_lat_lon_list()[0][0]
-                )
-                prev_lon.append(
-                    feature.get_geometry().to_lat_lon_list()[0][1]
-                )
-                try:
-                    spreading_rate = float(feature.get_shapefile_attribute("SPREADING_RATE"))
-                except Exception:
-                    spreading_rate = np.nan
-                spreading_rates.append(spreading_rate)
-
-    return active_points, appearance_time, birth_lat, prev_lat, prev_lon, spreading_rates
-
-
-# TO-DO: Replace this with a pandas dataframe per ocean point? Use unique point ID to track
-# points through time. 
-def set_shapefile_attribute(
-    pygplates_feature, 
-    shapefile_attribute, 
-    shapefile_attribute_name, 
-    overwrite_attribute=False
-):
-    """ Allocate a z-value to a point using its pygplates shapefile attribute
-    dictionary.
-    """
-    new_attribute = {shapefile_attribute_name : shapefile_attribute}
-    
-    # If the feature has no shapefile attribute dictionary, make one
-    if pygplates_feature.get_shapefile_attributes() is None:
-        pygplates_feature.set_shapefile_attributes()
-    
-    # If the shapefile attribute does not already exist in the dictionary, add it
-    if shapefile_attribute_name not in pygplates_feature.get_shapefile_attributes().keys():
-        pygplates_feature.set_shapefile_attributes(
-            {**pygplates_feature.get_shapefile_attributes(), **new_attribute}
-        )
-    # If the shapefile attribute exists already but needs to be overwritten
-    elif (shapefile_attribute_name in pygplates_feature.get_shapefile_attributes().keys()
-         and
-         overwrite_attribute):
-        pygplates_feature.set_shapefile_attributes(
-            {**pygplates_feature.get_shapefile_attributes(), **new_attribute}
-        )
-    return pygplates_feature
-
-
 class SeafloorGrid(object):
 
     """A class to generate grids that track data atop global ocean basin points 
@@ -454,6 +346,9 @@ class SeafloorGrid(object):
         `save_directory` if re-run after interruption, or normally re-run, thus beginning
         gridding preparation from scratch. `False` will be useful if data allocated to the
         MOR seed points need to be augmented.
+    zval_names : list of str
+        A list containing string labels for the z values to attribute to points.
+        Will be used as column headers for z value point dataframes.
     """
 
     def __init__(
@@ -471,7 +366,8 @@ class SeafloorGrid(object):
         resY = 1000,
         subduction_collision_parameters = (5.0, 10.0),
         initial_ocean_mean_spreading_rate = 75.,
-        resume_from_checkpoints = False
+        resume_from_checkpoints = False,
+        zval_names = ['SPREADING_RATE']
         ):
 
         # Provides a rotation model, topology features and reconstruction time for 
@@ -515,6 +411,10 @@ class SeafloorGrid(object):
         self._PlotTopologies_object.continents = PlotTopologies_object.continents
         self.icosahedral_multi_point, self.icosahedral_global_mesh = create_icosahedral_mesh(self.refinement_levels)
 
+        # Z value parameters
+        self.zval_names = zval_names
+        self.default_column_headers = ['CURRENT_LONGITUDES', 'CURRENT_LATITUDES', 'SEAFLOOR_AGE', 'BIRTH_LAT_SNAPSHOT', 'POINT_ID_SNAPSHOT']
+        self.total_column_headers = np.concatenate([self.default_column_headers, self.zval_names])
 
     # Allow SeafloorGrid time to be updated, and to update the internally-used 
     # PlotTopologies' time attribute too. If PlotTopologies is used outside the
@@ -541,6 +441,43 @@ class SeafloorGrid(object):
     def update_time(self, max_time):
         self._max_time = float(max_time)
         self._PlotTopologies_object.time = float(max_time)
+
+
+    def _collect_point_data_in_dataframe(self, pygplates_featurecollection, zval_ndarray, time):
+        """At a given timestep, create a pandas dataframe holding all attributes of point features.
+
+        Rather than store z values as shapefile attributes, store them in a dataframe indexed by
+        feature ID.
+        """
+        # Turn the zval_ndarray into a numPy array
+        zval_ndarray = np.array(zval_ndarray)
+
+        feature_id = [] 
+        for feature in pygplates_featurecollection:
+            feature_id.append(str(feature.get_feature_id()))
+   
+        # Prepare the zval ndarray (can be of any shape) to be saved with default point data
+        zvals_to_store = {}
+
+        # If only one zvalue (fow now, spreading rate)
+        if zval_ndarray.ndim == 1:
+            zvals_to_store[self.zval_names[0]] = zval_ndarray
+            data_to_store = [zvals_to_store[i] for i in zvals_to_store]
+        else:
+            for i in zval_ndarray.shape[1]:
+                zvals_to_store[self.zval_names[i]] = [list(j) for j in zip(*zval_ndarray)][i]
+            data_to_store = [zvals_to_store[i] for i in zvals_to_store]
+
+        full_directory = "{}/{}_point_data_dataframe_{}Ma".format(
+            self.save_directory,
+            self.file_collection,
+            time
+        )
+        np.savez_compressed(full_directory, 
+            FEATURE_ID = feature_id,
+            *data_to_store
+        ) 
+        return
 
 
     def create_initial_ocean_seed_points(self):
@@ -657,28 +594,28 @@ class SeafloorGrid(object):
             point_feature.set_valid_time(point[2]+self._max_time, -1)
 
             # For now: custom zvals are added as shapefile attributes - will attempt pandas data frames
-            point_feature = set_shapefile_attribute(point_feature, self.initial_ocean_mean_spreading_rate, "SPREADING_RATE")  # Seems like static data
+            # point_feature = set_shapefile_attribute(point_feature, self.initial_ocean_mean_spreading_rate, "SPREADING_RATE")  # Seems like static data
             initial_ocean_point_features.append(point_feature)
             initial_ocean_multipoints.append(point_feature.get_geometry())
 
         # print(initial_ocean_point_features)
         multi_point_feature = pygplates.MultiPointOnSphere(initial_ocean_multipoints)
 
-        if self.save_directory:
-            if self.file_collection is not None:
-                full_directory = "{}/{}_ocean_basin_seed_points_{}_RLs_{}Ma.gpmlz".format(
-                    self.save_directory,
-                    self.file_collection, 
-                    self.refinement_levels,
-                    self._max_time
-                )
-            else:
-                full_directory = "{}/ocean_basin_seed_points_{}_RLs_{}Ma.gpmlz".format(
-                    self.save_directory, 
-                    self.refinement_levels,
-                    self._max_time
-                )
-            pygplates.FeatureCollection(initial_ocean_point_features).write(full_directory)
+        full_directory = "{}/{}_ocean_basin_seed_points_{}_RLs_{}Ma.gpmlz".format(
+            self.save_directory,
+            self.file_collection, 
+            self.refinement_levels,
+            self._max_time
+        )
+        initial_ocean_feature_collection = pygplates.FeatureCollection(initial_ocean_point_features)
+        initial_ocean_feature_collection.write(full_directory)
+
+        # Collect all point feature data into a pandas dataframe
+        self._collect_point_data_in_dataframe(
+            initial_ocean_feature_collection, 
+            np.array([self.initial_ocean_mean_spreading_rate] * len(pX)), # for now, spreading rate is one zvalue for initial ocean points. will other zvalues need to have a generalised workflow?
+            self._max_time
+        )
 
         return pygplates.FeatureCollection(initial_ocean_point_features), multi_point_feature
 
@@ -784,13 +721,12 @@ class SeafloorGrid(object):
             # Summarising get_isochrons_for_ridge_snapshot;
             # Write out the ridge point born at 'ridge_time' but their position at 'ridge_time - time_step'.
             mor_point_features = []
-            for i, (curr_point, spreading_rate) in enumerate(zip(shifted_mor_points, point_spreading_rates)):
+            for curr_point in shifted_mor_points:
                 feature = pygplates.Feature()
                 feature.set_geometry(curr_point)
                 feature.set_valid_time(time, -999)  # delete - time_step
                 #feature.set_name(str(spreading_rate))
-                feature = set_shapefile_attribute(feature, spreading_rate, "SPREADING_RATE")  # make spreading rate a shapefile attribute
-                #feature = set_shapefile_attribute(feature, point_indices[i], "INDEX")
+                #feature = set_shapefile_attribute(feature, spreading_rate, "SPREADING_RATE")  # make spreading rate a shapefile attribute
                 mor_point_features.append(feature)
 
             mor_points = pygplates.FeatureCollection(mor_point_features)
@@ -801,6 +737,16 @@ class SeafloorGrid(object):
                 self.file_collection,
                 time
                 )
+            )
+            full_directory = "{}/{}_MOR_point_features_DataFrame_{}Ma".format(
+                self.save_directory,
+                self.file_collection, 
+                time
+            )
+            self._collect_point_data_in_dataframe(
+                mor_points, 
+                point_spreading_rates, 
+                time    
             )
             print("Finished building MOR seedpoints at {} Ma!".format(time))
         return
@@ -818,7 +764,7 @@ class SeafloorGrid(object):
         -----
         If MOR seed point building is interrupted, progress is safeguarded as long as 
         `resume_from_checkpoints` is set to `True`.
-        
+
         This assumes that points spread from ridges symmetrically, with the exception of 
         large ridge jumps at successive timesteps. Therefore, z-values allocated to ridge-emerging
         points will appear symmetrical until changes in spreading ridge geometries create 
@@ -999,6 +945,26 @@ class SeafloorGrid(object):
         return
 
 
+    def _extract_zvalues_from_npz_to_ndarray(self, featurecollection, time):
+        
+        # NPZ file of seedpoint z values that emerged at this time 
+        zvals_directory = "{}/{}_point_data_dataframe_{}Ma.npz".format(
+            self.save_directory,
+            self.file_collection,
+            time
+        )
+        loaded_npz = np.load(zvals_directory)
+
+        curr_zvalues = np.empty(
+            [len(featurecollection), len(self.zval_names)]
+        )
+        for i in range(len(self.zval_names)):
+            # Account for the 0th index being for point feature IDs
+            curr_zvalues[:,i] = np.array(loaded_npz['arr_{}'.format(i)])
+        
+        return curr_zvalues
+
+
     def prepare_for_reconstruction_by_topologies(self):
         """ Prepare three main auxiliary files for seafloor data gridding:
         * Initial ocean seed points (at `max_time`)
@@ -1027,24 +993,75 @@ class SeafloorGrid(object):
         self.build_all_continental_masks()
         self.build_all_MOR_seedpoints()
 
-        all_mor_features = []
-        for time in self.time_array:
-            mor_directory = '{}/{}_MOR_plus_one_points_{:0.2f}.gpmlz'.format(
-                self.save_directory, 
-                self.file_collection,
-                time
-                )
-            all_mor_features.append(pygplates.FeatureCollection(mor_directory))
-
-        # ALL-TIME POINTS AND FEATURES -----------------------------------------------------
+        # ALL-TIME POINTS -----------------------------------------------------
         # Extract all feature attributes for all reconstruction times into lists
-        active_points, appearance_time, \
-        birth_lat, prev_lat, prev_lon, spreading_rates  = _extract_point_feature_attributes_for_rbt(
-            initial_ocean_seed_points,
-            all_mor_features,
-            self.time_array
-        )
-        return active_points, appearance_time, birth_lat, prev_lat, prev_lon, spreading_rates
+        active_points = []  
+        appearance_time = []  
+        birth_lat = []  # latitude_of_crust_formation
+        prev_lat = []
+        prev_lon = []
+        
+        # Extract point feature attributes from MOR seed points
+        all_mor_features = []
+        zvalues = np.empty((0, len(self.zval_names)))
+        for time in self.time_array:
+
+            # If we're at the maximum time, start preparing points from the initial ocean mesh
+            # as well as their z values
+            if time == self._max_time:
+                for feature in initial_ocean_seed_points:
+                    active_points.append(
+                        feature.get_geometry()
+                    )
+                    appearance_time.append(
+                        feature.get_valid_time()[0]
+                    )
+                    birth_lat.append(
+                        feature.get_geometry().to_lat_lon_list()[0][0]
+                    )
+                    prev_lat.append(
+                        feature.get_geometry().to_lat_lon_list()[0][0]
+                    )
+                    prev_lon.append(
+                        feature.get_geometry().to_lat_lon_list()[0][1]
+                    )
+                
+                curr_zvalues = self._extract_zvalues_from_npz_to_ndarray(initial_ocean_seed_points, time)
+                zvalues = np.concatenate((zvalues, curr_zvalues), axis=0)
+
+            # Otherwise, we'd be preparing MOR points and their z values
+            else:
+                # GPMLZ file of MOR seedpoints
+                mor_directory = '{}/{}_MOR_plus_one_points_{:0.2f}.gpmlz'.format(
+                    self.save_directory, 
+                    self.file_collection,
+                    time
+                    )
+                features = pygplates.FeatureCollection(mor_directory)
+
+                for feature in features:
+                    if feature.get_valid_time()[0]<self.time_array[0]:
+                        active_points.append(
+                            feature.get_geometry()
+                        )
+                        appearance_time.append(
+                            feature.get_valid_time()[0]
+                        )
+                        birth_lat.append(
+                            feature.get_geometry().to_lat_lon_list()[0][0]
+                        )
+                        prev_lat.append(
+                            feature.get_geometry().to_lat_lon_list()[0][0]
+                        )
+                        prev_lon.append(
+                            feature.get_geometry().to_lat_lon_list()[0][1]
+                        )
+
+                # COLLECT NDARRAY OF ALL ZVALUES IN THIS TIMESTEP ------------------
+                curr_zvalues = self._extract_zvalues_from_npz_to_ndarray(features, time)
+                zvalues = np.concatenate((zvalues, curr_zvalues), axis=0)
+
+        return active_points, appearance_time, birth_lat, prev_lat, prev_lon, zvalues
 
 
     def reconstruct_by_topologies(self):
@@ -1060,7 +1077,7 @@ class SeafloorGrid(object):
         # Obtain all info from the ocean seed points and all MOR points through time, store in
         # arrays
         active_points, appearance_time, birth_lat, \
-        prev_lat, prev_lon, spreading_rates = self.prepare_for_reconstruction_by_topologies()
+        prev_lat, prev_lon, zvalues = self.prepare_for_reconstruction_by_topologies()
 
         ####  Begin reconstruction by topology process:
         # Indices for all points (`active_points`) that have existed from `max_time` to `min_time`.
@@ -1137,11 +1154,12 @@ class SeafloorGrid(object):
                 # 0 = longitude
                 # 1 = latitude
                 # 2 = seafloor age
-                # 3 = spreading rate
-                # 4 = birth latitude snapshot
-                # 5 = point id
-                # In future, we will add to 6 by len(input params of zvals to SeafloorGrid)
-                gridding_input_data = np.empty((num_current_points, 6))
+                # 3 = birth latitude snapshot
+                # 4 = point id
+
+                # 5 for the default gridding columns above, plus additional zvalues added next
+                total_number_of_columns = 5 + len(self.zval_names)
+                gridding_input_data = np.empty([num_current_points, total_number_of_columns])
 
                 # Lons and lats are first and second columns of the ndarray respectively
                 gridding_input_data[:, 1], gridding_input_data[:,0] = zip(*curr_lat_lon_points)
@@ -1161,31 +1179,33 @@ class SeafloorGrid(object):
                         # Seafloor age
                         gridding_input_data[i, 2] = appearance_time[point_index] - topology_reconstruction.get_current_time()
                         # Birth latitude (snapshot)
-                        gridding_input_data[i, 4] = birth_lat[point_index]
+                        gridding_input_data[i, 3] = birth_lat[point_index]
                         # Point ID (snapshot)
-                        gridding_input_data[i, 5] = point_id[point_index] # The ID of a corresponding point from the original list of all MOR-resolved points
-                        # Spreading rate
-                        gridding_input_data[i, 3] = spreading_rates[point_index]
+                        gridding_input_data[i, 4] = point_id[point_index] # The ID of a corresponding point from the original list of all MOR-resolved points
 
+                        # GENERAL Z-VALUE ALLOCATION 
+                        # Z values are 1st index onwards; 0th belongs to the point feature ID (thus +1)
+                        for j in range(len(self.zval_names)):
+
+                            # Adjusted index - and we have to add j to 5 to account for lat, lon, age, birth lat and point ID, 
+                            adjusted_index = 5+j
+
+                            # Spreading rate would be first 
+                            # Access current zval from the master list of all zvalues for all points that ever existed in time_array
+                            gridding_input_data[i, adjusted_index] = zvalues[point_index, j]
+
+                        # Go to the next active point
                         i += 1
+
+                gridding_input_dictionary = {}
+
+                for i in list(range(total_number_of_columns)):
+                    gridding_input_dictionary[self.total_column_headers[i]] = [list(j) for j in zip(*gridding_input_data)][i]
+                    data_to_store = [gridding_input_dictionary[i] for i in gridding_input_dictionary]
 
                 if self.file_collection is not None:
                     np.savez_compressed('{:s}/{}_gridding_input_{:0.1f}Ma'.format(self.save_directory, self.file_collection, topology_reconstruction.get_current_time()), 
-                        CURRENT_LONGITUDES = gridding_input_data[:,0],
-                        CURRENT_LATITUDES = gridding_input_data[:,1],
-                        SEAFLOOR_AGE = gridding_input_data[:,2],
-                        SPREADING_RATE_SNAPSHOT = gridding_input_data[:,3],
-                        BIRTH_LAT_SNAPSHOT = gridding_input_data[:,4],
-                        POINT_ID_SNAPSHOT = gridding_input_data[:,5]
-                    )
-                else:
-                    np.savez_compressed('{:s}/gridding_input_{:0.1f}Ma.csv'.format(self.save_directory, topology_reconstruction.get_current_time()), 
-                        CURRENT_LONGITUDES = gridding_input_data[:,0],
-                        CURRENT_LATITUDES = gridding_input_data[:,1],
-                        SEAFLOOR_AGE = gridding_input_data[:,2],
-                        SPREADING_RATE_SNAPSHOT = gridding_input_data[:,3],
-                        BIRTH_LAT_SNAPSHOT = gridding_input_data[:,4],
-                        POINT_ID_SNAPSHOT = gridding_input_data[:,5]
+                        *data_to_store
                     )
 
             if not topology_reconstruction.reconstruct_to_next_time():
@@ -1235,6 +1255,7 @@ class SeafloorGrid(object):
             # Use pandas to load in lons, lats and z values from npz files
             npz = np.load(gridding_input)
             curr_data = pd.DataFrame.from_dict({item: npz[item] for item in npz.files}, orient='index').transpose()
+            curr_data.columns = self.total_column_headers
 
             # Drop duplicate latitudes and longitudes
             unique_data = curr_data.drop_duplicates(subset=["CURRENT_LONGITUDES", "CURRENT_LATITUDES"])
