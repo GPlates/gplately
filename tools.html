@@ -32,6 +32,7 @@
 &#34;&#34;&#34;
 import numpy as np
 import pygplates
+import pandas as pd
 
 EARTH_RADIUS = pygplates.Earth.mean_radius_in_kms
 
@@ -424,7 +425,37 @@ def plate_partitioner_for_point(lat_lon_tuple, topology_features, rotation_model
         )
     )
     plate_id_at_present_day = partitioning_plate.get_feature().get_reconstruction_plate_id()
-    return(plate_id_at_present_day)</code></pre>
+    return(plate_id_at_present_day)
+
+
+def read_rotation_file_pandas(rotation_file_paths):
+    &#34;&#34;&#34; Written by Nicky Williams. Extract data from one rotation file, and write 
+    it to a pandas dataframe.
+    &#34;&#34;&#34;
+    rotation_file = pd.read_csv(
+        rotation_file_paths, 
+        names = [&#39;reconstruction_plate_id&#39;, &#39;age&#39;, &#39;lat&#39;, &#39;lon&#39;, &#39;angle&#39;, &#39;anchor_plate_id&#39;, &#39;comment&#39;], 
+        delim_whitespace=True, 
+        comment=&#39;!&#39;
+    )
+    with open(rotation_file_paths, &#39;r&#39;) as f:
+        lines = f.readlines()
+        output = []
+
+        comment = &#39;!&#39;
+        for line in lines:
+            head, sep, tail = line.partition(comment)
+            tail = tail.strip(&#39;\n&#39;)
+            output.append(tail)
+    
+    rotation_file[&#39;comment&#39;] = output
+    
+    return rotation_file
+
+
+def correct_longitudes_for_dateline(lons):
+    lons[lons &lt; 0] += 360 # correct for dateline
+    return lons</code></pre>
 </details>
 </section>
 <section>
@@ -434,6 +465,20 @@ def plate_partitioner_for_point(lat_lon_tuple, topology_features, rotation_model
 <section>
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
+<dt id="gplately.tools.correct_longitudes_for_dateline"><code class="name flex">
+<span>def <span class="ident">correct_longitudes_for_dateline</span></span>(<span>lons)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def correct_longitudes_for_dateline(lons):
+    lons[lons &lt; 0] += 360 # correct for dateline
+    return lons</code></pre>
+</details>
+</dd>
 <dt id="gplately.tools.extract_feature_lonlat"><code class="name flex">
 <span>def <span class="ident">extract_feature_lonlat</span></span>(<span>features)</span>
 </code></dt>
@@ -977,6 +1022,41 @@ longitude list.</p>
     return point_features</code></pre>
 </details>
 </dd>
+<dt id="gplately.tools.read_rotation_file_pandas"><code class="name flex">
+<span>def <span class="ident">read_rotation_file_pandas</span></span>(<span>rotation_file_paths)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Written by Nicky Williams. Extract data from one rotation file, and write
+it to a pandas dataframe.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def read_rotation_file_pandas(rotation_file_paths):
+    &#34;&#34;&#34; Written by Nicky Williams. Extract data from one rotation file, and write 
+    it to a pandas dataframe.
+    &#34;&#34;&#34;
+    rotation_file = pd.read_csv(
+        rotation_file_paths, 
+        names = [&#39;reconstruction_plate_id&#39;, &#39;age&#39;, &#39;lat&#39;, &#39;lon&#39;, &#39;angle&#39;, &#39;anchor_plate_id&#39;, &#39;comment&#39;], 
+        delim_whitespace=True, 
+        comment=&#39;!&#39;
+    )
+    with open(rotation_file_paths, &#39;r&#39;) as f:
+        lines = f.readlines()
+        output = []
+
+        comment = &#39;!&#39;
+        for line in lines:
+            head, sep, tail = line.partition(comment)
+            tail = tail.strip(&#39;\n&#39;)
+            output.append(tail)
+    
+    rotation_file[&#39;comment&#39;] = output
+    
+    return rotation_file</code></pre>
+</details>
+</dd>
 <dt id="gplately.tools.xyz2lonlat"><code class="name flex">
 <span>def <span class="ident">xyz2lonlat</span></span>(<span>x, y, z, validate=False, degrees=True)</span>
 </code></dt>
@@ -1058,6 +1138,7 @@ lon / lat (radians).</p>
 </li>
 <li><h3><a href="#header-functions">Functions</a></h3>
 <ul class="">
+<li><code><a title="gplately.tools.correct_longitudes_for_dateline" href="#gplately.tools.correct_longitudes_for_dateline">correct_longitudes_for_dateline</a></code></li>
 <li><code><a title="gplately.tools.extract_feature_lonlat" href="#gplately.tools.extract_feature_lonlat">extract_feature_lonlat</a></code></li>
 <li><code><a title="gplately.tools.geocentric_radius" href="#gplately.tools.geocentric_radius">geocentric_radius</a></code></li>
 <li><code><a title="gplately.tools.haversine_distance" href="#gplately.tools.haversine_distance">haversine_distance</a></code></li>
@@ -1066,6 +1147,7 @@ lon / lat (radians).</p>
 <li><code><a title="gplately.tools.plate_partitioner_for_point" href="#gplately.tools.plate_partitioner_for_point">plate_partitioner_for_point</a></code></li>
 <li><code><a title="gplately.tools.plate_temp" href="#gplately.tools.plate_temp">plate_temp</a></code></li>
 <li><code><a title="gplately.tools.points_to_features" href="#gplately.tools.points_to_features">points_to_features</a></code></li>
+<li><code><a title="gplately.tools.read_rotation_file_pandas" href="#gplately.tools.read_rotation_file_pandas">read_rotation_file_pandas</a></code></li>
 <li><code><a title="gplately.tools.xyz2lonlat" href="#gplately.tools.xyz2lonlat">xyz2lonlat</a></code></li>
 </ul>
 </li>
