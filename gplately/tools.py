@@ -2,6 +2,7 @@
 """
 import numpy as np
 import pygplates
+import scipy
 
 EARTH_RADIUS = pygplates.Earth.mean_radius_in_kms
 
@@ -395,3 +396,57 @@ def plate_partitioner_for_point(lat_lon_tuple, topology_features, rotation_model
     )
     plate_id_at_present_day = partitioning_plate.get_feature().get_reconstruction_plate_id()
     return(plate_id_at_present_day)
+
+
+# Auxiliary functions for the Muller et al. 2022 paper "Evolution of Earth’s tectonic carbon conveyor belt"
+def surface_area_oblate_spheroid(r1, r2):
+    e = np.sqrt(1.0 - r2**2/r1**2)
+    return 2.0*np.pi*r1**2*(1.0 + (1.0-e**2)/e * np.arctanh(e))
+
+
+def lat_area_function(latitude_one, latitude_two, longitude_resolution):
+    '''
+    Calculates the point area of an evenly gridded lat/lon mesh
+    Longitude resolution is lon2 - lon1
+    '''
+    dlat = np.sin(np.radians(latitude_two)) - np.sin(np.radians(latitude_one))
+    lat_area = 2 * np.pi * 6371.009e3**2 * np.abs(dlat)/longitude_resolution
+    return lat_area
+
+
+def smooth_1D(array, sigma=3.0, axis=0):
+    """ Gaussian filter with standard deviation """
+    return scipy.ndimage.gaussian_filter1d(array, sigma, axis=axis)
+
+
+def My2s(Ma):
+    return Ma*3.1536e13
+
+
+def update_progress(progress):
+    from IPython.display import clear_output
+    bar_length = 20
+    if isinstance(progress, int):
+        progress = float(progress)
+    if not isinstance(progress, float):
+        progress = 0
+    if progress < 0:
+        progress = 0
+    if progress >= 1:
+        progress = 1
+    
+    bar_length = 20
+    block = int(round(bar_length * progress))
+
+    clear_output(wait = True)
+    text = "Progress: [{0}] {1:.1f}%".format( "#" * block + "-" * (bar_length - block), progress * 100)
+    print(text)
+
+
+def read_csv(filename, readcols):
+    """ read csv and reorder from 0 - 250 Ma """
+    Ma = np.loadtxt(filename, delimiter=',', usecols=(0,), skiprows=1, dtype=int, unpack=True)
+    data = np.loadtxt(filename, delimiter=',', usecols=readcols, skiprows=1, unpack=False)
+    return data[Ma]
+
+
