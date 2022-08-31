@@ -32,7 +32,7 @@
 &#34;&#34;&#34;
 import numpy as np
 import pygplates
-import pandas as pd
+import scipy
 
 EARTH_RADIUS = pygplates.Earth.mean_radius_in_kms
 
@@ -428,34 +428,56 @@ def plate_partitioner_for_point(lat_lon_tuple, topology_features, rotation_model
     return(plate_id_at_present_day)
 
 
-def read_rotation_file_pandas(rotation_file_paths):
-    &#34;&#34;&#34; Written by Nicky Williams. Extract data from one rotation file, and write 
-    it to a pandas dataframe.
-    &#34;&#34;&#34;
-    rotation_file = pd.read_csv(
-        rotation_file_paths, 
-        names = [&#39;reconstruction_plate_id&#39;, &#39;age&#39;, &#39;lat&#39;, &#39;lon&#39;, &#39;angle&#39;, &#39;anchor_plate_id&#39;, &#39;comment&#39;], 
-        delim_whitespace=True, 
-        comment=&#39;!&#39;
-    )
-    with open(rotation_file_paths, &#39;r&#39;) as f:
-        lines = f.readlines()
-        output = []
+# Auxiliary functions for the Muller et al. 2022 paper &#34;Evolution of Earth’s tectonic carbon conveyor belt&#34;
+def surface_area_oblate_spheroid(r1, r2):
+    e = np.sqrt(1.0 - r2**2/r1**2)
+    return 2.0*np.pi*r1**2*(1.0 + (1.0-e**2)/e * np.arctanh(e))
 
-        comment = &#39;!&#39;
-        for line in lines:
-            head, sep, tail = line.partition(comment)
-            tail = tail.strip(&#39;\n&#39;)
-            output.append(tail)
+
+def lat_area_function(latitude_one, latitude_two, longitude_resolution):
+    &#39;&#39;&#39;
+    Calculates the point area of an evenly gridded lat/lon mesh
+    Longitude resolution is lon2 - lon1
+    &#39;&#39;&#39;
+    dlat = np.sin(np.radians(latitude_two)) - np.sin(np.radians(latitude_one))
+    lat_area = 2 * np.pi * 6371.009e3**2 * np.abs(dlat)/longitude_resolution
+    return lat_area
+
+
+def smooth_1D(array, sigma=3.0, axis=0):
+    &#34;&#34;&#34; Gaussian filter with standard deviation &#34;&#34;&#34;
+    return scipy.ndimage.gaussian_filter1d(array, sigma, axis=axis)
+
+
+def My2s(Ma):
+    return Ma*3.1536e13
+
+
+def update_progress(progress):
+    from IPython.display import clear_output
+    bar_length = 20
+    if isinstance(progress, int):
+        progress = float(progress)
+    if not isinstance(progress, float):
+        progress = 0
+    if progress &lt; 0:
+        progress = 0
+    if progress &gt;= 1:
+        progress = 1
     
-    rotation_file[&#39;comment&#39;] = output
-    
-    return rotation_file
+    bar_length = 20
+    block = int(round(bar_length * progress))
+
+    clear_output(wait = True)
+    text = &#34;Progress: [{0}] {1:.1f}%&#34;.format( &#34;#&#34; * block + &#34;-&#34; * (bar_length - block), progress * 100)
+    print(text)
 
 
-def correct_longitudes_for_dateline(lons):
-    lons[lons &lt; 0] += 360 # correct for dateline
-    return lons</code></pre>
+def read_csv(filename, readcols):
+    &#34;&#34;&#34; read csv and reorder from 0 - 250 Ma &#34;&#34;&#34;
+    Ma = np.loadtxt(filename, delimiter=&#39;,&#39;, usecols=(0,), skiprows=1, dtype=int, unpack=True)
+    data = np.loadtxt(filename, delimiter=&#39;,&#39;, usecols=readcols, skiprows=1, unpack=False)
+    return data[Ma]</code></pre>
 </details>
 </section>
 <section>
@@ -465,8 +487,8 @@ def correct_longitudes_for_dateline(lons):
 <section>
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
-<dt id="gplately.tools.correct_longitudes_for_dateline"><code class="name flex">
-<span>def <span class="ident">correct_longitudes_for_dateline</span></span>(<span>lons)</span>
+<dt id="gplately.tools.My2s"><code class="name flex">
+<span>def <span class="ident">My2s</span></span>(<span>Ma)</span>
 </code></dt>
 <dd>
 <div class="desc"></div>
@@ -474,9 +496,8 @@ def correct_longitudes_for_dateline(lons):
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def correct_longitudes_for_dateline(lons):
-    lons[lons &lt; 0] += 360 # correct for dateline
-    return lons</code></pre>
+<pre><code class="python">def My2s(Ma):
+    return Ma*3.1536e13</code></pre>
 </details>
 </dd>
 <dt id="gplately.tools.extract_feature_lonlat"><code class="name flex">
@@ -642,6 +663,26 @@ points given their latitudes and longitudes.</p>
     c = 2.0 * np.arctan2(np.sqrt(a), np.sqrt(1.0 - a))
     d = EARTH_RADIUS * c
     return d * 1000</code></pre>
+</details>
+</dd>
+<dt id="gplately.tools.lat_area_function"><code class="name flex">
+<span>def <span class="ident">lat_area_function</span></span>(<span>latitude_one, latitude_two, longitude_resolution)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Calculates the point area of an evenly gridded lat/lon mesh
+Longitude resolution is lon2 - lon1</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def lat_area_function(latitude_one, latitude_two, longitude_resolution):
+    &#39;&#39;&#39;
+    Calculates the point area of an evenly gridded lat/lon mesh
+    Longitude resolution is lon2 - lon1
+    &#39;&#39;&#39;
+    dlat = np.sin(np.radians(latitude_two)) - np.sin(np.radians(latitude_one))
+    lat_area = 2 * np.pi * 6371.009e3**2 * np.abs(dlat)/longitude_resolution
+    return lat_area</code></pre>
 </details>
 </dd>
 <dt id="gplately.tools.lonlat2xyz"><code class="name flex">
@@ -1022,39 +1063,77 @@ longitude list.</p>
     return point_features</code></pre>
 </details>
 </dd>
-<dt id="gplately.tools.read_rotation_file_pandas"><code class="name flex">
-<span>def <span class="ident">read_rotation_file_pandas</span></span>(<span>rotation_file_paths)</span>
+<dt id="gplately.tools.read_csv"><code class="name flex">
+<span>def <span class="ident">read_csv</span></span>(<span>filename, readcols)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Written by Nicky Williams. Extract data from one rotation file, and write
-it to a pandas dataframe.</p></div>
+<div class="desc"><p>read csv and reorder from 0 - 250 Ma</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def read_rotation_file_pandas(rotation_file_paths):
-    &#34;&#34;&#34; Written by Nicky Williams. Extract data from one rotation file, and write 
-    it to a pandas dataframe.
-    &#34;&#34;&#34;
-    rotation_file = pd.read_csv(
-        rotation_file_paths, 
-        names = [&#39;reconstruction_plate_id&#39;, &#39;age&#39;, &#39;lat&#39;, &#39;lon&#39;, &#39;angle&#39;, &#39;anchor_plate_id&#39;, &#39;comment&#39;], 
-        delim_whitespace=True, 
-        comment=&#39;!&#39;
-    )
-    with open(rotation_file_paths, &#39;r&#39;) as f:
-        lines = f.readlines()
-        output = []
+<pre><code class="python">def read_csv(filename, readcols):
+    &#34;&#34;&#34; read csv and reorder from 0 - 250 Ma &#34;&#34;&#34;
+    Ma = np.loadtxt(filename, delimiter=&#39;,&#39;, usecols=(0,), skiprows=1, dtype=int, unpack=True)
+    data = np.loadtxt(filename, delimiter=&#39;,&#39;, usecols=readcols, skiprows=1, unpack=False)
+    return data[Ma]</code></pre>
+</details>
+</dd>
+<dt id="gplately.tools.smooth_1D"><code class="name flex">
+<span>def <span class="ident">smooth_1D</span></span>(<span>array, sigma=3.0, axis=0)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Gaussian filter with standard deviation</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def smooth_1D(array, sigma=3.0, axis=0):
+    &#34;&#34;&#34; Gaussian filter with standard deviation &#34;&#34;&#34;
+    return scipy.ndimage.gaussian_filter1d(array, sigma, axis=axis)</code></pre>
+</details>
+</dd>
+<dt id="gplately.tools.surface_area_oblate_spheroid"><code class="name flex">
+<span>def <span class="ident">surface_area_oblate_spheroid</span></span>(<span>r1, r2)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def surface_area_oblate_spheroid(r1, r2):
+    e = np.sqrt(1.0 - r2**2/r1**2)
+    return 2.0*np.pi*r1**2*(1.0 + (1.0-e**2)/e * np.arctanh(e))</code></pre>
+</details>
+</dd>
+<dt id="gplately.tools.update_progress"><code class="name flex">
+<span>def <span class="ident">update_progress</span></span>(<span>progress)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def update_progress(progress):
+    from IPython.display import clear_output
+    bar_length = 20
+    if isinstance(progress, int):
+        progress = float(progress)
+    if not isinstance(progress, float):
+        progress = 0
+    if progress &lt; 0:
+        progress = 0
+    if progress &gt;= 1:
+        progress = 1
+    
+    bar_length = 20
+    block = int(round(bar_length * progress))
 
-        comment = &#39;!&#39;
-        for line in lines:
-            head, sep, tail = line.partition(comment)
-            tail = tail.strip(&#39;\n&#39;)
-            output.append(tail)
-    
-    rotation_file[&#39;comment&#39;] = output
-    
-    return rotation_file</code></pre>
+    clear_output(wait = True)
+    text = &#34;Progress: [{0}] {1:.1f}%&#34;.format( &#34;#&#34; * block + &#34;-&#34; * (bar_length - block), progress * 100)
+    print(text)</code></pre>
 </details>
 </dd>
 <dt id="gplately.tools.xyz2lonlat"><code class="name flex">
@@ -1138,16 +1217,20 @@ lon / lat (radians).</p>
 </li>
 <li><h3><a href="#header-functions">Functions</a></h3>
 <ul class="">
-<li><code><a title="gplately.tools.correct_longitudes_for_dateline" href="#gplately.tools.correct_longitudes_for_dateline">correct_longitudes_for_dateline</a></code></li>
+<li><code><a title="gplately.tools.My2s" href="#gplately.tools.My2s">My2s</a></code></li>
 <li><code><a title="gplately.tools.extract_feature_lonlat" href="#gplately.tools.extract_feature_lonlat">extract_feature_lonlat</a></code></li>
 <li><code><a title="gplately.tools.geocentric_radius" href="#gplately.tools.geocentric_radius">geocentric_radius</a></code></li>
 <li><code><a title="gplately.tools.haversine_distance" href="#gplately.tools.haversine_distance">haversine_distance</a></code></li>
+<li><code><a title="gplately.tools.lat_area_function" href="#gplately.tools.lat_area_function">lat_area_function</a></code></li>
 <li><code><a title="gplately.tools.lonlat2xyz" href="#gplately.tools.lonlat2xyz">lonlat2xyz</a></code></li>
 <li><code><a title="gplately.tools.plate_isotherm_depth" href="#gplately.tools.plate_isotherm_depth">plate_isotherm_depth</a></code></li>
 <li><code><a title="gplately.tools.plate_partitioner_for_point" href="#gplately.tools.plate_partitioner_for_point">plate_partitioner_for_point</a></code></li>
 <li><code><a title="gplately.tools.plate_temp" href="#gplately.tools.plate_temp">plate_temp</a></code></li>
 <li><code><a title="gplately.tools.points_to_features" href="#gplately.tools.points_to_features">points_to_features</a></code></li>
-<li><code><a title="gplately.tools.read_rotation_file_pandas" href="#gplately.tools.read_rotation_file_pandas">read_rotation_file_pandas</a></code></li>
+<li><code><a title="gplately.tools.read_csv" href="#gplately.tools.read_csv">read_csv</a></code></li>
+<li><code><a title="gplately.tools.smooth_1D" href="#gplately.tools.smooth_1D">smooth_1D</a></code></li>
+<li><code><a title="gplately.tools.surface_area_oblate_spheroid" href="#gplately.tools.surface_area_oblate_spheroid">surface_area_oblate_spheroid</a></code></li>
+<li><code><a title="gplately.tools.update_progress" href="#gplately.tools.update_progress">update_progress</a></code></li>
 <li><code><a title="gplately.tools.xyz2lonlat" href="#gplately.tools.xyz2lonlat">xyz2lonlat</a></code></li>
 </ul>
 </li>
