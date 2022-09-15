@@ -20,12 +20,12 @@ jobs:
         pip install flake8 pytest
         if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
         sudo apt-get update
-        sudo apt-get install -yq wget libboost-python-dev libboost-program-options-dev libgdal-dev libglew-dev libglu1-mesa libproj-dev libqt5core5a libqt5gui5 libqt5network5 libqt5opengl5 libqt5svg5 libqt5widgets5 libqt5xml5 libqt5xmlpatterns5 libqwt-qt5-6
+        sudo apt-get install -yq wget libboost-python-dev libboost-program-options-dev libgdal-dev libglew-dev libglu1-mesa libproj-dev libqt5core5a libqt5gui5 libqt5network5 libqt5opengl5 libqt5svg5 libqt5widgets5 libqt5xml5 libqt5xmlpatterns5 libqwt-qt5-6 libgfortran-5-dev
         wget https://www.earthbyte.org/webdav/ftp/earthbyte/pygplates/pygplates-py3_rev33_ubuntu-20.04-amd64.deb -O pygplates_package.deb
         yes | sudo dpkg -i pygplates_package.deb
     - name: Install gplately
       run: |
-        pip install cartopy==0.19.0.post1
+        pip install stripy cartopy==0.19.0.post1
         pip install .
     - name: Test with pytest
       run: |
