@@ -92,6 +92,7 @@ if __name__ == "__main__":
                                'netcdf4',
                                'rasterio',
                                'geopandas',
+                               'stripy',
                                ],
           packages          = ['gplately'],
           package_data      = {'gplately': ['Notebooks/*ipynb', # Worked Examples is not currently used
