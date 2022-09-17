@@ -812,6 +812,11 @@ class SeafloorGrid(object):
             if last_seed_time == "nil":
                 time_array = self.time_array
 
+            # If the last seed time it could identify is outside the time bounds of the current instance of SeafloorGrid, start
+            # from the top (this may happen if we use the same save directory for grids for a new set of times)
+            elif last_seed_time not in self.time_array:
+                time_array = self.time_array
+
             # If seeding was done to the min_time, we are finished 
             elif last_seed_time == self.min_time:
                 return
@@ -935,9 +940,15 @@ class SeafloorGrid(object):
             if last_masked_time == "nil":
                 time_array = self.time_array
 
+            # If the last seed time it could identify is outside the time bounds of the current instance of SeafloorGrid, start
+            # from the top (this may happen if we use the same save directory for grids for a new set of times)                
+            elif last_masked_time not in self.time_array:
+                time_array = self.time_array
+
             # If masking was done to the min_time, we are finished 
             elif last_masked_time == self.min_time:
                 return
+
             # If masking to `min_time` has been interrupted, resume it at last_masked_time.
             else:
                 time_array = np.arange(last_masked_time, self.min_time-0.1, -self.ridge_time_step)
