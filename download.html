@@ -765,7 +765,7 @@ class DataServer(object):
     &#34;&#34;&#34;
     def __init__(self, file_collection):
 
-        self.file_collection = file_collection
+        self.file_collection = file_collection.capitalize()
         self.data_collection = DataCollection(self.file_collection)
 
 
@@ -915,6 +915,9 @@ class DataServer(object):
         if not static_polygons:
             print(&#34;No static polygons in {}.&#34;.format(self.file_collection))
             static_polygons = []
+
+        # add identifier for setting up DownloadServer independently
+        rotation_model.reconstruction_identifier = self.file_collection
 
         return rotation_model, topology_features, static_polygons
 
@@ -2235,7 +2238,7 @@ Geosystems, 21, e2020GC009117. DOI: <a href="https://doi.org/10.1029/2020GC00911
     &#34;&#34;&#34;
     def __init__(self, file_collection):
 
-        self.file_collection = file_collection
+        self.file_collection = file_collection.capitalize()
         self.data_collection = DataCollection(self.file_collection)
 
 
@@ -2385,6 +2388,9 @@ Geosystems, 21, e2020GC009117. DOI: <a href="https://doi.org/10.1029/2020GC00911
         if not static_polygons:
             print(&#34;No static polygons in {}.&#34;.format(self.file_collection))
             static_polygons = []
+
+        # add identifier for setting up DownloadServer independently
+        rotation_model.reconstruction_identifier = self.file_collection
 
         return rotation_model, topology_features, static_polygons
 
@@ -3474,6 +3480,9 @@ No continent-ocean boundaries in TorsvikCocks2017.
     if not static_polygons:
         print(&#34;No static polygons in {}.&#34;.format(self.file_collection))
         static_polygons = []
+
+    # add identifier for setting up DownloadServer independently
+    rotation_model.reconstruction_identifier = self.file_collection
 
     return rotation_model, topology_features, static_polygons</code></pre>
 </details>
