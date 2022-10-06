@@ -45,7 +45,11 @@ class DataCollection(object):
     def __init__(self, file_collection):
         """Uses a string to identify the needed plate model, taken from
         <gplately.data.DataServer>."""
-        self.file_collection = file_collection
+        database = self.plate_reconstruction_files()
+        if file_collection not in database:
+            raise ValueError("Enter a valid plate model identifier, e.g. Muller2019, Seton2012, etc.")
+
+        self.file_collection = file_collection.capitalize()
 
 
     def netcdf4_age_grids(self, time):
