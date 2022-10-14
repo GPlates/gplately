@@ -477,7 +477,77 @@ def read_csv(filename, readcols):
     &#34;&#34;&#34; read csv and reorder from 0 - 250 Ma &#34;&#34;&#34;
     Ma = np.loadtxt(filename, delimiter=&#39;,&#39;, usecols=(0,), skiprows=1, dtype=int, unpack=True)
     data = np.loadtxt(filename, delimiter=&#39;,&#39;, usecols=readcols, skiprows=1, unpack=False)
-    return data[Ma]</code></pre>
+    return data[Ma]
+
+
+def smooth_1D_gaussian(
+    input_data, time_window, 
+    axis=-1, output=None, mode=&#34;reflect&#34;, truncate=4.0):
+    &#34;&#34;&#34;Smooth every data element in the 1D `input_data` array over a 
+    specified `time_window`, using a one-dimensional, zeroth order 
+    Gaussian filter. 
+    
+    The `time_window`, or Gaussian kernel diameter, is used to 
+    calculate a sigma for the Gaussian kernel.
+    
+    For example, if a `time_window` of 20 Myr is supplied, an array with 21
+    elements (10 Myr on each side of a central point, including the central 
+    point) is produced. Each element is filled with the Gaussian evaluated 
+    at that point. 
+    
+    This Gaussian is correlated to each data point in the input_array to
+    smooth the data.
+    
+    Parameters
+    ----------
+    input_data : 1d array
+        A one-dimensional array of input data to smooth using a Gaussian filter.
+    time_window : float, default = 5 (Myr)
+        A float or integer to specify the full width of the Gaussian filter with
+        which to smooth each data point in `input_data`. 1 pixel : 1 Myr. 
+    axis : int, default = -1
+        The axis of `input_data` along which to smooth. Default is -1.
+    output : array or dtype, optional
+        The array in which to place the output, or the dtype of the returned array. 
+        By default an array of the same dtype as input will be created.
+    mode : str, default &#34;reflect&#34;
+        The way the input_array is extended beyond its bounds to ensure all data
+        points can be convolved with the created Gaussian. See 
+        [scipy&#39;s docs](https://docs.scipy.org/doc/scipy/reference/generated/scipy.ndimage.gaussian_filter1d.html)
+        to see the full list of extension methods. By default, `&#34;reflect&#34;` extends
+        `input_array` such that [a b c d] becomes (d c b a | a b c d | d c b a),
+        reflecting about the edge of the last pixel.
+    truncate : float or int, default = 4.0
+        A multiplicative factor that truncates the number of standard deviations, or
+        sigmas, that the Gaussian distribution spans in either direction from the
+        centre. This impacts the number of pixels that the Gaussian kernel spans. 
+        By default, this is set to 4 standard deviations.
+    &#34;&#34;&#34;
+    # Sigma, the magnitude of standard deviation in pixel units, is truncated
+    # by a specified number of permissible standard deviations; 4 by default
+    # half the time window defines the width of the gaussian kernel
+    radius = time_window/2
+    sigma = int(radius-0.5)/int(truncate)
+    
+    # Produce the gaussian kernel given a sigma and kernel full-width/diameter 
+    # (time_window). The coefficient 1/sqrt(2*pi)*sigma is omitted as it 
+    # just scales the kernel distribution and does not impact smoothing weights
+    time_window_array = np.arange(-radius, radius+1)
+    kernel = np.exp(-0.5 / sigma**2 * time_window_array ** 2)
+    
+    # Ensure sum of kernel is normalised to unity
+    kernel = kernel / kernel.sum()
+    
+    # Correlate the input data to the Gaussian kernel
+    smoothed_data = scipy.ndimage.correlate1d(
+        input_data, 
+        kernel, 
+        axis, output, mode,
+        origin=0, # 0 centers the filter over the pixel
+        cval=0.0 # Only applicable if mode is &#39;constant&#39;, extends filter by 0s everywhere. 
+    )
+    return smoothed_data
+    </code></pre>
 </details>
 </section>
 <section>
@@ -1093,6 +1163,119 @@ longitude list.</p>
     return scipy.ndimage.gaussian_filter1d(array, sigma, axis=axis)</code></pre>
 </details>
 </dd>
+<dt id="gplately.tools.smooth_1D_gaussian"><code class="name flex">
+<span>def <span class="ident">smooth_1D_gaussian</span></span>(<span>input_data, time_window, axis=-1, output=None, mode='reflect', truncate=4.0)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Smooth every data element in the 1D <code>input_data</code> array over a
+specified <code>time_window</code>, using a one-dimensional, zeroth order
+Gaussian filter. </p>
+<p>The <code>time_window</code>, or Gaussian kernel diameter, is used to
+calculate a sigma for the Gaussian kernel.</p>
+<p>For example, if a <code>time_window</code> of 20 Myr is supplied, an array with 21
+elements (10 Myr on each side of a central point, including the central
+point) is produced. Each element is filled with the Gaussian evaluated
+at that point. </p>
+<p>This Gaussian is correlated to each data point in the input_array to
+smooth the data.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>input_data</code></strong> :&ensp;<code>1d array</code></dt>
+<dd>A one-dimensional array of input data to smooth using a Gaussian filter.</dd>
+<dt><strong><code>time_window</code></strong> :&ensp;<code>float</code>, default <code>= 5 (Myr)</code></dt>
+<dd>A float or integer to specify the full width of the Gaussian filter with
+which to smooth each data point in <code>input_data</code>. 1 pixel : 1 Myr.</dd>
+<dt><strong><code>axis</code></strong> :&ensp;<code>int</code>, default <code>= -1</code></dt>
+<dd>The axis of <code>input_data</code> along which to smooth. Default is -1.</dd>
+<dt><strong><code>output</code></strong> :&ensp;<code>array</code> or <code>dtype</code>, optional</dt>
+<dd>The array in which to place the output, or the dtype of the returned array.
+By default an array of the same dtype as input will be created.</dd>
+<dt><strong><code>mode</code></strong> :&ensp;<code>str</code>, default <code>"reflect"</code></dt>
+<dd>The way the input_array is extended beyond its bounds to ensure all data
+points can be convolved with the created Gaussian. See
+<a href="https://docs.scipy.org/doc/scipy/reference/generated/scipy.ndimage.gaussian_filter1d.html">scipy's docs</a>
+to see the full list of extension methods. By default, <code>"reflect"</code> extends
+<code>input_array</code> such that [a b c d] becomes (d c b a | a b c d | d c b a),
+reflecting about the edge of the last pixel.</dd>
+<dt><strong><code>truncate</code></strong> :&ensp;<code>float</code> or <code>int</code>, default <code>= 4.0</code></dt>
+<dd>A multiplicative factor that truncates the number of standard deviations, or
+sigmas, that the Gaussian distribution spans in either direction from the
+centre. This impacts the number of pixels that the Gaussian kernel spans.
+By default, this is set to 4 standard deviations.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def smooth_1D_gaussian(
+    input_data, time_window, 
+    axis=-1, output=None, mode=&#34;reflect&#34;, truncate=4.0):
+    &#34;&#34;&#34;Smooth every data element in the 1D `input_data` array over a 
+    specified `time_window`, using a one-dimensional, zeroth order 
+    Gaussian filter. 
+    
+    The `time_window`, or Gaussian kernel diameter, is used to 
+    calculate a sigma for the Gaussian kernel.
+    
+    For example, if a `time_window` of 20 Myr is supplied, an array with 21
+    elements (10 Myr on each side of a central point, including the central 
+    point) is produced. Each element is filled with the Gaussian evaluated 
+    at that point. 
+    
+    This Gaussian is correlated to each data point in the input_array to
+    smooth the data.
+    
+    Parameters
+    ----------
+    input_data : 1d array
+        A one-dimensional array of input data to smooth using a Gaussian filter.
+    time_window : float, default = 5 (Myr)
+        A float or integer to specify the full width of the Gaussian filter with
+        which to smooth each data point in `input_data`. 1 pixel : 1 Myr. 
+    axis : int, default = -1
+        The axis of `input_data` along which to smooth. Default is -1.
+    output : array or dtype, optional
+        The array in which to place the output, or the dtype of the returned array. 
+        By default an array of the same dtype as input will be created.
+    mode : str, default &#34;reflect&#34;
+        The way the input_array is extended beyond its bounds to ensure all data
+        points can be convolved with the created Gaussian. See 
+        [scipy&#39;s docs](https://docs.scipy.org/doc/scipy/reference/generated/scipy.ndimage.gaussian_filter1d.html)
+        to see the full list of extension methods. By default, `&#34;reflect&#34;` extends
+        `input_array` such that [a b c d] becomes (d c b a | a b c d | d c b a),
+        reflecting about the edge of the last pixel.
+    truncate : float or int, default = 4.0
+        A multiplicative factor that truncates the number of standard deviations, or
+        sigmas, that the Gaussian distribution spans in either direction from the
+        centre. This impacts the number of pixels that the Gaussian kernel spans. 
+        By default, this is set to 4 standard deviations.
+    &#34;&#34;&#34;
+    # Sigma, the magnitude of standard deviation in pixel units, is truncated
+    # by a specified number of permissible standard deviations; 4 by default
+    # half the time window defines the width of the gaussian kernel
+    radius = time_window/2
+    sigma = int(radius-0.5)/int(truncate)
+    
+    # Produce the gaussian kernel given a sigma and kernel full-width/diameter 
+    # (time_window). The coefficient 1/sqrt(2*pi)*sigma is omitted as it 
+    # just scales the kernel distribution and does not impact smoothing weights
+    time_window_array = np.arange(-radius, radius+1)
+    kernel = np.exp(-0.5 / sigma**2 * time_window_array ** 2)
+    
+    # Ensure sum of kernel is normalised to unity
+    kernel = kernel / kernel.sum()
+    
+    # Correlate the input data to the Gaussian kernel
+    smoothed_data = scipy.ndimage.correlate1d(
+        input_data, 
+        kernel, 
+        axis, output, mode,
+        origin=0, # 0 centers the filter over the pixel
+        cval=0.0 # Only applicable if mode is &#39;constant&#39;, extends filter by 0s everywhere. 
+    )
+    return smoothed_data</code></pre>
+</details>
+</dd>
 <dt id="gplately.tools.surface_area_oblate_spheroid"><code class="name flex">
 <span>def <span class="ident">surface_area_oblate_spheroid</span></span>(<span>r1, r2)</span>
 </code></dt>
@@ -1229,6 +1412,7 @@ lon / lat (radians).</p>
 <li><code><a title="gplately.tools.points_to_features" href="#gplately.tools.points_to_features">points_to_features</a></code></li>
 <li><code><a title="gplately.tools.read_csv" href="#gplately.tools.read_csv">read_csv</a></code></li>
 <li><code><a title="gplately.tools.smooth_1D" href="#gplately.tools.smooth_1D">smooth_1D</a></code></li>
+<li><code><a title="gplately.tools.smooth_1D_gaussian" href="#gplately.tools.smooth_1D_gaussian">smooth_1D_gaussian</a></code></li>
 <li><code><a title="gplately.tools.surface_area_oblate_spheroid" href="#gplately.tools.surface_area_oblate_spheroid">surface_area_oblate_spheroid</a></code></li>
 <li><code><a title="gplately.tools.update_progress" href="#gplately.tools.update_progress">update_progress</a></code></li>
 <li><code><a title="gplately.tools.xyz2lonlat" href="#gplately.tools.xyz2lonlat">xyz2lonlat</a></code></li>
