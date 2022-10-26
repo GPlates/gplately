@@ -81,6 +81,7 @@ Classes
 * SeafloorGrid
 
 """
+import warnings
 import pygplates
 import numpy as np
 from pydoc import plain
@@ -1232,7 +1233,13 @@ class SeafloorGrid(object):
         # return reconstruction_data
 
 
-    def lat_lon_z_to_netCDF(self, zval_name, time_arr=None):
+    def lat_lon_z_to_netCDF(
+        self,
+        zval_name,
+        time_arr=None,
+        unmasked=False,
+        nprocs=1,
+    ):
         """ Produce a netCDF4 grid of a z-value identified by its `zval_name` for a 
         given time range in `time_arr`.
 
@@ -1249,86 +1256,160 @@ class SeafloorGrid(object):
             input files.
         time_arr : list of float, default None
             A time range to turn lons, lats and z-values into netCDF4 grids. If not provided,
-            `time_arr` defaults to the full `time_array` provided to `SeafloorGrids`. 
+            `time_arr` defaults to the full `time_array` provided to `SeafloorGrids`.
+        unmasked : bool, default False
+            Save unmasked grids, in addition to masked versions.
+        nprocs : int, defaullt 1
+            Number of processes to use for certain operations (requires joblib).
+            Passed to `joblib.Parallel`, so -1 means all available processes.
         """
+
+        parallel = None
+        nprocs = int(nprocs)
+        if nprocs != 1:
+            try:
+                from joblib import Parallel
+
+                parallel = Parallel(nprocs)
+            except ImportError:
+                warnings.warn(
+                    "Could not import joblib; falling back to serial execution"
+                )
 
         # User can put any time array within SeafloorGrid bounds, but if none
         # is provided, it defaults to the attributed time array
         if time_arr is None:
             time_arr = self.time_array
-        for time in time_arr:
-            # Read the gridding input made by ReconstructByTopologies:
-            if self.file_collection is not None:
-                gridding_input = '{:s}/{}_gridding_input_{:0.1f}Ma.npz'.format(
-                    self.save_directory, 
-                    self.file_collection, 
-                    time
+
+        if parallel is None:
+            for time in time_arr:
+                _lat_lon_z_to_netCDF_time(
+                    time=time,
+                    zval_name=zval_name,
+                    file_collection=self.file_collection,
+                    save_directory=self.save_directory,
+                    total_column_headers=self.total_column_headers,
+                    resX=self.resX,
+                    resY=self.resY,
+                    unmasked=unmasked,
                 )
-            else:
-                gridding_input = '{:s}/gridding_input_{:0.1f}Ma.npz'.format(self.save_directory, time)
+        else:
+            from joblib import delayed
 
-            # Use pandas to load in lons, lats and z values from npz files
-            npz = np.load(gridding_input)
-            curr_data = pd.DataFrame.from_dict({item: npz[item] for item in npz.files}, orient='index').transpose()
-            curr_data.columns = self.total_column_headers
-
-            # Drop duplicate latitudes and longitudes
-            unique_data = curr_data.drop_duplicates(subset=["CURRENT_LONGITUDES", "CURRENT_LATITUDES"])
-
-            # Acquire lons, lats and zvalues for each time
-            lons = unique_data["CURRENT_LONGITUDES"].to_list()
-            lats = unique_data["CURRENT_LATITUDES"].to_list()
-            zdata = np.array(unique_data[zval_name].to_list())
-
-            #zdata = np.where(zdata > 375, float("nan"), zdata), to deal with vmax in the future
-            zdata = np.nan_to_num(zdata)
-            
-            # Create a regular grid on which to interpolate lats, lons and zdata
-            extent_globe = [-180,180,-90,90]
-            grid_lon = np.linspace(extent_globe[0], extent_globe[1], self.resX)
-            grid_lat = np.linspace(extent_globe[2], extent_globe[3], self.resY)
-            X, Y = np.meshgrid(grid_lon, grid_lat)
-
-            # Interpolate lons, lats and zvals over a regular grid using nearest
-            # neighbour interpolation
-            Z = griddata((lons, lats), zdata, (X, Y), method='nearest')
-            
-            # Access continental grids from the save directory
-            if self.save_directory is not None:
-                if self.file_collection is not None:
-                    full_directory = "{}/{}_continent_mask_{}Ma.nc".format(
-                        self.save_directory, 
-                        self.file_collection, 
-                        time
-                    )
-                    grid_output_dir = "{}/{}_{}_grid_{}Ma.nc".format(
-                        self.save_directory, 
-                        self.file_collection, 
-                        str(zval_name),
-                        time
-                    )
-                else:
-                    full_directory = "{}/continent_mask_{}Ma.nc".format(
-                        self.save_directory, 
-                        time
-                    )
-                    grid_output_dir = "{}/grid{}Ma.nc".format(
-                        self.save_directory, 
-                        time
-                    )
-
-            # Identify regions in the grid in the continental mask
-            cont_mask = grids.Raster(
-                    filename=str(full_directory))
-            grd = cont_mask.interpolate(X, Y) > 0.5
-            Z[grd] = np.nan
-
-            grids.write_netcdf_grid(
-                    grid_output_dir, 
-                    Z, 
-                    extent=[-180,180,-90,90]
+            parallel(
+                delayed(_lat_lon_z_to_netCDF_time)(
+                    time=time,
+                    zval_name=zval_name,
+                    file_collection=self.file_collection,
+                    save_directory=self.save_directory,
+                    total_column_headers=self.total_column_headers,
+                    resX=self.resX,
+                    resY=self.resY,
+                    unmasked=unmasked,
                 )
-            print("netCDF grid for {} Ma complete!".format(time))
-        return
+                for time in time_arr
+            )
 
 
+def _lat_lon_z_to_netCDF_time(
+    time,
+    zval_name,
+    file_collection,
+    save_directory,
+    total_column_headers,
+    resX,
+    resY,
+    unmasked=False,
+):
+    # Read the gridding input made by ReconstructByTopologies:
+    if file_collection is not None:
+        gridding_input = '{:s}/{}_gridding_input_{:0.1f}Ma.npz'.format(
+            save_directory,
+            file_collection,
+            time
+        )
+    else:
+        gridding_input = '{:s}/gridding_input_{:0.1f}Ma.npz'.format(save_directory, time)
+
+    # Use pandas to load in lons, lats and z values from npz files
+    npz = np.load(gridding_input)
+    curr_data = pd.DataFrame.from_dict({item: npz[item] for item in npz.files}, orient='columns')
+    curr_data.columns = total_column_headers
+
+    # Drop duplicate latitudes and longitudes
+    unique_data = curr_data.drop_duplicates(subset=["CURRENT_LONGITUDES", "CURRENT_LATITUDES"])
+
+    # Acquire lons, lats and zvalues for each time
+    lons = unique_data["CURRENT_LONGITUDES"].to_list()
+    lats = unique_data["CURRENT_LATITUDES"].to_list()
+    zdata = np.array(unique_data[zval_name].to_list())
+
+    #zdata = np.where(zdata > 375, float("nan"), zdata), to deal with vmax in the future
+    zdata = np.nan_to_num(zdata)
+
+    # Create a regular grid on which to interpolate lats, lons and zdata
+    extent_globe = [-180,180,-90,90]
+    grid_lon = np.linspace(extent_globe[0], extent_globe[1], resX)
+    grid_lat = np.linspace(extent_globe[2], extent_globe[3], resY)
+    X, Y = np.meshgrid(grid_lon, grid_lat)
+
+    # Interpolate lons, lats and zvals over a regular grid using nearest
+    # neighbour interpolation
+    Z = griddata((lons, lats), zdata, (X, Y), method='nearest')
+
+    # Access continental grids from the save directory
+    if save_directory is not None:
+        if file_collection is not None:
+            full_directory = "{}/{}_continent_mask_{}Ma.nc".format(
+                save_directory,
+                file_collection,
+                time
+            )
+            grid_output_unmasked = "{}/{}_{}_grid_unmasked_{}Ma.nc".format(
+                save_directory,
+                file_collection,
+                str(zval_name),
+                time
+            )
+            grid_output_dir = "{}/{}_{}_grid_{}Ma.nc".format(
+                save_directory,
+                file_collection,
+                str(zval_name),
+                time
+            )
+        else:
+            full_directory = "{}/{}_continent_mask_{}Ma.nc".format(
+                save_directory,
+                zval_name,
+                time
+            )
+            grid_output_unmasked = "{}/{}_grid_unmasked_{}Ma.nc".format(
+                save_directory,
+                zval_name,
+                time
+            )
+            grid_output_dir = "{}/{}_grid_{}Ma.nc".format(
+                save_directory,
+                zval_name,
+                time
+            )
+
+    if unmasked:
+        grids.write_netcdf_grid(
+            grid_output_unmasked,
+            Z,
+            extent=[-180,180,-90,90]
+        )
+
+    # Identify regions in the grid in the continental mask
+    cont_mask = grids.Raster(
+            filename=str(full_directory))
+    grd = cont_mask.interpolate(X, Y) > 0.5
+    Z[grd] = np.nan
+
+    grids.write_netcdf_grid(
+            grid_output_dir,
+            Z,
+            extent=[-180,180,-90,90]
+        )
+    print("netCDF grids for {} Ma complete!".format(time))
