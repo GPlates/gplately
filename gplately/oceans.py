@@ -91,6 +91,7 @@ import multiprocessing
 import glob
 import os
 import re
+import math
 from skimage import measure
 from scipy.interpolate import griddata
 import pandas as pd
@@ -299,6 +300,14 @@ def point_in_polygon_routine(multi_point, COB_polygons):
     return pygplates.MultiPointOnSphere(points_in_arr), pygplates.MultiPointOnSphere(points_out_arr), zvals
 
 
+def _deg2pixels(deg_res, deg_min, deg_max):
+    return int(np.floor((deg_max - deg_min) / deg_res)) + 1
+
+
+def _pixels2deg(spacing_pixel, deg_min, deg_max):
+    return (deg_max - deg_min) / np.floor(int(spacing_pixel - 1))
+
+
 class SeafloorGrid(object):
 
     """A class to generate grids that track data atop global ocean basin points 
@@ -326,11 +335,32 @@ class SeafloorGrid(object):
         Control the number of points in the icosahedral mesh (higher integer
         means higher resolution of continent masks).
     ridge_sampling : float, default 0.5
-        Spatial resolution for points that emerge from ridges.
-    resX : int, default 2000
-        X resolution of the regular grid to interpolate the icosahedral meshed points onto.
-    resY : int, default 1000
-        Y resolution of the regular grid to interpolate the icosahedral meshed points onto.
+        Spatial resolution (in degrees) at which points that emerge from ridges are tessellated.
+    extent : list of float or int, default [-180.,180.,-90.,90.]
+        A list containing the mininum longitude, maximum longitude, minimum latitude and 
+        maximum latitude extents for all masking and final grids.
+    spacing_degrees : float, default None
+        The degree spacing/interval with which to space grid points across all masking and
+        final grids. If `spacing_degrees` is provided, all grids will use it, and `spacingX`
+        and/or `spacingY` cannot be provided too. However, if `spacingX` and `spacingY` are 
+        provided instead, `spacing_degrees` defaults to the equivalent degree spacing of 
+        `spacingX` and `spacingY`. If insufficient grid resolution information is given, 
+        `spacing_degrees` defaults to 0.1, `spacingX` defaults to 3601 and `spacingY` defaults
+        to 1801. 
+    spacingX : int, default None
+        Number of pixels in the longitudinal direction of the regular grid to interpolate 
+        the grid points onto. If provided with the correct `spacingY`, it creates 
+        an even grid point distribution across `extent`. Otherwise, `spacingX` and `spacingY` 
+        are shifted to values that create an even point distribution. If `spacingX` is provided
+        alone, `spacingX` defaults to 3601 and `spacingY` defaults to 1801, which translates to
+        a `spacing_degree` of 0.1. If provided, `spacing_degrees` cannot be provided too.
+    spacingY : int, default None
+        Number of pixels in the latitudinal direction of the regular grid to interpolate
+        the grid points onto. If provided with the correct `spacingX`, it creates 
+        an even grid point distribution across `extent`. Otherwise, `spacingX` and `spacingY` 
+        are shifted to values that create an even point distribution. If `spacingY` is provided
+        alone, `spacingX` defaults to 3601 and `spacingY` defaults to 1801, which translates to
+        a `spacing_degree` of 0.1. If provided, `spacing_degrees` cannot be provided too.
     subduction_collision_parameters : len-2 tuple of float, default (5.0, 10.0)
         A 2-tuple of (threshold velocity delta in kms/my, threshold distance to boundary 
         per My in kms/my)
@@ -363,8 +393,10 @@ class SeafloorGrid(object):
         file_collection=None,
         refinement_levels=5, 
         ridge_sampling=0.5,
-        resX = 2000,
-        resY = 1000,
+        extent = [-180,180,-90,90],
+        spacing_degrees = None, 
+        spacingX = None,
+        spacingY = None,
         subduction_collision_parameters = (5.0, 10.0),
         initial_ocean_mean_spreading_rate = 75.,
         resume_from_checkpoints = True,
@@ -388,8 +420,110 @@ class SeafloorGrid(object):
         self.initial_ocean_mean_spreading_rate = initial_ocean_mean_spreading_rate
 
         # Gridding parameters
-        self.resX = resX
-        self.resY = resY
+        self.extent = extent
+
+        if spacing_degrees and (spacingX or spacingY):
+            raise ValueError("Please provide only spacing_degrees OR spacingX & spacingY.")
+
+        divisible_degree_spacings = [0.1, 0.25, 0.5, 0.75, 1.]
+
+        if spacing_degrees:
+
+            if spacing_degrees in divisible_degree_spacings:
+                self.spacing_degrees = spacing_degrees
+                self.spacingX = _deg2pixels(spacing_degrees, self.extent[0], self.extent[1])
+                self.spacingY = _deg2pixels(spacing_degrees, self.extent[2], self.extent[3])
+
+            # If the provided spacing is >>1 degree, use 1 degree
+            elif spacing_degrees >= divisible_degree_spacings[-1]:
+                self.spacing_degrees = divisible_degree_spacings[-1]
+                self.spacingX = _deg2pixels(divisible_degree_spacings[-1], self.extent[0], self.extent[1])
+                self.spacingY = _deg2pixels(divisible_degree_spacings[-1], self.extent[2], self.extent[3])
+
+                with warnings.catch_warnings():
+                    warnings.simplefilter("always")
+                    warnings.warn(
+                        "The provided spacing_degrees of {} is quite large. To preserve the grid resolution, a {} degree spacing and spacingX of {} and spacingY of {} has been employed instead".format(
+                            spacing_degrees, self.spacing_degrees, self.spacing_degrees, self.spacingX, self.spacingY
+                        )
+                    )
+
+            else:
+                for divisible_degree_spacing in divisible_degree_spacings:
+                # The tolerance is half the difference between consecutive divisible spacings.
+                # Max is 1 degree for now - other integers work but may provide too little of a
+                # grid resolution.
+                    if (abs(spacing_degrees - divisible_degree_spacing) <= 0.125):
+                        new_deg_res = divisible_degree_spacing
+                        self.spacing_degrees = new_deg_res
+                        self.spacingX = _deg2pixels(new_deg_res, self.extent[0], self.extent[1])
+                        self.spacingY = _deg2pixels(new_deg_res, self.extent[2], self.extent[3])
+
+                with warnings.catch_warnings():
+                    warnings.simplefilter("always")
+                    warnings.warn(
+                        "The provided spacing_degrees of {} does not cleanly divide into the global extent. A degree spacing of {} with spacingX of {} and spacingY of {} has been employed instead.".format(
+                            spacing_degrees, self.spacing_degrees, self.spacingX, self.spacingY
+                        )
+                    )
+
+        else:
+            # If either spacingX and/or spacingY is still none, use default resolutions
+            if None in (spacingX, spacingY):
+                self.spacing_degrees = 0.1
+                self.spacingX = 3601
+                self.spacingY = 1801
+
+            # If both spacingX and spacingY are given,
+            else:
+                # Find their equivalent degree spacings
+                equivalent_lon_deg = _pixels2deg(spacingX, self.extent[0], self.extent[1])
+                equivalent_lat_deg = _pixels2deg(spacingY, self.extent[2], self.extent[3])
+
+                # Can use the provided spacings if they provide an equal degree interval in x and y
+                if equivalent_lon_deg == equivalent_lat_deg:
+                    self.spacingX = spacingX
+                    self.spacingY = spacingY
+                    self.spacing_degrees = equivalent_lon_deg
+
+                # If they do not provide an equal degree interval in x and y,
+                else:
+
+                    # Use the average degree of both the lon and lat equivalent degrees
+                    spacing_degrees = (equivalent_lat_deg + equivalent_lon_deg)/2
+
+                    # If the average spacing is much higher than the last permissible degree interval,
+                    # use the last permissible degree interval.
+                    if spacing_degrees >= divisible_degree_spacings[-1]:
+                        self.spacing_degrees = divisible_degree_spacings[-1]
+                        self.spacingX = _deg2pixels(divisible_degree_spacings[-1], self.extent[0], self.extent[1])
+                        self.spacingY = _deg2pixels(divisible_degree_spacings[-1], self.extent[2], self.extent[3])
+
+                        with warnings.catch_warnings():
+                            warnings.simplefilter("always")
+                            warnings.warn(
+                                "The provided spacingX of {} and spacingY of {} gives a large and uneven degree spacing. To preserve the grid resolution, a {} degree spacing and spacingX of {} and spacingY of {} has been employed instead.".format(
+                                    spacingX, spacingY, self.spacing_degrees, self.spacingX, self.spacingY
+                                )
+                            )
+                    else:
+                        # Get the closest divisible degree to this average degree 
+                        for divisible_degree_spacing in divisible_degree_spacings:
+
+                            if (abs(spacing_degrees - divisible_degree_spacing) <= 0.125):
+                                new_deg_res = divisible_degree_spacing
+                                self.spacing_degrees = new_deg_res
+                                self.spacingX = _deg2pixels(new_deg_res, self.extent[0], self.extent[1])
+                                self.spacingY = _deg2pixels(new_deg_res, self.extent[2], self.extent[3])
+
+                        with warnings.catch_warnings():
+                            warnings.simplefilter("always")
+                            warnings.warn(
+                                "The provided pixel spacingX of {} and spacingY of {} do not cleanly divide into the global extent. A degree spacing of {} with spacingX of {} and spacingY of {} has been employed instead.".format(
+                                    spacingX, spacingY, self.spacing_degrees, self.spacingX, self.spacingY
+                                )
+                            )
+
         self.resume_from_checkpoints = resume_from_checkpoints
 
         # Temporal parameters
@@ -865,9 +999,9 @@ class SeafloorGrid(object):
             )
 
             # A regular grid to interpolate the icosahedral mesh onto
-            extent_globe = np.radians([-180,180,-90,90])
-            grid_lon = np.linspace(extent_globe[0], extent_globe[1], self.resX)
-            grid_lat = np.linspace(extent_globe[2], extent_globe[3], self.resY)
+            extent_globe = np.radians(self.extent)
+            grid_lon = np.linspace(extent_globe[0], extent_globe[1], self.spacingX)
+            grid_lat = np.linspace(extent_globe[2], extent_globe[3], self.spacingY)
 
             # Interpolate the icosahedral-meshed zval binaries onto the regular global extent grid
             grid_z1 = self.icosahedral_global_mesh.interpolate_to_grid(
@@ -1289,8 +1423,9 @@ class SeafloorGrid(object):
                     file_collection=self.file_collection,
                     save_directory=self.save_directory,
                     total_column_headers=self.total_column_headers,
-                    resX=self.resX,
-                    resY=self.resY,
+                    extent=self.extent,
+                    resX=self.spacingX,
+                    resY=self.spacingY,
                     unmasked=unmasked,
                 )
         else:
@@ -1303,8 +1438,9 @@ class SeafloorGrid(object):
                     file_collection=self.file_collection,
                     save_directory=self.save_directory,
                     total_column_headers=self.total_column_headers,
-                    resX=self.resX,
-                    resY=self.resY,
+                    extent=self.extent,
+                    resX=self.spacingX,
+                    resY=self.spacingY,
                     unmasked=unmasked,
                 )
                 for time in time_arr
@@ -1317,6 +1453,7 @@ def _lat_lon_z_to_netCDF_time(
     file_collection,
     save_directory,
     total_column_headers,
+    extent,
     resX,
     resY,
     unmasked=False,
@@ -1348,7 +1485,7 @@ def _lat_lon_z_to_netCDF_time(
     zdata = np.nan_to_num(zdata)
 
     # Create a regular grid on which to interpolate lats, lons and zdata
-    extent_globe = [-180,180,-90,90]
+    extent_globe = extent
     grid_lon = np.linspace(extent_globe[0], extent_globe[1], resX)
     grid_lat = np.linspace(extent_globe[2], extent_globe[3], resY)
     X, Y = np.meshgrid(grid_lon, grid_lat)
