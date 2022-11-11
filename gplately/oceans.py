@@ -1535,7 +1535,7 @@ def _lat_lon_z_to_netCDF_time(
         grids.write_netcdf_grid(
             grid_output_unmasked,
             Z,
-            extent=[-180,180,-90,90]
+            extent=extent
         )
 
     # Identify regions in the grid in the continental mask
@@ -1547,6 +1547,6 @@ def _lat_lon_z_to_netCDF_time(
     grids.write_netcdf_grid(
             grid_output_dir,
             Z,
-            extent=[-180,180,-90,90]
+            extent=extent
         )
     print("netCDF grids for {} Ma complete!".format(time))
