@@ -36,12 +36,19 @@ class PlateReconstruction(object):
     """
     
     def __init__(self, rotation_model=None, topology_features=None, static_polygons=None):
+
+        if hasattr(rotation_model, "reconstruction_identifier"):
+            self.name = rotation_model.reconstruction_identifier
+        else:
+            self.name = None
+
         rotation_model = pygplates.RotationModel(rotation_model)
 
         default_topology_features = pygplates.FeatureCollection()
         for topology in topology_features:
             default_topology_features.add( pygplates.FeatureCollection(topology) )
 
+        # To-do: should set up setter/getters for these attributes
         self.rotation_model = rotation_model
         self.topology_features = default_topology_features
         self.static_polygons = static_polygons
@@ -731,6 +738,14 @@ class PlateReconstruction(object):
                 StepTimes[:,i] = StepTime
                 StepRates[:,i] = StepRate
 
+                # Obseleted by Lauren's changes above (though it is more efficient)
+                # multiply arc length of the motion path segment by a latitude-dependent Earth radius
+                # use latitude of the segment start point
+                # distance.append( segment.get_arc_length() * _tools.geocentric_radius(segment.get_start_point().to_lat_lon()[0]) / 1e3)
+                # rate = np.asarray(distance)/np.diff(time_array)
+                # rates[:,i] = np.flipud(rate)
+                # rates *= 0.1 # cm/yr
+        
         if return_rate_of_motion is True:
             return np.squeeze(rlons), np.squeeze(rlats), np.squeeze(StepTimes), np.squeeze(StepRates)
         else:
