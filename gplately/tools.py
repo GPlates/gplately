@@ -2,6 +2,7 @@
 """
 import numpy as np
 import pygplates
+import pandas as pd
 import scipy
 
 EARTH_RADIUS = pygplates.Earth.mean_radius_in_kms
@@ -398,6 +399,35 @@ def plate_partitioner_for_point(lat_lon_tuple, topology_features, rotation_model
     return(plate_id_at_present_day)
 
 
+def read_rotation_file_pandas(rotation_file_paths):
+    """ Written by Nicky Williams. Extract data from one rotation file, and write 
+    it to a pandas dataframe.
+    """
+    rotation_file = pd.read_csv(
+        rotation_file_paths, 
+        names = ['reconstruction_plate_id', 'age', 'lat', 'lon', 'angle', 'anchor_plate_id', 'comment'], 
+        delim_whitespace=True, 
+        comment='!'
+    )
+    with open(rotation_file_paths, 'r') as f:
+        lines = f.readlines()
+        output = []
+
+        comment = '!'
+        for line in lines:
+            head, sep, tail = line.partition(comment)
+            tail = tail.strip('\n')
+            output.append(tail)
+    
+    rotation_file['comment'] = output
+    
+    return rotation_file
+
+
+def correct_longitudes_for_dateline(lons):
+    lons[lons < 0] += 360 # correct for dateline
+    return lons
+
 # Auxiliary functions for the Muller et al. 2022 paper "Evolution of Earth’s tectonic carbon conveyor belt"
 def surface_area_oblate_spheroid(r1, r2):
     e = np.sqrt(1.0 - r2**2/r1**2)
@@ -517,5 +547,3 @@ def smooth_1D_gaussian(
         cval=0.0 # Only applicable if mode is 'constant', extends filter by 0s everywhere. 
     )
     return smoothed_data
-    
-
