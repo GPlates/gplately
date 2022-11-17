@@ -736,7 +736,7 @@ class PlateReconstruction(object):
                 
                 # Append the nth point's step time and step rate coordinates to the ndarray
                 StepTimes[:,i] = StepTime
-                StepRates[:,i] = StepRate
+                StepRates[:,i] = StepRate*0.1 # cm/yr
 
                 # Obseleted by Lauren's changes above (though it is more efficient)
                 # multiply arc length of the motion path segment by a latitude-dependent Earth radius
@@ -877,7 +877,7 @@ class PlateReconstruction(object):
 
                 # Append the nth point's step time and step rate coordinates to the ndarray
                 StepTimes[:,i] = StepTime
-                StepRates[:,i] = StepRate
+                StepRates[:,i] = StepRate*0.1 # cm/yr
 
             return left_lon[start:], left_lat[start:], right_lon[start:], right_lat[start:], StepTimes, StepRates
 
@@ -1239,7 +1239,7 @@ class Points(object):
                 
                 # Append the nth point's step time and step rate coordinates to the ndarray
                 StepTimes[:,i] = StepTime
-                StepRates[:,i] = StepRate
+                StepRates[:,i] = StepRate*0.1 # cm/yr
         
         if return_rate_of_motion is True:
             return np.squeeze(rlons), np.squeeze(rlats), np.squeeze(StepTimes), np.squeeze(StepRates)
