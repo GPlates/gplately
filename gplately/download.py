@@ -729,7 +729,7 @@ class DataServer(object):
     """
     def __init__(self, file_collection):
 
-        self.file_collection = file_collection
+        self.file_collection = file_collection.capitalize()
         self.data_collection = DataCollection(self.file_collection)
 
 
@@ -879,6 +879,9 @@ class DataServer(object):
         if not static_polygons:
             print("No static polygons in {}.".format(self.file_collection))
             static_polygons = []
+
+        # add identifier for setting up DownloadServer independently
+        rotation_model.reconstruction_identifier = self.file_collection
 
         return rotation_model, topology_features, static_polygons
 

@@ -216,7 +216,7 @@ def write_netcdf_grid(filename, grid, extent=[-180,180,-90,90]):
     lon_grid = np.linspace(extent[0], extent[1], ncols)
     lat_grid = np.linspace(extent[2], extent[3], nrows)
     
-    with netCDF4.Dataset(filename, 'w') as cdf:
+    with netCDF4.Dataset(filename, 'w', driver=None) as cdf:
         cdf.createDimension('x', lon_grid.size)
         cdf.createDimension('y', lat_grid.size)
         cdf_lon = cdf.createVariable('x', lon_grid.dtype, ('x',), zlib=True)
@@ -1221,8 +1221,13 @@ class Raster(object):
         """
         interp = self._interpolator
         interp.values = self.data
+
+        lons = np.atleast_1d(lons)
+        lats = np.atleast_1d(lats)
+        lons[lons > 180] -= 360
+        lons[lons < -180] += 360
         data_interp = interp((lats,lons), method=method, return_indices=return_indices, return_distances=return_distances)
-        return data_interp
+        return np.squeeze(data_interp)
 
 
     def resample(self, spacingX, spacingY, overwrite=False):
@@ -1359,8 +1364,9 @@ class Raster(object):
 class TimeRaster(Raster):
     """ A class for the temporal manipulation of raster data. To be added soon!
     """
-    def __init__(self, PlateReconstruction_object, filename=None, array=None, extent=None, resample=None):
+    def __init__(self, PlateReconstruction_object=None, filename=None, array=None, extent=None, resample=None):
 
-        super(TimeRaster, self).__init__(filename, array, extent, resample)
+        super(TimeRaster, self).__init__(PlateReconstruction_object)
 
-        self.PlateReconstruction_object = PlateReconstruction_object
+
+        
