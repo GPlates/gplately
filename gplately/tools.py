@@ -399,8 +399,156 @@ def plate_partitioner_for_point(lat_lon_tuple, topology_features, rotation_model
     return(plate_id_at_present_day)
 
 
-<<<<<<< HEAD
+def read_rotation_file_pandas(rotation_file_paths):
+    """ Written by Nicky Williams. Extract data from one rotation file, and write 
+    it to a pandas dataframe.
+    """
+    rotation_file = pd.read_csv(
+        rotation_file_paths, 
+        names = ['reconstruction_plate_id', 'age', 'lat', 'lon', 'angle', 'anchor_plate_id', 'comment'], 
+        delim_whitespace=True, 
+        comment='!'
+    )
+    with open(rotation_file_paths, 'r') as f:
+        lines = f.readlines()
+        output = []
 
+        comment = '!'
+        for line in lines:
+            head, sep, tail = line.partition(comment)
+            tail = tail.strip('\n')
+            output.append(tail)
+    
+    rotation_file['comment'] = output
+    
+    return rotation_file
+
+
+def correct_longitudes_for_dateline(lons):
+    lons[lons < 0] += 360 # correct for dateline
+    return lons
+
+# Auxiliary functions for the Muller et al. 2022 paper "Evolution of Earth’s tectonic carbon conveyor belt"
+def surface_area_oblate_spheroid(r1, r2):
+    e = np.sqrt(1.0 - r2**2/r1**2)
+    return 2.0*np.pi*r1**2*(1.0 + (1.0-e**2)/e * np.arctanh(e))
+
+
+def lat_area_function(latitude_one, latitude_two, longitude_resolution):
+    '''
+    Calculates the point area of an evenly gridded lat/lon mesh
+    Longitude resolution is lon2 - lon1
+    '''
+    dlat = np.sin(np.radians(latitude_two)) - np.sin(np.radians(latitude_one))
+    lat_area = 2 * np.pi * 6371.009e3**2 * np.abs(dlat)/longitude_resolution
+    return lat_area
+
+
+def smooth_1D(array, sigma=3.0, axis=0):
+    """ Gaussian filter with standard deviation """
+    return scipy.ndimage.gaussian_filter1d(array, sigma, axis=axis)
+
+
+def My2s(Ma):
+    return Ma*3.1536e13
+
+
+def update_progress(progress):
+    from IPython.display import clear_output
+    bar_length = 20
+    if isinstance(progress, int):
+        progress = float(progress)
+    if not isinstance(progress, float):
+        progress = 0
+    if progress < 0:
+        progress = 0
+    if progress >= 1:
+        progress = 1
+    
+    bar_length = 20
+    block = int(round(bar_length * progress))
+
+    clear_output(wait = True)
+    text = "Progress: [{0}] {1:.1f}%".format( "#" * block + "-" * (bar_length - block), progress * 100)
+    print(text)
+
+
+def read_csv(filename, readcols):
+    """ read csv and reorder from 0 - 250 Ma """
+    Ma = np.loadtxt(filename, delimiter=',', usecols=(0,), skiprows=1, dtype=int, unpack=True)
+    data = np.loadtxt(filename, delimiter=',', usecols=readcols, skiprows=1, unpack=False)
+    return data[Ma]
+
+
+def smooth_1D_gaussian(
+    input_data, time_window, 
+    axis=-1, output=None, mode="reflect", truncate=4.0):
+    """Smooth every data element in the 1D `input_data` array over a 
+    specified `time_window`, using a one-dimensional, zeroth order 
+    Gaussian filter. 
+    
+    The `time_window`, or Gaussian kernel diameter, is used to 
+    calculate a sigma for the Gaussian kernel.
+    
+    For example, if a `time_window` of 20 Myr is supplied, an array with 21
+    elements (10 Myr on each side of a central point, including the central 
+    point) is produced. Each element is filled with the Gaussian evaluated 
+    at that point. 
+    
+    This Gaussian is correlated to each data point in the input_array to
+    smooth the data.
+    
+    Parameters
+    ----------
+    input_data : 1d array
+        A one-dimensional array of input data to smooth using a Gaussian filter.
+    time_window : float, default = 5 (Myr)
+        A float or integer to specify the full width of the Gaussian filter with
+        which to smooth each data point in `input_data`. 1 pixel : 1 Myr. 
+    axis : int, default = -1
+        The axis of `input_data` along which to smooth. Default is -1.
+    output : array or dtype, optional
+        The array in which to place the output, or the dtype of the returned array. 
+        By default an array of the same dtype as input will be created.
+    mode : str, default "reflect"
+        The way the input_array is extended beyond its bounds to ensure all data
+        points can be convolved with the created Gaussian. See 
+        [scipy's docs](https://docs.scipy.org/doc/scipy/reference/generated/scipy.ndimage.gaussian_filter1d.html)
+        to see the full list of extension methods. By default, `"reflect"` extends
+        `input_array` such that [a b c d] becomes (d c b a | a b c d | d c b a),
+        reflecting about the edge of the last pixel.
+    truncate : float or int, default = 4.0
+        A multiplicative factor that truncates the number of standard deviations, or
+        sigmas, that the Gaussian distribution spans in either direction from the
+        centre. This impacts the number of pixels that the Gaussian kernel spans. 
+        By default, this is set to 4 standard deviations.
+    """
+    # Sigma, the magnitude of standard deviation in pixel units, is truncated
+    # by a specified number of permissible standard deviations; 4 by default
+    # half the time window defines the width of the gaussian kernel
+    radius = time_window/2
+    sigma = int(radius-0.5)/int(truncate)
+    
+    # Produce the gaussian kernel given a sigma and kernel full-width/diameter 
+    # (time_window). The coefficient 1/sqrt(2*pi)*sigma is omitted as it 
+    # just scales the kernel distribution and does not impact smoothing weights
+    time_window_array = np.arange(-radius, radius+1)
+    kernel = np.exp(-0.5 / sigma**2 * time_window_array ** 2)
+    
+    # Ensure sum of kernel is normalised to unity
+    kernel = kernel / kernel.sum()
+    
+    # Correlate the input data to the Gaussian kernel
+    smoothed_data = scipy.ndimage.correlate1d(
+        input_data, 
+        kernel, 
+        axis, output, mode,
+        origin=0, # 0 centers the filter over the pixel
+        cval=0.0 # Only applicable if mode is 'constant', extends filter by 0s everywhere. 
+    )
+    return smoothed_data
+
+    
 # From Simon Williams' GPRM
 def find_distance_to_nearest_ridge(resolved_topologies,shared_boundary_sections,
                                    point_features,fill_value=5000.):
