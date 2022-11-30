@@ -548,7 +548,7 @@ def smooth_1D_gaussian(
     )
     return smoothed_data
 
-    
+
 # From Simon Williams' GPRM
 def find_distance_to_nearest_ridge(resolved_topologies,shared_boundary_sections,
                                    point_features,fill_value=5000.):
@@ -741,7 +741,7 @@ def _get_rotation(
 
     return rotation
 
-=======
+
 def read_rotation_file_pandas(rotation_file_paths):
     """ Written by Nicky Williams. Extract data from one rotation file, and write 
     it to a pandas dataframe.
@@ -890,4 +890,4 @@ def smooth_1D_gaussian(
         cval=0.0 # Only applicable if mode is 'constant', extends filter by 0s everywhere. 
     )
     return smoothed_data
->>>>>>> master
+
