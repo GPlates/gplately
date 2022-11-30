@@ -50,12 +50,12 @@ If an ocean point with a certain velocity on one plate ID transitions into anoth
 rigid plate ID at another timestep (with another velocity), the velocity difference 
 between both plates is calculated. The point may have subducted/collided with a continent 
 if this velocity difference is higher than a specified velocity threshold (which can be
-controlled with ``). To ascertain whether the point should be deactivated, a displacement
-test is conducted. If the proximity of the point's previous time position to the polygon 
-boundary it is approaching is higher than a set distance threshold, then the point is 
-far enough away from the boundary that it cannot be subducted or consumed by it, and 
-hence the point is still active. Otherwise, it is deemed inactive and deleted from the 
-ocean basin mesh. 
+controlled with `subduction_collision_parameters`). To ascertain whether the point 
+should be deactivated, a displacement test is conducted. If the proximity of the 
+point's previous time position to the polygon boundary it is approaching is higher than 
+a set distance threshold, then the point is far enough away from the boundary that it 
+cannot be subducted or consumed by it, and hence the point is still active. Otherwise, 
+it is deemed inactive and deleted from the ocean basin mesh. 
 
 With each reconstruction time step, points from mid-ocean ridges (which have more 
 accurate spreading rates and attributed valid times) will spread across the ocean
@@ -399,7 +399,7 @@ class SeafloorGrid(object):
         spacingY = None,
         subduction_collision_parameters = (5.0, 10.0),
         initial_ocean_mean_spreading_rate = 75.,
-        resume_from_checkpoints = True,
+        resume_from_checkpoints = False,
         zval_names = ['SPREADING_RATE']
         ):
 
@@ -1541,12 +1541,20 @@ def _lat_lon_z_to_netCDF_time(
     # Identify regions in the grid in the continental mask
     cont_mask = grids.Raster(
             filename=str(full_directory))
-    grd = cont_mask.interpolate(X, Y) > 0.5
-    Z[grd] = np.nan
+    
+    # Use the continental mask
+    Z = np.ma.array(
+        grids.Raster(array=Z).data.data, 
+        mask=cont_mask.data.data,
+        fill_value=np.nan
+    )
+
+    #grd = cont_mask.interpolate(X, Y) > 0.5
+    #Z[grd] = np.nan
 
     grids.write_netcdf_grid(
             grid_output_dir,
             Z,
-            extent=extent
+            extent=extent,
         )
     print("netCDF grids for {} Ma complete!".format(time))
