@@ -1265,9 +1265,9 @@ class DataServer(object):
 
         Returns
         -------
-        raster_filenames : ndarray
-            An ndarray of the cached raster. This can be plotted using `matplotlib.pyplot.imshow` on
-            a `cartopy.mpl.GeoAxis` GeoAxesSubplot (see example below).
+        raster_filenames : ndarray or MaskedArray
+            An ndarray or MaskedArray of the cached raster. This can be plotted using 
+            `matplotlib.pyplot.imshow` on a `cartopy.mpl.GeoAxis` GeoAxesSubplot (see example below).
 
         Raises
         ------
@@ -1302,6 +1302,8 @@ class DataServer(object):
         #filetype = &#34;.&#34;+&#34;_&#34;.split(raster_id_string)[-1]
 
         archive_formats = tuple([&#34;.gz&#34;, &#34;.xz&#34;, &#34;.bz2&#34;])
+        grid_extensions = tuple([&#34;.grd&#34;, &#34;.nc&#34;])
+
         # Set to true if we find the given collection in database
         found_collection = False
         raster_filenames = []
@@ -1319,7 +1321,13 @@ class DataServer(object):
         if found_collection is False:
             raise ValueError(&#34;{} not in collection database.&#34;.format(raster_id_string))
         else:
-            raster_matrix = image.imread(raster_filenames)
+            # If the downloaded raster is a grid, process it with the gplately.Raster object
+            if any(grid_extension in raster_filenames for grid_extension in grid_extensions):
+                raster_matrix = _gplately.grids.Raster(filename=raster_filenames).data
+
+            # Otherwise, the raster is an image; use imread to process
+            else:
+                raster_matrix = image.imread(raster_filenames)
         return raster_matrix
 
 
@@ -2738,9 +2746,9 @@ Geosystems, 21, e2020GC009117. DOI: <a href="https://doi.org/10.1029/2020GC00911
 
         Returns
         -------
-        raster_filenames : ndarray
-            An ndarray of the cached raster. This can be plotted using `matplotlib.pyplot.imshow` on
-            a `cartopy.mpl.GeoAxis` GeoAxesSubplot (see example below).
+        raster_filenames : ndarray or MaskedArray
+            An ndarray or MaskedArray of the cached raster. This can be plotted using 
+            `matplotlib.pyplot.imshow` on a `cartopy.mpl.GeoAxis` GeoAxesSubplot (see example below).
 
         Raises
         ------
@@ -2775,6 +2783,8 @@ Geosystems, 21, e2020GC009117. DOI: <a href="https://doi.org/10.1029/2020GC00911
         #filetype = &#34;.&#34;+&#34;_&#34;.split(raster_id_string)[-1]
 
         archive_formats = tuple([&#34;.gz&#34;, &#34;.xz&#34;, &#34;.bz2&#34;])
+        grid_extensions = tuple([&#34;.grd&#34;, &#34;.nc&#34;])
+
         # Set to true if we find the given collection in database
         found_collection = False
         raster_filenames = []
@@ -2792,7 +2802,13 @@ Geosystems, 21, e2020GC009117. DOI: <a href="https://doi.org/10.1029/2020GC00911
         if found_collection is False:
             raise ValueError(&#34;{} not in collection database.&#34;.format(raster_id_string))
         else:
-            raster_matrix = image.imread(raster_filenames)
+            # If the downloaded raster is a grid, process it with the gplately.Raster object
+            if any(grid_extension in raster_filenames for grid_extension in grid_extensions):
+                raster_matrix = _gplately.grids.Raster(filename=raster_filenames).data
+
+            # Otherwise, the raster is an image; use imread to process
+            else:
+                raster_matrix = image.imread(raster_filenames)
         return raster_matrix
 
 
@@ -3511,9 +3527,9 @@ reconstruction models supported by GPlately's <code><a title="gplately.download.
 </dl>
 <h2 id="returns">Returns</h2>
 <dl>
-<dt><strong><code>raster_filenames</code></strong> :&ensp;<code>ndarray</code></dt>
-<dd>An ndarray of the cached raster. This can be plotted using <code>matplotlib.pyplot.imshow</code> on
-a <code>cartopy.mpl.GeoAxis</code> GeoAxesSubplot (see example below).</dd>
+<dt><strong><code>raster_filenames</code></strong> :&ensp;<code>ndarray</code> or <code>MaskedArray</code></dt>
+<dd>An ndarray or MaskedArray of the cached raster. This can be plotted using
+<code>matplotlib.pyplot.imshow</code> on a <code>cartopy.mpl.GeoAxis</code> GeoAxesSubplot (see example below).</dd>
 </dl>
 <h2 id="raises">Raises</h2>
 <dl>
@@ -3564,9 +3580,9 @@ ax2.imshow(etopo1, extent=[-180,180,-90,90], transform=ccrs.PlateCarree())
 
     Returns
     -------
-    raster_filenames : ndarray
-        An ndarray of the cached raster. This can be plotted using `matplotlib.pyplot.imshow` on
-        a `cartopy.mpl.GeoAxis` GeoAxesSubplot (see example below).
+    raster_filenames : ndarray or MaskedArray
+        An ndarray or MaskedArray of the cached raster. This can be plotted using 
+        `matplotlib.pyplot.imshow` on a `cartopy.mpl.GeoAxis` GeoAxesSubplot (see example below).
 
     Raises
     ------
@@ -3601,6 +3617,8 @@ ax2.imshow(etopo1, extent=[-180,180,-90,90], transform=ccrs.PlateCarree())
     #filetype = &#34;.&#34;+&#34;_&#34;.split(raster_id_string)[-1]
 
     archive_formats = tuple([&#34;.gz&#34;, &#34;.xz&#34;, &#34;.bz2&#34;])
+    grid_extensions = tuple([&#34;.grd&#34;, &#34;.nc&#34;])
+
     # Set to true if we find the given collection in database
     found_collection = False
     raster_filenames = []
@@ -3618,7 +3636,13 @@ ax2.imshow(etopo1, extent=[-180,180,-90,90], transform=ccrs.PlateCarree())
     if found_collection is False:
         raise ValueError(&#34;{} not in collection database.&#34;.format(raster_id_string))
     else:
-        raster_matrix = image.imread(raster_filenames)
+        # If the downloaded raster is a grid, process it with the gplately.Raster object
+        if any(grid_extension in raster_filenames for grid_extension in grid_extensions):
+            raster_matrix = _gplately.grids.Raster(filename=raster_filenames).data
+
+        # Otherwise, the raster is an image; use imread to process
+        else:
+            raster_matrix = image.imread(raster_filenames)
     return raster_matrix</code></pre>
 </details>
 </dd>
