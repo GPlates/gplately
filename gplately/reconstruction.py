@@ -2011,5 +2011,5 @@ class ReconstructByTopologies(object):
             
             # Set the plate ID of resolved topology containing current point.
             self.curr_topology_plate_ids[point_index] = curr_polygon.get_feature().get_reconstruction_plate_id()
-            raise ValueError("Cannot save to specified file type, use csv or gpml file extension.")
+
             
