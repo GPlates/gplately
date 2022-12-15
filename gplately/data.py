@@ -45,8 +45,8 @@ class DataCollection(object):
     def __init__(self, file_collection):
         """Uses a string to identify the needed plate model, taken from
         <gplately.data.DataServer>."""
-        database = self.plate_reconstruction_files()
-        if file_collection not in database:
+        database = [model_name.lower() for model_name in self.plate_reconstruction_files()]
+        if file_collection.lower() not in database:
             raise ValueError("Enter a valid plate model identifier, e.g. Muller2019, Seton2012, etc.")
 
         self.file_collection = file_collection.capitalize()
