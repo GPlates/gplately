@@ -170,6 +170,10 @@ def read_netcdf_grid(filename, return_grids=False, resample=None):
         cdf_lon = lon_grid
         cdf_lat = lat_grid
             
+    # Fix grids with 9e36 as the fill value for nan. 
+    #cdf_grid_z.fill_value = float('nan')
+    #cdf_grid_z.data[cdf_grid_z.data > 1e36] = cdf_grid_z.fill_value
+    
     if return_grids:
         return cdf_grid_z, cdf_lon, cdf_lat
     else:
@@ -232,7 +236,9 @@ def write_netcdf_grid(filename, grid, extent=[-180,180,-90,90]):
 
 class RegularGridInterpolator(_RGI):
     """A class to sample gridded data at a set of point coordinates using either linear or nearest-neighbour 
-    interpolation methods. It is a child class of `scipy`'s [`RegularGridInterpolator`](https://docs.scipy.org/doc/scipy/reference/generated/scipy.interpolate.RegularGridInterpolator.html) class. 
+    interpolation methods. It is a child class of `scipy 1.10`'s [`RegularGridInterpolator`](https://docs.scipy.org/doc/scipy/reference/generated/scipy.interpolate.RegularGridInterpolator.html) class.
+
+    This will only work for scipy version 1.10 onwards. 
 
     Attributes
     ----------
@@ -261,6 +267,8 @@ class RegularGridInterpolator(_RGI):
         grid bounds and a corresponding error message was suppressed (by specifying bounds_error=False), all out-of-bound 
         point values are replaced with the self.fill_value attribute ascribed to the RegularGridInterpolator object (if it
         exists). Terminates otherwise.
+
+        This is identical to scipy 1.10's RGI object.
     
         Parameters
         ----------
@@ -297,32 +305,32 @@ class RegularGridInterpolator(_RGI):
         if method not in ["linear", "nearest"]:
             raise ValueError("Method '%s' is not defined" % method)
 
-        ndim = len(self.grid)
-        xi = _ndim_coords_from_arrays(xi, ndim=ndim)
-        if xi.shape[-1] != len(self.grid):
-            raise ValueError("The requested sample points xi have dimension "
-                             "%d, but this RegularGridInterpolator has "
-                             "dimension %d" % (xi.shape[1], ndim))
+        ####### from scipy.interpolate _rgi.py
+        xi, xi_shape, ndim, nans, out_of_bounds = self._prepare_xi(xi)
 
-        xi_shape = xi.shape
-        xi = xi.reshape(-1, xi_shape[-1])
+        indices, norm_distances = self._find_indices(xi.T)
 
-        if self.bounds_error:
-            for i, p in enumerate(xi.T):
-                if not np.logical_and(np.all(self.grid[i][0] <= p),
-                                      np.all(p <= self.grid[i][-1])):
-                    raise ValueError("One of the requested xi is out of bounds "
-                                     "in dimension %d" % i)
-
-        indices, norm_distances, out_of_bounds = self._find_indices(xi.T)
         if method == "linear":
-            result = self._evaluate_linear(indices,
-                                           norm_distances,
-                                           out_of_bounds)
+            if (ndim == 2 and hasattr(self.values, 'dtype') and
+                    self.values.ndim == 2 and self.values.flags.writeable and
+                    self.values.dtype in (np.float64, np.complex128) and
+                    self.values.dtype.byteorder == '='):
+                # until cython supports const fused types, the fast path
+                # cannot support non-writeable values
+                # a fast path
+                out = np.empty(indices.shape[1], dtype=self.values.dtype)
+                result = evaluate_linear_2d(self.values,
+                                            indices,
+                                            norm_distances,
+                                            self.grid,
+                                            out)
+            else:
+                result = self._evaluate_linear(indices,
+                                               norm_distances)
         elif method == "nearest":
             result = self._evaluate_nearest(indices,
-                                            norm_distances,
-                                            out_of_bounds)
+                                            norm_distances)
+
         if not self.bounds_error and self.fill_value is not None:
             result[out_of_bounds] = self.fill_value
             
