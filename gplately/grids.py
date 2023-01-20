@@ -301,6 +301,10 @@ class RegularGridInterpolator(_RGI):
             to True. If suppressed, out-of-bound points are replaced with a set fill_value. 
         """
         from scipy.interpolate.interpnd import _ndim_coords_from_arrays
+
+        # For now, allow cython 2d linear to work
+        from scipy.interpolate._rgi_cython import evaluate_linear_2d
+        
         method = self.method if method is None else method
         if method not in ["linear", "nearest"]:
             raise ValueError("Method '%s' is not defined" % method)
