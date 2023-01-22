@@ -351,7 +351,7 @@ class RegularGridInterpolator(_RGI):
 
         # For now, allow cython 2d linear to work
         from scipy.interpolate._rgi_cython import evaluate_linear_2d
-        
+
         method = self.method if method is None else method
         if method not in [&#34;linear&#34;, &#34;nearest&#34;]:
             raise ValueError(&#34;Method &#39;%s&#39; is not defined&#34; % method)
@@ -1286,6 +1286,8 @@ class Raster(object):
         lons[lons &gt; 180] -= 360
         lons[lons &lt; -180] += 360
         data_interp = interp((lats,lons), method=method, return_indices=return_indices, return_distances=return_distances)
+        # Fix numpy deprecation (once a VisibleDeprecationWarning) that prevents an array being produced from ragged sequences
+        data_interp = np.array(data_interp, dtype=object)
         return np.squeeze(data_interp)
 
 
@@ -2955,6 +2957,8 @@ e.g. resample=(spacingX, spacingY)</dd>
         lons[lons &gt; 180] -= 360
         lons[lons &lt; -180] += 360
         data_interp = interp((lats,lons), method=method, return_indices=return_indices, return_distances=return_distances)
+        # Fix numpy deprecation (once a VisibleDeprecationWarning) that prevents an array being produced from ragged sequences
+        data_interp = np.array(data_interp, dtype=object)
         return np.squeeze(data_interp)
 
 
@@ -3292,6 +3296,8 @@ Alerts user which dimension (index) the point is located.</li>
     lons[lons &gt; 180] -= 360
     lons[lons &lt; -180] += 360
     data_interp = interp((lats,lons), method=method, return_indices=return_indices, return_distances=return_distances)
+    # Fix numpy deprecation (once a VisibleDeprecationWarning) that prevents an array being produced from ragged sequences
+    data_interp = np.array(data_interp, dtype=object)
     return np.squeeze(data_interp)</code></pre>
 </details>
 </dd>
@@ -3591,7 +3597,7 @@ with the <code>fill_value</code> (defined below) if supplied.</dd>
 
         # For now, allow cython 2d linear to work
         from scipy.interpolate._rgi_cython import evaluate_linear_2d
-        
+
         method = self.method if method is None else method
         if method not in [&#34;linear&#34;, &#34;nearest&#34;]:
             raise ValueError(&#34;Method &#39;%s&#39; is not defined&#34; % method)
