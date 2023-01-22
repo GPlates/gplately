@@ -304,7 +304,7 @@ class RegularGridInterpolator(_RGI):
 
         # For now, allow cython 2d linear to work
         from scipy.interpolate._rgi_cython import evaluate_linear_2d
-        
+
         method = self.method if method is None else method
         if method not in ["linear", "nearest"]:
             raise ValueError("Method '%s' is not defined" % method)
@@ -1239,6 +1239,8 @@ class Raster(object):
         lons[lons > 180] -= 360
         lons[lons < -180] += 360
         data_interp = interp((lats,lons), method=method, return_indices=return_indices, return_distances=return_distances)
+        # Fix numpy deprecation (once a VisibleDeprecationWarning) that prevents an array being produced from ragged sequences
+        data_interp = np.array(data_interp, dtype=object)
         return np.squeeze(data_interp)
 
 

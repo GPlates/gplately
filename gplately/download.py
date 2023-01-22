@@ -138,7 +138,7 @@ def _first_time_download_from_web(url):
         return(fnames, etag, textfilename)
     
     
-def download_from_web(url, download_changes=True):
+def download_from_web(url, verbose, download_changes=True):
     """Download a file from a `url` into the `gplately` cache.
     
     Notes
@@ -181,6 +181,9 @@ def download_from_web(url, download_changes=True):
     url : str
         The full URL used to download a file from a public web server
         like webDAV.
+    verbose : bool
+        Choose whether to print user alerts regarding file availability,
+        data server/internet connection status etc. 
     download_changes : bool, default=True
         Permit the re-downloading/update of the file from `url` if 
         it has been updated on the web server since the last download.
@@ -209,7 +212,8 @@ def download_from_web(url, download_changes=True):
         # download files from the URL and create a textfile for this URL's E-Tag
         if _test_internet_connection(url):
             fnames, etag, textfilename = _first_time_download_from_web(url)
-            print("Requested files downloaded to the GPlately cache folder!")
+            if verbose:
+                print("Requested files downloaded to the GPlately cache folder!")
             return(fnames)
     
         # ... if a connection to the web server cannot be established
@@ -239,7 +243,8 @@ def download_from_web(url, download_changes=True):
 
                 # If the e-tag textfile exists for the local files,
                 else: 
-                    print("Checking whether the requested files need to be updated...")
+                    if verbose:
+                        print("Checking whether the requested files need to be updated...")
 
                     # Determine the local file's URL e-tag from the textfile
                     with open(local_etag_txtfile) as f:
@@ -251,7 +256,8 @@ def download_from_web(url, download_changes=True):
                     # If the local and remote e-tags are unequal, the web-server URL 
                     # contains an updated version of the cached files.
                     if str(remote_etag) != str(local_etag):
-                        print("Yes - updating requested files...")
+                        if verbose:
+                            print("Yes - updating requested files...")
                         
                         # Update the e-tag textfile with this newly-identified URL e-tag
                         _save_url_etag_to_txt(remote_etag, remote_etag_textfile)
@@ -266,13 +272,15 @@ def download_from_web(url, download_changes=True):
                             # determine_processor gives the file its processed filename
                             processed_file = str(full_path)+_determine_processor(url)[1]
 
-                        print("Requested files downloaded to the GPlately cache folder!")
+                        if verbose:
+                            print("Requested files downloaded to the GPlately cache folder!")
                         return(_extract_processed_files(processed_file))
 
                     # If the e-tags are equal, the local and remote files are the same.
                     # Just return the file(s) as-is.
                     else:
-                        print("Requested files are up-to-date!")
+                        if verbose:
+                            print("Requested files are up-to-date!")
                         return(_extract_processed_files(
                             str(full_path)+_determine_processor(url)[1]))
             
@@ -733,9 +741,14 @@ class DataServer(object):
         self.data_collection = DataCollection(self.file_collection)
 
 
-    def get_plate_reconstruction_files(self):
+    def get_plate_reconstruction_files(self, verbose=True):
         """Downloads and constructs a `rotation model`, a set of `topology_features` and
         and a set of `static_polygons` needed to call the `PlateReconstruction` object.
+
+        Parameters
+        ----------
+        verbose : bool, default True
+            Toggle print messages regarding server/internet connection status, file availability etc.
 
         Returns
         -------
@@ -793,7 +806,7 @@ class DataServer(object):
                 found_collection = True
                 if len(url) == 1:
                     fnames = _collection_sorter(
-                        download_from_web(url[0]), self.file_collection
+                        download_from_web(url[0], verbose), self.file_collection
                     )
                     rotation_filenames = _collect_file_extension(
                         _str_in_folder(
@@ -838,14 +851,14 @@ class DataServer(object):
                     for file in url[0]:
                         rotation_filenames.append(
                             _collect_file_extension(
-                                download_from_web(file), [".rot"])
+                                download_from_web(file, verbose), [".rot"])
                         )
                         rotation_model = _pygplates.RotationModel(rotation_filenames)
 
                     for file in url[1]:
                         topology_filenames.append(
                             _collect_file_extension(
-                                download_from_web(file), [".gpml"])
+                                download_from_web(file, verbose), [".gpml"])
                         )
                         for file in topology_filenames:
                             topology_features.add(
@@ -856,7 +869,7 @@ class DataServer(object):
                         static_polygon_filenames.append(
                             _check_gpml_or_shp(
                                 _str_in_folder(
-                                    _str_in_filename(download_from_web(url[0]), 
+                                    _str_in_filename(download_from_web(url[0], verbose), 
                                         strings_to_include=DataCollection.static_polygon_strings_to_include(self)
                                     ),    
                                         strings_to_ignore=DataCollection.static_polygon_strings_to_ignore(self)
@@ -886,10 +899,15 @@ class DataServer(object):
         return rotation_model, topology_features, static_polygons
 
 
-    def get_topology_geometries(self):
+    def get_topology_geometries(self, verbose=True):
         """Uses Pooch to download coastline, continent and COB (continent-ocean boundary)
         Shapely geometries from the requested plate model. These are needed to call the `PlotTopologies`
         object and visualise topological plates through time.
+
+        Parameters
+        ----------
+        verbose : bool, default True
+            Toggle print messages regarding server/internet connection status, file availability etc.
 
         Returns
         -------
@@ -954,7 +972,7 @@ class DataServer(object):
                         break
                     else:
                         fnames = _collection_sorter(
-                            download_from_web(url[0]), self.file_collection
+                            download_from_web(url[0], verbose), self.file_collection
                         )
                         coastlines = _check_gpml_or_shp(
                             _str_in_folder(
@@ -990,7 +1008,7 @@ class DataServer(object):
                     for file in url[0]:
                         if url[0] is not None:
                             coastlines.append(_str_in_filename(
-                                download_from_web(file), 
+                                download_from_web(file, verbose), 
                                 strings_to_include=["coastline"])
                             )
                             coastlines = _check_gpml_or_shp(coastlines)
@@ -1000,7 +1018,7 @@ class DataServer(object):
                     for file in url[1]:
                         if url[1] is not None:
                             continents.append(_str_in_filename(
-                                download_from_web(file), 
+                                download_from_web(file, verbose), 
                                 strings_to_include=["continent"])
                             )
                             continents = _check_gpml_or_shp(continents)
@@ -1010,7 +1028,7 @@ class DataServer(object):
                     for file in url[2]:
                         if url[2] is not None:
                             COBs.append(_str_in_filename(
-                                download_from_web(file), 
+                                download_from_web(file, verbose), 
                                 strings_to_include=["cob"])
                             )
                             COBs = _check_gpml_or_shp(COBs)
@@ -1052,7 +1070,7 @@ class DataServer(object):
         return geometries
 
 
-    def get_age_grid(self, time):
+    def get_age_grid(self, time, verbose=True):
         """Downloads seafloor and paleo-age grids from the plate reconstruction model (`file_collection`)
         passed into the `DataServer` object. Stores grids in the "gplately" cache.
 
@@ -1082,6 +1100,8 @@ class DataServer(object):
         time : int, or list of int, default=None
             Request an age grid from one (an integer) or multiple reconstruction times (a
             list of integers).
+        verbose : bool, default True
+            Toggle print messages regarding server/internet connection status, file availability etc.
 
         Returns
         -------
@@ -1121,7 +1141,7 @@ class DataServer(object):
         age_grids = []
         age_grid_links = DataCollection.netcdf4_age_grids(self, time)
         for link in age_grid_links:
-            age_grid_file = download_from_web(link)
+            age_grid_file = download_from_web(link, verbose)
             age_grid = _gplately.grids.read_netcdf_grid(age_grid_file)
             age_grids.append(age_grid)
 
@@ -1134,7 +1154,7 @@ class DataServer(object):
             return age_grids
 
 
-    def get_spreading_rate_grid(self, time):
+    def get_spreading_rate_grid(self, time, verbose=True):
         """Downloads seafloor spreading rate grids from the plate reconstruction 
         model (`file_collection`) passed into the `DataServer` object. Stores 
         grids in the "gplately" cache.
@@ -1154,6 +1174,8 @@ class DataServer(object):
         time : int, or list of int, default=None
             Request a spreading grid from one (an integer) or multiple reconstruction 
             times (a list of integers).
+        verbose : bool, default True
+            Toggle print messages regarding server/internet connection status, file availability etc.
 
         Returns
         -------
@@ -1195,7 +1217,7 @@ class DataServer(object):
         spreading_rate_grids = []
         spreading_rate_grid_links = DataCollection.netcdf4_spreading_rate_grids(self, time)
         for link in spreading_rate_grid_links:
-            spreading_rate_grid_file = download_from_web(link)
+            spreading_rate_grid_file = download_from_web(link, verbose)
             spreading_rate_grid = _gplately.grids.read_netcdf_grid(spreading_rate_grid_file)
             spreading_rate_grids.append(spreading_rate_grid)
 
@@ -1208,7 +1230,7 @@ class DataServer(object):
             return spreading_rate_grids
 
 
-    def get_raster(self, raster_id_string=None):
+    def get_raster(self, raster_id_string=None, verbose=True):
         """Downloads assorted raster data that are not associated with the plate 
         reconstruction models supported by GPlately's `DataServer`. Stores rasters in the 
         "gplately" cache.
@@ -1226,6 +1248,8 @@ class DataServer(object):
         ----------
         raster_id_string : str, default=None
             A string to identify which raster to download.
+        verbose : bool, default True
+            Toggle print messages regarding server/internet connection status, file availability etc.
 
         Returns
         -------
@@ -1278,7 +1302,7 @@ class DataServer(object):
             #raster_name = collection.split("_")[0]
             #raster_type = "."+collection.split("_")[-1]
             if (raster_id_string.lower() == collection.lower()):
-                raster_filenames = download_from_web(zip_url[0])
+                raster_filenames = download_from_web(zip_url[0], verbose)
                 found_collection = True
                 break
 
@@ -1295,7 +1319,7 @@ class DataServer(object):
         return raster_matrix
 
 
-    def get_feature_data(self, feature_data_id_string=None):
+    def get_feature_data(self, feature_data_id_string=None, verbose=True):
         """Downloads assorted geological feature data from web servers (i.e. 
         [GPlates 2.3 sample data](https://www.earthbyte.org/gplates-2-3-software-and-data-sets/))
         into the "gplately" cache.
@@ -1367,6 +1391,8 @@ class DataServer(object):
         feature_data_id_string : str, default=None
             A string to identify which feature data to download to the cache (see list of supported
             feature data above).
+        verbose : bool, default True
+            Toggle print messages regarding server/internet connection status, file availability etc.
 
         Returns
         -------
@@ -1399,7 +1425,7 @@ class DataServer(object):
                 found_collection = True
                 feature_data_filenames = _collection_sorter(
                     _collect_file_extension(
-                    download_from_web(zip_url[0]), [".gpml", ".gpmlz"]
+                    download_from_web(zip_url[0], verbose), [".gpml", ".gpmlz"]
                     ),
                     collection
                 )
