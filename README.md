@@ -21,16 +21,36 @@ GPlately is an object-oriented interface to common pyGPlates and PlateTectonicTo
 
 ## Installation
 
-You can install `GPlately` using the pip package manager,
+To install the latest version of GPlately from a specific repository branch (e.g. `master`), copy the following commands into your terminal:
+
+```python
+cd /path/to/desired/directory #Change your command directory to where you'd like to clone GPlately
+git clone https://github.com/GPlates/gplately.git
+pwd # Just to check your directory - should end with /.../gplately
+git checkout master # or the name of whichever branch you need
+git pull # fetch all recent changes from this branch
+pip install .
+```
+
+You can also install the latest* public release of `GPlately` using the pip package manager (*Note that the version of GPlately installed may not be as up-to-date as the above).
 
 ```python
 pip install gplately
 ```
-
-... you can also install the most updated version of the `GPlately` repository with pip:
+or:
 
 ```python
 pip install git+https://github.com/GPlates/gplately.git 
+```
+
+## Update GPlately
+To update your installation of GPlately to fetch the latest pushes from a specific repository branch (e.g. `master`), copy the following commands into your terminal:
+
+```python
+cd /path/to/gplately/directory #Should be where gplately is cloned - must end in /.../gplately
+git checkout master # or the name of whichever branch you need
+git pull # fetch all recent changes from this branch
+pip install .
 ```
 
 
