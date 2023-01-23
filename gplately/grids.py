@@ -1239,9 +1239,16 @@ class Raster(object):
         lons[lons > 180] -= 360
         lons[lons < -180] += 360
         data_interp = interp((lats,lons), method=method, return_indices=return_indices, return_distances=return_distances)
+
         # Fix numpy deprecation (once a VisibleDeprecationWarning) that prevents an array being produced from ragged sequences
         data_interp = np.array(data_interp, dtype=object)
-        return np.squeeze(data_interp).astype(float)
+
+        if not return_indices and not return_distances:
+            # Return single array as float type; data_interp is not a ragged sequence
+            return np.squeeze(data_interp).astype(float)
+        else:
+            # Consider ragged sequence outputs
+            return np.squeeze(data_interp)
 
 
     def resample(self, spacingX, spacingY, overwrite=False):
