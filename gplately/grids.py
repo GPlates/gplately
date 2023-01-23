@@ -1241,7 +1241,7 @@ class Raster(object):
         data_interp = interp((lats,lons), method=method, return_indices=return_indices, return_distances=return_distances)
         # Fix numpy deprecation (once a VisibleDeprecationWarning) that prevents an array being produced from ragged sequences
         data_interp = np.array(data_interp, dtype=object)
-        return np.squeeze(data_interp)
+        return np.squeeze(data_interp).astype(float)
 
 
     def resample(self, spacingX, spacingY, overwrite=False):
