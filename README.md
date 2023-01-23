@@ -8,9 +8,9 @@ GPlately is an object-oriented interface to common pyGPlates and PlateTectonicTo
 
 - [pyGPlates](https://www.gplates.org/docs/pygplates/pygplates_getting_started.html#installation)
 - [PlateTectonicTools](https://github.com/EarthByte/PlateTectonicTools)
-- [Shapely](https://shapely.readthedocs.io/en/stable/project.html#installing-shapely)
+- [Shapely <2.0](https://shapely.readthedocs.io/en/stable/project.html#installing-shapely)
 - NumPy
-- SciPy
+- SciPy 1.10
 - Matplotlib
 - [Cartopy](https://scitools.org.uk/cartopy/docs/latest/index.html#getting-started) (for mapping)
 - Shapely
