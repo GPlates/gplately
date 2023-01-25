@@ -300,41 +300,20 @@ class RegularGridInterpolator(_RGI):
             dimension (index) the point is located. Only raised if the RegularGridInterpolator attribute bounds_error is set
             to True. If suppressed, out-of-bound points are replaced with a set fill_value. 
         """
-        from scipy.interpolate.interpnd import _ndim_coords_from_arrays
-
-        # For now, allow cython 2d linear to work
-        from scipy.interpolate._rgi_cython import evaluate_linear_2d
-
         method = self.method if method is None else method
         if method not in ["linear", "nearest"]:
             raise ValueError("Method '%s' is not defined" % method)
 
-        ####### from scipy.interpolate _rgi.py
         xi, xi_shape, ndim, nans, out_of_bounds = self._prepare_xi(xi)
 
         indices, norm_distances = self._find_indices(xi.T)
 
         if method == "linear":
-            if (ndim == 2 and hasattr(self.values, 'dtype') and
-                    self.values.ndim == 2 and self.values.flags.writeable and
-                    self.values.dtype in (np.float64, np.complex128) and
-                    self.values.dtype.byteorder == '='):
-                # until cython supports const fused types, the fast path
-                # cannot support non-writeable values
-                # a fast path
-                out = np.empty(indices.shape[1], dtype=self.values.dtype)
-                result = evaluate_linear_2d(self.values,
-                                            indices,
-                                            norm_distances,
-                                            self.grid,
-                                            out)
-            else:
-                result = self._evaluate_linear(indices,
-                                               norm_distances)
+            result = self._evaluate_linear(indices,
+                                           norm_distances)
         elif method == "nearest":
             result = self._evaluate_nearest(indices,
                                             norm_distances)
-
         if not self.bounds_error and self.fill_value is not None:
             result[out_of_bounds] = self.fill_value
             
@@ -350,6 +329,116 @@ class RegularGridInterpolator(_RGI):
             return tuple(output_tuple)
         else:
             return output_tuple[0]
+
+
+    def _prepare_xi(self, xi):
+        from scipy.interpolate.interpnd import _ndim_coords_from_arrays
+        ndim = len(self.grid)
+        xi = _ndim_coords_from_arrays(xi, ndim=ndim)
+        if xi.shape[-1] != len(self.grid):
+            raise ValueError("The requested sample points xi have dimension "
+                             f"{xi.shape[-1]} but this "
+                             f"RegularGridInterpolator has dimension {ndim}")
+
+        xi_shape = xi.shape
+        xi = xi.reshape(-1, xi_shape[-1])
+
+        # find nans in input
+        nans = np.any(np.isnan(xi), axis=-1)
+
+        if self.bounds_error:
+            for i, p in enumerate(xi.T):
+                if not np.logical_and(np.all(self.grid[i][0] <= p),
+                                      np.all(p <= self.grid[i][-1])):
+                    raise ValueError("One of the requested xi is out of bounds "
+                                     "in dimension %d" % i)
+            out_of_bounds = None
+        else:
+            out_of_bounds = self._find_out_of_bounds(xi.T)
+
+        return xi, xi_shape, ndim, nans, out_of_bounds
+
+
+    def _find_out_of_bounds(self, xi):
+        # check for out of bounds xi
+        out_of_bounds = np.zeros((xi.shape[1]), dtype=bool)
+        # iterate through dimensions
+        for x, grid in zip(xi, self.grid):
+            out_of_bounds += x < grid[0]
+            out_of_bounds += x > grid[-1]
+        return out_of_bounds
+
+
+    def _find_indices(self, xi):
+        """Index identifier outsourced from scipy 1.9's 
+        RegularGridInterpolator to ensure stable 
+        operations with all versions of scipy >1.0. 
+        """
+        # find relevant edges between which xi are situated
+        indices = []
+        # compute distance to lower edge in unity units
+        norm_distances = []
+        # iterate through dimensions
+        for x, grid in zip(xi, self.grid):
+            i = np.searchsorted(grid, x) - 1
+            i[i < 0] = 0
+            i[i > grid.size - 2] = grid.size - 2
+            indices.append(i)
+
+            # compute norm_distances, incl length-1 grids,
+            # where `grid[i+1] == grid[i]`
+            denom = grid[i + 1] - grid[i]
+            with np.errstate(divide='ignore', invalid='ignore'):
+                norm_dist = np.where(denom != 0, (x - grid[i]) / denom, 0)
+            norm_distances.append(norm_dist)
+
+        return indices, norm_distances
+
+
+    def _evaluate_linear(self, indices, norm_distances):
+        """Linear interpolator outsourced from scipy 1.9's 
+        RegularGridInterpolator to ensure stable 
+        operations with all versions of scipy >1.0.
+        """
+        import itertools
+        # slice for broadcasting over trailing dimensions in self.values
+        vslice = (slice(None),) + (None,)*(self.values.ndim - len(indices))
+
+        # Compute shifting up front before zipping everything together
+        shift_norm_distances = [1 - yi for yi in norm_distances]
+        shift_indices = [i + 1 for i in indices]
+
+        # The formula for linear interpolation in 2d takes the form:
+        # values = self.values[(i0, i1)] * (1 - y0) * (1 - y1) + \
+        #          self.values[(i0, i1 + 1)] * (1 - y0) * y1 + \
+        #          self.values[(i0 + 1, i1)] * y0 * (1 - y1) + \
+        #          self.values[(i0 + 1, i1 + 1)] * y0 * y1
+        # We pair i with 1 - yi (zipped1) and i + 1 with yi (zipped2)
+        zipped1 = zip(indices, shift_norm_distances)
+        zipped2 = zip(shift_indices, norm_distances)
+
+        # Take all products of zipped1 and zipped2 and iterate over them
+        # to get the terms in the above formula. This corresponds to iterating
+        # over the vertices of a hypercube.
+        hypercube = itertools.product(*zip(zipped1, zipped2))
+        values = 0.
+        for h in hypercube:
+            edge_indices, weights = zip(*h)
+            weight = 1.
+            for w in weights:
+                weight *= w
+            values += np.asarray(self.values[edge_indices]) * weight[vslice]
+        return values
+
+
+    def _evaluate_nearest(self, indices, norm_distances):
+        """Nearest neighbour interpolator outsourced from scipy 1.9's 
+        RegularGridInterpolator to ensure stable 
+        operations with all versions of scipy >1.0. 
+        """
+        idx_res = [np.where(yi <= .5, i, i + 1)
+                   for i, yi in zip(indices, norm_distances)]
+        return self.values[tuple(idx_res)]
 
 
 def sample_grid(lon, lat, grid, extent=[-180,180,-90,90], return_indices=False, return_distances=False, method='linear'):
