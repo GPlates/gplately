@@ -385,9 +385,11 @@ def plate_partitioner_for_point(lat_lon_tuple, topology_features, rotation_model
     """ Determine the present-day plate ID of a (lat, lon) coordinate pair if 
     it is not specified.
     """
+    if not isinstance(rotation_model, pygplates.RotationModel):
+        rotation_model = pygplates.RotationModel(rotation_model)
     plate_partitioner = pygplates.PlatePartitioner(
         pygplates.FeatureCollection(topology_features), 
-        pygplates.RotationModel(rotation_model), 
+        rotation_model,
         reconstruction_time=float(0)
     )
     partitioning_plate = plate_partitioner.partition_point(

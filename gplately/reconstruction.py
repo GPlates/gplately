@@ -42,7 +42,8 @@ class PlateReconstruction(object):
         else:
             self.name = None
 
-        rotation_model = pygplates.RotationModel(rotation_model)
+        if not isinstance(rotation_model, pygplates.RotationModel):
+            rotation_model = pygplates.RotationModel(rotation_model)
 
         default_topology_features = pygplates.FeatureCollection()
         for topology in topology_features:
@@ -1689,7 +1690,11 @@ class ReconstructByTopologies(object):
         """
         
         # Turn rotation data into a RotationModel (if not already).
-        self.rotation_model = pygplates.RotationModel(rotation_features_or_model)
+        if not isinstance(rotation_features_or_model, pygplates.RotationModel):
+            rotation_model = pygplates.RotationModel(rotation_features_or_model)
+        else:
+            rotation_model = rotation_features_or_model
+        self.rotation_model = rotation_model
         
         # Turn topology data into a list of features (if not already).
         self.topology_features = pygplates.FeaturesFunctionArgument(topology_features).get_features()
