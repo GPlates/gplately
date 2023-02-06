@@ -528,7 +528,6 @@ def reconstruct_grid(
     extent="global",
     origin="upper",
     fill_value=None,
-    plate_ids=None,
     threads=1,
 ):
     """Reconstruct a gridded dataset to a given reconstruction time.
@@ -573,11 +572,6 @@ def reconstruct_grid(
         (0.0, 0.0, 0.0) or (0, 0, 0).
         For RGBA image grids, the default fill value will be transparent black
         (0.0, 0.0, 0.0, 0.0) or (0, 0, 0, 0).
-    plate_ids : array_like, optional
-        If a rasterised grid of plate IDs at `to_time` has already been
-        obtained (e.g. using `gplately.grids.rasterise`), it can be provided
-        here in order to avoid repeatedly rasterising `partitioning_features`.
-        `plate_ids` must share its first two dimensions with `grid`.
     threads : int, default 1
         Number of threads to use for certain computationally heavy routines.
 
@@ -589,9 +583,9 @@ def reconstruct_grid(
         `fill_value`.
     """
     try:
-        grid = np.array(read_netcdf_grid(grid))
+        grid = np.array(read_netcdf_grid(grid))  # load grid data from file
     except Exception:
-        pass
+        grid = np.array(grid)  # copy grid data to array
     if to_time == from_time:
         return grid
     elif rotation_model is None:
@@ -599,14 +593,6 @@ def reconstruct_grid(
             "`rotation_model` must be provided if `to_time` != `from_time`"
         )
 
-    if plate_ids is not None:
-        plate_ids = np.array(plate_ids)
-    if plate_ids is not None and plate_ids.shape != grid.shape[:2]:
-        raise ValueError(
-            "Shape mismatch: "
-            + "`grid.shape` == {}, ".format(grid.shape)
-            + "`plate_ids.shape` == {}".format(plate_ids.shape)
-        )
     if origin.lower() not in {"lower", "upper"}:
         raise ValueError("Invalid `origin` value: {}".format(origin))
     origin = origin.lower()
@@ -662,29 +648,92 @@ def reconstruct_grid(
     resx = (xmax - xmin) / nx
     resy = (ymax - ymin) / ny
 
-    if not isinstance(partitioning_features, pygplates.FeatureCollection):
+    if isinstance(partitioning_features, pygplates.FeaturesFunctionArgument):
+        partitioning_features = pygplates.FeatureCollection(
+            partitioning_features.get_features()
+        )
+    elif not isinstance(partitioning_features, pygplates.FeatureCollection):
         partitioning_features = pygplates.FeatureCollection(
             pygplates.FeaturesFunctionArgument(
                 partitioning_features
             ).get_features()
         )
+
     if not isinstance(rotation_model, pygplates.RotationModel):
         rotation_model = pygplates.RotationModel(rotation_model)
 
     lats = np.arange(ymin + resy * 0.5, ymax, resy)
     lons = np.arange(xmin + resx * 0.5, xmax, resx)
     lons, lats = np.meshgrid(lons, lats)
-    if plate_ids is None:
-        plate_ids = rasterise(
-            features=partitioning_features,
-            rotation_model=rotation_model,
-            key="plate_id",
-            time=None if to_time == 0.0 and rotation_model is None else to_time,
-            extent=extent,
-            shape=grid.shape[:2],
-            origin=origin,
-        )
+
+    plate_ids = rasterise(
+        features=partitioning_features,
+        rotation_model=rotation_model,
+        key="plate_id",
+        time=to_time,
+        extent=extent,
+        shape=grid.shape[:2],
+        origin=origin,
+    )
     plate_ids = plate_ids.flatten()
+    from_ages_to_time = rasterise(
+        features=partitioning_features,
+        rotation_model=rotation_model,
+        key="from_age",
+        time=to_time,
+        extent=extent,
+        shape=grid.shape[:2],
+        origin=origin,
+    )
+    from_ages_to_time = from_ages_to_time.flatten()
+    to_ages_to_time = rasterise(
+        features=partitioning_features,
+        rotation_model=rotation_model,
+        key="to_age",
+        time=to_time,
+        extent=extent,
+        shape=grid.shape[:2],
+        origin=origin,
+    )
+    to_ages_to_time = to_ages_to_time.flatten()
+    to_time_mask = (
+        (plate_ids != -1)
+        & (from_ages_to_time > from_time)
+        & (to_ages_to_time < from_time)
+        & (from_ages_to_time > to_time)
+        & (to_ages_to_time < to_time)
+    )  # valid at to_time
+
+    from_ages_from_time = rasterise(
+        features=partitioning_features,
+        rotation_model=rotation_model,
+        key="from_age",
+        time=from_time,
+        extent=extent,
+        shape=grid.shape[:2],
+        origin=origin,
+    )
+    to_ages_from_time = rasterise(
+        features=partitioning_features,
+        rotation_model=rotation_model,
+        key="to_age",
+        time=from_time,
+        extent=extent,
+        shape=grid.shape[:2],
+        origin=origin,
+    )
+    from_time_mask = (
+        (from_ages_from_time > from_time)  # valid at from_time
+        & (to_ages_from_time < from_time)  # valid at from_time
+        & (from_ages_from_time > to_time)  # valid at to_time
+        & (to_ages_from_time < to_time)  # valid at to_time
+    )
+    if grid.ndim == 2:
+        grid[~from_time_mask] = fill_value
+    else:  # grid.ndim == 3
+        for k in range(grid.shape[2]):
+            grid[..., k][~from_time_mask] = fill_value[k]
+
 
     unique_plate_ids = np.unique(plate_ids)
     rotations_dict = {}
@@ -759,7 +808,6 @@ def reconstruct_grid(
     rotated_y = np.abs((rotated_lats - ymin) / resy)
     rotated_x = np.abs((rotated_lons - xmin) / resx)
 
-    mask = plate_ids != -1
     interp_coords = np.vstack(
         (
             rotated_y.reshape((1, -1)),
@@ -770,11 +818,11 @@ def reconstruct_grid(
         data = np.full(rotated_lats.size, fill_value, dtype=dtype)
         tmp = map_coordinates(
             grid,
-            interp_coords[:, mask],
+            interp_coords[:, to_time_mask],
             mode="grid-wrap",
             order=0,
         ).squeeze()
-        data[mask] = tmp
+        data[to_time_mask] = tmp
         data = data.reshape(grid.shape)
     else:  # grid.ndim == 3
         data = []
@@ -782,11 +830,11 @@ def reconstruct_grid(
             band = np.full(rotated_lats.size, fill_value[k], dtype=dtype)
             tmp = map_coordinates(
                 grid[..., k],
-                interp_coords[:, mask],
+                interp_coords[:, to_time_mask],
                 mode="grid-wrap",
                 order=0,
             ).squeeze()
-            band[mask] = tmp
+            band[to_time_mask] = tmp
             band = band.reshape(grid.shape[:2])
             data.append(band)
         data = np.dstack(data)
