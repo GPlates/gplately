@@ -402,7 +402,7 @@ def plate_partitioner_for_point(lat_lon_tuple, topology_features, rotation_model
 
 
 def read_rotation_file_pandas(rotation_file_paths):
-    """ Written by Nicky Williams. Extract data from one rotation file, and write 
+    """ Written by Nicky M Wright. Extract data from one rotation file, and write 
     it to a pandas dataframe.
     """
     rotation_file = pd.read_csv(
