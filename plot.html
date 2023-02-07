@@ -979,9 +979,10 @@ class PlotTopologies(object):
 
     and optionally, 
 
-    * a `coastline_filename`, 
-    * a `continent_filename`, 
+    * a `coastline_filename`
+    * a `continent_filename`
     * a `COB_filename`
+    * an `anchor_plate_id`
 
     For example:
 
@@ -990,7 +991,8 @@ class PlotTopologies(object):
                                             time,
                                             coastline_filename,
                                             continent_filename,
-                                            COB_filename
+                                            COB_filename,
+                                            anchor_plate_id,
                 )
 
     The `coastline_filename`, `continent_filename` and `COB_filename` can be single
@@ -1029,6 +1031,9 @@ class PlotTopologies(object):
         The GPlately `PlateReconstruction` object will be used to access a plate 
         `rotation_model` and a set of `topology_features` which contains plate boundary 
         features like trenches, ridges and transforms.
+
+    anchor_plate_id : int, default 0
+        The anchor plate ID used for reconstruction.
 
     base_projection : instance of &lt;cartopy.crs.{transform}&gt;, default &lt;cartopy.crs.PlateCarree&gt; object
         where {transform} is the map Projection to use on the Cartopy GeoAxes. 
@@ -1096,16 +1101,22 @@ class PlotTopologies(object):
         boundaries and passive continental boundaries.
 
     &#34;&#34;&#34;
-    def __init__(self, PlateReconstruction_object, time, coastline_filename=None, continent_filename=None, COB_filename=None):
-        import ptt
-        import cartopy.crs as ccrs
-
+    def __init__(
+        self,
+        PlateReconstruction_object,
+        time,
+        coastline_filename=None,
+        continent_filename=None,
+        COB_filename=None,
+        anchor_plate_id=0,
+    ):
         self.PlateReconstruction_object = PlateReconstruction_object
         self.base_projection = ccrs.PlateCarree()
 
         self.coastline_filename = coastline_filename
         self.continent_filename = continent_filename
         self.COB_filename = COB_filename
+        self._anchor_plate_id = self._check_anchor_plate_id(anchor_plate_id)
 
         # store topologies for easy access
         # setting time runs the update_time routine
@@ -1131,10 +1142,28 @@ class PlotTopologies(object):
         else:
             raise ValueError(&#34;Enter a valid time &gt;= 0&#34;)
 
+    @property
+    def anchor_plate_id(self):
+        &#34;&#34;&#34;Anchor plate ID for reconstruction. Must be an integer &gt;= 0.&#34;&#34;&#34;
+        return self._anchor_plate_id
+
+    @anchor_plate_id.setter
+    def anchor_plate_id(self, anchor_plate):
+        self._anchor_plate_id = self._check_anchor_plate_id(anchor_plate)
+        self.update_time(self.time)
+
+    @staticmethod
+    def _check_anchor_plate_id(id):
+        id = int(id)
+        if id &lt; 0:
+            raise ValueError(
+                &#34;Invalid anchor plate ID: {}&#34;.format(id)
+            )
+        return id
 
     def update_time(self, time):
         &#34;&#34;&#34;Re-reconstruct features and topologies to the time specified by the `PlotTopologies` `time` attribute 
-        whenever it is updated.
+        whenever it or the anchor plate is updated.
 
         Notes
         -----
@@ -1222,15 +1251,15 @@ class PlotTopologies(object):
         # reconstruct other important polygons and lines
         if self.coastline_filename:
             self.coastlines = self.PlateReconstruction_object.reconstruct(
-                self.coastline_filename, self.time, from_time=0, anchor_plate_id=0)
+                self.coastline_filename, self.time, from_time=0, anchor_plate_id=self.anchor_plate_id)
 
         if self.continent_filename:
             self.continents = self.PlateReconstruction_object.reconstruct(
-                self.continent_filename, self.time, from_time=0, anchor_plate_id=0)
+                self.continent_filename, self.time, from_time=0, anchor_plate_id=self.anchor_plate_id)
 
         if self.COB_filename:
             self.COBs = self.PlateReconstruction_object.reconstruct(
-                self.COB_filename, self.time, from_time=0, anchor_plate_id=0)
+                self.COB_filename, self.time, from_time=0, anchor_plate_id=self.anchor_plate_id)
 
 
     # subduction teeth
@@ -3496,7 +3525,7 @@ segments with distances that exceed the given threshold <code>tessellation_radia
 <dl>
 <dt id="gplately.plot.PlotTopologies"><code class="flex name class">
 <span>class <span class="ident">PlotTopologies</span></span>
-<span>(</span><span>PlateReconstruction_object, time, coastline_filename=None, continent_filename=None, COB_filename=None)</span>
+<span>(</span><span>PlateReconstruction_object, time, coastline_filename=None, continent_filename=None, COB_filename=None, anchor_plate_id=0)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>A class with tools to read, reconstruct and plot topology features at specific
@@ -3518,9 +3547,10 @@ Projections. </li>
 </ul>
 <p>and optionally, </p>
 <ul>
-<li>a <code>coastline_filename</code>, </li>
-<li>a <code>continent_filename</code>, </li>
+<li>a <code>coastline_filename</code></li>
+<li>a <code>continent_filename</code></li>
 <li>a <code>COB_filename</code></li>
+<li>an <code>anchor_plate_id</code></li>
 </ul>
 <p>For example:</p>
 <pre><code># Calling the PlotTopologies object
@@ -3528,7 +3558,8 @@ gplot = gplately.plot.PlotTopologies(plate_reconstruction_object,
                                     time,
                                     coastline_filename,
                                     continent_filename,
-                                    COB_filename
+                                    COB_filename,
+                                    anchor_plate_id,
         )
 </code></pre>
 <p>The <code>coastline_filename</code>, <code>continent_filename</code> and <code>COB_filename</code> can be single
@@ -3568,6 +3599,8 @@ as Shapely <code>MultiLineString</code> or <code>MultiPolygon</code> geometries,
 <dd>The GPlately <code>PlateReconstruction</code> object will be used to access a plate
 <code>rotation_model</code> and a set of <code>topology_features</code> which contains plate boundary
 features like trenches, ridges and transforms.</dd>
+<dt><strong><code>anchor_plate_id</code></strong> :&ensp;<code>int</code>, default <code>0</code></dt>
+<dd>The anchor plate ID used for reconstruction.</dd>
 <dt><strong><code>base_projection</code></strong> :&ensp;<code>instance</code> of <code>&lt;cartopy.crs.{transform}&gt;</code>, default <code>&lt;cartopy.crs.PlateCarree&gt; object</code></dt>
 <dd>where {transform} is the map Projection to use on the Cartopy GeoAxes.
 By default, the base projection is set to cartopy.crs.PlateCarree. See the
@@ -3646,9 +3679,10 @@ boundaries and passive continental boundaries.</dd>
 
     and optionally, 
 
-    * a `coastline_filename`, 
-    * a `continent_filename`, 
+    * a `coastline_filename`
+    * a `continent_filename`
     * a `COB_filename`
+    * an `anchor_plate_id`
 
     For example:
 
@@ -3657,7 +3691,8 @@ boundaries and passive continental boundaries.</dd>
                                             time,
                                             coastline_filename,
                                             continent_filename,
-                                            COB_filename
+                                            COB_filename,
+                                            anchor_plate_id,
                 )
 
     The `coastline_filename`, `continent_filename` and `COB_filename` can be single
@@ -3696,6 +3731,9 @@ boundaries and passive continental boundaries.</dd>
         The GPlately `PlateReconstruction` object will be used to access a plate 
         `rotation_model` and a set of `topology_features` which contains plate boundary 
         features like trenches, ridges and transforms.
+
+    anchor_plate_id : int, default 0
+        The anchor plate ID used for reconstruction.
 
     base_projection : instance of &lt;cartopy.crs.{transform}&gt;, default &lt;cartopy.crs.PlateCarree&gt; object
         where {transform} is the map Projection to use on the Cartopy GeoAxes. 
@@ -3763,16 +3801,22 @@ boundaries and passive continental boundaries.</dd>
         boundaries and passive continental boundaries.
 
     &#34;&#34;&#34;
-    def __init__(self, PlateReconstruction_object, time, coastline_filename=None, continent_filename=None, COB_filename=None):
-        import ptt
-        import cartopy.crs as ccrs
-
+    def __init__(
+        self,
+        PlateReconstruction_object,
+        time,
+        coastline_filename=None,
+        continent_filename=None,
+        COB_filename=None,
+        anchor_plate_id=0,
+    ):
         self.PlateReconstruction_object = PlateReconstruction_object
         self.base_projection = ccrs.PlateCarree()
 
         self.coastline_filename = coastline_filename
         self.continent_filename = continent_filename
         self.COB_filename = COB_filename
+        self._anchor_plate_id = self._check_anchor_plate_id(anchor_plate_id)
 
         # store topologies for easy access
         # setting time runs the update_time routine
@@ -3798,10 +3842,28 @@ boundaries and passive continental boundaries.</dd>
         else:
             raise ValueError(&#34;Enter a valid time &gt;= 0&#34;)
 
+    @property
+    def anchor_plate_id(self):
+        &#34;&#34;&#34;Anchor plate ID for reconstruction. Must be an integer &gt;= 0.&#34;&#34;&#34;
+        return self._anchor_plate_id
+
+    @anchor_plate_id.setter
+    def anchor_plate_id(self, anchor_plate):
+        self._anchor_plate_id = self._check_anchor_plate_id(anchor_plate)
+        self.update_time(self.time)
+
+    @staticmethod
+    def _check_anchor_plate_id(id):
+        id = int(id)
+        if id &lt; 0:
+            raise ValueError(
+                &#34;Invalid anchor plate ID: {}&#34;.format(id)
+            )
+        return id
 
     def update_time(self, time):
         &#34;&#34;&#34;Re-reconstruct features and topologies to the time specified by the `PlotTopologies` `time` attribute 
-        whenever it is updated.
+        whenever it or the anchor plate is updated.
 
         Notes
         -----
@@ -3889,15 +3951,15 @@ boundaries and passive continental boundaries.</dd>
         # reconstruct other important polygons and lines
         if self.coastline_filename:
             self.coastlines = self.PlateReconstruction_object.reconstruct(
-                self.coastline_filename, self.time, from_time=0, anchor_plate_id=0)
+                self.coastline_filename, self.time, from_time=0, anchor_plate_id=self.anchor_plate_id)
 
         if self.continent_filename:
             self.continents = self.PlateReconstruction_object.reconstruct(
-                self.continent_filename, self.time, from_time=0, anchor_plate_id=0)
+                self.continent_filename, self.time, from_time=0, anchor_plate_id=self.anchor_plate_id)
 
         if self.COB_filename:
             self.COBs = self.PlateReconstruction_object.reconstruct(
-                self.COB_filename, self.time, from_time=0, anchor_plate_id=0)
+                self.COB_filename, self.time, from_time=0, anchor_plate_id=self.anchor_plate_id)
 
 
     # subduction teeth
@@ -5039,6 +5101,19 @@ boundaries and passive continental boundaries.</dd>
 </details>
 <h3>Instance variables</h3>
 <dl>
+<dt id="gplately.plot.PlotTopologies.anchor_plate_id"><code class="name">var <span class="ident">anchor_plate_id</span></code></dt>
+<dd>
+<div class="desc"><p>Anchor plate ID for reconstruction. Must be an integer &gt;= 0.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def anchor_plate_id(self):
+    &#34;&#34;&#34;Anchor plate ID for reconstruction. Must be an integer &gt;= 0.&#34;&#34;&#34;
+    return self._anchor_plate_id</code></pre>
+</details>
+</dd>
 <dt id="gplately.plot.PlotTopologies.time"><code class="name">var <span class="ident">time</span></code></dt>
 <dd>
 <div class="desc"><p>The reconstruction time.</p></div>
@@ -7066,7 +7141,7 @@ with unclassified features plotted onto the chosen map projection.</dd>
 </code></dt>
 <dd>
 <div class="desc"><p>Re-reconstruct features and topologies to the time specified by the <code><a title="gplately.plot.PlotTopologies" href="#gplately.plot.PlotTopologies">PlotTopologies</a></code> <code>time</code> attribute
-whenever it is updated.</p>
+whenever it or the anchor plate is updated.</p>
 <h2 id="notes">Notes</h2>
 <p>The following <code><a title="gplately.plot.PlotTopologies" href="#gplately.plot.PlotTopologies">PlotTopologies</a></code> attributes are updated whenever a reconstruction <code>time</code> attribute is set:</p>
 <ul>
@@ -7087,7 +7162,7 @@ whenever it is updated.</p>
 </summary>
 <pre><code class="python">def update_time(self, time):
     &#34;&#34;&#34;Re-reconstruct features and topologies to the time specified by the `PlotTopologies` `time` attribute 
-    whenever it is updated.
+    whenever it or the anchor plate is updated.
 
     Notes
     -----
@@ -7175,15 +7250,15 @@ whenever it is updated.</p>
     # reconstruct other important polygons and lines
     if self.coastline_filename:
         self.coastlines = self.PlateReconstruction_object.reconstruct(
-            self.coastline_filename, self.time, from_time=0, anchor_plate_id=0)
+            self.coastline_filename, self.time, from_time=0, anchor_plate_id=self.anchor_plate_id)
 
     if self.continent_filename:
         self.continents = self.PlateReconstruction_object.reconstruct(
-            self.continent_filename, self.time, from_time=0, anchor_plate_id=0)
+            self.continent_filename, self.time, from_time=0, anchor_plate_id=self.anchor_plate_id)
 
     if self.COB_filename:
         self.COBs = self.PlateReconstruction_object.reconstruct(
-            self.COB_filename, self.time, from_time=0, anchor_plate_id=0)</code></pre>
+            self.COB_filename, self.time, from_time=0, anchor_plate_id=self.anchor_plate_id)</code></pre>
 </details>
 </dd>
 </dl>
@@ -7223,6 +7298,7 @@ whenever it is updated.</p>
 <li>
 <h4><code><a title="gplately.plot.PlotTopologies" href="#gplately.plot.PlotTopologies">PlotTopologies</a></code></h4>
 <ul class="">
+<li><code><a title="gplately.plot.PlotTopologies.anchor_plate_id" href="#gplately.plot.PlotTopologies.anchor_plate_id">anchor_plate_id</a></code></li>
 <li><code><a title="gplately.plot.PlotTopologies.plot_coastlines" href="#gplately.plot.PlotTopologies.plot_coastlines">plot_coastlines</a></code></li>
 <li><code><a title="gplately.plot.PlotTopologies.plot_continent_ocean_boundaries" href="#gplately.plot.PlotTopologies.plot_continent_ocean_boundaries">plot_continent_ocean_boundaries</a></code></li>
 <li><code><a title="gplately.plot.PlotTopologies.plot_continental_crusts" href="#gplately.plot.PlotTopologies.plot_continental_crusts">plot_continental_crusts</a></code></li>
