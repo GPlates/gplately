@@ -938,7 +938,7 @@ class SeafloorGrid(object):
             checkpointed_MOR_seedpoints = [s.split("/")[-1] for s in glob.glob(self.save_directory+"/"+"*MOR_plus_one_points*")]
             try:
                 # -2 as an index accesses the age (float type), safeguards against identifying numbers in the SeafloorGrid.file_collection string
-                last_seed_time = np.sort([float(re.findall("\d+", s)[-2]) for s in checkpointed_MOR_seedpoints])[0]
+                last_seed_time = np.sort([float(re.findall(r"\d+", s)[-2]) for s in checkpointed_MOR_seedpoints])[0]
             # If none were built yet
             except:
                 last_seed_time = "nil"
@@ -1066,7 +1066,7 @@ class SeafloorGrid(object):
             checkpointed_continental_masks = [s.split("/")[-1] for s in glob.glob(self.save_directory+"/"+"*continent_mask*")]
             try:
                 # -2 as an index accesses the age (float type), safeguards against identifying numbers in the SeafloorGrid.file_collection string
-                last_masked_time = np.sort([float(re.findall("\d+", s)[-2]) for s in checkpointed_continental_masks])[0]
+                last_masked_time = np.sort([float(re.findall(r"\d+", s)[-2]) for s in checkpointed_continental_masks])[0]
             # If none were built yet
             except:
                 last_masked_time = "nil"
