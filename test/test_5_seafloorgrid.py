@@ -43,7 +43,13 @@ def test_reconstruct_by_topologies(
     time, 
     seafloorgrid
 ):
+    _reconstruct_by_topologies(time, seafloorgrid, clean=True)
 
+
+# Separate reconstruction by topologies code so that test_lat_lon_z_to_netCDF
+# does not depend on the result of test_reconstruct_by_topologies
+# This allows the tests to be run in parallel using pytest-xdist
+def _reconstruct_by_topologies(time, seafloorgrid, clean=False):
     # This next line must run smoothly. An interruption will happen in pytest
     # if any aspect of reconstruct_by_topologies goes wrong.
     reconstruction_process = seafloorgrid.reconstruct_by_topologies()
@@ -99,6 +105,20 @@ def test_reconstruct_by_topologies(
     else:
         assert np.unique(np.isnan(spreading_rate_data))[0] is False, "Some spreading rates in the {} Ma gridding input have been ascribed a NaN value.".format(time)
 
+    if clean:
+        for i in ("", "unmasked_"):
+            for zval_name in zval_names:
+                filename = os.path.join(
+                    seafloorgrid.save_directory,
+                    "{}_{}_grid_{}{}Ma.nc".format(
+                        seafloorgrid.file_collection,
+                        zval_name,
+                        i,
+                        time,
+                    )
+                )
+                if os.path.exists(filename):
+                    os.remove(filename)
 
 
 # test netCDF writing
@@ -107,14 +127,14 @@ def test_lat_lon_z_to_netCDF(
     zval_name, 
     seafloorgrid
 ):
+    time = gridding_times[0]
 
     # Test the creation of a masked and unmasked age grid
+    _reconstruct_by_topologies(time, seafloorgrid)
     seafloorgrid.lat_lon_z_to_netCDF(
         zval_name, 
         unmasked=True
     )
-
-    time = gridding_times[0]
 
     grid_output_unmasked = "{}/{}_{}_grid_unmasked_{}Ma.nc".format(
         seafloorgrid.save_directory,
