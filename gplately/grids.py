@@ -221,16 +221,28 @@ def write_netcdf_grid(filename, grid, extent=[-180,180,-90,90]):
     lat_grid = np.linspace(extent[2], extent[3], nrows)
     
     with netCDF4.Dataset(filename, 'w', driver=None) as cdf:
-        cdf.createDimension('x', lon_grid.size)
-        cdf.createDimension('y', lat_grid.size)
-        cdf_lon = cdf.createVariable('x', lon_grid.dtype, ('x',), zlib=True)
-        cdf_lat = cdf.createVariable('y', lat_grid.dtype, ('y',), zlib=True)
+        cdf.title = "Grid produced by gplately"
+        cdf.createDimension('lon', lon_grid.size)
+        cdf.createDimension('lat', lat_grid.size)
+        cdf_lon = cdf.createVariable('lon', lon_grid.dtype, ('lon',), zlib=True)
+        cdf_lat = cdf.createVariable('lat', lat_grid.dtype, ('lat',), zlib=True)
         cdf_lon[:] = lon_grid
         cdf_lat[:] = lat_grid
-        cdf_lon.units = "degrees"
-        cdf_lat.units = "degrees"
 
-        cdf_data = cdf.createVariable('z', grid.dtype, ('y','x'), zlib=True)
+        # Units for Geographic Grid type
+        cdf_lon.units = "degrees_east"
+        cdf_lon.standard_name = 'lon'
+        cdf_lat.units = "degrees_north"
+        cdf_lat.standard_name = 'lat'
+
+        cdf_data = cdf.createVariable('z', grid.dtype, ('lat','lon'), zlib=True)
+        # netCDF4 uses the missing_value attribute as the default _FillValue
+        # without this, _FillValue defaults to 9.969209968386869e+36
+        cdf_data.missing_value = np.nan
+        cdf_data.standard_name = 'z'
+        #Ensure pygmt registers min and max z values properly
+        cdf_data.actual_range = [np.min(grid), np.max(grid)]
+
         cdf_data[:,:] = grid
 
 
