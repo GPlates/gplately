@@ -975,6 +975,18 @@ class SeafloorGrid(object):
         if time_array[0] != self._max_time:
             print("Masking interrupted - resuming continental mask building at {} Ma!".format(time_array[0]))
 
+        # Output grid coordinates
+        extent_globe = self.extent
+        grid_lon = np.linspace(extent_globe[0], extent_globe[1], self.spacingX)
+        grid_lat = np.linspace(extent_globe[2], extent_globe[3], self.spacingY)
+        grid_lon, grid_lat = np.meshgrid(grid_lon, grid_lat)
+        output_shape = np.shape(grid_lon)
+        grid_lon = np.ravel(grid_lon)
+        grid_lat = np.ravel(grid_lat)
+        multipoint = pygplates.MultiPointOnSphere(
+            np.column_stack((grid_lat, grid_lon))
+        )
+
         for time in time_array:
             self._PlotTopologies_object.time = time
 
@@ -984,31 +996,16 @@ class SeafloorGrid(object):
                 self.rotation_model,
                 time) 
 
-            # zval is a binary array encoding whether a point 
+            # grid_z1 is a binary array encoding whether a grid
             # coordinate is within a COB terrane polygon or not
-            _, _, zvals = point_in_polygon_routine(
-                self.icosahedral_multi_point, 
-                COB_polygons
+            _, _, grid_z1 = point_in_polygon_routine(
+                multipoint,
+                COB_polygons,
             )
+            grid_z1 = np.array(grid_z1)
 
-            # Interpolate the zval binaries onto the icosahedral global mesh
-            boolean_identifier, _ = self.icosahedral_global_mesh.interpolate(
-                self.icosahedral_global_mesh.lons, 
-                self.icosahedral_global_mesh.lats, order=3, 
-                zdata=np.array(zvals)
-            )
-
-            # A regular grid to interpolate the icosahedral mesh onto
-            extent_globe = np.radians(self.extent)
-            grid_lon = np.linspace(extent_globe[0], extent_globe[1], self.spacingX)
-            grid_lat = np.linspace(extent_globe[2], extent_globe[3], self.spacingY)
-
-            # Interpolate the icosahedral-meshed zval binaries onto the regular global extent grid
-            grid_z1 = self.icosahedral_global_mesh.interpolate_to_grid(
-                grid_lon, grid_lat, boolean_identifier
-            )
-            # Ensure the PIP binaries are integers
-            final_grid = np.rint(grid_z1)
+            # Ensure the PIP values are integers
+            final_grid = np.rint(grid_z1).astype("int").reshape(output_shape)
 
             if self.save_directory is not None:
                 if self.file_collection is not None:
