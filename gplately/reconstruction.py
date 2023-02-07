@@ -258,13 +258,13 @@ class PlateReconstruction(object):
         if continental_grid is None:
             raise ValueError("Please provide a directory to a continental grid or a masked array for the current time.")
         
-        elif isinstance(continental_grid, np.ma.MaskedArray):
+        elif isinstance(continental_grid, np.ndarray):
             # Process the masked continental grid
-            graster = _grids.Raster(PlateReconstruction, array=continental_grid, extent=[-180,180,-90,90])
+            graster = _grids.Raster(data=continental_grid, extent=[-180,180,-90,90])
 
         elif isinstance(continental_grid, str):
             # Process the continental grid directory
-            graster = _grids.Raster(PlateReconstruction, continental_grid, extent=[-180,180,-90,90])
+            graster = _grids.Raster(data=continental_grid, extent=[-180,180,-90,90])
 
         # Obtain trench data with Plate Tectonic Tools
         trench_data = self.tesselate_subduction_zones(time, ignore_warnings=ignore_warnings)
