@@ -1003,9 +1003,7 @@ class SeafloorGrid(object):
                 COB_polygons,
             )
             grid_z1 = np.array(grid_z1)
-
-            # Ensure the PIP values are integers
-            final_grid = np.rint(grid_z1).astype("int").reshape(output_shape)
+            final_grid = np.abs(np.rint(grid_z1)).reshape(output_shape)
 
             if self.save_directory is not None:
                 if self.file_collection is not None:
