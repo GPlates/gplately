@@ -138,7 +138,7 @@ def _first_time_download_from_web(url):
         return(fnames, etag, textfilename)
     
     
-def download_from_web(url, verbose, download_changes=True):
+def download_from_web(url, verbose=True, download_changes=True):
     """Download a file from a `url` into the `gplately` cache.
     
     Notes
@@ -734,21 +734,25 @@ class DataServer(object):
         Reconstruction of Western North America and the Eastern Pacific Basin. Geochemistry, Geophysics, 
         Geosystems, 21, e2020GC009117. DOI: https://doi.org/10.1029/2020GC009117
 
+        Parameters
+        ----------
+        file_collection : str
+            name of file collection to use
+
+        verbose : bool, default True
+            Toggle print messages regarding server/internet connection status, file availability etc.
+
     """
-    def __init__(self, file_collection):
+    def __init__(self, file_collection, verbose=True):
 
         self.file_collection = file_collection.capitalize()
         self.data_collection = DataCollection(self.file_collection)
+        self.verbose = verbose
 
 
-    def get_plate_reconstruction_files(self, verbose=True):
+    def get_plate_reconstruction_files(self):
         """Downloads and constructs a `rotation model`, a set of `topology_features` and
         and a set of `static_polygons` needed to call the `PlateReconstruction` object.
-
-        Parameters
-        ----------
-        verbose : bool, default True
-            Toggle print messages regarding server/internet connection status, file availability etc.
 
         Returns
         -------
@@ -786,6 +790,8 @@ class DataServer(object):
                 No continent-ocean boundaries in TorsvikCocks2017.
 
         """
+
+        verbose = self.verbose
 
         rotation_filenames = []
         rotation_model = []
@@ -899,7 +905,7 @@ class DataServer(object):
         return rotation_model, topology_features, static_polygons
 
 
-    def get_topology_geometries(self, verbose=True):
+    def get_topology_geometries(self):
         """Uses Pooch to download coastline, continent and COB (continent-ocean boundary)
         Shapely geometries from the requested plate model. These are needed to call the `PlotTopologies`
         object and visualise topological plates through time.
@@ -951,6 +957,8 @@ class DataServer(object):
 
                 No continent-ocean boundaries in Matthews2016.
         """
+
+        verbose = self.verbose
 
         # Locate all topology geometries from GPlately's DataCollection
         database = DataCollection.topology_geometries(self)
@@ -1070,7 +1078,7 @@ class DataServer(object):
         return geometries
 
 
-    def get_age_grid(self, time, verbose=True):
+    def get_age_grid(self, time):
         """Downloads seafloor and paleo-age grids from the plate reconstruction model (`file_collection`)
         passed into the `DataServer` object. Stores grids in the "gplately" cache.
 
@@ -1100,8 +1108,6 @@ class DataServer(object):
         time : int, or list of int, default=None
             Request an age grid from one (an integer) or multiple reconstruction times (a
             list of integers).
-        verbose : bool, default True
-            Toggle print messages regarding server/internet connection status, file availability etc.
 
         Returns
         -------
@@ -1141,7 +1147,7 @@ class DataServer(object):
         age_grids = []
         age_grid_links = DataCollection.netcdf4_age_grids(self, time)
         for link in age_grid_links:
-            age_grid_file = download_from_web(link, verbose)
+            age_grid_file = download_from_web(link, self.verbose)
             age_grid = _gplately.grids.read_netcdf_grid(age_grid_file)
             age_grids.append(age_grid)
 
@@ -1154,7 +1160,7 @@ class DataServer(object):
             return age_grids
 
 
-    def get_spreading_rate_grid(self, time, verbose=True):
+    def get_spreading_rate_grid(self, time):
         """Downloads seafloor spreading rate grids from the plate reconstruction 
         model (`file_collection`) passed into the `DataServer` object. Stores 
         grids in the "gplately" cache.
@@ -1174,8 +1180,6 @@ class DataServer(object):
         time : int, or list of int, default=None
             Request a spreading grid from one (an integer) or multiple reconstruction 
             times (a list of integers).
-        verbose : bool, default True
-            Toggle print messages regarding server/internet connection status, file availability etc.
 
         Returns
         -------
@@ -1217,7 +1221,7 @@ class DataServer(object):
         spreading_rate_grids = []
         spreading_rate_grid_links = DataCollection.netcdf4_spreading_rate_grids(self, time)
         for link in spreading_rate_grid_links:
-            spreading_rate_grid_file = download_from_web(link, verbose)
+            spreading_rate_grid_file = download_from_web(link, self.verbose)
             spreading_rate_grid = _gplately.grids.read_netcdf_grid(spreading_rate_grid_file)
             spreading_rate_grids.append(spreading_rate_grid)
 
@@ -1230,7 +1234,7 @@ class DataServer(object):
             return spreading_rate_grids
 
 
-    def get_raster(self, raster_id_string=None, verbose=True):
+    def get_raster(self, raster_id_string=None):
         """Downloads assorted raster data that are not associated with the plate 
         reconstruction models supported by GPlately's `DataServer`. Stores rasters in the 
         "gplately" cache.
@@ -1248,8 +1252,6 @@ class DataServer(object):
         ----------
         raster_id_string : str, default=None
             A string to identify which raster to download.
-        verbose : bool, default True
-            Toggle print messages regarding server/internet connection status, file availability etc.
 
         Returns
         -------
@@ -1302,7 +1304,7 @@ class DataServer(object):
             #raster_name = collection.split("_")[0]
             #raster_type = "."+collection.split("_")[-1]
             if (raster_id_string.lower() == collection.lower()):
-                raster_filenames = download_from_web(zip_url[0], verbose)
+                raster_filenames = download_from_web(zip_url[0], self.verbose)
                 found_collection = True
                 break
 
@@ -1319,7 +1321,7 @@ class DataServer(object):
         return raster_matrix
 
 
-    def get_feature_data(self, feature_data_id_string=None, verbose=True):
+    def get_feature_data(self, feature_data_id_string=None):
         """Downloads assorted geological feature data from web servers (i.e. 
         [GPlates 2.3 sample data](https://www.earthbyte.org/gplates-2-3-software-and-data-sets/))
         into the "gplately" cache.
@@ -1391,8 +1393,6 @@ class DataServer(object):
         feature_data_id_string : str, default=None
             A string to identify which feature data to download to the cache (see list of supported
             feature data above).
-        verbose : bool, default True
-            Toggle print messages regarding server/internet connection status, file availability etc.
 
         Returns
         -------
@@ -1425,7 +1425,7 @@ class DataServer(object):
                 found_collection = True
                 feature_data_filenames = _collection_sorter(
                     _collect_file_extension(
-                    download_from_web(zip_url[0], verbose), [".gpml", ".gpmlz"]
+                    download_from_web(zip_url[0], self.verbose), [".gpml", ".gpmlz"]
                     ),
                     collection
                 )
