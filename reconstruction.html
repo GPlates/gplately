@@ -74,7 +74,8 @@ class PlateReconstruction(object):
         else:
             self.name = None
 
-        rotation_model = pygplates.RotationModel(rotation_model)
+        if not isinstance(rotation_model, pygplates.RotationModel):
+            rotation_model = pygplates.RotationModel(rotation_model)
 
         default_topology_features = pygplates.FeatureCollection()
         for topology in topology_features:
@@ -289,13 +290,13 @@ class PlateReconstruction(object):
         if continental_grid is None:
             raise ValueError(&#34;Please provide a directory to a continental grid or a masked array for the current time.&#34;)
         
-        elif isinstance(continental_grid, np.ndarray):
+        elif isinstance(continental_grid, np.ma.MaskedArray):
             # Process the masked continental grid
-            graster = _grids.Raster(data=continental_grid, extent=[-180,180,-90,90])
+            graster = _grids.Raster(PlateReconstruction, array=continental_grid, extent=[-180,180,-90,90])
 
         elif isinstance(continental_grid, str):
             # Process the continental grid directory
-            graster = _grids.Raster(data=continental_grid, extent=[-180,180,-90,90])
+            graster = _grids.Raster(PlateReconstruction, continental_grid, extent=[-180,180,-90,90])
 
         # Obtain trench data with Plate Tectonic Tools
         trench_data = self.tesselate_subduction_zones(time, ignore_warnings=ignore_warnings)
@@ -1721,7 +1722,11 @@ class ReconstructByTopologies(object):
         &#34;&#34;&#34;
         
         # Turn rotation data into a RotationModel (if not already).
-        self.rotation_model = pygplates.RotationModel(rotation_features_or_model)
+        if not isinstance(rotation_features_or_model, pygplates.RotationModel):
+            rotation_model = pygplates.RotationModel(rotation_features_or_model)
+        else:
+            rotation_model = rotation_features_or_model
+        self.rotation_model = rotation_model
         
         # Turn topology data into a list of features (if not already).
         self.topology_features = pygplates.FeaturesFunctionArgument(topology_features).get_features()
@@ -2495,7 +2500,8 @@ features.</dd>
         else:
             self.name = None
 
-        rotation_model = pygplates.RotationModel(rotation_model)
+        if not isinstance(rotation_model, pygplates.RotationModel):
+            rotation_model = pygplates.RotationModel(rotation_model)
 
         default_topology_features = pygplates.FeatureCollection()
         for topology in topology_features:
@@ -2710,13 +2716,13 @@ features.</dd>
         if continental_grid is None:
             raise ValueError(&#34;Please provide a directory to a continental grid or a masked array for the current time.&#34;)
         
-        elif isinstance(continental_grid, np.ndarray):
+        elif isinstance(continental_grid, np.ma.MaskedArray):
             # Process the masked continental grid
-            graster = _grids.Raster(data=continental_grid, extent=[-180,180,-90,90])
+            graster = _grids.Raster(PlateReconstruction, array=continental_grid, extent=[-180,180,-90,90])
 
         elif isinstance(continental_grid, str):
             # Process the continental grid directory
-            graster = _grids.Raster(data=continental_grid, extent=[-180,180,-90,90])
+            graster = _grids.Raster(PlateReconstruction, continental_grid, extent=[-180,180,-90,90])
 
         # Obtain trench data with Plate Tectonic Tools
         trench_data = self.tesselate_subduction_zones(time, ignore_warnings=ignore_warnings)
@@ -4342,13 +4348,13 @@ subduction sub-segments that are ignored due to unidentified polarities and/or s
     if continental_grid is None:
         raise ValueError(&#34;Please provide a directory to a continental grid or a masked array for the current time.&#34;)
     
-    elif isinstance(continental_grid, np.ndarray):
+    elif isinstance(continental_grid, np.ma.MaskedArray):
         # Process the masked continental grid
-        graster = _grids.Raster(data=continental_grid, extent=[-180,180,-90,90])
+        graster = _grids.Raster(PlateReconstruction, array=continental_grid, extent=[-180,180,-90,90])
 
     elif isinstance(continental_grid, str):
         # Process the continental grid directory
-        graster = _grids.Raster(data=continental_grid, extent=[-180,180,-90,90])
+        graster = _grids.Raster(PlateReconstruction, continental_grid, extent=[-180,180,-90,90])
 
     # Obtain trench data with Plate Tectonic Tools
     trench_data = self.tesselate_subduction_zones(time, ignore_warnings=ignore_warnings)
@@ -5749,7 +5755,11 @@ otherwise use faster points_in_polygons.find_polygons().</p>
         &#34;&#34;&#34;
         
         # Turn rotation data into a RotationModel (if not already).
-        self.rotation_model = pygplates.RotationModel(rotation_features_or_model)
+        if not isinstance(rotation_features_or_model, pygplates.RotationModel):
+            rotation_model = pygplates.RotationModel(rotation_features_or_model)
+        else:
+            rotation_model = rotation_features_or_model
+        self.rotation_model = rotation_model
         
         # Turn topology data into a list of features (if not already).
         self.topology_features = pygplates.FeaturesFunctionArgument(topology_features).get_features()

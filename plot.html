@@ -1843,15 +1843,7 @@ class PlotTopologies(object):
             A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map 
             with the grid plotted onto the chosen map projection.
         &#34;&#34;&#34;
-        # Override matplotlib default origin (&#39;upper&#39;)
-        origin = kwargs.pop(&#34;origin&#34;, &#34;lower&#34;)
-        return ax.imshow(
-            grid,
-            extent=extent,
-            transform=self.base_projection,
-            origin=origin,
-            **kwargs,
-        )
+        return ax.imshow(grid, origin=&#39;lower&#39;, extent=extent, transform=self.base_projection, **kwargs)
 
 
     def plot_grid_from_netCDF(self, ax, filename, **kwargs):
@@ -4510,15 +4502,7 @@ boundaries and passive continental boundaries.</dd>
             A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map 
             with the grid plotted onto the chosen map projection.
         &#34;&#34;&#34;
-        # Override matplotlib default origin (&#39;upper&#39;)
-        origin = kwargs.pop(&#34;origin&#34;, &#34;lower&#34;)
-        return ax.imshow(
-            grid,
-            extent=extent,
-            transform=self.base_projection,
-            origin=origin,
-            **kwargs,
-        )
+        return ax.imshow(grid, origin=&#39;lower&#39;, extent=extent, transform=self.base_projection, **kwargs)
 
 
     def plot_grid_from_netCDF(self, ax, filename, **kwargs):
@@ -5657,15 +5641,7 @@ with the grid plotted onto the chosen map projection.</dd>
         A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map 
         with the grid plotted onto the chosen map projection.
     &#34;&#34;&#34;
-    # Override matplotlib default origin (&#39;upper&#39;)
-    origin = kwargs.pop(&#34;origin&#34;, &#34;lower&#34;)
-    return ax.imshow(
-        grid,
-        extent=extent,
-        transform=self.base_projection,
-        origin=origin,
-        **kwargs,
-    )</code></pre>
+    return ax.imshow(grid, origin=&#39;lower&#39;, extent=extent, transform=self.base_projection, **kwargs)</code></pre>
 </details>
 </dd>
 <dt id="gplately.plot.PlotTopologies.plot_grid_from_netCDF"><code class="name flex">
