@@ -943,9 +943,10 @@ class PlotTopologies(object):
 
     and optionally, 
 
-    * a `coastline_filename`, 
-    * a `continent_filename`, 
+    * a `coastline_filename`
+    * a `continent_filename`
     * a `COB_filename`
+    * an `anchor_plate_id`
 
     For example:
 
@@ -954,7 +955,8 @@ class PlotTopologies(object):
                                             time,
                                             coastline_filename,
                                             continent_filename,
-                                            COB_filename
+                                            COB_filename,
+                                            anchor_plate_id,
                 )
 
     The `coastline_filename`, `continent_filename` and `COB_filename` can be single
@@ -993,6 +995,9 @@ class PlotTopologies(object):
         The GPlately `PlateReconstruction` object will be used to access a plate 
         `rotation_model` and a set of `topology_features` which contains plate boundary 
         features like trenches, ridges and transforms.
+
+    anchor_plate_id : int, default 0
+        The anchor plate ID used for reconstruction.
 
     base_projection : instance of <cartopy.crs.{transform}>, default <cartopy.crs.PlateCarree> object
         where {transform} is the map Projection to use on the Cartopy GeoAxes. 
@@ -1060,16 +1065,22 @@ class PlotTopologies(object):
         boundaries and passive continental boundaries.
 
     """
-    def __init__(self, PlateReconstruction_object, time, coastline_filename=None, continent_filename=None, COB_filename=None):
-        import ptt
-        import cartopy.crs as ccrs
-
+    def __init__(
+        self,
+        PlateReconstruction_object,
+        time,
+        coastline_filename=None,
+        continent_filename=None,
+        COB_filename=None,
+        anchor_plate_id=0,
+    ):
         self.PlateReconstruction_object = PlateReconstruction_object
         self.base_projection = ccrs.PlateCarree()
 
         self.coastline_filename = coastline_filename
         self.continent_filename = continent_filename
         self.COB_filename = COB_filename
+        self._anchor_plate_id = self._check_anchor_plate_id(anchor_plate_id)
 
         # store topologies for easy access
         # setting time runs the update_time routine
@@ -1095,10 +1106,28 @@ class PlotTopologies(object):
         else:
             raise ValueError("Enter a valid time >= 0")
 
+    @property
+    def anchor_plate_id(self):
+        """Anchor plate ID for reconstruction. Must be an integer >= 0."""
+        return self._anchor_plate_id
+
+    @anchor_plate_id.setter
+    def anchor_plate_id(self, anchor_plate):
+        self._anchor_plate_id = self._check_anchor_plate_id(anchor_plate)
+        self.update_time(self.time)
+
+    @staticmethod
+    def _check_anchor_plate_id(id):
+        id = int(id)
+        if id < 0:
+            raise ValueError(
+                "Invalid anchor plate ID: {}".format(id)
+            )
+        return id
 
     def update_time(self, time):
         """Re-reconstruct features and topologies to the time specified by the `PlotTopologies` `time` attribute 
-        whenever it is updated.
+        whenever it or the anchor plate is updated.
 
         Notes
         -----
@@ -1186,15 +1215,15 @@ class PlotTopologies(object):
         # reconstruct other important polygons and lines
         if self.coastline_filename:
             self.coastlines = self.PlateReconstruction_object.reconstruct(
-                self.coastline_filename, self.time, from_time=0, anchor_plate_id=0)
+                self.coastline_filename, self.time, from_time=0, anchor_plate_id=self.anchor_plate_id)
 
         if self.continent_filename:
             self.continents = self.PlateReconstruction_object.reconstruct(
-                self.continent_filename, self.time, from_time=0, anchor_plate_id=0)
+                self.continent_filename, self.time, from_time=0, anchor_plate_id=self.anchor_plate_id)
 
         if self.COB_filename:
             self.COBs = self.PlateReconstruction_object.reconstruct(
-                self.COB_filename, self.time, from_time=0, anchor_plate_id=0)
+                self.COB_filename, self.time, from_time=0, anchor_plate_id=self.anchor_plate_id)
 
 
     # subduction teeth
