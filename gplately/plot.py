@@ -1807,7 +1807,15 @@ class PlotTopologies(object):
             A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map 
             with the grid plotted onto the chosen map projection.
         """
-        return ax.imshow(grid, origin='lower', extent=extent, transform=self.base_projection, **kwargs)
+        # Override matplotlib default origin ('upper')
+        origin = kwargs.pop("origin", "lower")
+        return ax.imshow(
+            grid,
+            extent=extent,
+            transform=self.base_projection,
+            origin=origin,
+            **kwargs,
+        )
 
 
     def plot_grid_from_netCDF(self, ax, filename, **kwargs):

@@ -42,7 +42,8 @@ class PlateReconstruction(object):
         else:
             self.name = None
 
-        rotation_model = pygplates.RotationModel(rotation_model)
+        if not isinstance(rotation_model, pygplates.RotationModel):
+            rotation_model = pygplates.RotationModel(rotation_model)
 
         default_topology_features = pygplates.FeatureCollection()
         for topology in topology_features:
@@ -257,13 +258,13 @@ class PlateReconstruction(object):
         if continental_grid is None:
             raise ValueError("Please provide a directory to a continental grid or a masked array for the current time.")
         
-        elif isinstance(continental_grid, np.ma.MaskedArray):
+        elif isinstance(continental_grid, np.ndarray):
             # Process the masked continental grid
-            graster = _grids.Raster(PlateReconstruction, array=continental_grid, extent=[-180,180,-90,90])
+            graster = _grids.Raster(data=continental_grid, extent=[-180,180,-90,90])
 
         elif isinstance(continental_grid, str):
             # Process the continental grid directory
-            graster = _grids.Raster(PlateReconstruction, continental_grid, extent=[-180,180,-90,90])
+            graster = _grids.Raster(data=continental_grid, extent=[-180,180,-90,90])
 
         # Obtain trench data with Plate Tectonic Tools
         trench_data = self.tesselate_subduction_zones(time, ignore_warnings=ignore_warnings)
@@ -1689,7 +1690,11 @@ class ReconstructByTopologies(object):
         """
         
         # Turn rotation data into a RotationModel (if not already).
-        self.rotation_model = pygplates.RotationModel(rotation_features_or_model)
+        if not isinstance(rotation_features_or_model, pygplates.RotationModel):
+            rotation_model = pygplates.RotationModel(rotation_features_or_model)
+        else:
+            rotation_model = rotation_features_or_model
+        self.rotation_model = rotation_model
         
         # Turn topology data into a list of features (if not already).
         self.topology_features = pygplates.FeaturesFunctionArgument(topology_features).get_features()

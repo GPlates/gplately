@@ -1146,6 +1146,10 @@ class DataServer(object):
         """
         age_grids = []
         age_grid_links = DataCollection.netcdf4_age_grids(self, time)
+
+        if not age_grid_links:
+            raise ValueError("{} age grids are not on GPlately's DataServer.".format(self.file_collection))
+
         for link in age_grid_links:
             age_grid_file = download_from_web(link, self.verbose)
             age_grid = _gplately.grids.read_netcdf_grid(age_grid_file)
@@ -1220,6 +1224,10 @@ class DataServer(object):
         """
         spreading_rate_grids = []
         spreading_rate_grid_links = DataCollection.netcdf4_spreading_rate_grids(self, time)
+
+        if not spreading_rate_grid_links:
+            raise ValueError("{} spreading rate grids are not on GPlately's DataServer.".format(self.file_collection))
+
         for link in spreading_rate_grid_links:
             spreading_rate_grid_file = download_from_web(link, self.verbose)
             spreading_rate_grid = _gplately.grids.read_netcdf_grid(spreading_rate_grid_file)
@@ -1431,6 +1439,9 @@ class DataServer(object):
                 )
 
                 break
+
+        if found_collection is False:
+            raise ValueError("{} are not in GPlately's DataServer.".format(feature_data_id_string))
 
         feat_data = _pygplates.FeatureCollection()
         if len(feature_data_filenames) == 1:
