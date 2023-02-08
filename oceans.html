@@ -1102,9 +1102,7 @@ class SeafloorGrid(object):
                 COB_polygons,
             )
             grid_z1 = np.array(grid_z1)
-
-            # Ensure the PIP values are integers
-            final_grid = np.rint(grid_z1).astype(&#34;int&#34;).reshape(output_shape)
+            final_grid = np.abs(np.rint(grid_z1)).reshape(output_shape)
 
             if self.save_directory is not None:
                 if self.file_collection is not None:
@@ -2744,9 +2742,7 @@ Will be used as column headers for z value point dataframes.</dd>
                 COB_polygons,
             )
             grid_z1 = np.array(grid_z1)
-
-            # Ensure the PIP values are integers
-            final_grid = np.rint(grid_z1).astype(&#34;int&#34;).reshape(output_shape)
+            final_grid = np.abs(np.rint(grid_z1)).reshape(output_shape)
 
             if self.save_directory is not None:
                 if self.file_collection is not None:
