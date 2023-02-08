@@ -1,0 +1,51 @@
+{% set name = "gplately" %}
+{% set version = "0.2.4" %}
+
+package:
+  name: {{ name|lower }}
+  version: {{ version }}
+
+source:
+  url: https://pypi.io/packages/source/{{ name[0] }}/{{ name }}/gplately-{{ version }}.tar.gz
+  sha256: 392ce7ee5d22e7aa996716f2f9ba6c2bb7737a04b176267fb9c5e303b395e54c
+
+build:
+  noarch: python
+  script: {{ PYTHON }} -m pip install . -vv
+  number: 0
+
+requirements:
+  host:
+    - python
+    - pip
+  run:
+    - python
+    - numpy >=1.16.0
+    - scipy >=1.0.0
+    - shapely
+    - matplotlib-base
+    - cartopy
+    - platetectonictools
+    - pooch
+    - tqdm
+    - netcdf4
+    - rasterio
+    - geopandas
+
+test:
+  imports:
+    - gplately
+  commands:
+    - pip check
+  requires:
+    - pip
+
+about:
+  home: https://github.com/GPlates/gplately
+  summary: Object-orientated Python interface to pyGPlates for plate tectonic reconstructions
+  license: ''
+  license_file: PLEASE_ADD_LICENSE_FILE
+
+extra:
+  recipe-maintainers:
+    - bwhmather
