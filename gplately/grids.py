@@ -241,7 +241,7 @@ def write_netcdf_grid(filename, grid, extent=[-180,180,-90,90]):
         cdf_data.missing_value = np.nan
         cdf_data.standard_name = 'z'
         #Ensure pygmt registers min and max z values properly
-        cdf_data.actual_range = [np.min(grid), np.max(grid)]
+        cdf_data.actual_range = [np.nanmin(grid), np.nanmax(grid)]
 
         cdf_data[:,:] = grid
 
