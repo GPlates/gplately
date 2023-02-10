@@ -193,6 +193,7 @@ class DataCollection(object):
             "OLD",
             "__MACOSX",
             "DO_NOT",
+            "9_Point", # Muller et al 2019
             "9_Point_Density", # Clennett et al 2020
             "Density", # Clennett et al 2020
             "Inactive_Meshes_and_Topologies", # Clennett et al 2020
