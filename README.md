@@ -1,8 +1,19 @@
 # GPlately
 
-GPlately is an object-oriented interface to common pyGPlates and PlateTectonicTools routines.
+GPlately was created to accelerate spatio-temporal data analysis leveraging pyGPlates and PlateTectonicTools within a simplified Python interface. This object-oriented package enables the reconstruction of data through deep geologic time (points, lines, polygons, and rasters), the interrogation of plate kinematic information (plate velocities, rates of subduction and seafloor spreading), the rapid comparison between multiple plate motion models, and the plotting of reconstructed output data on maps. All tools are designed to be parallel-safe to accelerate spatio-temporal analysis over multiple CPU processors.
 
 ![SeedPointGIF](./Notebooks/NotebookFiles/ReadMe_Files/muller19_seedpoints.gif)
+
+GPlately requires a working installation of pyGPlates, which is freely
+available at https://www.gplates.org/download.
+All major system architectures (e.g. Linux, MacOS, Windows) are supported and installation instructions
+are [well documented](https://www.gplates.org/docs/pygplates/pygplates_getting_started.html\#installation).
+Sample data is also available from EarthByte servers (https://www.earthbyte.org/category/resources), which
+includes rasters, seafloor age grids, rotation files, and more to get started with plate reconstructions.
+
+#### Citation
+
+_Coming soon!_
 
 ## Dependencies
 
