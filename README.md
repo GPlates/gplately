@@ -8,7 +8,7 @@ GPlately requires a working installation of pyGPlates, which is freely
 available at https://www.gplates.org/download.
 All major system architectures (e.g. Linux, MacOS, Windows) are supported and installation instructions
 are [well documented](https://www.gplates.org/docs/pygplates/pygplates_getting_started.html\#installation).
-Sample data is also available from EarthByte servers (https://www.earthbyte.org/category/resources), which
+Sample data is also available from [EarthByte servers](https://www.earthbyte.org/category/resources/), which
 includes rasters, seafloor age grids, rotation files, and more to get started with plate reconstructions.
 
 #### Citation
