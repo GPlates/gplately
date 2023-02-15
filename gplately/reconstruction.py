@@ -7,7 +7,8 @@ import ptt
 import warnings
 import math
 from . import tools as _tools
-
+from .pygplates import RotationModel as _RotationModel
+from .pygplates import FeatureCollection as _FeatureCollection
 
 
 class PlateReconstruction(object):
@@ -42,17 +43,49 @@ class PlateReconstruction(object):
         else:
             self.name = None
 
-        if not isinstance(rotation_model, pygplates.RotationModel):
-            rotation_model = pygplates.RotationModel(rotation_model)
+        if not isinstance(rotation_model, pygplates.RotationModel) \
+        or not isinstance(rotation_model, _RotationModel):
+            rotation_model = _RotationModel(rotation_model)
 
-        default_topology_features = pygplates.FeatureCollection()
-        for topology in topology_features:
-            default_topology_features.add( pygplates.FeatureCollection(topology) )
+        if not isinstance(topology_features, _FeatureCollection):        
+            default_topology_features = _FeatureCollection()
+            for topology in topology_features:
+                default_topology_features.add( _FeatureCollection(topology) )
+            topology_features = default_topology_features
 
         # To-do: should set up setter/getters for these attributes
         self.rotation_model = rotation_model
-        self.topology_features = default_topology_features
+        self.topology_features = topology_features
         self.static_polygons = static_polygons
+
+    def __getstate__(self):
+
+        filenames = {"rotation_model": self.rotation_model.filenames,\
+                     "topology_features": self.topology_features.filenames,\
+                     "static_polygons": self.static_polygons.filenames}
+
+        # remove unpicklable items
+        del self.rotation_model, self.topology_features, self.static_polygons
+        
+        # really make sure they're gone
+        self.rotation_model = None
+        self.topology_features = None
+        self.static_polygons = None
+
+        return filenames
+
+
+    def __setstate__(self, state):
+
+        # reinstate unpicklable items
+        self.rotation_model = _RotationModel(state['rotation_model'])
+        self.topology_features = _FeatureCollection()
+        for topology in state['topology_features']:
+            self.topology_features.add( _FeatureCollection(topology) )
+
+        self.static_polygons = _FeatureCollection()
+        for polygon in state['static_polygons']:
+            self.static_polygons.add( _FeatureCollection(polygon) )
 
 
     def tesselate_subduction_zones(self, time, tessellation_threshold_radians=0.001, ignore_warnings=False, **kwargs):
