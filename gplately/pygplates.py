@@ -4,6 +4,10 @@ A light wrapping of some pyGPlates classes to keep track of filenames
 Each object listed here will have a `self.filenames` attribute.
 """
 
+import pygplates as _pygplates
+from pygplates import *
+
+
 def _is_string(value):
     # convert sets to list
     if type(value) is set:
@@ -21,19 +25,46 @@ def _is_string(value):
         return type(value) is str
 
 
-import pygplates as _pygplates
-
 class RotationModel(_pygplates.RotationModel):
 
     def __init__(self, rotation_features):
         super(RotationModel, self).__init__(rotation_features)
+        self.filenames = []
+
+        # update filename list
+        if _is_string(rotation_features) and type(rotation_features) is list:
+            self.filenames = rotation_features
+        elif _is_string(rotation_features) and type(rotation_features) is str:
+            self.filenames = [rotation_features]
+        elif rotation_features is None:
+            self.filenames = []
+        elif isinstance(rotation_features, RotationModel):
+            self.filenames = rotation_features.filenames
+        else:
+            print("RotationModel: No filename associated with", type(feature), "in __init__")
+            self.filenames = []
+
         self.filenames = rotation_features
 
 class Feature(_pygplates.Feature):
 
     def __init__(self, feature):
         super(Feature, self).__init__(feature)
-        self.filenames = [feature]
+        self.filenames = []
+
+        # update filename list
+        if _is_string(feature) and type(feature) is list:
+            self.filenames = feature
+        elif _is_string(feature) and type(feature) is str:
+            self.filenames = [feature]
+        elif feature is None:
+            self.filenames = []
+        elif isinstance(feature, Feature):
+            self.filenames = feature.filenames
+        else:
+            print("Feature: No filename associated with", type(feature), "in __init__")
+            self.filenames = []
+
 
     def add(self, feature):
         super().add(feature)
@@ -42,7 +73,7 @@ class Feature(_pygplates.Feature):
         elif _is_string(feature):
             self.filenames.extend(feature)
         else:
-            raise ValueError("Unsupported type: ", type(feature))
+            print("Feature: No filename associated with", type(feature), "in add")
 
     def clone(self):
         feat = super().clone()
@@ -52,6 +83,7 @@ class FeatureCollection(_pygplates.FeatureCollection):
 
     def __init__(self, features=None):
         super(FeatureCollection, self).__init__(features)
+        self.filenames = []
 
         # update filename list
         if _is_string(features) and type(features) is list:
@@ -61,9 +93,10 @@ class FeatureCollection(_pygplates.FeatureCollection):
         elif features is None:
             self.filenames = []
         elif isinstance(features, FeatureCollection):
-            self.filenames.extend(features.filenames)
+            self.filenames = features.filenames
         else:
-            raise ValueError("Unsupported type:", type(features))
+            print("FeatureCollection: No filename associated with", type(features), "in __init__")
+            self.filenames = []
 
     def add(self, features):
         super().add(features)
@@ -74,7 +107,7 @@ class FeatureCollection(_pygplates.FeatureCollection):
         elif _is_string(features):
             self.filenames.extend(features)
         else:
-            raise ValueError("Unsupported type: ", type(features))
+            print("FeatureCollection: No filename associated with", type(features), "in add")
 
     def clone(self):
         fc = super().clone()

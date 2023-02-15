@@ -47,7 +47,8 @@ class PlateReconstruction(object):
         or not isinstance(rotation_model, _RotationModel):
             rotation_model = _RotationModel(rotation_model)
 
-        if not isinstance(topology_features, _FeatureCollection):        
+        if not isinstance(topology_features, _FeatureCollection) \
+        or not isinstance(topology_features, pygplates.FeatureCollection):        
             default_topology_features = _FeatureCollection()
             for topology in topology_features:
                 default_topology_features.add( _FeatureCollection(topology) )
@@ -953,6 +954,13 @@ class Points(object):
         self.lats = lats
         self.time = time
 
+        self.PlateReconstruction_object = PlateReconstruction_object
+
+        self.update(lons, lats, time, plate_id)
+
+
+    def update(self, lons, lats, time=0, plate_id=None):
+
         # get Cartesian coordinates
         self.x, self.y, self.z = _tools.lonlat2xyz(lons, lats, degrees=False)
 
@@ -966,13 +974,13 @@ class Points(object):
         self.xyz = np.c_[self.x, self.y, self.z]
 
 
-        rotation_model = PlateReconstruction_object.rotation_model
-        static_polygons = PlateReconstruction_object.static_polygons
-        self.PlateReconstruction_object = PlateReconstruction_object
+        rotation_model = self.PlateReconstruction_object.rotation_model
+        static_polygons = self.PlateReconstruction_object.static_polygons
+        
 
         features = _tools.points_to_features(lons, lats, plate_id)
 
-        if plate_id:
+        if plate_id is not None:
             plate_id = np.atleast_1d(plate_id)
             self.features = features
         else:
@@ -990,7 +998,37 @@ class Points(object):
                 plate_id[i] = feature.get_reconstruction_plate_id()
 
         self.plate_id = plate_id
-        self.FeatureCollection = pygplates.FeatureCollection(self.features)
+        self.FeatureCollection = _FeatureCollection(self.features)
+
+
+    def __getstate__(self):
+
+        filenames = self.PlateReconstruction_object.__getstate__()
+
+        # add important variables from Points object
+        filenames["lons"] = self.lons
+        filenames["lats"] = self.lats
+        filenames['time'] = self.time
+        filenames['plate_id'] = self.plate_id
+
+        del self.FeatureCollection, self.features
+
+        self.FeatureCollection = None
+        self.features = None
+
+        return filenames
+
+    def __setstate__(self, state):
+
+        self.PlateReconstruction_object = PlateReconstruction(state['rotation_model'], state['topology_features'], state['static_polygons'])
+
+        # reinstate unpicklable items
+        self.lons = state['lons']
+        self.lats = state['lats']
+        self.time = state['time']
+        self.plate_id = state['plate_id']
+
+        self.update(self.lons, self.lats, self.time, self.plate_id)
 
 
     def reconstruct(self, time, anchor_plate_id=0, **kwargs):
