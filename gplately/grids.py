@@ -20,8 +20,11 @@ import concurrent.futures
 from multiprocessing import cpu_count
 import warnings
 
-import pygplates
+import matplotlib.pyplot as plt
 import numpy as np
+import pygplates
+from cartopy.crs import PlateCarree as _PlateCarree
+from cartopy.mpl.geoaxes import GeoAxes as _GeoAxes
 from rasterio.enums import MergeAlg
 from rasterio.features import rasterize as _rasterize
 from rasterio.transform import from_bounds as _from_bounds
@@ -1535,6 +1538,21 @@ class Raster(object):
             return "upper"
 
     @property
+    def shape(self):
+        """The shape of the data array."""
+        return self.data.shape
+
+    @property
+    def size(self):
+        """The size of the data array."""
+        return self.data.size
+
+    @property
+    def dtype(self):
+        """The data type of the array."""
+        return self.data.dtype
+
+    @property
     def filename(self):
         """The filename of the raster file used to create the object.
 
@@ -1656,17 +1674,22 @@ class Raster(object):
         lats = np.atleast_1d(lats)
         lons[lons > 180] -= 360
         lons[lons < -180] += 360
-        data_interp = interp((lats,lons), method=method, return_indices=return_indices, return_distances=return_distances)
+        results = interp(
+            (lats,lons),
+            method=method,
+            return_indices=return_indices,
+            return_distances=return_distances,
+        )
 
-        # Fix numpy deprecation (once a VisibleDeprecationWarning) that prevents an array being produced from ragged sequences
-        data_interp = np.array(data_interp, dtype=object)
+        if return_indices or return_distances:
+            data_interp = results[0]
+            if self.origin == "upper":
+                data_interp = np.flipud(data_interp)
+            return data_interp.astype(self.dtype), *results[1:]
 
-        if not return_indices and not return_distances:
-            # Return single array as float type; data_interp is not a ragged sequence
-            return np.squeeze(data_interp).astype(float)
-        else:
-            # Consider ragged sequence outputs
-            return np.squeeze(data_interp)
+        if self.origin == "upper":
+            results = np.flipud(results)
+        return results.astype(self.dtype)
 
 
     def resample(self, spacingX, spacingY, overwrite=False):
@@ -1703,6 +1726,11 @@ class Raster(object):
             A new version of the raster data attributed to the `Raster` object resampled to 
             the given `spacingX` and `spacingY` spacings.
         """
+        spacingX = np.abs(spacingX)
+        spacingY = np.abs(spacingY)
+        if self.origin == "upper":
+            spacingY *= -1.0
+
         lons = np.arange(self.extent[0], self.extent[1]+spacingX, spacingX)
         lats = np.arange(self.extent[2], self.extent[3]+spacingY, spacingY)
         lonq, latq = np.meshgrid(lons, lats)
@@ -1838,6 +1866,78 @@ class Raster(object):
             fill_value=fill_value,
             threads=threads,
         )
+
+    def imshow(self, ax=None, projection=None, **kwargs):
+        """Display raster data.
+
+        A pre-existing matplotlib `Axes` instance is used if available,
+        else a new one is created. The `origin` and `extent` of the image
+        are determined automatically and should not be specified.
+
+        Parameters
+        ----------
+        ax : matplotlib.axes.Axes, optional
+            If specified, the image will be drawn within these axes.
+        projection : cartopy.crs.Projection, optional
+            The map projection to be used. If both `ax` and `projection`
+            are specified, this will be checked against the `projection`
+            attribute of `ax`, if it exists.
+        **kwargs : dict, optional
+            Any further keyword arguments are passed to
+            `matplotlib.pyplot.imshow` or `matplotlib.axes.Axes.imshow`,
+            where appropriate.
+
+        Returns
+        -------
+        matplotlib.image.AxesImage
+
+        Raises
+        ------
+        ValueError
+            If `ax` and `projection` are both specified, but do not match
+            (i.e. `ax.projection != projection`).
+        """
+        for kw in ("origin", "extent"):
+            if kw in kwargs.keys():
+                raise TypeError(
+                    "imshow got an unexpected keyword argument: {}".format(kw)
+                )
+        if ax is None:
+            existing_figure = len(plt.get_fignums()) > 0
+            current_axes = plt.gca()
+            if projection is None:
+                ax = current_axes
+            elif (
+                isinstance(current_axes, _GeoAxes)
+                and current_axes.projection == projection
+            ):
+                ax = current_axes
+            else:
+                if not existing_figure:
+                    current_axes.remove()
+                ax = plt.axes(projection=projection)
+        elif projection is not None:
+            # projection and ax both specified
+            if isinstance(ax, _GeoAxes) and ax.projection == projection:
+                pass  # projections match
+            else:
+                raise ValueError(
+                    "Both `projection` and `ax` were specified, but"
+                    + " `projection` does not match `ax.projection`"
+                )
+
+        if isinstance(ax, _GeoAxes) and "transform" not in kwargs.keys():
+            kwargs["transform"] = _PlateCarree()
+        extent = self.extent
+        if self.origin == "upper":
+            extent = (
+                extent[0],
+                extent[1],
+                extent[3],
+                extent[2],
+            )
+        im = ax.imshow(self.data, origin=self.origin, extent=extent, **kwargs)
+        return im
 
 
 class TimeRaster(Raster):
