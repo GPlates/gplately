@@ -1915,6 +1915,35 @@ class Raster(object):
         )
 
     def imshow(self, ax=None, projection=None, **kwargs):
+        &#34;&#34;&#34;Display raster data.
+
+        A pre-existing matplotlib `Axes` instance is used if available,
+        else a new one is created. The `origin` and `extent` of the image
+        are determined automatically and should not be specified.
+
+        Parameters
+        ----------
+        ax : matplotlib.axes.Axes, optional
+            If specified, the image will be drawn within these axes.
+        projection : cartopy.crs.Projection, optional
+            The map projection to be used. If both `ax` and `projection`
+            are specified, this will be checked against the `projection`
+            attribute of `ax`, if it exists.
+        **kwargs : dict, optional
+            Any further keyword arguments are passed to
+            `matplotlib.pyplot.imshow` or `matplotlib.axes.Axes.imshow`,
+            where appropriate.
+
+        Returns
+        -------
+        matplotlib.image.AxesImage
+
+        Raises
+        ------
+        ValueError
+            If `ax` and `projection` are both specified, but do not match
+            (i.e. `ax.projection != projection`).
+        &#34;&#34;&#34;
         for kw in (&#34;origin&#34;, &#34;extent&#34;):
             if kw in kwargs.keys():
                 raise TypeError(
@@ -1956,8 +1985,6 @@ class Raster(object):
             )
         im = ax.imshow(self.data, origin=self.origin, extent=extent, **kwargs)
         return im
-
-    show = imshow
 
 
 class TimeRaster(Raster):
@@ -4035,6 +4062,35 @@ reconstruction.</dd>
         )
 
     def imshow(self, ax=None, projection=None, **kwargs):
+        &#34;&#34;&#34;Display raster data.
+
+        A pre-existing matplotlib `Axes` instance is used if available,
+        else a new one is created. The `origin` and `extent` of the image
+        are determined automatically and should not be specified.
+
+        Parameters
+        ----------
+        ax : matplotlib.axes.Axes, optional
+            If specified, the image will be drawn within these axes.
+        projection : cartopy.crs.Projection, optional
+            The map projection to be used. If both `ax` and `projection`
+            are specified, this will be checked against the `projection`
+            attribute of `ax`, if it exists.
+        **kwargs : dict, optional
+            Any further keyword arguments are passed to
+            `matplotlib.pyplot.imshow` or `matplotlib.axes.Axes.imshow`,
+            where appropriate.
+
+        Returns
+        -------
+        matplotlib.image.AxesImage
+
+        Raises
+        ------
+        ValueError
+            If `ax` and `projection` are both specified, but do not match
+            (i.e. `ax.projection != projection`).
+        &#34;&#34;&#34;
         for kw in (&#34;origin&#34;, &#34;extent&#34;):
             if kw in kwargs.keys():
                 raise TypeError(
@@ -4075,9 +4131,7 @@ reconstruction.</dd>
                 extent[2],
             )
         im = ax.imshow(self.data, origin=self.origin, extent=extent, **kwargs)
-        return im
-
-    show = imshow</code></pre>
+        return im</code></pre>
 </details>
 <h3>Subclasses</h3>
 <ul class="hlist">
@@ -4329,12 +4383,68 @@ overwrites the one attributed to <code>data</code>.</dd>
 <span>def <span class="ident">imshow</span></span>(<span>self, ax=None, projection=None, **kwargs)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Display raster data.</p>
+<p>A pre-existing matplotlib <code>Axes</code> instance is used if available,
+else a new one is created. The <code>origin</code> and <code>extent</code> of the image
+are determined automatically and should not be specified.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>ax</code></strong> :&ensp;<code>matplotlib.axes.Axes</code>, optional</dt>
+<dd>If specified, the image will be drawn within these axes.</dd>
+<dt><strong><code>projection</code></strong> :&ensp;<code>cartopy.crs.Projection</code>, optional</dt>
+<dd>The map projection to be used. If both <code>ax</code> and <code>projection</code>
+are specified, this will be checked against the <code>projection</code>
+attribute of <code>ax</code>, if it exists.</dd>
+<dt><strong><code>**kwargs</code></strong> :&ensp;<code>dict</code>, optional</dt>
+<dd>Any further keyword arguments are passed to
+<code>matplotlib.pyplot.imshow</code> or <code>matplotlib.axes.Axes.imshow</code>,
+where appropriate.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>matplotlib.image.AxesImage</code></dt>
+<dd>&nbsp;</dd>
+</dl>
+<h2 id="raises">Raises</h2>
+<dl>
+<dt><code>ValueError</code></dt>
+<dd>If <code>ax</code> and <code>projection</code> are both specified, but do not match
+(i.e. <code>ax.projection != projection</code>).</dd>
+</dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def imshow(self, ax=None, projection=None, **kwargs):
+    &#34;&#34;&#34;Display raster data.
+
+    A pre-existing matplotlib `Axes` instance is used if available,
+    else a new one is created. The `origin` and `extent` of the image
+    are determined automatically and should not be specified.
+
+    Parameters
+    ----------
+    ax : matplotlib.axes.Axes, optional
+        If specified, the image will be drawn within these axes.
+    projection : cartopy.crs.Projection, optional
+        The map projection to be used. If both `ax` and `projection`
+        are specified, this will be checked against the `projection`
+        attribute of `ax`, if it exists.
+    **kwargs : dict, optional
+        Any further keyword arguments are passed to
+        `matplotlib.pyplot.imshow` or `matplotlib.axes.Axes.imshow`,
+        where appropriate.
+
+    Returns
+    -------
+    matplotlib.image.AxesImage
+
+    Raises
+    ------
+    ValueError
+        If `ax` and `projection` are both specified, but do not match
+        (i.e. `ax.projection != projection`).
+    &#34;&#34;&#34;
     for kw in (&#34;origin&#34;, &#34;extent&#34;):
         if kw in kwargs.keys():
             raise TypeError(
@@ -4812,59 +4922,6 @@ the ".nc" extension) in netCDF4 format.</p></div>
     write_netcdf_grid(str(filename), self.data, self.extent)</code></pre>
 </details>
 </dd>
-<dt id="gplately.grids.Raster.show"><code class="name flex">
-<span>def <span class="ident">show</span></span>(<span>self, ax=None, projection=None, **kwargs)</span>
-</code></dt>
-<dd>
-<div class="desc"></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def imshow(self, ax=None, projection=None, **kwargs):
-    for kw in (&#34;origin&#34;, &#34;extent&#34;):
-        if kw in kwargs.keys():
-            raise TypeError(
-                &#34;imshow got an unexpected keyword argument: {}&#34;.format(kw)
-            )
-    if ax is None:
-        existing_figure = len(plt.get_fignums()) &gt; 0
-        current_axes = plt.gca()
-        if projection is None:
-            ax = current_axes
-        elif (
-            isinstance(current_axes, _GeoAxes)
-            and current_axes.projection == projection
-        ):
-            ax = current_axes
-        else:
-            if not existing_figure:
-                current_axes.remove()
-            ax = plt.axes(projection=projection)
-    elif projection is not None:
-        # projection and ax both specified
-        if isinstance(ax, _GeoAxes) and ax.projection == projection:
-            pass  # projections match
-        else:
-            raise ValueError(
-                &#34;Both `projection` and `ax` were specified, but&#34;
-                + &#34; `projection` does not match `ax.projection`&#34;
-            )
-
-    if isinstance(ax, _GeoAxes) and &#34;transform&#34; not in kwargs.keys():
-        kwargs[&#34;transform&#34;] = _PlateCarree()
-    extent = self.extent
-    if self.origin == &#34;upper&#34;:
-        extent = (
-            extent[0],
-            extent[1],
-            extent[3],
-            extent[2],
-        )
-    im = ax.imshow(self.data, origin=self.origin, extent=extent, **kwargs)
-    return im</code></pre>
-</details>
-</dd>
 </dl>
 </dd>
 <dt id="gplately.grids.RegularGridInterpolator"><code class="flex name class">
@@ -5155,7 +5212,6 @@ with the <code>fill_value</code> (defined below) if supplied.</dd>
 <li><code><a title="gplately.grids.Raster.resize" href="#gplately.grids.Raster.resize">resize</a></code></li>
 <li><code><a title="gplately.grids.Raster.save_to_NetCDF4" href="#gplately.grids.Raster.save_to_NetCDF4">save_to_NetCDF4</a></code></li>
 <li><code><a title="gplately.grids.Raster.shape" href="#gplately.grids.Raster.shape">shape</a></code></li>
-<li><code><a title="gplately.grids.Raster.show" href="#gplately.grids.Raster.show">show</a></code></li>
 <li><code><a title="gplately.grids.Raster.size" href="#gplately.grids.Raster.size">size</a></code></li>
 <li><code><a title="gplately.grids.Raster.time" href="#gplately.grids.Raster.time">time</a></code></li>
 </ul>
