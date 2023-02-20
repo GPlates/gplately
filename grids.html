@@ -67,8 +67,11 @@ import concurrent.futures
 from multiprocessing import cpu_count
 import warnings
 
-import pygplates
+import matplotlib.pyplot as plt
 import numpy as np
+import pygplates
+from cartopy.crs import PlateCarree as _PlateCarree
+from cartopy.mpl.geoaxes import GeoAxes as _GeoAxes
 from rasterio.enums import MergeAlg
 from rasterio.features import rasterize as _rasterize
 from rasterio.transform import from_bounds as _from_bounds
@@ -1582,6 +1585,21 @@ class Raster(object):
             return &#34;upper&#34;
 
     @property
+    def shape(self):
+        &#34;&#34;&#34;The shape of the data array.&#34;&#34;&#34;
+        return self.data.shape
+
+    @property
+    def size(self):
+        &#34;&#34;&#34;The size of the data array.&#34;&#34;&#34;
+        return self.data.size
+
+    @property
+    def dtype(self):
+        &#34;&#34;&#34;The data type of the array.&#34;&#34;&#34;
+        return self.data.dtype
+
+    @property
     def filename(self):
         &#34;&#34;&#34;The filename of the raster file used to create the object.
 
@@ -1703,17 +1721,22 @@ class Raster(object):
         lats = np.atleast_1d(lats)
         lons[lons &gt; 180] -= 360
         lons[lons &lt; -180] += 360
-        data_interp = interp((lats,lons), method=method, return_indices=return_indices, return_distances=return_distances)
+        results = interp(
+            (lats,lons),
+            method=method,
+            return_indices=return_indices,
+            return_distances=return_distances,
+        )
 
-        # Fix numpy deprecation (once a VisibleDeprecationWarning) that prevents an array being produced from ragged sequences
-        data_interp = np.array(data_interp, dtype=object)
+        if return_indices or return_distances:
+            data_interp = results[0]
+            if self.origin == &#34;upper&#34;:
+                data_interp = np.flipud(data_interp)
+            return data_interp.astype(self.dtype), *results[1:]
 
-        if not return_indices and not return_distances:
-            # Return single array as float type; data_interp is not a ragged sequence
-            return np.squeeze(data_interp).astype(float)
-        else:
-            # Consider ragged sequence outputs
-            return np.squeeze(data_interp)
+        if self.origin == &#34;upper&#34;:
+            results = np.flipud(results)
+        return results.astype(self.dtype)
 
 
     def resample(self, spacingX, spacingY, overwrite=False):
@@ -1750,6 +1773,11 @@ class Raster(object):
             A new version of the raster data attributed to the `Raster` object resampled to 
             the given `spacingX` and `spacingY` spacings.
         &#34;&#34;&#34;
+        spacingX = np.abs(spacingX)
+        spacingY = np.abs(spacingY)
+        if self.origin == &#34;upper&#34;:
+            spacingY *= -1.0
+
         lons = np.arange(self.extent[0], self.extent[1]+spacingX, spacingX)
         lats = np.arange(self.extent[2], self.extent[3]+spacingY, spacingY)
         lonq, latq = np.meshgrid(lons, lats)
@@ -1885,6 +1913,51 @@ class Raster(object):
             fill_value=fill_value,
             threads=threads,
         )
+
+    def imshow(self, ax=None, projection=None, **kwargs):
+        for kw in (&#34;origin&#34;, &#34;extent&#34;):
+            if kw in kwargs.keys():
+                raise TypeError(
+                    &#34;imshow got an unexpected keyword argument: {}&#34;.format(kw)
+                )
+        if ax is None:
+            existing_figure = len(plt.get_fignums()) &gt; 0
+            current_axes = plt.gca()
+            if projection is None:
+                ax = current_axes
+            elif (
+                isinstance(current_axes, _GeoAxes)
+                and current_axes.projection == projection
+            ):
+                ax = current_axes
+            else:
+                if not existing_figure:
+                    current_axes.remove()
+                ax = plt.axes(projection=projection)
+        elif projection is not None:
+            # projection and ax both specified
+            if isinstance(ax, _GeoAxes) and ax.projection == projection:
+                pass  # projections match
+            else:
+                raise ValueError(
+                    &#34;Both `projection` and `ax` were specified, but&#34;
+                    + &#34; `projection` does not match `ax.projection`&#34;
+                )
+
+        if isinstance(ax, _GeoAxes) and &#34;transform&#34; not in kwargs.keys():
+            kwargs[&#34;transform&#34;] = _PlateCarree()
+        extent = self.extent
+        if self.origin == &#34;upper&#34;:
+            extent = (
+                extent[0],
+                extent[1],
+                extent[3],
+                extent[2],
+            )
+        im = ax.imshow(self.data, origin=self.origin, extent=extent, **kwargs)
+        return im
+
+    show = imshow
 
 
 class TimeRaster(Raster):
@@ -3632,6 +3705,21 @@ reconstruction.</dd>
             return &#34;upper&#34;
 
     @property
+    def shape(self):
+        &#34;&#34;&#34;The shape of the data array.&#34;&#34;&#34;
+        return self.data.shape
+
+    @property
+    def size(self):
+        &#34;&#34;&#34;The size of the data array.&#34;&#34;&#34;
+        return self.data.size
+
+    @property
+    def dtype(self):
+        &#34;&#34;&#34;The data type of the array.&#34;&#34;&#34;
+        return self.data.dtype
+
+    @property
     def filename(self):
         &#34;&#34;&#34;The filename of the raster file used to create the object.
 
@@ -3753,17 +3841,22 @@ reconstruction.</dd>
         lats = np.atleast_1d(lats)
         lons[lons &gt; 180] -= 360
         lons[lons &lt; -180] += 360
-        data_interp = interp((lats,lons), method=method, return_indices=return_indices, return_distances=return_distances)
+        results = interp(
+            (lats,lons),
+            method=method,
+            return_indices=return_indices,
+            return_distances=return_distances,
+        )
 
-        # Fix numpy deprecation (once a VisibleDeprecationWarning) that prevents an array being produced from ragged sequences
-        data_interp = np.array(data_interp, dtype=object)
+        if return_indices or return_distances:
+            data_interp = results[0]
+            if self.origin == &#34;upper&#34;:
+                data_interp = np.flipud(data_interp)
+            return data_interp.astype(self.dtype), *results[1:]
 
-        if not return_indices and not return_distances:
-            # Return single array as float type; data_interp is not a ragged sequence
-            return np.squeeze(data_interp).astype(float)
-        else:
-            # Consider ragged sequence outputs
-            return np.squeeze(data_interp)
+        if self.origin == &#34;upper&#34;:
+            results = np.flipud(results)
+        return results.astype(self.dtype)
 
 
     def resample(self, spacingX, spacingY, overwrite=False):
@@ -3800,6 +3893,11 @@ reconstruction.</dd>
             A new version of the raster data attributed to the `Raster` object resampled to 
             the given `spacingX` and `spacingY` spacings.
         &#34;&#34;&#34;
+        spacingX = np.abs(spacingX)
+        spacingY = np.abs(spacingY)
+        if self.origin == &#34;upper&#34;:
+            spacingY *= -1.0
+
         lons = np.arange(self.extent[0], self.extent[1]+spacingX, spacingX)
         lats = np.arange(self.extent[2], self.extent[3]+spacingY, spacingY)
         lonq, latq = np.meshgrid(lons, lats)
@@ -3934,7 +4032,52 @@ reconstruction.</dd>
             origin=self.origin,
             fill_value=fill_value,
             threads=threads,
-        )</code></pre>
+        )
+
+    def imshow(self, ax=None, projection=None, **kwargs):
+        for kw in (&#34;origin&#34;, &#34;extent&#34;):
+            if kw in kwargs.keys():
+                raise TypeError(
+                    &#34;imshow got an unexpected keyword argument: {}&#34;.format(kw)
+                )
+        if ax is None:
+            existing_figure = len(plt.get_fignums()) &gt; 0
+            current_axes = plt.gca()
+            if projection is None:
+                ax = current_axes
+            elif (
+                isinstance(current_axes, _GeoAxes)
+                and current_axes.projection == projection
+            ):
+                ax = current_axes
+            else:
+                if not existing_figure:
+                    current_axes.remove()
+                ax = plt.axes(projection=projection)
+        elif projection is not None:
+            # projection and ax both specified
+            if isinstance(ax, _GeoAxes) and ax.projection == projection:
+                pass  # projections match
+            else:
+                raise ValueError(
+                    &#34;Both `projection` and `ax` were specified, but&#34;
+                    + &#34; `projection` does not match `ax.projection`&#34;
+                )
+
+        if isinstance(ax, _GeoAxes) and &#34;transform&#34; not in kwargs.keys():
+            kwargs[&#34;transform&#34;] = _PlateCarree()
+        extent = self.extent
+        if self.origin == &#34;upper&#34;:
+            extent = (
+                extent[0],
+                extent[1],
+                extent[3],
+                extent[2],
+            )
+        im = ax.imshow(self.data, origin=self.origin, extent=extent, **kwargs)
+        return im
+
+    show = imshow</code></pre>
 </details>
 <h3>Subclasses</h3>
 <ul class="hlist">
@@ -3973,6 +4116,19 @@ def data(self):
     Can be modified.
     &#34;&#34;&#34;
     return self._data</code></pre>
+</details>
+</dd>
+<dt id="gplately.grids.Raster.dtype"><code class="name">var <span class="ident">dtype</span></code></dt>
+<dd>
+<div class="desc"><p>The data type of the array.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def dtype(self):
+    &#34;&#34;&#34;The data type of the array.&#34;&#34;&#34;
+    return self.data.dtype</code></pre>
 </details>
 </dd>
 <dt id="gplately.grids.Raster.extent"><code class="name">var <span class="ident">extent</span></code></dt>
@@ -4080,6 +4236,32 @@ def plate_reconstruction(self):
     return self._plate_reconstruction</code></pre>
 </details>
 </dd>
+<dt id="gplately.grids.Raster.shape"><code class="name">var <span class="ident">shape</span></code></dt>
+<dd>
+<div class="desc"><p>The shape of the data array.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def shape(self):
+    &#34;&#34;&#34;The shape of the data array.&#34;&#34;&#34;
+    return self.data.shape</code></pre>
+</details>
+</dd>
+<dt id="gplately.grids.Raster.size"><code class="name">var <span class="ident">size</span></code></dt>
+<dd>
+<div class="desc"><p>The size of the data array.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def size(self):
+    &#34;&#34;&#34;The size of the data array.&#34;&#34;&#34;
+    return self.data.size</code></pre>
+</details>
+</dd>
 <dt id="gplately.grids.Raster.time"><code class="name">var <span class="ident">time</span></code></dt>
 <dd>
 <div class="desc"><p>The time step represented by the raster data.</p></div>
@@ -4141,6 +4323,59 @@ overwrites the one attributed to <code>data</code>.</dd>
         self._data = data
 
     return data</code></pre>
+</details>
+</dd>
+<dt id="gplately.grids.Raster.imshow"><code class="name flex">
+<span>def <span class="ident">imshow</span></span>(<span>self, ax=None, projection=None, **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def imshow(self, ax=None, projection=None, **kwargs):
+    for kw in (&#34;origin&#34;, &#34;extent&#34;):
+        if kw in kwargs.keys():
+            raise TypeError(
+                &#34;imshow got an unexpected keyword argument: {}&#34;.format(kw)
+            )
+    if ax is None:
+        existing_figure = len(plt.get_fignums()) &gt; 0
+        current_axes = plt.gca()
+        if projection is None:
+            ax = current_axes
+        elif (
+            isinstance(current_axes, _GeoAxes)
+            and current_axes.projection == projection
+        ):
+            ax = current_axes
+        else:
+            if not existing_figure:
+                current_axes.remove()
+            ax = plt.axes(projection=projection)
+    elif projection is not None:
+        # projection and ax both specified
+        if isinstance(ax, _GeoAxes) and ax.projection == projection:
+            pass  # projections match
+        else:
+            raise ValueError(
+                &#34;Both `projection` and `ax` were specified, but&#34;
+                + &#34; `projection` does not match `ax.projection`&#34;
+            )
+
+    if isinstance(ax, _GeoAxes) and &#34;transform&#34; not in kwargs.keys():
+        kwargs[&#34;transform&#34;] = _PlateCarree()
+    extent = self.extent
+    if self.origin == &#34;upper&#34;:
+        extent = (
+            extent[0],
+            extent[1],
+            extent[3],
+            extent[2],
+        )
+    im = ax.imshow(self.data, origin=self.origin, extent=extent, **kwargs)
+    return im</code></pre>
 </details>
 </dd>
 <dt id="gplately.grids.Raster.interpolate"><code class="name flex">
@@ -4293,17 +4528,22 @@ Alerts user which dimension (index) the point is located.</li>
     lats = np.atleast_1d(lats)
     lons[lons &gt; 180] -= 360
     lons[lons &lt; -180] += 360
-    data_interp = interp((lats,lons), method=method, return_indices=return_indices, return_distances=return_distances)
+    results = interp(
+        (lats,lons),
+        method=method,
+        return_indices=return_indices,
+        return_distances=return_distances,
+    )
 
-    # Fix numpy deprecation (once a VisibleDeprecationWarning) that prevents an array being produced from ragged sequences
-    data_interp = np.array(data_interp, dtype=object)
+    if return_indices or return_distances:
+        data_interp = results[0]
+        if self.origin == &#34;upper&#34;:
+            data_interp = np.flipud(data_interp)
+        return data_interp.astype(self.dtype), *results[1:]
 
-    if not return_indices and not return_distances:
-        # Return single array as float type; data_interp is not a ragged sequence
-        return np.squeeze(data_interp).astype(float)
-    else:
-        # Consider ragged sequence outputs
-        return np.squeeze(data_interp)</code></pre>
+    if self.origin == &#34;upper&#34;:
+        results = np.flipud(results)
+    return results.astype(self.dtype)</code></pre>
 </details>
 </dd>
 <dt id="gplately.grids.Raster.reconstruct"><code class="name flex">
@@ -4456,6 +4696,11 @@ the given <code>spacingX</code> and <code>spacingY</code> spacings.</dd>
         A new version of the raster data attributed to the `Raster` object resampled to 
         the given `spacingX` and `spacingY` spacings.
     &#34;&#34;&#34;
+    spacingX = np.abs(spacingX)
+    spacingY = np.abs(spacingY)
+    if self.origin == &#34;upper&#34;:
+        spacingY *= -1.0
+
     lons = np.arange(self.extent[0], self.extent[1]+spacingX, spacingX)
     lats = np.arange(self.extent[2], self.extent[3]+spacingY, spacingY)
     lonq, latq = np.meshgrid(lons, lats)
@@ -4565,6 +4810,59 @@ the ".nc" extension) in netCDF4 format.</p></div>
     &#34;&#34;&#34; Saves the grid attributed to the `Raster` object to the given `filename` (including
     the &#34;.nc&#34; extension) in netCDF4 format.&#34;&#34;&#34;
     write_netcdf_grid(str(filename), self.data, self.extent)</code></pre>
+</details>
+</dd>
+<dt id="gplately.grids.Raster.show"><code class="name flex">
+<span>def <span class="ident">show</span></span>(<span>self, ax=None, projection=None, **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def imshow(self, ax=None, projection=None, **kwargs):
+    for kw in (&#34;origin&#34;, &#34;extent&#34;):
+        if kw in kwargs.keys():
+            raise TypeError(
+                &#34;imshow got an unexpected keyword argument: {}&#34;.format(kw)
+            )
+    if ax is None:
+        existing_figure = len(plt.get_fignums()) &gt; 0
+        current_axes = plt.gca()
+        if projection is None:
+            ax = current_axes
+        elif (
+            isinstance(current_axes, _GeoAxes)
+            and current_axes.projection == projection
+        ):
+            ax = current_axes
+        else:
+            if not existing_figure:
+                current_axes.remove()
+            ax = plt.axes(projection=projection)
+    elif projection is not None:
+        # projection and ax both specified
+        if isinstance(ax, _GeoAxes) and ax.projection == projection:
+            pass  # projections match
+        else:
+            raise ValueError(
+                &#34;Both `projection` and `ax` were specified, but&#34;
+                + &#34; `projection` does not match `ax.projection`&#34;
+            )
+
+    if isinstance(ax, _GeoAxes) and &#34;transform&#34; not in kwargs.keys():
+        kwargs[&#34;transform&#34;] = _PlateCarree()
+    extent = self.extent
+    if self.origin == &#34;upper&#34;:
+        extent = (
+            extent[0],
+            extent[1],
+            extent[3],
+            extent[2],
+        )
+    im = ax.imshow(self.data, origin=self.origin, extent=extent, **kwargs)
+    return im</code></pre>
 </details>
 </dd>
 </dl>
@@ -4842,9 +5140,11 @@ with the <code>fill_value</code> (defined below) if supplied.</dd>
 <ul class="">
 <li><code><a title="gplately.grids.Raster.PlateReconstruction_object" href="#gplately.grids.Raster.PlateReconstruction_object">PlateReconstruction_object</a></code></li>
 <li><code><a title="gplately.grids.Raster.data" href="#gplately.grids.Raster.data">data</a></code></li>
+<li><code><a title="gplately.grids.Raster.dtype" href="#gplately.grids.Raster.dtype">dtype</a></code></li>
 <li><code><a title="gplately.grids.Raster.extent" href="#gplately.grids.Raster.extent">extent</a></code></li>
 <li><code><a title="gplately.grids.Raster.filename" href="#gplately.grids.Raster.filename">filename</a></code></li>
 <li><code><a title="gplately.grids.Raster.fill_NaNs" href="#gplately.grids.Raster.fill_NaNs">fill_NaNs</a></code></li>
+<li><code><a title="gplately.grids.Raster.imshow" href="#gplately.grids.Raster.imshow">imshow</a></code></li>
 <li><code><a title="gplately.grids.Raster.interpolate" href="#gplately.grids.Raster.interpolate">interpolate</a></code></li>
 <li><code><a title="gplately.grids.Raster.lats" href="#gplately.grids.Raster.lats">lats</a></code></li>
 <li><code><a title="gplately.grids.Raster.lons" href="#gplately.grids.Raster.lons">lons</a></code></li>
@@ -4854,6 +5154,9 @@ with the <code>fill_value</code> (defined below) if supplied.</dd>
 <li><code><a title="gplately.grids.Raster.resample" href="#gplately.grids.Raster.resample">resample</a></code></li>
 <li><code><a title="gplately.grids.Raster.resize" href="#gplately.grids.Raster.resize">resize</a></code></li>
 <li><code><a title="gplately.grids.Raster.save_to_NetCDF4" href="#gplately.grids.Raster.save_to_NetCDF4">save_to_NetCDF4</a></code></li>
+<li><code><a title="gplately.grids.Raster.shape" href="#gplately.grids.Raster.shape">shape</a></code></li>
+<li><code><a title="gplately.grids.Raster.show" href="#gplately.grids.Raster.show">show</a></code></li>
+<li><code><a title="gplately.grids.Raster.size" href="#gplately.grids.Raster.size">size</a></code></li>
 <li><code><a title="gplately.grids.Raster.time" href="#gplately.grids.Raster.time">time</a></code></li>
 </ul>
 </li>

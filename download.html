@@ -51,8 +51,6 @@ from pooch import HTTPDownloader as _HTTPDownloader
 from pooch import Unzip as _Unzip
 from pooch import Decompress as _Decompress
 from matplotlib import image as _image
-from .pygplates import RotationModel as _RotationModel
-from .pygplates import FeatureCollection as _FeatureCollection
 from gplately.data import DataCollection
 import gplately as _gplately
 import pygplates as _pygplates
@@ -834,8 +832,8 @@ class DataServer(object):
         rotation_filenames = []
         rotation_model = []
         topology_filenames = []
-        topology_features = _FeatureCollection()
-        static_polygons= _FeatureCollection()
+        topology_features = _pygplates.FeatureCollection()
+        static_polygons= _pygplates.FeatureCollection()
         static_polygon_filenames = []
 
         # Locate all plate reconstruction files from GPlately&#39;s DataCollection
@@ -862,7 +860,7 @@ class DataServer(object):
                         [&#34;.rot&#34;]
                     )
                     #print(rotation_filenames)
-                    rotation_model = _RotationModel(rotation_filenames)
+                    rotation_model = _pygplates.RotationModel(rotation_filenames)
 
                     topology_filenames = _collect_file_extension(
                         _str_in_folder(
@@ -876,7 +874,7 @@ class DataServer(object):
                     )
                     #print(topology_filenames)
                     for file in topology_filenames:
-                        topology_features.add(_FeatureCollection(file))
+                        topology_features.add(_pygplates.FeatureCollection(file))
 
                     static_polygon_filenames = _check_gpml_or_shp(
                         _str_in_folder(
@@ -889,17 +887,25 @@ class DataServer(object):
                     )
                     #print(static_polygon_filenames)
                     for stat in static_polygon_filenames:
-                        static_polygons.add(_FeatureCollection(stat))
+                        static_polygons.add(_pygplates.FeatureCollection(stat))
 
                 else:
                     for file in url[0]:
-                        rotation_filenames.append(_collect_file_extension(download_from_web(file, verbose), [&#34;.rot&#34;]))
-                        rotation_model = _RotationModel(rotation_filenames)
+                        rotation_filenames.append(
+                            _collect_file_extension(
+                                download_from_web(file, verbose), [&#34;.rot&#34;])
+                        )
+                        rotation_model = _pygplates.RotationModel(rotation_filenames)
 
                     for file in url[1]:
-                        topology_filenames.append(_collect_file_extension(download_from_web(file, verbose), [&#34;.gpml&#34;]))
+                        topology_filenames.append(
+                            _collect_file_extension(
+                                download_from_web(file, verbose), [&#34;.gpml&#34;])
+                        )
                         for file in topology_filenames:
-                            topology_features.add(_FeatureCollection(file))
+                            topology_features.add(
+                                _pygplates.FeatureCollection(file)
+                            )
 
                     for file in url[2]:
                         static_polygon_filenames.append(
@@ -913,7 +919,7 @@ class DataServer(object):
                             )   
                         )
                         for stat in static_polygon_filenames:
-                            static_polygons.add(_FeatureCollection(stat))
+                            static_polygons.add(_pygplates.FeatureCollection(stat))
                 break
 
         if found_collection is False:
@@ -1082,27 +1088,27 @@ class DataServer(object):
             coastlines_featurecollection = []
         else:
             #print(coastlines)
-            coastlines_featurecollection = _FeatureCollection()
+            coastlines_featurecollection = _pygplates.FeatureCollection()
             for coastline in coastlines:
-                coastlines_featurecollection.add(_FeatureCollection(coastline))
+                coastlines_featurecollection.add(_pygplates.FeatureCollection(coastline))
         
         if not continents:
             print(&#34;No continents in {}.&#34;.format(self.file_collection))
             continents_featurecollection = []
         else:
             #print(continents)
-            continents_featurecollection = _FeatureCollection()
+            continents_featurecollection = _pygplates.FeatureCollection()
             for continent in continents:
-                continents_featurecollection.add(_FeatureCollection(continent))
+                continents_featurecollection.add(_pygplates.FeatureCollection(continent))
         
         if not COBs:
             print(&#34;No continent-ocean boundaries in {}.&#34;.format(self.file_collection))
             COBs_featurecollection = []
         else:
             #print(COBs)
-            COBs_featurecollection = _FeatureCollection()
+            COBs_featurecollection = _pygplates.FeatureCollection()
             for COB in COBs:
-                COBs_featurecollection.add(_FeatureCollection(COB))
+                COBs_featurecollection.add(_pygplates.FeatureCollection(COB))
         
         geometries = coastlines_featurecollection, continents_featurecollection, COBs_featurecollection
         return geometries
@@ -1473,14 +1479,14 @@ class DataServer(object):
         if found_collection is False:
             raise ValueError(&#34;{} are not in GPlately&#39;s DataServer.&#34;.format(feature_data_id_string))
 
-        feat_data = _FeatureCollection()
+        feat_data = _pygplates.FeatureCollection()
         if len(feature_data_filenames) == 1:
-                feat_data.add(_FeatureCollection(feature_data_filenames[0]))
+                feat_data.add(_pygplates.FeatureCollection(feature_data_filenames[0]))
                 return feat_data
         else:    
             feat_data=[]
             for file in feature_data_filenames:
-                feat_data.append(_FeatureCollection(file))
+                feat_data.append(_pygplates.FeatureCollection(file))
             return feat_data
     </code></pre>
 </details>
@@ -2352,8 +2358,8 @@ Toggle print messages regarding server/internet connection status, file availabi
         rotation_filenames = []
         rotation_model = []
         topology_filenames = []
-        topology_features = _FeatureCollection()
-        static_polygons= _FeatureCollection()
+        topology_features = _pygplates.FeatureCollection()
+        static_polygons= _pygplates.FeatureCollection()
         static_polygon_filenames = []
 
         # Locate all plate reconstruction files from GPlately&#39;s DataCollection
@@ -2380,7 +2386,7 @@ Toggle print messages regarding server/internet connection status, file availabi
                         [&#34;.rot&#34;]
                     )
                     #print(rotation_filenames)
-                    rotation_model = _RotationModel(rotation_filenames)
+                    rotation_model = _pygplates.RotationModel(rotation_filenames)
 
                     topology_filenames = _collect_file_extension(
                         _str_in_folder(
@@ -2394,7 +2400,7 @@ Toggle print messages regarding server/internet connection status, file availabi
                     )
                     #print(topology_filenames)
                     for file in topology_filenames:
-                        topology_features.add(_FeatureCollection(file))
+                        topology_features.add(_pygplates.FeatureCollection(file))
 
                     static_polygon_filenames = _check_gpml_or_shp(
                         _str_in_folder(
@@ -2407,17 +2413,25 @@ Toggle print messages regarding server/internet connection status, file availabi
                     )
                     #print(static_polygon_filenames)
                     for stat in static_polygon_filenames:
-                        static_polygons.add(_FeatureCollection(stat))
+                        static_polygons.add(_pygplates.FeatureCollection(stat))
 
                 else:
                     for file in url[0]:
-                        rotation_filenames.append(_collect_file_extension(download_from_web(file, verbose), [&#34;.rot&#34;]))
-                        rotation_model = _RotationModel(rotation_filenames)
+                        rotation_filenames.append(
+                            _collect_file_extension(
+                                download_from_web(file, verbose), [&#34;.rot&#34;])
+                        )
+                        rotation_model = _pygplates.RotationModel(rotation_filenames)
 
                     for file in url[1]:
-                        topology_filenames.append(_collect_file_extension(download_from_web(file, verbose), [&#34;.gpml&#34;]))
+                        topology_filenames.append(
+                            _collect_file_extension(
+                                download_from_web(file, verbose), [&#34;.gpml&#34;])
+                        )
                         for file in topology_filenames:
-                            topology_features.add(_FeatureCollection(file))
+                            topology_features.add(
+                                _pygplates.FeatureCollection(file)
+                            )
 
                     for file in url[2]:
                         static_polygon_filenames.append(
@@ -2431,7 +2445,7 @@ Toggle print messages regarding server/internet connection status, file availabi
                             )   
                         )
                         for stat in static_polygon_filenames:
-                            static_polygons.add(_FeatureCollection(stat))
+                            static_polygons.add(_pygplates.FeatureCollection(stat))
                 break
 
         if found_collection is False:
@@ -2600,27 +2614,27 @@ Toggle print messages regarding server/internet connection status, file availabi
             coastlines_featurecollection = []
         else:
             #print(coastlines)
-            coastlines_featurecollection = _FeatureCollection()
+            coastlines_featurecollection = _pygplates.FeatureCollection()
             for coastline in coastlines:
-                coastlines_featurecollection.add(_FeatureCollection(coastline))
+                coastlines_featurecollection.add(_pygplates.FeatureCollection(coastline))
         
         if not continents:
             print(&#34;No continents in {}.&#34;.format(self.file_collection))
             continents_featurecollection = []
         else:
             #print(continents)
-            continents_featurecollection = _FeatureCollection()
+            continents_featurecollection = _pygplates.FeatureCollection()
             for continent in continents:
-                continents_featurecollection.add(_FeatureCollection(continent))
+                continents_featurecollection.add(_pygplates.FeatureCollection(continent))
         
         if not COBs:
             print(&#34;No continent-ocean boundaries in {}.&#34;.format(self.file_collection))
             COBs_featurecollection = []
         else:
             #print(COBs)
-            COBs_featurecollection = _FeatureCollection()
+            COBs_featurecollection = _pygplates.FeatureCollection()
             for COB in COBs:
-                COBs_featurecollection.add(_FeatureCollection(COB))
+                COBs_featurecollection.add(_pygplates.FeatureCollection(COB))
         
         geometries = coastlines_featurecollection, continents_featurecollection, COBs_featurecollection
         return geometries
@@ -2991,14 +3005,14 @@ Toggle print messages regarding server/internet connection status, file availabi
         if found_collection is False:
             raise ValueError(&#34;{} are not in GPlately&#39;s DataServer.&#34;.format(feature_data_id_string))
 
-        feat_data = _FeatureCollection()
+        feat_data = _pygplates.FeatureCollection()
         if len(feature_data_filenames) == 1:
-                feat_data.add(_FeatureCollection(feature_data_filenames[0]))
+                feat_data.add(_pygplates.FeatureCollection(feature_data_filenames[0]))
                 return feat_data
         else:    
             feat_data=[]
             for file in feature_data_filenames:
-                feat_data.append(_FeatureCollection(file))
+                feat_data.append(_pygplates.FeatureCollection(file))
             return feat_data</code></pre>
 </details>
 <h3>Methods</h3>
@@ -3371,14 +3385,14 @@ notebook 05 - Working With Feature Geometries <a href="https://github.com/GPlate
     if found_collection is False:
         raise ValueError(&#34;{} are not in GPlately&#39;s DataServer.&#34;.format(feature_data_id_string))
 
-    feat_data = _FeatureCollection()
+    feat_data = _pygplates.FeatureCollection()
     if len(feature_data_filenames) == 1:
-            feat_data.add(_FeatureCollection(feature_data_filenames[0]))
+            feat_data.add(_pygplates.FeatureCollection(feature_data_filenames[0]))
             return feat_data
     else:    
         feat_data=[]
         for file in feature_data_filenames:
-            feat_data.append(_FeatureCollection(file))
+            feat_data.append(_pygplates.FeatureCollection(file))
         return feat_data</code></pre>
 </details>
 </dd>
@@ -3471,8 +3485,8 @@ No continent-ocean boundaries in TorsvikCocks2017.
     rotation_filenames = []
     rotation_model = []
     topology_filenames = []
-    topology_features = _FeatureCollection()
-    static_polygons= _FeatureCollection()
+    topology_features = _pygplates.FeatureCollection()
+    static_polygons= _pygplates.FeatureCollection()
     static_polygon_filenames = []
 
     # Locate all plate reconstruction files from GPlately&#39;s DataCollection
@@ -3499,7 +3513,7 @@ No continent-ocean boundaries in TorsvikCocks2017.
                     [&#34;.rot&#34;]
                 )
                 #print(rotation_filenames)
-                rotation_model = _RotationModel(rotation_filenames)
+                rotation_model = _pygplates.RotationModel(rotation_filenames)
 
                 topology_filenames = _collect_file_extension(
                     _str_in_folder(
@@ -3513,7 +3527,7 @@ No continent-ocean boundaries in TorsvikCocks2017.
                 )
                 #print(topology_filenames)
                 for file in topology_filenames:
-                    topology_features.add(_FeatureCollection(file))
+                    topology_features.add(_pygplates.FeatureCollection(file))
 
                 static_polygon_filenames = _check_gpml_or_shp(
                     _str_in_folder(
@@ -3526,17 +3540,25 @@ No continent-ocean boundaries in TorsvikCocks2017.
                 )
                 #print(static_polygon_filenames)
                 for stat in static_polygon_filenames:
-                    static_polygons.add(_FeatureCollection(stat))
+                    static_polygons.add(_pygplates.FeatureCollection(stat))
 
             else:
                 for file in url[0]:
-                    rotation_filenames.append(_collect_file_extension(download_from_web(file, verbose), [&#34;.rot&#34;]))
-                    rotation_model = _RotationModel(rotation_filenames)
+                    rotation_filenames.append(
+                        _collect_file_extension(
+                            download_from_web(file, verbose), [&#34;.rot&#34;])
+                    )
+                    rotation_model = _pygplates.RotationModel(rotation_filenames)
 
                 for file in url[1]:
-                    topology_filenames.append(_collect_file_extension(download_from_web(file, verbose), [&#34;.gpml&#34;]))
+                    topology_filenames.append(
+                        _collect_file_extension(
+                            download_from_web(file, verbose), [&#34;.gpml&#34;])
+                    )
                     for file in topology_filenames:
-                        topology_features.add(_FeatureCollection(file))
+                        topology_features.add(
+                            _pygplates.FeatureCollection(file)
+                        )
 
                 for file in url[2]:
                     static_polygon_filenames.append(
@@ -3550,7 +3572,7 @@ No continent-ocean boundaries in TorsvikCocks2017.
                         )   
                     )
                     for stat in static_polygon_filenames:
-                        static_polygons.add(_FeatureCollection(stat))
+                        static_polygons.add(_pygplates.FeatureCollection(stat))
             break
 
     if found_collection is False:
@@ -4052,27 +4074,27 @@ message: <pre><code>No continent-ocean boundaries in Matthews2016.
         coastlines_featurecollection = []
     else:
         #print(coastlines)
-        coastlines_featurecollection = _FeatureCollection()
+        coastlines_featurecollection = _pygplates.FeatureCollection()
         for coastline in coastlines:
-            coastlines_featurecollection.add(_FeatureCollection(coastline))
+            coastlines_featurecollection.add(_pygplates.FeatureCollection(coastline))
     
     if not continents:
         print(&#34;No continents in {}.&#34;.format(self.file_collection))
         continents_featurecollection = []
     else:
         #print(continents)
-        continents_featurecollection = _FeatureCollection()
+        continents_featurecollection = _pygplates.FeatureCollection()
         for continent in continents:
-            continents_featurecollection.add(_FeatureCollection(continent))
+            continents_featurecollection.add(_pygplates.FeatureCollection(continent))
     
     if not COBs:
         print(&#34;No continent-ocean boundaries in {}.&#34;.format(self.file_collection))
         COBs_featurecollection = []
     else:
         #print(COBs)
-        COBs_featurecollection = _FeatureCollection()
+        COBs_featurecollection = _pygplates.FeatureCollection()
         for COB in COBs:
-            COBs_featurecollection.add(_FeatureCollection(COB))
+            COBs_featurecollection.add(_pygplates.FeatureCollection(COB))
     
     geometries = coastlines_featurecollection, continents_featurecollection, COBs_featurecollection
     return geometries</code></pre>
