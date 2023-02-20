@@ -1868,6 +1868,35 @@ class Raster(object):
         )
 
     def imshow(self, ax=None, projection=None, **kwargs):
+        """Display raster data.
+
+        A pre-existing matplotlib `Axes` instance is used if available,
+        else a new one is created. The `origin` and `extent` of the image
+        are determined automatically and should not be specified.
+
+        Parameters
+        ----------
+        ax : matplotlib.axes.Axes, optional
+            If specified, the image will be drawn within these axes.
+        projection : cartopy.crs.Projection, optional
+            The map projection to be used. If both `ax` and `projection`
+            are specified, this will be checked against the `projection`
+            attribute of `ax`, if it exists.
+        **kwargs : dict, optional
+            Any further keyword arguments are passed to
+            `matplotlib.pyplot.imshow` or `matplotlib.axes.Axes.imshow`,
+            where appropriate.
+
+        Returns
+        -------
+        matplotlib.image.AxesImage
+
+        Raises
+        ------
+        ValueError
+            If `ax` and `projection` are both specified, but do not match
+            (i.e. `ax.projection != projection`).
+        """
         for kw in ("origin", "extent"):
             if kw in kwargs.keys():
                 raise TypeError(
@@ -1909,8 +1938,6 @@ class Raster(object):
             )
         im = ax.imshow(self.data, origin=self.origin, extent=extent, **kwargs)
         return im
-
-    show = imshow
 
 
 class TimeRaster(Raster):
