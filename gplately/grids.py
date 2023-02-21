@@ -543,7 +543,7 @@ def reconstruct_grid(
     to_time,
     from_time=0.0,
     extent="global",
-    origin="upper",
+    origin=None,
     fill_value=None,
     threads=1,
     anchor_plate_id=0,
@@ -613,9 +613,7 @@ def reconstruct_grid(
             "`rotation_model` must be provided if `to_time` != `from_time`"
         )
 
-    if origin.lower() not in {"lower", "upper"}:
-        raise ValueError("Invalid `origin` value: {}".format(origin))
-    origin = origin.lower()
+    extent = _parse_extent_origin(extent, origin)
     dtype = grid.dtype
 
     if isinstance(threads, str):
@@ -669,13 +667,7 @@ def reconstruct_grid(
             + ", grid shape: {}".format(np.shape(grid))
         )
 
-    if extent == "global":
-        extent = (-180, 180, -90, 90)
     xmin, xmax, ymin, ymax = extent
-    if origin == "upper" and ymin < ymax:
-        ymin, ymax = ymax, ymin
-    elif origin == "lower" and ymin > ymax:
-        ymin, ymax = ymax, ymin
     ny, nx = grid.shape[:2]
 
     if isinstance(partitioning_features, pygplates.FeaturesFunctionArgument):
@@ -817,7 +809,7 @@ def rasterise(
     resy=1.0,
     shape=None,
     extent="global",
-    origin="upper",
+    origin=None,
 ):
     """Rasterise GPlates objects at a given reconstruction time.
 
@@ -882,9 +874,6 @@ def rasterise(
     This function is used by gplately.grids.reconstruct_grids to rasterise
     static polygons in order to extract their plate IDs.
     """
-    if origin.lower() not in {"upper", "lower"}:
-        raise ValueError("Invalid `origin`: {}".format(origin))
-    origin = origin.lower()
     valid_keys = {
         "plate_id",
         "conjugate_plate_id",
@@ -903,17 +892,8 @@ def rasterise(
             + "\nkey must be one of {}".format(valid_keys)
         )
 
-    try:
-        extent = extent.lower()
-    except AttributeError:
-        pass
-    if extent == "global":
-        extent = (-180.0, 180.0, -90.0, 90.0)
+    extent = _parse_extent_origin(extent, origin)
     minx, maxx, miny, maxy = extent
-    if origin == "upper" and miny < maxy:
-        miny, maxy = maxy, miny
-    if origin == "lower" and miny > maxy:
-        miny, maxy = maxy, miny
 
     if minx > maxx:
         resx = -1.0 * np.abs(resx)
@@ -1110,6 +1090,38 @@ def _check_grid(data):
     return data
 
 
+def _parse_extent_origin(extent, origin):
+    """Default values: extent='global', origin=None"""
+    if hasattr(extent, "lower"):  # i.e. a string
+        extent = extent.lower()
+
+    if extent is None or extent == "global":
+        extent = (-180.0, 180.0, -90.0, 90.0)
+    elif len(extent) != 4:
+        raise TypeError(
+            "`extent` must be a four-element tuple, 'global', or None"
+        )
+    extent = tuple(float(i) for i in extent)
+
+    if origin is not None:
+        origin = str(origin).lower()
+        if origin == "lower" and extent[2] > extent[3]:
+            extent = (
+                extent[0],
+                extent[1],
+                extent[3],
+                extent[2],
+            )
+        if origin == "upper" and extent[2] < extent[3]:
+            extent = (
+                extent[0],
+                extent[1],
+                extent[3],
+                extent[2],
+            )
+    return extent
+
+
 class Raster(object):
     """A class for working with raster data.
 
@@ -1274,31 +1286,7 @@ class Raster(object):
         else:
             # numpy array
             self._filename = None
-            # Process `extent` parameter
-            if hasattr(extent, "lower"):  # i.e. a string
-                extent = extent.lower()
-            if extent is None or extent == "global":
-                extent = (-180.0, 180.0, -90.0, 90.0)
-            elif len(extent) != 4:
-                raise TypeError(
-                    "`extent` must be a four-element tuple, 'global', or None"
-                )
-            if origin is not None:
-                origin = str(origin).lower()
-                if origin == "lower" and extent[2] > extent[3]:
-                    extent = (
-                        extent[0],
-                        extent[1],
-                        extent[3],
-                        extent[2],
-                    )
-                if origin == "upper" and extent[2] < extent[3]:
-                    extent = (
-                        extent[0],
-                        extent[1],
-                        extent[3],
-                        extent[2],
-                    )
+            extent = _parse_extent_origin(extent, origin)
             data = _check_grid(data)
             self._data = np.array(data)
             self._lons = np.linspace(extent[0], extent[1], self.data.shape[1])
