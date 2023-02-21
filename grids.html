@@ -66,6 +66,7 @@ Classes
 import warnings
 from multiprocessing import cpu_count
 
+import matplotlib.colors
 import matplotlib.pyplot as plt
 import numpy as np
 import pygplates
@@ -589,7 +590,7 @@ def reconstruct_grid(
     to_time,
     from_time=0.0,
     extent=&#34;global&#34;,
-    origin=&#34;upper&#34;,
+    origin=None,
     fill_value=None,
     threads=1,
     anchor_plate_id=0,
@@ -659,9 +660,7 @@ def reconstruct_grid(
             &#34;`rotation_model` must be provided if `to_time` != `from_time`&#34;
         )
 
-    if origin.lower() not in {&#34;lower&#34;, &#34;upper&#34;}:
-        raise ValueError(&#34;Invalid `origin` value: {}&#34;.format(origin))
-    origin = origin.lower()
+    extent = _parse_extent_origin(extent, origin)
     dtype = grid.dtype
 
     if isinstance(threads, str):
@@ -673,7 +672,8 @@ def reconstruct_grid(
     threads = max([threads, 1])
 
     grid = grid.squeeze()
-    _check_image_shape(grid)
+    grid = _check_grid(grid)
+
     # Determine fill_value
     if fill_value is None:
         if grid.ndim == 2:
@@ -688,6 +688,17 @@ def reconstruct_grid(
                 fill_value = tuple([0] * grid.shape[2])
             else:  # dtype.kind == &#34;f&#34;
                 fill_value = tuple([0.0] * grid.shape[2])
+    if isinstance(fill_value, str):
+        if grid.ndim == 2:
+            raise TypeError(
+                &#34;Invalid fill_value for 2D grid: {}&#34;.format(fill_value)
+            )
+        fill_value = np.array(matplotlib.colors.to_rgba(fill_value))
+        if dtype.kind == &#34;u&#34;:
+            fill_value = (fill_value * 255.0).astype(&#34;u1&#34;)
+            fill_value = np.clip(fill_value, 0, 255)
+        fill_value = tuple(fill_value)[:grid.shape[2]]
+
     if (
         grid.ndim == 3
         and grid.shape[2] == 4
@@ -703,13 +714,7 @@ def reconstruct_grid(
             + &#34;, grid shape: {}&#34;.format(np.shape(grid))
         )
 
-    if extent == &#34;global&#34;:
-        extent = (-180, 180, -90, 90)
     xmin, xmax, ymin, ymax = extent
-    if origin == &#34;upper&#34; and ymin &lt; ymax:
-        ymin, ymax = ymax, ymin
-    elif origin == &#34;lower&#34; and ymin &gt; ymax:
-        ymin, ymax = ymax, ymin
     ny, nx = grid.shape[:2]
 
     if isinstance(partitioning_features, pygplates.FeaturesFunctionArgument):
@@ -851,7 +856,7 @@ def rasterise(
     resy=1.0,
     shape=None,
     extent=&#34;global&#34;,
-    origin=&#34;upper&#34;,
+    origin=None,
 ):
     &#34;&#34;&#34;Rasterise GPlates objects at a given reconstruction time.
 
@@ -916,9 +921,6 @@ def rasterise(
     This function is used by gplately.grids.reconstruct_grids to rasterise
     static polygons in order to extract their plate IDs.
     &#34;&#34;&#34;
-    if origin.lower() not in {&#34;upper&#34;, &#34;lower&#34;}:
-        raise ValueError(&#34;Invalid `origin`: {}&#34;.format(origin))
-    origin = origin.lower()
     valid_keys = {
         &#34;plate_id&#34;,
         &#34;conjugate_plate_id&#34;,
@@ -937,17 +939,8 @@ def rasterise(
             + &#34;\nkey must be one of {}&#34;.format(valid_keys)
         )
 
-    try:
-        extent = extent.lower()
-    except AttributeError:
-        pass
-    if extent == &#34;global&#34;:
-        extent = (-180.0, 180.0, -90.0, 90.0)
+    extent = _parse_extent_origin(extent, origin)
     minx, maxx, miny, maxy = extent
-    if origin == &#34;upper&#34; and miny &lt; maxy:
-        miny, maxy = maxy, miny
-    if origin == &#34;lower&#34; and miny &gt; maxy:
-        miny, maxy = maxy, miny
 
     if minx &gt; maxx:
         resx = -1.0 * np.abs(resx)
@@ -1089,21 +1082,91 @@ def _vector_to_lat_lon(
     return lat, lon
 
 
-def _check_image_shape(data):
+def _check_grid_shape(data):
+    &#34;&#34;&#34;Check data is a 2D grid or a 3D RGB(A) image.&#34;&#34;&#34;
     ndim = np.ndim(data)
     shape = np.shape(data)
     valid = True
     if ndim not in (2, 3):
-        # ndim == 2: greyscale image
-        # ndim == 3: colour image
+        # ndim == 2: greyscale image/grid
+        # ndim == 3: colour RGB(A) image
         valid = False
     if ndim == 3 and shape[2] not in (3, 4):
-        # shape[2] == 3: colour image
-        # shape[2] == 4: colour image w/ transparency
+        # shape[2] == 3: colour image (RGB)
+        # shape[2] == 4: colour image w/ transparency (RGBA)
         valid = False
 
     if not valid:
-        raise ValueError(&#34;Invalid image shape: {}&#34;.format(shape))
+        raise ValueError(&#34;Invalid grid shape: {}&#34;.format(shape))
+
+
+def _check_image_values(data):
+    &#34;&#34;&#34;Check values are within correct range for an RGB(A) image.&#34;&#34;&#34;
+    dtype = data.dtype
+    if dtype.kind == &#34;i&#34;:
+        data = data.astype(&#34;u1&#34;)
+        dtype = data.dtype
+    min_value = np.nanmin(data)
+    max_value = np.nanmax(data)
+    if min_value &lt; 0:
+        raise ValueError(
+            &#34;Invalid value for RGB(A) image: {}&#34;.format(min_value)
+        )
+    if (
+        (dtype.kind == &#34;f&#34; and max_value &gt; 1.0)
+        or (dtype.kind == &#34;u&#34; and max_value &gt; 255)
+    ):
+        raise ValueError(
+            &#34;Invalid value for RGB(A) image: {}&#34;.format(max_value)
+        )
+    return data
+
+
+def _check_grid(data):
+    &#34;&#34;&#34;Check grid shape and values make sense.&#34;&#34;&#34;
+    if not isinstance(data, np.ndarray):
+        data = np.array(data)
+    ndim = data.ndim
+    dtype = data.dtype
+    _check_grid_shape(data)
+
+    if ndim == 3:
+        # data is an RGB(A) image
+        data = _check_image_values(data)
+
+    return data
+
+
+def _parse_extent_origin(extent, origin):
+    &#34;&#34;&#34;Default values: extent=&#39;global&#39;, origin=None&#34;&#34;&#34;
+    if hasattr(extent, &#34;lower&#34;):  # i.e. a string
+        extent = extent.lower()
+
+    if extent is None or extent == &#34;global&#34;:
+        extent = (-180.0, 180.0, -90.0, 90.0)
+    elif len(extent) != 4:
+        raise TypeError(
+            &#34;`extent` must be a four-element tuple, &#39;global&#39;, or None&#34;
+        )
+    extent = tuple(float(i) for i in extent)
+
+    if origin is not None:
+        origin = str(origin).lower()
+        if origin == &#34;lower&#34; and extent[2] &gt; extent[3]:
+            extent = (
+                extent[0],
+                extent[1],
+                extent[3],
+                extent[2],
+            )
+        if origin == &#34;upper&#34; and extent[2] &lt; extent[3]:
+            extent = (
+                extent[0],
+                extent[1],
+                extent[3],
+                extent[2],
+            )
+    return extent
 
 
 class Raster(object):
@@ -1270,32 +1333,8 @@ class Raster(object):
         else:
             # numpy array
             self._filename = None
-            # Process `extent` parameter
-            if hasattr(extent, &#34;lower&#34;):  # i.e. a string
-                extent = extent.lower()
-            if extent is None or extent == &#34;global&#34;:
-                extent = (-180.0, 180.0, -90.0, 90.0)
-            elif len(extent) != 4:
-                raise TypeError(
-                    &#34;`extent` must be a four-element tuple, &#39;global&#39;, or None&#34;
-                )
-            if origin is not None:
-                origin = str(origin).lower()
-                if origin == &#34;lower&#34; and extent[2] &gt; extent[3]:
-                    extent = (
-                        extent[0],
-                        extent[1],
-                        extent[3],
-                        extent[2],
-                    )
-                if origin == &#34;upper&#34; and extent[2] &lt; extent[3]:
-                    extent = (
-                        extent[0],
-                        extent[1],
-                        extent[3],
-                        extent[2],
-                    )
-            _check_image_shape(data)
+            extent = _parse_extent_origin(extent, origin)
+            data = _check_grid(data)
             self._data = np.array(data)
             self._lons = np.linspace(extent[0], extent[1], self.data.shape[1])
             self._lats = np.linspace(extent[2], extent[3], self.data.shape[0])
@@ -1686,6 +1725,7 @@ class Raster(object):
         partitioning_features=None,
         threads=1,
         anchor_plate_id=0,
+        inplace=False,
     ):
         &#34;&#34;&#34;Reconstruct the raster data to a given time.
 
@@ -1714,12 +1754,20 @@ class Raster(object):
             routines.
         anchor_plate_id : int, default 0
             ID of the anchored plate.
+        inplace : bool, default False
+            Perform the reconstruction in-place (replace the raster&#39;s data
+            with the reconstructed data).
 
         Returns
         -------
         numpy.ndarray
             The reconstructed grid. Areas for which no plate ID could be
             determined will be filled with `fill_value`.
+
+        Raises
+        ------
+        TypeError
+            If this `Raster` has no `plate_reconstruction` set.
         &#34;&#34;&#34;
         if self.plate_reconstruction is None:
             raise TypeError(
@@ -1728,7 +1776,7 @@ class Raster(object):
             )
         if partitioning_features is None:
             partitioning_features = self.plate_reconstruction.static_polygons
-        return reconstruct_grid(
+        result =  reconstruct_grid(
             grid=self.data,
             partitioning_features=partitioning_features,
             rotation_model=self.plate_reconstruction.rotation_model,
@@ -1740,6 +1788,9 @@ class Raster(object):
             threads=threads,
             anchor_plate_id=anchor_plate_id,
         )
+        if inplace:
+            self.data = result
+        return result
 
     def imshow(self, ax=None, projection=None, **kwargs):
         &#34;&#34;&#34;Display raster data.
@@ -1923,7 +1974,7 @@ of its nearest valid neighbour.</dd>
 </details>
 </dd>
 <dt id="gplately.grids.rasterise"><code class="name flex">
-<span>def <span class="ident">rasterise</span></span>(<span>features, rotation_model=None, key='plate_id', time=None, resx=1.0, resy=1.0, shape=None, extent='global', origin='upper')</span>
+<span>def <span class="ident">rasterise</span></span>(<span>features, rotation_model=None, key='plate_id', time=None, resx=1.0, resy=1.0, shape=None, extent='global', origin=None)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Rasterise GPlates objects at a given reconstruction time.</p>
@@ -1998,7 +2049,7 @@ static polygons in order to extract their plate IDs.</p></div>
     resy=1.0,
     shape=None,
     extent=&#34;global&#34;,
-    origin=&#34;upper&#34;,
+    origin=None,
 ):
     &#34;&#34;&#34;Rasterise GPlates objects at a given reconstruction time.
 
@@ -2063,9 +2114,6 @@ static polygons in order to extract their plate IDs.</p></div>
     This function is used by gplately.grids.reconstruct_grids to rasterise
     static polygons in order to extract their plate IDs.
     &#34;&#34;&#34;
-    if origin.lower() not in {&#34;upper&#34;, &#34;lower&#34;}:
-        raise ValueError(&#34;Invalid `origin`: {}&#34;.format(origin))
-    origin = origin.lower()
     valid_keys = {
         &#34;plate_id&#34;,
         &#34;conjugate_plate_id&#34;,
@@ -2084,17 +2132,8 @@ static polygons in order to extract their plate IDs.</p></div>
             + &#34;\nkey must be one of {}&#34;.format(valid_keys)
         )
 
-    try:
-        extent = extent.lower()
-    except AttributeError:
-        pass
-    if extent == &#34;global&#34;:
-        extent = (-180.0, 180.0, -90.0, 90.0)
+    extent = _parse_extent_origin(extent, origin)
     minx, maxx, miny, maxy = extent
-    if origin == &#34;upper&#34; and miny &lt; maxy:
-        miny, maxy = maxy, miny
-    if origin == &#34;lower&#34; and miny &gt; maxy:
-        miny, maxy = maxy, miny
 
     if minx &gt; maxx:
         resx = -1.0 * np.abs(resx)
@@ -2173,7 +2212,7 @@ static polygons in order to extract their plate IDs.</p></div>
 </details>
 </dd>
 <dt id="gplately.grids.rasterize"><code class="name flex">
-<span>def <span class="ident">rasterize</span></span>(<span>features, rotation_model=None, key='plate_id', time=None, resx=1.0, resy=1.0, shape=None, extent='global', origin='upper')</span>
+<span>def <span class="ident">rasterize</span></span>(<span>features, rotation_model=None, key='plate_id', time=None, resx=1.0, resy=1.0, shape=None, extent='global', origin=None)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Rasterise GPlates objects at a given reconstruction time.</p>
@@ -2248,7 +2287,7 @@ static polygons in order to extract their plate IDs.</p></div>
     resy=1.0,
     shape=None,
     extent=&#34;global&#34;,
-    origin=&#34;upper&#34;,
+    origin=None,
 ):
     &#34;&#34;&#34;Rasterise GPlates objects at a given reconstruction time.
 
@@ -2313,9 +2352,6 @@ static polygons in order to extract their plate IDs.</p></div>
     This function is used by gplately.grids.reconstruct_grids to rasterise
     static polygons in order to extract their plate IDs.
     &#34;&#34;&#34;
-    if origin.lower() not in {&#34;upper&#34;, &#34;lower&#34;}:
-        raise ValueError(&#34;Invalid `origin`: {}&#34;.format(origin))
-    origin = origin.lower()
     valid_keys = {
         &#34;plate_id&#34;,
         &#34;conjugate_plate_id&#34;,
@@ -2334,17 +2370,8 @@ static polygons in order to extract their plate IDs.</p></div>
             + &#34;\nkey must be one of {}&#34;.format(valid_keys)
         )
 
-    try:
-        extent = extent.lower()
-    except AttributeError:
-        pass
-    if extent == &#34;global&#34;:
-        extent = (-180.0, 180.0, -90.0, 90.0)
+    extent = _parse_extent_origin(extent, origin)
     minx, maxx, miny, maxy = extent
-    if origin == &#34;upper&#34; and miny &lt; maxy:
-        miny, maxy = maxy, miny
-    if origin == &#34;lower&#34; and miny &gt; maxy:
-        miny, maxy = maxy, miny
 
     if minx &gt; maxx:
         resx = -1.0 * np.abs(resx)
@@ -2548,7 +2575,7 @@ An example output of <code>cdf_lat</code> is:<pre><code>masked_array(data=[-90. 
 </details>
 </dd>
 <dt id="gplately.grids.reconstruct_grid"><code class="name flex">
-<span>def <span class="ident">reconstruct_grid</span></span>(<span>grid, partitioning_features, rotation_model, to_time, from_time=0.0, extent='global', origin='upper', fill_value=None, threads=1, anchor_plate_id=0)</span>
+<span>def <span class="ident">reconstruct_grid</span></span>(<span>grid, partitioning_features, rotation_model, to_time, from_time=0.0, extent='global', origin=None, fill_value=None, threads=1, anchor_plate_id=0)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Reconstruct a gridded dataset to a given reconstruction time.</p>
@@ -2615,7 +2642,7 @@ determined from <code>partitioning_features</code> will be filled with
     to_time,
     from_time=0.0,
     extent=&#34;global&#34;,
-    origin=&#34;upper&#34;,
+    origin=None,
     fill_value=None,
     threads=1,
     anchor_plate_id=0,
@@ -2685,9 +2712,7 @@ determined from <code>partitioning_features</code> will be filled with
             &#34;`rotation_model` must be provided if `to_time` != `from_time`&#34;
         )
 
-    if origin.lower() not in {&#34;lower&#34;, &#34;upper&#34;}:
-        raise ValueError(&#34;Invalid `origin` value: {}&#34;.format(origin))
-    origin = origin.lower()
+    extent = _parse_extent_origin(extent, origin)
     dtype = grid.dtype
 
     if isinstance(threads, str):
@@ -2699,7 +2724,8 @@ determined from <code>partitioning_features</code> will be filled with
     threads = max([threads, 1])
 
     grid = grid.squeeze()
-    _check_image_shape(grid)
+    grid = _check_grid(grid)
+
     # Determine fill_value
     if fill_value is None:
         if grid.ndim == 2:
@@ -2714,6 +2740,17 @@ determined from <code>partitioning_features</code> will be filled with
                 fill_value = tuple([0] * grid.shape[2])
             else:  # dtype.kind == &#34;f&#34;
                 fill_value = tuple([0.0] * grid.shape[2])
+    if isinstance(fill_value, str):
+        if grid.ndim == 2:
+            raise TypeError(
+                &#34;Invalid fill_value for 2D grid: {}&#34;.format(fill_value)
+            )
+        fill_value = np.array(matplotlib.colors.to_rgba(fill_value))
+        if dtype.kind == &#34;u&#34;:
+            fill_value = (fill_value * 255.0).astype(&#34;u1&#34;)
+            fill_value = np.clip(fill_value, 0, 255)
+        fill_value = tuple(fill_value)[:grid.shape[2]]
+
     if (
         grid.ndim == 3
         and grid.shape[2] == 4
@@ -2729,13 +2766,7 @@ determined from <code>partitioning_features</code> will be filled with
             + &#34;, grid shape: {}&#34;.format(np.shape(grid))
         )
 
-    if extent == &#34;global&#34;:
-        extent = (-180, 180, -90, 90)
     xmin, xmax, ymin, ymax = extent
-    if origin == &#34;upper&#34; and ymin &lt; ymax:
-        ymin, ymax = ymax, ymin
-    elif origin == &#34;lower&#34; and ymin &gt; ymax:
-        ymin, ymax = ymax, ymin
     ny, nx = grid.shape[:2]
 
     if isinstance(partitioning_features, pygplates.FeaturesFunctionArgument):
@@ -3374,32 +3405,8 @@ reconstruction.</dd>
         else:
             # numpy array
             self._filename = None
-            # Process `extent` parameter
-            if hasattr(extent, &#34;lower&#34;):  # i.e. a string
-                extent = extent.lower()
-            if extent is None or extent == &#34;global&#34;:
-                extent = (-180.0, 180.0, -90.0, 90.0)
-            elif len(extent) != 4:
-                raise TypeError(
-                    &#34;`extent` must be a four-element tuple, &#39;global&#39;, or None&#34;
-                )
-            if origin is not None:
-                origin = str(origin).lower()
-                if origin == &#34;lower&#34; and extent[2] &gt; extent[3]:
-                    extent = (
-                        extent[0],
-                        extent[1],
-                        extent[3],
-                        extent[2],
-                    )
-                if origin == &#34;upper&#34; and extent[2] &lt; extent[3]:
-                    extent = (
-                        extent[0],
-                        extent[1],
-                        extent[3],
-                        extent[2],
-                    )
-            _check_image_shape(data)
+            extent = _parse_extent_origin(extent, origin)
+            data = _check_grid(data)
             self._data = np.array(data)
             self._lons = np.linspace(extent[0], extent[1], self.data.shape[1])
             self._lats = np.linspace(extent[2], extent[3], self.data.shape[0])
@@ -3790,6 +3797,7 @@ reconstruction.</dd>
         partitioning_features=None,
         threads=1,
         anchor_plate_id=0,
+        inplace=False,
     ):
         &#34;&#34;&#34;Reconstruct the raster data to a given time.
 
@@ -3818,12 +3826,20 @@ reconstruction.</dd>
             routines.
         anchor_plate_id : int, default 0
             ID of the anchored plate.
+        inplace : bool, default False
+            Perform the reconstruction in-place (replace the raster&#39;s data
+            with the reconstructed data).
 
         Returns
         -------
         numpy.ndarray
             The reconstructed grid. Areas for which no plate ID could be
             determined will be filled with `fill_value`.
+
+        Raises
+        ------
+        TypeError
+            If this `Raster` has no `plate_reconstruction` set.
         &#34;&#34;&#34;
         if self.plate_reconstruction is None:
             raise TypeError(
@@ -3832,7 +3848,7 @@ reconstruction.</dd>
             )
         if partitioning_features is None:
             partitioning_features = self.plate_reconstruction.static_polygons
-        return reconstruct_grid(
+        result =  reconstruct_grid(
             grid=self.data,
             partitioning_features=partitioning_features,
             rotation_model=self.plate_reconstruction.rotation_model,
@@ -3844,6 +3860,9 @@ reconstruction.</dd>
             threads=threads,
             anchor_plate_id=anchor_plate_id,
         )
+        if inplace:
+            self.data = result
+        return result
 
     def imshow(self, ax=None, projection=None, **kwargs):
         &#34;&#34;&#34;Display raster data.
@@ -4441,7 +4460,7 @@ Alerts user which dimension (index) the point is located.</li>
 </details>
 </dd>
 <dt id="gplately.grids.Raster.reconstruct"><code class="name flex">
-<span>def <span class="ident">reconstruct</span></span>(<span>self, time, fill_value=None, partitioning_features=None, threads=1, anchor_plate_id=0)</span>
+<span>def <span class="ident">reconstruct</span></span>(<span>self, time, fill_value=None, partitioning_features=None, threads=1, anchor_plate_id=0, inplace=False)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Reconstruct the raster data to a given time.</p>
@@ -4470,12 +4489,20 @@ will be used, but alternatively any valid argument to
 routines.</dd>
 <dt><strong><code>anchor_plate_id</code></strong> :&ensp;<code>int</code>, default <code>0</code></dt>
 <dd>ID of the anchored plate.</dd>
+<dt><strong><code>inplace</code></strong> :&ensp;<code>bool</code>, default <code>False</code></dt>
+<dd>Perform the reconstruction in-place (replace the raster's data
+with the reconstructed data).</dd>
 </dl>
 <h2 id="returns">Returns</h2>
 <dl>
 <dt><code>numpy.ndarray</code></dt>
 <dd>The reconstructed grid. Areas for which no plate ID could be
 determined will be filled with <code>fill_value</code>.</dd>
+</dl>
+<h2 id="raises">Raises</h2>
+<dl>
+<dt><code>TypeError</code></dt>
+<dd>If this <code><a title="gplately.grids.Raster" href="#gplately.grids.Raster">Raster</a></code> has no <code>plate_reconstruction</code> set.</dd>
 </dl></div>
 <details class="source">
 <summary>
@@ -4488,6 +4515,7 @@ determined will be filled with <code>fill_value</code>.</dd>
     partitioning_features=None,
     threads=1,
     anchor_plate_id=0,
+    inplace=False,
 ):
     &#34;&#34;&#34;Reconstruct the raster data to a given time.
 
@@ -4516,12 +4544,20 @@ determined will be filled with <code>fill_value</code>.</dd>
         routines.
     anchor_plate_id : int, default 0
         ID of the anchored plate.
+    inplace : bool, default False
+        Perform the reconstruction in-place (replace the raster&#39;s data
+        with the reconstructed data).
 
     Returns
     -------
     numpy.ndarray
         The reconstructed grid. Areas for which no plate ID could be
         determined will be filled with `fill_value`.
+
+    Raises
+    ------
+    TypeError
+        If this `Raster` has no `plate_reconstruction` set.
     &#34;&#34;&#34;
     if self.plate_reconstruction is None:
         raise TypeError(
@@ -4530,7 +4566,7 @@ determined will be filled with <code>fill_value</code>.</dd>
         )
     if partitioning_features is None:
         partitioning_features = self.plate_reconstruction.static_polygons
-    return reconstruct_grid(
+    result =  reconstruct_grid(
         grid=self.data,
         partitioning_features=partitioning_features,
         rotation_model=self.plate_reconstruction.rotation_model,
@@ -4541,7 +4577,10 @@ determined will be filled with <code>fill_value</code>.</dd>
         fill_value=fill_value,
         threads=threads,
         anchor_plate_id=anchor_plate_id,
-    )</code></pre>
+    )
+    if inplace:
+        self.data = result
+    return result</code></pre>
 </details>
 </dd>
 <dt id="gplately.grids.Raster.resample"><code class="name flex">
