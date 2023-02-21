@@ -19,6 +19,7 @@ Classes
 import warnings
 from multiprocessing import cpu_count
 
+import matplotlib.colors
 import matplotlib.pyplot as plt
 import numpy as np
 import pygplates
@@ -626,7 +627,8 @@ def reconstruct_grid(
     threads = max([threads, 1])
 
     grid = grid.squeeze()
-    _check_image_shape(grid)
+    grid = _check_grid(grid)
+
     # Determine fill_value
     if fill_value is None:
         if grid.ndim == 2:
@@ -641,6 +643,17 @@ def reconstruct_grid(
                 fill_value = tuple([0] * grid.shape[2])
             else:  # dtype.kind == "f"
                 fill_value = tuple([0.0] * grid.shape[2])
+    if isinstance(fill_value, str):
+        if grid.ndim == 2:
+            raise TypeError(
+                "Invalid fill_value for 2D grid: {}".format(fill_value)
+            )
+        fill_value = np.array(matplotlib.colors.to_rgba(fill_value))
+        if dtype.kind == "u":
+            fill_value = (fill_value * 255.0).astype("u1")
+            fill_value = np.clip(fill_value, 0, 255)
+        fill_value = tuple(fill_value)[:grid.shape[2]]
+
     if (
         grid.ndim == 3
         and grid.shape[2] == 4
@@ -1042,21 +1055,59 @@ def _vector_to_lat_lon(
     return lat, lon
 
 
-def _check_image_shape(data):
+def _check_grid_shape(data):
+    """Check data is a 2D grid or a 3D RGB(A) image."""
     ndim = np.ndim(data)
     shape = np.shape(data)
     valid = True
     if ndim not in (2, 3):
-        # ndim == 2: greyscale image
-        # ndim == 3: colour image
+        # ndim == 2: greyscale image/grid
+        # ndim == 3: colour RGB(A) image
         valid = False
     if ndim == 3 and shape[2] not in (3, 4):
-        # shape[2] == 3: colour image
-        # shape[2] == 4: colour image w/ transparency
+        # shape[2] == 3: colour image (RGB)
+        # shape[2] == 4: colour image w/ transparency (RGBA)
         valid = False
 
     if not valid:
-        raise ValueError("Invalid image shape: {}".format(shape))
+        raise ValueError("Invalid grid shape: {}".format(shape))
+
+
+def _check_image_values(data):
+    """Check values are within correct range for an RGB(A) image."""
+    dtype = data.dtype
+    if dtype.kind == "i":
+        data = data.astype("u1")
+        dtype = data.dtype
+    min_value = np.nanmin(data)
+    max_value = np.nanmax(data)
+    if min_value < 0:
+        raise ValueError(
+            "Invalid value for RGB(A) image: {}".format(min_value)
+        )
+    if (
+        (dtype.kind == "f" and max_value > 1.0)
+        or (dtype.kind == "u" and max_value > 255)
+    ):
+        raise ValueError(
+            "Invalid value for RGB(A) image: {}".format(max_value)
+        )
+    return data
+
+
+def _check_grid(data):
+    """Check grid shape and values make sense."""
+    if not isinstance(data, np.ndarray):
+        data = np.array(data)
+    ndim = data.ndim
+    dtype = data.dtype
+    _check_grid_shape(data)
+
+    if ndim == 3:
+        # data is an RGB(A) image
+        data = _check_image_values(data)
+
+    return data
 
 
 class Raster(object):
@@ -1248,7 +1299,7 @@ class Raster(object):
                         extent[3],
                         extent[2],
                     )
-            _check_image_shape(data)
+            data = _check_grid(data)
             self._data = np.array(data)
             self._lons = np.linspace(extent[0], extent[1], self.data.shape[1])
             self._lats = np.linspace(extent[2], extent[3], self.data.shape[0])
@@ -1639,6 +1690,7 @@ class Raster(object):
         partitioning_features=None,
         threads=1,
         anchor_plate_id=0,
+        inplace=False,
     ):
         """Reconstruct the raster data to a given time.
 
@@ -1667,12 +1719,20 @@ class Raster(object):
             routines.
         anchor_plate_id : int, default 0
             ID of the anchored plate.
+        inplace : bool, default False
+            Perform the reconstruction in-place (replace the raster's data
+            with the reconstructed data).
 
         Returns
         -------
         numpy.ndarray
             The reconstructed grid. Areas for which no plate ID could be
             determined will be filled with `fill_value`.
+
+        Raises
+        ------
+        TypeError
+            If this `Raster` has no `plate_reconstruction` set.
         """
         if self.plate_reconstruction is None:
             raise TypeError(
@@ -1681,7 +1741,7 @@ class Raster(object):
             )
         if partitioning_features is None:
             partitioning_features = self.plate_reconstruction.static_polygons
-        return reconstruct_grid(
+        result =  reconstruct_grid(
             grid=self.data,
             partitioning_features=partitioning_features,
             rotation_model=self.plate_reconstruction.rotation_model,
@@ -1693,6 +1753,9 @@ class Raster(object):
             threads=threads,
             anchor_plate_id=anchor_plate_id,
         )
+        if inplace:
+            self.data = result
+        return result
 
     def imshow(self, ax=None, projection=None, **kwargs):
         """Display raster data.
