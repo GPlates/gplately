@@ -41,7 +41,7 @@ class RotationModel(_pygplates.RotationModel):
         elif isinstance(rotation_features, RotationModel):
             self.filenames = rotation_features.filenames
         else:
-            print("RotationModel: No filename associated with", type(feature), "in __init__")
+            print("RotationModel: No filename associated with", type(rotation_features), "in __init__")
             self.filenames = []
 
         self.filenames = rotation_features

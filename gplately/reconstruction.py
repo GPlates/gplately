@@ -65,13 +65,13 @@ class PlateReconstruction(object):
                      "topology_features": self.topology_features.filenames,\
                      "static_polygons": self.static_polygons.filenames}
 
-        # remove unpicklable items
-        del self.rotation_model, self.topology_features, self.static_polygons
+        # # remove unpicklable items
+        # del self.rotation_model, self.topology_features, self.static_polygons
         
-        # really make sure they're gone
-        self.rotation_model = None
-        self.topology_features = None
-        self.static_polygons = None
+        # # really make sure they're gone
+        # self.rotation_model = None
+        # self.topology_features = None
+        # self.static_polygons = None
 
         return filenames
 
