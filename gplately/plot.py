@@ -1097,17 +1097,12 @@ class PlotTopologies(object):
         self.PlateReconstruction_object = PlateReconstruction_object
         self.base_projection = ccrs.PlateCarree()
 
-        # these change when time is set to ReconstructedFeatureGeometry
+        # store these for when time is updated
         # make sure these are initialised as FeatureCollection objects
 
-        self.coastlines = _check_object_type(coastlines)
-        self.continents = _check_object_type(continents)
-        self.COBs = _check_object_type(COBs)
-
-        # store filenames for pickling
-        self.coastline_filenames = self.coastlines.filenames
-        self.continent_filenames = self.continents.filenames
-        self.COB_filenames = self.COBs.filenames
+        self._coastlines = _check_object_type(coastlines)
+        self._continents = _check_object_type(continents)
+        self._COBs = _check_object_type(COBs)
 
         self._anchor_plate_id = self._check_anchor_plate_id(anchor_plate_id)
 
@@ -1120,17 +1115,21 @@ class PlotTopologies(object):
         filenames = self.PlateReconstruction_object.__getstate__()
 
         # add important variables from Points object
-        filenames["coastlines"] = self.coastline_filenames
-        filenames["continents"] = self.continent_filenames
-        filenames["COBs"] = self.COB_filenames
+        filenames["coastlines"] = self._coastlines.filenames
+        filenames["continents"] = self._continents.filenames
+        filenames["COBs"] = self._COBs.filenames
         filenames['time'] = self.time
         filenames['plate_id'] = self._anchor_plate_id
 
         del self.coastlines, self.continents, self.COBs
+        del self._coastlines, self._continents, self._COBs
 
         self.coastlines = None
         self.continents = None
         self.COBs = None
+        self._coastlines = None
+        self._continents = None
+        self._COBs = None
 
         return filenames
 
@@ -1140,23 +1139,18 @@ class PlotTopologies(object):
 
         # reinstate unpicklable items
 
-        self.coastlines = _FeatureCollection()
+        self._coastlines = _FeatureCollection()
         for feature in state['coastlines']:
-            self.coastlines.add( _FeatureCollection(feature) )
+            self._coastlines.add( _FeatureCollection(feature) )
 
-        self.continents = _FeatureCollection()
+        self._continents = _FeatureCollection()
         for feature in state['continents']:
-            self.continents.add( _FeatureCollection(feature) )
+            self._continents.add( _FeatureCollection(feature) )
 
-        self.COBs = _FeatureCollection()
+        self._COBs = _FeatureCollection()
         for feature in state['COBs']:
-            self.COBs.add( _FeatureCollection(feature) )
+            self._COBs.add( _FeatureCollection(feature) )
 
-
-        # store filenames for pickling
-        self.coastline_filenames = self.coastlines.filenames
-        self.continent_filenames = self.continents.filenames
-        self.COB_filenames = self.COBs.filenames
 
         self._anchor_plate_id = state["plate_id"]
         self.time = state['time']
@@ -1289,17 +1283,17 @@ class PlotTopologies(object):
                 self.unclassified_features.append(topol)
 
         # reconstruct other important polygons and lines
-        if self.coastlines:
+        if self._coastlines:
             self.coastlines = self.PlateReconstruction_object.reconstruct(
-                self.coastlines, self.time, from_time=0, anchor_plate_id=self.anchor_plate_id)
+                self._coastlines, self.time, from_time=0, anchor_plate_id=self.anchor_plate_id)
 
-        if self.continents:
+        if self._continents:
             self.continents = self.PlateReconstruction_object.reconstruct(
-                self.continents, self.time, from_time=0, anchor_plate_id=self.anchor_plate_id)
+                self._continents, self.time, from_time=0, anchor_plate_id=self.anchor_plate_id)
 
-        if self.COBs:
+        if self._COBs:
             self.COBs = self.PlateReconstruction_object.reconstruct(
-                self.COBs, self.time, from_time=0, anchor_plate_id=self.anchor_plate_id)
+                self._COBs, self.time, from_time=0, anchor_plate_id=self.anchor_plate_id)
 
 
     # subduction teeth
