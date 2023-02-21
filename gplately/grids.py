@@ -577,19 +577,13 @@ def reconstruct_grid(
         Extent of `grid`. Valid arguments are a tuple of
         the form (xmin, xmax, ymin, ymax), or the string "global",
         equivalent to (-180.0, 180.0, -90.0, 90.0).
-    origin : {"upper", "lower"}
-        Origin of `grid` - either lower-left or upper-left.
+    origin : {"upper", "lower"}, optional
+        Origin of `grid` - either lower-left or upper-left. By default,
+        determined from `extent`.
     fill_value : float, int, or tuple, optional
         The value to be used for regions outside of `partitioning_features`
         at `to_time`. By default (`fill_value=None`), this value will be
         determined based on the input.
-        For two-dimensional grids, the default fill value will be `np.nan` for
-        float or complex types, the minimum value for integer types, and the
-        maximum value for unsigned types.
-        For RGB image grids, the default fill value will be black
-        (0.0, 0.0, 0.0) or (0, 0, 0).
-        For RGBA image grids, the default fill value will be transparent black
-        (0.0, 0.0, 0.0, 0.0) or (0, 0, 0, 0).
     threads : int, default 1
         Number of threads to use for certain computationally heavy routines.
     anchor_plate_id : int, default 0
@@ -601,6 +595,20 @@ def reconstruct_grid(
         The reconstructed grid. Areas for which no plate ID could be
         determined from `partitioning_features` will be filled with
         `fill_value`.
+
+    Notes
+    -----
+    For two-dimensional grids, `fill_value` should be a single
+    number. The default value will be `np.nan` for float or
+    complex types, the minimum value for integer types, and the
+    maximum value for unsigned types.
+    For RGB image grids, `fill_value` should be a 3-tuple RGB
+    colour code or a matplotlib colour string. The default value
+    will be black (0.0, 0.0, 0.0) or (0, 0, 0).
+    For RGBA image grids, `fill_value` should be a 4-tuple RGBA
+    colour code or a matplotlib colour string. The default fill
+    value will be transparent black (0.0, 0.0, 0.0, 0.0) or
+    (0, 0, 0, 0).
     """
     try:
         grid = np.array(read_netcdf_grid(grid))  # load grid data from file
@@ -852,8 +860,9 @@ def rasterise(
         Extent of the rasterised grid. Valid arguments are a tuple of
         the form (xmin, xmax, ymin, ymax), or the string "global",
         equivalent to (-180.0, 180.0, -90.0, 90.0).
-    origin : {"upper", "lower"}
-        Origin (upper-left or lower-left) of the output array.
+    origin : {"upper", "lower"}, optional
+        Origin (upper-left or lower-left) of the output array. By default,
+        determined from `extent`.
 
     Returns
     -------
@@ -1130,6 +1139,39 @@ class Raster(object):
     resizing rasters using new X and Y grid pixel resolutions. NaN-type data in rasters
     can be replaced with the values of their nearest valid neighbours.
 
+    Parameters
+    ----------
+    plate_reconstruction : PlateReconstruction
+        Allows for the accessibility of PlateReconstruction object attributes. Namely, PlateReconstruction object
+        attributes rotation_model, topology_featues and static_polygons can be used in the points object if called using
+        “self.plate_reconstruction.X”, where X is the attribute.
+
+    data : str or array-like
+        The raster data, either as a filename (`str`) or array.
+
+    extent : str or 4-tuple, default: 'global'
+        4-tuple to specify (min_lon, max_lon, min_lat, max_lat) extents
+        of the raster. If no extents are supplied, full global extent
+        [-180,180,-90,90] is assumed (equivalent to `extent='global'`).
+        For array data with an upper-left origin, make sure `min_lat` is
+        greater than `max_lat`, or specify `origin` parameter.
+
+    resample : 2-tuple, optional
+        Optionally resample grid, pass spacing in X and Y direction as a
+        2-tuple e.g. resample=(spacingX, spacingY).
+
+    time : float, default: 0.0
+        The time step represented by the raster data. Used for raster
+        reconstruction.
+
+    origin : {'lower', 'upper'}, optional
+        When `data` is an array, use this parameter to specify the origin
+        (upper left or lower left) of the data (overriding `extent`).
+
+    **kwargs
+        Handle deprecated arguments such as `PlateReconstruction_object`,
+        `filename`, and `array`.
+
     Attributes
     ----------
     plate_reconstruction : PlateReconstruction
@@ -1158,31 +1200,28 @@ class Raster(object):
 
     Methods
     -------
-    __init__(self, plate_reconstruction=None, data=None, extent=None, resample=None, time=0, origin=None, **kwargs)
-        Constructs all necessary attributes for the Raster object.
+    interpolate(lons, lats, method='linear', return_indices=False,
+                return_distances=False)
+        Sample gridded data on a set of points using interpolation from
+        `scipy.interpolate.RegularGridInterpolator`.
 
-    _update(self)
-        Allows RegularGridInterpolator attributes ((self.lats, self.lons), self.data, method='linear') and methods 
-        (__call__(), or RegularGridInterpolator) to be accessible from the Raster object.
+    resample(spacingX, spacingY, overwrite=False)
+        Resamples the grid using X & Y-spaced lat-lon arrays, meshed with
+        linear interpolation.
 
-    interpolate(self, lons, lats, method='linear', return_indices=False, return_distances=False)
-        Sample gridded data on a set of points using interpolation from RegularGridInterpolator.
+    resize(resX, resY, overwrite=False)
+        Resizes the grid with a specific resolution and samples points
+        using linear interpolation.
 
-    resample(self, spacingX, spacingY, overwrite=False)
-        Resamples the grid using X & Y-spaced lat-lon arrays, meshed with linear interpolation.
+    fill_NaNs(overwrite=False)
+        Searches for invalid 'data' cells containing NaN-type entries and
+        replaces NaNs with the value of the nearest valid data cell.
 
-    resize(self, resX, resY, overwrite=False)
-        Resizes the grid with a specific resolution and samples points using linear interpolation.
-
-    fill_NaNs(self, overwrite=False)
-        Searches for invalid 'data' cells containing NaN-type entries and replaces NaNs with the value of the nearest
-        valid data cell.
-
-    reconstruct(self, time)
+    reconstruct(time, fill_value=None, partitioning_features=None,
+                threads=1, anchor_plate_id=0, inplace=False)
         Reconstruct the raster from its initial time (`self.time`) to a new
         time.
     """
-
     def __init__(
         self,
         plate_reconstruction=None,
@@ -1686,17 +1725,10 @@ class Raster(object):
         ----------
         time : float
             Time to which the data will be reconstructed.
-        fill_value : float, int, or tuple, optional
+        fill_value : float, int, str, or tuple, optional
             The value to be used for regions outside of the static polygons
             at `time`. By default (`fill_value=None`), this value will be
             determined based on the input.
-            For two-dimensional grids, the default fill value will be `np.nan`
-            for float or complex types, the minimum value for integer types,
-            and the maximum value for unsigned types.
-            For RGB image grids, the default fill value will be black
-            (0.0, 0.0, 0.0) or (0, 0, 0).
-            For RGBA image grids, the default fill value will be transparent
-            black (0.0, 0.0, 0.0, 0.0) or (0, 0, 0, 0).
         partitioning_features : sequence of Feature or str, optional
             The features used to partition the raster grid and assign plate
             IDs. By default, `self.plate_reconstruction.static_polygons`
@@ -1721,6 +1753,20 @@ class Raster(object):
         ------
         TypeError
             If this `Raster` has no `plate_reconstruction` set.
+
+        Notes
+        -----
+        For two-dimensional grids, `fill_value` should be a single
+        number. The default value will be `np.nan` for float or
+        complex types, the minimum value for integer types, and the
+        maximum value for unsigned types.
+        For RGB image grids, `fill_value` should be a 3-tuple RGB
+        colour code or a matplotlib colour string. The default value
+        will be black (0.0, 0.0, 0.0) or (0, 0, 0).
+        For RGBA image grids, `fill_value` should be a 4-tuple RGBA
+        colour code or a matplotlib colour string. The default fill
+        value will be transparent black (0.0, 0.0, 0.0, 0.0) or
+        (0, 0, 0, 0).
         """
         if self.plate_reconstruction is None:
             raise TypeError(
