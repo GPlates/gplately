@@ -96,3 +96,8 @@ def test_PlotTopologies_trench_L(time, gplot):
 def test_PlotTopologies_trench_R(time, gplot):
     assert gplot.trench_right, "No trench (R) features from Müller et al. (2019) at {} Ma are attributed to <gplately.PlotTopologies>.".format(time)
     assert [trench_r.get_feature_type() == "gpml:SubductionZone" for trench_r in gplot.trench_right], "<gplately.PlotTopologies> trenches (R) are not all of type gpml:SubductionZone in Müller et al. (2019) at {} Ma.".format(time)
+
+def test_pickle_Points():
+    import pickle
+    gplot_dump = pickle.dumps(gplot)
+    gplot_load = pickle.loads(gplot_dump)

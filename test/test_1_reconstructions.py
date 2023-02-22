@@ -92,3 +92,8 @@ def test_point_velocities(time, model):
     lats = [15]
     point_velocities = model.get_point_velocities(lons, lats, time, delta_time=1.0)
     assert point_velocities.any(), "Could not calculate point data velocities for Muller et al. (2019) at {} Ma.".format(time)
+
+def test_pickle_Points():
+    import pickle
+    model_dump = pickle.dumps(model)
+    model_load = pickle.loads(model_dump)
