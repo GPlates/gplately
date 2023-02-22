@@ -84,7 +84,6 @@ Classes
 import warnings
 import pygplates
 import numpy as np
-from pydoc import plain
 import stripy 
 import ptt
 import multiprocessing
@@ -92,7 +91,6 @@ import glob
 import os
 import re
 import math
-from skimage import measure
 from scipy.interpolate import griddata
 import pandas as pd
 
