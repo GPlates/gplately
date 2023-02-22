@@ -1,8 +1,14 @@
 import pytest
 import gplately
 import numpy as np
-from conftest import reconstruction_times, pt_lon, pt_lat
-from conftest import gplately_raster_object as graster
+from conftest import (
+    reconstruction_times,
+    pt_lon,
+    pt_lat,
+    gplately_raster_object as graster,
+    gplately_merdith_raster,
+    gplately_merdith_static_geometries,
+)
 
 # ========================================= <gplately.Raster> =========================================
 
@@ -41,3 +47,27 @@ def test_fill_NaNs(graster):
 def test_reconstruct(graster):
     reconstructed_raster = graster.reconstruct(50)
     assert np.shape(reconstructed_raster), "Unable to reconstruct age grid"
+
+
+def test_reverse_reconstruct(
+    gplately_merdith_raster,
+    gplately_merdith_static_geometries,
+):
+    continents = gplately_merdith_static_geometries[1]
+    original_data = np.array(gplately_merdith_raster.data)
+
+    gplately_merdith_raster.reconstruct(
+        50,
+        partitioning_features=continents,
+        inplace=True,
+    )
+    gplately_merdith_raster.reconstruct(
+        0,
+        partitioning_features=continents,
+        inplace=True,
+    )
+    diff = gplately_merdith_raster.data - original_data
+    # RMS error after reconstructing and reverse reconstructing
+    # should be fairly small if reconstruction is working well
+    rmse = np.sqrt(np.nanmean(diff ** 2))
+    assert rmse < 250.0  # make sure RMSE is within a reasonable limit
