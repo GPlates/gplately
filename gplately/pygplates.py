@@ -40,11 +40,11 @@ class RotationModel(_pygplates.RotationModel):
             self.filenames = []
         elif isinstance(rotation_features, RotationModel):
             self.filenames = rotation_features.filenames
+        elif hasattr(rotation_features, "filenames"):
+            self.filenames = rotation_features.filenames
         else:
             print("RotationModel: No filename associated with", type(rotation_features), "in __init__")
             self.filenames = []
-
-        self.filenames = rotation_features
 
 class Feature(_pygplates.Feature):
 
@@ -61,6 +61,8 @@ class Feature(_pygplates.Feature):
             self.filenames = []
         elif isinstance(feature, Feature):
             self.filenames = feature.filenames
+        elif hasattr(feature, "filenames"):
+            self.filenames = feature.filenames
         else:
             print("Feature: No filename associated with", type(feature), "in __init__")
             self.filenames = []
@@ -72,6 +74,8 @@ class Feature(_pygplates.Feature):
             self.filenames.extend(feature.filenames)
         elif _is_string(feature):
             self.filenames.extend(feature)
+        elif hasattr(feature, "filenames"):
+            self.filenames.extend(feature.filenames)
         else:
             print("Feature: No filename associated with", type(feature), "in add")
 
@@ -94,6 +98,8 @@ class FeatureCollection(_pygplates.FeatureCollection):
             self.filenames = []
         elif isinstance(features, FeatureCollection):
             self.filenames = features.filenames
+        elif hasattr(features, "filenames"):
+            self.filenames = features.filenames
         else:
             print("FeatureCollection: No filename associated with", type(features), "in __init__")
             self.filenames = []
@@ -106,6 +112,8 @@ class FeatureCollection(_pygplates.FeatureCollection):
             self.filenames.extend(features.filenames)
         elif _is_string(features):
             self.filenames.extend(features)
+        elif hasattr(features, "filenames"):
+            self.filenames.extend(features.filenames)
         else:
             print("FeatureCollection: No filename associated with", type(features), "in add")
 
