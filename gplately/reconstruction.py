@@ -998,7 +998,7 @@ class Points(object):
                 plate_id[i] = feature.get_reconstruction_plate_id()
 
         self.plate_id = plate_id
-        self.FeatureCollection = _FeatureCollection(self.features)
+        self.FeatureCollection = pygplates.FeatureCollection(self.features)
 
 
     def __getstate__(self):
