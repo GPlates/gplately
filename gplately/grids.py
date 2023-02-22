@@ -1305,7 +1305,10 @@ class Raster(object):
             )
         self.plate_reconstruction = plate_reconstruction
 
-        self._time = float(time)
+        if time < 0.0:
+            raise ValueError("Invalid time: {}".format(time))
+        time = float(time)
+        self._time = time
 
         if data is None:
             raise TypeError(
@@ -1768,6 +1771,9 @@ class Raster(object):
         value will be transparent black (0.0, 0.0, 0.0, 0.0) or
         (0, 0, 0, 0).
         """
+        if time < 0.0:
+            raise ValueError("Invalid time: {}".format(time))
+        time = float(time)
         if self.plate_reconstruction is None:
             raise TypeError(
                 "Cannot perform reconstruction - "
@@ -1780,7 +1786,7 @@ class Raster(object):
             partitioning_features=partitioning_features,
             rotation_model=self.plate_reconstruction.rotation_model,
             from_time=self.time,
-            to_time=float(time),
+            to_time=time,
             extent=self.extent,
             origin=self.origin,
             fill_value=fill_value,
@@ -1789,6 +1795,7 @@ class Raster(object):
         )
         if inplace:
             self.data = result
+            self._time = time
         return result
 
     def imshow(self, ax=None, projection=None, **kwargs):
