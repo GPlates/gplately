@@ -50,6 +50,8 @@ The following functions are defined here:
 import os
 
 import pygplates
+from .pygplates import FeatureCollection as _FeatureCollection
+from .pygplates import _is_string
 
 __all__ = [
     &#34;create_feature_dict&#34;,
@@ -289,7 +291,25 @@ def _parse_features_function_arguments(features):
             ) from e
         else:
             raise e
-    return features</code></pre>
+    return features
+
+def _load_FeatureCollection(geometry):
+    if isinstance(geometry, _FeatureCollection):
+        return geometry
+    elif isinstance(geometry, pygplates.FeatureCollection):
+        geometry.filenames = []
+        return geometry
+    elif _is_string(geometry) and type(geometry) is list:
+        fc = _FeatureCollection()
+        for geom in geometry:
+            fc.add( _FeatureCollection(geom) )
+        return fc
+    elif _is_string(geometry):
+        return _FeatureCollection(geometry)
+    elif geometry is None:
+        return None
+    else:
+        raise ValueError(&#34;geometry is an invalid type&#34;, type(geometry))</code></pre>
 </details>
 </section>
 <section>
