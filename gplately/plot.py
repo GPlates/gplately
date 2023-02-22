@@ -30,7 +30,7 @@ from .io import (
     get_geometries as _get_geometries,
 )
 from .tools import EARTH_RADIUS
-
+from .gpml import _load_FeatureCollection
     
 def add_coastlines(ax, reconstruction_time, **kwargs):
     """Reconstruct coastline features to a `reconstruction_time` and plot them as 
@@ -925,25 +925,6 @@ shapelify_feature_lines = shapelify_features
 shapelify_feature_polygons = shapelify_features
 
 
-def _check_object_type(geometry):
-    if isinstance(geometry, _FeatureCollection):
-        return geometry
-    elif isinstance(geometry, pygplates.FeatureCollection):
-        geometry.filenames = []
-        return geometry
-    elif _is_string(geometry) and type(geometry) is list:
-        fc = _FeatureCollection()
-        for geom in geometry:
-            fc.add( _FeatureCollection(geom) )
-        return fc
-    elif _is_string(geometry):
-        return _FeatureCollection(geometry)
-    elif geometry is None:
-        return None
-    else:
-        raise ValueError("geometry is an invalid type", type(geometry))
-
-
 class PlotTopologies(object):
     """A class with tools to read, reconstruct and plot topology features at specific
     reconstruction times.
@@ -1102,9 +1083,9 @@ class PlotTopologies(object):
         # store these for when time is updated
         # make sure these are initialised as FeatureCollection objects
 
-        self._coastlines = _check_object_type(coastlines)
-        self._continents = _check_object_type(continents)
-        self._COBs = _check_object_type(COBs)
+        self._coastlines = _load_FeatureCollection(coastlines)
+        self._continents = _load_FeatureCollection(continents)
+        self._COBs = _load_FeatureCollection(COBs)
 
         self.coastlines = None
         self.continents = None
