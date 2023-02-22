@@ -974,6 +974,8 @@ def _check_object_type(geometry):
         return fc
     elif _is_string(geometry):
         return _FeatureCollection(geometry)
+    elif geometry is None:
+        return None
     else:
         raise ValueError(&#34;geometry is an invalid type&#34;, type(geometry))
 
@@ -1140,6 +1142,10 @@ class PlotTopologies(object):
         self._continents = _check_object_type(continents)
         self._COBs = _check_object_type(COBs)
 
+        self.coastlines = None
+        self.continents = None
+        self.COBs = None
+
         self._anchor_plate_id = self._check_anchor_plate_id(anchor_plate_id)
 
         # store topologies for easy access
@@ -1151,9 +1157,12 @@ class PlotTopologies(object):
         filenames = self.PlateReconstruction_object.__getstate__()
 
         # add important variables from Points object
-        filenames[&#34;coastlines&#34;] = self._coastlines.filenames
-        filenames[&#34;continents&#34;] = self._continents.filenames
-        filenames[&#34;COBs&#34;] = self._COBs.filenames
+        if self._coastlines:
+            filenames[&#34;coastlines&#34;] = self._coastlines.filenames
+        if self._continents:
+            filenames[&#34;continents&#34;] = self._continents.filenames
+        if self._COBs:
+            filenames[&#34;COBs&#34;] = self._COBs.filenames
         filenames[&#39;time&#39;] = self.time
         filenames[&#39;plate_id&#39;] = self._anchor_plate_id
 
@@ -1173,19 +1182,28 @@ class PlotTopologies(object):
 
         self.PlateReconstruction_object = _PlateReconstruction(state[&#39;rotation_model&#39;], state[&#39;topology_features&#39;], state[&#39;static_polygons&#39;])
 
+        self._coastlines = None
+        self._continents = None
+        self._COBs = None
+        self.coastlines = None
+        self.continents = None
+        self.COBs = None
+
         # reinstate unpicklable items
+        if &#39;coastlines&#39; in state:
+            self._coastlines = _FeatureCollection()
+            for feature in state[&#39;coastlines&#39;]:
+                self._coastlines.add( _FeatureCollection(feature) )
 
-        self._coastlines = _FeatureCollection()
-        for feature in state[&#39;coastlines&#39;]:
-            self._coastlines.add( _FeatureCollection(feature) )
+        if &#39;continents&#39; in state:
+            self._continents = _FeatureCollection()
+            for feature in state[&#39;continents&#39;]:
+                self._continents.add( _FeatureCollection(feature) )
 
-        self._continents = _FeatureCollection()
-        for feature in state[&#39;continents&#39;]:
-            self._continents.add( _FeatureCollection(feature) )
-
-        self._COBs = _FeatureCollection()
-        for feature in state[&#39;COBs&#39;]:
-            self._COBs.add( _FeatureCollection(feature) )
+        if &#39;COBs&#39; in state:
+            self._COBs = _FeatureCollection()
+            for feature in state[&#39;COBs&#39;]:
+                self._COBs.add( _FeatureCollection(feature) )
 
 
         self._anchor_plate_id = state[&#34;plate_id&#34;]
@@ -3890,6 +3908,10 @@ boundaries and passive continental boundaries.</dd>
         self._continents = _check_object_type(continents)
         self._COBs = _check_object_type(COBs)
 
+        self.coastlines = None
+        self.continents = None
+        self.COBs = None
+
         self._anchor_plate_id = self._check_anchor_plate_id(anchor_plate_id)
 
         # store topologies for easy access
@@ -3901,9 +3923,12 @@ boundaries and passive continental boundaries.</dd>
         filenames = self.PlateReconstruction_object.__getstate__()
 
         # add important variables from Points object
-        filenames[&#34;coastlines&#34;] = self._coastlines.filenames
-        filenames[&#34;continents&#34;] = self._continents.filenames
-        filenames[&#34;COBs&#34;] = self._COBs.filenames
+        if self._coastlines:
+            filenames[&#34;coastlines&#34;] = self._coastlines.filenames
+        if self._continents:
+            filenames[&#34;continents&#34;] = self._continents.filenames
+        if self._COBs:
+            filenames[&#34;COBs&#34;] = self._COBs.filenames
         filenames[&#39;time&#39;] = self.time
         filenames[&#39;plate_id&#39;] = self._anchor_plate_id
 
@@ -3923,19 +3948,28 @@ boundaries and passive continental boundaries.</dd>
 
         self.PlateReconstruction_object = _PlateReconstruction(state[&#39;rotation_model&#39;], state[&#39;topology_features&#39;], state[&#39;static_polygons&#39;])
 
+        self._coastlines = None
+        self._continents = None
+        self._COBs = None
+        self.coastlines = None
+        self.continents = None
+        self.COBs = None
+
         # reinstate unpicklable items
+        if &#39;coastlines&#39; in state:
+            self._coastlines = _FeatureCollection()
+            for feature in state[&#39;coastlines&#39;]:
+                self._coastlines.add( _FeatureCollection(feature) )
 
-        self._coastlines = _FeatureCollection()
-        for feature in state[&#39;coastlines&#39;]:
-            self._coastlines.add( _FeatureCollection(feature) )
+        if &#39;continents&#39; in state:
+            self._continents = _FeatureCollection()
+            for feature in state[&#39;continents&#39;]:
+                self._continents.add( _FeatureCollection(feature) )
 
-        self._continents = _FeatureCollection()
-        for feature in state[&#39;continents&#39;]:
-            self._continents.add( _FeatureCollection(feature) )
-
-        self._COBs = _FeatureCollection()
-        for feature in state[&#39;COBs&#39;]:
-            self._COBs.add( _FeatureCollection(feature) )
+        if &#39;COBs&#39; in state:
+            self._COBs = _FeatureCollection()
+            for feature in state[&#39;COBs&#39;]:
+                self._COBs.add( _FeatureCollection(feature) )
 
 
         self._anchor_plate_id = state[&#34;plate_id&#34;]

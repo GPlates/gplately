@@ -1030,7 +1030,7 @@ class Points(object):
                 plate_id[i] = feature.get_reconstruction_plate_id()
 
         self.plate_id = plate_id
-        self.FeatureCollection = _FeatureCollection(self.features)
+        self.FeatureCollection = pygplates.FeatureCollection(self.features)
 
 
     def __getstate__(self):
@@ -4823,7 +4823,7 @@ if not provided.</dd>
                 plate_id[i] = feature.get_reconstruction_plate_id()
 
         self.plate_id = plate_id
-        self.FeatureCollection = _FeatureCollection(self.features)
+        self.FeatureCollection = pygplates.FeatureCollection(self.features)
 
 
     def __getstate__(self):
@@ -5893,7 +5893,7 @@ rlons, rlats = gpts.reconstruct_to_birth_age(ages)
             plate_id[i] = feature.get_reconstruction_plate_id()
 
     self.plate_id = plate_id
-    self.FeatureCollection = _FeatureCollection(self.features)</code></pre>
+    self.FeatureCollection = pygplates.FeatureCollection(self.features)</code></pre>
 </details>
 </dd>
 </dl>
