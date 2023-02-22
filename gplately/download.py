@@ -15,6 +15,8 @@ from pooch import HTTPDownloader as _HTTPDownloader
 from pooch import Unzip as _Unzip
 from pooch import Decompress as _Decompress
 from matplotlib import image as _image
+from .pygplates import RotationModel as _RotationModel
+from .pygplates import FeatureCollection as _FeatureCollection
 from gplately.data import DataCollection
 import gplately as _gplately
 import pygplates as _pygplates
@@ -796,8 +798,8 @@ class DataServer(object):
         rotation_filenames = []
         rotation_model = []
         topology_filenames = []
-        topology_features = _pygplates.FeatureCollection()
-        static_polygons= _pygplates.FeatureCollection()
+        topology_features = _FeatureCollection()
+        static_polygons= _FeatureCollection()
         static_polygon_filenames = []
 
         # Locate all plate reconstruction files from GPlately's DataCollection
@@ -824,7 +826,7 @@ class DataServer(object):
                         [".rot"]
                     )
                     #print(rotation_filenames)
-                    rotation_model = _pygplates.RotationModel(rotation_filenames)
+                    rotation_model = _RotationModel(rotation_filenames)
 
                     topology_filenames = _collect_file_extension(
                         _str_in_folder(
@@ -838,7 +840,7 @@ class DataServer(object):
                     )
                     #print(topology_filenames)
                     for file in topology_filenames:
-                        topology_features.add(_pygplates.FeatureCollection(file))
+                        topology_features.add(_FeatureCollection(file))
 
                     static_polygon_filenames = _check_gpml_or_shp(
                         _str_in_folder(
@@ -851,25 +853,17 @@ class DataServer(object):
                     )
                     #print(static_polygon_filenames)
                     for stat in static_polygon_filenames:
-                        static_polygons.add(_pygplates.FeatureCollection(stat))
+                        static_polygons.add(_FeatureCollection(stat))
 
                 else:
                     for file in url[0]:
-                        rotation_filenames.append(
-                            _collect_file_extension(
-                                download_from_web(file, verbose), [".rot"])
-                        )
-                        rotation_model = _pygplates.RotationModel(rotation_filenames)
+                        rotation_filenames.append(_collect_file_extension(download_from_web(file, verbose), [".rot"]))
+                        rotation_model = _RotationModel(rotation_filenames)
 
                     for file in url[1]:
-                        topology_filenames.append(
-                            _collect_file_extension(
-                                download_from_web(file, verbose), [".gpml"])
-                        )
+                        topology_filenames.append(_collect_file_extension(download_from_web(file, verbose), [".gpml"]))
                         for file in topology_filenames:
-                            topology_features.add(
-                                _pygplates.FeatureCollection(file)
-                            )
+                            topology_features.add(_FeatureCollection(file))
 
                     for file in url[2]:
                         static_polygon_filenames.append(
@@ -883,7 +877,7 @@ class DataServer(object):
                             )   
                         )
                         for stat in static_polygon_filenames:
-                            static_polygons.add(_pygplates.FeatureCollection(stat))
+                            static_polygons.add(_FeatureCollection(stat))
                 break
 
         if found_collection is False:
@@ -1052,27 +1046,27 @@ class DataServer(object):
             coastlines_featurecollection = []
         else:
             #print(coastlines)
-            coastlines_featurecollection = _pygplates.FeatureCollection()
+            coastlines_featurecollection = _FeatureCollection()
             for coastline in coastlines:
-                coastlines_featurecollection.add(_pygplates.FeatureCollection(coastline))
+                coastlines_featurecollection.add(_FeatureCollection(coastline))
         
         if not continents:
             print("No continents in {}.".format(self.file_collection))
             continents_featurecollection = []
         else:
             #print(continents)
-            continents_featurecollection = _pygplates.FeatureCollection()
+            continents_featurecollection = _FeatureCollection()
             for continent in continents:
-                continents_featurecollection.add(_pygplates.FeatureCollection(continent))
+                continents_featurecollection.add(_FeatureCollection(continent))
         
         if not COBs:
             print("No continent-ocean boundaries in {}.".format(self.file_collection))
             COBs_featurecollection = []
         else:
             #print(COBs)
-            COBs_featurecollection = _pygplates.FeatureCollection()
+            COBs_featurecollection = _FeatureCollection()
             for COB in COBs:
-                COBs_featurecollection.add(_pygplates.FeatureCollection(COB))
+                COBs_featurecollection.add(_FeatureCollection(COB))
         
         geometries = coastlines_featurecollection, continents_featurecollection, COBs_featurecollection
         return geometries
@@ -1443,13 +1437,13 @@ class DataServer(object):
         if found_collection is False:
             raise ValueError("{} are not in GPlately's DataServer.".format(feature_data_id_string))
 
-        feat_data = _pygplates.FeatureCollection()
+        feat_data = _FeatureCollection()
         if len(feature_data_filenames) == 1:
-                feat_data.add(_pygplates.FeatureCollection(feature_data_filenames[0]))
+                feat_data.add(_FeatureCollection(feature_data_filenames[0]))
                 return feat_data
         else:    
             feat_data=[]
             for file in feature_data_filenames:
-                feat_data.append(_pygplates.FeatureCollection(file))
+                feat_data.append(_FeatureCollection(file))
             return feat_data
     

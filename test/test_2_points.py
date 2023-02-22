@@ -36,3 +36,9 @@ def test_point_reconstruction(time, gpts):
 def test_plate_velocity(time, gpts):
     plate_vel = gpts.plate_velocity(time, delta_time=1)
     assert plate_vel, "Unable to calculate plate velocities of point data at {} Ma with Muller et al. (2019).".format(time)
+
+
+def test_pickle_Points():
+    import pickle
+    gpts_dump = pickle.dumps(gpts)
+    gpts_load = pickle.loads(gpts_dump)

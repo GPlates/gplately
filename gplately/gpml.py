@@ -12,6 +12,8 @@ The following functions are defined here:
 import os
 
 import pygplates
+from .pygplates import FeatureCollection as _FeatureCollection
+from .pygplates import _is_string
 
 __all__ = [
     "create_feature_dict",
@@ -252,3 +254,21 @@ def _parse_features_function_arguments(features):
         else:
             raise e
     return features
+
+def _load_FeatureCollection(geometry):
+    if isinstance(geometry, _FeatureCollection):
+        return geometry
+    elif isinstance(geometry, pygplates.FeatureCollection):
+        geometry.filenames = []
+        return geometry
+    elif _is_string(geometry) and type(geometry) is list:
+        fc = _FeatureCollection()
+        for geom in geometry:
+            fc.add( _FeatureCollection(geom) )
+        return fc
+    elif _is_string(geometry):
+        return _FeatureCollection(geometry)
+    elif geometry is None:
+        return None
+    else:
+        raise ValueError("geometry is an invalid type", type(geometry))

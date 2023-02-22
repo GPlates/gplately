@@ -20,6 +20,9 @@ from shapely.geometry import Point, Polygon
 from shapely.geometry.base import BaseGeometry, BaseMultipartGeometry
 from shapely.ops import linemerge
 
+from .pygplates import FeatureCollection as _FeatureCollection
+from .pygplates import _is_string
+from .reconstruction import PlateReconstruction as _PlateReconstruction
 from .geometry import pygplates_to_shapely
 import geopandas as gpd
 from .io import (
@@ -27,7 +30,7 @@ from .io import (
     get_geometries as _get_geometries,
 )
 from .tools import EARTH_RADIUS
-
+from .gpml import _load_FeatureCollection
     
 def add_coastlines(ax, reconstruction_time, **kwargs):
     """Reconstruct coastline features to a `reconstruction_time` and plot them as 
@@ -1005,17 +1008,17 @@ class PlotTopologies(object):
         [Cartopy projection list](https://scitools.org.uk/cartopy/docs/v0.15/crs/projections.html)
         for all supported Projection types.
 
-    coastline_filename : str, or instance of <pygplates.FeatureCollection>
+    coastlines : str, or instance of <pygplates.FeatureCollection>
         The full string path to a coastline feature file. Coastline features can also 
         be passed as instances of the `pygplates.FeatureCollection` object (this is 
         the case if these features are sourced from the `DataServer` object).
 
-    continent_filename : str, or instance of <pygplates.FeatureCollection>
+    continents : str, or instance of <pygplates.FeatureCollection>
         The full string path to a continent feature file. Continent features can also 
         be passed as instances of the `pygplates.FeatureCollection` object (this is 
         the case if these features are sourced from the `DataServer` object).
 
-    COB_filename : str, or instance of <pygplates.FeatureCollection>
+    COBs : str, or instance of <pygplates.FeatureCollection>
         The full string path to a COB feature file. COB features can also be passed 
         as instances of the `pygplates.FeatureCollection` object (this is the case 
         if these features are sourced from the `DataServer` object).
@@ -1069,22 +1072,88 @@ class PlotTopologies(object):
         self,
         PlateReconstruction_object,
         time,
-        coastline_filename=None,
-        continent_filename=None,
-        COB_filename=None,
+        coastlines=None,
+        continents=None,
+        COBs=None,
         anchor_plate_id=0,
     ):
         self.PlateReconstruction_object = PlateReconstruction_object
         self.base_projection = ccrs.PlateCarree()
 
-        self.coastline_filename = coastline_filename
-        self.continent_filename = continent_filename
-        self.COB_filename = COB_filename
+        # store these for when time is updated
+        # make sure these are initialised as FeatureCollection objects
+
+        self._coastlines = _load_FeatureCollection(coastlines)
+        self._continents = _load_FeatureCollection(continents)
+        self._COBs = _load_FeatureCollection(COBs)
+
+        self.coastlines = None
+        self.continents = None
+        self.COBs = None
+
         self._anchor_plate_id = self._check_anchor_plate_id(anchor_plate_id)
 
         # store topologies for easy access
         # setting time runs the update_time routine
         self.time = time
+
+    def __getstate__(self):
+
+        filenames = self.PlateReconstruction_object.__getstate__()
+
+        # add important variables from Points object
+        if self._coastlines:
+            filenames["coastlines"] = self._coastlines.filenames
+        if self._continents:
+            filenames["continents"] = self._continents.filenames
+        if self._COBs:
+            filenames["COBs"] = self._COBs.filenames
+        filenames['time'] = self.time
+        filenames['plate_id'] = self._anchor_plate_id
+
+        del self.coastlines, self.continents, self.COBs
+        del self._coastlines, self._continents, self._COBs
+
+        self.coastlines = None
+        self.continents = None
+        self.COBs = None
+        self._coastlines = None
+        self._continents = None
+        self._COBs = None
+
+        return filenames
+
+    def __setstate__(self, state):
+
+        self.PlateReconstruction_object = _PlateReconstruction(state['rotation_model'], state['topology_features'], state['static_polygons'])
+
+        self._coastlines = None
+        self._continents = None
+        self._COBs = None
+        self.coastlines = None
+        self.continents = None
+        self.COBs = None
+
+        # reinstate unpicklable items
+        if 'coastlines' in state:
+            self._coastlines = _FeatureCollection()
+            for feature in state['coastlines']:
+                self._coastlines.add( _FeatureCollection(feature) )
+
+        if 'continents' in state:
+            self._continents = _FeatureCollection()
+            for feature in state['continents']:
+                self._continents.add( _FeatureCollection(feature) )
+
+        if 'COBs' in state:
+            self._COBs = _FeatureCollection()
+            for feature in state['COBs']:
+                self._COBs.add( _FeatureCollection(feature) )
+
+
+        self._anchor_plate_id = state["plate_id"]
+        self.time = state['time']
+
 
     @property
     def time(self):
@@ -1213,17 +1282,17 @@ class PlotTopologies(object):
                 self.unclassified_features.append(topol)
 
         # reconstruct other important polygons and lines
-        if self.coastline_filename:
+        if self._coastlines:
             self.coastlines = self.PlateReconstruction_object.reconstruct(
-                self.coastline_filename, self.time, from_time=0, anchor_plate_id=self.anchor_plate_id)
+                self._coastlines, self.time, from_time=0, anchor_plate_id=self.anchor_plate_id)
 
-        if self.continent_filename:
+        if self._continents:
             self.continents = self.PlateReconstruction_object.reconstruct(
-                self.continent_filename, self.time, from_time=0, anchor_plate_id=self.anchor_plate_id)
+                self._continents, self.time, from_time=0, anchor_plate_id=self.anchor_plate_id)
 
-        if self.COB_filename:
+        if self._COBs:
             self.COBs = self.PlateReconstruction_object.reconstruct(
-                self.COB_filename, self.time, from_time=0, anchor_plate_id=self.anchor_plate_id)
+                self._COBs, self.time, from_time=0, anchor_plate_id=self.anchor_plate_id)
 
 
     # subduction teeth
@@ -1335,7 +1404,7 @@ class PlotTopologies(object):
             with coastline features plotted onto the chosen map projection. 
         """
 
-        if self.coastline_filename is None:
+        if self.coastlines is None:
             raise ValueError("Supply coastline_filename to PlotTopologies object")
 
         coastline_polygons = shapelify_feature_polygons(self.coastlines)
@@ -1373,7 +1442,7 @@ class PlotTopologies(object):
             A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map 
             with continent features plotted onto the chosen map projection. 
         """
-        if self.continent_filename is None:
+        if self.continents is None:
             raise ValueError("Supply continent_filename to PlotTopologies object")
 
         continent_polygons = shapelify_feature_polygons(self.continents)
@@ -1416,7 +1485,7 @@ class PlotTopologies(object):
             A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map 
             with COB features plotted onto the chosen map projection. 
         """
-        if self.COB_filename is None:
+        if self.COBs is None:
             raise ValueError("Supply COB_filename to PlotTopologies object")
 
         COB_lines = shapelify_feature_lines(self.COBs)

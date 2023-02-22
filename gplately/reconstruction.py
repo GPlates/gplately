@@ -7,7 +7,9 @@ import ptt
 import warnings
 import math
 from . import tools as _tools
-
+from .pygplates import RotationModel as _RotationModel
+from .pygplates import FeatureCollection as _FeatureCollection
+from .gpml import _load_FeatureCollection
 
 
 class PlateReconstruction(object):
@@ -35,24 +37,54 @@ class PlateReconstruction(object):
         features.
     """
     
-    def __init__(self, rotation_model=None, topology_features=None, static_polygons=None):
+    def __init__(self, rotation_model, topology_features=None, static_polygons=None):
 
         if hasattr(rotation_model, "reconstruction_identifier"):
             self.name = rotation_model.reconstruction_identifier
         else:
             self.name = None
 
-        if not isinstance(rotation_model, pygplates.RotationModel):
-            rotation_model = pygplates.RotationModel(rotation_model)
+        self.rotation_model = _RotationModel(rotation_model)
+        self.topology_features = _load_FeatureCollection(topology_features)
+        self.static_polygons = _load_FeatureCollection(static_polygons)
 
-        default_topology_features = pygplates.FeatureCollection()
-        for topology in topology_features:
-            default_topology_features.add( pygplates.FeatureCollection(topology) )
+    def __getstate__(self):
 
-        # To-do: should set up setter/getters for these attributes
-        self.rotation_model = rotation_model
-        self.topology_features = default_topology_features
-        self.static_polygons = static_polygons
+        filenames = {"rotation_model": self.rotation_model.filenames}
+
+        if self.topology_features:
+            filenames['topology_features'] = self.topology_features.filenames
+        if self.static_polygons:
+            filenames['static_polygons'] = self.static_polygons.filenames
+
+        # # remove unpicklable items
+        # del self.rotation_model, self.topology_features, self.static_polygons
+        
+        # # really make sure they're gone
+        # self.rotation_model = None
+        # self.topology_features = None
+        # self.static_polygons = None
+
+        return filenames
+
+
+    def __setstate__(self, state):
+
+        # reinstate unpicklable items
+        self.rotation_model = _RotationModel(state['rotation_model'])
+
+        self.topology_features = None
+        self.static_polygons = None
+
+        if 'topology_features' in state:
+            self.topology_features = _FeatureCollection()
+            for topology in state['topology_features']:
+                self.topology_features.add( _FeatureCollection(topology) )
+
+        if 'static_polygons' in state:
+            self.static_polygons = _FeatureCollection()
+            for polygon in state['static_polygons']:
+                self.static_polygons.add( _FeatureCollection(polygon) )
 
 
     def tesselate_subduction_zones(self, time, tessellation_threshold_radians=0.001, ignore_warnings=False, **kwargs):
@@ -920,6 +952,13 @@ class Points(object):
         self.lats = lats
         self.time = time
 
+        self.PlateReconstruction_object = PlateReconstruction_object
+
+        self.update(lons, lats, time, plate_id)
+
+
+    def update(self, lons, lats, time=0, plate_id=None):
+
         # get Cartesian coordinates
         self.x, self.y, self.z = _tools.lonlat2xyz(lons, lats, degrees=False)
 
@@ -933,13 +972,13 @@ class Points(object):
         self.xyz = np.c_[self.x, self.y, self.z]
 
 
-        rotation_model = PlateReconstruction_object.rotation_model
-        static_polygons = PlateReconstruction_object.static_polygons
-        self.PlateReconstruction_object = PlateReconstruction_object
+        rotation_model = self.PlateReconstruction_object.rotation_model
+        static_polygons = self.PlateReconstruction_object.static_polygons
+        
 
         features = _tools.points_to_features(lons, lats, plate_id)
 
-        if plate_id:
+        if plate_id is not None:
             plate_id = np.atleast_1d(plate_id)
             self.features = features
         else:
@@ -958,6 +997,36 @@ class Points(object):
 
         self.plate_id = plate_id
         self.FeatureCollection = pygplates.FeatureCollection(self.features)
+
+
+    def __getstate__(self):
+
+        filenames = self.PlateReconstruction_object.__getstate__()
+
+        # add important variables from Points object
+        filenames["lons"] = self.lons
+        filenames["lats"] = self.lats
+        filenames['time'] = self.time
+        filenames['plate_id'] = self.plate_id
+
+        del self.FeatureCollection, self.features
+
+        self.FeatureCollection = None
+        self.features = None
+
+        return filenames
+
+    def __setstate__(self, state):
+
+        self.PlateReconstruction_object = PlateReconstruction(state['rotation_model'], state['topology_features'], state['static_polygons'])
+
+        # reinstate unpicklable items
+        self.lons = state['lons']
+        self.lats = state['lats']
+        self.time = state['time']
+        self.plate_id = state['plate_id']
+
+        self.update(self.lons, self.lats, self.time, self.plate_id)
 
 
     def reconstruct(self, time, anchor_plate_id=0, **kwargs):
