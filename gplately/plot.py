@@ -938,6 +938,8 @@ def _check_object_type(geometry):
         return fc
     elif _is_string(geometry):
         return _FeatureCollection(geometry)
+    elif geometry is None:
+        return None
     else:
         raise ValueError("geometry is an invalid type", type(geometry))
 
@@ -1104,6 +1106,10 @@ class PlotTopologies(object):
         self._continents = _check_object_type(continents)
         self._COBs = _check_object_type(COBs)
 
+        self.coastlines = None
+        self.continents = None
+        self.COBs = None
+
         self._anchor_plate_id = self._check_anchor_plate_id(anchor_plate_id)
 
         # store topologies for easy access
@@ -1115,9 +1121,12 @@ class PlotTopologies(object):
         filenames = self.PlateReconstruction_object.__getstate__()
 
         # add important variables from Points object
-        filenames["coastlines"] = self._coastlines.filenames
-        filenames["continents"] = self._continents.filenames
-        filenames["COBs"] = self._COBs.filenames
+        if self._coastlines:
+            filenames["coastlines"] = self._coastlines.filenames
+        if self._continents:
+            filenames["continents"] = self._continents.filenames
+        if self._COBs:
+            filenames["COBs"] = self._COBs.filenames
         filenames['time'] = self.time
         filenames['plate_id'] = self._anchor_plate_id
 
@@ -1137,19 +1146,28 @@ class PlotTopologies(object):
 
         self.PlateReconstruction_object = _PlateReconstruction(state['rotation_model'], state['topology_features'], state['static_polygons'])
 
+        self._coastlines = None
+        self._continents = None
+        self._COBs = None
+        self.coastlines = None
+        self.continents = None
+        self.COBs = None
+
         # reinstate unpicklable items
+        if 'coastlines' in state:
+            self._coastlines = _FeatureCollection()
+            for feature in state['coastlines']:
+                self._coastlines.add( _FeatureCollection(feature) )
 
-        self._coastlines = _FeatureCollection()
-        for feature in state['coastlines']:
-            self._coastlines.add( _FeatureCollection(feature) )
+        if 'continents' in state:
+            self._continents = _FeatureCollection()
+            for feature in state['continents']:
+                self._continents.add( _FeatureCollection(feature) )
 
-        self._continents = _FeatureCollection()
-        for feature in state['continents']:
-            self._continents.add( _FeatureCollection(feature) )
-
-        self._COBs = _FeatureCollection()
-        for feature in state['COBs']:
-            self._COBs.add( _FeatureCollection(feature) )
+        if 'COBs' in state:
+            self._COBs = _FeatureCollection()
+            for feature in state['COBs']:
+                self._COBs.add( _FeatureCollection(feature) )
 
 
         self._anchor_plate_id = state["plate_id"]
