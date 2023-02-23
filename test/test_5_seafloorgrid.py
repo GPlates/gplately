@@ -151,12 +151,12 @@ def test_lat_lon_z_to_netCDF(
     )
 
     age_grid_unmasked = gplately.Raster(
-        filename=grid_output_unmasked, 
+        data=grid_output_unmasked,
         extent=[-180,180,-90,90]
     )
 
     age_grid = gplately.Raster(
-        filename=grid_output_dir, 
+        data=grid_output_dir,
         extent=[-180,180,-90,90]
     )
 

@@ -16,10 +16,10 @@ Classes
 * Raster
 * TimeRaster
 """
-import concurrent.futures
-from multiprocessing import cpu_count
 import warnings
+from multiprocessing import cpu_count
 
+import matplotlib.colors
 import matplotlib.pyplot as plt
 import numpy as np
 import pygplates
@@ -29,7 +29,9 @@ from rasterio.enums import MergeAlg
 from rasterio.features import rasterize as _rasterize
 from rasterio.transform import from_bounds as _from_bounds
 from scipy.interpolate import RegularGridInterpolator as _RGI
-from scipy.ndimage import distance_transform_edt, map_coordinates
+from scipy.ndimage import distance_transform_edt
+from scipy.spatial import cKDTree as _cKDTree
+from scipy.spatial.transform import Rotation as _Rotation
 
 from .geometry import pygplates_to_shapely
 from .reconstruction import PlateReconstruction as _PlateReconstruction
@@ -536,14 +538,15 @@ def sample_grid(lon, lat, grid, extent=[-180,180,-90,90], return_indices=False, 
 
 def reconstruct_grid(
     grid,
-    partitioning_features=None,
-    rotation_model=None,
-    to_time=0.0,
+    partitioning_features,
+    rotation_model,
+    to_time,
     from_time=0.0,
     extent="global",
-    origin="upper",
+    origin=None,
     fill_value=None,
     threads=1,
+    anchor_plate_id=0,
 ):
     """Reconstruct a gridded dataset to a given reconstruction time.
 
@@ -574,21 +577,17 @@ def reconstruct_grid(
         Extent of `grid`. Valid arguments are a tuple of
         the form (xmin, xmax, ymin, ymax), or the string "global",
         equivalent to (-180.0, 180.0, -90.0, 90.0).
-    origin : {"upper", "lower"}
-        Origin of `grid` - either lower-left or upper-left.
+    origin : {"upper", "lower"}, optional
+        Origin of `grid` - either lower-left or upper-left. By default,
+        determined from `extent`.
     fill_value : float, int, or tuple, optional
         The value to be used for regions outside of `partitioning_features`
         at `to_time`. By default (`fill_value=None`), this value will be
         determined based on the input.
-        For two-dimensional grids, the default fill value will be `np.nan` for
-        float or complex types, the minimum value for integer types, and the
-        maximum value for unsigned types.
-        For RGB image grids, the default fill value will be black
-        (0.0, 0.0, 0.0) or (0, 0, 0).
-        For RGBA image grids, the default fill value will be transparent black
-        (0.0, 0.0, 0.0, 0.0) or (0, 0, 0, 0).
     threads : int, default 1
         Number of threads to use for certain computationally heavy routines.
+    anchor_plate_id : int, default 0
+        ID of the anchored plate.
 
     Returns
     -------
@@ -596,6 +595,20 @@ def reconstruct_grid(
         The reconstructed grid. Areas for which no plate ID could be
         determined from `partitioning_features` will be filled with
         `fill_value`.
+
+    Notes
+    -----
+    For two-dimensional grids, `fill_value` should be a single
+    number. The default value will be `np.nan` for float or
+    complex types, the minimum value for integer types, and the
+    maximum value for unsigned types.
+    For RGB image grids, `fill_value` should be a 3-tuple RGB
+    colour code or a matplotlib colour string. The default value
+    will be black (0.0, 0.0, 0.0) or (0, 0, 0).
+    For RGBA image grids, `fill_value` should be a 4-tuple RGBA
+    colour code or a matplotlib colour string. The default fill
+    value will be transparent black (0.0, 0.0, 0.0, 0.0) or
+    (0, 0, 0, 0).
     """
     try:
         grid = np.array(read_netcdf_grid(grid))  # load grid data from file
@@ -608,9 +621,7 @@ def reconstruct_grid(
             "`rotation_model` must be provided if `to_time` != `from_time`"
         )
 
-    if origin.lower() not in {"lower", "upper"}:
-        raise ValueError("Invalid `origin` value: {}".format(origin))
-    origin = origin.lower()
+    extent = _parse_extent_origin(extent, origin)
     dtype = grid.dtype
 
     if isinstance(threads, str):
@@ -622,7 +633,8 @@ def reconstruct_grid(
     threads = max([threads, 1])
 
     grid = grid.squeeze()
-    _check_image_shape(grid)
+    grid = _check_grid(grid)
+
     # Determine fill_value
     if fill_value is None:
         if grid.ndim == 2:
@@ -637,6 +649,17 @@ def reconstruct_grid(
                 fill_value = tuple([0] * grid.shape[2])
             else:  # dtype.kind == "f"
                 fill_value = tuple([0.0] * grid.shape[2])
+    if isinstance(fill_value, str):
+        if grid.ndim == 2:
+            raise TypeError(
+                "Invalid fill_value for 2D grid: {}".format(fill_value)
+            )
+        fill_value = np.array(matplotlib.colors.to_rgba(fill_value))
+        if dtype.kind == "u":
+            fill_value = (fill_value * 255.0).astype("u1")
+            fill_value = np.clip(fill_value, 0, 255)
+        fill_value = tuple(fill_value)[:grid.shape[2]]
+
     if (
         grid.ndim == 3
         and grid.shape[2] == 4
@@ -652,16 +675,8 @@ def reconstruct_grid(
             + ", grid shape: {}".format(np.shape(grid))
         )
 
-    if extent == "global":
-        extent = (-180, 180, -90, 90)
     xmin, xmax, ymin, ymax = extent
-    if origin == "upper" and ymin < ymax:
-        ymin, ymax = ymax, ymin
-    elif origin == "lower" and ymin > ymax:
-        ymin, ymax = ymax, ymin
     ny, nx = grid.shape[:2]
-    resx = (xmax - xmin) / nx
-    resy = (ymax - ymin) / ny
 
     if isinstance(partitioning_features, pygplates.FeaturesFunctionArgument):
         partitioning_features = pygplates.FeatureCollection(
@@ -677,183 +692,120 @@ def reconstruct_grid(
     if not isinstance(rotation_model, pygplates.RotationModel):
         rotation_model = pygplates.RotationModel(rotation_model)
 
-    lats = np.arange(ymin + resy * 0.5, ymax, resy)
-    lons = np.arange(xmin + resx * 0.5, xmax, resx)
-    lons, lats = np.meshgrid(lons, lats)
+    lons = np.linspace(xmin, xmax, nx)
+    lats = np.linspace(ymin, ymax, ny)
+    m_lons, m_lats = np.meshgrid(lons, lats)
 
+    valid_partitioning_features = [
+        i for i in partitioning_features
+        if i.is_valid_at_time(from_time)
+        and i.is_valid_at_time(to_time)
+    ]
     plate_ids = rasterise(
-        features=partitioning_features,
+        features=valid_partitioning_features,
+        rotation_model=rotation_model,
+        key="plate_id",
+        time=from_time,
+        extent=extent,
+        shape=grid.shape[:2],
+        origin=origin,
+    )
+    valid_output_mask = rasterise(
+        features=valid_partitioning_features,
         rotation_model=rotation_model,
         key="plate_id",
         time=to_time,
         extent=extent,
         shape=grid.shape[:2],
         origin=origin,
-    )
-    plate_ids = plate_ids.flatten()
-    from_ages_to_time = rasterise(
-        features=partitioning_features,
-        rotation_model=rotation_model,
-        key="from_age",
-        time=to_time,
-        extent=extent,
-        shape=grid.shape[:2],
-        origin=origin,
-    )
-    from_ages_to_time = from_ages_to_time.flatten()
-    to_ages_to_time = rasterise(
-        features=partitioning_features,
-        rotation_model=rotation_model,
-        key="to_age",
-        time=to_time,
-        extent=extent,
-        shape=grid.shape[:2],
-        origin=origin,
-    )
-    to_ages_to_time = to_ages_to_time.flatten()
-    to_time_mask = (
-        (plate_ids != -1)
-        & (from_ages_to_time > from_time)
-        & (to_ages_to_time < from_time)
-        & (from_ages_to_time > to_time)
-        & (to_ages_to_time < to_time)
-    )  # valid at to_time
+    ) != -1
 
-    from_ages_from_time = rasterise(
-        features=partitioning_features,
-        rotation_model=rotation_model,
-        key="from_age",
-        time=from_time,
-        extent=extent,
-        shape=grid.shape[:2],
-        origin=origin,
-    )
-    to_ages_from_time = rasterise(
-        features=partitioning_features,
-        rotation_model=rotation_model,
-        key="to_age",
-        time=from_time,
-        extent=extent,
-        shape=grid.shape[:2],
-        origin=origin,
-    )
-    from_time_mask = (
-        (from_ages_from_time > from_time)  # valid at from_time
-        & (to_ages_from_time < from_time)  # valid at from_time
-        & (from_ages_from_time > to_time)  # valid at to_time
-        & (to_ages_from_time < to_time)  # valid at to_time
-    )
+    valid_mask = plate_ids != -1
+    valid_m_lons = m_lons[valid_mask]
+    valid_m_lats = m_lats[valid_mask]
+    valid_plate_ids = plate_ids[valid_mask]
     if grid.ndim == 2:
-        grid[~from_time_mask] = fill_value
-    else:  # grid.ndim == 3
+        valid_data = grid[valid_mask]
+    else:
+        valid_data = np.empty(
+            (grid.shape[2], np.sum(valid_mask)),
+            dtype=dtype,
+        )
         for k in range(grid.shape[2]):
-            grid[..., k][~from_time_mask] = fill_value[k]
+            valid_data[k, :] = grid[..., k][valid_mask]
 
+    if grid.ndim == 2:
+        output_grid = np.full(grid.shape, fill_value)
+    else:
+        output_grid = np.empty(grid.shape, dtype=dtype)
+        for k in range(grid.shape[2]):
+            output_grid[..., k] = fill_value[k]
+    output_lons = m_lons[valid_output_mask]
+    output_lats = m_lats[valid_output_mask]
 
-    unique_plate_ids = np.unique(plate_ids)
+    unique_plate_ids, inv = np.unique(valid_plate_ids, return_inverse=True)
     rotations_dict = {}
     for plate in unique_plate_ids:
-        if plate == -1:
-            continue
         rot = rotation_model.get_rotation(
-            float(from_time),
-            int(plate),
-            float(to_time),
+            to_time=float(to_time),
+            from_time=float(from_time),
+            moving_plate_id=int(plate),
+            anchor_plate_id=int(anchor_plate_id),
         )
         if not isinstance(rot, pygplates.FiniteRotation):
-            continue
+            raise ValueError("No rotation found for plate ID: {}".format(plate))
         lat, lon, angle = rot.get_lat_lon_euler_pole_and_angle_degrees()
         angle = np.deg2rad(angle)
         vec = _lat_lon_to_vector(lat, lon, degrees=True)
-        rotations_dict[plate] = (vec, angle)
+        rotations_dict[plate] = vec * angle
+    rotations_array = np.array(
+        [rotations_dict[x] for x in unique_plate_ids]
+    )[inv]
+    combined_rotations = _Rotation.from_rotvec(rotations_array)
 
     point_vecs = _lat_lon_to_vector(
-        lats,
-        lons,
+        np.ravel(valid_m_lats),
+        np.ravel(valid_m_lons),
         degrees=True,
-        threads=threads,
     )
+    rotated_vecs = combined_rotations.apply(point_vecs)
 
-    rotated_vecs = np.full_like(point_vecs, np.nan)
-    if threads > 1:
-        executor = concurrent.futures.ThreadPoolExecutor(threads)
-        plate_ids_divided = np.array_split(unique_plate_ids, threads)
-
-        def _fill(ids, out):
-            for id in ids:
-                if id == -1:
-                    continue
-                index = plate_ids == id
-                vec_subset = point_vecs[index, :]
-                rotation, angle = rotations_dict[id]
-                rotated = _rotate(vec_subset, rotation, angle)
-                out[index] = rotated
-
-        futures = {}
-        for i in range(threads):
-            args = (
-                _fill,
-                plate_ids_divided[i],
-                rotated_vecs,
-            )
-            futures[executor.submit(*args)] = i
-        concurrent.futures.wait(futures)
-        executor.shutdown(False)
-    else:
-        for plate_id in unique_plate_ids:
-            if plate_id == -1:
-                continue
-            index = plate_ids == plate_id
-            vec_subset = point_vecs[index, :]
-            rotation, angle = rotations_dict[plate_id]
-            rotated = _rotate(vec_subset, rotation, angle)
-            rotated_vecs[index] = rotated
-
-    x = rotated_vecs[:, 0]
-    y = rotated_vecs[:, 1]
-    z = rotated_vecs[:, 2]
-    rotated_lats, rotated_lons = _vector_to_lat_lon(
-        x,
-        y,
-        z,
+    tree = _cKDTree(rotated_vecs)
+    output_vecs = _lat_lon_to_vector(
+        output_lats,
+        output_lons,
         degrees=True,
-        return_array=True,
-        threads=threads,
     )
-    rotated_y = np.abs((rotated_lats - ymin) / resy)
-    rotated_x = np.abs((rotated_lons - xmin) / resx)
-
-    interp_coords = np.vstack(
-        (
-            rotated_y.reshape((1, -1)),
-            rotated_x.reshape((1, -1)),
+    # Compatibility with older versions of SciPy:
+    # 'n_jobs' argument was replaced with 'workers'
+    try:
+        _, indices = tree.query(
+            output_vecs,
+            k=1,
+            workers=threads,
         )
-    )
+    except TypeError as err:
+        if (
+            "Unexpected keyword argument" in err.args[0]
+            and "workers" in err.args[0]
+        ):
+            _, indices = tree.query(
+                output_vecs,
+                k=1,
+                n_jobs=threads,
+            )
+        else:
+            raise err
+
     if grid.ndim == 2:
-        data = np.full(rotated_lats.size, fill_value, dtype=dtype)
-        tmp = map_coordinates(
-            grid,
-            interp_coords[:, to_time_mask],
-            mode="grid-wrap",
-            order=0,
-        ).squeeze()
-        data[to_time_mask] = tmp
-        data = data.reshape(grid.shape)
-    else:  # grid.ndim == 3
-        data = []
+        output_data = valid_data[indices]
+        output_grid[valid_output_mask] = output_data
+    else:
         for k in range(grid.shape[2]):
-            band = np.full(rotated_lats.size, fill_value[k], dtype=dtype)
-            tmp = map_coordinates(
-                grid[..., k],
-                interp_coords[:, to_time_mask],
-                mode="grid-wrap",
-                order=0,
-            ).squeeze()
-            band[to_time_mask] = tmp
-            band = band.reshape(grid.shape[:2])
-            data.append(band)
-        data = np.dstack(data)
-    return data
+            output_data = valid_data[k, indices]
+            output_grid[..., k][valid_output_mask] = output_data
+
+    return output_grid
 
 
 def rasterise(
@@ -865,7 +817,7 @@ def rasterise(
     resy=1.0,
     shape=None,
     extent="global",
-    origin="upper",
+    origin=None,
 ):
     """Rasterise GPlates objects at a given reconstruction time.
 
@@ -908,8 +860,9 @@ def rasterise(
         Extent of the rasterised grid. Valid arguments are a tuple of
         the form (xmin, xmax, ymin, ymax), or the string "global",
         equivalent to (-180.0, 180.0, -90.0, 90.0).
-    origin : {"upper", "lower"}
-        Origin (upper-left or lower-left) of the output array.
+    origin : {"upper", "lower"}, optional
+        Origin (upper-left or lower-left) of the output array. By default,
+        determined from `extent`.
 
     Returns
     -------
@@ -930,9 +883,6 @@ def rasterise(
     This function is used by gplately.grids.reconstruct_grids to rasterise
     static polygons in order to extract their plate IDs.
     """
-    if origin.lower() not in {"upper", "lower"}:
-        raise ValueError("Invalid `origin`: {}".format(origin))
-    origin = origin.lower()
     valid_keys = {
         "plate_id",
         "conjugate_plate_id",
@@ -951,17 +901,8 @@ def rasterise(
             + "\nkey must be one of {}".format(valid_keys)
         )
 
-    try:
-        extent = extent.lower()
-    except AttributeError:
-        pass
-    if extent == "global":
-        extent = (-180.0, 180.0, -90.0, 90.0)
+    extent = _parse_extent_origin(extent, origin)
     minx, maxx, miny, maxy = extent
-    if origin == "upper" and miny < maxy:
-        miny, maxy = maxy, miny
-    if origin == "lower" and miny > maxy:
-        miny, maxy = maxy, miny
 
     if minx > maxx:
         resx = -1.0 * np.abs(resx)
@@ -1042,7 +983,7 @@ def rasterise(
 rasterize = rasterise
 
 
-def _lat_lon_to_vector(lat, lon, degrees=False, threads=1):
+def _lat_lon_to_vector(lat, lon, degrees=False):
     """Convert (lat, lon) coordinates (degrees or radians) to vectors on
     the unit sphere. Returns a vector of shape (3,) if `lat` and `lon` are
     single values, else an array of shape (N, 3) containing N (x, y, z)
@@ -1054,44 +995,9 @@ def _lat_lon_to_vector(lat, lon, degrees=False, threads=1):
         lat = np.deg2rad(lat)
         lon = np.deg2rad(lon)
 
-    if threads == 1:
-        x = np.cos(lat) * np.cos(lon)
-        y = np.cos(lat) * np.sin(lon)
-        z = np.sin(lat)
-    else:
-        n = lat.size
-        step = np.ceil(n / threads).astype(np.int_)
-        executor = concurrent.futures.ThreadPoolExecutor(threads)
-
-        def _fill(out_x, out_y, out_z, first, last):
-            np.multiply(
-                np.cos(lat[first:last]),
-                np.cos(lon[first:last]),
-                out=out_x[first:last],
-            )
-            np.multiply(
-                np.cos(lat[first:last]),
-                np.sin(lon[first:last]),
-                out=out_y[first:last],
-            )
-            np.sin(lat[first:last], out=out_z[first:last])
-
-        futures = {}
-        x = np.zeros_like(lat)
-        y = np.zeros_like(x)
-        z = np.zeros_like(x)
-        for i in range(threads):
-            args = (
-                _fill,
-                x,
-                y,
-                z,
-                i * step,
-                (i + 1) * step,
-            )
-            futures[executor.submit(*args)] = i
-        concurrent.futures.wait(futures)
-        executor.shutdown(False)
+    x = np.cos(lat) * np.cos(lon)
+    y = np.cos(lat) * np.sin(lon)
+    z = np.sin(lat)
 
     size = x.size
     if size == 1:
@@ -1112,11 +1018,9 @@ def _vector_to_lat_lon(
     z,
     degrees=False,
     return_array=False,
-    threads=1,
 ):
     """Convert one or more (x, y, z) vectors (on the unit sphere) to
-    (lat, lon) coordinate pairs, in degrees or radians. Optionally, use
-    more than one thread.
+    (lat, lon) coordinate pairs, in degrees or radians.
     """
     x = np.atleast_1d(x).flatten()
     y = np.atleast_1d(y).flatten()
@@ -1124,53 +1028,11 @@ def _vector_to_lat_lon(
 
     with warnings.catch_warnings():
         warnings.simplefilter("ignore", RuntimeWarning)
-        if threads == 1:
-            lat = np.arcsin(z)
-            lon = np.arctan2(y, x)
-            if degrees:
-                lat = np.rad2deg(lat)
-                lon = np.rad2deg(lon)
-        else:
-            n = x.size
-            step = np.ceil(n / threads).astype(np.int_)
-            executor = concurrent.futures.ThreadPoolExecutor(threads)
-
-            def _fill(out_lat, out_lon, first, last, degrees=False):
-                if degrees:
-                    np.rad2deg(
-                        np.arcsin(z[first:last]),
-                        out=out_lat[first:last],
-                    )
-                    np.rad2deg(
-                        np.arctan2(
-                            y[first:last],
-                            x[first:last],
-                        ),
-                        out=out_lon[first:last],
-                    )
-                else:
-                    np.arcsin(z[first:last], out=out_lat[first:last])
-                    np.arctan2(
-                        y[first:last],
-                        x[first:last],
-                        out=out_lon[first:last],
-                    )
-
-            futures = {}
-            lat = np.zeros_like(x)
-            lon = np.zeros_like(lat)
-            for i in range(threads):
-                args = (
-                    _fill,
-                    lat,
-                    lon,
-                    i * step,
-                    (i + 1) * step,
-                    degrees,
-                )
-                futures[executor.submit(*args)] = i
-            concurrent.futures.wait(futures)
-            executor.shutdown(False)
+        lat = np.arcsin(z)
+        lon = np.arctan2(y, x)
+        if degrees:
+            lat = np.rad2deg(lat)
+            lon = np.rad2deg(lon)
 
     if lat.size == 1 and not return_array:
         lat = np.atleast_1d(np.squeeze(lat))[0]
@@ -1182,71 +1044,91 @@ def _vector_to_lat_lon(
     return lat, lon
 
 
-def _rotate(vectors, rotation, angle):
-    cross = _cross_products
-    dot = np.dot
-
-    invalid_dims_err = ValueError(
-        "Invalid shapes: {}, {}".format(vectors.shape, rotation.shape)
-    )
-    vectors = np.atleast_2d(vectors)
-    rotation = np.squeeze(rotation)
-    if vectors.shape[1] != 3:
-        vectors = vectors.T
-    if vectors.shape[1] != 3 or rotation.shape != (3,):
-        raise invalid_dims_err
-
-    angle = float(angle)
-
-    t1 = np.cos(angle) * vectors
-    t2 = np.sin(angle) * cross(rotation, vectors)
-    t3 = (
-        (1.0 - np.cos(angle))
-        * dot(vectors, rotation.reshape((-1, 1))).reshape((-1, 1))
-        * vectors
-    )
-    return t1 + t2 + t3
-
-
-def _cross_products(a, b):
-    """Cross products of a vector and a list of vectors."""
-    if a.ndim == 2 and b.ndim == 1:
-        return -1.0 * _cross_products(b, a)
-    vec = a
-    arr = b
-    invalid_dims_err = ValueError(
-        "Invalid dimensions: {}, {}".format(vec.ndim, arr.ndim)
-    )
-    if vec.ndim != 1 or arr.ndim != 2:
-        raise invalid_dims_err
-
-    if arr.shape[1] != 3:
-        arr = arr.T
-    if arr.shape[1] != 3:
-        raise invalid_dims_err
-
-    out = np.zeros_like(arr)
-    out[:, 0] = vec[1] * arr[:, 2] - vec[2] * arr[:, 1]
-    out[:, 1] = vec[2] * arr[:, 0] - vec[0] * arr[:, 2]
-    out[:, 2] = vec[0] * arr[:, 1] - vec[1] * arr[:, 0]
-    return out
-
-
-def _check_image_shape(data):
+def _check_grid_shape(data):
+    """Check data is a 2D grid or a 3D RGB(A) image."""
     ndim = np.ndim(data)
     shape = np.shape(data)
     valid = True
     if ndim not in (2, 3):
-        # ndim == 2: greyscale image
-        # ndim == 3: colour image
+        # ndim == 2: greyscale image/grid
+        # ndim == 3: colour RGB(A) image
         valid = False
     if ndim == 3 and shape[2] not in (3, 4):
-        # shape[2] == 3: colour image
-        # shape[2] == 4: colour image w/ transparency
+        # shape[2] == 3: colour image (RGB)
+        # shape[2] == 4: colour image w/ transparency (RGBA)
         valid = False
 
     if not valid:
-        raise ValueError("Invalid image shape: {}".format(shape))
+        raise ValueError("Invalid grid shape: {}".format(shape))
+
+
+def _check_image_values(data):
+    """Check values are within correct range for an RGB(A) image."""
+    dtype = data.dtype
+    if dtype.kind == "i":
+        data = data.astype("u1")
+        dtype = data.dtype
+    min_value = np.nanmin(data)
+    max_value = np.nanmax(data)
+    if min_value < 0:
+        raise ValueError(
+            "Invalid value for RGB(A) image: {}".format(min_value)
+        )
+    if (
+        (dtype.kind == "f" and max_value > 1.0)
+        or (dtype.kind == "u" and max_value > 255)
+    ):
+        raise ValueError(
+            "Invalid value for RGB(A) image: {}".format(max_value)
+        )
+    return data
+
+
+def _check_grid(data):
+    """Check grid shape and values make sense."""
+    if not isinstance(data, np.ndarray):
+        data = np.array(data)
+    ndim = data.ndim
+    dtype = data.dtype
+    _check_grid_shape(data)
+
+    if ndim == 3:
+        # data is an RGB(A) image
+        data = _check_image_values(data)
+
+    return data
+
+
+def _parse_extent_origin(extent, origin):
+    """Default values: extent='global', origin=None"""
+    if hasattr(extent, "lower"):  # i.e. a string
+        extent = extent.lower()
+
+    if extent is None or extent == "global":
+        extent = (-180.0, 180.0, -90.0, 90.0)
+    elif len(extent) != 4:
+        raise TypeError(
+            "`extent` must be a four-element tuple, 'global', or None"
+        )
+    extent = tuple(float(i) for i in extent)
+
+    if origin is not None:
+        origin = str(origin).lower()
+        if origin == "lower" and extent[2] > extent[3]:
+            extent = (
+                extent[0],
+                extent[1],
+                extent[3],
+                extent[2],
+            )
+        if origin == "upper" and extent[2] < extent[3]:
+            extent = (
+                extent[0],
+                extent[1],
+                extent[3],
+                extent[2],
+            )
+    return extent
 
 
 class Raster(object):
@@ -1256,6 +1138,39 @@ class Raster(object):
     RegularGridInterpolator, resampling rasters with new X and Y-direction spacings and
     resizing rasters using new X and Y grid pixel resolutions. NaN-type data in rasters
     can be replaced with the values of their nearest valid neighbours.
+
+    Parameters
+    ----------
+    plate_reconstruction : PlateReconstruction
+        Allows for the accessibility of PlateReconstruction object attributes. Namely, PlateReconstruction object
+        attributes rotation_model, topology_featues and static_polygons can be used in the points object if called using
+        “self.plate_reconstruction.X”, where X is the attribute.
+
+    data : str or array-like
+        The raster data, either as a filename (`str`) or array.
+
+    extent : str or 4-tuple, default: 'global'
+        4-tuple to specify (min_lon, max_lon, min_lat, max_lat) extents
+        of the raster. If no extents are supplied, full global extent
+        [-180,180,-90,90] is assumed (equivalent to `extent='global'`).
+        For array data with an upper-left origin, make sure `min_lat` is
+        greater than `max_lat`, or specify `origin` parameter.
+
+    resample : 2-tuple, optional
+        Optionally resample grid, pass spacing in X and Y direction as a
+        2-tuple e.g. resample=(spacingX, spacingY).
+
+    time : float, default: 0.0
+        The time step represented by the raster data. Used for raster
+        reconstruction.
+
+    origin : {'lower', 'upper'}, optional
+        When `data` is an array, use this parameter to specify the origin
+        (upper left or lower left) of the data (overriding `extent`).
+
+    **kwargs
+        Handle deprecated arguments such as `PlateReconstruction_object`,
+        `filename`, and `array`.
 
     Attributes
     ----------
@@ -1285,31 +1200,28 @@ class Raster(object):
 
     Methods
     -------
-    __init__(self, plate_reconstruction=None, data=None, extent=None, resample=None, time=0, origin=None, **kwargs)
-        Constructs all necessary attributes for the Raster object.
+    interpolate(lons, lats, method='linear', return_indices=False,
+                return_distances=False)
+        Sample gridded data on a set of points using interpolation from
+        `scipy.interpolate.RegularGridInterpolator`.
 
-    _update(self)
-        Allows RegularGridInterpolator attributes ((self.lats, self.lons), self.data, method='linear') and methods 
-        (__call__(), or RegularGridInterpolator) to be accessible from the Raster object.
+    resample(spacingX, spacingY, overwrite=False)
+        Resamples the grid using X & Y-spaced lat-lon arrays, meshed with
+        linear interpolation.
 
-    interpolate(self, lons, lats, method='linear', return_indices=False, return_distances=False)
-        Sample gridded data on a set of points using interpolation from RegularGridInterpolator.
+    resize(resX, resY, overwrite=False)
+        Resizes the grid with a specific resolution and samples points
+        using linear interpolation.
 
-    resample(self, spacingX, spacingY, overwrite=False)
-        Resamples the grid using X & Y-spaced lat-lon arrays, meshed with linear interpolation.
+    fill_NaNs(overwrite=False)
+        Searches for invalid 'data' cells containing NaN-type entries and
+        replaces NaNs with the value of the nearest valid data cell.
 
-    resize(self, resX, resY, overwrite=False)
-        Resizes the grid with a specific resolution and samples points using linear interpolation.
-
-    fill_NaNs(self, overwrite=False)
-        Searches for invalid 'data' cells containing NaN-type entries and replaces NaNs with the value of the nearest
-        valid data cell.
-
-    reconstruct(self, time)
+    reconstruct(time, fill_value=None, partitioning_features=None,
+                threads=1, anchor_plate_id=0, inplace=False)
         Reconstruct the raster from its initial time (`self.time`) to a new
         time.
     """
-
     def __init__(
         self,
         plate_reconstruction=None,
@@ -1393,7 +1305,10 @@ class Raster(object):
             )
         self.plate_reconstruction = plate_reconstruction
 
-        self._time = float(time)
+        if time < 0.0:
+            raise ValueError("Invalid time: {}".format(time))
+        time = float(time)
+        self._time = time
 
         if data is None:
             raise TypeError(
@@ -1413,32 +1328,8 @@ class Raster(object):
         else:
             # numpy array
             self._filename = None
-            # Process `extent` parameter
-            if hasattr(extent, "lower"):  # i.e. a string
-                extent = extent.lower()
-            if extent is None or extent == "global":
-                extent = (-180.0, 180.0, -90.0, 90.0)
-            elif len(extent) != 4:
-                raise TypeError(
-                    "`extent` must be a four-element tuple, 'global', or None"
-                )
-            if origin is not None:
-                origin = str(origin).lower()
-                if origin == "lower" and extent[2] > extent[3]:
-                    extent = (
-                        extent[0],
-                        extent[1],
-                        extent[3],
-                        extent[2],
-                    )
-                if origin == "upper" and extent[2] < extent[3]:
-                    extent = (
-                        extent[0],
-                        extent[1],
-                        extent[3],
-                        extent[2],
-                    )
-            _check_image_shape(data)
+            extent = _parse_extent_origin(extent, origin)
+            data = _check_grid(data)
             self._data = np.array(data)
             self._lons = np.linspace(extent[0], extent[1], self.data.shape[1])
             self._lats = np.linspace(extent[2], extent[3], self.data.shape[0])
@@ -1822,50 +1713,90 @@ class Raster(object):
         write_netcdf_grid(str(filename), self.data, self.extent)
 
 
-    def reconstruct(self, time, fill_value=None, threads=1):
+    def reconstruct(
+        self,
+        time,
+        fill_value=None,
+        partitioning_features=None,
+        threads=1,
+        anchor_plate_id=0,
+        inplace=False,
+    ):
         """Reconstruct the raster data to a given time.
 
         Parameters
         ----------
         time : float
             Time to which the data will be reconstructed.
-        fill_value : float, int, or tuple, optional
+        fill_value : float, int, str, or tuple, optional
             The value to be used for regions outside of the static polygons
             at `time`. By default (`fill_value=None`), this value will be
             determined based on the input.
-            For two-dimensional grids, the default fill value will be `np.nan`
-            for float or complex types, the minimum value for integer types,
-            and the maximum value for unsigned types.
-            For RGB image grids, the default fill value will be black
-            (0.0, 0.0, 0.0) or (0, 0, 0).
-            For RGBA image grids, the default fill value will be transparent
-            black (0.0, 0.0, 0.0, 0.0) or (0, 0, 0, 0).
+        partitioning_features : sequence of Feature or str, optional
+            The features used to partition the raster grid and assign plate
+            IDs. By default, `self.plate_reconstruction.static_polygons`
+            will be used, but alternatively any valid argument to
+            `pygplates.FeaturesFunctionArgument` can be specified here.
         threads : int, default 1
             Number of threads to use for certain computationally heavy
             routines.
+        anchor_plate_id : int, default 0
+            ID of the anchored plate.
+        inplace : bool, default False
+            Perform the reconstruction in-place (replace the raster's data
+            with the reconstructed data).
 
         Returns
         -------
         numpy.ndarray
             The reconstructed grid. Areas for which no plate ID could be
             determined will be filled with `fill_value`.
+
+        Raises
+        ------
+        TypeError
+            If this `Raster` has no `plate_reconstruction` set.
+
+        Notes
+        -----
+        For two-dimensional grids, `fill_value` should be a single
+        number. The default value will be `np.nan` for float or
+        complex types, the minimum value for integer types, and the
+        maximum value for unsigned types.
+        For RGB image grids, `fill_value` should be a 3-tuple RGB
+        colour code or a matplotlib colour string. The default value
+        will be black (0.0, 0.0, 0.0) or (0, 0, 0).
+        For RGBA image grids, `fill_value` should be a 4-tuple RGBA
+        colour code or a matplotlib colour string. The default fill
+        value will be transparent black (0.0, 0.0, 0.0, 0.0) or
+        (0, 0, 0, 0).
         """
+        if time < 0.0:
+            raise ValueError("Invalid time: {}".format(time))
+        time = float(time)
         if self.plate_reconstruction is None:
             raise TypeError(
                 "Cannot perform reconstruction - "
                 + "`plate_reconstruction` has not been set"
             )
-        return reconstruct_grid(
-            self.data,
-            self.plate_reconstruction.static_polygons,
-            self.plate_reconstruction.rotation_model,
+        if partitioning_features is None:
+            partitioning_features = self.plate_reconstruction.static_polygons
+        result =  reconstruct_grid(
+            grid=self.data,
+            partitioning_features=partitioning_features,
+            rotation_model=self.plate_reconstruction.rotation_model,
             from_time=self.time,
-            to_time=float(time),
+            to_time=time,
             extent=self.extent,
             origin=self.origin,
             fill_value=fill_value,
             threads=threads,
+            anchor_plate_id=anchor_plate_id,
         )
+        if inplace:
+            self.data = result
+            self._time = time
+        return result
 
     def imshow(self, ax=None, projection=None, **kwargs):
         """Display raster data.

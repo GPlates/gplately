@@ -18,21 +18,61 @@ pt_lat = np.array([19.8202, 53.5])
 
 
 @pytest.fixture(scope="module")
-def gplately_plate_reconstruction_object():
-    gdownload = gplately.download.DataServer("Muller2019")
-    rotation_model, topology_features, static_polygons = gdownload.get_plate_reconstruction_files()
-    model = gplately.PlateReconstruction(rotation_model, topology_features, static_polygons)
-    return model
+def gplately_muller_server():
+    return gplately.DataServer("Muller2019")
 
 
 @pytest.fixture(scope="module")
-def gplately_plot_topologies_object(gplately_plate_reconstruction_object):
-    model = gplately_plate_reconstruction_object
-    time = 0 #Ma, will change to 100 when called in test_3.
-    gdownload = gplately.download.DataServer("Muller2019")
-    coastlines, continents, COBs = gdownload.get_topology_geometries()
-    gplot = gplately.plot.PlotTopologies(model, time, coastlines, continents, COBs)
-    return gplot
+def gplately_merdith_server():
+    return gplately.DataServer("Merdith2021")
+
+
+@pytest.fixture(scope="module")
+def gplately_muller_static_geometries(gplately_muller_server):
+    return gplately_muller_server.get_topology_geometries()
+
+
+@pytest.fixture(scope="module")
+def gplately_merdith_static_geometries(gplately_merdith_server):
+    coastlines, continents, _ = gplately_merdith_server.get_topology_geometries()
+    return coastlines, continents
+
+
+@pytest.fixture(scope="module")
+def gplately_muller_reconstruction_files(gplately_muller_server):
+    return gplately_muller_server.get_plate_reconstruction_files()
+
+
+@pytest.fixture(scope="module")
+def gplately_merdith_reconstruction_files(gplately_merdith_server):
+    return gplately_merdith_server.get_plate_reconstruction_files()
+
+
+@pytest.fixture(scope="module")
+def gplately_plate_reconstruction_object(gplately_muller_reconstruction_files):
+    return gplately.PlateReconstruction(
+        *gplately_muller_reconstruction_files
+    )
+
+
+@pytest.fixture(scope="module")
+def gplately_merdith_reconstruction(gplately_merdith_reconstruction_files):
+    return gplately.PlateReconstruction(
+        *gplately_merdith_reconstruction_files
+    )
+
+
+@pytest.fixture(scope="module")
+def gplately_plot_topologies_object(
+    gplately_plate_reconstruction_object,
+    gplately_muller_static_geometries,
+):
+    time = 0
+    return gplately.PlotTopologies(
+        gplately_plate_reconstruction_object,
+        time,
+        *gplately_muller_static_geometries,
+    )
 
 
 @pytest.fixture(scope="module")
@@ -50,15 +90,31 @@ def gplately_points_object(gplately_plate_reconstruction_object):
 
 
 @pytest.fixture(scope="module")
-def gplately_raster_object(gplately_plate_reconstruction_object):
+def gplately_raster_object(
+    gplately_muller_server,
+    gplately_plate_reconstruction_object,
+):
     model = gplately_plate_reconstruction_object
     time = 0
+    masked_age_grid = gplately_muller_server.get_age_grid(time)
 
-    gdownload = gplately.download.DataServer("Muller2019")
-    masked_age_grid = gdownload.get_age_grid(time)
-
-    graster = gplately.Raster(model, array=masked_age_grid, extent=[-180,180,-90,90])
+    graster = gplately.Raster(model, data=masked_age_grid, extent=[-180,180,-90,90])
     return graster
+
+
+@pytest.fixture(scope="module")
+def gplately_merdith_raster(
+    gplately_merdith_server,
+    gplately_merdith_reconstruction,
+):
+    etopo = gplately_merdith_server.get_raster("ETOPO1_grd").astype("float")
+    downsampled = etopo[::15, ::15]
+    raster = gplately.Raster(
+        plate_reconstruction=gplately_merdith_reconstruction,
+        data=downsampled,
+        origin="lower",
+    )
+    return raster
 
 
 # Create a temporary directory for testing seafloorgrid
