@@ -1315,7 +1315,7 @@ class DataServer(object):
         else:
             # If the downloaded raster is a grid, process it with the gplately.Raster object
             if any(grid_extension in raster_filenames for grid_extension in grid_extensions):
-                raster_matrix = _gplately.grids.Raster(filename=raster_filenames).data
+                raster_matrix = _gplately.grids.Raster(data=raster_filenames).data
 
             # Otherwise, the raster is an image; use imread to process
             else:
