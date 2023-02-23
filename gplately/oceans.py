@@ -1534,12 +1534,11 @@ def _lat_lon_z_to_netCDF_time(
         )
 
     # Identify regions in the grid in the continental mask
-    cont_mask = grids.Raster(
-            filename=str(full_directory))
-    
+    cont_mask = grids.Raster(data=str(full_directory))
+
     # Use the continental mask
     Z = np.ma.array(
-        grids.Raster(array=Z).data.data, 
+        grids.Raster(data=Z).data.data,
         mask=cont_mask.data.data,
         fill_value=np.nan
     )
