@@ -114,6 +114,11 @@ class GeometryOnSphere(pygplates.GeometryOnSphere):
             explode=explode,
         )
 
+    @classmethod
+    def from_shapely(cls, geom):
+        converted = shapely_to_pygplates(geom)
+        return cls(converted)
+
 
 class PointOnSphere(pygplates.PointOnSphere, GeometryOnSphere):
     """GPlately equivalent of `pygplates.PointOnSphere`, incorporating
