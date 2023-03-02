@@ -83,9 +83,9 @@ if __name__ == "__main__":
           long_description_content_type='text/markdown',
           install_requires  = ['numpy>=1.16.0',
                                'scipy>=1.0.0',
-                               'shapely>=2.0',
+                               'shapely',
                                'matplotlib',
-                               'cartopy>=0.21.1',  # required for shapely>=2.0
+                               'cartopy',
                                'PlateTectonicTools',
                                'pooch',
                                'tqdm',
