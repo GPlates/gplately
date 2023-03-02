@@ -15,6 +15,10 @@ reconstruction_times = [0, 100]
 gridding_times = [249., 250.]
 pt_lon = np.array([-155.4696, 164.3])
 pt_lat = np.array([19.8202, 53.5])
+test_geometry_n_points = 1000
+test_geometry_origins = ((20, -10), (175, -40))  # (lon, lat)
+test_geometry_radii = (100, 500, 1000, 2000)  # km
+test_geometry_azimuths = (45, -100)  # degrees
 
 
 @pytest.fixture(scope="module")

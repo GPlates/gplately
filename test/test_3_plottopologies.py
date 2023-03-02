@@ -1,5 +1,5 @@
 import pytest
-import gplately
+import matplotlib.pyplot as plt
 import numpy as np
 from conftest import reconstruction_times
 from conftest import gplately_plot_topologies_object as gplot
@@ -96,6 +96,15 @@ def test_PlotTopologies_trench_L(time, gplot):
 def test_PlotTopologies_trench_R(time, gplot):
     assert gplot.trench_right, "No trench (R) features from Müller et al. (2019) at {} Ma are attributed to <gplately.PlotTopologies>.".format(time)
     assert [trench_r.get_feature_type() == "gpml:SubductionZone" for trench_r in gplot.trench_right], "<gplately.PlotTopologies> trenches (R) are not all of type gpml:SubductionZone in Müller et al. (2019) at {} Ma.".format(time)
+
+
+# Subduction teeth
+def test_PlotTopologies_subduction_teeth(gplot):
+    ax = plt.gca()
+    gplot.plot_subduction_teeth(ax=ax)
+    fig = plt.gcf()
+    plt.close(fig)
+
 
 def test_pickle_Points():
     import pickle
