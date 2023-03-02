@@ -85,7 +85,7 @@ if __name__ == "__main__":
                                'scipy>=1.0.0',
                                'shapely>=2.0',
                                'matplotlib',
-                               'cartopy',
+                               'cartopy>=0.21.1',  # required for shapely>=2.0
                                'PlateTectonicTools',
                                'pooch',
                                'tqdm',
