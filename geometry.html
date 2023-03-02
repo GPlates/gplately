@@ -201,6 +201,11 @@ class GeometryOnSphere(pygplates.GeometryOnSphere):
             explode=explode,
         )
 
+    @classmethod
+    def from_shapely(cls, geom):
+        converted = shapely_to_pygplates(geom)
+        return cls(converted)
+
 
 class PointOnSphere(pygplates.PointOnSphere, GeometryOnSphere):
     &#34;&#34;&#34;GPlately equivalent of `pygplates.PointOnSphere`, incorporating
@@ -401,7 +406,7 @@ def _ensure_ccw(geometry):
 
 
 def shapely_to_pygplates(geometry):
-    &#34;&#34;&#34;Convert one or more Shapely geometries to PyGPlates format.
+    &#34;&#34;&#34;Convert one or more Shapely geometries to gplately format.
 
     Parameters
     ----------
@@ -410,32 +415,31 @@ def shapely_to_pygplates(geometry):
 
     Returns
     -------
-    output_geometry : pygplates.GeometryOnSphere or list
-        Converted PyGPlates geometry or geometries.
+    output_geometry : GeometryOnSphere or list
+        Converted gplately geometry or geometries.
 
     Notes
     -----
     If a single input geometry was passed, `output_geometry` will be a
-    subclass of `pygplates.GeometryOnSphere`. Otherwise, `output_geometry`
-    will be a list of `pygplates.GeometryOnSphere`, of the same length as
+    subclass of `GeometryOnSphere`. Otherwise, `output_geometry`
+    will be a list of `GeometryOnSphere`, of the same length as
     the input.
 
     Input geometry types are converted as follows:
         - `Point`: `PointOnSphere`
         - `MultiPoint`: `MultiPointOnSphere`
         - `LineString`: `PolylineOnSphere`
-        - `LinearRing` or `Polygon`:
-            `PolygonOnSphere`
+        - `LinearRing` or `Polygon`: `PolygonOnSphere`
 
     Multi-part input geometry types other than `MultiPoint` will be treated
     as an iterable of their component single-part geometries.
     &#34;&#34;&#34;
     pygplates_conversion = {
-        _Point: pygplates.PointOnSphere,
-        _MultiPoint: pygplates.MultiPointOnSphere,
-        _LineString: pygplates.PolylineOnSphere,
-        _LinearRing: pygplates.PolygonOnSphere,
-        _Polygon: pygplates.PolygonOnSphere,
+        _Point: PointOnSphere,
+        _MultiPoint: MultiPointOnSphere,
+        _LineString: PolylineOnSphere,
+        _LinearRing: PolygonOnSphere,
+        _Polygon: PolygonOnSphere,
     }
 
     if isinstance(geometry, _BaseMultipartGeometry) and not isinstance(
@@ -864,7 +868,7 @@ subclass of <code>shapely.geometry.base.BaseGeometry</code>. Otherwise,
 <span>def <span class="ident">shapely_to_pygplates</span></span>(<span>geometry)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Convert one or more Shapely geometries to PyGPlates format.</p>
+<div class="desc"><p>Convert one or more Shapely geometries to gplately format.</p>
 <h2 id="parameters">Parameters</h2>
 <dl>
 <dt><strong><code>geometry</code></strong> :&ensp;<code>shapely.geometry.base.BaseGeometry</code> or <code>list</code></dt>
@@ -872,20 +876,19 @@ subclass of <code>shapely.geometry.base.BaseGeometry</code>. Otherwise,
 </dl>
 <h2 id="returns">Returns</h2>
 <dl>
-<dt><strong><code>output_geometry</code></strong> :&ensp;<code>pygplates.GeometryOnSphere</code> or <code>list</code></dt>
-<dd>Converted PyGPlates geometry or geometries.</dd>
+<dt><strong><code>output_geometry</code></strong> :&ensp;<code><a title="gplately.geometry.GeometryOnSphere" href="#gplately.geometry.GeometryOnSphere">GeometryOnSphere</a></code> or <code>list</code></dt>
+<dd>Converted gplately geometry or geometries.</dd>
 </dl>
 <h2 id="notes">Notes</h2>
 <p>If a single input geometry was passed, <code>output_geometry</code> will be a
-subclass of <code>pygplates.GeometryOnSphere</code>. Otherwise, <code>output_geometry</code>
-will be a list of <code>pygplates.GeometryOnSphere</code>, of the same length as
+subclass of <code><a title="gplately.geometry.GeometryOnSphere" href="#gplately.geometry.GeometryOnSphere">GeometryOnSphere</a></code>. Otherwise, <code>output_geometry</code>
+will be a list of <code><a title="gplately.geometry.GeometryOnSphere" href="#gplately.geometry.GeometryOnSphere">GeometryOnSphere</a></code>, of the same length as
 the input.</p>
 <p>Input geometry types are converted as follows:
 - <code>Point</code>: <code><a title="gplately.geometry.PointOnSphere" href="#gplately.geometry.PointOnSphere">PointOnSphere</a></code>
 - <code>MultiPoint</code>: <code><a title="gplately.geometry.MultiPointOnSphere" href="#gplately.geometry.MultiPointOnSphere">MultiPointOnSphere</a></code>
 - <code>LineString</code>: <code><a title="gplately.geometry.PolylineOnSphere" href="#gplately.geometry.PolylineOnSphere">PolylineOnSphere</a></code>
-- <code>LinearRing</code> or <code>Polygon</code>:
-<code><a title="gplately.geometry.PolygonOnSphere" href="#gplately.geometry.PolygonOnSphere">PolygonOnSphere</a></code></p>
+- <code>LinearRing</code> or <code>Polygon</code>: <code><a title="gplately.geometry.PolygonOnSphere" href="#gplately.geometry.PolygonOnSphere">PolygonOnSphere</a></code></p>
 <p>Multi-part input geometry types other than <code>MultiPoint</code> will be treated
 as an iterable of their component single-part geometries.</p></div>
 <details class="source">
@@ -893,7 +896,7 @@ as an iterable of their component single-part geometries.</p></div>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def shapely_to_pygplates(geometry):
-    &#34;&#34;&#34;Convert one or more Shapely geometries to PyGPlates format.
+    &#34;&#34;&#34;Convert one or more Shapely geometries to gplately format.
 
     Parameters
     ----------
@@ -902,32 +905,31 @@ as an iterable of their component single-part geometries.</p></div>
 
     Returns
     -------
-    output_geometry : pygplates.GeometryOnSphere or list
-        Converted PyGPlates geometry or geometries.
+    output_geometry : GeometryOnSphere or list
+        Converted gplately geometry or geometries.
 
     Notes
     -----
     If a single input geometry was passed, `output_geometry` will be a
-    subclass of `pygplates.GeometryOnSphere`. Otherwise, `output_geometry`
-    will be a list of `pygplates.GeometryOnSphere`, of the same length as
+    subclass of `GeometryOnSphere`. Otherwise, `output_geometry`
+    will be a list of `GeometryOnSphere`, of the same length as
     the input.
 
     Input geometry types are converted as follows:
         - `Point`: `PointOnSphere`
         - `MultiPoint`: `MultiPointOnSphere`
         - `LineString`: `PolylineOnSphere`
-        - `LinearRing` or `Polygon`:
-            `PolygonOnSphere`
+        - `LinearRing` or `Polygon`: `PolygonOnSphere`
 
     Multi-part input geometry types other than `MultiPoint` will be treated
     as an iterable of their component single-part geometries.
     &#34;&#34;&#34;
     pygplates_conversion = {
-        _Point: pygplates.PointOnSphere,
-        _MultiPoint: pygplates.MultiPointOnSphere,
-        _LineString: pygplates.PolylineOnSphere,
-        _LinearRing: pygplates.PolygonOnSphere,
-        _Polygon: pygplates.PolygonOnSphere,
+        _Point: PointOnSphere,
+        _MultiPoint: MultiPointOnSphere,
+        _LineString: PolylineOnSphere,
+        _LinearRing: PolygonOnSphere,
+        _Polygon: PolygonOnSphere,
     }
 
     if isinstance(geometry, _BaseMultipartGeometry) and not isinstance(
@@ -1133,7 +1135,12 @@ This class cannot be instantiated from Python</p></div>
             validate=validate,
             force_ccw=force_ccw,
             explode=explode,
-        )</code></pre>
+        )
+
+    @classmethod
+    def from_shapely(cls, geom):
+        converted = shapely_to_pygplates(geom)
+        return cls(converted)</code></pre>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
@@ -1147,6 +1154,24 @@ This class cannot be instantiated from Python</p></div>
 <li><a title="gplately.geometry.PolygonOnSphere" href="#gplately.geometry.PolygonOnSphere">PolygonOnSphere</a></li>
 <li><a title="gplately.geometry.PolylineOnSphere" href="#gplately.geometry.PolylineOnSphere">PolylineOnSphere</a></li>
 </ul>
+<h3>Static methods</h3>
+<dl>
+<dt id="gplately.geometry.GeometryOnSphere.from_shapely"><code class="name flex">
+<span>def <span class="ident">from_shapely</span></span>(<span>geom)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@classmethod
+def from_shapely(cls, geom):
+    converted = shapely_to_pygplates(geom)
+    return cls(converted)</code></pre>
+</details>
+</dd>
+</dl>
 <h3>Methods</h3>
 <dl>
 <dt id="gplately.geometry.GeometryOnSphere.to_shapely"><code class="name flex">
@@ -1662,6 +1687,7 @@ except pygplates.InvalidPointsForPolylineConstructionError:
 <li>
 <h4><code><a title="gplately.geometry.GeometryOnSphere" href="#gplately.geometry.GeometryOnSphere">GeometryOnSphere</a></code></h4>
 <ul class="">
+<li><code><a title="gplately.geometry.GeometryOnSphere.from_shapely" href="#gplately.geometry.GeometryOnSphere.from_shapely">from_shapely</a></code></li>
 <li><code><a title="gplately.geometry.GeometryOnSphere.to_shapely" href="#gplately.geometry.GeometryOnSphere.to_shapely">to_shapely</a></code></li>
 </ul>
 </li>
