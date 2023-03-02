@@ -105,7 +105,7 @@ def test_polygon_conversion(origin, radius, n_points=N_POINTS):
     circle = Polygon(zip(lons, lats))
     converted = PolygonOnSphere.from_shapely(circle)
     reconverted = converted.to_shapely(
-        central_meridian=converted.get_centroid().to_lat_lon()[1],
+        central_meridian=converted.get_interior_centroid().to_lat_lon()[1],
     )
     assert np.allclose(
         circle.exterior.coords,
@@ -121,7 +121,7 @@ def test_polygon_splitting(n_points=N_POINTS):
     converted = PolygonOnSphere.from_shapely(circle)
     split = converted.to_shapely(central_meridian=0)
     unsplit = converted.to_shapely(
-        central_meridian=converted.get_centroid().to_lat_lon()[1]
+        central_meridian=converted.get_interior_centroid().to_lat_lon()[1]
     )
 
     assert isinstance(
