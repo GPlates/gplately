@@ -75,7 +75,8 @@ from . import (
     grids,
     io,
     plot,
-    oceans
+    oceans,
+    pygplates
 )
 
 from .data import DataCollection
