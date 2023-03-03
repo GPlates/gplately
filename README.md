@@ -149,14 +149,26 @@ gpts = gplately.Points(model, pt_lon, pt_lat)
 relief rasters. You can also reconstruct raster data back through geological time!
 
 ```python
-time = 0
-agegrid = gdownload.get_age_grid(time)
-graster = gplately.Raster(model, data=agegrid, extent=[-180,180,-90,90])
+etopo = gdownload.get_raster("ETOPO1_tif")
+
+raster = gplately.Raster(
+    model,
+    data=etopo,
+    time=0,
+    origin="upper",
+)
+white_rgb = (255, 255, 255)  # RGB code for white, to fill gaps in output
+
+reconstructed = raster.reconstruct(
+    time=50,
+    fill_value=white_rgb,
+    threads=4,
+)
 ```
 
-Below is a plot of the original Müller et al. (2019) age grid (L) and an age-grid resampled with the `Raster` object (R):
+Below is a plot of the [ETOPO1 global relief raster](https://www.ncei.noaa.gov/products/etopo-global-relief-model) at present day, and reconstructed to 50Ma:
 
-![RasterImg](./Notebooks/NotebookFiles/ReadMe_Files/muller19_raster_resample.png)
+![RasterImg](./Notebooks/NotebookFiles/ReadMe_Files/etopo_reconstruction.png)
 
 ## Sample workflows
 
@@ -176,4 +188,3 @@ To see GPlately in action, launch a Jupyter Notebook environment and check out t
 ## API Documentation
 
 Documentation of GPlately's objects and methods can be found [here](https://gplates.github.io/gplately/)!
-
