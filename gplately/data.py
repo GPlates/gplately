@@ -161,7 +161,7 @@ class DataCollection(object):
             "Topology",
             "_PP_", # for Seton 2012
             #"ContinentOceanBoundaries",
-            "Seton_etal_ESR2012_Coastline_2012",
+            #"Seton_etal_ESR2012_Coastline_2012",
             "Deforming_Mesh",
             "Deforming",
             "Flat_Slabs",
@@ -197,6 +197,8 @@ class DataCollection(object):
             "9_Point_Density", # Clennett et al 2020
             "Density", # Clennett et al 2020
             "Inactive_Meshes_and_Topologies", # Clennett et al 2020
+            "ContinentOceanBoundaries", # Seton 2012
+            "Seton_etal_ESR2012_Coastline_2012", # Seton 2012
         ]
         return strings
 
@@ -205,6 +207,7 @@ class DataCollection(object):
 
         strings = [
             "StaticPolygon",
+            "StaticPolygons",
             "Static_Polygon",
             "StaticPlatePolygons_",
             "RodiniaBlocks_WithPlateIDColumnAndIDs",
