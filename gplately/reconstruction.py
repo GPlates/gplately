@@ -1408,7 +1408,7 @@ class Points(object):
 
 
 # FROM RECONSTRUCT_BY_TOPOLOGIES.PY
-class DefaultCollision(object):
+class _DefaultCollision(object):
     """
     Default collision detection function class (the function is the '__call__' method).
     """
@@ -1607,10 +1607,10 @@ class DefaultCollision(object):
         return False
 
 
-DEFAULT_COLLISION = DefaultCollision()
+_DEFAULT_COLLISION = _DefaultCollision()
 
 
-class ContinentCollision(object):
+class _ContinentCollision(object):
     """
     Continental collision detection function class (the function is the '__call__' method).
     """
@@ -1618,7 +1618,7 @@ class ContinentCollision(object):
     def __init__(
             self,
             grd_output_dir,
-            chain_collision_detection=DEFAULT_COLLISION):
+            chain_collision_detection=_DEFAULT_COLLISION):
         """
         grd_output_dir: The directory containing the continental grids.
 
@@ -1704,7 +1704,7 @@ def  reconstruct_points(
             point_begin_times = None,
             point_end_times = None,
             point_plate_ids = None,
-            detect_collisions = DEFAULT_COLLISION):
+            detect_collisions = _DEFAULT_COLLISION):
     """
     Function to reconstruct points using the ReconstructByTopologies class below.
     
@@ -1726,7 +1726,7 @@ def  reconstruct_points(
     return topology_reconstruction.reconstruct()
 
 
-class ReconstructByTopologies(object):
+class _ReconstructByTopologies(object):
     """
     Class to reconstruct geometries using topologies.
     
@@ -1749,13 +1749,13 @@ class ReconstructByTopologies(object):
             point_begin_times = None,
             point_end_times = None,
             point_plate_ids = None,
-            detect_collisions = DEFAULT_COLLISION):
+            detect_collisions = _DEFAULT_COLLISION):
         """
         rotation_features_or_model: Rotation model or feature collection(s), or list of features, or filename(s).
         
         topology_features: Topology feature collection(s), or list of features, or filename(s) or any combination of those.
         
-        detect_collisions: Collision detection function, or None. Defaults to DEFAULT_COLLISION.
+        detect_collisions: Collision detection function, or None. Defaults to _DEFAULT_COLLISION.
         """
         
         # Turn rotation data into a RotationModel (if not already).
@@ -2038,7 +2038,7 @@ class ReconstructByTopologies(object):
         resolved_topologies = []
         pygplates.resolve_topologies(self.topology_features, self.rotation_model, resolved_topologies, current_time)
         
-        if ReconstructByTopologies.use_plate_partitioner:
+        if _ReconstructByTopologies.use_plate_partitioner:
             # Create a plate partitioner from the resolved polygons.
             plate_partitioner = pygplates.PlatePartitioner(resolved_topologies, self.rotation_model)
         else:
@@ -2068,7 +2068,7 @@ class ReconstructByTopologies(object):
                 continue
             
             # Find the plate id of the polygon that contains 'curr_point'.
-            if ReconstructByTopologies.use_plate_partitioner:
+            if _ReconstructByTopologies.use_plate_partitioner:
                 curr_polygon = plate_partitioner.partition_point(curr_point)
             else:
                 curr_polygon = resolved_topologies_containing_curr_valid_points[
