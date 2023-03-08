@@ -1,0 +1,40 @@
+4034  0.0   90.0    0.0    0.0  301 !Lut Block
+4034 10.0   44.41  -78.03   -0.51  301 !Calculated interactively by GPlates
+4034 16.0   43.27  -76.25   -0.64  301 !Calculated interactively by GPlates
+4034 140.0   43.27  -76.25   -0.64  301 !Lut Block
+4035  0.0   90.0    0.0    0.0  4059 !Sanandaj-Sirjan Block
+4035 10.0   38.84  -73.51   -0.46  4059 !Calculated interactively by GPlates
+4035 140.0   38.84  -73.51   -0.46  4059 !Sanandaj-Sirjan Block
+4035 600.0   38.84  -73.51   -0.46  4059 !Sanandaj-Sirjan Block
+4058  0.0   90.0    0.0    0.0  301 !South Caspian Block
+4058 10.0   41.82  -83.09   -0.28  301 !Calculated interactively by GPlates
+4058 140.0   41.82  -83.09   -0.28  301 !South Caspian Block
+4058 600.0   41.82  -83.09   -0.28  301 !South Caspian Block
+4059  0.0   90.0    0.0    0.0  4058 !Alborz
+4059 16.0   38.18  -72.44   -0.43  4058 !Calculated interactively by GPlates
+4059 140.0   38.18  -72.44   -0.43  4058 !Alborz     
+4059 600.0   38.18  -72.44   -0.43  4058 !Alborz 
+4060  0.0   90.0    0.0    0.0  4035 !Sanandaj-Sirjan boundary plus Allen et al 2011 shortening
+4060  4.0   90.0    0.0    0.0  4035 !Sanandaj-Sirjan boundary plus Allen et al 2011 shortening
+4060 20.0   42.84  -76.47   -0.55  4035 !Calculated interactively by GPlates
+4060 140.0   42.84  -76.47   -0.55  4035 !Sanandaj-Sirjan boundary plus Allen et al 2011 shortening
+4061  0.0   90.0    0.0    0.0  503 !northeastern limit Arabia corrected for Zagros shortening
+4061  4.0   36.38   49.92    0.95  503 !Calculated interactively by GPlates
+4061 12.0   37.08   45.26    2.1  503 !Calculated interactively by GPlates
+4061 20.0   52.04   10.53    2.32  503 !Calculated interactively by GPlates
+4061 140.0   37.82  -69.13    1.62  503 !northeastern limit Arabia corrected for Zagros shortening
+506  0.0   90.0    0.0    0.0  505 !AFF-IRN Afghanistan (Farah)-Iran     
+506 150.0   90.0    0.0    0.0  505 !AFF-IRN 
+506 200.0   26.64   48.66  -34.58  505 !AFF-IRN greater_india_topologies.rot
+506 230.0   26.64   48.66  -34.58  505 !AFF-IRN 
+506 250.0   26.64   48.66  -34.58  505 !AFF-IRN EarthByteGroup 2002
+50601  0.0   90.0    0.0    0.0  506 !HEL-AFF Helmand-Farah     
+50601 250.0   90.0    0.0    0.0  506 !HEL-FAR     
+50602  0.0   90.0    0.0    0.0  50601 !MAK-HEL Makran-Helmand     
+50602 250.0   90.0    0.0    0.0  50601 !MAK-HEL 
+526  0.0   90.0    0.0    0.0  301 !EPT-EUR East Pontides-Northern European Craton
+526 140.0   90.0    0.0    0.0  301 !EPT-EUR      
+526 230.0   90.0    0.0    0.0  301 !EPT-EUR MHV2014
+526 250.0   49.25   15.0  -32.5  301 !EPT-EUR MHV2014
+59004  0.0   90.0    0.0    0.0  501 ! Subducted Greater India West
+59004 600.0   90.0    0.0    0.0  501 ! Subducted Greater India West

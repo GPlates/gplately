@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<gpml:FeatureCollection xmlns:gpml="http://www.gplates.org/gplates" xmlns:gml="http://www.opengis.net/gml" xmlns:xsi="http://www.w3.org/XMLSchema-instance" gpml:version="1.6.0327" xsi:schemaLocation="http://www.gplates.org/gplates ../xsd/gpml.xsd http://www.opengis.net/gml ../../../gml/current/base">
+    <gml:featureMember>
+        <gpml:UnclassifiedFeature>
+            <gpml:identity>GPlates-d14d0e82-ef9d-48a0-8617-fb1c7a86dbad</gpml:identity>
+            <gpml:revision>GPlates-d58b9298-273b-488f-9b76-528fc930ddcc</gpml:revision>
+            <gpml:centerLineOf>
+                <gpml:ConstantValue>
+                    <gpml:value>
+                        <gml:Polygon>
+                            <gml:exterior>
+                                <gml:LinearRing>
+                                    <gml:posList gml:dimension="2">31.196191500227204 66.862370690361061 34.618634817294129 66.83143618047427 37.403271059519106 67.500926615434921 38.724648639904544 68.68650834493674 39.349800000000791 69.805299999999974 39.574800000000835 70.276699999999934 40.144409047474554 71.471348868745196 40.385678551097982 73.453722172136608 40.14991476518982 76.883507666508706 39.760100000000797 81.30799999999995 39.271395895030899 85.045934562093805 38.488988216424978 88.112517701723419 37.592400000000737 91.037099999999953 36.176400000000719 93.533599999999993 34.689705854618268 95.314871524946099 33.342622357309168 96.328610383545339 31.160422388911289 97.174475367131322 29.054697034813579 97.787862878647829 27.458215509833742 95.510273576842749 27.709129378145171 95.100438665079906 28.065611361731971 94.012799701449794 28.1551751852185 92.902021519008656 28.822600000000509 90.568399999999954 28.703100000000504 88.252799999999965 29.083400000000527 84.621300000000005 30.637700000000585 80.347899999999996 32.431400000000572 78.376699999999971 33.84630825310969 75.187846468018691 34.625790439932288 73.768950456950904 34.680900000000634 72.408999999999992 33.673867949764734 70.980386301179593 32.634100000000593 70.312899999999956 32.291000000000572 70.002899999999926 31.196191500227204 66.862370690361061 </gml:posList>
+                                </gml:LinearRing>
+                            </gml:exterior>
+                        </gml:Polygon>
+                    </gpml:value>
+                    <gpml:valueType xmlns:gml="http://www.opengis.net/gml">gml:Polygon</gpml:valueType>
+                </gpml:ConstantValue>
+            </gpml:centerLineOf>
+            <gpml:reconstructionPlateId>
+                <gpml:ConstantValue>
+                    <gpml:value>501</gpml:value>
+                    <gpml:valueType xmlns:gpml="http://www.gplates.org/gplates">gpml:plateId</gpml:valueType>
+                </gpml:ConstantValue>
+            </gpml:reconstructionPlateId>
+            <gml:name>Greater India Masking COB, Replumaz et al 2010</gml:name>
+            <gml:validTime>
+                <gml:TimePeriod>
+                    <gml:begin>
+                        <gml:TimeInstant>
+                            <gml:timePosition gml:frame="http://gplates.org/TRS/flat">600</gml:timePosition>
+                        </gml:TimeInstant>
+                    </gml:begin>
+                    <gml:end>
+                        <gml:TimeInstant>
+                            <gml:timePosition gml:frame="http://gplates.org/TRS/flat">http://gplates.org/times/distantFuture</gml:timePosition>
+                        </gml:TimeInstant>
+                    </gml:end>
+                </gml:TimePeriod>
+            </gml:validTime>
+        </gpml:UnclassifiedFeature>
+    </gml:featureMember>
+</gpml:FeatureCollection>
