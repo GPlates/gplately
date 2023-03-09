@@ -956,6 +956,8 @@ class Points(object):
 
         self.update(lons, lats, time, plate_id)
 
+        # Deprecated name of `plate_reconstruction` attribute
+        self.plate_reconstruction = self.PlateReconstruction_object
 
     def update(self, lons, lats, time=0, plate_id=None):
 
