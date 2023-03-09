@@ -33,14 +33,14 @@ icosahedral triangulated mesh. The number of points in this mesh can be
 controlled using a `refinement_levels` integer (the larger this integer,
 the more resolved the continent masks will be). 
 
-![RefinementLevels](../../Notebooks/NotebookFiles/pdoc_Files/seafloorgrid_refinement.png)
+![RefinementLevels](https://github.com/GPlates/gplately/blob/master/Notebooks/NotebookFiles/pdoc_Files/seafloorgrid_refinement.png)
 
 These points are spatially partitioned by plate ID so they can be passed
 into a 
-[point-in-polygon routine](file:///Users/laurenilano/gplately/api/gplately/oceans.html#gplately.oceans.point_in_polygon_routine). 
+[point-in-polygon routine](https://gplates.github.io/gplately/oceans.html#gplately.oceans.point_in_polygon_routine). 
 This identifies points that lie within
 continental polygon boundaries and those that are in the ocean. From this,
-[continental masks are built](file:///Users/laurenilano/gplately/api/gplately/oceans.html#gplately.oceans.SeafloorGrid.build_all_continental_masks) 
+[continental masks are built](https://gplates.github.io/gplately/oceans.html#gplately.oceans.SeafloorGrid.build_all_continental_masks) 
 per timestep, and the initial seed points are
 allocated ages at the first reconstruction timestep `max_time`. Each point's 
 initial age is calculated by dividing its proximity to the nearest
@@ -52,16 +52,17 @@ Thus, the spreading rate grid at `max_time` will be uniformly populated with the
 The age grid at `max_time` will look like a series of smooth, linear age gradients clearly partitioned by 
 tectonic plates with unique plate IDs:
 
-![MaxTimeGrids](../../Notebooks/NotebookFiles/pdoc_Files/max_time_grids.png)
+![MaxTimeGrids](https://github.com/GPlates/gplately/blob/master/Notebooks/NotebookFiles/pdoc_Files/max_time_grids.png)
 
-Ridge "line" topologies are resolved at each reconstruction time step and partitioned
+[Ridge "line" topologies](https://gplates.github.io/gplately/oceans.html#gplately.oceans.SeafloorGrid.build_all_MOR_seedpoints) 
+are resolved at each reconstruction time step and partitioned
 into segments with a valid stage rotation. Each segment is further divided into points 
 at a specified ridge sampling spacing (`ridge_sampling`). Each point is 
 ascribed a latitude, longitude, spreading rate and age (from plate reconstruction 
 model files, as opposed to ages of the initial ocean mesh points), a point index 
 and the general z-value that will be gridded onto it. 
 
-![RefinementLevels](../../Notebooks/NotebookFiles/pdoc_Files/new_ridge_points.png)
+![NewRidgePoints](https://github.com/GPlates/gplately/blob/master/Notebooks/NotebookFiles/pdoc_Files/new_ridge_points.png)
 
 Reconstruction by topologies involves determining which points are active and 
 inactive (collided with a continent or subducted at a trench) for each reconstruction 
