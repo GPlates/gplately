@@ -114,6 +114,11 @@ class GeometryOnSphere(pygplates.GeometryOnSphere):
             explode=explode,
         )
 
+    @classmethod
+    def from_shapely(cls, geom):
+        converted = shapely_to_pygplates(geom)
+        return cls(converted)
+
 
 class PointOnSphere(pygplates.PointOnSphere, GeometryOnSphere):
     """GPlately equivalent of `pygplates.PointOnSphere`, incorporating
@@ -314,7 +319,7 @@ def _ensure_ccw(geometry):
 
 
 def shapely_to_pygplates(geometry):
-    """Convert one or more Shapely geometries to PyGPlates format.
+    """Convert one or more Shapely geometries to gplately format.
 
     Parameters
     ----------
@@ -323,32 +328,31 @@ def shapely_to_pygplates(geometry):
 
     Returns
     -------
-    output_geometry : pygplates.GeometryOnSphere or list
-        Converted PyGPlates geometry or geometries.
+    output_geometry : GeometryOnSphere or list
+        Converted gplately geometry or geometries.
 
     Notes
     -----
     If a single input geometry was passed, `output_geometry` will be a
-    subclass of `pygplates.GeometryOnSphere`. Otherwise, `output_geometry`
-    will be a list of `pygplates.GeometryOnSphere`, of the same length as
+    subclass of `GeometryOnSphere`. Otherwise, `output_geometry`
+    will be a list of `GeometryOnSphere`, of the same length as
     the input.
 
     Input geometry types are converted as follows:
         - `Point`: `PointOnSphere`
         - `MultiPoint`: `MultiPointOnSphere`
         - `LineString`: `PolylineOnSphere`
-        - `LinearRing` or `Polygon`:
-            `PolygonOnSphere`
+        - `LinearRing` or `Polygon`: `PolygonOnSphere`
 
     Multi-part input geometry types other than `MultiPoint` will be treated
     as an iterable of their component single-part geometries.
     """
     pygplates_conversion = {
-        _Point: pygplates.PointOnSphere,
-        _MultiPoint: pygplates.MultiPointOnSphere,
-        _LineString: pygplates.PolylineOnSphere,
-        _LinearRing: pygplates.PolygonOnSphere,
-        _Polygon: pygplates.PolygonOnSphere,
+        _Point: PointOnSphere,
+        _MultiPoint: MultiPointOnSphere,
+        _LineString: PolylineOnSphere,
+        _LinearRing: PolygonOnSphere,
+        _Polygon: PolygonOnSphere,
     }
 
     if isinstance(geometry, _BaseMultipartGeometry) and not isinstance(
