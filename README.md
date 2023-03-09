@@ -2,7 +2,8 @@
 
 GPlately was created to accelerate spatio-temporal data analysis leveraging pyGPlates and PlateTectonicTools within a simplified Python interface. This object-oriented package enables the reconstruction of data through deep geologic time (points, lines, polygons, and rasters), the interrogation of plate kinematic information (plate velocities, rates of subduction and seafloor spreading), the rapid comparison between multiple plate motion models, and the plotting of reconstructed output data on maps. All tools are designed to be parallel-safe to accelerate spatio-temporal analysis over multiple CPU processors.
 
-![SeedPointGIF](./Notebooks/NotebookFiles/ReadMe_Files/muller19_seedpoints.gif)
+![SeedPointGIF](https://raw.githubusercontent.com/GPlates/gplately/master/Notebooks/NotebookFiles/ReadMe_Files/muller19_seedpoints.gif)
+
 
 GPlately requires a working installation of pyGPlates, which is freely
 available at https://www.gplates.org/download.
@@ -109,7 +110,7 @@ the object by passing a `rotation model`, a set of `topology features` and some 
 ```python
 model = gplately.PlateReconstruction(rotation_model, topology_features, static_polygons)
 ```
-Launch the [Plate Reconstruction](./Notebooks/02-PlateReconstructions.ipynb) notebook to see more.
+Launch the [Plate Reconstruction](https://github.com/GPlates/gplately/blob/master/Notebooks/02-PlateReconstructions.ipynb) notebook to see more.
 
 
 ### The `PlotTopologies` object
@@ -126,7 +127,7 @@ gPlot = gplately.plot.PlotTopologies(model, time, coastlines, continents, COBs)
 Below are some continents, coastlines, COBs, ridges and transforms, trenches, subduction teeth and
 seafloor age grids plotted using `PlotTopologies`!
 
-![ReconstructionImage](./Notebooks/NotebookFiles/ReadMe_Files/plot_topologies_img.png)
+![ReconstructionImage](https://raw.githubusercontent.com/GPlates/gplately/master/Notebooks/NotebookFiles/ReadMe_Files/plot_topologies_img.png)
 
 ### The `Points` object
 
@@ -140,7 +141,7 @@ pt_lat = np.array([48.797807, -12.654857, 11.884395, -26.415630, 31.368509])
 # Call the Points object: pass the PlateReconstruction object, and the latitudes and longitudes of the seed points!
 gpts = gplately.Points(model, pt_lon, pt_lat)
 ```
-![PointData](./Notebooks/NotebookFiles/ReadMe_Files/surface_hotspot_plumes.png)
+![PointData](https://raw.githubusercontent.com/GPlates/gplately/master/Notebooks/NotebookFiles/ReadMe_Files/surface_hotspot_plumes.png)
 
 
 ### The `Raster` object
@@ -149,31 +150,43 @@ gpts = gplately.Points(model, pt_lon, pt_lat)
 relief rasters. You can also reconstruct raster data back through geological time!
 
 ```python
-time = 0
-agegrid = gdownload.get_age_grid(time)
-graster = gplately.Raster(model, data=agegrid, extent=[-180,180,-90,90])
+etopo = gdownload.get_raster("ETOPO1_tif")
+
+raster = gplately.Raster(
+    model,
+    data=etopo,
+    time=0,
+    origin="upper",
+)
+white_rgb = (255, 255, 255)  # RGB code for white, to fill gaps in output
+
+reconstructed = raster.reconstruct(
+    time=50,
+    fill_value=white_rgb,
+    threads=4,
+)
 ```
 
-Below is a plot of the original Müller et al. (2019) age grid (L) and an age-grid resampled with the `Raster` object (R):
+Below is a plot of the [ETOPO1 global relief raster](https://www.ncei.noaa.gov/products/etopo-global-relief-model) at present day, and reconstructed to 50Ma:
 
-![RasterImg](./Notebooks/NotebookFiles/ReadMe_Files/muller19_raster_resample.png)
+![RasterImg](https://raw.githubusercontent.com/GPlates/gplately/master/Notebooks/NotebookFiles/ReadMe_Files/etopo_reconstruction.png)
+
 
 ## Sample workflows
 
 To see GPlately in action, launch a Jupyter Notebook environment and check out the [sample notebooks](./Notebooks):
 
-- [__01 - Getting Started__](./Notebooks/01-GettingStarted.ipynb): A brief overview of how to initialise GPlately's main objects
-- [__02 - Plate Reconstructions__](./Notebooks/02-PlateReconstructions.ipynb): Setting up a `PlateReconstruction` object, reconstructing geological data through time 
-- [__03 - Working with Points__](./Notebooks/03-WorkingWithPoints.ipynb): Setting up a `Points` object, reconstructing seed point locations through time with. This notebook uses point data from the Paleobiology Database (PBDB).
-- [__04 - Velocity Basics__](./Notebooks/04-VelocityBasics.ipynb): Calculating plate velocities, plotting velocity vector fields
-- [__05 - Working with Feature Geometries__](./Notebooks/05-WorkingWithFeatureGeometries.ipynb): Processing and plotting assorted polyline, polygon and point data from [GPlates 2.3's sample data sets](https://www.earthbyte.org/gplates-2-3-software-and-data-sets/)
-- [__06 - Rasters__](./Notebooks/06-Rasters.ipynb): Reading, resizing, resampling raster data, and linearly interpolating point data onto raster data
-- [__07 - Plate Tectonic Stats__](./Notebooks/07-WorkingWithPlateTectonicStats.ipynb): Using [PlateTectonicTools](https://github.com/EarthByte/PlateTectonicTools) to calculate and plot subduction zone and ridge data (convergence/spreading velocities, subduction angles, subduction zone and ridge lengths, crustal surface areas produced and subducted etc.) 
-- [__08 - Predicting Slab Dip__](./Notebooks/08-PredictingSlabDip.ipynb): Predicting the average slab dip angle of subducting oceanic lithosphere.
-- [__09 - Motion Paths and Flowlines__](./Notebooks/09-CreatingMotionPathsAndFlowlines.ipynb): Using pyGPlates to create motion paths and flowines of points on a tectonic plate to illustrate the plate's trajectory through geological time.
-
+- [__01 - Getting Started__](https://github.com/GPlates/gplately/blob/master/Notebooks/01-GettingStarted.ipynb): A brief overview of how to initialise GPlately's main objects
+- [__02 - Plate Reconstructions__](https://github.com/GPlates/gplately/blob/master/Notebooks/02-PlateReconstructions.ipynb): Setting up a `PlateReconstruction` object, reconstructing geological data through time 
+- [__03 - Working with Points__](https://github.com/GPlates/gplately/blob/master/Notebooks/03-WorkingWithPoints.ipynb): Setting up a `Points` object, reconstructing seed point locations through time with. This notebook uses point data from the Paleobiology Database (PBDB).
+- [__04 - Velocity Basics__](https://github.com/GPlates/gplately/blob/master/Notebooks/04-VelocityBasics.ipynb): Calculating plate velocities, plotting velocity vector fields
+- [__05 - Working with Feature Geometries__](https://github.com/GPlates/gplately/blob/master/Notebooks/05-WorkingWithFeatureGeometries.ipynb): Processing and plotting assorted polyline, polygon and point data from [GPlates 2.3's sample data sets](https://www.earthbyte.org/gplates-2-3-software-and-data-sets/)
+- [__06 - Rasters__](https://github.com/GPlates/gplately/blob/master/Notebooks/06-Rasters.ipynb): Reading, resizing, resampling raster data, and linearly interpolating point data onto raster data
+- [__07 - Plate Tectonic Stats__](https://github.com/GPlates/gplately/blob/master/Notebooks/07-WorkingWithPlateTectonicStats.ipynb): Using [PlateTectonicTools](https://github.com/EarthByte/PlateTectonicTools) to calculate and plot subduction zone and ridge data (convergence/spreading velocities, subduction angles, subduction zone and ridge lengths, crustal surface areas produced and subducted etc.) 
+- [__08 - Predicting Slab Dip__](https://github.com/GPlates/gplately/blob/master/Notebooks/08-PredictingSlabDip.ipynb): Predicting the average slab dip angle of subducting oceanic lithosphere.
+- [__09 - Motion Paths and Flowlines__](https://github.com/GPlates/gplately/blob/master/Notebooks/09-CreatingMotionPathsAndFlowlines.ipynb): Using pyGPlates to create motion paths and flowines of points on a tectonic plate to illustrate the plate's trajectory through geological time.
+- [__10 - SeafloorGrid__](https://github.com/GPlates/gplately/blob/master/Notebooks/10-SeafloorGrids.ipynb): Defines the parameters needed to set up a `SeafloorGrid` object, and demonstrates how to produce age and spreading rate grids from a set of plate reconstruction model files.
 
 ## API Documentation
 
 Documentation of GPlately's objects and methods can be found [here](https://gplates.github.io/gplately/)!
-
