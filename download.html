@@ -396,7 +396,7 @@ def _check_gpml_or_shp(fnames):
     instead if GPML files not found.&#34;&#34;&#34;
     sorted_fnames = []
     for file in fnames:
-        if file.endswith(&#34;.gpml&#34;) or file.endswith(&#34;.gpmlz&#34;):
+        if file.endswith(&#34;.gpml&#34;):
             sorted_fnames.append(file)
         elif file.endswith(&#34;.shp&#34;):
             sorted_fnames.append(file)

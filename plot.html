@@ -1114,6 +1114,7 @@ class PlotTopologies(object):
         anchor_plate_id=0,
     ):
         self.PlateReconstruction_object = PlateReconstruction_object
+        self.plate_model = self.PlateReconstruction_object
         self.base_projection = ccrs.PlateCarree()
 
         # store these for when time is updated
@@ -3880,6 +3881,7 @@ boundaries and passive continental boundaries.</dd>
         anchor_plate_id=0,
     ):
         self.PlateReconstruction_object = PlateReconstruction_object
+        self.plate_model = self.PlateReconstruction_object
         self.base_projection = ccrs.PlateCarree()
 
         # store these for when time is updated

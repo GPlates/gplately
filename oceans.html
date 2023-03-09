@@ -28,62 +28,42 @@ and other oceanic data from the `gplately.PlateReconstruction` and
 <p>A module to generate grids of seafloor age, seafloor spreading rate
 and other oceanic data from the <code>gplately.PlateReconstruction</code> and
 <code>gplately.PlotToplogies</code> objects. </p>
-<p>Gridding methods in this module have been adapted from Simon Williams'
+<p>Gridding methods in this script have been adapted from Simon Williams'
 development repository for an
-<a href="https://github.com/siwill22/agegrid-0.1">auto-age-gridding workflow</a>, and are kept
-within the <code><a title="gplately.oceans.SeafloorGrid" href="#gplately.oceans.SeafloorGrid">SeafloorGrid</a></code> object.</p>
-<p>The sample jupyter notebook
-<a href="https://github.com/GPlates/gplately/blob/master/Notebooks/10-SeafloorGrids.ipynb">10-SeafloorGrid</a>
-demonstrates how the functionalities within <code><a title="gplately.oceans.SeafloorGrid" href="#gplately.oceans.SeafloorGrid">SeafloorGrid</a></code> work. Below you can find
-documentation for each of <code><a title="gplately.oceans.SeafloorGrid" href="#gplately.oceans.SeafloorGrid">SeafloorGrid</a></code>'s functions.</p>
-<h2 id="seafloorgrid-methodology"><code><a title="gplately.oceans.SeafloorGrid" href="#gplately.oceans.SeafloorGrid">SeafloorGrid</a></code> Methodology</h2>
-<p>There are two main steps that <code><a title="gplately.oceans.SeafloorGrid" href="#gplately.oceans.SeafloorGrid">SeafloorGrid</a></code> follows to generate grids:</p>
-<ol>
-<li>Preparation for reconstruction by topologies</li>
-<li>Reconstruction by topologies</li>
-</ol>
-<p>The preparation step involves building a:</p>
-<ul>
-<li>global domain of initial points that populate the seafloor at <code>max_time</code>, </li>
-<li>continental mask that separates ocean points from continent regions per timestep, and</li>
-<li>set of points that emerge to the left and right of mid-ocean
+(auto-age-gridding workflow)[<a href="https://github.com/siwill22/agegrid-0.1].">https://github.com/siwill22/agegrid-0.1].</a></p>
+<h2 id="methodology">Methodology</h2>
+<p>There are two main steps in grid generation:
+1) Preparation for reconstruction by topologies
+2) Reconstruction by topologies</p>
+<p>The preparation step involves building a:
+* global domain of initial points,
+* continental mask per timestep,
+* set of points that emerge to the left and right of mid-ocean
 ridge segments per timestep, as well as the z-value to allocate to these
-points.</li>
-</ul>
-<p>First, the global domain of initial points is created using
-<a href="https://github.com/underworldcode/stripy/blob/master/stripy/spherical_meshes.py#L27">stripy's</a>
+points.</p>
+<p>First, the global domain of initial points is created using Stripy's
 icosahedral triangulated mesh. The number of points in this mesh can be
 controlled using a <code>refinement_levels</code> integer (the larger this integer,
 the more resolved the continent masks will be). </p>
-<p><img alt="RefinementLevels" src="../../Notebooks/NotebookFiles/pdoc_Files/seafloorgrid_refinement.png"></p>
 <p>These points are spatially partitioned by plate ID so they can be passed
-into a
-<a href="file:///Users/laurenilano/gplately/api/gplately/oceans.html#gplately.oceans.point_in_polygon_routine">point-in-polygon routine</a>.
-This identifies points that lie within
+into a point-in-polygon routine. This identifies points that lie within
 continental polygon boundaries and those that are in the ocean. From this,
-<a href="file:///Users/laurenilano/gplately/api/gplately/oceans.html#gplately.oceans.SeafloorGrid.build_all_continental_masks">continental masks are built</a>
-per timestep, and the initial seed points are
+continental masks are built per timestep, and the initial seed points are
 allocated ages at the first reconstruction timestep <code>max_time</code>. Each point's
 initial age is calculated by dividing its proximity to the nearest
 MOR segment by half its assumed spreading rate. This spreading rate
 (<code>initial_ocean_mean_spreading_rate</code>) is assumed to be uniform for all points.</p>
-<p>These initial points momentarily fill the global ocean basin, and all have uniform spreading rates.
-Thus, the spreading rate grid at <code>max_time</code> will be uniformly populated with the <code>initial_ocean_mean_spreading_rate</code> (mm/yr).
-The age grid at <code>max_time</code> will look like a series of smooth, linear age gradients clearly partitioned by
-tectonic plates with unique plate IDs:</p>
-<p><img alt="MaxTimeGrids" src="../../Notebooks/NotebookFiles/pdoc_Files/max_time_grids.png"></p>
-<p>Ridge "line" topologies are resolved at each reconstruction time step and partitioned
-into segments with a valid stage rotation. Each segment is further divided into points
+<p>These initial points momentarily fill the global ocean basin. </p>
+<p>Ridge topologies are resolved at each reconstruction time step and partitioned
+into segments with a valid stage rotation. Each segment is divided into points
 at a specified ridge sampling spacing (<code>ridge_sampling</code>). Each point is
 ascribed a latitude, longitude, spreading rate and age (from plate reconstruction
 model files, as opposed to ages of the initial ocean mesh points), a point index
 and the general z-value that will be gridded onto it. </p>
-<p><img alt="RefinementLevels" src="../../Notebooks/NotebookFiles/pdoc_Files/new_ridge_points.png"></p>
 <p>Reconstruction by topologies involves determining which points are active and
 inactive (collided with a continent or subducted at a trench) for each reconstruction
-time step. This is done using a hidden object in <code>PlateReconstruction</code> called
-<code>ReconstructByTopologies</code>.</p>
-<p>If an ocean point with a certain velocity on one plate ID transitions into another
+time step. This is done using <code>PlateReconstruction</code>s <code>ReconstructByTopologies</code> object.
+If an ocean point with a certain velocity on one plate ID transitions into another
 rigid plate ID at another timestep (with another velocity), the velocity difference
 between both plates is calculated. The point may have subducted/collided with a continent
 if this velocity difference is higher than a specified velocity threshold (which can be
@@ -121,72 +101,50 @@ interpolation and written to a netCDF4 format.</p>
 and other oceanic data from the `gplately.PlateReconstruction` and 
 `gplately.PlotToplogies` objects. 
 
-Gridding methods in this module have been adapted from Simon Williams&#39; 
+Gridding methods in this script have been adapted from Simon Williams&#39; 
 development repository for an 
-[auto-age-gridding workflow](https://github.com/siwill22/agegrid-0.1), and are kept 
-within the `SeafloorGrid` object.
+(auto-age-gridding workflow)[https://github.com/siwill22/agegrid-0.1].
 
-The sample jupyter notebook 
-[10-SeafloorGrid](https://github.com/GPlates/gplately/blob/master/Notebooks/10-SeafloorGrids.ipynb) 
-demonstrates how the functionalities within `SeafloorGrid` work. Below you can find
-documentation for each of `SeafloorGrid`&#39;s functions.
-
-`SeafloorGrid` Methodology
---------------------------
-There are two main steps that `SeafloorGrid` follows to generate grids:
-
-1. Preparation for reconstruction by topologies
-2. Reconstruction by topologies
+Methodology
+-----------
+There are two main steps in grid generation:
+1) Preparation for reconstruction by topologies
+2) Reconstruction by topologies
 
 The preparation step involves building a:
-
-* global domain of initial points that populate the seafloor at `max_time`, 
-* continental mask that separates ocean points from continent regions per timestep, and
+* global domain of initial points, 
+* continental mask per timestep,
 * set of points that emerge to the left and right of mid-ocean 
 ridge segments per timestep, as well as the z-value to allocate to these
 points.
 
-First, the global domain of initial points is created using 
-[stripy&#39;s](https://github.com/underworldcode/stripy/blob/master/stripy/spherical_meshes.py#L27)
+First, the global domain of initial points is created using Stripy&#39;s 
 icosahedral triangulated mesh. The number of points in this mesh can be
 controlled using a `refinement_levels` integer (the larger this integer,
 the more resolved the continent masks will be). 
 
-![RefinementLevels](../../Notebooks/NotebookFiles/pdoc_Files/seafloorgrid_refinement.png)
-
 These points are spatially partitioned by plate ID so they can be passed
-into a 
-[point-in-polygon routine](file:///Users/laurenilano/gplately/api/gplately/oceans.html#gplately.oceans.point_in_polygon_routine). 
-This identifies points that lie within
+into a point-in-polygon routine. This identifies points that lie within
 continental polygon boundaries and those that are in the ocean. From this,
-[continental masks are built](file:///Users/laurenilano/gplately/api/gplately/oceans.html#gplately.oceans.SeafloorGrid.build_all_continental_masks) 
-per timestep, and the initial seed points are
+continental masks are built per timestep, and the initial seed points are
 allocated ages at the first reconstruction timestep `max_time`. Each point&#39;s 
 initial age is calculated by dividing its proximity to the nearest
 MOR segment by half its assumed spreading rate. This spreading rate 
 (`initial_ocean_mean_spreading_rate`) is assumed to be uniform for all points.
 
-These initial points momentarily fill the global ocean basin, and all have uniform spreading rates.
-Thus, the spreading rate grid at `max_time` will be uniformly populated with the `initial_ocean_mean_spreading_rate` (mm/yr).
-The age grid at `max_time` will look like a series of smooth, linear age gradients clearly partitioned by 
-tectonic plates with unique plate IDs:
+These initial points momentarily fill the global ocean basin. 
 
-![MaxTimeGrids](../../Notebooks/NotebookFiles/pdoc_Files/max_time_grids.png)
-
-Ridge &#34;line&#34; topologies are resolved at each reconstruction time step and partitioned
-into segments with a valid stage rotation. Each segment is further divided into points 
+Ridge topologies are resolved at each reconstruction time step and partitioned
+into segments with a valid stage rotation. Each segment is divided into points 
 at a specified ridge sampling spacing (`ridge_sampling`). Each point is 
 ascribed a latitude, longitude, spreading rate and age (from plate reconstruction 
 model files, as opposed to ages of the initial ocean mesh points), a point index 
 and the general z-value that will be gridded onto it. 
 
-![RefinementLevels](../../Notebooks/NotebookFiles/pdoc_Files/new_ridge_points.png)
 
 Reconstruction by topologies involves determining which points are active and 
 inactive (collided with a continent or subducted at a trench) for each reconstruction 
-time step. This is done using a hidden object in `PlateReconstruction` called 
-`ReconstructByTopologies`.
-
+time step. This is done using `PlateReconstruction`s `ReconstructByTopologies` object.
 If an ocean point with a certain velocity on one plate ID transitions into another 
 rigid plate ID at another timestep (with another velocity), the velocity difference 
 between both plates is calculated. The point may have subducted/collided with a continent 
@@ -1370,25 +1328,25 @@ class SeafloorGrid(object):
         point_id = range(len(active_points))
 
         # Specify the default collision detection region as subduction zones
-        default_collision = reconstruction._DefaultCollision(
+        default_collision = reconstruction.DefaultCollision(
             feature_specific_collision_parameters = [
             (pygplates.FeatureType.gpml_subduction_zone, self.subduction_collision_parameters)
             ]
         )
         # In addition to the default subduction detection, also detect continental collisions
         if self.file_collection is not None:
-            collision_spec = reconstruction._ContinentCollision(
+            collision_spec = reconstruction.ContinentCollision(
                 self.save_directory+&#34;/&#34;+self.file_collection+&#34;_continent_mask_{}Ma.nc&#34;, 
                 default_collision
             )
         else:
-            collision_spec = reconstruction._ContinentCollision(
+            collision_spec = reconstruction.ContinentCollision(
                 self.save_directory+&#34;/continent_mask_{}Ma.nc&#34;, 
                 default_collision
             )
 
         # Call the reconstruct by topologies object
-        topology_reconstruction = reconstruction._ReconstructByTopologies(
+        topology_reconstruction = reconstruction.ReconstructByTopologies(
             self.rotation_model, 
             self.topology_features,
             self._max_time, 
@@ -3009,25 +2967,25 @@ Will be used as column headers for z value point dataframes.</dd>
         point_id = range(len(active_points))
 
         # Specify the default collision detection region as subduction zones
-        default_collision = reconstruction._DefaultCollision(
+        default_collision = reconstruction.DefaultCollision(
             feature_specific_collision_parameters = [
             (pygplates.FeatureType.gpml_subduction_zone, self.subduction_collision_parameters)
             ]
         )
         # In addition to the default subduction detection, also detect continental collisions
         if self.file_collection is not None:
-            collision_spec = reconstruction._ContinentCollision(
+            collision_spec = reconstruction.ContinentCollision(
                 self.save_directory+&#34;/&#34;+self.file_collection+&#34;_continent_mask_{}Ma.nc&#34;, 
                 default_collision
             )
         else:
-            collision_spec = reconstruction._ContinentCollision(
+            collision_spec = reconstruction.ContinentCollision(
                 self.save_directory+&#34;/continent_mask_{}Ma.nc&#34;, 
                 default_collision
             )
 
         # Call the reconstruct by topologies object
-        topology_reconstruction = reconstruction._ReconstructByTopologies(
+        topology_reconstruction = reconstruction.ReconstructByTopologies(
             self.rotation_model, 
             self.topology_features,
             self._max_time, 
@@ -3894,25 +3852,25 @@ other general z-values are saved to a gridding input file (.npz).</p></div>
     point_id = range(len(active_points))
 
     # Specify the default collision detection region as subduction zones
-    default_collision = reconstruction._DefaultCollision(
+    default_collision = reconstruction.DefaultCollision(
         feature_specific_collision_parameters = [
         (pygplates.FeatureType.gpml_subduction_zone, self.subduction_collision_parameters)
         ]
     )
     # In addition to the default subduction detection, also detect continental collisions
     if self.file_collection is not None:
-        collision_spec = reconstruction._ContinentCollision(
+        collision_spec = reconstruction.ContinentCollision(
             self.save_directory+&#34;/&#34;+self.file_collection+&#34;_continent_mask_{}Ma.nc&#34;, 
             default_collision
         )
     else:
-        collision_spec = reconstruction._ContinentCollision(
+        collision_spec = reconstruction.ContinentCollision(
             self.save_directory+&#34;/continent_mask_{}Ma.nc&#34;, 
             default_collision
         )
 
     # Call the reconstruct by topologies object
-    topology_reconstruction = reconstruction._ReconstructByTopologies(
+    topology_reconstruction = reconstruction.ReconstructByTopologies(
         self.rotation_model, 
         self.topology_features,
         self._max_time, 
@@ -4048,7 +4006,7 @@ other general z-values are saved to a gridding input file (.npz).</p></div>
 <h1>Index</h1>
 <div class="toc">
 <ul>
-<li><a href="#seafloorgrid-methodology">SeafloorGrid Methodology</a></li>
+<li><a href="#methodology">Methodology</a></li>
 <li><a href="#classes">Classes</a></li>
 </ul>
 </div>
