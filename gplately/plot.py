@@ -1079,6 +1079,10 @@ class PlotTopologies(object):
     ):
         self.PlateReconstruction_object = PlateReconstruction_object
         self.plate_model = self.PlateReconstruction_object
+
+        if self.plate_model.topology_features is None:
+            raise ValueError("Plate model must have topology features.")
+
         self.base_projection = ccrs.PlateCarree()
 
         # store these for when time is updated
