@@ -1713,7 +1713,7 @@ def  reconstruct_points(
     For description of parameters see the ReconstructByTopologies class below.
     """
     
-    topology_reconstruction = ReconstructByTopologies(
+    topology_reconstruction = _ReconstructByTopologies(
             rotation_features_or_model,
             topology_features,
             reconstruction_begin_time,
