@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
 <meta name="generator" content="pdoc 0.10.0" />
 <title>gplately API documentation</title>
-<meta name="description" content="" />
+<meta name="description" content="![Intro GIF](../../Notebooks/NotebookFiles/pdoc_Files/docs_muller19_seed_points.gif) …" />
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
 <link rel="stylesheet preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/styles/github.min.css" crossorigin>
@@ -23,17 +23,133 @@
 <h1 class="title">Package <code>gplately</code></h1>
 </header>
 <section id="section-intro">
+<p><img alt="Intro GIF" src="../../Notebooks/NotebookFiles/pdoc_Files/docs_muller19_seed_points.gif"></p>
+<h2 id="main-objects">Main objects</h2>
+<p>GPlately's common objects include:</p>
+<h3 id="dataserver"><a href="https://gplates.github.io/gplately/download.html#gplately.download.DataServer">DataServer </a></h3>
+<p>The <code>DataServer</code> object automatically downloads and caches files needed for plate reconstructions to a folder in your system.
+These plate reconstruction files include rotation models, topology features and static polygons and geometries such as
+coastlines, continents and continent-ocean boundaries. Additional data like rasters, grids and feature data can also be installed. </p>
+<pre><code>gdownload = gplately.download.DataServer("Muller2019")
+
+# Download plate reconstruction files and geometries from the Müller et al. 2019 model
+rotation_model, topology_features, static_polygons = gdownload.get_plate_reconstruction_files()
+coastlines, continents, COBs = gdownload.get_topology_geometries()
+
+# Download the Müller et al. 2019 100 Ma age grid
+age_grid = gdownload.get_age_grid(time=100)
+
+# Download the ETOPO1 geotiff raster
+etopo = gdownload.get_raster("ETOPO1_tif")
+</code></pre>
+<h3 id="platereconstruction"><a href="https://gplates.github.io/gplately/reconstruction.html#gplately.reconstruction.PlateReconstruction">PlateReconstruction</a></h3>
+<p>The <code>PlateReconstruction</code> object contains tools to reconstruct geological features like tectonic plates and plate boundaries,
+and to interrogate plate kinematic data like plate motion velocities, and rates of subduction and seafloor spreading.</p>
+<h3 id="points"><a href="https://gplates.github.io/gplately/reconstruction.html#gplately.reconstruction.Points">Points</a></h3>
+<p>Tools in the <code>Points</code> object track the motion of a point (or group of points) represented by a latitude and longitude
+through geologic time. This motion can be visualised using flowlines or motion paths and quantified with point
+motion velocities.</p>
+<p><img alt="PointsDemo" src="../../Notebooks/NotebookFiles/pdoc_Files/Hawaii_Emperor_motion_path.png"></p>
+<h3 id="raster"><a href="https://gplates.github.io/gplately/grids.html#gplately.grids.Raster">Raster</a></h3>
+<p>The <code>Raster</code> object contains tools to work with netCDF4 or MaskedArray gridded data. Grids may be filled,
+resized, resampled, and reconstructed back and forwards through geologic time. Other array data can also be
+interpolated onto <code>Raster</code> grids.
+</p>
+<p><img alt="RasterDemo" src="../../Notebooks/NotebookFiles/pdoc_Files/etopo_reconstruction.png">
+<img alt="ResampleDemo" src="../../Notebooks/NotebookFiles/pdoc_Files/resample.png"></p>
+<h3 id="plottopologies"><a href="https://gplates.github.io/gplately/plot.html#gplately.plot.PlotTopologies">PlotTopologies</a></h3>
+<p><code>PlotTopologies</code> works with the aforementioned <code>PlateReconstruction</code> object to plot
+geologic features of different types listed
+<a href="https://gplates.github.io/gplately/plot.html#gplately.plot.PlotTopologies">here</a>, as well as
+coastline, continent and continent-ocean boundary geometries reconstructed through time using pyGPlates. </p>
+<p><img alt="PlotTopologiesDemo" src="../../Notebooks/NotebookFiles/pdoc_Files/plottopologies.png"></p>
+<h3 id="seafloorgrid"><a href="https://gplates.github.io/gplately/oceans.html#gplately.oceans.SeafloorGrid">SeafloorGrid</a></h3>
+<p>The <code>SeafloorGrid</code> object wraps an automatic workflow to grid seafloor ages and seafloor spreading rates
+as encoded by a plate reconstruction model. </p>
+<p><a href="../gplately/Notebooks/10-SeafloorGrids.ipynb">10-SeafloorGrids.ipynb</a> is a tutorial notebook that demonstrates
+how to set up and use the <code>SeafloorGrid</code> object, and shows a sample set of output grids. </p>
+<p><img alt="SeafloorGridDemo" src="../../Notebooks/NotebookFiles/pdoc_Files/seafloorgrid.gif"></p>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">from . import (
+<pre><code class="python">&#34;&#34;&#34;
+
+![Intro GIF](../../Notebooks/NotebookFiles/pdoc_Files/docs_muller19_seed_points.gif)
+
+## Main objects
+GPlately&#39;s common objects include:
+
+### [DataServer ](https://gplates.github.io/gplately/download.html#gplately.download.DataServer)
+The `DataServer` object automatically downloads and caches files needed for plate reconstructions to a folder in your system.
+These plate reconstruction files include rotation models, topology features and static polygons and geometries such as 
+coastlines, continents and continent-ocean boundaries. Additional data like rasters, grids and feature data can also be installed. 
+
+    gdownload = gplately.download.DataServer(&#34;Muller2019&#34;)
+
+    # Download plate reconstruction files and geometries from the Müller et al. 2019 model
+    rotation_model, topology_features, static_polygons = gdownload.get_plate_reconstruction_files()
+    coastlines, continents, COBs = gdownload.get_topology_geometries()
+
+    # Download the Müller et al. 2019 100 Ma age grid
+    age_grid = gdownload.get_age_grid(time=100)
+
+    # Download the ETOPO1 geotiff raster
+    etopo = gdownload.get_raster(&#34;ETOPO1_tif&#34;)
+
+
+
+
+### [PlateReconstruction](https://gplates.github.io/gplately/reconstruction.html#gplately.reconstruction.PlateReconstruction)
+The `PlateReconstruction` object contains tools to reconstruct geological features like tectonic plates and plate boundaries,
+and to interrogate plate kinematic data like plate motion velocities, and rates of subduction and seafloor spreading.
+
+
+### [Points](https://gplates.github.io/gplately/reconstruction.html#gplately.reconstruction.Points)
+Tools in the `Points` object track the motion of a point (or group of points) represented by a latitude and longitude 
+through geologic time. This motion can be visualised using flowlines or motion paths and quantified with point 
+motion velocities.
+
+![PointsDemo](../../Notebooks/NotebookFiles/pdoc_Files/Hawaii_Emperor_motion_path.png)
+
+
+### [Raster](https://gplates.github.io/gplately/grids.html#gplately.grids.Raster)
+The `Raster` object contains tools to work with netCDF4 or MaskedArray gridded data. Grids may be filled, 
+resized, resampled, and reconstructed back and forwards through geologic time. Other array data can also be 
+interpolated onto `Raster` grids.  
+
+![RasterDemo](../../Notebooks/NotebookFiles/pdoc_Files/etopo_reconstruction.png)
+![ResampleDemo](../../Notebooks/NotebookFiles/pdoc_Files/resample.png)
+
+
+### [PlotTopologies](https://gplates.github.io/gplately/plot.html#gplately.plot.PlotTopologies)
+`PlotTopologies` works with the aforementioned `PlateReconstruction` object to plot
+geologic features of different types listed 
+[here](https://gplates.github.io/gplately/plot.html#gplately.plot.PlotTopologies), as well as 
+coastline, continent and continent-ocean boundary geometries reconstructed through time using pyGPlates. 
+
+![PlotTopologiesDemo](../../Notebooks/NotebookFiles/pdoc_Files/plottopologies.png)
+
+
+### [SeafloorGrid](https://gplates.github.io/gplately/oceans.html#gplately.oceans.SeafloorGrid)
+The `SeafloorGrid` object wraps an automatic workflow to grid seafloor ages and seafloor spreading rates
+as encoded by a plate reconstruction model. 
+
+[10-SeafloorGrids.ipynb](../gplately/Notebooks/10-SeafloorGrids.ipynb) is a tutorial notebook that demonstrates
+how to set up and use the `SeafloorGrid` object, and shows a sample set of output grids. 
+
+![SeafloorGridDemo](../../Notebooks/NotebookFiles/pdoc_Files/seafloorgrid.gif)
+
+&#34;&#34;&#34;
+
+from . import (
     data,
     download,
     geometry,
     gpml,
     grids,
     io,
+    reconstruction,
     plot,
     oceans,
     pygplates
@@ -47,11 +163,16 @@ from .grids import (
 )
 from .io import get_geometries, get_valid_geometries
 from .plot import PlotTopologies
-from .reconstruction import PlateReconstruction, Points, DefaultCollision, ContinentCollision, ReconstructByTopologies
+from .reconstruction import PlateReconstruction, Points, _DefaultCollision, _ContinentCollision, _ReconstructByTopologies
 from .tools import EARTH_RADIUS
 from .oceans import SeafloorGrid
 
-__pdoc__ = {&#34;data&#34; : False}</code></pre>
+__pdoc__ = {
+    &#34;data&#34; : False,
+    &#34;_DefaultCollision&#34; : False,
+    &#34;_ContinentCollision&#34; : False,
+    &#34;_ReconstructByTopologies&#34; : False,
+}</code></pre>
 </details>
 </section>
 <section>
@@ -122,7 +243,17 @@ working with point data, and calculating plate …</p></div>
 <nav id="sidebar">
 <h1>Index</h1>
 <div class="toc">
-<ul></ul>
+<ul>
+<li><a href="#main-objects">Main objects</a><ul>
+<li><a href="#dataserver">DataServer</a></li>
+<li><a href="#platereconstruction">PlateReconstruction</a></li>
+<li><a href="#points">Points</a></li>
+<li><a href="#raster">Raster</a></li>
+<li><a href="#plottopologies">PlotTopologies</a></li>
+<li><a href="#seafloorgrid">SeafloorGrid</a></li>
+</ul>
+</li>
+</ul>
 </div>
 <ul id="index">
 <li><h3><a href="#header-submodules">Sub-modules</a></h3>
