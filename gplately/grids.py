@@ -237,8 +237,10 @@ def write_netcdf_grid(filename, grid, extent=[-180,180,-90,90]):
         # Units for Geographic Grid type
         cdf_lon.units = "degrees_east"
         cdf_lon.standard_name = 'lon'
+        cdf_lon.actual_range = [np.nanmin(lon_grid), np.nanmax(lon_grid)]
         cdf_lat.units = "degrees_north"
         cdf_lat.standard_name = 'lat'
+        cdf_lat.actual_range = [np.nanmin(lat_grid), np.nanmax(lat_grid)]
 
         cdf_data = cdf.createVariable('z', grid.dtype, ('lat','lon'), zlib=True)
         # netCDF4 uses the missing_value attribute as the default _FillValue
