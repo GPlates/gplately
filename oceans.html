@@ -55,7 +55,7 @@ points.</li>
 icosahedral triangulated mesh. The number of points in this mesh can be
 controlled using a <code>refinement_levels</code> integer (the larger this integer,
 the more resolved the continent masks will be). </p>
-<p><img alt="RefinementLevels" src="https://github.com/GPlates/gplately/blob/master/Notebooks/NotebookFiles/pdoc_Files/seafloorgrid_refinement.png"></p>
+<p><img alt="RefinementLevels" src="https://raw.githubusercontent.com/GPlates/gplately/master/Notebooks/NotebookFiles/pdoc_Files/seafloorgrid_refinement.png"></p>
 <p>These points are spatially partitioned by plate ID so they can be passed
 into a
 <a href="https://gplates.github.io/gplately/oceans.html#gplately.oceans.point_in_polygon_routine">point-in-polygon routine</a>.
@@ -71,7 +71,7 @@ MOR segment by half its assumed spreading rate. This spreading rate
 Thus, the spreading rate grid at <code>max_time</code> will be uniformly populated with the <code>initial_ocean_mean_spreading_rate</code> (mm/yr).
 The age grid at <code>max_time</code> will look like a series of smooth, linear age gradients clearly partitioned by
 tectonic plates with unique plate IDs:</p>
-<p><img alt="MaxTimeGrids" src="https://github.com/GPlates/gplately/blob/master/Notebooks/NotebookFiles/pdoc_Files/max_time_grids.png"></p>
+<p><img alt="MaxTimeGrids" src="https://raw.githubusercontent.com/GPlates/gplately/master/Notebooks/NotebookFiles/pdoc_Files/max_time_grids.png"></p>
 <p><a href="https://gplates.github.io/gplately/oceans.html#gplately.oceans.SeafloorGrid.build_all_MOR_seedpoints">Ridge "line" topologies</a>
 are resolved at each reconstruction time step and partitioned
 into segments with a valid stage rotation. Each segment is further divided into points
@@ -79,7 +79,7 @@ at a specified ridge sampling spacing (<code>ridge_sampling</code>). Each point 
 ascribed a latitude, longitude, spreading rate and age (from plate reconstruction
 model files, as opposed to ages of the initial ocean mesh points), a point index
 and the general z-value that will be gridded onto it. </p>
-<p><img alt="NewRidgePoints" src="https://github.com/GPlates/gplately/blob/master/Notebooks/NotebookFiles/pdoc_Files/new_ridge_points.png"></p>
+<p><img alt="NewRidgePoints" src="https://raw.githubusercontent.com/GPlates/gplately/master/Notebooks/NotebookFiles/pdoc_Files/new_ridge_points.png"></p>
 <p>Reconstruction by topologies involves determining which points are active and
 inactive (collided with a continent or subducted at a trench) for each reconstruction
 time step. This is done using a hidden object in <code>PlateReconstruction</code> called
@@ -153,7 +153,7 @@ icosahedral triangulated mesh. The number of points in this mesh can be
 controlled using a `refinement_levels` integer (the larger this integer,
 the more resolved the continent masks will be). 
 
-![RefinementLevels](https://github.com/GPlates/gplately/blob/master/Notebooks/NotebookFiles/pdoc_Files/seafloorgrid_refinement.png)
+![RefinementLevels](https://raw.githubusercontent.com/GPlates/gplately/master/Notebooks/NotebookFiles/pdoc_Files/seafloorgrid_refinement.png)
 
 These points are spatially partitioned by plate ID so they can be passed
 into a 
@@ -172,7 +172,7 @@ Thus, the spreading rate grid at `max_time` will be uniformly populated with the
 The age grid at `max_time` will look like a series of smooth, linear age gradients clearly partitioned by 
 tectonic plates with unique plate IDs:
 
-![MaxTimeGrids](https://github.com/GPlates/gplately/blob/master/Notebooks/NotebookFiles/pdoc_Files/max_time_grids.png)
+![MaxTimeGrids](https://raw.githubusercontent.com/GPlates/gplately/master/Notebooks/NotebookFiles/pdoc_Files/max_time_grids.png)
 
 [Ridge &#34;line&#34; topologies](https://gplates.github.io/gplately/oceans.html#gplately.oceans.SeafloorGrid.build_all_MOR_seedpoints) 
 are resolved at each reconstruction time step and partitioned
@@ -182,7 +182,7 @@ ascribed a latitude, longitude, spreading rate and age (from plate reconstructio
 model files, as opposed to ages of the initial ocean mesh points), a point index 
 and the general z-value that will be gridded onto it. 
 
-![NewRidgePoints](https://github.com/GPlates/gplately/blob/master/Notebooks/NotebookFiles/pdoc_Files/new_ridge_points.png)
+![NewRidgePoints](https://raw.githubusercontent.com/GPlates/gplately/master/Notebooks/NotebookFiles/pdoc_Files/new_ridge_points.png)
 
 Reconstruction by topologies involves determining which points are active and 
 inactive (collided with a continent or subducted at a trench) for each reconstruction 
@@ -248,7 +248,7 @@ from ptt import separate_ridge_transform_segments
 
 def create_icosahedral_mesh(refinement_levels):
     &#34;&#34;&#34; Define a global point mesh with Stripy&#39;s
-    [icosahedral triangulated mesh][https://github.com/underworldcode/stripy/blob/294354c00dd72e085a018e69c345d9353c6fafef/stripy/spherical_meshes.py#L27] 
+    [icosahedral triangulated mesh](https://github.com/underworldcode/stripy/blob/294354c00dd72e085a018e69c345d9353c6fafef/stripy/spherical_meshes.py#L27)
     and turn all mesh domains into pyGPlates MultiPointOnSphere types.
 
     This global mesh will be masked with a set of continental or COB terrane
@@ -1707,7 +1707,7 @@ def _lat_lon_z_to_netCDF_time(
 </code></dt>
 <dd>
 <div class="desc"><p>Define a global point mesh with Stripy's
-[icosahedral triangulated mesh][<a href="https://github.com/underworldcode/stripy/blob/294354c00dd72e085a018e69c345d9353c6fafef/stripy/spherical_meshes.py#L27]">https://github.com/underworldcode/stripy/blob/294354c00dd72e085a018e69c345d9353c6fafef/stripy/spherical_meshes.py#L27]</a>
+<a href="https://github.com/underworldcode/stripy/blob/294354c00dd72e085a018e69c345d9353c6fafef/stripy/spherical_meshes.py#L27">icosahedral triangulated mesh</a>
 and turn all mesh domains into pyGPlates MultiPointOnSphere types.</p>
 <p>This global mesh will be masked with a set of continental or COB terrane
 polygons to define the ocean basin at a given reconstruction time.
@@ -1733,7 +1733,7 @@ collated into a MultiPointOnSphere object.</dd>
 </summary>
 <pre><code class="python">def create_icosahedral_mesh(refinement_levels):
     &#34;&#34;&#34; Define a global point mesh with Stripy&#39;s
-    [icosahedral triangulated mesh][https://github.com/underworldcode/stripy/blob/294354c00dd72e085a018e69c345d9353c6fafef/stripy/spherical_meshes.py#L27] 
+    [icosahedral triangulated mesh](https://github.com/underworldcode/stripy/blob/294354c00dd72e085a018e69c345d9353c6fafef/stripy/spherical_meshes.py#L27)
     and turn all mesh domains into pyGPlates MultiPointOnSphere types.
 
     This global mesh will be masked with a set of continental or COB terrane
