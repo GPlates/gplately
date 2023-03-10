@@ -1,0 +1,110 @@
+604001  0.0   90.0    0.0    0.0  604 !Cuu Long Basin N Bound
+604001 28.0   90.0    0.0    0.0  604 !Cuu Long Basin N Bound
+604001 35.0   90.0    0.0    0.0  604 !Cuu Long Basin N Bound
+604001 100.0   90.0    0.0    0.0  604 !Cuu Long Basin N Bound
+604002  0.0   90.0    0.0    0.0  604 !Cuu Long Basin S Bound
+604002 28.0   90.0    0.0    0.0  604 !Cuu Long Basin S Bound
+604002 35.0  -34.32    7.05    0.43  604 !Calculated interactively by GPlates
+604002 100.0  -34.32    7.05    0.43  604 !Calculated interactively by GPlates
+647001  0.0   90.0    0.0    0.0  604 !Pattani Basin NE bound
+647001  9.0   90.0    0.0    0.0  604 !Pattani Basin NE bound
+647001 17.0   90.0    0.0    0.0  604 !Pattani Basin NE bound
+647001 32.0   90.0    0.0    0.0  604 !Pattani Basin NE bound
+647001 38.0   90.0    0.0    0.0  604 !Pattani Basin NE bound
+647002  0.0   90.0    0.0    0.0  603 ! Pattani Basin NE bound
+647002  9.0  -20.37  -78.9    0.8  603 !Calculated interactively by GPlates
+647002 17.0   11.21   89.62   -1.99  603 !Calculated interactively by GPlates
+647002 23.0   14.0   92.77   -2.65  603 !Calculated interactively by GPlates
+647002 32.0  -35.79 -152.39    0.69  603 !Calculated interactively by GPlates
+647002 37.0   10.72   84.11   -2.09  603 !Calculated interactively by GPlates
+647002 100.0   15.09    2.08   -0.8  603 !Calculated interactively by GPlates
+647003  0.0   90.0    0.0    0.0  604 ! Western/Kra Basin E Bound
+647003  9.0   90.0    0.0    0.0  604 ! Western/Kra Basin E Bound
+647003 19.0   90.0    0.0    0.0  604 ! Western/Kra Basin E Bound
+647003 23.0   90.0    0.0    0.0  604 ! Western/Kra Basin E Bound
+647003 35.0   90.0    0.0    0.0  604 ! Western/Kra Basin E Bound
+647003 100.0   90.0    0.0    0.0  604 ! Western/Kra Basin E Bound
+647004  0.0   90.0    0.0    0.0  603 !Western/Kra Basin W Bound
+647004  9.0   90.0    0.0    0.0  603 !Western/Kra Basin W Bound
+647004 19.0   73.69  -78.78   -0.06  603 !Calculated interactively by GPlates
+647004 23.0   73.69  -78.78   -0.06  603 !Calculated interactively by GPlates
+647004 35.0   73.69  -78.78   -0.06  603 !Calculated interactively by GPlates
+647004 100.0   73.69  -78.78   -0.06  603 !Calculated interactively by GPlates
+647005  0.0   90.0    0.0    0.0  604 !Malay basin NE Bound
+647005  5.0   90.0    0.0    0.0  604 !Malay basin NE Bound
+647005 16.0   90.0    0.0    0.0  604 !Malay basin NE Bound
+647005 19.0   90.0    0.0    0.0  604 !Malay basin NE Bound
+647005 35.0   90.0    0.0    0.0  604 !Malay basin NE Bound
+647005 100.0   90.0    0.0    0.0  604 !Malay basin NE Bound
+647006  0.0   90.0    0.0    0.0  647 !Malay basin SW Bound  
+647006  5.0    2.68  -79.38   -0.19  647 !Calculated interactively by GPlates
+647006 16.0   30.88   79.98   -0.8  647 !Calculated interactively by GPlates
+647006 19.0   29.27   80.88   -1.06  647 !Calculated interactively by GPlates
+647006 35.0    6.85   94.34    1.78  647 !Calculated interactively by GPlates
+647006 100.0   10.68   91.59    2.31  647 !Calculated interactively by GPlates
+647007  0.0   90.0    0.0    0.0  604 !West Natuna basin N Bound  
+647007  9.0   90.0    0.0    0.0  604 !West Natuna basin N Bound  
+647007 17.0   90.0    0.0    0.0  604 !West Natuna basin N Bound  
+647007 23.0   90.0    0.0    0.0  604 !West Natuna basin N Bound  
+647007 36.0   90.0    0.0    0.0  604 !West Natuna basin N Bound  
+647008  0.0   90.0    0.0    0.0  604 !West Natuna basin S Bound  
+647008  9.0   90.0    0.0    0.0  604 !West Natuna basin S Bound  
+647008 17.0  -23.64   53.71   -0.68  604 !Calculated interactively by GPlates
+647008 23.0  -23.64   53.71   -0.68  604 !Calculated interactively by GPlates
+647008 36.0    7.83   31.59    0.92  604 !Calculated interactively by GPlates
+647008 100.0    7.83   31.59    0.92  604 !Calculated interactively by GPlates
+647009  0.0   90.0    0.0    0.0  604 !ConSon Basin E Bound
+647009 12.0   90.0    0.0    0.0  604 !ConSon Basin E Bound
+647009 18.0  -64.16 -175.08    1.19  604 !Calculated interactively by GPlates
+647009 100.0  -64.16 -175.08    1.19  604 !Calculated interactively by GPlates
+647010  0.0   90.0    0.0    0.0  604 !ConSon Basin W Bound
+647010 12.0   90.0    0.0    0.0  604 !ConSon Basin W Bound
+647010 18.0  -79.41   62.1    0.56  604 !Calculated interactively by GPlates
+647010 100.0  -79.41   62.1    0.56  604 !Calculated interactively by GPlates
+647011  0.0   90.0    0.0    0.0  647008 !ConSon Basin W Bound
+647011  5.0   90.0    0.0    0.0  647008 !ConSon Basin W Bound
+647011 11.0   90.0    0.0    0.0  647008 !ConSon Basin W Bound
+647011 20.0   90.0    0.0    0.0  647008 !ConSon Basin W Bound
+647011 34.0   90.0    0.0    0.0  647008 !ConSon Basin W Bound
+647012  0.0   90.0    0.0    0.0  647 !ConSon Basin W Bound
+647012  5.0   90.0    0.0    0.0  647 !ConSon Basin W Bound
+647012 10.0   90.0    0.0    0.0  647 !ConSon Basin W Bound
+647012 20.0   90.0    0.0    0.0  647 !ConSon Basin W Bound
+647012 34.0   90.0    0.0    0.0  647 !ConSon Basin W Bound
+673003  0.0   90.0    0.0    0.0  647 !North Sumatra Basin WestBound
+673003 17.0   90.0    0.0    0.0  647 !North Sumatra Basin WestBound
+673003 38.0  -26.92   12.46    0.39  647 !Calculated interactively by GPlates
+673004  0.0   63.17   -6.58    0.31  647 !North Sumatra Basin EastBound
+673004 17.0  -33.39 -174.28   -0.54  647 !Calculated interactively by GPlates
+673004 35.0   51.23 -165.55    1.78  647 !Calculated interactively by GPlates
+673004 1000.0   51.23 -165.55    1.78  647 !Calculated interactively by GPlates
+673005  0.0   90.0    0.0    0.0  647 !Central Sumatra Basin WestBound
+673005 23.0   90.0    0.0    0.0  647 !Central Sumatra Basin WestBound
+673005 28.0   90.0    0.0    0.0  647 !Central Sumatra Basin WestBound
+673005 38.0   90.0    0.0    0.0  647 !Central Sumatra Basin WestBound
+673005 43.0   90.0    0.0    0.0  647 !Central Sumatra Basin WestBound
+673005 100.0   90.0    0.0    0.0  647 !Central Sumatra Basin WestBound
+673006  0.0   90.0    0.0    0.0  647 !Central Sumatra Basin EastBound
+673006 23.0   90.0    0.0    0.0  647 !Central Sumatra Basin EastBound
+673006 28.0  -87.86   76.16   -0.13  647 !Calculated interactively by GPlates
+673006 38.0  -87.86   76.16   -0.13  647 !Calculated interactively by GPlates
+673006 43.0  -68.67   15.02   -0.54  647 !Calculated interactively by GPlates
+673006 100.0   90.0    0.0    0.0  647 !Central Sumatra Basin EastBound
+614001  0.0   90.0    0.0    0.0  614002 !East Natuna Basin E Bound
+614001  7.0  -49.6  -58.05    0.61  614002 !Calculated interactively by GPlates
+614001 17.0  -49.6  -58.05    0.61  614002 !Calculated interactively by GPlates
+614001 25.0  -47.67  -66.35    0.86  614002 !Calculated interactively by GPlates
+614001 32.0  -47.67  -66.35    0.86  614002 !Calculated interactively by GPlates
+614001 100.0  -47.67  -66.35    0.86  614002 !Calculated interactively by GPlates
+614002  0.0   90.0    0.0    0.0  647 !East Natuna Basin W Bound
+614002 17.0   90.0    0.0    0.0  647 !East Natuna Basin W Bound
+614002 25.0   53.55   -4.58   -1.05  647 !Calculated interactively by GPlates
+614002 32.0   52.42  -68.11   -1.44  647 !Calculated interactively by GPlates
+614002 100.0   52.42  -68.11   -1.44  647 !Calculated interactively by GPlates
+614003  0.0   90.0    0.0    0.0  668 !Makassar Strait bains E Bound
+614003 51.0   90.0    0.0    0.0  668 !Makassar Strait bains E Bound
+614004  0.0   90.0    0.0    0.0  614 !Makassar Strait bains W Bound
+614004 51.0   90.0    0.0    0.0  614 !Makassar Strait bains W Bound
+64702  0.0   90.0    0.0    0.0  647 !Tip of Malay Penisula
+64702 10.0   90.0    0.0    0.0  647 !Tip of Malay Penisula
+64702 50.0   90.0    0.0    0.0  647 !Tip of Malay Penisula
