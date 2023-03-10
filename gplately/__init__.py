@@ -1,6 +1,6 @@
 """
 
-![Intro GIF](https://github.com/GPlates/gplately/blob/master/Notebooks/NotebookFiles/pdoc_Files/docs_muller19_seed_points.gif)
+![Intro GIF](https://raw.githubusercontent.com/GPlates/gplately/master/Notebooks/NotebookFiles/pdoc_Files/docs_muller19_seed_points.gif)
 
 ## Main objects
 GPlately's common objects include:
@@ -35,15 +35,15 @@ Tools in the `Points` object track the motion of a point (or group of points) re
 through geologic time. This motion can be visualised using flowlines or motion paths and quantified with point 
 motion velocities.
 
-![PointsDemo](https://github.com/GPlates/gplately/blob/master/Notebooks/NotebookFiles/pdoc_Files/Hawaii_Emperor_motion_path.png)
+![PointsDemo](https://raw.githubusercontent.com/GPlates/gplately/master/Notebooks/NotebookFiles/pdoc_Files/Hawaii_Emperor_motion_path.png)
 
 ### [Raster](https://gplates.github.io/gplately/grids.html#gplately.grids.Raster)
 The `Raster` object contains tools to work with netCDF4 or MaskedArray gridded data. Grids may be filled, 
 resized, resampled, and reconstructed back and forwards through geologic time. Other array data can also be 
 interpolated onto `Raster` grids.  
 
-![RasterDemo](https://github.com/GPlates/gplately/blob/master/Notebooks/NotebookFiles/pdoc_Files/etopo_reconstruction.png)
-![ResampleDemo](https://github.com/GPlates/gplately/blob/master/Notebooks/NotebookFiles/pdoc_Files/resample.png)
+![RasterDemo](https://raw.githubusercontent.com/GPlates/gplately/master/Notebooks/NotebookFiles/pdoc_Files/etopo_reconstruction.png)
+![ResampleDemo](https://raw.githubusercontent.com/GPlates/gplately/master/Notebooks/NotebookFiles/pdoc_Files/resample.png)
 
 
 ### [PlotTopologies](https://gplates.github.io/gplately/plot.html#gplately.plot.PlotTopologies)
@@ -52,7 +52,7 @@ geologic features of different types listed
 [here](https://gplates.github.io/gplately/plot.html#gplately.plot.PlotTopologies), as well as 
 coastline, continent and continent-ocean boundary geometries reconstructed through time using pyGPlates. 
 
-![PlotTopologiesDemo](https://github.com/GPlates/gplately/blob/master/Notebooks/NotebookFiles/pdoc_Files/plottopologies.png)
+![PlotTopologiesDemo](https://raw.githubusercontent.com/GPlates/gplately/master/Notebooks/NotebookFiles/pdoc_Files/plottopologies.png)
 
 ### [SeafloorGrid](https://gplates.github.io/gplately/oceans.html#gplately.oceans.SeafloorGrid)
 The `SeafloorGrid` object wraps an automatic workflow to grid seafloor ages and seafloor spreading rates
@@ -61,7 +61,7 @@ as encoded by a plate reconstruction model.
 [10-SeafloorGrids.ipynb](../gplately/Notebooks/10-SeafloorGrids.ipynb) is a tutorial notebook that demonstrates
 how to set up and use the `SeafloorGrid` object, and shows a sample set of output grids. 
 
-![SeafloorGridDemo](https://github.com/GPlates/gplately/blob/master/Notebooks/NotebookFiles/pdoc_Files/seafloorgrid.gif)
+![SeafloorGridDemo](https://raw.githubusercontent.com/GPlates/gplately/master/Notebooks/NotebookFiles/pdoc_Files/seafloorgrid.gif)
 
 """
 
