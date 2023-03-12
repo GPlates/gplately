@@ -37,6 +37,30 @@ def _studyname(study_name):
     name = _re.findall(r'[A-Za-z]+|\d+', study_name)[0]
     return name
 
+
+def _rasters():
+
+        database = {
+
+            "ETOPO1_grd" : ["https://www.ngdc.noaa.gov/mgg/global/relief/ETOPO1/data/ice_surface/grid_registered/netcdf/ETOPO1_Ice_g_gmt4.grd.gz"],
+            "ETOPO1_tif" : ["https://www.ngdc.noaa.gov/mgg/global/relief/ETOPO1/image/color_etopo1_ice_low.tif.gz"],
+        }
+        return database
+
+
+def _feature_data():
+    """Assorted feature data from EarthByte's GPlates 2.3 sample data repository."""
+
+    database = {
+
+        "SeafloorFabric" : ["https://www.earthbyte.org/webdav/ftp/earthbyte/GPlates/GPlates2.3_GeoData/Individual/SeafloorFabric.zip"],
+        "Johansson2018" : ["https://www.earthbyte.org/webdav/ftp/earthbyte/GPlates/GPlates2.3_GeoData/Individual/IgneousProvinces.zip"],
+        "Whittaker2015" : ["https://www.earthbyte.org/webdav/ftp/earthbyte/GPlates/GPlates2.3_GeoData/Individual/IgneousProvinces.zip"],
+        "Hotspots" : ["https://www.earthbyte.org/webdav/ftp/earthbyte/GPlates/GPlates2.3_GeoData/Individual/Hotspots.zip"]
+    }
+    return database
+
+
 class DataCollection(object):
     """GPlately's collection of plate model data is a dictionary where
     the plate model's identifier string is the key, and values are 
@@ -113,26 +137,26 @@ class DataCollection(object):
         return database
 
 
-    def plate_model_max_reconstruction_times(self):
+    def plate_model_valid_reconstruction_times(self):
 
         database = {
 
-            "Cao2020" : [1000],
-            "Muller2019" : [250], 
-            "Muller2016" : [240],
-            "Clennett2020" : [170],
-            "Seton2012" : [200],
-            "Merdith2021" : [1000],
-            "Matthews2016" : [410], 
-            "Merdith2017" : [410], 
-            "Li2008" : [410],
+            "Cao2020" : [0, 1000],
+            "Muller2019" : [0, 250], 
+            "Muller2016" : [0, 240],
+            "Clennett2020" : [0, 170],
+            "Seton2012" : [0, 200],
+            "Merdith2021" : [0, 1000],
+            "Matthews2016" : [0, 410], 
+            "Merdith2017" : [0, 410], 
+            "Li2008" : [0, 410],
             # "Pehrsson2015" : [25], (First implement continuous rotation)
-            "TorsvikCocks2017" : [410],
-            "Young2019" : [410], 
-            "Scotese2008" : [410],      
-            "Golonka2007" : [410],
-            "Clennett2020_M2019" : [170],
-            "Clennett2020_S2013" : [170],
+            "TorsvikCocks2017" : [0, 410],
+            "Young2019" : [0, 410], 
+            "Scotese2008" : [0, 410],      
+            "Golonka2007" : [0, 410],
+            "Clennett2020_M2019" : [0, 170],
+            "Clennett2020_S2013" : [0, 170],
 
         }  
         return database
@@ -328,26 +352,3 @@ class DataCollection(object):
             "__MACOSX",
         ]
         return strings
-
-
-    def rasters(self):
-
-        database = {
-
-            "ETOPO1_grd" : ["https://www.ngdc.noaa.gov/mgg/global/relief/ETOPO1/data/ice_surface/grid_registered/netcdf/ETOPO1_Ice_g_gmt4.grd.gz"],
-            "ETOPO1_tif" : ["https://www.ngdc.noaa.gov/mgg/global/relief/ETOPO1/image/color_etopo1_ice_low.tif.gz"],
-        }
-        return database
-
-
-    def feature_data(self):
-        """Assorted feature data from EarthByte's GPlates 2.3 sample data repository."""
-
-        database = {
-
-            "SeafloorFabric" : ["https://www.earthbyte.org/webdav/ftp/earthbyte/GPlates/GPlates2.3_GeoData/Individual/SeafloorFabric.zip"],
-            "Johansson2018" : ["https://www.earthbyte.org/webdav/ftp/earthbyte/GPlates/GPlates2.3_GeoData/Individual/IgneousProvinces.zip"],
-            "Whittaker2015" : ["https://www.earthbyte.org/webdav/ftp/earthbyte/GPlates/GPlates2.3_GeoData/Individual/IgneousProvinces.zip"],
-            "Hotspots" : ["https://www.earthbyte.org/webdav/ftp/earthbyte/GPlates/GPlates2.3_GeoData/Individual/Hotspots.zip"]
-        }
-        return database
