@@ -121,19 +121,25 @@ def _save_url_etag_to_txt(etag, text_path):
     text_file.close()
     
     
-def _first_time_download_from_web(url):
+def _first_time_download_from_web(url, verbose=True):
     """
     # Provided a web connection to a server can be established,
     download the files from the URL into the GPlately cache.
     """
     if _test_internet_connection(url):
+        if not verbose:
+            logger = _pooch.get_logger()
+            log_level = logger.level
+            logger.setLevel("WARNING")
         fnames = _retrieve(
                 url=url,
                 known_hash=None,  
-                downloader=_HTTPDownloader(progressbar=True),
+                downloader=_HTTPDownloader(progressbar=verbose),
                 path=_os_cache('gplately'),
-                processor=_determine_processor(url)[0]
+                processor=_determine_processor(url)[0],
         )
+        if not verbose:
+            logger.setLevel(log_level)
         # Get the URL's E-Tag for the first time
         etag, textfilename = _get_url_etag(url)
         _save_url_etag_to_txt(etag, textfilename)
@@ -213,7 +219,10 @@ def download_from_web(url, verbose=True, download_changes=True):
         # ...and if a connection to the web server can be established,
         # download files from the URL and create a textfile for this URL's E-Tag
         if _test_internet_connection(url):
-            fnames, etag, textfilename = _first_time_download_from_web(url)
+            fnames, etag, textfilename = _first_time_download_from_web(
+                url,
+                verbose=verbose,
+            )
             if verbose:
                 print("Requested files downloaded to the GPlately cache folder!")
             return(fnames)
@@ -240,7 +249,10 @@ def download_from_web(url, verbose=True, download_changes=True):
                 # creates an e-tag textfile for this version.
                 if not _os.path.isfile(local_etag_txtfile):
                     _os.remove(str(full_path))
-                    fnames, etag, local_etag_txtfile = _first_time_download_from_web(url)
+                    fnames, etag, local_etag_txtfile = _first_time_download_from_web(
+                        url,
+                        verbose=verbose,
+                    )
                     return(fnames)
 
                 # If the e-tag textfile exists for the local files,
@@ -266,7 +278,7 @@ def download_from_web(url, verbose=True, download_changes=True):
 
                         # Re-download the file, and process it if need-be.
                         with _pooch.utils.temporary_file(path=str(full_path.parent)) as tmp:
-                            downloader = _HTTPDownloader(progressbar=True)
+                            downloader = _HTTPDownloader(progressbar=verbose)
                             downloader(url, tmp, _pooch) 
                             _shutil.move(tmp, str(full_path))
                             processor=_determine_processor(url)[0]
