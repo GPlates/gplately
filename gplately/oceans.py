@@ -104,24 +104,22 @@ Classes
 * SeafloorGrid
 
 """
-import warnings
-import pygplates
-import numpy as np
-import stripy 
-import ptt
-import multiprocessing
 import glob
 import os
 import re
-import math
-from scipy.interpolate import griddata
+import warnings
+
+import numpy as np
 import pandas as pd
+import ptt
+import pygplates
+import stripy
+from ptt import separate_ridge_transform_segments
+from scipy.interpolate import griddata
 
 from . import reconstruction
-from . import plot
 from . import grids
 from . import tools
-from ptt import separate_ridge_transform_segments
 
 # -------------------------------------------------------------------------
 # Auxiliary functions for SeafloorGrid
@@ -287,38 +285,38 @@ def point_in_polygon_routine(multi_point, COB_polygons):
         MultiPointOnSphere object is on the ocean. If == 1, the point is 
         in the COB terrane polygon.
     """
+    # Convert MultiPointOnSphere to array of PointOnSphere
+    multi_point = np.array(multi_point.get_points(), dtype="object")
 
-    # Collect reconstructed geometries and features of continental polygons
-    # Both are needed for PTT's PIP routine.
-    polygons = []
-    polygon_features = []
-    for reconstructed_continental_geometry in COB_polygons:
-        polygons.append(
-            reconstructed_continental_geometry.get_reconstructed_geometry()
-        )
-        polygon_features.append(
-            reconstructed_continental_geometry.get_feature()
-        )
+    # Collect reconstructed geometries of continental polygons
+    polygons = np.empty(len(COB_polygons), dtype="object")
+    for ind, i in enumerate(COB_polygons):
+        if isinstance(i, pygplates.ReconstructedFeatureGeometry):
+            geom = i.get_reconstructed_geometry()
+        elif isinstance(i, pygplates.GeometryOnSphere):
+            geom = i
+        else:  # e.g. ndarray of coordinates
+            geom = pygplates.PolygonOnSphere(i)
+        polygons[ind] = geom
+    proxies = np.ones(polygons.size)
 
-    # Determine which continental polygons contain points from the isocahedral mesh
-    continental_polygon_features_containing_points = ptt.utils.points_in_polygons.find_polygons(
-        multi_point, polygons, polygon_features, all_polygons=True
+    pip_result = ptt.utils.points_in_polygons.find_polygons(
+        multi_point, polygons, proxies, all_polygons=False
+    )  # 1 for points in polygons, None for points outside
+    zvals = np.array(
+        pip_result,
+        dtype="float",
+    ).ravel()
+    zvals[np.isnan(zvals)] = 0.0
+    zvals = zvals.astype("int")
+    points_in_arr = multi_point[zvals == 1]
+    points_out_arr = multi_point[zvals != 1]
+
+    return (
+        pygplates.MultiPointOnSphere(points_in_arr),
+        pygplates.MultiPointOnSphere(points_out_arr),
+        zvals,
     )
-    # Look for points inside polygons, i.e. points in COB terrane polygons
-    points_in_arr = []
-    points_out_arr = []
-    zvals = []
-    for point_index, polygon_feature_list in enumerate(continental_polygon_features_containing_points):
-        # If inside, set zval of masking grid to True
-        if polygon_feature_list:
-            points_in_arr.append(multi_point[point_index])
-            zvals.append(1)
-        # If outside, set zval of masking grid to False
-        else:
-            points_out_arr.append(multi_point[point_index])
-            zvals.append(0)
-
-    return pygplates.MultiPointOnSphere(points_in_arr), pygplates.MultiPointOnSphere(points_out_arr), zvals
 
 
 def _deg2pixels(deg_res, deg_min, deg_max):
@@ -414,15 +412,15 @@ class SeafloorGrid(object):
         file_collection=None,
         refinement_levels=5, 
         ridge_sampling=0.5,
-        extent = [-180,180,-90,90],
+        extent = (-180, 180, -90, 90),
         spacing_degrees = None, 
         spacingX = None,
         spacingY = None,
         subduction_collision_parameters = (5.0, 10.0),
         initial_ocean_mean_spreading_rate = 75.,
         resume_from_checkpoints = False,
-        zval_names = ['SPREADING_RATE']
-        ):
+        zval_names = ('SPREADING_RATE'),
+    ):
 
         # Provides a rotation model, topology features and reconstruction time for 
         # the SeafloorGrid
@@ -431,6 +429,12 @@ class SeafloorGrid(object):
         self.topology_features = self.PlateReconstruction_object.topology_features
         self._PlotTopologies_object = PlotTopologies_object
         #self.save_directory = str(os.path.abspath(save_directory))
+        if (save_directory is not None) and (not os.path.isdir(save_directory)):
+            print(
+                "Output directory does not exist; creating now: "
+                + str(save_directory)
+            )
+            os.makedirs(save_directory, exist_ok=True)
         self.save_directory = save_directory
         self.file_collection = file_collection
 
@@ -991,59 +995,38 @@ class SeafloorGrid(object):
 
 
     def _create_continental_mask(self, time_array):
-
-        # Create a mask for each timestep
+        """Create a continental mask for each timestep."""
         if time_array[0] != self._max_time:
             print("Masking interrupted - resuming continental mask building at {} Ma!".format(time_array[0]))
 
-        # Output grid coordinates
-        extent_globe = self.extent
-        grid_lon = np.linspace(extent_globe[0], extent_globe[1], self.spacingX)
-        grid_lat = np.linspace(extent_globe[2], extent_globe[3], self.spacingY)
-        grid_lon, grid_lat = np.meshgrid(grid_lon, grid_lat)
-        output_shape = np.shape(grid_lon)
-        grid_lon = np.ravel(grid_lon)
-        grid_lat = np.ravel(grid_lat)
-        multipoint = pygplates.MultiPointOnSphere(
-            np.column_stack((grid_lat, grid_lon))
-        )
-
         for time in time_array:
             self._PlotTopologies_object.time = time
-
-            # Ensure COB terranes have reconstruction IDs and valid times
-            COB_polygons = ensure_polygon_geometry(
-                self._PlotTopologies_object.continents,
-                self.rotation_model,
-                time) 
-
-            # grid_z1 is a binary array encoding whether a grid
-            # coordinate is within a COB terrane polygon or not
-            _, _, grid_z1 = point_in_polygon_routine(
-                multipoint,
-                COB_polygons,
+            geoms = self._PlotTopologies_object.continents
+            final_grid = grids.rasterise(
+                geoms,
+                key=1.0,
+                shape=(self.spacingY, self.spacingX),
+                extent=self.extent,
+                origin="lower",
             )
-            grid_z1 = np.array(grid_z1)
-            final_grid = np.abs(np.rint(grid_z1)).reshape(output_shape)
+            final_grid[np.isnan(final_grid)] = 0.0
 
             if self.save_directory is not None:
+                output_basename = "continent_mask_{}Ma.nc".format(time)
                 if self.file_collection is not None:
-                    full_directory = "{}/{}_continent_mask_{}Ma.nc".format(
-                        self.save_directory, 
-                        self.file_collection, 
-                        time
+                    output_basename = "{}_{}".format(
+                        self.file_collection,
+                        output_basename,
                     )
-                else:
-                    full_directory = "{}/continent_mask_{}Ma.nc".format(
-                        self.save_directory, 
-                        time
-                    )
+                output_filename = os.path.join(
+                    self.save_directory,
+                    output_basename,
+                )
                 grids.write_netcdf_grid(
-                    full_directory, 
-                    final_grid, 
+                    output_filename,
+                    final_grid,
                     extent=[-180,180,-90,90]
                 )
-            #all_continental_masks.append(final_grid)
             print("Finished building a continental mask at {} Ma!".format(time))
 
         return
@@ -1261,12 +1244,14 @@ class SeafloorGrid(object):
         if self.file_collection is not None:
             collision_spec = reconstruction._ContinentCollision(
                 self.save_directory+"/"+self.file_collection+"_continent_mask_{}Ma.nc", 
-                default_collision
+                default_collision,
+                verbose=False,
             )
         else:
             collision_spec = reconstruction._ContinentCollision(
                 self.save_directory+"/continent_mask_{}Ma.nc", 
-                default_collision
+                default_collision,
+                verbose=False,
             )
 
         # Call the reconstruct by topologies object
