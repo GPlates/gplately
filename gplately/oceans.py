@@ -419,7 +419,7 @@ class SeafloorGrid(object):
         subduction_collision_parameters = (5.0, 10.0),
         initial_ocean_mean_spreading_rate = 75.,
         resume_from_checkpoints = False,
-        zval_names = ('SPREADING_RATE'),
+        zval_names = ("SPREADING_RATE",),
     ):
 
         # Provides a rotation model, topology features and reconstruction time for 
