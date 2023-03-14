@@ -102,9 +102,9 @@ def fill_raster(data,invalid=None):
     ind = distance_transform_edt(invalid, return_distances=False, return_indices=True)
     return data[tuple(ind)]
 
-def read_netcdf_grid(filename, return_grids=False, resample=None):
+def read_netcdf_grid(filename, return_grids=False, realign=False, resample=None):
     """Read a `netCDF` (.nc) grid from a given `filename` and return its data as a
-    `MaskedArray`. Re-align longitudes of raster data from -180 to 180 degrees.
+    `MaskedArray`.
 
     Notes
     -----
@@ -125,6 +125,10 @@ def read_netcdf_grid(filename, return_grids=False, resample=None):
         
     return_grids : bool, optional, default=False
         If set to `True`, returns lon, lat arrays associated with the grid data.
+
+    realign : bool, optional, default=False
+        if set to `True`, realigns grid to -180/180 and flips the array if the
+        latitudinal coordinates are decreasing.
         
     resample : tuple, optional, default=None
         If passed as `resample = (spacingX, spacingY)`, the given `netCDF` grid is resampled 
@@ -132,11 +136,11 @@ def read_netcdf_grid(filename, return_grids=False, resample=None):
 
     Returns
     -------
-    cdf_grid_z : MaskedArray
+    grid_z : MaskedArray
         A `MaskedArray` containing the gridded data from the supplied netCDF4 `filename`. 
         Entries' longitudes are re-aligned between -180 and 180 degrees.
 
-    cdf_lon, cdf_lat : 1d MaskedArrays
+    lon, lat : 1d MaskedArrays
         `MaskedArrays` encasing longitude and latitude variables belonging to the 
         supplied netCDF4 file. Longitudes are rescaled between -180 and 180 degrees. 
         An example output of `cdf_lat` is:
@@ -154,13 +158,22 @@ def read_netcdf_grid(filename, return_grids=False, resample=None):
         except:
             cdf_lon = cdf['x'][:]
             cdf_lat = cdf['y'][:]
-            
-        cdf_lon_mask = cdf_lon[:] > 180
-        dlon = np.diff(cdf_lon[:]).mean()
         
-        if cdf_lon_mask.any():
-            cdf_grid_z = np.hstack([cdf_grid[:,cdf_lon_mask], cdf_grid[:,~cdf_lon_mask]])
-            cdf_lon = np.hstack([cdf_lon[cdf_lon_mask]-360-dlon, cdf_lon[~cdf_lon_mask]])
+        if realign:
+            # realign longitudes to -180/180 dateline
+            cdf_lon_mask = cdf_lon[:] > 180
+            dlon = np.diff(cdf_lon[:]).mean()
+
+            if cdf_lon_mask.any():
+                cdf_grid_z = np.hstack([cdf_grid[:,cdf_lon_mask], cdf_grid[:,~cdf_lon_mask]])
+                cdf_lon = np.hstack([cdf_lon[cdf_lon_mask]-360-dlon, cdf_lon[~cdf_lon_mask]])
+            else:
+                cdf_grid_z = cdf_grid[:]
+
+            # flip the array if latitude is decreasing
+            if cdf_lat[0] > cdf_lat[-1]:
+                cdf_grid_z = np.flipud(cdf_grid_z)
+                cdf_lat = cdf_lat[::-1]
         else:
             cdf_grid_z = cdf_grid[:]
 
