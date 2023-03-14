@@ -742,16 +742,6 @@ class PlotTopologies(object):
         filenames['time'] = self.time
         filenames['plate_id'] = self._anchor_plate_id
 
-        del self.coastlines, self.continents, self.COBs
-        del self._coastlines, self._continents, self._COBs
-
-        self.coastlines = None
-        self.continents = None
-        self.COBs = None
-        self._coastlines = None
-        self._continents = None
-        self._COBs = None
-
         return filenames
 
     def __setstate__(self, state):
@@ -783,6 +773,7 @@ class PlotTopologies(object):
 
 
         self._anchor_plate_id = state["plate_id"]
+        self.base_projection = ccrs.PlateCarree()
         self.time = state['time']
 
 
@@ -1036,7 +1027,7 @@ class PlotTopologies(object):
         """
 
         if self.coastlines is None:
-            raise ValueError("Supply coastline_filename to PlotTopologies object")
+            raise ValueError("Supply coastlines to PlotTopologies object")
 
         coastline_polygons = shapelify_feature_polygons(self.coastlines)
         gdf = gpd.GeoDataFrame({"geometry": coastline_polygons}, geometry="geometry")
@@ -1074,7 +1065,7 @@ class PlotTopologies(object):
             with continent features plotted onto the chosen map projection. 
         """
         if self.continents is None:
-            raise ValueError("Supply continent_filename to PlotTopologies object")
+            raise ValueError("Supply continents to PlotTopologies object")
 
         continent_polygons = shapelify_feature_polygons(self.continents)
         gdf = gpd.GeoDataFrame({"geometry": continent_polygons}, geometry="geometry")
@@ -1117,7 +1108,7 @@ class PlotTopologies(object):
             with COB features plotted onto the chosen map projection. 
         """
         if self.COBs is None:
-            raise ValueError("Supply COB_filename to PlotTopologies object")
+            raise ValueError("Supply COBs to PlotTopologies object")
 
         COB_lines = shapelify_feature_lines(self.COBs)
         gdf = gpd.GeoDataFrame({"geometry": COB_lines}, geometry="geometry")

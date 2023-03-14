@@ -1011,11 +1011,6 @@ class Points(object):
         filenames['time'] = self.time
         filenames['plate_id'] = self.plate_id
 
-        del self.FeatureCollection, self.features
-
-        self.FeatureCollection = None
-        self.features = None
-
         return filenames
 
     def __setstate__(self, state):
