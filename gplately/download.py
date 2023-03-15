@@ -77,25 +77,29 @@ def path_of_cached_file(url, model_name=None):
     if processor_extension:
         # Are they from plate models? These typically are the .zip folders for plate models
         if model_name:
-            cached_filename = cached_filename = str(path) + '/' + model_name + processor_extension+'/'
+            cached_filename  = str(path) + '/' + model_name + processor_extension+'/'
+            unprocessed_path = str(path) + '/' + model_name
             #cached_filename = cached_filename = str(path) + '/' + model_name
 
         # If not from plate models but need processing, i.e. ETOPO1
         else:
-            cached_filename = "gplately_"+_parse_url_for_filenames(url) + processor_extension+'/'
+            cached_filename = str(path) + '/' + "gplately_"+_parse_url_for_filenames(url) + processor_extension+'/'
+            unprocessed_path = str(path) + '/' + "gplately_"+_parse_url_for_filenames(url)
             #cached_filename = "gplately_"+_parse_url_for_filenames(url) 
 
     # If the requested files do not need processing, like standalone .nc files:
     else:
         if model_name:
-            cached_filename = model_name + "_" + _parse_url_for_filenames(url)
+            cached_filename = str(path) + '/' + model_name + "_" + _parse_url_for_filenames(url)
+            unprocessed_path = None
         else:
-            cached_filename = "gplately_"+_parse_url_for_filenames(url)
+            cached_filename = str(path) + '/' + "gplately_"+_parse_url_for_filenames(url)
+            unprocessed_path = None
       
     _pooch.utils.make_local_storage(path)
     full_path = path.resolve() / cached_filename
 
-    return full_path
+    return full_path, unprocessed_path
 
 
 def _extract_processed_files(processed_directory):
@@ -196,11 +200,12 @@ def _first_time_download_from_web(url, model_name=None):
             if model_name:
                 # Download the files with a naming structure like:
                 # /path/to/cache/gplately/model_name+processor_extension
+                used_fname = model_name
                 fnames = _retrieve(
                         url=url,
                         known_hash=None,  
                         downloader=_HTTPDownloader(progressbar=True),
-                        fname=model_name,
+                        fname=used_fname,
                         path=_os_cache('gplately'),
                         processor=_determine_processor(url)[0]
                 )
@@ -208,11 +213,12 @@ def _first_time_download_from_web(url, model_name=None):
             else:
                 # Download the files with a naming structure like:
                 # /path/to/cache/gplately/file_name-as_inteded_in_url+processor_extension
+                used_fname = "gplately_"+_parse_url_for_filenames(url)
                 fnames = _retrieve(
                     url=url,
                     known_hash=None,  
                     downloader=_HTTPDownloader(progressbar=True),
-                    fname="gplately_"+_parse_url_for_filenames(url),
+                    fname=used_fname,
                     path=_os_cache('gplately'),
                     processor=_determine_processor(url)[0]
                 )
@@ -222,21 +228,23 @@ def _first_time_download_from_web(url, model_name=None):
             if model_name:
                 # Download the files with a naming structure like:
                 # /path/to/cache/gplately/file_name-as_inteded_in_url+processor_extension
+                used_fname = model_name+"_"+_parse_url_for_filenames(url)
                 fnames = _retrieve(
                         url=url,
                         known_hash=None,  
                         downloader=_HTTPDownloader(progressbar=True),
-                        fname=model_name+"_"+_parse_url_for_filenames(url),
+                        fname=used_fname,
                         path=_os_cache('gplately'),
                         processor=_determine_processor(url)[0]
                 )
             # If not from plate models and do not need processing,
             else:
+                used_fname = "gplately_"+_parse_url_for_filenames(url)
                 fnames = _retrieve(
                         url=url,
                         known_hash=None,  
                         downloader=_HTTPDownloader(progressbar=True),
-                        fname="gplately_"+_parse_url_for_filenames(url),
+                        fname=used_fname,
                         path=_os_cache('gplately'),
                         processor=_determine_processor(url)[0]
                 )
@@ -244,7 +252,7 @@ def _first_time_download_from_web(url, model_name=None):
         # Get the URL's E-Tag for the first time
         etag, textfilename = _get_url_etag(url, model_name)
         _save_url_etag_to_txt(etag, textfilename)
-        return(fnames, etag, textfilename)
+        return(fnames, etag, textfilename, used_fname)
 
     
 def download_from_web(url, verbose=True, download_changes=True, model_name=None):
@@ -348,7 +356,7 @@ def download_from_web(url, verbose=True, download_changes=True, model_name=None)
     #   in instances where the download URL remains the same but its contents may have changed
     #   since the file(s) were last cached. 
     
-    full_path = str(path_of_cached_file(url, model_name))
+    full_path, unprocessed_path = path_of_cached_file(url, model_name)
 
     # If the file required processing (zips make a directory to unzip in, and .gz for example
     # makes a file just saved to the top-level directory), and the directory or file is not 
@@ -360,7 +368,7 @@ def download_from_web(url, verbose=True, download_changes=True, model_name=None)
         # ...and if a connection to the web server can be established,
         # download files from the URL and create a textfile for this URL's E-Tag
         if _test_internet_connection(url):
-            fnames, etag, textfilename = _first_time_download_from_web(url, model_name)
+            fnames, etag, textfilename, used_fname = _first_time_download_from_web(url, model_name)
             if verbose:
                 print("Requested files downloaded to the GPlately cache folder!")
             return(fnames)
@@ -377,7 +385,7 @@ def download_from_web(url, verbose=True, download_changes=True, model_name=None)
         # ...and if a connection to the web server can be established,
         # download files from the URL and create a textfile for this URL's E-Tag
         if _test_internet_connection(url):
-            fnames, etag, textfilename = _first_time_download_from_web(url, model_name)
+            fnames, etag, textfilename, used_fname = _first_time_download_from_web(url, model_name)
             if verbose:
                 print("Requested files downloaded to the GPlately cache folder!")
             return(fnames)
@@ -415,7 +423,7 @@ def download_from_web(url, verbose=True, download_changes=True, model_name=None)
                 # creates an e-tag textfile for this version.
                 if not etag_exists:
                     _shutil.rmtree(str(full_path))
-                    fnames, etag, local_etag_txtfile = _first_time_download_from_web(url, model_name)
+                    fnames, etag, local_etag_txtfile, used_fname = _first_time_download_from_web(url, model_name)
                     return(fnames)
 
                 # If the e-tag textfile exists for the local files,
@@ -445,13 +453,17 @@ def download_from_web(url, verbose=True, download_changes=True, model_name=None)
                             downloader(url, tmp, _pooch) 
                             _shutil.move(tmp, str(full_path))
                             processor=_determine_processor(url)[0]
-                            processor(str(full_path), "update", None)
-                            # determine_processor gives the file its processed filename
-                            processed_file = str(full_path)+_determine_processor(url)[1]
 
+                            # If the file to update needs processing, pass the unprocessed file's
+                            # absolute path to the processor
+                            if unprocessed_path:
+                                processor(str(unprocessed_path), "update", None)
+                            
+                        # full_path holds the files to return to the user, irrespective of whether
+                        # proceessing was needed
                         if verbose:
                             print("Requested files downloaded to the GPlately cache folder!")
-                        return(_extract_processed_files(processed_file))
+                        return(_extract_processed_files(str(full_path)))
 
                     # If the e-tags are equal, the local and remote files are the same.
                     # Just return the file(s) as-is.
@@ -459,23 +471,14 @@ def download_from_web(url, verbose=True, download_changes=True, model_name=None)
                         if verbose:
                             print("Requested files are up-to-date!")
 
-                        # FLAG, IMPORTANT: Using the processing method may account for more folder types that need processing; however all steps
-                        # above have only considered zip files. If we need to process files other than zips, we may need to replace
-                        # all zip conditions above...
-                        
-                        #if url.endswith(".zip"):
-                        #    return(_extract_processed_files(
-                        #        str(full_path)))
-                        ## If not processed, add the file extension to the path string (i.e. ".nc")
-                        #else:
-                        #    return(_extract_processed_files(
-                        #        str(full_path)+_match_url_to_extension(url)))
+                        # If files were processed once, return the processed files.
                         if _determine_processor(url):
                             if str(full_path).endswith(_determine_processor(url)[1]):
                                 return(_extract_processed_files((str(full_path))))
                             else:
                                 return(_extract_processed_files(
                                     str(full_path)+_determine_processor(url)[1]))
+                        # If not, return as-is.
                         else:
                             return(_extract_processed_files(
                                 str(full_path)+_match_url_to_extension(url)))
