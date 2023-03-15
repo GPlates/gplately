@@ -1242,6 +1242,7 @@ class Raster(object):
         plate_reconstruction=None,
         data=None,
         extent="global",
+        realign=False,
         resample=None,
         time=0.0,
         origin=None,
@@ -1335,6 +1336,7 @@ class Raster(object):
             self._data, lons, lats = read_netcdf_grid(
                 data,
                 return_grids=True,
+                realign=realign,
                 resample=resample,
             )
             self._lons = lons

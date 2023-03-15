@@ -264,9 +264,11 @@ class PlateReconstruction(object):
         ----------
         time : int
             The geological time at which to calculate total continental arc lengths.
-        continental_grid: str or MaskedArray, default=None
+        continental_grid: str or ndarray, default=None
             A MaskedArray or full string path to a continental grid with which to interpolate projected trench points on 
-            (thereby identifying continental arc points). 
+            (thereby identifying continental arc points).
+            - If an array is specified then a global extent is assumed [-180,180,-90,90]
+            - If a filename is specified then the extent is obtained from the raster file.
         trench_arc_distance : float, default=0.0
             The trench-to-arc distance (in kilometres) to project sampled trench points out by in the direction of their 
             subduction polarities. 
@@ -288,7 +290,7 @@ class PlateReconstruction(object):
         from . import grids as _grids
         # Right now, raster reconstruction is not supported.
         if continental_grid is None:
-            raise ValueError("Please provide a directory to a continental grid or a masked array for the current time.")
+            raise ValueError("Please provide a continental grid filename or a numpy array for the current time.")
         
         elif isinstance(continental_grid, np.ndarray):
             # Process the masked continental grid
@@ -296,7 +298,7 @@ class PlateReconstruction(object):
 
         elif isinstance(continental_grid, str):
             # Process the continental grid directory
-            graster = _grids.Raster(data=continental_grid, extent=[-180,180,-90,90])
+            graster = _grids.Raster(data=continental_grid, realign=True)
 
         # Obtain trench data with Plate Tectonic Tools
         trench_data = self.tesselate_subduction_zones(time, ignore_warnings=ignore_warnings)
