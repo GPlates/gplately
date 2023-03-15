@@ -1289,6 +1289,7 @@ class Raster(object):
         plate_reconstruction=None,
         data=None,
         extent=&#34;global&#34;,
+        realign=False,
         resample=None,
         time=0.0,
         origin=None,
@@ -1382,6 +1383,7 @@ class Raster(object):
             self._data, lons, lats = read_netcdf_grid(
                 data,
                 return_grids=True,
+                realign=realign,
                 resample=resample,
             )
             self._lons = lons
@@ -3260,7 +3262,7 @@ is assumed.</dd>
 <dl>
 <dt id="gplately.grids.Raster"><code class="flex name class">
 <span>class <span class="ident">Raster</span></span>
-<span>(</span><span>plate_reconstruction=None, data=None, extent='global', resample=None, time=0.0, origin=None, **kwargs)</span>
+<span>(</span><span>plate_reconstruction=None, data=None, extent='global', realign=False, resample=None, time=0.0, origin=None, **kwargs)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>A class for working with raster data.</p>
@@ -3468,6 +3470,7 @@ reconstruction.</dd>
         plate_reconstruction=None,
         data=None,
         extent=&#34;global&#34;,
+        realign=False,
         resample=None,
         time=0.0,
         origin=None,
@@ -3561,6 +3564,7 @@ reconstruction.</dd>
             self._data, lons, lats = read_netcdf_grid(
                 data,
                 return_grids=True,
+                realign=realign,
                 resample=resample,
             )
             self._lons = lons
