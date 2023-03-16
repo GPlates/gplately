@@ -697,7 +697,7 @@ class PlotTopologies(object):
     def __init__(
         self,
         PlateReconstruction_object,
-        time,
+        time=None,
         coastlines=None,
         continents=None,
         COBs=None,
@@ -726,7 +726,10 @@ class PlotTopologies(object):
 
         # store topologies for easy access
         # setting time runs the update_time routine
-        self.time = time
+        if time is not None:
+            self.time = time
+        else:
+            self._time = None
 
     def __getstate__(self):
 
@@ -774,7 +777,7 @@ class PlotTopologies(object):
 
         self._anchor_plate_id = state["plate_id"]
         self.base_projection = ccrs.PlateCarree()
-        self.time = state['time']
+        self._time = None
 
 
     @property
@@ -1071,6 +1074,18 @@ class PlotTopologies(object):
         gdf = gpd.GeoDataFrame({"geometry": continent_polygons}, geometry="geometry")
         return gdf.plot(ax=ax, transform=self.base_projection, **kwargs)
 
+
+    def get_continent_ocean_boundaries(self):
+        if self._time is None:
+            raise ValueError("set `time` to construct topologies")
+
+        if self.COBs is None:
+            raise ValueError("Supply COBs to PlotTopologies object")
+
+        COB_lines = shapelify_feature_lines(self.COBs)
+        gdf = gpd.GeoDataFrame({"geometry": COB_lines}, geometry="geometry")
+        return gdf
+
     def plot_continent_ocean_boundaries(self, ax, **kwargs):
         """Plot reconstructed continent-ocean boundary (COB) polygons onto a standard 
         map Projection. 
@@ -1107,11 +1122,7 @@ class PlotTopologies(object):
             A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map 
             with COB features plotted onto the chosen map projection. 
         """
-        if self.COBs is None:
-            raise ValueError("Supply COBs to PlotTopologies object")
-
-        COB_lines = shapelify_feature_lines(self.COBs)
-        gdf = gpd.GeoDataFrame({"geometry": COB_lines}, geometry="geometry")
+        gdf = self.get_continent_ocean_boundaries()
         return gdf.plot(ax=ax, transform=self.base_projection, **kwargs)
 
     def plot_ridges(self, ax, color='black', **kwargs):
