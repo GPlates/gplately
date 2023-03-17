@@ -992,10 +992,28 @@ class PlotTopologies(object):
 
         return np.array(triangle_pointsX), np.array(triangle_pointsY)
 
-    def plot_feature(self, ax, feature, **kwargs):
+
+    def get_feature(self, feature):
         shp = shapelify_features(feature)
         gdf = gpd.GeoDataFrame({'geometry': shp}, geometry='geometry')
+        return gdf
+
+    def plot_feature(self, ax, feature, **kwargs):
+        gdf = self.get_feature(feature)
         return gdf.plot(ax=ax, transform=self.base_projection, **kwargs)
+
+
+    def get_coastlines(self):
+        if self._time is None:
+            raise ValueError("No coastlines have been resolved. Set `PlotTopologies.time` to construct coastlines.")
+
+        if self.coastlines is None:
+            raise ValueError("Supply coastlines to PlotTopologies object")
+
+        coastline_polygons = shapelify_feature_polygons(self.coastlines)
+        gdf = gpd.GeoDataFrame({"geometry": coastline_polygons}, geometry="geometry")
+        return gdf
+
 
     def plot_coastlines(self, ax, **kwargs):
         """Plot reconstructed coastline polygons onto a standard map Projection. 
@@ -1028,13 +1046,22 @@ class PlotTopologies(object):
             A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map 
             with coastline features plotted onto the chosen map projection. 
         """
-
-        if self.coastlines is None:
-            raise ValueError("Supply coastlines to PlotTopologies object")
-
-        coastline_polygons = shapelify_feature_polygons(self.coastlines)
-        gdf = gpd.GeoDataFrame({"geometry": coastline_polygons}, geometry="geometry")
+        gdf = self.get_coastlines()
         return gdf.plot(ax=ax, transform=self.base_projection, **kwargs)
+
+
+    def get_continents(self):
+
+        if self._time is None:
+            raise ValueError("No continents have been resolved. Set `PlotTopologies.time` to construct continents.")
+
+        if self.continents is None:
+            raise ValueError("Supply continents to PlotTopologies object")
+
+        continent_polygons = shapelify_feature_polygons(self.continents)
+        gdf = gpd.GeoDataFrame({"geometry": continent_polygons}, geometry="geometry")
+        return gdf
+
 
     def plot_continents(self, ax, **kwargs):
         """Plot reconstructed continental polygons onto a standard map Projection. 
@@ -1067,17 +1094,13 @@ class PlotTopologies(object):
             A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map 
             with continent features plotted onto the chosen map projection. 
         """
-        if self.continents is None:
-            raise ValueError("Supply continents to PlotTopologies object")
-
-        continent_polygons = shapelify_feature_polygons(self.continents)
-        gdf = gpd.GeoDataFrame({"geometry": continent_polygons}, geometry="geometry")
+        gdf = self.get_continents()
         return gdf.plot(ax=ax, transform=self.base_projection, **kwargs)
 
 
     def get_continent_ocean_boundaries(self):
         if self._time is None:
-            raise ValueError("set `time` to construct topologies")
+            raise ValueError("No geometries have been resolved. Set `PlotTopologies.time` to construct topologies.")
 
         if self.COBs is None:
             raise ValueError("Supply COBs to PlotTopologies object")
@@ -1085,6 +1108,7 @@ class PlotTopologies(object):
         COB_lines = shapelify_feature_lines(self.COBs)
         gdf = gpd.GeoDataFrame({"geometry": COB_lines}, geometry="geometry")
         return gdf
+
 
     def plot_continent_ocean_boundaries(self, ax, **kwargs):
         """Plot reconstructed continent-ocean boundary (COB) polygons onto a standard 
@@ -1124,6 +1148,19 @@ class PlotTopologies(object):
         """
         gdf = self.get_continent_ocean_boundaries()
         return gdf.plot(ax=ax, transform=self.base_projection, **kwargs)
+
+
+    def get_ridges(self):
+        if self._time is None:
+            raise ValueError("No ridges have been resolved. Set `PlotTopologies.time` to construct ridges.")
+
+        if self.ridges is None:
+            raise ValueError("No ridge topologies passed to PlotTopologies.")
+
+        ridge_lines = shapelify_feature_lines(self.ridges)
+        gdf = gpd.GeoDataFrame({"geometry": ridge_lines}, geometry="geometry")
+        return gdf
+
 
     def plot_ridges(self, ax, color='black', **kwargs):
         """Plot reconstructed ridge polylines onto a standard map Projection. 
@@ -1165,9 +1202,21 @@ class PlotTopologies(object):
             A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map 
             with ridge features plotted onto the chosen map projection. 
         """
-        ridge_lines = shapelify_feature_lines(self.ridges)
-        gdf = gpd.GeoDataFrame({"geometry": ridge_lines}, geometry="geometry")
+        gdf = self.get_ridges()
         return gdf.plot(ax=ax, facecolor='none', edgecolor=color, transform=self.base_projection, **kwargs)
+
+
+    def get_ridges_and_transforms(self):
+        if self._time is None:
+            raise ValueError("No ridges and transforms have been resolved. Set `PlotTopologies.time` to construct ridges and transforms.")
+
+        if self.ridge_transforms is None:
+            raise ValueError("No ridge and transform topologies passed to PlotTopologies.")
+
+        ridge_transform_lines = shapelify_feature_lines(self.ridge_transforms)
+        gdf = gpd.GeoDataFrame({"geometry": ridge_transform_lines}, geometry="geometry")
+        return gdf
+
 
     def plot_ridges_and_transforms(self, ax, color='black', **kwargs):
         """Plot reconstructed ridge & transform boundary polylines onto a standard map
@@ -1210,9 +1259,21 @@ class PlotTopologies(object):
             A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map 
             with ridge & transform features plotted onto the chosen map projection. 
         """
-        ridge_transform_lines = shapelify_feature_lines(self.ridge_transforms)
-        gdf = gpd.GeoDataFrame({"geometry": ridge_transform_lines}, geometry="geometry")
+        gdf = self.get_ridges_and_transforms()
         return gdf.plot(ax=ax, facecolor='none', edgecolor=color, transform=self.base_projection, **kwargs)
+
+
+    def get_transforms(self):
+        if self._time is None:
+            raise ValueError("No transforms have been resolved. Set `PlotTopologies.time` to construct transforms.")
+
+        if self.transforms is None:
+            raise ValueError("No transform topologies passed to PlotTopologies.")
+
+        transform_lines = shapelify_feature_lines(self.transforms)
+        gdf = gpd.GeoDataFrame({"geometry": transform_lines}, geometry="geometry")
+        return gdf
+
 
     def plot_transforms(self, ax, color='black', **kwargs):
         """Plot reconstructed transform boundary polylines onto a standard map. 
@@ -1254,9 +1315,21 @@ class PlotTopologies(object):
             A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map 
             with transform features plotted onto the chosen map projection.
         """
-        transform_lines = shapelify_feature_lines(self.transforms)
-        gdf = gpd.GeoDataFrame({"geometry": transform_lines}, geometry="geometry")
+        gdf = self.get_transforms()
         return gdf.plot(ax=ax, facecolor='none', edgecolor=color, transform=self.base_projection, **kwargs)
+
+
+    def get_trenches(self):
+        if self._time is None:
+            raise ValueError("No trenches have been resolved. Set `PlotTopologies.time` to construct trenches.")
+
+        if self.trenches is None:
+            raise ValueError("No trenches passed to PlotTopologies.")
+
+        trench_lines = shapelify_feature_lines(self.trenches)
+        gdf = gpd.GeoDataFrame({"geometry": trench_lines}, geometry="geometry")
+        return gdf
+
 
     def plot_trenches(self, ax, color='black', **kwargs):
         """Plot reconstructed subduction trench polylines onto a standard map
@@ -1299,9 +1372,21 @@ class PlotTopologies(object):
             A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map 
             with transform features plotted onto the chosen map projection.
         """
-        trench_lines = shapelify_feature_lines(self.trenches)
-        gdf = gpd.GeoDataFrame({"geometry": trench_lines}, geometry="geometry")
+        gdf = self.get_trenches()
         return gdf.plot(ax=ax, facecolor='none', edgecolor=color, transform=self.base_projection, **kwargs)
+
+
+    def get_misc_boundaries(self):
+        if self._time is None:
+            raise ValueError("No miscellaneous topologies have been resolved. Set `PlotTopologies.time` to construct them.")
+
+        if self.other is None:
+            raise ValueError("No miscellaneous topologies passed to PlotTopologies.")
+
+        lines = shapelify_features(self.other)
+        gdf = gpd.GeoDataFrame({"geometry": lines}, geometry="geometry")
+        return gdf
+
 
     def plot_misc_boundaries(self, ax, color="black", **kwargs):
         """Plot reconstructed miscellaneous plate boundary polylines onto a standard 
@@ -1344,9 +1429,9 @@ class PlotTopologies(object):
             A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map 
             with miscellaneous boundary features plotted onto the chosen map projection.
         """
-        lines = shapelify_features(self.other)
-        gdf = gpd.GeoDataFrame({"geometry": lines}, geometry="geometry")
+        gdf = self.get_misc_boundaries()
         return gdf.plot(ax=ax, facecolor='none', edgecolor=color, transform=self.base_projection, **kwargs)
+
 
     def plot_subduction_teeth_deprecated(self, ax, spacing=0.1, size=2.0, aspect=1, color='black', **kwargs):
         """Plot subduction teeth onto a standard map Projection. 
@@ -1416,6 +1501,22 @@ class PlotTopologies(object):
         return ax.add_geometries(teeth, crs=self.base_projection, color=color, **kwargs)
 
 
+    def get_subduction_teeth(self, spacing=0.07, size=None, aspect=None):
+        spacing = spacing * EARTH_RADIUS * 1e3
+
+        if aspect is None:
+            aspect = 2.0/3.0
+        if size is None:
+            size = spacing*0.5
+
+        height = size*aspect
+
+        trench_left_features  = shapelify_feature_lines(self.trench_left)
+        trench_right_features = shapelify_feature_lines(self.trench_right)
+
+        return trench_left_features, trench_right_features
+
+
     def plot_subduction_teeth(self, ax, spacing=0.07, size=None, aspect=None, color='black', **kwargs):
         """Plot subduction teeth onto a standard map Projection.  
 
@@ -1458,22 +1559,13 @@ class PlotTopologies(object):
             with subduction teeth plotted onto the chosen map projection.
         """
 
-        spacing = spacing * EARTH_RADIUS * 1e3
-
-        if aspect is None:
-            aspect = 2.0/3.0
-        if size is None:
-            size = spacing*0.5
-
-        height = size*aspect
-
-        trench_left_features  = shapelify_feature_lines(self.trench_left)
-        trench_right_features = shapelify_feature_lines(self.trench_right)
+        trench_left_features, trench_right_features = self.get_subduction_teeth()
 
         return(
             plot_subduction_teeth(trench_left_features,  size, 'l', height, spacing, ax=ax, color=color, **kwargs),
             plot_subduction_teeth(trench_right_features,  size, 'r', height, spacing, ax=ax, color=color, **kwargs)
         )
+
 
     def plot_plate_id(self, ax, plate_id, **kwargs):
         """Plot a plate polygon with an associated `plate_id` onto a standard map Projection. 
@@ -1660,6 +1752,18 @@ class PlotTopologies(object):
         return ax.quiver(X, Y, U, V, transform=self.base_projection, **kwargs)
 
 
+    def get_continental_rifts(self):
+        if self._time is None:
+            raise ValueError("No continental rifts have been resolved. Set `PlotTopologies.time` to construct them.")
+
+        if self.continental_rifts is None:
+            raise ValueError("No continental rifts passed to PlotTopologies.")
+
+        continental_rift_lines = shapelify_feature_lines(self.continental_rifts)
+        gdf = gpd.GeoDataFrame({"geometry": continental_rift_lines}, geometry="geometry")
+        return gdf
+
+
     def plot_continental_rifts(self, ax, color='black', **kwargs):
         """Plot continental rifts on a standard map projection.
 
@@ -1684,9 +1788,20 @@ class PlotTopologies(object):
             A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map 
             with continental rifts plotted onto the chosen map projection.
         """
-        continental_rift_lines = shapelify_feature_lines(self.continental_rifts)
-        gdf = gpd.GeoDataFrame({"geometry": continental_rift_lines}, geometry="geometry")
+        gdf = self.get_continental_rifts()
         return gdf.plot(ax=ax, facecolor='none', edgecolor=color, transform=self.base_projection, **kwargs)
+
+
+    def get_faults(self):
+        if self._time is None:
+            raise ValueError("No faults have been resolved. Set `PlotTopologies.time` to construct them.")
+
+        if self.faults is None:
+            raise ValueError("No faults passed to PlotTopologies.")
+
+        fault_lines = shapelify_feature_lines(self.faults)
+        gdf = gpd.GeoDataFrame({"geometry": fault_lines}, geometry="geometry")
+        return gdf
 
 
     def plot_faults(self, ax, color='black', **kwargs):
@@ -1713,9 +1828,20 @@ class PlotTopologies(object):
             A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map 
             with faults plotted onto the chosen map projection.
         """
-        fault_lines = shapelify_feature_lines(self.faults)
-        gdf = gpd.GeoDataFrame({"geometry": fault_lines}, geometry="geometry")
+        gdf = self.get_faults()
         return gdf.plot(ax=ax, facecolor='none', edgecolor=color, transform=self.base_projection, **kwargs)
+
+
+    def get_fracture_zones(self):
+        if self._time is None:
+            raise ValueError("No fracture zones have been resolved. Set `PlotTopologies.time` to construct them.")
+
+        if self.fracture_zones is None:
+            raise ValueError("No fracture zones passed to PlotTopologies.")
+
+        fracture_zone_lines = shapelify_feature_lines(self.fracture_zones)
+        gdf = gpd.GeoDataFrame({"geometry": fracture_zone_lines}, geometry="geometry")
+        return gdf
 
 
     def plot_fracture_zones(self, ax, color='black', **kwargs):
@@ -1742,9 +1868,20 @@ class PlotTopologies(object):
             A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map 
             with fracture zones plotted onto the chosen map projection.
         """
-        fracture_zone_lines = shapelify_feature_lines(self.fracture_zones)
-        gdf = gpd.GeoDataFrame({"geometry": fracture_zone_lines}, geometry="geometry")
+        gdf = self.get_fracture_zones()
         return gdf.plot(ax=ax, facecolor='none', edgecolor=color, transform=self.base_projection, **kwargs)
+
+
+    def get_inferred_paleo_boundaries(self):
+        if self._time is None:
+            raise ValueError("No inferred paleo boundaries have been resolved. Set `PlotTopologies.time` to construct them.")
+
+        if self.inferred_paleo_boundaries is None:
+            raise ValueError("No inferred paleo boundaries passed to PlotTopologies.")
+
+        inferred_paleo_boundary_lines = shapelify_feature_lines(self.inferred_paleo_boundaries)
+        gdf = gpd.GeoDataFrame({"geometry": inferred_paleo_boundary_lines}, geometry="geometry")
+        return gdf
 
 
     def plot_inferred_paleo_boundaries(self, ax, color='black', **kwargs):
@@ -1771,9 +1908,20 @@ class PlotTopologies(object):
             A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map 
             with inferred paleo boundaries plotted onto the chosen map projection.
         """
-        inferred_paleo_boundary_lines = shapelify_feature_lines(self.inferred_paleo_boundaries)
-        gdf = gpd.GeoDataFrame({"geometry": inferred_paleo_boundary_lines}, geometry="geometry")
+        gdf = get_inferred_paleo_boundaries()
         return gdf.plot(ax=ax, facecolor='none', edgecolor=color, transform=self.base_projection, **kwargs)
+
+
+    def get_terrane_boundaries(self):
+        if self._time is None:
+            raise ValueError("No terrane boundaries have been resolved. Set `PlotTopologies.time` to construct them.")
+
+        if self.terrane_boundaries is None:
+            raise ValueError("No terrane boundaries passed to PlotTopologies.")
+
+        terrane_boundary_lines = shapelify_feature_lines(self.terrane_boundaries)
+        gdf = gpd.GeoDataFrame({"geometry": terrane_boundary_lines}, geometry="geometry")
+        return gdf
 
 
     def plot_terrane_boundaries(self, ax, color='black', **kwargs):
@@ -1800,9 +1948,20 @@ class PlotTopologies(object):
             A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map 
             with terrane boundaries plotted onto the chosen map projection.
         """
-        terrane_boundary_lines = shapelify_feature_lines(self.terrane_boundaries)
-        gdf = gpd.GeoDataFrame({"geometry": terrane_boundary_lines}, geometry="geometry")
+        gdf = self.get_terrane_boundaries()
         return gdf.plot(ax=ax, facecolor='none', edgecolor=color, transform=self.base_projection, **kwargs)
+
+
+    def get_transitional_crusts(self):
+        if self._time is None:
+            raise ValueError("No transitional crusts have been resolved. Set `PlotTopologies.time` to construct them.")
+
+        if self.transitional_crusts is None:
+            raise ValueError("No transitional crusts passed to PlotTopologies.")
+
+        transitional_crust_lines = shapelify_feature_lines(self.transitional_crusts)
+        gdf = gpd.GeoDataFrame({"geometry": transitional_crust_lines}, geometry="geometry")
+        return gdf 
 
 
     def plot_transitional_crusts(self, ax, color='black', **kwargs):
@@ -1829,9 +1988,20 @@ class PlotTopologies(object):
             A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map 
             with transitional crust plotted onto the chosen map projection.
         """
-        transitional_crust_lines = shapelify_feature_lines(self.transitional_crusts)
-        gdf = gpd.GeoDataFrame({"geometry": transitional_crust_lines}, geometry="geometry")
+        gdf = self.get_transitional_crusts()
         return gdf.plot(ax=ax, facecolor='none', edgecolor=color, transform=self.base_projection, **kwargs)
+
+
+    def get_orogenic_belts(self):
+        if self._time is None:
+            raise ValueError("No orogenic belts have been resolved. Set `PlotTopologies.time` to construct them.")
+
+        if self.orogenic_belts is None:
+            raise ValueError("No orogenic belts passed to PlotTopologies.")
+
+        orogenic_belt_lines = shapelify_feature_lines(self.orogenic_belts)
+        gdf = gpd.GeoDataFrame({"geometry": orogenic_belt_lines}, geometry="geometry")
+        return gdf
 
 
     def plot_orogenic_belts(self, ax, color='black', **kwargs):
@@ -1858,9 +2028,20 @@ class PlotTopologies(object):
             A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map 
             with orogenic belts plotted onto the chosen map projection.
         """
-        orogenic_belt_lines = shapelify_feature_lines(self.orogenic_belts)
-        gdf = gpd.GeoDataFrame({"geometry": transitional_crust_lines}, geometry="geometry")
+        gdf = self.get_orogenic_belts()
         return gdf.plot(ax=ax, facecolor='none', edgecolor=color, transform=self.base_projection, **kwargs)
+
+
+    def get_sutures(self):
+        if self._time is None:
+            raise ValueError("No sutures have been resolved. Set `PlotTopologies.time` to construct them.")
+
+        if self.sutures is None:
+            raise ValueError("No sutures passed to PlotTopologies.")
+
+        suture_lines = shapelify_feature_lines(self.sutures)
+        gdf = gpd.GeoDataFrame({"geometry": suture_lines}, geometry="geometry")
+        return gdf
 
 
     def plot_sutures(self, ax, color='black', **kwargs):
@@ -1887,9 +2068,20 @@ class PlotTopologies(object):
             A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map 
             with sutures plotted onto the chosen map projection.
         """
-        suture_lines = shapelify_feature_lines(self.sutures)
-        gdf = gpd.GeoDataFrame({"geometry": suture_lines}, geometry="geometry")
+        gdf = self.get_sutures()
         return gdf.plot(ax=ax, facecolor='none', edgecolor=color, transform=self.base_projection, **kwargs)
+
+
+    def get_continental_crusts(self):
+        if self._time is None:
+            raise ValueError("No continental crust topologies have been resolved. Set `PlotTopologies.time` to construct them.")
+
+        if self.continental_crusts is None:
+            raise ValueError("No continental crust topologies passed to PlotTopologies.")
+
+        continental_crust_lines = shapelify_feature_lines(self.continental_crusts)
+        gdf = gpd.GeoDataFrame({"geometry": continental_crust_lines}, geometry="geometry")
+        return gdf
 
 
     def plot_continental_crusts(self, ax, color='black', **kwargs):
@@ -1916,10 +2108,20 @@ class PlotTopologies(object):
             A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map 
             with continental crust lines plotted onto the chosen map projection.
         """
-        continental_crust_lines = shapelify_feature_lines(self.continental_crusts)
-        gdf = gpd.GeoDataFrame({"geometry": continental_crust_lines}, geometry="geometry")
+        gdf = self.get_continental_crusts()
         return gdf.plot(ax=ax, facecolor='none', edgecolor=color, transform=self.base_projection, **kwargs)
 
+
+    def get_extended_continental_crusts(self):
+        if self._time is None:
+            raise ValueError("No extended continental crust topologies have been resolved. Set `PlotTopologies.time` to construct them.")
+
+        if self.extended_continental_crusts is None:
+            raise ValueError("No extended continental crust topologies passed to PlotTopologies.")
+
+        extended_continental_crust_lines = shapelify_feature_lines(self.extended_continental_crusts)
+        gdf = gpd.GeoDataFrame({"geometry": extended_continental_crust_lines}, geometry="geometry")
+        return gdf
 
     def plot_extended_continental_crusts(self, ax, color='black', **kwargs): 
         """Plot extended continental crust lines on a standard map projection.
@@ -1945,9 +2147,20 @@ class PlotTopologies(object):
             A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map 
             with extended continental crust lines plotted onto the chosen map projection.
         """
-        extended_continental_crust_lines = shapelify_feature_lines(self.extended_continental_crusts)
-        gdf = gpd.GeoDataFrame({"geometry": extended_continental_crust_lines}, geometry="geometry")
+        gdf = self.get_extended_continental_crusts()
         return gdf.plot(ax=ax, facecolor='none', edgecolor=color, transform=self.base_projection, **kwargs)
+
+
+    def get_passive_continental_boundaries(self):
+        if self._time is None:
+            raise ValueError("No passive continental boundaries have been resolved. Set `PlotTopologies.time` to construct them.")
+
+        if self.passive_continental_boundaries is None:
+            raise ValueError("No passive continental boundaries passed to PlotTopologies.")
+
+        passive_continental_boundary_lines = shapelify_feature_lines(self.passive_continental_boundaries)
+        gdf = gpd.GeoDataFrame({"geometry": passive_continental_boundary_lines}, geometry="geometry")
+        return gdf
 
 
     def plot_passive_continental_boundaries(self, ax, color='black', **kwargs): 
@@ -1974,9 +2187,20 @@ class PlotTopologies(object):
             A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map 
             with passive continental boundaries plotted onto the chosen map projection.
         """
-        passive_continental_boundary_lines = shapelify_feature_lines(self.passive_continental_boundaries)
-        gdf = gpd.GeoDataFrame({"geometry": passive_continental_boundary_lines}, geometry="geometry")
+        gdf = self.get_passive_continental_boundaries()
         return gdf.plot(ax=ax, facecolor='none', edgecolor=color, transform=self.base_projection, **kwargs)
+
+
+    def get_slab_edges(self):
+        if self._time is None:
+            raise ValueError("No slab edges have been resolved. Set `PlotTopologies.time` to construct them.")
+
+        if self.slab_edges is None:
+            raise ValueError("No slab edges passed to PlotTopologies.")
+
+        slab_edge_lines = shapelify_feature_lines(self.slab_edges)
+        gdf = gpd.GeoDataFrame({"geometry": slab_edge_lines}, geometry="geometry")
+        return gdf
 
 
     def plot_slab_edges(self, ax, color='black', **kwargs): 
@@ -2003,9 +2227,20 @@ class PlotTopologies(object):
             A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map 
             with slab edges plotted onto the chosen map projection.
         """
-        slab_edge_lines = shapelify_feature_lines(self.slab_edges)
-        gdf = gpd.GeoDataFrame({"geometry": slab_edge_lines}, geometry="geometry")
+        gdf = self.get_slab_edges()
         return gdf.plot(ax=ax, facecolor='none', edgecolor=color, transform=self.base_projection, **kwargs)
+
+
+    def get_misc_transforms(self):
+        if self._time is None:
+            raise ValueError("No miscellaneous transforms have been resolved. Set `PlotTopologies.time` to construct them.")
+
+        if self.misc_transforms is None:
+            raise ValueError("No miscellaneous transforms passed to PlotTopologies.")
+
+        misc_transform_lines = shapelify_feature_lines(self.misc_transforms)
+        gdf = gpd.GeoDataFrame({"geometry": misc_transform_lines}, geometry="geometry")
+        return gdf
 
 
     def plot_misc_transforms(self, ax, color='black', **kwargs): 
@@ -2032,9 +2267,20 @@ class PlotTopologies(object):
             A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map 
             with miscellaneous transform boundaries plotted onto the chosen map projection.
         """
-        misc_transform_lines = shapelify_feature_lines(self.misc_transforms)
-        gdf = gpd.GeoDataFrame({"geometry": misc_transform_lines}, geometry="geometry")
+        gdf = self.get_misc_transforms()
         return gdf.plot(ax=ax, facecolor='none', edgecolor=color, transform=self.base_projection, **kwargs)
+
+
+    def get_unclassified_features(self):
+        if self._time is None:
+            raise ValueError("No unclassified features have been resolved. Set `PlotTopologies.time` to construct them.")
+
+        if self.unclassified_features is None:
+            raise ValueError("No unclassified features passed to PlotTopologies.")
+
+        unclassified_feature_lines = shapelify_feature_lines(self.unclassified_features)
+        gdf = gpd.GeoDataFrame({"geometry": unclassified_feature_lines}, geometry="geometry")
+        return gdf
 
 
     def plot_unclassified_features(self, ax, color='black', **kwargs): 
@@ -2061,7 +2307,6 @@ class PlotTopologies(object):
             A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map 
             with unclassified features plotted onto the chosen map projection.
         """
-        unclassified_feature_lines = shapelify_feature_lines(self.unclassified_features)
-        gdf = gpd.GeoDataFrame({"geometry": unclassified_feature_lines}, geometry="geometry")
+        gdf = self.get_unclassified_features()
         return gdf.plot(ax=ax, facecolor='none', edgecolor=color, transform=self.base_projection, **kwargs)
 
