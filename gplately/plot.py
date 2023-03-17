@@ -1501,22 +1501,6 @@ class PlotTopologies(object):
         return ax.add_geometries(teeth, crs=self.base_projection, color=color, **kwargs)
 
 
-    def get_subduction_teeth(self, spacing=0.07, size=None, aspect=None):
-        spacing = spacing * EARTH_RADIUS * 1e3
-
-        if aspect is None:
-            aspect = 2.0/3.0
-        if size is None:
-            size = spacing*0.5
-
-        height = size*aspect
-
-        trench_left_features  = shapelify_feature_lines(self.trench_left)
-        trench_right_features = shapelify_feature_lines(self.trench_right)
-
-        return trench_left_features, trench_right_features
-
-
     def plot_subduction_teeth(self, ax, spacing=0.07, size=None, aspect=None, color='black', **kwargs):
         """Plot subduction teeth onto a standard map Projection.  
 
@@ -1559,7 +1543,17 @@ class PlotTopologies(object):
             with subduction teeth plotted onto the chosen map projection.
         """
 
-        trench_left_features, trench_right_features = self.get_subduction_teeth()
+        spacing = spacing * EARTH_RADIUS * 1e3
+
+        if aspect is None:
+            aspect = 2.0/3.0
+        if size is None:
+            size = spacing*0.5
+
+        height = size*aspect
+
+        trench_left_features  = shapelify_feature_lines(self.trench_left)
+        trench_right_features = shapelify_feature_lines(self.trench_right)
 
         return(
             plot_subduction_teeth(trench_left_features,  size, 'l', height, spacing, ax=ax, color=color, **kwargs),
