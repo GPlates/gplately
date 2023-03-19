@@ -994,6 +994,25 @@ class PlotTopologies(object):
 
 
     def get_feature(self, feature):
+        """Create a geopandas.GeoDataFrame object containing geometries of reconstructed features. 
+
+        Notes
+        -----
+        The feature needed to produce the GeoDataFrame should already be constructed to a `time`.
+        This function converts the feature into a set of Shapely geometries whose coordinates are 
+        passed to a geopandas GeoDataFrame.
+
+        Parameters
+        ----------
+        feature : instance of <pygplates.Feature>
+            A feature reconstructed to `time`.
+
+        Returns
+        -------
+        gdf : instance of <geopandas.GeoDataFrame>
+            A pandas.DataFrame that has a column with `feature` geometries.
+
+        """
         shp = shapelify_features(feature)
         gdf = gpd.GeoDataFrame({'geometry': shp}, geometry='geometry')
         return gdf
@@ -1004,6 +1023,36 @@ class PlotTopologies(object):
 
 
     def get_coastlines(self):
+        """Create a geopandas.GeoDataFrame object containing geometries of reconstructed coastline polygons. 
+
+        Notes
+        -----
+        The `coastlines` needed to produce the GeoDataFrame are automatically constructed if the optional `time` 
+        parameter is passed to the `PlotTopologies` object before calling this function. `time` can be passed 
+        either when `PlotTopologies` is first called...
+
+            gplot = gplately.PlotTopologies(..., time=100,...)
+
+        or anytime afterwards, by setting:
+
+            time = 100 #Ma
+            gplot.time = time
+
+        ...after which this function can be re-run. Once the `coastlines` are reconstructed, they are 
+        converted into Shapely polygons whose coordinates are passed to a geopandas GeoDataFrame.
+
+        Returns
+        -------
+        gdf : instance of <geopandas.GeoDataFrame>
+            A pandas.DataFrame that has a column with `coastlines` geometry.
+
+        Raises 
+        ------
+        ValueError
+            If the optional `time` parameter has not been passed to `PlotTopologies`. This is needed to construct
+            `coastlines` to the requested `time` and thus populate the GeoDataFrame.
+
+        """
         if self._time is None:
             raise ValueError("No coastlines have been resolved. Set `PlotTopologies.time` to construct coastlines.")
 
@@ -1051,7 +1100,36 @@ class PlotTopologies(object):
 
 
     def get_continents(self):
+        """Create a geopandas.GeoDataFrame object containing geometries of reconstructed continental polygons. 
 
+        Notes
+        -----
+        The `continents` needed to produce the GeoDataFrame are automatically constructed if the optional `time` 
+        parameter is passed to the `PlotTopologies` object before calling this function. `time` can be passed 
+        either when `PlotTopologies` is first called...
+
+            gplot = gplately.PlotTopologies(..., time=100,...)
+
+        or anytime afterwards, by setting:
+
+            time = 100 #Ma
+            gplot.time = time
+
+        ...after which this function can be re-run. Once the `continents` are reconstructed, they are 
+        converted into Shapely polygons whose coordinates are passed to a geopandas GeoDataFrame.
+
+        Returns
+        -------
+        gdf : instance of <geopandas.GeoDataFrame>
+            A pandas.DataFrame that has a column with `continents` geometry.
+
+        Raises 
+        ------
+        ValueError
+            If the optional `time` parameter has not been passed to `PlotTopologies`. This is needed to construct
+            `continents` to the requested `time` and thus populate the GeoDataFrame.
+
+        """
         if self._time is None:
             raise ValueError("No continents have been resolved. Set `PlotTopologies.time` to construct continents.")
 
@@ -1099,6 +1177,37 @@ class PlotTopologies(object):
 
 
     def get_continent_ocean_boundaries(self):
+        """Create a geopandas.GeoDataFrame object containing geometries of reconstructed continent-ocean
+        boundary lines. 
+
+        Notes
+        -----
+        The `COBs` needed to produce the GeoDataFrame are automatically constructed if the optional `time` 
+        parameter is passed to the `PlotTopologies` object before calling this function. `time` can be passed 
+        either when `PlotTopologies` is first called...
+
+            gplot = gplately.PlotTopologies(..., time=100,...)
+
+        or anytime afterwards, by setting:
+
+            time = 100 #Ma
+            gplot.time = time
+
+        ...after which this function can be re-run. Once the `COBs` are reconstructed, they are 
+        converted into Shapely lines whose coordinates are passed to a geopandas GeoDataFrame.
+
+        Returns
+        -------
+        gdf : instance of <geopandas.GeoDataFrame>
+            A pandas.DataFrame that has a column with `COBs` geometry.
+
+        Raises 
+        ------
+        ValueError
+            If the optional `time` parameter has not been passed to `PlotTopologies`. This is needed to construct
+            `COBs` to the requested `time` and thus populate the GeoDataFrame.
+
+        """
         if self._time is None:
             raise ValueError("No geometries have been resolved. Set `PlotTopologies.time` to construct topologies.")
 
@@ -1151,6 +1260,36 @@ class PlotTopologies(object):
 
 
     def get_ridges(self):
+        """Create a geopandas.GeoDataFrame object containing geometries of reconstructed ridge lines. 
+
+        Notes
+        -----
+        The `ridges` needed to produce the GeoDataFrame are automatically constructed if the optional `time` 
+        parameter is passed to the `PlotTopologies` object before calling this function. `time` can be passed 
+        either when `PlotTopologies` is first called...
+
+            gplot = gplately.PlotTopologies(..., time=100,...)
+
+        or anytime afterwards, by setting:
+
+            time = 100 #Ma
+            gplot.time = time
+
+        ...after which this function can be re-run. Once the `ridges` are reconstructed, they are 
+        converted into Shapely lines whose coordinates are passed to a geopandas GeoDataFrame.
+
+        Returns
+        -------
+        gdf : instance of <geopandas.GeoDataFrame>
+            A pandas.DataFrame that has a column with `ridges` geometry.
+
+        Raises 
+        ------
+        ValueError
+            If the optional `time` parameter has not been passed to `PlotTopologies`. This is needed to construct
+            `ridges` to the requested `time` and thus populate the GeoDataFrame.
+
+        """
         if self._time is None:
             raise ValueError("No ridges have been resolved. Set `PlotTopologies.time` to construct ridges.")
 
@@ -1207,6 +1346,36 @@ class PlotTopologies(object):
 
 
     def get_ridges_and_transforms(self):
+        """Create a geopandas.GeoDataFrame object containing geometries of reconstructed ridge and transform lines. 
+
+        Notes
+        -----
+        The `ridge_transforms` needed to produce the GeoDataFrame are automatically constructed if the optional `time` 
+        parameter is passed to the `PlotTopologies` object before calling this function. `time` can be passed 
+        either when `PlotTopologies` is first called...
+
+            gplot = gplately.PlotTopologies(..., time=100,...)
+
+        or anytime afterwards, by setting:
+
+            time = 100 #Ma
+            gplot.time = time
+
+        ...after which this function can be re-run. Once the `ridge_transforms` are reconstructed, they are 
+        converted into Shapely lines whose coordinates are passed to a geopandas GeoDataFrame.
+
+        Returns
+        -------
+        gdf : instance of <geopandas.GeoDataFrame>
+            A pandas.DataFrame that has a column with `ridges` geometry.
+
+        Raises 
+        ------
+        ValueError
+            If the optional `time` parameter has not been passed to `PlotTopologies`. This is needed to construct
+            `ridge_transforms` to the requested `time` and thus populate the GeoDataFrame.
+
+        """
         if self._time is None:
             raise ValueError("No ridges and transforms have been resolved. Set `PlotTopologies.time` to construct ridges and transforms.")
 
@@ -1264,6 +1433,35 @@ class PlotTopologies(object):
 
 
     def get_transforms(self):
+        """Create a geopandas.GeoDataFrame object containing geometries of reconstructed transform lines. 
+
+        Notes
+        -----
+        The `transforms` needed to produce the GeoDataFrame are automatically constructed if the optional `time` 
+        parameter is passed to the `PlotTopologies` object before calling this function. `time` can be passed 
+        either when `PlotTopologies` is first called...
+
+            gplot = gplately.PlotTopologies(..., time=100,...)
+
+        or anytime afterwards, by setting:
+
+            time = 100 #Ma
+            gplot.time = time
+
+        ...after which this function can be re-run. Once the `transforms` are reconstructed, they are 
+        converted into Shapely lines whose coordinates are passed to a geopandas GeoDataFrame.
+
+        Returns
+        -------
+        gdf : instance of <geopandas.GeoDataFrame>
+            A pandas.DataFrame that has a column with `transforms` geometry.
+
+        Raises 
+        ------
+        ValueError
+            If the optional `time` parameter has not been passed to `PlotTopologies`. This is needed to construct
+            `transforms` to the requested `time` and thus populate the GeoDataFrame.
+        """
         if self._time is None:
             raise ValueError("No transforms have been resolved. Set `PlotTopologies.time` to construct transforms.")
 
@@ -1320,6 +1518,35 @@ class PlotTopologies(object):
 
 
     def get_trenches(self):
+        """Create a geopandas.GeoDataFrame object containing geometries of reconstructed trench lines. 
+
+        Notes
+        -----
+        The `trenches` needed to produce the GeoDataFrame are automatically constructed if the optional `time` 
+        parameter is passed to the `PlotTopologies` object before calling this function. `time` can be passed 
+        either when `PlotTopologies` is first called...
+
+            gplot = gplately.PlotTopologies(..., time=100,...)
+
+        or anytime afterwards, by setting:
+
+            time = 100 #Ma
+            gplot.time = time
+
+        ...after which this function can be re-run. Once the `trenches` are reconstructed, they are 
+        converted into Shapely lines whose coordinates are passed to a geopandas GeoDataFrame.
+
+        Returns
+        -------
+        gdf : instance of <geopandas.GeoDataFrame>
+            A pandas.DataFrame that has a column with `trenches` geometry.
+
+        Raises 
+        ------
+        ValueError
+            If the optional `time` parameter has not been passed to `PlotTopologies`. This is needed to construct
+            `trenches` to the requested `time` and thus populate the GeoDataFrame.
+        """
         if self._time is None:
             raise ValueError("No trenches have been resolved. Set `PlotTopologies.time` to construct trenches.")
 
@@ -1377,6 +1604,35 @@ class PlotTopologies(object):
 
 
     def get_misc_boundaries(self):
+        """Create a geopandas.GeoDataFrame object containing geometries of other reconstructed lines. 
+
+        Notes
+        -----
+        The `other` geometries needed to produce the GeoDataFrame are automatically constructed if the optional `time` 
+        parameter is passed to the `PlotTopologies` object before calling this function. `time` can be passed 
+        either when `PlotTopologies` is first called...
+
+            gplot = gplately.PlotTopologies(..., time=100,...)
+
+        or anytime afterwards, by setting:
+
+            time = 100 #Ma
+            gplot.time = time
+
+        ...after which this function can be re-run. Once the `other` geometries are reconstructed, they are 
+        converted into Shapely features whose coordinates are passed to a geopandas GeoDataFrame.
+
+        Returns
+        -------
+        gdf : instance of <geopandas.GeoDataFrame>
+            A pandas.DataFrame that has a column with `other` geometry.
+
+        Raises 
+        ------
+        ValueError
+            If the optional `time` parameter has not been passed to `PlotTopologies`. This is needed to construct
+            `other` geometries to the requested `time` and thus populate the GeoDataFrame.
+        """
         if self._time is None:
             raise ValueError("No miscellaneous topologies have been resolved. Set `PlotTopologies.time` to construct them.")
 
@@ -1747,6 +2003,35 @@ class PlotTopologies(object):
 
 
     def get_continental_rifts(self):
+        """Create a geopandas.GeoDataFrame object containing geometries of reconstructed contiental rift lines. 
+
+        Notes
+        -----
+        The `continental_rifts` needed to produce the GeoDataFrame are automatically constructed if the optional `time` 
+        parameter is passed to the `PlotTopologies` object before calling this function. `time` can be passed 
+        either when `PlotTopologies` is first called...
+
+            gplot = gplately.PlotTopologies(..., time=100,...)
+
+        or anytime afterwards, by setting:
+
+            time = 100 #Ma
+            gplot.time = time
+
+        ...after which this function can be re-run. Once the `continental_rifts` are reconstructed, they are 
+        converted into Shapely lines whose coordinates are passed to a geopandas GeoDataFrame.
+
+        Returns
+        -------
+        gdf : instance of <geopandas.GeoDataFrame>
+            A pandas.DataFrame that has a column with `continental_rifts` geometry.
+
+        Raises 
+        ------
+        ValueError
+            If the optional `time` parameter has not been passed to `PlotTopologies`. This is needed to construct
+            `continental_rifts` to the requested `time` and thus populate the GeoDataFrame.
+        """
         if self._time is None:
             raise ValueError("No continental rifts have been resolved. Set `PlotTopologies.time` to construct them.")
 
@@ -1787,6 +2072,35 @@ class PlotTopologies(object):
 
 
     def get_faults(self):
+        """Create a geopandas.GeoDataFrame object containing geometries of reconstructed fault lines. 
+
+        Notes
+        -----
+        The `faults` needed to produce the GeoDataFrame are automatically constructed if the optional `time` 
+        parameter is passed to the `PlotTopologies` object before calling this function. `time` can be passed 
+        either when `PlotTopologies` is first called...
+
+            gplot = gplately.PlotTopologies(..., time=100,...)
+
+        or anytime afterwards, by setting:
+
+            time = 100 #Ma
+            gplot.time = time
+
+        ...after which this function can be re-run. Once the `faults` are reconstructed, they are 
+        converted into Shapely lines whose coordinates are passed to a geopandas GeoDataFrame.
+
+        Returns
+        -------
+        gdf : instance of <geopandas.GeoDataFrame>
+            A pandas.DataFrame that has a column with `faults` geometry.
+
+        Raises 
+        ------
+        ValueError
+            If the optional `time` parameter has not been passed to `PlotTopologies`. This is needed to construct
+            `faults` to the requested `time` and thus populate the GeoDataFrame.
+        """
         if self._time is None:
             raise ValueError("No faults have been resolved. Set `PlotTopologies.time` to construct them.")
 
@@ -1827,6 +2141,35 @@ class PlotTopologies(object):
 
 
     def get_fracture_zones(self):
+        """Create a geopandas.GeoDataFrame object containing geometries of reconstructed fracture zone lines. 
+
+        Notes
+        -----
+        The `fracture_zones` needed to produce the GeoDataFrame are automatically constructed if the optional `time` 
+        parameter is passed to the `PlotTopologies` object before calling this function. `time` can be passed 
+        either when `PlotTopologies` is first called...
+
+            gplot = gplately.PlotTopologies(..., time=100,...)
+
+        or anytime afterwards, by setting:
+
+            time = 100 #Ma
+            gplot.time = time
+
+        ...after which this function can be re-run. Once the `fracture_zones` are reconstructed, they are 
+        converted into Shapely lines whose coordinates are passed to a geopandas GeoDataFrame.
+
+        Returns
+        -------
+        gdf : instance of <geopandas.GeoDataFrame>
+            A pandas.DataFrame that has a column with `fracture_zones` geometry.
+
+        Raises 
+        ------
+        ValueError
+            If the optional `time` parameter has not been passed to `PlotTopologies`. This is needed to construct
+            `fracture_zones` to the requested `time` and thus populate the GeoDataFrame.
+        """
         if self._time is None:
             raise ValueError("No fracture zones have been resolved. Set `PlotTopologies.time` to construct them.")
 
@@ -1867,6 +2210,35 @@ class PlotTopologies(object):
 
 
     def get_inferred_paleo_boundaries(self):
+        """Create a geopandas.GeoDataFrame object containing geometries of reconstructed inferred paleo boundary lines. 
+
+        Notes
+        -----
+        The `inferred_paleo_boundaries` needed to produce the GeoDataFrame are automatically constructed if the optional `time` 
+        parameter is passed to the `PlotTopologies` object before calling this function. `time` can be passed 
+        either when `PlotTopologies` is first called...
+
+            gplot = gplately.PlotTopologies(..., time=100,...)
+
+        or anytime afterwards, by setting:
+
+            time = 100 #Ma
+            gplot.time = time
+
+        ...after which this function can be re-run. Once the `inferred_paleo_boundaries` are reconstructed, they are 
+        converted into Shapely lines whose coordinates are passed to a geopandas GeoDataFrame.
+
+        Returns
+        -------
+        gdf : instance of <geopandas.GeoDataFrame>
+            A pandas.DataFrame that has a column with `inferred_paleo_boundaries` geometry.
+
+        Raises 
+        ------
+        ValueError
+            If the optional `time` parameter has not been passed to `PlotTopologies`. This is needed to construct
+            `inferred_paleo_boundaries` to the requested `time` and thus populate the GeoDataFrame.
+        """
         if self._time is None:
             raise ValueError("No inferred paleo boundaries have been resolved. Set `PlotTopologies.time` to construct them.")
 
@@ -1907,6 +2279,35 @@ class PlotTopologies(object):
 
 
     def get_terrane_boundaries(self):
+        """Create a geopandas.GeoDataFrame object containing geometries of reconstructed terrane boundary lines. 
+
+        Notes
+        -----
+        The `terrane_boundaries` needed to produce the GeoDataFrame are automatically constructed if the optional `time` 
+        parameter is passed to the `PlotTopologies` object before calling this function. `time` can be passed 
+        either when `PlotTopologies` is first called...
+
+            gplot = gplately.PlotTopologies(..., time=100,...)
+
+        or anytime afterwards, by setting:
+
+            time = 100 #Ma
+            gplot.time = time
+
+        ...after which this function can be re-run. Once the `terrane_boundaries` are reconstructed, they are 
+        converted into Shapely lines whose coordinates are passed to a geopandas GeoDataFrame.
+
+        Returns
+        -------
+        gdf : instance of <geopandas.GeoDataFrame>
+            A pandas.DataFrame that has a column with `terrane_boundaries` geometry.
+
+        Raises 
+        ------
+        ValueError
+            If the optional `time` parameter has not been passed to `PlotTopologies`. This is needed to construct
+            `terrane_boundaries` to the requested `time` and thus populate the GeoDataFrame.
+        """
         if self._time is None:
             raise ValueError("No terrane boundaries have been resolved. Set `PlotTopologies.time` to construct them.")
 
@@ -1947,6 +2348,35 @@ class PlotTopologies(object):
 
 
     def get_transitional_crusts(self):
+        """Create a geopandas.GeoDataFrame object containing geometries of reconstructed transitional crust lines. 
+
+        Notes
+        -----
+        The `transitional_crusts` needed to produce the GeoDataFrame are automatically constructed if the optional `time` 
+        parameter is passed to the `PlotTopologies` object before calling this function. `time` can be passed 
+        either when `PlotTopologies` is first called...
+
+            gplot = gplately.PlotTopologies(..., time=100,...)
+
+        or anytime afterwards, by setting:
+
+            time = 100 #Ma
+            gplot.time = time
+
+        ...after which this function can be re-run. Once the `transitional_crusts` are reconstructed, they are 
+        converted into Shapely lines whose coordinates are passed to a geopandas GeoDataFrame.
+
+        Returns
+        -------
+        gdf : instance of <geopandas.GeoDataFrame>
+            A pandas.DataFrame that has a column with `transitional_crusts` geometry.
+
+        Raises 
+        ------
+        ValueError
+            If the optional `time` parameter has not been passed to `PlotTopologies`. This is needed to construct
+            `transitional_crusts` to the requested `time` and thus populate the GeoDataFrame.
+        """
         if self._time is None:
             raise ValueError("No transitional crusts have been resolved. Set `PlotTopologies.time` to construct them.")
 
@@ -1987,6 +2417,35 @@ class PlotTopologies(object):
 
 
     def get_orogenic_belts(self):
+        """Create a geopandas.GeoDataFrame object containing geometries of reconstructed orogenic belt lines. 
+
+        Notes
+        -----
+        The `orogenic_belts` needed to produce the GeoDataFrame are automatically constructed if the optional `time` 
+        parameter is passed to the `PlotTopologies` object before calling this function. `time` can be passed 
+        either when `PlotTopologies` is first called...
+
+            gplot = gplately.PlotTopologies(..., time=100,...)
+
+        or anytime afterwards, by setting:
+
+            time = 100 #Ma
+            gplot.time = time
+
+        ...after which this function can be re-run. Once the `orogenic_belts` are reconstructed, they are 
+        converted into Shapely lines whose coordinates are passed to a geopandas GeoDataFrame.
+
+        Returns
+        -------
+        gdf : instance of <geopandas.GeoDataFrame>
+            A pandas.DataFrame that has a column with `orogenic_belts` geometry.
+
+        Raises 
+        ------
+        ValueError
+            If the optional `time` parameter has not been passed to `PlotTopologies`. This is needed to construct
+            `orogenic_belts` to the requested `time` and thus populate the GeoDataFrame.
+        """
         if self._time is None:
             raise ValueError("No orogenic belts have been resolved. Set `PlotTopologies.time` to construct them.")
 
@@ -2027,6 +2486,35 @@ class PlotTopologies(object):
 
 
     def get_sutures(self):
+        """Create a geopandas.GeoDataFrame object containing geometries of reconstructed suture lines. 
+
+        Notes
+        -----
+        The `sutures` needed to produce the GeoDataFrame are automatically constructed if the optional `time` 
+        parameter is passed to the `PlotTopologies` object before calling this function. `time` can be passed 
+        either when `PlotTopologies` is first called...
+
+            gplot = gplately.PlotTopologies(..., time=100,...)
+
+        or anytime afterwards, by setting:
+
+            time = 100 #Ma
+            gplot.time = time
+
+        ...after which this function can be re-run. Once the `sutures` are reconstructed, they are 
+        converted into Shapely lines whose coordinates are passed to a geopandas GeoDataFrame.
+
+        Returns
+        -------
+        gdf : instance of <geopandas.GeoDataFrame>
+            A pandas.DataFrame that has a column with `sutures` geometry.
+
+        Raises 
+        ------
+        ValueError
+            If the optional `time` parameter has not been passed to `PlotTopologies`. This is needed to construct
+            `sutures` to the requested `time` and thus populate the GeoDataFrame.
+        """
         if self._time is None:
             raise ValueError("No sutures have been resolved. Set `PlotTopologies.time` to construct them.")
 
@@ -2067,6 +2555,35 @@ class PlotTopologies(object):
 
 
     def get_continental_crusts(self):
+        """Create a geopandas.GeoDataFrame object containing geometries of reconstructed continental crust lines. 
+
+        Notes
+        -----
+        The `continental_crusts` needed to produce the GeoDataFrame are automatically constructed if the optional `time` 
+        parameter is passed to the `PlotTopologies` object before calling this function. `time` can be passed 
+        either when `PlotTopologies` is first called...
+
+            gplot = gplately.PlotTopologies(..., time=100,...)
+
+        or anytime afterwards, by setting:
+
+            time = 100 #Ma
+            gplot.time = time
+
+        ...after which this function can be re-run. Once the `continental_crusts` are reconstructed, they are 
+        converted into Shapely lines whose coordinates are passed to a geopandas GeoDataFrame.
+
+        Returns
+        -------
+        gdf : instance of <geopandas.GeoDataFrame>
+            A pandas.DataFrame that has a column with `continental_crusts` geometry.
+
+        Raises 
+        ------
+        ValueError
+            If the optional `time` parameter has not been passed to `PlotTopologies`. This is needed to construct
+            `continental_crusts` to the requested `time` and thus populate the GeoDataFrame.
+        """
         if self._time is None:
             raise ValueError("No continental crust topologies have been resolved. Set `PlotTopologies.time` to construct them.")
 
@@ -2107,6 +2624,35 @@ class PlotTopologies(object):
 
 
     def get_extended_continental_crusts(self):
+        """Create a geopandas.GeoDataFrame object containing geometries of reconstructed extended continental crust lines. 
+
+        Notes
+        -----
+        The `extended_continental_crusts` needed to produce the GeoDataFrame are automatically constructed if the optional `time` 
+        parameter is passed to the `PlotTopologies` object before calling this function. `time` can be passed 
+        either when `PlotTopologies` is first called...
+
+            gplot = gplately.PlotTopologies(..., time=100,...)
+
+        or anytime afterwards, by setting:
+
+            time = 100 #Ma
+            gplot.time = time
+
+        ...after which this function can be re-run. Once the `extended_continental_crusts` are reconstructed, they are 
+        converted into Shapely lines whose coordinates are passed to a geopandas GeoDataFrame.
+
+        Returns
+        -------
+        gdf : instance of <geopandas.GeoDataFrame>
+            A pandas.DataFrame that has a column with `extended_continental_crusts` geometry.
+
+        Raises 
+        ------
+        ValueError
+            If the optional `time` parameter has not been passed to `PlotTopologies`. This is needed to construct
+            `extended_continental_crusts` to the requested `time` and thus populate the GeoDataFrame.
+        """
         if self._time is None:
             raise ValueError("No extended continental crust topologies have been resolved. Set `PlotTopologies.time` to construct them.")
 
@@ -2146,6 +2692,35 @@ class PlotTopologies(object):
 
 
     def get_passive_continental_boundaries(self):
+        """Create a geopandas.GeoDataFrame object containing geometries of reconstructed passive continental boundary lines. 
+
+        Notes
+        -----
+        The `passive_continental_boundaries` needed to produce the GeoDataFrame are automatically constructed if the optional `time` 
+        parameter is passed to the `PlotTopologies` object before calling this function. `time` can be passed 
+        either when `PlotTopologies` is first called...
+
+            gplot = gplately.PlotTopologies(..., time=100,...)
+
+        or anytime afterwards, by setting:
+
+            time = 100 #Ma
+            gplot.time = time
+
+        ...after which this function can be re-run. Once the `passive_continental_boundaries` are reconstructed, they are 
+        converted into Shapely lines whose coordinates are passed to a geopandas GeoDataFrame.
+
+        Returns
+        -------
+        gdf : instance of <geopandas.GeoDataFrame>
+            A pandas.DataFrame that has a column with `passive_continental_boundaries` geometry.
+
+        Raises 
+        ------
+        ValueError
+            If the optional `time` parameter has not been passed to `PlotTopologies`. This is needed to construct
+            `passive_continental_boundaries` to the requested `time` and thus populate the GeoDataFrame.
+        """
         if self._time is None:
             raise ValueError("No passive continental boundaries have been resolved. Set `PlotTopologies.time` to construct them.")
 
@@ -2186,6 +2761,35 @@ class PlotTopologies(object):
 
 
     def get_slab_edges(self):
+        """Create a geopandas.GeoDataFrame object containing geometries of reconstructed slab edge lines. 
+
+        Notes
+        -----
+        The `slab_edges` needed to produce the GeoDataFrame are automatically constructed if the optional `time` 
+        parameter is passed to the `PlotTopologies` object before calling this function. `time` can be passed 
+        either when `PlotTopologies` is first called...
+
+            gplot = gplately.PlotTopologies(..., time=100,...)
+
+        or anytime afterwards, by setting:
+
+            time = 100 #Ma
+            gplot.time = time
+
+        ...after which this function can be re-run. Once the `slab_edges` are reconstructed, they are 
+        converted into Shapely lines whose coordinates are passed to a geopandas GeoDataFrame.
+
+        Returns
+        -------
+        gdf : instance of <geopandas.GeoDataFrame>
+            A pandas.DataFrame that has a column with `slab_edges` geometry.
+
+        Raises 
+        ------
+        ValueError
+            If the optional `time` parameter has not been passed to `PlotTopologies`. This is needed to construct
+            `slab_edges` to the requested `time` and thus populate the GeoDataFrame.
+        """
         if self._time is None:
             raise ValueError("No slab edges have been resolved. Set `PlotTopologies.time` to construct them.")
 
@@ -2226,6 +2830,35 @@ class PlotTopologies(object):
 
 
     def get_misc_transforms(self):
+        """Create a geopandas.GeoDataFrame object containing geometries of reconstructed misc transform lines. 
+
+        Notes
+        -----
+        The `misc_transforms` needed to produce the GeoDataFrame are automatically constructed if the optional `time` 
+        parameter is passed to the `PlotTopologies` object before calling this function. `time` can be passed 
+        either when `PlotTopologies` is first called...
+
+            gplot = gplately.PlotTopologies(..., time=100,...)
+
+        or anytime afterwards, by setting:
+
+            time = 100 #Ma
+            gplot.time = time
+
+        ...after which this function can be re-run. Once the `misc_transforms` are reconstructed, they are 
+        converted into Shapely lines whose coordinates are passed to a geopandas GeoDataFrame.
+
+        Returns
+        -------
+        gdf : instance of <geopandas.GeoDataFrame>
+            A pandas.DataFrame that has a column with `misc_transforms` geometry.
+
+        Raises 
+        ------
+        ValueError
+            If the optional `time` parameter has not been passed to `PlotTopologies`. This is needed to construct
+            `misc_transforms` to the requested `time` and thus populate the GeoDataFrame.
+        """
         if self._time is None:
             raise ValueError("No miscellaneous transforms have been resolved. Set `PlotTopologies.time` to construct them.")
 
@@ -2266,6 +2899,35 @@ class PlotTopologies(object):
 
 
     def get_unclassified_features(self):
+        """Create a geopandas.GeoDataFrame object containing geometries of reconstructed unclassified feature lines. 
+
+        Notes
+        -----
+        The `unclassified_features` needed to produce the GeoDataFrame are automatically constructed if the optional `time` 
+        parameter is passed to the `PlotTopologies` object before calling this function. `time` can be passed 
+        either when `PlotTopologies` is first called...
+
+            gplot = gplately.PlotTopologies(..., time=100,...)
+
+        or anytime afterwards, by setting:
+
+            time = 100 #Ma
+            gplot.time = time
+
+        ...after which this function can be re-run. Once the `unclassified_features` are reconstructed, they are 
+        converted into Shapely lines whose coordinates are passed to a geopandas GeoDataFrame.
+
+        Returns
+        -------
+        gdf : instance of <geopandas.GeoDataFrame>
+            A pandas.DataFrame that has a column with `unclassified_features` geometry.
+
+        Raises 
+        ------
+        ValueError
+            If the optional `time` parameter has not been passed to `PlotTopologies`. This is needed to construct
+            `unclassified_features` to the requested `time` and thus populate the GeoDataFrame.
+        """
         if self._time is None:
             raise ValueError("No unclassified features have been resolved. Set `PlotTopologies.time` to construct them.")
 
