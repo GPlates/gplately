@@ -70,45 +70,6 @@ def path_to_cache():
     return path
 
 
-def path_of_cached_file(url, model_name=None):
-    """Determine the full path to the cache where the file in `url` 
-    will be downloaded to."""
-
-    cached_filename = _pooch.utils.unique_file_name(url)
-    cached_filename = _remove_hash(cached_filename)
-    path = path_to_cache()
-
-    processor_to_use, processor_extension = _determine_processor(url)
-
-    # If the requested files need processing (i.e. zip, gz folders)
-    if processor_extension:
-        # Are they from plate models? These typically are the .zip folders for plate models
-        if model_name:
-            cached_filename  = str(path) + '/' + model_name + processor_extension+'/'
-            unprocessed_path = str(path) + '/' + model_name
-            #cached_filename = cached_filename = str(path) + '/' + model_name
-
-        # If not from plate models but need processing, i.e. ETOPO1
-        else:
-            cached_filename = str(path) + '/' + "gplately_"+_parse_url_for_filenames(url) + processor_extension+'/'
-            unprocessed_path = str(path) + '/' + "gplately_"+_parse_url_for_filenames(url)
-            #cached_filename = "gplately_"+_parse_url_for_filenames(url) 
-
-    # If the requested files do not need processing, like standalone .nc files:
-    else:
-        if model_name:
-            cached_filename = str(path) + '/' + model_name + "_" + _parse_url_for_filenames(url)
-            unprocessed_path = None
-        else:
-            cached_filename = str(path) + '/' + "gplately_"+_parse_url_for_filenames(url)
-            unprocessed_path = None
-      
-    _pooch.utils.make_local_storage(path)
-    full_path = path.resolve() / cached_filename
-
-    return full_path, unprocessed_path
-
-
 def _extract_processed_files(unprocessed_directory, processed_directory):
     """Return a list of all full filenames from a given directory 
     in the GPlately cache.
@@ -144,40 +105,6 @@ def clear_cache():
     cache_path = path_to_cache()
     _shutil.rmtree(str(cache_path))
     _pooch.utils.make_local_storage(str(cache_path))
-    return
-
-
-def clear_file(file_id_string):
-    path_to_json = str(path_to_cache())+"/DataServer.json"
-    with open(path_to_json, "r") as data_file:
-        data_loaded = _json.load(data_file)
-
-        found_collection = False
-        for file_id, file_metadata in data_loaded.items():
-
-            # If the requested file has a JSON entry...
-            if file_id.lower() == file_id_string.lower():
-                found_collection = True
-
-                # Check local file paths (unprocessed and processed, if applicable)
-                unprocessed_path = data_loaded[file_id.lower()]["local_path"]['unprocessed']
-                processed_path = data_loaded[file_id.lower()]["local_path"]['processed']
-
-                # Delete both unprocessed and processed files/directories
-                # related to this URL so we can re-download its files
-                if _os.path.isfile(str(unprocessed_path)):
-                    _os.remove(str(unprocessed_path))
-                elif _os.path.isdir(str(unprocessed_path)):
-                    _shutil.rmtree(str(unprocessed_path))
-
-                if _os.path.isfile(str(processed_path)):
-                    _os.remove(str(processed_path))
-                elif _os.path.isdir(str(processed_path)):
-                    _shutil.rmtree(str(processed_path))
-
-    if not found_collection:
-        raise ValueError("No files/directories with the ID {} could be identified and deleted".format(file_id_string)
-        )
     return
 
 
@@ -944,7 +871,7 @@ class DataServer(object):
     If the `DataServer` object and its methods are called for the first time, i.e. by:
 
         # string identifier to access the Muller et al. 2019 model
-        gDownload = DataServer("Muller2019")
+        gDownload = gplately.DataServer("Muller2019")
 
     all requested files are downloaded into the user's 'gplately' cache folder only _once_. If the same
     object and method(s) are re-run, the files will be re-accessed from the cache provided they have not been 
@@ -1273,7 +1200,7 @@ class DataServer(object):
         This method accesses the plate reconstruction model ascribed to the `file_collection` string passed 
         into the `DataServer` object. For example, if the object was called with `"Muller2019"`:
 
-            gDownload = DataServer("Muller2019")
+            gDownload = gplately.DataServer("Muller2019")
             rotation_model, topology_features, static_polygons = gDownload.get_plate_reconstruction_files()
 
         the method will download a `rotation_model`, `topology_features` and `static_polygons` from the 
@@ -1429,7 +1356,7 @@ class DataServer(object):
         string passed into the `DataServer` object. For example, if the object was called with
         `"Muller2019"`:
 
-            gDownload = DataServer("Muller2019")
+            gDownload = gplately.DataServer("Muller2019")
             coastlines, continents, COBs = gDownload.get_topology_geometries()
 
         the method will attempt to download `coastlines`, `continents` and `COBs` from the Müller
@@ -1625,7 +1552,7 @@ class DataServer(object):
         --------
         if the `DataServer` object was called with the `Muller2019` `file_collection` string:
 
-            gDownload = DataServer("Muller2019")
+            gDownload = gplately.DataServer("Muller2019")
 
         `get_age_grid` will download seafloor age grids from the Müller et al. (2019) plate 
         reconstruction model for the geological time(s) requested in the `time` parameter. 
@@ -1708,7 +1635,7 @@ class DataServer(object):
         --------
         if the `DataServer` object was called with the `Clennett2020` `file_collection` string:
 
-            gDownload = DataServer("Clennett2020")
+            gDownload = gplately.DataServer("Clennett2020")
 
         `get_spreading_rate_grid` will download seafloor spreading rate grids from the 
         Clennett et al. (2020) plate reconstruction model for the geological time(s) 
