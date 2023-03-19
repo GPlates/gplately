@@ -143,7 +143,7 @@ class DataCollection(object):
 
             "Cao2020" : [0, 1000],
             "Muller2019" : [0, 250], 
-            "Muller2016" : [0, 240],
+            "Muller2016" : [0, 230],
             "Clennett2020" : [0, 170],
             "Seton2012" : [0, 200],
             "Merdith2021" : [0, 1000],
