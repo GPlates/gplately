@@ -149,6 +149,22 @@ def fill_raster(data,invalid=None):
     ind = distance_transform_edt(invalid, return_distances=False, return_indices=True)
     return data[tuple(ind)]
 
+
+def realign_grid(array, lons, lats):
+    mask_lons = lons &gt; 180
+
+    # realign to -180/180
+    if mask_lons.any():
+        dlon = np.diff(lons).mean()
+        array = np.hstack([array[:,mask_lons], array[:,~mask_lons]])
+        lons  = np.hstack([lons[mask_lons] - 360 - dlon, lons[~mask_lons]])
+
+    if lats[0] &gt; lats[-1]:
+        array = np.flipud(array)
+        lats = lats[::-1]
+
+    return array, lons, lats
+
 def read_netcdf_grid(filename, return_grids=False, realign=False, resample=None):
     &#34;&#34;&#34;Read a `netCDF` (.nc) grid from a given `filename` and return its data as a
     `MaskedArray`.
@@ -198,7 +214,7 @@ def read_netcdf_grid(filename, return_grids=False, realign=False, resample=None)
     
     # open netCDF file and re-align from -180, 180 degrees
     with netCDF4.Dataset(filename, &#39;r&#39;) as cdf:
-        cdf_grid = cdf[&#34;z&#34;]
+        cdf_grid = cdf[&#34;z&#34;][:]
         try:
             cdf_lon = cdf[&#39;lon&#39;][:]
             cdf_lat = cdf[&#39;lat&#39;][:]
@@ -206,23 +222,11 @@ def read_netcdf_grid(filename, return_grids=False, realign=False, resample=None)
             cdf_lon = cdf[&#39;x&#39;][:]
             cdf_lat = cdf[&#39;y&#39;][:]
         
-        if realign:
-            # realign longitudes to -180/180 dateline
-            cdf_lon_mask = cdf_lon[:] &gt; 180
-            dlon = np.diff(cdf_lon[:]).mean()
-
-            if cdf_lon_mask.any():
-                cdf_grid_z = np.hstack([cdf_grid[:,cdf_lon_mask], cdf_grid[:,~cdf_lon_mask]])
-                cdf_lon = np.hstack([cdf_lon[cdf_lon_mask]-360-dlon, cdf_lon[~cdf_lon_mask]])
-            else:
-                cdf_grid_z = cdf_grid[:]
-
-            # flip the array if latitude is decreasing
-            if cdf_lat[0] &gt; cdf_lat[-1]:
-                cdf_grid_z = np.flipud(cdf_grid_z)
-                cdf_lat = cdf_lat[::-1]
-        else:
-            cdf_grid_z = cdf_grid[:]
+    if realign:
+        # realign longitudes to -180/180 dateline
+        cdf_grid_z, cdf_lon, cdf_lat = realign_grid(cdf_grid, cdf_lon, cdf_lat)
+    else:
+        cdf_grid_z = cdf_grid
 
     # resample
     if resample is not None:
@@ -1481,6 +1485,9 @@ class Raster(object):
             self._data = np.array(data)
             self._lons = np.linspace(extent[0], extent[1], self.data.shape[1])
             self._lats = np.linspace(extent[2], extent[3], self.data.shape[0])
+            if realign:
+                # realign to -180,180 and flip grid
+                self._data, self._lons, self._lats = realign_grid(self._data, self._lons, self._lats)
 
         self._update()
 
@@ -1945,6 +1952,40 @@ class Raster(object):
             self.data = result
             self._time = time
         return result
+
+
+    def plot(self, ax=None, projection=None, **kwargs):
+        &#34;&#34;&#34;Plot raster data.
+
+        A pre-existing matplotlib `Axes` instance is used if available,
+        else a new one is created. The `origin` and `extent` of the image
+        are determined automatically and should not be specified.
+
+        Parameters
+        ----------
+        ax : matplotlib.axes.Axes, optional
+            If specified, the image will be drawn within these axes.
+        projection : cartopy.crs.Projection, optional
+            The map projection to be used. If both `ax` and `projection`
+            are specified, this will be checked against the `projection`
+            attribute of `ax`, if it exists.
+        **kwargs : dict, optional
+            Any further keyword arguments are passed to
+            `matplotlib.pyplot.imshow` or `matplotlib.axes.Axes.imshow`,
+            where appropriate.
+
+        Returns
+        -------
+        matplotlib.image.AxesImage
+
+        Raises
+        ------
+        ValueError
+            If `ax` and `projection` are both specified, but do not match
+            (i.e. `ax.projection != projection`).
+        &#34;&#34;&#34;
+        return self.imshow(ax, projection, **kwargs)
+
 
     def imshow(self, ax=None, projection=None, **kwargs):
         &#34;&#34;&#34;Display raster data.
@@ -2759,7 +2800,7 @@ An example output of <code>cdf_lat</code> is:<pre><code>masked_array(data=[-90. 
     
     # open netCDF file and re-align from -180, 180 degrees
     with netCDF4.Dataset(filename, &#39;r&#39;) as cdf:
-        cdf_grid = cdf[&#34;z&#34;]
+        cdf_grid = cdf[&#34;z&#34;][:]
         try:
             cdf_lon = cdf[&#39;lon&#39;][:]
             cdf_lat = cdf[&#39;lat&#39;][:]
@@ -2767,23 +2808,11 @@ An example output of <code>cdf_lat</code> is:<pre><code>masked_array(data=[-90. 
             cdf_lon = cdf[&#39;x&#39;][:]
             cdf_lat = cdf[&#39;y&#39;][:]
         
-        if realign:
-            # realign longitudes to -180/180 dateline
-            cdf_lon_mask = cdf_lon[:] &gt; 180
-            dlon = np.diff(cdf_lon[:]).mean()
-
-            if cdf_lon_mask.any():
-                cdf_grid_z = np.hstack([cdf_grid[:,cdf_lon_mask], cdf_grid[:,~cdf_lon_mask]])
-                cdf_lon = np.hstack([cdf_lon[cdf_lon_mask]-360-dlon, cdf_lon[~cdf_lon_mask]])
-            else:
-                cdf_grid_z = cdf_grid[:]
-
-            # flip the array if latitude is decreasing
-            if cdf_lat[0] &gt; cdf_lat[-1]:
-                cdf_grid_z = np.flipud(cdf_grid_z)
-                cdf_lat = cdf_lat[::-1]
-        else:
-            cdf_grid_z = cdf_grid[:]
+    if realign:
+        # realign longitudes to -180/180 dateline
+        cdf_grid_z, cdf_lon, cdf_lat = realign_grid(cdf_grid, cdf_lon, cdf_lat)
+    else:
+        cdf_grid_z = cdf_grid
 
     # resample
     if resample is not None:
@@ -3720,6 +3749,9 @@ reconstruction.</dd>
             self._data = np.array(data)
             self._lons = np.linspace(extent[0], extent[1], self.data.shape[1])
             self._lats = np.linspace(extent[2], extent[3], self.data.shape[0])
+            if realign:
+                # realign to -180,180 and flip grid
+                self._data, self._lons, self._lats = realign_grid(self._data, self._lons, self._lats)
 
         self._update()
 
@@ -4184,6 +4216,40 @@ reconstruction.</dd>
             self.data = result
             self._time = time
         return result
+
+
+    def plot(self, ax=None, projection=None, **kwargs):
+        &#34;&#34;&#34;Plot raster data.
+
+        A pre-existing matplotlib `Axes` instance is used if available,
+        else a new one is created. The `origin` and `extent` of the image
+        are determined automatically and should not be specified.
+
+        Parameters
+        ----------
+        ax : matplotlib.axes.Axes, optional
+            If specified, the image will be drawn within these axes.
+        projection : cartopy.crs.Projection, optional
+            The map projection to be used. If both `ax` and `projection`
+            are specified, this will be checked against the `projection`
+            attribute of `ax`, if it exists.
+        **kwargs : dict, optional
+            Any further keyword arguments are passed to
+            `matplotlib.pyplot.imshow` or `matplotlib.axes.Axes.imshow`,
+            where appropriate.
+
+        Returns
+        -------
+        matplotlib.image.AxesImage
+
+        Raises
+        ------
+        ValueError
+            If `ax` and `projection` are both specified, but do not match
+            (i.e. `ax.projection != projection`).
+        &#34;&#34;&#34;
+        return self.imshow(ax, projection, **kwargs)
+
 
     def imshow(self, ax=None, projection=None, **kwargs):
         &#34;&#34;&#34;Display raster data.
@@ -4778,6 +4844,75 @@ Alerts user which dimension (index) the point is located.</li>
     if self.origin == &#34;upper&#34;:
         results = np.flipud(results)
     return results.astype(self.dtype)</code></pre>
+</details>
+</dd>
+<dt id="gplately.grids.Raster.plot"><code class="name flex">
+<span>def <span class="ident">plot</span></span>(<span>self, ax=None, projection=None, **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Plot raster data.</p>
+<p>A pre-existing matplotlib <code>Axes</code> instance is used if available,
+else a new one is created. The <code>origin</code> and <code>extent</code> of the image
+are determined automatically and should not be specified.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>ax</code></strong> :&ensp;<code>matplotlib.axes.Axes</code>, optional</dt>
+<dd>If specified, the image will be drawn within these axes.</dd>
+<dt><strong><code>projection</code></strong> :&ensp;<code>cartopy.crs.Projection</code>, optional</dt>
+<dd>The map projection to be used. If both <code>ax</code> and <code>projection</code>
+are specified, this will be checked against the <code>projection</code>
+attribute of <code>ax</code>, if it exists.</dd>
+<dt><strong><code>**kwargs</code></strong> :&ensp;<code>dict</code>, optional</dt>
+<dd>Any further keyword arguments are passed to
+<code>matplotlib.pyplot.imshow</code> or <code>matplotlib.axes.Axes.imshow</code>,
+where appropriate.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>matplotlib.image.AxesImage</code></dt>
+<dd>&nbsp;</dd>
+</dl>
+<h2 id="raises">Raises</h2>
+<dl>
+<dt><code>ValueError</code></dt>
+<dd>If <code>ax</code> and <code>projection</code> are both specified, but do not match
+(i.e. <code>ax.projection != projection</code>).</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def plot(self, ax=None, projection=None, **kwargs):
+    &#34;&#34;&#34;Plot raster data.
+
+    A pre-existing matplotlib `Axes` instance is used if available,
+    else a new one is created. The `origin` and `extent` of the image
+    are determined automatically and should not be specified.
+
+    Parameters
+    ----------
+    ax : matplotlib.axes.Axes, optional
+        If specified, the image will be drawn within these axes.
+    projection : cartopy.crs.Projection, optional
+        The map projection to be used. If both `ax` and `projection`
+        are specified, this will be checked against the `projection`
+        attribute of `ax`, if it exists.
+    **kwargs : dict, optional
+        Any further keyword arguments are passed to
+        `matplotlib.pyplot.imshow` or `matplotlib.axes.Axes.imshow`,
+        where appropriate.
+
+    Returns
+    -------
+    matplotlib.image.AxesImage
+
+    Raises
+    ------
+    ValueError
+        If `ax` and `projection` are both specified, but do not match
+        (i.e. `ax.projection != projection`).
+    &#34;&#34;&#34;
+    return self.imshow(ax, projection, **kwargs)</code></pre>
 </details>
 </dd>
 <dt id="gplately.grids.Raster.reconstruct"><code class="name flex">
@@ -5391,6 +5526,7 @@ with the <code>fill_value</code> (defined below) if supplied.</dd>
 <li><code><a title="gplately.grids.Raster.lons" href="#gplately.grids.Raster.lons">lons</a></code></li>
 <li><code><a title="gplately.grids.Raster.origin" href="#gplately.grids.Raster.origin">origin</a></code></li>
 <li><code><a title="gplately.grids.Raster.plate_reconstruction" href="#gplately.grids.Raster.plate_reconstruction">plate_reconstruction</a></code></li>
+<li><code><a title="gplately.grids.Raster.plot" href="#gplately.grids.Raster.plot">plot</a></code></li>
 <li><code><a title="gplately.grids.Raster.reconstruct" href="#gplately.grids.Raster.reconstruct">reconstruct</a></code></li>
 <li><code><a title="gplately.grids.Raster.resample" href="#gplately.grids.Raster.resample">resample</a></code></li>
 <li><code><a title="gplately.grids.Raster.resize" href="#gplately.grids.Raster.resize">resize</a></code></li>
