@@ -1,5 +1,5 @@
 {% set name = "gplately" %}
-{% set version = "0.2.4" %}
+{% set version = "0.3.3" %}
 
 package:
   name: {{ name|lower }}
@@ -7,7 +7,7 @@ package:
 
 source:
   url: https://pypi.io/packages/source/{{ name[0] }}/{{ name }}/gplately-{{ version }}.tar.gz
-  sha256: 392ce7ee5d22e7aa996716f2f9ba6c2bb7737a04b176267fb9c5e303b395e54c
+  sha256: e1a1aa81b42e907802909848c41910ad52922a71e5915d53d728230f4033f52a
 
 build:
   noarch: python
@@ -31,6 +31,7 @@ requirements:
     - netcdf4
     - rasterio
     - geopandas
+    - stripy
 
 test:
   imports:
