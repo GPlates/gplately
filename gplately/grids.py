@@ -102,6 +102,22 @@ def fill_raster(data,invalid=None):
     ind = distance_transform_edt(invalid, return_distances=False, return_indices=True)
     return data[tuple(ind)]
 
+
+def realign_grid(array, lons, lats):
+    mask_lons = lons > 180
+
+    # realign to -180/180
+    if mask_lons.any():
+        dlon = np.diff(lons).mean()
+        array = np.hstack([array[:,mask_lons], array[:,~mask_lons]])
+        lons  = np.hstack([lons[mask_lons] - 360 - dlon, lons[~mask_lons]])
+
+    if lats[0] > lats[-1]:
+        array = np.flipud(array)
+        lats = lats[::-1]
+
+    return array, lons, lats
+
 def read_netcdf_grid(filename, return_grids=False, realign=False, resample=None):
     """Read a `netCDF` (.nc) grid from a given `filename` and return its data as a
     `MaskedArray`.
@@ -151,7 +167,7 @@ def read_netcdf_grid(filename, return_grids=False, realign=False, resample=None)
     
     # open netCDF file and re-align from -180, 180 degrees
     with netCDF4.Dataset(filename, 'r') as cdf:
-        cdf_grid = cdf["z"]
+        cdf_grid = cdf["z"][:]
         try:
             cdf_lon = cdf['lon'][:]
             cdf_lat = cdf['lat'][:]
@@ -159,23 +175,11 @@ def read_netcdf_grid(filename, return_grids=False, realign=False, resample=None)
             cdf_lon = cdf['x'][:]
             cdf_lat = cdf['y'][:]
         
-        if realign:
-            # realign longitudes to -180/180 dateline
-            cdf_lon_mask = cdf_lon[:] > 180
-            dlon = np.diff(cdf_lon[:]).mean()
-
-            if cdf_lon_mask.any():
-                cdf_grid_z = np.hstack([cdf_grid[:,cdf_lon_mask], cdf_grid[:,~cdf_lon_mask]])
-                cdf_lon = np.hstack([cdf_lon[cdf_lon_mask]-360-dlon, cdf_lon[~cdf_lon_mask]])
-            else:
-                cdf_grid_z = cdf_grid[:]
-
-            # flip the array if latitude is decreasing
-            if cdf_lat[0] > cdf_lat[-1]:
-                cdf_grid_z = np.flipud(cdf_grid_z)
-                cdf_lat = cdf_lat[::-1]
-        else:
-            cdf_grid_z = cdf_grid[:]
+    if realign:
+        # realign longitudes to -180/180 dateline
+        cdf_grid_z, cdf_lon, cdf_lat = realign_grid(cdf_grid, cdf_lon, cdf_lat)
+    else:
+        cdf_grid_z = cdf_grid
 
     # resample
     if resample is not None:
@@ -1350,6 +1354,9 @@ class Raster(object):
             self._data = np.array(data)
             self._lons = np.linspace(extent[0], extent[1], self.data.shape[1])
             self._lats = np.linspace(extent[2], extent[3], self.data.shape[0])
+            if realign:
+                # realign to -180,180 and flip grid
+                self._data, self._lons, self._lats = realign_grid(self._data, self._lons, self._lats)
 
         self._update()
 
@@ -1814,6 +1821,40 @@ class Raster(object):
             self.data = result
             self._time = time
         return result
+
+
+    def plot(self, ax=None, projection=None, **kwargs):
+        """Plot raster data.
+
+        A pre-existing matplotlib `Axes` instance is used if available,
+        else a new one is created. The `origin` and `extent` of the image
+        are determined automatically and should not be specified.
+
+        Parameters
+        ----------
+        ax : matplotlib.axes.Axes, optional
+            If specified, the image will be drawn within these axes.
+        projection : cartopy.crs.Projection, optional
+            The map projection to be used. If both `ax` and `projection`
+            are specified, this will be checked against the `projection`
+            attribute of `ax`, if it exists.
+        **kwargs : dict, optional
+            Any further keyword arguments are passed to
+            `matplotlib.pyplot.imshow` or `matplotlib.axes.Axes.imshow`,
+            where appropriate.
+
+        Returns
+        -------
+        matplotlib.image.AxesImage
+
+        Raises
+        ------
+        ValueError
+            If `ax` and `projection` are both specified, but do not match
+            (i.e. `ax.projection != projection`).
+        """
+        return self.imshow(ax, projection, **kwargs)
+
 
     def imshow(self, ax=None, projection=None, **kwargs):
         """Display raster data.
