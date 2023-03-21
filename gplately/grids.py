@@ -837,6 +837,7 @@ def rasterise(
     shape=None,
     extent="global",
     origin=None,
+    tessellate_degrees=0.1,
 ):
     """Rasterise GPlates objects at a given reconstruction time.
 
@@ -845,11 +846,15 @@ def rasterise(
 
     Parameters
     ----------
-    features : valid argument for pygplates.FeaturesFunctionArgument
+    features : geometries or features
         `features` may be a single `pygplates.Feature`, a
         `pygplates.FeatureCollection`, a `str` filename,
         or a (potentially nested) sequence of any combination of the
         above types.
+        Alternatively, `features` may also be a sequence of geometry types
+        (`pygplates.GeometryOnSphere` or `pygplates.ReconstructionGeometry`).
+        In this case, `rotation_model` and `time` will be ignored, and
+        `key` must be an array_like of the same length as `features`.
     rotation_model : valid argument for pygplates.RotationModel, optional
         `rotation_model` may be a `pygplates.RotationModel`, a rotation
         feature collection (pygplates.FeatureCollection), a rotation filename
@@ -858,7 +863,7 @@ def rasterise(
         combination of the above types.
         Alternatively, if time not given, a rotation model is
         not usually required.
-    key : str, default "plate_id"
+    key : str or array_like, default "plate_id"
         The value used to create the rasterised grid. May be any of
         the following values:
         - "plate_id"
@@ -867,6 +872,8 @@ def rasterise(
         - "to_age"
         - "left_plate"
         - "right_plate"
+        Alternatively, `key` may be a sequence of the same length as
+        `features`.
     time : float, optional
         Reconstruction time at which to perform rasterisation. If given,
         `rotation_model` must also be specified.
@@ -882,6 +889,10 @@ def rasterise(
     origin : {"upper", "lower"}, optional
         Origin (upper-left or lower-left) of the output array. By default,
         determined from `extent`.
+    tessellate_degrees : float, default 0.1
+        Densify pyGPlates geometries to this resolution before conversion.
+        Can be disabled by specifying `tessellate_degrees=None`, but this
+        may provide inaccurate results for low-resolution input geometries.
 
     Returns
     -------
@@ -910,15 +921,13 @@ def rasterise(
         "left_plate",
         "right_plate",
     }
-    try:
+    if isinstance(key, str):
         key = key.lower()
-    except AttributeError as err:
-        raise TypeError("Invalid key type: {}".format(type(key))) from err
-    if key not in valid_keys:
-        raise ValueError(
-            "Invalid key: {}".format(key)
-            + "\nkey must be one of {}".format(valid_keys)
-        )
+        if key not in valid_keys:
+            raise ValueError(
+                "Invalid key: {}".format(key)
+                + "\nkey must be one of {}".format(valid_keys)
+            )
 
     extent = _parse_extent_origin(extent, origin)
     minx, maxx, miny, maxy = extent
@@ -937,27 +946,90 @@ def rasterise(
     nx = lons.size
     ny = lats.size
 
-    if rotation_model is None:
-        if time is not None:
-            raise TypeError(
-                "Rotation model must be provided if `time` is not `None`"
+    try:
+        features = pygplates.FeaturesFunctionArgument(features).get_features()
+        geometries = None
+    except Exception as err:
+        if not str(err).startswith("Python argument types in"):
+            # Not a Boost.Python.ArgumentError
+            raise err
+        geometries = pygplates_to_shapely(
+            features,
+            tessellate_degrees=tessellate_degrees,
+        )
+        reconstructed = None
+
+    if geometries is None:
+        if rotation_model is None:
+            if time is not None:
+                raise TypeError(
+                    "Rotation model must be provided if `time` is not `None`"
+                )
+            rotation_model = pygplates.RotationModel(pygplates.Feature())
+            time = 0.0
+        features = pygplates.FeaturesFunctionArgument(features).get_features()
+        if time is None:
+            time = 0.0
+        time = float(time)
+
+        reconstructed = []
+        pygplates.reconstruct(
+            features,
+            rotation_model,
+            reconstructed,
+            time,
+        )
+        geometries = pygplates_to_shapely(
+            reconstructed,
+            tessellate_degrees=tessellate_degrees,
+        )
+    if not isinstance(geometries, list):
+        geometries = [geometries]
+
+    if isinstance(key, str):
+        values, fill_value, dtype = _get_rasterise_values(key, reconstructed)
+    else:
+        if not hasattr(key, "__len__"):
+            key = [key] * len(geometries)
+        if len(key) != len(geometries):
+            raise ValueError(
+                "Shape mismatch: len(key) = {}, ".format(len(key))
+                + "len(geometries) = {}".format(len(geometries))
             )
-        rotation_model = pygplates.RotationModel(pygplates.Feature())
-        time = 0.0
-    features = pygplates.FeaturesFunctionArgument(features).get_features()
-    if time is None:
-        time = 0.0
-    time = float(time)
+        values = np.array(key)
+        dtype = values.dtype
+        if dtype.kind == "u":
+            fill_value = np.iinfo(dtype).max
+        elif dtype.kind == "i":
+            fill_value = -1
+        elif dtype.kind == "f":
+            fill_value = np.nan
+        else:
+            raise TypeError("Unrecognised dtype for `key`: {}".format(dtype))
 
-    reconstructed = []
-    pygplates.reconstruct(
-        features,
-        rotation_model,
-        reconstructed,
-        time,
+    return _rasterise_geometries(
+        geometries=geometries,
+        values=values,
+        out_shape=(ny, nx),
+        fill_value=fill_value,
+        dtype=dtype,
+        merge_alg=MergeAlg.replace,
+        transform=_from_bounds(minx, miny, maxx, maxy, nx, ny),
     )
-    geometries = pygplates_to_shapely(reconstructed)
 
+
+def _get_rasterise_values(
+    key,
+    reconstructed,
+):
+    valid_keys = {
+        "plate_id",
+        "conjugate_plate_id",
+        "from_age",
+        "to_age",
+        "left_plate",
+        "right_plate",
+    }
     if key == "plate_id":
         values = [i.get_feature().get_reconstruction_plate_id() for i in reconstructed]
         fill_value = -1
@@ -987,14 +1059,26 @@ def rasterise(
             "Invalid key: {}".format(key)
             + "\nkey must be one of {}".format(valid_keys)
         )
+    return values, fill_value, dtype
 
+
+def _rasterise_geometries(
+    geometries,
+    values,
+    out_shape,
+    fill_value,
+    dtype,
+    transform,
+    merge_alg=MergeAlg.replace,
+):
+    shapes = zip(geometries, values)
     out = _rasterize(
-        shapes=zip(geometries, values),
-        out_shape=(ny, nx),
+        shapes=shapes,
+        out_shape=out_shape,
         fill=fill_value,
         dtype=dtype,
-        merge_alg=MergeAlg.replace,
-        transform=_from_bounds(minx, miny, maxx, maxy, nx, ny),
+        merge_alg=merge_alg,
+        transform=transform,
     )
     return np.flipud(out)
 

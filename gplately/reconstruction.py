@@ -1,15 +1,18 @@
 """Tools that wrap up pyGplates and Plate Tectonic Tools functionalities for reconstructing features,
  working with point data, and calculating plate velocities at specific geological times. 
 """
-import pygplates
+import math
+import os
+import warnings
+
 import numpy as np
 import ptt
-import warnings
-import math
+import pygplates
+
 from . import tools as _tools
+from .gpml import _load_FeatureCollection
 from .pygplates import RotationModel as _RotationModel
 from .pygplates import FeatureCollection as _FeatureCollection
-from .gpml import _load_FeatureCollection
 
 
 class PlateReconstruction(object):
@@ -1615,21 +1618,53 @@ class _ContinentCollision(object):
     """
 
     def __init__(
-            self,
-            grd_output_dir,
-            chain_collision_detection=_DEFAULT_COLLISION):
+        self,
+        grd_output_dir,
+        chain_collision_detection=_DEFAULT_COLLISION,
+        verbose=False,
+    ):
         """
         grd_output_dir: The directory containing the continental grids.
 
         chain_collision_detection: Another collision detection class/function to reference if we find no collision.
                                    If None then no collision detection is chained. Defaults to the default collision detection.
+
+        verbose: Print progress messages
         """
         
         self.grd_output_dir = grd_output_dir
         self.chain_collision_detection = chain_collision_detection
+        self.verbose = verbose
         
         # Load a new grid each time the reconstruction time changes.
         self.grid_time = None
+
+    @property
+    def grid_time(self):
+        return self._grid_time
+
+    @grid_time.setter
+    def grid_time(self, time):
+        from .grids import read_netcdf_grid
+
+        if time is None:
+            self._grid_time = time
+        else:
+            filename = '{:s}'.format(self.grd_output_dir.format(time))
+            if self.verbose:
+                print(
+                    'Points masked against grid: {0}'.format(
+                        os.path.basename(filename)
+                    )
+                )
+            gridZ, gridX, gridY = read_netcdf_grid(filename, return_grids=True)
+            self.gridZ = gridZ
+            self.ni, self.nj = gridZ.shape
+            self.xmin = np.nanmin(gridX)
+            self.xmax = np.nanmax(gridX)
+            self.ymin = np.nanmin(gridY)
+            self.ymax = np.nanmax(gridY)
+            self._grid_time = float(time)
 
 
     def __call__(
@@ -1647,36 +1682,34 @@ class _ContinentCollision(object):
         Returns True if a collision with a continent was detected, or returns result of
         chained collision detection if 'self.chain_collision_detection' is not None.
         """
-
-        # Import locally so that we only get import errors if we use this class (and don't have the required dependencies).
-        # Not sure if importing locally like this will slow down executation a lot ?
-        from scipy.interpolate import RegularGridInterpolator
-        # from gprm.utils.fileio import load_netcdf
-        from .grids import read_netcdf_grid
-
         # Load the grid for the current time if encountering a new time.
         if time != self.grid_time:
             self.grid_time = time
-            
-            # Load a grid that is based on the continent masks, assuming the detect_continents
-            # are represented by NaNs
-            # The grid is sampled at each point, and in NaN retrurned, the point is set to inactive
-            filename = '{:s}'.format(self.grd_output_dir.format(time))
-            print('Points masked against grid: {0}'.format(filename))
-            gridZ,gridX,gridY = read_netcdf_grid(filename, return_grids=True)
             self.continent_deletion_count = 0
 
-            self.f = RegularGridInterpolator((gridX,gridY), gridZ.T, method='nearest')
-
-        # interpolate grid, which is one over continents and zero over oceans.
-        # if value is >0.5 we deactivate
-        #print curr_point
-        if self.f([curr_point.to_lat_lon()[1], curr_point.to_lat_lon()[0]])>0.5:
-            #print 'deactivating point within continent'
-            self.continent_deletion_count += 1
+        # Sample mask grid, which is one over continents and zero over oceans.
+        point_lat, point_lon = curr_point.to_lat_lon()
+        point_i = (self.ni - 1) * (
+            (point_lat - self.ymin)
+            / (self.ymax - self.ymin)
+        )
+        point_j = (self.nj - 1) * (
+            (point_lon - self.xmin)
+            / (self.xmax - self.xmin)
+        )
+        point_i_uint = np.rint(point_i).astype(np.uint)
+        point_j_uint = np.rint(point_j).astype(np.uint)
+        try:
+            mask_value = self.gridZ[point_i_uint, point_j_uint]
+        except IndexError:
+            point_i = np.clip(np.rint(point_i), 0, self.ni - 1).astype(np.int_)
+            point_j = np.clip(np.rint(point_j), 0, self.nj - 1).astype(np.int_)
+            mask_value = self.gridZ[point_i, point_j]
+        if mask_value >= 0.5:
             # Detected a collision.
+            self.continent_deletion_count += 1
             return True
-        
+
         # We didn't find a collision, so ask the chained collision detection if it did (if we have anything chained).
         if self.chain_collision_detection:
             return self.chain_collision_detection(
@@ -2084,5 +2117,3 @@ class _ReconstructByTopologies(object):
             
             # Set the plate ID of resolved topology containing current point.
             self.curr_topology_plate_ids[point_index] = curr_polygon.get_feature().get_reconstruction_plate_id()
-
-            
