@@ -16,12 +16,13 @@ build:
 
 requirements:
   host:
-    - python
+    - python >=3.5
     - pip
   run:
-    - python
+    - python >=3.5
     - numpy >=1.16.0
     - scipy >=1.0.0
+    - pygplates
     - shapely
     - matplotlib-base
     - cartopy
@@ -43,10 +44,11 @@ test:
 
 about:
   home: https://github.com/GPlates/gplately
+  license: GPL-2.0-or-later
+  license_family: GPL
+  license_file: LICENSE
   summary: Object-orientated Python interface to pyGPlates for plate tectonic reconstructions
-  license: ''
-  license_file: PLEASE_ADD_LICENSE_FILE
 
 extra:
   recipe-maintainers:
-    - bwhmather
+    - brmather
