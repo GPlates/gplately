@@ -41,14 +41,14 @@ eprint = {https://rmets.onlinelibrary.wiley.com/doi/pdf/10.1002/gdj3.185},
 - [pyGPlates](https://www.gplates.org/docs/pygplates/pygplates_getting_started.html#installation)
 - [PlateTectonicTools](https://github.com/EarthByte/PlateTectonicTools)
 - [Shapely](https://shapely.readthedocs.io/en/stable/project.html#installing-shapely)
-- NumPy > 1.16
-- SciPy > 1.0
-- Matplotlib
+- [NumPy](https://numpy.org/install/) > 1.16
+- [SciPy](https://scipy.org/install/) > 1.0
+- [Matplotlib](https://matplotlib.org/stable/users/installing/index.html)
 - [Cartopy](https://scitools.org.uk/cartopy/docs/latest/index.html#getting-started) (for mapping)
-- Shapely
+- [Shapely](https://shapely.readthedocs.io/en/stable/installation.html)
 - [Pooch](https://github.com/fatiando/pooch)
-- GeoPandas
-- netCDF4
+- [GeoPandas](https://geopandas.org/en/stable/getting_started.html)
+- [netCDF4](https://unidata.github.io/netcdf4-python/#quick-install)
 
 
 ## Installation
@@ -64,15 +64,15 @@ conda install -c conda-forge gplately
 
 #### Creating a new conda environment
 
-We recommend creating a new conda environment inside which to install `GPlately`. This avoids any potential conflicts in your base Python environment. In the example below we create a new environment called "myenv":
+We recommend creating a new conda environment inside which to install `GPlately`. This avoids any potential conflicts in your base Python environment. In the example below we create a new environment called "`my-env`":
 
 ```sh
-conda create -n myenv
-conda activate myenv
+conda create -n my-env
+conda activate my-env
 conda install -c conda-forge gplately
 ```
 
-`myenv` needs to be activated whenever you use `GPlately`: i.e. `conda activate myenv`.
+`my-env` needs to be activated whenever you use `GPlately`: i.e. `conda activate my-env`.
 
 ### 2. Using pip
 
@@ -114,11 +114,11 @@ pip install .
 
 GPlately uses objects to accomplish a variety of common tasks. The common objects include:
 
-- `DataServer` - download rotation files and topology features from plate models on EarthByte's webDAV server
-- `PlateReconstruction` - reconstruct features, tesselate mid ocean ridges, subduction zones
-- `Points` - partition points onto plates, rotate back through time
-- `Raster` - read in NetCDF grids, interpolation, resampling
-- `PlotTopologies` - one stop shop for plotting ridges, trenches, subduction teeth
+- [`DataServer`](#the-dataserver-object) - download rotation files and topology features from plate models on EarthByte's webDAV server
+- [`PlateReconstruction`](#the-platereconstruction-object) - reconstruct features, tesselate mid ocean ridges, subduction zones
+- [`Points`](#the-points-object) - partition points onto plates, rotate back through time
+- [`Raster`](#the-raster-object) - read in NetCDF grids, interpolation, resampling
+- [`PlotTopologies`](#the-plottopologies-object) - one stop shop for plotting ridges, trenches, subduction teeth
 
 
 ### The `DataServer` object
@@ -154,23 +154,6 @@ model = gplately.PlateReconstruction(rotation_model, topology_features, static_p
 ```
 Launch the [Plate Reconstruction](https://github.com/GPlates/gplately/blob/master/Notebooks/02-PlateReconstructions.ipynb) notebook to see more.
 
-
-### The `PlotTopologies` object
-
-... can be used to visualise reconstructed feature geometries through time. To call the object, pass a set of `continents`, 
-`coastlines` and `COBs` (either as file paths or as `<pyGPlates.FeatureCollection>` objects), as well as a `PlateReconstruction`
-object, and a reconstruction `time`. 
-
-```python
-coastlines, continents, COBs = gDownload.get_topology_geometries()
-time = 50 #Ma
-gPlot = gplately.plot.PlotTopologies(model, time, coastlines, continents, COBs)
-```
-Below are some continents, coastlines, COBs, ridges and transforms, trenches, subduction teeth and
-seafloor age grids plotted using `PlotTopologies`!
-
-![ReconstructionImage](https://raw.githubusercontent.com/GPlates/gplately/master/Notebooks/NotebookFiles/ReadMe_Files/plot_topologies_img.png)
-
 ### The `Points` object
 
 ... can be used to reconstruct the positions of geological point features and calculate their underlying plate velocities 
@@ -184,7 +167,6 @@ pt_lat = np.array([48.797807, -12.654857, 11.884395, -26.415630, 31.368509])
 gpts = gplately.Points(model, pt_lon, pt_lat)
 ```
 ![PointData](https://raw.githubusercontent.com/GPlates/gplately/master/Notebooks/NotebookFiles/ReadMe_Files/surface_hotspot_plumes.png)
-
 
 ### The `Raster` object
 
@@ -212,6 +194,22 @@ reconstructed = raster.reconstruct(
 Below is a plot of the [ETOPO1 global relief raster](https://www.ncei.noaa.gov/products/etopo-global-relief-model) at present day, and reconstructed to 50Ma:
 
 ![RasterImg](https://raw.githubusercontent.com/GPlates/gplately/master/Notebooks/NotebookFiles/ReadMe_Files/etopo_reconstruction.png)
+
+### The `PlotTopologies` object
+
+... can be used to visualise reconstructed feature geometries through time. To call the object, pass a set of `continents`, 
+`coastlines` and `COBs` (either as file paths or as `<pyGPlates.FeatureCollection>` objects), as well as a `PlateReconstruction`
+object, and a reconstruction `time`. 
+
+```python
+coastlines, continents, COBs = gDownload.get_topology_geometries()
+time = 50 #Ma
+gPlot = gplately.plot.PlotTopologies(model, time, coastlines, continents, COBs)
+```
+Below are some continents, coastlines, COBs, ridges and transforms, trenches, subduction teeth and
+seafloor age grids plotted using `PlotTopologies`!
+
+![ReconstructionImage](https://raw.githubusercontent.com/GPlates/gplately/master/Notebooks/NotebookFiles/ReadMe_Files/plot_topologies_img.png)
 
 
 ## Sample workflows
