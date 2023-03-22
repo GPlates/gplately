@@ -1,6 +1,6 @@
 # GPlately
 
-GPlately was created to accelerate spatio-temporal data analysis leveraging pyGPlates and PlateTectonicTools within a simplified Python interface. This object-oriented package enables the reconstruction of data through deep geologic time (points, lines, polygons, and rasters), the interrogation of plate kinematic information (plate velocities, rates of subduction and seafloor spreading), the rapid comparison between multiple plate motion models, and the plotting of reconstructed output data on maps. All tools are designed to be parallel-safe to accelerate spatio-temporal analysis over multiple CPU processors.
+GPlately was created to accelerate spatio-temporal data analysis leveraging [pyGPlates](https://www.gplates.org/docs/pygplates/index.html) and [PlateTectonicTools](https://github.com/EarthByte/PlateTectonicTools) within a simplified Python interface. This object-oriented package enables the reconstruction of data through deep geologic time (points, lines, polygons, and rasters), the interrogation of plate kinematic information (plate velocities, rates of subduction and seafloor spreading), the rapid comparison between multiple plate motion models, and the plotting of reconstructed output data on maps. All tools are designed to be parallel-safe to accelerate spatio-temporal analysis over multiple CPU processors.
 
 ![SeedPointGIF](https://raw.githubusercontent.com/GPlates/gplately/master/Notebooks/NotebookFiles/ReadMe_Files/muller19_seedpoints.gif)
 
@@ -14,15 +14,29 @@ includes rasters, seafloor age grids, rotation files, and more to get started wi
 
 #### Citation
 
-_Coming soon!_
+> Mather, B.R., Müller, R.D., Zahirovic, S., Cannon, J., Chin, M., Ilano, L., Ilano, L., Wright, N.M., Alfonso, C. (2023) Deep time spatio-temporal data analysis using pyGPlates with PlateTectonicTools and GPlately. _Geoscience Data Journal_, 1–8. Available from: https://doi.org/10.1002/gdj3.185
+
+```bib
+@article{Mather2023,
+author = {Mather, Ben R. and Müller, R. Dietmar and Zahirovic, Sabin and Cannon, John and Chin, Michael and Ilano, Lauren and Wright, Nicky M. and Alfonso, Christopher and Williams, Simon and Tetley, Michael and Merdith, Andrew},
+title = {Deep time spatio-temporal data analysis using pyGPlates with PlateTectonicTools and GPlately},
+year = {2023},
+journal = {Geoscience Data Journal},
+pages = {1-8},
+keywords = {geospatial, plate reconstructions, pyGPlates, python, tectonics},
+doi = {https://doi.org/10.1002/gdj3.185},
+url = {https://rmets.onlinelibrary.wiley.com/doi/abs/10.1002/gdj3.185},
+eprint = {https://rmets.onlinelibrary.wiley.com/doi/pdf/10.1002/gdj3.185},
+}
+```
 
 ## Dependencies
 
 - [pyGPlates](https://www.gplates.org/docs/pygplates/pygplates_getting_started.html#installation)
 - [PlateTectonicTools](https://github.com/EarthByte/PlateTectonicTools)
-- [Shapely <2.0](https://shapely.readthedocs.io/en/stable/project.html#installing-shapely)
-- NumPy
-- SciPy 1.10
+- [Shapely](https://shapely.readthedocs.io/en/stable/project.html#installing-shapely)
+- NumPy > 1.16
+- SciPy > 1.0
 - Matplotlib
 - [Cartopy](https://scitools.org.uk/cartopy/docs/latest/index.html#getting-started) (for mapping)
 - Shapely
@@ -33,26 +47,48 @@ _Coming soon!_
 
 ## Installation
 
-### Stable release
-You can install the latest stable public release of `GPlately` using the pip package manager.
+### 1. Using conda (recommended)
 
-```python
+You can install the latest stable public release of `GPlately` and all of its dependencies using conda.
+This is the preferred method to install `GPlately` which downloads binaries from the conda-forge channel.
+
+```sh
+conda install -c conda-forge gplately
+```
+
+#### Creating a new conda environment
+
+We recommend creating a new conda environment inside which to install `GPlately`. This avoids any potential conflicts in your base Python environment. In the example below we create a new environment called "myenv":
+
+```sh
+conda create -n myenv
+conda activate myenv
+conda install -c conda-forge gplately
+```
+
+`myenv` needs to be activated whenever you use `GPlately`: i.e. `conda activate myenv`.
+
+### 2. Using pip
+
+Alternatively, you can install the latest stable public release of `GPlately` using the pip package manager.
+
+```sh
 pip install gplately
 ```
-or:
+or from this GitHub repository:
 
-```python
+```sh
 pip install git+https://github.com/GPlates/gplately.git 
 ```
 
-### Pull from repository 
+#### Pull from repository 
 
 **First-time installation:** To install the latest version of GPlately from a specific repository branch (e.g. `master`), copy the following commands into your terminal:
 
-```python
+```sh
 cd /path/to/desired/directory #Change your command directory to where you'd like to clone GPlately
 git clone https://github.com/GPlates/gplately.git
-pwd # Just to check your directory - should end with /.../gplately
+cd gplately # navigate within the gplately folder
 git checkout master # or the name of whichever branch you need
 git pull # fetch all recent changes from this branch
 pip install .
@@ -60,7 +96,7 @@ pip install .
 
 **Update installation from cloned repo:** To update your installation of GPlately by fetching the latest pushes from a specific repository branch (e.g. `master`), copy the following commands into your terminal:
 
-```python
+```sh
 cd /path/to/gplately/directory #Should be where gplately is cloned - must end in /.../gplately
 git checkout master # or the name of whichever branch you need
 git pull # fetch all recent changes from this branch
