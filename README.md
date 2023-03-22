@@ -1,6 +1,6 @@
 # GPlately
 
-GPlately was created to accelerate spatio-temporal data analysis leveraging pyGPlates and PlateTectonicTools within a simplified Python interface. This object-oriented package enables the reconstruction of data through deep geologic time (points, lines, polygons, and rasters), the interrogation of plate kinematic information (plate velocities, rates of subduction and seafloor spreading), the rapid comparison between multiple plate motion models, and the plotting of reconstructed output data on maps. All tools are designed to be parallel-safe to accelerate spatio-temporal analysis over multiple CPU processors.
+GPlately was created to accelerate spatio-temporal data analysis leveraging [pyGPlates](https://www.gplates.org/docs/pygplates/index.html) and [PlateTectonicTools](https://github.com/EarthByte/PlateTectonicTools) within a simplified Python interface. This object-oriented package enables the reconstruction of data through deep geologic time (points, lines, polygons, and rasters), the interrogation of plate kinematic information (plate velocities, rates of subduction and seafloor spreading), the rapid comparison between multiple plate motion models, and the plotting of reconstructed output data on maps. All tools are designed to be parallel-safe to accelerate spatio-temporal analysis over multiple CPU processors.
 
 ![SeedPointGIF](https://raw.githubusercontent.com/GPlates/gplately/master/Notebooks/NotebookFiles/ReadMe_Files/muller19_seedpoints.gif)
 
@@ -14,7 +14,21 @@ includes rasters, seafloor age grids, rotation files, and more to get started wi
 
 #### Citation
 
-_Coming soon!_
+> Mather, B.R., Müller, R.D., Zahirovic, S., Cannon, J., Chin, M., Ilano, L., Ilano, L., Wright, N.M., Alfonso, C. (2023) Deep time spatio-temporal data analysis using pyGPlates with PlateTectonicTools and GPlately. _Geoscience Data Journal_, 1–8. Available from: https://doi.org/10.1002/gdj3.185
+
+```bib
+@article{Mather2023,
+author = {Mather, Ben R. and Müller, R. Dietmar and Zahirovic, Sabin and Cannon, John and Chin, Michael and Ilano, Lauren and Wright, Nicky M. and Alfonso, Christopher and Williams, Simon and Tetley, Michael and Merdith, Andrew},
+title = {Deep time spatio-temporal data analysis using pyGPlates with PlateTectonicTools and GPlately},
+year = {2023},
+journal = {Geoscience Data Journal},
+pages = {1-8},
+keywords = {geospatial, plate reconstructions, pyGPlates, python, tectonics},
+doi = {https://doi.org/10.1002/gdj3.185},
+url = {https://rmets.onlinelibrary.wiley.com/doi/abs/10.1002/gdj3.185},
+eprint = {https://rmets.onlinelibrary.wiley.com/doi/pdf/10.1002/gdj3.185},
+}
+```
 
 ## Dependencies
 
