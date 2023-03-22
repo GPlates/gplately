@@ -34,9 +34,9 @@ eprint = {https://rmets.onlinelibrary.wiley.com/doi/pdf/10.1002/gdj3.185},
 
 - [pyGPlates](https://www.gplates.org/docs/pygplates/pygplates_getting_started.html#installation)
 - [PlateTectonicTools](https://github.com/EarthByte/PlateTectonicTools)
-- [Shapely <2.0](https://shapely.readthedocs.io/en/stable/project.html#installing-shapely)
-- NumPy
-- SciPy 1.10
+- [Shapely](https://shapely.readthedocs.io/en/stable/project.html#installing-shapely)
+- NumPy > 1.16
+- SciPy > 1.0
 - Matplotlib
 - [Cartopy](https://scitools.org.uk/cartopy/docs/latest/index.html#getting-started) (for mapping)
 - Shapely
@@ -47,26 +47,48 @@ eprint = {https://rmets.onlinelibrary.wiley.com/doi/pdf/10.1002/gdj3.185},
 
 ## Installation
 
-### Stable release
-You can install the latest stable public release of `GPlately` using the pip package manager.
+### 1. Using conda (recommended)
 
-```python
+You can install the latest stable public release of `GPlately` and all of its dependencies using conda.
+This is the preferred method to install `GPlately` which downloads binaries from the conda-forge channel.
+
+```sh
+conda install -c conda-forge gplately
+```
+
+#### Creating a new conda environment
+
+We recommend creating a new conda environment inside which to install `GPlately`. This avoids any potential conflicts in your base Python environment. In the example below we create a new environment called "myenv":
+
+```sh
+conda create -n myenv
+conda activate myenv
+conda install -c conda-forge gplately
+```
+
+`myenv` needs to be activated whenever you use `GPlately`: i.e. `conda activate myenv`.
+
+### 2. Using pip
+
+Alternatively, you can install the latest stable public release of `GPlately` using the pip package manager.
+
+```sh
 pip install gplately
 ```
-or:
+or from this GitHub repository:
 
-```python
+```sh
 pip install git+https://github.com/GPlates/gplately.git 
 ```
 
-### Pull from repository 
+#### Pull from repository 
 
 **First-time installation:** To install the latest version of GPlately from a specific repository branch (e.g. `master`), copy the following commands into your terminal:
 
-```python
+```sh
 cd /path/to/desired/directory #Change your command directory to where you'd like to clone GPlately
 git clone https://github.com/GPlates/gplately.git
-pwd # Just to check your directory - should end with /.../gplately
+cd gplately # navigate within the gplately folder
 git checkout master # or the name of whichever branch you need
 git pull # fetch all recent changes from this branch
 pip install .
@@ -74,7 +96,7 @@ pip install .
 
 **Update installation from cloned repo:** To update your installation of GPlately by fetching the latest pushes from a specific repository branch (e.g. `master`), copy the following commands into your terminal:
 
-```python
+```sh
 cd /path/to/gplately/directory #Should be where gplately is cloned - must end in /.../gplately
 git checkout master # or the name of whichever branch you need
 git pull # fetch all recent changes from this branch
