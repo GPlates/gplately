@@ -156,13 +156,18 @@ def _match_url_to_extension(url):
         return ".tif"
 
 
-def _first_time_download_from_web(url, model_name=None):
+def _first_time_download_from_web(url, verbose=True, model_name=None):
     """
     # Provided a web connection to a server can be established,
     download the files from the URL into the GPlately cache.
     """
 
     if _test_internet_connection(url):
+
+        if not verbose:
+            logger = _pooch.get_logger()
+            log_level = logger.level
+            logger.setLevel("WARNING")
 
         # The filename pooch saves the requested file is derived from
         # one of four permutations:
@@ -205,11 +210,13 @@ def _first_time_download_from_web(url, model_name=None):
         fnames = _retrieve(
                 url=url,
                 known_hash=None,  
-                downloader=_HTTPDownloader(progressbar=True),
+                downloader=_HTTPDownloader(progressbar=verbose),
                 fname=unprocessed_fname,
                 path=_os_cache('gplately'),
-                processor=processor_to_use
+                processor=processor_to_use,
         )
+        if not verbose:
+            logger.setLevel(log_level)
                      
         cache_path = str(path_to_cache())
         unprocessed_path = cache_path + "/" + unprocessed_fname
@@ -336,7 +343,8 @@ def download_from_web(
     # If the requested file(s) is not from a plate model, its json
     # entry name comes from the parsed URL. Use this. 
     if not model_name:
-        json_name = _parse_url_for_filenames(url).split(".")[0]
+        #json_name = _parse_url_for_filenames(url).split(".")[0]
+        json_name = _parse_url_for_filenames(url)
 
     # If from a plate model...
     else:
@@ -351,147 +359,150 @@ def download_from_web(
         else:
             json_name = model_name
 
+    #path_to_json = str(path_to_cache())+"/DataServer.json"
+    #with open(path_to_json, "r") as data_file:
+    #    data_loaded = _json.load(data_file)
+
     path_to_json = str(path_to_cache())+"/DataServer.json"
-    with open(path_to_json, "r") as data_file:
-        data_loaded = _json.load(data_file)
+    data_loaded = _build_json(path_to_json)
 
-        found_collection = False
-        for file_id, file_metadata in data_loaded.items():
+    found_collection = False
+    for file_id, file_metadata in data_loaded.items():
 
-            # If the requested file has a JSON entry...
-            if file_id.lower() == json_name.lower():
-                found_collection = True
+        # If the requested file has a JSON entry...
+        if file_id.lower() == json_name.lower():
+            found_collection = True
 
-                # FROM JSON FILE...
-                # Check md5
-                current_md5 = data_loaded[file_id.lower()]["md5"]
+            # FROM JSON FILE...
+            # Check md5
+            current_md5 = data_loaded[file_id.lower()]["md5"]
 
-                # Check e-tag
-                current_etag = data_loaded[file_id.lower()]["etag"]
+            # Check e-tag
+            current_etag = data_loaded[file_id.lower()]["etag"]
 
-                # Check url
-                #current_URL = data_loaded[file_id.lower()]["url"]
+            # Check url
+            #current_URL = data_loaded[file_id.lower()]["url"]
 
-                # Check local file paths (unprocessed and processed, if applicable)
-                unprocessed_path = data_loaded[file_id.lower()]["local_path"]['unprocessed']
-                processed_path = data_loaded[file_id.lower()]["local_path"]['processed']
+            # Check local file paths (unprocessed and processed, if applicable)
+            unprocessed_path = data_loaded[file_id.lower()]["local_path"]['unprocessed']
+            processed_path = data_loaded[file_id.lower()]["local_path"]['processed']
 
-                # Obtain remote metadata from URL
-                md5 = get_url_md5(url)
-                etag = get_url_etag(url)
+            # Obtain remote metadata from URL
+            md5 = get_url_md5(url)
+            etag = get_url_etag(url)
 
-                # If file versioning matters,
-                if download_changes:
+            # If file versioning matters,
+            if download_changes:
 
-                    if verbose:
-                        print("Checking whether the requested files need to be updated...")
-
-                    if not etag:
-                        if verbose:
-                            print("An e-tag could not be found from the requested file's ({}) URL. This file can only be updated manually by deleting the files in the paths: {} and {}, and re-running this function.".format(json_name, unprocessed_path, processed_path))
-
-                    # If the local and remote e-tags are not the same,
-                    if (md5 and etag) and etag != current_etag:
-
-                        if verbose:
-                            print("Yes - updating requested files...")
-
-                        # Delete both unprocessed and processed files/directories
-                        # related to this URL so we can re-download its files
-                        if _os.path.isfile(str(unprocessed_path)):
-                            _os.remove(str(unprocessed_path))
-                        elif _os.path.isdir(str(unprocessed_path)):
-                            _shutil.rmtree(str(unprocessed_path))
-
-                        if _os.path.isfile(str(processed_path)):
-                            _os.remove(str(processed_path))
-                        elif _os.path.isdir(str(processed_path)):
-                            _shutil.rmtree(str(processed_path))
-
-                        # Download the file(s) again and obtain its md5 hash and e-tag
-                        fnames, unprocessed_path, processed_path, \
-                        md5, etag = _first_time_download_from_web(url, model_name)
-
-                        # Overwrite the metadata in this file's DataSever.json entry
-                        data_loaded[file_id.lower()]["md5"] = md5
-                        data_loaded[file_id.lower()]["etag"] = etag
-                        data_loaded[file_id.lower()]["url"] = url
-                        data_loaded[file_id.lower()]["local_path"]['unprocessed'] = unprocessed_path
-                        data_loaded[file_id.lower()]["local_path"]['processed'] = processed_path
-
-                        with open(path_to_json, "w") as data_file:
-                            _json.dump(data_loaded, data_file,
-                                indent=4,  
-                                separators=(',',': '))
-                            data_file.close()
-
-                        if verbose:
-                            print("Requested files downloaded to the GPlately cache folder!")
-                        return(fnames)
-
-                    # If the local and remote files are the same, re-access the file
-                    # from the cache. 
-                    else:
-                        if verbose:
-                            print("Requested files are up-to-date. Re-accesing from the cache...")
-
-                        # If files require processing, then the "processed_path" 
-                        # directory holds all files                 
-                        return _extract_processed_files(
-                            str(unprocessed_path), str(processed_path)
-                        )
-                # If file versioning doesn't matter, just return the files as-is
-                else:
-                    # Call pooch's retrieve function, which will recognise the file
-                    # in the cache already and just return all fnames as-is
-                    fnames, _, _, _, _ = _first_time_download_from_web(url, model_name)
-                    return(fnames)
-
-        # If the entry hasn't been found in the JSON file...
-        if not found_collection:
-
-            # ...and if a connection to the web server can be established,
-            # automatically download files from the URL and obtain this 
-            # file's metadata
-            if _test_internet_connection(url):
-
-                fnames, unprocessed_path, processed_path, \
-                md5, etag = _first_time_download_from_web(url, model_name)
+                if verbose:
+                    print("Checking whether the requested files need to be updated...")
 
                 if not etag:
                     if verbose:
                         print("An e-tag could not be found from the requested file's ({}) URL. This file can only be updated manually by deleting the files in the paths: {} and {}, and re-running this function.".format(json_name, unprocessed_path, processed_path))
 
-                # Create a new entry in DataSever.json for this file
-                # and populate the metadata fields
-                new_entry = {
-                    json_name.lower() : 
-                        {"md5" : md5,
-                         "etag" : etag,
-                         "url" : url,
-                         "local_path" : {"unprocessed" : unprocessed_path,
-                                        "processed" : processed_path},
-                        }
-                    }
-                data_loaded.update(new_entry)
+                # If the local and remote e-tags are not the same,
+                if (md5 and etag) and etag != current_etag:
 
-                with open(path_to_json, "w") as data_file:
-                    _json.dump(data_loaded, data_file, 
-                        indent=4,  
-                        separators=(',',': '))
-                    data_file.close()
+                    if verbose:
+                        print("Yes - updating requested files...")
 
-                if verbose:
-                    print("Requested files downloaded to the GPlately cache folder!")
+                    # Delete both unprocessed and processed files/directories
+                    # related to this URL so we can re-download its files
+                    if _os.path.isfile(str(unprocessed_path)):
+                        _os.remove(str(unprocessed_path))
+                    elif _os.path.isdir(str(unprocessed_path)):
+                        _shutil.rmtree(str(unprocessed_path))
+
+                    if _os.path.isfile(str(processed_path)):
+                        _os.remove(str(processed_path))
+                    elif _os.path.isdir(str(processed_path)):
+                        _shutil.rmtree(str(processed_path))
+
+                    # Download the file(s) again and obtain its md5 hash and e-tag
+                    fnames, unprocessed_path, processed_path, \
+                    md5, etag = _first_time_download_from_web(url, verbose, model_name)
+
+                    # Overwrite the metadata in this file's DataSever.json entry
+                    data_loaded[file_id.lower()]["md5"] = md5
+                    data_loaded[file_id.lower()]["etag"] = etag
+                    data_loaded[file_id.lower()]["url"] = url
+                    data_loaded[file_id.lower()]["local_path"]['unprocessed'] = unprocessed_path
+                    data_loaded[file_id.lower()]["local_path"]['processed'] = processed_path
+
+                    with open(path_to_json, "w") as data_file:
+                        _json.dump(data_loaded, data_file,
+                            indent=4,  
+                            separators=(',',': '))
+
+                    if verbose:
+                        print("Requested files downloaded to the GPlately cache folder!")
+                    return(fnames)
+
+                # If the local and remote files are the same, re-access the file
+                # from the cache. 
+                else:
+                    if verbose:
+                        print("Requested files are up-to-date. Re-accesing from the cache...")
+
+                    # If files require processing, then the "processed_path" 
+                    # directory holds all files                 
+                    return _extract_processed_files(
+                        str(unprocessed_path), str(processed_path)
+                    )
+            # If file versioning doesn't matter, just return the files as-is
+            else:
+                # Call pooch's retrieve function, which will recognise the file
+                # in the cache already and just return all fnames as-is
+                fnames, _, _, _, _ = _first_time_download_from_web(url, verbose, model_name)
                 return(fnames)
 
-            # ... if a connection to the web server cannot be established
-            else:
-                raise ConnectionError(
-                        "A connection to {} could not be made. Please check your internet connection and/or ensure the URL is correct. No file from the given URL has been cached to {} yet - nothing has been returned.".format(
-                            url, path_to_cache()
-                        )
-                )
+    # If the entry hasn't been found in the JSON file...
+    if not found_collection:
+
+        # ...and if a connection to the web server can be established,
+        # automatically download files from the URL and obtain this 
+        # file's metadata
+        if _test_internet_connection(url):
+
+            fnames, unprocessed_path, processed_path, \
+            md5, etag = _first_time_download_from_web(url, verbose, model_name)
+
+            if not etag:
+                if verbose:
+                    print("An e-tag could not be found from the requested file's ({}) URL. This file can only be updated manually by deleting the files in the paths: {} and {}, and re-running this function.".format(json_name, unprocessed_path, processed_path))
+
+            # Create a new entry in DataSever.json for this file
+            # and populate the metadata fields
+            new_entry = {
+                json_name.lower() : 
+                    {"md5" : md5,
+                     "etag" : etag,
+                     "url" : url,
+                     "local_path" : {"unprocessed" : unprocessed_path,
+                                    "processed" : processed_path},
+                    }
+                }
+            data_loaded.update(new_entry)
+
+            with open(path_to_json, "w") as data_file:
+                _json.dump(data_loaded, data_file, 
+                    indent=4,  
+                    separators=(',',': '))
+                data_file.close()
+
+            if verbose:
+                print("Requested files downloaded to the GPlately cache folder!")
+            return(fnames)
+
+        # ... if a connection to the web server cannot be established
+        else:
+            raise ConnectionError(
+                    "A connection to {} could not be made. Please check your internet connection and/or ensure the URL is correct. No file from the given URL has been cached to {} yet - nothing has been returned.".format(
+                        url, path_to_cache()
+                    )
+            )
+
 
 
 def _collect_file_extension(fnames, file_extension):
@@ -509,7 +520,7 @@ def _str_in_folder(fnames, strings_to_include=None, strings_to_ignore=None):
     fnames_to_include = []
     sorted_fnames = []
     for i, fname in enumerate(fnames):
-        parent_directory = '/'.join(fname.split("/")[:-1])
+        parent_directory = _os.path.dirname(fname)
         if strings_to_ignore is not None:
             for s in strings_to_ignore:
                 if s in parent_directory:
@@ -518,7 +529,7 @@ def _str_in_folder(fnames, strings_to_include=None, strings_to_ignore=None):
 
     if strings_to_include is not None:
         for fname in sorted_fnames:
-            parent_directory = '/'.join(fname.split("/")[:-1])
+            parent_directory = _os.path.dirname(fname)
             for s in strings_to_include:
                 if s in parent_directory:
                     fnames_to_include.append(fname)
@@ -528,25 +539,24 @@ def _str_in_folder(fnames, strings_to_include=None, strings_to_ignore=None):
 
 def _str_in_filename(fnames, strings_to_include=None, strings_to_ignore=None):
     sorted_fnames = []
-    if strings_to_include is not None:
-        for f in fnames:
-            f_splitted = f.split("/")[-1]
-            check = [s for s in strings_to_include if s.lower() in f_splitted.lower()]
-            if check:
-                sorted_fnames.append(f)
-    else:
-        sorted_fnames = fnames
-    
-    if strings_to_ignore is not None:
-        more_sorted = []
-        for f in sorted_fnames:
-            f_splitted = f.split("/")[-1]
-            check = [s for s in strings_to_ignore if s.lower() in f_splitted.lower()]
-            if not check:
-                more_sorted.append(f)
-        return(more_sorted)
-    else:
-        return(sorted_fnames)
+    out = []
+    def filter_func(fname):
+        basename = _os.path.basename(fname)
+        keep = False
+        if strings_to_include is None:
+            keep = True
+        else:
+            for s in strings_to_include:
+                if s.lower() in basename.lower():
+                    keep = True
+                    break
+        if strings_to_ignore is not None:
+            for s in strings_to_ignore:
+                if s.lower() in basename.lower():
+                    keep = False
+                    break
+        return keep
+    return list(filter(filter_func, fnames))
 
 
 def _check_gpml_or_shp(fnames):
@@ -863,6 +873,20 @@ def get_feature_data(feature_data_id_string=None, verbose=True):
         return feat_data
 
 
+def _build_json(path_to_json):
+    # If DataServer.json does not exist in the gplately cache yet, build it
+    if not _os.path.isfile(path_to_json):
+        data = {}
+        with _io.open(path_to_json, 'w', encoding='utf8') as DataServerMetadata:
+            json_data = _json.dumps(data)
+            DataServerMetadata.write(str(json_data))
+
+    with open(path_to_json, "r") as data_file:
+        data_loaded = _json.load(data_file)
+
+    return data_loaded
+
+
 class DataServer(object):
     """Uses [Pooch](https://www.fatiando.org/pooch/latest/) to download plate reconstruction 
     feature data from plate models and other studies that are stored on web servers 
@@ -1165,17 +1189,15 @@ class DataServer(object):
         self.data_collection = DataCollection(self.file_collection)
         self.verbose = verbose
 
-        # Check existence of DataServer.json
         path = path_to_cache()
         self.cache_path = path
         _pooch.utils.make_local_storage(str(self.cache_path))
 
-        # If DataServer.json does not exist yet, build it
-        if not _os.path.isfile(str(path)+"/DataServer.json"):
-            data = {}
-            with _io.open(str(path)+"/DataServer.json", 'w', encoding='utf8') as DataServerMetadata:
-                json_data = _json.dumps(data)
-                DataServerMetadata.write(str(json_data))
+        path_to_json = str(self.cache_path)+"/DataServer.json"
+
+        # Build metadata json file if it doesn't exist in the gplately cache already.
+        # If it already exists, extract all data into self.metadata
+        self.metadata = _build_json(path_to_json)
 
 
     def get_plate_reconstruction_files(self):
