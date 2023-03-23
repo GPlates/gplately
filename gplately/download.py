@@ -86,7 +86,7 @@ def _extract_processed_files(processed_directory):
     elif _os.path.isfile(str(processed_directory)):
         return(processed_directory)
 
-    
+
 def _get_url_etag(url):
     """Obtain the E-Tag of a web server URL. 
     
@@ -101,17 +101,20 @@ def _get_url_etag(url):
 
     # Determine the filename of an E-Tag txt file
     md5 = _hashlib.md5(url.encode()).hexdigest()
-    fname = _pooch.utils.parse_url(url)["path"].split("/")[-1]
+    fname = _os.path.basename(_pooch.utils.parse_url(url)["path"])
     fname = fname[-(255 - len(md5) - 1) :]
-    unique_name = f"{md5}-{fname}".split(".")[0]+"-ETAG.txt"
+    unique_name = md5 + "-" + fname
+    unique_name = _os.extsep.join(
+        unique_name.split(_os.extsep)[:-1]
+    ) + "-ETAG.txt"
     cachepath = str(
         _pathlib.Path(
             _os.path.expanduser(str(_os_cache('gplately'))))
     )
-    text_path = cachepath+"/"+unique_name 
+    text_path = _os.path.join(cachepath, unique_name)
     return(etag, text_path)
-    
-    
+
+
 def _save_url_etag_to_txt(etag, text_path):
     """Write an E-Tag to a text file.
     """       
@@ -242,13 +245,16 @@ def download_from_web(url, verbose=True, download_changes=True):
             if download_changes:
 
                 # Get the path to the file's E-Tag textfile
-                local_etag_txtfile = str(full_path).split(".")[0]+"-ETAG.txt"
+                local_etag_txtfile = _os.extsep.join(
+                    str(full_path).split(_os.extsep)[:-1]
+                ) + "-ETAG.txt"
 
                 # If an e-tag text file does not exist, erase the cached files
                 # and download the latest version from the web server. This, in turn,
                 # creates an e-tag textfile for this version.
                 if not _os.path.isfile(local_etag_txtfile):
-                    _os.remove(str(full_path))
+                    if _os.path.isfile(str(full_path)):
+                        _os.remove(str(full_path))
                     fnames, etag, local_etag_txtfile = _first_time_download_from_web(
                         url,
                         verbose=verbose,
@@ -327,7 +333,7 @@ def _str_in_folder(fnames, strings_to_include=None, strings_to_ignore=None):
     fnames_to_include = []
     sorted_fnames = []
     for i, fname in enumerate(fnames):
-        parent_directory = '/'.join(fname.split("/")[:-1])
+        parent_directory = _os.path.dirname(fname)
         if strings_to_ignore is not None:
             for s in strings_to_ignore:
                 if s in parent_directory:
@@ -336,7 +342,7 @@ def _str_in_folder(fnames, strings_to_include=None, strings_to_ignore=None):
 
     if strings_to_include is not None:
         for fname in sorted_fnames:
-            parent_directory = '/'.join(fname.split("/")[:-1])
+            parent_directory = _os.path.dirname(fname)
             for s in strings_to_include:
                 if s in parent_directory:
                     fnames_to_include.append(fname)
@@ -345,26 +351,24 @@ def _str_in_folder(fnames, strings_to_include=None, strings_to_ignore=None):
 
 
 def _str_in_filename(fnames, strings_to_include=None, strings_to_ignore=None):
-    sorted_fnames = []
-    if strings_to_include is not None:
-        for f in fnames:
-            f_splitted = f.split("/")[-1]
-            check = [s for s in strings_to_include if s.lower() in f_splitted.lower()]
-            if check:
-                sorted_fnames.append(f)
-    else:
-        sorted_fnames = fnames
-    
-    if strings_to_ignore is not None:
-        more_sorted = []
-        for f in sorted_fnames:
-            f_splitted = f.split("/")[-1]
-            check = [s for s in strings_to_ignore if s.lower() in f_splitted.lower()]
-            if not check:
-                more_sorted.append(f)
-        return(more_sorted)
-    else:
-        return(sorted_fnames)
+    out = []
+    def filter_func(fname):
+        basename = _os.path.basename(fname)
+        keep = False
+        if strings_to_include is None:
+            keep = True
+        else:
+            for s in strings_to_include:
+                if s.lower() in basename.lower():
+                    keep = True
+                    break
+        if strings_to_ignore is not None:
+            for s in strings_to_ignore:
+                if s.lower() in basename.lower():
+                    keep = False
+                    break
+        return keep
+    return list(filter(filter_func, fnames))
 
 
 def _check_gpml_or_shp(fnames):
