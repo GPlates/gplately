@@ -10,19 +10,19 @@ The `DataServer` object automatically downloads and caches files needed for plat
 These plate reconstruction files include rotation models, topology features and static polygons and geometries such as 
 coastlines, continents and continent-ocean boundaries. Additional data like rasters, grids and feature data can also be installed. 
 
-    gdownload = gplately.download.DataServer("Muller2019")
+```python
+gdownload = gplately.download.DataServer("Muller2019")
 
-    # Download plate reconstruction files and geometries from the Müller et al. 2019 model
-    rotation_model, topology_features, static_polygons = gdownload.get_plate_reconstruction_files()
-    coastlines, continents, COBs = gdownload.get_topology_geometries()
+# Download plate reconstruction files and geometries from the Müller et al. 2019 model
+rotation_model, topology_features, static_polygons = gdownload.get_plate_reconstruction_files()
+coastlines, continents, COBs = gdownload.get_topology_geometries()
 
-    # Download the Müller et al. 2019 100 Ma age grid
-    age_grid = gdownload.get_age_grid(time=100)
+# Download the Müller et al. 2019 100 Ma age grid
+age_grid = gdownload.get_age_grid(time=100)
 
-    # Download the ETOPO1 geotiff raster
-    etopo = gdownload.get_raster("ETOPO1_tif")
-
-
+# Download the ETOPO1 geotiff raster
+etopo = gdownload.get_raster("ETOPO1_tif")
+```
 
 
 ### [PlateReconstruction](https://gplates.github.io/gplately/reconstruction.html#gplately.reconstruction.PlateReconstruction)
@@ -62,6 +62,20 @@ as encoded by a plate reconstruction model.
 how to set up and use the `SeafloorGrid` object, and shows a sample set of output grids. 
 
 ![SeafloorGridDemo](https://raw.githubusercontent.com/GPlates/gplately/master/Notebooks/NotebookFiles/pdoc_Files/seafloorgrid.gif)
+
+
+## Notebooks / Examples
+
+- [__01 - Getting Started__](01-GettingStarted.html): A brief overview of how to initialise GPlately's main objects
+- [__02 - Plate Reconstructions__](02-PlateReconstructions.html): Setting up a `PlateReconstruction` object, reconstructing geological data through time 
+- [__03 - Working with Points__](03-WorkingWithPoints.html): Setting up a `Points` object, reconstructing seed point locations through time with. This notebook uses point data from the Paleobiology Database (PBDB).
+- [__04 - Velocity Basics__](04-VelocityBasics.html): Calculating plate velocities, plotting velocity vector fields
+- [__05 - Working with Feature Geometries__](05-WorkingWithFeatureGeometries.html): Processing and plotting assorted polyline, polygon and point data from [GPlates 2.3's sample data sets](https://www.earthbyte.org/gplates-2-3-software-and-data-sets/)
+- [__06 - Rasters__](06-Rasters.html): Reading, resizing, resampling raster data, and linearly interpolating point data onto raster data
+- [__07 - Plate Tectonic Stats__](07-WorkingWithPlateTectonicStats.html): Using [PlateTectonicTools](https://github.com/EarthByte/PlateTectonicTools) to calculate and plot subduction zone and ridge data (convergence/spreading velocities, subduction angles, subduction zone and ridge lengths, crustal surface areas produced and subducted etc.) 
+- [__08 - Predicting Slab Dip__](08-PredictingSlabDip.html): Predicting the average slab dip angle of subducting oceanic lithosphere.
+- [__09 - Motion Paths and Flowlines__](09-CreatingMotionPathsAndFlowlines.html): Using pyGPlates to create motion paths and flowines of points on a tectonic plate to illustrate the plate's trajectory through geological time.
+- [__10 - SeafloorGrid__](10-SeafloorGrids.html): Defines the parameters needed to set up a `SeafloorGrid` object, and demonstrates how to produce age and spreading rate grids from a set of plate reconstruction model files.
 
 """
 
