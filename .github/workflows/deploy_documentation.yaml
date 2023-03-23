@@ -32,7 +32,7 @@ jobs:
       run : |
         export PYTHONPATH=$PYTHONPATH:/usr/lib/
         export LD_PRELOAD=/lib/x86_64-linux-gnu/libstdc++.so.6:$LD_PRELOAD
-        pdoc --config latex_math=True --html -o api --force gplately
+        pdoc --config latex_math=True --template-dir .pdoc_template --html -o api --force gplately
     - name: Convert jupyter notebooks to html
       run : |
         export PYTHONPATH=$PYTHONPATH:/usr/lib/
