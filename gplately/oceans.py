@@ -360,26 +360,8 @@ class SeafloorGrid(object):
         maximum latitude extents for all masking and final grids.
     spacing_degrees : float, default None
         The degree spacing/interval with which to space grid points across all masking and
-        final grids. If `spacing_degrees` is provided, all grids will use it, and `spacingX`
-        and/or `spacingY` cannot be provided too. However, if `spacingX` and `spacingY` are 
-        provided instead, `spacing_degrees` defaults to the equivalent degree spacing of 
-        `spacingX` and `spacingY`. If insufficient grid resolution information is given, 
-        `spacing_degrees` defaults to 0.1, `spacingX` defaults to 3601 and `spacingY` defaults
-        to 1801. 
-    spacingX : int, default None
-        Number of pixels in the longitudinal direction of the regular grid to interpolate 
-        the grid points onto. If provided with the correct `spacingY`, it creates 
-        an even grid point distribution across `extent`. Otherwise, `spacingX` and `spacingY` 
-        are shifted to values that create an even point distribution. If `spacingX` is provided
-        alone, `spacingX` defaults to 3601 and `spacingY` defaults to 1801, which translates to
-        a `spacing_degree` of 0.1. If provided, `spacing_degrees` cannot be provided too.
-    spacingY : int, default None
-        Number of pixels in the latitudinal direction of the regular grid to interpolate
-        the grid points onto. If provided with the correct `spacingX`, it creates 
-        an even grid point distribution across `extent`. Otherwise, `spacingX` and `spacingY` 
-        are shifted to values that create an even point distribution. If `spacingY` is provided
-        alone, `spacingX` defaults to 3601 and `spacingY` defaults to 1801, which translates to
-        a `spacing_degree` of 0.1. If provided, `spacing_degrees` cannot be provided too.
+        final grids. If `spacing_degrees` is provided, all grids will use it. If not,
+        `spacing_degrees` defaults to 0.1.
     subduction_collision_parameters : len-2 tuple of float, default (5.0, 10.0)
         A 2-tuple of (threshold velocity delta in kms/my, threshold distance to boundary 
         per My in kms/my)
@@ -414,8 +396,6 @@ class SeafloorGrid(object):
         ridge_sampling=0.5,
         extent = (-180, 180, -90, 90),
         spacing_degrees = None, 
-        spacingX = None,
-        spacingY = None,
         subduction_collision_parameters = (5.0, 10.0),
         initial_ocean_mean_spreading_rate = 75.,
         resume_from_checkpoints = False,
@@ -447,13 +427,13 @@ class SeafloorGrid(object):
         # Gridding parameters
         self.extent = extent
 
-        if spacing_degrees and (spacingX or spacingY):
-            raise ValueError("Please provide only spacing_degrees OR spacingX & spacingY.")
-
+        # A list of degree spacings that allow an even division of the global lat-lon extent.
         divisible_degree_spacings = [0.1, 0.25, 0.5, 0.75, 1.]
 
         if spacing_degrees:
 
+            # If the provided degree spacing is in the list of permissible spacings, use it
+            # and prepare the number of pixels in x and y (spacingX and spacingY)
             if spacing_degrees in divisible_degree_spacings:
                 self.spacing_degrees = spacing_degrees
                 self.spacingX = _deg2pixels(spacing_degrees, self.extent[0], self.extent[1])
@@ -468,11 +448,14 @@ class SeafloorGrid(object):
                 with warnings.catch_warnings():
                     warnings.simplefilter("always")
                     warnings.warn(
-                        "The provided spacing_degrees of {} is quite large. To preserve the grid resolution, a {} degree spacing and spacingX of {} and spacingY of {} has been employed instead".format(
-                            spacing_degrees, self.spacing_degrees, self.spacing_degrees, self.spacingX, self.spacingY
+                        "The provided spacing_degrees of {} is quite large. To preserve the grid resolution, a {} degree spacing has been employed instead".format(
+                            spacing_degrees, self.spacing_degrees, self.spacing_degrees,
                         )
                     )
 
+            # If the provided degree spacing is not in the list of permissible spacings, but below
+            # a degree, find the closest permissible degree spacing. Use this and find 
+            # spacingX and spacingY.
             else:
                 for divisible_degree_spacing in divisible_degree_spacings:
                 # The tolerance is half the difference between consecutive divisible spacings.
@@ -487,67 +470,17 @@ class SeafloorGrid(object):
                 with warnings.catch_warnings():
                     warnings.simplefilter("always")
                     warnings.warn(
-                        "The provided spacing_degrees of {} does not cleanly divide into the global extent. A degree spacing of {} with spacingX of {} and spacingY of {} has been employed instead.".format(
-                            spacing_degrees, self.spacing_degrees, self.spacingX, self.spacingY
+                        "The provided spacing_degrees of {} does not cleanly divide into the global extent. A degree spacing of {} has been employed instead.".format(
+                            spacing_degrees, self.spacing_degrees
                         )
                     )
 
         else:
-            # If either spacingX and/or spacingY is still none, use default resolutions
-            if None in (spacingX, spacingY):
-                self.spacing_degrees = 0.1
-                self.spacingX = 3601
-                self.spacingY = 1801
-
-            # If both spacingX and spacingY are given,
-            else:
-                # Find their equivalent degree spacings
-                equivalent_lon_deg = _pixels2deg(spacingX, self.extent[0], self.extent[1])
-                equivalent_lat_deg = _pixels2deg(spacingY, self.extent[2], self.extent[3])
-
-                # Can use the provided spacings if they provide an equal degree interval in x and y
-                if equivalent_lon_deg == equivalent_lat_deg:
-                    self.spacingX = spacingX
-                    self.spacingY = spacingY
-                    self.spacing_degrees = equivalent_lon_deg
-
-                # If they do not provide an equal degree interval in x and y,
-                else:
-
-                    # Use the average degree of both the lon and lat equivalent degrees
-                    spacing_degrees = (equivalent_lat_deg + equivalent_lon_deg)/2
-
-                    # If the average spacing is much higher than the last permissible degree interval,
-                    # use the last permissible degree interval.
-                    if spacing_degrees >= divisible_degree_spacings[-1]:
-                        self.spacing_degrees = divisible_degree_spacings[-1]
-                        self.spacingX = _deg2pixels(divisible_degree_spacings[-1], self.extent[0], self.extent[1])
-                        self.spacingY = _deg2pixels(divisible_degree_spacings[-1], self.extent[2], self.extent[3])
-
-                        with warnings.catch_warnings():
-                            warnings.simplefilter("always")
-                            warnings.warn(
-                                "The provided spacingX of {} and spacingY of {} gives a large and uneven degree spacing. To preserve the grid resolution, a {} degree spacing and spacingX of {} and spacingY of {} has been employed instead.".format(
-                                    spacingX, spacingY, self.spacing_degrees, self.spacingX, self.spacingY
-                                )
-                            )
-                    else:
-                        # Get the closest divisible degree to this average degree 
-                        for divisible_degree_spacing in divisible_degree_spacings:
-
-                            if (abs(spacing_degrees - divisible_degree_spacing) <= 0.125):
-                                new_deg_res = divisible_degree_spacing
-                                self.spacing_degrees = new_deg_res
-                                self.spacingX = _deg2pixels(new_deg_res, self.extent[0], self.extent[1])
-                                self.spacingY = _deg2pixels(new_deg_res, self.extent[2], self.extent[3])
-
-                        with warnings.catch_warnings():
-                            warnings.simplefilter("always")
-                            warnings.warn(
-                                "The provided pixel spacingX of {} and spacingY of {} do not cleanly divide into the global extent. A degree spacing of {} with spacingX of {} and spacingY of {} has been employed instead.".format(
-                                    spacingX, spacingY, self.spacing_degrees, self.spacingX, self.spacingY
-                                )
-                            )
+            # If a spacing degree is not provided, use default 
+            # resolution and get default spacingX and spacingY
+            self.spacing_degrees = 0.1
+            self.spacingX = 3601
+            self.spacingY = 1801
 
         self.resume_from_checkpoints = resume_from_checkpoints
 
