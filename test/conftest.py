@@ -153,7 +153,7 @@ def gplately_seafloorgrid_object(
         ridge_time_step=1.,
         save_directory=str(test_save_directory),
         file_collection = "Muller2019",
-        spacing_degrees = 0.25
+        grid_spacing = 0.25
     )
     return seafloorgrid
 
