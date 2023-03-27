@@ -59,18 +59,43 @@ def _determine_processor(url):
     return processor, ext
 
 
-def _path_of_cached_file(url):
+def path_of_cached_file(url, model_name=None):
     """Determine the full path to the cache where the file in `url` 
     will be downloaded to."""
+
     cached_filename = _pooch.utils.unique_file_name(url)
-    path = _pooch.utils.cache_location(
-        _os_cache('gplately'), 
-        env=None, 
-        version=None
-    )
+    cached_filename = _remove_hash(cached_filename)
+    path = path_to_cache()
+
+    processor_to_use, processor_extension = _determine_processor(url)
+
+    # If the requested files need processing (i.e. zip, gz folders)
+    if processor_extension:
+        # Are they from plate models? These typically are the .zip folders for plate models
+        if model_name:
+            cached_filename  = str(path) + '/' + model_name + processor_extension+'/'
+            unprocessed_path = str(path) + '/' + model_name
+            #cached_filename = cached_filename = str(path) + '/' + model_name
+
+        # If not from plate models but need processing, i.e. ETOPO1
+        else:
+            cached_filename = str(path) + '/' + "gplately_"+_parse_url_for_filenames(url) + processor_extension+'/'
+            unprocessed_path = str(path) + '/' + "gplately_"+_parse_url_for_filenames(url)
+            #cached_filename = "gplately_"+_parse_url_for_filenames(url) 
+
+    # If the requested files do not need processing, like standalone .nc files:
+    else:
+        if model_name:
+            cached_filename = str(path) + '/' + model_name + "_" + _parse_url_for_filenames(url)
+            unprocessed_path = None
+        else:
+            cached_filename = str(path) + '/' + "gplately_"+_parse_url_for_filenames(url)
+            unprocessed_path = None
+      
     _pooch.utils.make_local_storage(path)
     full_path = path.resolve() / cached_filename
-    return full_path
+
+    return full_path, unprocessed_path
 
 
 def _extract_processed_files(processed_directory):
@@ -87,6 +112,35 @@ def _extract_processed_files(processed_directory):
         return(processed_directory)
 
 
+def path_to_cache():
+    path = _pooch.utils.cache_location(
+        _os_cache('gplately'), 
+        env=None, 
+        version=None
+    )
+    return path
+
+
+def clear_cache():
+    """Caution - when called, this clears the entire gplately cache. 
+    This action cannot be undone."""
+    cache_path = path_to_cache()
+    _shutil.rmtree(str(cache_path))
+    _pooch.utils.make_local_storage(str(cache_path))
+    return
+
+    
+def _parse_url_for_filenames(url, return_hash=False):
+    # Determine the filename of an E-Tag txt file
+    md5 = _hashlib.md5(url.encode()).hexdigest()
+    fname = _os.path.basename(_pooch.utils.parse_url(url)["path"])
+    fname = fname[-(255 - len(md5) - 1) :]
+    if return_hash:
+        return str(fname), str(md5)
+    else:
+        return str(fname)
+
+
 def _get_url_etag(url):
     """Obtain the E-Tag of a web server URL. 
     
@@ -100,21 +154,19 @@ def _get_url_etag(url):
     etag = str(_requests.head(url).headers.get("ETag"))
 
     # Determine the filename of an E-Tag txt file
-    md5 = _hashlib.md5(url.encode()).hexdigest()
-    fname = _os.path.basename(_pooch.utils.parse_url(url)["path"])
-    fname = fname[-(255 - len(md5) - 1) :]
-    unique_name = md5 + "-" + fname
-    unique_name = _os.extsep.join(
-        unique_name.split(_os.extsep)[:-1]
-    ) + "-ETAG.txt"
+    parsed_fname, filehash = _parse_url_for_filenames(url, return_hash=True)
+
+    unique_name = filehash + "-ETAG.txt"
+
     cachepath = str(
         _pathlib.Path(
             _os.path.expanduser(str(_os_cache('gplately'))))
     )
+
     text_path = _os.path.join(cachepath, unique_name)
     return(etag, text_path)
-
-
+    
+    
 def _save_url_etag_to_txt(etag, text_path):
     """Write an E-Tag to a text file.
     """       
@@ -123,33 +175,105 @@ def _save_url_etag_to_txt(etag, text_path):
     text_file.write(etag)
     text_file.close()
     
-    
-def _first_time_download_from_web(url, verbose=True):
+
+def _match_url_to_extension(url):
+    url = str(url)
+    if url.endswith(".nc"):
+        return ".nc"
+    elif url.endswith(".jpg"):
+        return ".jpg"
+    elif url.endswith(".png"):
+        return ".png"
+    elif url.endswith(".tif"):
+        return ".tif"
+
+
+def _first_time_download_from_web(url, model_name=None, verbose=True):
     """
     # Provided a web connection to a server can be established,
     download the files from the URL into the GPlately cache.
     """
+
     if _test_internet_connection(url):
+
         if not verbose:
             logger = _pooch.get_logger()
             log_level = logger.level
             logger.setLevel("WARNING")
-        fnames = _retrieve(
-                url=url,
-                known_hash=None,  
-                downloader=_HTTPDownloader(progressbar=verbose),
-                path=_os_cache('gplately'),
-                processor=_determine_processor(url)[0],
-        )
+
+        # The filename pooch saves the requested file is derived from
+        # one of four permutations:
+        # 1. File is from a plate model and needs processing (i.e. zip --> unzip)
+        # 2. File is from a plate model and does not need processing (i.e. .nc age grids)
+        # 3. File is not from a plate model but needs processing (i.e. ETOPO, .grd.gz --> .decomp)
+        # 4. File is not from a plate model and does not need processing
+        processor_to_use, processor_extension = _determine_processor(url)
+
+        # If the requested files need processing (i.e. zip, gz folders)
+        if processor_extension:
+            # Are they from plate models? These typically are the .zip folders for plate models
+            if model_name:
+                # Download the files with a naming structure like:
+                # /path/to/cache/gplately/model_name+processor_extension
+                used_fname = model_name
+                fnames = _retrieve(
+                        url=url,
+                        known_hash=None,  
+                        downloader=_HTTPDownloader(progressbar=verbose),
+                        fname=used_fname,
+                        path=_os_cache('gplately'),
+                        processor=processor_to_use
+                )
+            # If not from plate models but need processing, i.e. ETOPO1
+            else:
+                # Download the files with a naming structure like:
+                # /path/to/cache/gplately/file_name-as_inteded_in_url+processor_extension
+                used_fname = "gplately_"+_parse_url_for_filenames(url)
+                fnames = _retrieve(
+                    url=url,
+                    known_hash=None,  
+                    downloader=_HTTPDownloader(progressbar=verbose),
+                    fname=used_fname,
+                    path=_os_cache('gplately'),
+                    processor=processor_to_use
+                )
+        # If the requested files do not need processing, like standalone .nc files:
+        else:
+            # Are they from plate models? These typically are age or spreading rate grids
+            if model_name:
+                # Download the files with a naming structure like:
+                # /path/to/cache/gplately/file_name-as_inteded_in_url+processor_extension
+                used_fname = model_name+"_"+_parse_url_for_filenames(url)
+                fnames = _retrieve(
+                        url=url,
+                        known_hash=None,  
+                        downloader=_HTTPDownloader(progressbar=verbose),
+                        fname=used_fname,
+                        path=_os_cache('gplately'),
+                        processor=processor_to_use
+                )
+            # If not from plate models and do not need processing,
+            else:
+                used_fname = "gplately_"+_parse_url_for_filenames(url)
+                fnames = _retrieve(
+                        url=url,
+                        known_hash=None,  
+                        downloader=_HTTPDownloader(progressbar=verbose),
+                        fname=used_fname,
+                        path=_os_cache('gplately'),
+                        processor=processor_to_use
+                )
+        
         if not verbose:
             logger.setLevel(log_level)
+
         # Get the URL's E-Tag for the first time
         etag, textfilename = _get_url_etag(url)
         _save_url_etag_to_txt(etag, textfilename)
-        return(fnames, etag, textfilename)
+        return(fnames, etag, textfilename, used_fname)
+
     
-    
-def download_from_web(url, verbose=True, download_changes=True):
+def download_from_web(url, verbose=True, download_changes=True, model_name=None):
     """Download a file from a `url` into the `gplately` cache.
     
     Notes
@@ -213,18 +337,59 @@ def download_from_web(url, verbose=True, download_changes=True):
         is incorrect) and no version of the requested file(s) have been
         cached before. In this case, nothing is returned. 
     """
-    # Identify the final filename from the given url within the GPlately cache
-    full_path = _path_of_cached_file(url)
+
+
+    #   NOTE: We need a way to verify the existence of requested file(s) in the gplately
+    #   cache to determine whether a file needs to be installed, updated, or re-accessed 
+    #   from the cache. Every time a file is installed for the first time,
+    #   DataServer creates a directory called `full_path`. Its existence verifies the 
+    #   existence
+    #
+    #   The nature of `full_path` is dependent on the file-type:
+    #
+    #   .zip files will be downloaded and expanded in an inside folder:
+    #   
+    #   /path/to/cache/gplately/fname.zip.unzip/
+    #
+    #   Thus, for zips, `full_path` is a directory that ends in ".zip.unzip":
+    #
+    #   For example: /Users/laurenilano/Library/Caches/gplately/Muller2019.zip.unzip/
+
+    #   Other types of files that need processing, like .gz --> .decomp, aren't
+    #   expanded in an internal folder. This is also the case for files that do not 
+    #   need processing, e.g. ".nc" files. In these cases, `full_path` is the exact
+    #   directory that the cached file is saved to.
+    # 
+    #
+    #   For example: /Users/laurenilano/Library/Caches/gplately/Muller_etal_2019_Tectonics_v2.0_AgeGrid-100.nc
+    #
+    #   `full_path` is an empty directory for non-zips, and is the parent directory of
+    #   unzipped contents in ".zip" URLs. 
+    #
+    #   Why do we need `full_path`?
+    #   We search the top-level gplately cache directory for the `full_path` directory as it is
+    #   installed with the requested files. Its existence verifies the
+    #   existence of the requested file(s), and thus to decide whether to install the
+    #   files or re-access existing cached versions. This also helps with E-Tag versioning
+    #   in instances where the download URL remains the same but its contents may have changed
+    #   since the file(s) were last cached. 
     
-    # If the files are not yet on the cache,
-    if not _os.path.isfile(str(full_path)):
-        
+    full_path, unprocessed_path = path_of_cached_file(url, model_name)
+
+    # If the file required processing (zips make a directory to unzip in, and .gz for example
+    # makes a file just saved to the top-level directory), and the directory or file is not 
+    # yet on the cache,
+    if _determine_processor(url)[1] and not (
+        _os.path.isdir(str(full_path)) or _os.path.isfile(str(full_path))
+        ):
+
         # ...and if a connection to the web server can be established,
         # download files from the URL and create a textfile for this URL's E-Tag
         if _test_internet_connection(url):
-            fnames, etag, textfilename = _first_time_download_from_web(
-                url,
-                verbose=verbose,
+            fnames, etag, textfilename, used_fname = _first_time_download_from_web(
+                url, 
+                model_name=model_name,
+                verbose=verbose
             )
             if verbose:
                 print("Requested files downloaded to the GPlately cache folder!")
@@ -235,29 +400,55 @@ def download_from_web(url, verbose=True, download_changes=True):
             raise ConnectionError(
                     "A connection to {} could not be made. Please check your internet connection and/or ensure the URL is correct. No file from the given URL has been cached to {} yet - nothing has been returned.".format(url, full_path.parent))
 
+
+    # If the file does not require processing, it did not open up a directory, so check isfile,
+    # and if the file is not yet on the cache,
+    elif not _determine_processor(url)[1] and not _os.path.isfile(str(full_path)):
+        # ...and if a connection to the web server can be established,
+        # download files from the URL and create a textfile for this URL's E-Tag
+        if _test_internet_connection(url):
+            fnames, etag, textfilename, used_fname = _first_time_download_from_web(
+                url, 
+                model_name=model_name,
+                verbose=verbose
+            )
+            if verbose:
+                print("Requested files downloaded to the GPlately cache folder!")
+            return(fnames)
+    
+        # ... if a connection to the web server cannot be established
+        else:
+            raise ConnectionError(
+                    "A connection to {} could not be made. Please check your internet connection and/or ensure the URL is correct. No file from the given URL has been cached to {} yet - nothing has been returned.".format(url, full_path.parent))
+
+
     # If the files have been downloaded before...
     else:
         #... and if a connection to the web server can be made...
         if _test_internet_connection(url):
             
+            _, local_etag_txtfile = _get_url_etag(url)
+
             # If the newest version of the files in `url` must be cached 
             # at all times, perform E-Tag comparisons:
             if download_changes:
 
-                # Get the path to the file's E-Tag textfile
-                local_etag_txtfile = _os.extsep.join(
-                    str(full_path).split(_os.extsep)[:-1]
-                ) + "-ETAG.txt"
+                # Walk through the top-level cache directory to find an E-Tag textfile unique to the URL
+                etag_exists = False
+
+                cache_path = str(path_to_cache())
+                if _os.path.isfile(local_etag_txtfile):
+                    etag_exists = True
 
                 # If an e-tag text file does not exist, erase the cached files
                 # and download the latest version from the web server. This, in turn,
                 # creates an e-tag textfile for this version.
-                if not _os.path.isfile(local_etag_txtfile):
-                    if _os.path.isfile(str(full_path)):
-                        _os.remove(str(full_path))
-                    fnames, etag, local_etag_txtfile = _first_time_download_from_web(
-                        url,
-                        verbose=verbose,
+                if not etag_exists:
+                    _shutil.rmtree(str(full_path))
+                    fnames, etag, local_etag_txtfile, used_fname = _first_time_download_from_web(
+                        url, 
+                        model_name=model_name,
+                        verbose=verbose
                     )
                     return(fnames)
 
@@ -280,7 +471,7 @@ def download_from_web(url, verbose=True, download_changes=True):
                             print("Yes - updating requested files...")
                         
                         # Update the e-tag textfile with this newly-identified URL e-tag
-                        _save_url_etag_to_txt(remote_etag, remote_etag_textfile)
+                        _save_url_etag_to_txt(remote_etag, local_etag_txtfile)
 
                         # Re-download the file, and process it if need-be.
                         with _pooch.utils.temporary_file(path=str(full_path.parent)) as tmp:
@@ -288,33 +479,50 @@ def download_from_web(url, verbose=True, download_changes=True):
                             downloader(url, tmp, _pooch) 
                             _shutil.move(tmp, str(full_path))
                             processor=_determine_processor(url)[0]
-                            processor(str(full_path), "update", None)
-                            # determine_processor gives the file its processed filename
-                            processed_file = str(full_path)+_determine_processor(url)[1]
 
+                            # If the file to update needs processing, pass the unprocessed file's
+                            # absolute path to the processor
+                            if unprocessed_path:
+                                processor(str(unprocessed_path), "update", None)
+                            
+                        # full_path holds the files to return to the user, irrespective of whether
+                        # proceessing was needed
                         if verbose:
                             print("Requested files downloaded to the GPlately cache folder!")
-                        return(_extract_processed_files(processed_file))
+                        return(_extract_processed_files(str(full_path)))
 
                     # If the e-tags are equal, the local and remote files are the same.
                     # Just return the file(s) as-is.
                     else:
                         if verbose:
                             print("Requested files are up-to-date!")
-                        return(_extract_processed_files(
-                            str(full_path)+_determine_processor(url)[1]))
-            
+
+                        # If files were processed once, return the processed files.
+                        if _determine_processor(url):
+                            if str(full_path).endswith(_determine_processor(url)[1]):
+                                return(_extract_processed_files((str(full_path))))
+                            else:
+                                return(_extract_processed_files(
+                                    str(full_path)+_determine_processor(url)[1]))
+                        # If not, return as-is.
+                        else:
+                            return(_extract_processed_files(
+                                str(full_path)+_match_url_to_extension(url)))
+
             # If file versioning doesn't matter, just keep returning the cached files.
             else:
-                fnames, etag, local_etag_txtfile = _first_time_download_from_web(url)
+                fnames, etag, local_etag_txtfile = _first_time_download_from_web(url, model_name)
                 return(fnames)
                 
         # If a connection to the web server could not be made, and the files exist in
         # the GPlately cache, just return the files as-is.
         else:
             print("No connection to {} established. The requested file(s) (potentially older versions) exist in the GPlately cache ({}) and have been returned.".format(url, full_path.parent))
+            #print(str(full_path)+_determine_processor(url)[1])
             return(_extract_processed_files(
-                    str(full_path)+_determine_processor(url)[1]))
+                    str(full_path)))
+            # This created zip.unzip.unzip, so i deleted it but not sure if this will affect other files. 
+            # return(_extract_processed_files(str(full_path)+_determine_processor(url)[1]))
 
 
 
@@ -463,6 +671,218 @@ def _match_filetype_to_extension(filetype):
     elif filetype == "TIFF":
         extensions.append(".tif")
     return extensions
+
+
+def get_raster(raster_id_string=None, verbose=True):
+    """Downloads assorted raster data that are not associated with the plate 
+    reconstruction models supported by GPlately's `DataServer`. Stores rasters in the 
+    "gplately" cache.
+
+    Currently, gplately supports the following rasters and images:
+
+    * __[ETOPO1](https://www.ngdc.noaa.gov/mgg/global/)__: 
+        * Filetypes available : TIF, netCDF (GRD)
+        * `raster_id_string` = `"ETOPO1_grd"`, `"ETOPO1_tif"` (depending on the requested format)
+        * A 1-arc minute global relief model combining lang topography and ocean bathymetry.
+        * Citation: doi:10.7289/V5C8276M
+
+
+    Parameters
+    ----------
+    raster_id_string : str, default=None
+        A string to identify which raster to download.
+
+    Returns
+    -------
+    raster_filenames : ndarray or MaskedArray
+        An ndarray or MaskedArray of the cached raster. This can be plotted using 
+        `matplotlib.pyplot.imshow` on a `cartopy.mpl.GeoAxis` GeoAxesSubplot (see example below).
+
+    Raises
+    ------
+    ValueError
+        * if a `raster_id_string` is not supplied.
+
+    Notes
+    -----
+    Rasters obtained by this method are (so far) only reconstructed to present-day. 
+
+    Examples
+    --------
+    To download ETOPO1 and plot it on a Mollweide projection:
+
+        import gplately
+        import numpy as np
+        import matplotlib.pyplot as plt
+        import cartopy.crs as ccrs
+
+        gdownload = gplately.DataServer("Muller2019")
+        etopo1 = gdownload.get_raster("ETOPO1_tif")
+        fig = plt.figure(figsize=(18,14), dpi=300)
+        ax = fig.add_subplot(111, projection=ccrs.Mollweide(central_longitude = -150))
+        ax2.imshow(etopo1, extent=[-180,180,-90,90], transform=ccrs.PlateCarree()) 
+
+    """
+    from matplotlib import image
+    if raster_id_string is None:
+        raise ValueError(
+            "Please specify which raster to download."
+        )
+    #filetype = "."+"_".split(raster_id_string)[-1]
+
+    archive_formats = tuple([".gz", ".xz", ".bz2"])
+    grid_extensions = tuple([".grd", ".nc"])
+
+    # Set to true if we find the given collection in database
+    found_collection = False
+    raster_filenames = []
+    database = _gplately.data._rasters()
+
+    for collection, zip_url in database.items():
+        # Isolate the raster name and the file type
+        #raster_name = collection.split("_")[0]
+        #raster_type = "."+collection.split("_")[-1]
+        if (raster_id_string.lower() == collection.lower()):
+            raster_filenames = download_from_web(zip_url[0], verbose)
+            found_collection = True
+            break
+
+    if found_collection is False:
+        raise ValueError("{} not in collection database.".format(raster_id_string))
+    else:
+        # If the downloaded raster is a grid, process it with the gplately.Raster object
+        if any(grid_extension in raster_filenames for grid_extension in grid_extensions):
+            raster_matrix = _gplately.grids.Raster(data=raster_filenames).data
+
+        # Otherwise, the raster is an image; use imread to process
+        else:
+            raster_matrix = image.imread(raster_filenames)
+    return raster_matrix
+
+
+def get_feature_data(feature_data_id_string=None, verbose=True):
+    """Downloads assorted geological feature data from web servers (i.e. 
+    [GPlates 2.3 sample data](https://www.earthbyte.org/gplates-2-3-software-and-data-sets/))
+    into the "gplately" cache.
+
+    Currently, gplately supports the following feature data:
+
+    * __Large igneous provinces from Johansson et al. (2018)__
+
+        Information
+        -----------
+        * Formats: .gpmlz
+        * `feature_data_id_string` = `Johansson2018`
+
+        Citations
+        ---------
+        * Johansson, L., Zahirovic, S., and Müller, R. D., In Prep, The 
+        interplay between the eruption and weathering of Large Igneous Provinces and 
+        the deep-time carbon cycle: Geophysical Research Letters.
+
+
+    - __Large igneous province products interpreted as plume products from Whittaker 
+    et al. (2015)__.
+
+        Information
+        -----------
+        * Formats: .gpmlz, .shp
+        * `feature_data_id_string` = `Whittaker2015`
+        
+        Citations
+        ---------
+        * Whittaker, J. M., Afonso, J. C., Masterton, S., Müller, R. D., 
+        Wessel, P., Williams, S. E., & Seton, M. (2015). Long-term interaction between 
+        mid-ocean ridges and mantle plumes. Nature Geoscience, 8(6), 479-483. 
+        doi:10.1038/ngeo2437.
+
+
+    - __Seafloor tectonic fabric (fracture zones, discordant zones, V-shaped structures, 
+    unclassified V-anomalies, propagating ridge lineations and extinct ridges) from 
+    Matthews et al. (2011)__
+
+        Information
+        -----------
+        * Formats: .gpml
+        * `feature_data_id_string` = `SeafloorFabric`
+
+        Citations
+        ---------
+        * Matthews, K.J., Müller, R.D., Wessel, P. and Whittaker, J.M., 2011. The 
+        tectonic fabric of the ocean basins. Journal of Geophysical Research, 116(B12): 
+        B12109, DOI: 10.1029/2011JB008413. 
+
+
+    - __Present day surface hotspot/plume locations from Whittaker et al. (2013)__
+
+        Information
+        -----------
+        * Formats: .gpmlz
+        * `feature_data_id_string` = `Hotspots`
+
+        Citation
+        --------
+        * Whittaker, J., Afonso, J., Masterton, S., Müller, R., Wessel, P., 
+        Williams, S., and Seton, M., 2015, Long-term interaction between mid-ocean ridges and 
+        mantle plumes: Nature Geoscience, v. 8, no. 6, p. 479-483, doi:10.1038/ngeo2437.
+
+    
+    Parameters
+    ----------
+    feature_data_id_string : str, default=None
+        A string to identify which feature data to download to the cache (see list of supported
+        feature data above).
+
+    Returns
+    -------
+    feature_data_filenames : instance of <pygplates.FeatureCollection>, or list of instance <pygplates.FeatureCollection>
+        If a single set of feature data is downloaded, a single pyGPlates `FeatureCollection` 
+        object is returned. Otherwise, a list containing multiple pyGPlates `FeatureCollection` 
+        objects is returned (like for `SeafloorFabric`). In the latter case, feature reconstruction 
+        and plotting may have to be done iteratively.
+
+    Raises
+    ------
+    ValueError
+        If a `feature_data_id_string` is not provided.
+
+    Examples
+    --------
+    For examples of plotting data downloaded with `get_feature_data`, see GPlately's sample 
+    notebook 05 - Working With Feature Geometries [here](https://github.com/GPlates/gplately/blob/master/Notebooks/05-WorkingWithFeatureGeometries.ipynb).
+    """
+    if feature_data_id_string is None:
+        raise ValueError(
+            "Please specify which feature data to fetch."
+        )
+
+    database = _gplately.data._feature_data()
+
+    found_collection = False
+    for collection, zip_url in database.items():
+        if feature_data_id_string.lower() == collection.lower():
+            found_collection = True
+            feature_data_filenames = _collection_sorter(
+                _collect_file_extension(
+                download_from_web(zip_url[0], verbose), [".gpml", ".gpmlz"]
+                ),
+                collection
+            )
+
+            break
+
+    if found_collection is False:
+        raise ValueError("{} are not in GPlately's DataServer.".format(feature_data_id_string))
+
+    feat_data = _FeatureCollection()
+    if len(feature_data_filenames) == 1:
+            feat_data.add(_FeatureCollection(feature_data_filenames[0]))
+            return feat_data
+    else:    
+        feat_data=[]
+        for file in feature_data_filenames:
+            feat_data.append(_FeatureCollection(file))
+        return feat_data
 
 
 class DataServer(object):
@@ -830,7 +1250,7 @@ class DataServer(object):
                 found_collection = True
                 if len(url) == 1:
                     fnames = _collection_sorter(
-                        download_from_web(url[0], verbose), self.file_collection
+                        download_from_web(url[0], verbose, model_name=self.file_collection), self.file_collection
                     )
                     rotation_filenames = _collect_file_extension(
                         _str_in_folder(
@@ -873,11 +1293,11 @@ class DataServer(object):
 
                 else:
                     for file in url[0]:
-                        rotation_filenames.append(_collect_file_extension(download_from_web(file, verbose), [".rot"]))
+                        rotation_filenames.append(_collect_file_extension(download_from_web(file, verbose, model_name=self.file_collection), [".rot"]))
                         rotation_model = _RotationModel(rotation_filenames)
 
                     for file in url[1]:
-                        topology_filenames.append(_collect_file_extension(download_from_web(file, verbose), [".gpml"]))
+                        topology_filenames.append(_collect_file_extension(download_from_web(file, verbose, model_name=self.file_collection), [".gpml"]))
                         for file in topology_filenames:
                             topology_features.add(_FeatureCollection(file))
 
@@ -885,7 +1305,7 @@ class DataServer(object):
                         static_polygon_filenames.append(
                             _check_gpml_or_shp(
                                 _str_in_folder(
-                                    _str_in_filename(download_from_web(url[0], verbose), 
+                                    _str_in_filename(download_from_web(url[0], verbose, model_name=self.file_collection), 
                                         strings_to_include=DataCollection.static_polygon_strings_to_include(self)
                                     ),    
                                         strings_to_ignore=DataCollection.static_polygon_strings_to_ignore(self)
@@ -990,7 +1410,7 @@ class DataServer(object):
                         break
                     else:
                         fnames = _collection_sorter(
-                            download_from_web(url[0], verbose), self.file_collection
+                            download_from_web(url[0], verbose, model_name=self.file_collection), self.file_collection
                         )
                         coastlines = _check_gpml_or_shp(
                             _str_in_folder(
@@ -1026,7 +1446,7 @@ class DataServer(object):
                     for file in url[0]:
                         if url[0] is not None:
                             coastlines.append(_str_in_filename(
-                                download_from_web(file, verbose), 
+                                download_from_web(file, verbose, model_name=self.file_collection), 
                                 strings_to_include=["coastline"])
                             )
                             coastlines = _check_gpml_or_shp(coastlines)
@@ -1036,7 +1456,7 @@ class DataServer(object):
                     for file in url[1]:
                         if url[1] is not None:
                             continents.append(_str_in_filename(
-                                download_from_web(file, verbose), 
+                                download_from_web(file, verbose, model_name=self.file_collection), 
                                 strings_to_include=["continent"])
                             )
                             continents = _check_gpml_or_shp(continents)
@@ -1046,7 +1466,7 @@ class DataServer(object):
                     for file in url[2]:
                         if url[2] is not None:
                             COBs.append(_str_in_filename(
-                                download_from_web(file, verbose), 
+                                download_from_web(file, verbose, model_name=self.file_collection), 
                                 strings_to_include=["cob"])
                             )
                             COBs = _check_gpml_or_shp(COBs)
@@ -1157,14 +1577,36 @@ class DataServer(object):
         age_grids = []
         age_grid_links = DataCollection.netcdf4_age_grids(self, time)
 
-        if not age_grid_links:
-            raise ValueError("{} age grids are not on GPlately's DataServer.".format(self.file_collection))
+        if not isinstance(time, list):
+            time = [time]
 
-        for link in age_grid_links:
-            age_grid_file = download_from_web(link, self.verbose)
+        # For a single time passed that isn't in the valid time range, 
+        if not age_grid_links:
+            raise ValueError(
+                "{} {}Ma age grids are not on GPlately's DataServer.".format(
+                    self.file_collection, 
+                    time[0]
+                )
+            )
+
+        # For a list of times passed...
+        for i, link in enumerate(age_grid_links):
+            if not link:
+                raise ValueError(
+                    "{} {}Ma age grids are not on GPlately's DataServer.".format(
+                        self.file_collection,
+                        time[i]
+                    )
+                )
+            age_grid_file = download_from_web(
+                link, 
+                verbose=self.verbose, 
+                model_name=self.file_collection
+            )
             age_grid = _gplately.grids.read_netcdf_grid(age_grid_file)
             age_grids.append(age_grid)
 
+        # One last check to alert user if the masked array grids were not processed properly
         if not age_grids:
             raise ValueError("{} netCDF4 age grids not found.".format(self.file_collection))
 
@@ -1235,14 +1677,35 @@ class DataServer(object):
         spreading_rate_grids = []
         spreading_rate_grid_links = DataCollection.netcdf4_spreading_rate_grids(self, time)
 
-        if not spreading_rate_grid_links:
-            raise ValueError("{} spreading rate grids are not on GPlately's DataServer.".format(self.file_collection))
+        if not isinstance(time, list):
+            time = [time]
 
-        for link in spreading_rate_grid_links:
-            spreading_rate_grid_file = download_from_web(link, self.verbose)
+        # For a single time passed that isn't in the valid time range, 
+        if not spreading_rate_grid_links:
+            raise ValueError(
+                "{} {}Ma spreading rate grids are not on GPlately's DataServer.".format(
+                    self.file_collection,
+                    time[0]
+                )
+            )
+        # For a list of times passed...
+        for i, link in enumerate(spreading_rate_grid_links):
+            if not link:
+                raise ValueError(
+                    "{} {}Ma spreading rate grids are not on GPlately's DataServer.".format(
+                        self.file_collection,
+                        time[i]
+                    )
+                )
+            spreading_rate_grid_file = download_from_web(
+                link, 
+                verbose=self.verbose, 
+                model_name=self.file_collection
+            )
             spreading_rate_grid = _gplately.grids.read_netcdf_grid(spreading_rate_grid_file)
             spreading_rate_grids.append(spreading_rate_grid)
 
+        # One last check to alert user if the masked array grids were not processed properly
         if not spreading_rate_grids:
             raise ValueError("{} netCDF4 seafloor spreading rate grids not found.".format(self.file_collection))
 
@@ -1250,6 +1713,23 @@ class DataServer(object):
             return spreading_rate_grids[0]
         else: 
             return spreading_rate_grids
+
+
+    def get_valid_times(self):
+        """Returns a tuple of the valid plate model time range, (min_time, max_time).
+        """
+        all_model_valid_times = DataCollection.plate_model_valid_reconstruction_times(self)
+
+        min_time = None
+        max_time = None
+        for plate_model_name, valid_times in list(all_model_valid_times.items()):
+            if plate_model_name.lower() == self.file_collection.lower():
+                min_time = valid_times[0]
+                max_time = valid_times[1]
+        if not min_time and not max_time:
+            raise ValueError("Could not find the valid reconstruction time of {}".format(self.file_collection))
+
+        return (min_time, max_time)
 
 
     def get_raster(self, raster_id_string=None):
@@ -1315,7 +1795,7 @@ class DataServer(object):
         # Set to true if we find the given collection in database
         found_collection = False
         raster_filenames = []
-        database = DataCollection.rasters(self)
+        database = _gplately.data._rasters()
 
         for collection, zip_url in database.items():
             # Isolate the raster name and the file type
@@ -1435,7 +1915,7 @@ class DataServer(object):
                 "Please specify which feature data to fetch."
             )
 
-        database = DataCollection.feature_data(self)
+        database = _gplately.data._feature_data()
 
         found_collection = False
         for collection, zip_url in database.items():
