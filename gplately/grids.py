@@ -1829,6 +1829,7 @@ class Raster(object):
         threads=1,
         anchor_plate_id=0,
         inplace=False,
+        return_array=False,
     ):
         """Reconstruct the raster data to a given time.
 
@@ -1853,10 +1854,12 @@ class Raster(object):
         inplace : bool, default False
             Perform the reconstruction in-place (replace the raster's data
             with the reconstructed data).
+        return_array : bool, default False
+            Return a `numpy.ndarray`, rather than a `Raster`.
 
         Returns
         -------
-        numpy.ndarray
+        Raster or np.ndarray
             The reconstructed grid. Areas for which no plate ID could be
             determined will be filled with `fill_value`.
 
@@ -1901,9 +1904,22 @@ class Raster(object):
             threads=threads,
             anchor_plate_id=anchor_plate_id,
         )
+
         if inplace:
             self.data = result
             self._time = time
+            if return_array:
+                return result
+            return self
+
+        if not return_array:
+            result = Raster(
+                plate_reconstruction=self.plate_reconstruction,
+                data=result,
+                extent=self.extent,
+                time=time,
+                origin=self.origin,
+            )
         return result
 
 
