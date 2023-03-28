@@ -1,5 +1,3 @@
-import pytest
-import gplately
 import numpy as np
 from conftest import (
     reconstruction_times,
@@ -46,7 +44,9 @@ def test_fill_NaNs(graster):
 
 def test_reconstruct(graster):
     reconstructed_raster = graster.reconstruct(50)
-    assert np.shape(reconstructed_raster), "Unable to reconstruct age grid"
+    assert (
+        np.shape(reconstructed_raster) == np.shape(graster)
+    ), "Unable to reconstruct age grid"
 
 
 def test_reverse_reconstruct(
