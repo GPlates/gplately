@@ -1876,6 +1876,7 @@ class Raster(object):
         threads=1,
         anchor_plate_id=0,
         inplace=False,
+        return_array=False,
     ):
         &#34;&#34;&#34;Reconstruct the raster data to a given time.
 
@@ -1900,10 +1901,12 @@ class Raster(object):
         inplace : bool, default False
             Perform the reconstruction in-place (replace the raster&#39;s data
             with the reconstructed data).
+        return_array : bool, default False
+            Return a `numpy.ndarray`, rather than a `Raster`.
 
         Returns
         -------
-        numpy.ndarray
+        Raster or np.ndarray
             The reconstructed grid. Areas for which no plate ID could be
             determined will be filled with `fill_value`.
 
@@ -1948,9 +1951,22 @@ class Raster(object):
             threads=threads,
             anchor_plate_id=anchor_plate_id,
         )
+
         if inplace:
             self.data = result
             self._time = time
+            if return_array:
+                return result
+            return self
+
+        if not return_array:
+            result = Raster(
+                plate_reconstruction=self.plate_reconstruction,
+                data=result,
+                extent=self.extent,
+                time=time,
+                origin=self.origin,
+            )
         return result
 
 
@@ -4140,6 +4156,7 @@ reconstruction.</dd>
         threads=1,
         anchor_plate_id=0,
         inplace=False,
+        return_array=False,
     ):
         &#34;&#34;&#34;Reconstruct the raster data to a given time.
 
@@ -4164,10 +4181,12 @@ reconstruction.</dd>
         inplace : bool, default False
             Perform the reconstruction in-place (replace the raster&#39;s data
             with the reconstructed data).
+        return_array : bool, default False
+            Return a `numpy.ndarray`, rather than a `Raster`.
 
         Returns
         -------
-        numpy.ndarray
+        Raster or np.ndarray
             The reconstructed grid. Areas for which no plate ID could be
             determined will be filled with `fill_value`.
 
@@ -4212,9 +4231,22 @@ reconstruction.</dd>
             threads=threads,
             anchor_plate_id=anchor_plate_id,
         )
+
         if inplace:
             self.data = result
             self._time = time
+            if return_array:
+                return result
+            return self
+
+        if not return_array:
+            result = Raster(
+                plate_reconstruction=self.plate_reconstruction,
+                data=result,
+                extent=self.extent,
+                time=time,
+                origin=self.origin,
+            )
         return result
 
 
@@ -4916,7 +4948,7 @@ where appropriate.</dd>
 </details>
 </dd>
 <dt id="gplately.grids.Raster.reconstruct"><code class="name flex">
-<span>def <span class="ident">reconstruct</span></span>(<span>self, time, fill_value=None, partitioning_features=None, threads=1, anchor_plate_id=0, inplace=False)</span>
+<span>def <span class="ident">reconstruct</span></span>(<span>self, time, fill_value=None, partitioning_features=None, threads=1, anchor_plate_id=0, inplace=False, return_array=False)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Reconstruct the raster data to a given time.</p>
@@ -4941,10 +4973,12 @@ routines.</dd>
 <dt><strong><code>inplace</code></strong> :&ensp;<code>bool</code>, default <code>False</code></dt>
 <dd>Perform the reconstruction in-place (replace the raster's data
 with the reconstructed data).</dd>
+<dt><strong><code>return_array</code></strong> :&ensp;<code>bool</code>, default <code>False</code></dt>
+<dd>Return a <code>numpy.ndarray</code>, rather than a <code><a title="gplately.grids.Raster" href="#gplately.grids.Raster">Raster</a></code>.</dd>
 </dl>
 <h2 id="returns">Returns</h2>
 <dl>
-<dt><code>numpy.ndarray</code></dt>
+<dt><code><a title="gplately.grids.Raster" href="#gplately.grids.Raster">Raster</a></code> or <code>np.ndarray</code></dt>
 <dd>The reconstructed grid. Areas for which no plate ID could be
 determined will be filled with <code>fill_value</code>.</dd>
 </dl>
@@ -4977,6 +5011,7 @@ value will be transparent black (0.0, 0.0, 0.0, 0.0) or
     threads=1,
     anchor_plate_id=0,
     inplace=False,
+    return_array=False,
 ):
     &#34;&#34;&#34;Reconstruct the raster data to a given time.
 
@@ -5001,10 +5036,12 @@ value will be transparent black (0.0, 0.0, 0.0, 0.0) or
     inplace : bool, default False
         Perform the reconstruction in-place (replace the raster&#39;s data
         with the reconstructed data).
+    return_array : bool, default False
+        Return a `numpy.ndarray`, rather than a `Raster`.
 
     Returns
     -------
-    numpy.ndarray
+    Raster or np.ndarray
         The reconstructed grid. Areas for which no plate ID could be
         determined will be filled with `fill_value`.
 
@@ -5049,9 +5086,22 @@ value will be transparent black (0.0, 0.0, 0.0, 0.0) or
         threads=threads,
         anchor_plate_id=anchor_plate_id,
     )
+
     if inplace:
         self.data = result
         self._time = time
+        if return_array:
+            return result
+        return self
+
+    if not return_array:
+        result = Raster(
+            plate_reconstruction=self.plate_reconstruction,
+            data=result,
+            extent=self.extent,
+            time=time,
+            origin=self.origin,
+        )
     return result</code></pre>
 </details>
 </dd>
