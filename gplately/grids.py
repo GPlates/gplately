@@ -14,7 +14,6 @@ Classes
 -------
 * RegularGridInterpolator
 * Raster
-* TimeRaster
 """
 import warnings
 from multiprocessing import cpu_count
@@ -167,17 +166,17 @@ def read_netcdf_grid(filename, return_grids=False, realign=False, resample=None)
             masked_array(data=[-90. , -89.9, -89.8, ...,  89.8,  89.9,  90. ], mask=False, fill_value=1e+20)
     """
     import netCDF4
-    
+
     # open netCDF file and re-align from -180, 180 degrees
     with netCDF4.Dataset(filename, 'r') as cdf:
         cdf_grid = cdf["z"][:]
         try:
-            cdf_lon = cdf['lon'][:]
-            cdf_lat = cdf['lat'][:]
-        except:
-            cdf_lon = cdf['x'][:]
-            cdf_lat = cdf['y'][:]
-        
+            cdf_lon = np.array(cdf['lon'])
+            cdf_lat = np.array(cdf['lat'])
+        except LookupError:
+            cdf_lon = np.array(cdf['x'])
+            cdf_lat = np.array(cdf['y'])
+
     if realign:
         # realign longitudes to -180/180 dateline
         cdf_grid_z, cdf_lon, cdf_lat = realign_grid(cdf_grid, cdf_lon, cdf_lat)
@@ -190,8 +189,19 @@ def read_netcdf_grid(filename, return_grids=False, realign=False, resample=None)
         lon_grid = np.arange(cdf_lon.min(), cdf_lon.max()+spacingX, spacingX)
         lat_grid = np.arange(cdf_lat.min(), cdf_lat.max()+spacingY, spacingY)
         lonq, latq = np.meshgrid(lon_grid, lat_grid)
-        interp = RegularGridInterpolator((cdf_lat, cdf_lon), cdf_grid_z, method='nearest', bounds_error=False)
-        cdf_grid_z = interp((latq, lonq))
+        original_extent = (
+            cdf_lon[0],
+            cdf_lon[-1],
+            cdf_lat[0],
+            cdf_lat[-1],
+        )
+        cdf_grid_z = sample_grid(
+            lonq, latq,
+            cdf_grid_z,
+            method="nearest",
+            extent=original_extent,
+            return_indices=False,
+        )
         cdf_lon = lon_grid
         cdf_lat = lat_grid
             
@@ -480,82 +490,141 @@ class RegularGridInterpolator(_RGI):
         return self.values[tuple(idx_res)]
 
 
-def sample_grid(lon, lat, grid, extent=[-180,180,-90,90], return_indices=False, return_distances=False, method='linear'):
-    """Sample point data with given `lon` and `lat` coordinates onto a `grid` using either a linear or nearest-neighbour 
-    interpolation `method`.
+def sample_grid(
+    lon,
+    lat,
+    grid,
+    method="linear",
+    extent="global",
+    origin=None,
+    return_indices=False,
+):
+    """Sample point data with given `lon` and `lat` coordinates onto a `grid`
+    using spline interpolation.
+
+    Parameters
+    ----------
+    lon, lat : array_like
+        The longitudes and latitudes of the points to interpolate onto the
+        gridded data. Must be broadcastable to a common shape.
+    grid : Raster or array_like
+        An array whose elements define a grid. The number of rows corresponds
+        to the number of point latitudes, while the number of columns
+        corresponds to the number of point longitudes.
+    method : str or int; default: 'linear'
+        The order of spline interpolation. Must be an integer in the range
+        0-5. 'nearest', 'linear', and 'cubic' are aliases for 0, 1, and 3,
+        respectively.
+    extent : str or 4-tuple, default: 'global'
+        4-tuple to specify (min_lon, max_lon, min_lat, max_lat) extents
+        of the raster. If no extents are supplied, full global extent
+        [-180,180,-90,90] is assumed (equivalent to `extent='global'`).
+        For array data with an upper-left origin, make sure `min_lat` is
+        greater than `max_lat`, or specify `origin` parameter.
+    origin : {'lower', 'upper'}, optional
+        When `data` is an array, use this parameter to specify the origin
+        (upper left or lower left) of the data (overriding `extent`).
+    return_indices : bool, default=False
+        Whether to return the row and column indices of the nearest grid
+        points.
+
+    Returns
+    -------
+    numpy.ndarray
+        The values interpolated at the input points.
+    indices : 2-tuple of numpy.ndarray
+        The i- and j-indices of the nearest grid points to the input
+        points, only present if `return_indices=True`.
+
+    Raises
+    ------
+    ValueError
+        If an invalid `method` is provided.
+    RuntimeWarning
+        If `lat` contains any invalid values outside of the interval
+        [-90, 90]. Invalid values will be clipped to this interval.
 
     Notes
     -----
-    If `return_indices` is set to `True`, the indices of raster points that were used as neighbouring sampling points
-    are returned as an array containing two arrays:
-
-    * array [0] is for the raster row coordinate (lat), and 
-    * array [1] is for the raster column (lon) coordinate.
+    If `return_indices` is set to `True`, the nearest array indices
+    are returned as a tuple of arrays, in (i, j) or (lat, lon) format.
 
     An example output:
 
         # The first array holds the rows of the raster where point data spatially falls near.
         # The second array holds the columns of the raster where point data spatially falls near.
-        sampled_indices = [array([1019, 1019, 1019, ..., 1086, 1086, 1087]), array([2237, 2237, 2237, ...,  983,  983,  983])]
-
-    If `return_distances` is set to `True`, the distances between the raster sampling points and interpolated points 
-    are returned as an array containing two arrays:
-
-    * array [0] is for the latitudinal component of distance between the raster sampling point and the interpolated point.
-    * array [1] is for the longitudinal component of distance between the raster sampling point and the interpolated point.
-
-    An example output:
-
-        # The first array holds the lat-component of the normal dist, while the second array holds the lon-component.
-        sampled_dist = [array([5.30689060e-05, 3.47557804e-02, 1.03967049e-01, ..., 3.46526690e-02, 5.77772021e-01, 1.20890767e-01]), 
-        array([4.41756600e-04, 2.89440621e-01, 8.66576791e-01, ..., 4.08341107e-01, 3.74526858e-01, 3.40690957e-01])]
-
-
-    Parameters
-    ----------
-    lon, lat : 1d arrays
-        Two arrays each specifying the longitudes and latitudes of the points to interpolate on the grid.
-
-    grid : ndarray or MaskedArray
-        An array whose elements define a grid. The number of rows corresponds to the number of point latitudes, while
-        the number of columns corresponds to the number of point longitudes.
-
-    extent : 1D numpy array, default=[-180,180,-90,90]
-        A four-element array to specify the [min lon, max lon, min lat, max lat] with which to constrain lat and lon sampling
-        points with respect to the given grid. If no extents are supplied, full global extent is assumed. 
-
-    return_indices : bool, default=False
-        Choose whether to return the row and column indices of points on the `grid` used to interpolate the point data. 
-
-    return_distances : bool, default=False
-        Choose whether to return the row and column normal distances between interpolated points and neighbouring 
-        sampling points.
-
-    method : str, default=’linear’
-        The method of interpolation to perform. Supported are "linear" and "nearest". Assumes “linear” by default.
-
-    Returns
-    -----
-    output_tuple : tuple of ndarrays
-        By default, `output_tuple` has one ndarray - this holds the values of the grid data where interpolated points lie. 
-        If sample point indices and/or distances have been requested (by setting `return_indices` and/or `return_distances`
-        to `True`), these are returned as subsequent tuple elements. 
-
-    Raises
-    ------
-    ValueError
-        * Raised if the string method supplied is not “linear” or “nearest”.
-        * Raised if the provided sample points for interpolation (xi) do not have the same dimensions as the supplied grid. 
-        * Raised if the provided sample points for interpolation include any point out of grid bounds. Alerts user which 
-        dimension (index) the point is located. Only raised if the RegularGridInterpolator attribute bounds_error is set 
-        to True. If suppressed, out-of-bound points are replaced with a set fill_value. 
-
+        sampled_indices = (array([1019, 1019, 1019, ..., 1086, 1086, 1087]), array([2237, 2237, 2237, ...,  983,  983,  983]))
     """
-    interpolator = RegularGridInterpolator((np.linspace(extent[2], extent[3], grid.shape[0]),
-                                            np.linspace(extent[0], extent[1], grid.shape[1])),
-                                            grid, method=method)
+    order = {
+        "nearest": 0,
+        "linear": 1,
+        "cubic": 3,
+    }.get(method, method)
+    if order not in {0, 1, 2, 3, 4, 5}:
+        raise ValueError("Invalid `method` parameter: {}".format(method))
 
-    return interpolator(np.c_[lat, lon], return_indices=return_indices, return_distances=return_distances)
+    if isinstance(grid, Raster):
+        extent = grid.extent
+        grid = np.array(grid.data)
+    else:
+        extent = _parse_extent_origin(extent, origin)
+        grid = _check_grid(grid)
+
+    # Do not wrap from North to South Pole (or vice versa)
+    if np.any(np.abs(lat) > 90.0):
+        warnings.warn(
+            "Invalid values encountered in lat; clipping to [-90, 90]",
+            RuntimeWarning,
+        )
+        lat = np.clip(lat, -90.0, 90.0)
+
+    dx = (extent[1] - extent[0]) / (np.shape(grid)[1] - 1)
+    dy = (extent[3] - extent[2]) / (np.shape(grid)[0] - 1)
+    point_i = (lat - extent[2]) / dy
+    point_j = (lon - extent[0]) / dx
+
+    point_coords = np.row_stack(
+        (
+            np.ravel(point_i),
+            np.ravel(point_j),
+        )
+    )
+    if np.ndim(grid) == 2:
+        interpolated = map_coordinates(
+            np.array(grid, dtype="float"),
+            point_coords,
+            order=order,
+            mode="grid-wrap",
+            prefilter=order > 1,
+        )
+        interpolated = np.reshape(interpolated, np.shape(lon))
+    else:  # ndim(grid) == 3
+        depth = np.shape(grid)[2]
+        interpolated = []
+        for k in range(depth):
+            interpolated_k = map_coordinates(
+                grid[..., k],
+                point_coords,
+                order=order,
+                mode="grid-wrap",
+                prefilter=order > 1,
+            )
+            interpolated_k = np.reshape(
+                interpolated_k,
+                np.shape(lon),
+            )
+            interpolated.append(interpolated_k)
+        del interpolated_k
+        interpolated = np.stack(interpolated, axis=-1)
+
+    interpolated = interpolated.astype(grid.dtype)
+    if return_indices:
+        indices = (
+            np.rint(np.ravel(point_i)).astype(np.int_),
+            np.rint(np.ravel(point_j)).astype(np.int_),
+        )
+        return interpolated, indices
+    return interpolated
 
 
 def reconstruct_grid(
@@ -1604,8 +1673,8 @@ class Raster(object):
             The longitudes and latitudes of the points to interpolate onto the
             gridded data. Must be broadcastable to a common shape.
         method : str or int; default: 'linear'
-            The order of interpolation. Must be an integer in the range 0-5.
-            'nearest', 'linear', and 'cubic' are aliases for 0, 1, and 3,
+            The order of spline interpolation. Must be an integer in the range
+            0-5. 'nearest', 'linear', and 'cubic' are aliases for 0, 1, and 3,
             respectively.
         return_indices : bool, default=False
             Whether to return the row and column indices of the nearest grid
@@ -1638,69 +1707,13 @@ class Raster(object):
             # The second array holds the columns of the raster where point data spatially falls near.
             sampled_indices = (array([1019, 1019, 1019, ..., 1086, 1086, 1087]), array([2237, 2237, 2237, ...,  983,  983,  983]))
         """
-        order = {
-            "nearest": 0,
-            "linear": 1,
-            "cubic": 3,
-        }.get(method, method)
-        if order not in {0, 1, 2, 3, 4, 5}:
-            raise ValueError("Invalid `method` parameter: {}".format(method))
-
-        # Do not wrap from North to South Pole (or vice versa)
-        if (np.abs(np.array(lats)) > 90.0).any():
-            warnings.warn(
-                "Invalid values encountered in lats; clipping to [-90, 90]",
-                RuntimeWarning,
-            )
-            lats = np.clip(lats, -90.0, 90.0)
-
-        dx = (self.extent[1] - self.extent[0]) / (self.shape[1] - 1)
-        dy = (self.extent[3] - self.extent[2]) / (self.shape[0] - 1)
-        point_i = (lats - self.extent[2]) / dy
-        point_j = (lons - self.extent[0]) / dx
-
-        point_coords = np.row_stack(
-            (
-                np.ravel(point_i),
-                np.ravel(point_j),
-            )
+        return sample_grid(
+            lon=lons,
+            lat=lats,
+            grid=self,
+            method=method,
+            return_indices=return_indices,
         )
-        if self.ndim == 2:
-            interpolated = map_coordinates(
-                self.data.astype("float"),
-                point_coords,
-                order=order,
-                mode="grid-wrap",
-                prefilter=order > 1,
-            )
-            interpolated = np.reshape(interpolated, np.shape(lons))
-        else:  # self.ndim == 3
-            depth = self.shape[2]
-            interpolated = []
-            for k in range(depth):
-                interpolated_k = map_coordinates(
-                    self.data[..., k],
-                    point_coords,
-                    order=order,
-                    mode="grid-wrap",
-                    prefilter=order > 1,
-                )
-                interpolated_k = np.reshape(
-                    interpolated_k,
-                    np.shape(lons),
-                )
-                interpolated.append(interpolated_k)
-            del interpolated_k
-            interpolated = np.stack(interpolated, axis=-1)
-
-        if return_indices:
-            indices = (
-                np.rint(np.ravel(point_i)).astype(np.int_),
-                np.rint(np.ravel(point_j)).astype(np.int_),
-            )
-            return interpolated.astype(self.dtype), indices
-        return interpolated.astype(self.dtype)
-
 
     def resample(self, spacingX, spacingY, overwrite=False, **kwargs):
         """Resample the `grid` passed to the `Raster` object with a new `spacingX` and 
