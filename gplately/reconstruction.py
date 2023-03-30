@@ -253,7 +253,13 @@ class PlateReconstruction(object):
             return total_subduction_zone_length_kms
 
 
-    def total_continental_arc_length(self, time, continental_grid=None, trench_arc_distance=0.0, ignore_warnings=True):
+    def total_continental_arc_length(
+        self,
+        time,
+        continental_grid,
+        trench_arc_distance,
+        ignore_warnings=True,
+    ):
         """Calculates the total length of all global continental arcs (km) at the specified geological time (Ma).
 
         Uses Plate Tectonic Tools' `subduction_convergence` workflow to sample a given plate model's trench features into 
@@ -267,23 +273,17 @@ class PlateReconstruction(object):
         ----------
         time : int
             The geological time at which to calculate total continental arc lengths.
-        continental_grid: str or ndarray, default=None
-            A MaskedArray or full string path to a continental grid with which to interpolate projected trench points on 
-            (thereby identifying continental arc points).
-            - If an array is specified then a global extent is assumed [-180,180,-90,90]
-            - If a filename is specified then the extent is obtained from the raster file.
-        trench_arc_distance : float, default=0.0
+        continental_grid: Raster, array_like, or str
+            The continental grid used to identify continental arc points. Must
+            be convertible to `Raster`. For an array, a global extent is
+            assumed [-180,180,-90,90]. For a filename, the extent is obtained
+            from the file.
+        trench_arc_distance : float
             The trench-to-arc distance (in kilometres) to project sampled trench points out by in the direction of their 
             subduction polarities. 
-        ignore_warnings : bool, default=False
+        ignore_warnings : bool, default=True
             Choose whether to ignore warning messages from PTT's subduction_convergence workflow that alerts the user of 
             subduction sub-segments that are ignored due to unidentified polarities and/or subducting plates. 
-
-        Raises
-        ------
-        ValueError
-            * If a continental grid directory is not supplied.
-            * If the trench_arc_distance is not supplied or kept at 0.0km.
 
         Returns
         -------
@@ -291,62 +291,68 @@ class PlateReconstruction(object):
             The continental arc length (in km) at the specified time.
         """
         from . import grids as _grids
-        # Right now, raster reconstruction is not supported.
-        if continental_grid is None:
-            raise ValueError("Please provide a continental grid filename or a numpy array for the current time.")
-        
-        elif isinstance(continental_grid, np.ndarray):
-            # Process the masked continental grid
-            graster = _grids.Raster(data=continental_grid, extent=[-180,180,-90,90])
 
+        if isinstance(continental_grid, _grids.Raster):
+            graster = continental_grid
         elif isinstance(continental_grid, str):
             # Process the continental grid directory
-            graster = _grids.Raster(data=continental_grid, realign=True)
+            graster = _grids.Raster(
+                data=continental_grid,
+                realign=True,
+                time=float(time),
+            )
+        else:
+            # Process the masked continental grid
+            try:
+                continental_grid = np.array(continental_grid)
+                graster = _grids.Raster(
+                    data=continental_grid,
+                    extent=[-180,180,-90,90],
+                    time=float(time),
+                )
+            except Exception as e:
+                raise TypeError(
+                    "Invalid type for `continental_grid` (must be Raster,"
+                    + " str, or array_like)"
+                ) from e
+        if (time != graster.time) and (not ignore_warnings):
+            raise RuntimeWarning(
+                "`continental_grid.time` ({}) ".format(graster.time)
+                + "does not match `time` ({})".format(time)
+            )
 
         # Obtain trench data with Plate Tectonic Tools
         trench_data = self.tesselate_subduction_zones(time, ignore_warnings=ignore_warnings)
-        
+
         # Extract trench data
         trench_normal_azimuthal_angle = trench_data[:,7]
         trench_arcseg = trench_data[:,6]
         trench_pt_lon = trench_data[:,0]
         trench_pt_lat = trench_data[:,1]
-        
+
         # Modify the trench-arc distance using the geocentric radius
         arc_distance = trench_arc_distance / (_tools.geocentric_radius(trench_pt_lat)/1000)
-        
+
         # Project trench points out along trench-arc distance, and obtain their new lat-lon coordinates
         dlon = arc_distance*np.sin(np.radians(trench_normal_azimuthal_angle))
         dlat = arc_distance*np.cos(np.radians(trench_normal_azimuthal_angle))
         ilon = trench_pt_lon + np.degrees(dlon)
         ilat = trench_pt_lat + np.degrees(dlat)
-        
+
         # Linearly interpolate projected points onto continental grids, and collect the indices of points that lie
         # within the grids.
-        sampled_points = graster.interpolate(ilon, ilat, method='linear', return_indices=True, return_distances=False)     
-        in_raster = [i for i, point in enumerate(sampled_points[0]) if point > 0]
-        
-        # Define arrays + total arc length
-        lat_in = []
-        lon_in = []
-        total_continental_arc_length_kms = 0
-        subd_we_count_lat = []
-        subd_we_count_lon = []
-        
-        # Loop through all successful in-raster indices
-        for index in in_raster:
-            
-            # Get the lat-lon coordinate of the in-raster point, and the corresponding trench point
-            lat_in.append(ilat[index])
-            lon_in.append(ilon[index])
-            subd_we_count_lat.append(trench_pt_lat[index])
-            subd_we_count_lon.append(trench_pt_lon[index])
-
-            # Append the continental trench segment to the total arc length
-            earth_radius = _tools.geocentric_radius(trench_pt_lat[index])/1000
-            total_continental_arc_length_kms += np.deg2rad(trench_data[:,6][index])*earth_radius
-            
-        return total_continental_arc_length_kms
+        sampled_points = graster.interpolate(
+            ilon,
+            ilat,
+            method='linear',
+            return_indices=False,
+        )
+        continental_indices = np.where(sampled_points > 0)
+        point_lats = ilat[continental_indices]
+        point_radii = _tools.geocentric_radius(point_lats) * 1.0e-3  # km
+        segment_arclens = np.deg2rad(trench_arcseg[continental_indices])
+        segment_lengths = point_radii * segment_arclens
+        return np.sum(segment_lengths)
 
 
     def tesselate_mid_ocean_ridges(self, time, tessellation_threshold_radians=0.001, ignore_warnings=False, **kwargs):
