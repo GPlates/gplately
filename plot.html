@@ -46,6 +46,7 @@ Classes
 PlotTopologies
 &#34;&#34;&#34;
 import re
+import warnings
 
 import pygplates
 import cartopy.crs as ccrs
@@ -1682,7 +1683,15 @@ class PlotTopologies(object):
             U /= mag
             V /= mag
 
-        return ax.quiver(X, Y, U, V, transform=self.base_projection, **kwargs)
+        with warnings.catch_warnings():
+            warnings.simplefilter(&#34;ignore&#34;, UserWarning)
+            quiver = ax.quiver(
+                X, Y,
+                U, V,
+                transform=self.base_projection,
+                **kwargs
+            )
+        return quiver
 
 
     def plot_continental_rifts(self, ax, color=&#39;black&#39;, **kwargs):
@@ -3893,7 +3902,15 @@ boundaries and passive continental boundaries.</dd>
             U /= mag
             V /= mag
 
-        return ax.quiver(X, Y, U, V, transform=self.base_projection, **kwargs)
+        with warnings.catch_warnings():
+            warnings.simplefilter(&#34;ignore&#34;, UserWarning)
+            quiver = ax.quiver(
+                X, Y,
+                U, V,
+                transform=self.base_projection,
+                **kwargs
+            )
+        return quiver
 
 
     def plot_continental_rifts(self, ax, color=&#39;black&#39;, **kwargs):
@@ -5494,7 +5511,15 @@ with the velocity vector field plotted onto the chosen map projection.</dd>
         U /= mag
         V /= mag
 
-    return ax.quiver(X, Y, U, V, transform=self.base_projection, **kwargs)</code></pre>
+    with warnings.catch_warnings():
+        warnings.simplefilter(&#34;ignore&#34;, UserWarning)
+        quiver = ax.quiver(
+            X, Y,
+            U, V,
+            transform=self.base_projection,
+            **kwargs
+        )
+    return quiver</code></pre>
 </details>
 </dd>
 <dt id="gplately.plot.PlotTopologies.plot_ridges"><code class="name flex">
