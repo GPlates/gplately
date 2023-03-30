@@ -33,7 +33,7 @@ jobs:
 
       - name: Install current gplately
         run: |
-          pip install . --no-binary=gplately --no-cache-dir
+          pip install . --no-binary :all: --no-cache-dir --no-dependencies
 
       - name: Test with pytest
         run: |
