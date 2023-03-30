@@ -26,11 +26,10 @@ jobs:
           channels: conda-forge,defaults
           channel-priority: true
           activate-environment: test
-          environment-file: conda/meta.yaml
 
-      - name: Install pytest
+      - name: Install gplately and dependencies
         run: |
-          mamba install pytest
+          mamba install gplately pytest
 
       - name: Install current gplately
         run: |
