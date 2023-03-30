@@ -17,6 +17,10 @@ jobs:
         os: [ubuntu-latest, macos-latest, windows-latest]
         python-version: ["3.8", "3.9", "3.10", "3.11"]
 
+    defaults:
+      run:
+        shell: bash -el {0}
+
     steps:
       - uses: actions/checkout@v2
       - uses: conda-incubator/setup-miniconda@v2
@@ -26,18 +30,18 @@ jobs:
           channels: conda-forge,defaults
           channel-priority: true
           activate-environment: test
+      - run: conda info
+      - run: conda list
+      - run: conda config --show
 
       - name: Install gplately and dependencies
         run: |
-          conda activate test
           mamba install gplately pytest
 
       - name: Install current gplately
         run: |
-          conda activate test
           pip install . --no-binary :all: --no-cache-dir --no-dependencies
 
       - name: Test with pytest
         run: |
-          conda activate test
-          pytest -vv
+          python -m pytest -vv
