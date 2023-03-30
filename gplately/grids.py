@@ -165,17 +165,44 @@ def read_netcdf_grid(filename, return_grids=False, realign=False, resample=None)
 
             masked_array(data=[-90. , -89.9, -89.8, ...,  89.8,  89.9,  90. ], mask=False, fill_value=1e+20)
     """
+
+    def find_label(keys, labels):
+        for label in labels:
+            if label in keys:
+                return label
+        return None
+
+
     import netCDF4
+
+    # possible permutations of lon/lat/z
+    label_lon = ['lon', 'lons', 'longitude', 'x', 'east', 'easting', 'eastings']
+    label_lat = ['lat', 'lats', 'latitude', 'y', 'north', 'northing', 'northings']
+    label_z   = ['z', 'data', 'values']
+
+    # add capitalise and upper case permutations
+    label_lon = label_lon + [label.capitalize() for label in label_lon] + [label.upper() for label in label_lon]
+    label_lat = label_lat + [label.capitalize() for label in label_lat] + [label.upper() for label in label_lat]
+    label_z = label_z + [label.capitalize() for label in label_z] + [label.upper() for label in label_z]
 
     # open netCDF file and re-align from -180, 180 degrees
     with netCDF4.Dataset(filename, 'r') as cdf:
-        cdf_grid = cdf["z"][:]
-        try:
-            cdf_lon = np.array(cdf['lon'])
-            cdf_lat = np.array(cdf['lat'])
-        except LookupError:
-            cdf_lon = np.array(cdf['x'])
-            cdf_lat = np.array(cdf['y'])
+        keys = cdf.variables.keys()
+        
+        # find the names of variables
+        key_z   = find_label(keys, label_z)
+        key_lon = find_label(keys, label_lon)
+        key_lat = find_label(keys, label_lat)
+
+        if key_lon is None or key_lat is None:
+            raise ValueError("Cannot find x,y or lon/lat coordinates in netcdf")
+        if key_z is None:
+            raise ValueError("Cannot find z data in netcdf")
+
+        # extract data from cdf variables
+        cdf_grid = cdf[key_z][:]
+        cdf_lon  = cdf[key_lon][:]
+        cdf_lat  = cdf[key_lat][:]
 
     if realign:
         # realign longitudes to -180/180 dateline
@@ -267,10 +294,10 @@ def write_netcdf_grid(filename, grid, extent=[-180,180,-90,90]):
         # Units for Geographic Grid type
         cdf_lon.units = "degrees_east"
         cdf_lon.standard_name = 'lon'
-        cdf_lon.actual_range = [np.nanmin(lon_grid), np.nanmax(lon_grid)]
+        cdf_lon.actual_range = [lon_grid[0], lon_grid[-1]]
         cdf_lat.units = "degrees_north"
         cdf_lat.standard_name = 'lat'
-        cdf_lat.actual_range = [np.nanmin(lat_grid), np.nanmax(lat_grid)]
+        cdf_lat.actual_range = [lat_grid[0], lat_grid[-1]]
 
         cdf_data = cdf.createVariable('z', grid.dtype, ('lat','lon'), zlib=True)
         # netCDF4 uses the missing_value attribute as the default _FillValue
