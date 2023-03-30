@@ -10,6 +10,7 @@ Classes
 PlotTopologies
 """
 import re
+import warnings
 
 import pygplates
 import cartopy.crs as ccrs
@@ -1646,7 +1647,15 @@ class PlotTopologies(object):
             U /= mag
             V /= mag
 
-        return ax.quiver(X, Y, U, V, transform=self.base_projection, **kwargs)
+        with warnings.catch_warnings():
+            warnings.simplefilter("ignore", UserWarning)
+            quiver = ax.quiver(
+                X, Y,
+                U, V,
+                transform=self.base_projection,
+                **kwargs
+            )
+        return quiver
 
 
     def plot_continental_rifts(self, ax, color='black', **kwargs):
