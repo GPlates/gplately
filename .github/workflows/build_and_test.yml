@@ -29,12 +29,15 @@ jobs:
 
       - name: Install gplately and dependencies
         run: |
+          conda activate test
           mamba install gplately pytest
 
       - name: Install current gplately
         run: |
+          conda activate test
           pip install . --no-binary :all: --no-cache-dir --no-dependencies
 
       - name: Test with pytest
         run: |
-          python -m pytest -vv
+          conda activate test
+          pytest -vv
