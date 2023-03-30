@@ -6,8 +6,7 @@ package:
   version: {{ version }}
 
 source:
-  url: https://pypi.io/packages/source/{{ name[0] }}/{{ name }}/gplately-{{ version }}.tar.gz
-  sha256: e1a1aa81b42e907802909848c41910ad52922a71e5915d53d728230f4033f52a
+  path: ..
 
 build:
   noarch: python
@@ -41,6 +40,7 @@ test:
     - pip check
   requires:
     - pip
+    - pytest
 
 about:
   home: https://github.com/GPlates/gplately
@@ -52,3 +52,4 @@ about:
 extra:
   recipe-maintainers:
     - brmather
+    - jcannon-gplates
