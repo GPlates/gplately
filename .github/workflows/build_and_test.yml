@@ -33,7 +33,7 @@ jobs:
 
       - name: Install current gplately
         run: |
-          pip install .
+          pip install . --no-binary gplately
 
       - name: Test with pytest
         run: |
