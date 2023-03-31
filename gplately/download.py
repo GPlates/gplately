@@ -60,8 +60,20 @@ def _determine_processor(url):
 
 
 def path_of_cached_file(url, model_name=None):
-    """Determine the full path to the cache where the file in `url` 
-    will be downloaded to."""
+    """Determine the absolute path where the file(s) from `url` 
+    will be downloaded to.
+
+    Parameters
+    ----------
+    url : str
+        The full download URL for the file passed as a string.
+
+    model_name : str, default None
+        An optional substring that ideally describes/labels the file.
+        This will help name the file(s) when it is downloaded to the 
+        gplately cache (this directory can be
+        found using `gplately.download.path_to_cache()`). 
+        """
 
     cached_filename = _pooch.utils.unique_file_name(url)
     cached_filename = _remove_hash(cached_filename)
@@ -113,6 +125,8 @@ def _extract_processed_files(processed_directory):
 
 
 def path_to_cache():
+    """Determine the absolute path to the system gplately cache. 
+    """
     path = _pooch.utils.cache_location(
         _os_cache('gplately'), 
         env=None, 
@@ -122,8 +136,14 @@ def path_to_cache():
 
 
 def clear_cache():
-    """Caution - when called, this clears the entire gplately cache. 
-    This action cannot be undone."""
+    """Clear the `gplately` cache directory. 
+
+    The absolute path of this directory can be found by running
+    [gplately.download.path_to_cache()](file:///Users/laurenilano/gplately/api/gplately/download.html#gplately.download.path_to_cache).
+
+    Caution - when called, all files in /path/to/caches/gplately will
+    be deleted. This action cannot be undone.
+    """
     cache_path = path_to_cache()
     _shutil.rmtree(str(cache_path))
     _pooch.utils.make_local_storage(str(cache_path))
@@ -444,7 +464,11 @@ def download_from_web(url, verbose=True, download_changes=True, model_name=None)
                 # and download the latest version from the web server. This, in turn,
                 # creates an e-tag textfile for this version.
                 if not etag_exists:
-                    _shutil.rmtree(str(full_path))
+                    if _os.path.isdir(full_path):
+                        _shutil.rmtree(str(full_path))
+                    elif _os.path.isfile(full_path):
+                        _os.remove(full_path)
+
                     fnames, etag, local_etag_txtfile, used_fname = _first_time_download_from_web(
                         url, 
                         model_name=model_name,
@@ -694,9 +718,19 @@ def get_raster(raster_id_string=None, verbose=True):
 
     Returns
     -------
-    raster_filenames : ndarray or MaskedArray
-        An ndarray or MaskedArray of the cached raster. This can be plotted using 
-        `matplotlib.pyplot.imshow` on a `cartopy.mpl.GeoAxis` GeoAxesSubplot (see example below).
+    a gplately.Raster object
+        A gplately.Raster object containing the raster data. The gridded data can be extracted 
+        into a numpy ndarray or MaskedArray by appending `.data` to the variable assigned to `get_raster()`.
+
+        For example:
+
+            graster = gplately.download.get_raster(raster_id_string, verbose)
+
+            graster_data = graster.data
+
+        where `graster_data` is a numpy ndarray. This array can be visualised using 
+        `matplotlib.pyplot.imshow` on a `cartopy.mpl.GeoAxis` GeoAxesSubplot 
+        (see example below).
 
     Raises
     ------
@@ -716,11 +750,12 @@ def get_raster(raster_id_string=None, verbose=True):
         import matplotlib.pyplot as plt
         import cartopy.crs as ccrs
 
-        gdownload = gplately.DataServer("Muller2019")
-        etopo1 = gdownload.get_raster("ETOPO1_tif")
+        etopo1 = gplately.download.get_raster("ETOPO1_tif")
+        etopo1_data = etopo1.data
+
         fig = plt.figure(figsize=(18,14), dpi=300)
         ax = fig.add_subplot(111, projection=ccrs.Mollweide(central_longitude = -150))
-        ax2.imshow(etopo1, extent=[-180,180,-90,90], transform=ccrs.PlateCarree()) 
+        ax2.imshow(etopo1_data, extent=[-180,180,-90,90], transform=ccrs.PlateCarree()) 
 
     """
     from matplotlib import image
@@ -1541,9 +1576,20 @@ class DataServer(object):
 
         Returns
         -------
-        raster_array : MaskedArray
-            A masked array containing the netCDF4 age grid ready for plotting or for
-            passing into GPlately's `Raster` object for raster manipulation.
+        a gplately.Raster object
+            A gplately.Raster object containing the age grid. The age grid data can be extracted 
+            into a numpy ndarray or MaskedArray by appending `.data` to the variable assigned to 
+            `get_age_grid()`.
+
+            For example:
+
+                gdownload = gplately.DataServer("Muller2019")
+
+                graster = gdownload.get_age_grid(time=100)
+
+                graster_data = graster.data
+
+            where `graster_data` is a numpy ndarray. 
 
         Raises
         -----
@@ -1639,9 +1685,20 @@ class DataServer(object):
 
         Returns
         -------
-        raster_array : MaskedArray
-            A masked array containing the netCDF4 spreading rate grid ready for 
-            plotting or for passing into GPlately's `Raster` object.
+        a gplately.Raster object
+            A gplately.Raster object containing the spreading rate grid. The spreading 
+            rate grid data can be extracted into a numpy ndarray or MaskedArray by 
+            appending `.data` to the variable assigned to `get_spreading_rate_grid()`.
+
+            For example:
+
+                gdownload = gplately.DataServer("Clennett2020")
+
+                graster = gdownload.get_spreading_rate_grid(time=100)
+
+                graster_data = graster.data
+
+            where `graster_data` is a numpy ndarray.
 
         Raises
         -----
@@ -1753,9 +1810,21 @@ class DataServer(object):
 
         Returns
         -------
-        raster_filenames : ndarray or MaskedArray
-            An ndarray or MaskedArray of the cached raster. This can be plotted using 
-            `matplotlib.pyplot.imshow` on a `cartopy.mpl.GeoAxis` GeoAxesSubplot (see example below).
+        a gplately.Raster object
+            A gplately.Raster object containing the raster data. The gridded data can be extracted 
+            into a numpy ndarray or MaskedArray by appending `.data` to the variable assigned to `get_raster()`.
+
+            For example:
+
+                gdownload = gplately.DataServer("Muller2019")
+
+                graster = gdownload.get_raster(raster_id_string, verbose)
+
+                graster_data = graster.data
+
+            where `graster_data` is a numpy ndarray. This array can be visualised using 
+            `matplotlib.pyplot.imshow` on a `cartopy.mpl.GeoAxis` GeoAxesSubplot 
+            (see example below).
 
         Raises
         ------
