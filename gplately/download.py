@@ -752,12 +752,12 @@ def get_raster(raster_id_string=None, verbose=True):
     else:
         # If the downloaded raster is a grid, process it with the gplately.Raster object
         if any(grid_extension in raster_filenames for grid_extension in grid_extensions):
-            raster_matrix = _gplately.grids.Raster(data=raster_filenames).data
+            return _gplately.grids.Raster(data=raster_filenames)
 
         # Otherwise, the raster is an image; use imread to process
         else:
             raster_matrix = image.imread(raster_filenames)
-    return raster_matrix
+            return _gplately.grid.Raster(data=raster_matrix)
 
 
 def get_feature_data(feature_data_id_string=None, verbose=True):
@@ -1603,7 +1603,7 @@ class DataServer(object):
                 verbose=self.verbose, 
                 model_name=self.file_collection
             )
-            age_grid = _gplately.grids.read_netcdf_grid(age_grid_file)
+            age_grid = _gplately.grids.Raster(data=age_grid_file)
             age_grids.append(age_grid)
 
         # One last check to alert user if the masked array grids were not processed properly
@@ -1702,7 +1702,7 @@ class DataServer(object):
                 verbose=self.verbose, 
                 model_name=self.file_collection
             )
-            spreading_rate_grid = _gplately.grids.read_netcdf_grid(spreading_rate_grid_file)
+            spreading_rate_grid = _gplately.grids.Raster(data=spreading_rate_grid_file)
             spreading_rate_grids.append(spreading_rate_grid)
 
         # One last check to alert user if the masked array grids were not processed properly
@@ -1811,12 +1811,12 @@ class DataServer(object):
         else:
             # If the downloaded raster is a grid, process it with the gplately.Raster object
             if any(grid_extension in raster_filenames for grid_extension in grid_extensions):
-                raster_matrix = _gplately.grids.Raster(data=raster_filenames).data
+                return _gplately.grids.Raster(data=raster_filenames)
 
             # Otherwise, the raster is an image; use imread to process
             else:
                 raster_matrix = image.imread(raster_filenames)
-        return raster_matrix
+                return _gplately.grids.Raster(data=raster_matrix)
 
 
     def get_feature_data(self, feature_data_id_string=None):
