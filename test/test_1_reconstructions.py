@@ -78,10 +78,11 @@ def test_pygplates_ridge_length(time, model):
 @pytest.mark.parametrize("time", reconstruction_times)
 def test_cont_arc_length(time, model):
     gdownload = gplately.download.DataServer("Muller2019")
-    continental_grid_directory = gdownload.get_age_grid(time)
+    continental_grid = gdownload.get_age_grid(time)
+    continental_grid_data = continental_grid.data
     # Use 281km as the trench-arc distance 281 km; the median distance frin global analysis at the present-day (Pall et al. 2018)
     trench_arc_distance = 281
-    total_cont_arc_length = model.total_continental_arc_length(time, continental_grid_directory, trench_arc_distance, ignore_warnings=True)
+    total_cont_arc_length = model.total_continental_arc_length(time, continental_grid_data, trench_arc_distance, ignore_warnings=True)
     assert total_cont_arc_length, "Could not calculate total continental arc lengths for Muller et al. (2019) at {} Ma.".format(time)
 
 

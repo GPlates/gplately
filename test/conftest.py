@@ -102,7 +102,9 @@ def gplately_raster_object(
     time = 0
     masked_age_grid = gplately_muller_server.get_age_grid(time)
 
-    graster = gplately.Raster(model, data=masked_age_grid, extent=[-180,180,-90,90])
+    masked_age_grid_data = masked_age_grid.data
+
+    graster = gplately.Raster(model, data=masked_age_grid_data, extent=[-180,180,-90,90])
     return graster
 
 
@@ -111,7 +113,8 @@ def gplately_merdith_raster(
     gplately_merdith_server,
     gplately_merdith_reconstruction,
 ):
-    etopo = gplately_merdith_server.get_raster("ETOPO1_grd").astype("float")
+    etopo = gplately_merdith_server.get_raster("ETOPO1_grd")
+    etopo = etopo.data.astype("float")
     downsampled = etopo[::15, ::15]
     raster = gplately.Raster(
         plate_reconstruction=gplately_merdith_reconstruction,
