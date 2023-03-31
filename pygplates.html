@@ -37,7 +37,7 @@ Each object listed here will have a `self.filenames` attribute.
 
 import pygplates as _pygplates
 from pygplates import *
-
+import warnings as _warnings
 
 def _is_string(value):
     # convert sets to list
@@ -74,7 +74,10 @@ class RotationModel(_pygplates.RotationModel):
         elif hasattr(rotation_features, &#34;filenames&#34;):
             self.filenames = rotation_features.filenames
         else:
-            print(&#34;RotationModel: No filename associated with&#34;, type(rotation_features), &#34;in __init__&#34;)
+            msg = &#34;RotationModel: No filename associated with&#34;, type(rotation_features), &#34;in __init__&#34;
+            msg += &#34;\n ensure pygplates is imported from gplately. Run,&#34;
+            msg += &#34;\n from gplately import pygplates&#34;
+            _warnings.warn(msg, ImportWarning)
             self.filenames = []
 
 class Feature(_pygplates.Feature):
@@ -95,7 +98,10 @@ class Feature(_pygplates.Feature):
         elif hasattr(feature, &#34;filenames&#34;):
             self.filenames = feature.filenames
         else:
-            print(&#34;Feature: No filename associated with&#34;, type(feature), &#34;in __init__&#34;)
+            msg = &#34;RotationModel: No filename associated with&#34;, type(feature), &#34;in __init__&#34;
+            msg += &#34;\n ensure pygplates is imported from gplately. Run,&#34;
+            msg += &#34;\n from gplately import pygplates&#34;
+            _warnings.warn(msg, ImportWarning)
             self.filenames = []
 
 
@@ -108,7 +114,10 @@ class Feature(_pygplates.Feature):
         elif hasattr(feature, &#34;filenames&#34;):
             self.filenames.extend(feature.filenames)
         else:
-            print(&#34;Feature: No filename associated with&#34;, type(feature), &#34;in add&#34;)
+            msg = &#34;RotationModel: No filename associated with&#34;, type(feature), &#34;in add&#34;
+            msg += &#34;\n ensure pygplates is imported from gplately. Run,&#34;
+            msg += &#34;\n from gplately import pygplates&#34;
+            _warnings.warn(msg, ImportWarning)
 
     def clone(self):
         feat = super().clone()
@@ -132,7 +141,10 @@ class FeatureCollection(_pygplates.FeatureCollection):
         elif hasattr(features, &#34;filenames&#34;):
             self.filenames = features.filenames
         else:
-            print(&#34;FeatureCollection: No filename associated with&#34;, type(features), &#34;in __init__&#34;)
+            msg = &#34;RotationModel: No filename associated with&#34;, type(features), &#34;in __init__&#34;
+            msg += &#34;\n ensure pygplates is imported from gplately. Run,&#34;
+            msg += &#34;\n from gplately import pygplates&#34;
+            _warnings.warn(msg, ImportWarning)
             self.filenames = []
 
     def add(self, features):
@@ -146,7 +158,10 @@ class FeatureCollection(_pygplates.FeatureCollection):
         elif hasattr(features, &#34;filenames&#34;):
             self.filenames.extend(features.filenames)
         else:
-            print(&#34;FeatureCollection: No filename associated with&#34;, type(features), &#34;in add&#34;)
+            msg = &#34;RotationModel: No filename associated with&#34;, type(features), &#34;in add&#34;
+            msg += &#34;\n ensure pygplates is imported from gplately. Run,&#34;
+            msg += &#34;\n from gplately import pygplates&#34;
+            _warnings.warn(msg, ImportWarning)
 
     def clone(self):
         fc = super().clone()
@@ -314,7 +329,10 @@ unclassified_feature = pygplates.Feature(
         elif hasattr(feature, &#34;filenames&#34;):
             self.filenames = feature.filenames
         else:
-            print(&#34;Feature: No filename associated with&#34;, type(feature), &#34;in __init__&#34;)
+            msg = &#34;RotationModel: No filename associated with&#34;, type(feature), &#34;in __init__&#34;
+            msg += &#34;\n ensure pygplates is imported from gplately. Run,&#34;
+            msg += &#34;\n from gplately import pygplates&#34;
+            _warnings.warn(msg, ImportWarning)
             self.filenames = []
 
 
@@ -327,7 +345,10 @@ unclassified_feature = pygplates.Feature(
         elif hasattr(feature, &#34;filenames&#34;):
             self.filenames.extend(feature.filenames)
         else:
-            print(&#34;Feature: No filename associated with&#34;, type(feature), &#34;in add&#34;)
+            msg = &#34;RotationModel: No filename associated with&#34;, type(feature), &#34;in add&#34;
+            msg += &#34;\n ensure pygplates is imported from gplately. Run,&#34;
+            msg += &#34;\n from gplately import pygplates&#34;
+            _warnings.warn(msg, ImportWarning)
 
     def clone(self):
         feat = super().clone()
@@ -401,7 +422,10 @@ properties_added = feature.add([
     elif hasattr(feature, &#34;filenames&#34;):
         self.filenames.extend(feature.filenames)
     else:
-        print(&#34;Feature: No filename associated with&#34;, type(feature), &#34;in add&#34;)</code></pre>
+        msg = &#34;RotationModel: No filename associated with&#34;, type(feature), &#34;in add&#34;
+        msg += &#34;\n ensure pygplates is imported from gplately. Run,&#34;
+        msg += &#34;\n from gplately import pygplates&#34;
+        _warnings.warn(msg, ImportWarning)</code></pre>
 </details>
 </dd>
 <dt id="gplately.pygplates.Feature.clone"><code class="name flex">
@@ -570,7 +594,10 @@ This creates a shallow copy much in the same way as with a Python list (for exam
         elif hasattr(features, &#34;filenames&#34;):
             self.filenames = features.filenames
         else:
-            print(&#34;FeatureCollection: No filename associated with&#34;, type(features), &#34;in __init__&#34;)
+            msg = &#34;RotationModel: No filename associated with&#34;, type(features), &#34;in __init__&#34;
+            msg += &#34;\n ensure pygplates is imported from gplately. Run,&#34;
+            msg += &#34;\n from gplately import pygplates&#34;
+            _warnings.warn(msg, ImportWarning)
             self.filenames = []
 
     def add(self, features):
@@ -584,7 +611,10 @@ This creates a shallow copy much in the same way as with a Python list (for exam
         elif hasattr(features, &#34;filenames&#34;):
             self.filenames.extend(features.filenames)
         else:
-            print(&#34;FeatureCollection: No filename associated with&#34;, type(features), &#34;in add&#34;)
+            msg = &#34;RotationModel: No filename associated with&#34;, type(features), &#34;in add&#34;
+            msg += &#34;\n ensure pygplates is imported from gplately. Run,&#34;
+            msg += &#34;\n from gplately import pygplates&#34;
+            _warnings.warn(msg, ImportWarning)
 
     def clone(self):
         fc = super().clone()
@@ -626,7 +656,10 @@ feature_collection.add([feature1, feature2])
     elif hasattr(features, &#34;filenames&#34;):
         self.filenames.extend(features.filenames)
     else:
-        print(&#34;FeatureCollection: No filename associated with&#34;, type(features), &#34;in add&#34;)</code></pre>
+        msg = &#34;RotationModel: No filename associated with&#34;, type(features), &#34;in add&#34;
+        msg += &#34;\n ensure pygplates is imported from gplately. Run,&#34;
+        msg += &#34;\n from gplately import pygplates&#34;
+        _warnings.warn(msg, ImportWarning)</code></pre>
 </details>
 </dd>
 <dt id="gplately.pygplates.FeatureCollection.clone"><code class="name flex">
@@ -737,7 +770,10 @@ Simply return an existing rotation model as a convenience.</p>
         elif hasattr(rotation_features, &#34;filenames&#34;):
             self.filenames = rotation_features.filenames
         else:
-            print(&#34;RotationModel: No filename associated with&#34;, type(rotation_features), &#34;in __init__&#34;)
+            msg = &#34;RotationModel: No filename associated with&#34;, type(rotation_features), &#34;in __init__&#34;
+            msg += &#34;\n ensure pygplates is imported from gplately. Run,&#34;
+            msg += &#34;\n from gplately import pygplates&#34;
+            _warnings.warn(msg, ImportWarning)
             self.filenames = []</code></pre>
 </details>
 <h3>Ancestors</h3>
