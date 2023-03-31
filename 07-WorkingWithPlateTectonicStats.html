@@ -14625,7 +14625,7 @@ body[data-format='mobile'] .jp-OutputArea-child .jp-OutputArea-output {
      <div class="CodeMirror cm-s-jupyter">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="kn">import</span> <span class="nn">gplately</span>
 <span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="kn">import</span> <span class="nn">pygplates</span>
+<span class="kn">import</span> <span class="nn">gplately.pygplates</span> <span class="k">as</span> <span class="nn">pygplates</span>
 <span class="kn">import</span> <span class="nn">ptt</span>
 <span class="kn">import</span> <span class="nn">glob</span><span class="o">,</span> <span class="nn">os</span>
 <span class="kn">import</span> <span class="nn">pandas</span> <span class="k">as</span> <span class="nn">pd</span>
@@ -14803,13 +14803,14 @@ Requested files are up-to-date!
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[4]:</div>
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[5]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
      <div class="CodeMirror cm-s-jupyter">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># Create a time array</span>
 <span class="n">min_time</span> <span class="o">=</span> <span class="mi">0</span> 
 <span class="n">max_time</span> <span class="o">=</span> <span class="mi">250</span>
 <span class="n">time_array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">max_time</span><span class="p">,</span><span class="n">min_time</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">-</span><span class="mi">1</span><span class="p">)</span>
+<span class="n">time_array_reversed</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">arange</span><span class="p">(</span><span class="n">min_time</span><span class="p">,</span><span class="n">max_time</span><span class="o">+</span><span class="mi">1</span><span class="p">,</span> <span class="mi">1</span><span class="p">)</span>
 
 <span class="c1"># Initialise data ndarray</span>
 <span class="n">data_array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="mi">10</span><span class="p">,</span><span class="n">time_array</span><span class="o">.</span><span class="n">size</span><span class="p">))</span>
@@ -14817,7 +14818,7 @@ Requested files are up-to-date!
 <span class="c1"># Get plate tectonic stats for each reconstruction time</span>
 <span class="k">for</span> <span class="n">t</span><span class="p">,</span> <span class="n">time</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">time_array</span><span class="p">):</span>
     <span class="n">data_array</span><span class="p">[:,</span><span class="n">t</span><span class="p">]</span> <span class="o">=</span> <span class="n">get_plate_tectonic_stats</span><span class="p">(</span><span class="n">model</span><span class="p">,</span> <span class="n">time</span><span class="p">)</span>
-    <span class="c1">#print(&quot;Calculated stats for {} Ma!&quot;.format(time))</span>
+    <span class="n">gplately</span><span class="o">.</span><span class="n">tools</span><span class="o">.</span><span class="n">update_progress</span><span class="p">(</span><span class="n">time_array_reversed</span><span class="p">[</span><span class="n">t</span><span class="p">]</span><span class="o">/</span><span class="n">max_time</span><span class="p">)</span>
 <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;Done calculating stats!&quot;</span><span class="p">)</span>
 </pre></div>
 
@@ -14838,7 +14839,8 @@ Requested files are up-to-date!
 
 
 <div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
-<pre>Done calculating stats!
+<pre>Progress: [####################] 100.0%
+Done calculating stats!
 </pre>
 </div>
 </div>
