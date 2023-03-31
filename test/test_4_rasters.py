@@ -1,5 +1,3 @@
-import pytest
-import gplately
 import numpy as np
 from conftest import (
     reconstruction_times,
@@ -29,7 +27,12 @@ methods in the object are tested:
 
 # TEST LINEAR POINT DATA INTERPOLATION (WITH PT. COORDS FROM CONFTEST)
 def test_point_interpolation(graster):
-    interpolated_points = graster.interpolate(pt_lon, pt_lat, method='linear', return_indices=False, return_distances=False)
+    interpolated_points = graster.interpolate(
+        pt_lon,
+        pt_lat,
+        method='linear',
+        return_indices=False,
+    )
     assert interpolated_points.any(), "Unable to interpolate points"
 
 
@@ -46,7 +49,9 @@ def test_fill_NaNs(graster):
 
 def test_reconstruct(graster):
     reconstructed_raster = graster.reconstruct(50)
-    assert np.shape(reconstructed_raster), "Unable to reconstruct age grid"
+    assert (
+        np.shape(reconstructed_raster) == np.shape(graster)
+    ), "Unable to reconstruct age grid"
 
 
 def test_reverse_reconstruct(

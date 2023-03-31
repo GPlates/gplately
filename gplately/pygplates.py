@@ -6,7 +6,7 @@ Each object listed here will have a `self.filenames` attribute.
 
 import pygplates as _pygplates
 from pygplates import *
-
+import warnings as _warnings
 
 def _is_string(value):
     # convert sets to list
@@ -43,7 +43,10 @@ class RotationModel(_pygplates.RotationModel):
         elif hasattr(rotation_features, "filenames"):
             self.filenames = rotation_features.filenames
         else:
-            print("RotationModel: No filename associated with", type(rotation_features), "in __init__")
+            msg = "RotationModel: No filename associated with", type(rotation_features), "in __init__"
+            msg += "\n ensure pygplates is imported from gplately. Run,"
+            msg += "\n from gplately import pygplates"
+            _warnings.warn(msg, ImportWarning)
             self.filenames = []
 
 class Feature(_pygplates.Feature):
@@ -64,7 +67,10 @@ class Feature(_pygplates.Feature):
         elif hasattr(feature, "filenames"):
             self.filenames = feature.filenames
         else:
-            print("Feature: No filename associated with", type(feature), "in __init__")
+            msg = "RotationModel: No filename associated with", type(feature), "in __init__"
+            msg += "\n ensure pygplates is imported from gplately. Run,"
+            msg += "\n from gplately import pygplates"
+            _warnings.warn(msg, ImportWarning)
             self.filenames = []
 
 
@@ -77,7 +83,10 @@ class Feature(_pygplates.Feature):
         elif hasattr(feature, "filenames"):
             self.filenames.extend(feature.filenames)
         else:
-            print("Feature: No filename associated with", type(feature), "in add")
+            msg = "RotationModel: No filename associated with", type(feature), "in add"
+            msg += "\n ensure pygplates is imported from gplately. Run,"
+            msg += "\n from gplately import pygplates"
+            _warnings.warn(msg, ImportWarning)
 
     def clone(self):
         feat = super().clone()
@@ -101,7 +110,10 @@ class FeatureCollection(_pygplates.FeatureCollection):
         elif hasattr(features, "filenames"):
             self.filenames = features.filenames
         else:
-            print("FeatureCollection: No filename associated with", type(features), "in __init__")
+            msg = "RotationModel: No filename associated with", type(features), "in __init__"
+            msg += "\n ensure pygplates is imported from gplately. Run,"
+            msg += "\n from gplately import pygplates"
+            _warnings.warn(msg, ImportWarning)
             self.filenames = []
 
     def add(self, features):
@@ -115,7 +127,10 @@ class FeatureCollection(_pygplates.FeatureCollection):
         elif hasattr(features, "filenames"):
             self.filenames.extend(features.filenames)
         else:
-            print("FeatureCollection: No filename associated with", type(features), "in add")
+            msg = "RotationModel: No filename associated with", type(features), "in add"
+            msg += "\n ensure pygplates is imported from gplately. Run,"
+            msg += "\n from gplately import pygplates"
+            _warnings.warn(msg, ImportWarning)
 
     def clone(self):
         fc = super().clone()

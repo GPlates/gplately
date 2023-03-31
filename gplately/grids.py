@@ -14,7 +14,6 @@ Classes
 -------
 * RegularGridInterpolator
 * Raster
-* TimeRaster
 """
 import warnings
 from multiprocessing import cpu_count
@@ -29,7 +28,10 @@ from rasterio.enums import MergeAlg
 from rasterio.features import rasterize as _rasterize
 from rasterio.transform import from_bounds as _from_bounds
 from scipy.interpolate import RegularGridInterpolator as _RGI
-from scipy.ndimage import distance_transform_edt
+from scipy.ndimage import (
+    distance_transform_edt,
+    map_coordinates,
+)
 from scipy.spatial import cKDTree as _cKDTree
 from scipy.spatial.transform import Rotation as _Rotation
 
@@ -163,18 +165,45 @@ def read_netcdf_grid(filename, return_grids=False, realign=False, resample=None)
 
             masked_array(data=[-90. , -89.9, -89.8, ...,  89.8,  89.9,  90. ], mask=False, fill_value=1e+20)
     """
+
+    def find_label(keys, labels):
+        for label in labels:
+            if label in keys:
+                return label
+        return None
+
+
     import netCDF4
-    
+
+    # possible permutations of lon/lat/z
+    label_lon = ['lon', 'lons', 'longitude', 'x', 'east', 'easting', 'eastings']
+    label_lat = ['lat', 'lats', 'latitude', 'y', 'north', 'northing', 'northings']
+    label_z   = ['z', 'data', 'values']
+
+    # add capitalise and upper case permutations
+    label_lon = label_lon + [label.capitalize() for label in label_lon] + [label.upper() for label in label_lon]
+    label_lat = label_lat + [label.capitalize() for label in label_lat] + [label.upper() for label in label_lat]
+    label_z = label_z + [label.capitalize() for label in label_z] + [label.upper() for label in label_z]
+
     # open netCDF file and re-align from -180, 180 degrees
     with netCDF4.Dataset(filename, 'r') as cdf:
-        cdf_grid = cdf["z"][:]
-        try:
-            cdf_lon = cdf['lon'][:]
-            cdf_lat = cdf['lat'][:]
-        except:
-            cdf_lon = cdf['x'][:]
-            cdf_lat = cdf['y'][:]
+        keys = cdf.variables.keys()
         
+        # find the names of variables
+        key_z   = find_label(keys, label_z)
+        key_lon = find_label(keys, label_lon)
+        key_lat = find_label(keys, label_lat)
+
+        if key_lon is None or key_lat is None:
+            raise ValueError("Cannot find x,y or lon/lat coordinates in netcdf")
+        if key_z is None:
+            raise ValueError("Cannot find z data in netcdf")
+
+        # extract data from cdf variables
+        cdf_grid = cdf[key_z][:]
+        cdf_lon  = cdf[key_lon][:]
+        cdf_lat  = cdf[key_lat][:]
+
     if realign:
         # realign longitudes to -180/180 dateline
         cdf_grid_z, cdf_lon, cdf_lat = realign_grid(cdf_grid, cdf_lon, cdf_lat)
@@ -187,8 +216,19 @@ def read_netcdf_grid(filename, return_grids=False, realign=False, resample=None)
         lon_grid = np.arange(cdf_lon.min(), cdf_lon.max()+spacingX, spacingX)
         lat_grid = np.arange(cdf_lat.min(), cdf_lat.max()+spacingY, spacingY)
         lonq, latq = np.meshgrid(lon_grid, lat_grid)
-        interp = RegularGridInterpolator((cdf_lat, cdf_lon), cdf_grid_z, method='nearest', bounds_error=False)
-        cdf_grid_z = interp((latq, lonq))
+        original_extent = (
+            cdf_lon[0],
+            cdf_lon[-1],
+            cdf_lat[0],
+            cdf_lat[-1],
+        )
+        cdf_grid_z = sample_grid(
+            lonq, latq,
+            cdf_grid_z,
+            method="nearest",
+            extent=original_extent,
+            return_indices=False,
+        )
         cdf_lon = lon_grid
         cdf_lat = lat_grid
             
@@ -254,10 +294,10 @@ def write_netcdf_grid(filename, grid, extent=[-180,180,-90,90]):
         # Units for Geographic Grid type
         cdf_lon.units = "degrees_east"
         cdf_lon.standard_name = 'lon'
-        cdf_lon.actual_range = [np.nanmin(lon_grid), np.nanmax(lon_grid)]
+        cdf_lon.actual_range = [lon_grid[0], lon_grid[-1]]
         cdf_lat.units = "degrees_north"
         cdf_lat.standard_name = 'lat'
-        cdf_lat.actual_range = [np.nanmin(lat_grid), np.nanmax(lat_grid)]
+        cdf_lat.actual_range = [lat_grid[0], lat_grid[-1]]
 
         cdf_data = cdf.createVariable('z', grid.dtype, ('lat','lon'), zlib=True)
         # netCDF4 uses the missing_value attribute as the default _FillValue
@@ -477,82 +517,141 @@ class RegularGridInterpolator(_RGI):
         return self.values[tuple(idx_res)]
 
 
-def sample_grid(lon, lat, grid, extent=[-180,180,-90,90], return_indices=False, return_distances=False, method='linear'):
-    """Sample point data with given `lon` and `lat` coordinates onto a `grid` using either a linear or nearest-neighbour 
-    interpolation `method`.
+def sample_grid(
+    lon,
+    lat,
+    grid,
+    method="linear",
+    extent="global",
+    origin=None,
+    return_indices=False,
+):
+    """Sample point data with given `lon` and `lat` coordinates onto a `grid`
+    using spline interpolation.
+
+    Parameters
+    ----------
+    lon, lat : array_like
+        The longitudes and latitudes of the points to interpolate onto the
+        gridded data. Must be broadcastable to a common shape.
+    grid : Raster or array_like
+        An array whose elements define a grid. The number of rows corresponds
+        to the number of point latitudes, while the number of columns
+        corresponds to the number of point longitudes.
+    method : str or int; default: 'linear'
+        The order of spline interpolation. Must be an integer in the range
+        0-5. 'nearest', 'linear', and 'cubic' are aliases for 0, 1, and 3,
+        respectively.
+    extent : str or 4-tuple, default: 'global'
+        4-tuple to specify (min_lon, max_lon, min_lat, max_lat) extents
+        of the raster. If no extents are supplied, full global extent
+        [-180,180,-90,90] is assumed (equivalent to `extent='global'`).
+        For array data with an upper-left origin, make sure `min_lat` is
+        greater than `max_lat`, or specify `origin` parameter.
+    origin : {'lower', 'upper'}, optional
+        When `data` is an array, use this parameter to specify the origin
+        (upper left or lower left) of the data (overriding `extent`).
+    return_indices : bool, default=False
+        Whether to return the row and column indices of the nearest grid
+        points.
+
+    Returns
+    -------
+    numpy.ndarray
+        The values interpolated at the input points.
+    indices : 2-tuple of numpy.ndarray
+        The i- and j-indices of the nearest grid points to the input
+        points, only present if `return_indices=True`.
+
+    Raises
+    ------
+    ValueError
+        If an invalid `method` is provided.
+    RuntimeWarning
+        If `lat` contains any invalid values outside of the interval
+        [-90, 90]. Invalid values will be clipped to this interval.
 
     Notes
     -----
-    If `return_indices` is set to `True`, the indices of raster points that were used as neighbouring sampling points
-    are returned as an array containing two arrays:
-
-    * array [0] is for the raster row coordinate (lat), and 
-    * array [1] is for the raster column (lon) coordinate.
+    If `return_indices` is set to `True`, the nearest array indices
+    are returned as a tuple of arrays, in (i, j) or (lat, lon) format.
 
     An example output:
 
         # The first array holds the rows of the raster where point data spatially falls near.
         # The second array holds the columns of the raster where point data spatially falls near.
-        sampled_indices = [array([1019, 1019, 1019, ..., 1086, 1086, 1087]), array([2237, 2237, 2237, ...,  983,  983,  983])]
-
-    If `return_distances` is set to `True`, the distances between the raster sampling points and interpolated points 
-    are returned as an array containing two arrays:
-
-    * array [0] is for the latitudinal component of distance between the raster sampling point and the interpolated point.
-    * array [1] is for the longitudinal component of distance between the raster sampling point and the interpolated point.
-
-    An example output:
-
-        # The first array holds the lat-component of the normal dist, while the second array holds the lon-component.
-        sampled_dist = [array([5.30689060e-05, 3.47557804e-02, 1.03967049e-01, ..., 3.46526690e-02, 5.77772021e-01, 1.20890767e-01]), 
-        array([4.41756600e-04, 2.89440621e-01, 8.66576791e-01, ..., 4.08341107e-01, 3.74526858e-01, 3.40690957e-01])]
-
-
-    Parameters
-    ----------
-    lon, lat : 1d arrays
-        Two arrays each specifying the longitudes and latitudes of the points to interpolate on the grid.
-
-    grid : ndarray or MaskedArray
-        An array whose elements define a grid. The number of rows corresponds to the number of point latitudes, while
-        the number of columns corresponds to the number of point longitudes.
-
-    extent : 1D numpy array, default=[-180,180,-90,90]
-        A four-element array to specify the [min lon, max lon, min lat, max lat] with which to constrain lat and lon sampling
-        points with respect to the given grid. If no extents are supplied, full global extent is assumed. 
-
-    return_indices : bool, default=False
-        Choose whether to return the row and column indices of points on the `grid` used to interpolate the point data. 
-
-    return_distances : bool, default=False
-        Choose whether to return the row and column normal distances between interpolated points and neighbouring 
-        sampling points.
-
-    method : str, default=’linear’
-        The method of interpolation to perform. Supported are "linear" and "nearest". Assumes “linear” by default.
-
-    Returns
-    -----
-    output_tuple : tuple of ndarrays
-        By default, `output_tuple` has one ndarray - this holds the values of the grid data where interpolated points lie. 
-        If sample point indices and/or distances have been requested (by setting `return_indices` and/or `return_distances`
-        to `True`), these are returned as subsequent tuple elements. 
-
-    Raises
-    ------
-    ValueError
-        * Raised if the string method supplied is not “linear” or “nearest”.
-        * Raised if the provided sample points for interpolation (xi) do not have the same dimensions as the supplied grid. 
-        * Raised if the provided sample points for interpolation include any point out of grid bounds. Alerts user which 
-        dimension (index) the point is located. Only raised if the RegularGridInterpolator attribute bounds_error is set 
-        to True. If suppressed, out-of-bound points are replaced with a set fill_value. 
-
+        sampled_indices = (array([1019, 1019, 1019, ..., 1086, 1086, 1087]), array([2237, 2237, 2237, ...,  983,  983,  983]))
     """
-    interpolator = RegularGridInterpolator((np.linspace(extent[2], extent[3], grid.shape[0]),
-                                            np.linspace(extent[0], extent[1], grid.shape[1])),
-                                            grid, method=method)
+    order = {
+        "nearest": 0,
+        "linear": 1,
+        "cubic": 3,
+    }.get(method, method)
+    if order not in {0, 1, 2, 3, 4, 5}:
+        raise ValueError("Invalid `method` parameter: {}".format(method))
 
-    return interpolator(np.c_[lat, lon], return_indices=return_indices, return_distances=return_distances)
+    if isinstance(grid, Raster):
+        extent = grid.extent
+        grid = np.array(grid.data)
+    else:
+        extent = _parse_extent_origin(extent, origin)
+        grid = _check_grid(grid)
+
+    # Do not wrap from North to South Pole (or vice versa)
+    if np.any(np.abs(lat) > 90.0):
+        warnings.warn(
+            "Invalid values encountered in lat; clipping to [-90, 90]",
+            RuntimeWarning,
+        )
+        lat = np.clip(lat, -90.0, 90.0)
+
+    dx = (extent[1] - extent[0]) / (np.shape(grid)[1] - 1)
+    dy = (extent[3] - extent[2]) / (np.shape(grid)[0] - 1)
+    point_i = (lat - extent[2]) / dy
+    point_j = (lon - extent[0]) / dx
+
+    point_coords = np.row_stack(
+        (
+            np.ravel(point_i),
+            np.ravel(point_j),
+        )
+    )
+    if np.ndim(grid) == 2:
+        interpolated = map_coordinates(
+            np.array(grid, dtype="float"),
+            point_coords,
+            order=order,
+            mode="grid-wrap",
+            prefilter=order > 1,
+        )
+        interpolated = np.reshape(interpolated, np.shape(lon))
+    else:  # ndim(grid) == 3
+        depth = np.shape(grid)[2]
+        interpolated = []
+        for k in range(depth):
+            interpolated_k = map_coordinates(
+                grid[..., k],
+                point_coords,
+                order=order,
+                mode="grid-wrap",
+                prefilter=order > 1,
+            )
+            interpolated_k = np.reshape(
+                interpolated_k,
+                np.shape(lon),
+            )
+            interpolated.append(interpolated_k)
+        del interpolated_k
+        interpolated = np.stack(interpolated, axis=-1)
+
+    interpolated = interpolated.astype(grid.dtype)
+    if return_indices:
+        indices = (
+            np.rint(np.ravel(point_i)).astype(np.int_),
+            np.rint(np.ravel(point_j)).astype(np.int_),
+        )
+        return interpolated, indices
+    return interpolated
 
 
 def reconstruct_grid(
@@ -1237,20 +1336,23 @@ def _parse_extent_origin(extent, origin):
 class Raster(object):
     """A class for working with raster data.
 
-    `Raster`'s functionalities inclue interpolating point data on rasters using Scipy's
-    RegularGridInterpolator, resampling rasters with new X and Y-direction spacings and
-    resizing rasters using new X and Y grid pixel resolutions. NaN-type data in rasters
-    can be replaced with the values of their nearest valid neighbours.
+    `Raster`'s functionalities inclue sampling data at points using spline
+    interpolation, resampling rasters with new X and Y-direction spacings and
+    resizing rasters using new X and Y grid pixel resolutions. NaN-type data
+    in rasters can be replaced with the values of their nearest valid
+    neighbours.
 
     Parameters
     ----------
-    plate_reconstruction : PlateReconstruction
-        Allows for the accessibility of PlateReconstruction object attributes. Namely, PlateReconstruction object
-        attributes rotation_model, topology_featues and static_polygons can be used in the points object if called using
-        “self.plate_reconstruction.X”, where X is the attribute.
-
     data : str or array-like
         The raster data, either as a filename (`str`) or array.
+
+    plate_reconstruction : PlateReconstruction
+        Allows for the accessibility of PlateReconstruction object attributes.
+        Namely, PlateReconstruction object attributes rotation_model,
+        topology_features and static_polygons can be used in the `Raster`
+        object if called using “self.plate_reconstruction.X”, where X is the
+        attribute.
 
     extent : str or 4-tuple, default: 'global'
         4-tuple to specify (min_lon, max_lon, min_lat, max_lat) extents
@@ -1277,18 +1379,20 @@ class Raster(object):
 
     Attributes
     ----------
-    plate_reconstruction : PlateReconstruction
-        An object of GPlately's `PlateReconstruction` class, like the
-        `rotation_model`, a set of reconstructable `topology_featues` and `static_polygons`
-        that belong to a particular plate model. These attributes can be used in the `Points`
-        object if called using “self.PlateReconstruction_object.X”, where X is the attribute.
-        This attribute can be modified after creation of the `Raster`.
-    extent : tuple of floats
-        Four-element array to specify [min lon, max lon, min lat, max lat] extents of any sampling
-        points. If no extents are supplied, full global extent [-180,180,-90,90] is assumed.
     data : ndarray, shape (ny, nx)
         Array containing the underlying raster data. This attribute can be
         modified after creation of the `Raster`.
+    plate_reconstruction : PlateReconstruction
+        An object of GPlately's `PlateReconstruction` class, like the
+        `rotation_model`, a set of reconstructable `topology_features` and
+        `static_polygons` that belong to a particular plate model. These
+        attributes can be used in the `Raster` object if called using
+        “self.plate_reconstruction.X”, where X is the attribute. This
+        attribute can be modified after creation of the `Raster`.
+    extent : tuple of floats
+        Four-element array to specify [min lon, max lon, min lat, max lat]
+        extents of any sampling points. If no extents are supplied, full
+        global extent [-180,180,-90,90] is assumed.
     lons : ndarray, shape (nx,)
         The x-coordinates of the raster data. This attribute can be modified
         after creation of the `Raster`.
@@ -1303,10 +1407,8 @@ class Raster(object):
 
     Methods
     -------
-    interpolate(lons, lats, method='linear', return_indices=False,
-                return_distances=False)
-        Sample gridded data on a set of points using interpolation from
-        `scipy.interpolate.RegularGridInterpolator`.
+    interpolate(lons, lats, method='linear', return_indices=False)
+        Sample gridded data at a set of points using spline interpolation.
 
     resample(spacingX, spacingY, overwrite=False)
         Resamples the grid using X & Y-spaced lat-lon arrays, meshed with
@@ -1327,8 +1429,8 @@ class Raster(object):
     """
     def __init__(
         self,
-        plate_reconstruction=None,
         data=None,
+        plate_reconstruction=None,
         extent="global",
         realign=False,
         resample=None,
@@ -1342,13 +1444,13 @@ class Raster(object):
 
         Parameters
         ----------
+        data : str or array-like
+            The raster data, either as a filename (`str`) or array.
+
         plate_reconstruction : PlateReconstruction
             Allows for the accessibility of PlateReconstruction object attributes. Namely, PlateReconstruction object
             attributes rotation_model, topology_featues and static_polygons can be used in the points object if called using
             “self.plate_reconstruction.X”, where X is the attribute.
-
-        data : str or array-like
-            The raster data, either as a filename (`str`) or array.
 
         extent : str or 4-tuple, default: 'global'
             4-tuple to specify (min_lon, max_lon, min_lat, max_lat) extents
@@ -1442,8 +1544,6 @@ class Raster(object):
                 # realign to -180,180 and flip grid
                 self._data, self._lons, self._lats = realign_grid(self._data, self._lons, self._lats)
 
-        self._update()
-
         if (not isinstance(data, str)) and (resample is not None):
             self.resample(*resample, overwrite=True)
 
@@ -1471,7 +1571,6 @@ class Raster(object):
                 )
             )
         self._data = z
-        self._update()
 
     @property
     def lons(self):
@@ -1492,7 +1591,6 @@ class Raster(object):
                 )
             )
         self._lons = x
-        self._update()
 
     @property
     def lats(self):
@@ -1513,7 +1611,6 @@ class Raster(object):
                 )
             )
         self._lats = y
-        self._update()
 
     @property
     def extent(self):
@@ -1539,17 +1636,22 @@ class Raster(object):
     @property
     def shape(self):
         """The shape of the data array."""
-        return self.data.shape
+        return np.shape(self.data)
 
     @property
     def size(self):
         """The size of the data array."""
-        return self.data.size
+        return np.size(self.data)
 
     @property
     def dtype(self):
         """The data type of the array."""
         return self.data.dtype
+
+    @property
+    def ndim(self):
+        """The number of dimensions in the array."""
+        return np.ndim(self.data)
 
     @property
     def filename(self):
@@ -1582,116 +1684,65 @@ class Raster(object):
     # Deprecated name of `plate_reconstruction` attribute
     PlateReconstruction_object = plate_reconstruction
 
-    def _update(self):
-        """Stores the RegularGridInterpolator object's method for sampling gridded data at a set of 
-        point coordinates. 
+    def interpolate(
+        self,
+        lons,
+        lats,
+        method="linear",
+        return_indices=False,
+    ):
+        """Interpolate a set of point data onto the gridded data provided
+        to the `Raster` object.
 
-        Allows methods of the Raster object to access grid sampling functionalities. The gridded data 
-        used is the “data” attribute - either read from a netCDF4 file, or supplied as an ndarray. 
-        Points to sample are either variables of the netCDF4 file, or are generated from the “extent” 
-        attribute and scaled to fit the grid “data”.
-        """
-        # store interpolation object
-        interpolator = RegularGridInterpolator((self.lats, self.lons), self.data, method='linear')
-        self._interpolator = interpolator
+        Parameters
+        ----------
+        lons, lats : array_like
+            The longitudes and latitudes of the points to interpolate onto the
+            gridded data. Must be broadcastable to a common shape.
+        method : str or int; default: 'linear'
+            The order of spline interpolation. Must be an integer in the range
+            0-5. 'nearest', 'linear', and 'cubic' are aliases for 0, 1, and 3,
+            respectively.
+        return_indices : bool, default=False
+            Whether to return the row and column indices of the nearest grid
+            points.
 
+        Returns
+        -------
+        numpy.ndarray
+            The values interpolated at the input points.
+        indices : 2-tuple of numpy.ndarray
+            The i- and j-indices of the nearest grid points to the input
+            points, only present if `return_indices=True`.
 
-    def interpolate(self, lons, lats, method='linear', return_indices=False, return_distances=False):
-        """Interpolate a set of point data (either linearly or through nearest-neighbour methods) 
-        onto the gridded data provided to the `Raster` object. 
+        Raises
+        ------
+        ValueError
+            If an invalid `method` is provided.
+        RuntimeWarning
+            If `lats` contains any invalid values outside of the interval
+            [-90, 90]. Invalid values will be clipped to this interval.
 
         Notes
         -----
-        If `return_indices` is set to `True`, the indices of raster data used for interpolating the
-        points are returned as an array containing two arrays:
-
-        * array [0] is for the raster row coordinate (lat), and 
-        * array [1] is for the raster column (lon) coordinate.
+        If `return_indices` is set to `True`, the nearest array indices
+        are returned as a tuple of arrays, in (i, j) or (lat, lon) format.
 
         An example output:
 
             # The first array holds the rows of the raster where point data spatially falls near.
             # The second array holds the columns of the raster where point data spatially falls near.
-            sampled_indices = [array([1019, 1019, 1019, ..., 1086, 1086, 1087]), array([2237, 2237, 2237, ...,  983,  983,  983])]
-
-
-        If `return_distances` is set to `True`, the distances between the raster data used for 
-        interpolating the points are returned as an array containing two arrays:
-
-        * array [0] is for the latitudinal component of distance between the raster sampling 
-        point and the interpolated point.
-        * array [1] is for the longitudinal component of distance between the raster sampling 
-        point and the interpolated point.
-
-        An example output:
-
-            # The first array holds the lat-component of the normal dist, while the second array holds the lon-component.
-            sampled_dist = [array([5.30689060e-05, 3.47557804e-02, 1.03967049e-01, ..., 3.46526690e-02, 5.77772021e-01, 1.20890767e-01]), 
-            array([4.41756600e-04, 2.89440621e-01, 8.66576791e-01, ..., 4.08341107e-01, 3.74526858e-01, 3.40690957e-01])]
-    
-        Parameters
-        ----------
-        lons, lats : array
-            1d arrays containing the longitudes and latitudes of the points to interpolate onto the
-            gridded data. 
-
-        method : str, default='linear'
-            The method of interpolation to perform. Supported are `linear` and `Nearest`. Assumes 
-            `linear` interpolation if `None` provided.  
-
-        return_indices : bool, default=False
-            Choose whether to return the row and column indices of points on the `grid` used to 
-            interpolate the point data. 
-
-        return_distances : bool, default=False
-            Choose whether to return the row and column normal distances between interpolated 
-            points and neighbouring sampling points.
-
-        Returns
-        -------
-        data_interp : tuple of ndarrays
-            By default, `data_interp` has one ndarray - this holds the values of the grid data 
-            where interpolated points lie. If sample point indices and/or distances have been 
-            requested (by setting `return_indices` and/or `return_distances`
-            to `True`), these are returned as subsequent tuple elements. 
-
-        Raises
-        ------
-        ValueError
-            * Raised if the string method supplied is not `linear` or `nearest`.
-            * Raised if the provided lat, lon arrays generate sample points that do not have the 
-            same dimensions as the 
-            supplied grid. 
-            * Raised if the provided lat, lon arrays generate sample points that include any point 
-            out of grid bounds. 
-            Alerts user which dimension (index) the point is located. 
+            sampled_indices = (array([1019, 1019, 1019, ..., 1086, 1086, 1087]), array([2237, 2237, 2237, ...,  983,  983,  983]))
         """
-        interp = self._interpolator
-        interp.values = self.data
-
-        lons = np.atleast_1d(lons)
-        lats = np.atleast_1d(lats)
-        lons[lons > 180] -= 360
-        lons[lons < -180] += 360
-        results = interp(
-            (lats,lons),
+        return sample_grid(
+            lon=lons,
+            lat=lats,
+            grid=self,
             method=method,
             return_indices=return_indices,
-            return_distances=return_distances,
         )
 
-        if return_indices or return_distances:
-            data_interp = results[0]
-            if self.origin == "upper":
-                data_interp = np.flipud(data_interp)
-            return data_interp.astype(self.dtype), *results[1:]
-
-        if self.origin == "upper":
-            results = np.flipud(results)
-        return results.astype(self.dtype)
-
-
-    def resample(self, spacingX, spacingY, overwrite=False):
+    def resample(self, spacingX, spacingY, overwrite=False, **kwargs):
         """Resample the `grid` passed to the `Raster` object with a new `spacingX` and 
         `spacingY` using linear interpolation.
 
@@ -1725,6 +1776,14 @@ class Raster(object):
             A new version of the raster data attributed to the `Raster` object resampled to 
             the given `spacingX` and `spacingY` spacings.
         """
+        # For consistency with Raster.reconstruct
+        if "inplace" in kwargs.keys():
+            overwrite = kwargs["inplace"]
+        for key in kwargs.keys():
+            raise TypeError(
+                "resample got an unexpected keyword argument: {}".format(key)
+            )
+
         spacingX = np.abs(spacingX)
         spacingY = np.abs(spacingY)
         if self.origin == "upper":
@@ -1739,12 +1798,11 @@ class Raster(object):
             self._data = data
             self._lons = lons
             self._lats = lats
-            self._update()
 
         return data
 
 
-    def resize(self, resX, resY, overwrite=False):
+    def resize(self, resX, resY, overwrite=False, **kwargs):
         """Resize the grid passed to the `Raster` object with a new x and y resolution 
         (`resX` and `resY`) using linear interpolation. 
 
@@ -1776,6 +1834,14 @@ class Raster(object):
             A new resized raster. If `overwrite` is set to `True`, this raster overwrites the
             one attributed to `data`.
         """
+        # For consistency with Raster.reconstruct
+        if "inplace" in kwargs.keys():
+            overwrite = kwargs["inplace"]
+        for key in kwargs.keys():
+            raise TypeError(
+                "resize got an unexpected keyword argument: {}".format(key)
+            )
+
         # construct grid
         lons = np.linspace(self.extent[0], self.extent[1], resX)
         lats = np.linspace(self.extent[2], self.extent[3], resY)
@@ -1786,12 +1852,11 @@ class Raster(object):
             self._data = data
             self._lons = lons
             self._lats = lats
-            self._update()
 
         return data
 
 
-    def fill_NaNs(self, overwrite=False):
+    def fill_NaNs(self, overwrite=False, **kwargs):
         """Search raster for invalid ‘data’ cells containing NaN-type entries replaces them 
         with the value of their nearest valid data cells.
 
@@ -1808,6 +1873,14 @@ class Raster(object):
             alue of its nearest valid neighbour. If `overwrite` is set to `True`, this raster 
             overwrites the one attributed to `data`.
         """
+        # For consistency with Raster.reconstruct
+        if "inplace" in kwargs.keys():
+            overwrite = kwargs["inplace"]
+        for key in kwargs.keys():
+            raise TypeError(
+                "fill_NaNs got an unexpected keyword argument: {}".format(key)
+            )
+
         data = fill_raster(self.data)
         if overwrite:
             self._data = data
@@ -1829,8 +1902,9 @@ class Raster(object):
         threads=1,
         anchor_plate_id=0,
         inplace=False,
+        return_array=False,
     ):
-        """Reconstruct the raster data to a given time.
+        """Reconstruct raster data to a given time.
 
         Parameters
         ----------
@@ -1853,10 +1927,12 @@ class Raster(object):
         inplace : bool, default False
             Perform the reconstruction in-place (replace the raster's data
             with the reconstructed data).
+        return_array : bool, default False
+            Return a `numpy.ndarray`, rather than a `Raster`.
 
         Returns
         -------
-        numpy.ndarray
+        Raster or np.ndarray
             The reconstructed grid. Areas for which no plate ID could be
             determined will be filled with `fill_value`.
 
@@ -1901,43 +1977,23 @@ class Raster(object):
             threads=threads,
             anchor_plate_id=anchor_plate_id,
         )
+
         if inplace:
             self.data = result
             self._time = time
+            if return_array:
+                return result
+            return self
+
+        if not return_array:
+            result = type(self)(
+                data=result,
+                plate_reconstruction=self.plate_reconstruction,
+                extent=self.extent,
+                time=time,
+                origin=self.origin,
+            )
         return result
-
-
-    def plot(self, ax=None, projection=None, **kwargs):
-        """Plot raster data.
-
-        A pre-existing matplotlib `Axes` instance is used if available,
-        else a new one is created. The `origin` and `extent` of the image
-        are determined automatically and should not be specified.
-
-        Parameters
-        ----------
-        ax : matplotlib.axes.Axes, optional
-            If specified, the image will be drawn within these axes.
-        projection : cartopy.crs.Projection, optional
-            The map projection to be used. If both `ax` and `projection`
-            are specified, this will be checked against the `projection`
-            attribute of `ax`, if it exists.
-        **kwargs : dict, optional
-            Any further keyword arguments are passed to
-            `matplotlib.pyplot.imshow` or `matplotlib.axes.Axes.imshow`,
-            where appropriate.
-
-        Returns
-        -------
-        matplotlib.image.AxesImage
-
-        Raises
-        ------
-        ValueError
-            If `ax` and `projection` are both specified, but do not match
-            (i.e. `ax.projection != projection`).
-        """
-        return self.imshow(ax, projection, **kwargs)
 
 
     def imshow(self, ax=None, projection=None, **kwargs):
@@ -2012,11 +2068,13 @@ class Raster(object):
         im = ax.imshow(self.data, origin=self.origin, extent=extent, **kwargs)
         return im
 
+    plot = imshow
 
-class TimeRaster(Raster):
-    """A class for the temporal manipulation of raster data. To be added soon!"""
-    def __init__(self, PlateReconstruction_object=None, filename=None, array=None, extent=None, resample=None):
-        raise NotImplementedError(
-            "This class has not been implemented; use `Raster` instead"
-        )
-        # super(TimeRaster, self).__init__(PlateReconstruction_object)
+
+# class TimeRaster(Raster):
+#     """A class for the temporal manipulation of raster data. To be added soon!"""
+#     def __init__(self, PlateReconstruction_object=None, filename=None, array=None, extent=None, resample=None):
+#         raise NotImplementedError(
+#             "This class has not been implemented; use `Raster` instead"
+#         )
+#         super(TimeRaster, self).__init__(PlateReconstruction_object)

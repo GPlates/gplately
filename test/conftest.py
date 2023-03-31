@@ -104,7 +104,12 @@ def gplately_raster_object(
 
     masked_age_grid_data = masked_age_grid.data
 
-    graster = gplately.Raster(model, data=masked_age_grid_data, extent=[-180,180,-90,90])
+    graster = gplately.Raster(
+        data=masked_age_grid_data,
+        plate_reconstruction=model,
+        extent=[-180,180,-90,90],
+    )
+
     return graster
 
 
