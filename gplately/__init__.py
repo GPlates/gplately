@@ -73,7 +73,7 @@ how to set up and use the `SeafloorGrid` object, and shows a sample set of outpu
 - [__05 - Working with Feature Geometries__](05-WorkingWithFeatureGeometries.html): Processing and plotting assorted polyline, polygon and point data from [GPlates 2.3's sample data sets](https://www.earthbyte.org/gplates-2-3-software-and-data-sets/)
 - [__06 - Rasters__](06-Rasters.html): Reading, resizing, resampling raster data, and linearly interpolating point data onto raster data
 - [__07 - Plate Tectonic Stats__](07-WorkingWithPlateTectonicStats.html): Using [PlateTectonicTools](https://github.com/EarthByte/PlateTectonicTools) to calculate and plot subduction zone and ridge data (convergence/spreading velocities, subduction angles, subduction zone and ridge lengths, crustal surface areas produced and subducted etc.) 
-- [__08 - Predicting Slab Dip__](08-PredictingSlabDip.html): Predicting the average slab dip angle of subducting oceanic lithosphere.
+- [__08 - Predicting Slab Flux__](08-PredictingSlabFlux.html): Predicting the average slab dip angle of subducting oceanic lithosphere.
 - [__09 - Motion Paths and Flowlines__](09-CreatingMotionPathsAndFlowlines.html): Using pyGPlates to create motion paths and flowines of points on a tectonic plate to illustrate the plate's trajectory through geological time.
 - [__10 - SeafloorGrid__](10-SeafloorGrids.html): Defines the parameters needed to set up a `SeafloorGrid` object, and demonstrates how to produce age and spreading rate grids from a set of plate reconstruction model files.
 

@@ -102,11 +102,14 @@ def gplately_raster_object(
     time = 0
     masked_age_grid = gplately_muller_server.get_age_grid(time)
 
+    masked_age_grid_data = masked_age_grid.data
+
     graster = gplately.Raster(
-        data=masked_age_grid,
+        data=masked_age_grid_data,
         plate_reconstruction=model,
         extent=[-180,180,-90,90],
     )
+
     return graster
 
 
@@ -115,7 +118,8 @@ def gplately_merdith_raster(
     gplately_merdith_server,
     gplately_merdith_reconstruction,
 ):
-    etopo = gplately_merdith_server.get_raster("ETOPO1_grd").astype("float")
+    etopo = gplately_merdith_server.get_raster("ETOPO1_grd")
+    etopo = etopo.data.astype("float")
     downsampled = etopo[::15, ::15]
     raster = gplately.Raster(
         plate_reconstruction=gplately_merdith_reconstruction,
@@ -157,7 +161,7 @@ def gplately_seafloorgrid_object(
         ridge_time_step=1.,
         save_directory=str(test_save_directory),
         file_collection = "Muller2019",
-        spacing_degrees = 0.25
+        grid_spacing = 0.25
     )
     return seafloorgrid
 

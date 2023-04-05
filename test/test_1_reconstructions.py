@@ -78,7 +78,9 @@ def test_pygplates_ridge_length(time, model):
 @pytest.mark.parametrize("time", reconstruction_times)
 def test_cont_arc_length(time, model):
     gdownload = gplately.download.DataServer("Muller2019")
+
     agegrid = gdownload.get_age_grid(time)
+    agegrid = agegrid.data
     continental_grid = np.isnan(np.array(agegrid))
     # Use 281km as the trench-arc distance 281 km; the median distance frin global analysis at the present-day (Pall et al. 2018)
     trench_arc_distance = 281
@@ -105,6 +107,7 @@ def test_cont_arc_length(time, model):
         # Value for this time has not been computed, so just make sure no
         # errors were encountered
         assert total_cont_arc_length >= 0.0, err_msg
+
 
 
 # POINT VELOCITIES
