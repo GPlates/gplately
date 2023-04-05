@@ -568,7 +568,7 @@ class PlotTopologies(object):
 
     To call the `PlotTopologies` object, supply: 
 
-    * an instance of the GPlately `PlateReconstruction_object`
+    * an instance of the GPlately `plate_reconstruction` object
     * a reconstruction `time`
 
     and optionally, 
@@ -581,7 +581,7 @@ class PlotTopologies(object):
     For example:
 
         # Calling the PlotTopologies object
-        gplot = gplately.plot.PlotTopologies(plate_reconstruction_object,
+        gplot = gplately.plot.PlotTopologies(plate_reconstruction,
                                             time,
                                             coastline_filename,
                                             continent_filename,
@@ -621,7 +621,7 @@ class PlotTopologies(object):
 
     Attributes
     ----------
-    PlateReconstruction_object : instance of <gplately.reconstruction.PlateReconstruction>
+    plate_reconstruction : instance of <gplately.reconstruction.PlateReconstruction>
         The GPlately `PlateReconstruction` object will be used to access a plate 
         `rotation_model` and a set of `topology_features` which contains plate boundary 
         features like trenches, ridges and transforms.
@@ -697,17 +697,16 @@ class PlotTopologies(object):
     """
     def __init__(
         self,
-        PlateReconstruction_object,
+        plate_reconstruction,
         time=None,
         coastlines=None,
         continents=None,
         COBs=None,
         anchor_plate_id=0,
     ):
-        self.PlateReconstruction_object = PlateReconstruction_object
-        self.plate_model = self.PlateReconstruction_object
+        self.plate_reconstruction = plate_reconstruction
 
-        if self.plate_model.topology_features is None:
+        if self.plate_reconstruction.topology_features is None:
             raise ValueError("Plate model must have topology features.")
 
         self.base_projection = ccrs.PlateCarree()
@@ -734,7 +733,7 @@ class PlotTopologies(object):
 
     def __getstate__(self):
 
-        filenames = self.PlateReconstruction_object.__getstate__()
+        filenames = self.plate_reconstruction.__getstate__()
 
         # add important variables from Points object
         if self._coastlines:
@@ -750,7 +749,7 @@ class PlotTopologies(object):
 
     def __setstate__(self, state):
 
-        self.PlateReconstruction_object = _PlateReconstruction(state['rotation_model'], state['topology_features'], state['static_polygons'])
+        self.plate_reconstruction = _PlateReconstruction(state['rotation_model'], state['topology_features'], state['static_polygons'])
 
         self._coastlines = None
         self._continents = None
@@ -842,8 +841,8 @@ class PlotTopologies(object):
         """
         self._time = float(time)
         resolved_topologies = ptt.resolve_topologies.resolve_topologies_into_features(
-            self.PlateReconstruction_object.rotation_model,
-            self.PlateReconstruction_object.topology_features,
+            self.plate_reconstruction.rotation_model,
+            self.plate_reconstruction.topology_features,
             self.time)
 
         self.topologies, self.ridge_transforms, self.ridges, self.transforms, self.trenches, self.trench_left, self.trench_right, self.other = resolved_topologies
@@ -909,15 +908,15 @@ class PlotTopologies(object):
 
         # reconstruct other important polygons and lines
         if self._coastlines:
-            self.coastlines = self.PlateReconstruction_object.reconstruct(
+            self.coastlines = self.plate_reconstruction.reconstruct(
                 self._coastlines, self.time, from_time=0, anchor_plate_id=self.anchor_plate_id)
 
         if self._continents:
-            self.continents = self.PlateReconstruction_object.reconstruct(
+            self.continents = self.plate_reconstruction.reconstruct(
                 self._continents, self.time, from_time=0, anchor_plate_id=self.anchor_plate_id)
 
         if self._COBs:
-            self.COBs = self.PlateReconstruction_object.reconstruct(
+            self.COBs = self.plate_reconstruction.reconstruct(
                 self._COBs, self.time, from_time=0, anchor_plate_id=self.anchor_plate_id)
 
 
@@ -1980,8 +1979,8 @@ class PlotTopologies(object):
         # create a feature from all the points
         velocity_domain_features = ptt.velocity_tools.make_GPML_velocity_feature(lonq.ravel(), latq.ravel())
 
-        rotation_model = self.PlateReconstruction_object.rotation_model
-        topology_features = self.PlateReconstruction_object.topology_features
+        rotation_model = self.plate_reconstruction.rotation_model
+        topology_features = self.plate_reconstruction.topology_features
 
         delta_time = 5.0
         all_velocities = ptt.velocity_tools.get_plate_velocities(

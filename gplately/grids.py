@@ -1888,7 +1888,7 @@ class Raster(object):
         return data
 
 
-    def save_to_NetCDF4(self, filename):
+    def save_to_netcdf4(self, filename):
         """ Saves the grid attributed to the `Raster` object to the given `filename` (including
         the ".nc" extension) in netCDF4 format."""
         write_netcdf_grid(str(filename), self.data, self.extent)

@@ -938,9 +938,9 @@ class Points(object):
 
     Attributes
     ----------
-    PlateReconstruction_object : object pointer
+    plate_reconstruction : object pointer
         Allows for the accessibility of `PlateReconstruction` object attributes: `rotation_model`, `topology_featues` 
-        and `static_polygons` for use in the `Points` object if called using “self.PlateReconstruction_object.X”, 
+        and `static_polygons` for use in the `Points` object if called using “self.plate_reconstruction.X”, 
         where X is the attribute.
 
     lons : float, or 1D array
@@ -958,17 +958,15 @@ class Points(object):
         if not provided.
 
     """
-    def __init__(self, PlateReconstruction_object, lons, lats, time=0, plate_id=None):
+    def __init__(self, plate_reconstruction, lons, lats, time=0, plate_id=None):
         self.lons = lons
         self.lats = lats
         self.time = time
 
-        self.PlateReconstruction_object = PlateReconstruction_object
+        self.plate_reconstruction = plate_reconstruction
 
         self.update(lons, lats, time, plate_id)
 
-        # Deprecated name of `plate_reconstruction` attribute
-        self.plate_reconstruction = self.PlateReconstruction_object
 
     def update(self, lons, lats, time=0, plate_id=None):
 
@@ -985,8 +983,8 @@ class Points(object):
         self.xyz = np.c_[self.x, self.y, self.z]
 
 
-        rotation_model = self.PlateReconstruction_object.rotation_model
-        static_polygons = self.PlateReconstruction_object.static_polygons
+        rotation_model = self.plate_reconstruction.rotation_model
+        static_polygons = self.plate_reconstruction.static_polygons
         
 
         features = _tools.points_to_features(lons, lats, plate_id)
@@ -1014,7 +1012,7 @@ class Points(object):
 
     def __getstate__(self):
 
-        filenames = self.PlateReconstruction_object.__getstate__()
+        filenames = self.plate_reconstruction.__getstate__()
 
         # add important variables from Points object
         filenames["lons"] = self.lons
@@ -1026,7 +1024,7 @@ class Points(object):
 
     def __setstate__(self, state):
 
-        self.PlateReconstruction_object = PlateReconstruction(state['rotation_model'], state['topology_features'], state['static_polygons'])
+        self.plate_reconstruction = PlateReconstruction(state['rotation_model'], state['topology_features'], state['static_polygons'])
 
         # reinstate unpicklable items
         self.lons = state['lons']
@@ -1086,7 +1084,7 @@ class Points(object):
         """
         from_time = self.time
         to_time = time
-        reconstructed_features = self.PlateReconstruction_object.reconstruct(
+        reconstructed_features = self.plate_reconstruction.reconstruct(
             self.features, to_time, from_time, anchor_plate_id=anchor_plate_id, **kwargs)
 
         rlons, rlats = _tools.extract_feature_lonlat(reconstructed_features)
@@ -1149,7 +1147,7 @@ class Points(object):
         for age in unique_ages:
             mask_age = ages == age
 
-            reconstructed_features = self.PlateReconstruction_object.reconstruct(
+            reconstructed_features = self.plate_reconstruction.reconstruct(
                 self.features, age, from_time, anchor_plate_id=anchor_plate_id, **kwargs)
 
             lons, lats = _tools.extract_feature_lonlat(reconstructed_features)
@@ -1187,7 +1185,7 @@ class Points(object):
         """
         time = float(time)
 
-        rotation_model = self.PlateReconstruction_object.rotation_model
+        rotation_model = self.plate_reconstruction.rotation_model
         all_velocities = np.empty((len(self.features), 2))
 
         for i, feature in enumerate(self.features):
@@ -1268,7 +1266,7 @@ class Points(object):
                 relative_plate=int(anchor_plate_id),
                 reconstruction_plate_id=int(self.plate_id[i]))
 
-            reconstructed_motion_paths = self.PlateReconstruction_object.reconstruct(
+            reconstructed_motion_paths = self.plate_reconstruction.reconstruct(
                 motion_path_feature, 
                 to_time=0, 
                 #from_time=0, 
@@ -1377,7 +1375,7 @@ class Points(object):
                 right_flowline_longitudes = right_lon[:,i]
                 right_flowline_latitudes = right_lat[:,i]
         """
-        model = self.PlateReconstruction_object
+        model = self.plate_reconstruction
         return model.create_flowline(self.lons, self.lats, time_array, left_plate_ID, right_plate_ID, return_rate_of_motion)
 
 
