@@ -1035,7 +1035,7 @@ class Points(object):
         self.update(self.lons, self.lats, self.time, self.plate_id)
 
 
-    def reconstruct(self, time, anchor_plate_id=0, **kwargs):
+    def reconstruct(self, time, anchor_plate_id=0, return_array=False, **kwargs):
         """Reconstructs regular geological features, motion paths or flowlines to a specific geological time and extracts 
         the latitudinal and longitudinal points of these features.
 
@@ -1051,6 +1051,9 @@ class Points(object):
             Reconstruct features with respect to a certain anchor plate. By default, reconstructions are made 
             with respect to the absolute reference frame, like a stationary geological element (e.g. a mantle
             plume). This frame is given the plate ID of 0.
+
+        return_array : bool, default False
+            Return a `numpy.ndarray`, rather than a `Points` object.
 
         **reconstruct_type : ReconstructType, default=ReconstructType.feature_geometry
             The specific reconstruction type to generate based on input feature geometry type. Can be provided as
@@ -1088,7 +1091,10 @@ class Points(object):
             self.features, to_time, from_time, anchor_plate_id=anchor_plate_id, **kwargs)
 
         rlons, rlats = _tools.extract_feature_lonlat(reconstructed_features)
-        return rlons, rlats
+        if return_array:
+            return rlons, rlats
+        else:
+            return Points(self.plate_reconstruction, rlons, rlats, time=to_time, plate_id=self.plate_id)
 
 
     def reconstruct_to_birth_age(self, ages, anchor_plate_id=0, **kwargs):
