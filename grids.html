@@ -1934,7 +1934,7 @@ class Raster(object):
         return data
 
 
-    def save_to_NetCDF4(self, filename):
+    def save_to_netcdf4(self, filename):
         &#34;&#34;&#34; Saves the grid attributed to the `Raster` object to the given `filename` (including
         the &#34;.nc&#34; extension) in netCDF4 format.&#34;&#34;&#34;
         write_netcdf_grid(str(filename), self.data, self.extent)
@@ -4246,7 +4246,7 @@ reconstruction.</dd>
         return data
 
 
-    def save_to_NetCDF4(self, filename):
+    def save_to_netcdf4(self, filename):
         &#34;&#34;&#34; Saves the grid attributed to the `Raster` object to the given `filename` (including
         the &#34;.nc&#34; extension) in netCDF4 format.&#34;&#34;&#34;
         write_netcdf_grid(str(filename), self.data, self.extent)
@@ -5357,8 +5357,8 @@ one attributed to <code>data</code>.</dd>
     return data</code></pre>
 </details>
 </dd>
-<dt id="gplately.grids.Raster.save_to_NetCDF4"><code class="name flex">
-<span>def <span class="ident">save_to_NetCDF4</span></span>(<span>self, filename)</span>
+<dt id="gplately.grids.Raster.save_to_netcdf4"><code class="name flex">
+<span>def <span class="ident">save_to_netcdf4</span></span>(<span>self, filename)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Saves the grid attributed to the <code><a title="gplately.grids.Raster" href="#gplately.grids.Raster">Raster</a></code> object to the given <code>filename</code> (including
@@ -5367,7 +5367,7 @@ the ".nc" extension) in netCDF4 format.</p></div>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def save_to_NetCDF4(self, filename):
+<pre><code class="python">def save_to_netcdf4(self, filename):
     &#34;&#34;&#34; Saves the grid attributed to the `Raster` object to the given `filename` (including
     the &#34;.nc&#34; extension) in netCDF4 format.&#34;&#34;&#34;
     write_netcdf_grid(str(filename), self.data, self.extent)</code></pre>
@@ -5668,7 +5668,7 @@ with the <code>fill_value</code> (defined below) if supplied.</dd>
 <li><code><a title="gplately.grids.Raster.reconstruct" href="#gplately.grids.Raster.reconstruct">reconstruct</a></code></li>
 <li><code><a title="gplately.grids.Raster.resample" href="#gplately.grids.Raster.resample">resample</a></code></li>
 <li><code><a title="gplately.grids.Raster.resize" href="#gplately.grids.Raster.resize">resize</a></code></li>
-<li><code><a title="gplately.grids.Raster.save_to_NetCDF4" href="#gplately.grids.Raster.save_to_NetCDF4">save_to_NetCDF4</a></code></li>
+<li><code><a title="gplately.grids.Raster.save_to_netcdf4" href="#gplately.grids.Raster.save_to_netcdf4">save_to_netcdf4</a></code></li>
 <li><code><a title="gplately.grids.Raster.shape" href="#gplately.grids.Raster.shape">shape</a></code></li>
 <li><code><a title="gplately.grids.Raster.size" href="#gplately.grids.Raster.size">size</a></code></li>
 <li><code><a title="gplately.grids.Raster.time" href="#gplately.grids.Raster.time">time</a></code></li>
