@@ -1054,6 +1054,26 @@ class PlotTopologies(object):
         return gdf
 
     def plot_feature(self, ax, feature, **kwargs):
+        &#34;&#34;&#34; Plot pygplates.FeatureCollection  or pygplates.Feature onto a map.
+
+        Parameters
+        ----------
+        ax : instance of &lt;cartopy.mpl.geoaxes.GeoAxes&gt; or &lt;cartopy.mpl.geoaxes.GeoAxesSubplot&gt;
+            A subclass of `matplotlib.axes.Axes` which represents a map Projection.
+            The map should be set at a particular Cartopy projection.
+
+        **kwargs : 
+            Keyword arguments for parameters such as `facecolor`, `alpha`, 
+            etc. for plotting coastline geometries.
+            See `Matplotlib` keyword arguments 
+            [here](https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html).
+
+        Returns
+        -------
+        ax : instance of &lt;geopandas.GeoDataFrame.plot&gt;
+            A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map 
+            with coastline features plotted onto the chosen map projection.
+        &#34;&#34;&#34;
         gdf = self.get_feature(feature)
         return gdf.plot(ax=ax, transform=self.base_projection, **kwargs)
 
@@ -4184,6 +4204,26 @@ boundaries and passive continental boundaries.</dd>
         return gdf
 
     def plot_feature(self, ax, feature, **kwargs):
+        &#34;&#34;&#34; Plot pygplates.FeatureCollection  or pygplates.Feature onto a map.
+
+        Parameters
+        ----------
+        ax : instance of &lt;cartopy.mpl.geoaxes.GeoAxes&gt; or &lt;cartopy.mpl.geoaxes.GeoAxesSubplot&gt;
+            A subclass of `matplotlib.axes.Axes` which represents a map Projection.
+            The map should be set at a particular Cartopy projection.
+
+        **kwargs : 
+            Keyword arguments for parameters such as `facecolor`, `alpha`, 
+            etc. for plotting coastline geometries.
+            See `Matplotlib` keyword arguments 
+            [here](https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html).
+
+        Returns
+        -------
+        ax : instance of &lt;geopandas.GeoDataFrame.plot&gt;
+            A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map 
+            with coastline features plotted onto the chosen map projection.
+        &#34;&#34;&#34;
         gdf = self.get_feature(feature)
         return gdf.plot(ax=ax, transform=self.base_projection, **kwargs)
 
@@ -8232,12 +8272,50 @@ with faults plotted onto the chosen map projection.</dd>
 <span>def <span class="ident">plot_feature</span></span>(<span>self, ax, feature, **kwargs)</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>Plot pygplates.FeatureCollection
+or pygplates.Feature onto a map.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>ax</code></strong> :&ensp;<code>instance</code> of <code>&lt;cartopy.mpl.geoaxes.GeoAxes&gt;</code> or <code>&lt;cartopy.mpl.geoaxes.GeoAxesSubplot&gt;</code></dt>
+<dd>A subclass of <code>matplotlib.axes.Axes</code> which represents a map Projection.
+The map should be set at a particular Cartopy projection.</dd>
+<dt><strong><code>**kwargs</code></strong></dt>
+<dd>Keyword arguments for parameters such as <code>facecolor</code>, <code>alpha</code>,
+etc. for plotting coastline geometries.
+See <code>Matplotlib</code> keyword arguments
+<a href="https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html">here</a>.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><strong><code>ax</code></strong> :&ensp;<code>instance</code> of <code>&lt;geopandas.GeoDataFrame.plot&gt;</code></dt>
+<dd>A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map
+with coastline features plotted onto the chosen map projection.</dd>
+</dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def plot_feature(self, ax, feature, **kwargs):
+    &#34;&#34;&#34; Plot pygplates.FeatureCollection  or pygplates.Feature onto a map.
+
+    Parameters
+    ----------
+    ax : instance of &lt;cartopy.mpl.geoaxes.GeoAxes&gt; or &lt;cartopy.mpl.geoaxes.GeoAxesSubplot&gt;
+        A subclass of `matplotlib.axes.Axes` which represents a map Projection.
+        The map should be set at a particular Cartopy projection.
+
+    **kwargs : 
+        Keyword arguments for parameters such as `facecolor`, `alpha`, 
+        etc. for plotting coastline geometries.
+        See `Matplotlib` keyword arguments 
+        [here](https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html).
+
+    Returns
+    -------
+    ax : instance of &lt;geopandas.GeoDataFrame.plot&gt;
+        A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map 
+        with coastline features plotted onto the chosen map projection.
+    &#34;&#34;&#34;
     gdf = self.get_feature(feature)
     return gdf.plot(ax=ax, transform=self.base_projection, **kwargs)</code></pre>
 </details>

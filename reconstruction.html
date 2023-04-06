@@ -1066,8 +1066,17 @@ class Points(object):
 
         self.update(self.lons, self.lats, self.time, self.plate_id)
 
+    def copy(self):
+        &#34;&#34;&#34; Returns a copy of the Points object
 
-    def reconstruct(self, time, anchor_plate_id=0, **kwargs):
+        Returns
+        -------
+        Points
+            A copy of the current Points object
+        &#34;&#34;&#34;
+        return Points(self.plate_reconstruction, self.lons, self.lats, self.time, self.plate_id)
+
+    def reconstruct(self, time, anchor_plate_id=0, return_array=False, **kwargs):
         &#34;&#34;&#34;Reconstructs regular geological features, motion paths or flowlines to a specific geological time and extracts 
         the latitudinal and longitudinal points of these features.
 
@@ -1083,6 +1092,9 @@ class Points(object):
             Reconstruct features with respect to a certain anchor plate. By default, reconstructions are made 
             with respect to the absolute reference frame, like a stationary geological element (e.g. a mantle
             plume). This frame is given the plate ID of 0.
+
+        return_array : bool, default False
+            Return a `numpy.ndarray`, rather than a `Points` object.
 
         **reconstruct_type : ReconstructType, default=ReconstructType.feature_geometry
             The specific reconstruction type to generate based on input feature geometry type. Can be provided as
@@ -1120,7 +1132,10 @@ class Points(object):
             self.features, to_time, from_time, anchor_plate_id=anchor_plate_id, **kwargs)
 
         rlons, rlats = _tools.extract_feature_lonlat(reconstructed_features)
-        return rlons, rlats
+        if return_array:
+            return rlons, rlats
+        else:
+            return Points(self.plate_reconstruction, rlons, rlats, time=to_time, plate_id=self.plate_id)
 
 
     def reconstruct_to_birth_age(self, ages, anchor_plate_id=0, **kwargs):
@@ -4556,8 +4571,17 @@ if not provided.</dd>
 
         self.update(self.lons, self.lats, self.time, self.plate_id)
 
+    def copy(self):
+        &#34;&#34;&#34; Returns a copy of the Points object
 
-    def reconstruct(self, time, anchor_plate_id=0, **kwargs):
+        Returns
+        -------
+        Points
+            A copy of the current Points object
+        &#34;&#34;&#34;
+        return Points(self.plate_reconstruction, self.lons, self.lats, self.time, self.plate_id)
+
+    def reconstruct(self, time, anchor_plate_id=0, return_array=False, **kwargs):
         &#34;&#34;&#34;Reconstructs regular geological features, motion paths or flowlines to a specific geological time and extracts 
         the latitudinal and longitudinal points of these features.
 
@@ -4573,6 +4597,9 @@ if not provided.</dd>
             Reconstruct features with respect to a certain anchor plate. By default, reconstructions are made 
             with respect to the absolute reference frame, like a stationary geological element (e.g. a mantle
             plume). This frame is given the plate ID of 0.
+
+        return_array : bool, default False
+            Return a `numpy.ndarray`, rather than a `Points` object.
 
         **reconstruct_type : ReconstructType, default=ReconstructType.feature_geometry
             The specific reconstruction type to generate based on input feature geometry type. Can be provided as
@@ -4610,7 +4637,10 @@ if not provided.</dd>
             self.features, to_time, from_time, anchor_plate_id=anchor_plate_id, **kwargs)
 
         rlons, rlats = _tools.extract_feature_lonlat(reconstructed_features)
-        return rlons, rlats
+        if return_array:
+            return rlons, rlats
+        else:
+            return Points(self.plate_reconstruction, rlons, rlats, time=to_time, plate_id=self.plate_id)
 
 
     def reconstruct_to_birth_age(self, ages, anchor_plate_id=0, **kwargs):
@@ -4936,6 +4966,31 @@ if not provided.</dd>
 </details>
 <h3>Methods</h3>
 <dl>
+<dt id="gplately.reconstruction.Points.copy"><code class="name flex">
+<span>def <span class="ident">copy</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Returns a copy of the Points object</p>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code><a title="gplately.reconstruction.Points" href="#gplately.reconstruction.Points">Points</a></code></dt>
+<dd>A copy of the current Points object</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def copy(self):
+    &#34;&#34;&#34; Returns a copy of the Points object
+
+    Returns
+    -------
+    Points
+        A copy of the current Points object
+    &#34;&#34;&#34;
+    return Points(self.plate_reconstruction, self.lons, self.lats, self.time, self.plate_id)</code></pre>
+</details>
+</dd>
 <dt id="gplately.reconstruction.Points.flowline"><code class="name flex">
 <span>def <span class="ident">flowline</span></span>(<span>self, time_array, left_plate_ID, right_plate_ID, return_rate_of_motion=False)</span>
 </code></dt>
@@ -5279,7 +5334,7 @@ stores one point’s x,y, velocity components along its two rows.</dd>
 </details>
 </dd>
 <dt id="gplately.reconstruction.Points.reconstruct"><code class="name flex">
-<span>def <span class="ident">reconstruct</span></span>(<span>self, time, anchor_plate_id=0, **kwargs)</span>
+<span>def <span class="ident">reconstruct</span></span>(<span>self, time, anchor_plate_id=0, return_array=False, **kwargs)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Reconstructs regular geological features, motion paths or flowlines to a specific geological time and extracts
@@ -5294,6 +5349,8 @@ the feature lat-lon point attributes of the Points object.</p>
 <dd>Reconstruct features with respect to a certain anchor plate. By default, reconstructions are made
 with respect to the absolute reference frame, like a stationary geological element (e.g. a mantle
 plume). This frame is given the plate ID of 0.</dd>
+<dt><strong><code>return_array</code></strong> :&ensp;<code>bool</code>, default <code>False</code></dt>
+<dd>Return a <code>numpy.ndarray</code>, rather than a <code><a title="gplately.reconstruction.Points" href="#gplately.reconstruction.Points">Points</a></code> object.</dd>
 <dt><strong><code>**reconstruct_type</code></strong> :&ensp;<code>ReconstructType</code>, default=<code>ReconstructType.feature_geometry</code></dt>
 <dd>The specific reconstruction type to generate based on input feature geometry type. Can be provided as
 ReconstructType.feature_geometry to only reconstruct regular feature geometries, or ReconstructType.MotionPath to
@@ -5325,7 +5382,7 @@ always grouped with their features. This is applicable to all ReconstructType fe
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def reconstruct(self, time, anchor_plate_id=0, **kwargs):
+<pre><code class="python">def reconstruct(self, time, anchor_plate_id=0, return_array=False, **kwargs):
     &#34;&#34;&#34;Reconstructs regular geological features, motion paths or flowlines to a specific geological time and extracts 
     the latitudinal and longitudinal points of these features.
 
@@ -5341,6 +5398,9 @@ always grouped with their features. This is applicable to all ReconstructType fe
         Reconstruct features with respect to a certain anchor plate. By default, reconstructions are made 
         with respect to the absolute reference frame, like a stationary geological element (e.g. a mantle
         plume). This frame is given the plate ID of 0.
+
+    return_array : bool, default False
+        Return a `numpy.ndarray`, rather than a `Points` object.
 
     **reconstruct_type : ReconstructType, default=ReconstructType.feature_geometry
         The specific reconstruction type to generate based on input feature geometry type. Can be provided as
@@ -5378,7 +5438,10 @@ always grouped with their features. This is applicable to all ReconstructType fe
         self.features, to_time, from_time, anchor_plate_id=anchor_plate_id, **kwargs)
 
     rlons, rlats = _tools.extract_feature_lonlat(reconstructed_features)
-    return rlons, rlats</code></pre>
+    if return_array:
+        return rlons, rlats
+    else:
+        return Points(self.plate_reconstruction, rlons, rlats, time=to_time, plate_id=self.plate_id)</code></pre>
 </details>
 </dd>
 <dt id="gplately.reconstruction.Points.reconstruct_to_birth_age"><code class="name flex">
@@ -5642,6 +5705,7 @@ rlons, rlats = gpts.reconstruct_to_birth_age(ages)
 <li>
 <h4><code><a title="gplately.reconstruction.Points" href="#gplately.reconstruction.Points">Points</a></code></h4>
 <ul class="">
+<li><code><a title="gplately.reconstruction.Points.copy" href="#gplately.reconstruction.Points.copy">copy</a></code></li>
 <li><code><a title="gplately.reconstruction.Points.flowline" href="#gplately.reconstruction.Points.flowline">flowline</a></code></li>
 <li><code><a title="gplately.reconstruction.Points.motion_path" href="#gplately.reconstruction.Points.motion_path">motion_path</a></code></li>
 <li><code><a title="gplately.reconstruction.Points.plate_velocity" href="#gplately.reconstruction.Points.plate_velocity">plate_velocity</a></code></li>
