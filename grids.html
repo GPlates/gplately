@@ -1788,7 +1788,7 @@ class Raster(object):
             return_indices=return_indices,
         )
 
-    def resample(self, spacingX, spacingY, inplace=False, **kwargs):
+    def resample(self, spacingX, spacingY, overwrite=False, **kwargs):
         &#34;&#34;&#34;Resample the `grid` passed to the `Raster` object with a new `spacingX` and 
         `spacingY` using linear interpolation.
 
@@ -1799,8 +1799,8 @@ class Raster(object):
 
         `resample` creates new latitude and longitude arrays with specified spacings in the
         X and Y directions (`spacingX` and `spacingY`). These arrays are linearly interpolated 
-        into a new raster. If `inplace` is set to `True`, the respaced latitude array, longitude 
-        array and raster will inplace the ones currently attributed to the `Raster` object.
+        into a new raster. If `overwrite` is set to `True`, the respaced latitude array, longitude 
+        array and raster will overwrite the ones currently attributed to the `Raster` object.
 
         Parameters
         ----------
@@ -1811,17 +1811,25 @@ class Raster(object):
             otherwise, if for example `spacingX &gt; spacingY`, the raster will appear stretched 
             longitudinally. 
 
-        inplace : bool, default=False
-            Choose to overwrite the data (the `self.data` attribute), latitude array 
+        overwrite : bool, default=False
+            Choose to overwrite the raster (the `self.data` attribute), latitude array 
             (`self.lats`) and longitude array (`self.lons`) currently attributed to the 
             `Raster` object. 
 
         Returns
         -------
-        Raster
-            The resampled grid. If `inplace` is set to `True`, this raster overwrites the
-            one attributed to `data`.
+        data : ndarray grid
+            A new version of the raster data attributed to the `Raster` object resampled to 
+            the given `spacingX` and `spacingY` spacings.
         &#34;&#34;&#34;
+        # For consistency with Raster.reconstruct
+        if &#34;inplace&#34; in kwargs.keys():
+            overwrite = kwargs[&#34;inplace&#34;]
+        for key in kwargs.keys():
+            raise TypeError(
+                &#34;resample got an unexpected keyword argument: {}&#34;.format(key)
+            )
+
         spacingX = np.abs(spacingX)
         spacingY = np.abs(spacingY)
         if self.origin == &#34;upper&#34;:
@@ -1832,15 +1840,15 @@ class Raster(object):
         lonq, latq = np.meshgrid(lons, lats)
 
         data = self.interpolate(lonq, latq)
-        if inplace:
+        if overwrite:
             self._data = data
             self._lons = lons
             self._lats = lats
-        else:
-            return Raster(data, self.plate_reconstruction, self.extent, self.time)
+
+        return data
 
 
-    def resize(self, resX, resY, inplace=False, **kwargs):
+    def resize(self, resX, resY, overwrite=False, **kwargs):
         &#34;&#34;&#34;Resize the grid passed to the `Raster` object with a new x and y resolution 
         (`resX` and `resY`) using linear interpolation. 
 
@@ -1851,8 +1859,8 @@ class Raster(object):
 
         It creates new latitude and longitude arrays with specific resolutions in 
         the X and Y directions (`resX` and `resY`). These arrays are linearly interpolated
-        into a new raster. If `inplace` is set to `True`, the resized latitude, longitude 
-        arrays and raster will inplace the ones currently attributed to the `Raster` object.
+        into a new raster. If `overwrite` is set to `True`, the resized latitude, longitude 
+        arrays and raster will overwrite the ones currently attributed to the `Raster` object.
 
         Parameters
         ----------
@@ -1861,52 +1869,69 @@ class Raster(object):
             the more longitudinally-stretched the raster becomes. The larger `resY` is, the
             more latitudinally-stretched the raster becomes.
 
-        inplace : bool, default=False
-            Choose to overwrite the data (the `self.data` attribute), latitude array 
+        overwrite : bool, default=False
+            Choose to overwrite the raster (the `self.data` attribute), latitude array 
             (`self.lats`) and longitude array (`self.lons`) currently attributed to the 
             `Raster` object. 
 
         Returns
         -------
-        Raster
-            The resized grid. If `inplace` is set to `True`, this raster overwrites the
+        data : meshed ndarray grid
+            A new resized raster. If `overwrite` is set to `True`, this raster overwrites the
             one attributed to `data`.
         &#34;&#34;&#34;
+        # For consistency with Raster.reconstruct
+        if &#34;inplace&#34; in kwargs.keys():
+            overwrite = kwargs[&#34;inplace&#34;]
+        for key in kwargs.keys():
+            raise TypeError(
+                &#34;resize got an unexpected keyword argument: {}&#34;.format(key)
+            )
+
         # construct grid
         lons = np.linspace(self.extent[0], self.extent[1], resX)
         lats = np.linspace(self.extent[2], self.extent[3], resY)
         lonq, latq = np.meshgrid(lons, lats)
 
         data = self.interpolate(lonq, latq)
-        if inplace:
+        if overwrite:
             self._data = data
             self._lons = lons
             self._lats = lats
-        else:
-            return Raster(data, self.plate_reconstruction, self.extent, self.time)
+
+        return data
 
 
-    def fill_NaNs(self, inplace=False, **kwargs):
+    def fill_NaNs(self, overwrite=False, **kwargs):
         &#34;&#34;&#34;Search raster for invalid ‘data’ cells containing NaN-type entries replaces them 
         with the value of their nearest valid data cells.
 
         Parameters
         ---------
-        inplace : bool, default=False
+        overwrite : bool, default=False
             Choose whether to overwrite the grid currently held in the `data` attribute with
             the filled grid.
 
         Returns
         --------
-        Raster
-            The resized grid. If `inplace` is set to `True`, this raster overwrites the
-            one attributed to `data`.
+        data : ndarray
+            An updated grid of data where each invalid cell has been replaced with the v
+            alue of its nearest valid neighbour. If `overwrite` is set to `True`, this raster 
+            overwrites the one attributed to `data`.
         &#34;&#34;&#34;
+        # For consistency with Raster.reconstruct
+        if &#34;inplace&#34; in kwargs.keys():
+            overwrite = kwargs[&#34;inplace&#34;]
+        for key in kwargs.keys():
+            raise TypeError(
+                &#34;fill_NaNs got an unexpected keyword argument: {}&#34;.format(key)
+            )
+
         data = fill_raster(self.data)
-        if inplace:
+        if overwrite:
             self._data = data
-        else:
-            return Raster(data, self.plate_reconstruction, self.extent, self.time)
+
+        return data
 
 
     def save_to_netcdf4(self, filename):
@@ -4075,7 +4100,7 @@ reconstruction.</dd>
             return_indices=return_indices,
         )
 
-    def resample(self, spacingX, spacingY, inplace=False, **kwargs):
+    def resample(self, spacingX, spacingY, overwrite=False, **kwargs):
         &#34;&#34;&#34;Resample the `grid` passed to the `Raster` object with a new `spacingX` and 
         `spacingY` using linear interpolation.
 
@@ -4086,8 +4111,8 @@ reconstruction.</dd>
 
         `resample` creates new latitude and longitude arrays with specified spacings in the
         X and Y directions (`spacingX` and `spacingY`). These arrays are linearly interpolated 
-        into a new raster. If `inplace` is set to `True`, the respaced latitude array, longitude 
-        array and raster will inplace the ones currently attributed to the `Raster` object.
+        into a new raster. If `overwrite` is set to `True`, the respaced latitude array, longitude 
+        array and raster will overwrite the ones currently attributed to the `Raster` object.
 
         Parameters
         ----------
@@ -4098,17 +4123,25 @@ reconstruction.</dd>
             otherwise, if for example `spacingX &gt; spacingY`, the raster will appear stretched 
             longitudinally. 
 
-        inplace : bool, default=False
-            Choose to overwrite the data (the `self.data` attribute), latitude array 
+        overwrite : bool, default=False
+            Choose to overwrite the raster (the `self.data` attribute), latitude array 
             (`self.lats`) and longitude array (`self.lons`) currently attributed to the 
             `Raster` object. 
 
         Returns
         -------
-        Raster
-            The resampled grid. If `inplace` is set to `True`, this raster overwrites the
-            one attributed to `data`.
+        data : ndarray grid
+            A new version of the raster data attributed to the `Raster` object resampled to 
+            the given `spacingX` and `spacingY` spacings.
         &#34;&#34;&#34;
+        # For consistency with Raster.reconstruct
+        if &#34;inplace&#34; in kwargs.keys():
+            overwrite = kwargs[&#34;inplace&#34;]
+        for key in kwargs.keys():
+            raise TypeError(
+                &#34;resample got an unexpected keyword argument: {}&#34;.format(key)
+            )
+
         spacingX = np.abs(spacingX)
         spacingY = np.abs(spacingY)
         if self.origin == &#34;upper&#34;:
@@ -4119,15 +4152,15 @@ reconstruction.</dd>
         lonq, latq = np.meshgrid(lons, lats)
 
         data = self.interpolate(lonq, latq)
-        if inplace:
+        if overwrite:
             self._data = data
             self._lons = lons
             self._lats = lats
-        else:
-            return Raster(data, self.plate_reconstruction, self.extent, self.time)
+
+        return data
 
 
-    def resize(self, resX, resY, inplace=False, **kwargs):
+    def resize(self, resX, resY, overwrite=False, **kwargs):
         &#34;&#34;&#34;Resize the grid passed to the `Raster` object with a new x and y resolution 
         (`resX` and `resY`) using linear interpolation. 
 
@@ -4138,8 +4171,8 @@ reconstruction.</dd>
 
         It creates new latitude and longitude arrays with specific resolutions in 
         the X and Y directions (`resX` and `resY`). These arrays are linearly interpolated
-        into a new raster. If `inplace` is set to `True`, the resized latitude, longitude 
-        arrays and raster will inplace the ones currently attributed to the `Raster` object.
+        into a new raster. If `overwrite` is set to `True`, the resized latitude, longitude 
+        arrays and raster will overwrite the ones currently attributed to the `Raster` object.
 
         Parameters
         ----------
@@ -4148,52 +4181,69 @@ reconstruction.</dd>
             the more longitudinally-stretched the raster becomes. The larger `resY` is, the
             more latitudinally-stretched the raster becomes.
 
-        inplace : bool, default=False
-            Choose to overwrite the data (the `self.data` attribute), latitude array 
+        overwrite : bool, default=False
+            Choose to overwrite the raster (the `self.data` attribute), latitude array 
             (`self.lats`) and longitude array (`self.lons`) currently attributed to the 
             `Raster` object. 
 
         Returns
         -------
-        Raster
-            The resized grid. If `inplace` is set to `True`, this raster overwrites the
+        data : meshed ndarray grid
+            A new resized raster. If `overwrite` is set to `True`, this raster overwrites the
             one attributed to `data`.
         &#34;&#34;&#34;
+        # For consistency with Raster.reconstruct
+        if &#34;inplace&#34; in kwargs.keys():
+            overwrite = kwargs[&#34;inplace&#34;]
+        for key in kwargs.keys():
+            raise TypeError(
+                &#34;resize got an unexpected keyword argument: {}&#34;.format(key)
+            )
+
         # construct grid
         lons = np.linspace(self.extent[0], self.extent[1], resX)
         lats = np.linspace(self.extent[2], self.extent[3], resY)
         lonq, latq = np.meshgrid(lons, lats)
 
         data = self.interpolate(lonq, latq)
-        if inplace:
+        if overwrite:
             self._data = data
             self._lons = lons
             self._lats = lats
-        else:
-            return Raster(data, self.plate_reconstruction, self.extent, self.time)
+
+        return data
 
 
-    def fill_NaNs(self, inplace=False, **kwargs):
+    def fill_NaNs(self, overwrite=False, **kwargs):
         &#34;&#34;&#34;Search raster for invalid ‘data’ cells containing NaN-type entries replaces them 
         with the value of their nearest valid data cells.
 
         Parameters
         ---------
-        inplace : bool, default=False
+        overwrite : bool, default=False
             Choose whether to overwrite the grid currently held in the `data` attribute with
             the filled grid.
 
         Returns
         --------
-        Raster
-            The resized grid. If `inplace` is set to `True`, this raster overwrites the
-            one attributed to `data`.
+        data : ndarray
+            An updated grid of data where each invalid cell has been replaced with the v
+            alue of its nearest valid neighbour. If `overwrite` is set to `True`, this raster 
+            overwrites the one attributed to `data`.
         &#34;&#34;&#34;
+        # For consistency with Raster.reconstruct
+        if &#34;inplace&#34; in kwargs.keys():
+            overwrite = kwargs[&#34;inplace&#34;]
+        for key in kwargs.keys():
+            raise TypeError(
+                &#34;fill_NaNs got an unexpected keyword argument: {}&#34;.format(key)
+            )
+
         data = fill_raster(self.data)
-        if inplace:
+        if overwrite:
             self._data = data
-        else:
-            return Raster(data, self.plate_reconstruction, self.extent, self.time)
+
+        return data
 
 
     def save_to_netcdf4(self, filename):
@@ -4587,48 +4637,58 @@ def time(self):
 <h3>Methods</h3>
 <dl>
 <dt id="gplately.grids.Raster.fill_NaNs"><code class="name flex">
-<span>def <span class="ident">fill_NaNs</span></span>(<span>self, inplace=False, **kwargs)</span>
+<span>def <span class="ident">fill_NaNs</span></span>(<span>self, overwrite=False, **kwargs)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Search raster for invalid ‘data’ cells containing NaN-type entries replaces them
 with the value of their nearest valid data cells.</p>
 <h2 id="parameters">Parameters</h2>
 <dl>
-<dt><strong><code>inplace</code></strong> :&ensp;<code>bool</code>, default=<code>False</code></dt>
+<dt><strong><code>overwrite</code></strong> :&ensp;<code>bool</code>, default=<code>False</code></dt>
 <dd>Choose whether to overwrite the grid currently held in the <code>data</code> attribute with
 the filled grid.</dd>
 </dl>
 <h2 id="returns">Returns</h2>
 <dl>
-<dt><code><a title="gplately.grids.Raster" href="#gplately.grids.Raster">Raster</a></code></dt>
-<dd>The resized grid. If <code>inplace</code> is set to <code>True</code>, this raster overwrites the
-one attributed to <code>data</code>.</dd>
+<dt><strong><code>data</code></strong> :&ensp;<code>ndarray</code></dt>
+<dd>An updated grid of data where each invalid cell has been replaced with the v
+alue of its nearest valid neighbour. If <code>overwrite</code> is set to <code>True</code>, this raster
+overwrites the one attributed to <code>data</code>.</dd>
 </dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def fill_NaNs(self, inplace=False, **kwargs):
+<pre><code class="python">def fill_NaNs(self, overwrite=False, **kwargs):
     &#34;&#34;&#34;Search raster for invalid ‘data’ cells containing NaN-type entries replaces them 
     with the value of their nearest valid data cells.
 
     Parameters
     ---------
-    inplace : bool, default=False
+    overwrite : bool, default=False
         Choose whether to overwrite the grid currently held in the `data` attribute with
         the filled grid.
 
     Returns
     --------
-    Raster
-        The resized grid. If `inplace` is set to `True`, this raster overwrites the
-        one attributed to `data`.
+    data : ndarray
+        An updated grid of data where each invalid cell has been replaced with the v
+        alue of its nearest valid neighbour. If `overwrite` is set to `True`, this raster 
+        overwrites the one attributed to `data`.
     &#34;&#34;&#34;
+    # For consistency with Raster.reconstruct
+    if &#34;inplace&#34; in kwargs.keys():
+        overwrite = kwargs[&#34;inplace&#34;]
+    for key in kwargs.keys():
+        raise TypeError(
+            &#34;fill_NaNs got an unexpected keyword argument: {}&#34;.format(key)
+        )
+
     data = fill_raster(self.data)
-    if inplace:
+    if overwrite:
         self._data = data
-    else:
-        return Raster(data, self.plate_reconstruction, self.extent, self.time)</code></pre>
+
+    return data</code></pre>
 </details>
 </dd>
 <dt id="gplately.grids.Raster.imshow"><code class="name flex">
@@ -5114,7 +5174,7 @@ value will be transparent black (0.0, 0.0, 0.0, 0.0) or
 </details>
 </dd>
 <dt id="gplately.grids.Raster.resample"><code class="name flex">
-<span>def <span class="ident">resample</span></span>(<span>self, spacingX, spacingY, inplace=False, **kwargs)</span>
+<span>def <span class="ident">resample</span></span>(<span>self, spacingX, spacingY, overwrite=False, **kwargs)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Resample the <code>grid</code> passed to the <code><a title="gplately.grids.Raster" href="#gplately.grids.Raster">Raster</a></code> object with a new <code>spacingX</code> and
@@ -5124,8 +5184,8 @@ value will be transparent black (0.0, 0.0, 0.0, 0.0) or
 larger the x and y spacings given are, the larger the pixellation of raster data. </p>
 <p><code>resample</code> creates new latitude and longitude arrays with specified spacings in the
 X and Y directions (<code>spacingX</code> and <code>spacingY</code>). These arrays are linearly interpolated
-into a new raster. If <code>inplace</code> is set to <code>True</code>, the respaced latitude array, longitude
-array and raster will inplace the ones currently attributed to the <code><a title="gplately.grids.Raster" href="#gplately.grids.Raster">Raster</a></code> object.</p>
+into a new raster. If <code>overwrite</code> is set to <code>True</code>, the respaced latitude array, longitude
+array and raster will overwrite the ones currently attributed to the <code><a title="gplately.grids.Raster" href="#gplately.grids.Raster">Raster</a></code> object.</p>
 <h2 id="parameters">Parameters</h2>
 <dl>
 <dt><strong><code>spacingX</code></strong>, <strong><code>spacingY</code></strong> :&ensp;<code>ndarray</code></dt>
@@ -5134,22 +5194,22 @@ array and raster will inplace the ones currently attributed to the <code><a titl
 Note: to keep the size of the raster consistent, set <code>spacingX = spacingY</code>;
 otherwise, if for example <code>spacingX &gt; spacingY</code>, the raster will appear stretched
 longitudinally.</dd>
-<dt><strong><code>inplace</code></strong> :&ensp;<code>bool</code>, default=<code>False</code></dt>
-<dd>Choose to overwrite the data (the <code>self.data</code> attribute), latitude array
+<dt><strong><code>overwrite</code></strong> :&ensp;<code>bool</code>, default=<code>False</code></dt>
+<dd>Choose to overwrite the raster (the <code>self.data</code> attribute), latitude array
 (<code>self.lats</code>) and longitude array (<code>self.lons</code>) currently attributed to the
 <code><a title="gplately.grids.Raster" href="#gplately.grids.Raster">Raster</a></code> object.</dd>
 </dl>
 <h2 id="returns">Returns</h2>
 <dl>
-<dt><code><a title="gplately.grids.Raster" href="#gplately.grids.Raster">Raster</a></code></dt>
-<dd>The resampled grid. If <code>inplace</code> is set to <code>True</code>, this raster overwrites the
-one attributed to <code>data</code>.</dd>
+<dt><strong><code>data</code></strong> :&ensp;<code>ndarray grid</code></dt>
+<dd>A new version of the raster data attributed to the <code><a title="gplately.grids.Raster" href="#gplately.grids.Raster">Raster</a></code> object resampled to
+the given <code>spacingX</code> and <code>spacingY</code> spacings.</dd>
 </dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def resample(self, spacingX, spacingY, inplace=False, **kwargs):
+<pre><code class="python">def resample(self, spacingX, spacingY, overwrite=False, **kwargs):
     &#34;&#34;&#34;Resample the `grid` passed to the `Raster` object with a new `spacingX` and 
     `spacingY` using linear interpolation.
 
@@ -5160,8 +5220,8 @@ one attributed to <code>data</code>.</dd>
 
     `resample` creates new latitude and longitude arrays with specified spacings in the
     X and Y directions (`spacingX` and `spacingY`). These arrays are linearly interpolated 
-    into a new raster. If `inplace` is set to `True`, the respaced latitude array, longitude 
-    array and raster will inplace the ones currently attributed to the `Raster` object.
+    into a new raster. If `overwrite` is set to `True`, the respaced latitude array, longitude 
+    array and raster will overwrite the ones currently attributed to the `Raster` object.
 
     Parameters
     ----------
@@ -5172,17 +5232,25 @@ one attributed to <code>data</code>.</dd>
         otherwise, if for example `spacingX &gt; spacingY`, the raster will appear stretched 
         longitudinally. 
 
-    inplace : bool, default=False
-        Choose to overwrite the data (the `self.data` attribute), latitude array 
+    overwrite : bool, default=False
+        Choose to overwrite the raster (the `self.data` attribute), latitude array 
         (`self.lats`) and longitude array (`self.lons`) currently attributed to the 
         `Raster` object. 
 
     Returns
     -------
-    Raster
-        The resampled grid. If `inplace` is set to `True`, this raster overwrites the
-        one attributed to `data`.
+    data : ndarray grid
+        A new version of the raster data attributed to the `Raster` object resampled to 
+        the given `spacingX` and `spacingY` spacings.
     &#34;&#34;&#34;
+    # For consistency with Raster.reconstruct
+    if &#34;inplace&#34; in kwargs.keys():
+        overwrite = kwargs[&#34;inplace&#34;]
+    for key in kwargs.keys():
+        raise TypeError(
+            &#34;resample got an unexpected keyword argument: {}&#34;.format(key)
+        )
+
     spacingX = np.abs(spacingX)
     spacingY = np.abs(spacingY)
     if self.origin == &#34;upper&#34;:
@@ -5193,16 +5261,16 @@ one attributed to <code>data</code>.</dd>
     lonq, latq = np.meshgrid(lons, lats)
 
     data = self.interpolate(lonq, latq)
-    if inplace:
+    if overwrite:
         self._data = data
         self._lons = lons
         self._lats = lats
-    else:
-        return Raster(data, self.plate_reconstruction, self.extent, self.time)</code></pre>
+
+    return data</code></pre>
 </details>
 </dd>
 <dt id="gplately.grids.Raster.resize"><code class="name flex">
-<span>def <span class="ident">resize</span></span>(<span>self, resX, resY, inplace=False, **kwargs)</span>
+<span>def <span class="ident">resize</span></span>(<span>self, resX, resY, overwrite=False, **kwargs)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Resize the grid passed to the <code><a title="gplately.grids.Raster" href="#gplately.grids.Raster">Raster</a></code> object with a new x and y resolution
@@ -5212,30 +5280,30 @@ one attributed to <code>data</code>.</dd>
 the resolutions in x and y, the more stretched the raster appears in x and y.</p>
 <p>It creates new latitude and longitude arrays with specific resolutions in
 the X and Y directions (<code>resX</code> and <code>resY</code>). These arrays are linearly interpolated
-into a new raster. If <code>inplace</code> is set to <code>True</code>, the resized latitude, longitude
-arrays and raster will inplace the ones currently attributed to the <code><a title="gplately.grids.Raster" href="#gplately.grids.Raster">Raster</a></code> object.</p>
+into a new raster. If <code>overwrite</code> is set to <code>True</code>, the resized latitude, longitude
+arrays and raster will overwrite the ones currently attributed to the <code><a title="gplately.grids.Raster" href="#gplately.grids.Raster">Raster</a></code> object.</p>
 <h2 id="parameters">Parameters</h2>
 <dl>
 <dt><strong><code>resX</code></strong>, <strong><code>resY</code></strong> :&ensp;<code>ndarray</code></dt>
 <dd>Specify the resolutions with which to resize the raster. The larger <code>resX</code> is,
 the more longitudinally-stretched the raster becomes. The larger <code>resY</code> is, the
 more latitudinally-stretched the raster becomes.</dd>
-<dt><strong><code>inplace</code></strong> :&ensp;<code>bool</code>, default=<code>False</code></dt>
-<dd>Choose to overwrite the data (the <code>self.data</code> attribute), latitude array
+<dt><strong><code>overwrite</code></strong> :&ensp;<code>bool</code>, default=<code>False</code></dt>
+<dd>Choose to overwrite the raster (the <code>self.data</code> attribute), latitude array
 (<code>self.lats</code>) and longitude array (<code>self.lons</code>) currently attributed to the
 <code><a title="gplately.grids.Raster" href="#gplately.grids.Raster">Raster</a></code> object.</dd>
 </dl>
 <h2 id="returns">Returns</h2>
 <dl>
-<dt><code><a title="gplately.grids.Raster" href="#gplately.grids.Raster">Raster</a></code></dt>
-<dd>The resized grid. If <code>inplace</code> is set to <code>True</code>, this raster overwrites the
+<dt><strong><code>data</code></strong> :&ensp;<code>meshed ndarray grid</code></dt>
+<dd>A new resized raster. If <code>overwrite</code> is set to <code>True</code>, this raster overwrites the
 one attributed to <code>data</code>.</dd>
 </dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def resize(self, resX, resY, inplace=False, **kwargs):
+<pre><code class="python">def resize(self, resX, resY, overwrite=False, **kwargs):
     &#34;&#34;&#34;Resize the grid passed to the `Raster` object with a new x and y resolution 
     (`resX` and `resY`) using linear interpolation. 
 
@@ -5246,8 +5314,8 @@ one attributed to <code>data</code>.</dd>
 
     It creates new latitude and longitude arrays with specific resolutions in 
     the X and Y directions (`resX` and `resY`). These arrays are linearly interpolated
-    into a new raster. If `inplace` is set to `True`, the resized latitude, longitude 
-    arrays and raster will inplace the ones currently attributed to the `Raster` object.
+    into a new raster. If `overwrite` is set to `True`, the resized latitude, longitude 
+    arrays and raster will overwrite the ones currently attributed to the `Raster` object.
 
     Parameters
     ----------
@@ -5256,29 +5324,37 @@ one attributed to <code>data</code>.</dd>
         the more longitudinally-stretched the raster becomes. The larger `resY` is, the
         more latitudinally-stretched the raster becomes.
 
-    inplace : bool, default=False
-        Choose to overwrite the data (the `self.data` attribute), latitude array 
+    overwrite : bool, default=False
+        Choose to overwrite the raster (the `self.data` attribute), latitude array 
         (`self.lats`) and longitude array (`self.lons`) currently attributed to the 
         `Raster` object. 
 
     Returns
     -------
-    Raster
-        The resized grid. If `inplace` is set to `True`, this raster overwrites the
+    data : meshed ndarray grid
+        A new resized raster. If `overwrite` is set to `True`, this raster overwrites the
         one attributed to `data`.
     &#34;&#34;&#34;
+    # For consistency with Raster.reconstruct
+    if &#34;inplace&#34; in kwargs.keys():
+        overwrite = kwargs[&#34;inplace&#34;]
+    for key in kwargs.keys():
+        raise TypeError(
+            &#34;resize got an unexpected keyword argument: {}&#34;.format(key)
+        )
+
     # construct grid
     lons = np.linspace(self.extent[0], self.extent[1], resX)
     lats = np.linspace(self.extent[2], self.extent[3], resY)
     lonq, latq = np.meshgrid(lons, lats)
 
     data = self.interpolate(lonq, latq)
-    if inplace:
+    if overwrite:
         self._data = data
         self._lons = lons
         self._lats = lats
-    else:
-        return Raster(data, self.plate_reconstruction, self.extent, self.time)</code></pre>
+
+    return data</code></pre>
 </details>
 </dd>
 <dt id="gplately.grids.Raster.save_to_netcdf4"><code class="name flex">
