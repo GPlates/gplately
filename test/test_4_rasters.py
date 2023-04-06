@@ -38,13 +38,13 @@ def test_point_interpolation(graster):
 
 # TEST AGE GRID RESIZING (AT RESOLUTIONS OF RES_X = 1000, RES_Y = 400)
 def test_resizing(graster):
-    resized_agegrid = graster.resize(1000, 400, overwrite=False)
+    resized_agegrid = graster.resize(1000, 400, return_array=True)
     assert np.shape(resized_agegrid)==(400,1000), "Unable to rezise"
 
 
 # TEST FILLING NaNs IN AGE GRIDS
 def test_fill_NaNs(graster):
-    no_NaNs = graster.fill_NaNs(overwrite=False)
+    no_NaNs = graster.fill_NaNs(return_array=True)
     assert not np.isnan(no_NaNs).all(), "Unable to fill NaNs"
 
 def test_reconstruct(graster):
