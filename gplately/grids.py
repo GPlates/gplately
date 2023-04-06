@@ -1681,8 +1681,16 @@ class Raster(object):
                 reconstruction = _PlateReconstruction(reconstruction)
         self._plate_reconstruction = reconstruction
 
-    # Deprecated name of `plate_reconstruction` attribute
-    PlateReconstruction_object = plate_reconstruction
+
+    def copy(self):
+        """ Returns a copy of the Raster
+        
+        Returns
+        -------
+        Raster
+            A copy of the current Raster object
+        """
+        return Raster(self.data.copy(), self.plate_reconstruction, self.extent, self.time)
 
     def interpolate(
         self,
@@ -1742,7 +1750,7 @@ class Raster(object):
             return_indices=return_indices,
         )
 
-    def resample(self, spacingX, spacingY, inplace=False, **kwargs):
+    def resample(self, spacingX, spacingY, method="linear", inplace=False):
         """Resample the `grid` passed to the `Raster` object with a new `spacingX` and 
         `spacingY` using linear interpolation.
 
@@ -1765,6 +1773,11 @@ class Raster(object):
             otherwise, if for example `spacingX > spacingY`, the raster will appear stretched 
             longitudinally. 
 
+        method : str or int; default: 'linear'
+            The order of spline interpolation. Must be an integer in the range
+            0-5. 'nearest', 'linear', and 'cubic' are aliases for 0, 1, and 3,
+            respectively.
+
         inplace : bool, default=False
             Choose to overwrite the data (the `self.data` attribute), latitude array 
             (`self.lats`) and longitude array (`self.lons`) currently attributed to the 
@@ -1785,7 +1798,7 @@ class Raster(object):
         lats = np.arange(self.extent[2], self.extent[3]+spacingY, spacingY)
         lonq, latq = np.meshgrid(lons, lats)
 
-        data = self.interpolate(lonq, latq)
+        data = self.interpolate(lonq, latq, method=method)
         if inplace:
             self._data = data
             self._lons = lons
@@ -1794,7 +1807,7 @@ class Raster(object):
             return Raster(data, self.plate_reconstruction, self.extent, self.time)
 
 
-    def resize(self, resX, resY, inplace=False, **kwargs):
+    def resize(self, resX, resY, inplace=False, method="linear", return_array=False):
         """Resize the grid passed to the `Raster` object with a new x and y resolution 
         (`resX` and `resY`) using linear interpolation. 
 
@@ -1815,10 +1828,18 @@ class Raster(object):
             the more longitudinally-stretched the raster becomes. The larger `resY` is, the
             more latitudinally-stretched the raster becomes.
 
+        method : str or int; default: 'linear'
+            The order of spline interpolation. Must be an integer in the range
+            0-5. 'nearest', 'linear', and 'cubic' are aliases for 0, 1, and 3,
+            respectively.
+
         inplace : bool, default=False
             Choose to overwrite the data (the `self.data` attribute), latitude array 
             (`self.lats`) and longitude array (`self.lons`) currently attributed to the 
             `Raster` object. 
+
+        return_array : bool, default False
+            Return a `numpy.ndarray`, rather than a `Raster`.
 
         Returns
         -------
@@ -1831,16 +1852,18 @@ class Raster(object):
         lats = np.linspace(self.extent[2], self.extent[3], resY)
         lonq, latq = np.meshgrid(lons, lats)
 
-        data = self.interpolate(lonq, latq)
+        data = self.interpolate(lonq, latq, method=method)
         if inplace:
             self._data = data
             self._lons = lons
             self._lats = lats
+        if return_array:
+            return data
         else:
             return Raster(data, self.plate_reconstruction, self.extent, self.time)
 
 
-    def fill_NaNs(self, inplace=False, **kwargs):
+    def fill_NaNs(self, inplace=False, return_array=False):
         """Search raster for invalid ‘data’ cells containing NaN-type entries replaces them 
         with the value of their nearest valid data cells.
 
@@ -1849,6 +1872,9 @@ class Raster(object):
         inplace : bool, default=False
             Choose whether to overwrite the grid currently held in the `data` attribute with
             the filled grid.
+
+        return_array : bool, default False
+            Return a `numpy.ndarray`, rather than a `Raster`.
 
         Returns
         --------
@@ -1859,6 +1885,8 @@ class Raster(object):
         data = fill_raster(self.data)
         if inplace:
             self._data = data
+        if return_array:
+            return data
         else:
             return Raster(data, self.plate_reconstruction, self.extent, self.time)
 

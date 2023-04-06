@@ -1034,6 +1034,15 @@ class Points(object):
 
         self.update(self.lons, self.lats, self.time, self.plate_id)
 
+    def copy(self):
+        """ Returns a copy of the Points object
+
+        Returns
+        -------
+        Points
+            A copy of the current Points object
+        """
+        return Points(self.plate_reconstruction, self.lons, self.lats, self.time, self.plate_id)
 
     def reconstruct(self, time, anchor_plate_id=0, return_array=False, **kwargs):
         """Reconstructs regular geological features, motion paths or flowlines to a specific geological time and extracts 
