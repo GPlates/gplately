@@ -43,7 +43,6 @@ resized, resampled, and reconstructed back and forwards through geologic time. O
 interpolated onto `Raster` grids.  
 
 ![RasterDemo](https://raw.githubusercontent.com/GPlates/gplately/master/Notebooks/NotebookFiles/pdoc_Files/etopo_reconstruction.png)
-![ResampleDemo](https://raw.githubusercontent.com/GPlates/gplately/master/Notebooks/NotebookFiles/pdoc_Files/resample.png)
 
 
 ### [PlotTopologies](https://gplates.github.io/gplately/plot.html#gplately.plot.PlotTopologies)
