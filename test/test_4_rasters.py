@@ -1,4 +1,5 @@
 import numpy as np
+import gplately
 from conftest import (
     reconstruction_times,
     pt_lon,
@@ -34,6 +35,33 @@ def test_point_interpolation(graster):
         return_indices=False,
     )
     assert interpolated_points.any(), "Unable to interpolate points"
+
+
+def test_bilinear_interpolation():
+    array = np.array([[0,1],[1,2]], dtype=float)
+    graster = gplately.Raster(data=array, extent=[0,1,0,1])
+
+    ilon = ilat = 2.0/3
+    result = 1.0 + 1.0/3
+    interp = graster.interpolate(ilon, ilat, method="linear")
+    assert np.isclose(interp, result), "Linear interpolation in x direction failed"
+
+    # get interpolation coordinates
+    interp, (ci,cj) = graster.interpolate(ilon, ilat, method="linear", return_indices=True)
+    assert ci == 1 and cj == 1, "Indices of interpolation are incorrect"
+
+def test_nearest_neighbour_interpolation():
+    array = np.array([[0,1],[1,2]], dtype=float)
+    graster = gplately.Raster(data=array, extent=[0,1,0,1])
+
+    ilon = ilat = 2.0/3
+    result = 2
+    interp = graster.interpolate(ilon, ilat, method="nearest")
+    assert np.isclose(interp, result), "Linear interpolation in x direction failed"
+
+    # get interpolation coordinates
+    interp, (ci,cj) = graster.interpolate(ilon, ilat, method="nearest", return_indices=True)
+    assert ci == 1 and cj == 1, "Indices of interpolation are incorrect"    
 
 
 # TEST AGE GRID RESIZING (AT RESOLUTIONS OF RES_X = 1000, RES_Y = 400)
