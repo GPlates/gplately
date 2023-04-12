@@ -152,6 +152,7 @@ class DataCollection(object):
             "Muller2008" : ["https://www.earthbyte.org/webdav/ftp/Data_Collections/Muller2008/Global_Model_Rigid_Internal_Release_2010.zip"],
             "Scotese2016" : ["https://www.earthbyte.org/webdav/ftp/Data_Collections/Scotese2016/PALEOMAP_GlobalPlateModel.zip"],
             "Shephard2013" : ["https://www.earthbyte.org/webdav/ftp/Data_Collections/Shephard2013/GPlates.zip"],
+            "Muller2022" : ["https://www.earthbyte.org/webdav/ftp/Data_Collections/Muller2022/Muller_etal_2022_SE_1Ga_Opt.zip"],
 
         }
 
@@ -309,6 +310,7 @@ class DataCollection(object):
             "Muller2008" : ["https://www.earthbyte.org/webdav/ftp/Data_Collections/Muller2008/Global_Model_Rigid_Internal_Release_2010.zip"],
             "Scotese2016" : ["https://www.earthbyte.org/webdav/ftp/Data_Collections/Scotese2016/PALEOMAP_GlobalPlateModel.zip"],
             "Shephard2013" : ["https://www.earthbyte.org/webdav/ftp/Data_Collections/Shephard2013/GPlates.zip"],
+            "Muller2022" : ["https://www.earthbyte.org/webdav/ftp/Data_Collections/Muller2022/Muller_etal_2022_SE_1Ga_Opt.zip"],
 
         }
         return database
