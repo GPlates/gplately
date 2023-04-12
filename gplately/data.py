@@ -149,6 +149,9 @@ class DataCollection(object):
             "Golonka2007" : ["https://static.cambridge.org/content/id/urn:cambridge.org:id:article:S0016756818000110/resource/name/S0016756818000110sup001.zip"],
             "Clennett2020_M2019" : ["https://www.earthbyte.org/webdav/ftp/Data_Collections/Clennett_etal_2020_G3/Clennett_etal_2020_M2019.zip"],
             "Clennett2020_S2013" : ["https://www.earthbyte.org/webdav/ftp/Data_Collections/Clennett_etal_2020_G3/Clennett_etal_2020_S2013.zip"],
+            "Muller2008" : ["https://www.earthbyte.org/webdav/ftp/Data_Collections/Muller2008/Global_Model_Rigid_Internal_Release_2010.zip"],
+            "Scotese2016" : ["https://www.earthbyte.org/webdav/ftp/Data_Collections/Scotese2016/PALEOMAP_GlobalPlateModel.zip"],
+            "Shephard2013" : ["https://www.earthbyte.org/webdav/ftp/Data_Collections/Shephard2013/GPlates.zip"],
 
         }
 
@@ -175,6 +178,9 @@ class DataCollection(object):
             "Golonka2007" : [0, 410],
             "Clennett2020_M2019" : [0, 170],
             "Clennett2020_S2013" : [0, 170],
+            "Scotese2016" : [0,410],
+            "Shephard2013" : [0,200],
+            "Muller2008" : [0,141], #GPlates static polygons reconstruct to this time
 
         }  
         return database
@@ -224,6 +230,7 @@ class DataCollection(object):
             "Clennett_2020_Isochrons",
             "Clennett_2020_Coastlines",
             "Clennett_2020_NAm_boundaries",
+            "Shephard_etal_ESR2013_Global_EarthByte_2013", # For Shephard et al. 2013
 
         ]
         return strings 
@@ -241,6 +248,7 @@ class DataCollection(object):
             "Inactive_Meshes_and_Topologies", # Clennett et al 2020
             "ContinentOceanBoundaries", # Seton 2012
             "Seton_etal_ESR2012_Coastline_2012", # Seton 2012
+            "PALEOMAP_PoliticalBoundaries", # Scotese 2016
         ]
         return strings
 
@@ -259,6 +267,7 @@ class DataCollection(object):
             "CEED6_LAND.gpml",
             "Scotese_2008_PresentDay_ContinentalPolygons", # Scotese 2008
             "Golonka_2007_PresentDay_ContinentalPolygons.shp", # Golonka 2007
+            "PALEOMAP_PlatePolygons.gpml", # For Scotese 2016
         ]
         return strings
 
@@ -297,6 +306,9 @@ class DataCollection(object):
             "Golonka2007" : ["https://static.cambridge.org/content/id/urn:cambridge.org:id:article:S0016756818000110/resource/name/S0016756818000110sup001.zip"],
             "Clennett2020_M2019" : ["https://www.earthbyte.org/webdav/ftp/Data_Collections/Clennett_etal_2020_G3/Clennett_etal_2020_M2019.zip"],
             "Clennett2020_S2013" : ["https://www.earthbyte.org/webdav/ftp/Data_Collections/Clennett_etal_2020_G3/Clennett_etal_2020_S2013.zip"],
+            "Muller2008" : ["https://www.earthbyte.org/webdav/ftp/Data_Collections/Muller2008/Global_Model_Rigid_Internal_Release_2010.zip"],
+            "Scotese2016" : ["https://www.earthbyte.org/webdav/ftp/Data_Collections/Scotese2016/PALEOMAP_GlobalPlateModel.zip"],
+            "Shephard2013" : ["https://www.earthbyte.org/webdav/ftp/Data_Collections/Shephard2013/GPlates.zip"],
 
         }
         return database
@@ -307,7 +319,8 @@ class DataCollection(object):
         strings = [
 
             "coastline",
-            "CEED6_LAND.gpml" # for TorsvikCocks2017
+            "CEED6_LAND.gpml", # for TorsvikCocks2017
+            "PALEOMAP_PoliticalBoundaries", # For Scotese 2016
         ]
         return strings
 
