@@ -182,6 +182,7 @@ class DataCollection(object):
             "Scotese2016" : [0,410],
             "Shephard2013" : [0,200],
             "Muller2008" : [0,141], #GPlates static polygons reconstruct to this time
+            "Muller2022" : [0,1000],
 
         }  
         return database
