@@ -962,13 +962,14 @@ class Points(object):
         self.lons = lons
         self.lats = lats
         self.time = time
+        self.attributes = dict()
 
         self.plate_reconstruction = plate_reconstruction
 
-        self.update(lons, lats, time, plate_id)
+        self._update(lons, lats, time, plate_id)
 
 
-    def update(self, lons, lats, time=0, plate_id=None):
+    def _update(self, lons, lats, time=0, plate_id=None):
 
         # get Cartesian coordinates
         self.x, self.y, self.z = _tools.lonlat2xyz(lons, lats, degrees=False)
@@ -1032,7 +1033,7 @@ class Points(object):
         self.time = state['time']
         self.plate_id = state['plate_id']
 
-        self.update(self.lons, self.lats, self.time, self.plate_id)
+        self._update(self.lons, self.lats, self.time, self.plate_id)
 
     def copy(self):
         """ Returns a copy of the Points object
@@ -1042,7 +1043,50 @@ class Points(object):
         Points
             A copy of the current Points object
         """
-        return Points(self.plate_reconstruction, self.lons, self.lats, self.time, self.plate_id)
+        gpts = Points(self.plate_reconstruction, self.lons.copy(), self.lats.copy(), self.time, self.plate_id.copy())
+        gpts.add_attributes(**self.attributes.copy())
+
+    def add_attributes(self, **kwargs):
+        keys = kwargs.keys()
+
+        for key in kwargs:
+            attribute = kwargs[key]
+
+            # make sure attribute is the same size as self.lons
+            if type(attribute) is int or type(attribute) is float:
+                array = np.full(self.lons.size, attribute)
+                attribute = array
+            elif isinstance(attribute, np.ndarray):
+                if attribute.size == 1:
+                    array = np.full(self.lons.size, attribute, dtype=attribute.dtype)
+                    attribute = array
+
+            assert len(attribute) == self.lons.size, "Size mismatch, ensure attributes have the same number of entries as Points"
+            self.attributes[key] = attribute
+
+        if any(kwargs):
+            # add these to the FeatureCollection
+            for f, feature in enumerate(self.FeatureCollection):
+                for key in keys:
+                    # extract value for each row in attribute
+                    val = self.attributes[key][f]
+
+                    # set this attribute on the feature
+                    feature.set_shapefile_attribute(key, val)
+
+    def get_geopandas_dataframe(self):
+        import geopandas as gpd
+        from shapely import geometry
+
+        # create shapely points
+        points = []
+        for lon, lat in zip(self.lons, self.lats):
+            points.append( geometry.Point(lon, lat) )
+
+        attributes = self.attributes.copy()
+        attributes['geometry'] = points
+
+        return gpd.GeoDataFrame(attributes, geometry='geometry')
 
     def reconstruct(self, time, anchor_plate_id=0, return_array=False, **kwargs):
         """Reconstructs regular geological features, motion paths or flowlines to a specific geological time and extracts 
@@ -1103,7 +1147,9 @@ class Points(object):
         if return_array:
             return rlons, rlats
         else:
-            return Points(self.plate_reconstruction, rlons, rlats, time=to_time, plate_id=self.plate_id)
+            gpts = Points(self.plate_reconstruction, rlons, rlats, time=to_time, plate_id=self.plate_id)
+            gpts.add_attributes(**self.attributes.copy())
+            return gpts
 
 
     def reconstruct_to_birth_age(self, ages, anchor_plate_id=0, **kwargs):
@@ -1394,6 +1440,18 @@ class Points(object):
         return model.create_flowline(self.lons, self.lats, time_array, left_plate_ID, right_plate_ID, return_rate_of_motion)
 
 
+    def _get_dataframe(self):
+        import geopandas as gpd
+
+        data = dict()
+        data["Longitude"] = self.lons
+        data["Latitude"]  = self.lats
+        data["Plate_ID"]  = self.plate_id
+        for key in self.attributes:
+            data[key] = self.attributes[key]
+
+        return gpd.GeoDataFrame(data)
+
     def save(self, filename):
         """Saves the feature collection used in the Points object under a given filename to the current directory. 
 
@@ -1410,22 +1468,23 @@ class Points(object):
         """
         filename = str(filename)
 
-        numpy_types = {'.csv': ',', '.txt': ' ', '.dat': ' '}
+        if filename.endswith(('.csv', '.txt', '.dat')):
+            df = self._get_dataframe()
+            df.to_csv(filename, index=False)
 
-        if filename.endswith(tuple(numpy_types.keys())):
-            data = np.c_[self.lons, self.lats, self.plate_id]
+        elif filename.endswith(('.xls', '.xlsx')):
+            df = self._get_dataframe()
+            df.to_excel(filename, index=False)
 
-            # find appropriate delimiter
-            delimiter = numpy_types[filename[filename.index('.'):]]
+        elif filename.endswith('xml'):
+            df = self._get_dataframe()
+            df.to_xml(filename, index=False)
 
-            header = "Longitude{0}Latitude{0}Plate_ID".format(delimiter)
-            np.savetxt(filename, data, header=header, delimiter=delimiter, comments='')
-
-        elif filename.endswith('.gpml'):
+        elif filename.endswith('.gpml') or filename.endswith('.gpmlz'):
             self.FeatureCollection.write(filename)
 
         else:
-            raise ValueError("Cannot save to specified file type, use csv or gpml file extension.")
+            raise ValueError("Cannot save to specified file type. Use csv, gpml, or xls file extension.")
 
 
 # FROM RECONSTRUCT_BY_TOPOLOGIES.PY
