@@ -469,6 +469,12 @@ def download_from_web(url, verbose=True, download_changes=True, model_name=None)
                     elif _os.path.isfile(full_path):
                         _os.remove(full_path)
 
+                    if unprocessed_path:
+                        if _os.path.isdir(unprocessed_path):
+                            _shutil.rmtree(str(unprocessed_path))
+                        elif _os.path.isfile(unprocessed_path):
+                            _os.remove(unprocessed_path)
+
                     fnames, etag, local_etag_txtfile, used_fname = _first_time_download_from_web(
                         url, 
                         model_name=model_name,
@@ -493,27 +499,35 @@ def download_from_web(url, verbose=True, download_changes=True, model_name=None)
                     if str(remote_etag) != str(local_etag):
                         if verbose:
                             print("Yes - updating requested files...")
-                        
+
                         # Update the e-tag textfile with this newly-identified URL e-tag
                         _save_url_etag_to_txt(remote_etag, local_etag_txtfile)
 
-                        # Re-download the file, and process it if need-be.
-                        with _pooch.utils.temporary_file(path=str(full_path.parent)) as tmp:
-                            downloader = _HTTPDownloader(progressbar=verbose)
-                            downloader(url, tmp, _pooch) 
-                            _shutil.move(tmp, str(full_path))
-                            processor=_determine_processor(url)[0]
-
-                            # If the file to update needs processing, pass the unprocessed file's
-                            # absolute path to the processor
-                            if unprocessed_path:
-                                processor(str(unprocessed_path), "update", None)
+                        # Delete existing version of the files...
+                        # If it didn't need processing, i.e. 'unzipping', just delete as-is
+                        if _os.path.isdir(full_path):
+                            _shutil.rmtree(str(full_path))
+                        elif _os.path.isfile(full_path):
+                            _os.remove(full_path)
                             
-                        # full_path holds the files to return to the user, irrespective of whether
-                        # proceessing was needed
+                        # If it's the kind of file that needs processing, delete the 
+                        # unprocessed version so we can re-download it
+                        if unprocessed_path:
+                            if _os.path.isdir(unprocessed_path):
+                                _shutil.rmtree(str(unprocessed_path))
+                            elif _os.path.isfile(unprocessed_path):
+                                _os.remove(unprocessed_path)
+
+                        # Treat as if downloading the file(s) from the URL for the first time
+                        fnames, etag, local_etag_txtfile, used_fname = _first_time_download_from_web(
+                            url, 
+                            model_name=model_name,
+                            verbose=verbose
+                        )
+
                         if verbose:
-                            print("Requested files downloaded to the GPlately cache folder!")
-                        return(_extract_processed_files(str(full_path)))
+                            print("Updated requested files downloaded to the GPlately cache folder!")
+                        return(fnames)
 
                     # If the e-tags are equal, the local and remote files are the same.
                     # Just return the file(s) as-is.
@@ -751,10 +765,11 @@ def get_raster(raster_id_string=None, verbose=True):
         import cartopy.crs as ccrs
 
         etopo1 = gplately.download.get_raster("ETOPO1_tif")
+        etopo1_data = etopo1.data
 
         fig = plt.figure(figsize=(18,14), dpi=300)
         ax = fig.add_subplot(111, projection=ccrs.Mollweide(central_longitude = -150))
-        etopo1.imshow(ax) 
+        ax2.imshow(etopo1_data, extent=[-180,180,-90,90], transform=ccrs.PlateCarree()) 
 
     """
     from matplotlib import image
@@ -786,19 +801,12 @@ def get_raster(raster_id_string=None, verbose=True):
     else:
         # If the downloaded raster is a grid, process it with the gplately.Raster object
         if any(grid_extension in raster_filenames for grid_extension in grid_extensions):
-            raster = _gplately.grids.Raster(data=raster_filenames)
+            return _gplately.grids.Raster(data=raster_filenames)
 
         # Otherwise, the raster is an image; use imread to process
         else:
             raster_matrix = image.imread(raster_filenames)
-            raster = _gplately.grids.Raster(data=raster_matrix)
-
-        if raster_id_string.lower() == "etopo1_tif":
-            raster.lats = raster.lats[::-1]
-        if raster_id_string.lower() == "etopo1_grd":
-            raster._data = raster._data.astype(float)
-
-    return raster
+            return _gplately.grid.Raster(data=raster_matrix)
 
 
 def get_feature_data(feature_data_id_string=None, verbose=True):
@@ -1595,7 +1603,7 @@ class DataServer(object):
 
                 graster_data = graster.data
 
-            where `graster_data` is a numpy ndarray. 
+            where `graster_data` is a numpy ndarray.
 
         Raises
         -----
@@ -1857,7 +1865,41 @@ class DataServer(object):
             ax2.imshow(etopo1, extent=[-180,180,-90,90], transform=ccrs.PlateCarree()) 
 
         """
-        return get_raster(raster_id_string, self.verbose)
+        from matplotlib import image
+        if raster_id_string is None:
+            raise ValueError(
+                "Please specify which raster to download."
+            )
+        #filetype = "."+"_".split(raster_id_string)[-1]
+
+        archive_formats = tuple([".gz", ".xz", ".bz2"])
+        grid_extensions = tuple([".grd", ".nc"])
+
+        # Set to true if we find the given collection in database
+        found_collection = False
+        raster_filenames = []
+        database = _gplately.data._rasters()
+
+        for collection, zip_url in database.items():
+            # Isolate the raster name and the file type
+            #raster_name = collection.split("_")[0]
+            #raster_type = "."+collection.split("_")[-1]
+            if (raster_id_string.lower() == collection.lower()):
+                raster_filenames = download_from_web(zip_url[0], self.verbose)
+                found_collection = True
+                break
+
+        if found_collection is False:
+            raise ValueError("{} not in collection database.".format(raster_id_string))
+        else:
+            # If the downloaded raster is a grid, process it with the gplately.Raster object
+            if any(grid_extension in raster_filenames for grid_extension in grid_extensions):
+                return _gplately.grids.Raster(data=raster_filenames)
+
+            # Otherwise, the raster is an image; use imread to process
+            else:
+                raster_matrix = image.imread(raster_filenames)
+                return _gplately.grids.Raster(data=raster_matrix)
 
 
     def get_feature_data(self, feature_data_id_string=None):
