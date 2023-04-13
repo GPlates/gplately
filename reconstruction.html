@@ -1042,6 +1042,10 @@ class Points(object):
         self.plate_id = plate_id
         self.FeatureCollection = pygplates.FeatureCollection(self.features)
 
+    @property
+    def size(self):
+        return len(self.lons)
+
 
     def __getstate__(self):
 
@@ -1052,6 +1056,8 @@ class Points(object):
         filenames[&#34;lats&#34;] = self.lats
         filenames[&#39;time&#39;] = self.time
         filenames[&#39;plate_id&#39;] = self.plate_id
+        for key in self.attributes:
+            filenames[key] = self.attributes[key]
 
         return filenames
 
@@ -1064,8 +1070,13 @@ class Points(object):
         self.lats = state[&#39;lats&#39;]
         self.time = state[&#39;time&#39;]
         self.plate_id = state[&#39;plate_id&#39;]
+        self.attributes = dict()
 
         self._update(self.lons, self.lats, self.time, self.plate_id)
+
+        for key in state:
+            if key not in [&#39;lons&#39;, &#39;lats&#39;, &#39;time&#39;, &#39;plate_id&#39;]:
+                self.attributes[key] = state[key]
 
     def copy(self):
         &#34;&#34;&#34; Returns a copy of the Points object
@@ -4606,6 +4617,10 @@ if not provided.</dd>
         self.plate_id = plate_id
         self.FeatureCollection = pygplates.FeatureCollection(self.features)
 
+    @property
+    def size(self):
+        return len(self.lons)
+
 
     def __getstate__(self):
 
@@ -4616,6 +4631,8 @@ if not provided.</dd>
         filenames[&#34;lats&#34;] = self.lats
         filenames[&#39;time&#39;] = self.time
         filenames[&#39;plate_id&#39;] = self.plate_id
+        for key in self.attributes:
+            filenames[key] = self.attributes[key]
 
         return filenames
 
@@ -4628,8 +4645,13 @@ if not provided.</dd>
         self.lats = state[&#39;lats&#39;]
         self.time = state[&#39;time&#39;]
         self.plate_id = state[&#39;plate_id&#39;]
+        self.attributes = dict()
 
         self._update(self.lons, self.lats, self.time, self.plate_id)
+
+        for key in state:
+            if key not in [&#39;lons&#39;, &#39;lats&#39;, &#39;time&#39;, &#39;plate_id&#39;]:
+                self.attributes[key] = state[key]
 
     def copy(self):
         &#34;&#34;&#34; Returns a copy of the Points object
@@ -5082,6 +5104,21 @@ if not provided.</dd>
         else:
             raise ValueError(&#34;Cannot save to specified file type. Use csv, gpml, or xls file extension.&#34;)</code></pre>
 </details>
+<h3>Instance variables</h3>
+<dl>
+<dt id="gplately.reconstruction.Points.size"><code class="name">var <span class="ident">size</span></code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def size(self):
+    return len(self.lons)</code></pre>
+</details>
+</dd>
+</dl>
 <h3>Methods</h3>
 <dl>
 <dt id="gplately.reconstruction.Points.add_attributes"><code class="name flex">
@@ -5847,6 +5884,7 @@ rlons, rlats = gpts.reconstruct_to_birth_age(ages)
 <li><code><a title="gplately.reconstruction.Points.reconstruct" href="#gplately.reconstruction.Points.reconstruct">reconstruct</a></code></li>
 <li><code><a title="gplately.reconstruction.Points.reconstruct_to_birth_age" href="#gplately.reconstruction.Points.reconstruct_to_birth_age">reconstruct_to_birth_age</a></code></li>
 <li><code><a title="gplately.reconstruction.Points.save" href="#gplately.reconstruction.Points.save">save</a></code></li>
+<li><code><a title="gplately.reconstruction.Points.size" href="#gplately.reconstruction.Points.size">size</a></code></li>
 </ul>
 </li>
 </ul>
