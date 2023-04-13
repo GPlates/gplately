@@ -211,11 +211,11 @@ def points_to_features(lons, lats, plate_ID=None):
 
     # create point features
     point_features = []
-    for lon, lat, id in zip(lons, lats, plate_ID):
+    for lon, lat, pid in zip(lons, lats, plate_ID):
         point_feature = pygplates.Feature()
         point_feature.set_geometry(pygplates.PointOnSphere(float(lat), float(lon)))
-        if id is not None:
-            point_feature.set_reconstruction_plate_id(id)
+        if pid is not None:
+            point_feature.set_reconstruction_plate_id(pid)
         point_features.append(point_feature)
 
     if len(point_features) == 1:

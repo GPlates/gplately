@@ -37,8 +37,16 @@ def test_plate_velocity(time, gpts):
     plate_vel = gpts.plate_velocity(time, delta_time=1)
     assert plate_vel, "Unable to calculate plate velocities of point data at {} Ma with Muller et al. (2019).".format(time)
 
+def test_point_attributes(gpts):
+    attr = np.arange(0, gpts.size)
+    gpts.add_attributes(FROMAGE=attr, TOAGE=attr)
 
-def test_pickle_Points():
+def test_pickle_Points(gpts):
     import pickle
+    gpts_dump = pickle.dumps(gpts)
+    gpts_load = pickle.loads(gpts_dump)
+
+    attr = np.arange(0, gpts.size)
+    gpts.add_attributes(FROMAGE=attr, TOAGE=attr)
     gpts_dump = pickle.dumps(gpts)
     gpts_load = pickle.loads(gpts_dump)
