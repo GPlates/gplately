@@ -1010,6 +1010,10 @@ class Points(object):
         self.plate_id = plate_id
         self.FeatureCollection = pygplates.FeatureCollection(self.features)
 
+    @property
+    def size(self):
+        return len(self.lons)
+
 
     def __getstate__(self):
 
@@ -1020,6 +1024,8 @@ class Points(object):
         filenames["lats"] = self.lats
         filenames['time'] = self.time
         filenames['plate_id'] = self.plate_id
+        for key in self.attributes:
+            filenames[key] = self.attributes[key]
 
         return filenames
 
@@ -1032,8 +1038,13 @@ class Points(object):
         self.lats = state['lats']
         self.time = state['time']
         self.plate_id = state['plate_id']
+        self.attributes = dict()
 
         self._update(self.lons, self.lats, self.time, self.plate_id)
+
+        for key in state:
+            if key not in ['lons', 'lats', 'time', 'plate_id']:
+                self.attributes[key] = state[key]
 
     def copy(self):
         """ Returns a copy of the Points object
