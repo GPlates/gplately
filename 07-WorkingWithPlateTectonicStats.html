@@ -15237,7 +15237,7 @@ Requested files are up-to-date!
 
     <span class="c1"># -----------------------   MID-OCEAN RIDGES   ------------------------------</span>
     <span class="c1"># Calculate mid ocean ridge stats with GPlately</span>
-    <span class="n">ridge_data</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">tesselate_mid_ocean_ridges</span><span class="p">(</span><span class="n">reconstruction_time</span><span class="p">,</span> <span class="n">ignore_warnings</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">ridge_data</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">tessellate_mid_ocean_ridges</span><span class="p">(</span><span class="n">reconstruction_time</span><span class="p">,</span> <span class="n">ignore_warnings</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
     
     <span class="c1"># Ignore data of ridge segments with negative velocities </span>
     <span class="n">ridge_data</span> <span class="o">=</span> <span class="n">ridge_data</span><span class="p">[</span><span class="n">ridge_data</span><span class="p">[:,</span><span class="mi">2</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="mi">0</span><span class="p">]</span>
@@ -15262,7 +15262,7 @@ Requested files are up-to-date!
     
     <span class="c1"># -----------------------   SUBDUCTION ZONES   ------------------------------</span>
     <span class="c1"># Calculate subduction convergence stats with GPlately</span>
-    <span class="n">subduction_data</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">tesselate_subduction_zones</span><span class="p">(</span><span class="n">reconstruction_time</span><span class="p">,</span> <span class="n">ignore_warnings</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">subduction_data</span> <span class="o">=</span> <span class="n">model</span><span class="o">.</span><span class="n">tessellate_subduction_zones</span><span class="p">(</span><span class="n">reconstruction_time</span><span class="p">,</span> <span class="n">ignore_warnings</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
     
     <span class="c1"># Latitudes and longitudes of points along trench segments</span>
     <span class="n">subduction_lon</span> <span class="o">=</span> <span class="n">subduction_data</span><span class="p">[:,</span><span class="mi">0</span><span class="p">]</span>

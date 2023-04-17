@@ -122,14 +122,14 @@ class PlateReconstruction(object):
                 self.static_polygons.add( _FeatureCollection(polygon) )
 
 
-    def tesselate_subduction_zones(self, time, tessellation_threshold_radians=0.001, ignore_warnings=False, return_geodataframe=False, **kwargs):
+    def tessellate_subduction_zones(self, time, tessellation_threshold_radians=0.001, ignore_warnings=False, return_geodataframe=False, **kwargs):
         &#34;&#34;&#34;Samples points along subduction zone trenches and obtains subduction data at a particular
         geological time.
         
         Resolves topologies at `time`, tessellates all resolved subducting features to within &#39;tessellation_threshold_radians&#39;
         radians and obtains the following information for each sampled point along a trench:
     
-        `tesselate_subduction_zones` returns a list of 10 vertically-stacked tuples with the following data per sampled trench point:
+        `tessellate_subduction_zones` returns a list of 10 vertically-stacked tuples with the following data per sampled trench point:
 
         * Col. 0 - longitude of sampled trench point
         * Col. 1 - latitude of sampled trench point
@@ -280,7 +280,7 @@ class PlateReconstruction(object):
         if use_ptt:
             with warnings.catch_warnings():
                 warnings.simplefilter(&#39;ignore&#39;)
-                subduction_data = self.tesselate_subduction_zones(time, ignore_warnings=ignore_warnings)
+                subduction_data = self.tessellate_subduction_zones(time, ignore_warnings=ignore_warnings)
 
             trench_arcseg = subduction_data[:,6]
             trench_pt_lat = subduction_data[:,1]
@@ -378,7 +378,7 @@ class PlateReconstruction(object):
             )
 
         # Obtain trench data with Plate Tectonic Tools
-        trench_data = self.tesselate_subduction_zones(time, ignore_warnings=ignore_warnings)
+        trench_data = self.tessellate_subduction_zones(time, ignore_warnings=ignore_warnings)
 
         # Extract trench data
         trench_normal_azimuthal_angle = trench_data[:,7]
@@ -411,7 +411,7 @@ class PlateReconstruction(object):
         return np.sum(segment_lengths)
 
 
-    def tesselate_mid_ocean_ridges(self, time, tessellation_threshold_radians=0.001, ignore_warnings=False, return_geodataframe=False, **kwargs):
+    def tessellate_mid_ocean_ridges(self, time, tessellation_threshold_radians=0.001, ignore_warnings=False, return_geodataframe=False, **kwargs):
         &#34;&#34;&#34;Samples points along resolved spreading features (e.g. mid-ocean ridges) and calculates spreading rates and 
         lengths of ridge segments at a particular geological time.
          
@@ -527,7 +527,7 @@ class PlateReconstruction(object):
         if use_ptt is True:
             with warnings.catch_warnings():
                 warnings.simplefilter(&#39;ignore&#39;)
-                ridge_data = self.tesselate_mid_ocean_ridges(time)
+                ridge_data = self.tessellate_mid_ocean_ridges(time)
 
             ridge_arcseg = ridge_data[:,3]
             ridge_pt_lat = ridge_data[:,1]
@@ -2442,14 +2442,14 @@ features.</dd>
                 self.static_polygons.add( _FeatureCollection(polygon) )
 
 
-    def tesselate_subduction_zones(self, time, tessellation_threshold_radians=0.001, ignore_warnings=False, return_geodataframe=False, **kwargs):
+    def tessellate_subduction_zones(self, time, tessellation_threshold_radians=0.001, ignore_warnings=False, return_geodataframe=False, **kwargs):
         &#34;&#34;&#34;Samples points along subduction zone trenches and obtains subduction data at a particular
         geological time.
         
         Resolves topologies at `time`, tessellates all resolved subducting features to within &#39;tessellation_threshold_radians&#39;
         radians and obtains the following information for each sampled point along a trench:
     
-        `tesselate_subduction_zones` returns a list of 10 vertically-stacked tuples with the following data per sampled trench point:
+        `tessellate_subduction_zones` returns a list of 10 vertically-stacked tuples with the following data per sampled trench point:
 
         * Col. 0 - longitude of sampled trench point
         * Col. 1 - latitude of sampled trench point
@@ -2600,7 +2600,7 @@ features.</dd>
         if use_ptt:
             with warnings.catch_warnings():
                 warnings.simplefilter(&#39;ignore&#39;)
-                subduction_data = self.tesselate_subduction_zones(time, ignore_warnings=ignore_warnings)
+                subduction_data = self.tessellate_subduction_zones(time, ignore_warnings=ignore_warnings)
 
             trench_arcseg = subduction_data[:,6]
             trench_pt_lat = subduction_data[:,1]
@@ -2698,7 +2698,7 @@ features.</dd>
             )
 
         # Obtain trench data with Plate Tectonic Tools
-        trench_data = self.tesselate_subduction_zones(time, ignore_warnings=ignore_warnings)
+        trench_data = self.tessellate_subduction_zones(time, ignore_warnings=ignore_warnings)
 
         # Extract trench data
         trench_normal_azimuthal_angle = trench_data[:,7]
@@ -2731,7 +2731,7 @@ features.</dd>
         return np.sum(segment_lengths)
 
 
-    def tesselate_mid_ocean_ridges(self, time, tessellation_threshold_radians=0.001, ignore_warnings=False, return_geodataframe=False, **kwargs):
+    def tessellate_mid_ocean_ridges(self, time, tessellation_threshold_radians=0.001, ignore_warnings=False, return_geodataframe=False, **kwargs):
         &#34;&#34;&#34;Samples points along resolved spreading features (e.g. mid-ocean ridges) and calculates spreading rates and 
         lengths of ridge segments at a particular geological time.
          
@@ -2847,7 +2847,7 @@ features.</dd>
         if use_ptt is True:
             with warnings.catch_warnings():
                 warnings.simplefilter(&#39;ignore&#39;)
-                ridge_data = self.tesselate_mid_ocean_ridges(time)
+                ridge_data = self.tessellate_mid_ocean_ridges(time)
 
             ridge_arcseg = ridge_data[:,3]
             ridge_pt_lat = ridge_data[:,1]
@@ -3962,8 +3962,8 @@ of its reconstructed geometries.</dd>
     return reconstructed_features</code></pre>
 </details>
 </dd>
-<dt id="gplately.reconstruction.PlateReconstruction.tesselate_mid_ocean_ridges"><code class="name flex">
-<span>def <span class="ident">tesselate_mid_ocean_ridges</span></span>(<span>self, time, tessellation_threshold_radians=0.001, ignore_warnings=False, return_geodataframe=False, **kwargs)</span>
+<dt id="gplately.reconstruction.PlateReconstruction.tessellate_mid_ocean_ridges"><code class="name flex">
+<span>def <span class="ident">tessellate_mid_ocean_ridges</span></span>(<span>self, time, tessellation_threshold_radians=0.001, ignore_warnings=False, return_geodataframe=False, **kwargs)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Samples points along resolved spreading features (e.g. mid-ocean ridges) and calculates spreading rates and
@@ -4007,7 +4007,7 @@ Each tuple in the list corresponds to a tessellated point and has the following 
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def tesselate_mid_ocean_ridges(self, time, tessellation_threshold_radians=0.001, ignore_warnings=False, return_geodataframe=False, **kwargs):
+<pre><code class="python">def tessellate_mid_ocean_ridges(self, time, tessellation_threshold_radians=0.001, ignore_warnings=False, return_geodataframe=False, **kwargs):
     &#34;&#34;&#34;Samples points along resolved spreading features (e.g. mid-ocean ridges) and calculates spreading rates and 
     lengths of ridge segments at a particular geological time.
      
@@ -4085,15 +4085,15 @@ Each tuple in the list corresponds to a tessellated point and has the following 
         return ridge_data</code></pre>
 </details>
 </dd>
-<dt id="gplately.reconstruction.PlateReconstruction.tesselate_subduction_zones"><code class="name flex">
-<span>def <span class="ident">tesselate_subduction_zones</span></span>(<span>self, time, tessellation_threshold_radians=0.001, ignore_warnings=False, return_geodataframe=False, **kwargs)</span>
+<dt id="gplately.reconstruction.PlateReconstruction.tessellate_subduction_zones"><code class="name flex">
+<span>def <span class="ident">tessellate_subduction_zones</span></span>(<span>self, time, tessellation_threshold_radians=0.001, ignore_warnings=False, return_geodataframe=False, **kwargs)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Samples points along subduction zone trenches and obtains subduction data at a particular
 geological time.</p>
 <p>Resolves topologies at <code>time</code>, tessellates all resolved subducting features to within 'tessellation_threshold_radians'
 radians and obtains the following information for each sampled point along a trench:</p>
-<p><code>tesselate_subduction_zones</code> returns a list of 10 vertically-stacked tuples with the following data per sampled trench point:</p>
+<p><code>tessellate_subduction_zones</code> returns a list of 10 vertically-stacked tuples with the following data per sampled trench point:</p>
 <ul>
 <li>Col. 0 - longitude of sampled trench point</li>
 <li>Col. 1 - latitude of sampled trench point</li>
@@ -4157,14 +4157,14 @@ than -90) - note that this ignores the kinematics of the subducting plate.</p>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def tesselate_subduction_zones(self, time, tessellation_threshold_radians=0.001, ignore_warnings=False, return_geodataframe=False, **kwargs):
+<pre><code class="python">def tessellate_subduction_zones(self, time, tessellation_threshold_radians=0.001, ignore_warnings=False, return_geodataframe=False, **kwargs):
     &#34;&#34;&#34;Samples points along subduction zone trenches and obtains subduction data at a particular
     geological time.
     
     Resolves topologies at `time`, tessellates all resolved subducting features to within &#39;tessellation_threshold_radians&#39;
     radians and obtains the following information for each sampled point along a trench:
 
-    `tesselate_subduction_zones` returns a list of 10 vertically-stacked tuples with the following data per sampled trench point:
+    `tessellate_subduction_zones` returns a list of 10 vertically-stacked tuples with the following data per sampled trench point:
 
     * Col. 0 - longitude of sampled trench point
     * Col. 1 - latitude of sampled trench point
@@ -4380,7 +4380,7 @@ subduction sub-segments that are ignored due to unidentified polarities and/or s
         )
 
     # Obtain trench data with Plate Tectonic Tools
-    trench_data = self.tesselate_subduction_zones(time, ignore_warnings=ignore_warnings)
+    trench_data = self.tessellate_subduction_zones(time, ignore_warnings=ignore_warnings)
 
     # Extract trench data
     trench_normal_azimuthal_angle = trench_data[:,7]
@@ -4486,7 +4486,7 @@ Scales lengths to kilometres using the geocentric radius.</p>
     if use_ptt is True:
         with warnings.catch_warnings():
             warnings.simplefilter(&#39;ignore&#39;)
-            ridge_data = self.tesselate_mid_ocean_ridges(time)
+            ridge_data = self.tessellate_mid_ocean_ridges(time)
 
         ridge_arcseg = ridge_data[:,3]
         ridge_pt_lat = ridge_data[:,1]
@@ -4592,7 +4592,7 @@ polarities and/or subducting plates.</dd>
     if use_ptt:
         with warnings.catch_warnings():
             warnings.simplefilter(&#39;ignore&#39;)
-            subduction_data = self.tesselate_subduction_zones(time, ignore_warnings=ignore_warnings)
+            subduction_data = self.tessellate_subduction_zones(time, ignore_warnings=ignore_warnings)
 
         trench_arcseg = subduction_data[:,6]
         trench_pt_lat = subduction_data[:,1]
@@ -6001,8 +6001,8 @@ rlons, rlats = gpts.reconstruct_to_birth_age(ages)
 <li><code><a title="gplately.reconstruction.PlateReconstruction.create_motion_path" href="#gplately.reconstruction.PlateReconstruction.create_motion_path">create_motion_path</a></code></li>
 <li><code><a title="gplately.reconstruction.PlateReconstruction.get_point_velocities" href="#gplately.reconstruction.PlateReconstruction.get_point_velocities">get_point_velocities</a></code></li>
 <li><code><a title="gplately.reconstruction.PlateReconstruction.reconstruct" href="#gplately.reconstruction.PlateReconstruction.reconstruct">reconstruct</a></code></li>
-<li><code><a title="gplately.reconstruction.PlateReconstruction.tesselate_mid_ocean_ridges" href="#gplately.reconstruction.PlateReconstruction.tesselate_mid_ocean_ridges">tesselate_mid_ocean_ridges</a></code></li>
-<li><code><a title="gplately.reconstruction.PlateReconstruction.tesselate_subduction_zones" href="#gplately.reconstruction.PlateReconstruction.tesselate_subduction_zones">tesselate_subduction_zones</a></code></li>
+<li><code><a title="gplately.reconstruction.PlateReconstruction.tessellate_mid_ocean_ridges" href="#gplately.reconstruction.PlateReconstruction.tessellate_mid_ocean_ridges">tessellate_mid_ocean_ridges</a></code></li>
+<li><code><a title="gplately.reconstruction.PlateReconstruction.tessellate_subduction_zones" href="#gplately.reconstruction.PlateReconstruction.tessellate_subduction_zones">tessellate_subduction_zones</a></code></li>
 <li><code><a title="gplately.reconstruction.PlateReconstruction.total_continental_arc_length" href="#gplately.reconstruction.PlateReconstruction.total_continental_arc_length">total_continental_arc_length</a></code></li>
 <li><code><a title="gplately.reconstruction.PlateReconstruction.total_ridge_length" href="#gplately.reconstruction.PlateReconstruction.total_ridge_length">total_ridge_length</a></code></li>
 <li><code><a title="gplately.reconstruction.PlateReconstruction.total_subduction_zone_length" href="#gplately.reconstruction.PlateReconstruction.total_subduction_zone_length">total_subduction_zone_length</a></code></li>
