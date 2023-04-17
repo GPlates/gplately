@@ -1012,6 +1012,8 @@ class Points(object):
 
     @property
     def size(self):
+        """ Number of points
+        """
         return len(self.lons)
 
 
