@@ -90,14 +90,14 @@ class PlateReconstruction(object):
                 self.static_polygons.add( _FeatureCollection(polygon) )
 
 
-    def tesselate_subduction_zones(self, time, tessellation_threshold_radians=0.001, ignore_warnings=False, return_geodataframe=False, **kwargs):
+    def tessellate_subduction_zones(self, time, tessellation_threshold_radians=0.001, ignore_warnings=False, return_geodataframe=False, **kwargs):
         """Samples points along subduction zone trenches and obtains subduction data at a particular
         geological time.
         
         Resolves topologies at `time`, tessellates all resolved subducting features to within 'tessellation_threshold_radians'
         radians and obtains the following information for each sampled point along a trench:
     
-        `tesselate_subduction_zones` returns a list of 10 vertically-stacked tuples with the following data per sampled trench point:
+        `tessellate_subduction_zones` returns a list of 10 vertically-stacked tuples with the following data per sampled trench point:
 
         * Col. 0 - longitude of sampled trench point
         * Col. 1 - latitude of sampled trench point
@@ -248,7 +248,7 @@ class PlateReconstruction(object):
         if use_ptt:
             with warnings.catch_warnings():
                 warnings.simplefilter('ignore')
-                subduction_data = self.tesselate_subduction_zones(time, ignore_warnings=ignore_warnings)
+                subduction_data = self.tessellate_subduction_zones(time, ignore_warnings=ignore_warnings)
 
             trench_arcseg = subduction_data[:,6]
             trench_pt_lat = subduction_data[:,1]
@@ -346,7 +346,7 @@ class PlateReconstruction(object):
             )
 
         # Obtain trench data with Plate Tectonic Tools
-        trench_data = self.tesselate_subduction_zones(time, ignore_warnings=ignore_warnings)
+        trench_data = self.tessellate_subduction_zones(time, ignore_warnings=ignore_warnings)
 
         # Extract trench data
         trench_normal_azimuthal_angle = trench_data[:,7]
@@ -379,7 +379,7 @@ class PlateReconstruction(object):
         return np.sum(segment_lengths)
 
 
-    def tesselate_mid_ocean_ridges(self, time, tessellation_threshold_radians=0.001, ignore_warnings=False, return_geodataframe=False, **kwargs):
+    def tessellate_mid_ocean_ridges(self, time, tessellation_threshold_radians=0.001, ignore_warnings=False, return_geodataframe=False, **kwargs):
         """Samples points along resolved spreading features (e.g. mid-ocean ridges) and calculates spreading rates and 
         lengths of ridge segments at a particular geological time.
          
@@ -495,7 +495,7 @@ class PlateReconstruction(object):
         if use_ptt is True:
             with warnings.catch_warnings():
                 warnings.simplefilter('ignore')
-                ridge_data = self.tesselate_mid_ocean_ridges(time)
+                ridge_data = self.tessellate_mid_ocean_ridges(time)
 
             ridge_arcseg = ridge_data[:,3]
             ridge_pt_lat = ridge_data[:,1]

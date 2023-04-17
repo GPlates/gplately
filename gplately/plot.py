@@ -122,7 +122,7 @@ def plot_subduction_teeth(
                 continue
             gdf_polarity = geometries[geometries[polarity_column] == p]
             triangles.extend(
-                _tesselate_triangles(
+                _tessellate_triangles(
                     gdf_polarity,
                     width,
                     p,
@@ -133,7 +133,7 @@ def plot_subduction_teeth(
                 )
             )
     else:
-        triangles = _tesselate_triangles(
+        triangles = _tessellate_triangles(
             geometries,
             width,
             polarity,
@@ -154,7 +154,7 @@ def plot_subduction_teeth(
             ax.fill(*triangle.exterior.xy, **kwargs)
 
 
-def _tesselate_triangles(
+def _tessellate_triangles(
     geometries,
     width,
     polarity="left",
@@ -286,7 +286,7 @@ def _calculate_triangle_vertices(
     Triangle bases are set on shapely BaseGeometry trench instances with their apexes 
     pointing in directions of subduction polarity. Triangle dimensions are set by a 
     specified width, spacing and height (either provided by the user or set as default
-    values from _tesselate_triangles). The teeth are returned as shapely polygons.
+    values from _tessellate_triangles). The teeth are returned as shapely polygons.
 
     Parameters
     ----------
@@ -320,29 +320,29 @@ def _calculate_triangle_vertices(
         if not isinstance(geometry, BaseGeometry):
             continue
         length = geometry.length
-        tesselated_x = []
-        tesselated_y = []
+        tessellated_x = []
+        tessellated_y = []
         for distance in np.arange(spacing, length, spacing):
             point = Point(geometry.interpolate(distance))
-            tesselated_x.append(point.x)
-            tesselated_y.append(point.y)
-        tesselated_x = np.array(tesselated_x)
-        tesselated_y = np.array(tesselated_y)
+            tessellated_x.append(point.x)
+            tessellated_y.append(point.y)
+        tessellated_x = np.array(tessellated_x)
+        tessellated_y = np.array(tessellated_y)
 
-        for i in range(len(tesselated_x) - 1):
-            normal_x = tesselated_y[i] - tesselated_y[i + 1]
-            normal_y = tesselated_x[i + 1] - tesselated_x[i]
+        for i in range(len(tessellated_x) - 1):
+            normal_x = tessellated_y[i] - tessellated_y[i + 1]
+            normal_y = tessellated_x[i + 1] - tessellated_x[i]
             normal = np.array((normal_x, normal_y))
             normal_mag = np.sqrt((normal ** 2).sum())
             if normal_mag == 0:
                 continue
             normal *= height / normal_mag
-            midpoint = np.array((tesselated_x[i], tesselated_y[i]))
+            midpoint = np.array((tessellated_x[i], tessellated_y[i]))
             if polarity == "right":
                 normal *= -1.0
             apex = midpoint + normal
 
-            next_midpoint = np.array((tesselated_x[i + 1], tesselated_y[i + 1]))
+            next_midpoint = np.array((tessellated_x[i + 1], tessellated_y[i + 1]))
             line_vector = np.array(next_midpoint - midpoint)
             line_vector_mag = np.sqrt((line_vector ** 2).sum())
             line_vector /= line_vector_mag
@@ -921,7 +921,7 @@ class PlotTopologies(object):
 
 
     # subduction teeth
-    def _tesselate_triangles(self, features, tesselation_radians, triangle_base_length, triangle_aspect=1.0):
+    def _tessellate_triangles(self, features, tesselation_radians, triangle_base_length, triangle_aspect=1.0):
         """Places subduction teeth along subduction boundary line segments within a MultiLineString shapefile. 
 
         Parameters
@@ -1752,12 +1752,12 @@ class PlotTopologies(object):
         import shapely
 
         # add Subduction Teeth
-        subd_xL, subd_yL = self._tesselate_triangles(
+        subd_xL, subd_yL = self._tessellate_triangles(
             self.trench_left,
             tesselation_radians=spacing,
             triangle_base_length=size,
             triangle_aspect=-aspect)
-        subd_xR, subd_yR = self._tesselate_triangles(
+        subd_xR, subd_yR = self._tessellate_triangles(
             self.trench_right,
             tesselation_radians=spacing,
             triangle_base_length=size,
