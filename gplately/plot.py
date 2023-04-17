@@ -122,7 +122,7 @@ def plot_subduction_teeth(
                 continue
             gdf_polarity = geometries[geometries[polarity_column] == p]
             triangles.extend(
-                _tesselate_triangles(
+                _tessellate_triangles(
                     gdf_polarity,
                     width,
                     p,
@@ -133,7 +133,7 @@ def plot_subduction_teeth(
                 )
             )
     else:
-        triangles = _tesselate_triangles(
+        triangles = _tessellate_triangles(
             geometries,
             width,
             polarity,
@@ -154,7 +154,7 @@ def plot_subduction_teeth(
             ax.fill(*triangle.exterior.xy, **kwargs)
 
 
-def _tesselate_triangles(
+def _tessellate_triangles(
     geometries,
     width,
     polarity="left",
@@ -286,7 +286,7 @@ def _calculate_triangle_vertices(
     Triangle bases are set on shapely BaseGeometry trench instances with their apexes 
     pointing in directions of subduction polarity. Triangle dimensions are set by a 
     specified width, spacing and height (either provided by the user or set as default
-    values from _tesselate_triangles). The teeth are returned as shapely polygons.
+    values from _tessellate_triangles). The teeth are returned as shapely polygons.
 
     Parameters
     ----------
@@ -320,29 +320,29 @@ def _calculate_triangle_vertices(
         if not isinstance(geometry, BaseGeometry):
             continue
         length = geometry.length
-        tesselated_x = []
-        tesselated_y = []
+        tessellated_x = []
+        tessellated_y = []
         for distance in np.arange(spacing, length, spacing):
             point = Point(geometry.interpolate(distance))
-            tesselated_x.append(point.x)
-            tesselated_y.append(point.y)
-        tesselated_x = np.array(tesselated_x)
-        tesselated_y = np.array(tesselated_y)
+            tessellated_x.append(point.x)
+            tessellated_y.append(point.y)
+        tessellated_x = np.array(tessellated_x)
+        tessellated_y = np.array(tessellated_y)
 
-        for i in range(len(tesselated_x) - 1):
-            normal_x = tesselated_y[i] - tesselated_y[i + 1]
-            normal_y = tesselated_x[i + 1] - tesselated_x[i]
+        for i in range(len(tessellated_x) - 1):
+            normal_x = tessellated_y[i] - tessellated_y[i + 1]
+            normal_y = tessellated_x[i + 1] - tessellated_x[i]
             normal = np.array((normal_x, normal_y))
             normal_mag = np.sqrt((normal ** 2).sum())
             if normal_mag == 0:
                 continue
             normal *= height / normal_mag
-            midpoint = np.array((tesselated_x[i], tesselated_y[i]))
+            midpoint = np.array((tessellated_x[i], tessellated_y[i]))
             if polarity == "right":
                 normal *= -1.0
             apex = midpoint + normal
 
-            next_midpoint = np.array((tesselated_x[i + 1], tesselated_y[i + 1]))
+            next_midpoint = np.array((tessellated_x[i + 1], tessellated_y[i + 1]))
             line_vector = np.array(next_midpoint - midpoint)
             line_vector_mag = np.sqrt((line_vector ** 2).sum())
             line_vector /= line_vector_mag
@@ -921,7 +921,7 @@ class PlotTopologies(object):
 
 
     # subduction teeth
-    def _tesselate_triangles(self, features, tesselation_radians, triangle_base_length, triangle_aspect=1.0):
+    def _tessellate_triangles(self, features, tesselation_radians, triangle_base_length, triangle_aspect=1.0):
         """Places subduction teeth along subduction boundary line segments within a MultiLineString shapefile. 
 
         Parameters
@@ -1752,12 +1752,12 @@ class PlotTopologies(object):
         import shapely
 
         # add Subduction Teeth
-        subd_xL, subd_yL = self._tesselate_triangles(
+        subd_xL, subd_yL = self._tessellate_triangles(
             self.trench_left,
             tesselation_radians=spacing,
             triangle_base_length=size,
             triangle_aspect=-aspect)
-        subd_xR, subd_yR = self._tesselate_triangles(
+        subd_xR, subd_yR = self._tessellate_triangles(
             self.trench_right,
             tesselation_radians=spacing,
             triangle_base_length=size,
@@ -1775,6 +1775,53 @@ class PlotTopologies(object):
             teeth.append(shp)
 
         return ax.add_geometries(teeth, crs=self.base_projection, color=color, **kwargs)
+
+
+    def get_subduction_direction(self):
+        """Create a geopandas.GeoDataFrame object containing geometries of trench directions.
+
+        Notes
+        -----
+        The `trench_left` and `trench_right` geometries needed to produce the GeoDataFrame are automatically
+        constructed if the optional `time` parameter is passed to the `PlotTopologies` object before calling
+        this function. `time` can be passed either when `PlotTopologies` is first called...
+
+            gplot = gplately.PlotTopologies(..., time=100,...)
+
+        or anytime afterwards, by setting:
+
+            time = 100 #Ma
+            gplot.time = time
+
+        ...after which this function can be re-run. Once the `other` geometries are reconstructed, they are 
+        converted into Shapely features whose coordinates are passed to a geopandas GeoDataFrame.
+
+        Returns
+        -------
+        gdf_left : instance of <geopandas.GeoDataFrame>
+            A pandas.DataFrame that has a column with `trench_left` geometry.
+        gdf_right : instance of <geopandas.GeoDataFrame>
+            A pandas.DataFrame that has a column with `trench_right` geometry.
+
+        Raises 
+        ------
+        ValueError
+            If the optional `time` parameter has not been passed to `PlotTopologies`. This is needed to construct
+            `trench_left` or `trench_right` geometries to the requested `time` and thus populate the GeoDataFrame.
+        """
+        if self._time is None:
+            raise ValueError("No miscellaneous topologies have been resolved. Set `PlotTopologies.time` to construct them.")
+
+        if self.trench_left is None or self.trench_right is None:
+            raise ValueError("No trench_left or trench_right topologies passed to PlotTopologies.")
+
+        trench_left_features  = shapelify_feature_lines(self.trench_left)
+        trench_right_features = shapelify_feature_lines(self.trench_right)
+
+        gdf_left  = gpd.GeoDataFrame({"geometry": trench_left_features},  geometry="geometry")
+        gdf_right = gpd.GeoDataFrame({"geometry": trench_right_features}, geometry="geometry")
+
+        return gdf_left, gdf_right
 
 
     def plot_subduction_teeth(self, ax, spacing=0.07, size=None, aspect=None, color='black', **kwargs):
@@ -1818,6 +1865,8 @@ class PlotTopologies(object):
             A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map 
             with subduction teeth plotted onto the chosen map projection.
         """
+        if self._time is None:
+            raise ValueError("No miscellaneous topologies have been resolved. Set `PlotTopologies.time` to construct them.")
 
         spacing = spacing * EARTH_RADIUS * 1e3
 
@@ -2994,3 +3043,71 @@ class PlotTopologies(object):
         gdf = self.get_unclassified_features()
         return gdf.plot(ax=ax, facecolor='none', edgecolor=color, transform=self.base_projection, **kwargs)
 
+
+    def get_all_topologies(self):
+        """Create a geopandas.GeoDataFrame object containing geometries of reconstructed unclassified feature lines. 
+
+        Notes
+        -----
+        The `topologies` needed to produce the GeoDataFrame are automatically constructed if the optional `time` 
+        parameter is passed to the `PlotTopologies` object before calling this function. `time` can be passed 
+        either when `PlotTopologies` is first called...
+
+            gplot = gplately.PlotTopologies(..., time=100,...)
+
+        or anytime afterwards, by setting:
+
+            time = 100 #Ma
+            gplot.time = time
+
+        ...after which this function can be re-run. Once the `topologies` are reconstructed, they are 
+        converted into Shapely lines whose coordinates are passed to a geopandas GeoDataFrame.
+
+        Returns
+        -------
+        gdf : instance of <geopandas.GeoDataFrame>
+            A pandas.DataFrame that has a column with `topologies` geometry.
+
+        Raises 
+        ------
+        ValueError
+            If the optional `time` parameter has not been passed to `PlotTopologies`. This is needed to construct
+            `topologies` to the requested `time` and thus populate the GeoDataFrame.
+        """
+        if self._time is None:
+            raise ValueError("No topologies have been resolved. Set `PlotTopologies.time` to construct them.")
+
+        if self.topologies is None:
+            raise ValueError("No topologies passed to PlotTopologies.")
+
+        all_topologies = shapelify_features(self.topologies)
+        gdf = gpd.GeoDataFrame({"geometry": all_topologies}, geometry="geometry")
+        return gdf
+
+
+    def plot_all_topologies(self, ax, color='black', **kwargs):
+        """Plot all topologies on a standard map projection.
+
+        Parameters
+        ----------
+        ax : instance of <cartopy.mpl.geoaxes.GeoAxes> or <cartopy.mpl.geoaxes.GeoAxesSubplot>
+            A subclass of `matplotlib.axes.Axes` which represents a map Projection.
+            The map should be set at a particular Cartopy projection.
+
+        color : str, default=’black’
+            The colour of the trench lines. By default, it is set to black.
+
+        **kwargs : 
+            Keyword arguments for parameters such as `alpha`, etc. 
+            for plotting trench geometries.
+            See `Matplotlib` keyword arguments 
+            [here](https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html).
+
+        Returns
+        -------
+        ax : instance of <geopandas.GeoDataFrame.plot>
+            A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map 
+            with unclassified features plotted onto the chosen map projection.
+        """
+        gdf = self.get_all_topologies()
+        return gdf.plot(ax=ax, facecolor='none', edgecolor=color, transform=self.base_projection, **kwargs)

@@ -13,8 +13,8 @@ object with the Müller et al. (2019) plate reconstruction model. The following 
 object are tested:
 
     - __init__
-    - tesselate_subduction_zones
-    - tesselate_mid_ocean_ridges
+    - tessellate_subduction_zones
+    - tessellate_mid_ocean_ridges
 
     Using pyGPlates and Plate Tectonic Tools:
     - total_subduction_zone_length
@@ -40,7 +40,7 @@ Contents are:
 """
 @pytest.mark.parametrize("time", reconstruction_times)
 def test_tessellate_trenches(time, model):
-    subduction_data = model.tesselate_subduction_zones(time, ignore_warnings=True)
+    subduction_data = model.tessellate_subduction_zones(time, ignore_warnings=True)
     # CONDITIONS
     assert subduction_data.any(), "There is no trench data inside Muller et al. (2019) at {} Ma.".format(time)
     assert (np.abs(subduction_data[:,0]) <= 180).all(), "Some trench lons exceed a magnitude of 180 degrees in Muller et al. (2019) at {} Ma.".format(time)
@@ -50,7 +50,7 @@ def test_tessellate_trenches(time, model):
 
 @pytest.mark.parametrize("time", reconstruction_times)
 def test_tessellate_ridges(time, model):
-    ridge_data = model.tesselate_mid_ocean_ridges(time, ignore_warnings=False)
+    ridge_data = model.tessellate_mid_ocean_ridges(time, ignore_warnings=False)
     assert ridge_data.any(), "There is no ridge data inside Müller et al. (2019) at {} Ma.".format(time)
     assert (np.abs(ridge_data[:,0]) <= 180).all(), "Some ridge lons exceed a magnitude of 180 degrees in Muller et al. (2019) at {} Ma.".format(time)
     assert (np.abs(ridge_data[:,1]) <= 90).all(), "Some ridge lats exceed a magnitude of 90 degrees in Muller et al. (2019) at {} Ma.".format(time)
