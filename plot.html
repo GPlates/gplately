@@ -1813,6 +1813,53 @@ class PlotTopologies(object):
         return ax.add_geometries(teeth, crs=self.base_projection, color=color, **kwargs)
 
 
+    def get_subduction_direction(self):
+        &#34;&#34;&#34;Create a geopandas.GeoDataFrame object containing geometries of trench directions.
+
+        Notes
+        -----
+        The `trench_left` and `trench_right` geometries needed to produce the GeoDataFrame are automatically
+        constructed if the optional `time` parameter is passed to the `PlotTopologies` object before calling
+        this function. `time` can be passed either when `PlotTopologies` is first called...
+
+            gplot = gplately.PlotTopologies(..., time=100,...)
+
+        or anytime afterwards, by setting:
+
+            time = 100 #Ma
+            gplot.time = time
+
+        ...after which this function can be re-run. Once the `other` geometries are reconstructed, they are 
+        converted into Shapely features whose coordinates are passed to a geopandas GeoDataFrame.
+
+        Returns
+        -------
+        gdf_left : instance of &lt;geopandas.GeoDataFrame&gt;
+            A pandas.DataFrame that has a column with `trench_left` geometry.
+        gdf_right : instance of &lt;geopandas.GeoDataFrame&gt;
+            A pandas.DataFrame that has a column with `trench_right` geometry.
+
+        Raises 
+        ------
+        ValueError
+            If the optional `time` parameter has not been passed to `PlotTopologies`. This is needed to construct
+            `trench_left` or `trench_right` geometries to the requested `time` and thus populate the GeoDataFrame.
+        &#34;&#34;&#34;
+        if self._time is None:
+            raise ValueError(&#34;No miscellaneous topologies have been resolved. Set `PlotTopologies.time` to construct them.&#34;)
+
+        if self.trench_left is None or self.trench_right is None:
+            raise ValueError(&#34;No trench_left or trench_right topologies passed to PlotTopologies.&#34;)
+
+        trench_left_features  = shapelify_feature_lines(self.trench_left)
+        trench_right_features = shapelify_feature_lines(self.trench_right)
+
+        gdf_left  = gpd.GeoDataFrame({&#34;geometry&#34;: trench_left_features},  geometry=&#34;geometry&#34;)
+        gdf_right = gpd.GeoDataFrame({&#34;geometry&#34;: trench_right_features}, geometry=&#34;geometry&#34;)
+
+        return gdf_left, gdf_right
+
+
     def plot_subduction_teeth(self, ax, spacing=0.07, size=None, aspect=None, color=&#39;black&#39;, **kwargs):
         &#34;&#34;&#34;Plot subduction teeth onto a standard map Projection.  
 
@@ -1854,6 +1901,8 @@ class PlotTopologies(object):
             A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map 
             with subduction teeth plotted onto the chosen map projection.
         &#34;&#34;&#34;
+        if self._time is None:
+            raise ValueError(&#34;No miscellaneous topologies have been resolved. Set `PlotTopologies.time` to construct them.&#34;)
 
         spacing = spacing * EARTH_RADIUS * 1e3
 
@@ -3028,6 +3077,75 @@ class PlotTopologies(object):
             with unclassified features plotted onto the chosen map projection.
         &#34;&#34;&#34;
         gdf = self.get_unclassified_features()
+        return gdf.plot(ax=ax, facecolor=&#39;none&#39;, edgecolor=color, transform=self.base_projection, **kwargs)
+
+
+    def get_all_topologies(self):
+        &#34;&#34;&#34;Create a geopandas.GeoDataFrame object containing geometries of reconstructed unclassified feature lines. 
+
+        Notes
+        -----
+        The `topologies` needed to produce the GeoDataFrame are automatically constructed if the optional `time` 
+        parameter is passed to the `PlotTopologies` object before calling this function. `time` can be passed 
+        either when `PlotTopologies` is first called...
+
+            gplot = gplately.PlotTopologies(..., time=100,...)
+
+        or anytime afterwards, by setting:
+
+            time = 100 #Ma
+            gplot.time = time
+
+        ...after which this function can be re-run. Once the `topologies` are reconstructed, they are 
+        converted into Shapely lines whose coordinates are passed to a geopandas GeoDataFrame.
+
+        Returns
+        -------
+        gdf : instance of &lt;geopandas.GeoDataFrame&gt;
+            A pandas.DataFrame that has a column with `topologies` geometry.
+
+        Raises 
+        ------
+        ValueError
+            If the optional `time` parameter has not been passed to `PlotTopologies`. This is needed to construct
+            `topologies` to the requested `time` and thus populate the GeoDataFrame.
+        &#34;&#34;&#34;
+        if self._time is None:
+            raise ValueError(&#34;No topologies have been resolved. Set `PlotTopologies.time` to construct them.&#34;)
+
+        if self.topologies is None:
+            raise ValueError(&#34;No topologies passed to PlotTopologies.&#34;)
+
+        all_topologies = shapelify_features(self.topologies)
+        gdf = gpd.GeoDataFrame({&#34;geometry&#34;: all_topologies}, geometry=&#34;geometry&#34;)
+        return gdf
+
+
+    def plot_all_topologies(self, ax, color=&#39;black&#39;, **kwargs):
+        &#34;&#34;&#34;Plot all topologies on a standard map projection.
+
+        Parameters
+        ----------
+        ax : instance of &lt;cartopy.mpl.geoaxes.GeoAxes&gt; or &lt;cartopy.mpl.geoaxes.GeoAxesSubplot&gt;
+            A subclass of `matplotlib.axes.Axes` which represents a map Projection.
+            The map should be set at a particular Cartopy projection.
+
+        color : str, default=’black’
+            The colour of the trench lines. By default, it is set to black.
+
+        **kwargs : 
+            Keyword arguments for parameters such as `alpha`, etc. 
+            for plotting trench geometries.
+            See `Matplotlib` keyword arguments 
+            [here](https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html).
+
+        Returns
+        -------
+        ax : instance of &lt;geopandas.GeoDataFrame.plot&gt;
+            A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map 
+            with unclassified features plotted onto the chosen map projection.
+        &#34;&#34;&#34;
+        gdf = self.get_all_topologies()
         return gdf.plot(ax=ax, facecolor=&#39;none&#39;, edgecolor=color, transform=self.base_projection, **kwargs)</code></pre>
 </details>
 </section>
@@ -4963,6 +5081,53 @@ boundaries and passive continental boundaries.</dd>
         return ax.add_geometries(teeth, crs=self.base_projection, color=color, **kwargs)
 
 
+    def get_subduction_direction(self):
+        &#34;&#34;&#34;Create a geopandas.GeoDataFrame object containing geometries of trench directions.
+
+        Notes
+        -----
+        The `trench_left` and `trench_right` geometries needed to produce the GeoDataFrame are automatically
+        constructed if the optional `time` parameter is passed to the `PlotTopologies` object before calling
+        this function. `time` can be passed either when `PlotTopologies` is first called...
+
+            gplot = gplately.PlotTopologies(..., time=100,...)
+
+        or anytime afterwards, by setting:
+
+            time = 100 #Ma
+            gplot.time = time
+
+        ...after which this function can be re-run. Once the `other` geometries are reconstructed, they are 
+        converted into Shapely features whose coordinates are passed to a geopandas GeoDataFrame.
+
+        Returns
+        -------
+        gdf_left : instance of &lt;geopandas.GeoDataFrame&gt;
+            A pandas.DataFrame that has a column with `trench_left` geometry.
+        gdf_right : instance of &lt;geopandas.GeoDataFrame&gt;
+            A pandas.DataFrame that has a column with `trench_right` geometry.
+
+        Raises 
+        ------
+        ValueError
+            If the optional `time` parameter has not been passed to `PlotTopologies`. This is needed to construct
+            `trench_left` or `trench_right` geometries to the requested `time` and thus populate the GeoDataFrame.
+        &#34;&#34;&#34;
+        if self._time is None:
+            raise ValueError(&#34;No miscellaneous topologies have been resolved. Set `PlotTopologies.time` to construct them.&#34;)
+
+        if self.trench_left is None or self.trench_right is None:
+            raise ValueError(&#34;No trench_left or trench_right topologies passed to PlotTopologies.&#34;)
+
+        trench_left_features  = shapelify_feature_lines(self.trench_left)
+        trench_right_features = shapelify_feature_lines(self.trench_right)
+
+        gdf_left  = gpd.GeoDataFrame({&#34;geometry&#34;: trench_left_features},  geometry=&#34;geometry&#34;)
+        gdf_right = gpd.GeoDataFrame({&#34;geometry&#34;: trench_right_features}, geometry=&#34;geometry&#34;)
+
+        return gdf_left, gdf_right
+
+
     def plot_subduction_teeth(self, ax, spacing=0.07, size=None, aspect=None, color=&#39;black&#39;, **kwargs):
         &#34;&#34;&#34;Plot subduction teeth onto a standard map Projection.  
 
@@ -5004,6 +5169,8 @@ boundaries and passive continental boundaries.</dd>
             A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map 
             with subduction teeth plotted onto the chosen map projection.
         &#34;&#34;&#34;
+        if self._time is None:
+            raise ValueError(&#34;No miscellaneous topologies have been resolved. Set `PlotTopologies.time` to construct them.&#34;)
 
         spacing = spacing * EARTH_RADIUS * 1e3
 
@@ -6178,6 +6345,75 @@ boundaries and passive continental boundaries.</dd>
             with unclassified features plotted onto the chosen map projection.
         &#34;&#34;&#34;
         gdf = self.get_unclassified_features()
+        return gdf.plot(ax=ax, facecolor=&#39;none&#39;, edgecolor=color, transform=self.base_projection, **kwargs)
+
+
+    def get_all_topologies(self):
+        &#34;&#34;&#34;Create a geopandas.GeoDataFrame object containing geometries of reconstructed unclassified feature lines. 
+
+        Notes
+        -----
+        The `topologies` needed to produce the GeoDataFrame are automatically constructed if the optional `time` 
+        parameter is passed to the `PlotTopologies` object before calling this function. `time` can be passed 
+        either when `PlotTopologies` is first called...
+
+            gplot = gplately.PlotTopologies(..., time=100,...)
+
+        or anytime afterwards, by setting:
+
+            time = 100 #Ma
+            gplot.time = time
+
+        ...after which this function can be re-run. Once the `topologies` are reconstructed, they are 
+        converted into Shapely lines whose coordinates are passed to a geopandas GeoDataFrame.
+
+        Returns
+        -------
+        gdf : instance of &lt;geopandas.GeoDataFrame&gt;
+            A pandas.DataFrame that has a column with `topologies` geometry.
+
+        Raises 
+        ------
+        ValueError
+            If the optional `time` parameter has not been passed to `PlotTopologies`. This is needed to construct
+            `topologies` to the requested `time` and thus populate the GeoDataFrame.
+        &#34;&#34;&#34;
+        if self._time is None:
+            raise ValueError(&#34;No topologies have been resolved. Set `PlotTopologies.time` to construct them.&#34;)
+
+        if self.topologies is None:
+            raise ValueError(&#34;No topologies passed to PlotTopologies.&#34;)
+
+        all_topologies = shapelify_features(self.topologies)
+        gdf = gpd.GeoDataFrame({&#34;geometry&#34;: all_topologies}, geometry=&#34;geometry&#34;)
+        return gdf
+
+
+    def plot_all_topologies(self, ax, color=&#39;black&#39;, **kwargs):
+        &#34;&#34;&#34;Plot all topologies on a standard map projection.
+
+        Parameters
+        ----------
+        ax : instance of &lt;cartopy.mpl.geoaxes.GeoAxes&gt; or &lt;cartopy.mpl.geoaxes.GeoAxesSubplot&gt;
+            A subclass of `matplotlib.axes.Axes` which represents a map Projection.
+            The map should be set at a particular Cartopy projection.
+
+        color : str, default=’black’
+            The colour of the trench lines. By default, it is set to black.
+
+        **kwargs : 
+            Keyword arguments for parameters such as `alpha`, etc. 
+            for plotting trench geometries.
+            See `Matplotlib` keyword arguments 
+            [here](https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html).
+
+        Returns
+        -------
+        ax : instance of &lt;geopandas.GeoDataFrame.plot&gt;
+            A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map 
+            with unclassified features plotted onto the chosen map projection.
+        &#34;&#34;&#34;
+        gdf = self.get_all_topologies()
         return gdf.plot(ax=ax, facecolor=&#39;none&#39;, edgecolor=color, transform=self.base_projection, **kwargs)</code></pre>
 </details>
 <h3>Instance variables</h3>
@@ -6211,6 +6447,77 @@ def time(self):
 </dl>
 <h3>Methods</h3>
 <dl>
+<dt id="gplately.plot.PlotTopologies.get_all_topologies"><code class="name flex">
+<span>def <span class="ident">get_all_topologies</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Create a geopandas.GeoDataFrame object containing geometries of reconstructed unclassified feature lines. </p>
+<h2 id="notes">Notes</h2>
+<p>The <code>topologies</code> needed to produce the GeoDataFrame are automatically constructed if the optional <code>time</code>
+parameter is passed to the <code><a title="gplately.plot.PlotTopologies" href="#gplately.plot.PlotTopologies">PlotTopologies</a></code> object before calling this function. <code>time</code> can be passed
+either when <code><a title="gplately.plot.PlotTopologies" href="#gplately.plot.PlotTopologies">PlotTopologies</a></code> is first called&hellip;</p>
+<pre><code>gplot = gplately.PlotTopologies(..., time=100,...)
+</code></pre>
+<p>or anytime afterwards, by setting:</p>
+<pre><code>time = 100 #Ma
+gplot.time = time
+</code></pre>
+<p>&hellip;after which this function can be re-run. Once the <code>topologies</code> are reconstructed, they are
+converted into Shapely lines whose coordinates are passed to a geopandas GeoDataFrame.</p>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><strong><code>gdf</code></strong> :&ensp;<code>instance</code> of <code>&lt;geopandas.GeoDataFrame&gt;</code></dt>
+<dd>A pandas.DataFrame that has a column with <code>topologies</code> geometry.</dd>
+</dl>
+<h2 id="raises">Raises</h2>
+<p>ValueError
+If the optional <code>time</code> parameter has not been passed to <code><a title="gplately.plot.PlotTopologies" href="#gplately.plot.PlotTopologies">PlotTopologies</a></code>. This is needed to construct
+<code>topologies</code> to the requested <code>time</code> and thus populate the GeoDataFrame.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_all_topologies(self):
+    &#34;&#34;&#34;Create a geopandas.GeoDataFrame object containing geometries of reconstructed unclassified feature lines. 
+
+    Notes
+    -----
+    The `topologies` needed to produce the GeoDataFrame are automatically constructed if the optional `time` 
+    parameter is passed to the `PlotTopologies` object before calling this function. `time` can be passed 
+    either when `PlotTopologies` is first called...
+
+        gplot = gplately.PlotTopologies(..., time=100,...)
+
+    or anytime afterwards, by setting:
+
+        time = 100 #Ma
+        gplot.time = time
+
+    ...after which this function can be re-run. Once the `topologies` are reconstructed, they are 
+    converted into Shapely lines whose coordinates are passed to a geopandas GeoDataFrame.
+
+    Returns
+    -------
+    gdf : instance of &lt;geopandas.GeoDataFrame&gt;
+        A pandas.DataFrame that has a column with `topologies` geometry.
+
+    Raises 
+    ------
+    ValueError
+        If the optional `time` parameter has not been passed to `PlotTopologies`. This is needed to construct
+        `topologies` to the requested `time` and thus populate the GeoDataFrame.
+    &#34;&#34;&#34;
+    if self._time is None:
+        raise ValueError(&#34;No topologies have been resolved. Set `PlotTopologies.time` to construct them.&#34;)
+
+    if self.topologies is None:
+        raise ValueError(&#34;No topologies passed to PlotTopologies.&#34;)
+
+    all_topologies = shapelify_features(self.topologies)
+    gdf = gpd.GeoDataFrame({&#34;geometry&#34;: all_topologies}, geometry=&#34;geometry&#34;)
+    return gdf</code></pre>
+</details>
+</dd>
 <dt id="gplately.plot.PlotTopologies.get_coastlines"><code class="name flex">
 <span>def <span class="ident">get_coastlines</span></span>(<span>self)</span>
 </code></dt>
@@ -7402,6 +7709,85 @@ If the optional <code>time</code> parameter has not been passed to <code><a titl
     return gdf</code></pre>
 </details>
 </dd>
+<dt id="gplately.plot.PlotTopologies.get_subduction_direction"><code class="name flex">
+<span>def <span class="ident">get_subduction_direction</span></span>(<span>self)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Create a geopandas.GeoDataFrame object containing geometries of trench directions.</p>
+<h2 id="notes">Notes</h2>
+<p>The <code>trench_left</code> and <code>trench_right</code> geometries needed to produce the GeoDataFrame are automatically
+constructed if the optional <code>time</code> parameter is passed to the <code><a title="gplately.plot.PlotTopologies" href="#gplately.plot.PlotTopologies">PlotTopologies</a></code> object before calling
+this function. <code>time</code> can be passed either when <code><a title="gplately.plot.PlotTopologies" href="#gplately.plot.PlotTopologies">PlotTopologies</a></code> is first called&hellip;</p>
+<pre><code>gplot = gplately.PlotTopologies(..., time=100,...)
+</code></pre>
+<p>or anytime afterwards, by setting:</p>
+<pre><code>time = 100 #Ma
+gplot.time = time
+</code></pre>
+<p>&hellip;after which this function can be re-run. Once the <code>other</code> geometries are reconstructed, they are
+converted into Shapely features whose coordinates are passed to a geopandas GeoDataFrame.</p>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><strong><code>gdf_left</code></strong> :&ensp;<code>instance</code> of <code>&lt;geopandas.GeoDataFrame&gt;</code></dt>
+<dd>A pandas.DataFrame that has a column with <code>trench_left</code> geometry.</dd>
+<dt><strong><code>gdf_right</code></strong> :&ensp;<code>instance</code> of <code>&lt;geopandas.GeoDataFrame&gt;</code></dt>
+<dd>A pandas.DataFrame that has a column with <code>trench_right</code> geometry.</dd>
+</dl>
+<h2 id="raises">Raises</h2>
+<p>ValueError
+If the optional <code>time</code> parameter has not been passed to <code><a title="gplately.plot.PlotTopologies" href="#gplately.plot.PlotTopologies">PlotTopologies</a></code>. This is needed to construct
+<code>trench_left</code> or <code>trench_right</code> geometries to the requested <code>time</code> and thus populate the GeoDataFrame.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_subduction_direction(self):
+    &#34;&#34;&#34;Create a geopandas.GeoDataFrame object containing geometries of trench directions.
+
+    Notes
+    -----
+    The `trench_left` and `trench_right` geometries needed to produce the GeoDataFrame are automatically
+    constructed if the optional `time` parameter is passed to the `PlotTopologies` object before calling
+    this function. `time` can be passed either when `PlotTopologies` is first called...
+
+        gplot = gplately.PlotTopologies(..., time=100,...)
+
+    or anytime afterwards, by setting:
+
+        time = 100 #Ma
+        gplot.time = time
+
+    ...after which this function can be re-run. Once the `other` geometries are reconstructed, they are 
+    converted into Shapely features whose coordinates are passed to a geopandas GeoDataFrame.
+
+    Returns
+    -------
+    gdf_left : instance of &lt;geopandas.GeoDataFrame&gt;
+        A pandas.DataFrame that has a column with `trench_left` geometry.
+    gdf_right : instance of &lt;geopandas.GeoDataFrame&gt;
+        A pandas.DataFrame that has a column with `trench_right` geometry.
+
+    Raises 
+    ------
+    ValueError
+        If the optional `time` parameter has not been passed to `PlotTopologies`. This is needed to construct
+        `trench_left` or `trench_right` geometries to the requested `time` and thus populate the GeoDataFrame.
+    &#34;&#34;&#34;
+    if self._time is None:
+        raise ValueError(&#34;No miscellaneous topologies have been resolved. Set `PlotTopologies.time` to construct them.&#34;)
+
+    if self.trench_left is None or self.trench_right is None:
+        raise ValueError(&#34;No trench_left or trench_right topologies passed to PlotTopologies.&#34;)
+
+    trench_left_features  = shapelify_feature_lines(self.trench_left)
+    trench_right_features = shapelify_feature_lines(self.trench_right)
+
+    gdf_left  = gpd.GeoDataFrame({&#34;geometry&#34;: trench_left_features},  geometry=&#34;geometry&#34;)
+    gdf_right = gpd.GeoDataFrame({&#34;geometry&#34;: trench_right_features}, geometry=&#34;geometry&#34;)
+
+    return gdf_left, gdf_right</code></pre>
+</details>
+</dd>
 <dt id="gplately.plot.PlotTopologies.get_sutures"><code class="name flex">
 <span>def <span class="ident">get_sutures</span></span>(<span>self)</span>
 </code></dt>
@@ -7826,6 +8212,62 @@ If the optional <code>time</code> parameter has not been passed to <code><a titl
     unclassified_feature_lines = shapelify_feature_lines(self.unclassified_features)
     gdf = gpd.GeoDataFrame({&#34;geometry&#34;: unclassified_feature_lines}, geometry=&#34;geometry&#34;)
     return gdf</code></pre>
+</details>
+</dd>
+<dt id="gplately.plot.PlotTopologies.plot_all_topologies"><code class="name flex">
+<span>def <span class="ident">plot_all_topologies</span></span>(<span>self, ax, color='black', **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Plot all topologies on a standard map projection.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>ax</code></strong> :&ensp;<code>instance</code> of <code>&lt;cartopy.mpl.geoaxes.GeoAxes&gt;</code> or <code>&lt;cartopy.mpl.geoaxes.GeoAxesSubplot&gt;</code></dt>
+<dd>A subclass of <code>matplotlib.axes.Axes</code> which represents a map Projection.
+The map should be set at a particular Cartopy projection.</dd>
+<dt><strong><code>color</code></strong> :&ensp;<code>str</code>, default=<code>’black’</code></dt>
+<dd>The colour of the trench lines. By default, it is set to black.</dd>
+<dt><strong><code>**kwargs</code></strong></dt>
+<dd>Keyword arguments for parameters such as <code>alpha</code>, etc.
+for plotting trench geometries.
+See <code>Matplotlib</code> keyword arguments
+<a href="https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html">here</a>.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><strong><code>ax</code></strong> :&ensp;<code>instance</code> of <code>&lt;geopandas.GeoDataFrame.plot&gt;</code></dt>
+<dd>A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map
+with unclassified features plotted onto the chosen map projection.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def plot_all_topologies(self, ax, color=&#39;black&#39;, **kwargs):
+    &#34;&#34;&#34;Plot all topologies on a standard map projection.
+
+    Parameters
+    ----------
+    ax : instance of &lt;cartopy.mpl.geoaxes.GeoAxes&gt; or &lt;cartopy.mpl.geoaxes.GeoAxesSubplot&gt;
+        A subclass of `matplotlib.axes.Axes` which represents a map Projection.
+        The map should be set at a particular Cartopy projection.
+
+    color : str, default=’black’
+        The colour of the trench lines. By default, it is set to black.
+
+    **kwargs : 
+        Keyword arguments for parameters such as `alpha`, etc. 
+        for plotting trench geometries.
+        See `Matplotlib` keyword arguments 
+        [here](https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html).
+
+    Returns
+    -------
+    ax : instance of &lt;geopandas.GeoDataFrame.plot&gt;
+        A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map 
+        with unclassified features plotted onto the chosen map projection.
+    &#34;&#34;&#34;
+    gdf = self.get_all_topologies()
+    return gdf.plot(ax=ax, facecolor=&#39;none&#39;, edgecolor=color, transform=self.base_projection, **kwargs)</code></pre>
 </details>
 </dd>
 <dt id="gplately.plot.PlotTopologies.plot_coastlines"><code class="name flex">
@@ -9325,6 +9767,8 @@ with subduction teeth plotted onto the chosen map projection.</dd>
         A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map 
         with subduction teeth plotted onto the chosen map projection.
     &#34;&#34;&#34;
+    if self._time is None:
+        raise ValueError(&#34;No miscellaneous topologies have been resolved. Set `PlotTopologies.time` to construct them.&#34;)
 
     spacing = spacing * EARTH_RADIUS * 1e3
 
@@ -10009,6 +10453,7 @@ whenever it or the anchor plate is updated.</p>
 <h4><code><a title="gplately.plot.PlotTopologies" href="#gplately.plot.PlotTopologies">PlotTopologies</a></code></h4>
 <ul class="">
 <li><code><a title="gplately.plot.PlotTopologies.anchor_plate_id" href="#gplately.plot.PlotTopologies.anchor_plate_id">anchor_plate_id</a></code></li>
+<li><code><a title="gplately.plot.PlotTopologies.get_all_topologies" href="#gplately.plot.PlotTopologies.get_all_topologies">get_all_topologies</a></code></li>
 <li><code><a title="gplately.plot.PlotTopologies.get_coastlines" href="#gplately.plot.PlotTopologies.get_coastlines">get_coastlines</a></code></li>
 <li><code><a title="gplately.plot.PlotTopologies.get_continent_ocean_boundaries" href="#gplately.plot.PlotTopologies.get_continent_ocean_boundaries">get_continent_ocean_boundaries</a></code></li>
 <li><code><a title="gplately.plot.PlotTopologies.get_continental_crusts" href="#gplately.plot.PlotTopologies.get_continental_crusts">get_continental_crusts</a></code></li>
@@ -10026,12 +10471,14 @@ whenever it or the anchor plate is updated.</p>
 <li><code><a title="gplately.plot.PlotTopologies.get_ridges" href="#gplately.plot.PlotTopologies.get_ridges">get_ridges</a></code></li>
 <li><code><a title="gplately.plot.PlotTopologies.get_ridges_and_transforms" href="#gplately.plot.PlotTopologies.get_ridges_and_transforms">get_ridges_and_transforms</a></code></li>
 <li><code><a title="gplately.plot.PlotTopologies.get_slab_edges" href="#gplately.plot.PlotTopologies.get_slab_edges">get_slab_edges</a></code></li>
+<li><code><a title="gplately.plot.PlotTopologies.get_subduction_direction" href="#gplately.plot.PlotTopologies.get_subduction_direction">get_subduction_direction</a></code></li>
 <li><code><a title="gplately.plot.PlotTopologies.get_sutures" href="#gplately.plot.PlotTopologies.get_sutures">get_sutures</a></code></li>
 <li><code><a title="gplately.plot.PlotTopologies.get_terrane_boundaries" href="#gplately.plot.PlotTopologies.get_terrane_boundaries">get_terrane_boundaries</a></code></li>
 <li><code><a title="gplately.plot.PlotTopologies.get_transforms" href="#gplately.plot.PlotTopologies.get_transforms">get_transforms</a></code></li>
 <li><code><a title="gplately.plot.PlotTopologies.get_transitional_crusts" href="#gplately.plot.PlotTopologies.get_transitional_crusts">get_transitional_crusts</a></code></li>
 <li><code><a title="gplately.plot.PlotTopologies.get_trenches" href="#gplately.plot.PlotTopologies.get_trenches">get_trenches</a></code></li>
 <li><code><a title="gplately.plot.PlotTopologies.get_unclassified_features" href="#gplately.plot.PlotTopologies.get_unclassified_features">get_unclassified_features</a></code></li>
+<li><code><a title="gplately.plot.PlotTopologies.plot_all_topologies" href="#gplately.plot.PlotTopologies.plot_all_topologies">plot_all_topologies</a></code></li>
 <li><code><a title="gplately.plot.PlotTopologies.plot_coastlines" href="#gplately.plot.PlotTopologies.plot_coastlines">plot_coastlines</a></code></li>
 <li><code><a title="gplately.plot.PlotTopologies.plot_continent_ocean_boundaries" href="#gplately.plot.PlotTopologies.plot_continent_ocean_boundaries">plot_continent_ocean_boundaries</a></code></li>
 <li><code><a title="gplately.plot.PlotTopologies.plot_continental_crusts" href="#gplately.plot.PlotTopologies.plot_continental_crusts">plot_continental_crusts</a></code></li>
