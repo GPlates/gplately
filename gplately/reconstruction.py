@@ -90,7 +90,7 @@ class PlateReconstruction(object):
                 self.static_polygons.add( _FeatureCollection(polygon) )
 
 
-    def tesselate_subduction_zones(self, time, tessellation_threshold_radians=0.001, ignore_warnings=False, **kwargs):
+    def tesselate_subduction_zones(self, time, tessellation_threshold_radians=0.001, ignore_warnings=False, return_geodataframe=False, **kwargs):
         """Samples points along subduction zone trenches and obtains subduction data at a particular
         geological time.
         
@@ -181,7 +181,31 @@ class PlateReconstruction(object):
                 **kwargs)
 
         subduction_data = np.vstack(subduction_data)
-        return subduction_data
+
+        if return_geodataframe:
+            from shapely import geometry
+            import geopandas as gpd
+            coords = [geometry.Point(lon,lat) for lon,lat in zip(subduction_data[:,0], subduction_data[:,1])]
+            d = {"geometry": coords}
+
+            labels = ['convergence velocity (cm/yr)',
+                      'convergence obliquity angle (degrees)',
+                      'trench velocity (cm/yr)',
+                      'trench obliquity angle (degrees)',
+                      'length (degrees)',
+                      'trench normal angle (degrees)',
+                      'subducting plate ID',
+                      'overriding plate ID']
+
+            for i, label in enumerate(labels):
+                index = 2+i
+                d[label] = subduction_data[:,index]
+
+            gdf = gpd.GeoDataFrame(d, geometry="geometry")
+            return gdf
+
+        else:
+            return subduction_data
 
 
     def total_subduction_zone_length(self, time, use_ptt=False, ignore_warnings=False):
@@ -355,7 +379,7 @@ class PlateReconstruction(object):
         return np.sum(segment_lengths)
 
 
-    def tesselate_mid_ocean_ridges(self, time, tessellation_threshold_radians=0.001, ignore_warnings=False, **kwargs):
+    def tesselate_mid_ocean_ridges(self, time, tessellation_threshold_radians=0.001, ignore_warnings=False, return_geodataframe=False, **kwargs):
         """Samples points along resolved spreading features (e.g. mid-ocean ridges) and calculates spreading rates and 
         lengths of ridge segments at a particular geological time.
          
@@ -417,7 +441,20 @@ class PlateReconstruction(object):
                 **kwargs)
 
         ridge_data = np.vstack(ridge_data)
-        return ridge_data
+
+        if return_geodataframe:
+            from shapely import geometry
+            import geopandas as gpd
+
+            points = [geometry.Point(lon,lat) for lon,lat in zip(ridge_data[:,0], ridge_data[:,1])]
+            gdf = gpd.GeoDataFrame({"geometry": points,
+                                    "velocity (cm/yr)": ridge_data[:,2],
+                                    "length (degrees)": ridge_data[:,3]},
+                                    geometry="geometry")
+            return gdf
+
+        else:
+            return ridge_data
 
 
     def total_ridge_length(self, time, use_ptt=False, ignore_warnings=False):
@@ -1100,6 +1137,9 @@ class Points(object):
         attributes['geometry'] = points
 
         return gpd.GeoDataFrame(attributes, geometry='geometry')
+
+    def get_geodataframe(self):
+        return self.get_geopandas_dataframe()
 
     def reconstruct(self, time, anchor_plate_id=0, return_array=False, **kwargs):
         """Reconstructs regular geological features, motion paths or flowlines to a specific geological time and extracts 
