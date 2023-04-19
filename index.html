@@ -42,31 +42,307 @@ age_grid = gdownload.get_age_grid(time=100)
 # Download the ETOPO1 geotiff raster
 etopo = gdownload.get_raster(&quot;ETOPO1_tif&quot;)
 </code></pre>
+<p><code>DataServer</code> supports the following plate reconstruction file collections:</p>
+<hr>
+<table>
+<thead>
+<tr>
+<th style="text-align: center;"><strong>Model name string Identifier</strong></th>
+<th style="text-align: center;"><strong>Rot. files</strong></th>
+<th style="text-align: center;"><strong>Topology features</strong></th>
+<th style="text-align: center;"><strong>Static polygons</strong></th>
+<th style="text-align: center;"><strong>Coast-lines</strong></th>
+<th style="text-align: center;"><strong>Cont-inents</strong></th>
+<th style="text-align: center;"><strong>COB-</strong></th>
+<th style="text-align: center;"><strong>Age grids</strong></th>
+<th style="text-align: center;"><strong>SR grids</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: center;">Muller2019</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">❌</td>
+</tr>
+<tr>
+<td style="text-align: center;">Muller2016</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">❌</td>
+<td style="text-align: center;">❌</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">❌</td>
+</tr>
+<tr>
+<td style="text-align: center;">Merdith2021</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">❌</td>
+<td style="text-align: center;">❌</td>
+<td style="text-align: center;">❌</td>
+</tr>
+<tr>
+<td style="text-align: center;">Cao2020</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">❌</td>
+<td style="text-align: center;">❌</td>
+<td style="text-align: center;">❌</td>
+</tr>
+<tr>
+<td style="text-align: center;">Clennett2020</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">❌</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">✅</td>
+</tr>
+<tr>
+<td style="text-align: center;">Seton2012</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">❌</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">❌</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">❌</td>
+</tr>
+<tr>
+<td style="text-align: center;">Matthews2016</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">❌</td>
+<td style="text-align: center;">❌</td>
+<td style="text-align: center;">❌</td>
+</tr>
+<tr>
+<td style="text-align: center;">Merdith2017</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">❌</td>
+<td style="text-align: center;">❌</td>
+<td style="text-align: center;">❌</td>
+<td style="text-align: center;">❌</td>
+<td style="text-align: center;">❌</td>
+<td style="text-align: center;">❌</td>
+</tr>
+<tr>
+<td style="text-align: center;">Li2008</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">❌</td>
+<td style="text-align: center;">❌</td>
+<td style="text-align: center;">❌</td>
+<td style="text-align: center;">❌</td>
+<td style="text-align: center;">❌</td>
+<td style="text-align: center;">❌</td>
+</tr>
+<tr>
+<td style="text-align: center;">Pehrsson2015</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">❌</td>
+<td style="text-align: center;">❌</td>
+<td style="text-align: center;">❌</td>
+<td style="text-align: center;">❌</td>
+<td style="text-align: center;">❌</td>
+<td style="text-align: center;">❌</td>
+</tr>
+<tr>
+<td style="text-align: center;">TorsvikCocks2017</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">❌</td>
+<td style="text-align: center;">❌</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">❌</td>
+<td style="text-align: center;">❌</td>
+<td style="text-align: center;">❌</td>
+<td style="text-align: center;">❌</td>
+</tr>
+<tr>
+<td style="text-align: center;">Young2019</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">❌</td>
+<td style="text-align: center;">❌</td>
+<td style="text-align: center;">❌</td>
+</tr>
+<tr>
+<td style="text-align: center;">Scotese2008</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">❌</td>
+<td style="text-align: center;">❌</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">❌</td>
+<td style="text-align: center;">❌</td>
+<td style="text-align: center;">❌</td>
+</tr>
+<tr>
+<td style="text-align: center;">Clennett2020_M19</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">❌</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">❌</td>
+<td style="text-align: center;">❌</td>
+<td style="text-align: center;">❌</td>
+</tr>
+<tr>
+<td style="text-align: center;">Clennett2020_S13</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">❌</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">❌</td>
+<td style="text-align: center;">❌</td>
+<td style="text-align: center;">❌</td>
+</tr>
+<tr>
+<td style="text-align: center;">Muller2008</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">❌</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">❌</td>
+<td style="text-align: center;">❌</td>
+<td style="text-align: center;">❌</td>
+<td style="text-align: center;">❌</td>
+<td style="text-align: center;">❌</td>
+</tr>
+<tr>
+<td style="text-align: center;">Muller2022</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">❌</td>
+<td style="text-align: center;">❌</td>
+</tr>
+<tr>
+<td style="text-align: center;">Scotese2016</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">❌</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">❌</td>
+<td style="text-align: center;">❌</td>
+<td style="text-align: center;">❌</td>
+<td style="text-align: center;">❌</td>
+</tr>
+<tr>
+<td style="text-align: center;">Shephard2013</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">❌</td>
+<td style="text-align: center;">❌</td>
+<td style="text-align: center;">❌</td>
+<td style="text-align: center;">❌</td>
+</tr>
+</tbody>
+</table>
+<hr>
 <h3 id="platereconstruction"><a href="https://gplates.github.io/gplately/reconstruction.html#gplately.reconstruction.PlateReconstruction">PlateReconstruction</a></h3>
 <p>The <code>PlateReconstruction</code> object contains tools to reconstruct geological features like tectonic plates and plate boundaries,
 and to interrogate plate kinematic data like plate motion velocities, and rates of subduction and seafloor spreading.</p>
+<pre><code class="language-python"># Build a plate reconstruction model using a rotation model, a set of topology features and static polygons
+model = gplately.PlateReconstruction(rotation_model, topology_features, static_polygons)
+</code></pre>
 <h3 id="points"><a href="https://gplates.github.io/gplately/reconstruction.html#gplately.reconstruction.Points">Points</a></h3>
 <p>Tools in the <code>Points</code> object track the motion of a point (or group of points) represented by a latitude and longitude
 through geologic time. This motion can be visualised using flowlines or motion paths and quantified with point
 motion velocities.</p>
+<pre><code class="language-python"># Define some points using their latitude and longitude coordinates so we can track them though time!
+pt_lons = np.array([140., 150., 160.])
+pt_lats = np.array([-30., -40., -50.])
+
+# Build a Points object from these points
+gpts = gplately.Points(model, pt_lons, pt_lats)
+</code></pre>
 <p><img alt="PointsDemo" src="https://raw.githubusercontent.com/GPlates/gplately/master/Notebooks/NotebookFiles/pdoc_Files/Hawaii_Emperor_motion_path.png"></p>
 <h3 id="raster"><a href="https://gplates.github.io/gplately/grids.html#gplately.grids.Raster">Raster</a></h3>
 <p>The <code>Raster</code> object contains tools to work with netCDF4 or MaskedArray gridded data. Grids may be filled,
 resized, resampled, and reconstructed back and forwards through geologic time. Other array data can also be
 interpolated onto <code>Raster</code> grids.
 </p>
+<pre><code class="language-python"># Any numpy array can be turned into a Raster object!
+raster = gplately.Raster(
+    plate_reconstruction=model,
+    data=array,
+    extent=&quot;global&quot;,  # equivalent to (-180, 180, -90, 90)
+    origin=&quot;lower&quot;,  # or set extent to (-180, 180, -90, 90)
+)
+
+# Reconstruct the raster data to 50 million years ago! 
+reconstructed_raster = raster.reconstruct(time=50, partitioning_features=continents)
+</code></pre>
 <p><img alt="RasterDemo" src="https://raw.githubusercontent.com/GPlates/gplately/master/Notebooks/NotebookFiles/pdoc_Files/etopo_reconstruction.png"></p>
 <h3 id="plottopologies"><a href="https://gplates.github.io/gplately/plot.html#gplately.plot.PlotTopologies">PlotTopologies</a></h3>
 <p><code>PlotTopologies</code> works with the aforementioned <code>PlateReconstruction</code> object to plot
 geologic features of different types listed
 <a href="https://gplates.github.io/gplately/plot.html#gplately.plot.PlotTopologies">here</a>, as well as
 coastline, continent and continent-ocean boundary geometries reconstructed through time using pyGPlates. </p>
+<pre><code class="language-python">gdownload = gplately.download.DataServer(&quot;Muller2019&quot;)
+
+# Obtain features for the PlotTopologies object with DataServer
+coastlines, continents, COBs = gdownload.get_topology_geometries()
+
+# Call the PlotTopologies object
+gplot = gplately.plot.PlotTopologies(
+    model, # The PlateReconstruction object - it is an input parameter!
+    time, 
+    coastlines, continents, COBs
+)
+</code></pre>
 <p><img alt="PlotTopologiesDemo" src="https://raw.githubusercontent.com/GPlates/gplately/master/Notebooks/NotebookFiles/pdoc_Files/plottopologies.png"></p>
 <h3 id="seafloorgrid"><a href="https://gplates.github.io/gplately/oceans.html#gplately.oceans.SeafloorGrid">SeafloorGrid</a></h3>
 <p>The <code>SeafloorGrid</code> object wraps an automatic workflow to grid seafloor ages and seafloor spreading rates
 as encoded by a plate reconstruction model. </p>
 <p><a href="../gplately/Notebooks/10-SeafloorGrids.ipynb">10-SeafloorGrids.ipynb</a> is a tutorial notebook that demonstrates
 how to set up and use the <code>SeafloorGrid</code> object, and shows a sample set of output grids. </p>
+<pre><code class="language-python"># Set up automatic gridding from 1000Ma to present day
+seafloorgrid = gplately.SeafloorGrid(
+
+    PlateReconstruction_object = model, #The PlateReconstruction object
+    PlotTopologies_object = gplot, #The PlotTopologies object
+
+    # Time parameters
+    max_time = 1000, #Ma
+    min_time = 0, #Ma
+)
+
+# Begin automatic gridding!
+seafloorgrid.reconstruct_by_topologies()
+</code></pre>
 <p><img alt="SeafloorGridDemo" src="https://raw.githubusercontent.com/GPlates/gplately/master/Notebooks/NotebookFiles/pdoc_Files/seafloorgrid.gif"></p>
 <h2 id="notebooks-examples">Notebooks / Examples</h2>
 <ul>
@@ -111,23 +387,76 @@ age_grid = gdownload.get_age_grid(time=100)
 etopo = gdownload.get_raster(&#34;ETOPO1_tif&#34;)
 ```
 
+`DataServer` supports the following plate reconstruction file collections:
+
+------------------
+
+| **Model name string Identifier** | **Rot. files** | **Topology features** | **Static polygons** | **Coast-lines** | **Cont-inents** | **COB-** | **Age grids** | **SR grids** |
+|:--------------------------------:|:--------------:|:---------------------:|:-------------------:|:---------------:|:---------------:|:--------:|:-------------:|:------------:|
+|            Muller2019            |        ✅       |           ✅           |          ✅          |        ✅        |        ✅        |     ✅    |       ✅       |       ❌      |
+|            Muller2016            |        ✅       |           ✅           |          ✅          |        ✅        |        ❌        |     ❌    |       ✅       |       ❌      |
+|            Merdith2021           |        ✅       |           ✅           |          ✅          |        ✅        |        ✅        |     ❌    |       ❌       |       ❌      |
+|              Cao2020             |        ✅       |           ✅           |          ✅          |        ✅        |        ✅        |     ❌    |       ❌       |       ❌      |
+|           Clennett2020           |        ✅       |           ✅           |          ✅          |        ✅        |        ✅        |     ❌    |       ✅       |       ✅      |
+|             Seton2012            |        ✅       |           ✅           |          ❌          |        ✅        |        ❌        |     ✅    |       ✅       |       ❌      |
+|           Matthews2016           |        ✅       |           ✅           |          ✅          |        ✅        |        ✅        |     ❌    |       ❌       |       ❌      |
+|            Merdith2017           |        ✅       |           ✅           |          ❌          |        ❌        |        ❌        |     ❌    |       ❌       |       ❌      |
+|              Li2008              |        ✅       |           ✅           |          ❌          |        ❌        |        ❌        |     ❌    |       ❌       |       ❌      |
+|           Pehrsson2015           |        ✅       |           ✅           |          ❌          |        ❌        |        ❌        |     ❌    |       ❌       |       ❌      |
+|         TorsvikCocks2017         |        ✅       |           ❌           |          ❌          |        ✅        |        ❌        |     ❌    |       ❌       |       ❌      |
+|             Young2019            |        ✅       |           ✅           |          ✅          |        ✅        |        ✅        |     ❌    |       ❌       |       ❌      |
+|            Scotese2008           |        ✅       |           ✅           |          ❌          |        ❌        |        ✅        |     ❌    |       ❌       |       ❌      |
+|         Clennett2020_M19         |        ✅       |           ✅           |          ❌          |        ✅        |        ✅        |     ❌    |       ❌       |       ❌      |
+|         Clennett2020_S13         |        ✅       |           ✅           |          ❌          |        ✅        |        ✅        |     ❌    |       ❌       |       ❌      |
+|            Muller2008            |        ✅       |           ❌           |          ✅          |        ❌        |        ❌        |     ❌    |       ❌       |       ❌      |
+|            Muller2022            |        ✅       |           ✅           |          ✅          |        ✅        |        ✅        |     ✅    |       ❌       |       ❌      |
+|            Scotese2016           |        ✅       |           ❌           |          ✅          |        ✅        |        ❌        |     ❌    |       ❌       |       ❌      |
+|           Shephard2013           |        ✅       |           ✅           |          ✅          |        ✅        |        ❌        |     ❌    |       ❌       |       ❌      |
+
+------------------
 
 ### [PlateReconstruction](https://gplates.github.io/gplately/reconstruction.html#gplately.reconstruction.PlateReconstruction)
 The `PlateReconstruction` object contains tools to reconstruct geological features like tectonic plates and plate boundaries,
 and to interrogate plate kinematic data like plate motion velocities, and rates of subduction and seafloor spreading.
 
+```python
+# Build a plate reconstruction model using a rotation model, a set of topology features and static polygons
+model = gplately.PlateReconstruction(rotation_model, topology_features, static_polygons)
+```
 
 ### [Points](https://gplates.github.io/gplately/reconstruction.html#gplately.reconstruction.Points)
 Tools in the `Points` object track the motion of a point (or group of points) represented by a latitude and longitude 
 through geologic time. This motion can be visualised using flowlines or motion paths and quantified with point 
 motion velocities.
 
+```python
+# Define some points using their latitude and longitude coordinates so we can track them though time!
+pt_lons = np.array([140., 150., 160.])
+pt_lats = np.array([-30., -40., -50.])
+
+# Build a Points object from these points
+gpts = gplately.Points(model, pt_lons, pt_lats)
+```
 ![PointsDemo](https://raw.githubusercontent.com/GPlates/gplately/master/Notebooks/NotebookFiles/pdoc_Files/Hawaii_Emperor_motion_path.png)
+
 
 ### [Raster](https://gplates.github.io/gplately/grids.html#gplately.grids.Raster)
 The `Raster` object contains tools to work with netCDF4 or MaskedArray gridded data. Grids may be filled, 
 resized, resampled, and reconstructed back and forwards through geologic time. Other array data can also be 
 interpolated onto `Raster` grids.  
+
+```python
+# Any numpy array can be turned into a Raster object!
+raster = gplately.Raster(
+    plate_reconstruction=model,
+    data=array,
+    extent=&#34;global&#34;,  # equivalent to (-180, 180, -90, 90)
+    origin=&#34;lower&#34;,  # or set extent to (-180, 180, -90, 90)
+)
+
+# Reconstruct the raster data to 50 million years ago! 
+reconstructed_raster = raster.reconstruct(time=50, partitioning_features=continents)
+```
 
 ![RasterDemo](https://raw.githubusercontent.com/GPlates/gplately/master/Notebooks/NotebookFiles/pdoc_Files/etopo_reconstruction.png)
 
@@ -138,6 +467,20 @@ geologic features of different types listed
 [here](https://gplates.github.io/gplately/plot.html#gplately.plot.PlotTopologies), as well as 
 coastline, continent and continent-ocean boundary geometries reconstructed through time using pyGPlates. 
 
+```python
+gdownload = gplately.download.DataServer(&#34;Muller2019&#34;)
+
+# Obtain features for the PlotTopologies object with DataServer
+coastlines, continents, COBs = gdownload.get_topology_geometries()
+
+# Call the PlotTopologies object
+gplot = gplately.plot.PlotTopologies(
+    model, # The PlateReconstruction object - it is an input parameter!
+    time, 
+    coastlines, continents, COBs
+)
+```
+
 ![PlotTopologiesDemo](https://raw.githubusercontent.com/GPlates/gplately/master/Notebooks/NotebookFiles/pdoc_Files/plottopologies.png)
 
 ### [SeafloorGrid](https://gplates.github.io/gplately/oceans.html#gplately.oceans.SeafloorGrid)
@@ -146,6 +489,22 @@ as encoded by a plate reconstruction model.
 
 [10-SeafloorGrids.ipynb](../gplately/Notebooks/10-SeafloorGrids.ipynb) is a tutorial notebook that demonstrates
 how to set up and use the `SeafloorGrid` object, and shows a sample set of output grids. 
+
+```python
+# Set up automatic gridding from 1000Ma to present day
+seafloorgrid = gplately.SeafloorGrid(
+
+    PlateReconstruction_object = model, #The PlateReconstruction object
+    PlotTopologies_object = gplot, #The PlotTopologies object
+    
+    # Time parameters
+    max_time = 1000, #Ma
+    min_time = 0, #Ma
+)
+
+# Begin automatic gridding!
+seafloorgrid.reconstruct_by_topologies()
+```
 
 ![SeafloorGridDemo](https://raw.githubusercontent.com/GPlates/gplately/master/Notebooks/NotebookFiles/pdoc_Files/seafloorgrid.gif)
 

@@ -852,6 +852,19 @@ def get_feature_data(feature_data_id_string=None, verbose=True):
 
     Currently, gplately supports the following feature data:
 
+    --------------
+
+    | **Feature data string identifier** | **Description**                                                                                                                                                                              |
+    |------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+    | Johansson2018                      | Large igneous provinces from  Johansson et al. (2018)                                                                                                                                        |
+    | Whittaker2015                      | Large igneous province products  interpreted as plume products  from Whittaker et al. (2015).                                                                                                |
+    | SeafloorFabric                     | Seafloor tectonic fabric  (fracture zones, discordant zones,  V-shaped structures, unclassified  V-anomalies, propagating ridge  lineations and extinct ridges)  from Matthews et al. (2011) |
+    | Hotspots                           | Present day surface hotspot/plume  locations from Whittaker et al. (2013)                                                                                                                    |
+   
+    ---------------
+
+    Detailed descriptions can be found below:
+
     * __Large igneous provinces from Johansson et al. (2018)__
 
         Information
@@ -984,8 +997,35 @@ class DataServer(object):
     object and method(s) are re-run, the files will be re-accessed from the cache provided they have not been 
     moved or deleted. 
 
-    Currently, `DataServer` supports a number of plate reconstruction models. To call the object,
-    supply a `file_collection` string from one of the following models:
+    Currently, `DataServer` supports a number of plate reconstruction models. 
+
+    ------------------
+
+    | **Model name string Identifier** | **Rot. files** | **Topology features** | **Static polygons** | **Coast-lines** | **Cont-inents** | **COB-** | **Age grids** | **SR grids** |
+    |:--------------------------------:|:--------------:|:---------------------:|:-------------------:|:---------------:|:---------------:|:--------:|:-------------:|:------------:|
+    |            Muller2019            |        ✅       |           ✅           |          ✅          |        ✅        |        ✅        |     ✅    |       ✅       |       ❌      |
+    |            Muller2016            |        ✅       |           ✅           |          ✅          |        ✅        |        ❌        |     ❌    |       ✅       |       ❌      |
+    |            Merdith2021           |        ✅       |           ✅           |          ✅          |        ✅        |        ✅        |     ❌    |       ❌       |       ❌      |
+    |              Cao2020             |        ✅       |           ✅           |          ✅          |        ✅        |        ✅        |     ❌    |       ❌       |       ❌      |
+    |           Clennett2020           |        ✅       |           ✅           |          ✅          |        ✅        |        ✅        |     ❌    |       ✅       |       ✅      |
+    |             Seton2012            |        ✅       |           ✅           |          ❌          |        ✅        |        ❌        |     ✅    |       ✅       |       ❌      |
+    |           Matthews2016           |        ✅       |           ✅           |          ✅          |        ✅        |        ✅        |     ❌    |       ❌       |       ❌      |
+    |            Merdith2017           |        ✅       |           ✅           |          ❌          |        ❌        |        ❌        |     ❌    |       ❌       |       ❌      |
+    |              Li2008              |        ✅       |           ✅           |          ❌          |        ❌        |        ❌        |     ❌    |       ❌       |       ❌      |
+    |           Pehrsson2015           |        ✅       |           ✅           |          ❌          |        ❌        |        ❌        |     ❌    |       ❌       |       ❌      |
+    |         TorsvikCocks2017         |        ✅       |           ❌           |          ❌          |        ✅        |        ❌        |     ❌    |       ❌       |       ❌      |
+    |             Young2019            |        ✅       |           ✅           |          ✅          |        ✅        |        ✅        |     ❌    |       ❌       |       ❌      |
+    |            Scotese2008           |        ✅       |           ✅           |          ❌          |        ❌        |        ✅        |     ❌    |       ❌       |       ❌      |
+    |         Clennett2020_M19         |        ✅       |           ✅           |          ❌          |        ✅        |        ✅        |     ❌    |       ❌       |       ❌      |
+    |         Clennett2020_S13         |        ✅       |           ✅           |          ❌          |        ✅        |        ✅        |     ❌    |       ❌       |       ❌      |
+    |            Muller2008            |        ✅       |           ❌           |          ✅          |        ❌        |        ❌        |     ❌    |       ❌       |       ❌      |
+    |            Muller2022            |        ✅       |           ✅           |          ✅          |        ✅        |        ✅        |     ✅    |       ❌       |       ❌      |
+    |            Scotese2016           |        ✅       |           ❌           |          ✅          |        ✅        |        ❌        |     ❌    |       ❌       |       ❌      |
+    |           Shephard2013           |        ✅       |           ✅           |          ✅          |        ✅        |        ❌        |     ❌    |       ❌       |       ❌      |
+
+    ------------------
+
+    To call the object, supply a model name string Identifier, `file_collection`, from one of the following models:
 
     * __[Müller et al. 2019](https://www.earthbyte.org/muller-et-al-2019-deforming-plate-reconstruction-and-seafloor-age-grids-tectonics/):__ 
 
@@ -1231,7 +1271,7 @@ class DataServer(object):
         Information
         -----------
         * Downloadable files: `rotation_model`, `topology_features`, `continents` and `coastlines`
-        * Maximum reconstruction time: 250 Ma
+        * Maximum reconstruction time: 170 Ma
         
         Citations
         ---------
@@ -1248,7 +1288,7 @@ class DataServer(object):
         Information
         -----------
         * Downloadable files: `rotation_model`, `topology_features`, `continents` and `coastlines`
-        * Maximum reconstruction time: 
+        * Maximum reconstruction time: 170
         
         Citations
         ---------
@@ -1256,6 +1296,80 @@ class DataServer(object):
         Mohammadzaheri, A., Johnston, S.T., Müller, R.D., (2020), A Quantitative Tomotectonic Plate 
         Reconstruction of Western North America and the Eastern Pacific Basin. Geochemistry, Geophysics, 
         Geosystems, 21, e2020GC009117. DOI: https://doi.org/10.1029/2020GC009117
+
+
+    - __Müller et al. 2008__:
+
+        file_collection = `Muller2008`
+
+        Information
+        -----------
+        * Downloadable files:  `rotation_model`, `static_polygons`
+        * Maximum reconstruction time: 141 Ma
+
+        Citations
+        ---------
+        * Müller, R. D., Sdrolias, M., Gaina, C., &amp; Roest, W. R. (2008). Age, spreading rates, and 
+        spreading asymmetry of the world&#39;s ocean crust. Geochemistry, Geophysics, Geosystems, 9(4).
+
+
+
+    - __Müller et al. 2022__:
+
+        file_collection = `Muller2022`
+
+        Information
+        -----------
+        * Downloadable files:  `rotation_model`, `topology_features`, `static_polygons`, `continents`, `coastlines` and `COBs`
+        * Maximum reconstruction time: 1000 Ma
+
+        Citations
+        ---------
+        *  Müller, R. D., Flament, N., Cannon, J., Tetley, M. G., Williams, S. E., Cao, X., Bodur, Ö. F., Zahirovic, S., 
+        and Merdith, A.: A tectonic-rules-based mantle reference frame since 1 billion years ago – implications for 
+        supercontinent cycles and plate–mantle system evolution, Solid Earth, 13, 1127–1159, 
+        https://doi.org/10.5194/se-13-1127-2022, 2022.
+
+
+
+    - __Scotese 2016__:
+
+        file_collection = `Scotese2016`
+
+        Information
+        -----------
+        * Downloadable files:  `rotation_model`, `static_polygons`, `coastlines` 
+        * Maximum reconstruction time: 410 Ma
+
+        Citations
+        ---------
+        * Scotese, C.R., 2016. PALEOMAP PaleoAtlas for GPlates and the PaleoData 
+        Plotter Program, PALEOMAP Project, 
+        http://www.earthbyte.org/paleomappaleoatlas-for-gplates/
+
+
+    - __Shephard et al. 2013__:
+
+        file_collection = `Shephard2013`
+
+        Information
+        -----------
+        * Downloadable files:  `rotation_model`, `topology_features`, `static_polygons`, `coastlines`
+        * Maximum reconstruction time: 200 Ma
+
+        Citations
+        ---------
+        * Shephard, G.E., Müller, R.D., and Seton, M., 2013. The tectonic evolution of the Arctic since 
+        Pangea breakup: Integrating constraints from surface geology and geophysics with mantle structure. 
+        Earth-Science Reviews, Volume 124 p.148-183. doi:10.1016/j.earscirev.2013.05.012 
+        (http://www.sciencedirect.com/science/article/pii/S0012825213001104)
+
+        * M. Seton, R.D. Müller, S. Zahirovic, C. Gaina, T.H. Torsvik, G. Shephard, A. Talsma, M. Gurnis, 
+        M. Turner, S. Maus, M. Chandler, Global continental and ocean basin reconstructions since 200 Ma, 
+        Earth-Science Reviews, Volume 113, p.212-270 doi:10.1016/j.earscirev.2012.03.002.
+        (http://www.sciencedirect.com/science/article/pii/S0012825212000311)
+
+
 
         Parameters
         ----------
@@ -2443,6 +2557,44 @@ cached before. In this case, nothing is returned.</dd>
 <a href="https://www.earthbyte.org/gplates-2-3-software-and-data-sets/">GPlates 2.3 sample data</a>)
 into the "gplately" cache.</p>
 <p>Currently, gplately supports the following feature data:</p>
+<hr>
+<table>
+<thead>
+<tr>
+<th><strong>Feature data string identifier</strong></th>
+<th><strong>Description</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Johansson2018</td>
+<td>Large igneous provinces from
+Johansson et al. (2018)</td>
+</tr>
+<tr>
+<td>Whittaker2015</td>
+<td>Large igneous province products
+interpreted as plume products
+from Whittaker et al. (2015).</td>
+</tr>
+<tr>
+<td>SeafloorFabric</td>
+<td>Seafloor tectonic fabric
+(fracture zones, discordant zones,
+V-shaped structures, unclassified
+V-anomalies, propagating ridge
+lineations and extinct ridges)
+from Matthews et al. (2011)</td>
+</tr>
+<tr>
+<td>Hotspots</td>
+<td>Present day surface hotspot/plume
+locations from Whittaker et al. (2013)</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<p>Detailed descriptions can be found below:</p>
 <ul>
 <li>
 <p><strong>Large igneous provinces from Johansson et al. (2018)</strong></p>
@@ -2537,6 +2689,19 @@ notebook 05 - Working With Feature Geometries <a href="https://github.com/GPlate
     into the &#34;gplately&#34; cache.
 
     Currently, gplately supports the following feature data:
+
+    --------------
+
+    | **Feature data string identifier** | **Description**                                                                                                                                                                              |
+    |------------------------------------|----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------|
+    | Johansson2018                      | Large igneous provinces from  Johansson et al. (2018)                                                                                                                                        |
+    | Whittaker2015                      | Large igneous province products  interpreted as plume products  from Whittaker et al. (2015).                                                                                                |
+    | SeafloorFabric                     | Seafloor tectonic fabric  (fracture zones, discordant zones,  V-shaped structures, unclassified  V-anomalies, propagating ridge  lineations and extinct ridges)  from Matthews et al. (2011) |
+    | Hotspots                           | Present day surface hotspot/plume  locations from Whittaker et al. (2013)                                                                                                                    |
+   
+    ---------------
+
+    Detailed descriptions can be found below:
 
     * __Large igneous provinces from Johansson et al. (2018)__
 
@@ -2932,8 +3097,236 @@ gDownload = gplately.download.DataServer("Muller2019")
 <p>all requested files are downloaded into the user's 'gplately' cache folder only <em>once</em>. If the same
 object and method(s) are re-run, the files will be re-accessed from the cache provided they have not been
 moved or deleted. </p>
-<p>Currently, <code><a title="gplately.download.DataServer" href="#gplately.download.DataServer">DataServer</a></code> supports a number of plate reconstruction models. To call the object,
-supply a <code>file_collection</code> string from one of the following models:</p>
+<p>Currently, <code><a title="gplately.download.DataServer" href="#gplately.download.DataServer">DataServer</a></code> supports a number of plate reconstruction models. </p>
+<hr>
+<table>
+<thead>
+<tr>
+<th style="text-align: center;"><strong>Model name string Identifier</strong></th>
+<th style="text-align: center;"><strong>Rot. files</strong></th>
+<th style="text-align: center;"><strong>Topology features</strong></th>
+<th style="text-align: center;"><strong>Static polygons</strong></th>
+<th style="text-align: center;"><strong>Coast-lines</strong></th>
+<th style="text-align: center;"><strong>Cont-inents</strong></th>
+<th style="text-align: center;"><strong>COB-</strong></th>
+<th style="text-align: center;"><strong>Age grids</strong></th>
+<th style="text-align: center;"><strong>SR grids</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: center;">Muller2019</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">❌</td>
+</tr>
+<tr>
+<td style="text-align: center;">Muller2016</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">❌</td>
+<td style="text-align: center;">❌</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">❌</td>
+</tr>
+<tr>
+<td style="text-align: center;">Merdith2021</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">❌</td>
+<td style="text-align: center;">❌</td>
+<td style="text-align: center;">❌</td>
+</tr>
+<tr>
+<td style="text-align: center;">Cao2020</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">❌</td>
+<td style="text-align: center;">❌</td>
+<td style="text-align: center;">❌</td>
+</tr>
+<tr>
+<td style="text-align: center;">Clennett2020</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">❌</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">✅</td>
+</tr>
+<tr>
+<td style="text-align: center;">Seton2012</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">❌</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">❌</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">❌</td>
+</tr>
+<tr>
+<td style="text-align: center;">Matthews2016</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">❌</td>
+<td style="text-align: center;">❌</td>
+<td style="text-align: center;">❌</td>
+</tr>
+<tr>
+<td style="text-align: center;">Merdith2017</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">❌</td>
+<td style="text-align: center;">❌</td>
+<td style="text-align: center;">❌</td>
+<td style="text-align: center;">❌</td>
+<td style="text-align: center;">❌</td>
+<td style="text-align: center;">❌</td>
+</tr>
+<tr>
+<td style="text-align: center;">Li2008</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">❌</td>
+<td style="text-align: center;">❌</td>
+<td style="text-align: center;">❌</td>
+<td style="text-align: center;">❌</td>
+<td style="text-align: center;">❌</td>
+<td style="text-align: center;">❌</td>
+</tr>
+<tr>
+<td style="text-align: center;">Pehrsson2015</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">❌</td>
+<td style="text-align: center;">❌</td>
+<td style="text-align: center;">❌</td>
+<td style="text-align: center;">❌</td>
+<td style="text-align: center;">❌</td>
+<td style="text-align: center;">❌</td>
+</tr>
+<tr>
+<td style="text-align: center;">TorsvikCocks2017</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">❌</td>
+<td style="text-align: center;">❌</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">❌</td>
+<td style="text-align: center;">❌</td>
+<td style="text-align: center;">❌</td>
+<td style="text-align: center;">❌</td>
+</tr>
+<tr>
+<td style="text-align: center;">Young2019</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">❌</td>
+<td style="text-align: center;">❌</td>
+<td style="text-align: center;">❌</td>
+</tr>
+<tr>
+<td style="text-align: center;">Scotese2008</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">❌</td>
+<td style="text-align: center;">❌</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">❌</td>
+<td style="text-align: center;">❌</td>
+<td style="text-align: center;">❌</td>
+</tr>
+<tr>
+<td style="text-align: center;">Clennett2020_M19</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">❌</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">❌</td>
+<td style="text-align: center;">❌</td>
+<td style="text-align: center;">❌</td>
+</tr>
+<tr>
+<td style="text-align: center;">Clennett2020_S13</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">❌</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">❌</td>
+<td style="text-align: center;">❌</td>
+<td style="text-align: center;">❌</td>
+</tr>
+<tr>
+<td style="text-align: center;">Muller2008</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">❌</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">❌</td>
+<td style="text-align: center;">❌</td>
+<td style="text-align: center;">❌</td>
+<td style="text-align: center;">❌</td>
+<td style="text-align: center;">❌</td>
+</tr>
+<tr>
+<td style="text-align: center;">Muller2022</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">❌</td>
+<td style="text-align: center;">❌</td>
+</tr>
+<tr>
+<td style="text-align: center;">Scotese2016</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">❌</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">❌</td>
+<td style="text-align: center;">❌</td>
+<td style="text-align: center;">❌</td>
+<td style="text-align: center;">❌</td>
+</tr>
+<tr>
+<td style="text-align: center;">Shephard2013</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">❌</td>
+<td style="text-align: center;">❌</td>
+<td style="text-align: center;">❌</td>
+<td style="text-align: center;">❌</td>
+</tr>
+</tbody>
+</table>
+<hr>
+<p>To call the object, supply a model name string Identifier, <code>file_collection</code>, from one of the following models:</p>
 <ul>
 <li>
 <p><strong><a href="https://www.earthbyte.org/muller-et-al-2019-deforming-plate-reconstruction-and-seafloor-age-grids-tectonics/">Müller et al. 2019</a>:</strong> </p>
@@ -3162,7 +3555,7 @@ Palaeogeography, Palaeoclimatology, Palaeoecology 244(1–4), 297–307.</li>
 <h2 id="information_14">Information</h2>
 <ul>
 <li>Downloadable files: <code>rotation_model</code>, <code>topology_features</code>, <code>continents</code> and <code>coastlines</code></li>
-<li>Maximum reconstruction time: 250 Ma</li>
+<li>Maximum reconstruction time: 170 Ma</li>
 </ul>
 <h2 id="citations_14">Citations</h2>
 <ul>
@@ -3178,7 +3571,7 @@ Geosystems, 21, e2020GC009117. DOI: <a href="https://doi.org/10.1029/2020GC00911
 <h2 id="information_15">Information</h2>
 <ul>
 <li>Downloadable files: <code>rotation_model</code>, <code>topology_features</code>, <code>continents</code> and <code>coastlines</code></li>
-<li>Maximum reconstruction time: </li>
+<li>Maximum reconstruction time: 170</li>
 </ul>
 <h2 id="citations_15">Citations</h2>
 <ul>
@@ -3186,6 +3579,79 @@ Geosystems, 21, e2020GC009117. DOI: <a href="https://doi.org/10.1029/2020GC00911
 Mohammadzaheri, A., Johnston, S.T., Müller, R.D., (2020), A Quantitative Tomotectonic Plate
 Reconstruction of Western North America and the Eastern Pacific Basin. Geochemistry, Geophysics,
 Geosystems, 21, e2020GC009117. DOI: <a href="https://doi.org/10.1029/2020GC009117">https://doi.org/10.1029/2020GC009117</a></li>
+</ul>
+</li>
+<li>
+<p><strong>Müller et al. 2008</strong>:</p>
+<p>file_collection = <code>Muller2008</code></p>
+<h2 id="information_16">Information</h2>
+<ul>
+<li>Downloadable files:
+<code>rotation_model</code>, <code>static_polygons</code></li>
+<li>Maximum reconstruction time: 141 Ma</li>
+</ul>
+<h2 id="citations_16">Citations</h2>
+<ul>
+<li>Müller, R. D., Sdrolias, M., Gaina, C., &amp; Roest, W. R. (2008). Age, spreading rates, and
+spreading asymmetry of the world's ocean crust. Geochemistry, Geophysics, Geosystems, 9(4).</li>
+</ul>
+</li>
+<li>
+<p><strong>Müller et al. 2022</strong>:</p>
+<p>file_collection = <code>Muller2022</code></p>
+<h2 id="information_17">Information</h2>
+<ul>
+<li>Downloadable files:
+<code>rotation_model</code>, <code>topology_features</code>, <code>static_polygons</code>, <code>continents</code>, <code>coastlines</code> and <code>COBs</code></li>
+<li>Maximum reconstruction time: 1000 Ma</li>
+</ul>
+<h2 id="citations_17">Citations</h2>
+<ul>
+<li>Müller, R. D., Flament, N., Cannon, J., Tetley, M. G., Williams, S. E., Cao, X., Bodur, Ö. F., Zahirovic, S.,
+and Merdith, A.: A tectonic-rules-based mantle reference frame since 1 billion years ago – implications for
+supercontinent cycles and plate–mantle system evolution, Solid Earth, 13, 1127–1159,
+<a href="https://doi.org/10.5194/se-13-1127-2022,">https://doi.org/10.5194/se-13-1127-2022,</a> 2022.</li>
+</ul>
+</li>
+<li>
+<p><strong>Scotese 2016</strong>:</p>
+<p>file_collection = <code>Scotese2016</code></p>
+<h2 id="information_18">Information</h2>
+<ul>
+<li>Downloadable files:
+<code>rotation_model</code>, <code>static_polygons</code>, <code>coastlines</code> </li>
+<li>Maximum reconstruction time: 410 Ma</li>
+</ul>
+<h2 id="citations_18">Citations</h2>
+<ul>
+<li>Scotese, C.R., 2016. PALEOMAP PaleoAtlas for GPlates and the PaleoData
+Plotter Program, PALEOMAP Project,
+<a href="http://www.earthbyte.org/paleomappaleoatlas-for-gplates/">http://www.earthbyte.org/paleomappaleoatlas-for-gplates/</a></li>
+</ul>
+</li>
+<li>
+<p><strong>Shephard et al. 2013</strong>:</p>
+<p>file_collection = <code>Shephard2013</code></p>
+<h2 id="information_19">Information</h2>
+<ul>
+<li>Downloadable files:
+<code>rotation_model</code>, <code>topology_features</code>, <code>static_polygons</code>, <code>coastlines</code></li>
+<li>Maximum reconstruction time: 200 Ma</li>
+</ul>
+<h2 id="citations_19">Citations</h2>
+<ul>
+<li>
+<p>Shephard, G.E., Müller, R.D., and Seton, M., 2013. The tectonic evolution of the Arctic since
+Pangea breakup: Integrating constraints from surface geology and geophysics with mantle structure.
+Earth-Science Reviews, Volume 124 p.148-183. doi:10.1016/j.earscirev.2013.05.012
+(<a href="http://www.sciencedirect.com/science/article/pii/S0012825213001104">http://www.sciencedirect.com/science/article/pii/S0012825213001104</a>)</p>
+</li>
+<li>
+<p>M. Seton, R.D. Müller, S. Zahirovic, C. Gaina, T.H. Torsvik, G. Shephard, A. Talsma, M. Gurnis,
+M. Turner, S. Maus, M. Chandler, Global continental and ocean basin reconstructions since 200 Ma,
+Earth-Science Reviews, Volume 113, p.212-270 doi:10.1016/j.earscirev.2012.03.002.
+(<a href="http://www.sciencedirect.com/science/article/pii/S0012825212000311">http://www.sciencedirect.com/science/article/pii/S0012825212000311</a>)</p>
+</li>
 </ul>
 <h2 id="parameters">Parameters</h2>
 <p>file_collection : str
@@ -3212,8 +3678,35 @@ Toggle print messages regarding server/internet connection status, file availabi
     object and method(s) are re-run, the files will be re-accessed from the cache provided they have not been 
     moved or deleted. 
 
-    Currently, `DataServer` supports a number of plate reconstruction models. To call the object,
-    supply a `file_collection` string from one of the following models:
+    Currently, `DataServer` supports a number of plate reconstruction models. 
+
+    ------------------
+
+    | **Model name string Identifier** | **Rot. files** | **Topology features** | **Static polygons** | **Coast-lines** | **Cont-inents** | **COB-** | **Age grids** | **SR grids** |
+    |:--------------------------------:|:--------------:|:---------------------:|:-------------------:|:---------------:|:---------------:|:--------:|:-------------:|:------------:|
+    |            Muller2019            |        ✅       |           ✅           |          ✅          |        ✅        |        ✅        |     ✅    |       ✅       |       ❌      |
+    |            Muller2016            |        ✅       |           ✅           |          ✅          |        ✅        |        ❌        |     ❌    |       ✅       |       ❌      |
+    |            Merdith2021           |        ✅       |           ✅           |          ✅          |        ✅        |        ✅        |     ❌    |       ❌       |       ❌      |
+    |              Cao2020             |        ✅       |           ✅           |          ✅          |        ✅        |        ✅        |     ❌    |       ❌       |       ❌      |
+    |           Clennett2020           |        ✅       |           ✅           |          ✅          |        ✅        |        ✅        |     ❌    |       ✅       |       ✅      |
+    |             Seton2012            |        ✅       |           ✅           |          ❌          |        ✅        |        ❌        |     ✅    |       ✅       |       ❌      |
+    |           Matthews2016           |        ✅       |           ✅           |          ✅          |        ✅        |        ✅        |     ❌    |       ❌       |       ❌      |
+    |            Merdith2017           |        ✅       |           ✅           |          ❌          |        ❌        |        ❌        |     ❌    |       ❌       |       ❌      |
+    |              Li2008              |        ✅       |           ✅           |          ❌          |        ❌        |        ❌        |     ❌    |       ❌       |       ❌      |
+    |           Pehrsson2015           |        ✅       |           ✅           |          ❌          |        ❌        |        ❌        |     ❌    |       ❌       |       ❌      |
+    |         TorsvikCocks2017         |        ✅       |           ❌           |          ❌          |        ✅        |        ❌        |     ❌    |       ❌       |       ❌      |
+    |             Young2019            |        ✅       |           ✅           |          ✅          |        ✅        |        ✅        |     ❌    |       ❌       |       ❌      |
+    |            Scotese2008           |        ✅       |           ✅           |          ❌          |        ❌        |        ✅        |     ❌    |       ❌       |       ❌      |
+    |         Clennett2020_M19         |        ✅       |           ✅           |          ❌          |        ✅        |        ✅        |     ❌    |       ❌       |       ❌      |
+    |         Clennett2020_S13         |        ✅       |           ✅           |          ❌          |        ✅        |        ✅        |     ❌    |       ❌       |       ❌      |
+    |            Muller2008            |        ✅       |           ❌           |          ✅          |        ❌        |        ❌        |     ❌    |       ❌       |       ❌      |
+    |            Muller2022            |        ✅       |           ✅           |          ✅          |        ✅        |        ✅        |     ✅    |       ❌       |       ❌      |
+    |            Scotese2016           |        ✅       |           ❌           |          ✅          |        ✅        |        ❌        |     ❌    |       ❌       |       ❌      |
+    |           Shephard2013           |        ✅       |           ✅           |          ✅          |        ✅        |        ❌        |     ❌    |       ❌       |       ❌      |
+
+    ------------------
+
+    To call the object, supply a model name string Identifier, `file_collection`, from one of the following models:
 
     * __[Müller et al. 2019](https://www.earthbyte.org/muller-et-al-2019-deforming-plate-reconstruction-and-seafloor-age-grids-tectonics/):__ 
 
@@ -3459,7 +3952,7 @@ Toggle print messages regarding server/internet connection status, file availabi
         Information
         -----------
         * Downloadable files: `rotation_model`, `topology_features`, `continents` and `coastlines`
-        * Maximum reconstruction time: 250 Ma
+        * Maximum reconstruction time: 170 Ma
         
         Citations
         ---------
@@ -3476,7 +3969,7 @@ Toggle print messages regarding server/internet connection status, file availabi
         Information
         -----------
         * Downloadable files: `rotation_model`, `topology_features`, `continents` and `coastlines`
-        * Maximum reconstruction time: 
+        * Maximum reconstruction time: 170
         
         Citations
         ---------
@@ -3484,6 +3977,80 @@ Toggle print messages regarding server/internet connection status, file availabi
         Mohammadzaheri, A., Johnston, S.T., Müller, R.D., (2020), A Quantitative Tomotectonic Plate 
         Reconstruction of Western North America and the Eastern Pacific Basin. Geochemistry, Geophysics, 
         Geosystems, 21, e2020GC009117. DOI: https://doi.org/10.1029/2020GC009117
+
+
+    - __Müller et al. 2008__:
+
+        file_collection = `Muller2008`
+
+        Information
+        -----------
+        * Downloadable files:  `rotation_model`, `static_polygons`
+        * Maximum reconstruction time: 141 Ma
+
+        Citations
+        ---------
+        * Müller, R. D., Sdrolias, M., Gaina, C., &amp; Roest, W. R. (2008). Age, spreading rates, and 
+        spreading asymmetry of the world&#39;s ocean crust. Geochemistry, Geophysics, Geosystems, 9(4).
+
+
+
+    - __Müller et al. 2022__:
+
+        file_collection = `Muller2022`
+
+        Information
+        -----------
+        * Downloadable files:  `rotation_model`, `topology_features`, `static_polygons`, `continents`, `coastlines` and `COBs`
+        * Maximum reconstruction time: 1000 Ma
+
+        Citations
+        ---------
+        *  Müller, R. D., Flament, N., Cannon, J., Tetley, M. G., Williams, S. E., Cao, X., Bodur, Ö. F., Zahirovic, S., 
+        and Merdith, A.: A tectonic-rules-based mantle reference frame since 1 billion years ago – implications for 
+        supercontinent cycles and plate–mantle system evolution, Solid Earth, 13, 1127–1159, 
+        https://doi.org/10.5194/se-13-1127-2022, 2022.
+
+
+
+    - __Scotese 2016__:
+
+        file_collection = `Scotese2016`
+
+        Information
+        -----------
+        * Downloadable files:  `rotation_model`, `static_polygons`, `coastlines` 
+        * Maximum reconstruction time: 410 Ma
+
+        Citations
+        ---------
+        * Scotese, C.R., 2016. PALEOMAP PaleoAtlas for GPlates and the PaleoData 
+        Plotter Program, PALEOMAP Project, 
+        http://www.earthbyte.org/paleomappaleoatlas-for-gplates/
+
+
+    - __Shephard et al. 2013__:
+
+        file_collection = `Shephard2013`
+
+        Information
+        -----------
+        * Downloadable files:  `rotation_model`, `topology_features`, `static_polygons`, `coastlines`
+        * Maximum reconstruction time: 200 Ma
+
+        Citations
+        ---------
+        * Shephard, G.E., Müller, R.D., and Seton, M., 2013. The tectonic evolution of the Arctic since 
+        Pangea breakup: Integrating constraints from surface geology and geophysics with mantle structure. 
+        Earth-Science Reviews, Volume 124 p.148-183. doi:10.1016/j.earscirev.2013.05.012 
+        (http://www.sciencedirect.com/science/article/pii/S0012825213001104)
+
+        * M. Seton, R.D. Müller, S. Zahirovic, C. Gaina, T.H. Torsvik, G. Shephard, A. Talsma, M. Gurnis, 
+        M. Turner, S. Maus, M. Chandler, Global continental and ocean basin reconstructions since 200 Ma, 
+        Earth-Science Reviews, Volume 113, p.212-270 doi:10.1016/j.earscirev.2012.03.002.
+        (http://www.sciencedirect.com/science/article/pii/S0012825212000311)
+
+
 
         Parameters
         ----------
