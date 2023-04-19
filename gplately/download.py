@@ -1195,7 +1195,7 @@ class DataServer(object):
         Information
         -----------
         * Downloadable files: `rotation_model`, `topology_features`, `continents` and `coastlines`
-        * Maximum reconstruction time: 250 Ma
+        * Maximum reconstruction time: 170 Ma
         
         Citations
         ---------
@@ -1212,7 +1212,7 @@ class DataServer(object):
         Information
         -----------
         * Downloadable files: `rotation_model`, `topology_features`, `continents` and `coastlines`
-        * Maximum reconstruction time: 
+        * Maximum reconstruction time: 170
         
         Citations
         ---------
@@ -1220,6 +1220,80 @@ class DataServer(object):
         Mohammadzaheri, A., Johnston, S.T., Müller, R.D., (2020), A Quantitative Tomotectonic Plate 
         Reconstruction of Western North America and the Eastern Pacific Basin. Geochemistry, Geophysics, 
         Geosystems, 21, e2020GC009117. DOI: https://doi.org/10.1029/2020GC009117
+
+
+    - __Müller et al. 2008__:
+
+        file_collection = `Muller2008`
+
+        Information
+        -----------
+        * Downloadable files:  `rotation_model`, `static_polygons`
+        * Maximum reconstruction time: 141 Ma
+
+        Citations
+        ---------
+        * Müller, R. D., Sdrolias, M., Gaina, C., & Roest, W. R. (2008). Age, spreading rates, and 
+        spreading asymmetry of the world's ocean crust. Geochemistry, Geophysics, Geosystems, 9(4).
+
+
+
+    - __Müller et al. 2022__:
+
+        file_collection = `Muller2022`
+
+        Information
+        -----------
+        * Downloadable files:  `rotation_model`, `topology_features`, `static_polygons`, `continents`, `coastlines` and `COBs`
+        * Maximum reconstruction time: 1000 Ma
+
+        Citations
+        ---------
+        *  Müller, R. D., Flament, N., Cannon, J., Tetley, M. G., Williams, S. E., Cao, X., Bodur, Ö. F., Zahirovic, S., 
+        and Merdith, A.: A tectonic-rules-based mantle reference frame since 1 billion years ago – implications for 
+        supercontinent cycles and plate–mantle system evolution, Solid Earth, 13, 1127–1159, 
+        https://doi.org/10.5194/se-13-1127-2022, 2022.
+
+
+
+    - __Scotese 2016__:
+
+        file_collection = `Scotese2016`
+
+        Information
+        -----------
+        * Downloadable files:  `rotation_model`, `static_polygons`, `coastlines` 
+        * Maximum reconstruction time: 410 Ma
+
+        Citations
+        ---------
+        * Scotese, C.R., 2016. PALEOMAP PaleoAtlas for GPlates and the PaleoData 
+        Plotter Program, PALEOMAP Project, 
+        http://www.earthbyte.org/paleomappaleoatlas-for-gplates/
+
+
+    - __Shephard et al. 2013__:
+
+        file_collection = `Shephard2013`
+
+        Information
+        -----------
+        * Downloadable files:  `rotation_model`, `topology_features`, `static_polygons`, `coastlines`
+        * Maximum reconstruction time: 200 Ma
+
+        Citations
+        ---------
+        * Shephard, G.E., Müller, R.D., and Seton, M., 2013. The tectonic evolution of the Arctic since 
+        Pangea breakup: Integrating constraints from surface geology and geophysics with mantle structure. 
+        Earth-Science Reviews, Volume 124 p.148-183. doi:10.1016/j.earscirev.2013.05.012 
+        (http://www.sciencedirect.com/science/article/pii/S0012825213001104)
+
+        * M. Seton, R.D. Müller, S. Zahirovic, C. Gaina, T.H. Torsvik, G. Shephard, A. Talsma, M. Gurnis, 
+        M. Turner, S. Maus, M. Chandler, Global continental and ocean basin reconstructions since 200 Ma, 
+        Earth-Science Reviews, Volume 113, p.212-270 doi:10.1016/j.earscirev.2012.03.002.
+        (http://www.sciencedirect.com/science/article/pii/S0012825212000311)
+
+
 
         Parameters
         ----------
