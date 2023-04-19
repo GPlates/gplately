@@ -24,11 +24,11 @@ age_grid = gdownload.get_age_grid(time=100)
 etopo = gdownload.get_raster("ETOPO1_tif")
 ```
 
-`DataServer` supports the following plate reconstruction file collections:
+`DataServer` supports the following plate reconstruction file collections which are bundled with the following data:
 
 ------------------
 
-| **Model name string Identifier** | **Rot. files** | **Topology features** | **Static polygons** | **Coast-lines** | **Cont-inents** | **COB-** | **Age grids** | **SR grids** |
+| **Model name string Identifier** | **Rot. files** | **Topology features** | **Static polygons** | **Coast-lines** | **Cont-inents** | **COB** | **Age grids** | **SR grids** |
 |:--------------------------------:|:--------------:|:---------------------:|:-------------------:|:---------------:|:---------------:|:--------:|:-------------:|:------------:|
 |            Muller2019            |        ✅       |           ✅           |          ✅          |        ✅        |        ✅        |     ✅    |       ✅       |       ❌      |
 |            Muller2016            |        ✅       |           ✅           |          ✅          |        ✅        |        ❌        |     ❌    |       ✅       |       ❌      |
