@@ -806,7 +806,7 @@ def get_raster(raster_id_string=None, verbose=True):
         # Otherwise, the raster is an image; use imread to process
         else:
             raster_matrix = image.imread(raster_filenames)
-            return _gplately.grid.Raster(data=raster_matrix)
+            return _gplately.grids.Raster(data=raster_matrix)
 
 
 def get_feature_data(feature_data_id_string=None, verbose=True):
