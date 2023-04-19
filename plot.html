@@ -1963,7 +1963,7 @@ class PlotTopologies(object):
             A subclass of `matplotlib.axes.Axes` which represents a map Projection.
             The map should be set at a particular Cartopy projection.
 
-        grid : MaskedArray
+        grid : MaskedArray or `gplately.grids.Raster`
             A `MaskedArray` with elements that define a grid. The number of rows in the raster
             corresponds to the number of latitudinal coordinates, while the number of raster 
             columns corresponds to the number of longitudinal coordinates.
@@ -1987,8 +1987,19 @@ class PlotTopologies(object):
         &#34;&#34;&#34;
         # Override matplotlib default origin (&#39;upper&#39;)
         origin = kwargs.pop(&#34;origin&#34;, &#34;lower&#34;)
+
+        from .grids import Raster
+
+        if isinstance(grid, Raster):
+            # extract extent and origin
+            extent = grid.extent
+            origin = grid.origin
+            data = grid.data
+        else:
+            data = grid
+
         return ax.imshow(
-            grid,
+            data,
             extent=extent,
             transform=self.base_projection,
             origin=origin,
@@ -2025,11 +2036,20 @@ class PlotTopologies(object):
             A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map 
             with the netCDF grid plotted onto the chosen map projection.
         &#34;&#34;&#34;
+        # Override matplotlib default origin (&#39;upper&#39;)
+        origin = kwargs.pop(&#34;origin&#34;, &#34;lower&#34;)
+
         from .grids import read_netcdf_grid
 
         raster, lon_coords, lat_coords = read_netcdf_grid(filename, return_grids=True)
-        extent = [lon_coords.min(), lon_coords.max(), lat_coords.min(), lat_coords.max()]
-        return self.plot_grid(ax, raster, extent=extent, **kwargs)
+        extent = [lon_coords[0], lon_coords[-1], lat_coords[0], lat_coords[-1]]
+
+        if lon_coords[0] &lt; lat_coords[-1]:
+            origin = &#34;lower&#34;
+        else:
+            origin = &#34;upper&#34;
+
+        return self.plot_grid(ax, raster, extent=extent, origin=origin, **kwargs)
 
 
     def plot_plate_motion_vectors(self, ax, spacingX=10, spacingY=10, normalise=False, **kwargs):
@@ -3117,7 +3137,23 @@ class PlotTopologies(object):
             raise ValueError(&#34;No topologies passed to PlotTopologies.&#34;)
 
         all_topologies = shapelify_features(self.topologies)
-        gdf = gpd.GeoDataFrame({&#34;geometry&#34;: all_topologies}, geometry=&#34;geometry&#34;)
+
+        # get plate IDs and feature types to add to geodataframe
+        plate_IDs = []
+        feature_types = []
+        feature_names = []
+        for topo in self.topologies:
+            ft_type = topo.get_feature_type()
+
+            plate_IDs.append(topo.get_reconstruction_plate_id())
+            feature_types.append(ft_type)
+            feature_names.append(ft_type.get_name())
+
+        gdf = gpd.GeoDataFrame({&#34;geometry&#34;: all_topologies,
+                                &#34;reconstruction_plate_ID&#34;: plate_IDs,
+                                &#34;feature_type&#34;: feature_types,
+                                &#34;feature_name&#34;: feature_names},
+                                geometry=&#34;geometry&#34;)
         return gdf
 
 
@@ -5231,7 +5267,7 @@ boundaries and passive continental boundaries.</dd>
             A subclass of `matplotlib.axes.Axes` which represents a map Projection.
             The map should be set at a particular Cartopy projection.
 
-        grid : MaskedArray
+        grid : MaskedArray or `gplately.grids.Raster`
             A `MaskedArray` with elements that define a grid. The number of rows in the raster
             corresponds to the number of latitudinal coordinates, while the number of raster 
             columns corresponds to the number of longitudinal coordinates.
@@ -5255,8 +5291,19 @@ boundaries and passive continental boundaries.</dd>
         &#34;&#34;&#34;
         # Override matplotlib default origin (&#39;upper&#39;)
         origin = kwargs.pop(&#34;origin&#34;, &#34;lower&#34;)
+
+        from .grids import Raster
+
+        if isinstance(grid, Raster):
+            # extract extent and origin
+            extent = grid.extent
+            origin = grid.origin
+            data = grid.data
+        else:
+            data = grid
+
         return ax.imshow(
-            grid,
+            data,
             extent=extent,
             transform=self.base_projection,
             origin=origin,
@@ -5293,11 +5340,20 @@ boundaries and passive continental boundaries.</dd>
             A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map 
             with the netCDF grid plotted onto the chosen map projection.
         &#34;&#34;&#34;
+        # Override matplotlib default origin (&#39;upper&#39;)
+        origin = kwargs.pop(&#34;origin&#34;, &#34;lower&#34;)
+
         from .grids import read_netcdf_grid
 
         raster, lon_coords, lat_coords = read_netcdf_grid(filename, return_grids=True)
-        extent = [lon_coords.min(), lon_coords.max(), lat_coords.min(), lat_coords.max()]
-        return self.plot_grid(ax, raster, extent=extent, **kwargs)
+        extent = [lon_coords[0], lon_coords[-1], lat_coords[0], lat_coords[-1]]
+
+        if lon_coords[0] &lt; lat_coords[-1]:
+            origin = &#34;lower&#34;
+        else:
+            origin = &#34;upper&#34;
+
+        return self.plot_grid(ax, raster, extent=extent, origin=origin, **kwargs)
 
 
     def plot_plate_motion_vectors(self, ax, spacingX=10, spacingY=10, normalise=False, **kwargs):
@@ -6385,7 +6441,23 @@ boundaries and passive continental boundaries.</dd>
             raise ValueError(&#34;No topologies passed to PlotTopologies.&#34;)
 
         all_topologies = shapelify_features(self.topologies)
-        gdf = gpd.GeoDataFrame({&#34;geometry&#34;: all_topologies}, geometry=&#34;geometry&#34;)
+
+        # get plate IDs and feature types to add to geodataframe
+        plate_IDs = []
+        feature_types = []
+        feature_names = []
+        for topo in self.topologies:
+            ft_type = topo.get_feature_type()
+
+            plate_IDs.append(topo.get_reconstruction_plate_id())
+            feature_types.append(ft_type)
+            feature_names.append(ft_type.get_name())
+
+        gdf = gpd.GeoDataFrame({&#34;geometry&#34;: all_topologies,
+                                &#34;reconstruction_plate_ID&#34;: plate_IDs,
+                                &#34;feature_type&#34;: feature_types,
+                                &#34;feature_name&#34;: feature_names},
+                                geometry=&#34;geometry&#34;)
         return gdf
 
 
@@ -6514,7 +6586,23 @@ If the optional <code>time</code> parameter has not been passed to <code><a titl
         raise ValueError(&#34;No topologies passed to PlotTopologies.&#34;)
 
     all_topologies = shapelify_features(self.topologies)
-    gdf = gpd.GeoDataFrame({&#34;geometry&#34;: all_topologies}, geometry=&#34;geometry&#34;)
+
+    # get plate IDs and feature types to add to geodataframe
+    plate_IDs = []
+    feature_types = []
+    feature_names = []
+    for topo in self.topologies:
+        ft_type = topo.get_feature_type()
+
+        plate_IDs.append(topo.get_reconstruction_plate_id())
+        feature_types.append(ft_type)
+        feature_names.append(ft_type.get_name())
+
+    gdf = gpd.GeoDataFrame({&#34;geometry&#34;: all_topologies,
+                            &#34;reconstruction_plate_ID&#34;: plate_IDs,
+                            &#34;feature_type&#34;: feature_types,
+                            &#34;feature_name&#34;: feature_names},
+                            geometry=&#34;geometry&#34;)
     return gdf</code></pre>
 </details>
 </dd>
@@ -8831,7 +8919,7 @@ with fracture zones plotted onto the chosen map projection.</dd>
 <dt><strong><code>ax</code></strong> :&ensp;<code>instance</code> of <code>&lt;cartopy.mpl.geoaxes.GeoAxes&gt;</code> or <code>&lt;cartopy.mpl.geoaxes.GeoAxesSubplot&gt;</code></dt>
 <dd>A subclass of <code>matplotlib.axes.Axes</code> which represents a map Projection.
 The map should be set at a particular Cartopy projection.</dd>
-<dt><strong><code>grid</code></strong> :&ensp;<code>MaskedArray</code></dt>
+<dt><strong><code>grid</code></strong> :&ensp;<code>MaskedArray</code> or <code><a title="gplately.grids.Raster" href="grids.html#gplately.grids.Raster">Raster</a></code></dt>
 <dd>A <code>MaskedArray</code> with elements that define a grid. The number of rows in the raster
 corresponds to the number of latitudinal coordinates, while the number of raster
 columns corresponds to the number of longitudinal coordinates.</dd>
@@ -8869,7 +8957,7 @@ with the grid plotted onto the chosen map projection.</dd>
         A subclass of `matplotlib.axes.Axes` which represents a map Projection.
         The map should be set at a particular Cartopy projection.
 
-    grid : MaskedArray
+    grid : MaskedArray or `gplately.grids.Raster`
         A `MaskedArray` with elements that define a grid. The number of rows in the raster
         corresponds to the number of latitudinal coordinates, while the number of raster 
         columns corresponds to the number of longitudinal coordinates.
@@ -8893,8 +8981,19 @@ with the grid plotted onto the chosen map projection.</dd>
     &#34;&#34;&#34;
     # Override matplotlib default origin (&#39;upper&#39;)
     origin = kwargs.pop(&#34;origin&#34;, &#34;lower&#34;)
+
+    from .grids import Raster
+
+    if isinstance(grid, Raster):
+        # extract extent and origin
+        extent = grid.extent
+        origin = grid.origin
+        data = grid.data
+    else:
+        data = grid
+
     return ax.imshow(
-        grid,
+        data,
         extent=extent,
         transform=self.base_projection,
         origin=origin,
@@ -8962,11 +9061,20 @@ with the netCDF grid plotted onto the chosen map projection.</dd>
         A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map 
         with the netCDF grid plotted onto the chosen map projection.
     &#34;&#34;&#34;
+    # Override matplotlib default origin (&#39;upper&#39;)
+    origin = kwargs.pop(&#34;origin&#34;, &#34;lower&#34;)
+
     from .grids import read_netcdf_grid
 
     raster, lon_coords, lat_coords = read_netcdf_grid(filename, return_grids=True)
-    extent = [lon_coords.min(), lon_coords.max(), lat_coords.min(), lat_coords.max()]
-    return self.plot_grid(ax, raster, extent=extent, **kwargs)</code></pre>
+    extent = [lon_coords[0], lon_coords[-1], lat_coords[0], lat_coords[-1]]
+
+    if lon_coords[0] &lt; lat_coords[-1]:
+        origin = &#34;lower&#34;
+    else:
+        origin = &#34;upper&#34;
+
+    return self.plot_grid(ax, raster, extent=extent, origin=origin, **kwargs)</code></pre>
 </details>
 </dd>
 <dt id="gplately.plot.PlotTopologies.plot_inferred_paleo_boundaries"><code class="name flex">
