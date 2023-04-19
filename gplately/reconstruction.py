@@ -1097,6 +1097,45 @@ class Points(object):
         gpts.add_attributes(**self.attributes.copy())
 
     def add_attributes(self, **kwargs):
+        """ Adds the value of a feature attribute associated with a key.
+
+        Example
+        -------
+
+            # Define latitudes and longitudes to set up a Points object
+            pt_lons = np.array([140., 150., 160.])
+            pt_lats = np.array([-30., -40., -50.])
+
+            gpts = gplately.Points(model, pt_lons, pt_lats)
+
+            # Add the attributes a, b and c to the points in the Points object
+            gpts.add_attributes(
+                a=[10,2,2], 
+                b=[2,3,3], 
+                c=[30,0,0],
+            )
+
+            print(gpts.attributes)
+
+        The output would be:
+
+            {'a': [10, 2, 2], 'b': [2, 3, 3], 'c': [30, 0, 0]}
+
+        Parameters
+        ----------
+        **kwargs : sequence of key=item/s
+            A single key=value pair, or a sequence of key=value pairs denoting the name and
+            value of an attribute.
+
+
+        Notes
+        -----
+        * An **assertion** is raised if the number of points in the Points object is not equal
+        to the number of values associated with an attribute key. For example, consider an instance
+        of the Points object with 3 points. If the points are ascribed an attribute `temperature`,
+        there must be one `temperature` value per point, i.e. `temperature = [20, 15, 17.5]`.
+
+        """
         keys = kwargs.keys()
 
         for key in kwargs:
@@ -1125,6 +1164,42 @@ class Points(object):
                     feature.set_shapefile_attribute(key, val)
 
     def get_geopandas_dataframe(self):
+        """ Adds a shapely point `geometry` attribute to each point in the `gplately.Points` object.
+        pandas.DataFrame that has a column with geometry
+        Any existing point attributes are kept.
+
+        Returns
+        -------
+        GeoDataFrame : instance of `geopandas.GeoDataFrame`
+            A pandas.DataFrame with rows equal to the number of points in the `gplately.Points` object,
+            and an additional column containing a shapely `geometry` attribute.
+
+        Example
+        -------
+
+            pt_lons = np.array([140., 150., 160.])
+            pt_lats = np.array([-30., -40., -50.])
+
+            gpts = gplately.Points(model, pt_lons, pt_lats)
+
+            # Add sample attributes a, b and c to the points in the Points object
+            gpts.add_attributes(
+                a=[10,2,2], 
+                b=[2,3,3], 
+                c=[30,0,0],
+            )
+
+            gpts.get_geopandas_dataframe()
+
+        ...has the output:
+
+                a  b   c                     geometry
+            0  10  2  30  POINT (140.00000 -30.00000)
+            1   2  3   0  POINT (150.00000 -40.00000)
+            2   2  3   0  POINT (160.00000 -50.00000)
+
+
+        """
         import geopandas as gpd
         from shapely import geometry
 
@@ -1139,6 +1214,44 @@ class Points(object):
         return gpd.GeoDataFrame(attributes, geometry='geometry')
 
     def get_geodataframe(self):
+        """ Returns the output of `Points.get_geopandas_dataframe()`.
+
+        Adds a shapely point `geometry` attribute to each point in the `gplately.Points` object.
+        pandas.DataFrame that has a column with geometry
+        Any existing point attributes are kept.
+
+        Returns
+        -------
+        GeoDataFrame : instance of `geopandas.GeoDataFrame`
+            A pandas.DataFrame with rows equal to the number of points in the `gplately.Points` object,
+            and an additional column containing a shapely `geometry` attribute.
+
+        Example
+        -------
+
+            pt_lons = np.array([140., 150., 160.])
+            pt_lats = np.array([-30., -40., -50.])
+
+            gpts = gplately.Points(model, pt_lons, pt_lats)
+
+            # Add sample attributes a, b and c to the points in the Points object
+            gpts.add_attributes(
+                a=[10,2,2], 
+                b=[2,3,3], 
+                c=[30,0,0],
+            )
+
+            gpts.get_geopandas_dataframe()
+
+        ...has the output:
+
+                a  b   c                     geometry
+            0  10  2  30  POINT (140.00000 -30.00000)
+            1   2  3   0  POINT (150.00000 -40.00000)
+            2   2  3   0  POINT (160.00000 -50.00000)
+
+
+        """
         return self.get_geopandas_dataframe()
 
     def reconstruct(self, time, anchor_plate_id=0, return_array=False, **kwargs):
