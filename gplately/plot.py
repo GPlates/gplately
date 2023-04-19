@@ -1927,7 +1927,7 @@ class PlotTopologies(object):
             A subclass of `matplotlib.axes.Axes` which represents a map Projection.
             The map should be set at a particular Cartopy projection.
 
-        grid : MaskedArray
+        grid : MaskedArray or `gplately.grids.Raster`
             A `MaskedArray` with elements that define a grid. The number of rows in the raster
             corresponds to the number of latitudinal coordinates, while the number of raster 
             columns corresponds to the number of longitudinal coordinates.
@@ -1951,8 +1951,19 @@ class PlotTopologies(object):
         """
         # Override matplotlib default origin ('upper')
         origin = kwargs.pop("origin", "lower")
+
+        from .grids import Raster
+
+        if isinstance(grid, Raster):
+            # extract extent and origin
+            extent = grid.extent
+            origin = grid.origin
+            data = grid.data
+        else:
+            data = grid
+
         return ax.imshow(
-            grid,
+            data,
             extent=extent,
             transform=self.base_projection,
             origin=origin,
@@ -1989,11 +2000,20 @@ class PlotTopologies(object):
             A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map 
             with the netCDF grid plotted onto the chosen map projection.
         """
+        # Override matplotlib default origin ('upper')
+        origin = kwargs.pop("origin", "lower")
+
         from .grids import read_netcdf_grid
 
         raster, lon_coords, lat_coords = read_netcdf_grid(filename, return_grids=True)
-        extent = [lon_coords.min(), lon_coords.max(), lat_coords.min(), lat_coords.max()]
-        return self.plot_grid(ax, raster, extent=extent, **kwargs)
+        extent = [lon_coords[0], lon_coords[-1], lat_coords[0], lat_coords[-1]]
+
+        if lon_coords[0] < lat_coords[-1]:
+            origin = "lower"
+        else:
+            origin = "upper"
+
+        return self.plot_grid(ax, raster, extent=extent, origin=origin, **kwargs)
 
 
     def plot_plate_motion_vectors(self, ax, spacingX=10, spacingY=10, normalise=False, **kwargs):
@@ -3081,7 +3101,23 @@ class PlotTopologies(object):
             raise ValueError("No topologies passed to PlotTopologies.")
 
         all_topologies = shapelify_features(self.topologies)
-        gdf = gpd.GeoDataFrame({"geometry": all_topologies}, geometry="geometry")
+
+        # get plate IDs and feature types to add to geodataframe
+        plate_IDs = []
+        feature_types = []
+        feature_names = []
+        for topo in self.topologies:
+            ft_type = topo.get_feature_type()
+
+            plate_IDs.append(topo.get_reconstruction_plate_id())
+            feature_types.append(ft_type)
+            feature_names.append(ft_type.get_name())
+
+        gdf = gpd.GeoDataFrame({"geometry": all_topologies,
+                                "reconstruction_plate_ID": plate_IDs,
+                                "feature_type": feature_types,
+                                "feature_name": feature_names},
+                                geometry="geometry")
         return gdf
 
 
