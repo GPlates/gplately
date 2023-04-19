@@ -24,23 +24,76 @@ age_grid = gdownload.get_age_grid(time=100)
 etopo = gdownload.get_raster("ETOPO1_tif")
 ```
 
+`DataServer` supports the following plate reconstruction file collections:
+
+------------------
+
+| **Model name string Identifier** | **Rot. files** | **Topology features** | **Static polygons** | **Coast-lines** | **Cont-inents** | **COB-** | **Age grids** | **SR grids** |
+|:--------------------------------:|:--------------:|:---------------------:|:-------------------:|:---------------:|:---------------:|:--------:|:-------------:|:------------:|
+|            Muller2019            |        ✅       |           ✅           |          ✅          |        ✅        |        ✅        |     ✅    |       ✅       |       ❌      |
+|            Muller2016            |        ✅       |           ✅           |          ✅          |        ✅        |        ❌        |     ❌    |       ✅       |       ❌      |
+|            Merdith2021           |        ✅       |           ✅           |          ✅          |        ✅        |        ✅        |     ❌    |       ❌       |       ❌      |
+|              Cao2020             |        ✅       |           ✅           |          ✅          |        ✅        |        ✅        |     ❌    |       ❌       |       ❌      |
+|           Clennett2020           |        ✅       |           ✅           |          ✅          |        ✅        |        ✅        |     ❌    |       ✅       |       ✅      |
+|             Seton2012            |        ✅       |           ✅           |          ❌          |        ✅        |        ❌        |     ✅    |       ✅       |       ❌      |
+|           Matthews2016           |        ✅       |           ✅           |          ✅          |        ✅        |        ✅        |     ❌    |       ❌       |       ❌      |
+|            Merdith2017           |        ✅       |           ✅           |          ❌          |        ❌        |        ❌        |     ❌    |       ❌       |       ❌      |
+|              Li2008              |        ✅       |           ✅           |          ❌          |        ❌        |        ❌        |     ❌    |       ❌       |       ❌      |
+|           Pehrsson2015           |        ✅       |           ✅           |          ❌          |        ❌        |        ❌        |     ❌    |       ❌       |       ❌      |
+|         TorsvikCocks2017         |        ✅       |           ❌           |          ❌          |        ✅        |        ❌        |     ❌    |       ❌       |       ❌      |
+|             Young2019            |        ✅       |           ✅           |          ✅          |        ✅        |        ✅        |     ❌    |       ❌       |       ❌      |
+|            Scotese2008           |        ✅       |           ✅           |          ❌          |        ❌        |        ✅        |     ❌    |       ❌       |       ❌      |
+|         Clennett2020_M19         |        ✅       |           ✅           |          ❌          |        ✅        |        ✅        |     ❌    |       ❌       |       ❌      |
+|         Clennett2020_S13         |        ✅       |           ✅           |          ❌          |        ✅        |        ✅        |     ❌    |       ❌       |       ❌      |
+|            Muller2008            |        ✅       |           ❌           |          ✅          |        ❌        |        ❌        |     ❌    |       ❌       |       ❌      |
+|            Muller2022            |        ✅       |           ✅           |          ✅          |        ✅        |        ✅        |     ✅    |       ❌       |       ❌      |
+|            Scotese2016           |        ✅       |           ❌           |          ✅          |        ✅        |        ❌        |     ❌    |       ❌       |       ❌      |
+|           Shephard2013           |        ✅       |           ✅           |          ✅          |        ✅        |        ❌        |     ❌    |       ❌       |       ❌      |
+
+------------------
 
 ### [PlateReconstruction](https://gplates.github.io/gplately/reconstruction.html#gplately.reconstruction.PlateReconstruction)
 The `PlateReconstruction` object contains tools to reconstruct geological features like tectonic plates and plate boundaries,
 and to interrogate plate kinematic data like plate motion velocities, and rates of subduction and seafloor spreading.
 
+```python
+# Build a plate reconstruction model using a rotation model, a set of topology features and static polygons
+model = gplately.PlateReconstruction(rotation_model, topology_features, static_polygons)
+```
 
 ### [Points](https://gplates.github.io/gplately/reconstruction.html#gplately.reconstruction.Points)
 Tools in the `Points` object track the motion of a point (or group of points) represented by a latitude and longitude 
 through geologic time. This motion can be visualised using flowlines or motion paths and quantified with point 
 motion velocities.
 
+```python
+# Define some points using their latitude and longitude coordinates so we can track them though time!
+pt_lons = np.array([140., 150., 160.])
+pt_lats = np.array([-30., -40., -50.])
+
+# Build a Points object from these points
+gpts = gplately.Points(model, pt_lons, pt_lats)
+```
 ![PointsDemo](https://raw.githubusercontent.com/GPlates/gplately/master/Notebooks/NotebookFiles/pdoc_Files/Hawaii_Emperor_motion_path.png)
+
 
 ### [Raster](https://gplates.github.io/gplately/grids.html#gplately.grids.Raster)
 The `Raster` object contains tools to work with netCDF4 or MaskedArray gridded data. Grids may be filled, 
 resized, resampled, and reconstructed back and forwards through geologic time. Other array data can also be 
 interpolated onto `Raster` grids.  
+
+```python
+# Any numpy array can be turned into a Raster object!
+raster = gplately.Raster(
+    plate_reconstruction=model,
+    data=array,
+    extent="global",  # equivalent to (-180, 180, -90, 90)
+    origin="lower",  # or set extent to (-180, 180, -90, 90)
+)
+
+# Reconstruct the raster data to 50 million years ago! 
+reconstructed_raster = raster.reconstruct(time=50, partitioning_features=continents)
+```
 
 ![RasterDemo](https://raw.githubusercontent.com/GPlates/gplately/master/Notebooks/NotebookFiles/pdoc_Files/etopo_reconstruction.png)
 
@@ -51,6 +104,20 @@ geologic features of different types listed
 [here](https://gplates.github.io/gplately/plot.html#gplately.plot.PlotTopologies), as well as 
 coastline, continent and continent-ocean boundary geometries reconstructed through time using pyGPlates. 
 
+```python
+gdownload = gplately.download.DataServer("Muller2019")
+
+# Obtain features for the PlotTopologies object with DataServer
+coastlines, continents, COBs = gdownload.get_topology_geometries()
+
+# Call the PlotTopologies object
+gplot = gplately.plot.PlotTopologies(
+    model, # The PlateReconstruction object - it is an input parameter!
+    time, 
+    coastlines, continents, COBs
+)
+```
+
 ![PlotTopologiesDemo](https://raw.githubusercontent.com/GPlates/gplately/master/Notebooks/NotebookFiles/pdoc_Files/plottopologies.png)
 
 ### [SeafloorGrid](https://gplates.github.io/gplately/oceans.html#gplately.oceans.SeafloorGrid)
@@ -59,6 +126,22 @@ as encoded by a plate reconstruction model.
 
 [10-SeafloorGrids.ipynb](../gplately/Notebooks/10-SeafloorGrids.ipynb) is a tutorial notebook that demonstrates
 how to set up and use the `SeafloorGrid` object, and shows a sample set of output grids. 
+
+```python
+# Set up automatic gridding from 1000Ma to present day
+seafloorgrid = gplately.SeafloorGrid(
+
+    PlateReconstruction_object = model, #The PlateReconstruction object
+    PlotTopologies_object = gplot, #The PlotTopologies object
+    
+    # Time parameters
+    max_time = 1000, #Ma
+    min_time = 0, #Ma
+)
+
+# Begin automatic gridding!
+seafloorgrid.reconstruct_by_topologies()
+```
 
 ![SeafloorGridDemo](https://raw.githubusercontent.com/GPlates/gplately/master/Notebooks/NotebookFiles/pdoc_Files/seafloorgrid.gif)
 
