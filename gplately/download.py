@@ -769,7 +769,7 @@ def get_raster(raster_id_string=None, verbose=True):
 
         fig = plt.figure(figsize=(18,14), dpi=300)
         ax = fig.add_subplot(111, projection=ccrs.Mollweide(central_longitude = -150))
-        ax2.imshow(etopo1_data, extent=[-180,180,-90,90], transform=ccrs.PlateCarree()) 
+        etopo1.imshow(ax)
 
     """
     from matplotlib import image
@@ -801,12 +801,19 @@ def get_raster(raster_id_string=None, verbose=True):
     else:
         # If the downloaded raster is a grid, process it with the gplately.Raster object
         if any(grid_extension in raster_filenames for grid_extension in grid_extensions):
-            return _gplately.grids.Raster(data=raster_filenames)
+            raster = _gplately.grids.Raster(data=raster_filenames)
 
         # Otherwise, the raster is an image; use imread to process
         else:
             raster_matrix = image.imread(raster_filenames)
-            return _gplately.grids.Raster(data=raster_matrix)
+            raster = _gplately.grids.Raster(data=raster_matrix)
+
+        if raster_id_string.lower() == "etopo1_tif":
+            raster.lats = raster.lats[::-1]
+        if raster_id_string.lower() == "etopo1_grd":
+            raster._data = raster._data.astype(float)
+
+    return raster
 
 
 def get_feature_data(feature_data_id_string=None, verbose=True):
@@ -1979,41 +1986,7 @@ class DataServer(object):
             ax2.imshow(etopo1, extent=[-180,180,-90,90], transform=ccrs.PlateCarree()) 
 
         """
-        from matplotlib import image
-        if raster_id_string is None:
-            raise ValueError(
-                "Please specify which raster to download."
-            )
-        #filetype = "."+"_".split(raster_id_string)[-1]
-
-        archive_formats = tuple([".gz", ".xz", ".bz2"])
-        grid_extensions = tuple([".grd", ".nc"])
-
-        # Set to true if we find the given collection in database
-        found_collection = False
-        raster_filenames = []
-        database = _gplately.data._rasters()
-
-        for collection, zip_url in database.items():
-            # Isolate the raster name and the file type
-            #raster_name = collection.split("_")[0]
-            #raster_type = "."+collection.split("_")[-1]
-            if (raster_id_string.lower() == collection.lower()):
-                raster_filenames = download_from_web(zip_url[0], self.verbose)
-                found_collection = True
-                break
-
-        if found_collection is False:
-            raise ValueError("{} not in collection database.".format(raster_id_string))
-        else:
-            # If the downloaded raster is a grid, process it with the gplately.Raster object
-            if any(grid_extension in raster_filenames for grid_extension in grid_extensions):
-                return _gplately.grids.Raster(data=raster_filenames)
-
-            # Otherwise, the raster is an image; use imread to process
-            else:
-                raster_matrix = image.imread(raster_filenames)
-                return _gplately.grids.Raster(data=raster_matrix)
+        return get_raster(raster_id_string, self.verbose)
 
 
     def get_feature_data(self, feature_data_id_string=None):
