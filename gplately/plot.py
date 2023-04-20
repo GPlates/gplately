@@ -605,6 +605,7 @@ class PlotTopologies(object):
         gplot.time = 20 # Ma
 
     which will automatically reconstruct all topologies to the specified time.
+    You __MUST__ set `gplot.time` before plotting anything.
 
     A variety of geological features can be plotted on GeoAxes/GeoAxesSubplot maps 
     as Shapely `MultiLineString` or `MultiPolygon` geometries, including:
