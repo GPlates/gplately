@@ -605,28 +605,25 @@ class PlotTopologies(object):
     To call the `PlotTopologies` object, supply: 
 
     * an instance of the GPlately `plate_reconstruction` object
+    * a reconstruction `time`
 
     and optionally, 
 
     * a `coastline_filename`
     * a `continent_filename`
     * a `COB_filename`
-    * a reconstruction `time`
     * an `anchor_plate_id`
 
     For example:
 
         # Calling the PlotTopologies object
         gplot = gplately.plot.PlotTopologies(plate_reconstruction,
-                                            coastline_filename=None,
-                                            continent_filename=None,
-                                            COB_filename=None,
-                                            time=None,
-                                            anchor_plate_id=0,
+                                            time,
+                                            coastline_filename,
+                                            continent_filename,
+                                            COB_filename,
+                                            anchor_plate_id,
                 )
-
-        # Setting a new reconstruction time
-        gplot.time = 20 # Ma
 
     The `coastline_filename`, `continent_filename` and `COB_filename` can be single
     strings to GPML and/or shapefiles, as well as instances of `pygplates.FeatureCollection`. 
@@ -636,12 +633,7 @@ class PlotTopologies(object):
     Some features for plotting (like plate boundaries) are taken from the `PlateReconstruction` 
     object&#39;s`topology_features` attribute. They have already been reconstructed to the given
     `time` using [Plate Tectonic Tools](https://github.com/EarthByte/PlateTectonicTools).
-    Simply provide a new reconstruction time by changing the `time` attribute, e.g.
 
-        gplot.time = 20 # Ma
-
-    which will automatically reconstruct all topologies to the specified time.
-    You __MUST__ set `gplot.time` before plotting anything.
 
     A variety of geological features can be plotted on GeoAxes/GeoAxesSubplot maps 
     as Shapely `MultiLineString` or `MultiPolygon` geometries, including:
@@ -742,10 +734,10 @@ class PlotTopologies(object):
     def __init__(
         self,
         plate_reconstruction,
+        time=None,
         coastlines=None,
         continents=None,
         COBs=None,
-        time=None,
         anchor_plate_id=0,
     ):
         self.plate_reconstruction = plate_reconstruction
@@ -3767,7 +3759,7 @@ geometries at the dateline are split.</dd>
 <dl>
 <dt id="gplately.plot.PlotTopologies"><code class="flex name class">
 <span>class <span class="ident">PlotTopologies</span></span>
-<span>(</span><span>plate_reconstruction, coastlines=None, continents=None, COBs=None, time=None, anchor_plate_id=0)</span>
+<span>(</span><span>plate_reconstruction, time=None, coastlines=None, continents=None, COBs=None, anchor_plate_id=0)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>A class with tools to read, reconstruct and plot topology features at specific
@@ -3785,27 +3777,24 @@ Projections. </li>
 <p>To call the <code><a title="gplately.plot.PlotTopologies" href="#gplately.plot.PlotTopologies">PlotTopologies</a></code> object, supply: </p>
 <ul>
 <li>an instance of the GPlately <code>plate_reconstruction</code> object</li>
+<li>a reconstruction <code>time</code></li>
 </ul>
 <p>and optionally, </p>
 <ul>
 <li>a <code>coastline_filename</code></li>
 <li>a <code>continent_filename</code></li>
 <li>a <code>COB_filename</code></li>
-<li>a reconstruction <code>time</code></li>
 <li>an <code>anchor_plate_id</code></li>
 </ul>
 <p>For example:</p>
 <pre><code># Calling the PlotTopologies object
 gplot = gplately.plot.PlotTopologies(plate_reconstruction,
-                                    coastline_filename=None,
-                                    continent_filename=None,
-                                    COB_filename=None,
-                                    time=None,
-                                    anchor_plate_id=0,
+                                    time,
+                                    coastline_filename,
+                                    continent_filename,
+                                    COB_filename,
+                                    anchor_plate_id,
         )
-
-# Setting a new reconstruction time
-gplot.time = 20 # Ma
 </code></pre>
 <p>The <code>coastline_filename</code>, <code>continent_filename</code> and <code>COB_filename</code> can be single
 strings to GPML and/or shapefiles, as well as instances of <code>pygplates.FeatureCollection</code>.
@@ -3813,12 +3802,7 @@ If using GPlately's <code>DataServer</code> object to source these files, they w
 <code>pygplates.FeatureCollection</code> items.</p>
 <p>Some features for plotting (like plate boundaries) are taken from the <code>PlateReconstruction</code>
 object's<code>topology_features</code> attribute. They have already been reconstructed to the given
-<code>time</code> using <a href="https://github.com/EarthByte/PlateTectonicTools">Plate Tectonic Tools</a>.
-Simply provide a new reconstruction time by changing the <code>time</code> attribute, e.g.</p>
-<pre><code>gplot.time = 20 # Ma
-</code></pre>
-<p>which will automatically reconstruct all topologies to the specified time.
-You <strong>MUST</strong> set <code>gplot.time</code> before plotting anything.</p>
+<code>time</code> using <a href="https://github.com/EarthByte/PlateTectonicTools">Plate Tectonic Tools</a>.</p>
 <p>A variety of geological features can be plotted on GeoAxes/GeoAxesSubplot maps
 as Shapely <code>MultiLineString</code> or <code>MultiPolygon</code> geometries, including:</p>
 <ul>
@@ -3925,28 +3909,25 @@ boundaries and passive continental boundaries.</dd>
     To call the `PlotTopologies` object, supply: 
 
     * an instance of the GPlately `plate_reconstruction` object
+    * a reconstruction `time`
 
     and optionally, 
 
     * a `coastline_filename`
     * a `continent_filename`
     * a `COB_filename`
-    * a reconstruction `time`
     * an `anchor_plate_id`
 
     For example:
 
         # Calling the PlotTopologies object
         gplot = gplately.plot.PlotTopologies(plate_reconstruction,
-                                            coastline_filename=None,
-                                            continent_filename=None,
-                                            COB_filename=None,
-                                            time=None,
-                                            anchor_plate_id=0,
+                                            time,
+                                            coastline_filename,
+                                            continent_filename,
+                                            COB_filename,
+                                            anchor_plate_id,
                 )
-
-        # Setting a new reconstruction time
-        gplot.time = 20 # Ma
 
     The `coastline_filename`, `continent_filename` and `COB_filename` can be single
     strings to GPML and/or shapefiles, as well as instances of `pygplates.FeatureCollection`. 
@@ -3956,12 +3937,7 @@ boundaries and passive continental boundaries.</dd>
     Some features for plotting (like plate boundaries) are taken from the `PlateReconstruction` 
     object&#39;s`topology_features` attribute. They have already been reconstructed to the given
     `time` using [Plate Tectonic Tools](https://github.com/EarthByte/PlateTectonicTools).
-    Simply provide a new reconstruction time by changing the `time` attribute, e.g.
 
-        gplot.time = 20 # Ma
-
-    which will automatically reconstruct all topologies to the specified time.
-    You __MUST__ set `gplot.time` before plotting anything.
 
     A variety of geological features can be plotted on GeoAxes/GeoAxesSubplot maps 
     as Shapely `MultiLineString` or `MultiPolygon` geometries, including:
@@ -4062,10 +4038,10 @@ boundaries and passive continental boundaries.</dd>
     def __init__(
         self,
         plate_reconstruction,
+        time=None,
         coastlines=None,
         continents=None,
         COBs=None,
-        time=None,
         anchor_plate_id=0,
     ):
         self.plate_reconstruction = plate_reconstruction
