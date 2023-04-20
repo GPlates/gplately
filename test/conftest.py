@@ -71,12 +71,12 @@ def gplately_plot_topologies_object(
     gplately_plate_reconstruction_object,
     gplately_muller_static_geometries,
 ):
-    time = 0
-    return gplately.PlotTopologies(
+    gplot = gplately.PlotTopologies(
         gplately_plate_reconstruction_object,
-        time,
         *gplately_muller_static_geometries,
     )
+    gplot.time = 0
+    return gplot
 
 
 @pytest.fixture(scope="module")
