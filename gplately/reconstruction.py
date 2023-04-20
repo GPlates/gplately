@@ -1621,7 +1621,7 @@ class Points(object):
     def save(self, filename):
         """Saves the feature collection used in the Points object under a given filename to the current directory. 
 
-        The needed file format to save to is determined from the filename extension. 
+        The file format is determined from the filename extension. 
 
         Parameters
         ----------
