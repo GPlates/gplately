@@ -15127,7 +15127,7 @@ body[data-format='mobile'] .jp-OutputArea-child .jp-OutputArea-output {
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[17]:</div>
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[1]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
      <div class="CodeMirror cm-s-jupyter">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="o">%</span><span class="k">matplotlib</span> inline
@@ -15198,7 +15198,7 @@ body[data-format='mobile'] .jp-OutputArea-child .jp-OutputArea-output {
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[19]:</div>
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[3]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
      <div class="CodeMirror cm-s-jupyter">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="k">def</span> <span class="nf">get_subduction_volume_rate</span><span class="p">(</span><span class="n">gdownload_object</span><span class="p">,</span> <span class="n">model</span><span class="p">,</span> <span class="n">reconstruction_time</span><span class="p">):</span>
@@ -15229,7 +15229,7 @@ body[data-format='mobile'] .jp-OutputArea-child .jp-OutputArea-output {
 
     <span class="c1"># DataServer returns a Raster object</span>
     <span class="n">graster</span> <span class="o">=</span> <span class="n">gdownload_object</span><span class="o">.</span><span class="n">get_age_grid</span><span class="p">(</span><span class="n">reconstruction_time</span><span class="p">)</span>
-    <span class="n">graster</span><span class="o">.</span><span class="n">fill_NaNs</span><span class="p">(</span><span class="n">overwrite</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
+    <span class="n">graster</span><span class="o">.</span><span class="n">fill_NaNs</span><span class="p">(</span><span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
     <span class="n">age_interp</span> <span class="o">=</span> <span class="n">graster</span><span class="o">.</span><span class="n">interpolate</span><span class="p">(</span><span class="n">subduction_lon</span><span class="p">,</span> <span class="n">subduction_lat</span><span class="p">)</span>
 
     <span class="n">subduction_age</span> <span class="o">=</span> <span class="n">age_interp</span>
@@ -15255,12 +15255,12 @@ body[data-format='mobile'] .jp-OutputArea-child .jp-OutputArea-output {
 </div>
 </div>
 
-</div><div  class="jp-Cell jp-CodeCell jp-Notebook-cell jp-mod-noOutputs  ">
+</div><div  class="jp-Cell jp-CodeCell jp-Notebook-cell   ">
 <div class="jp-Cell-inputWrapper">
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[&nbsp;]:</div>
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[4]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
      <div class="CodeMirror cm-s-jupyter">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># Calculate the total subduction volume rate (km^3/yr) per timestep for each plate model</span>
@@ -15292,6 +15292,27 @@ body[data-format='mobile'] .jp-OutputArea-child .jp-OutputArea-output {
 </div>
 </div>
 
+<div class="jp-Cell-outputWrapper">
+<div class="jp-Collapser jp-OutputCollapser jp-Cell-outputCollapser">
+</div>
+
+
+<div class="jp-OutputArea jp-Cell-outputArea">
+<div class="jp-OutputArea-child">
+    
+    <div class="jp-OutputPrompt jp-OutputArea-prompt"></div>
+
+
+<div class="jp-RenderedText jp-OutputArea-output" data-mime-type="text/plain">
+<pre>Progress: [####################] 99.6%
+</pre>
+</div>
+</div>
+
+</div>
+
+</div>
+
 </div>
 <div  class="jp-Cell jp-MarkdownCell jp-Notebook-cell">
 <div class="jp-Cell-inputWrapper">
@@ -15309,7 +15330,7 @@ body[data-format='mobile'] .jp-OutputArea-child .jp-OutputArea-output {
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[23]:</div>
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[5]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
      <div class="CodeMirror cm-s-jupyter">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="kn">from</span> <span class="nn">joblib</span> <span class="kn">import</span> <span class="n">Parallel</span><span class="p">,</span> <span class="n">delayed</span>
@@ -15339,11 +15360,11 @@ body[data-format='mobile'] .jp-OutputArea-child .jp-OutputArea-output {
 
 <div class="jp-RenderedText jp-OutputArea-output" data-mime-type="application/vnd.jupyter.stderr">
 <pre>[Parallel(n_jobs=-3)]: Using backend LokyBackend with 8 concurrent workers.
-[Parallel(n_jobs=-3)]: Done  34 tasks      | elapsed:   28.2s
+[Parallel(n_jobs=-3)]: Done  34 tasks      | elapsed:   36.9s
 /Users/ben/miniforge3/envs/mapping/lib/python3.9/site-packages/joblib/externals/loky/process_executor.py:702: UserWarning: A worker stopped while some jobs were given to the executor. This can be caused by a too short worker timeout or by a memory leak.
   warnings.warn(
-[Parallel(n_jobs=-3)]: Done 184 tasks      | elapsed:  2.0min
-[Parallel(n_jobs=-3)]: Done 231 out of 231 | elapsed:  2.5min finished
+[Parallel(n_jobs=-3)]: Done 184 tasks      | elapsed:  2.7min
+[Parallel(n_jobs=-3)]: Done 231 out of 231 | elapsed:  3.4min finished
 </pre>
 </div>
 </div>
@@ -15357,7 +15378,7 @@ body[data-format='mobile'] .jp-OutputArea-child .jp-OutputArea-output {
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[24]:</div>
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[6]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
      <div class="CodeMirror cm-s-jupyter">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># Use Loky Backend</span>
@@ -15383,9 +15404,9 @@ body[data-format='mobile'] .jp-OutputArea-child .jp-OutputArea-output {
 
 <div class="jp-RenderedText jp-OutputArea-output" data-mime-type="application/vnd.jupyter.stderr">
 <pre>[Parallel(n_jobs=-3)]: Using backend LokyBackend with 8 concurrent workers.
-[Parallel(n_jobs=-3)]: Done  34 tasks      | elapsed:   18.0s
-[Parallel(n_jobs=-3)]: Done 184 tasks      | elapsed:  1.4min
-[Parallel(n_jobs=-3)]: Done 231 out of 231 | elapsed:  1.7min finished
+[Parallel(n_jobs=-3)]: Done  34 tasks      | elapsed:   26.4s
+[Parallel(n_jobs=-3)]: Done 184 tasks      | elapsed:  1.9min
+[Parallel(n_jobs=-3)]: Done 231 out of 231 | elapsed:  2.4min finished
 </pre>
 </div>
 </div>
@@ -15399,7 +15420,7 @@ body[data-format='mobile'] .jp-OutputArea-child .jp-OutputArea-output {
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[30]:</div>
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[7]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
      <div class="CodeMirror cm-s-jupyter">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># unpack numpy arrays</span>
@@ -15428,7 +15449,7 @@ body[data-format='mobile'] .jp-OutputArea-child .jp-OutputArea-output {
 <div class="jp-Collapser jp-InputCollapser jp-Cell-inputCollapser">
 </div>
 <div class="jp-InputArea jp-Cell-inputArea">
-<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[32]:</div>
+<div class="jp-InputPrompt jp-InputArea-prompt">In&nbsp;[8]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
      <div class="CodeMirror cm-s-jupyter">
 <div class=" highlight hl-ipython3"><pre><span></span><span class="c1"># Plot this data using a Gaussian filter</span>
@@ -15461,13 +15482,13 @@ body[data-format='mobile'] .jp-OutputArea-child .jp-OutputArea-output {
 <div class="jp-OutputArea jp-Cell-outputArea">
 <div class="jp-OutputArea-child jp-OutputArea-executeResult">
     
-    <div class="jp-OutputPrompt jp-OutputArea-prompt">Out[32]:</div>
+    <div class="jp-OutputPrompt jp-OutputArea-prompt">Out[8]:</div>
 
 
 
 
 <div class="jp-RenderedText jp-OutputArea-output jp-OutputArea-executeResult" data-mime-type="text/plain">
-<pre>&lt;matplotlib.legend.Legend at 0x2b46ff460&gt;</pre>
+<pre>&lt;matplotlib.legend.Legend at 0x17f1977c0&gt;</pre>
 </div>
 
 </div>
