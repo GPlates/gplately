@@ -113,7 +113,6 @@ import numpy as np
 import pandas as pd
 import ptt
 import pygplates
-import stripy
 from ptt import separate_ridge_transform_segments
 from scipy.interpolate import griddata
 
@@ -148,6 +147,7 @@ def create_icosahedral_mesh(refinement_levels):
     icosahedral_global_mesh : instance of <stripy.spherical_meshes.icosahedral_mesh>
         The original global icosahedral triangulated mesh. 
     """
+    import stripy
 
     # Create the ocean basin mesh using Stripy's icosahedral spherical mesh
     icosahedral_global_mesh = stripy.spherical_meshes.icosahedral_mesh(
