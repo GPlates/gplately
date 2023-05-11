@@ -793,7 +793,13 @@ class PlotTopologies(object):
 
     def __setstate__(self, state):
 
-        self.plate_reconstruction = _PlateReconstruction(state[&#39;rotation_model&#39;], state[&#39;topology_features&#39;], state[&#39;static_polygons&#39;])
+        plate_reconstruction_args = [state[&#39;rotation_model&#39;], None, None]
+        if &#39;topology_features&#39; in state:
+            plate_reconstruction_args[1] = state[&#39;topology_features&#39;]
+        if &#39;static_polygons&#39; in state:
+            plate_reconstruction_args[2] = state[&#39;static_polygons&#39;]
+
+        self.plate_reconstruction = _PlateReconstruction(*plate_reconstruction_args)
 
         self._coastlines = None
         self._continents = None
@@ -4113,7 +4119,13 @@ boundaries and passive continental boundaries.</dd>
 
     def __setstate__(self, state):
 
-        self.plate_reconstruction = _PlateReconstruction(state[&#39;rotation_model&#39;], state[&#39;topology_features&#39;], state[&#39;static_polygons&#39;])
+        plate_reconstruction_args = [state[&#39;rotation_model&#39;], None, None]
+        if &#39;topology_features&#39; in state:
+            plate_reconstruction_args[1] = state[&#39;topology_features&#39;]
+        if &#39;static_polygons&#39; in state:
+            plate_reconstruction_args[2] = state[&#39;static_polygons&#39;]
+
+        self.plate_reconstruction = _PlateReconstruction(*plate_reconstruction_args)
 
         self._coastlines = None
         self._continents = None
