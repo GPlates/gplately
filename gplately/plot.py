@@ -757,7 +757,13 @@ class PlotTopologies(object):
 
     def __setstate__(self, state):
 
-        self.plate_reconstruction = _PlateReconstruction(state['rotation_model'], state['topology_features'], state['static_polygons'])
+        plate_reconstruction_args = [state['rotation_model'], None, None]
+        if 'topology_features' in state:
+            plate_reconstruction_args[1] = state['topology_features']
+        if 'static_polygons' in state:
+            plate_reconstruction_args[2] = state['static_polygons']
+
+        self.plate_reconstruction = _PlateReconstruction(*plate_reconstruction_args)
 
         self._coastlines = None
         self._continents = None
