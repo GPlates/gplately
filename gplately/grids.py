@@ -38,6 +38,7 @@ from scipy.interpolate import griddata
 
 from .geometry import pygplates_to_shapely
 from .reconstruction import PlateReconstruction as _PlateReconstruction
+from .tools import _deg2pixels
 
 __all__ = [
     "fill_raster",
@@ -2086,6 +2087,8 @@ class Raster(object):
         non_reference_plate=701,
         output_name=None
     ):
+        import time as timer
+
         """Rotate a grid defined in one plate model reference frame 
         within a gplately.Raster object to another plate 
         reconstruction model reference frame.
@@ -2143,18 +2146,34 @@ class Raster(object):
             anchor_plate_id=to_rotation_reference_plate
         )
         reference_frame_conversion_rotation = to_rotation * from_rotation.get_inverse()
-        
-        llons, llats = np.meshgrid(self.lons, self.lats)
-        llons = llons.flatten()
-        llats = llats.flatten()
-        
-        # Convert lon-lat points of Raster grid to pyGPlates points
-        input_points = pygplates.MultiPointOnSphere(
-            (lat, lon) for lon, lat in zip(llons, llats)
+
+
+        # Resize the input grid to the specified output resolution before rotating
+        resX = _deg2pixels(
+            grid_spacing_degrees, self.extent[0], self.extent[1]
+        )
+        resY = _deg2pixels(
+            grid_spacing_degrees, self.extent[2], self.extent[3]
+        )
+        resized_input_grid = self.resize(
+            resX, resY, inplace=False
         )
 
-        # Grid values
-        values = np.array(self.data).flatten()
+        # Get the flattened lons, lats
+        llons, llats = np.meshgrid(
+            resized_input_grid.lons, resized_input_grid.lats
+        )
+        llons = llons.flatten()
+        llats = llats.flatten()
+        input_coords = [(llons[i], llats[i]) for i in range(0, len(llons))]
+
+
+        # Convert lon-lat points of Raster grid to pyGPlates points
+        input_points = pygplates.MultiPointOnSphere(
+            (lat, lon) for lon, lat in input_coords
+        )
+        # Get grid values of the resized Raster object
+        values = np.array(resized_input_grid.data).flatten()
 
         # Rotate grid nodes to the other reference frame
         output_points = reference_frame_conversion_rotation * input_points
@@ -2170,6 +2189,7 @@ class Raster(object):
             zdata.append(values[index])
 
         # Create a regular grid on which to interpolate lats, lons and zdata
+        # Use the extent of the original Raster object
         extent_globe = self.extent
 
         resX = int(np.floor((extent_globe[1] - extent_globe[0]) / grid_spacing_degrees)) + 1
@@ -2185,6 +2205,7 @@ class Raster(object):
             extent_globe[3], 
             resY
         )
+
         X, Y = np.meshgrid(
             grid_lon, 
             grid_lat
@@ -2198,7 +2219,7 @@ class Raster(object):
             (X, Y), 
             method='nearest'
         )
-        
+
         # Write output grid to netCDF if requested.
         if output_name:
             write_netcdf_grid(
@@ -2208,6 +2229,7 @@ class Raster(object):
             )
             
         return Raster(data=Z)
+
     
 
 
