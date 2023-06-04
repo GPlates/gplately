@@ -520,6 +520,37 @@ class SeafloorGrid(object):
         # Filename for continental masks that the user can provide instead of building it here
         self.continent_mask_filename = continent_mask_filename
 
+        # If the user provides a continental mask filename, we need to downsize the mask 
+        # resolution for when we create the initial ocean mesh. The mesh does not need to be high-res.
+        if self.continent_mask_filename is not None:
+
+            # Determine which percentage to use to scale the continent mask resolution at max time
+            def _map_res_to_node_percentage(
+                self, 
+                continent_mask_filename
+            ):
+                maskY, maskX = grids.read_netcdf_grid(
+                    continent_mask_filename.format(
+                        self._max_time
+                    )
+                ).shape
+                
+                mask_deg = _pixels2deg(maskX, self.extent[0], self.extent[1])
+                
+                if mask_deg <= 0.1:
+                    percentage = 0.1
+                elif mask_deg <= 0.25:
+                    percentage = 0.3
+                elif mask_deg <= 0.5:
+                    percentage = 0.5
+                elif mask_deg < 0.75:
+                    percentage = 0.6
+                elif mask_deg >= 1:
+                    percentage = 0.75
+                return mask_deg, percentage
+
+            _, self.percentage = _map_res_to_node_percentage(self, self.continent_mask_filename)
+
 
     # Allow SeafloorGrid time to be updated, and to update the internally-used 
     # PlotTopologies' time attribute too. If PlotTopologies is used outside the
@@ -676,10 +707,11 @@ class SeafloorGrid(object):
             # grid is 7x more populated than a 6-level stripy icosahedral mesh and
             # using this resolution for the initial ocean mesh will dramatically slow down
             # reconstruction by topologies.
-            # Take half the input resolution for the initial seafloor profile.
+            # Scale down the resolution based on the input mask resolution
+            # (percentage was found in __init__.)
             max_time_cont_mask.resize(
-                int(max_time_cont_mask.shape[0]*0.5), 
-                int(max_time_cont_mask.shape[1]*0.5),
+                int(max_time_cont_mask.shape[0]*self.percentage), 
+                int(max_time_cont_mask.shape[1]*self.percentage),
                 inplace=True
             )
 
