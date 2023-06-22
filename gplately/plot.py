@@ -1056,7 +1056,7 @@ class PlotTopologies(object):
         return gdf.plot(ax=ax, transform=self.base_projection, **kwargs)
 
 
-    def get_coastlines(self):
+    def get_coastlines(self, central_meridian=0.0, tessellate_degrees=None):
         """Create a geopandas.GeoDataFrame object containing geometries of reconstructed coastline polygons. 
 
         Notes
@@ -1079,6 +1079,11 @@ class PlotTopologies(object):
         -------
         gdf : instance of <geopandas.GeoDataFrame>
             A pandas.DataFrame that has a column with `coastlines` geometry.
+        central_meridian : float
+            Central meridian around which to perform wrapping; default: 0.0.
+        tessellate_degrees : float or None
+            If provided, geometries will be tessellated to this resolution prior
+            to wrapping.
 
         Raises 
         ------
@@ -1093,7 +1098,11 @@ class PlotTopologies(object):
         if self.coastlines is None:
             raise ValueError("Supply coastlines to PlotTopologies object")
 
-        coastline_polygons = shapelify_feature_polygons(self.coastlines)
+        coastline_polygons = shapelify_feature_polygons(
+            self.coastlines,
+            central_meridian=central_meridian,
+            tessellate_degrees=tessellate_degrees,
+        )
         gdf = gpd.GeoDataFrame({"geometry": coastline_polygons}, geometry="geometry")
         return gdf
 
@@ -1129,11 +1138,14 @@ class PlotTopologies(object):
             A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map 
             with coastline features plotted onto the chosen map projection. 
         """
-        gdf = self.get_coastlines()
+        gdf = self.get_coastlines(
+            central_meridian=kwargs.pop("central_meridian", 0.0),
+            tessellate_degrees=kwargs.pop("tessellate_degrees", None),
+        )
         return gdf.plot(ax=ax, transform=self.base_projection, **kwargs)
 
 
-    def get_continents(self):
+    def get_continents(self, central_meridian=0.0, tessellate_degrees=None):
         """Create a geopandas.GeoDataFrame object containing geometries of reconstructed continental polygons. 
 
         Notes
@@ -1156,6 +1168,11 @@ class PlotTopologies(object):
         -------
         gdf : instance of <geopandas.GeoDataFrame>
             A pandas.DataFrame that has a column with `continents` geometry.
+        central_meridian : float
+            Central meridian around which to perform wrapping; default: 0.0.
+        tessellate_degrees : float or None
+            If provided, geometries will be tessellated to this resolution prior
+            to wrapping.
 
         Raises 
         ------
@@ -1170,7 +1187,11 @@ class PlotTopologies(object):
         if self.continents is None:
             raise ValueError("Supply continents to PlotTopologies object")
 
-        continent_polygons = shapelify_feature_polygons(self.continents)
+        continent_polygons = shapelify_feature_polygons(
+            self.continents,
+            central_meridian=central_meridian,
+            tessellate_degrees=tessellate_degrees,
+        )
         gdf = gpd.GeoDataFrame({"geometry": continent_polygons}, geometry="geometry")
         return gdf
 
@@ -1206,11 +1227,18 @@ class PlotTopologies(object):
             A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map 
             with continent features plotted onto the chosen map projection. 
         """
-        gdf = self.get_continents()
+        gdf = self.get_continents(
+            central_meridian=kwargs.pop("central_meridian", 0.0),
+            tessellate_degrees=kwargs.pop("tessellate_degrees", None),
+        )
         return gdf.plot(ax=ax, transform=self.base_projection, **kwargs)
 
 
-    def get_continent_ocean_boundaries(self):
+    def get_continent_ocean_boundaries(
+        self,
+        central_meridian=0.0,
+        tessellate_degrees=None,
+    ):
         """Create a geopandas.GeoDataFrame object containing geometries of reconstructed continent-ocean
         boundary lines. 
 
@@ -1234,6 +1262,11 @@ class PlotTopologies(object):
         -------
         gdf : instance of <geopandas.GeoDataFrame>
             A pandas.DataFrame that has a column with `COBs` geometry.
+        central_meridian : float
+            Central meridian around which to perform wrapping; default: 0.0.
+        tessellate_degrees : float or None
+            If provided, geometries will be tessellated to this resolution prior
+            to wrapping.
 
         Raises 
         ------
@@ -1248,7 +1281,11 @@ class PlotTopologies(object):
         if self.COBs is None:
             raise ValueError("Supply COBs to PlotTopologies object")
 
-        COB_lines = shapelify_feature_lines(self.COBs)
+        COB_lines = shapelify_feature_lines(
+            self.COBs,
+            central_meridian=central_meridian,
+            tessellate_degrees=tessellate_degrees,
+        )
         gdf = gpd.GeoDataFrame({"geometry": COB_lines}, geometry="geometry")
         return gdf
 
@@ -1289,11 +1326,14 @@ class PlotTopologies(object):
             A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map 
             with COB features plotted onto the chosen map projection. 
         """
-        gdf = self.get_continent_ocean_boundaries()
+        gdf = self.get_continent_ocean_boundaries(
+            central_meridian=kwargs.pop("central_meridian", 0.0),
+            tessellate_degrees=kwargs.pop("tessellate_degrees", None),
+        )
         return gdf.plot(ax=ax, transform=self.base_projection, **kwargs)
 
 
-    def get_ridges(self):
+    def get_ridges(self, central_meridian=0.0, tessellate_degrees=None):
         """Create a geopandas.GeoDataFrame object containing geometries of reconstructed ridge lines. 
 
         Notes
@@ -1316,6 +1356,11 @@ class PlotTopologies(object):
         -------
         gdf : instance of <geopandas.GeoDataFrame>
             A pandas.DataFrame that has a column with `ridges` geometry.
+        central_meridian : float
+            Central meridian around which to perform wrapping; default: 0.0.
+        tessellate_degrees : float or None
+            If provided, geometries will be tessellated to this resolution prior
+            to wrapping.
 
         Raises 
         ------
@@ -1330,7 +1375,11 @@ class PlotTopologies(object):
         if self.ridges is None:
             raise ValueError("No ridge topologies passed to PlotTopologies.")
 
-        ridge_lines = shapelify_feature_lines(self.ridges)
+        ridge_lines = shapelify_feature_lines(
+            self.ridges,
+            central_meridian=central_meridian,
+            tessellate_degrees=tessellate_degrees,
+        )
         gdf = gpd.GeoDataFrame({"geometry": ridge_lines}, geometry="geometry")
         return gdf
 
@@ -1375,11 +1424,18 @@ class PlotTopologies(object):
             A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map 
             with ridge features plotted onto the chosen map projection. 
         """
-        gdf = self.get_ridges()
+        gdf = self.get_ridges(
+            central_meridian=kwargs.pop("central_meridian", 0.0),
+            tessellate_degrees=kwargs.pop("tessellate_degrees", None),
+        )
         return gdf.plot(ax=ax, facecolor='none', edgecolor=color, transform=self.base_projection, **kwargs)
 
 
-    def get_ridges_and_transforms(self):
+    def get_ridges_and_transforms(
+        self,
+        central_meridian=0.0,
+        tessellate_degrees=None,
+    ):
         """Create a geopandas.GeoDataFrame object containing geometries of reconstructed ridge and transform lines. 
 
         Notes
@@ -1402,6 +1458,11 @@ class PlotTopologies(object):
         -------
         gdf : instance of <geopandas.GeoDataFrame>
             A pandas.DataFrame that has a column with `ridges` geometry.
+        central_meridian : float
+            Central meridian around which to perform wrapping; default: 0.0.
+        tessellate_degrees : float or None
+            If provided, geometries will be tessellated to this resolution prior
+            to wrapping.
 
         Raises 
         ------
@@ -1416,7 +1477,11 @@ class PlotTopologies(object):
         if self.ridge_transforms is None:
             raise ValueError("No ridge and transform topologies passed to PlotTopologies.")
 
-        ridge_transform_lines = shapelify_feature_lines(self.ridge_transforms)
+        ridge_transform_lines = shapelify_feature_lines(
+            self.ridge_transforms,
+            central_meridian=central_meridian,
+            tessellate_degrees=tessellate_degrees,
+        )
         gdf = gpd.GeoDataFrame({"geometry": ridge_transform_lines}, geometry="geometry")
         return gdf
 
@@ -1462,11 +1527,14 @@ class PlotTopologies(object):
             A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map 
             with ridge & transform features plotted onto the chosen map projection. 
         """
-        gdf = self.get_ridges_and_transforms()
+        gdf = self.get_ridges_and_transforms(
+            central_meridian=kwargs.pop("central_meridian", 0.0),
+            tessellate_degrees=kwargs.pop("tessellate_degrees", None),
+        )
         return gdf.plot(ax=ax, facecolor='none', edgecolor=color, transform=self.base_projection, **kwargs)
 
 
-    def get_transforms(self):
+    def get_transforms(self, central_meridian=0.0, tessellate_degrees=None):
         """Create a geopandas.GeoDataFrame object containing geometries of reconstructed transform lines. 
 
         Notes
@@ -1489,6 +1557,11 @@ class PlotTopologies(object):
         -------
         gdf : instance of <geopandas.GeoDataFrame>
             A pandas.DataFrame that has a column with `transforms` geometry.
+        central_meridian : float
+            Central meridian around which to perform wrapping; default: 0.0.
+        tessellate_degrees : float or None
+            If provided, geometries will be tessellated to this resolution prior
+            to wrapping.
 
         Raises 
         ------
@@ -1502,7 +1575,11 @@ class PlotTopologies(object):
         if self.transforms is None:
             raise ValueError("No transform topologies passed to PlotTopologies.")
 
-        transform_lines = shapelify_feature_lines(self.transforms)
+        transform_lines = shapelify_feature_lines(
+            self.transforms,
+            central_meridian=central_meridian,
+            tessellate_degrees=tessellate_degrees,
+        )
         gdf = gpd.GeoDataFrame({"geometry": transform_lines}, geometry="geometry")
         return gdf
 
@@ -1547,11 +1624,14 @@ class PlotTopologies(object):
             A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map 
             with transform features plotted onto the chosen map projection.
         """
-        gdf = self.get_transforms()
+        gdf = self.get_transforms(
+            central_meridian=kwargs.pop("central_meridian", 0.0),
+            tessellate_degrees=kwargs.pop("tessellate_degrees", None),
+        )
         return gdf.plot(ax=ax, facecolor='none', edgecolor=color, transform=self.base_projection, **kwargs)
 
 
-    def get_trenches(self):
+    def get_trenches(self, central_meridian=0.0, tessellate_degrees=None):
         """Create a geopandas.GeoDataFrame object containing geometries of reconstructed trench lines. 
 
         Notes
@@ -1574,6 +1654,11 @@ class PlotTopologies(object):
         -------
         gdf : instance of <geopandas.GeoDataFrame>
             A pandas.DataFrame that has a column with `trenches` geometry.
+        central_meridian : float
+            Central meridian around which to perform wrapping; default: 0.0.
+        tessellate_degrees : float or None
+            If provided, geometries will be tessellated to this resolution prior
+            to wrapping.
 
         Raises 
         ------
@@ -1587,7 +1672,11 @@ class PlotTopologies(object):
         if self.trenches is None:
             raise ValueError("No trenches passed to PlotTopologies.")
 
-        trench_lines = shapelify_feature_lines(self.trenches)
+        trench_lines = shapelify_feature_lines(
+            self.trenches,
+            central_meridian=central_meridian,
+            tessellate_degrees=tessellate_degrees,
+        )
         gdf = gpd.GeoDataFrame({"geometry": trench_lines}, geometry="geometry")
         return gdf
 
@@ -1633,11 +1722,14 @@ class PlotTopologies(object):
             A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map 
             with transform features plotted onto the chosen map projection.
         """
-        gdf = self.get_trenches()
+        gdf = self.get_trenches(
+            central_meridian=kwargs.pop("central_meridian", 0.0),
+            tessellate_degrees=kwargs.pop("tessellate_degrees", None),
+        )
         return gdf.plot(ax=ax, facecolor='none', edgecolor=color, transform=self.base_projection, **kwargs)
 
 
-    def get_misc_boundaries(self):
+    def get_misc_boundaries(self, central_meridian=0.0, tessellate_degrees=None):
         """Create a geopandas.GeoDataFrame object containing geometries of other reconstructed lines. 
 
         Notes
@@ -1660,6 +1752,11 @@ class PlotTopologies(object):
         -------
         gdf : instance of <geopandas.GeoDataFrame>
             A pandas.DataFrame that has a column with `other` geometry.
+        central_meridian : float
+            Central meridian around which to perform wrapping; default: 0.0.
+        tessellate_degrees : float or None
+            If provided, geometries will be tessellated to this resolution prior
+            to wrapping.
 
         Raises 
         ------
@@ -1673,7 +1770,11 @@ class PlotTopologies(object):
         if self.other is None:
             raise ValueError("No miscellaneous topologies passed to PlotTopologies.")
 
-        lines = shapelify_features(self.other)
+        lines = shapelify_features(
+            self.other,
+            central_meridian=central_meridian,
+            tessellate_degrees=tessellate_degrees,
+        )
         gdf = gpd.GeoDataFrame({"geometry": lines}, geometry="geometry")
         return gdf
 
@@ -1719,7 +1820,10 @@ class PlotTopologies(object):
             A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map 
             with miscellaneous boundary features plotted onto the chosen map projection.
         """
-        gdf = self.get_misc_boundaries()
+        gdf = self.get_misc_boundaries(
+            central_meridian=kwargs.pop("central_meridian", 0.0),
+            tessellate_degrees=kwargs.pop("tessellate_degrees", None),
+        )
         return gdf.plot(ax=ax, facecolor='none', edgecolor=color, transform=self.base_projection, **kwargs)
 
 
@@ -2113,7 +2217,11 @@ class PlotTopologies(object):
         return quiver
 
 
-    def get_continental_rifts(self):
+    def get_continental_rifts(
+        self,
+        central_meridian=0.0,
+        tessellate_degrees=None,
+    ):
         """Create a geopandas.GeoDataFrame object containing geometries of reconstructed contiental rift lines. 
 
         Notes
@@ -2136,6 +2244,11 @@ class PlotTopologies(object):
         -------
         gdf : instance of <geopandas.GeoDataFrame>
             A pandas.DataFrame that has a column with `continental_rifts` geometry.
+        central_meridian : float
+            Central meridian around which to perform wrapping; default: 0.0.
+        tessellate_degrees : float or None
+            If provided, geometries will be tessellated to this resolution prior
+            to wrapping.
 
         Raises 
         ------
@@ -2149,7 +2262,11 @@ class PlotTopologies(object):
         if self.continental_rifts is None:
             raise ValueError("No continental rifts passed to PlotTopologies.")
 
-        continental_rift_lines = shapelify_feature_lines(self.continental_rifts)
+        continental_rift_lines = shapelify_feature_lines(
+            self.continental_rifts,
+            central_meridian=central_meridian,
+            tessellate_degrees=tessellate_degrees,
+        )
         gdf = gpd.GeoDataFrame({"geometry": continental_rift_lines}, geometry="geometry")
         return gdf
 
@@ -2178,11 +2295,14 @@ class PlotTopologies(object):
             A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map 
             with continental rifts plotted onto the chosen map projection.
         """
-        gdf = self.get_continental_rifts()
+        gdf = self.get_continental_rifts(
+            central_meridian=kwargs.pop("central_meridian", 0.0),
+            tessellate_degrees=kwargs.pop("tessellate_degrees", None),
+        )
         return gdf.plot(ax=ax, facecolor='none', edgecolor=color, transform=self.base_projection, **kwargs)
 
 
-    def get_faults(self):
+    def get_faults(self, central_meridian=0.0, tessellate_degrees=None):
         """Create a geopandas.GeoDataFrame object containing geometries of reconstructed fault lines. 
 
         Notes
@@ -2205,6 +2325,11 @@ class PlotTopologies(object):
         -------
         gdf : instance of <geopandas.GeoDataFrame>
             A pandas.DataFrame that has a column with `faults` geometry.
+        central_meridian : float
+            Central meridian around which to perform wrapping; default: 0.0.
+        tessellate_degrees : float or None
+            If provided, geometries will be tessellated to this resolution prior
+            to wrapping.
 
         Raises 
         ------
@@ -2218,7 +2343,11 @@ class PlotTopologies(object):
         if self.faults is None:
             raise ValueError("No faults passed to PlotTopologies.")
 
-        fault_lines = shapelify_feature_lines(self.faults)
+        fault_lines = shapelify_feature_lines(
+            self.faults,
+            central_meridian=central_meridian,
+            tessellate_degrees=tessellate_degrees,
+        )
         gdf = gpd.GeoDataFrame({"geometry": fault_lines}, geometry="geometry")
         return gdf
 
@@ -2247,11 +2376,14 @@ class PlotTopologies(object):
             A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map 
             with faults plotted onto the chosen map projection.
         """
-        gdf = self.get_faults()
+        gdf = self.get_faults(
+            central_meridian=kwargs.pop("central_meridian", 0.0),
+            tessellate_degrees=kwargs.pop("tessellate_degrees", None),
+        )
         return gdf.plot(ax=ax, facecolor='none', edgecolor=color, transform=self.base_projection, **kwargs)
 
 
-    def get_fracture_zones(self):
+    def get_fracture_zones(self, central_meridian=0.0, tessellate_degrees=None):
         """Create a geopandas.GeoDataFrame object containing geometries of reconstructed fracture zone lines. 
 
         Notes
@@ -2274,6 +2406,11 @@ class PlotTopologies(object):
         -------
         gdf : instance of <geopandas.GeoDataFrame>
             A pandas.DataFrame that has a column with `fracture_zones` geometry.
+        central_meridian : float
+            Central meridian around which to perform wrapping; default: 0.0.
+        tessellate_degrees : float or None
+            If provided, geometries will be tessellated to this resolution prior
+            to wrapping.
 
         Raises 
         ------
@@ -2287,7 +2424,11 @@ class PlotTopologies(object):
         if self.fracture_zones is None:
             raise ValueError("No fracture zones passed to PlotTopologies.")
 
-        fracture_zone_lines = shapelify_feature_lines(self.fracture_zones)
+        fracture_zone_lines = shapelify_feature_lines(
+            self.fracture_zones,
+            central_meridian=central_meridian,
+            tessellate_degrees=tessellate_degrees,
+        )
         gdf = gpd.GeoDataFrame({"geometry": fracture_zone_lines}, geometry="geometry")
         return gdf
 
@@ -2316,11 +2457,18 @@ class PlotTopologies(object):
             A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map 
             with fracture zones plotted onto the chosen map projection.
         """
-        gdf = self.get_fracture_zones()
+        gdf = self.get_fracture_zones(
+            central_meridian=kwargs.pop("central_meridian", 0.0),
+            tessellate_degrees=kwargs.pop("tessellate_degrees", None),
+        )
         return gdf.plot(ax=ax, facecolor='none', edgecolor=color, transform=self.base_projection, **kwargs)
 
 
-    def get_inferred_paleo_boundaries(self):
+    def get_inferred_paleo_boundaries(
+        self,
+        central_meridian=0.0,
+        tessellate_degrees=None,
+    ):
         """Create a geopandas.GeoDataFrame object containing geometries of reconstructed inferred paleo boundary lines. 
 
         Notes
@@ -2343,6 +2491,11 @@ class PlotTopologies(object):
         -------
         gdf : instance of <geopandas.GeoDataFrame>
             A pandas.DataFrame that has a column with `inferred_paleo_boundaries` geometry.
+        central_meridian : float
+            Central meridian around which to perform wrapping; default: 0.0.
+        tessellate_degrees : float or None
+            If provided, geometries will be tessellated to this resolution prior
+            to wrapping.
 
         Raises 
         ------
@@ -2356,7 +2509,11 @@ class PlotTopologies(object):
         if self.inferred_paleo_boundaries is None:
             raise ValueError("No inferred paleo boundaries passed to PlotTopologies.")
 
-        inferred_paleo_boundary_lines = shapelify_feature_lines(self.inferred_paleo_boundaries)
+        inferred_paleo_boundary_lines = shapelify_feature_lines(
+            self.inferred_paleo_boundaries,
+            central_meridian=central_meridian,
+            tessellate_degrees=tessellate_degrees,
+        )
         gdf = gpd.GeoDataFrame({"geometry": inferred_paleo_boundary_lines}, geometry="geometry")
         return gdf
 
@@ -2385,11 +2542,18 @@ class PlotTopologies(object):
             A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map 
             with inferred paleo boundaries plotted onto the chosen map projection.
         """
-        gdf = get_inferred_paleo_boundaries()
+        gdf = self.get_inferred_paleo_boundaries(
+            central_meridian=kwargs.pop("central_meridian", 0.0),
+            tessellate_degrees=kwargs.pop("tessellate_degrees", None),
+        )
         return gdf.plot(ax=ax, facecolor='none', edgecolor=color, transform=self.base_projection, **kwargs)
 
 
-    def get_terrane_boundaries(self):
+    def get_terrane_boundaries(
+        self,
+        central_meridian=0.0,
+        tessellate_degrees=None,
+    ):
         """Create a geopandas.GeoDataFrame object containing geometries of reconstructed terrane boundary lines. 
 
         Notes
@@ -2412,6 +2576,11 @@ class PlotTopologies(object):
         -------
         gdf : instance of <geopandas.GeoDataFrame>
             A pandas.DataFrame that has a column with `terrane_boundaries` geometry.
+        central_meridian : float
+            Central meridian around which to perform wrapping; default: 0.0.
+        tessellate_degrees : float or None
+            If provided, geometries will be tessellated to this resolution prior
+            to wrapping.
 
         Raises 
         ------
@@ -2425,7 +2594,11 @@ class PlotTopologies(object):
         if self.terrane_boundaries is None:
             raise ValueError("No terrane boundaries passed to PlotTopologies.")
 
-        terrane_boundary_lines = shapelify_feature_lines(self.terrane_boundaries)
+        terrane_boundary_lines = shapelify_feature_lines(
+            self.terrane_boundaries,
+            central_meridian=central_meridian,
+            tessellate_degrees=tessellate_degrees,
+        )
         gdf = gpd.GeoDataFrame({"geometry": terrane_boundary_lines}, geometry="geometry")
         return gdf
 
@@ -2454,11 +2627,18 @@ class PlotTopologies(object):
             A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map 
             with terrane boundaries plotted onto the chosen map projection.
         """
-        gdf = self.get_terrane_boundaries()
+        gdf = self.get_terrane_boundaries(
+            central_meridian=kwargs.pop("central_meridian", 0.0),
+            tessellate_degrees=kwargs.pop("tessellate_degrees", None),
+        )
         return gdf.plot(ax=ax, facecolor='none', edgecolor=color, transform=self.base_projection, **kwargs)
 
 
-    def get_transitional_crusts(self):
+    def get_transitional_crusts(
+        self,
+        central_meridian=0.0,
+        tessellate_degrees=None,
+    ):
         """Create a geopandas.GeoDataFrame object containing geometries of reconstructed transitional crust lines. 
 
         Notes
@@ -2481,6 +2661,11 @@ class PlotTopologies(object):
         -------
         gdf : instance of <geopandas.GeoDataFrame>
             A pandas.DataFrame that has a column with `transitional_crusts` geometry.
+        central_meridian : float
+            Central meridian around which to perform wrapping; default: 0.0.
+        tessellate_degrees : float or None
+            If provided, geometries will be tessellated to this resolution prior
+            to wrapping.
 
         Raises 
         ------
@@ -2494,7 +2679,11 @@ class PlotTopologies(object):
         if self.transitional_crusts is None:
             raise ValueError("No transitional crusts passed to PlotTopologies.")
 
-        transitional_crust_lines = shapelify_feature_lines(self.transitional_crusts)
+        transitional_crust_lines = shapelify_feature_lines(
+            self.transitional_crusts,
+            central_meridian=central_meridian,
+            tessellate_degrees=tessellate_degrees,
+        )
         gdf = gpd.GeoDataFrame({"geometry": transitional_crust_lines}, geometry="geometry")
         return gdf 
 
@@ -2523,11 +2712,18 @@ class PlotTopologies(object):
             A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map 
             with transitional crust plotted onto the chosen map projection.
         """
-        gdf = self.get_transitional_crusts()
+        gdf = self.get_transitional_crusts(
+            central_meridian=kwargs.pop("central_meridian", 0.0),
+            tessellate_degrees=kwargs.pop("tessellate_degrees", None),
+        )
         return gdf.plot(ax=ax, facecolor='none', edgecolor=color, transform=self.base_projection, **kwargs)
 
 
-    def get_orogenic_belts(self):
+    def get_orogenic_belts(
+        self,
+        central_meridian=0.0,
+        tessellate_degrees=None,
+    ):
         """Create a geopandas.GeoDataFrame object containing geometries of reconstructed orogenic belt lines. 
 
         Notes
@@ -2550,6 +2746,11 @@ class PlotTopologies(object):
         -------
         gdf : instance of <geopandas.GeoDataFrame>
             A pandas.DataFrame that has a column with `orogenic_belts` geometry.
+        central_meridian : float
+            Central meridian around which to perform wrapping; default: 0.0.
+        tessellate_degrees : float or None
+            If provided, geometries will be tessellated to this resolution prior
+            to wrapping.
 
         Raises 
         ------
@@ -2563,7 +2764,11 @@ class PlotTopologies(object):
         if self.orogenic_belts is None:
             raise ValueError("No orogenic belts passed to PlotTopologies.")
 
-        orogenic_belt_lines = shapelify_feature_lines(self.orogenic_belts)
+        orogenic_belt_lines = shapelify_feature_lines(
+            self.orogenic_belts,
+            central_meridian=central_meridian,
+            tessellate_degrees=tessellate_degrees,
+        )
         gdf = gpd.GeoDataFrame({"geometry": orogenic_belt_lines}, geometry="geometry")
         return gdf
 
@@ -2592,11 +2797,14 @@ class PlotTopologies(object):
             A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map 
             with orogenic belts plotted onto the chosen map projection.
         """
-        gdf = self.get_orogenic_belts()
+        gdf = self.get_orogenic_belts(
+            central_meridian=kwargs.pop("central_meridian", 0.0),
+            tessellate_degrees=kwargs.pop("tessellate_degrees", None),
+        )
         return gdf.plot(ax=ax, facecolor='none', edgecolor=color, transform=self.base_projection, **kwargs)
 
 
-    def get_sutures(self):
+    def get_sutures(self, central_meridian=0.0, tessellate_degrees=None):
         """Create a geopandas.GeoDataFrame object containing geometries of reconstructed suture lines. 
 
         Notes
@@ -2619,6 +2827,11 @@ class PlotTopologies(object):
         -------
         gdf : instance of <geopandas.GeoDataFrame>
             A pandas.DataFrame that has a column with `sutures` geometry.
+        central_meridian : float
+            Central meridian around which to perform wrapping; default: 0.0.
+        tessellate_degrees : float or None
+            If provided, geometries will be tessellated to this resolution prior
+            to wrapping.
 
         Raises 
         ------
@@ -2632,7 +2845,11 @@ class PlotTopologies(object):
         if self.sutures is None:
             raise ValueError("No sutures passed to PlotTopologies.")
 
-        suture_lines = shapelify_feature_lines(self.sutures)
+        suture_lines = shapelify_feature_lines(
+            self.sutures,
+            central_meridian=central_meridian,
+            tessellate_degrees=tessellate_degrees,
+        )
         gdf = gpd.GeoDataFrame({"geometry": suture_lines}, geometry="geometry")
         return gdf
 
@@ -2661,11 +2878,18 @@ class PlotTopologies(object):
             A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map 
             with sutures plotted onto the chosen map projection.
         """
-        gdf = self.get_sutures()
+        gdf = self.get_sutures(
+            central_meridian=kwargs.pop("central_meridian", 0.0),
+            tessellate_degrees=kwargs.pop("tessellate_degrees", None),
+        )
         return gdf.plot(ax=ax, facecolor='none', edgecolor=color, transform=self.base_projection, **kwargs)
 
 
-    def get_continental_crusts(self):
+    def get_continental_crusts(
+        self,
+        central_meridian=0.0,
+        tessellate_degrees=None,
+    ):
         """Create a geopandas.GeoDataFrame object containing geometries of reconstructed continental crust lines. 
 
         Notes
@@ -2688,6 +2912,11 @@ class PlotTopologies(object):
         -------
         gdf : instance of <geopandas.GeoDataFrame>
             A pandas.DataFrame that has a column with `continental_crusts` geometry.
+        central_meridian : float
+            Central meridian around which to perform wrapping; default: 0.0.
+        tessellate_degrees : float or None
+            If provided, geometries will be tessellated to this resolution prior
+            to wrapping.
 
         Raises 
         ------
@@ -2701,7 +2930,11 @@ class PlotTopologies(object):
         if self.continental_crusts is None:
             raise ValueError("No continental crust topologies passed to PlotTopologies.")
 
-        continental_crust_lines = shapelify_feature_lines(self.continental_crusts)
+        continental_crust_lines = shapelify_feature_lines(
+            self.continental_crusts,
+            central_meridian=central_meridian,
+            tessellate_degrees=tessellate_degrees,
+        )
         gdf = gpd.GeoDataFrame({"geometry": continental_crust_lines}, geometry="geometry")
         return gdf
 
@@ -2730,11 +2963,18 @@ class PlotTopologies(object):
             A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map 
             with continental crust lines plotted onto the chosen map projection.
         """
-        gdf = self.get_continental_crusts()
+        gdf = self.get_continental_crusts(
+            central_meridian=kwargs.pop("central_meridian", 0.0),
+            tessellate_degrees=kwargs.pop("tessellate_degrees", None),
+        )
         return gdf.plot(ax=ax, facecolor='none', edgecolor=color, transform=self.base_projection, **kwargs)
 
 
-    def get_extended_continental_crusts(self):
+    def get_extended_continental_crusts(
+        self,
+        central_meridian=0.0,
+        tessellate_degrees=None,
+    ):
         """Create a geopandas.GeoDataFrame object containing geometries of reconstructed extended continental crust lines. 
 
         Notes
@@ -2757,6 +2997,11 @@ class PlotTopologies(object):
         -------
         gdf : instance of <geopandas.GeoDataFrame>
             A pandas.DataFrame that has a column with `extended_continental_crusts` geometry.
+        central_meridian : float
+            Central meridian around which to perform wrapping; default: 0.0.
+        tessellate_degrees : float or None
+            If provided, geometries will be tessellated to this resolution prior
+            to wrapping.
 
         Raises 
         ------
@@ -2770,7 +3015,11 @@ class PlotTopologies(object):
         if self.extended_continental_crusts is None:
             raise ValueError("No extended continental crust topologies passed to PlotTopologies.")
 
-        extended_continental_crust_lines = shapelify_feature_lines(self.extended_continental_crusts)
+        extended_continental_crust_lines = shapelify_feature_lines(
+            self.extended_continental_crusts,
+            central_meridian=central_meridian,
+            tessellate_degrees=tessellate_degrees,
+        )
         gdf = gpd.GeoDataFrame({"geometry": extended_continental_crust_lines}, geometry="geometry")
         return gdf
 
@@ -2798,11 +3047,18 @@ class PlotTopologies(object):
             A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map 
             with extended continental crust lines plotted onto the chosen map projection.
         """
-        gdf = self.get_extended_continental_crusts()
+        gdf = self.get_extended_continental_crusts(
+            central_meridian=kwargs.pop("central_meridian", 0.0),
+            tessellate_degrees=kwargs.pop("tessellate_degrees", None),
+        )
         return gdf.plot(ax=ax, facecolor='none', edgecolor=color, transform=self.base_projection, **kwargs)
 
 
-    def get_passive_continental_boundaries(self):
+    def get_passive_continental_boundaries(
+        self,
+        central_meridian=0.0,
+        tessellate_degrees=None,
+    ):
         """Create a geopandas.GeoDataFrame object containing geometries of reconstructed passive continental boundary lines. 
 
         Notes
@@ -2825,6 +3081,11 @@ class PlotTopologies(object):
         -------
         gdf : instance of <geopandas.GeoDataFrame>
             A pandas.DataFrame that has a column with `passive_continental_boundaries` geometry.
+        central_meridian : float
+            Central meridian around which to perform wrapping; default: 0.0.
+        tessellate_degrees : float or None
+            If provided, geometries will be tessellated to this resolution prior
+            to wrapping.
 
         Raises 
         ------
@@ -2838,7 +3099,11 @@ class PlotTopologies(object):
         if self.passive_continental_boundaries is None:
             raise ValueError("No passive continental boundaries passed to PlotTopologies.")
 
-        passive_continental_boundary_lines = shapelify_feature_lines(self.passive_continental_boundaries)
+        passive_continental_boundary_lines = shapelify_feature_lines(
+            self.passive_continental_boundaries,
+            central_meridian=central_meridian,
+            tessellate_degrees=tessellate_degrees,
+        )
         gdf = gpd.GeoDataFrame({"geometry": passive_continental_boundary_lines}, geometry="geometry")
         return gdf
 
@@ -2867,11 +3132,14 @@ class PlotTopologies(object):
             A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map 
             with passive continental boundaries plotted onto the chosen map projection.
         """
-        gdf = self.get_passive_continental_boundaries()
+        gdf = self.get_passive_continental_boundaries(
+            central_meridian=kwargs.pop("central_meridian", 0.0),
+            tessellate_degrees=kwargs.pop("tessellate_degrees", None),
+        )
         return gdf.plot(ax=ax, facecolor='none', edgecolor=color, transform=self.base_projection, **kwargs)
 
 
-    def get_slab_edges(self):
+    def get_slab_edges(self, central_meridian=0.0, tessellate_degrees=None):
         """Create a geopandas.GeoDataFrame object containing geometries of reconstructed slab edge lines. 
 
         Notes
@@ -2894,6 +3162,11 @@ class PlotTopologies(object):
         -------
         gdf : instance of <geopandas.GeoDataFrame>
             A pandas.DataFrame that has a column with `slab_edges` geometry.
+        central_meridian : float
+            Central meridian around which to perform wrapping; default: 0.0.
+        tessellate_degrees : float or None
+            If provided, geometries will be tessellated to this resolution prior
+            to wrapping.
 
         Raises 
         ------
@@ -2907,7 +3180,11 @@ class PlotTopologies(object):
         if self.slab_edges is None:
             raise ValueError("No slab edges passed to PlotTopologies.")
 
-        slab_edge_lines = shapelify_feature_lines(self.slab_edges)
+        slab_edge_lines = shapelify_feature_lines(
+            self.slab_edges,
+            central_meridian=central_meridian,
+            tessellate_degrees=tessellate_degrees,
+        )
         gdf = gpd.GeoDataFrame({"geometry": slab_edge_lines}, geometry="geometry")
         return gdf
 
@@ -2936,11 +3213,18 @@ class PlotTopologies(object):
             A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map 
             with slab edges plotted onto the chosen map projection.
         """
-        gdf = self.get_slab_edges()
+        gdf = self.get_slab_edges(
+            central_meridian=kwargs.pop("central_meridian", 0.0),
+            tessellate_degrees=kwargs.pop("tessellate_degrees", None),
+        )
         return gdf.plot(ax=ax, facecolor='none', edgecolor=color, transform=self.base_projection, **kwargs)
 
 
-    def get_misc_transforms(self):
+    def get_misc_transforms(
+        self,
+        central_meridian=0.0,
+        tessellate_degrees=None,
+    ):
         """Create a geopandas.GeoDataFrame object containing geometries of reconstructed misc transform lines. 
 
         Notes
@@ -2963,6 +3247,11 @@ class PlotTopologies(object):
         -------
         gdf : instance of <geopandas.GeoDataFrame>
             A pandas.DataFrame that has a column with `misc_transforms` geometry.
+        central_meridian : float
+            Central meridian around which to perform wrapping; default: 0.0.
+        tessellate_degrees : float or None
+            If provided, geometries will be tessellated to this resolution prior
+            to wrapping.
 
         Raises 
         ------
@@ -2976,7 +3265,11 @@ class PlotTopologies(object):
         if self.misc_transforms is None:
             raise ValueError("No miscellaneous transforms passed to PlotTopologies.")
 
-        misc_transform_lines = shapelify_feature_lines(self.misc_transforms)
+        misc_transform_lines = shapelify_feature_lines(
+            self.misc_transforms,
+            central_meridian=central_meridian,
+            tessellate_degrees=tessellate_degrees,
+        )
         gdf = gpd.GeoDataFrame({"geometry": misc_transform_lines}, geometry="geometry")
         return gdf
 
@@ -3005,11 +3298,18 @@ class PlotTopologies(object):
             A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map 
             with miscellaneous transform boundaries plotted onto the chosen map projection.
         """
-        gdf = self.get_misc_transforms()
+        gdf = self.get_misc_transforms(
+            central_meridian=kwargs.pop("central_meridian", 0.0),
+            tessellate_degrees=kwargs.pop("tessellate_degrees", None),
+        )
         return gdf.plot(ax=ax, facecolor='none', edgecolor=color, transform=self.base_projection, **kwargs)
 
 
-    def get_unclassified_features(self):
+    def get_unclassified_features(
+        self,
+        central_meridian=0.0,
+        tessellate_degrees=None,
+    ):
         """Create a geopandas.GeoDataFrame object containing geometries of reconstructed unclassified feature lines. 
 
         Notes
@@ -3032,6 +3332,11 @@ class PlotTopologies(object):
         -------
         gdf : instance of <geopandas.GeoDataFrame>
             A pandas.DataFrame that has a column with `unclassified_features` geometry.
+        central_meridian : float
+            Central meridian around which to perform wrapping; default: 0.0.
+        tessellate_degrees : float or None
+            If provided, geometries will be tessellated to this resolution prior
+            to wrapping.
 
         Raises 
         ------
@@ -3045,7 +3350,11 @@ class PlotTopologies(object):
         if self.unclassified_features is None:
             raise ValueError("No unclassified features passed to PlotTopologies.")
 
-        unclassified_feature_lines = shapelify_feature_lines(self.unclassified_features)
+        unclassified_feature_lines = shapelify_feature_lines(
+            self.unclassified_features,
+            central_meridian=central_meridian,
+            tessellate_degrees=tessellate_degrees,
+        )
         gdf = gpd.GeoDataFrame({"geometry": unclassified_feature_lines}, geometry="geometry")
         return gdf
 
@@ -3074,11 +3383,18 @@ class PlotTopologies(object):
             A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map 
             with unclassified features plotted onto the chosen map projection.
         """
-        gdf = self.get_unclassified_features()
+        gdf = self.get_unclassified_features(
+            central_meridian=kwargs.pop("central_meridian", 0.0),
+            tessellate_degrees=kwargs.pop("tessellate_degrees", None),
+        )
         return gdf.plot(ax=ax, facecolor='none', edgecolor=color, transform=self.base_projection, **kwargs)
 
 
-    def get_all_topologies(self):
+    def get_all_topologies(
+        self,
+        central_meridian=0.0,
+        tessellate_degrees=None,
+    ):
         """Create a geopandas.GeoDataFrame object containing geometries of reconstructed unclassified feature lines. 
 
         Notes
@@ -3101,6 +3417,11 @@ class PlotTopologies(object):
         -------
         gdf : instance of <geopandas.GeoDataFrame>
             A pandas.DataFrame that has a column with `topologies` geometry.
+        central_meridian : float
+            Central meridian around which to perform wrapping; default: 0.0.
+        tessellate_degrees : float or None
+            If provided, geometries will be tessellated to this resolution prior
+            to wrapping.
 
         Raises 
         ------
@@ -3114,7 +3435,11 @@ class PlotTopologies(object):
         if self.topologies is None:
             raise ValueError("No topologies passed to PlotTopologies.")
 
-        all_topologies = shapelify_features(self.topologies)
+        all_topologies = shapelify_features(
+            self.topologies,
+            central_meridian=central_meridian,
+            tessellate_degrees=tessellate_degrees,
+        )
 
         # get plate IDs and feature types to add to geodataframe
         plate_IDs = []
@@ -3159,5 +3484,8 @@ class PlotTopologies(object):
             A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map 
             with unclassified features plotted onto the chosen map projection.
         """
-        gdf = self.get_all_topologies()
+        gdf = self.get_all_topologies(
+            central_meridian=kwargs.pop("central_meridian", 0.0),
+            tessellate_degrees=kwargs.pop("tessellate_degrees", None),
+        )
         return gdf.plot(ax=ax, facecolor='none', edgecolor=color, transform=self.base_projection, **kwargs)
