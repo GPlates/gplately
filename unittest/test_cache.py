@@ -17,7 +17,13 @@ print(
 
 print(
     cache.get(
-        "https://www.earthbyte.org/webdav/ftp/Data_Collections/Muller_etal_2019_Tectonics/Muller_etal_2019_PlateMotionModel/Muller_etal_2019_PlateMotionModel_v2.0_Tectonics_Updated.zip"
+        "https://www.earthbyte.org/webdav/ftp/Data_Collections/Gibbons_etal_2013_JGR.zip"
+    )
+)
+
+print(
+    cache.get(
+        "https://www.earthbyte.org/webdav/ftp/Data_Collections/Zahirovic_etal_2016_ESR_AgeGrid/netCDF/EarthByte_Zahirovic_etal_2016_ESR_r888_AgeGrid-0.nc"
     )
 )
 
