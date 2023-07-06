@@ -38,3 +38,36 @@ def get(url: str, auto_unzip: bool = True, large_file: bool = False):
         if etag:
             f.write(f"etag={etag}\n")
     return cache_path
+
+
+def get_all(urls, auto_unzip: bool = True):
+    """get the file at url. return a folder path for zip file. return a file path for other files."""
+
+    filepaths = []
+    etags = []
+    for url in urls:
+        url_id = uuid.UUID(hex=hashlib.md5(url.encode("UTF-8")).hexdigest())
+        cache_path = f"{get_user_cache_dir()}/{url_id}"
+        meta_file = f"{cache_path}.meta"
+
+        # get the etag from meta file
+        current_etag = None
+        if os.path.isfile(meta_file):
+            with open(meta_file, "r") as f:
+                for line in f:
+                    if line.startswith("etag="):
+                        current_etag = line[5:-1]
+        filepaths.append(cache_path)
+        etags.append(current_etag)
+
+    new_etags = network.fetch_files(urls, filepaths, etags=etags, auto_unzip=auto_unzip)
+    print(new_etags)
+
+    for idx, filepath in enumerate(filepaths):
+        with open(f"{filepath}.meta", "w+") as f:
+            f.write(f"url={urls[idx]}\n")
+            if len(new_etags) > idx:
+                etag = new_etags[idx]
+                if etag:
+                    f.write(f"etag={etag}\n")
+    return filepaths
