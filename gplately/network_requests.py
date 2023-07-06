@@ -2,7 +2,7 @@ import asyncio
 import concurrent.futures
 import functools
 import io
-import os
+import os, time
 import zipfile
 from pathlib import Path
 
@@ -62,6 +62,8 @@ def fetch_file(
 
 def _fetch_range(url, index: int, chunk_size: int, data: list):
     """"""
+    print(index)
+    st = time.time()
     headers = {
         "Range": f"bytes={index*chunk_size}-{(index+1)*chunk_size-1}",
         "Accept-Encoding": "identity",
@@ -69,10 +71,12 @@ def _fetch_range(url, index: int, chunk_size: int, data: list):
 
     r = requests.get(url, headers=headers)
     data[index].write(r.content)
+    et = time.time()
+    print(f"{index} -- time: {et - st}")
 
 
 async def _fetch_large_file(
-    run, url, file_size: int, data: list, chunk_size=2 * 1000 * 1000
+    run, url, file_size: int, data: list, chunk_size=10 * 1000 * 1000
 ):
     """"""
     num_chunks = file_size // chunk_size + 1

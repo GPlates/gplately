@@ -1,13 +1,11 @@
 import asyncio
 import io
-import os
+import os, time
 import zipfile
 from pathlib import Path
 import aiohttp
 
 import requests
-
-from typing import List, Type
 
 
 def get_etag(url):
@@ -88,6 +86,7 @@ async def _fetch_file(
 async def _fetch_range(session, url, index: int, chunk_size: int, data: list):
     """"""
     print(index)
+    st = time.time()
     headers = {
         "Range": f"bytes={index*chunk_size}-{(index+1)*chunk_size-1}",
         "Accept-Encoding": "identity",
@@ -97,7 +96,8 @@ async def _fetch_range(session, url, index: int, chunk_size: int, data: list):
     async with session.get(url, headers=headers) as r:
         c = await r.content.read()
         data[index].write(c)
-        print(index, len(c))
+    et = time.time()
+    print(f"{index} -- time: {et - st}")
 
 
 async def _fetch_large_file(
