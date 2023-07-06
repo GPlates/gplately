@@ -9,13 +9,14 @@ def get_user_cache_dir():
     return platformdirs.user_cache_dir("gplately", "")
 
 
-def get(url: str):
+def get(url: str, auto_unzip: bool = True, large_file: bool = False):
     """get the file at url. return a folder path for zip file. return a file path for other files."""
 
     url_id = uuid.UUID(hex=hashlib.md5(url.encode("UTF-8")).hexdigest())
     cache_path = f"{get_user_cache_dir()}/{url_id}"
     meta_file = f"{cache_path}.meta"
 
+    # get the etag from meta file
     current_etag = None
     if os.path.isfile(meta_file):
         with open(meta_file, "r") as f:
@@ -23,10 +24,14 @@ def get(url: str):
                 if line.startswith("etag="):
                     current_etag = line[5:-1]
 
-    if url.endswith(".zip"):
-        etag = network.fetch_file(url, cache_path, etag=current_etag)
+    if large_file:
+        etag = network.fetch_large_file(
+            url, cache_path, etag=current_etag, auto_unzip=auto_unzip
+        )
     else:
-        etag = network.fetch_file(url, cache_path, etag=current_etag)
+        etag = network.fetch_file(
+            url, cache_path, etag=current_etag, auto_unzip=auto_unzip
+        )
 
     with open(f"{cache_path}.meta", "w+") as f:
         f.write(f"url={url}\n")
