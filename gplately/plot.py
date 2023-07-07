@@ -809,7 +809,9 @@ class PlotTopologies(object):
         ValueError
             If the chosen reconstruction time is <0 Ma.
         """
-        if var >= 0:
+        if var == self.time:
+            pass
+        elif var >= 0:
             self.update_time(var)
         else:
             raise ValueError("Enter a valid time >= 0")
@@ -1943,12 +1945,12 @@ class PlotTopologies(object):
 
 
     def plot_subduction_teeth(self, ax, spacing=0.07, size=None, aspect=None, color='black', **kwargs):
-        """Plot subduction teeth onto a standard map Projection.  
+        """Plot subduction teeth onto a standard map Projection.
 
         Notes
         -----
         Subduction teeth are tessellated from `PlotTopologies` object attributes `trench_left` and 
-        `trench_right`, and transformed into Shapely polygons for plotting. 
+        `trench_right`, and transformed into Shapely polygons for plotting.
 
         Parameters
         ----------
@@ -1956,10 +1958,10 @@ class PlotTopologies(object):
             A subclass of `matplotlib.axes.Axes` which represents a map Projection.
             The map should be set at a particular Cartopy projection.
 
-        spacing : float, default=0.1 
-            The tessellation threshold (in radians). Parametrises subduction tooth density. 
-            Triangles are generated only along line segments with distances that exceed 
-            the given threshold ‘spacing’.
+        spacing : float, default=0.07
+            The tessellation threshold (in radians). Parametrises subduction tooth density.
+            Triangles are generated only along line segments with distances that exceed
+            the given threshold `spacing`.
 
         size : float, default=None
             Length of teeth triangle base (in radians). If kept at `None`, then
@@ -1968,24 +1970,19 @@ class PlotTopologies(object):
         aspect : float, default=None
             Aspect ratio of teeth triangles. If kept at `None`, then `aspect = 2/3*size`.
 
-        color : str, default=’black’
+        color : str, default='black'
             The colour of the teeth. By default, it is set to black.
 
-        **kwargs : 
-            Keyword arguments parameters such as ‘alpha’, etc. 
+        **kwargs :
+            Keyword arguments parameters such as `alpha`, etc.
             for plotting subduction tooth polygons.
-            See `Matplotlib` keyword arguments 
+            See `Matplotlib` keyword arguments
             [here](https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html).
-
-        Returns
-        -------
-        ax : instance of <geopandas.GeoDataFrame.plot>
-            A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map 
-            with subduction teeth plotted onto the chosen map projection.
         """
         if self._time is None:
-            raise ValueError("No miscellaneous topologies have been resolved. Set `PlotTopologies.time` to construct them.")
+            raise ValueError("No topologies have been resolved. Set `PlotTopologies.time` to construct them.")
 
+        tessellate_degrees = np.rad2deg(spacing)
         spacing = spacing * EARTH_RADIUS * 1e3
 
         if aspect is None:
@@ -1995,13 +1992,17 @@ class PlotTopologies(object):
 
         height = size*aspect
 
-        trench_left_features  = shapelify_feature_lines(self.trench_left)
-        trench_right_features = shapelify_feature_lines(self.trench_right)
-
-        return(
-            plot_subduction_teeth(trench_left_features,  size, 'l', height, spacing, ax=ax, color=color, **kwargs),
-            plot_subduction_teeth(trench_right_features,  size, 'r', height, spacing, ax=ax, color=color, **kwargs)
+        trench_left_features  = shapelify_feature_lines(
+            self.trench_left,
+            tessellate_degrees=tessellate_degrees,
         )
+        trench_right_features = shapelify_feature_lines(
+            self.trench_right,
+            tessellate_degrees=tessellate_degrees,
+        )
+
+        plot_subduction_teeth(trench_left_features,  size, 'l', height, spacing, ax=ax, color=color, **kwargs)
+        plot_subduction_teeth(trench_right_features,  size, 'r', height, spacing, ax=ax, color=color, **kwargs)
 
 
     def plot_plate_id(self, ax, plate_id, **kwargs):
