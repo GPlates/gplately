@@ -464,6 +464,15 @@ def _parse_geometries(geometries):
     return out
 
 
+def _meridian_from_ax(ax):
+    if hasattr(ax, "projection") and isinstance(ax.projection, ccrs.Projection):
+        proj = ax.projection
+        x = np.mean(proj.x_limits)
+        y = np.mean(proj.y_limits)
+        return ccrs.PlateCarree().transform_point(x, y, proj)[0]
+    return 0.0
+
+
 def shapelify_features(features, central_meridian=0.0, tessellate_degrees=None):
     """Generate Shapely `MultiPolygon` or `MultiLineString` geometries
     from reconstructed feature polygons.
@@ -1009,7 +1018,12 @@ class PlotTopologies(object):
         return np.array(triangle_pointsX), np.array(triangle_pointsY)
 
 
-    def get_feature(self, feature):
+    def get_feature(
+        self,
+        feature,
+        central_meridian=0.0,
+        tessellate_degrees=None,
+    ):
         """Create a geopandas.GeoDataFrame object containing geometries of reconstructed features. 
 
         Notes
@@ -1029,7 +1043,11 @@ class PlotTopologies(object):
             A pandas.DataFrame that has a column with `feature` geometries.
 
         """
-        shp = shapelify_features(feature)
+        shp = shapelify_features(
+            feature,
+            central_meridian=central_meridian,
+            tessellate_degrees=tessellate_degrees,
+        )
         gdf = gpd.GeoDataFrame({'geometry': shp}, geometry='geometry')
         return gdf
 
@@ -1054,7 +1072,16 @@ class PlotTopologies(object):
             A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map 
             with coastline features plotted onto the chosen map projection.
         """
-        gdf = self.get_feature(feature)
+        tessellate_degrees = kwargs.pop("tessellate_degrees", None)
+        central_meridian = kwargs.pop("central_meridian", None)
+        if central_meridian is None:
+            central_meridian = _meridian_from_ax(ax)
+
+        gdf = self.get_feature(
+            feature,
+            central_meridian=central_meridian,
+            tessellate_degrees=tessellate_degrees,
+        )
         return gdf.plot(ax=ax, transform=self.base_projection, **kwargs)
 
 
@@ -1140,9 +1167,14 @@ class PlotTopologies(object):
             A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map 
             with coastline features plotted onto the chosen map projection. 
         """
+        tessellate_degrees = kwargs.pop("tessellate_degrees", None)
+        central_meridian = kwargs.pop("central_meridian", None)
+        if central_meridian is None:
+            central_meridian = _meridian_from_ax(ax)
+
         gdf = self.get_coastlines(
-            central_meridian=kwargs.pop("central_meridian", 0.0),
-            tessellate_degrees=kwargs.pop("tessellate_degrees", None),
+            central_meridian=central_meridian,
+            tessellate_degrees=tessellate_degrees,
         )
         return gdf.plot(ax=ax, transform=self.base_projection, **kwargs)
 
@@ -1229,9 +1261,14 @@ class PlotTopologies(object):
             A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map 
             with continent features plotted onto the chosen map projection. 
         """
+        tessellate_degrees = kwargs.pop("tessellate_degrees", None)
+        central_meridian = kwargs.pop("central_meridian", None)
+        if central_meridian is None:
+            central_meridian = _meridian_from_ax(ax)
+
         gdf = self.get_continents(
-            central_meridian=kwargs.pop("central_meridian", 0.0),
-            tessellate_degrees=kwargs.pop("tessellate_degrees", None),
+            central_meridian=central_meridian,
+            tessellate_degrees=tessellate_degrees,
         )
         return gdf.plot(ax=ax, transform=self.base_projection, **kwargs)
 
@@ -1328,9 +1365,14 @@ class PlotTopologies(object):
             A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map 
             with COB features plotted onto the chosen map projection. 
         """
+        tessellate_degrees = kwargs.pop("tessellate_degrees", None)
+        central_meridian = kwargs.pop("central_meridian", None)
+        if central_meridian is None:
+            central_meridian = _meridian_from_ax(ax)
+
         gdf = self.get_continent_ocean_boundaries(
-            central_meridian=kwargs.pop("central_meridian", 0.0),
-            tessellate_degrees=kwargs.pop("tessellate_degrees", None),
+            central_meridian=central_meridian,
+            tessellate_degrees=tessellate_degrees,
         )
         return gdf.plot(ax=ax, transform=self.base_projection, **kwargs)
 
@@ -1426,9 +1468,14 @@ class PlotTopologies(object):
             A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map 
             with ridge features plotted onto the chosen map projection. 
         """
+        tessellate_degrees = kwargs.pop("tessellate_degrees", None)
+        central_meridian = kwargs.pop("central_meridian", None)
+        if central_meridian is None:
+            central_meridian = _meridian_from_ax(ax)
+
         gdf = self.get_ridges(
-            central_meridian=kwargs.pop("central_meridian", 0.0),
-            tessellate_degrees=kwargs.pop("tessellate_degrees", None),
+            central_meridian=central_meridian,
+            tessellate_degrees=tessellate_degrees,
         )
         return gdf.plot(ax=ax, facecolor='none', edgecolor=color, transform=self.base_projection, **kwargs)
 
@@ -1529,9 +1576,14 @@ class PlotTopologies(object):
             A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map 
             with ridge & transform features plotted onto the chosen map projection. 
         """
+        tessellate_degrees = kwargs.pop("tessellate_degrees", None)
+        central_meridian = kwargs.pop("central_meridian", None)
+        if central_meridian is None:
+            central_meridian = _meridian_from_ax(ax)
+
         gdf = self.get_ridges_and_transforms(
-            central_meridian=kwargs.pop("central_meridian", 0.0),
-            tessellate_degrees=kwargs.pop("tessellate_degrees", None),
+            central_meridian=central_meridian,
+            tessellate_degrees=tessellate_degrees,
         )
         return gdf.plot(ax=ax, facecolor='none', edgecolor=color, transform=self.base_projection, **kwargs)
 
@@ -1626,9 +1678,14 @@ class PlotTopologies(object):
             A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map 
             with transform features plotted onto the chosen map projection.
         """
+        tessellate_degrees = kwargs.pop("tessellate_degrees", None)
+        central_meridian = kwargs.pop("central_meridian", None)
+        if central_meridian is None:
+            central_meridian = _meridian_from_ax(ax)
+
         gdf = self.get_transforms(
-            central_meridian=kwargs.pop("central_meridian", 0.0),
-            tessellate_degrees=kwargs.pop("tessellate_degrees", None),
+            central_meridian=central_meridian,
+            tessellate_degrees=tessellate_degrees,
         )
         return gdf.plot(ax=ax, facecolor='none', edgecolor=color, transform=self.base_projection, **kwargs)
 
@@ -1724,9 +1781,14 @@ class PlotTopologies(object):
             A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map 
             with transform features plotted onto the chosen map projection.
         """
+        tessellate_degrees = kwargs.pop("tessellate_degrees", None)
+        central_meridian = kwargs.pop("central_meridian", None)
+        if central_meridian is None:
+            central_meridian = _meridian_from_ax(ax)
+
         gdf = self.get_trenches(
-            central_meridian=kwargs.pop("central_meridian", 0.0),
-            tessellate_degrees=kwargs.pop("tessellate_degrees", None),
+            central_meridian=central_meridian,
+            tessellate_degrees=tessellate_degrees,
         )
         return gdf.plot(ax=ax, facecolor='none', edgecolor=color, transform=self.base_projection, **kwargs)
 
@@ -1822,9 +1884,14 @@ class PlotTopologies(object):
             A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map 
             with miscellaneous boundary features plotted onto the chosen map projection.
         """
+        tessellate_degrees = kwargs.pop("tessellate_degrees", None)
+        central_meridian = kwargs.pop("central_meridian", None)
+        if central_meridian is None:
+            central_meridian = _meridian_from_ax(ax)
+
         gdf = self.get_misc_boundaries(
-            central_meridian=kwargs.pop("central_meridian", 0.0),
-            tessellate_degrees=kwargs.pop("tessellate_degrees", None),
+            central_meridian=central_meridian,
+            tessellate_degrees=tessellate_degrees,
         )
         return gdf.plot(ax=ax, facecolor='none', edgecolor=color, transform=self.base_projection, **kwargs)
 
@@ -1982,6 +2049,7 @@ class PlotTopologies(object):
         if self._time is None:
             raise ValueError("No topologies have been resolved. Set `PlotTopologies.time` to construct them.")
 
+        central_meridian = _meridian_from_ax(ax)
         tessellate_degrees = np.rad2deg(spacing)
         spacing = spacing * EARTH_RADIUS * 1e3
 
@@ -1995,10 +2063,12 @@ class PlotTopologies(object):
         trench_left_features  = shapelify_feature_lines(
             self.trench_left,
             tessellate_degrees=tessellate_degrees,
+            central_meridian=central_meridian,
         )
         trench_right_features = shapelify_feature_lines(
             self.trench_right,
             tessellate_degrees=tessellate_degrees,
+            central_meridian=central_meridian,
         )
 
         plot_subduction_teeth(trench_left_features,  size, 'l', height, spacing, ax=ax, color=color, **kwargs)
@@ -2026,9 +2096,18 @@ class PlotTopologies(object):
             [here](https://matplotlib.org/3.5.1/api/_as_gen/matplotlib.axes.Axes.imshow.html).
 
         """
+        tessellate_degrees = kwargs.pop("tessellate_degrees", None)
+        central_meridian = kwargs.pop("central_meridian", None)
+        if central_meridian is None:
+            central_meridian = _meridian_from_ax(ax)
+
         for feature in self.topologies:
             if feature.get_reconstruction_plate_id() == plate_id:
-                ft_plate = shapelify_feature_polygons([feature])
+                ft_plate = shapelify_feature_polygons(
+                    [feature],
+                    central_meridian=central_meridian,
+                    tessellate_degrees=tessellate_degrees,
+                )
                 return ax.add_geometries(ft_plate, crs=self.base_projection, **kwargs)
 
 
@@ -2296,9 +2375,14 @@ class PlotTopologies(object):
             A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map 
             with continental rifts plotted onto the chosen map projection.
         """
+        tessellate_degrees = kwargs.pop("tessellate_degrees", None)
+        central_meridian = kwargs.pop("central_meridian", None)
+        if central_meridian is None:
+            central_meridian = _meridian_from_ax(ax)
+
         gdf = self.get_continental_rifts(
-            central_meridian=kwargs.pop("central_meridian", 0.0),
-            tessellate_degrees=kwargs.pop("tessellate_degrees", None),
+            central_meridian=central_meridian,
+            tessellate_degrees=tessellate_degrees,
         )
         return gdf.plot(ax=ax, facecolor='none', edgecolor=color, transform=self.base_projection, **kwargs)
 
@@ -2377,9 +2461,14 @@ class PlotTopologies(object):
             A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map 
             with faults plotted onto the chosen map projection.
         """
+        tessellate_degrees = kwargs.pop("tessellate_degrees", None)
+        central_meridian = kwargs.pop("central_meridian", None)
+        if central_meridian is None:
+            central_meridian = _meridian_from_ax(ax)
+
         gdf = self.get_faults(
-            central_meridian=kwargs.pop("central_meridian", 0.0),
-            tessellate_degrees=kwargs.pop("tessellate_degrees", None),
+            central_meridian=central_meridian,
+            tessellate_degrees=tessellate_degrees,
         )
         return gdf.plot(ax=ax, facecolor='none', edgecolor=color, transform=self.base_projection, **kwargs)
 
@@ -2458,9 +2547,14 @@ class PlotTopologies(object):
             A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map 
             with fracture zones plotted onto the chosen map projection.
         """
+        tessellate_degrees = kwargs.pop("tessellate_degrees", None)
+        central_meridian = kwargs.pop("central_meridian", None)
+        if central_meridian is None:
+            central_meridian = _meridian_from_ax(ax)
+
         gdf = self.get_fracture_zones(
-            central_meridian=kwargs.pop("central_meridian", 0.0),
-            tessellate_degrees=kwargs.pop("tessellate_degrees", None),
+            central_meridian=central_meridian,
+            tessellate_degrees=tessellate_degrees,
         )
         return gdf.plot(ax=ax, facecolor='none', edgecolor=color, transform=self.base_projection, **kwargs)
 
@@ -2543,9 +2637,14 @@ class PlotTopologies(object):
             A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map 
             with inferred paleo boundaries plotted onto the chosen map projection.
         """
+        tessellate_degrees = kwargs.pop("tessellate_degrees", None)
+        central_meridian = kwargs.pop("central_meridian", None)
+        if central_meridian is None:
+            central_meridian = _meridian_from_ax(ax)
+
         gdf = self.get_inferred_paleo_boundaries(
-            central_meridian=kwargs.pop("central_meridian", 0.0),
-            tessellate_degrees=kwargs.pop("tessellate_degrees", None),
+            central_meridian=central_meridian,
+            tessellate_degrees=tessellate_degrees,
         )
         return gdf.plot(ax=ax, facecolor='none', edgecolor=color, transform=self.base_projection, **kwargs)
 
@@ -2628,9 +2727,14 @@ class PlotTopologies(object):
             A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map 
             with terrane boundaries plotted onto the chosen map projection.
         """
+        tessellate_degrees = kwargs.pop("tessellate_degrees", None)
+        central_meridian = kwargs.pop("central_meridian", None)
+        if central_meridian is None:
+            central_meridian = _meridian_from_ax(ax)
+
         gdf = self.get_terrane_boundaries(
-            central_meridian=kwargs.pop("central_meridian", 0.0),
-            tessellate_degrees=kwargs.pop("tessellate_degrees", None),
+            central_meridian=central_meridian,
+            tessellate_degrees=tessellate_degrees,
         )
         return gdf.plot(ax=ax, facecolor='none', edgecolor=color, transform=self.base_projection, **kwargs)
 
@@ -2713,9 +2817,14 @@ class PlotTopologies(object):
             A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map 
             with transitional crust plotted onto the chosen map projection.
         """
+        tessellate_degrees = kwargs.pop("tessellate_degrees", None)
+        central_meridian = kwargs.pop("central_meridian", None)
+        if central_meridian is None:
+            central_meridian = _meridian_from_ax(ax)
+
         gdf = self.get_transitional_crusts(
-            central_meridian=kwargs.pop("central_meridian", 0.0),
-            tessellate_degrees=kwargs.pop("tessellate_degrees", None),
+            central_meridian=central_meridian,
+            tessellate_degrees=tessellate_degrees,
         )
         return gdf.plot(ax=ax, facecolor='none', edgecolor=color, transform=self.base_projection, **kwargs)
 
@@ -2798,9 +2907,14 @@ class PlotTopologies(object):
             A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map 
             with orogenic belts plotted onto the chosen map projection.
         """
+        tessellate_degrees = kwargs.pop("tessellate_degrees", None)
+        central_meridian = kwargs.pop("central_meridian", None)
+        if central_meridian is None:
+            central_meridian = _meridian_from_ax(ax)
+
         gdf = self.get_orogenic_belts(
-            central_meridian=kwargs.pop("central_meridian", 0.0),
-            tessellate_degrees=kwargs.pop("tessellate_degrees", None),
+            central_meridian=central_meridian,
+            tessellate_degrees=tessellate_degrees,
         )
         return gdf.plot(ax=ax, facecolor='none', edgecolor=color, transform=self.base_projection, **kwargs)
 
@@ -2879,9 +2993,14 @@ class PlotTopologies(object):
             A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map 
             with sutures plotted onto the chosen map projection.
         """
+        tessellate_degrees = kwargs.pop("tessellate_degrees", None)
+        central_meridian = kwargs.pop("central_meridian", None)
+        if central_meridian is None:
+            central_meridian = _meridian_from_ax(ax)
+
         gdf = self.get_sutures(
-            central_meridian=kwargs.pop("central_meridian", 0.0),
-            tessellate_degrees=kwargs.pop("tessellate_degrees", None),
+            central_meridian=central_meridian,
+            tessellate_degrees=tessellate_degrees,
         )
         return gdf.plot(ax=ax, facecolor='none', edgecolor=color, transform=self.base_projection, **kwargs)
 
@@ -2964,9 +3083,14 @@ class PlotTopologies(object):
             A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map 
             with continental crust lines plotted onto the chosen map projection.
         """
+        tessellate_degrees = kwargs.pop("tessellate_degrees", None)
+        central_meridian = kwargs.pop("central_meridian", None)
+        if central_meridian is None:
+            central_meridian = _meridian_from_ax(ax)
+
         gdf = self.get_continental_crusts(
-            central_meridian=kwargs.pop("central_meridian", 0.0),
-            tessellate_degrees=kwargs.pop("tessellate_degrees", None),
+            central_meridian=central_meridian,
+            tessellate_degrees=tessellate_degrees,
         )
         return gdf.plot(ax=ax, facecolor='none', edgecolor=color, transform=self.base_projection, **kwargs)
 
@@ -3048,9 +3172,14 @@ class PlotTopologies(object):
             A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map 
             with extended continental crust lines plotted onto the chosen map projection.
         """
+        tessellate_degrees = kwargs.pop("tessellate_degrees", None)
+        central_meridian = kwargs.pop("central_meridian", None)
+        if central_meridian is None:
+            central_meridian = _meridian_from_ax(ax)
+
         gdf = self.get_extended_continental_crusts(
-            central_meridian=kwargs.pop("central_meridian", 0.0),
-            tessellate_degrees=kwargs.pop("tessellate_degrees", None),
+            central_meridian=central_meridian,
+            tessellate_degrees=tessellate_degrees,
         )
         return gdf.plot(ax=ax, facecolor='none', edgecolor=color, transform=self.base_projection, **kwargs)
 
@@ -3133,9 +3262,14 @@ class PlotTopologies(object):
             A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map 
             with passive continental boundaries plotted onto the chosen map projection.
         """
+        tessellate_degrees = kwargs.pop("tessellate_degrees", None)
+        central_meridian = kwargs.pop("central_meridian", None)
+        if central_meridian is None:
+            central_meridian = _meridian_from_ax(ax)
+
         gdf = self.get_passive_continental_boundaries(
-            central_meridian=kwargs.pop("central_meridian", 0.0),
-            tessellate_degrees=kwargs.pop("tessellate_degrees", None),
+            central_meridian=central_meridian,
+            tessellate_degrees=tessellate_degrees,
         )
         return gdf.plot(ax=ax, facecolor='none', edgecolor=color, transform=self.base_projection, **kwargs)
 
@@ -3214,9 +3348,14 @@ class PlotTopologies(object):
             A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map 
             with slab edges plotted onto the chosen map projection.
         """
+        tessellate_degrees = kwargs.pop("tessellate_degrees", None)
+        central_meridian = kwargs.pop("central_meridian", None)
+        if central_meridian is None:
+            central_meridian = _meridian_from_ax(ax)
+
         gdf = self.get_slab_edges(
-            central_meridian=kwargs.pop("central_meridian", 0.0),
-            tessellate_degrees=kwargs.pop("tessellate_degrees", None),
+            central_meridian=central_meridian,
+            tessellate_degrees=tessellate_degrees,
         )
         return gdf.plot(ax=ax, facecolor='none', edgecolor=color, transform=self.base_projection, **kwargs)
 
@@ -3299,9 +3438,14 @@ class PlotTopologies(object):
             A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map 
             with miscellaneous transform boundaries plotted onto the chosen map projection.
         """
+        tessellate_degrees = kwargs.pop("tessellate_degrees", None)
+        central_meridian = kwargs.pop("central_meridian", None)
+        if central_meridian is None:
+            central_meridian = _meridian_from_ax(ax)
+
         gdf = self.get_misc_transforms(
-            central_meridian=kwargs.pop("central_meridian", 0.0),
-            tessellate_degrees=kwargs.pop("tessellate_degrees", None),
+            central_meridian=central_meridian,
+            tessellate_degrees=tessellate_degrees,
         )
         return gdf.plot(ax=ax, facecolor='none', edgecolor=color, transform=self.base_projection, **kwargs)
 
@@ -3384,9 +3528,14 @@ class PlotTopologies(object):
             A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map 
             with unclassified features plotted onto the chosen map projection.
         """
+        tessellate_degrees = kwargs.pop("tessellate_degrees", None)
+        central_meridian = kwargs.pop("central_meridian", None)
+        if central_meridian is None:
+            central_meridian = _meridian_from_ax(ax)
+
         gdf = self.get_unclassified_features(
-            central_meridian=kwargs.pop("central_meridian", 0.0),
-            tessellate_degrees=kwargs.pop("tessellate_degrees", None),
+            central_meridian=central_meridian,
+            tessellate_degrees=tessellate_degrees,
         )
         return gdf.plot(ax=ax, facecolor='none', edgecolor=color, transform=self.base_projection, **kwargs)
 
@@ -3485,8 +3634,13 @@ class PlotTopologies(object):
             A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map 
             with unclassified features plotted onto the chosen map projection.
         """
+        tessellate_degrees = kwargs.pop("tessellate_degrees", None)
+        central_meridian = kwargs.pop("central_meridian", None)
+        if central_meridian is None:
+            central_meridian = _meridian_from_ax(ax)
+
         gdf = self.get_all_topologies(
-            central_meridian=kwargs.pop("central_meridian", 0.0),
-            tessellate_degrees=kwargs.pop("tessellate_degrees", None),
+            central_meridian=central_meridian,
+            tessellate_degrees=tessellate_degrees,
         )
         return gdf.plot(ax=ax, facecolor='none', edgecolor=color, transform=self.base_projection, **kwargs)
