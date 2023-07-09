@@ -183,3 +183,70 @@ def _save_file(url, filepath, filename, data):
         print(f"Warning: overwriting {filename}")
     with open(f"{filepath}/{filename}", "wb+") as of:
         of.write(data)
+
+
+async def _async_fetch_files(
+    run,
+    urls,
+    filepaths,
+    filenames=[],
+    etags=[],
+    auto_unzip: bool = True,
+):
+    """"""
+    tasks = []
+    for idx, url in enumerate(urls):
+        if len(filenames) > idx:
+            filename = filenames[idx]
+        else:
+            filename = None
+        if len(filepaths) > idx:
+            filepath = filepaths[idx]
+        else:
+            filepath = None
+        if len(etags) > idx:
+            etag = etags[idx]
+        else:
+            etag = None
+
+        tasks.append(
+            run(
+                fetch_file,
+                url,
+                filepath,
+                filename,
+                etag,
+                auto_unzip,
+            )
+        )
+    # print(tasks)
+    await asyncio.wait(tasks)
+
+
+def fetch_files(
+    urls,
+    filepaths,
+    filenames=[],
+    etags=[],
+    auto_unzip: bool = True,
+):
+    # set up concurrent functions
+    executor = concurrent.futures.ThreadPoolExecutor(max_workers=15)
+    loop = asyncio.new_event_loop()
+    run = functools.partial(loop.run_in_executor, executor)
+
+    asyncio.set_event_loop(loop)
+
+    try:
+        loop.run_until_complete(
+            _async_fetch_files(
+                run,
+                urls,
+                filepaths,
+                filenames=filenames,
+                etags=etags,
+                auto_unzip=auto_unzip,
+            )
+        )
+    finally:
+        loop.close()

@@ -15,7 +15,7 @@ def test():
     spt = time.process_time()
 
     for i in range(20):
-        print(i)
+        # print(i)
         network.fetch_file(
             f"https://www.earthbyte.org/webdav/ftp/Data_Collections/Zahirovic_etal_2016_ESR_AgeGrid/jpegs/EarthByte_Zahirovic_etal_2016_ESR_r888_AgeGrid-{i}.jpg",
             "./download-directly/",
@@ -53,5 +53,30 @@ def test_concurrent():
     print(f"process time: {ept - spt}")
 
 
+def test_concurrent_requests():
+    st = time.time()
+    spt = time.process_time()
+    urls = []
+    paths = []
+    for i in range(20):
+        urls.append(
+            f"https://www.earthbyte.org/webdav/ftp/Data_Collections/Zahirovic_etal_2016_ESR_AgeGrid/jpegs/EarthByte_Zahirovic_etal_2016_ESR_r888_AgeGrid-{i}.jpg",
+        )
+        paths.append("./download-concurrent-requests/")
+
+    network_requests.fetch_files(
+        urls,
+        paths,
+        auto_unzip=auto_unzip,
+    )
+
+    et = time.time()
+    ept = time.process_time()
+
+    print(f"time: {et - st}")
+    print(f"process time: {ept - spt}")
+
+
 test()
-test_concurrent()
+# test_concurrent()
+test_concurrent_requests()
