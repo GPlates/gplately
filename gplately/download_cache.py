@@ -1,7 +1,7 @@
 import hashlib, uuid, os
 import platformdirs
 
-from . import network
+from . import network_aiohttp
 
 
 def get_user_cache_dir():
@@ -25,11 +25,11 @@ def get(url: str, auto_unzip: bool = True, large_file: bool = False):
                     current_etag = line[5:-1]
 
     if large_file:
-        etag = network.fetch_large_file(
+        etag = network_aiohttp.fetch_large_file(
             url, cache_path, etag=current_etag, auto_unzip=auto_unzip
         )
     else:
-        etag = network.fetch_file(
+        etag = network_aiohttp.fetch_file(
             url, cache_path, etag=current_etag, auto_unzip=auto_unzip
         )
 
@@ -60,7 +60,9 @@ def get_all(urls, auto_unzip: bool = True):
         filepaths.append(cache_path)
         etags.append(current_etag)
 
-    new_etags = network.fetch_files(urls, filepaths, etags=etags, auto_unzip=auto_unzip)
+    new_etags = network_aiohttp.fetch_files(
+        urls, filepaths, etags=etags, auto_unzip=auto_unzip
+    )
     print(new_etags)
 
     for idx, filepath in enumerate(filepaths):

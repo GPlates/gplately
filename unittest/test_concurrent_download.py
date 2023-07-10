@@ -2,23 +2,27 @@ import sys
 import time
 
 sys.path.insert(0, "../")
-from gplately import network, network_requests
+from gplately import network_aiohttp, network_requests
 
-test_url = "https://www.earthbyte.org/webdav/ftp/Data_Collections/Zahirovic_etal_2016_ESR_AgeGrid/netCDF/EarthByte_Zahirovic_etal_2016_ESR_r888_AgeGrid-0.nc"
-# test_url="https://www.earthbyte.org/webdav/ftp/Data_Collections/Zahirovic_etal_2016_ESR_AgeGrid/jpegs.zip"
+test_urls = [
+    f"https://www.earthbyte.org/webdav/ftp/Data_Collections/Zahirovic_etal_2016_ESR_AgeGrid/jpegs/EarthByte_Zahirovic_etal_2016_ESR_r888_AgeGrid-{i}.jpg"
+    for i in range(20)
+]
 
 auto_unzip = False
 
 
-def test():
+def test_with_for_loop():
+    """requests + "for loop" """
     st = time.time()
     spt = time.process_time()
 
-    for i in range(20):
-        # print(i)
-        network.fetch_file(
-            f"https://www.earthbyte.org/webdav/ftp/Data_Collections/Zahirovic_etal_2016_ESR_AgeGrid/jpegs/EarthByte_Zahirovic_etal_2016_ESR_r888_AgeGrid-{i}.jpg",
-            "./download-directly/",
+    print("Start test_with_for_loop ... ")
+
+    for url in test_urls:
+        network_requests.fetch_file(
+            url,
+            "./download-with-for-loop/",
             auto_unzip=auto_unzip,
         )
 
@@ -28,20 +32,19 @@ def test():
     print(f"time: {et - st}")
     print(f"process time: {ept - spt}")
 
+    print("End test_with_for_loop ... ")
 
-def test_concurrent():
+
+def test_concurrent_aiohttp():
+    """asyncio + aiohttp"""
     st = time.time()
     spt = time.process_time()
-    urls = []
-    paths = []
-    for i in range(20):
-        urls.append(
-            f"https://www.earthbyte.org/webdav/ftp/Data_Collections/Zahirovic_etal_2016_ESR_AgeGrid/jpegs/EarthByte_Zahirovic_etal_2016_ESR_r888_AgeGrid-{i}.jpg",
-        )
-        paths.append("./download-concurrent/")
+    paths = ["./download-concurrently-with-aiohttp/" for i in range(len(test_urls))]
 
-    network.fetch_files(
-        urls,
+    print("Start test_concurrent_aiohttp ... ")
+
+    network_aiohttp.fetch_files(
+        test_urls,
         paths,
         auto_unzip=auto_unzip,
     )
@@ -52,20 +55,20 @@ def test_concurrent():
     print(f"time: {et - st}")
     print(f"process time: {ept - spt}")
 
+    print("End test_concurrent_aiohttp ... ")
 
-def test_concurrent_requests():
+
+def test_concurrent_executor():
+    """requests + ThreadPoolExecutor + asyncio"""
     st = time.time()
     spt = time.process_time()
-    urls = []
-    paths = []
-    for i in range(20):
-        urls.append(
-            f"https://www.earthbyte.org/webdav/ftp/Data_Collections/Zahirovic_etal_2016_ESR_AgeGrid/jpegs/EarthByte_Zahirovic_etal_2016_ESR_r888_AgeGrid-{i}.jpg",
-        )
-        paths.append("./download-concurrent-requests/")
+
+    paths = ["./download-concurrently-with-executor/" for i in range(len(test_urls))]
+
+    print("Start test_concurrent_executor ... ")
 
     network_requests.fetch_files(
-        urls,
+        test_urls,
         paths,
         auto_unzip=auto_unzip,
     )
@@ -76,7 +79,9 @@ def test_concurrent_requests():
     print(f"time: {et - st}")
     print(f"process time: {ept - spt}")
 
+    print("End test_concurrent_executor ... ")
 
-test()
-# test_concurrent()
-test_concurrent_requests()
+
+test_with_for_loop()
+test_concurrent_aiohttp()
+test_concurrent_executor()

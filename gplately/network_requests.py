@@ -8,11 +8,17 @@ from pathlib import Path
 
 import requests
 
-from typing import List, Type
+# This file contains the code to download file(s) from url(s) using "requests" + "asyncio"
+# Download files concurrently can improve the performance significantly.
+# Download partial content of a large file concurrently may/maynot work depending on the server configuration.
 
 
 def get_etag(url):
-    """return the etag of the given url. could be none"""
+    """return the etag of the given url. The return could be none if the server does not support etag.
+
+    :param url: the url of the file
+
+    """
     return requests.head(url).headers.get("ETag")
 
 
@@ -23,7 +29,17 @@ def fetch_file(
     etag: str = None,
     auto_unzip: bool = True,
 ):
-    """download a file from "url" and save to "filepath" """
+    """download a file from "url" and save to "filepath"
+        You can give a new "filename" for the file.
+        If "etag" is given, check if etag has changed. If not changed, do not download again.
+
+    :param url: the url to download file from
+    :param filepath: location to keep the file
+    :param filename: new file name (optional)
+    :param etag: old etag. if the old etag is the same with the one on server, do not download again.
+    :param auto_unzip: bool flag to indicate if unzip .zip file automatically
+
+    """
 
     if etag:
         headers = {"If-None-Match": etag}
@@ -61,9 +77,14 @@ def fetch_file(
 
 
 def _fetch_range(url, index: int, chunk_size: int, data: list):
-    """"""
-    print(index)
-    st = time.time()
+    """get patial content of a file from the server
+    Be careful, some server does not support this function.
+    And some firewall sequences these requests to shape network traffic and defeat the purpose
+    of this function completely. So it might slower than download directly.
+
+    """
+    # print(index)
+    # st = time.time()
     headers = {
         "Range": f"bytes={index*chunk_size}-{(index+1)*chunk_size-1}",
         "Accept-Encoding": "identity",
@@ -71,14 +92,15 @@ def _fetch_range(url, index: int, chunk_size: int, data: list):
 
     r = requests.get(url, headers=headers)
     data[index].write(r.content)
-    et = time.time()
-    print(f"{index} -- time: {et - st}")
+    # et = time.time()
+    # print(f"{index} -- time: {et - st}")
 
 
 async def _fetch_large_file(
     run, url, file_size: int, data: list, chunk_size=10 * 1000 * 1000
 ):
-    """"""
+    """async implementation of fetch_large_file"""
+
     num_chunks = file_size // chunk_size + 1
     data_array = [io.BytesIO() for i in range(num_chunks)]
     tasks = [
@@ -107,14 +129,21 @@ def fetch_large_file(
     auto_unzip: bool = True,
 ):
     """use multi-thread to fetch a large file.
+        LOOK HERE!!!
         Be careful when use this function. You cannot get partial content if the content is gzip encoded.
         So the file might be larger than the one download directly.
         It is useful when downloading large .zip file.
+        Warning: this could be slower than single thread download.
+        Some firewall sequences these requests to shape network traffic and defeat the purpose of this function completely.
 
     :param url: the file url
-    :param file_size: the file size. if none, get via header request inside this function
+    :param filepath: location to keep the file
+    :param filename: new file name (optional)
+    :param etag: old etag. if the old etag is the same with the one on server, do not download again.
+    :param auto_unzip: bool flag to indicate if unzip .zip file automatically
 
-    :returns:
+    :returns: new etag
+
     """
 
     # check file size and etag
@@ -175,7 +204,8 @@ def fetch_large_file(
 
 
 def _save_file(url, filepath, filename, data):
-    """"""
+    """helper function to save file to hard drive"""
+
     Path(filepath).mkdir(parents=True, exist_ok=True)
     if not filename:
         filename = url.split("/")[-1]  # use the filename in the url
@@ -193,7 +223,7 @@ async def _async_fetch_files(
     etags=[],
     auto_unzip: bool = True,
 ):
-    """"""
+    """async implementation of fetch_files function"""
     tasks = []
     for idx, url in enumerate(urls):
         if len(filenames) > idx:
@@ -230,6 +260,16 @@ def fetch_files(
     etags=[],
     auto_unzip: bool = True,
 ):
+    """fetch multiple files concurrently
+
+    :param urls: the urls to download files from
+    :param filepaths: locations to keep the files
+    :param filenames: new file names (optional)
+    :param etags: old etags. if the old etag is the same with the one on server, do not download again.
+    :param auto_unzip: bool flag to indicate if unzip .zip file automatically
+
+    """
+
     # set up concurrent functions
     executor = concurrent.futures.ThreadPoolExecutor(max_workers=15)
     loop = asyncio.new_event_loop()

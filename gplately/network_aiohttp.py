@@ -7,6 +7,11 @@ import aiohttp
 
 import requests
 
+# This file contains experimental code to download files concurrently using aiohttp.
+# Later, I realized that "requests"+"ThreadPoolExecutor" works as well.
+# I do not want to introduce a new dependency when "requests" works.
+# So, keep this file just for record keeping in case we need aiohttp in the future.
+
 
 def get_etag(url):
     """return the etag of the given url. could be none"""
@@ -20,7 +25,17 @@ def fetch_file(
     etag: str = None,
     auto_unzip: bool = True,
 ):
-    """download a file from "url" and save to "filepath" """
+    """download a file from "url" and save to "filepath"
+        You can give a new "filename" for the file.
+        If "etag" is given, check if etag has changed. If not changed, do not download again.
+
+    :param url: the url to download file from
+    :param filepath: location to keep the file
+    :param filename: new file name (optional)
+    :param etag: old etag. if the old etag is the same with the one on server, do not download again.
+    :param auto_unzip: bool flag to indicate if unzip .zip file automatically
+
+    """
 
     async def f():
         async with aiohttp.ClientSession() as session:
@@ -44,7 +59,7 @@ async def _fetch_file(
     etag: str = None,
     auto_unzip: bool = True,
 ):
-    """download a file from "url" and save to "filepath" """
+    """async "fetch_file" implementation. See the docstring of "fetch_file" """
 
     if etag:
         headers = {"If-None-Match": etag}
@@ -84,7 +99,12 @@ async def _fetch_file(
 
 
 async def _fetch_range(session, url, index: int, chunk_size: int, data: list):
-    """"""
+    """async funtion to get patial content of a file from the server
+    Be careful, some server does not support this function.
+    And some firewall sequences these requests to shape network traffic and defeat the purpose
+    of this function completely.
+
+    """
     print(index)
     st = time.time()
     headers = {
@@ -103,7 +123,7 @@ async def _fetch_range(session, url, index: int, chunk_size: int, data: list):
 async def _fetch_large_file(
     url, file_size: int, data: list, chunk_size=10 * 1000 * 1000
 ):
-    """"""
+    """async implementation of fetch_large_file"""
     async with aiohttp.ClientSession() as session:
         num_chunks = file_size // chunk_size + 1
         data_array = [io.BytesIO() for i in range(num_chunks)]
@@ -130,11 +150,17 @@ def fetch_large_file(
         Be careful when use this function. You cannot get partial content if the content is gzip encoded.
         So the file might be larger than the one download directly.
         It is useful when downloading large .zip file.
-        Warning: this could be slower than single thread download
+        Warning: this could be slower than single thread download.
+        Some firewall sequences these requests to shape network traffic and defeat the purpose of this function completely.
 
     :param url: the file url
+    :param filepath: location to keep the file
+    :param filename: new file name (optional)
+    :param etag: old etag. if the old etag is the same with the one on server, do not download again.
+    :param auto_unzip: bool flag to indicate if unzip .zip file automatically
 
-    :returns:
+    :returns: new etag
+
     """
 
     # check file size and etag
@@ -192,7 +218,7 @@ def fetch_large_file(
 
 
 def _save_file(url, filepath, filename, data):
-    """"""
+    """helper function to save file to hard drive"""
     Path(filepath).mkdir(parents=True, exist_ok=True)
     if not filename:
         filename = url.split("/")[-1]  # use the filename in the url
@@ -209,6 +235,16 @@ def fetch_files(
     etags=[],
     auto_unzip: bool = True,
 ):
+    """fetch multiple files concurrently
+
+    :param urls: the urls to download files from
+    :param filepaths: locations to keep the files
+    :param filenames: new file names (optional)
+    :param etags: old etags. if the old etag is the same with the one on server, do not download again.
+    :param auto_unzip: bool flag to indicate if unzip .zip file automatically
+
+    """
+
     async def f():
         async with aiohttp.ClientSession() as session:
             tasks = []
@@ -243,7 +279,7 @@ def fetch_files(
     new_etags = []
     try:
         new_etags = loop.run_until_complete(f())
-        print(new_etags)
+        # print(new_etags)
     finally:
         loop.close()
         return new_etags
