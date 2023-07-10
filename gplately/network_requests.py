@@ -226,14 +226,23 @@ async def _async_fetch_files(
     """async implementation of fetch_files function"""
     tasks = []
     for idx, url in enumerate(urls):
+        # get filename
         if len(filenames) > idx:
             filename = filenames[idx]
         else:
             filename = None
-        if len(filepaths) > idx:
+
+        # get filepath
+        if isinstance(filepaths, str):
+            filepath = filepaths
+        elif isinstance(filepaths, list) and len(filepaths) > idx:
             filepath = filepaths[idx]
         else:
-            filepath = None
+            raise Exception(
+                "The 'filepaths' should be either one string or a list of strings. And the length of the list should be the same with the length of urls. "
+            )
+
+        # get etag
         if len(etags) > idx:
             etag = etags[idx]
         else:
@@ -263,7 +272,7 @@ def fetch_files(
     """fetch multiple files concurrently
 
     :param urls: the urls to download files from
-    :param filepaths: locations to keep the files
+    :param filepaths: location(s) to keep the files. This can be one path for all files or one path for each file.
     :param filenames: new file names (optional)
     :param etags: old etags. if the old etag is the same with the one on server, do not download again.
     :param auto_unzip: bool flag to indicate if unzip .zip file automatically

@@ -39,7 +39,7 @@ def test_concurrent_aiohttp():
     """asyncio + aiohttp"""
     st = time.time()
     spt = time.process_time()
-    paths = ["./download-concurrently-with-aiohttp/" for i in range(len(test_urls))]
+    paths = "./download-concurrently-with-aiohttp/"
 
     print("Start test_concurrent_aiohttp ... ")
 
@@ -63,7 +63,7 @@ def test_concurrent_executor():
     st = time.time()
     spt = time.process_time()
 
-    paths = ["./download-concurrently-with-executor/" for i in range(len(test_urls))]
+    paths = "./download-concurrently-with-executor/"
 
     print("Start test_concurrent_executor ... ")
 

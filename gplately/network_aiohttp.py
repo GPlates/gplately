@@ -105,8 +105,8 @@ async def _fetch_range(session, url, index: int, chunk_size: int, data: list):
     of this function completely.
 
     """
-    print(index)
-    st = time.time()
+    # print(index)
+    # st = time.time()
     headers = {
         "Range": f"bytes={index*chunk_size}-{(index+1)*chunk_size-1}",
         "Accept-Encoding": "identity",
@@ -116,8 +116,8 @@ async def _fetch_range(session, url, index: int, chunk_size: int, data: list):
     async with session.get(url, headers=headers) as r:
         c = await r.content.read()
         data[index].write(c)
-    et = time.time()
-    print(f"{index} -- time: {et - st}")
+    # et = time.time()
+    # print(f"{index} -- time: {et - st}")
 
 
 async def _fetch_large_file(
@@ -238,7 +238,7 @@ def fetch_files(
     """fetch multiple files concurrently
 
     :param urls: the urls to download files from
-    :param filepaths: locations to keep the files
+    :param filepaths: location(s) to keep the files. This can be one path for all files or one path for each file.
     :param filenames: new file names (optional)
     :param etags: old etags. if the old etag is the same with the one on server, do not download again.
     :param auto_unzip: bool flag to indicate if unzip .zip file automatically
@@ -249,21 +249,34 @@ def fetch_files(
         async with aiohttp.ClientSession() as session:
             tasks = []
             for idx, url in enumerate(urls):
+                # get filename
                 if len(filenames) > idx:
                     filename = filenames[idx]
                 else:
                     filename = None
 
+                # get filepath
+                if isinstance(filepaths, str):
+                    filepath = filepaths
+                elif isinstance(filepaths, list) and len(filepaths) > idx:
+                    filepath = filepaths[idx]
+                else:
+                    raise Exception(
+                        "The 'filepaths' should be either one string or a list of strings. And the length of the list should be the same with the length of urls. "
+                    )
+
+                # get etag
                 if len(etags) > idx:
                     etag = etags[idx]
                 else:
                     etag = None
+
                 tasks.append(
                     asyncio.ensure_future(
                         _fetch_file(
                             session,
                             url,
-                            filepaths[idx],
+                            filepath,
                             filename=filename,
                             etag=etag,
                             auto_unzip=auto_unzip,
