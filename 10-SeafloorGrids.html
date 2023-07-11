@@ -15101,7 +15101,116 @@ body[data-format='mobile'] .jp-OutputArea-child .jp-OutputArea-output {
     }
     init_mathjax();
     </script>
-    <!-- End of mathjax configuration --></head>
+    <!-- End of mathjax configuration --><script type="module">
+  document.addEventListener("DOMContentLoaded", async () => {
+    const diagrams = document.querySelectorAll(".jp-Mermaid > pre.mermaid");
+    // do not load mermaidjs if not needed
+    if (!diagrams.length) {
+      return;
+    }
+    const mermaid = (await import("https://cdnjs.cloudflare.com/ajax/libs/mermaid/10.2.3/mermaid.esm.min.mjs")).default;
+
+    mermaid.initialize({
+      maxTextSize: 100000,
+      startOnLoad: false,
+      fontFamily: window
+        .getComputedStyle(document.body)
+        .getPropertyValue("--jp-ui-font-family"),
+      theme: document.querySelector("body[data-jp-theme-light='true']")
+        ? "default"
+        : "dark",
+    });
+
+    let _nextMermaidId = 0;
+
+    function makeMermaidImage(svg) {
+      const img = document.createElement('img');
+      const maxWidth = svg.match(/max-width: (\d+)/);
+      if (maxWidth && maxWidth[1]) {
+        const width = parseInt(maxWidth[1]);
+        if (width && !Number.isNaN(width) && Number.isFinite(width)) {
+          img.width = width;
+        }
+      }
+      img.setAttribute('src', `data:image/svg+xml,${encodeURIComponent(svg)}`);
+      return img;
+    }
+
+    async function makeMermaidError(text) {
+      let errorMessage = '';
+      try {
+        await mermaid.parse(text);
+      } catch (err) {
+        errorMessage = `${err}`;
+      }
+
+      const result = document.createElement('details');
+      const summary = document.createElement('summary');
+      const pre = document.createElement('pre');
+      const code = document.createElement('code');
+      code.innerText = text;
+      pre.appendChild(code);
+      summary.appendChild(pre);
+      result.appendChild(summary);
+
+      const warning = document.createElement('pre');
+      warning.innerText = errorMessage;
+      result.appendChild(warning);
+      return result;
+    }
+
+    async function renderOneMarmaid(src) {
+      const id = `jp-mermaid-${_nextMermaidId++}`;
+      const parent = src.parentNode;
+      let raw = src.textContent.trim();
+      const el = document.createElement("div");
+      el.style.visibility = "hidden";
+      document.body.appendChild(el);
+      let result = null;
+      try {
+        const { svg } = await mermaid.render(id, raw, el);
+        result = makeMermaidImage(svg);
+      } catch (err) {
+        parent.classList.add("jp-mod-warning");
+        result = await makeMermaidError(raw);
+      } finally {
+        el.remove();
+      }
+      parent.classList.add("jp-RenderedMermaid");
+      parent.appendChild(result);
+    }
+
+    void Promise.all([...diagrams].map(renderOneMarmaid));
+  });
+</script>
+<style>
+  .jp-RenderedMarkdown .jp-Mermaid:not(.jp-RenderedMermaid) {
+    display: none;
+  }
+  .jp-RenderedMarkdown .jp-RenderedMermaid.jp-mod-warning {
+    width: auto;
+    padding: 10px;
+    border: var(--jp-border-width) solid var(--jp-warn-color2);
+    border-radius: var(--jp-border-radius);
+    color: var(--jp-ui-font-color1);
+    font-size: var(--jp-ui-font-size1);
+    white-space: pre-wrap;
+    word-wrap: break-word;
+  }
+  .jp-RenderedMarkdown .jp-RenderedMermaid.jp-mod-warning details > pre {
+    margin-top: 1em;
+  }
+  .jp-RenderedMarkdown .jp-RenderedMermaid.jp-mod-warning summary {
+    color: var(--jp-warn-color2);
+  }
+  .jp-RenderedMarkdown .jp-RenderedMermaid.jp-mod-warning summary > pre {
+    display: inline-block;
+  }
+  .jp-RenderedMermaid > .mermaid {
+    display: none;
+  }
+</style>
+<!-- End of mermaid configuration --></head>
 <body class="jp-Notebook" data-jp-theme-light="true" data-jp-theme-name="JupyterLab Light">
 
 <div id="cell-id=6a6c21c7" class="jp-Cell jp-MarkdownCell jp-Notebook-cell">
@@ -15487,7 +15596,7 @@ No continent-ocean boundaries in Merdith2021.
 <hr />
 <h3 id="Subduction-parameters">Subduction parameters<a class="anchor-link" href="#Subduction-parameters">&#182;</a></h3><p>One of the ways an oceanic point can be deleted from the ocean basin at a certain timestep is if it is approaching a plate boundary such that a <strong>velocity and displacement test</strong> is passed:</p>
 <h4 id="Velocity-test">Velocity test<a class="anchor-link" href="#Velocity-test">&#182;</a></h4><p>First, given the trajectory of a point at the next time step, a point will cross a subducting plate boundary (and thus will be deleted) if the difference between its velocity on its current plate AND the velocity it will have on the other plate is greater than this velocity difference is higher than a specified <strong>threshold delta velocity in kms/Myr</strong>.</p>
-<h4 id="Displacement-test">Displacement test<a class="anchor-link" href="#Displacement-test">&#182;</a></h4><p>If the proximity of the point's previous time position to the plate boundary it is approaching is higher than a set distance threshold (<strong>threshold distance to boundary per Myr in kms/Myr</strong>), then the point is far enough away from the boundary that it cannot be subducted or consumed by it, and 
+<h4 id="Displacement-test">Displacement test<a class="anchor-link" href="#Displacement-test">&#182;</a></h4><p>If the proximity of the point's previous time position to the plate boundary it is approaching is higher than a set distance threshold (<strong>threshold distance to boundary per Myr in kms/Myr</strong>), then the point is far enough away from the boundary that it cannot be subducted or consumed by it, and
 hence the point is still active.</p>
 <p>The parameter needed to encapsulate these thresholds is:</p>
 <ul>
@@ -15703,7 +15812,7 @@ Duration: 0:00:24.362884
 <div class="jp-InputArea jp-Cell-inputArea"><div class="jp-InputPrompt jp-InputArea-prompt">
 </div><div class="jp-RenderedHTMLCommon jp-RenderedMarkdown jp-MarkdownOutput " data-mime-type="text/markdown">
 <h3 id="2)-Run-seafloorgrid.lat_lon_z_to_netCDF--to-write-grids-to-netCDF">2) Run <code>seafloorgrid.lat_lon_z_to_netCDF</code>  to write grids to netCDF<a class="anchor-link" href="#2)-Run-seafloorgrid.lat_lon_z_to_netCDF--to-write-grids-to-netCDF">&#182;</a></h3><p>Calling <code>seafloorgrid.lat_lon_z_to_netCDF</code> grids one set of z-data per latitude-longitude pair from each timestep's gridding input file (produced in <code>seafloorgrid.reconstruct_by_topologies()</code>). Grids are in netCDF format.</p>
-<p>The desired z-data to grid is identified using a <code>zval_name</code>. 
+<p>The desired z-data to grid is identified using a <code>zval_name</code>.
 For example, seafloor age grids can be produced using <code>SEAFLOOR_AGE</code>, and spreading rate grids are <code>SPREADING_RATE</code>.</p>
 <p>Use <code>unmasked = True</code> to output both the masked and unmasked versions of the grids.</p>
 
