@@ -17,9 +17,18 @@ import cartopy.crs as ccrs
 import matplotlib.pyplot as plt
 import numpy as np
 import ptt
-from shapely.geometry import Point, Polygon
+from shapely.geometry import (
+    LineString,
+    MultiPolygon,
+    Point,
+    Polygon,
+    box,
+)
 from shapely.geometry.base import BaseGeometry, BaseMultipartGeometry
-from shapely.ops import linemerge
+from shapely.ops import (
+    linemerge,
+    substring,
+)
 
 from .pygplates import FeatureCollection as _FeatureCollection
 from .pygplates import _is_string
@@ -464,13 +473,162 @@ def _parse_geometries(geometries):
     return out
 
 
+def _clean_polygons(data, projection):
+    data = gpd.GeoDataFrame(data)
+    exploded = data.explode(ignore_index=True)
+
+    # If no [Multi]Polygons, return original data
+    for geom in exploded.geometry:
+        if isinstance(geom, (Polygon, MultiPolygon)):
+            break
+    else:
+        return data
+    data = exploded
+
+    if data.crs is None:
+        data.crs = ccrs.PlateCarree()
+
+    if isinstance(
+        projection,
+        (
+            ccrs._RectangularProjection,
+            ccrs._WarpedRectangularProjection,
+        ),
+    ):
+        central_longitude = _meridian_from_projection(projection)
+        dx = 1.0e-3
+        rects = (
+            box(
+                central_longitude - 180,
+                -90,
+                central_longitude - 180 + dx * 0.5,
+                90,
+            ),
+            box(
+                central_longitude + 180 - dx * 0.5,
+                -90,
+                central_longitude + 180,
+                90,
+            )
+        )
+        rects = gpd.GeoDataFrame(
+            {"geometry": rects},
+            geometry="geometry",
+            crs=ccrs.PlateCarree(),
+        )
+        data = data.overlay(rects, how="difference")
+
+    proj_width = np.abs(projection.x_limits[1] - projection.x_limits[0])
+    proj_height = np.abs(projection.y_limits[1] - projection.y_limits[0])
+    min_distance = np.mean((proj_width, proj_height)) * 1.0e-4
+
+    boundary = projection.boundary
+    if np.array(boundary.coords).shape[1] == 3:
+        boundary = type(boundary)(np.array(boundary.coords)[:, :2])
+
+    projected = data.to_crs(projection)
+    return _fill_all_edges(projected, boundary, min_distance=min_distance)
+
+
+def _fill_all_edges(data, boundary, min_distance=None):
+    data = gpd.GeoDataFrame(data).explode(ignore_index=True)
+
+    def drop_func(geom):
+        if hasattr(geom, "exterior"):
+            geom = geom.exterior
+        coords = np.array(geom.coords)
+        return np.all(np.abs(coords) == np.inf)
+
+    to_drop = data.geometry.apply(drop_func)
+    data = (data[~to_drop]).copy()
+
+    def filt_func(geom):
+        if hasattr(geom, "exterior"):
+            geom = geom.exterior
+        coords = np.array(geom.coords)
+        return (
+            np.any(np.abs(coords) == np.inf)
+            or (
+                min_distance is not None
+                and geom.distance(boundary) < min_distance
+            )
+        )
+
+    to_fix = data.index[data.geometry.apply(filt_func)]
+    for index in to_fix:
+        fixed = _fill_edge_polygon(
+            data.geometry.at[index],
+            boundary,
+            min_distance=min_distance,
+        )
+        data.geometry.at[index] = fixed
+    return data
+
+
+def _fill_edge_polygon(geometry, boundary, min_distance=None):
+    if isinstance(geometry, BaseMultipartGeometry):
+        return type(geometry)(
+            [
+                _fill_edge_polygon(i, boundary, min_distance)
+                for i in geometry.geoms
+            ]
+        )
+    if not isinstance(geometry, Polygon):
+        geometry = Polygon(geometry)
+    coords = np.array(geometry.exterior.coords)
+
+    segments_list = []
+    segment = []
+    for x, y in coords:
+        if (
+            np.abs(x) == np.inf or np.abs(y) == np.inf
+        ) or (
+            min_distance is not None
+            and boundary.distance(Point(x, y)) < min_distance
+        ):
+            if len(segment) > 0:
+                segments_list.append(segment)
+                segment = []
+            continue
+        segment.append((x, y))
+    if len(segments_list) == 0:
+        return geometry
+    segments_list = [LineString(i) for i in segments_list]
+
+    out = []
+    for i in range(-1, len(segments_list) - 1):
+        segment_before = segments_list[i]
+        point_before = Point(segment_before.coords[-1])
+        d0 = boundary.project(point_before)
+
+        segment_after = segments_list[i + 1]
+        point_after = Point(segment_after.coords[0])
+        d1 = boundary.project(point_after)
+
+        boundary_segment = substring(boundary, d0, d1)
+        if i == -1:
+            out.append(segment_before)
+        out.append(boundary_segment)
+        if i != len(segments_list) - 2:
+            out.append(segment_after)
+
+    return Polygon(np.vstack([i.coords for i in out]))
+
+
 def _meridian_from_ax(ax):
-    if hasattr(ax, "projection") and isinstance(ax.projection, ccrs.Projection):
+    if (
+        hasattr(ax, "projection")
+        and isinstance(ax.projection, ccrs.Projection)
+    ):
         proj = ax.projection
-        x = np.mean(proj.x_limits)
-        y = np.mean(proj.y_limits)
-        return ccrs.PlateCarree().transform_point(x, y, proj)[0]
+        return _meridian_from_projection(projection=proj)
     return 0.0
+
+
+def _meridian_from_projection(projection):
+    x = np.mean(projection.x_limits)
+    y = np.mean(projection.y_limits)
+    return ccrs.PlateCarree().transform_point(x, y, projection)[0]
 
 
 def shapelify_features(features, central_meridian=0.0, tessellate_degrees=None):
@@ -1072,6 +1230,12 @@ class PlotTopologies(object):
             A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map 
             with coastline features plotted onto the chosen map projection.
         """
+        if "transform" in kwargs.keys():
+            warnings.warn(
+                "'transform' keyword argument is ignored by PlotTopologies",
+                UserWarning,
+            )
+            kwargs.pop("transform")
         tessellate_degrees = kwargs.pop("tessellate_degrees", None)
         central_meridian = kwargs.pop("central_meridian", None)
         if central_meridian is None:
@@ -1082,7 +1246,11 @@ class PlotTopologies(object):
             central_meridian=central_meridian,
             tessellate_degrees=tessellate_degrees,
         )
-        return gdf.plot(ax=ax, transform=self.base_projection, **kwargs)
+        if hasattr(ax, "projection"):
+            gdf = _clean_polygons(data=gdf, projection=ax.projection)
+        else:
+            kwargs["transform"] = self.base_projection
+        return gdf.plot(ax=ax, **kwargs)
 
 
     def get_coastlines(self, central_meridian=0.0, tessellate_degrees=None):
@@ -1167,6 +1335,12 @@ class PlotTopologies(object):
             A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map 
             with coastline features plotted onto the chosen map projection. 
         """
+        if "transform" in kwargs.keys():
+            warnings.warn(
+                "'transform' keyword argument is ignored by PlotTopologies",
+                UserWarning,
+            )
+            kwargs.pop("transform")
         tessellate_degrees = kwargs.pop("tessellate_degrees", None)
         central_meridian = kwargs.pop("central_meridian", None)
         if central_meridian is None:
@@ -1176,7 +1350,11 @@ class PlotTopologies(object):
             central_meridian=central_meridian,
             tessellate_degrees=tessellate_degrees,
         )
-        return gdf.plot(ax=ax, transform=self.base_projection, **kwargs)
+        if hasattr(ax, "projection"):
+            gdf = _clean_polygons(data=gdf, projection=ax.projection)
+        else:
+            kwargs["transform"] = self.base_projection
+        return gdf.plot(ax=ax, **kwargs)
 
 
     def get_continents(self, central_meridian=0.0, tessellate_degrees=None):
@@ -1261,6 +1439,12 @@ class PlotTopologies(object):
             A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map 
             with continent features plotted onto the chosen map projection. 
         """
+        if "transform" in kwargs.keys():
+            warnings.warn(
+                "'transform' keyword argument is ignored by PlotTopologies",
+                UserWarning,
+            )
+            kwargs.pop("transform")
         tessellate_degrees = kwargs.pop("tessellate_degrees", None)
         central_meridian = kwargs.pop("central_meridian", None)
         if central_meridian is None:
@@ -1270,7 +1454,11 @@ class PlotTopologies(object):
             central_meridian=central_meridian,
             tessellate_degrees=tessellate_degrees,
         )
-        return gdf.plot(ax=ax, transform=self.base_projection, **kwargs)
+        if hasattr(ax, "projection"):
+            gdf = _clean_polygons(data=gdf, projection=ax.projection)
+        else:
+            kwargs["transform"] = self.base_projection
+        return gdf.plot(ax=ax, **kwargs)
 
 
     def get_continent_ocean_boundaries(
@@ -1365,6 +1553,12 @@ class PlotTopologies(object):
             A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map 
             with COB features plotted onto the chosen map projection. 
         """
+        if "transform" in kwargs.keys():
+            warnings.warn(
+                "'transform' keyword argument is ignored by PlotTopologies",
+                UserWarning,
+            )
+            kwargs.pop("transform")
         tessellate_degrees = kwargs.pop("tessellate_degrees", None)
         central_meridian = kwargs.pop("central_meridian", None)
         if central_meridian is None:
@@ -1374,7 +1568,11 @@ class PlotTopologies(object):
             central_meridian=central_meridian,
             tessellate_degrees=tessellate_degrees,
         )
-        return gdf.plot(ax=ax, transform=self.base_projection, **kwargs)
+        if hasattr(ax, "projection"):
+            gdf = _clean_polygons(data=gdf, projection=ax.projection)
+        else:
+            kwargs["transform"] = self.base_projection
+        return gdf.plot(ax=ax, **kwargs)
 
 
     def get_ridges(self, central_meridian=0.0, tessellate_degrees=None):
@@ -1468,6 +1666,12 @@ class PlotTopologies(object):
             A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map 
             with ridge features plotted onto the chosen map projection. 
         """
+        if "transform" in kwargs.keys():
+            warnings.warn(
+                "'transform' keyword argument is ignored by PlotTopologies",
+                UserWarning,
+            )
+            kwargs.pop("transform")
         tessellate_degrees = kwargs.pop("tessellate_degrees", None)
         central_meridian = kwargs.pop("central_meridian", None)
         if central_meridian is None:
@@ -1477,7 +1681,11 @@ class PlotTopologies(object):
             central_meridian=central_meridian,
             tessellate_degrees=tessellate_degrees,
         )
-        return gdf.plot(ax=ax, facecolor='none', edgecolor=color, transform=self.base_projection, **kwargs)
+        if hasattr(ax, "projection"):
+            gdf = _clean_polygons(data=gdf, projection=ax.projection)
+        else:
+            kwargs["transform"] = self.base_projection
+        return gdf.plot(ax=ax, facecolor='none', edgecolor=color, **kwargs)
 
 
     def get_ridges_and_transforms(
@@ -1576,6 +1784,12 @@ class PlotTopologies(object):
             A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map 
             with ridge & transform features plotted onto the chosen map projection. 
         """
+        if "transform" in kwargs.keys():
+            warnings.warn(
+                "'transform' keyword argument is ignored by PlotTopologies",
+                UserWarning,
+            )
+            kwargs.pop("transform")
         tessellate_degrees = kwargs.pop("tessellate_degrees", None)
         central_meridian = kwargs.pop("central_meridian", None)
         if central_meridian is None:
@@ -1585,7 +1799,11 @@ class PlotTopologies(object):
             central_meridian=central_meridian,
             tessellate_degrees=tessellate_degrees,
         )
-        return gdf.plot(ax=ax, facecolor='none', edgecolor=color, transform=self.base_projection, **kwargs)
+        if hasattr(ax, "projection"):
+            gdf = _clean_polygons(data=gdf, projection=ax.projection)
+        else:
+            kwargs["transform"] = self.base_projection
+        return gdf.plot(ax=ax, facecolor='none', edgecolor=color, **kwargs)
 
 
     def get_transforms(self, central_meridian=0.0, tessellate_degrees=None):
@@ -1678,6 +1896,12 @@ class PlotTopologies(object):
             A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map 
             with transform features plotted onto the chosen map projection.
         """
+        if "transform" in kwargs.keys():
+            warnings.warn(
+                "'transform' keyword argument is ignored by PlotTopologies",
+                UserWarning,
+            )
+            kwargs.pop("transform")
         tessellate_degrees = kwargs.pop("tessellate_degrees", None)
         central_meridian = kwargs.pop("central_meridian", None)
         if central_meridian is None:
@@ -1687,7 +1911,11 @@ class PlotTopologies(object):
             central_meridian=central_meridian,
             tessellate_degrees=tessellate_degrees,
         )
-        return gdf.plot(ax=ax, facecolor='none', edgecolor=color, transform=self.base_projection, **kwargs)
+        if hasattr(ax, "projection"):
+            gdf = _clean_polygons(data=gdf, projection=ax.projection)
+        else:
+            kwargs["transform"] = self.base_projection
+        return gdf.plot(ax=ax, facecolor='none', edgecolor=color, **kwargs)
 
 
     def get_trenches(self, central_meridian=0.0, tessellate_degrees=None):
@@ -1781,6 +2009,12 @@ class PlotTopologies(object):
             A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map 
             with transform features plotted onto the chosen map projection.
         """
+        if "transform" in kwargs.keys():
+            warnings.warn(
+                "'transform' keyword argument is ignored by PlotTopologies",
+                UserWarning,
+            )
+            kwargs.pop("transform")
         tessellate_degrees = kwargs.pop("tessellate_degrees", None)
         central_meridian = kwargs.pop("central_meridian", None)
         if central_meridian is None:
@@ -1790,7 +2024,11 @@ class PlotTopologies(object):
             central_meridian=central_meridian,
             tessellate_degrees=tessellate_degrees,
         )
-        return gdf.plot(ax=ax, facecolor='none', edgecolor=color, transform=self.base_projection, **kwargs)
+        if hasattr(ax, "projection"):
+            gdf = _clean_polygons(data=gdf, projection=ax.projection)
+        else:
+            kwargs["transform"] = self.base_projection
+        return gdf.plot(ax=ax, facecolor='none', edgecolor=color, **kwargs)
 
 
     def get_misc_boundaries(self, central_meridian=0.0, tessellate_degrees=None):
@@ -1884,6 +2122,12 @@ class PlotTopologies(object):
             A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map 
             with miscellaneous boundary features plotted onto the chosen map projection.
         """
+        if "transform" in kwargs.keys():
+            warnings.warn(
+                "'transform' keyword argument is ignored by PlotTopologies",
+                UserWarning,
+            )
+            kwargs.pop("transform")
         tessellate_degrees = kwargs.pop("tessellate_degrees", None)
         central_meridian = kwargs.pop("central_meridian", None)
         if central_meridian is None:
@@ -1893,7 +2137,11 @@ class PlotTopologies(object):
             central_meridian=central_meridian,
             tessellate_degrees=tessellate_degrees,
         )
-        return gdf.plot(ax=ax, facecolor='none', edgecolor=color, transform=self.base_projection, **kwargs)
+        if hasattr(ax, "projection"):
+            gdf = _clean_polygons(data=gdf, projection=ax.projection)
+        else:
+            kwargs["transform"] = self.base_projection
+        return gdf.plot(ax=ax, facecolor='none', edgecolor=color, **kwargs)
 
 
     def plot_subduction_teeth_deprecated(self, ax, spacing=0.1, size=2.0, aspect=1, color='black', **kwargs):
@@ -2048,6 +2296,12 @@ class PlotTopologies(object):
         """
         if self._time is None:
             raise ValueError("No topologies have been resolved. Set `PlotTopologies.time` to construct them.")
+        if "transform" in kwargs.keys():
+            warnings.warn(
+                "'transform' keyword argument is ignored by PlotTopologies",
+                UserWarning,
+            )
+            kwargs.pop("transform")
 
         central_meridian = _meridian_from_ax(ax)
         tessellate_degrees = np.rad2deg(spacing)
@@ -2375,6 +2629,12 @@ class PlotTopologies(object):
             A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map 
             with continental rifts plotted onto the chosen map projection.
         """
+        if "transform" in kwargs.keys():
+            warnings.warn(
+                "'transform' keyword argument is ignored by PlotTopologies",
+                UserWarning,
+            )
+            kwargs.pop("transform")
         tessellate_degrees = kwargs.pop("tessellate_degrees", None)
         central_meridian = kwargs.pop("central_meridian", None)
         if central_meridian is None:
@@ -2384,7 +2644,11 @@ class PlotTopologies(object):
             central_meridian=central_meridian,
             tessellate_degrees=tessellate_degrees,
         )
-        return gdf.plot(ax=ax, facecolor='none', edgecolor=color, transform=self.base_projection, **kwargs)
+        if hasattr(ax, "projection"):
+            gdf = _clean_polygons(data=gdf, projection=ax.projection)
+        else:
+            kwargs["transform"] = self.base_projection
+        return gdf.plot(ax=ax, facecolor='none', edgecolor=color, **kwargs)
 
 
     def get_faults(self, central_meridian=0.0, tessellate_degrees=None):
@@ -2461,6 +2725,12 @@ class PlotTopologies(object):
             A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map 
             with faults plotted onto the chosen map projection.
         """
+        if "transform" in kwargs.keys():
+            warnings.warn(
+                "'transform' keyword argument is ignored by PlotTopologies",
+                UserWarning,
+            )
+            kwargs.pop("transform")
         tessellate_degrees = kwargs.pop("tessellate_degrees", None)
         central_meridian = kwargs.pop("central_meridian", None)
         if central_meridian is None:
@@ -2470,7 +2740,11 @@ class PlotTopologies(object):
             central_meridian=central_meridian,
             tessellate_degrees=tessellate_degrees,
         )
-        return gdf.plot(ax=ax, facecolor='none', edgecolor=color, transform=self.base_projection, **kwargs)
+        if hasattr(ax, "projection"):
+            gdf = _clean_polygons(data=gdf, projection=ax.projection)
+        else:
+            kwargs["transform"] = self.base_projection
+        return gdf.plot(ax=ax, facecolor='none', edgecolor=color, **kwargs)
 
 
     def get_fracture_zones(self, central_meridian=0.0, tessellate_degrees=None):
@@ -2547,6 +2821,12 @@ class PlotTopologies(object):
             A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map 
             with fracture zones plotted onto the chosen map projection.
         """
+        if "transform" in kwargs.keys():
+            warnings.warn(
+                "'transform' keyword argument is ignored by PlotTopologies",
+                UserWarning,
+            )
+            kwargs.pop("transform")
         tessellate_degrees = kwargs.pop("tessellate_degrees", None)
         central_meridian = kwargs.pop("central_meridian", None)
         if central_meridian is None:
@@ -2556,7 +2836,11 @@ class PlotTopologies(object):
             central_meridian=central_meridian,
             tessellate_degrees=tessellate_degrees,
         )
-        return gdf.plot(ax=ax, facecolor='none', edgecolor=color, transform=self.base_projection, **kwargs)
+        if hasattr(ax, "projection"):
+            gdf = _clean_polygons(data=gdf, projection=ax.projection)
+        else:
+            kwargs["transform"] = self.base_projection
+        return gdf.plot(ax=ax, facecolor='none', edgecolor=color, **kwargs)
 
 
     def get_inferred_paleo_boundaries(
@@ -2637,6 +2921,12 @@ class PlotTopologies(object):
             A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map 
             with inferred paleo boundaries plotted onto the chosen map projection.
         """
+        if "transform" in kwargs.keys():
+            warnings.warn(
+                "'transform' keyword argument is ignored by PlotTopologies",
+                UserWarning,
+            )
+            kwargs.pop("transform")
         tessellate_degrees = kwargs.pop("tessellate_degrees", None)
         central_meridian = kwargs.pop("central_meridian", None)
         if central_meridian is None:
@@ -2646,7 +2936,11 @@ class PlotTopologies(object):
             central_meridian=central_meridian,
             tessellate_degrees=tessellate_degrees,
         )
-        return gdf.plot(ax=ax, facecolor='none', edgecolor=color, transform=self.base_projection, **kwargs)
+        if hasattr(ax, "projection"):
+            gdf = _clean_polygons(data=gdf, projection=ax.projection)
+        else:
+            kwargs["transform"] = self.base_projection
+        return gdf.plot(ax=ax, facecolor='none', edgecolor=color, **kwargs)
 
 
     def get_terrane_boundaries(
@@ -2727,6 +3021,12 @@ class PlotTopologies(object):
             A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map 
             with terrane boundaries plotted onto the chosen map projection.
         """
+        if "transform" in kwargs.keys():
+            warnings.warn(
+                "'transform' keyword argument is ignored by PlotTopologies",
+                UserWarning,
+            )
+            kwargs.pop("transform")
         tessellate_degrees = kwargs.pop("tessellate_degrees", None)
         central_meridian = kwargs.pop("central_meridian", None)
         if central_meridian is None:
@@ -2736,7 +3036,11 @@ class PlotTopologies(object):
             central_meridian=central_meridian,
             tessellate_degrees=tessellate_degrees,
         )
-        return gdf.plot(ax=ax, facecolor='none', edgecolor=color, transform=self.base_projection, **kwargs)
+        if hasattr(ax, "projection"):
+            gdf = _clean_polygons(data=gdf, projection=ax.projection)
+        else:
+            kwargs["transform"] = self.base_projection
+        return gdf.plot(ax=ax, facecolor='none', edgecolor=color, **kwargs)
 
 
     def get_transitional_crusts(
@@ -2817,6 +3121,12 @@ class PlotTopologies(object):
             A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map 
             with transitional crust plotted onto the chosen map projection.
         """
+        if "transform" in kwargs.keys():
+            warnings.warn(
+                "'transform' keyword argument is ignored by PlotTopologies",
+                UserWarning,
+            )
+            kwargs.pop("transform")
         tessellate_degrees = kwargs.pop("tessellate_degrees", None)
         central_meridian = kwargs.pop("central_meridian", None)
         if central_meridian is None:
@@ -2826,7 +3136,11 @@ class PlotTopologies(object):
             central_meridian=central_meridian,
             tessellate_degrees=tessellate_degrees,
         )
-        return gdf.plot(ax=ax, facecolor='none', edgecolor=color, transform=self.base_projection, **kwargs)
+        if hasattr(ax, "projection"):
+            gdf = _clean_polygons(data=gdf, projection=ax.projection)
+        else:
+            kwargs["transform"] = self.base_projection
+        return gdf.plot(ax=ax, facecolor='none', edgecolor=color, **kwargs)
 
 
     def get_orogenic_belts(
@@ -2907,6 +3221,12 @@ class PlotTopologies(object):
             A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map 
             with orogenic belts plotted onto the chosen map projection.
         """
+        if "transform" in kwargs.keys():
+            warnings.warn(
+                "'transform' keyword argument is ignored by PlotTopologies",
+                UserWarning,
+            )
+            kwargs.pop("transform")
         tessellate_degrees = kwargs.pop("tessellate_degrees", None)
         central_meridian = kwargs.pop("central_meridian", None)
         if central_meridian is None:
@@ -2916,7 +3236,11 @@ class PlotTopologies(object):
             central_meridian=central_meridian,
             tessellate_degrees=tessellate_degrees,
         )
-        return gdf.plot(ax=ax, facecolor='none', edgecolor=color, transform=self.base_projection, **kwargs)
+        if hasattr(ax, "projection"):
+            gdf = _clean_polygons(data=gdf, projection=ax.projection)
+        else:
+            kwargs["transform"] = self.base_projection
+        return gdf.plot(ax=ax, facecolor='none', edgecolor=color, **kwargs)
 
 
     def get_sutures(self, central_meridian=0.0, tessellate_degrees=None):
@@ -2993,6 +3317,12 @@ class PlotTopologies(object):
             A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map 
             with sutures plotted onto the chosen map projection.
         """
+        if "transform" in kwargs.keys():
+            warnings.warn(
+                "'transform' keyword argument is ignored by PlotTopologies",
+                UserWarning,
+            )
+            kwargs.pop("transform")
         tessellate_degrees = kwargs.pop("tessellate_degrees", None)
         central_meridian = kwargs.pop("central_meridian", None)
         if central_meridian is None:
@@ -3002,7 +3332,11 @@ class PlotTopologies(object):
             central_meridian=central_meridian,
             tessellate_degrees=tessellate_degrees,
         )
-        return gdf.plot(ax=ax, facecolor='none', edgecolor=color, transform=self.base_projection, **kwargs)
+        if hasattr(ax, "projection"):
+            gdf = _clean_polygons(data=gdf, projection=ax.projection)
+        else:
+            kwargs["transform"] = self.base_projection
+        return gdf.plot(ax=ax, facecolor='none', edgecolor=color, **kwargs)
 
 
     def get_continental_crusts(
@@ -3083,6 +3417,12 @@ class PlotTopologies(object):
             A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map 
             with continental crust lines plotted onto the chosen map projection.
         """
+        if "transform" in kwargs.keys():
+            warnings.warn(
+                "'transform' keyword argument is ignored by PlotTopologies",
+                UserWarning,
+            )
+            kwargs.pop("transform")
         tessellate_degrees = kwargs.pop("tessellate_degrees", None)
         central_meridian = kwargs.pop("central_meridian", None)
         if central_meridian is None:
@@ -3092,7 +3432,11 @@ class PlotTopologies(object):
             central_meridian=central_meridian,
             tessellate_degrees=tessellate_degrees,
         )
-        return gdf.plot(ax=ax, facecolor='none', edgecolor=color, transform=self.base_projection, **kwargs)
+        if hasattr(ax, "projection"):
+            gdf = _clean_polygons(data=gdf, projection=ax.projection)
+        else:
+            kwargs["transform"] = self.base_projection
+        return gdf.plot(ax=ax, facecolor='none', edgecolor=color, **kwargs)
 
 
     def get_extended_continental_crusts(
@@ -3172,6 +3516,12 @@ class PlotTopologies(object):
             A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map 
             with extended continental crust lines plotted onto the chosen map projection.
         """
+        if "transform" in kwargs.keys():
+            warnings.warn(
+                "'transform' keyword argument is ignored by PlotTopologies",
+                UserWarning,
+            )
+            kwargs.pop("transform")
         tessellate_degrees = kwargs.pop("tessellate_degrees", None)
         central_meridian = kwargs.pop("central_meridian", None)
         if central_meridian is None:
@@ -3181,7 +3531,11 @@ class PlotTopologies(object):
             central_meridian=central_meridian,
             tessellate_degrees=tessellate_degrees,
         )
-        return gdf.plot(ax=ax, facecolor='none', edgecolor=color, transform=self.base_projection, **kwargs)
+        if hasattr(ax, "projection"):
+            gdf = _clean_polygons(data=gdf, projection=ax.projection)
+        else:
+            kwargs["transform"] = self.base_projection
+        return gdf.plot(ax=ax, facecolor='none', edgecolor=color, **kwargs)
 
 
     def get_passive_continental_boundaries(
@@ -3262,6 +3616,12 @@ class PlotTopologies(object):
             A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map 
             with passive continental boundaries plotted onto the chosen map projection.
         """
+        if "transform" in kwargs.keys():
+            warnings.warn(
+                "'transform' keyword argument is ignored by PlotTopologies",
+                UserWarning,
+            )
+            kwargs.pop("transform")
         tessellate_degrees = kwargs.pop("tessellate_degrees", None)
         central_meridian = kwargs.pop("central_meridian", None)
         if central_meridian is None:
@@ -3271,7 +3631,11 @@ class PlotTopologies(object):
             central_meridian=central_meridian,
             tessellate_degrees=tessellate_degrees,
         )
-        return gdf.plot(ax=ax, facecolor='none', edgecolor=color, transform=self.base_projection, **kwargs)
+        if hasattr(ax, "projection"):
+            gdf = _clean_polygons(data=gdf, projection=ax.projection)
+        else:
+            kwargs["transform"] = self.base_projection
+        return gdf.plot(ax=ax, facecolor='none', edgecolor=color, **kwargs)
 
 
     def get_slab_edges(self, central_meridian=0.0, tessellate_degrees=None):
@@ -3348,6 +3712,12 @@ class PlotTopologies(object):
             A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map 
             with slab edges plotted onto the chosen map projection.
         """
+        if "transform" in kwargs.keys():
+            warnings.warn(
+                "'transform' keyword argument is ignored by PlotTopologies",
+                UserWarning,
+            )
+            kwargs.pop("transform")
         tessellate_degrees = kwargs.pop("tessellate_degrees", None)
         central_meridian = kwargs.pop("central_meridian", None)
         if central_meridian is None:
@@ -3357,7 +3727,11 @@ class PlotTopologies(object):
             central_meridian=central_meridian,
             tessellate_degrees=tessellate_degrees,
         )
-        return gdf.plot(ax=ax, facecolor='none', edgecolor=color, transform=self.base_projection, **kwargs)
+        if hasattr(ax, "projection"):
+            gdf = _clean_polygons(data=gdf, projection=ax.projection)
+        else:
+            kwargs["transform"] = self.base_projection
+        return gdf.plot(ax=ax, facecolor='none', edgecolor=color, **kwargs)
 
 
     def get_misc_transforms(
@@ -3438,6 +3812,12 @@ class PlotTopologies(object):
             A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map 
             with miscellaneous transform boundaries plotted onto the chosen map projection.
         """
+        if "transform" in kwargs.keys():
+            warnings.warn(
+                "'transform' keyword argument is ignored by PlotTopologies",
+                UserWarning,
+            )
+            kwargs.pop("transform")
         tessellate_degrees = kwargs.pop("tessellate_degrees", None)
         central_meridian = kwargs.pop("central_meridian", None)
         if central_meridian is None:
@@ -3447,7 +3827,11 @@ class PlotTopologies(object):
             central_meridian=central_meridian,
             tessellate_degrees=tessellate_degrees,
         )
-        return gdf.plot(ax=ax, facecolor='none', edgecolor=color, transform=self.base_projection, **kwargs)
+        if hasattr(ax, "projection"):
+            gdf = _clean_polygons(data=gdf, projection=ax.projection)
+        else:
+            kwargs["transform"] = self.base_projection
+        return gdf.plot(ax=ax, facecolor='none', edgecolor=color, **kwargs)
 
 
     def get_unclassified_features(
@@ -3528,6 +3912,12 @@ class PlotTopologies(object):
             A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map 
             with unclassified features plotted onto the chosen map projection.
         """
+        if "transform" in kwargs.keys():
+            warnings.warn(
+                "'transform' keyword argument is ignored by PlotTopologies",
+                UserWarning,
+            )
+            kwargs.pop("transform")
         tessellate_degrees = kwargs.pop("tessellate_degrees", None)
         central_meridian = kwargs.pop("central_meridian", None)
         if central_meridian is None:
@@ -3537,7 +3927,11 @@ class PlotTopologies(object):
             central_meridian=central_meridian,
             tessellate_degrees=tessellate_degrees,
         )
-        return gdf.plot(ax=ax, facecolor='none', edgecolor=color, transform=self.base_projection, **kwargs)
+        if hasattr(ax, "projection"):
+            gdf = _clean_polygons(data=gdf, projection=ax.projection)
+        else:
+            kwargs["transform"] = self.base_projection
+        return gdf.plot(ax=ax, facecolor='none', edgecolor=color, **kwargs)
 
 
     def get_all_topologies(
@@ -3634,6 +4028,12 @@ class PlotTopologies(object):
             A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map 
             with unclassified features plotted onto the chosen map projection.
         """
+        if "transform" in kwargs.keys():
+            warnings.warn(
+                "'transform' keyword argument is ignored by PlotTopologies",
+                UserWarning,
+            )
+            kwargs.pop("transform")
         tessellate_degrees = kwargs.pop("tessellate_degrees", None)
         central_meridian = kwargs.pop("central_meridian", None)
         if central_meridian is None:
@@ -3643,4 +4043,8 @@ class PlotTopologies(object):
             central_meridian=central_meridian,
             tessellate_degrees=tessellate_degrees,
         )
-        return gdf.plot(ax=ax, facecolor='none', edgecolor=color, transform=self.base_projection, **kwargs)
+        if hasattr(ax, "projection"):
+            gdf = _clean_polygons(data=gdf, projection=ax.projection)
+        else:
+            kwargs["transform"] = self.base_projection
+        return gdf.plot(ax=ax, facecolor='none', edgecolor=color, **kwargs)
