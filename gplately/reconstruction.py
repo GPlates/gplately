@@ -1846,7 +1846,11 @@ class _DefaultCollision(object):
             distance_threshold_radians = ((threshold_distance_to_boundary_per_my + delta_velocity_magnitude)
                 * reconstruction_time_interval / pygplates.Earth.equatorial_radius_in_kms)
 
-            if pygplates.GeometryOnSphere.distance(prev_point, prev_boundary_geometry, distance_threshold_radians) is not None:
+            distance = pygplates.GeometryOnSphere.distance(
+                prev_point,
+                prev_boundary_geometry,
+            )
+            if distance > distance_threshold_radians:
                 # Detected a collision.
                 return True
         
