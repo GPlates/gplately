@@ -1850,7 +1850,7 @@ class _DefaultCollision(object):
                 prev_point,
                 prev_boundary_geometry,
             )
-            if distance > distance_threshold_radians:
+            if distance <= distance_threshold_radians:
                 # Detected a collision.
                 return True
         
