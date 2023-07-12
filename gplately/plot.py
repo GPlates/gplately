@@ -586,7 +586,7 @@ def _fill_edge_polygon(geometry, boundary, min_distance=None):
             min_distance is not None
             and boundary.distance(Point(x, y)) < min_distance
         ):
-            if len(segment) > 0:
+            if len(segment) > 1:
                 segments_list.append(segment)
                 segment = []
             continue
