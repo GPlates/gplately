@@ -1877,12 +1877,15 @@ class _DefaultCollision(object):
             # builder/user digitising a new boundary line that differs noticeably from that of the previous time period.
             distance_threshold_radians = ((threshold_distance_to_boundary_per_my + delta_velocity_magnitude)
                 * reconstruction_time_interval / pygplates.Earth.equatorial_radius_in_kms)
+            distance_threshold_radians = min(distance_threshold_radians, math.pi)
+            distance_threshold_radians = max(distance_threshold_radians, 0.0)
 
             distance = pygplates.GeometryOnSphere.distance(
                 prev_point,
                 prev_boundary_geometry,
+                distance_threshold_radians=float(distance_threshold_radians),
             )
-            if distance &lt;= distance_threshold_radians:
+            if distance is not None:
                 # Detected a collision.
                 return True
         
