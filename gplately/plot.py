@@ -19,6 +19,7 @@ import numpy as np
 import ptt
 from shapely.geometry import (
     LineString,
+    MultiLineString,
     MultiPolygon,
     Point,
     Polygon,
@@ -4060,3 +4061,144 @@ class PlotTopologies(object):
         else:
             kwargs["transform"] = self.base_projection
         return gdf.plot(ax=ax, facecolor='none', edgecolor=color, **kwargs)
+
+
+    def get_all_topological_sections(
+        self,
+        central_meridian=0.0,
+        tessellate_degrees=None,
+    ):
+        """Create a geopandas.GeoDataFrame object containing geometries of
+        resolved topological sections.
+
+        Parameters
+        ----------
+        central_meridian : float
+            Central meridian around which to perform wrapping; default: 0.0.
+        tessellate_degrees : float or None
+            If provided, geometries will be tessellated to this resolution prior
+            to wrapping.
+
+        Returns
+        -------
+        geopandas.GeoDataFrame
+            A pandas.DataFrame that has a column with `topologies` geometry.
+
+        Raises
+        ------
+        ValueError
+            If the optional `time` parameter has not been passed to
+            `PlotTopologies`. This is needed to construct `topologies`
+            to the requested `time` and thus populate the GeoDataFrame.
+
+        Notes
+        -----
+        The `topologies` needed to produce the GeoDataFrame are automatically
+        constructed if the optional `time` parameter is passed to the
+        `PlotTopologies` object before calling this function. `time` can be
+        passed either when `PlotTopologies` is first called...
+
+            gplot = gplately.PlotTopologies(..., time=100,...)
+
+        or anytime afterwards, by setting:
+
+            time = 100 # Ma
+            gplot.time = time
+
+        ...after which this function can be re-run. Once the `topologies`
+        are reconstructed, they are converted into Shapely lines whose
+        coordinates are passed to a geopandas GeoDataFrame.
+        """
+        if self._time is None:
+            raise ValueError("No topologies have been resolved. Set `PlotTopologies.time` to construct them.")
+
+        if self.topologies is None:
+            raise ValueError("No topologies passed to PlotTopologies.")
+
+        topologies_list = [
+            *self.ridge_transforms,
+            *self.ridges,
+            *self.transforms,
+            *self.trenches,
+            *self.trench_left,
+            *self.trench_right,
+            *self.other,
+        ]
+
+        # get plate IDs and feature types to add to geodataframe
+        geometries = []
+        plate_IDs = []
+        feature_types = []
+        feature_names = []
+        for topo in topologies_list:
+            geom = topo.get_geometry()
+            if geom is None:
+                continue
+            converted = shapelify_features(
+                topo,
+                central_meridian=central_meridian,
+                tessellate_degrees=tessellate_degrees,
+            )
+            if len(converted) > 1:
+                converted = MultiLineString(converted)
+            elif len(converted) == 1:
+                converted = converted[0]
+            else:
+                continue
+            geometries.append(converted)
+            plate_IDs.append(topo.get_reconstruction_plate_id())
+            feature_types.append(topo.get_feature_type())
+            feature_names.append(topo.get_name())
+
+        gdf = gpd.GeoDataFrame({"geometry": geometries,
+                                "reconstruction_plate_ID": plate_IDs,
+                                "feature_type": feature_types,
+                                "feature_name": feature_names},
+                                geometry="geometry")
+        return gdf
+
+
+    def plot_all_topological_sections(self, ax, color='black', **kwargs):
+        """Plot all topologies on a standard map projection.
+
+        Parameters
+        ----------
+        ax : cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot
+            A subclass of `matplotlib.axes.Axes` which represents a map Projection.
+            The map should be set at a particular Cartopy projection.
+
+        color : str, default='black'
+            The colour of the topology lines. By default, it is set to black.
+
+        **kwargs
+            Keyword arguments for parameters such as `alpha`, etc.
+            for plotting trench geometries.
+            See `Matplotlib` keyword arguments
+            [here](https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html).
+
+        Returns
+        -------
+        ax : instance of <geopandas.GeoDataFrame.plot>
+            A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map
+            with unclassified features plotted onto the chosen map projection.
+        """
+        if "transform" in kwargs.keys():
+            warnings.warn(
+                "'transform' keyword argument is ignored by PlotTopologies",
+                UserWarning,
+            )
+            kwargs.pop("transform")
+        tessellate_degrees = kwargs.pop("tessellate_degrees", None)
+        central_meridian = kwargs.pop("central_meridian", None)
+        if central_meridian is None:
+            central_meridian = _meridian_from_ax(ax)
+
+        gdf = self.get_all_topological_sections(
+            central_meridian=central_meridian,
+            tessellate_degrees=tessellate_degrees,
+        )
+        if hasattr(ax, "projection"):
+            gdf = _clean_polygons(data=gdf, projection=ax.projection)
+        else:
+            kwargs["transform"] = self.base_projection
+        return gdf.plot(ax=ax, color=color, **kwargs)
