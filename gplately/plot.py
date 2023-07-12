@@ -475,15 +475,7 @@ def _parse_geometries(geometries):
 
 def _clean_polygons(data, projection):
     data = gpd.GeoDataFrame(data)
-    exploded = data.explode(ignore_index=True)
-
-    # If no [Multi]Polygons, return original data
-    for geom in exploded.geometry:
-        if isinstance(geom, (Polygon, MultiPolygon)):
-            break
-    else:
-        return data
-    data = exploded
+    data = data.explode(ignore_index=True)
 
     if data.crs is None:
         data.crs = ccrs.PlateCarree()
@@ -497,19 +489,32 @@ def _clean_polygons(data, projection):
     ):
         central_longitude = _meridian_from_projection(projection)
         dx = 1.0e-3
+        dy = 5.0e-2
         rects = (
             box(
                 central_longitude - 180,
                 -90,
-                central_longitude - 180 + dx * 0.5,
+                central_longitude - 180 + dx,
                 90,
             ),
             box(
-                central_longitude + 180 - dx * 0.5,
+                central_longitude + 180 - dx,
                 -90,
                 central_longitude + 180,
                 90,
-            )
+            ),
+            box(
+                central_longitude - 180,
+                -90 - dy * 0.5,
+                central_longitude + 180,
+                -90 + dy * 0.5,
+            ),
+            box(
+                central_longitude - 180,
+                90 - dy * 0.5,
+                central_longitude + 180,
+                90 + dy * 0.5,
+            ),
         )
         rects = gpd.GeoDataFrame(
             {"geometry": rects},
@@ -518,6 +523,15 @@ def _clean_polygons(data, projection):
         )
         data = data.overlay(rects, how="difference")
 
+    projected = data.to_crs(projection)
+
+    # If no [Multi]Polygons, return projected data
+    for geom in projected.geometry:
+        if isinstance(geom, (Polygon, MultiPolygon)):
+            break
+    else:
+        return projected
+
     proj_width = np.abs(projection.x_limits[1] - projection.x_limits[0])
     proj_height = np.abs(projection.y_limits[1] - projection.y_limits[0])
     min_distance = np.mean((proj_width, proj_height)) * 1.0e-4
@@ -525,8 +539,6 @@ def _clean_polygons(data, projection):
     boundary = projection.boundary
     if np.array(boundary.coords).shape[1] == 3:
         boundary = type(boundary)(np.array(boundary.coords)[:, :2])
-
-    projected = data.to_crs(projection)
     return _fill_all_edges(projected, boundary, min_distance=min_distance)
 
 
@@ -584,7 +596,7 @@ def _fill_edge_polygon(geometry, boundary, min_distance=None):
             np.abs(x) == np.inf or np.abs(y) == np.inf
         ) or (
             min_distance is not None
-            and boundary.distance(Point(x, y)) < min_distance
+            and boundary.distance(Point(x, y)) <= min_distance
         ):
             if len(segment) > 1:
                 segments_list.append(segment)
