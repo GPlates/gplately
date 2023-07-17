@@ -1,0 +1,13 @@
+{
+    "Muller2019": {
+        "BigTime": 250.0,
+        "SmallTime": 0.0,
+        "Rotations": "https://www.earthbyte.org/webdav/ftp/gplately/Muller2019/Rotations.zip",
+        "Layers": {
+            "Coastlines": "https://www.earthbyte.org/webdav/ftp/gplately/Muller2019/Coastlines.zip",
+            "StaticPolygons": "https: //www.earthbyte.org/webdav/ftp/gplately/Muller2019/StaticPolygons.zip",
+            "ContinentalPolygons": "https://www.earthbyte.org/webdav/ftp/gplately/Muller2019/ContinentalPolygons.zip",
+            "Topologies": "https://www.earthbyte.org/webdav/ftp/gplately/Muller2019/Topologies.zip"
+        }
+    }
+}
