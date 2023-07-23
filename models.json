@@ -5,9 +5,10 @@
         "Rotations": "https://www.earthbyte.org/webdav/ftp/gplately/Muller2019/Rotations.zip",
         "Layers": {
             "Coastlines": "https://www.earthbyte.org/webdav/ftp/gplately/Muller2019/Coastlines.zip",
-            "StaticPolygons": "https: //www.earthbyte.org/webdav/ftp/gplately/Muller2019/StaticPolygons.zip",
+            "StaticPolygons": "https://www.earthbyte.org/webdav/ftp/gplately/Muller2019/StaticPolygons.zip",
             "ContinentalPolygons": "https://www.earthbyte.org/webdav/ftp/gplately/Muller2019/ContinentalPolygons.zip",
-            "Topologies": "https://www.earthbyte.org/webdav/ftp/gplately/Muller2019/Topologies.zip"
+            "Topologies": "https://www.earthbyte.org/webdav/ftp/gplately/Muller2019/Topologies.zip",
+            "COBs": "https://www.earthbyte.org/webdav/ftp/gplately/Muller2019/COBs.zip"
         }
     }
 }

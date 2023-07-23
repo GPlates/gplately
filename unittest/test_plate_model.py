@@ -8,3 +8,5 @@ model = plate_model.PlateModel("Muller2019")
 print(model.get_avail_layers())
 
 print(model.get_rotation_model())
+
+print(model.get_layer("Coastlines"))
