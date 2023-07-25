@@ -1,7 +1,11 @@
+import asyncio
+import concurrent.futures
+import functools
 import glob
 import json
 import os
-import shutil, time
+import shutil
+import time
 from datetime import datetime, timedelta
 from pathlib import Path
 
@@ -74,6 +78,26 @@ class PlateModel:
         # print(rotation_files)
         return pygplates.RotationModel(rotation_files)
 
+    def get_coastlines(self):
+        """return coastlines feature collection"""
+        return self.get_layer("Coastlines")
+
+    def get_static_polygons(self):
+        """return StaticPolygons feature collection"""
+        return self.get_layer("StaticPolygons")
+
+    def get_continental_polygons(self):
+        """return ContinentalPolygons feature collection"""
+        return self.get_layer("ContinentalPolygons")
+
+    def get_topologies(self):
+        """return Topologies feature collection"""
+        return self.get_layer("Topologies")
+
+    def get_COBs(self):
+        """return COBs feature collection"""
+        return self.get_layer("COBs")
+
     def get_layer(self, layer_name):
         """get a layer by name"""
         file_extensions = [
@@ -100,7 +124,7 @@ class PlateModel:
                 fc.add(pygplates.FeatureCollection(f))
         return fc
 
-    def download_layer_files(self, layer_name, force=False):
+    def download_layer_files(self, layer_name, dst_path=None, force=False):
         """given the layer name, download the layer files
 
         :param layer_name: such as "Rotations","Coastlines", "StaticPolygons", "ContinentalPolygons", "Topologies", etc
@@ -123,7 +147,10 @@ class PlateModel:
         now = datetime.now()
 
         # make sure the model folder is a folder indeed; otherwise rename it.
-        model_folder = f"{self.data_dir}/{self.model_name}"
+        if dst_path:
+            model_folder = f"{dst_path}/{self.model_name}"
+        else:
+            model_folder = f"{self.data_dir}/{self.model_name}"
         if os.path.isfile(model_folder):
             new_name = model_folder + now.strftime("-%Y-%m-%d-%H-%M-%S")
             os.rename(model_folder, new_name)
@@ -131,12 +158,12 @@ class PlateModel:
                 f"{model_folder} is a file. This should not happen. Rename the file name to {new_name}"
             )
 
-        # first check if the "Rotations" folder exists
         layer_folder = f"{model_folder}/{layer_name}"
 
-        if force:
+        if os.path.isdir(layer_folder) and force:
             shutil.rmtree(layer_folder)
 
+        # first check if the "Rotations" folder exists
         if os.path.isdir(layer_folder):
             metadata_file = f"{layer_folder}/{self.meta_filename}"
             if os.path.isfile(metadata_file):
@@ -193,3 +220,29 @@ class PlateModel:
                 json.dump(metadata, f)
 
         return layer_folder
+
+    def download(self, dst_path=None, force=False):
+        """download all layers"""
+        executor = concurrent.futures.ThreadPoolExecutor(max_workers=15)
+        loop = asyncio.new_event_loop()
+        run = functools.partial(loop.run_in_executor, executor)
+
+        asyncio.set_event_loop(loop)
+
+        async def f():
+            tasks = []
+            if "Rotations" in self.model:
+                tasks.append(
+                    run(self.download_layer_files, "Rotations", dst_path, force)
+                )
+            if "Layers" in self.model:
+                for layer in self.model["Layers"]:
+                    tasks.append(run(self.download_layer_files, layer, dst_path, force))
+
+            # print(tasks)
+            await asyncio.wait(tasks)
+
+        try:
+            loop.run_until_complete(f())
+        finally:
+            loop.close()

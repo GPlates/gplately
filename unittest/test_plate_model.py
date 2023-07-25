@@ -5,8 +5,10 @@ from gplately import plate_model
 
 model = plate_model.PlateModel("Muller2019")
 
-print(model.get_avail_layers())
+# print(model.get_avail_layers())
 
-print(model.get_rotation_model())
+# print(model.get_rotation_model())
 
-print(model.get_layer("Coastlines"))
+# print(model.get_layer("Coastlines"))
+
+model.download(dst_path="test-download-folder")
