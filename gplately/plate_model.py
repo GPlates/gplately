@@ -25,11 +25,16 @@ class PlateModel:
         self.expiry_format = "%Y/%m/%d, %H:%M:%S"
         self.model = None
         if not data_dir:
-            self.data_dir = platformdirs.user_cache_dir("gplately")
+            self.data_dir = platformdirs.user_data_dir("gplately")
         else:
             self.data_dir = data_dir
         models_file = f"{self.data_dir}/models.json"
         models = None
+
+        self.executor = concurrent.futures.ThreadPoolExecutor(max_workers=15)
+        self.loop = asyncio.new_event_loop()
+        self.run = functools.partial(self.loop.run_in_executor, self.executor)
+        asyncio.set_event_loop(self.loop)
 
         if force_fresh:
             os.remove(models_file)
@@ -63,6 +68,9 @@ class PlateModel:
                 raise Exception(f"Fatal: invalid model name: {model_name}")
         else:
             raise Exception("Fatal: failed to load models.")
+
+    def __del__(self):
+        self.loop.close()
 
     def get_avail_layers(self):
         """get all available layers in this plate model"""
@@ -133,7 +141,7 @@ class PlateModel:
         :returns: the folder path which contains the layer files
 
         """
-
+        print(f"downloading {layer_name}")
         download_flag = False
         download_with_etag = False
         meta_etag = None
@@ -223,26 +231,112 @@ class PlateModel:
 
     def download(self, dst_path=None, force=False):
         """download all layers"""
-        executor = concurrent.futures.ThreadPoolExecutor(max_workers=15)
-        loop = asyncio.new_event_loop()
-        run = functools.partial(loop.run_in_executor, executor)
-
-        asyncio.set_event_loop(loop)
 
         async def f():
             tasks = []
             if "Rotations" in self.model:
                 tasks.append(
-                    run(self.download_layer_files, "Rotations", dst_path, force)
+                    self.run(self.download_layer_files, "Rotations", dst_path, force)
                 )
             if "Layers" in self.model:
                 for layer in self.model["Layers"]:
-                    tasks.append(run(self.download_layer_files, layer, dst_path, force))
+                    tasks.append(
+                        self.run(self.download_layer_files, layer, dst_path, force)
+                    )
 
             # print(tasks)
             await asyncio.wait(tasks)
 
-        try:
-            loop.run_until_complete(f())
-        finally:
-            loop.close()
+        self.loop.run_until_complete(f())
+
+    def _check_redownload_need(self, metadata_file, url):
+        """check the metadata file and decide if redownload is necessary"""
+        download_flag = False
+        meta_etag = None
+        if os.path.isfile(metadata_file):
+            with open(metadata_file, "r") as f:
+                meta = json.load(f)
+                if "url" in meta:
+                    meta_url = meta["url"]
+                    if meta_url != url:
+                        # if the data url has changed, re-download
+                        download_flag = True
+                else:
+                    download_flag = True
+
+                # if the url is the same, now check the expiry date
+                if not download_flag:
+                    if "expiry" in meta:
+                        try:
+                            meta_expiry = meta["expiry"]
+                            expiry_date = datetime.strptime(
+                                meta_expiry, self.expiry_format
+                            )
+                            now = datetime.now()
+                            if now > expiry_date:
+                                download_flag = True  # expired
+                        except ValueError:
+                            download_flag = True  # invalid expiry date
+                    else:
+                        download_flag = True  # no expiry date in metafile
+
+                    if download_flag and "etag" in meta:
+                        meta_etag = meta["etag"]
+        else:
+            download_flag = True  # if metadata_file does not exist
+
+        return download_flag, meta_etag
+
+    def download_time_dependent_rasters(self, raster_name, dst_path):
+        """"""
+        if (
+            "TimeDepRasters" in self.model
+            and raster_name in self.model["TimeDepRasters"]
+        ):
+
+            async def f():
+                tasks = []
+                for time in range(self.model["SmallTime"], self.model["BigTime"]):
+                    tasks.append(
+                        self.run(
+                            self.download_raster,
+                            self.model["TimeDepRasters"][raster_name].format(time),
+                            dst_path,
+                        )
+                    )
+
+                # print(tasks)
+                await asyncio.wait(tasks)
+
+            self.loop.run_until_complete(f())
+
+        else:
+            raise Exception(
+                f"Unable to find {raster_name} configuration in this model {self.model_name}."
+            )
+
+    def download_raster(self, url, dst_path):
+        """"""
+        print(f"downloading {url}")
+        filename = url.split("/")[-1]
+        metadata_folder = f"{dst_path}/metadata"
+        metadata_file = f"{metadata_folder}/{filename}.json"
+        download_flag, etag = self._check_redownload_need(metadata_file, url)
+        if download_flag:
+            new_etag = network_requests.fetch_file(
+                url,
+                dst_path,
+                etag=etag,
+                auto_unzip=True,
+            )
+            # save metadata
+            metadata = {
+                "url": url,
+                "expiry": (datetime.now() + timedelta(hours=12)).strftime(
+                    self.expiry_format
+                ),
+                "etag": new_etag,
+            }
+            Path(metadata_folder).mkdir(parents=True, exist_ok=True)
+            with open(metadata_file, "w+") as f:
+                json.dump(metadata, f)
