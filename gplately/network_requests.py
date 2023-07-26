@@ -58,7 +58,7 @@ def fetch_file(
     if r.status_code == 304:
         print(url)
         print(
-            "The file has not been changed since it was downloaded last time.Do nothing and return."
+            "The file has not been changed since it was downloaded last time. Do nothing and return."
         )
     elif r.status_code == 200:
         if auto_unzip and url.endswith(".zip"):
