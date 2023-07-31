@@ -914,10 +914,9 @@ class PlotTopologies(object):
 
         # store topologies for easy access
         # setting time runs the update_time routine
+        self._time = None
         if time is not None:
             self.time = time
-        else:
-            self._time = None
 
     def __getstate__(self):
 
