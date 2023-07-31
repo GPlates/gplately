@@ -743,3 +743,11 @@ def _get_rotation(
 
     return rotation
 
+
+def _deg2pixels(deg_res, deg_min, deg_max):
+    return int(np.floor((deg_max - deg_min) / deg_res)) + 1
+
+def _pixels2deg(spacing_pixel, deg_min, deg_max):
+    return (deg_max - deg_min) / np.floor(int(spacing_pixel - 1))
+    
+

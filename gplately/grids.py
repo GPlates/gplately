@@ -34,9 +34,11 @@ from scipy.ndimage import (
 )
 from scipy.spatial import cKDTree as _cKDTree
 from scipy.spatial.transform import Rotation as _Rotation
+from scipy.interpolate import griddata
 
 from .geometry import pygplates_to_shapely
 from .reconstruction import PlateReconstruction as _PlateReconstruction
+from .tools import _deg2pixels
 
 __all__ = [
     "fill_raster",
@@ -2072,6 +2074,163 @@ class Raster(object):
         return im
 
     plot = imshow
+
+
+    def rotate_reference_frames(
+        self,
+        grid_spacing_degrees, 
+        reconstruction_time,
+        from_rotation_features_or_model,  # filename(s), or pyGPlates feature(s)/collection(s) or a RotationModel
+        to_rotation_features_or_model,    # filename(s), or pyGPlates feature(s)/collection(s) or a RotationModel
+        from_rotation_reference_plate=0,
+        to_rotation_reference_plate=0,
+        non_reference_plate=701,
+        output_name=None
+    ):
+        import time as timer
+
+        """Rotate a grid defined in one plate model reference frame 
+        within a gplately.Raster object to another plate 
+        reconstruction model reference frame.
+
+        Parameters
+        ----------
+        grid_spacing_degrees : float
+            The spacing (in degrees) for the output rotated grid.
+        reconstruction_time : float
+            The time at which to rotate the input grid.
+        from_rotation_features_or_model : str, list of str, or instance of pygplates.RotationModel
+            A filename, or a list of filenames, or a pyGPlates 
+            RotationModel object that defines the rotation model
+            that the input grid is currently associated with.
+        to_rotation_features_or_model : str, list of str, or instance of pygplates.RotationModel
+            A filename, or a list of filenames, or a pyGPlates 
+            RotationModel object that defines the rotation model
+            that the input grid shall be rotated with.
+        from_rotation_reference_plate : int, default = 0
+            The current reference plate for the plate model the grid
+            is defined in. Defaults to the anchor plate 0.
+        to_rotation_reference_plate : int, default = 0
+            The desired reference plate for the plate model the grid
+            is being rotated to. Defaults to the anchor plate 0.
+        non_reference_plate : int, default = 701
+            An arbitrary placeholder reference frame with which 
+            to define the "from" and "to" reference frames.
+        output_name : str, default None
+            If passed, the rotated grid is saved as a netCDF grid to this filename.
+
+        Returns
+        -------
+        gplately.Raster()
+            An instance of the gplately.Raster object containing the rotated grid.
+        """
+
+        input_positions = []
+
+        # Create the pygplates.FiniteRotation that rotates 
+        # between the two reference frames.
+        from_rotation_model = pygplates.RotationModel(
+            from_rotation_features_or_model
+        )
+        to_rotation_model = pygplates.RotationModel(
+            to_rotation_features_or_model
+        )
+        from_rotation = from_rotation_model.get_rotation(
+            reconstruction_time, 
+            non_reference_plate, 
+            anchor_plate_id=from_rotation_reference_plate
+        )
+        to_rotation = to_rotation_model.get_rotation(
+            reconstruction_time, 
+            non_reference_plate, 
+            anchor_plate_id=to_rotation_reference_plate
+        )
+        reference_frame_conversion_rotation = to_rotation * from_rotation.get_inverse()
+
+
+        # Resize the input grid to the specified output resolution before rotating
+        resX = _deg2pixels(
+            grid_spacing_degrees, self.extent[0], self.extent[1]
+        )
+        resY = _deg2pixels(
+            grid_spacing_degrees, self.extent[2], self.extent[3]
+        )
+        resized_input_grid = self.resize(
+            resX, resY, inplace=False
+        )
+
+        # Get the flattened lons, lats
+        llons, llats = np.meshgrid(
+            resized_input_grid.lons, resized_input_grid.lats
+        )
+        llons = llons.flatten()
+        llats = llats.flatten()
+        input_coords = [(llons[i], llats[i]) for i in range(0, len(llons))]
+
+
+        # Convert lon-lat points of Raster grid to pyGPlates points
+        input_points = pygplates.MultiPointOnSphere(
+            (lat, lon) for lon, lat in input_coords
+        )
+        # Get grid values of the resized Raster object
+        values = np.array(resized_input_grid.data).flatten()
+
+        # Rotate grid nodes to the other reference frame
+        output_points = reference_frame_conversion_rotation * input_points
+
+        # Assemble rotated points with grid values.
+        out_lon = []
+        out_lat = []
+        zdata = []
+        for index, point in enumerate(output_points):
+            lat, lon = point.to_lat_lon()
+            out_lon.append(lon)
+            out_lat.append(lat)
+            zdata.append(values[index])
+
+        # Create a regular grid on which to interpolate lats, lons and zdata
+        # Use the extent of the original Raster object
+        extent_globe = self.extent
+
+        resX = int(np.floor((extent_globe[1] - extent_globe[0]) / grid_spacing_degrees)) + 1
+        resY = int(np.floor((extent_globe[3] - extent_globe[2]) / grid_spacing_degrees)) + 1
+
+        grid_lon = np.linspace(
+            extent_globe[0], 
+            extent_globe[1], 
+            resX
+        )
+        grid_lat = np.linspace(
+            extent_globe[2], 
+            extent_globe[3], 
+            resY
+        )
+
+        X, Y = np.meshgrid(
+            grid_lon, 
+            grid_lat
+        )
+
+        # Interpolate lons, lats and zvals over a regular grid using nearest
+        # neighbour interpolation
+        Z = griddata(
+            (out_lon, out_lat), 
+            zdata, 
+            (X, Y), 
+            method='nearest'
+        )
+
+        # Write output grid to netCDF if requested.
+        if output_name:
+            write_netcdf_grid(
+                output_name,
+                Z,
+                extent=extent_globe,
+            )
+            
+        return Raster(data=Z)
+
+    
 
 
 # class TimeRaster(Raster):
