@@ -612,13 +612,23 @@ def _fill_edge_polygon(geometry, boundary, min_distance=None):
     for i in range(-1, len(segments_list) - 1):
         segment_before = segments_list[i]
         point_before = Point(segment_before.coords[-1])
-        d0 = boundary.project(point_before)
 
         segment_after = segments_list[i + 1]
         point_after = Point(segment_after.coords[0])
-        d1 = boundary.project(point_after)
 
-        boundary_segment = substring(boundary, d0, d1)
+        d0 = boundary.project(point_before, normalized=True)
+        d1 = boundary.project(point_after, normalized=True)
+        boundary_segment = substring(boundary, d0, d1, normalized=True)
+
+        if boundary_segment.length > 0.5 * boundary.length:
+            if d1 > d0:
+                seg0 = substring(boundary, d0, 0, normalized=True)
+                seg1 = substring(boundary, 1, d1, normalized=True)
+            else:
+                seg0 = substring(boundary, d0, 1, normalized=True)
+                seg1 = substring(boundary, 0, d1, normalized=True)
+            boundary_segment = linemerge([seg0, seg1])
+
         if i == -1:
             out.append(segment_before)
         out.append(boundary_segment)
