@@ -240,6 +240,7 @@ from . import reconstruction
 from . import grids
 from . import tools
 
+
 # -------------------------------------------------------------------------
 # Auxiliary functions for SeafloorGrid
 
@@ -501,6 +502,11 @@ class SeafloorGrid(object):
     zval_names : list of str
         A list containing string labels for the z values to attribute to points.
         Will be used as column headers for z value point dataframes.
+    continent_mask_filename : str
+        An optional parameter pointing to the full path to a continental mask for each timestep.
+        Assuming the time is in the filename, i.e. &#34;/path/to/continent_mask_0Ma.nc&#34;, it should be
+        passed as &#34;/path/to/continent_mask_{}Ma.nc&#34; with curly brackets. Include decimal formatting
+        if needed.
     &#34;&#34;&#34;
 
     def __init__(
@@ -520,6 +526,7 @@ class SeafloorGrid(object):
         initial_ocean_mean_spreading_rate = 75.,
         resume_from_checkpoints = False,
         zval_names = (&#34;SPREADING_RATE&#34;,),
+        continent_mask_filename = None,
     ):
 
         # Provides a rotation model, topology features and reconstruction time for 
@@ -630,6 +637,41 @@ class SeafloorGrid(object):
         self.default_column_headers = [&#39;CURRENT_LONGITUDES&#39;, &#39;CURRENT_LATITUDES&#39;, &#39;SEAFLOOR_AGE&#39;, &#39;BIRTH_LAT_SNAPSHOT&#39;, &#39;POINT_ID_SNAPSHOT&#39;]
         self.total_column_headers = np.concatenate([self.default_column_headers, self.zval_names])
 
+        # Filename for continental masks that the user can provide instead of building it here
+        self.continent_mask_filename = continent_mask_filename
+
+        # If the user provides a continental mask filename, we need to downsize the mask 
+        # resolution for when we create the initial ocean mesh. The mesh does not need to be high-res.
+        if self.continent_mask_filename is not None:
+
+            # Determine which percentage to use to scale the continent mask resolution at max time
+            def _map_res_to_node_percentage(
+                self, 
+                continent_mask_filename
+            ):
+                maskY, maskX = grids.read_netcdf_grid(
+                    continent_mask_filename.format(
+                        self._max_time
+                    )
+                ).shape
+                
+                mask_deg = _pixels2deg(maskX, self.extent[0], self.extent[1])
+                
+                if mask_deg &lt;= 0.1:
+                    percentage = 0.1
+                elif mask_deg &lt;= 0.25:
+                    percentage = 0.3
+                elif mask_deg &lt;= 0.5:
+                    percentage = 0.5
+                elif mask_deg &lt; 0.75:
+                    percentage = 0.6
+                elif mask_deg &gt;= 1:
+                    percentage = 0.75
+                return mask_deg, percentage
+
+            _, self.percentage = _map_res_to_node_percentage(self, self.continent_mask_filename)
+
+
     # Allow SeafloorGrid time to be updated, and to update the internally-used 
     # PlotTopologies&#39; time attribute too. If PlotTopologies is used outside the
     # object, its `time` attribute is not updated. 
@@ -737,43 +779,78 @@ class SeafloorGrid(object):
             A feature collection of point objects on the ocean basin.
         &#34;&#34;&#34;
 
-        # Ensure COB terranes at max time have reconstruction IDs and valid times
-        COB_polygons = ensure_polygon_geometry(
-            self._PlotTopologies_object.continents,
-            self.rotation_model,
-            self._max_time) 
+        if self.continent_mask_filename is None:
+            # Ensure COB terranes at max time have reconstruction IDs and valid times
+            COB_polygons = ensure_polygon_geometry(
+                self._PlotTopologies_object.continents,
+                self.rotation_model,
+                self._max_time) 
 
-        # zval is a binary array encoding whether a point 
-        # coordinate is within a COB terrane polygon or not.
-        # Use the icosahedral mesh MultiPointOnSphere attribute
-        _, ocean_basin_point_mesh, zvals = point_in_polygon_routine(
-            self.icosahedral_multi_point, 
-            COB_polygons
-        )
-        
-        # Plates to partition with
-        plate_partitioner = pygplates.PlatePartitioner(
-            COB_polygons,
-            self.rotation_model, 
-        )
+            # zval is a binary array encoding whether a point 
+            # coordinate is within a COB terrane polygon or not.
+            # Use the icosahedral mesh MultiPointOnSphere attribute
+            _, ocean_basin_point_mesh, zvals = point_in_polygon_routine(
+                self.icosahedral_multi_point, 
+                COB_polygons
+            )
+            
+            # Plates to partition with
+            plate_partitioner = pygplates.PlatePartitioner(
+                COB_polygons,
+                self.rotation_model, 
+            )
 
-        # Plate partition the ocean basin points
-        meshnode_feature = pygplates.Feature(
-            pygplates.FeatureType.create_from_qualified_string(&#39;gpml:MeshNode&#39;)
-        )
-        meshnode_feature.set_geometry(
-            ocean_basin_point_mesh
-            #multi_point
-        )
-        ocean_basin_meshnode = pygplates.FeatureCollection(meshnode_feature)
+            # Plate partition the ocean basin points
+            meshnode_feature = pygplates.Feature(
+                pygplates.FeatureType.create_from_qualified_string(&#39;gpml:MeshNode&#39;)
+            )
+            meshnode_feature.set_geometry(
+                ocean_basin_point_mesh
+                #multi_point
+            )
+            ocean_basin_meshnode = pygplates.FeatureCollection(meshnode_feature)
 
-        paleogeography = plate_partitioner.partition_features(
-            ocean_basin_meshnode, partition_return = pygplates.PartitionReturn.separate_partitioned_and_unpartitioned,
-            properties_to_copy=[pygplates.PropertyName.gpml_shapefile_attributes]
-        )
-        ocean_points = paleogeography[1]  # Separate those inside polygons
-        continent_points = paleogeography[0] # Separate those outside polygons
+            paleogeography = plate_partitioner.partition_features(
+                ocean_basin_meshnode, partition_return = pygplates.PartitionReturn.separate_partitioned_and_unpartitioned,
+                properties_to_copy=[pygplates.PropertyName.gpml_shapefile_attributes]
+            )
+            ocean_points = paleogeography[1]  # Separate those inside polygons
+            continent_points = paleogeography[0] # Separate those outside polygons
 
+        # If a set of continent masks was passed, we can use max_time&#39;s continental
+        # mask to build the initial profile of seafloor age.
+        else:
+            max_time_cont_mask = grids.Raster(
+                self.continent_mask_filename.format(self._max_time)
+            )
+            # If the input grid is at 0.5 degree uniform spacing, then the input 
+            # grid is 7x more populated than a 6-level stripy icosahedral mesh and
+            # using this resolution for the initial ocean mesh will dramatically slow down
+            # reconstruction by topologies.
+            # Scale down the resolution based on the input mask resolution
+            # (percentage was found in __init__.)
+            max_time_cont_mask.resize(
+                int(max_time_cont_mask.shape[0]*self.percentage), 
+                int(max_time_cont_mask.shape[1]*self.percentage),
+                inplace=True
+            )
+
+            lat = np.linspace(-90,90, max_time_cont_mask.shape[0])
+            lon = np.linspace(-180,180,max_time_cont_mask.shape[1])
+
+            llon, llat = np.meshgrid(lon, lat)
+
+            mask_inds = np.where(max_time_cont_mask.data.flatten() == 0)
+            mask_vals = max_time_cont_mask.data.flatten()
+            mask_lon = llon.flatten()[mask_inds]
+            mask_lat = llat.flatten()[mask_inds]
+
+            ocean_pt_feature = pygplates.Feature()
+            ocean_pt_feature.set_geometry(pygplates.MultiPointOnSphere(zip(mask_lat,mask_lon)))
+            ocean_points = [ocean_pt_feature]
+
+
+        # Now that we have ocean points...
         # Determine age of ocean basin points using their proximity to MOR features
         # and an assumed globally-uniform ocean basin mean spreading rate.
         # We need resolved topologies at the `max_time` to pass into the proximity
@@ -1194,7 +1271,11 @@ class SeafloorGrid(object):
         # - seeding was completed but the subsequent gridding input creation was interrupted, 
         # seeding is assumed completed and skipped. The workflow automatically proceeds to re-gridding. 
 
-        self.build_all_continental_masks()
+        if self.continent_mask_filename is None:
+            self.build_all_continental_masks()
+        else:
+            print(&#34;Continent masks passed to SeafloorGrid - skipping continental mask generation!&#34;)
+
         self.build_all_MOR_seedpoints()
 
         # ALL-TIME POINTS -----------------------------------------------------
@@ -1294,18 +1375,31 @@ class SeafloorGrid(object):
             ]
         )
         # In addition to the default subduction detection, also detect continental collisions
-        if self.file_collection is not None:
+        # Use the input continent mask if it is provided.
+        if self.continent_mask_filename is not None:
             collision_spec = reconstruction._ContinentCollision(
-                self.save_directory+&#34;/&#34;+self.file_collection+&#34;_continent_mask_{}Ma.nc&#34;, 
+
+                # This filename string should not have a time formatted into it - this is 
+                # taken care of later.
+                self.continent_mask_filename, 
                 default_collision,
                 verbose=False,
             )
         else:
-            collision_spec = reconstruction._ContinentCollision(
-                self.save_directory+&#34;/continent_mask_{}Ma.nc&#34;, 
-                default_collision,
-                verbose=False,
-            )
+            # If a continent mask is not provided, use the ones made.
+            if self.file_collection is not None:
+
+                collision_spec = reconstruction._ContinentCollision(
+                    self.save_directory+&#34;/&#34;+self.file_collection+&#34;_continent_mask_{}Ma.nc&#34;, 
+                    default_collision,
+                    verbose=False,
+                )
+            else:
+                collision_spec = reconstruction._ContinentCollision(
+                    self.save_directory+&#34;/continent_mask_{}Ma.nc&#34;, 
+                    default_collision,
+                    verbose=False,
+                )
 
         # Call the reconstruct by topologies object
         topology_reconstruction = reconstruction._ReconstructByTopologies(
@@ -1481,6 +1575,7 @@ class SeafloorGrid(object):
                     resX=self.spacingX,
                     resY=self.spacingY,
                     unmasked=unmasked,
+                    continent_mask_filename=self.continent_mask_filename
                 )
         else:
             from joblib import delayed
@@ -1496,6 +1591,7 @@ class SeafloorGrid(object):
                     resX=self.spacingX,
                     resY=self.spacingY,
                     unmasked=unmasked,
+                    continent_mask_filename=self.continent_mask_filename
                 )
                 for time in time_arr
             )
@@ -1511,6 +1607,7 @@ def _lat_lon_z_to_netCDF_time(
     resX,
     resY,
     unmasked=False,
+    continent_mask_filename=None
 ):
     # Read the gridding input made by ReconstructByTopologies:
     if file_collection is not None:
@@ -1549,41 +1646,46 @@ def _lat_lon_z_to_netCDF_time(
     Z = griddata((lons, lats), zdata, (X, Y), method=&#39;nearest&#39;)
 
     # Access continental grids from the save directory
-    if save_directory is not None:
-        if file_collection is not None:
+    if file_collection is not None:
+        if continent_mask_filename is not None:
+            full_directory=continent_mask_filename.format(time)
+        else:
             full_directory = &#34;{}/{}_continent_mask_{}Ma.nc&#34;.format(
                 save_directory,
                 file_collection,
                 time
             )
-            grid_output_unmasked = &#34;{}/{}_{}_grid_unmasked_{}Ma.nc&#34;.format(
-                save_directory,
-                file_collection,
-                str(zval_name),
-                time
-            )
-            grid_output_dir = &#34;{}/{}_{}_grid_{}Ma.nc&#34;.format(
-                save_directory,
-                file_collection,
-                str(zval_name),
-                time
-            )
+        grid_output_unmasked = &#34;{}/{}_{}_grid_unmasked_{}Ma.nc&#34;.format(
+            save_directory,
+            file_collection,
+            str(zval_name),
+            time
+        )
+        grid_output_dir = &#34;{}/{}_{}_grid_{}Ma.nc&#34;.format(
+            save_directory,
+            file_collection,
+            str(zval_name),
+            time
+        )
+    else:
+        if continent_mask_filename is not None:
+            full_directory=continent_mask_filename.format(time)
         else:
             full_directory = &#34;{}/{}_continent_mask_{}Ma.nc&#34;.format(
                 save_directory,
                 zval_name,
                 time
             )
-            grid_output_unmasked = &#34;{}/{}_grid_unmasked_{}Ma.nc&#34;.format(
-                save_directory,
-                zval_name,
-                time
-            )
-            grid_output_dir = &#34;{}/{}_grid_{}Ma.nc&#34;.format(
-                save_directory,
-                zval_name,
-                time
-            )
+        grid_output_unmasked = &#34;{}/{}_grid_unmasked_{}Ma.nc&#34;.format(
+            save_directory,
+            zval_name,
+            time
+        )
+        grid_output_dir = &#34;{}/{}_grid_{}Ma.nc&#34;.format(
+            save_directory,
+            zval_name,
+            time
+        )
 
     if unmasked:
         grids.write_netcdf_grid(
@@ -1594,6 +1696,12 @@ def _lat_lon_z_to_netCDF_time(
 
     # Identify regions in the grid in the continental mask
     cont_mask = grids.Raster(data=str(full_directory))
+
+    # We need the continental mask to match the number of nodes
+    # in the uniform grid defined above. This is important if we
+    # pass our own continental mask to SeafloorGrid
+    if cont_mask.shape[1] != resX:
+        cont_mask.resize(resX, resY, inplace=True)
 
     # Use the continental mask
     Z = np.ma.array(
@@ -1930,7 +2038,7 @@ in the COB terrane polygon.</dd>
 <dl>
 <dt id="gplately.oceans.SeafloorGrid"><code class="flex name class">
 <span>class <span class="ident">SeafloorGrid</span></span>
-<span>(</span><span>PlateReconstruction_object, PlotTopologies_object, max_time, min_time, ridge_time_step, save_directory=None, file_collection=None, refinement_levels=5, ridge_sampling=0.5, extent=(-180, 180, -90, 90), grid_spacing=None, subduction_collision_parameters=(5.0, 10.0), initial_ocean_mean_spreading_rate=75.0, resume_from_checkpoints=False, zval_names=('SPREADING_RATE',))</span>
+<span>(</span><span>PlateReconstruction_object, PlotTopologies_object, max_time, min_time, ridge_time_step, save_directory=None, file_collection=None, refinement_levels=5, ridge_sampling=0.5, extent=(-180, 180, -90, 90), grid_spacing=None, subduction_collision_parameters=(5.0, 10.0), initial_ocean_mean_spreading_rate=75.0, resume_from_checkpoints=False, zval_names=('SPREADING_RATE',), continent_mask_filename=None)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>A class to generate grids that track data atop global ocean basin points
@@ -1984,6 +2092,11 @@ MOR seed points need to be augmented.</dd>
 <dt><strong><code>zval_names</code></strong> :&ensp;<code>list</code> of <code>str</code></dt>
 <dd>A list containing string labels for the z values to attribute to points.
 Will be used as column headers for z value point dataframes.</dd>
+<dt><strong><code>continent_mask_filename</code></strong> :&ensp;<code>str</code></dt>
+<dd>An optional parameter pointing to the full path to a continental mask for each timestep.
+Assuming the time is in the filename, i.e. "/path/to/continent_mask_0Ma.nc", it should be
+passed as "/path/to/continent_mask_{}Ma.nc" with curly brackets. Include decimal formatting
+if needed.</dd>
 </dl></div>
 <details class="source">
 <summary>
@@ -2043,6 +2156,11 @@ Will be used as column headers for z value point dataframes.</dd>
     zval_names : list of str
         A list containing string labels for the z values to attribute to points.
         Will be used as column headers for z value point dataframes.
+    continent_mask_filename : str
+        An optional parameter pointing to the full path to a continental mask for each timestep.
+        Assuming the time is in the filename, i.e. &#34;/path/to/continent_mask_0Ma.nc&#34;, it should be
+        passed as &#34;/path/to/continent_mask_{}Ma.nc&#34; with curly brackets. Include decimal formatting
+        if needed.
     &#34;&#34;&#34;
 
     def __init__(
@@ -2062,6 +2180,7 @@ Will be used as column headers for z value point dataframes.</dd>
         initial_ocean_mean_spreading_rate = 75.,
         resume_from_checkpoints = False,
         zval_names = (&#34;SPREADING_RATE&#34;,),
+        continent_mask_filename = None,
     ):
 
         # Provides a rotation model, topology features and reconstruction time for 
@@ -2172,6 +2291,41 @@ Will be used as column headers for z value point dataframes.</dd>
         self.default_column_headers = [&#39;CURRENT_LONGITUDES&#39;, &#39;CURRENT_LATITUDES&#39;, &#39;SEAFLOOR_AGE&#39;, &#39;BIRTH_LAT_SNAPSHOT&#39;, &#39;POINT_ID_SNAPSHOT&#39;]
         self.total_column_headers = np.concatenate([self.default_column_headers, self.zval_names])
 
+        # Filename for continental masks that the user can provide instead of building it here
+        self.continent_mask_filename = continent_mask_filename
+
+        # If the user provides a continental mask filename, we need to downsize the mask 
+        # resolution for when we create the initial ocean mesh. The mesh does not need to be high-res.
+        if self.continent_mask_filename is not None:
+
+            # Determine which percentage to use to scale the continent mask resolution at max time
+            def _map_res_to_node_percentage(
+                self, 
+                continent_mask_filename
+            ):
+                maskY, maskX = grids.read_netcdf_grid(
+                    continent_mask_filename.format(
+                        self._max_time
+                    )
+                ).shape
+                
+                mask_deg = _pixels2deg(maskX, self.extent[0], self.extent[1])
+                
+                if mask_deg &lt;= 0.1:
+                    percentage = 0.1
+                elif mask_deg &lt;= 0.25:
+                    percentage = 0.3
+                elif mask_deg &lt;= 0.5:
+                    percentage = 0.5
+                elif mask_deg &lt; 0.75:
+                    percentage = 0.6
+                elif mask_deg &gt;= 1:
+                    percentage = 0.75
+                return mask_deg, percentage
+
+            _, self.percentage = _map_res_to_node_percentage(self, self.continent_mask_filename)
+
+
     # Allow SeafloorGrid time to be updated, and to update the internally-used 
     # PlotTopologies&#39; time attribute too. If PlotTopologies is used outside the
     # object, its `time` attribute is not updated. 
@@ -2279,43 +2433,78 @@ Will be used as column headers for z value point dataframes.</dd>
             A feature collection of point objects on the ocean basin.
         &#34;&#34;&#34;
 
-        # Ensure COB terranes at max time have reconstruction IDs and valid times
-        COB_polygons = ensure_polygon_geometry(
-            self._PlotTopologies_object.continents,
-            self.rotation_model,
-            self._max_time) 
+        if self.continent_mask_filename is None:
+            # Ensure COB terranes at max time have reconstruction IDs and valid times
+            COB_polygons = ensure_polygon_geometry(
+                self._PlotTopologies_object.continents,
+                self.rotation_model,
+                self._max_time) 
 
-        # zval is a binary array encoding whether a point 
-        # coordinate is within a COB terrane polygon or not.
-        # Use the icosahedral mesh MultiPointOnSphere attribute
-        _, ocean_basin_point_mesh, zvals = point_in_polygon_routine(
-            self.icosahedral_multi_point, 
-            COB_polygons
-        )
-        
-        # Plates to partition with
-        plate_partitioner = pygplates.PlatePartitioner(
-            COB_polygons,
-            self.rotation_model, 
-        )
+            # zval is a binary array encoding whether a point 
+            # coordinate is within a COB terrane polygon or not.
+            # Use the icosahedral mesh MultiPointOnSphere attribute
+            _, ocean_basin_point_mesh, zvals = point_in_polygon_routine(
+                self.icosahedral_multi_point, 
+                COB_polygons
+            )
+            
+            # Plates to partition with
+            plate_partitioner = pygplates.PlatePartitioner(
+                COB_polygons,
+                self.rotation_model, 
+            )
 
-        # Plate partition the ocean basin points
-        meshnode_feature = pygplates.Feature(
-            pygplates.FeatureType.create_from_qualified_string(&#39;gpml:MeshNode&#39;)
-        )
-        meshnode_feature.set_geometry(
-            ocean_basin_point_mesh
-            #multi_point
-        )
-        ocean_basin_meshnode = pygplates.FeatureCollection(meshnode_feature)
+            # Plate partition the ocean basin points
+            meshnode_feature = pygplates.Feature(
+                pygplates.FeatureType.create_from_qualified_string(&#39;gpml:MeshNode&#39;)
+            )
+            meshnode_feature.set_geometry(
+                ocean_basin_point_mesh
+                #multi_point
+            )
+            ocean_basin_meshnode = pygplates.FeatureCollection(meshnode_feature)
 
-        paleogeography = plate_partitioner.partition_features(
-            ocean_basin_meshnode, partition_return = pygplates.PartitionReturn.separate_partitioned_and_unpartitioned,
-            properties_to_copy=[pygplates.PropertyName.gpml_shapefile_attributes]
-        )
-        ocean_points = paleogeography[1]  # Separate those inside polygons
-        continent_points = paleogeography[0] # Separate those outside polygons
+            paleogeography = plate_partitioner.partition_features(
+                ocean_basin_meshnode, partition_return = pygplates.PartitionReturn.separate_partitioned_and_unpartitioned,
+                properties_to_copy=[pygplates.PropertyName.gpml_shapefile_attributes]
+            )
+            ocean_points = paleogeography[1]  # Separate those inside polygons
+            continent_points = paleogeography[0] # Separate those outside polygons
 
+        # If a set of continent masks was passed, we can use max_time&#39;s continental
+        # mask to build the initial profile of seafloor age.
+        else:
+            max_time_cont_mask = grids.Raster(
+                self.continent_mask_filename.format(self._max_time)
+            )
+            # If the input grid is at 0.5 degree uniform spacing, then the input 
+            # grid is 7x more populated than a 6-level stripy icosahedral mesh and
+            # using this resolution for the initial ocean mesh will dramatically slow down
+            # reconstruction by topologies.
+            # Scale down the resolution based on the input mask resolution
+            # (percentage was found in __init__.)
+            max_time_cont_mask.resize(
+                int(max_time_cont_mask.shape[0]*self.percentage), 
+                int(max_time_cont_mask.shape[1]*self.percentage),
+                inplace=True
+            )
+
+            lat = np.linspace(-90,90, max_time_cont_mask.shape[0])
+            lon = np.linspace(-180,180,max_time_cont_mask.shape[1])
+
+            llon, llat = np.meshgrid(lon, lat)
+
+            mask_inds = np.where(max_time_cont_mask.data.flatten() == 0)
+            mask_vals = max_time_cont_mask.data.flatten()
+            mask_lon = llon.flatten()[mask_inds]
+            mask_lat = llat.flatten()[mask_inds]
+
+            ocean_pt_feature = pygplates.Feature()
+            ocean_pt_feature.set_geometry(pygplates.MultiPointOnSphere(zip(mask_lat,mask_lon)))
+            ocean_points = [ocean_pt_feature]
+
+
+        # Now that we have ocean points...
         # Determine age of ocean basin points using their proximity to MOR features
         # and an assumed globally-uniform ocean basin mean spreading rate.
         # We need resolved topologies at the `max_time` to pass into the proximity
@@ -2736,7 +2925,11 @@ Will be used as column headers for z value point dataframes.</dd>
         # - seeding was completed but the subsequent gridding input creation was interrupted, 
         # seeding is assumed completed and skipped. The workflow automatically proceeds to re-gridding. 
 
-        self.build_all_continental_masks()
+        if self.continent_mask_filename is None:
+            self.build_all_continental_masks()
+        else:
+            print(&#34;Continent masks passed to SeafloorGrid - skipping continental mask generation!&#34;)
+
         self.build_all_MOR_seedpoints()
 
         # ALL-TIME POINTS -----------------------------------------------------
@@ -2836,18 +3029,31 @@ Will be used as column headers for z value point dataframes.</dd>
             ]
         )
         # In addition to the default subduction detection, also detect continental collisions
-        if self.file_collection is not None:
+        # Use the input continent mask if it is provided.
+        if self.continent_mask_filename is not None:
             collision_spec = reconstruction._ContinentCollision(
-                self.save_directory+&#34;/&#34;+self.file_collection+&#34;_continent_mask_{}Ma.nc&#34;, 
+
+                # This filename string should not have a time formatted into it - this is 
+                # taken care of later.
+                self.continent_mask_filename, 
                 default_collision,
                 verbose=False,
             )
         else:
-            collision_spec = reconstruction._ContinentCollision(
-                self.save_directory+&#34;/continent_mask_{}Ma.nc&#34;, 
-                default_collision,
-                verbose=False,
-            )
+            # If a continent mask is not provided, use the ones made.
+            if self.file_collection is not None:
+
+                collision_spec = reconstruction._ContinentCollision(
+                    self.save_directory+&#34;/&#34;+self.file_collection+&#34;_continent_mask_{}Ma.nc&#34;, 
+                    default_collision,
+                    verbose=False,
+                )
+            else:
+                collision_spec = reconstruction._ContinentCollision(
+                    self.save_directory+&#34;/continent_mask_{}Ma.nc&#34;, 
+                    default_collision,
+                    verbose=False,
+                )
 
         # Call the reconstruct by topologies object
         topology_reconstruction = reconstruction._ReconstructByTopologies(
@@ -3023,6 +3229,7 @@ Will be used as column headers for z value point dataframes.</dd>
                     resX=self.spacingX,
                     resY=self.spacingY,
                     unmasked=unmasked,
+                    continent_mask_filename=self.continent_mask_filename
                 )
         else:
             from joblib import delayed
@@ -3038,6 +3245,7 @@ Will be used as column headers for z value point dataframes.</dd>
                     resX=self.spacingX,
                     resY=self.spacingY,
                     unmasked=unmasked,
+                    continent_mask_filename=self.continent_mask_filename
                 )
                 for time in time_arr
             )</code></pre>
@@ -3366,43 +3574,78 @@ require more detail to be added to the reconstruction model.</p>
         A feature collection of point objects on the ocean basin.
     &#34;&#34;&#34;
 
-    # Ensure COB terranes at max time have reconstruction IDs and valid times
-    COB_polygons = ensure_polygon_geometry(
-        self._PlotTopologies_object.continents,
-        self.rotation_model,
-        self._max_time) 
+    if self.continent_mask_filename is None:
+        # Ensure COB terranes at max time have reconstruction IDs and valid times
+        COB_polygons = ensure_polygon_geometry(
+            self._PlotTopologies_object.continents,
+            self.rotation_model,
+            self._max_time) 
 
-    # zval is a binary array encoding whether a point 
-    # coordinate is within a COB terrane polygon or not.
-    # Use the icosahedral mesh MultiPointOnSphere attribute
-    _, ocean_basin_point_mesh, zvals = point_in_polygon_routine(
-        self.icosahedral_multi_point, 
-        COB_polygons
-    )
-    
-    # Plates to partition with
-    plate_partitioner = pygplates.PlatePartitioner(
-        COB_polygons,
-        self.rotation_model, 
-    )
+        # zval is a binary array encoding whether a point 
+        # coordinate is within a COB terrane polygon or not.
+        # Use the icosahedral mesh MultiPointOnSphere attribute
+        _, ocean_basin_point_mesh, zvals = point_in_polygon_routine(
+            self.icosahedral_multi_point, 
+            COB_polygons
+        )
+        
+        # Plates to partition with
+        plate_partitioner = pygplates.PlatePartitioner(
+            COB_polygons,
+            self.rotation_model, 
+        )
 
-    # Plate partition the ocean basin points
-    meshnode_feature = pygplates.Feature(
-        pygplates.FeatureType.create_from_qualified_string(&#39;gpml:MeshNode&#39;)
-    )
-    meshnode_feature.set_geometry(
-        ocean_basin_point_mesh
-        #multi_point
-    )
-    ocean_basin_meshnode = pygplates.FeatureCollection(meshnode_feature)
+        # Plate partition the ocean basin points
+        meshnode_feature = pygplates.Feature(
+            pygplates.FeatureType.create_from_qualified_string(&#39;gpml:MeshNode&#39;)
+        )
+        meshnode_feature.set_geometry(
+            ocean_basin_point_mesh
+            #multi_point
+        )
+        ocean_basin_meshnode = pygplates.FeatureCollection(meshnode_feature)
 
-    paleogeography = plate_partitioner.partition_features(
-        ocean_basin_meshnode, partition_return = pygplates.PartitionReturn.separate_partitioned_and_unpartitioned,
-        properties_to_copy=[pygplates.PropertyName.gpml_shapefile_attributes]
-    )
-    ocean_points = paleogeography[1]  # Separate those inside polygons
-    continent_points = paleogeography[0] # Separate those outside polygons
+        paleogeography = plate_partitioner.partition_features(
+            ocean_basin_meshnode, partition_return = pygplates.PartitionReturn.separate_partitioned_and_unpartitioned,
+            properties_to_copy=[pygplates.PropertyName.gpml_shapefile_attributes]
+        )
+        ocean_points = paleogeography[1]  # Separate those inside polygons
+        continent_points = paleogeography[0] # Separate those outside polygons
 
+    # If a set of continent masks was passed, we can use max_time&#39;s continental
+    # mask to build the initial profile of seafloor age.
+    else:
+        max_time_cont_mask = grids.Raster(
+            self.continent_mask_filename.format(self._max_time)
+        )
+        # If the input grid is at 0.5 degree uniform spacing, then the input 
+        # grid is 7x more populated than a 6-level stripy icosahedral mesh and
+        # using this resolution for the initial ocean mesh will dramatically slow down
+        # reconstruction by topologies.
+        # Scale down the resolution based on the input mask resolution
+        # (percentage was found in __init__.)
+        max_time_cont_mask.resize(
+            int(max_time_cont_mask.shape[0]*self.percentage), 
+            int(max_time_cont_mask.shape[1]*self.percentage),
+            inplace=True
+        )
+
+        lat = np.linspace(-90,90, max_time_cont_mask.shape[0])
+        lon = np.linspace(-180,180,max_time_cont_mask.shape[1])
+
+        llon, llat = np.meshgrid(lon, lat)
+
+        mask_inds = np.where(max_time_cont_mask.data.flatten() == 0)
+        mask_vals = max_time_cont_mask.data.flatten()
+        mask_lon = llon.flatten()[mask_inds]
+        mask_lat = llat.flatten()[mask_inds]
+
+        ocean_pt_feature = pygplates.Feature()
+        ocean_pt_feature.set_geometry(pygplates.MultiPointOnSphere(zip(mask_lat,mask_lon)))
+        ocean_points = [ocean_pt_feature]
+
+
+    # Now that we have ocean points...
     # Determine age of ocean basin points using their proximity to MOR features
     # and an assumed globally-uniform ocean basin mean spreading rate.
     # We need resolved topologies at the `max_time` to pass into the proximity
@@ -3551,6 +3794,7 @@ Passed to <code>joblib.Parallel</code>, so -1 means all available processes.</dd
                 resX=self.spacingX,
                 resY=self.spacingY,
                 unmasked=unmasked,
+                continent_mask_filename=self.continent_mask_filename
             )
     else:
         from joblib import delayed
@@ -3566,6 +3810,7 @@ Passed to <code>joblib.Parallel</code>, so -1 means all available processes.</dd
                 resX=self.spacingX,
                 resY=self.spacingY,
                 unmasked=unmasked,
+                continent_mask_filename=self.continent_mask_filename
             )
             for time in time_arr
         )</code></pre>
@@ -3610,7 +3855,11 @@ all ridge points for all times in the reconstruction time array.</p></div>
     # - seeding was completed but the subsequent gridding input creation was interrupted, 
     # seeding is assumed completed and skipped. The workflow automatically proceeds to re-gridding. 
 
-    self.build_all_continental_masks()
+    if self.continent_mask_filename is None:
+        self.build_all_continental_masks()
+    else:
+        print(&#34;Continent masks passed to SeafloorGrid - skipping continental mask generation!&#34;)
+
     self.build_all_MOR_seedpoints()
 
     # ALL-TIME POINTS -----------------------------------------------------
@@ -3723,18 +3972,31 @@ other general z-values are saved to a gridding input file (.npz).</p></div>
         ]
     )
     # In addition to the default subduction detection, also detect continental collisions
-    if self.file_collection is not None:
+    # Use the input continent mask if it is provided.
+    if self.continent_mask_filename is not None:
         collision_spec = reconstruction._ContinentCollision(
-            self.save_directory+&#34;/&#34;+self.file_collection+&#34;_continent_mask_{}Ma.nc&#34;, 
+
+            # This filename string should not have a time formatted into it - this is 
+            # taken care of later.
+            self.continent_mask_filename, 
             default_collision,
             verbose=False,
         )
     else:
-        collision_spec = reconstruction._ContinentCollision(
-            self.save_directory+&#34;/continent_mask_{}Ma.nc&#34;, 
-            default_collision,
-            verbose=False,
-        )
+        # If a continent mask is not provided, use the ones made.
+        if self.file_collection is not None:
+
+            collision_spec = reconstruction._ContinentCollision(
+                self.save_directory+&#34;/&#34;+self.file_collection+&#34;_continent_mask_{}Ma.nc&#34;, 
+                default_collision,
+                verbose=False,
+            )
+        else:
+            collision_spec = reconstruction._ContinentCollision(
+                self.save_directory+&#34;/continent_mask_{}Ma.nc&#34;, 
+                default_collision,
+                verbose=False,
+            )
 
     # Call the reconstruct by topologies object
     topology_reconstruction = reconstruction._ReconstructByTopologies(
