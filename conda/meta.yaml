@@ -32,6 +32,7 @@ requirements:
     - rasterio
     - geopandas
     - stripy
+    - pykdtree
 
 test:
   imports:
