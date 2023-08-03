@@ -1,9 +1,15 @@
+import cartopy.crs as ccrs
+import matplotlib.pyplot as plt
 import numpy as np
+import pytest
+
 import gplately
+
 from conftest import (
     reconstruction_times,
     pt_lon,
     pt_lat,
+    test_projections,
     gplately_raster_object as graster,
     gplately_merdith_raster,
     gplately_merdith_static_geometries,
@@ -104,3 +110,11 @@ def test_reverse_reconstruct(
     # should be fairly small if reconstruction is working well
     rmse = np.sqrt(np.nanmean(diff ** 2))
     assert rmse < 250.0  # make sure RMSE is within a reasonable limit
+
+
+@pytest.mark.parametrize("projection", test_projections)
+def test_imshow(gplately_merdith_raster, projection):
+    """Make sure raster plotting does not fail."""
+    fig, ax = plt.subplots(1, 1, subplot_kw={"projection": projection})
+    gplately_merdith_raster.imshow(ax=ax)
+    plt.close(fig)
