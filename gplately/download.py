@@ -1425,6 +1425,7 @@ class DataServer(object):
                     rotation_filenames = _collect_file_extension(
                         _str_in_folder(
                             _str_in_filename(fnames,
+                                strings_to_include=DataCollection.rotation_strings_to_include(self),
                                 strings_to_ignore=DataCollection.rotation_strings_to_ignore(self)
                             ),
                         strings_to_ignore=DataCollection.rotation_strings_to_ignore(self)

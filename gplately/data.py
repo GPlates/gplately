@@ -152,7 +152,7 @@ class DataCollection(object):
             "Muller2008" : ["https://www.earthbyte.org/webdav/ftp/Data_Collections/Muller2008/Global_Model_Rigid_Internal_Release_2010.zip"],
             "Scotese2016" : ["https://www.earthbyte.org/webdav/ftp/Data_Collections/Scotese2016/PALEOMAP_GlobalPlateModel.zip"],
             "Shephard2013" : ["https://www.earthbyte.org/webdav/ftp/Data_Collections/Shephard2013/GPlates.zip"],
-            "Muller2022" : ["https://www.earthbyte.org/webdav/ftp/Data_Collections/Muller2022/Muller_etal_2022_SE_1Ga_Opt.zip"],
+            "Muller2022" : ["https://earthbyte.org/webdav/ftp/Data_Collections/Muller_etal_2022_SE/Muller_etal_2022_SE_1Ga_Opt_PlateMotionModel.zip"],
 
         }
 
@@ -186,6 +186,15 @@ class DataCollection(object):
 
         }  
         return database
+
+
+    def rotation_strings_to_include(self):
+
+        strings = [
+
+            "1000_0_rotfile_Merdith_et_al_optimised.rot", # For Muller et al. 2022
+        ]
+        return strings
 
 
     def rotation_strings_to_ignore(self):
@@ -311,7 +320,7 @@ class DataCollection(object):
             "Muller2008" : ["https://www.earthbyte.org/webdav/ftp/Data_Collections/Muller2008/Global_Model_Rigid_Internal_Release_2010.zip"],
             "Scotese2016" : ["https://www.earthbyte.org/webdav/ftp/Data_Collections/Scotese2016/PALEOMAP_GlobalPlateModel.zip"],
             "Shephard2013" : ["https://www.earthbyte.org/webdav/ftp/Data_Collections/Shephard2013/GPlates.zip"],
-            "Muller2022" : ["https://www.earthbyte.org/webdav/ftp/Data_Collections/Muller2022/Muller_etal_2022_SE_1Ga_Opt.zip"],
+            "Muller2022" : ["https://earthbyte.org/webdav/ftp/Data_Collections/Muller_etal_2022_SE/Muller_etal_2022_SE_1Ga_Opt_PlateMotionModel.zip"],
 
         }
         return database
@@ -336,6 +345,7 @@ class DataCollection(object):
             "OLD",
             "__MACOSX",
             "Clennett_2020_Coastlines", # Clennett et al. 2020
+            "COB_polygons_and_coastlines_combined_1000_0_Merdith_etal", # Muller et al. 2022
         ]
         return strings
 
