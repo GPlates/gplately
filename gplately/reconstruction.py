@@ -743,10 +743,14 @@ class PlateReconstruction(object):
         # rates of motion (if requested)
         rlons = np.empty((len(time_array), len(lons)))
         rlats = np.empty((len(time_array), len(lons)))
-        StepTimes = np.empty(((len(time_array)-1)*2, len(lons)))
-        StepRates = np.empty(((len(time_array)-1)*2, len(lons)))
+        
+        if plate_id is None:
+            query_plate_id = True
+        else:
+            query_plate_id = False
+            plate_ids = np.ones(len(lons), dtype=int) * plate_id
 
-        seed_points = list(zip(lats,lons))
+        seed_points = zip(lats,lons)
         for i, lat_lon in enumerate(seed_points):
 
             seed_points_at_digitisation_time = pygplates.PointOnSphere(
@@ -754,37 +758,43 @@ class PlateReconstruction(object):
             )
             # Allocate the present-day plate ID to the PointOnSphere if 
             # it was not given.
-            if plate_id is None:
+            if query_plate_id:
                 plate_id = _tools.plate_partitioner_for_point(
                     lat_lon,
                     self.topology_features,
                     self.rotation_model
                 )
+            else:
+                plate_id = plate_ids[i]
+                
             # Create the motion path feature. enforce float and int for C++ signature.
             motion_path_feature = pygplates.Feature.create_motion_path(
                 seed_points_at_digitisation_time, 
                 time_array, 
                 valid_time=(time_array.max(), time_array.min()),
-                relative_plate=int(anchor_plate_id),
-                reconstruction_plate_id=int(plate_id))
+                relative_plate=int(plate_id),
+                reconstruction_plate_id=int(anchor_plate_id))
 
             reconstructed_motion_paths = self.reconstruct(
                 motion_path_feature, 
                 to_time=0, 
                 reconstruct_type=pygplates.ReconstructType.motion_path,
-                anchor_plate_id=int(anchor_plate_id),
+                anchor_plate_id=int(plate_id),
             )
             # Turn motion paths in to lat-lon coordinates
             for reconstructed_motion_path in reconstructed_motion_paths:
                 trail = reconstructed_motion_path.get_motion_path().to_lat_lon_array()
 
             lon, lat = np.flipud(trail[:, 1]), np.flipud(trail[:, 0])
-
+            
             rlons[:,i] = lon
             rlats[:,i] = lat
 
             # Obtain step-plot coordinates for rate of motion
             if return_rate_of_motion is True:
+
+                StepTimes = np.empty(((len(time_array)-1)*2, len(lons)))
+                StepRates = np.empty(((len(time_array)-1)*2, len(lons)))
                 
                 # Get timestep
                 TimeStep = []
@@ -1490,14 +1500,15 @@ class Points(object):
                 valid_time=(time_array.max(), time_array.min()),
                 #relative_plate=int(self.plate_id[i]),
                 #reconstruction_plate_id=int(anchor_plate_id))
-                relative_plate=int(anchor_plate_id),
-                reconstruction_plate_id=int(self.plate_id[i]))
+                relative_plate=int(self.plate_id[i]),
+                reconstruction_plate_id=int(anchor_plate_id))
 
             reconstructed_motion_paths = self.plate_reconstruction.reconstruct(
                 motion_path_feature, 
                 to_time=0, 
                 #from_time=0, 
-                reconstruct_type=pygplates.ReconstructType.motion_path)
+                reconstruct_type=pygplates.ReconstructType.motion_path,
+                anchor_plate_id=int(anchor_plate_id))
 
             # Turn motion paths in to lat-lon coordinates
             for reconstructed_motion_path in reconstructed_motion_paths:
