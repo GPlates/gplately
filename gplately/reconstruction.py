@@ -1471,27 +1471,20 @@ class Points(object):
         
         # ndarrays to fill with reconstructed points and 
         # rates of motion (if requested)
-        rlons = np.empty((len(time_array),   len(self.lons)))
-        rlats = np.empty((len(time_array),   len(self.lons)))
-        StepTimes = np.empty(((len(time_array)-1)*2, len(self.lons)))
-        StepRates = np.empty(((len(time_array)-1)*2, len(self.lons)))
+        rlons = np.empty((len(time_array), len(self.lons)))
+        rlats = np.empty((len(time_array), len(self.lons)))
 
-        seed_points = list(zip(self.lats, self.lons))
-        for i, lat_lon in enumerate(seed_points):
-            
-            seed_points_at_digitisation_time = pygplates.PointOnSphere(
-                pygplates.LatLonPoint(float(lat_lon[0]), float(lat_lon[1]))
-            )
+        for i, point_feature in enumerate(self.FeatureCollection):
 
             # Create the motion path feature
             motion_path_feature = pygplates.Feature.create_motion_path(
-                seed_points_at_digitisation_time, 
+                point_feature.get_geometry(), 
                 time_array.tolist(),
                 valid_time=(time_array.max(), time_array.min()),
                 #relative_plate=int(self.plate_id[i]),
                 #reconstruction_plate_id=int(anchor_plate_id))
-                relative_plate=int(anchor_plate_id),
-                reconstruction_plate_id=int(self.plate_id[i]))
+                relative_plate=int(self.plate_id[i]),
+                reconstruction_plate_id=int(anchor_plate_id))
 
             reconstructed_motion_paths = self.plate_reconstruction.reconstruct(
                 motion_path_feature, 
@@ -1510,6 +1503,9 @@ class Points(object):
 
             # Obtain step-plot coordinates for rate of motion
             if return_rate_of_motion is True:
+
+                StepTimes = np.empty(((len(time_array)-1)*2, len(self.lons)))
+                StepRates = np.empty(((len(time_array)-1)*2, len(self.lons)))
                 
                 # Get timestep
                 TimeStep = []
