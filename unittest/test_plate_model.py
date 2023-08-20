@@ -11,6 +11,10 @@ print(model.get_rotation_model())
 
 print(model.get_layer("Coastlines"))
 
+print(model.get_COBs())
+
+print(model.get_topologies())
+
 model.download_all_layers()
 
 model.download_time_dependent_rasters("AgeGrids", times=[1, 2])

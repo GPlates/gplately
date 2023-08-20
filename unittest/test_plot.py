@@ -25,7 +25,7 @@ gplot = PlotTopologies(
 )
 
 fig = plt.figure(figsize=(10, 10), dpi=100)
-ax = fig.add_subplot(111, projection=ccrs.Robinson(central_longitude=0))
+ax = fig.add_subplot(111, projection=ccrs.Robinson(central_longitude=180))
 
 gplot.plot_continent_ocean_boundaries(ax, color="cornflowerblue")
 gplot.plot_coastlines(ax, color="black")
