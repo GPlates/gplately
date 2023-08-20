@@ -33,6 +33,10 @@ jobs:
       - run: conda info
       - run: conda list
       - run: conda config --show
+      
+      # workaround for the "'/usr/lib/libarchive.13.dylib' (no such file)" error on macOS
+      - if: runner.os == 'macOS'
+        run: conda install libarchive -n base -c conda-forge
 
       - name: Install gplately and dependencies
         run: |
