@@ -23,6 +23,11 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
+      
+      # workaround for the "'/usr/lib/libarchive.13.dylib' (no such file)" error on macOS
+      - if: runner.os == 'macOS'
+        run: conda install libarchive -n base -c conda-forge
+
       - uses: conda-incubator/setup-miniconda@v2
         with:
           python-version: ${{ matrix.python-version }}
@@ -30,7 +35,6 @@ jobs:
           channels: conda-forge,defaults
           channel-priority: true
           activate-environment: test
-          environment-file: test/test.yml
       - run: conda info
       - run: conda list
       - run: conda config --show
