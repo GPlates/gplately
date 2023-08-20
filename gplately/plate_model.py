@@ -20,7 +20,7 @@ class PlateModel:
 
     def __init__(self, model_name, data_dir=None, force_fresh=False):
         """The valid model names can be found at https://www.earthbyte.org/webdav/ftp/gplately/models.json"""
-        self.model_name = model_name
+        self.model_name = model_name.lower()
         self.meta_filename = "metadata.json"
         self.expiry_format = "%Y/%m/%d, %H:%M:%S"
         self.model = None
@@ -63,11 +63,11 @@ class PlateModel:
                     with open(models_file) as f:
                         models = json.load(f)
         if models:
-            if model_name in models:
-                self.model = models[model_name]
+            if self.model_name in models:
+                self.model = models[self.model_name]
                 # print(models[model_name])
             else:
-                raise Exception(f"Fatal: invalid model name: {model_name}")
+                raise Exception(f"Fatal: invalid model name: {self.model_name}")
         else:
             raise Exception("Fatal: failed to load models.")
 
