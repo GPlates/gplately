@@ -192,7 +192,7 @@ class DataCollection(object):
 
         strings = [
 
-            "1000_0_rotfile_Merdith_et_al_optimised.rot", # For Muller et al. 2022
+            "Muller2022 1000_0_rotfile_Merdith_et_al_optimised.rot", # For Muller et al. 2022
         ]
         return strings
 
@@ -260,6 +260,7 @@ class DataCollection(object):
             "ContinentOceanBoundaries", # Seton 2012
             "Seton_etal_ESR2012_Coastline_2012", # Seton 2012
             "PALEOMAP_PoliticalBoundaries", # Scotese 2016
+            "1000-410_poles", # Merdith 
         ]
         return strings
 

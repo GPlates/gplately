@@ -596,7 +596,7 @@ def _str_in_folder(fnames, strings_to_include=None, strings_to_ignore=None):
     return sorted_fnames
 
 
-def _str_in_filename(fnames, strings_to_include=None, strings_to_ignore=None):
+def _str_in_filename(fnames, strings_to_include=None, strings_to_ignore=None, file_collection=None, file_collection_sensitive=False):
     out = []
     def filter_func(fname):
         basename = _os.path.basename(fname)
@@ -604,10 +604,79 @@ def _str_in_filename(fnames, strings_to_include=None, strings_to_ignore=None):
         if strings_to_include is None:
             keep = True
         else:
-            for s in strings_to_include:
-                if s.lower() in basename.lower():
-                    keep = True
-                    break
+            # If a file collection was passed to the string to include, there is at least one file specific to
+            # this model that must be included. Such a file should be presented in the respective
+            # strings_to_include list in data.py with format:
+            
+            #    "file_collection string_to_include"
+
+            # That is, a whitespace must be placed between the file collection and the string to include.
+            # The file collection must be identical to the string allocated to the key. 
+
+            # For example, strings_to_include = ["Muller2022 1000_0_rotfile_Merdith_et_al_optimised.rot"]
+
+            # In this example, "Muller2022" and the strings_to_include list from data.py are passed to this function
+            # when sorting through rotation files. 
+            # The list is looped through - if the current string has "Muller2022" (case insensitive) in it, 
+            # we will only pass through the filename following "Muller2022", i.e. the optmised plate model.
+            # All other rotation files bundled in the webDAV zip (including the published Merdith et al. 2021 rot files) 
+            # are excluded from the filter. 
+
+            # If no strings in the list include the passed file collection, we have one of two options, depending on whether
+            # file_collection_sensitive is True or False. 
+
+            # If it is set to True, that means that we should only treat strings_to_include as True if and only if the
+            #  passed file collection was found in the strings_to_include list. Otherwise, we have to treat strings_to_include
+            # as if it was NoneType, and therefore place no filter for the files we accept through (that is, accept all files).
+
+            # If it is set to False, that means that we should treat strings_to_include as True always, irrespective of
+            # whether the passed file collection was found in the strings_to_include list. An example is the static polygon
+            # filetype - this relies on strings_to_include being True no matter what.
+
+
+            # For example, Merdith2021, Muller2019 would have file_collection_sensitive = False because these
+            # models currently don't have any files that MUST be excluded for their own instance, but MUST 
+            # be included for other model instances. 
+
+            # Conversely, Muller2022 would have file_collection_sensitive = True because it requires all published Merdith2021
+            # rot models to be ignored (in favour of the optimised model). However, we do not want to ignore Merdith2021 rot
+            # models when we are using DataServer to collect Merdith2021 files.
+
+            if file_collection is not None:
+
+                # If the file collection is in the provided list of strings to include...
+                strings_with_file_collection = [s for s in strings_to_include if file_collection.lower() in s.lower()]
+                if strings_with_file_collection:
+
+                    # Include the string, and break out.
+                    for s in strings_with_file_collection:
+                        if s.split(" ")[-1].lower() in basename.lower():
+                            keep = True
+                            break
+                
+                # If there is a file collection passed, but none of the strings to include include the file collection,
+                else:
+                    # If we no longer require strings_to_include, treat as if strings_to_include is False, and just pass
+                    # all files through.
+                    if file_collection_sensitive is True:
+                        keep = True
+
+                    # If we still need strings_to_include, treat as if strings_to_include is True, and pass only required
+                    # files through.
+                    else:
+                        for s in strings_to_include:
+                            if s.lower() in basename.lower():
+                                keep = True
+                                break
+                    
+             
+            # If a file collection is not passed, but strings_to_include exists, only pass through those requested.       
+            else:
+                for s in strings_to_include:
+                    if s.lower() in basename.lower():
+                        keep = True
+                        break
+
         if strings_to_ignore is not None:
             for s in strings_to_ignore:
                 if s.lower() in basename.lower():
@@ -1426,7 +1495,9 @@ class DataServer(object):
                         _str_in_folder(
                             _str_in_filename(fnames,
                                 strings_to_include=DataCollection.rotation_strings_to_include(self),
-                                strings_to_ignore=DataCollection.rotation_strings_to_ignore(self)
+                                strings_to_ignore=DataCollection.rotation_strings_to_ignore(self),
+                                file_collection=self.file_collection,
+                                file_collection_sensitive=True
                             ),
                         strings_to_ignore=DataCollection.rotation_strings_to_ignore(self)
                         ),
@@ -1439,7 +1510,9 @@ class DataServer(object):
                         _str_in_folder(
                             _str_in_filename(fnames, 
                                 strings_to_include=DataCollection.dynamic_polygon_strings_to_include(self),
-                                strings_to_ignore=DataCollection.dynamic_polygon_strings_to_ignore(self)
+                                strings_to_ignore=DataCollection.dynamic_polygon_strings_to_ignore(self),
+                                file_collection=self.file_collection,
+                                file_collection_sensitive=False,
                             ), 
                             strings_to_ignore=DataCollection.dynamic_polygon_strings_to_ignore(self)
                         ),
@@ -1453,7 +1526,9 @@ class DataServer(object):
                         _str_in_folder(
                             _str_in_filename(fnames, 
                                 strings_to_include=DataCollection.static_polygon_strings_to_include(self),
-                                strings_to_ignore=DataCollection.static_polygon_strings_to_ignore(self)
+                                strings_to_ignore=DataCollection.static_polygon_strings_to_ignore(self),
+                                file_collection=self.file_collection,
+                                file_collection_sensitive=False
                             ),
                             strings_to_ignore=DataCollection.static_polygon_strings_to_ignore(self)
                         )
@@ -1588,7 +1663,9 @@ class DataServer(object):
                                 _str_in_filename(
                                     fnames,
                                     strings_to_include=DataCollection.coastline_strings_to_include(self),
-                                    strings_to_ignore=DataCollection.coastline_strings_to_ignore(self)
+                                    strings_to_ignore=DataCollection.coastline_strings_to_ignore(self),
+                                    file_collection=self.file_collection,
+                                    file_collection_sensitive=False
                                 ), 
                                 strings_to_ignore=DataCollection.coastline_strings_to_ignore(self)
                             )
@@ -1598,7 +1675,9 @@ class DataServer(object):
                                 _str_in_filename(
                                     fnames, 
                                     strings_to_include=DataCollection.continent_strings_to_include(self),
-                                    strings_to_ignore=DataCollection.continent_strings_to_ignore(self)
+                                    strings_to_ignore=DataCollection.continent_strings_to_ignore(self),
+                                    file_collection=self.file_collection,
+                                    file_collection_sensitive=False
                                 ), 
                                 strings_to_ignore=DataCollection.continent_strings_to_ignore(self)
                             )
@@ -1608,7 +1687,9 @@ class DataServer(object):
                                 _str_in_filename(
                                     fnames,
                                     strings_to_include=DataCollection.COB_strings_to_include(self),
-                                    strings_to_ignore=DataCollection.COB_strings_to_ignore(self)
+                                    strings_to_ignore=DataCollection.COB_strings_to_ignore(self),
+                                    file_collection=self.file_collection,
+                                    file_collection_sensitive=False
                                 ), 
                                 strings_to_ignore=DataCollection.COB_strings_to_ignore(self)
                             )
