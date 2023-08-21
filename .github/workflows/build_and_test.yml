@@ -36,10 +36,6 @@ jobs:
       - run: conda list
       - run: conda config --show
 
-      - name: Install gplately and dependencies
-        run: |
-          mamba install gplately pytest
-
       - name: Install current gplately
         run: |
           pip install . --no-binary :all: --no-cache-dir --no-dependencies
