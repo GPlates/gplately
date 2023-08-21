@@ -32,9 +32,6 @@ jobs:
             powershell
           cache-environment: true
           post-cleanup: 'all' 
-      - run: conda info
-      - run: conda list
-      - run: conda config --show
 
       - name: Install current gplately
         run: |
