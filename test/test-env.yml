@@ -1,8 +1,7 @@
-name: test
+name: test-env
 channels:
   - conda-forge
   - defaults
 dependencies:
-  - libarchive
   - gplately
   - pytest
