@@ -1,8 +1,8 @@
-import sys
+#!/usr/bin/env python
+
 import time
 
-sys.path.insert(0, "../")
-from gplately import network_aiohttp, network_requests
+from plate_model_manager import network_aiohttp, network_requests
 
 test_urls = [
     f"https://www.earthbyte.org/webdav/ftp/Data_Collections/Zahirovic_etal_2016_ESR_AgeGrid/jpegs/EarthByte_Zahirovic_etal_2016_ESR_r888_AgeGrid-{i}.jpg"
@@ -82,6 +82,7 @@ def test_concurrent_executor():
     print("End test_concurrent_executor ... ")
 
 
-test_with_for_loop()
-test_concurrent_aiohttp()
-test_concurrent_executor()
+if __name__ == "__main__":
+    test_with_for_loop()
+    test_concurrent_aiohttp()
+    test_concurrent_executor()

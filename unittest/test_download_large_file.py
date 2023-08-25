@@ -1,8 +1,8 @@
-import sys
+#!/usr/bin/env python
+
 import time
 
-sys.path.insert(0, "../")
-from gplately import network_aiohttp, network_requests
+from plate_model_manager import network_aiohttp, network_requests
 
 # concurrent download from www.earthbyte.org does not work because of Cloud provider's network traffic control
 # use "http://212.183.159.230/100MB.zip" to test. you can see the performance improvement
@@ -72,6 +72,7 @@ def test_aiohttp():
     print("End download with aiohttp ...")
 
 
-test_download_directly()
-test_requests()
-test_aiohttp()
+if __name__ == "__main__":
+    test_download_directly()
+    test_requests()
+    test_aiohttp()
