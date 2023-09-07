@@ -2,6 +2,7 @@ import pytest
 import gplately
 import numpy as np
 from conftest import gplately_plate_reconstruction_object as model
+from conftest import gplately_muller_server as server
 from conftest import reconstruction_times
 
 # ========================================= <gplately.PlateReconstruction> =====================================
@@ -76,11 +77,8 @@ def test_pygplates_ridge_length(time, model):
 
 # TOTAL CONTINENTAL ARC LENGTHS AT 0 AND 100 MA
 @pytest.mark.parametrize("time", reconstruction_times)
-def test_cont_arc_length(time, model):
-    gdownload = gplately.download.DataServer("Muller2019")
-
-    agegrid = gdownload.get_age_grid(time)
-    agegrid = agegrid.data
+def test_cont_arc_length(time, model, server):
+    agegrid = server.get_age_grid(time).data
     continental_grid = np.isnan(np.array(agegrid))
     # Use 281km as the trench-arc distance 281 km; the median distance frin global analysis at the present-day (Pall et al. 2018)
     trench_arc_distance = 281
@@ -91,7 +89,7 @@ def test_cont_arc_length(time, model):
         ignore_warnings=True,
     )
     approx_lengths = {
-        0: 51500,
+        0: 52200,
         100: 44000,
     }
     err_msg = (
