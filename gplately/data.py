@@ -251,6 +251,7 @@ class DataCollection(object):
             "ContinentOceanBoundaries", # Seton 2012
             "Seton_etal_ESR2012_Coastline_2012", # Seton 2012
             "PALEOMAP_PoliticalBoundaries", # Scotese 2016
+            "SimplifiedFiles",  # Muller et al. 2019 (updated)
         ]
         return strings
 
