@@ -24,7 +24,13 @@ test_geometry_azimuths = (45, -100)  # degrees
 
 
 @pytest.fixture(scope="module")
-def gplately_muller_server():
+def muller_2019_model():
+    pm_manger = PlateModelManager()
+    return pm_manger.get_model("Muller2019")
+
+
+@pytest.fixture(scope="module")
+def cd():
     return gplately.DataServer("Muller2019")
 
 
@@ -34,8 +40,17 @@ def gplately_merdith_server():
 
 
 @pytest.fixture(scope="module")
-def gplately_muller_static_geometries(gplately_muller_server):
-    return gplately_muller_server.get_topology_geometries()
+def gplately_muller_static_geometries(muller_2019_model):
+    coastlines = pygplates.FeatureCollection()
+    for file in muller_2019_model.get_layer("Coastlines"):
+        coastlines.add(pygplates.FeatureCollection(file))
+    continental_polygons = pygplates.FeatureCollection()
+    for file in muller_2019_model.get_layer("ContinentalPolygons"):
+        continental_polygons.add(pygplates.FeatureCollection(file))
+    COBs = pygplates.FeatureCollection()
+    for file in muller_2019_model.get_layer("COBs"):
+        COBs.add(pygplates.FeatureCollection(file))
+    return coastlines, continental_polygons, COBs
 
 
 @pytest.fixture(scope="module")
@@ -45,8 +60,15 @@ def gplately_merdith_static_geometries(gplately_merdith_server):
 
 
 @pytest.fixture(scope="module")
-def gplately_muller_reconstruction_files(gplately_muller_server):
-    return gplately_muller_server.get_plate_reconstruction_files()
+def gplately_muller_reconstruction_files(muller_2019_model):
+    rotation_model = pygplates.RotationModel(muller_2019_model.get_rotation_model())
+    topology_features = pygplates.FeatureCollection()
+    for file in muller_2019_model.get_layer("Topologies"):
+        topology_features.add(pygplates.FeatureCollection(file))
+    static_polygons = pygplates.FeatureCollection()
+    for file in muller_2019_model.get_layer("StaticPolygons"):
+        static_polygons.add(pygplates.FeatureCollection(file))
+    return rotation_model, topology_features, static_polygons
 
 
 @pytest.fixture(scope="module")
@@ -55,14 +77,11 @@ def gplately_merdith_reconstruction_files(gplately_merdith_server):
 
 
 @pytest.fixture(scope="module")
-def gplately_plate_reconstruction_object():
-    pm_manger = PlateModelManager()
-    model_muller2019 = pm_manger.get_model("Muller2019")
-
+def gplately_plate_reconstruction_object(muller_2019_model):
     return gplately.PlateReconstruction(
-        rotation_model=model_muller2019.get_rotation_model(),
-        topology_features=model_muller2019.get_layer("Topologies"),
-        static_polygons=model_muller2019.get_layer("StaticPolygons"),
+        rotation_model=muller_2019_model.get_rotation_model(),
+        topology_features=muller_2019_model.get_layer("Topologies"),
+        static_polygons=muller_2019_model.get_layer("StaticPolygons"),
     )
 
 
@@ -100,17 +119,15 @@ def gplately_points_object(gplately_plate_reconstruction_object):
 
 @pytest.fixture(scope="module")
 def gplately_raster_object(
-    gplately_muller_server,
+    muller_2019_model,
     gplately_plate_reconstruction_object,
 ):
     model = gplately_plate_reconstruction_object
     time = 0
-    masked_age_grid = gplately_muller_server.get_age_grid(time)
-
-    masked_age_grid_data = masked_age_grid.data
+    agegrid_path = muller_2019_model.get_raster("AgeGrids", time)
 
     graster = gplately.Raster(
-        data=masked_age_grid_data,
+        data=agegrid_path,
         plate_reconstruction=model,
         extent=[-180, 180, -90, 90],
     )
