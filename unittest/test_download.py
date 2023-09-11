@@ -22,6 +22,9 @@ def main():
         topology_features,
         static_polygons,
     ) = gdownload.get_plate_reconstruction_files()
+    print(rotation_model)
+    print(topology_features)
+    print(static_polygons)
     # coastlines, continents, COBs = gdownload.get_topology_geometries()
 
     et = time.time()
