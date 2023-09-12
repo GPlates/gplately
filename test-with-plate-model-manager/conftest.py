@@ -1,12 +1,12 @@
 import pytest
 import gplately
 import numpy as np
-import os
+import os, gzip, shutil
 import tempfile
 import matplotlib.pyplot as plt
 import cartopy.crs as ccrs
 from gplately import DataCollection
-from plate_model_manager import PlateModelManager
+from plate_model_manager import PlateModelManager, network_requests
 import pygplates
 
 ## ==========================
@@ -30,13 +30,9 @@ def muller_2019_model():
 
 
 @pytest.fixture(scope="module")
-def cd():
-    return gplately.DataServer("Muller2019")
-
-
-@pytest.fixture(scope="module")
-def gplately_merdith_server():
-    return gplately.DataServer("Merdith2021")
+def merdith_2021_model():
+    pm_manger = PlateModelManager()
+    return pm_manger.get_model("Merdith2021")
 
 
 @pytest.fixture(scope="module")
@@ -54,9 +50,15 @@ def gplately_muller_static_geometries(muller_2019_model):
 
 
 @pytest.fixture(scope="module")
-def gplately_merdith_static_geometries(gplately_merdith_server):
-    coastlines, continents, _ = gplately_merdith_server.get_topology_geometries()
-    return coastlines, continents
+def gplately_merdith_static_geometries(merdith_2021_model):
+    coastlines = pygplates.FeatureCollection()
+    for file in merdith_2021_model.get_layer("Coastlines"):
+        coastlines.add(pygplates.FeatureCollection(file))
+    continental_polygons = pygplates.FeatureCollection()
+    for file in merdith_2021_model.get_layer("ContinentalPolygons"):
+        continental_polygons.add(pygplates.FeatureCollection(file))
+
+    return coastlines, continental_polygons
 
 
 @pytest.fixture(scope="module")
@@ -72,8 +74,15 @@ def gplately_muller_reconstruction_files(muller_2019_model):
 
 
 @pytest.fixture(scope="module")
-def gplately_merdith_reconstruction_files(gplately_merdith_server):
-    return gplately_merdith_server.get_plate_reconstruction_files()
+def gplately_merdith_reconstruction_files(merdith_2021_model):
+    rotation_model = pygplates.RotationModel(merdith_2021_model.get_rotation_model())
+    topology_features = pygplates.FeatureCollection()
+    for file in merdith_2021_model.get_layer("Topologies"):
+        topology_features.add(pygplates.FeatureCollection(file))
+    static_polygons = pygplates.FeatureCollection()
+    for file in merdith_2021_model.get_layer("StaticPolygons"):
+        static_polygons.add(pygplates.FeatureCollection(file))
+    return rotation_model, topology_features, static_polygons
 
 
 @pytest.fixture(scope="module")
@@ -137,10 +146,17 @@ def gplately_raster_object(
 
 @pytest.fixture(scope="module")
 def gplately_merdith_raster(
-    gplately_merdith_server,
     gplately_merdith_reconstruction,
 ):
-    etopo = gplately_merdith_server.get_raster("ETOPO1_grd")
+    if not os.path.isfile("ETOPO1_Ice_g_gmt4/ETOPO1_Ice_g_gmt4.grd"):
+        network_requests.fetch_large_file(
+            "https://www.ngdc.noaa.gov/mgg/global/relief/ETOPO1/data/ice_surface/grid_registered/netcdf/ETOPO1_Ice_g_gmt4.grd.gz",
+            "ETOPO1_Ice_g_gmt4",
+        )
+        with open("ETOPO1_Ice_g_gmt4/ETOPO1_Ice_g_gmt4.grd", "w+b") as output:
+            with gzip.open("ETOPO1_Ice_g_gmt4/ETOPO1_Ice_g_gmt4.grd.gz") as zipped:
+                shutil.copyfileobj(zipped, output)
+    etopo = gplately.Raster(data="ETOPO1_Ice_g_gmt4/ETOPO1_Ice_g_gmt4.grd")
     etopo = etopo.data.astype("float")
     downsampled = etopo[::15, ::15]
     raster = gplately.Raster(
@@ -151,25 +167,9 @@ def gplately_merdith_raster(
     return raster
 
 
-# Create a temporary directory for testing seafloorgrid
-# @pytest.fixture(scope="module")
-# def temp_save_directory():
-#    tmpdir = tempfile.mkdtemp()
-#    os.mkdir(tmpdir, exist_ok=True)
-#    return tmpdir
-
-
-@pytest.fixture(scope="session")
-def test_save_directory(tmp_path_factory):
-    parent_dir = tmp_path_factory.mktemp("seafloorgrid_test")
-    return parent_dir
-
-
 @pytest.fixture(scope="module")
 def gplately_seafloorgrid_object(
-    gplately_plate_reconstruction_object,
-    gplately_plot_topologies_object,
-    test_save_directory,
+    gplately_plate_reconstruction_object, gplately_plot_topologies_object
 ):
     model = gplately_plate_reconstruction_object
     gplot = gplately_plot_topologies_object
@@ -180,7 +180,7 @@ def gplately_seafloorgrid_object(
         max_time=250,
         min_time=249,
         ridge_time_step=1.0,
-        save_directory=str(test_save_directory),
+        save_directory="test-seafloor-grid",
         file_collection="Muller2019",
         grid_spacing=0.25,
     )
