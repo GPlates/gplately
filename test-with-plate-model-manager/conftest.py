@@ -1,13 +1,17 @@
-import pytest
-import gplately
+import gzip
+import os
+import shutil
+
 import numpy as np
-import os, gzip, shutil
-import tempfile
-import matplotlib.pyplot as plt
-import cartopy.crs as ccrs
-from gplately import DataCollection
-from plate_model_manager import PlateModelManager, network_requests
 import pygplates
+import pytest
+from plate_model_manager import (
+    PlateModelManager,
+    PresentDayRasterManager,
+    network_requests,
+)
+
+import gplately
 
 ## ==========================
 
@@ -148,15 +152,8 @@ def gplately_raster_object(
 def gplately_merdith_raster(
     gplately_merdith_reconstruction,
 ):
-    if not os.path.isfile("ETOPO1_Ice_g_gmt4/ETOPO1_Ice_g_gmt4.grd"):
-        network_requests.fetch_large_file(
-            "https://www.ngdc.noaa.gov/mgg/global/relief/ETOPO1/data/ice_surface/grid_registered/netcdf/ETOPO1_Ice_g_gmt4.grd.gz",
-            "ETOPO1_Ice_g_gmt4",
-        )
-        with open("ETOPO1_Ice_g_gmt4/ETOPO1_Ice_g_gmt4.grd", "w+b") as output:
-            with gzip.open("ETOPO1_Ice_g_gmt4/ETOPO1_Ice_g_gmt4.grd.gz") as zipped:
-                shutil.copyfileobj(zipped, output)
-    etopo = gplately.Raster(data="ETOPO1_Ice_g_gmt4/ETOPO1_Ice_g_gmt4.grd")
+    raster_manager = PresentDayRasterManager()
+    etopo = gplately.Raster(data=raster_manager.get_raster("ETOPO1_grd"))
     etopo = etopo.data.astype("float")
     downsampled = etopo[::15, ::15]
     raster = gplately.Raster(
