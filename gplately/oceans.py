@@ -423,6 +423,8 @@ class SeafloorGrid(object):
             )
             os.makedirs(save_directory, exist_ok=True)
         self.save_directory = save_directory
+        if file_collection is not None:
+            file_collection = str(file_collection)
         self.file_collection = file_collection
 
         # Topological parameters
@@ -1260,7 +1262,7 @@ class SeafloorGrid(object):
             # If a continent mask is not provided, use the ones made.
             mask_basename = r"continent_mask_{}Ma.nc"
             if self.file_collection is not None:
-                mask_basename = str(self.file_collection) + mask_basename
+                mask_basename = str(self.file_collection) + "_" + mask_basename
             mask_template = os.path.join(self.save_directory, mask_basename)
             collision_spec = reconstruction._ContinentCollision(
                 mask_template,
