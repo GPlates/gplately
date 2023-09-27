@@ -4176,20 +4176,26 @@ class PlotTopologies(object):
         feature_types = []
         feature_names = []
         for topo in topologies_list:
-            geom = topo.get_geometry()
-            if geom is None:
-                continue
             converted = shapelify_features(
                 topo,
                 central_meridian=central_meridian,
                 tessellate_degrees=tessellate_degrees,
             )
-            if len(converted) &gt; 1:
-                converted = MultiLineString(converted)
-            elif len(converted) == 1:
-                converted = converted[0]
-            else:
-                continue
+            if not isinstance(converted, BaseGeometry):
+                if len(converted) &gt; 1:
+                    tmp = []
+                    for i in converted:
+                        if isinstance(i, BaseMultipartGeometry):
+                            tmp.extend(list(i.geoms))
+                        else:
+                            tmp.append(i)
+                    converted = tmp
+                    del tmp
+                    converted = linemerge(converted)
+                elif len(converted) == 1:
+                    converted = converted[0]
+                else:
+                    continue
             geometries.append(converted)
             plate_IDs.append(topo.get_reconstruction_plate_id())
             feature_types.append(topo.get_feature_type())
@@ -8362,20 +8368,26 @@ boundaries and passive continental boundaries.</dd>
         feature_types = []
         feature_names = []
         for topo in topologies_list:
-            geom = topo.get_geometry()
-            if geom is None:
-                continue
             converted = shapelify_features(
                 topo,
                 central_meridian=central_meridian,
                 tessellate_degrees=tessellate_degrees,
             )
-            if len(converted) &gt; 1:
-                converted = MultiLineString(converted)
-            elif len(converted) == 1:
-                converted = converted[0]
-            else:
-                continue
+            if not isinstance(converted, BaseGeometry):
+                if len(converted) &gt; 1:
+                    tmp = []
+                    for i in converted:
+                        if isinstance(i, BaseMultipartGeometry):
+                            tmp.extend(list(i.geoms))
+                        else:
+                            tmp.append(i)
+                    converted = tmp
+                    del tmp
+                    converted = linemerge(converted)
+                elif len(converted) == 1:
+                    converted = converted[0]
+                else:
+                    continue
             geometries.append(converted)
             plate_IDs.append(topo.get_reconstruction_plate_id())
             feature_types.append(topo.get_feature_type())
@@ -8577,20 +8589,26 @@ coordinates are passed to a geopandas GeoDataFrame.</p></div>
     feature_types = []
     feature_names = []
     for topo in topologies_list:
-        geom = topo.get_geometry()
-        if geom is None:
-            continue
         converted = shapelify_features(
             topo,
             central_meridian=central_meridian,
             tessellate_degrees=tessellate_degrees,
         )
-        if len(converted) &gt; 1:
-            converted = MultiLineString(converted)
-        elif len(converted) == 1:
-            converted = converted[0]
-        else:
-            continue
+        if not isinstance(converted, BaseGeometry):
+            if len(converted) &gt; 1:
+                tmp = []
+                for i in converted:
+                    if isinstance(i, BaseMultipartGeometry):
+                        tmp.extend(list(i.geoms))
+                    else:
+                        tmp.append(i)
+                converted = tmp
+                del tmp
+                converted = linemerge(converted)
+            elif len(converted) == 1:
+                converted = converted[0]
+            else:
+                continue
         geometries.append(converted)
         plate_IDs.append(topo.get_reconstruction_plate_id())
         feature_types.append(topo.get_feature_type())
