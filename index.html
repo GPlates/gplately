@@ -524,6 +524,8 @@ seafloorgrid.reconstruct_by_topologies()
 
 &#34;&#34;&#34;
 
+__version__ = &#34;1.1&#34;
+
 from . import (
     data,
     download,
@@ -534,7 +536,7 @@ from . import (
     reconstruction,
     plot,
     oceans,
-    pygplates
+    pygplates,
 )
 
 from .data import DataCollection
@@ -545,15 +547,21 @@ from .grids import (
 )
 from .io import get_geometries, get_valid_geometries
 from .plot import PlotTopologies
-from .reconstruction import PlateReconstruction, Points, _DefaultCollision, _ContinentCollision, _ReconstructByTopologies
+from .reconstruction import (
+    PlateReconstruction,
+    Points,
+    _DefaultCollision,
+    _ContinentCollision,
+    _ReconstructByTopologies,
+)
 from .tools import EARTH_RADIUS
 from .oceans import SeafloorGrid
 
 __pdoc__ = {
-    &#34;data&#34; : False,
-    &#34;_DefaultCollision&#34; : False,
-    &#34;_ContinentCollision&#34; : False,
-    &#34;_ReconstructByTopologies&#34; : False,
+    &#34;data&#34;: False,
+    &#34;_DefaultCollision&#34;: False,
+    &#34;_ContinentCollision&#34;: False,
+    &#34;_ReconstructByTopologies&#34;: False,
 }</code></pre>
 </details>
 </section>
