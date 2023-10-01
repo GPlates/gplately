@@ -1,0 +1,53 @@
+[build-system]
+requires      = ["setuptools>=61.0.0", "wheel"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "gplately"
+version = "1.1"
+description = "Object-orientated Python interface to pyGPlates for plate tectonic reconstruction"
+readme = "README.md"
+authors = [{ name = "Ben Mather", email = "ben.mather@sydney.edu.au" }]
+license = { file = "LICENSE" }
+classifiers = [
+    "License :: OSI Approved :: GNU General Public License v2 (GPLv2)",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.5",
+    "Programming Language :: Python :: 3.6",
+    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Programming Language :: Python :: 3.11"
+]
+keywords = ["Tectonics", "Earth"]
+dependencies = [
+    "numpy>=1.16.0",
+    "scipy>=1.0.0",
+    "shapely",
+    "matplotlib",
+    "cartopy",
+    "PlateTectonicTools",
+    "pooch",
+    "tqdm",
+    "netcdf4",
+    "rasterio",
+    "geopandas",
+    "stripy",
+]
+
+[tool.setuptools.packages.find]
+where = ["."]
+
+[tool.setuptools.package-data]
+gplately = ["data/*","examples/*"]
+
+[project.optional-dependencies]
+dev = ["black", "bumpver", "isort", "pip-tools", "pytest"]
+
+[project.urls]
+Homepage = "https://github.com/GPlates/gplately"
+
+[project.scripts]
+gplately = "gplately.__main__:main"
