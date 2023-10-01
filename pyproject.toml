@@ -41,7 +41,7 @@ dependencies = [
 where = ["."]
 
 [tool.setuptools.package-data]
-gplately = ["data/test.data"]
+gplately = ["data/*","examples/*"]
 
 [project.optional-dependencies]
 dev = ["black", "bumpver", "isort", "pip-tools", "pytest"]
