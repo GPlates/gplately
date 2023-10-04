@@ -17,14 +17,12 @@ def combine_feature_collections(input_files: list[str], output_file: str):
 
     feature_collection.write(output_file)
 
-    print(f"Done! The result has been saved to {output_file}.")
+    print(f"Done! The combined feature collection has been saved to {output_file}.")
 
 
 def filter_feature_collection(args):
-    input_feature_collection = pygplates.FeatureCollection(
-        args.filter_input_file
-        # "Global_EarthByte_GPlates_PresentDay_Coastlines.gpmlz"
-    )
+    """filter the input feature collection according to command line arguments"""
+    input_feature_collection = pygplates.FeatureCollection(args.filter_input_file)
 
     filters = []
     if args.names:
@@ -107,9 +105,9 @@ def main():
 
     birth_age_group = filter_cmd.add_mutually_exclusive_group()
     birth_age_group.add_argument(
-        "-a", "--min-birth-age", type=int, dest="min_birth_age"
+        "-a", "--min-birth-age", type=float, dest="min_birth_age"
     )
-    birth_age_group.add_argument("--max-birth-age", type=int, dest="max_birth_age")
+    birth_age_group.add_argument("--max-birth-age", type=float, dest="max_birth_age")
 
     filter_cmd.add_argument(
         "--case-sensitive", dest="case_sensitive", action="store_true"
@@ -118,7 +116,7 @@ def main():
 
     if len(sys.argv) == 1:
         parser.print_help(sys.stderr)
-        sys.exit(0)
+        sys.exit(1)
 
     args = parser.parse_args()
 
@@ -137,8 +135,6 @@ def main():
         print(f"Unknow command {args.command}!")
         parser.print_help(sys.stderr)
         sys.exit(1)
-
-    # print(args)
 
 
 if __name__ == "__main__":
