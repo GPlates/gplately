@@ -1,13 +1,14 @@
 import argparse
 import os
 import sys
+from typing import List
 
 import pygplates
 
 from gplately import __version__, feature_filter
 
 
-def combine_feature_collections(input_files: list[str], output_file: str):
+def combine_feature_collections(input_files: List[str], output_file: str):
     """combine multiply feature collections into one"""
     feature_collection = pygplates.FeatureCollection()
     for file in input_files:

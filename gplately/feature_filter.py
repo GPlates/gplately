@@ -1,6 +1,5 @@
 import abc
-import argparse
-import sys
+from typing import List
 
 import pygplates
 
@@ -38,7 +37,7 @@ class FeatureNameFilter(FeatureFilter):
     """
 
     def __init__(
-        self, names: list[str], exact_match=False, case_sensitive=False, exclude=False
+        self, names: List[str], exact_match=False, case_sensitive=False, exclude=False
     ):
         self.names = names
         self.exact_match = exact_match
@@ -80,7 +79,7 @@ class PlateIDFilter(FeatureFilter):
 
     """
 
-    def __init__(self, pids: list[int], exclude=False):
+    def __init__(self, pids: List[int], exclude=False):
         self.pids = pids
         self.exclude = exclude
 
@@ -119,7 +118,7 @@ class BirthAgeFilter(FeatureFilter):
 
 
 def filter_feature_collection(
-    feature_collection: pygplates.FeatureCollection, filters: list[FeatureFilter]
+    feature_collection: pygplates.FeatureCollection, filters: List[FeatureFilter]
 ):
     """the loop to apply fiters"""
     new_feature_collection = pygplates.FeatureCollection()
