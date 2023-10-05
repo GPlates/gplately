@@ -5,13 +5,13 @@ import shutil
 import numpy as np
 import pygplates
 import pytest
+import gplately
 from plate_model_manager import (
     PlateModelManager,
     PresentDayRasterManager,
     network_requests,
 )
 
-import gplately
 
 ## ==========================
 
