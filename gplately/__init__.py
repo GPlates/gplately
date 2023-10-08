@@ -200,3 +200,12 @@ __pdoc__ = {
     "_ContinentCollision": False,
     "_ReconstructByTopologies": False,
 }
+
+try:
+    import plate_model_manager
+except ImportError:
+    print("The plate_model_manager is not installed, installing it now!")
+    import subprocess
+    import sys
+
+    subprocess.call([sys.executable, "-m", "pip", "install", "plate-model-manager"])

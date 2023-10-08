@@ -1,7 +1,5 @@
-import os
-
 import numpy as np
-import pytest
+import pytest, os
 from conftest import gplately_merdith_raster, gplately_merdith_static_geometries
 from conftest import gplately_raster_object as graster
 from conftest import pt_lat, pt_lon, reconstruction_times
