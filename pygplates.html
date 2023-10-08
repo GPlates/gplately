@@ -44,7 +44,9 @@ Each object listed here will have a `self.filenames` attribute.
 import pygplates as _pygplates
 from pygplates import *
 import warnings as _warnings
-_warnings.simplefilter(&#39;always&#39;, ImportWarning)
+
+_warnings.simplefilter(&#34;always&#34;, ImportWarning)
+
 
 def _is_string(value):
     # convert sets to list
@@ -55,83 +57,84 @@ def _is_string(value):
     if type(value) is list:
         bl = []
         for val in value:
-            bl.append( type(val) is str )
+            bl.append(type(val) is str)
         return all(bl)
-    
+
     # if no list, check if string
     else:
         return type(value) is str
 
 
 class RotationModel(_pygplates.RotationModel):
-    &#34;&#34;&#34;A class that wraps the 
-    [`pyGPlates.RotationModel` class](https://www.gplates.org/docs/pygplates/generated/pygplates.rotationmodel#pygplates.RotationModel). 
-    This queries a finite rotation of a moving plate relative to any other plate, 
-    optionally between two instants in geological time. 
+    &#34;&#34;&#34;A class that wraps the
+    [`pyGPlates.RotationModel` class](https://www.gplates.org/docs/pygplates/generated/pygplates.rotationmodel#pygplates.RotationModel).
+    This queries a finite rotation of a moving plate relative to any other plate,
+    optionally between two instants in geological time.
 
     See [Plate reconstruction hierarchy](https://www.gplates.org/docs/pygplates/pygplates_foundations.html#pygplates-foundations-plate-reconstruction-hierarchy).
 
-    This class provides an easy way to query rotations in any of the four 
-    combinations of total/stage and equivalent/relative rotations using 
-    [`get_rotation()`](https://www.gplates.org/docs/pygplates/generated/pygplates.rotationmodel#pygplates.RotationModel.get_rotation). 
+    This class provides an easy way to query rotations in any of the four
+    combinations of total/stage and equivalent/relative rotations using
+    [`get_rotation()`](https://www.gplates.org/docs/pygplates/generated/pygplates.rotationmodel#pygplates.RotationModel.get_rotation).
 
-    Reconstruction trees can also be created at any instant 
-    of geological time and these are cached internally depending on a 
-    user-specified cache size parameter pass to `gplately.pygplates.RotationModel.__init__()`. 
-    The reconstruction_tree_cache_size parameter of those methods controls the 
-    size of an internal least-recently-used cache of reconstruction trees 
-    (evicts least recently requested reconstruction tree when a new 
-    reconstruction time is requested that does not currently exist in the cache). 
-    This enables reconstruction trees associated with different reconstruction 
-    times to be re-used instead of re-creating them, provided they have not been 
-    evicted from the cache. This benefit also applies when querying rotations with 
-    [`get_rotation()`](https://www.gplates.org/docs/pygplates/generated/pygplates.rotationmodel#pygplates.RotationModel.get_rotation) 
+    Reconstruction trees can also be created at any instant
+    of geological time and these are cached internally depending on a
+    user-specified cache size parameter pass to `gplately.pygplates.RotationModel.__init__()`.
+    The reconstruction_tree_cache_size parameter of those methods controls the
+    size of an internal least-recently-used cache of reconstruction trees
+    (evicts least recently requested reconstruction tree when a new
+    reconstruction time is requested that does not currently exist in the cache).
+    This enables reconstruction trees associated with different reconstruction
+    times to be re-used instead of re-creating them, provided they have not been
+    evicted from the cache. This benefit also applies when querying rotations with
+    [`get_rotation()`](https://www.gplates.org/docs/pygplates/generated/pygplates.rotationmodel#pygplates.RotationModel.get_rotation)
     since it, in turn, requests reconstruction trees.
 
 
-    This wrapping of `pygplates.RotationModel` contains all 
+    This wrapping of `pygplates.RotationModel` contains all
     [`pygplates.RotationModel` functionality](https://www.gplates.org/docs/pygplates/generated/pygplates.rotationmodel#pygplates.RotationModel),
     and in addition tracks the names of files from which the rotation feature(s) are read
-    using the `gplately.pygplates.RotationModel.filenames` attribute.  
+    using the `gplately.pygplates.RotationModel.filenames` attribute.
 
 
     &#34;&#34;&#34;
-    def __init__(self, rotation_features):
+
+    def __init__(self, rotation_features, default_anchor_plate_id=0):
         &#34;&#34;&#34;**A RotationModel object can be constructed in three ways.**
 
         ---
         **1. Create from rotation feature collection(s) and/or rotation filename(s)**
         --------------------------------------------------------------------------
-        
+
         Parameters
         ----------
         rotation_features : instance of `pygplates.FeatureCollection` or `str` or instance of `pygplates.Feature` or sequence of `pygplates.Feature` or sequence of any combination of those four types
-            A rotation feature collection, or rotation filename, or rotation feature, 
-            or sequence of rotation features, or a sequence (eg, `list` or `tuple`) of 
+            A rotation feature collection, or rotation filename, or rotation feature,
+            or sequence of rotation features, or a sequence (eg, `list` or `tuple`) of
             any combination of those four types.
 
         reconstruction_tree_cache_size : int, default 150
             Number of reconstruction trees to cache internally. Defaults to 150.
 
         extend_total_reconstruction_poles_to_distant_past : bool, default False
-            Extend each moving plate sequence back infinitely far into the distant 
-            past such that reconstructed geometries will not snap back to their 
-            present day positions when the reconstruction time is older than 
+            Extend each moving plate sequence back infinitely far into the distant
+            past such that reconstructed geometries will not snap back to their
+            present day positions when the reconstruction time is older than
             the oldest times specified in the rotation features (defaults to False).
 
         default_anchor_plate_id : int, default 0
-            The default anchored plate id to use when 
-            [`get_rotation()`](https://www.gplates.org/docs/pygplates/generated/pygplates.rotationmodel#pygplates.RotationModel.get_rotation)  
+            The default anchored plate id to use when
+            [`get_rotation()`](https://www.gplates.org/docs/pygplates/generated/pygplates.rotationmodel#pygplates.RotationModel.get_rotation)
             and [`get_reconstruction_tree()`](https://www.gplates.org/docs/pygplates/generated/pygplates.rotationmodel#pygplates.RotationModel.get_reconstruction_tree)
             are called without specifying their `anchor_plate_id` parameter. Defaults to 0.
 
         Raises
         ------
-        OpenFileForReadingError 
+        OpenFileForReadingError
             If any file is not readable (when filenames specified)
 
-        FileFormatNotSupportedError 
-            If any file format (identified by the filename extensions) 
+        FileFormatNotSupportedError
+            If any file format (identified by the filename extensions)
             does not support reading (when filenames specified)
 
 
@@ -159,23 +162,23 @@ class RotationModel(_pygplates.RotationModel):
             An existing rotation model.
 
         reconstruction_tree_cache_size : int, default 2
-            Number of reconstruction trees to cache internally. 
-            Defaults to 2 - this is much lower than the usual default 
-            cache size since the existing rotation model likely 
-            already has a sizeable cache anyway - and if you are 
-            leaving this at its default value then you are presumably 
-            only interested in changing the default anchor plate ID 
+            Number of reconstruction trees to cache internally.
+            Defaults to 2 - this is much lower than the usual default
+            cache size since the existing rotation model likely
+            already has a sizeable cache anyway - and if you are
+            leaving this at its default value then you are presumably
+            only interested in changing the default anchor plate ID
             (not increasing the cache size).
 
         default_anchor_plate_id : int, defaults to the default anchor plate of `rotation_model`
-            The default anchored plate id to use when 
+            The default anchored plate id to use when
             [`get_rotation()`](https://www.gplates.org/docs/pygplates/generated/pygplates.rotationmodel#pygplates.RotationModel.get_rotation)
             and [`get_reconstruction_tree()`](https://www.gplates.org/docs/pygplates/generated/pygplates.rotationmodel#pygplates.RotationModel.get_reconstruction_tree)
-            are called without specifying their `anchor_plate_id` parameter. 
+            are called without specifying their `anchor_plate_id` parameter.
             Defaults to the default anchor plate of `rotation_model`.
 
 
-        This is useful if you want to use an existing rotation model but with a 
+        This is useful if you want to use an existing rotation model but with a
         larger cache size or a different default anchor plate ID:
 
         Example
@@ -190,8 +193,8 @@ class RotationModel(_pygplates.RotationModel):
         **3. Return an existing rotation model as a convenience**
         -------------------------------------------------------
 
-        This is useful when defining your own function that accepts 
-        rotation features or a rotation model. It avoids the hassle 
+        This is useful when defining your own function that accepts
+        rotation features or a rotation model. It avoids the hassle
         of having to explicitly test for each source type:
 
             def my_function(rotation_features_or_model):
@@ -206,7 +209,9 @@ class RotationModel(_pygplates.RotationModel):
 
         ---
         &#34;&#34;&#34;
-        super(RotationModel, self).__init__(rotation_features)
+        super(RotationModel, self).__init__(
+            rotation_features, default_anchor_plate_id=default_anchor_plate_id
+        )
         self.filenames = []
 
         # update filename list
@@ -221,15 +226,18 @@ class RotationModel(_pygplates.RotationModel):
         elif hasattr(rotation_features, &#34;filenames&#34;):
             self.filenames = rotation_features.filenames
         else:
-            msg = &#34;\nRotationModel: No filename associated with {} in __init__&#34;.format(type(rotation_features))
+            msg = &#34;\nRotationModel: No filename associated with {} in __init__&#34;.format(
+                type(rotation_features)
+            )
             msg += &#34;\n ensure pygplates is imported from gplately. Run,&#34;
             msg += &#34;\n from gplately import pygplates&#34;
             _warnings.warn(msg, ImportWarning)
             self.filenames = []
 
+
 class Feature(_pygplates.Feature):
-    &#34;&#34;&#34;A class that wraps the `pyGPlates.Feature` class. This contains tools to query and set 
-    geological or plate-tectonic feature properties defined by the 
+    &#34;&#34;&#34;A class that wraps the `pyGPlates.Feature` class. This contains tools to query and set
+    geological or plate-tectonic feature properties defined by the
     [GPlates Geological Information Model (GPGIM)](https://www.gplates.org/docs/gpgim/).
     A feature consists of a collection of `properties`, a `feature type` and a `feature id`.
 
@@ -243,8 +251,8 @@ class Feature(_pygplates.Feature):
 
 
     This wrapping of `pygplates.Feature` contains all `pygplates.Feature` functionality,
-    and in addition tracks the names of files from which the feature(s) are read 
-    using the `gplately.pygplates.Feature.filenames` attribute.  
+    and in addition tracks the names of files from which the feature(s) are read
+    using the `gplately.pygplates.Feature.filenames` attribute.
 
 
     Creating `feature`s
@@ -422,15 +430,16 @@ class Feature(_pygplates.Feature):
     A feature can be deep copied using `clone()`.
 
     &#34;&#34;&#34;
+
     def __init__(self, feature):
         &#34;&#34;&#34;
 
         Parameters
         ----------
         feature_type : instance of `pygplates.FeatureType`
-            The type of feature. See 
-            [here](https://www.gplates.org/docs/pygplates/generated/pygplates.featuretype#pygplates.FeatureType) 
-            for a list of pygplates feature types. 
+            The type of feature. See
+            [here](https://www.gplates.org/docs/pygplates/generated/pygplates.featuretype#pygplates.FeatureType)
+            for a list of pygplates feature types.
 
         feature_id : instance of `pygplates.FeatureId`
             The [feature identifier](https://www.gplates.org/docs/pygplates/generated/pygplates.featureid#pygplates.FeatureID).
@@ -444,7 +453,7 @@ class Feature(_pygplates.Feature):
             If neither a `str`, `list` of `str`, `gplately.pygplates.Feature` or `None` is passed, no
             `Feature` filenames will be collected, and the user will be alerted of this.
 
-        InformationModelError 
+        InformationModelError
             if `verify_information_model` is `VerifyInformationModel.yes` and `feature_type` is not a recognised feature type.
 
         &#34;&#34;&#34;
@@ -463,15 +472,16 @@ class Feature(_pygplates.Feature):
         elif hasattr(feature, &#34;filenames&#34;):
             self.filenames = feature.filenames
         else:
-            msg = &#34;\nFeature: No filename associated with {} in __init__&#34;.format(type(feature))
+            msg = &#34;\nFeature: No filename associated with {} in __init__&#34;.format(
+                type(feature)
+            )
             msg += &#34;\n ensure pygplates is imported from gplately. Run,&#34;
             msg += &#34;\n from gplately import pygplates&#34;
             _warnings.warn(msg, ImportWarning)
             self.filenames = []
 
-
     def add(self, feature):
-        &#34;&#34;&#34;Adds a property (or properties) to this feature. See original docs 
+        &#34;&#34;&#34;Adds a property (or properties) to this feature. See original docs
         [here](https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature.add).
 
         Parameters
@@ -499,7 +509,9 @@ class Feature(_pygplates.Feature):
         elif hasattr(feature, &#34;filenames&#34;):
             self.filenames.extend(feature.filenames)
         else:
-            msg = &#34;\nFeature: No filename associated with {} in add&#34;.format(type(feature))
+            msg = &#34;\nFeature: No filename associated with {} in add&#34;.format(
+                type(feature)
+            )
             msg += &#34;\n ensure pygplates is imported from gplately. Run,&#34;
             msg += &#34;\n from gplately import pygplates&#34;
             _warnings.warn(msg, ImportWarning)
@@ -507,7 +519,7 @@ class Feature(_pygplates.Feature):
     def clone(self):
         &#34;&#34;&#34;Create a duplicate of this `Feature` instance.
 
-        This creates a new `Feature` instance with cloned versions of this feature’s `properties`. 
+        This creates a new `Feature` instance with cloned versions of this feature’s `properties`.
         The cloned feature is created with its own unique `pygplates.FeatureId`.
 
         Returns
@@ -519,18 +531,19 @@ class Feature(_pygplates.Feature):
         feat = super().clone()
         feat.filenames = self.filenames
 
+
 class FeatureCollection(_pygplates.FeatureCollection):
-    &#34;&#34;&#34;A class that wraps the 
-    [`pyGPlates.FeatureCollection`](https://www.gplates.org/docs/pygplates/generated/pygplates.featurecollection#pygplates.FeatureCollection) 
-    class. This aggregates a set of features into a collection. 
-    This is traditionally so that a group of  features can be loaded, saved or 
+    &#34;&#34;&#34;A class that wraps the
+    [`pyGPlates.FeatureCollection`](https://www.gplates.org/docs/pygplates/generated/pygplates.featurecollection#pygplates.FeatureCollection)
+    class. This aggregates a set of features into a collection.
+    This is traditionally so that a group of  features can be loaded, saved or
     unloaded in a single operation.
 
-    This wrapping of `pygplates.FeatureCollection` contains all 
+    This wrapping of `pygplates.FeatureCollection` contains all
     [`pygplates.FeatureCollection` functionality](https://www.gplates.org/docs/pygplates/generated/pygplates.featurecollection#pygplates.FeatureCollection),
-    and in addition tracks the names of files from which the feature 
-    collection(s) are read using the 
-    `gplately.pygplates.FeatureCollection.filenames` attribute.  
+    and in addition tracks the names of files from which the feature
+    collection(s) are read using the
+    `gplately.pygplates.FeatureCollection.filenames` attribute.
 
     Examples
     --------
@@ -576,7 +589,7 @@ class FeatureCollection(_pygplates.FeatureCollection):
 
     In the future, support will be added to enable users to implement and register readers/writers for other file formats (or their own non-standard file formats).
 
-    
+
     Operations for accessing features
     ---------------------------------
 
@@ -587,7 +600,7 @@ class FeatureCollection(_pygplates.FeatureCollection):
 
     * `for f in fc` : Iterates over the features `f` in feature collection `fc`.
 
-    * `fc[i]` : The feature of fc at index `i`. 
+    * `fc[i]` : The feature of fc at index `i`.
 
 
     For example:
@@ -597,6 +610,7 @@ class FeatureCollection(_pygplates.FeatureCollection):
         # assert(num_features == len(features_in_collection))
 
     &#34;&#34;&#34;
+
     def __init__(self, features=None):
         &#34;&#34;&#34;
 
@@ -608,10 +622,10 @@ class FeatureCollection(_pygplates.FeatureCollection):
 
         Raises
         ------
-        OpenFileForReadingError 
+        OpenFileForReadingError
             If file is not readable (if filename specified).
 
-        FileFormatNotSupportedError 
+        FileFormatNotSupportedError
             If file format (identified by the filename extension) does not support reading (when filename specified).
 
         &#34;&#34;&#34;
@@ -630,7 +644,9 @@ class FeatureCollection(_pygplates.FeatureCollection):
         elif hasattr(features, &#34;filenames&#34;):
             self.filenames = features.filenames
         else:
-            msg = &#34;\nFeatureCollection: No filename associated with {} in __init__&#34;.format(type(features))
+            msg = &#34;\nFeatureCollection: No filename associated with {} in __init__&#34;.format(
+                type(features)
+            )
             msg += &#34;\n ensure pygplates is imported from gplately. Run,&#34;
             msg += &#34;\n from gplately import pygplates&#34;
             _warnings.warn(msg, ImportWarning)
@@ -644,7 +660,7 @@ class FeatureCollection(_pygplates.FeatureCollection):
         feature : instance of `Feature` or sequence (eg, `list` or `tuple`) of `Feature`
             One or more features to add.
 
-        A feature collection is an unordered collection of features so there is no concept 
+        A feature collection is an unordered collection of features so there is no concept
         of where a feature is inserted in the sequence of features.
 
             feature_collection.add(feature)
@@ -660,7 +676,9 @@ class FeatureCollection(_pygplates.FeatureCollection):
         elif hasattr(features, &#34;filenames&#34;):
             self.filenames.extend(features.filenames)
         else:
-            msg = &#34;\nFeatureCollection: No filename associated with {} in add&#34;.format(type(features))
+            msg = &#34;\nFeatureCollection: No filename associated with {} in add&#34;.format(
+                type(features)
+            )
             msg += &#34;\n ensure pygplates is imported from gplately. Run,&#34;
             msg += &#34;\n from gplately import pygplates&#34;
             _warnings.warn(msg, ImportWarning)
@@ -668,14 +686,14 @@ class FeatureCollection(_pygplates.FeatureCollection):
     def clone(self):
         &#34;&#34;&#34;Create a duplicate of this feature collection instance.
 
-        This creates a new `FeatureCollection` instance with cloned versions of 
-        this collection’s features. And the cloned features (in the cloned 
+        This creates a new `FeatureCollection` instance with cloned versions of
+        this collection’s features. And the cloned features (in the cloned
         collection) are each created with a unique `FeatureId`.
 
         Returns
         -------
         feature_collection : instance of `gplately.pygplates.FeatureCollection`
-            The cloned `FeatureCollection`. 
+            The cloned `FeatureCollection`.
 
         &#34;&#34;&#34;
         fc = super().clone()
@@ -713,8 +731,7 @@ A feature consists of a collection of <code>properties</code>, a <code>feature t
 </ul>
 <p>This wrapping of <code>pygplates.Feature</code> contains all <code>pygplates.Feature</code> functionality,
 and in addition tracks the names of files from which the feature(s) are read
-using the <code>gplately.pygplates.Feature.filenames</code> attribute.
-</p>
+using the <code>gplately.pygplates.Feature.filenames</code> attribute.</p>
 <h2 id="creating-features">Creating <code>feature</code>s</h2>
 <p>The following methods provide convenient ways to create features:</p>
 <ul>
@@ -948,7 +965,7 @@ for a list of pygplates feature types.</dd>
 <dt><code>ImportWarning</code></dt>
 <dd>If neither a <code>str</code>, <code>list</code> of <code>str</code>, <code><a title="gplately.pygplates.Feature" href="#gplately.pygplates.Feature">Feature</a></code> or <code>None</code> is passed, no
 <code><a title="gplately.pygplates.Feature" href="#gplately.pygplates.Feature">Feature</a></code> filenames will be collected, and the user will be alerted of this.</dd>
-<dt><code>InformationModelError </code></dt>
+<dt><code>InformationModelError</code></dt>
 <dd>if <code>verify_information_model</code> is <code>VerifyInformationModel.yes</code> and <code>feature_type</code> is not a recognised feature type.</dd>
 </dl></div>
 <details class="source">
@@ -956,8 +973,8 @@ for a list of pygplates feature types.</dd>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class Feature(_pygplates.Feature):
-    &#34;&#34;&#34;A class that wraps the `pyGPlates.Feature` class. This contains tools to query and set 
-    geological or plate-tectonic feature properties defined by the 
+    &#34;&#34;&#34;A class that wraps the `pyGPlates.Feature` class. This contains tools to query and set
+    geological or plate-tectonic feature properties defined by the
     [GPlates Geological Information Model (GPGIM)](https://www.gplates.org/docs/gpgim/).
     A feature consists of a collection of `properties`, a `feature type` and a `feature id`.
 
@@ -971,8 +988,8 @@ for a list of pygplates feature types.</dd>
 
 
     This wrapping of `pygplates.Feature` contains all `pygplates.Feature` functionality,
-    and in addition tracks the names of files from which the feature(s) are read 
-    using the `gplately.pygplates.Feature.filenames` attribute.  
+    and in addition tracks the names of files from which the feature(s) are read
+    using the `gplately.pygplates.Feature.filenames` attribute.
 
 
     Creating `feature`s
@@ -1150,15 +1167,16 @@ for a list of pygplates feature types.</dd>
     A feature can be deep copied using `clone()`.
 
     &#34;&#34;&#34;
+
     def __init__(self, feature):
         &#34;&#34;&#34;
 
         Parameters
         ----------
         feature_type : instance of `pygplates.FeatureType`
-            The type of feature. See 
-            [here](https://www.gplates.org/docs/pygplates/generated/pygplates.featuretype#pygplates.FeatureType) 
-            for a list of pygplates feature types. 
+            The type of feature. See
+            [here](https://www.gplates.org/docs/pygplates/generated/pygplates.featuretype#pygplates.FeatureType)
+            for a list of pygplates feature types.
 
         feature_id : instance of `pygplates.FeatureId`
             The [feature identifier](https://www.gplates.org/docs/pygplates/generated/pygplates.featureid#pygplates.FeatureID).
@@ -1172,7 +1190,7 @@ for a list of pygplates feature types.</dd>
             If neither a `str`, `list` of `str`, `gplately.pygplates.Feature` or `None` is passed, no
             `Feature` filenames will be collected, and the user will be alerted of this.
 
-        InformationModelError 
+        InformationModelError
             if `verify_information_model` is `VerifyInformationModel.yes` and `feature_type` is not a recognised feature type.
 
         &#34;&#34;&#34;
@@ -1191,15 +1209,16 @@ for a list of pygplates feature types.</dd>
         elif hasattr(feature, &#34;filenames&#34;):
             self.filenames = feature.filenames
         else:
-            msg = &#34;\nFeature: No filename associated with {} in __init__&#34;.format(type(feature))
+            msg = &#34;\nFeature: No filename associated with {} in __init__&#34;.format(
+                type(feature)
+            )
             msg += &#34;\n ensure pygplates is imported from gplately. Run,&#34;
             msg += &#34;\n from gplately import pygplates&#34;
             _warnings.warn(msg, ImportWarning)
             self.filenames = []
 
-
     def add(self, feature):
-        &#34;&#34;&#34;Adds a property (or properties) to this feature. See original docs 
+        &#34;&#34;&#34;Adds a property (or properties) to this feature. See original docs
         [here](https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature.add).
 
         Parameters
@@ -1227,7 +1246,9 @@ for a list of pygplates feature types.</dd>
         elif hasattr(feature, &#34;filenames&#34;):
             self.filenames.extend(feature.filenames)
         else:
-            msg = &#34;\nFeature: No filename associated with {} in add&#34;.format(type(feature))
+            msg = &#34;\nFeature: No filename associated with {} in add&#34;.format(
+                type(feature)
+            )
             msg += &#34;\n ensure pygplates is imported from gplately. Run,&#34;
             msg += &#34;\n from gplately import pygplates&#34;
             _warnings.warn(msg, ImportWarning)
@@ -1235,7 +1256,7 @@ for a list of pygplates feature types.</dd>
     def clone(self):
         &#34;&#34;&#34;Create a duplicate of this `Feature` instance.
 
-        This creates a new `Feature` instance with cloned versions of this feature’s `properties`. 
+        This creates a new `Feature` instance with cloned versions of this feature’s `properties`.
         The cloned feature is created with its own unique `pygplates.FeatureId`.
 
         Returns
@@ -1279,7 +1300,7 @@ for a list of pygplates feature types.</dd>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def add(self, feature):
-    &#34;&#34;&#34;Adds a property (or properties) to this feature. See original docs 
+    &#34;&#34;&#34;Adds a property (or properties) to this feature. See original docs
     [here](https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature.add).
 
     Parameters
@@ -1307,7 +1328,9 @@ for a list of pygplates feature types.</dd>
     elif hasattr(feature, &#34;filenames&#34;):
         self.filenames.extend(feature.filenames)
     else:
-        msg = &#34;\nFeature: No filename associated with {} in add&#34;.format(type(feature))
+        msg = &#34;\nFeature: No filename associated with {} in add&#34;.format(
+            type(feature)
+        )
         msg += &#34;\n ensure pygplates is imported from gplately. Run,&#34;
         msg += &#34;\n from gplately import pygplates&#34;
         _warnings.warn(msg, ImportWarning)</code></pre>
@@ -1332,7 +1355,7 @@ The cloned feature is created with its own unique <code>pygplates.FeatureId</cod
 <pre><code class="python">def clone(self):
     &#34;&#34;&#34;Create a duplicate of this `Feature` instance.
 
-    This creates a new `Feature` instance with cloned versions of this feature’s `properties`. 
+    This creates a new `Feature` instance with cloned versions of this feature’s `properties`.
     The cloned feature is created with its own unique `pygplates.FeatureId`.
 
     Returns
@@ -1362,8 +1385,7 @@ unloaded in a single operation.</p>
 <a href="https://www.gplates.org/docs/pygplates/generated/pygplates.featurecollection#pygplates.FeatureCollection"><code>pygplates.FeatureCollection</code> functionality</a>,
 and in addition tracks the names of files from which the feature
 collection(s) are read using the
-<code>gplately.pygplates.FeatureCollection.filenames</code> attribute.
-</p>
+<code>gplately.pygplates.FeatureCollection.filenames</code> attribute.</p>
 <h2 id="examples">Examples</h2>
 <p>For example, to read coastline features from a file:</p>
 <pre><code>coastline_feature_collection = pygplates.FeatureCollection('coastlines.gpml')
@@ -1475,7 +1497,7 @@ Read</strong></th>
 <p><code>for f in fc</code> : Iterates over the features <code>f</code> in feature collection <code>fc</code>.</p>
 </li>
 <li>
-<p><code>fc[i]</code> : The feature of fc at index <code>i</code>. </p>
+<p><code>fc[i]</code> : The feature of fc at index <code>i</code>.</p>
 </li>
 </ul>
 <p>For example:</p>
@@ -1490,9 +1512,9 @@ features_in_collection = [feature for feature in feature_collection]
 </dl>
 <h2 id="raises">Raises</h2>
 <dl>
-<dt><code>OpenFileForReadingError </code></dt>
+<dt><code>OpenFileForReadingError</code></dt>
 <dd>If file is not readable (if filename specified).</dd>
-<dt><code>FileFormatNotSupportedError </code></dt>
+<dt><code>FileFormatNotSupportedError</code></dt>
 <dd>If file format (identified by the filename extension) does not support reading (when filename specified).</dd>
 </dl></div>
 <details class="source">
@@ -1500,17 +1522,17 @@ features_in_collection = [feature for feature in feature_collection]
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class FeatureCollection(_pygplates.FeatureCollection):
-    &#34;&#34;&#34;A class that wraps the 
-    [`pyGPlates.FeatureCollection`](https://www.gplates.org/docs/pygplates/generated/pygplates.featurecollection#pygplates.FeatureCollection) 
-    class. This aggregates a set of features into a collection. 
-    This is traditionally so that a group of  features can be loaded, saved or 
+    &#34;&#34;&#34;A class that wraps the
+    [`pyGPlates.FeatureCollection`](https://www.gplates.org/docs/pygplates/generated/pygplates.featurecollection#pygplates.FeatureCollection)
+    class. This aggregates a set of features into a collection.
+    This is traditionally so that a group of  features can be loaded, saved or
     unloaded in a single operation.
 
-    This wrapping of `pygplates.FeatureCollection` contains all 
+    This wrapping of `pygplates.FeatureCollection` contains all
     [`pygplates.FeatureCollection` functionality](https://www.gplates.org/docs/pygplates/generated/pygplates.featurecollection#pygplates.FeatureCollection),
-    and in addition tracks the names of files from which the feature 
-    collection(s) are read using the 
-    `gplately.pygplates.FeatureCollection.filenames` attribute.  
+    and in addition tracks the names of files from which the feature
+    collection(s) are read using the
+    `gplately.pygplates.FeatureCollection.filenames` attribute.
 
     Examples
     --------
@@ -1556,7 +1578,7 @@ features_in_collection = [feature for feature in feature_collection]
 
     In the future, support will be added to enable users to implement and register readers/writers for other file formats (or their own non-standard file formats).
 
-    
+
     Operations for accessing features
     ---------------------------------
 
@@ -1567,7 +1589,7 @@ features_in_collection = [feature for feature in feature_collection]
 
     * `for f in fc` : Iterates over the features `f` in feature collection `fc`.
 
-    * `fc[i]` : The feature of fc at index `i`. 
+    * `fc[i]` : The feature of fc at index `i`.
 
 
     For example:
@@ -1577,6 +1599,7 @@ features_in_collection = [feature for feature in feature_collection]
         # assert(num_features == len(features_in_collection))
 
     &#34;&#34;&#34;
+
     def __init__(self, features=None):
         &#34;&#34;&#34;
 
@@ -1588,10 +1611,10 @@ features_in_collection = [feature for feature in feature_collection]
 
         Raises
         ------
-        OpenFileForReadingError 
+        OpenFileForReadingError
             If file is not readable (if filename specified).
 
-        FileFormatNotSupportedError 
+        FileFormatNotSupportedError
             If file format (identified by the filename extension) does not support reading (when filename specified).
 
         &#34;&#34;&#34;
@@ -1610,7 +1633,9 @@ features_in_collection = [feature for feature in feature_collection]
         elif hasattr(features, &#34;filenames&#34;):
             self.filenames = features.filenames
         else:
-            msg = &#34;\nFeatureCollection: No filename associated with {} in __init__&#34;.format(type(features))
+            msg = &#34;\nFeatureCollection: No filename associated with {} in __init__&#34;.format(
+                type(features)
+            )
             msg += &#34;\n ensure pygplates is imported from gplately. Run,&#34;
             msg += &#34;\n from gplately import pygplates&#34;
             _warnings.warn(msg, ImportWarning)
@@ -1624,7 +1649,7 @@ features_in_collection = [feature for feature in feature_collection]
         feature : instance of `Feature` or sequence (eg, `list` or `tuple`) of `Feature`
             One or more features to add.
 
-        A feature collection is an unordered collection of features so there is no concept 
+        A feature collection is an unordered collection of features so there is no concept
         of where a feature is inserted in the sequence of features.
 
             feature_collection.add(feature)
@@ -1640,7 +1665,9 @@ features_in_collection = [feature for feature in feature_collection]
         elif hasattr(features, &#34;filenames&#34;):
             self.filenames.extend(features.filenames)
         else:
-            msg = &#34;\nFeatureCollection: No filename associated with {} in add&#34;.format(type(features))
+            msg = &#34;\nFeatureCollection: No filename associated with {} in add&#34;.format(
+                type(features)
+            )
             msg += &#34;\n ensure pygplates is imported from gplately. Run,&#34;
             msg += &#34;\n from gplately import pygplates&#34;
             _warnings.warn(msg, ImportWarning)
@@ -1648,14 +1675,14 @@ features_in_collection = [feature for feature in feature_collection]
     def clone(self):
         &#34;&#34;&#34;Create a duplicate of this feature collection instance.
 
-        This creates a new `FeatureCollection` instance with cloned versions of 
-        this collection’s features. And the cloned features (in the cloned 
+        This creates a new `FeatureCollection` instance with cloned versions of
+        this collection’s features. And the cloned features (in the cloned
         collection) are each created with a unique `FeatureId`.
 
         Returns
         -------
         feature_collection : instance of `gplately.pygplates.FeatureCollection`
-            The cloned `FeatureCollection`. 
+            The cloned `FeatureCollection`.
 
         &#34;&#34;&#34;
         fc = super().clone()
@@ -1696,7 +1723,7 @@ feature_collection.add([feature1, feature2])
     feature : instance of `Feature` or sequence (eg, `list` or `tuple`) of `Feature`
         One or more features to add.
 
-    A feature collection is an unordered collection of features so there is no concept 
+    A feature collection is an unordered collection of features so there is no concept
     of where a feature is inserted in the sequence of features.
 
         feature_collection.add(feature)
@@ -1712,7 +1739,9 @@ feature_collection.add([feature1, feature2])
     elif hasattr(features, &#34;filenames&#34;):
         self.filenames.extend(features.filenames)
     else:
-        msg = &#34;\nFeatureCollection: No filename associated with {} in add&#34;.format(type(features))
+        msg = &#34;\nFeatureCollection: No filename associated with {} in add&#34;.format(
+            type(features)
+        )
         msg += &#34;\n ensure pygplates is imported from gplately. Run,&#34;
         msg += &#34;\n from gplately import pygplates&#34;
         _warnings.warn(msg, ImportWarning)</code></pre>
@@ -1738,14 +1767,14 @@ collection) are each created with a unique <code>FeatureId</code>.</p>
 <pre><code class="python">def clone(self):
     &#34;&#34;&#34;Create a duplicate of this feature collection instance.
 
-    This creates a new `FeatureCollection` instance with cloned versions of 
-    this collection’s features. And the cloned features (in the cloned 
+    This creates a new `FeatureCollection` instance with cloned versions of
+    this collection’s features. And the cloned features (in the cloned
     collection) are each created with a unique `FeatureId`.
 
     Returns
     -------
     feature_collection : instance of `gplately.pygplates.FeatureCollection`
-        The cloned `FeatureCollection`. 
+        The cloned `FeatureCollection`.
 
     &#34;&#34;&#34;
     fc = super().clone()
@@ -1757,17 +1786,17 @@ collection) are each created with a unique <code>FeatureId</code>.</p>
 </dd>
 <dt id="gplately.pygplates.RotationModel"><code class="flex name class">
 <span>class <span class="ident">RotationModel</span></span>
-<span>(</span><span>rotation_features)</span>
+<span>(</span><span>rotation_features, default_anchor_plate_id=0)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>A class that wraps the
 <a href="https://www.gplates.org/docs/pygplates/generated/pygplates.rotationmodel#pygplates.RotationModel"><code>pyGPlates.RotationModel</code> class</a>.
 This queries a finite rotation of a moving plate relative to any other plate,
-optionally between two instants in geological time. </p>
+optionally between two instants in geological time.</p>
 <p>See <a href="https://www.gplates.org/docs/pygplates/pygplates_foundations.html#pygplates-foundations-plate-reconstruction-hierarchy">Plate reconstruction hierarchy</a>.</p>
 <p>This class provides an easy way to query rotations in any of the four
 combinations of total/stage and equivalent/relative rotations using
-<a href="https://www.gplates.org/docs/pygplates/generated/pygplates.rotationmodel#pygplates.RotationModel.get_rotation"><code>get_rotation()</code></a>. </p>
+<a href="https://www.gplates.org/docs/pygplates/generated/pygplates.rotationmodel#pygplates.RotationModel.get_rotation"><code>get_rotation()</code></a>.</p>
 <p>Reconstruction trees can also be created at any instant
 of geological time and these are cached internally depending on a
 user-specified cache size parameter pass to <code><a title="gplately.pygplates.RotationModel" href="#gplately.pygplates.RotationModel">RotationModel</a></code>.
@@ -1783,8 +1812,7 @@ since it, in turn, requests reconstruction trees.</p>
 <p>This wrapping of <code>pygplates.RotationModel</code> contains all
 <a href="https://www.gplates.org/docs/pygplates/generated/pygplates.rotationmodel#pygplates.RotationModel"><code>pygplates.RotationModel</code> functionality</a>,
 and in addition tracks the names of files from which the rotation feature(s) are read
-using the <code>gplately.pygplates.RotationModel.filenames</code> attribute.
-</p>
+using the <code>gplately.pygplates.RotationModel.filenames</code> attribute.</p>
 <p><strong>A RotationModel object can be constructed in three ways.</strong></p>
 <hr>
 <h2 id="1-create-from-rotation-feature-collections-andor-rotation-filenames"><strong>1. Create from rotation feature collection(s) and/or rotation filename(s)</strong></h2>
@@ -1803,15 +1831,15 @@ present day positions when the reconstruction time is older than
 the oldest times specified in the rotation features (defaults to False).</dd>
 <dt><strong><code>default_anchor_plate_id</code></strong> :&ensp;<code>int</code>, default <code>0</code></dt>
 <dd>The default anchored plate id to use when
-<a href="https://www.gplates.org/docs/pygplates/generated/pygplates.rotationmodel#pygplates.RotationModel.get_rotation"><code>get_rotation()</code></a><br>
+<a href="https://www.gplates.org/docs/pygplates/generated/pygplates.rotationmodel#pygplates.RotationModel.get_rotation"><code>get_rotation()</code></a>
 and <a href="https://www.gplates.org/docs/pygplates/generated/pygplates.rotationmodel#pygplates.RotationModel.get_reconstruction_tree"><code>get_reconstruction_tree()</code></a>
 are called without specifying their <code>anchor_plate_id</code> parameter. Defaults to 0.</dd>
 </dl>
 <h2 id="raises">Raises</h2>
 <dl>
-<dt><code>OpenFileForReadingError </code></dt>
+<dt><code>OpenFileForReadingError</code></dt>
 <dd>If any file is not readable (when filenames specified)</dd>
-<dt><code>FileFormatNotSupportedError </code></dt>
+<dt><code>FileFormatNotSupportedError</code></dt>
 <dd>If any file format (identified by the filename extensions)
 does not support reading (when filenames specified)</dd>
 </dl>
@@ -1873,74 +1901,75 @@ rotation_model = pygplates.RotationModel(rotation_features_or_model)
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class RotationModel(_pygplates.RotationModel):
-    &#34;&#34;&#34;A class that wraps the 
-    [`pyGPlates.RotationModel` class](https://www.gplates.org/docs/pygplates/generated/pygplates.rotationmodel#pygplates.RotationModel). 
-    This queries a finite rotation of a moving plate relative to any other plate, 
-    optionally between two instants in geological time. 
+    &#34;&#34;&#34;A class that wraps the
+    [`pyGPlates.RotationModel` class](https://www.gplates.org/docs/pygplates/generated/pygplates.rotationmodel#pygplates.RotationModel).
+    This queries a finite rotation of a moving plate relative to any other plate,
+    optionally between two instants in geological time.
 
     See [Plate reconstruction hierarchy](https://www.gplates.org/docs/pygplates/pygplates_foundations.html#pygplates-foundations-plate-reconstruction-hierarchy).
 
-    This class provides an easy way to query rotations in any of the four 
-    combinations of total/stage and equivalent/relative rotations using 
-    [`get_rotation()`](https://www.gplates.org/docs/pygplates/generated/pygplates.rotationmodel#pygplates.RotationModel.get_rotation). 
+    This class provides an easy way to query rotations in any of the four
+    combinations of total/stage and equivalent/relative rotations using
+    [`get_rotation()`](https://www.gplates.org/docs/pygplates/generated/pygplates.rotationmodel#pygplates.RotationModel.get_rotation).
 
-    Reconstruction trees can also be created at any instant 
-    of geological time and these are cached internally depending on a 
-    user-specified cache size parameter pass to `gplately.pygplates.RotationModel.__init__()`. 
-    The reconstruction_tree_cache_size parameter of those methods controls the 
-    size of an internal least-recently-used cache of reconstruction trees 
-    (evicts least recently requested reconstruction tree when a new 
-    reconstruction time is requested that does not currently exist in the cache). 
-    This enables reconstruction trees associated with different reconstruction 
-    times to be re-used instead of re-creating them, provided they have not been 
-    evicted from the cache. This benefit also applies when querying rotations with 
-    [`get_rotation()`](https://www.gplates.org/docs/pygplates/generated/pygplates.rotationmodel#pygplates.RotationModel.get_rotation) 
+    Reconstruction trees can also be created at any instant
+    of geological time and these are cached internally depending on a
+    user-specified cache size parameter pass to `gplately.pygplates.RotationModel.__init__()`.
+    The reconstruction_tree_cache_size parameter of those methods controls the
+    size of an internal least-recently-used cache of reconstruction trees
+    (evicts least recently requested reconstruction tree when a new
+    reconstruction time is requested that does not currently exist in the cache).
+    This enables reconstruction trees associated with different reconstruction
+    times to be re-used instead of re-creating them, provided they have not been
+    evicted from the cache. This benefit also applies when querying rotations with
+    [`get_rotation()`](https://www.gplates.org/docs/pygplates/generated/pygplates.rotationmodel#pygplates.RotationModel.get_rotation)
     since it, in turn, requests reconstruction trees.
 
 
-    This wrapping of `pygplates.RotationModel` contains all 
+    This wrapping of `pygplates.RotationModel` contains all
     [`pygplates.RotationModel` functionality](https://www.gplates.org/docs/pygplates/generated/pygplates.rotationmodel#pygplates.RotationModel),
     and in addition tracks the names of files from which the rotation feature(s) are read
-    using the `gplately.pygplates.RotationModel.filenames` attribute.  
+    using the `gplately.pygplates.RotationModel.filenames` attribute.
 
 
     &#34;&#34;&#34;
-    def __init__(self, rotation_features):
+
+    def __init__(self, rotation_features, default_anchor_plate_id=0):
         &#34;&#34;&#34;**A RotationModel object can be constructed in three ways.**
 
         ---
         **1. Create from rotation feature collection(s) and/or rotation filename(s)**
         --------------------------------------------------------------------------
-        
+
         Parameters
         ----------
         rotation_features : instance of `pygplates.FeatureCollection` or `str` or instance of `pygplates.Feature` or sequence of `pygplates.Feature` or sequence of any combination of those four types
-            A rotation feature collection, or rotation filename, or rotation feature, 
-            or sequence of rotation features, or a sequence (eg, `list` or `tuple`) of 
+            A rotation feature collection, or rotation filename, or rotation feature,
+            or sequence of rotation features, or a sequence (eg, `list` or `tuple`) of
             any combination of those four types.
 
         reconstruction_tree_cache_size : int, default 150
             Number of reconstruction trees to cache internally. Defaults to 150.
 
         extend_total_reconstruction_poles_to_distant_past : bool, default False
-            Extend each moving plate sequence back infinitely far into the distant 
-            past such that reconstructed geometries will not snap back to their 
-            present day positions when the reconstruction time is older than 
+            Extend each moving plate sequence back infinitely far into the distant
+            past such that reconstructed geometries will not snap back to their
+            present day positions when the reconstruction time is older than
             the oldest times specified in the rotation features (defaults to False).
 
         default_anchor_plate_id : int, default 0
-            The default anchored plate id to use when 
-            [`get_rotation()`](https://www.gplates.org/docs/pygplates/generated/pygplates.rotationmodel#pygplates.RotationModel.get_rotation)  
+            The default anchored plate id to use when
+            [`get_rotation()`](https://www.gplates.org/docs/pygplates/generated/pygplates.rotationmodel#pygplates.RotationModel.get_rotation)
             and [`get_reconstruction_tree()`](https://www.gplates.org/docs/pygplates/generated/pygplates.rotationmodel#pygplates.RotationModel.get_reconstruction_tree)
             are called without specifying their `anchor_plate_id` parameter. Defaults to 0.
 
         Raises
         ------
-        OpenFileForReadingError 
+        OpenFileForReadingError
             If any file is not readable (when filenames specified)
 
-        FileFormatNotSupportedError 
-            If any file format (identified by the filename extensions) 
+        FileFormatNotSupportedError
+            If any file format (identified by the filename extensions)
             does not support reading (when filenames specified)
 
 
@@ -1968,23 +1997,23 @@ rotation_model = pygplates.RotationModel(rotation_features_or_model)
             An existing rotation model.
 
         reconstruction_tree_cache_size : int, default 2
-            Number of reconstruction trees to cache internally. 
-            Defaults to 2 - this is much lower than the usual default 
-            cache size since the existing rotation model likely 
-            already has a sizeable cache anyway - and if you are 
-            leaving this at its default value then you are presumably 
-            only interested in changing the default anchor plate ID 
+            Number of reconstruction trees to cache internally.
+            Defaults to 2 - this is much lower than the usual default
+            cache size since the existing rotation model likely
+            already has a sizeable cache anyway - and if you are
+            leaving this at its default value then you are presumably
+            only interested in changing the default anchor plate ID
             (not increasing the cache size).
 
         default_anchor_plate_id : int, defaults to the default anchor plate of `rotation_model`
-            The default anchored plate id to use when 
+            The default anchored plate id to use when
             [`get_rotation()`](https://www.gplates.org/docs/pygplates/generated/pygplates.rotationmodel#pygplates.RotationModel.get_rotation)
             and [`get_reconstruction_tree()`](https://www.gplates.org/docs/pygplates/generated/pygplates.rotationmodel#pygplates.RotationModel.get_reconstruction_tree)
-            are called without specifying their `anchor_plate_id` parameter. 
+            are called without specifying their `anchor_plate_id` parameter.
             Defaults to the default anchor plate of `rotation_model`.
 
 
-        This is useful if you want to use an existing rotation model but with a 
+        This is useful if you want to use an existing rotation model but with a
         larger cache size or a different default anchor plate ID:
 
         Example
@@ -1999,8 +2028,8 @@ rotation_model = pygplates.RotationModel(rotation_features_or_model)
         **3. Return an existing rotation model as a convenience**
         -------------------------------------------------------
 
-        This is useful when defining your own function that accepts 
-        rotation features or a rotation model. It avoids the hassle 
+        This is useful when defining your own function that accepts
+        rotation features or a rotation model. It avoids the hassle
         of having to explicitly test for each source type:
 
             def my_function(rotation_features_or_model):
@@ -2015,7 +2044,9 @@ rotation_model = pygplates.RotationModel(rotation_features_or_model)
 
         ---
         &#34;&#34;&#34;
-        super(RotationModel, self).__init__(rotation_features)
+        super(RotationModel, self).__init__(
+            rotation_features, default_anchor_plate_id=default_anchor_plate_id
+        )
         self.filenames = []
 
         # update filename list
@@ -2030,7 +2061,9 @@ rotation_model = pygplates.RotationModel(rotation_features_or_model)
         elif hasattr(rotation_features, &#34;filenames&#34;):
             self.filenames = rotation_features.filenames
         else:
-            msg = &#34;\nRotationModel: No filename associated with {} in __init__&#34;.format(type(rotation_features))
+            msg = &#34;\nRotationModel: No filename associated with {} in __init__&#34;.format(
+                type(rotation_features)
+            )
             msg += &#34;\n ensure pygplates is imported from gplately. Run,&#34;
             msg += &#34;\n from gplately import pygplates&#34;
             _warnings.warn(msg, ImportWarning)
