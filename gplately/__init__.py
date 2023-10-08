@@ -208,4 +208,4 @@ except ImportError:
     import subprocess
     import sys
 
-    subprocess.call([sys.executable, "-m", "pip", "install", "plate_model_manager"])
+    subprocess.call([sys.executable, "-m", "pip", "install", "plate-model-manager"])
