@@ -163,13 +163,14 @@ seafloorgrid.reconstruct_by_topologies()
 
 __version__ = "1.1"
 
+
 from . import (
     data,
     download,
     geometry,
     gpml,
     grids,
-    io,
+    read_geometries,
     reconstruction,
     plot,
     oceans,
@@ -182,7 +183,7 @@ from .grids import (
     Raster,
     # TimeRaster,
 )
-from .io import get_geometries, get_valid_geometries
+from .read_geometries import get_valid_geometries, get_geometries
 from .plot import PlotTopologies
 from .reconstruction import (
     PlateReconstruction,
