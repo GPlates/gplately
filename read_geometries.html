@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
 <meta name="generator" content="pdoc 0.10.0" />
-<title>gplately.io API documentation</title>
+<title>gplately.read_geometries API documentation</title>
 <meta name="description" content="Tools to read geometry data from input files and output them as `Shapely`
 geometries. These geometries can be plotted directly with GPlately&#39;s
 …" />
@@ -22,7 +22,7 @@ geometries. These geometries can be plotted directly with GPlately&#39;s
 <main>
 <article id="content">
 <header>
-<h1 class="title">Module <code>gplately.io</code></h1>
+<h1 class="title">Module <code>gplately.read_geometries</code></h1>
 </header>
 <section id="section-intro">
 <p>Tools to read geometry data from input files and output them as <code>Shapely</code>
@@ -170,7 +170,7 @@ def _get_geometries_cartopy(filename, buffer=None):
 <section>
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
-<dt id="gplately.io.get_geometries"><code class="name flex">
+<dt id="gplately.read_geometries.get_geometries"><code class="name flex">
 <span>def <span class="ident">get_geometries</span></span>(<span>filename, buffer=None)</span>
 </code></dt>
 <dd>
@@ -220,7 +220,7 @@ shapefile. Can be plotted directly using
     return _get_geometries_cartopy(filename, buffer=buffer)</code></pre>
 </details>
 </dd>
-<dt id="gplately.io.get_valid_geometries"><code class="name flex">
+<dt id="gplately.read_geometries.get_valid_geometries"><code class="name flex">
 <span>def <span class="ident">get_valid_geometries</span></span>(<span>filename)</span>
 </code></dt>
 <dd>
@@ -291,8 +291,8 @@ shapefile. Can be plotted directly using
 </li>
 <li><h3><a href="#header-functions">Functions</a></h3>
 <ul class="">
-<li><code><a title="gplately.io.get_geometries" href="#gplately.io.get_geometries">get_geometries</a></code></li>
-<li><code><a title="gplately.io.get_valid_geometries" href="#gplately.io.get_valid_geometries">get_valid_geometries</a></code></li>
+<li><code><a title="gplately.read_geometries.get_geometries" href="#gplately.read_geometries.get_geometries">get_geometries</a></code></li>
+<li><code><a title="gplately.read_geometries.get_valid_geometries" href="#gplately.read_geometries.get_valid_geometries">get_valid_geometries</a></code></li>
 </ul>
 </li>
 </ul>
