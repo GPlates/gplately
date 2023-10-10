@@ -27,7 +27,7 @@ jobs:
       - uses: mamba-org/setup-micromamba@v1
         with:
           micromamba-version: "1.3.1-0"
-          environment-file: test/test-env.yml
+          environment-file: tests-dir/test-env.yml
           init-shell: >-
             bash
             powershell
@@ -40,4 +40,4 @@ jobs:
 
       - name: Test with pytest
         run: |
-          python -m pytest -vv
+          python -m pytest -vv tests-dir/pytestcases

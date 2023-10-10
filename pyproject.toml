@@ -39,7 +39,7 @@ dependencies = [
 
 [tool.setuptools.packages.find]
 where = ["."]
-exclude = ["*test*"]
+exclude = ["tests-dir*"]
 
 [tool.setuptools.package-data]
 gplately = ["notebooks/*","examples/*"]
