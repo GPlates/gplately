@@ -9,14 +9,16 @@ Classes
 -------
 PlotTopologies
 """
+import math
 import re
 import warnings
 
-import pygplates
 import cartopy.crs as ccrs
+import geopandas as gpd
 import matplotlib.pyplot as plt
 import numpy as np
 import ptt
+import pygplates
 from shapely.geometry import (
     LineString,
     MultiLineString,
@@ -26,22 +28,18 @@ from shapely.geometry import (
     box,
 )
 from shapely.geometry.base import BaseGeometry, BaseMultipartGeometry
-from shapely.ops import (
-    linemerge,
-    substring,
-)
+from shapely.ops import linemerge, substring
 
+from .geometry import pygplates_to_shapely
+from .gpml import _load_FeatureCollection
 from .pygplates import FeatureCollection as _FeatureCollection
 from .pygplates import _is_string
-from .reconstruction import PlateReconstruction as _PlateReconstruction
-from .geometry import pygplates_to_shapely
-import geopandas as gpd
+from .read_geometries import get_geometries as _get_geometries
 from .read_geometries import (
-    get_valid_geometries,  # included for backwards compatibility
-    get_geometries as _get_geometries,
-)
+    get_valid_geometries,
+)  # included for backwards compatibility
+from .reconstruction import PlateReconstruction as _PlateReconstruction
 from .tools import EARTH_RADIUS
-from .gpml import _load_FeatureCollection
 
 
 def plot_subduction_teeth(
@@ -53,7 +51,7 @@ def plot_subduction_teeth(
     projection="auto",
     transform=None,
     ax=None,
-    **kwargs
+    **kwargs,
 ):
     """Add subduction teeth to a plot.
 
@@ -239,6 +237,7 @@ def _tessellate_triangles(
         geometries = list(geometries.geoms)
     elif isinstance(geometries, BaseGeometry):
         geometries = [geometries]
+
     results = _calculate_triangle_vertices(
         geometries,
         width,
@@ -246,6 +245,7 @@ def _tessellate_triangles(
         height,
         polarity,
     )
+
     return results
 
 
@@ -327,6 +327,7 @@ def _calculate_triangle_vertices(
     for geometry in geometries:
         if not isinstance(geometry, BaseGeometry):
             continue
+
         length = geometry.length
         tessellated_x = []
         tessellated_y = []
@@ -2360,7 +2361,9 @@ class PlotTopologies(object):
 
         central_meridian = _meridian_from_ax(ax)
         tessellate_degrees = np.rad2deg(spacing)
-        spacing = spacing * EARTH_RADIUS * 1e3
+        # michael chin made this change. if spacing is in meters, it is too large to plot the triangles
+        spacing = math.degrees(spacing)
+        # spacing = spacing * EARTH_RADIUS * 1e3
 
         if aspect is None:
             aspect = 2.0 / 3.0
