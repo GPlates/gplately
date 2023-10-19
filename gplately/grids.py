@@ -1477,6 +1477,14 @@ class Raster(object):
             Handle deprecated arguments such as `PlateReconstruction_object`,
             `filename`, and `array`.
         """
+        if isinstance(data, self.__class__):
+            self._data = data._data.copy()
+            self.plate_reconstruction = data.plate_reconstruction
+            self._lons = data._lons
+            self._lats = data._lats
+            self._time = data._time
+            return
+
         if "PlateReconstruction_object" in kwargs.keys():
             warnings.warn(
                 "`PlateReconstruction_object` keyword argument has been "
@@ -1547,7 +1555,7 @@ class Raster(object):
                 self._data, self._lons, self._lats = realign_grid(self._data, self._lons, self._lats)
 
         if (not isinstance(data, str)) and (resample is not None):
-            self.resample(*resample, overwrite=True)
+            self.resample(*resample, inplace=True)
 
     @property
     def time(self):
@@ -2230,7 +2238,174 @@ class Raster(object):
             
         return Raster(data=Z)
 
-    
+
+    def __array__(self):
+        return np.array(self.data)
+
+
+    def __add__(self, other):
+        if isinstance(other, Raster):
+            # Return array, since we don't know which Raster
+            # to take properties from
+            return self.data + other.data
+
+        # Return Raster with new data
+        new_raster = self.copy()
+        new_data = self.data + other
+        new_raster.data = new_data
+        return new_raster
+
+
+    def __radd__(self, other):
+        return self + other
+
+
+    def __sub__(self, other):
+        if isinstance(other, Raster):
+            # Return array, since we don't know which Raster
+            # to take properties from
+            return self.data - other.data
+
+        # Return Raster with new data
+        new_raster = self.copy()
+        new_data = self.data - other
+        new_raster.data = new_data
+        return new_raster
+
+
+    def __rsub__(self, other):
+        if isinstance(other, Raster):
+            # Return array, since we don't know which Raster
+            # to take properties from
+            return other.data - self.data
+
+        # Return Raster with new data
+        new_raster = self.copy()
+        new_data = other - self.data
+        new_raster.data = new_data
+        return new_raster
+
+
+    def __mul__(self, other):
+        if isinstance(other, Raster):
+            # Return array, since we don't know which Raster
+            # to take properties from
+            return self.data * other.data
+
+        # Return Raster with new data
+        new_raster = self.copy()
+        new_data = self.data * other
+        new_raster.data = new_data
+        return new_raster
+
+
+    def __rmul__(self, other):
+        return self * other
+
+
+    def __truediv__(self, other):
+        if isinstance(other, Raster):
+            # Return array, since we don't know which Raster
+            # to take properties from
+            return self.data / other.data
+
+        # Return Raster with new data
+        new_raster = self.copy()
+        new_data = self.data / other
+        new_raster.data = new_data
+        return new_raster
+
+
+    def __rtruediv__(self, other):
+        if isinstance(other, Raster):
+            # Return array, since we don't know which Raster
+            # to take properties from
+            return other.data / self.data
+
+        # Return Raster with new data
+        new_raster = self.copy()
+        new_data = other / self.data
+        new_raster.data = new_data
+        return new_raster
+
+
+    def __floordiv__(self, other):
+        if isinstance(other, Raster):
+            # Return array, since we don't know which Raster
+            # to take properties from
+            return self.data // other.data
+
+        # Return Raster with new data
+        new_raster = self.copy()
+        new_data = self.data // other
+        new_raster.data = new_data
+        return new_raster
+
+
+    def __rfloordiv__(self, other):
+        if isinstance(other, Raster):
+            # Return array, since we don't know which Raster
+            # to take properties from
+            return other.data // self.data
+
+        # Return Raster with new data
+        new_raster = self.copy()
+        new_data = other // self.data
+        new_raster.data = new_data
+        return new_raster
+
+
+    def __mod__(self, other):
+        if isinstance(other, Raster):
+            # Return array, since we don't know which Raster
+            # to take properties from
+            return self.data % other.data
+
+        # Return Raster with new data
+        new_raster = self.copy()
+        new_data = self.data % other
+        new_raster.data = new_data
+        return new_raster
+
+
+    def __rmod__(self, other):
+        if isinstance(other, Raster):
+            # Return array, since we don't know which Raster
+            # to take properties from
+            return other.data % self.data
+
+        # Return Raster with new data
+        new_raster = self.copy()
+        new_data = other % self.data
+        new_raster.data = new_data
+        return new_raster
+
+
+    def __pow__(self, other):
+        if isinstance(other, Raster):
+            # Return array, since we don't know which Raster
+            # to take properties from
+            return self.data ** other.data
+
+        # Return Raster with new data
+        new_raster = self.copy()
+        new_data = self.data ** other
+        new_raster.data = new_data
+        return new_raster
+
+
+    def __rpow__(self, other):
+        if isinstance(other, Raster):
+            # Return array, since we don't know which Raster
+            # to take properties from
+            return other.data ** self.data
+
+        # Return Raster with new data
+        new_raster = self.copy()
+        new_data = other ** self.data
+        new_raster.data = new_data
+        return new_raster
+
 
 
 # class TimeRaster(Raster):
