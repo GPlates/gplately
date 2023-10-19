@@ -1,10 +1,11 @@
 import argparse
 import os
 import sys
+import warnings
 from typing import (
-    Iterable,
     List,
     Optional,
+    Sequence,
     Union,
 )
 
@@ -14,7 +15,7 @@ from gplately import __version__, feature_filter
 
 
 def combine_feature_collections(input_files: List[str], output_file: str):
-    """combine multiply feature collections into one"""
+    """Combine multiple feature collections into one."""
     feature_collection = pygplates.FeatureCollection()
     for file in input_files:
         if not os.path.isfile(file):
@@ -26,8 +27,15 @@ def combine_feature_collections(input_files: List[str], output_file: str):
     print(f"Done! The combined feature collection has been saved to {output_file}.")
 
 
+def _run_combine_feature_collections(args):
+    combine_feature_collections(
+        [args.combine_first_input_file] + args.combine_other_input_files,
+        args.combine_output_file,
+    )
+
+
 def filter_feature_collection(args):
-    """filter the input feature collection according to command line arguments"""
+    """Filter the input feature collection according to command line arguments."""
     input_feature_collection = pygplates.FeatureCollection(args.filter_input_file)
 
     filters = []
@@ -74,8 +82,8 @@ def filter_feature_collection(args):
 
 
 def create_agegrids(
-    input_filenames: Union[str, Iterable[str]],
-    continents_filenames: Union[str, Iterable[str]],
+    input_filenames: Union[str, Sequence[str]],
+    continents_filenames: Union[str, Sequence[str]],
     output_dir: str,
     min_time: float,
     max_time: float,
@@ -88,6 +96,7 @@ def create_agegrids(
     file_collection: Optional[str] = None,
     unmasked: bool = False,
 ) -> None:
+    """Create age grids for a plate model."""
     from gplately import (
         PlateReconstruction,
         PlotTopologies,
@@ -119,31 +128,50 @@ def create_agegrids(
             ).get_features()
         )
 
-    reconstruction = PlateReconstruction(
-        rotation_model=rotations,
-        topology_features=topologies,
-    )
-    gplot = PlotTopologies(
-        reconstruction,
-        continents=continents,
-    )
+    with warnings.catch_warnings():
+        warnings.simplefilter("ignore", ImportWarning)
+        reconstruction = PlateReconstruction(
+            rotation_model=rotations,
+            topology_features=topologies,
+        )
+        gplot = PlotTopologies(
+            reconstruction,
+            continents=continents,
+        )
 
-    grid = SeafloorGrid(
-        reconstruction,
-        gplot,
-        min_time=min_time,
-        max_time=max_time,
-        save_directory=output_dir,
-        ridge_time_step=ridge_time_step,
-        refinement_levels=refinement_levels,
-        grid_spacing=grid_spacing,
-        ridge_sampling=ridge_sampling,
-        initial_ocean_mean_spreading_rate=initial_spreadrate,
-        file_collection=file_collection,
-    )
+        grid = SeafloorGrid(
+            reconstruction,
+            gplot,
+            min_time=min_time,
+            max_time=max_time,
+            save_directory=output_dir,
+            ridge_time_step=ridge_time_step,
+            refinement_levels=refinement_levels,
+            grid_spacing=grid_spacing,
+            ridge_sampling=ridge_sampling,
+            initial_ocean_mean_spreading_rate=initial_spreadrate,
+            file_collection=file_collection,
+        )
     grid.reconstruct_by_topologies()
     for val in ("SEAFLOOR_AGE", "SPREADING_RATE"):
         grid.lat_lon_z_to_netCDF(val, unmasked=unmasked, nprocs=n_jobs)
+
+
+def _run_create_agegrids(args):
+    create_agegrids(
+        input_filenames=args.input_filenames,
+        continents_filenames=args.continents_filenames,
+        output_dir=args.output_dir,
+        min_time=args.min_time,
+        max_time=args.max_time,
+        n_jobs=args.n_jobs,
+        refinement_levels=args.refinement_levels,
+        grid_spacing=args.grid_spacing,
+        ridge_sampling=args.ridge_sampling,
+        initial_spreadrate=args.initial_spreadrate,
+        file_collection=args.file_collection,
+        unmasked=args.unmasked,
+    )
 
 
 class ArgParser(argparse.ArgumentParser):
@@ -159,22 +187,37 @@ def main():
     parser.add_argument("-v", "--version", action="store_true")
 
     # sub-commands
-    subparser = parser.add_subparsers(dest="command")
-    combine_cmd = subparser.add_parser("combine")
-    filter_cmd = subparser.add_parser("filter")
+    subparser = parser.add_subparsers(
+        dest="command",
+        title="subcommands",
+        description="valid subcommands",
+    )
+    combine_cmd = subparser.add_parser(
+        "combine",
+        help=combine_feature_collections.__doc__,
+        description=combine_feature_collections.__doc__,
+    )
+    filter_cmd = subparser.add_parser(
+        "filter",
+        help=filter_feature_collection.__doc__,
+        description=filter_feature_collection.__doc__,
+    )
     agegrid_cmd = subparser.add_parser(
         "agegrid",
         aliases=("ag",),
+        help=create_agegrids.__doc__,
         add_help=True,
-        description="Create age grids for a plate model.",
+        description=create_agegrids.__doc__,
     )
 
     # combine command arguments
+    combine_cmd.set_defaults(func=_run_combine_feature_collections)
     combine_cmd.add_argument("combine_first_input_file", type=str)
     combine_cmd.add_argument("combine_other_input_files", nargs="+", type=str)
     combine_cmd.add_argument("combine_output_file", type=str)
 
     # feature filter command arguments
+    filter_cmd.set_defaults(func=filter_feature_collection)
     filter_cmd.add_argument("filter_input_file", type=str)
     filter_cmd.add_argument("filter_output_file", type=str)
 
@@ -200,6 +243,7 @@ def main():
     filter_cmd.add_argument("--exact-match", dest="exact_match", action="store_true")
 
     # agegrid command arguments
+    agegrid_cmd.set_defaults(func=_run_create_agegrids)
     agegrid_cmd.add_argument(
         metavar="INPUT_FILE",
         nargs="+",
@@ -258,7 +302,7 @@ def main():
         "--min-time",
         metavar="MIN_TIME",
         type=float,
-        help="minimum time (Ma)",
+        help="minimum time (Ma); default: 0",
         default=0,
         dest="min_time",
     )
@@ -267,7 +311,7 @@ def main():
         "--max-time",
         metavar="MAX_TIME",
         type=float,
-        help="maximum time (Ma)",
+        help="maximum time (Ma); default: 0",
         default=0,
         dest="max_time",
     )
@@ -282,7 +326,7 @@ def main():
     agegrid_cmd.add_argument(
         "-f",
         "--file-collection",
-        help="file collection name; default: None",
+        help="file collection name (optional)",
         metavar="NAME",
         default=None,
         dest="file_collection",
@@ -305,32 +349,7 @@ def main():
         print(__version__)
         sys.exit(0)
 
-    if args.command == "combine":
-        combine_feature_collections(
-            [args.combine_first_input_file] + args.combine_other_input_files,
-            args.combine_output_file,
-        )
-    elif args.command == "filter":
-        filter_feature_collection(args)
-    elif args.command == "agegrid":
-        create_agegrids(
-            input_filenames=args.input_filenames,
-            continents_filenames=args.continents_filenames,
-            output_dir=args.output_dir,
-            min_time=args.min_time,
-            max_time=args.max_time,
-            n_jobs=args.n_jobs,
-            refinement_levels=args.refinement_levels,
-            grid_spacing=args.grid_spacing,
-            ridge_sampling=args.ridge_sampling,
-            initial_spreadrate=args.initial_spreadrate,
-            file_collection=args.file_collection,
-            unmasked=args.unmasked,
-        )
-    else:
-        print(f"Unknown command {args.command}!")
-        parser.print_help(sys.stderr)
-        sys.exit(1)
+    args.func(args)
 
 
 if __name__ == "__main__":
