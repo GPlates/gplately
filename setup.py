@@ -15,18 +15,19 @@
 # (see http://peterdowns.com/posts/first-time-with-pypi.html)
 
 
-from setuptools import dist, setup, find_packages
+import io
+import os
+import platform
+import subprocess
+from os import path
+
+from setuptools import dist, find_packages, setup
 
 # try:
 #     from distutils.command import bdist_conda
 # except ImportError:
 #     pass
 
-from os import path
-import io
-import os
-import subprocess
-import platform
 
 link_args = []
 
@@ -97,6 +98,7 @@ if __name__ == "__main__":
             "rasterio",
             "geopandas",
             "stripy",
+            "plate-model-manager",
         ],
         packages=["gplately"],
         # package_data={

@@ -32,6 +32,7 @@ requirements:
     - rasterio
     - geopandas
     - stripy
+    - plate-model-manager
 
 test:
   imports:
