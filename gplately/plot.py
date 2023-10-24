@@ -41,6 +41,132 @@ from .read_geometries import (
 from .reconstruction import PlateReconstruction as _PlateReconstruction
 from .tools import EARTH_RADIUS
 
+# pmag plots
+import numpy as np
+from matplotlib.patches import Polygon as polygon1
+
+def shoot(lon, lat, azimuth, maxdist=None):
+    """
+    This function enables A95 error ellipses to be drawn around
+    paleomagnetic poles in conjunction with equi
+    (from: http://www.geophysique.be/2011/02/20/matplotlib-basemap-tutorial-09-drawing-circles/)
+    """
+    glat1 = lat * np.pi / 180.
+    glon1 = lon * np.pi / 180.
+    s = maxdist/1.852
+    faz = azimuth * np.pi / 180.
+
+    EPS = 0.00000000005
+#    if ((np.abs(np.cos(glat1)) < EPS) and not (np.abs(np.sin(faz)) < EPS)): #why was this ever a thing? it works fine at the north pole
+#        raise ValueError("Only N-S courses are meaningful, starting at a pole!")
+
+    a = 6378.13/1.852
+    f = 1/298.257223563
+    r = 1 - f
+    tu = r * np.tan(glat1)
+    sf = np.sin(faz)
+    cf = np.cos(faz)
+    if (cf == 0):
+        b = 0.
+    else:
+        b = 2. * np.arctan2(tu, cf)
+
+    cu = 1.0/np.sqrt(1 + tu * tu)
+    su = tu * cu
+    sa = cu * sf
+    c2a = 1 - sa * sa
+    x = 1. + np.sqrt(1. + c2a * (1./(r * r) - 1.))
+    x = (x - 2.0)/ x
+    c = 1. - x
+    c = (x * x / 4. + 1.)/ c
+    d = (0.375 * x * x - 1.) * x
+    tu = s/ (r * a * c)
+    y = tu
+    c = y + 1
+    while (np.abs(y - c) > EPS):
+
+        sy = np.sin(y)
+        cy = np.cos(y)
+        cz = np.cos(b + y)
+        e = 2. * cz * cz - 1.
+        c = y
+        x = e * cy
+        y = e + e - 1.
+        y = (((sy * sy * 4. - 3.) * y * cz * d / 6. + x) *
+             d / 4. - cz) * sy * d + tu
+
+    b = cu * cy * cf - su * sy
+    c = r * np.sqrt(sa * sa + b * b)
+    d = su * cy + cu * sy * cf
+    glat2 = (np.arctan2(d, c) + np.pi) % (2 * np.pi) - np.pi
+    c = cu * cy - su * sy * cf
+    x = np.arctan2(sy * sf, c)
+    c = ((-3. * c2a + 4.) * f + 4.) * c2a * f / 16.
+    d = ((e * cy * c + cz) * sy * c + y) * sa
+    glon2 = ((glon1 + x - (1. - c) * d * f + np.pi) % (2 * np.pi)) - np.pi
+
+    baz = (np.arctan2(sa, b) + np.pi) % (2 * np.pi)
+
+    glon2 *= 180.0/np.pi
+    glat2 *= 180.0/np.pi
+    baz *= 180.0/np.pi
+
+    return (glon2, glat2, baz)
+
+def equi(map_axis, centerlon, centerlat, radius, color, alpha=1.0, 
+         outline=True, fill=False):
+    """
+    This function enables A95 error ellipses to be drawn in cartopy around
+    paleomagnetic poles in conjunction with shoot230
+    (modified from: http://www.geophysique.be/2011/02/20/matplotlib-basemap-tutorial-09-drawing-circles/).
+
+    Parameters:
+        map_axis : cartopy axis (i.e. the ax in fig, ax = plt...)
+        centerlon : longitude of the center of the ellipse
+        centerlat : latitude of the center of the ellipse
+        radius : radius of ellipse (in degrees)
+        color : color of ellipse
+        alpha : transparency - if filled, the transparency will only apply
+                to the facecolor of the ellipse
+        outline : boolean specifying if the ellipse should be plotted as a filled polygon1 or
+                as a set of line segments
+        fill : boolean specifying if the ellipse should be plotted as a filled polygon1
+    """
+
+    glon1 = centerlon
+    glat1 = centerlat
+    X = []
+    Y = []
+    for azimuth in range(0, 360):
+        glon2, glat2, baz = shoot(glon1, glat1, azimuth, radius)
+        X.append(glon2)
+        Y.append(glat2)
+    X.append(X[0])
+    Y.append(Y[0])
+    X = X[::-1]
+    Y = Y[::-1]
+
+    # for non-filled ellipses
+    if fill==False:
+        plt.plot(X, Y, color=color,
+                 transform=ccrs.Geodetic(), alpha=alpha)
+        #circle_edge = polygon1(XY,
+        #                      edgecolor=color,facecolor='none',
+        #                      transform=ccrs.Geodetic())
+        #map_axis.add_patch(circle_edge)
+    # for filled ellipses
+    else:
+        XY = np.stack([X,Y],axis=1)
+        if outline==True:
+            circle_edge = polygon1(XY,
+                                  edgecolor=color,facecolor='none',
+                                  transform=ccrs.Geodetic())
+            map_axis.add_patch(circle_edge)
+        circle_face = polygon1(XY,
+                              edgecolor='none',facecolor=color,alpha=alpha,
+                              transform=ccrs.Geodetic())
+        map_axis.add_patch(circle_face)
+
 
 def plot_subduction_teeth(
     geometries,
@@ -4298,3 +4424,43 @@ class PlotTopologies(object):
         else:
             kwargs["transform"] = self.base_projection
         return gdf.plot(ax=ax, color=color, **kwargs)
+    
+def plot_pole(map_axis, plon, plat, A95, label='', color='k', edgecolor='k',
+              marker='o', markersize=20, legend='no',outline=True,
+              filled_pole=False, fill_color='k', fill_alpha=1.0, 
+              mean_alpha = 1.0, A95_alpha=1.0, zorder=100):
+    """
+    from here https://github.com/PmagPy/PmagPy-docs/blob/main/pmagpy/ipmag.py#L3017
+
+    This function plots a paleomagnetic pole and A95 error ellipse on a cartopy map axis.
+
+    Before this function is called, a plot needs to be initialized with code
+    such as that in the make_orthographic_map function.
+
+    Parameters:
+        map_axis : the name of the current map axis that has been developed using cartopy
+        plon : the longitude of the paleomagnetic pole being plotted (in degrees E)
+        plat : the latitude of the paleomagnetic pole being plotted (in degrees)
+        A95 : the A_95 confidence ellipse of the paleomagnetic pole (in degrees)
+        color : symbol color; the default color is black. Other colors can be chosen (e.g. 'r')
+        marker : the default marker is a circle. Other symbols can be chosen (e.g. 's')
+        markersize : the default is 20. Other size can be chosen
+        label : the default is no label. Labels can be assigned.
+        legend : the default is no legend ('no'). Putting 'yes' will plot a legend.
+        filled_pole : if True, the A95 ellipse will be filled with color
+        fill_color : color of fill; the default is black.
+        fill_alpha : transparency of filled ellipse (the default is 1.0; no transparency).
+        zorder : plotting order (default is 100; higher will move to top of plot)
+
+    """
+
+    A95_km = A95 * 111.32
+    map_axis.scatter(plon, plat, marker=marker,
+                     color=color, edgecolors=edgecolor, s=markersize,
+                     label=label, zorder=zorder, transform=ccrs.PlateCarree(), alpha = mean_alpha)
+    if filled_pole==False:
+        equi(map_axis, plon, plat, A95_km, color, alpha=A95_alpha)
+    elif filled_pole==True:
+        equi(map_axis, plon, plat, A95_km, fill_color, alpha=fill_alpha, outline=outline,fill=True)
+    if legend == 'yes':
+        plt.legend(loc=2)    
