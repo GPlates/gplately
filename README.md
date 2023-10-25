@@ -148,6 +148,28 @@ gDownload = gplately.DataServer("Muller2019")
 rotation_model, topology_features, static_polygons = gDownload.get_plate_reconstruction_files()
 ```
 
+### The `PlateModelManager` object
+
+... was designed as a substitute of `DataServer` object. The `PlateModelManager` downloads and manages the plate reconstruction model files.
+
+```
+  pm_manager = PlateModelManager()
+  model = pm_manager.get_model("Muller2019")
+  model.set_data_dir("plate-model-repo")
+
+  recon_model = PlateReconstruction(
+      model.get_rotation_model(),
+      topology_features=model.get_layer("Topologies"),
+      static_polygons=model.get_layer("StaticPolygons"),
+  )
+  gplot = PlotTopologies(
+      recon_model,
+      coastlines=model.get_layer("Coastlines"),
+      COBs=model.get_layer("COBs"),
+      time=55,
+  )
+```
+
 ### The `PlateReconstruction` object
 
 ... contains methods to reconstruct the positions of present-day feature data back through geological time. You can also use
