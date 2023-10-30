@@ -91,7 +91,6 @@ if __name__ == "__main__":
             "shapely",
             "matplotlib",
             "cartopy",
-            "PlateTectonicTools",
             "pooch",
             "tqdm",
             "netcdf4",

@@ -17,7 +17,6 @@ import cartopy.crs as ccrs
 import geopandas as gpd
 import matplotlib.pyplot as plt
 import numpy as np
-import ptt
 import pygplates
 from shapely.geometry import (
     LineString,
@@ -30,6 +29,7 @@ from shapely.geometry import (
 from shapely.geometry.base import BaseGeometry, BaseMultipartGeometry
 from shapely.ops import linemerge, substring
 
+from . import ptt
 from .geometry import pygplates_to_shapely
 from .gpml import _load_FeatureCollection
 from .pygplates import FeatureCollection as _FeatureCollection

@@ -25,7 +25,6 @@ requirements:
     - shapely
     - matplotlib-base
     - cartopy
-    - platetectonictools
     - pooch
     - tqdm
     - netcdf4
