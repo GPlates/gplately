@@ -488,6 +488,10 @@ class PlateReconstruction(object):
                 **kwargs
             )
 
+        if not ridge_data:
+            # the ptt.ridge_spreading_rate.spreading_rates might return None
+            return
+
         ridge_data = np.vstack(ridge_data)
 
         if return_geodataframe:
