@@ -28,7 +28,6 @@ dependencies = [
     "shapely",
     "matplotlib",
     "cartopy",
-    "PlateTectonicTools",
     "pooch",
     "tqdm",
     "netcdf4",

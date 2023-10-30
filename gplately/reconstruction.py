@@ -6,13 +6,13 @@ import os
 import warnings
 
 import numpy as np
-import ptt
 import pygplates
 
+from . import ptt
 from . import tools as _tools
 from .gpml import _load_FeatureCollection
-from .pygplates import RotationModel as _RotationModel
 from .pygplates import FeatureCollection as _FeatureCollection
+from .pygplates import RotationModel as _RotationModel
 
 
 class PlateReconstruction(object):
@@ -195,8 +195,8 @@ class PlateReconstruction(object):
         subduction_data = np.vstack(subduction_data)
 
         if return_geodataframe:
-            from shapely import geometry
             import geopandas as gpd
+            from shapely import geometry
 
             coords = [
                 geometry.Point(lon, lat)
@@ -491,8 +491,8 @@ class PlateReconstruction(object):
         ridge_data = np.vstack(ridge_data)
 
         if return_geodataframe:
-            from shapely import geometry
             import geopandas as gpd
+            from shapely import geometry
 
             points = [
                 geometry.Point(lon, lat)
