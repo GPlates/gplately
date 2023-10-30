@@ -1,0 +1,565 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
+<meta name="generator" content="pdoc 0.10.0" />
+<title>gplately.ptt.rotation_tools API documentation</title>
+<meta name="description" content="Copyright (C) 2019 The University of Sydney, Australia …" />
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
+<link rel="stylesheet preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/styles/github.min.css" crossorigin>
+<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:30px;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:1em 0 .50em 0}h3{font-size:1.4em;margin:25px 0 10px 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .3s ease-in-out}a:hover{color:#e82}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900}pre code{background:#f8f8f8;font-size:.8em;line-height:1.4em}code{background:#f2f2f1;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{background:#f8f8f8;border:0;border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0;padding:1ex}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-weight:bold;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em .5em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.item .name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul{padding-left:1.5em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+<script async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS_CHTML" integrity="sha256-kZafAc6mZvK3W3v1pHOcUix30OHQN6pU/NO2oFkqZVw=" crossorigin></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/highlight.min.js" integrity="sha256-Uv3H6lx7dJmRfRvH8TH6kJD1TSK1aFcwgx+mdg3epi8=" crossorigin></script>
+<script>window.addEventListener('DOMContentLoaded', () => hljs.initHighlighting())</script>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>gplately.ptt.rotation_tools</code></h1>
+</header>
+<section id="section-intro">
+<p>Copyright (C) 2019 The University of Sydney, Australia</p>
+<p>This program is free software; you can redistribute it and/or modify it under
+the terms of the GNU General Public License, version 2, as published by
+the Free Software Foundation.</p>
+<p>This program is distributed in the hope that it will be useful, but WITHOUT
+ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+FITNESS FOR A PARTICULAR PURPOSE.
+See the GNU General Public License
+for more details.</p>
+<p>You should have received a copy of the GNU General Public License along
+with this program; if not, write to Free Software Foundation, Inc.,
+51 Franklin Street, Fifth Floor, Boston, MA
+02110-1301, USA.</p>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">&#34;&#34;&#34;
+    Copyright (C) 2019 The University of Sydney, Australia
+    
+    This program is free software; you can redistribute it and/or modify it under
+    the terms of the GNU General Public License, version 2, as published by
+    the Free Software Foundation.
+    
+    This program is distributed in the hope that it will be useful, but WITHOUT
+    ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+    FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+    for more details.
+    
+    You should have received a copy of the GNU General Public License along
+    with this program; if not, write to Free Software Foundation, Inc.,
+    51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+&#34;&#34;&#34;
+
+
+##################################################################################################
+# Various rotation utilities:                                                                    #
+#   * Calculating stage rotations between consecutive finite rotations in a plate pair.          #
+##################################################################################################
+
+
+from __future__ import print_function
+import sys
+import math
+import pygplates
+
+#
+# Python 2 and 3 compatibility.
+#
+# Iterating over a dict.
+try:
+    dict.iteritems
+except AttributeError:
+    # Python 3
+    def itervalues(d):
+        return iter(d.values())
+    def iteritems(d):
+        return iter(d.items())
+    def listvalues(d):
+        return list(d.values())
+    def listitems(d):
+        return list(d.items())
+else:
+    # Python 2
+    def itervalues(d):
+        return d.itervalues()
+    def iteritems(d):
+        return d.iteritems()
+    def listvalues(d):
+        return d.values()
+    def listitems(d):
+        return d.items()
+
+
+# Required pygplates version.
+# Let&#39;s not go back too far - require at least the 2nd public pygplates release.
+PYGPLATES_VERSION_REQUIRED = pygplates.Version(18)
+
+
+def extract_plate_pair_stage_rotations(
+        rotation_feature_collections,
+        plate_pair_filter=None):
+    # Docstring in numpydoc format...
+    &#34;&#34;&#34;Calculate stage rotations between consecutive finite rotations in each specified plate pair.
+    
+    Parameters
+    ----------
+    rotation_feature_collections : sequence of (str, or sequence of pygplates.Feature, or pygplates.FeatureCollection, or pygplates.Feature)
+        A sequence of rotation feature collections.
+        Each collection in the sequence can be a rotation filename, or a sequence (eg, list of tuple) or features, or
+        a feature collection, or even a single feature.
+    plate_pair_filter : Filter function accepting accepting 3 arguments (moving_plate_id, fixed_plate_id, rotation_sequence), or sequence of 2-tuple (moving_plate_id, fixed_plate_id), optional
+        Optional filtering of plate pairs to apply operation to.
+        Filter function (callable) accepting 3 arguments (), or
+        a sequence of (moving, fixed) plate pairs to limit operation to.
+    
+    Returns
+    -------
+    list of pygplates.FeatureCollection
+        The modified feature collections.
+        Returned list is same length as ``rotation_feature_collections``.
+    
+    Notes
+    -----
+    The results are returned as a list of pygplates.FeatureCollection (one per input rotation feature collection).
+    
+    Note that only the rotation features satisfying ``plate_pair_filter`` (if specified) are returned.
+    So if a returned feature collection is empty then it means all of its features were filtered out.
+    &#34;&#34;&#34;
+    
+    if plate_pair_filter is None:
+        plate_pair_filter = _all_filter
+    # If caller specified a sequence of moving/fixed plate pairs then use them, otherwise it&#39;s a filter function (callable).
+    elif hasattr(plate_pair_filter, &#39;__iter__&#39;):
+        plate_pair_filter = _is_in_plate_pair_sequence(plate_pair_filter)
+    # else ...&#39;plate_pair_filter&#39; is a callable...
+    
+    output_rotation_feature_collections = []
+    for rotation_feature_collection in rotation_feature_collections:
+        # Create an empty output rotation feature collection for each input rotation feature collection.
+        # We&#39;ll only add output features when an input feature is modified.
+        output_rotation_feature_collection = []
+        output_rotation_feature_collections.append(output_rotation_feature_collection)
+        
+        for rotation_feature in rotation_feature_collection:
+            # Get the rotation feature information.
+            total_reconstruction_pole = rotation_feature.get_total_reconstruction_pole()
+            if not total_reconstruction_pole:
+                # Not a rotation feature.
+                continue
+        
+            fixed_plate_id, moving_plate_id, rotation_sequence = total_reconstruction_pole
+            # We&#39;re only interested in rotation features with matching moving/fixed plate IDs.
+            if not plate_pair_filter(fixed_plate_id, moving_plate_id, rotation_sequence):
+                continue
+            
+            # Clone the input feature before we start making modifications.
+            # Otherwise we&#39;ll be modifying the input rotation feature (which the caller might not expect).
+            output_rotation_feature = rotation_feature.clone()
+            
+            _, _, output_rotation_sequence = output_rotation_feature.get_total_reconstruction_pole()
+            
+            # Get the enabled rotation samples - ignore the disabled samples.
+            output_enabled_rotation_samples = output_rotation_sequence.get_enabled_time_samples()
+            if not output_enabled_rotation_samples:
+                # No time samples are enabled.
+                continue
+            
+            prev_finite_rotation = output_enabled_rotation_samples[0].get_value().get_finite_rotation()
+            # Replace first finite rotation with identity rotation.
+            # This is the stage rotation of first finite rotation (which has no previous finite rotation).
+            output_enabled_rotation_samples[0].get_value().set_finite_rotation(pygplates.FiniteRotation())
+            
+            for rotation_sample_index in range(1, len(output_enabled_rotation_samples)):
+                time_sample = output_enabled_rotation_samples[rotation_sample_index]
+                finite_rotation = time_sample.get_value().get_finite_rotation()
+                
+                # The finite rotation at current time tc is composed of finite rotation at
+                # previous (younger) time tp and stage rotation between them:
+                #   R(0-&gt;tc) = R(tp-&gt;tc) * R(0-&gt;tp)
+                # The stage rotation from tp-&gt;tc:
+                #   R(tp-&gt;tc) = R(0-&gt;tc) * inverse[R(0-&gt;tp)]
+                stage_rotation = finite_rotation * prev_finite_rotation.get_inverse()
+                
+                # Replace current finite rotation with stage rotation.
+                time_sample.get_value().set_finite_rotation(stage_rotation)
+                
+                prev_finite_rotation = finite_rotation
+            
+            output_rotation_feature_collection.append(output_rotation_feature)
+    
+    # Return our output feature collections as a list of pygplates.FeatureCollection.
+    return [pygplates.FeatureCollection(rotation_feature_collection)
+        for rotation_feature_collection in output_rotation_feature_collections]
+
+
+def _all_filter(*args, **kwargs):
+    &#34;&#34;&#34;Predicate filter than always returns True (and accepts any number of parameters).&#34;&#34;&#34;
+    return True
+
+
+def _is_in_plate_pair_sequence(plate_pairs):
+    &#34;&#34;&#34;Returns a predicate filter function that returns True if a moving/fixed plate pair is in &#39;plate_pairs&#39;.&#34;&#34;&#34;
+    plate_pairs = list(plate_pairs)
+    def filter_is_in_plate_pair_sequence(fixed_plate_id, moving_plate_id, rotation_sequence):
+        return (moving_plate_id, fixed_plate_id) in plate_pairs
+    return filter_is_in_plate_pair_sequence
+
+
+if __name__ == &#39;__main__&#39;:
+    
+    import os.path
+    
+    
+    # Check the imported pygplates version.
+    if not hasattr(pygplates, &#39;Version&#39;) or pygplates.Version.get_imported_version() &lt; PYGPLATES_VERSION_REQUIRED:
+        print(&#39;{0}: Error - imported pygplates version {1} but version {2} or greater is required&#39;.format(
+                os.path.basename(__file__), pygplates.Version.get_imported_version(), PYGPLATES_VERSION_REQUIRED),
+            file=sys.stderr)
+        sys.exit(1)
+    
+    
+    import argparse
+
+    # Action to parse a tuple of accuracy parameters.
+    class ArgParseAccuracyAction(argparse.Action):
+        def __call__(self, parser, namespace, values, option_string=None):
+            # Need two numbers (rotation threshold and threshold time interval).
+            if len(values) != 2:
+                parser.error(&#39;accuracy must be specified as two numbers (rotation threshold and threshold time interval)&#39;)
+            
+            try:
+                # Convert strings to float.
+                threshold_rotation_accuracy_degrees = float(values[0])
+                threshold_time_interval = float(values[1])
+            except ValueError:
+                raise argparse.ArgumentTypeError(&#34;encountered a rotation threshold and threshold time interval that is not a number&#34;)
+            
+            if threshold_rotation_accuracy_degrees &lt;= 0 or threshold_rotation_accuracy_degrees &gt; 90:
+                parser.error(&#39;rotation threshold must be in the range (0, 90]&#39;)
+            if threshold_time_interval &lt;= 0:
+                parser.error(&#39;threshold time interval must be positive&#39;)
+            
+            setattr(namespace, self.dest, (threshold_rotation_accuracy_degrees, threshold_time_interval))
+    
+    
+    def main():
+    
+        __description__ = \
+    &#34;&#34;&#34;Calculate stage rotations between consecutive finite rotations in plate pairs.
+    
+    The results are written back to the input rotation files unless an output filename prefix is provided.
+    
+    Note that only the rotation features satisfying the &#39;plate_pairs&#39; option (if specified) are written back.
+    So if an output rotation file is empty then it means all of its rotation features were filtered out.
+
+    NOTE: Separate the positional and optional arguments with &#39;--&#39; (workaround for bug in argparse module).
+    For example...
+
+    python %(prog)s -p 701 70 -o stage_ -- rotations.rot
+     &#34;&#34;&#34;
+
+        # The command-line parser.
+        parser = argparse.ArgumentParser(description = __description__, formatter_class=argparse.RawDescriptionHelpFormatter)
+        
+        # Action to parse a list of plate pairs.
+        class PlatePairsAction(argparse.Action):
+            def __call__(self, parser, namespace, values, option_string=None):
+                # Should be an even number of numbers.
+                if len(values) % 2 != 0:
+                    parser.error(&#39;the plate pairs must be supplied as *pairs* of numbers&#39;)
+                
+                try:
+                    # Convert strings to integers.
+                    integer_values = map(int, values)
+                    list_of_plate_pair_tuples = zip(integer_values[::2], integer_values[1::2])
+                except ValueError:
+                    raise argparse.ArgumentTypeError(&#34;encountered a plate id that is not an integer&#34;)
+
+                setattr(namespace, self.dest, list_of_plate_pair_tuples)
+        
+        parser.add_argument(&#39;-p&#39;, &#39;--plate_pairs&#39;, nargs=&#39;+&#39;, action=PlatePairsAction,
+                metavar=&#39;moving_plate_id fixed_plate_id&#39;,
+                help=&#39;One or more moving/fixed plate pairs to limit operation to. &#39;
+                     &#39;If not specified then defaults to all plate pairs.&#39;)
+        
+        parser.add_argument(&#39;-o&#39;, &#39;--output_filename_prefix&#39;, type=str,
+                metavar=&#39;output_filename_prefix&#39;,
+                help=&#39;Optional output filename prefix. If one is provided then an output rotation file &#39;
+                    &#39;is created for each input rotation file by prefixing the input filenames. &#39;
+                    &#39;If no filename prefix is provided then the input files are overwritten.&#39;)
+        
+        parser.add_argument(&#39;input_rotation_filenames&#39;, type=str, nargs=&#39;+&#39;,
+                metavar=&#39;input_rotation_filename&#39;,
+                help=&#39;One or more rotation files to perform an operation on.&#39;)
+        
+        # Parse command-line options.
+        args = parser.parse_args()
+        
+        # Read the input rotation feature collections.
+        input_rotation_feature_collections = [pygplates.FeatureCollection(input_rotation_filename)
+                for input_rotation_filename in args.input_rotation_filenames]
+        
+        # Operation.
+        output_rotation_feature_collections = extract_plate_pair_stage_rotations(
+                input_rotation_feature_collections,
+                args.plate_pairs)
+        
+        # Write the modified rotation feature collections to disk.
+        for rotation_feature_collection_index in range(len(output_rotation_feature_collections)):
+            output_rotation_feature_collection = output_rotation_feature_collections[rotation_feature_collection_index]
+
+            # Each output filename is the input filename with an optional prefix prepended.
+            input_rotation_filename = args.input_rotation_filenames[rotation_feature_collection_index]
+            if args.output_filename_prefix:
+                dir, file_basename = os.path.split(input_rotation_filename)
+                output_rotation_filename = os.path.join(dir, &#39;{0}{1}&#39;.format(args.output_filename_prefix, file_basename))
+            else:
+                output_rotation_filename = input_rotation_filename
+            
+            output_rotation_feature_collection.write(output_rotation_filename)
+        
+        sys.exit(0)
+    
+    import traceback
+    
+    try:
+        main()
+        sys.exit(0)
+    except Exception as exc:
+        print(&#39;ERROR: {0}&#39;.format(exc), file=sys.stderr)
+        # Uncomment this to print traceback to location of raised exception.
+        # traceback.print_exc()
+        sys.exit(1)</code></pre>
+</details>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-functions">Functions</h2>
+<dl>
+<dt id="gplately.ptt.rotation_tools.extract_plate_pair_stage_rotations"><code class="name flex">
+<span>def <span class="ident">extract_plate_pair_stage_rotations</span></span>(<span>rotation_feature_collections, plate_pair_filter=None)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Calculate stage rotations between consecutive finite rotations in each specified plate pair.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>rotation_feature_collections</code></strong> :&ensp;<code>sequence</code> of <code>(str,</code> or <code>sequence</code> of <code>pygplates.Feature,</code> or <code>pygplates.FeatureCollection,</code> or <code>pygplates.Feature)</code></dt>
+<dd>A sequence of rotation feature collections.
+Each collection in the sequence can be a rotation filename, or a sequence (eg, list of tuple) or features, or
+a feature collection, or even a single feature.</dd>
+<dt><strong><code>plate_pair_filter</code></strong> :&ensp;<code>Filter function accepting accepting 3 arguments (moving_plate_id, fixed_plate_id, rotation_sequence),</code> or <code>sequence</code> of <code>2-tuple (moving_plate_id, fixed_plate_id)</code>, optional</dt>
+<dd>Optional filtering of plate pairs to apply operation to.
+Filter function (callable) accepting 3 arguments (), or
+a sequence of (moving, fixed) plate pairs to limit operation to.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>list</code> of <code>pygplates.FeatureCollection</code></dt>
+<dd>The modified feature collections.
+Returned list is same length as <code>rotation_feature_collections</code>.</dd>
+</dl>
+<h2 id="notes">Notes</h2>
+<p>The results are returned as a list of pygplates.FeatureCollection (one per input rotation feature collection).</p>
+<p>Note that only the rotation features satisfying <code>plate_pair_filter</code> (if specified) are returned.
+So if a returned feature collection is empty then it means all of its features were filtered out.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def extract_plate_pair_stage_rotations(
+        rotation_feature_collections,
+        plate_pair_filter=None):
+    # Docstring in numpydoc format...
+    &#34;&#34;&#34;Calculate stage rotations between consecutive finite rotations in each specified plate pair.
+    
+    Parameters
+    ----------
+    rotation_feature_collections : sequence of (str, or sequence of pygplates.Feature, or pygplates.FeatureCollection, or pygplates.Feature)
+        A sequence of rotation feature collections.
+        Each collection in the sequence can be a rotation filename, or a sequence (eg, list of tuple) or features, or
+        a feature collection, or even a single feature.
+    plate_pair_filter : Filter function accepting accepting 3 arguments (moving_plate_id, fixed_plate_id, rotation_sequence), or sequence of 2-tuple (moving_plate_id, fixed_plate_id), optional
+        Optional filtering of plate pairs to apply operation to.
+        Filter function (callable) accepting 3 arguments (), or
+        a sequence of (moving, fixed) plate pairs to limit operation to.
+    
+    Returns
+    -------
+    list of pygplates.FeatureCollection
+        The modified feature collections.
+        Returned list is same length as ``rotation_feature_collections``.
+    
+    Notes
+    -----
+    The results are returned as a list of pygplates.FeatureCollection (one per input rotation feature collection).
+    
+    Note that only the rotation features satisfying ``plate_pair_filter`` (if specified) are returned.
+    So if a returned feature collection is empty then it means all of its features were filtered out.
+    &#34;&#34;&#34;
+    
+    if plate_pair_filter is None:
+        plate_pair_filter = _all_filter
+    # If caller specified a sequence of moving/fixed plate pairs then use them, otherwise it&#39;s a filter function (callable).
+    elif hasattr(plate_pair_filter, &#39;__iter__&#39;):
+        plate_pair_filter = _is_in_plate_pair_sequence(plate_pair_filter)
+    # else ...&#39;plate_pair_filter&#39; is a callable...
+    
+    output_rotation_feature_collections = []
+    for rotation_feature_collection in rotation_feature_collections:
+        # Create an empty output rotation feature collection for each input rotation feature collection.
+        # We&#39;ll only add output features when an input feature is modified.
+        output_rotation_feature_collection = []
+        output_rotation_feature_collections.append(output_rotation_feature_collection)
+        
+        for rotation_feature in rotation_feature_collection:
+            # Get the rotation feature information.
+            total_reconstruction_pole = rotation_feature.get_total_reconstruction_pole()
+            if not total_reconstruction_pole:
+                # Not a rotation feature.
+                continue
+        
+            fixed_plate_id, moving_plate_id, rotation_sequence = total_reconstruction_pole
+            # We&#39;re only interested in rotation features with matching moving/fixed plate IDs.
+            if not plate_pair_filter(fixed_plate_id, moving_plate_id, rotation_sequence):
+                continue
+            
+            # Clone the input feature before we start making modifications.
+            # Otherwise we&#39;ll be modifying the input rotation feature (which the caller might not expect).
+            output_rotation_feature = rotation_feature.clone()
+            
+            _, _, output_rotation_sequence = output_rotation_feature.get_total_reconstruction_pole()
+            
+            # Get the enabled rotation samples - ignore the disabled samples.
+            output_enabled_rotation_samples = output_rotation_sequence.get_enabled_time_samples()
+            if not output_enabled_rotation_samples:
+                # No time samples are enabled.
+                continue
+            
+            prev_finite_rotation = output_enabled_rotation_samples[0].get_value().get_finite_rotation()
+            # Replace first finite rotation with identity rotation.
+            # This is the stage rotation of first finite rotation (which has no previous finite rotation).
+            output_enabled_rotation_samples[0].get_value().set_finite_rotation(pygplates.FiniteRotation())
+            
+            for rotation_sample_index in range(1, len(output_enabled_rotation_samples)):
+                time_sample = output_enabled_rotation_samples[rotation_sample_index]
+                finite_rotation = time_sample.get_value().get_finite_rotation()
+                
+                # The finite rotation at current time tc is composed of finite rotation at
+                # previous (younger) time tp and stage rotation between them:
+                #   R(0-&gt;tc) = R(tp-&gt;tc) * R(0-&gt;tp)
+                # The stage rotation from tp-&gt;tc:
+                #   R(tp-&gt;tc) = R(0-&gt;tc) * inverse[R(0-&gt;tp)]
+                stage_rotation = finite_rotation * prev_finite_rotation.get_inverse()
+                
+                # Replace current finite rotation with stage rotation.
+                time_sample.get_value().set_finite_rotation(stage_rotation)
+                
+                prev_finite_rotation = finite_rotation
+            
+            output_rotation_feature_collection.append(output_rotation_feature)
+    
+    # Return our output feature collections as a list of pygplates.FeatureCollection.
+    return [pygplates.FeatureCollection(rotation_feature_collection)
+        for rotation_feature_collection in output_rotation_feature_collections]</code></pre>
+</details>
+</dd>
+<dt id="gplately.ptt.rotation_tools.iteritems"><code class="name flex">
+<span>def <span class="ident">iteritems</span></span>(<span>d)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def iteritems(d):
+    return iter(d.items())</code></pre>
+</details>
+</dd>
+<dt id="gplately.ptt.rotation_tools.itervalues"><code class="name flex">
+<span>def <span class="ident">itervalues</span></span>(<span>d)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def itervalues(d):
+    return iter(d.values())</code></pre>
+</details>
+</dd>
+<dt id="gplately.ptt.rotation_tools.listitems"><code class="name flex">
+<span>def <span class="ident">listitems</span></span>(<span>d)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def listitems(d):
+    return list(d.items())</code></pre>
+</details>
+</dd>
+<dt id="gplately.ptt.rotation_tools.listvalues"><code class="name flex">
+<span>def <span class="ident">listvalues</span></span>(<span>d)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def listvalues(d):
+    return list(d.values())</code></pre>
+</details>
+</dd>
+</dl>
+</section>
+<section>
+</section>
+</article>
+<nav id="sidebar">
+<header>
+<a class="homelink" rel="home" title="GPlately Home" href="https://gplates.github.io/gplately/">
+<img src="https://raw.githubusercontent.com/GPlates/gplately/master/Notebooks/NotebookFiles/ReadMe_Files/GPlately_Main_logo.png" alt="GPlately logo" height="172" width="205">
+</a>
+</header>
+<h1>Index</h1>
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3>Super-module</h3>
+<ul>
+<li><code><a title="gplately.ptt" href="index.html">gplately.ptt</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-functions">Functions</a></h3>
+<ul class="">
+<li><code><a title="gplately.ptt.rotation_tools.extract_plate_pair_stage_rotations" href="#gplately.ptt.rotation_tools.extract_plate_pair_stage_rotations">extract_plate_pair_stage_rotations</a></code></li>
+<li><code><a title="gplately.ptt.rotation_tools.iteritems" href="#gplately.ptt.rotation_tools.iteritems">iteritems</a></code></li>
+<li><code><a title="gplately.ptt.rotation_tools.itervalues" href="#gplately.ptt.rotation_tools.itervalues">itervalues</a></code></li>
+<li><code><a title="gplately.ptt.rotation_tools.listitems" href="#gplately.ptt.rotation_tools.listitems">listitems</a></code></li>
+<li><code><a title="gplately.ptt.rotation_tools.listvalues" href="#gplately.ptt.rotation_tools.listvalues">listvalues</a></code></li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.10.0</a>.</p>
+</footer>
+</body>
+</html>

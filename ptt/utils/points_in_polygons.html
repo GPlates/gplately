@@ -1,0 +1,616 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
+<meta name="generator" content="pdoc 0.10.0" />
+<title>gplately.ptt.utils.points_in_polygons API documentation</title>
+<meta name="description" content="Copyright (C) 2017-2020 The University of Sydney, Australia …" />
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
+<link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
+<link rel="stylesheet preload" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/styles/github.min.css" crossorigin>
+<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:30px;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:1em 0 .50em 0}h3{font-size:1.4em;margin:25px 0 10px 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .3s ease-in-out}a:hover{color:#e82}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900}pre code{background:#f8f8f8;font-size:.8em;line-height:1.4em}code{background:#f2f2f1;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{background:#f8f8f8;border:0;border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0;padding:1ex}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-weight:bold;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em .5em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.item .name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul{padding-left:1.5em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+<script async src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.7/latest.js?config=TeX-AMS_CHTML" integrity="sha256-kZafAc6mZvK3W3v1pHOcUix30OHQN6pU/NO2oFkqZVw=" crossorigin></script>
+<script defer src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/10.1.1/highlight.min.js" integrity="sha256-Uv3H6lx7dJmRfRvH8TH6kJD1TSK1aFcwgx+mdg3epi8=" crossorigin></script>
+<script>window.addEventListener('DOMContentLoaded', () => hljs.initHighlighting())</script>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>gplately.ptt.utils.points_in_polygons</code></h1>
+</header>
+<section id="section-intro">
+<p>Copyright (C) 2017-2020 The University of Sydney, Australia</p>
+<p>This program is free software; you can redistribute it and/or modify it under
+the terms of the GNU General Public License, version 2, as published by
+the Free Software Foundation.</p>
+<p>This program is distributed in the hope that it will be useful, but WITHOUT
+ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+FITNESS FOR A PARTICULAR PURPOSE.
+See the GNU General Public License
+for more details.</p>
+<p>You should have received a copy of the GNU General Public License along
+with this program; if not, write to Free Software Foundation, Inc.,
+51 Franklin Street, Fifth Floor, Boston, MA
+02110-1301, USA.</p>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python"># -*- coding: utf-8 -*-
+
+&#34;&#34;&#34;
+    Copyright (C) 2017-2020 The University of Sydney, Australia
+    
+    This program is free software; you can redistribute it and/or modify it under
+    the terms of the GNU General Public License, version 2, as published by
+    the Free Software Foundation.
+    
+    This program is distributed in the hope that it will be useful, but WITHOUT
+    ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+    FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+    for more details.
+    
+    You should have received a copy of the GNU General Public License along
+    with this program; if not, write to Free Software Foundation, Inc.,
+    51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+&#34;&#34;&#34;
+
+
+#####################################################################
+# Efficient point-in-polygon testing when there are many            #
+# relatively uniformly spaced points to be tested against polygons. #
+#####################################################################
+#
+#
+# For example, to find the plate ID of the polygon containing each point in a sequence of points:
+#
+#
+#    import points_in_polygons
+#    
+#    # A list of &#39;pygplates.PointOnSphere&#39; points.
+#    points = [...]
+#
+#    # Some polygon features (eg, coastlines).
+#    polygon_feature_collection = pygplates.FeatureCollection(&#39;polygons.gpml&#39;)
+#
+#    # Extract the polygons from the features.
+#    polygons = []
+#    polygon_features = []
+#    for polygon_feature in polygon_feature_collection:
+#        polygons.append(polygon_feature.get_geometry())
+#        polygon_features.append(polygon_feature)
+#
+#    #
+#    # Assuming the polygons are *non-overlapping*, find the single polygon (feature) containing each point.
+#    #
+#    polygon_features_containing_points = points_in_polygons.find_polygons(points, polygons, polygon_features)
+#
+#    # Assign a plate ID to each point (or 0 if point outside all polygons).
+#    plate_ids = []
+#    for polygon_feature in polygon_features_containing_points:
+#        if polygon_feature is not None:
+#            plate_id = polygon_feature.get_reconstruction_plate_id()
+#        else:
+#            plate_id = 0
+#        
+#        plate_ids.append(plate_id)
+#
+#    #
+#    # Assuming the polygons are *overlapping*, find all polygons (features) containing each point.
+#    #
+#    polygon_features_containing_points = points_in_polygons.find_polygons(points, polygons, polygon_features, all_polygons=True)
+#
+#    # Assign multiple points to each plate ID.
+#    plate_id_to_points_mapping = {} # Each plate ID has a list of points.
+#    for point_index, polygon_feature_list in enumerate(polygon_features_containing_points):
+#        if polygon_feature_list:
+#            for polygon_feature in polygon_feature_list
+#                plate_id = polygon_feature.get_reconstruction_plate_id()
+#                points_with_plate_id = plate_id_to_points_mapping.setdefault(plate_id, [])
+#                points_with_plate_id.append(points[point_index])
+#
+#####################################################################
+
+
+from __future__ import print_function
+from . import points_spatial_tree
+import math
+import pygplates
+import sys
+
+# the following line would ensure more correct python2-3 compatibility,
+# but requires a non-standard module
+# from builtins import range
+
+
+def find_polygons(
+        points,
+        polygons,
+        polygon_proxies = None,
+        all_polygons = False,
+        subdivision_depth = points_spatial_tree.DEFAULT_SUBDIVISION_DEPTH):
+    &#34;&#34;&#34;
+    Efficient point-in-polygon testing when there are many relatively uniformly spaced points to be tested against polygons.
+    
+    points: a sequence of &#39;pygplates.PointOnSphere&#39;.
+    
+    polygons: a sequence of &#39;pygplates.PolygonOnSphere&#39;.
+    
+    polygon_proxies: Optional sequence of objects associated with &#39;polygons&#39;.
+                     If not specified then the proxies default to the polygons themselves.
+                     These can be any object (such as the &#39;pygplates.Feature&#39; that the polygon came from).
+    
+    all_polygons: Whether to find all polygons containing each point or just the first one encountered.
+                  Set to True if polygons overlap each other, otherwise set to False (for non-overlapping polygons).
+                  Defaults to False (non-overlapping polygons).
+    
+    subdivision_depth: The depth of the lat/lon quad tree used to speed up point-in-polygon queries.
+                       The lat/lon width of a leaf quad tree node is (90 / (2^subdivision_depth)) degrees.
+                       Generally the denser the &#39;points&#39; the larger the depth should be.
+                       Setting this value too high causes unnecessary time to be spent generating a deep quad tree.
+                       Setting this value too low reduces the culling efficiency of the quad tree.
+                       However a value of 4 seems to work quite well for a uniform lat/lon spacing of &#39;points&#39; of 1 degree and below
+                       without the cost of generating a deep quad tree.
+                       So most of the time the subdivision depth can be left at its default value.
+    
+    Returns: A list of polygon proxies associated with &#39;points&#39;.
+             The length of the returned list matches the length of &#39;points&#39;.
+             For each point in &#39;points&#39;, if the point is contained by a polygon then that polygon&#39;s proxy
+             is stored (otherwise None is stored) at the same index (as the point) in the returned list.
+             If &#39;all_polygons&#39; is False then each item in returned list is a single polygon proxy (or a single None).
+             If &#39;all_polygons&#39; is True then each item in returned list is a *list* of polygon proxies (or a single None).
+    
+    Raises ValueError if the lengths of &#39;polygons&#39; and &#39;polygon_proxies&#39; (if specified) do not match.
+    &#34;&#34;&#34;
+    
+    spatial_tree_of_points = points_spatial_tree.PointsSpatialTree(points, subdivision_depth)
+    return find_polygons_using_points_spatial_tree(points, spatial_tree_of_points, polygons, polygon_proxies, all_polygons)
+
+
+def find_polygons_using_points_spatial_tree(
+        points,
+        spatial_tree_of_points,
+        polygons,
+        polygon_proxies = None,
+        all_polygons = False):
+    &#34;&#34;&#34;
+    Same as &#39;find_polygons()&#39; except &#39;spatial_tree_of_points&#39; is a &#39;points_spatial_tree.PointsSpatialTree&#39; of &#39;points&#39;.
+    
+    This is useful when re-using a single &#39;points_spatial_tree.PointsSpatialTree&#39;.
+    For example, when using it both for point-in-polygon queries and minimum distance queries.
+    
+    Note that &#39;spatial_tree_of_points&#39; should have been built from &#39;points&#39; since it contains
+    indices into the &#39;points&#39; sequence.
+    &#34;&#34;&#34;
+    
+    # Use the polygons as proxies if no proxies have been specified.
+    if polygon_proxies is None:
+        polygon_proxies = polygons
+    
+    if len(polygons) != len(polygon_proxies):
+        raise ValueError(&#39;Number of polygons must match number of proxies.&#39;)
+    
+    # Sort the polygons from largest to smallest area.
+    # This makes searching for points/geometries more efficient.
+    #
+    # &#39;polygons_and_proxies&#39; is a list of 2-tuples (polygon, polygon_proxy).
+    polygons_and_proxies = sorted(
+            ((polygons[index], polygon_proxies[index]) for index in range(len(polygons))),
+            key=lambda polygon_and_proxy: polygon_and_proxy[0].get_area(),
+            reverse=True)
+    
+    # By default all points are outside all polygons.
+    # If any are found to be inside then we&#39;ll set the relevant polygon proxy.
+    polygon_proxies_containing_points = [None] * len(points)
+    
+    # Use a quad tree for efficiency - enables us to cull large groups of points that are either
+    # outside all polygons or inside a polygon (avoids point-in-polygon tests for these points).
+    for root_node in spatial_tree_of_points.get_root_nodes():
+        _visit_spatial_tree_node(root_node, points, polygons_and_proxies, polygon_proxies_containing_points, all_polygons)
+    
+    return polygon_proxies_containing_points
+
+
+##################
+# Implementation #
+##################
+
+
+def _visit_spatial_tree_node(
+        node,
+        points,
+        parent_overlapping_polygons_and_proxies,
+        polygon_proxies_containing_points,
+        all_polygons):
+    
+    # See if the current quad tree node&#39;s bounding polygon overlaps any polygons.
+    overlapping_polygons_and_proxies = []
+    for polygon, polygon_proxy in parent_overlapping_polygons_and_proxies:
+        
+        # See if quad tree node and current polygon overlap.
+        polygon_node_overlap_distance = pygplates.GeometryOnSphere.distance(
+                node.get_bounding_polygon(),
+                polygon,
+                1e-4, # Anything smaller than this is considered zero distance (intersection).
+                geometry1_is_solid = True,
+                geometry2_is_solid = True)
+        # Note: PyGPlates version 0.15 fixed an issue in GeometryOnSphere.distance() where very small distances (approx &lt;= 1e-6)
+        # should have been set to zero (to indicate an intersection) but were not. So we&#39;ll assume pyGPlates version 0.14 or less
+        # test for small distances instead of zero (this also works for version 0.15 and above). Our small distance is the threshold
+        # distance above. It&#39;s possible both polygons don&#39;t really overlap but are just very close, but that&#39;s OK since
+        # we&#39;re being conservative in that we&#39;re looking for possibilities of points being in polygons.
+        if polygon_node_overlap_distance is not None:
+
+            # See if quad tree node is contained completely inside polygon.
+            # We test this by ensuring the outlines of both polygons are not too close (ie, don&#39;t touch), and if they don&#39;t
+            # touch then later testing if any point on the node bounding polygon outline is inside the current polygon
+            # (and none of the current polygon&#39;s interior holes are inside the node bounding polygon).
+            node_to_polygon_distance = pygplates.GeometryOnSphere.distance(
+                    node.get_bounding_polygon(),
+                    polygon,
+                    1e-4) # Anything smaller than this is considered zero distance (intersection).
+            
+            # See if the node bounding polygon is entirely inside the solid interior region of the current polygon.
+            is_quad_tree_completely_inside_polygon = False
+            if node_to_polygon_distance is None:
+                # Test if any point on the node bounding polygon outline (we use first point) is inside the current polygon.
+                if polygon.is_point_in_polygon(node.get_bounding_polygon()[0]):
+                    is_quad_tree_completely_inside_polygon = True
+                    # If the current polygon contains interior rings/holes then it&#39;s possible that the outline of the node bounding polygon
+                    # lies entirely inside the current polygon *but* surrounds one of its interior rings/holes.
+                    # And this means we cannot fill the node (like we could if the current polygon did not contain any holes).
+                    # So we also detect if any interior holes of the current polygon are inside the node bounding polygon.
+                    for interior_ring_index in range(polygon.get_number_of_interior_rings()):
+                        # Arbitrarily choose the first point on each interior ring.
+                        if node.get_bounding_polygon().is_point_in_polygon(polygon.get_interior_ring_points(interior_ring_index)[0]):
+                            is_quad_tree_completely_inside_polygon = False
+                            break
+            
+            if is_quad_tree_completely_inside_polygon:
+                
+                # Recursively fill the entire quad sub-tree as inside current polygon.
+                _fill_spatial_tree_node_inside_polygon(node, polygon_proxy, polygon_proxies_containing_points, all_polygons)
+                
+                if not all_polygons:
+                    # Only storing first polygon proxy encountered, so skip remaining polygons.
+                    return
+                
+                # Note: No need to add polygon to &#39;overlapping_polygons_and_proxies&#39; since we&#39;ve already taken care of it.
+                
+            else:
+                overlapping_polygons_and_proxies.append((polygon, polygon_proxy))
+    
+    # If quad tree node is outside all polygons then nothing left to do since all points are marked as outside by default.
+    if not overlapping_polygons_and_proxies:
+        return
+    
+    # Visit child nodes (if internal node) or test each point (if leaf node).
+    if node.is_internal_node():
+        for child_node in node.get_child_nodes():
+            _visit_spatial_tree_node(
+                    child_node, points, overlapping_polygons_and_proxies, polygon_proxies_containing_points, all_polygons)
+    else:
+        for point_index in node.get_point_indices():
+            point = points[point_index]
+            for polygon, polygon_proxy in overlapping_polygons_and_proxies:
+                if polygon.is_point_in_polygon(point):
+                    # Point is inside a polygon.
+                    if all_polygons:
+                        # Each point has a *list* of polygon proxies (or None).
+                        # Create list if first polygon proxy encountered for current point.
+                        if polygon_proxies_containing_points[point_index] is None:
+                            polygon_proxies_containing_points[point_index] = []
+                        polygon_proxies_containing_points[point_index].append(polygon_proxy)
+                    else:
+                        # Each point has a *single* polygon proxy (or None).
+                        polygon_proxies_containing_points[point_index] = polygon_proxy
+                        # No need to visit remaining polygons for the current point.
+                        break
+
+
+def _fill_spatial_tree_node_inside_polygon(
+        node,
+        polygon_proxy,
+        polygon_proxies_containing_points,
+        all_polygons):
+    
+    if node.is_internal_node():
+        for child_node in node.get_child_nodes():
+            _fill_spatial_tree_node_inside_polygon(child_node, polygon_proxy, polygon_proxies_containing_points, all_polygons)
+    else:
+        for point_index in node.get_point_indices():
+            # Point is inside a polygon.
+            if all_polygons:
+                # Each point has a *list* of polygon proxies (or None).
+                # Create list if first polygon proxy encountered for current point.
+                if polygon_proxies_containing_points[point_index] is None:
+                    polygon_proxies_containing_points[point_index] = []
+                polygon_proxies_containing_points[point_index].append(polygon_proxy)
+            else:
+                # Each point has a *single* polygon proxy (or None).
+                polygon_proxies_containing_points[point_index] = polygon_proxy
+
+
+#if __name__ == &#39;__main__&#39;:
+#    
+#    #
+#    # Some testing/example code.
+#    #
+#    
+#    import time
+#    
+#    
+#    print(&#39;Loading coastline polygons and rotation model...&#39;)
+#    coastline_features = pygplates.FeatureCollection(&#39;../../../sample_data/2.0/SampleData/FeatureCollections/Coastlines/Matthews_etal_GPC_2016_Coastlines.gpmlz&#39;)
+#    rotation_model = pygplates.RotationModel(&#39;../../../sample_data/2.0/SampleData/FeatureCollections/Rotations/Matthews_etal_GPC_2016_410-0Ma_GK07.rot&#39;)
+#    
+#    print(&#39;Reconstructing coastline polygons...&#39;)
+#    reconstruction_time = 200
+#    coastline_reconstructed_feature_geometries = []
+#    pygplates.reconstruct(coastline_features, rotation_model, coastline_reconstructed_feature_geometries, reconstruction_time)
+#    
+#    polygons = []
+#    polygon_features = []
+#    for reconstructed_feature_geometry in coastline_reconstructed_feature_geometries:
+#        polygons.append(reconstructed_feature_geometry.get_reconstructed_geometry())
+#        polygon_features.append(reconstructed_feature_geometry.get_feature())
+#    
+#    # Create uniform lat/lon distribution of points.
+#    print(&#39;Creating lat/lon grid of points...&#39;)
+#    num_latitudes = 180
+#    num_longitudes = 360
+#    lat_grid_spacing_degrees = 180.0 / num_latitudes
+#    lon_grid_spacing_degrees = 360.0 / num_longitudes
+#    
+#    points = []
+#    for lat_index in xrange(num_latitudes):
+#        # The 0.5 puts the point in the centre of the grid pixel.
+#        # This also avoids sampling right on the poles.
+#        lat = -90 + (lat_index + 0.5) * lat_grid_spacing_degrees
+#        
+#        for lon_index in xrange(num_longitudes):
+#            # The 0.5 puts the point in the centre of the grid pixel.
+#            # This also avoids sampling right on the dateline where there might be
+#            # age grid or static polygon artifacts.
+#            lon = -180 + (lon_index + 0.5) * lon_grid_spacing_degrees
+#            
+#            point = pygplates.PointOnSphere(lat, lon)
+#            points.append(point)
+#    
+#    print(&#39;Finding polygons containing points...&#39;)
+#    time_begin = time.clock()
+#    
+#    if True:
+#        #
+#        # The fast way (about 3 seconds).
+#        #
+#        polygon_features_containing_points = find_polygons(points, polygons, polygon_features, all_polygons=True)
+#    else:
+#        #
+#        # The slow way (about 200 seconds).
+#        #
+#        # Similar to &#39;find_polygons()&#39; except without using a quad tree.
+#        #
+#        polygons_and_features = sorted(
+#                ((polygons[index], polygon_features[index]) for index in xrange(len(polygons))),
+#                key=lambda polygon_and_feature: polygon_and_feature[0].get_area(),
+#                reverse=True)
+#        polygon_features_containing_points = [None] * len(points)
+#        for point_index, point in enumerate(points):
+#            for polygon, polygon_feature in polygons_and_features:
+#                if polygon.is_point_in_polygon(point):
+#                    if polygon_features_containing_points[point_index] is None:
+#                        polygon_features_containing_points[point_index] = []
+#                    polygon_features_containing_points[point_index].append(polygon_feature)
+#    
+#    time_end = time.clock()
+#    print(&#39;  {0} seconds&#39;.format(time_end - time_begin))
+#    
+#    print(&#39;Associate each point with zero or more polygon plate IDs...&#39;)
+#    
+#    # Group points inside each polygon so can create one multi-point per polygon.
+#    polygon_feature_to_points_mapping = {}
+#    for point_index, polygon_feature_list in enumerate(polygon_features_containing_points):
+#        if polygon_feature_list:
+#            for polygon_feature in polygon_feature_list:
+#                points_in_polygon = polygon_feature_to_points_mapping.setdefault(polygon_feature, [])
+#                points_in_polygon.append(points[point_index])
+#    
+#    # Create multi-point features.
+#    multi_point_features = []
+#    for polygon_feature, points_in_polygon in polygon_feature_to_points_mapping.iteritems():
+#        multi_point_feature = pygplates.Feature()
+#        multi_point_feature.set_geometry(
+#                pygplates.MultiPointOnSphere(points_in_polygon))
+#        
+#        begin_time, end_time = polygon_feature.get_valid_time()
+#        multi_point_feature.set_valid_time(begin_time, end_time)
+#        
+#        multi_point_feature.set_reconstruction_plate_id(
+#                polygon_feature.get_reconstruction_plate_id())
+#        
+#        multi_point_features.append(multi_point_feature)
+#    
+#    print(&#39;Writing points feature collection...&#39;)
+#    pygplates.FeatureCollection(multi_point_features).write(&#39;multi_point_features.gpml&#39;)</code></pre>
+</details>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-functions">Functions</h2>
+<dl>
+<dt id="gplately.ptt.utils.points_in_polygons.find_polygons"><code class="name flex">
+<span>def <span class="ident">find_polygons</span></span>(<span>points, polygons, polygon_proxies=None, all_polygons=False, subdivision_depth=4)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Efficient point-in-polygon testing when there are many relatively uniformly spaced points to be tested against polygons.</p>
+<p>points: a sequence of 'pygplates.PointOnSphere'.</p>
+<p>polygons: a sequence of 'pygplates.PolygonOnSphere'.</p>
+<p>polygon_proxies: Optional sequence of objects associated with 'polygons'.
+If not specified then the proxies default to the polygons themselves.
+These can be any object (such as the 'pygplates.Feature' that the polygon came from).</p>
+<p>all_polygons: Whether to find all polygons containing each point or just the first one encountered.
+Set to True if polygons overlap each other, otherwise set to False (for non-overlapping polygons).
+Defaults to False (non-overlapping polygons).</p>
+<p>subdivision_depth: The depth of the lat/lon quad tree used to speed up point-in-polygon queries.
+The lat/lon width of a leaf quad tree node is (90 / (2^subdivision_depth)) degrees.
+Generally the denser the 'points' the larger the depth should be.
+Setting this value too high causes unnecessary time to be spent generating a deep quad tree.
+Setting this value too low reduces the culling efficiency of the quad tree.
+However a value of 4 seems to work quite well for a uniform lat/lon spacing of 'points' of 1 degree and below
+without the cost of generating a deep quad tree.
+So most of the time the subdivision depth can be left at its default value.</p>
+<p>Returns: A list of polygon proxies associated with 'points'.
+The length of the returned list matches the length of 'points'.
+For each point in 'points', if the point is contained by a polygon then that polygon's proxy
+is stored (otherwise None is stored) at the same index (as the point) in the returned list.
+If 'all_polygons' is False then each item in returned list is a single polygon proxy (or a single None).
+If 'all_polygons' is True then each item in returned list is a <em>list</em> of polygon proxies (or a single None).</p>
+<p>Raises ValueError if the lengths of 'polygons' and 'polygon_proxies' (if specified) do not match.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def find_polygons(
+        points,
+        polygons,
+        polygon_proxies = None,
+        all_polygons = False,
+        subdivision_depth = points_spatial_tree.DEFAULT_SUBDIVISION_DEPTH):
+    &#34;&#34;&#34;
+    Efficient point-in-polygon testing when there are many relatively uniformly spaced points to be tested against polygons.
+    
+    points: a sequence of &#39;pygplates.PointOnSphere&#39;.
+    
+    polygons: a sequence of &#39;pygplates.PolygonOnSphere&#39;.
+    
+    polygon_proxies: Optional sequence of objects associated with &#39;polygons&#39;.
+                     If not specified then the proxies default to the polygons themselves.
+                     These can be any object (such as the &#39;pygplates.Feature&#39; that the polygon came from).
+    
+    all_polygons: Whether to find all polygons containing each point or just the first one encountered.
+                  Set to True if polygons overlap each other, otherwise set to False (for non-overlapping polygons).
+                  Defaults to False (non-overlapping polygons).
+    
+    subdivision_depth: The depth of the lat/lon quad tree used to speed up point-in-polygon queries.
+                       The lat/lon width of a leaf quad tree node is (90 / (2^subdivision_depth)) degrees.
+                       Generally the denser the &#39;points&#39; the larger the depth should be.
+                       Setting this value too high causes unnecessary time to be spent generating a deep quad tree.
+                       Setting this value too low reduces the culling efficiency of the quad tree.
+                       However a value of 4 seems to work quite well for a uniform lat/lon spacing of &#39;points&#39; of 1 degree and below
+                       without the cost of generating a deep quad tree.
+                       So most of the time the subdivision depth can be left at its default value.
+    
+    Returns: A list of polygon proxies associated with &#39;points&#39;.
+             The length of the returned list matches the length of &#39;points&#39;.
+             For each point in &#39;points&#39;, if the point is contained by a polygon then that polygon&#39;s proxy
+             is stored (otherwise None is stored) at the same index (as the point) in the returned list.
+             If &#39;all_polygons&#39; is False then each item in returned list is a single polygon proxy (or a single None).
+             If &#39;all_polygons&#39; is True then each item in returned list is a *list* of polygon proxies (or a single None).
+    
+    Raises ValueError if the lengths of &#39;polygons&#39; and &#39;polygon_proxies&#39; (if specified) do not match.
+    &#34;&#34;&#34;
+    
+    spatial_tree_of_points = points_spatial_tree.PointsSpatialTree(points, subdivision_depth)
+    return find_polygons_using_points_spatial_tree(points, spatial_tree_of_points, polygons, polygon_proxies, all_polygons)</code></pre>
+</details>
+</dd>
+<dt id="gplately.ptt.utils.points_in_polygons.find_polygons_using_points_spatial_tree"><code class="name flex">
+<span>def <span class="ident">find_polygons_using_points_spatial_tree</span></span>(<span>points, spatial_tree_of_points, polygons, polygon_proxies=None, all_polygons=False)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Same as 'find_polygons()' except 'spatial_tree_of_points' is a 'points_spatial_tree.PointsSpatialTree' of 'points'.</p>
+<p>This is useful when re-using a single 'points_spatial_tree.PointsSpatialTree'.
+For example, when using it both for point-in-polygon queries and minimum distance queries.</p>
+<p>Note that 'spatial_tree_of_points' should have been built from 'points' since it contains
+indices into the 'points' sequence.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def find_polygons_using_points_spatial_tree(
+        points,
+        spatial_tree_of_points,
+        polygons,
+        polygon_proxies = None,
+        all_polygons = False):
+    &#34;&#34;&#34;
+    Same as &#39;find_polygons()&#39; except &#39;spatial_tree_of_points&#39; is a &#39;points_spatial_tree.PointsSpatialTree&#39; of &#39;points&#39;.
+    
+    This is useful when re-using a single &#39;points_spatial_tree.PointsSpatialTree&#39;.
+    For example, when using it both for point-in-polygon queries and minimum distance queries.
+    
+    Note that &#39;spatial_tree_of_points&#39; should have been built from &#39;points&#39; since it contains
+    indices into the &#39;points&#39; sequence.
+    &#34;&#34;&#34;
+    
+    # Use the polygons as proxies if no proxies have been specified.
+    if polygon_proxies is None:
+        polygon_proxies = polygons
+    
+    if len(polygons) != len(polygon_proxies):
+        raise ValueError(&#39;Number of polygons must match number of proxies.&#39;)
+    
+    # Sort the polygons from largest to smallest area.
+    # This makes searching for points/geometries more efficient.
+    #
+    # &#39;polygons_and_proxies&#39; is a list of 2-tuples (polygon, polygon_proxy).
+    polygons_and_proxies = sorted(
+            ((polygons[index], polygon_proxies[index]) for index in range(len(polygons))),
+            key=lambda polygon_and_proxy: polygon_and_proxy[0].get_area(),
+            reverse=True)
+    
+    # By default all points are outside all polygons.
+    # If any are found to be inside then we&#39;ll set the relevant polygon proxy.
+    polygon_proxies_containing_points = [None] * len(points)
+    
+    # Use a quad tree for efficiency - enables us to cull large groups of points that are either
+    # outside all polygons or inside a polygon (avoids point-in-polygon tests for these points).
+    for root_node in spatial_tree_of_points.get_root_nodes():
+        _visit_spatial_tree_node(root_node, points, polygons_and_proxies, polygon_proxies_containing_points, all_polygons)
+    
+    return polygon_proxies_containing_points</code></pre>
+</details>
+</dd>
+</dl>
+</section>
+<section>
+</section>
+</article>
+<nav id="sidebar">
+<header>
+<a class="homelink" rel="home" title="GPlately Home" href="https://gplates.github.io/gplately/">
+<img src="https://raw.githubusercontent.com/GPlates/gplately/master/Notebooks/NotebookFiles/ReadMe_Files/GPlately_Main_logo.png" alt="GPlately logo" height="172" width="205">
+</a>
+</header>
+<h1>Index</h1>
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3>Super-module</h3>
+<ul>
+<li><code><a title="gplately.ptt.utils" href="index.html">gplately.ptt.utils</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-functions">Functions</a></h3>
+<ul class="">
+<li><code><a title="gplately.ptt.utils.points_in_polygons.find_polygons" href="#gplately.ptt.utils.points_in_polygons.find_polygons">find_polygons</a></code></li>
+<li><code><a title="gplately.ptt.utils.points_in_polygons.find_polygons_using_points_spatial_tree" href="#gplately.ptt.utils.points_in_polygons.find_polygons_using_points_spatial_tree">find_polygons_using_points_spatial_tree</a></code></li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc" title="pdoc: Python API documentation generator"><cite>pdoc</cite> 0.10.0</a>.</p>
+</footer>
+</body>
+</html>
