@@ -7,12 +7,14 @@ import matplotlib.pyplot as plt
 from plate_model_manager import PlateModelManager
 
 sys.path.insert(0, "../..")
+from common import save_fig
+
 import gplately
 
 # test plotting subduction teeth
 
 
-def main():
+def main(show=True):
     pm_manager = PlateModelManager()
     model = pm_manager.get_model("Muller2019")
     model.set_data_dir("plate-model-repo")
@@ -42,8 +44,14 @@ def main():
     plot_plates.plot_faults(ax2, color="k")
     plot_plates.plot_subduction_teeth(ax2, color="green")
 
-    plt.show()
+    if show:
+        plt.show()
+    else:
+        save_fig(__file__)
 
 
 if __name__ == "__main__":
-    main()
+    if len(sys.argv) == 2 and sys.argv[1] == "save":
+        main(show=False)
+    else:
+        main(show=True)

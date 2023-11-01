@@ -7,12 +7,14 @@ import matplotlib.pyplot as plt
 from plate_model_manager import PlateModelManager
 
 sys.path.insert(0, "../..")
+from common import save_fig
+
 from gplately import PlateReconstruction, PlotTopologies
 
 # test the plot function with the new PlateModel class
 
 
-def main():
+def main(show=True):
     pm_manager = PlateModelManager()
 
     age = 55
@@ -45,8 +47,15 @@ def main():
     for id in ids:
         gplot.plot_plate_id(ax, id, facecolor="None", edgecolor="lightgreen")
     plt.title(f"{age} Ma")
-    plt.show()
+
+    if show:
+        plt.show()
+    else:
+        save_fig(__file__)
 
 
 if __name__ == "__main__":
-    main()
+    if len(sys.argv) == 2 and sys.argv[1] == "save":
+        main(show=False)
+    else:
+        main(show=True)
