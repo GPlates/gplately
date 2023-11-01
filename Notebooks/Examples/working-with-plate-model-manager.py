@@ -1,24 +1,22 @@
 #!/usr/bin/env python3
 
-import sys
 
 import cartopy.crs as ccrs
 import matplotlib.pyplot as plt
 from plate_model_manager import PlateModelManager
 
-sys.path.insert(0, "../..")
 from gplately import PlateReconstruction, PlotTopologies
 
-# test the plot function with the new PlateModel class
+# This is a simple example of how to use the Plate Model Manager with GPlately
 
 
 def main():
+    # Here is how to use PlateModelManager to create PlateReconstruction and PlotTopologies objects
     pm_manager = PlateModelManager()
-
-    age = 55
     model = pm_manager.get_model("Muller2019")
     model.set_data_dir("plate-model-repo")
 
+    age = 55
     test_model = PlateReconstruction(
         model.get_rotation_model(),
         topology_features=model.get_layer("Topologies"),
@@ -31,7 +29,8 @@ def main():
         time=age,
     )
 
-    fig = plt.figure(figsize=(10, 5), dpi=96)
+    # Now do some plotting
+    fig = plt.figure(figsize=(12, 6), dpi=72)
     ax = fig.add_subplot(111, projection=ccrs.Robinson(central_longitude=180))
 
     gplot.plot_continent_ocean_boundaries(ax, color="cornflowerblue")
