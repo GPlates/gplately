@@ -331,6 +331,7 @@ def _calculate_triangle_vertices(
         length = geometry.length
         tessellated_x = []
         tessellated_y = []
+
         for distance in np.arange(spacing, length, spacing):
             point = Point(geometry.interpolate(distance))
             tessellated_x.append(point.x)
@@ -2361,9 +2362,19 @@ class PlotTopologies(object):
 
         central_meridian = _meridian_from_ax(ax)
         tessellate_degrees = np.rad2deg(spacing)
-        # michael chin made this change. if spacing is in meters, it is too large to plot the triangles
-        spacing = math.degrees(spacing)
-        # spacing = spacing * EARTH_RADIUS * 1e3
+
+        try:
+            projection = ax.projection
+        except AttributeError:
+            print(
+                "The ax.projection does not exist. You must set project to plot Cartopy maps, such as ax = plt.subplot(211, projection=cartopy.crs.PlateCarree())"
+            )
+            projection = None
+
+        if isinstance(projection, ccrs.PlateCarree):
+            spacing = math.degrees(spacing)
+        else:
+            spacing = spacing * EARTH_RADIUS * 1e3
 
         if aspect is None:
             aspect = 2.0 / 3.0
@@ -2389,6 +2400,7 @@ class PlotTopologies(object):
             "l",
             height,
             spacing,
+            projection=projection,
             ax=ax,
             color=color,
             **kwargs,
@@ -2399,6 +2411,7 @@ class PlotTopologies(object):
             "r",
             height,
             spacing,
+            projection=projection,
             ax=ax,
             color=color,
             **kwargs,
