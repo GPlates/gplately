@@ -206,9 +206,9 @@ def read_netcdf_grid(filename, return_grids=False, realign=False, resample=None)
         cdf_lon  = cdf[key_lon][:]
         cdf_lat  = cdf[key_lat][:]
 
-        fill_value = cdf[key_z].missing_value
-
-        cdf_grid[np.isclose(cdf_grid, fill_value, rtol=0.1)] = np.nan
+        if hasattr(cdf[key_z], 'missing_value'):
+            fill_value = cdf[key_z].missing_value
+            cdf_grid[np.isclose(cdf_grid, fill_value, rtol=0.1)] = np.nan
 
     if realign:
         # realign longitudes to -180/180 dateline
