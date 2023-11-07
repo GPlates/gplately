@@ -206,6 +206,10 @@ def read_netcdf_grid(filename, return_grids=False, realign=False, resample=None)
         cdf_lon  = cdf[key_lon][:]
         cdf_lat  = cdf[key_lat][:]
 
+        fill_value = cdf[key_z].missing_value
+
+        cdf_grid[np.isclose(cdf_grid, fill_value, rtol=0.1)] = np.nan
+
     if realign:
         # realign longitudes to -180/180 dateline
         cdf_grid_z, cdf_lon, cdf_lat = realign_grid(cdf_grid, cdf_lon, cdf_lat)
@@ -243,7 +247,7 @@ def read_netcdf_grid(filename, return_grids=False, realign=False, resample=None)
     else:
         return cdf_grid_z
     
-def write_netcdf_grid(filename, grid, extent=[-180,180,-90,90]):
+def write_netcdf_grid(filename, grid, extent=[-180,180,-90,90], significant_digits=None, fill_value=np.nan):
     """ Write geological data contained in a `grid` to a netCDF4 grid with a specified `filename`.
 
     Notes
@@ -288,8 +292,8 @@ def write_netcdf_grid(filename, grid, extent=[-180,180,-90,90]):
         cdf.title = "Grid produced by gplately"
         cdf.createDimension('lon', lon_grid.size)
         cdf.createDimension('lat', lat_grid.size)
-        cdf_lon = cdf.createVariable('lon', lon_grid.dtype, ('lon',), zlib=True)
-        cdf_lat = cdf.createVariable('lat', lat_grid.dtype, ('lat',), zlib=True)
+        cdf_lon = cdf.createVariable('lon', lon_grid.dtype, ('lon',), compression='zstd', complevel=9)
+        cdf_lat = cdf.createVariable('lat', lat_grid.dtype, ('lat',), compression='zstd', complevel=9)
         cdf_lon[:] = lon_grid
         cdf_lat[:] = lat_grid
 
@@ -301,10 +305,18 @@ def write_netcdf_grid(filename, grid, extent=[-180,180,-90,90]):
         cdf_lat.standard_name = 'lat'
         cdf_lat.actual_range = [lat_grid[0], lat_grid[-1]]
 
-        cdf_data = cdf.createVariable('z', grid.dtype, ('lat','lon'), zlib=True)
+        if significant_digits:
+            cdf_data = cdf.createVariable('z', grid.dtype, ('lat','lon'), compression='zstd', complevel=9,
+                                          significant_digits=int(significant_digits),
+                                          quantize_mode='GranularBitRound')
+
+        else:
+            cdf_data = cdf.createVariable('z', grid.dtype, ('lat','lon'), compression='zstd', complevel=9)
+
         # netCDF4 uses the missing_value attribute as the default _FillValue
         # without this, _FillValue defaults to 9.969209968386869e+36
-        cdf_data.missing_value = np.nan
+        cdf_data.missing_value = fill_value
+
         cdf_data.standard_name = 'z'
         #Ensure pygmt registers min and max z values properly
         cdf_data.actual_range = [np.nanmin(grid), np.nanmax(grid)]
