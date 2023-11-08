@@ -131,3 +131,83 @@ def filter_feature_collection(
         if keep_flag:
             new_feature_collection.add(feature)
     return new_feature_collection
+
+
+def add_parser(subparser):
+    """add feature filter command line argument parser"""
+    filter_cmd = subparser.add_parser(
+        "filter",
+        help=filter_feature_collection.__doc__,
+        description=filter_feature_collection.__doc__,
+    )
+
+    # feature filter command arguments
+    filter_cmd.set_defaults(func=run_filter_feature_collection)
+    filter_cmd.add_argument("filter_input_file", type=str)
+    filter_cmd.add_argument("filter_output_file", type=str)
+
+    name_group = filter_cmd.add_mutually_exclusive_group()
+    name_group.add_argument("-n", "--names", type=str, dest="names", nargs="+")
+    name_group.add_argument(
+        "--exclude-names", type=str, dest="exclude_names", nargs="+"
+    )
+
+    pid_group = filter_cmd.add_mutually_exclusive_group()
+    pid_group.add_argument("-p", "--pids", type=int, dest="pids", nargs="+")
+    pid_group.add_argument("--exclude-pids", type=int, dest="exclude_pids", nargs="+")
+
+    birth_age_group = filter_cmd.add_mutually_exclusive_group()
+    birth_age_group.add_argument(
+        "-a", "--min-birth-age", type=float, dest="min_birth_age"
+    )
+    birth_age_group.add_argument("--max-birth-age", type=float, dest="max_birth_age")
+
+    filter_cmd.add_argument(
+        "--case-sensitive", dest="case_sensitive", action="store_true"
+    )
+    filter_cmd.add_argument("--exact-match", dest="exact_match", action="store_true")
+
+
+def run_filter_feature_collection(args):
+    """Filter the input feature collection according to command line arguments."""
+    input_feature_collection = pygplates.FeatureCollection(args.filter_input_file)
+
+    filters = []
+    if args.names:
+        filters.append(
+            FeatureNameFilter(
+                args.names,
+                exact_match=args.exact_match,
+                case_sensitive=args.case_sensitive,
+            )
+        )
+    elif args.exclude_names:
+        filters.append(
+            FeatureNameFilter(
+                args.exclude_names,
+                exclude=True,
+                exact_match=args.exact_match,
+                case_sensitive=args.case_sensitive,
+            )
+        )
+
+    if args.pids:
+        filters.append(PlateIDFilter(args.pids))
+    elif args.exclude_pids:
+        filters.append(PlateIDFilter(args.exclude_pids, exclude=True))
+
+    # print(args.max_birth_age)
+    if args.max_birth_age is not None:
+        filters.append(BirthAgeFilter(args.max_birth_age, keep_older=False))
+    elif args.min_birth_age is not None:
+        filters.append(BirthAgeFilter(args.min_birth_age))
+
+    new_fc = filter_feature_collection(
+        input_feature_collection,
+        filters,
+    )
+
+    new_fc.write(args.filter_output_file)
+    print(
+        f"Done! The filtered feature collection has been saved to {args.filter_output_file}."
+    )

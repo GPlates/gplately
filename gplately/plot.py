@@ -2367,7 +2367,7 @@ class PlotTopologies(object):
             projection = ax.projection
         except AttributeError:
             print(
-                "The ax.projection does not exist. You must set project to plot Cartopy maps, such as ax = plt.subplot(211, projection=cartopy.crs.PlateCarree())"
+                "The ax.projection does not exist. You must set projection to plot Cartopy maps, such as ax = plt.subplot(211, projection=cartopy.crs.PlateCarree())"
             )
             projection = None
 
