@@ -58,104 +58,181 @@ with this program; if not, write to Free Software Foundation, Inc.,
 &#34;&#34;&#34;
 
 from __future__ import print_function
+
 import argparse
-import math
-import sys
 import os.path
+import sys
+
 import pygplates
 
-DEFAULT_OUTPUT_FILENAME_SUFFIX = &#39;_fixed_crossovers&#39;
+DEFAULT_OUTPUT_FILENAME_SUFFIX = &#34;_fixed_crossovers&#34;
 
 
 def _fix_crossovers(
-        rotation_feature_collections,
-        crossover_threshold_degrees,
-        crossover_type_function,
-        ignore_moving_plates,
-        debug):
-    
+    rotation_feature_collections,
+    crossover_threshold_degrees,
+    crossover_type_function,
+    ignore_moving_plates,
+    debug,
+):
     crossover_filter = None
     # Ignore a subset of moving plates if requested.
     if ignore_moving_plates:
-        crossover_filter = lambda crossover: crossover.moving_plate_id not in ignore_moving_plates
-    
+        crossover_filter = (
+            lambda crossover: crossover.moving_plate_id not in ignore_moving_plates
+        )
+
     # Synchronise crossovers.
     crossover_results = []
     synchronise_crossovers_success = pygplates.synchronise_crossovers(
-            rotation_feature_collections,
-            crossover_filter,
-            crossover_threshold_degrees,
-            crossover_type_function,
-            crossover_results)
-    
+        rotation_feature_collections,
+        crossover_filter,
+        crossover_threshold_degrees,
+        crossover_type_function,
+        crossover_results,
+    )
+
     # Print debug output if requested.
     if debug:
         num_crossovers_error = 0
         num_crossovers_ignored = 0
         num_crossovers_passed = 0
         num_crossovers_corrected = 0
-        
+
         for crossover_result in crossover_results:
             crossover = crossover_result[0]
             result = crossover_result[1]
-            
+
             if crossover.type == pygplates.CrossoverType.synch_old_crossover_and_stages:
-                type_str = &#39;synch old crossover and stages&#39;
+                type_str = &#34;synch old crossover and stages&#34;
             elif crossover.type == pygplates.CrossoverType.synch_old_crossover_only:
-                type_str = &#39;synch old crossover only&#39;
-            elif crossover.type == pygplates.CrossoverType.synch_young_crossover_and_stages:
-                type_str = &#39;synch young crossover and stages&#39;
+                type_str = &#34;synch old crossover only&#34;
+            elif (
+                crossover.type
+                == pygplates.CrossoverType.synch_young_crossover_and_stages
+            ):
+                type_str = &#34;synch young crossover and stages&#34;
             elif crossover.type == pygplates.CrossoverType.synch_young_crossover_only:
-                type_str = &#39;synch young crossover only&#39;
+                type_str = &#34;synch young crossover only&#34;
             elif crossover.type == pygplates.CrossoverType.ignore:
-                type_str = &#39;ignore&#39;
+                type_str = &#34;ignore&#34;
             else:
-                type_str = &#39;unknown&#39;
-            
+                type_str = &#34;unknown&#34;
+
             if result == pygplates.CrossoverResult.not_synchronised:
                 num_crossovers_passed += 1
-                result_str = &#39;passed&#39;
+                result_str = &#34;passed&#34;
             elif result == pygplates.CrossoverResult.synchronised:
                 num_crossovers_corrected += 1
-                result_str = &#39;corrected&#39;
+                result_str = &#34;corrected&#34;
             elif result == pygplates.CrossoverResult.ignored:
                 num_crossovers_ignored += 1
-                result_str = &#39;ignored&#39;
+                result_str = &#34;ignored&#34;
             else:
                 num_crossovers_error += 1
-                result_str = &#39;error&#39;
-            
-            print(&#39;Time({0}), moving_pid({1}), young_fixed_pid({2}), old_fixed_pid({3}), type({4}): {5}&#39;.format(
+                result_str = &#34;error&#34;
+
+            print(
+                &#34;Time({0}), moving_pid({1}), young_fixed_pid({2}), old_fixed_pid({3}), type({4}): {5}&#34;.format(
                     crossover.time,
                     crossover.moving_plate_id,
                     crossover.young_crossover_fixed_plate_id,
                     crossover.old_crossover_fixed_plate_id,
                     type_str,
-                    result_str))
+                    result_str,
+                )
+            )
 
-        print(&#39;Results:&#39;)
-        print(&#39;  Total number of crossovers = {0}&#39;.format(len(crossover_results)))
-        print(&#39;  Total errors = {0}&#39;.format(num_crossovers_error))
-        print(&#39;  Total ignored = {0}&#39;.format(num_crossovers_ignored))
-        print(&#39;  Total passed = {0}&#39;.format(num_crossovers_passed))
-        print(&#39;  Total corrected = {0}&#39;.format(num_crossovers_corrected))
-    
+        print(&#34;Results:&#34;)
+        print(&#34;  Total number of crossovers = {0}&#34;.format(len(crossover_results)))
+        print(&#34;  Total errors = {0}&#34;.format(num_crossovers_error))
+        print(&#34;  Total ignored = {0}&#34;.format(num_crossovers_ignored))
+        print(&#34;  Total passed = {0}&#34;.format(num_crossovers_passed))
+        print(&#34;  Total corrected = {0}&#34;.format(num_crossovers_corrected))
+
     return synchronise_crossovers_success
-    
 
-if __name__ == &#34;__main__&#34;:
 
-    # Check the imported pygplates version.
-    required_version = pygplates.Version(12)
-    if not hasattr(pygplates, &#39;Version&#39;) or pygplates.Version.get_imported_version() &lt; required_version:
-        print(&#39;{0}: Error - imported pygplates version {1} but version {2} or greater is required&#39;.format(
-                os.path.basename(__file__), pygplates.Version.get_imported_version(), required_version),
-            file=sys.stderr)
-        sys.exit(1)
-    
-    
-    __description__ = \
-    &#34;&#34;&#34;Loads one or more input rotation files, fixes any crossovers and saves the rotations to \
+def parse_positive_number(value_string):
+    &#34;&#34;&#34;parse and return a positive number&#34;&#34;&#34;
+    try:
+        value = float(value_string)
+    except ValueError:
+        raise argparse.ArgumentTypeError(&#34;%s is not a number&#34; % value_string)
+
+    if value &lt; 0:
+        raise argparse.ArgumentTypeError(&#34;%g is not a positive number&#34; % value)
+
+    return value
+
+
+def add_arguments(parser: argparse.ArgumentParser):
+    &#34;&#34;&#34;add command line argument parser&#34;&#34;&#34;
+
+    parser.formatter_class = argparse.RawDescriptionHelpFormatter
+    parser.description = __description__
+
+    parser.set_defaults(func=main)
+
+    parser.add_argument(
+        &#34;-d&#34;, &#34;--debug&#34;, action=&#34;store_true&#34;, help=&#34;Print debug output.&#34;
+    )
+    parser.add_argument(
+        &#34;-c&#34;,
+        &#34;--crossover_threshold_degrees&#34;,
+        type=parse_positive_number,
+        help=&#34;If specified then crossovers are fixed only if post-crossover rotation latitude, &#34;
+        &#34;longitude or angle differ from those in pre-crossover rotation by the specified amount &#34;
+        &#34;(in degrees). This is useful for some PLATES rotation files that are typically accurate &#34;
+        &#34;to 2 decimal places (or threshold of 0.01).&#34;,
+    )
+
+    # Can specify only one of &#39;-x&#39; or &#39;-g&#39;.
+    crossover_type_group = parser.add_mutually_exclusive_group()
+    crossover_type_group.add_argument(
+        &#34;-x&#34;,
+        &#34;--default_xo_ys&#34;,
+        action=&#34;store_true&#34;,
+        dest=&#34;crossover_type_default_xo_ys&#34;,
+        help=&#34;If specified, then if a crossover&#39;s type is unknown it will default to &#34;
+        &#39;&#34;synch old crossover and stages&#34;, which is equivalent to the &#34;@xo_ys&#34; comment tag.&#39;,
+    )
+    crossover_type_group.add_argument(
+        &#34;-g&#34;,
+        &#34;--default_xo_ig&#34;,
+        action=&#34;store_true&#34;,
+        dest=&#34;crossover_type_default_xo_ig&#34;,
+        help=&#34;If specified, then if a crossover&#39;s type is unknown it will default to &#34;
+        &#39;ignoring the crossover, which is equivalent to the &#34;@xo_ig&#34; comment tag.&#39;,
+    )
+
+    parser.add_argument(
+        &#34;-i&#34;,
+        &#34;--ignore_moving_plates&#34;,
+        type=parse_positive_number,
+        nargs=&#34;+&#34;,
+        metavar=&#34;MOVING_PLATE_ID&#34;,
+        help=&#34;If specified then is a list of moving plate ids to ignore when fixing crossovers.&#34;,
+    )
+    parser.add_argument(
+        &#34;-s&#34;,
+        &#34;--output_filename_suffix&#34;,
+        type=str,
+        default=&#34;{0}&#34;.format(DEFAULT_OUTPUT_FILENAME_SUFFIX),
+        help=&#34;The suffix to append to each input rotation filename to get each output rotation &#34;
+        &#34;filename - the default suffix is &#39;{0}&#39;&#34;.format(DEFAULT_OUTPUT_FILENAME_SUFFIX),
+    )
+
+    parser.add_argument(
+        &#34;input_rotation_filenames&#34;,
+        type=str,
+        nargs=&#34;+&#34;,
+        metavar=&#34;input_rotation_filename&#34;,
+        help=&#34;One or more input rotation filenames (original files).&#34;,
+    )
+
+
+__description__ = &#34;&#34;&#34;Loads one or more input rotation files, fixes any crossovers and saves the rotations to \
 output rotation files.
 
     The name of each output file is the associated input filename with a suffix appended. For example:
@@ -188,92 +265,99 @@ output rotation files.
     NOTE: Separate the positional and optional arguments with &#39;--&#39; (workaround for bug in argparse module).
     For example...
 
-    python %(prog)s -d -c 0.01 -i 201 701 -- input_rotations1.rot input_rotations2.rot
-    &#34;&#34;&#34;.format(DEFAULT_OUTPUT_FILENAME_SUFFIX)
+    %(prog)s -d -c 0.01 -i 201 701 -- input_rotations1.rot input_rotations2.rot
+    &#34;&#34;&#34;.format(
+    DEFAULT_OUTPUT_FILENAME_SUFFIX
+)
 
-    # The command-line parser.
-    parser = argparse.ArgumentParser(description = __description__, formatter_class=argparse.RawDescriptionHelpFormatter)
-        
-    def parse_positive_number(value_string):
-        try:
-            value = float(value_string)
-        except ValueError:
-            raise argparse.ArgumentTypeError(&#34;%s is not a number&#34; % value_string)
-        
-        if value &lt; 0:
-            raise argparse.ArgumentTypeError(&#34;%g is not a positive number&#34; % value)
-        
-        return value
-    
-    parser.add_argument(&#39;-d&#39;, &#39;--debug&#39;, action=&#34;store_true&#34;, help=&#39;Print debug output.&#39;)
-    parser.add_argument(&#39;-c&#39;, &#39;--crossover_threshold_degrees&#39;, type=parse_positive_number,
-            help=&#39;If specified then crossovers are fixed only if post-crossover rotation latitude, &#39;
-                &#39;longitude or angle differ from those in pre-crossover rotation by the specified amount &#39;
-                &#39;(in degrees). This is useful for some PLATES rotation files that are typically accurate &#39;
-                &#39;to 2 decimal places (or threshold of 0.01).&#39;)
-    
-    # Can specify only one of &#39;-x&#39; or &#39;-g&#39;.
-    crossover_type_group = parser.add_mutually_exclusive_group()
-    crossover_type_group.add_argument(&#39;-x&#39;, &#39;--default_xo_ys&#39;, action=&#34;store_true&#34;,
-            dest=&#39;crossover_type_default_xo_ys&#39;,
-            help=&#39;If specified, then if a crossover\&#39;s type is unknown it will default to &#39;
-                &#39;&#34;synch old crossover and stages&#34;, which is equivalent to the &#34;@xo_ys&#34; comment tag.&#39;)
-    crossover_type_group.add_argument(&#39;-g&#39;, &#39;--default_xo_ig&#39;, action=&#34;store_true&#34;,
-            dest=&#39;crossover_type_default_xo_ig&#39;,
-            help=&#39;If specified, then if a crossover\&#39;s type is unknown it will default to &#39;
-                &#39;ignoring the crossover, which is equivalent to the &#34;@xo_ig&#34; comment tag.&#39;)
-    
-    parser.add_argument(&#39;-i&#39;, &#39;--ignore_moving_plates&#39;, type=parse_positive_number, nargs=&#39;+&#39;,
-            metavar=&#39;MOVING_PLATE_ID&#39;,
-            help=&#39;If specified then is a list of moving plate ids to ignore when fixing crossovers.&#39;)
-    parser.add_argument(&#39;-s&#39;, &#39;--output_filename_suffix&#39;, type=str,
-            default=&#39;{0}&#39;.format(DEFAULT_OUTPUT_FILENAME_SUFFIX),
-            help=&#34;The suffix to append to each input rotation filename to get each output rotation &#34;
-                &#34;filename - the default suffix is &#39;{0}&#39;&#34;.format(DEFAULT_OUTPUT_FILENAME_SUFFIX))
-    
-    parser.add_argument(&#39;input_rotation_filenames&#39;, type=str, nargs=&#39;+&#39;,
-            metavar=&#39;input_rotation_filename&#39;,
-            help=&#39;One or more input rotation filenames (original files).&#39;)
-    
-    # Parse command-line options.
-    args = parser.parse_args()
-    
+
+def main(args):
+    # Check the imported pygplates version.
+    required_version = pygplates.Version(12)
+    if (
+        not hasattr(pygplates, &#34;Version&#34;)
+        or pygplates.Version.get_imported_version() &lt; required_version
+    ):
+        print(
+            &#34;{0}: Error - imported pygplates version {1} but version {2} or greater is required&#34;.format(
+                os.path.basename(__file__),
+                pygplates.Version.get_imported_version(),
+                required_version,
+            ),
+            file=sys.stderr,
+        )
+        sys.exit(1)
+
     file_registry = pygplates.FeatureCollectionFileFormatRegistry()
-    
+
     # Read/parse the input rotation feature collections.
-    rotation_feature_collections = [file_registry.read(input_rotation_filename)
-            for input_rotation_filename in args.input_rotation_filenames]
-    
+    rotation_feature_collections = [
+        file_registry.read(input_rotation_filename)
+        for input_rotation_filename in args.input_rotation_filenames
+    ]
+
     # Whether to crossover types should default to &#39;@xo_ys&#39; or &#39;@xo_ig&#39; if type not found...
     if args.crossover_type_default_xo_ys:
-        crossover_type_function = pygplates.CrossoverTypeFunction.type_from_xo_tags_in_comment_default_xo_ys
+        crossover_type_function = (
+            pygplates.CrossoverTypeFunction.type_from_xo_tags_in_comment_default_xo_ys
+        )
     elif args.crossover_type_default_xo_ig:
-        crossover_type_function = pygplates.CrossoverTypeFunction.type_from_xo_tags_in_comment_default_xo_ig
+        crossover_type_function = (
+            pygplates.CrossoverTypeFunction.type_from_xo_tags_in_comment_default_xo_ig
+        )
     else:
-        crossover_type_function = pygplates.CrossoverTypeFunction.type_from_xo_tags_in_comment
-    
+        crossover_type_function = (
+            pygplates.CrossoverTypeFunction.type_from_xo_tags_in_comment
+        )
+
     # Fix crossovers.
     # If any errors occurred we will still write to the output files.
     if not _fix_crossovers(
-            rotation_feature_collections,
-            args.crossover_threshold_degrees,
-            crossover_type_function,
-            args.ignore_moving_plates,
-            args.debug):
-        print(&#39;Warning: One or more crossovers were not processed since unable to determine crossover &#39;
-                &#39;correction method or infinite cycle detected.&#39;,
-            file=sys.stderr)
-    
+        rotation_feature_collections,
+        args.crossover_threshold_degrees,
+        crossover_type_function,
+        args.ignore_moving_plates,
+        args.debug,
+    ):
+        print(
+            &#34;Warning: One or more crossovers were not processed since unable to determine crossover &#34;
+            &#34;correction method or infinite cycle detected.&#34;,
+            file=sys.stderr,
+        )
+
     # Write the modified rotation feature collections to disk.
     for rotation_feature_collection_index in range(len(rotation_feature_collections)):
-        rotation_feature_collection = rotation_feature_collections[rotation_feature_collection_index]
+        rotation_feature_collection = rotation_feature_collections[
+            rotation_feature_collection_index
+        ]
 
         # Each output filename is the input filename with a suffix appended.
-        input_rotation_filename = args.input_rotation_filenames[rotation_feature_collection_index]
+        input_rotation_filename = args.input_rotation_filenames[
+            rotation_feature_collection_index
+        ]
         filename_root, filename_ext = os.path.splitext(input_rotation_filename)
-        output_rotation_filename = &#39;&#39;.join((filename_root, args.output_filename_suffix, filename_ext))
-        
-        file_registry.write(rotation_feature_collection, output_rotation_filename)</code></pre>
+        output_rotation_filename = &#34;&#34;.join(
+            (filename_root, args.output_filename_suffix, filename_ext)
+        )
+
+        file_registry.write(rotation_feature_collection, output_rotation_filename)
+
+
+if __name__ == &#34;__main__&#34;:
+    # The command-line parser.
+    parser = argparse.ArgumentParser(
+        description=__description__,
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+    )
+
+    # add arguments
+    add_arguments(parser)
+
+    # Parse command-line options.
+    args = parser.parse_args()
+
+    # call main function
+    main(args)</code></pre>
 </details>
 </section>
 <section>
@@ -281,6 +365,187 @@ output rotation files.
 <section>
 </section>
 <section>
+<h2 class="section-title" id="header-functions">Functions</h2>
+<dl>
+<dt id="gplately.ptt.fix_crossovers.add_arguments"><code class="name flex">
+<span>def <span class="ident">add_arguments</span></span>(<span>parser: argparse.ArgumentParser)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>add command line argument parser</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def add_arguments(parser: argparse.ArgumentParser):
+    &#34;&#34;&#34;add command line argument parser&#34;&#34;&#34;
+
+    parser.formatter_class = argparse.RawDescriptionHelpFormatter
+    parser.description = __description__
+
+    parser.set_defaults(func=main)
+
+    parser.add_argument(
+        &#34;-d&#34;, &#34;--debug&#34;, action=&#34;store_true&#34;, help=&#34;Print debug output.&#34;
+    )
+    parser.add_argument(
+        &#34;-c&#34;,
+        &#34;--crossover_threshold_degrees&#34;,
+        type=parse_positive_number,
+        help=&#34;If specified then crossovers are fixed only if post-crossover rotation latitude, &#34;
+        &#34;longitude or angle differ from those in pre-crossover rotation by the specified amount &#34;
+        &#34;(in degrees). This is useful for some PLATES rotation files that are typically accurate &#34;
+        &#34;to 2 decimal places (or threshold of 0.01).&#34;,
+    )
+
+    # Can specify only one of &#39;-x&#39; or &#39;-g&#39;.
+    crossover_type_group = parser.add_mutually_exclusive_group()
+    crossover_type_group.add_argument(
+        &#34;-x&#34;,
+        &#34;--default_xo_ys&#34;,
+        action=&#34;store_true&#34;,
+        dest=&#34;crossover_type_default_xo_ys&#34;,
+        help=&#34;If specified, then if a crossover&#39;s type is unknown it will default to &#34;
+        &#39;&#34;synch old crossover and stages&#34;, which is equivalent to the &#34;@xo_ys&#34; comment tag.&#39;,
+    )
+    crossover_type_group.add_argument(
+        &#34;-g&#34;,
+        &#34;--default_xo_ig&#34;,
+        action=&#34;store_true&#34;,
+        dest=&#34;crossover_type_default_xo_ig&#34;,
+        help=&#34;If specified, then if a crossover&#39;s type is unknown it will default to &#34;
+        &#39;ignoring the crossover, which is equivalent to the &#34;@xo_ig&#34; comment tag.&#39;,
+    )
+
+    parser.add_argument(
+        &#34;-i&#34;,
+        &#34;--ignore_moving_plates&#34;,
+        type=parse_positive_number,
+        nargs=&#34;+&#34;,
+        metavar=&#34;MOVING_PLATE_ID&#34;,
+        help=&#34;If specified then is a list of moving plate ids to ignore when fixing crossovers.&#34;,
+    )
+    parser.add_argument(
+        &#34;-s&#34;,
+        &#34;--output_filename_suffix&#34;,
+        type=str,
+        default=&#34;{0}&#34;.format(DEFAULT_OUTPUT_FILENAME_SUFFIX),
+        help=&#34;The suffix to append to each input rotation filename to get each output rotation &#34;
+        &#34;filename - the default suffix is &#39;{0}&#39;&#34;.format(DEFAULT_OUTPUT_FILENAME_SUFFIX),
+    )
+
+    parser.add_argument(
+        &#34;input_rotation_filenames&#34;,
+        type=str,
+        nargs=&#34;+&#34;,
+        metavar=&#34;input_rotation_filename&#34;,
+        help=&#34;One or more input rotation filenames (original files).&#34;,
+    )</code></pre>
+</details>
+</dd>
+<dt id="gplately.ptt.fix_crossovers.main"><code class="name flex">
+<span>def <span class="ident">main</span></span>(<span>args)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def main(args):
+    # Check the imported pygplates version.
+    required_version = pygplates.Version(12)
+    if (
+        not hasattr(pygplates, &#34;Version&#34;)
+        or pygplates.Version.get_imported_version() &lt; required_version
+    ):
+        print(
+            &#34;{0}: Error - imported pygplates version {1} but version {2} or greater is required&#34;.format(
+                os.path.basename(__file__),
+                pygplates.Version.get_imported_version(),
+                required_version,
+            ),
+            file=sys.stderr,
+        )
+        sys.exit(1)
+
+    file_registry = pygplates.FeatureCollectionFileFormatRegistry()
+
+    # Read/parse the input rotation feature collections.
+    rotation_feature_collections = [
+        file_registry.read(input_rotation_filename)
+        for input_rotation_filename in args.input_rotation_filenames
+    ]
+
+    # Whether to crossover types should default to &#39;@xo_ys&#39; or &#39;@xo_ig&#39; if type not found...
+    if args.crossover_type_default_xo_ys:
+        crossover_type_function = (
+            pygplates.CrossoverTypeFunction.type_from_xo_tags_in_comment_default_xo_ys
+        )
+    elif args.crossover_type_default_xo_ig:
+        crossover_type_function = (
+            pygplates.CrossoverTypeFunction.type_from_xo_tags_in_comment_default_xo_ig
+        )
+    else:
+        crossover_type_function = (
+            pygplates.CrossoverTypeFunction.type_from_xo_tags_in_comment
+        )
+
+    # Fix crossovers.
+    # If any errors occurred we will still write to the output files.
+    if not _fix_crossovers(
+        rotation_feature_collections,
+        args.crossover_threshold_degrees,
+        crossover_type_function,
+        args.ignore_moving_plates,
+        args.debug,
+    ):
+        print(
+            &#34;Warning: One or more crossovers were not processed since unable to determine crossover &#34;
+            &#34;correction method or infinite cycle detected.&#34;,
+            file=sys.stderr,
+        )
+
+    # Write the modified rotation feature collections to disk.
+    for rotation_feature_collection_index in range(len(rotation_feature_collections)):
+        rotation_feature_collection = rotation_feature_collections[
+            rotation_feature_collection_index
+        ]
+
+        # Each output filename is the input filename with a suffix appended.
+        input_rotation_filename = args.input_rotation_filenames[
+            rotation_feature_collection_index
+        ]
+        filename_root, filename_ext = os.path.splitext(input_rotation_filename)
+        output_rotation_filename = &#34;&#34;.join(
+            (filename_root, args.output_filename_suffix, filename_ext)
+        )
+
+        file_registry.write(rotation_feature_collection, output_rotation_filename)</code></pre>
+</details>
+</dd>
+<dt id="gplately.ptt.fix_crossovers.parse_positive_number"><code class="name flex">
+<span>def <span class="ident">parse_positive_number</span></span>(<span>value_string)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>parse and return a positive number</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def parse_positive_number(value_string):
+    &#34;&#34;&#34;parse and return a positive number&#34;&#34;&#34;
+    try:
+        value = float(value_string)
+    except ValueError:
+        raise argparse.ArgumentTypeError(&#34;%s is not a number&#34; % value_string)
+
+    if value &lt; 0:
+        raise argparse.ArgumentTypeError(&#34;%g is not a positive number&#34; % value)
+
+    return value</code></pre>
+</details>
+</dd>
+</dl>
 </section>
 <section>
 </section>
@@ -299,6 +564,13 @@ output rotation files.
 <li><h3>Super-module</h3>
 <ul>
 <li><code><a title="gplately.ptt" href="index.html">gplately.ptt</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-functions">Functions</a></h3>
+<ul class="">
+<li><code><a title="gplately.ptt.fix_crossovers.add_arguments" href="#gplately.ptt.fix_crossovers.add_arguments">add_arguments</a></code></li>
+<li><code><a title="gplately.ptt.fix_crossovers.main" href="#gplately.ptt.fix_crossovers.main">main</a></code></li>
+<li><code><a title="gplately.ptt.fix_crossovers.parse_positive_number" href="#gplately.ptt.fix_crossovers.parse_positive_number">parse_positive_number</a></code></li>
 </ul>
 </li>
 </ul>

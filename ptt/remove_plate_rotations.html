@@ -64,10 +64,14 @@ with this program; if not, write to Free Software Foundation, Inc.,
 
 
 from __future__ import print_function
-import sys
-import math
-import pygplates
 
+import argparse
+import math
+import os.path
+import sys
+import traceback
+
+import pygplates
 
 # Required pygplates version.
 # Need pygplates.RotationModel to clone rotation features by default (revision 12).
@@ -75,23 +79,20 @@ import pygplates
 PYGPLATES_VERSION_REQUIRED = pygplates.Version(12)
 
 
-def remove_plates(
-        rotation_feature_collections,
-        plate_ids,
-        accuracy_parameters=None):
+def remove_plates(rotation_feature_collections, plate_ids, accuracy_parameters=None):
     # Docstring in numpydoc format...
     &#34;&#34;&#34;Remove one or more plate IDs from a rotation model (consisting of one or more rotation feature collections).
-    
+
     Any rotations with a fixed plate referencing one of the removed plates will be adjusted such that
     the rotation model effectively remains unchanged.
-    
+
     Optional accuracy threshold parameters can be specified to ensure the rotation model after removing
     plate rotations is very similar to the rotation model before removal.
-    
+
     The results are returned as a list of pygplates.FeatureCollection (one per input rotation feature collection).
-    
+
     Ensure you specify all input rotation feature collections that contain the plate IDs to be removed (either as a moving or fixed plate ID).
-    
+
     Parameters
     ----------
     rotation_feature_collections : sequence of (str, or sequence of pygplates.Feature, or pygplates.FeatureCollection, or pygplates.Feature)
@@ -109,23 +110,24 @@ def remove_plates(
         This mid-way adaptive bisection is repeated (when there is inaccuracy) until the interval between samples
         becomes smaller than the second parameter (threshold time interval).
         Rotation threshold is in degrees and threshold time interval is in millions of years.
-    
+
     Returns
     -------
     list of pygplates.FeatureCollection
         The (potentially) modified feature collections.
         Returned list is same length as ``rotation_feature_collections``.
     &#34;&#34;&#34;
-    
+
     # Convert each feature collection into a list of features so we can more easily remove features
     # and insert features at arbitrary locations within each feature collection (for example removing
     # a plate sequence and replacing it with a sequence with the same plate ID).
-    rotation_feature_collections = [list(pygplates.FeatureCollection(rotation_feature_collection))
-        for rotation_feature_collection in rotation_feature_collections]
-    
+    rotation_feature_collections = [
+        list(pygplates.FeatureCollection(rotation_feature_collection))
+        for rotation_feature_collection in rotation_feature_collections
+    ]
+
     # Iterate over the plates to be removed and remove each one separately.
     for remove_plate_id in plate_ids:
-        
         # Rotation model before any modifications to rotation features.
         #
         # Previously we only created one instance of RotationModel in this function (to serve all removed plates).
@@ -142,7 +144,7 @@ def remove_plates(
         # However the RotationModel in the next loop iteration will be affected of course.
         # UPDATE: Since pygplates revision 25 cloning is no longer necessary (and has been deprecated).
         rotation_model = pygplates.RotationModel(rotation_feature_collections)
-        
+
         # Rotation sequences with the current remove plate ID as the *moving* plate ID.
         # Each sequence will have a different *fixed* plate ID.
         remove_plate_sequences = []
@@ -150,97 +152,152 @@ def remove_plates(
             rotation_feature_index = 0
             while rotation_feature_index &lt; len(rotation_feature_collection):
                 rotation_feature = rotation_feature_collection[rotation_feature_index]
-                total_reconstruction_pole = rotation_feature.get_total_reconstruction_pole()
+                total_reconstruction_pole = (
+                    rotation_feature.get_total_reconstruction_pole()
+                )
                 if total_reconstruction_pole:
-                    fixed_plate_id, moving_plate_id, rotation_sequence = total_reconstruction_pole
+                    (
+                        fixed_plate_id,
+                        moving_plate_id,
+                        rotation_sequence,
+                    ) = total_reconstruction_pole
                     if moving_plate_id == remove_plate_id:
-                        sample_times = [pygplates.GeoTimeInstant(sample.get_time())
-                            for sample in rotation_sequence.get_enabled_time_samples()]
+                        sample_times = [
+                            pygplates.GeoTimeInstant(sample.get_time())
+                            for sample in rotation_sequence.get_enabled_time_samples()
+                        ]
                         if sample_times:
                             remove_plate_sequences.append(
-                                (fixed_plate_id, sample_times))
+                                (fixed_plate_id, sample_times)
+                            )
                         # Remove plate sequences whose moving plate is the current remove plate.
                         # Note that this won&#39;t affect &#39;rotation_model&#39; (since it used a cloned version of all features).
                         del rotation_feature_collection[rotation_feature_index]
                         rotation_feature_index -= 1
-                
+
                 rotation_feature_index += 1
-        
+
         # Sort the remove plate sequences in time order.
         # This helps out below, to find the max sample time over the removed sequences (all having same *moving* plate ID).
         #
         # Easiest way to do this is to sort based on the first time sample in each sequence
         # (since each sequence should already be sorted internally).
-        remove_plate_sequences.sort(key = lambda sequence: sequence[1][0])
-        
+        remove_plate_sequences.sort(key=lambda sequence: sequence[1][0])
+
         # Find those sequences that need adjustment due to the plate removal.
         # These are sequences whose *fixed* plate is the plate currently being removed.
         for rotation_feature_collection in rotation_feature_collections:
             rotation_feature_index = 0
             while rotation_feature_index &lt; len(rotation_feature_collection):
                 rotation_feature = rotation_feature_collection[rotation_feature_index]
-                total_reconstruction_pole = rotation_feature.get_total_reconstruction_pole()
+                total_reconstruction_pole = (
+                    rotation_feature.get_total_reconstruction_pole()
+                )
                 if total_reconstruction_pole:
-                    fixed_plate_id, moving_plate_id, rotation_sequence = total_reconstruction_pole
+                    (
+                        fixed_plate_id,
+                        moving_plate_id,
+                        rotation_sequence,
+                    ) = total_reconstruction_pole
                     if fixed_plate_id == remove_plate_id:
                         child_remove_plate_id = moving_plate_id
                         child_remove_plate_rotation_feature = rotation_feature
-                        child_remove_plate_samples = rotation_sequence.get_time_samples()
-                        
-                        child_remove_plate_sample_times = [pygplates.GeoTimeInstant(sample.get_time())
-                            for sample in child_remove_plate_samples]
-                        child_remove_plate_min_sample_time = child_remove_plate_sample_times[0]
-                        child_remove_plate_max_sample_time = child_remove_plate_sample_times[-1]
-                        
+                        child_remove_plate_samples = (
+                            rotation_sequence.get_time_samples()
+                        )
+
+                        child_remove_plate_sample_times = [
+                            pygplates.GeoTimeInstant(sample.get_time())
+                            for sample in child_remove_plate_samples
+                        ]
+                        child_remove_plate_min_sample_time = (
+                            child_remove_plate_sample_times[0]
+                        )
+                        child_remove_plate_max_sample_time = (
+                            child_remove_plate_sample_times[-1]
+                        )
+
                         # Iterate over the removed sequences whose moving plate matched the current plate being removed.
-                        for remove_plate_sequence_index, (parent_remove_plate_id, remove_plate_sample_times) in enumerate(remove_plate_sequences):
+                        for remove_plate_sequence_index, (
+                            parent_remove_plate_id,
+                            remove_plate_sample_times,
+                        ) in enumerate(remove_plate_sequences):
                             remove_plate_min_sample_time = remove_plate_sample_times[0]
                             remove_plate_max_sample_time = remove_plate_sample_times[-1]
-                            
+
                             # Find the time overlap of the removed sequence and the (child) sequence requiring modification.
-                            min_sample_time = max(remove_plate_min_sample_time, child_remove_plate_min_sample_time)
-                            if remove_plate_sequence_index == len(remove_plate_sequences) - 1:
+                            min_sample_time = max(
+                                remove_plate_min_sample_time,
+                                child_remove_plate_min_sample_time,
+                            )
+                            if (
+                                remove_plate_sequence_index
+                                == len(remove_plate_sequences) - 1
+                            ):
                                 # We want the last remove plate sequence to go back to the child max sample time.
                                 # If it doesn&#39;t go that far back then we will artificially extend the remove plate sequence that far back.
                                 max_sample_time = child_remove_plate_max_sample_time
                             else:
-                                max_sample_time = min(remove_plate_max_sample_time, child_remove_plate_max_sample_time)
-                            
+                                max_sample_time = min(
+                                    remove_plate_max_sample_time,
+                                    child_remove_plate_max_sample_time,
+                                )
+
                             # Note that the remove sequences are ordered by time (ie, first sequence should start at 0Ma, etc).
                             # The two sequences must overlap.
                             # Note that this excludes the case where the min of one sequence equals the max of the other (or max and min).
                             if min_sample_time &lt; max_sample_time:
                                 sample_times = []
                                 # Find those sample times of the child sequence within the overlap range.
-                                for child_remove_plate_sample_time in child_remove_plate_sample_times:
-                                    if (child_remove_plate_sample_time &gt;= min_sample_time and
-                                        child_remove_plate_sample_time &lt;= max_sample_time):
-                                        sample_times.append(child_remove_plate_sample_time)
+                                for (
+                                    child_remove_plate_sample_time
+                                ) in child_remove_plate_sample_times:
+                                    if (
+                                        child_remove_plate_sample_time
+                                        &gt;= min_sample_time
+                                        and child_remove_plate_sample_time
+                                        &lt;= max_sample_time
+                                    ):
+                                        sample_times.append(
+                                            child_remove_plate_sample_time
+                                        )
                                 # Find those sample times of the remove sequence within the overlap range.
                                 # Also avoiding duplicating sample times (times already in the child sequence).
-                                for remove_plate_sample_time in remove_plate_sample_times:
+                                for (
+                                    remove_plate_sample_time
+                                ) in remove_plate_sample_times:
                                     # Only add the sample time if it&#39;s not already in the list.
-                                    if (remove_plate_sample_time not in child_remove_plate_sample_times and
-                                        remove_plate_sample_time &gt;= min_sample_time and
-                                        remove_plate_sample_time &lt;= max_sample_time):
+                                    if (
+                                        remove_plate_sample_time
+                                        not in child_remove_plate_sample_times
+                                        and remove_plate_sample_time &gt;= min_sample_time
+                                        and remove_plate_sample_time &lt;= max_sample_time
+                                    ):
                                         sample_times.append(remove_plate_sample_time)
                                 # Need to sort the sample times (since they&#39;re likely interleaved between remove and child sequences).
                                 sample_times.sort()
-                                
+
                                 # Gather the rotation samples from the child&#39;s moving plate to the removed plate&#39;s fixed plate.
-                                parent_to_child_rotation_samples = _merge_rotation_samples(
-                                    rotation_model,
-                                    child_remove_plate_id,
-                                    remove_plate_id,
-                                    parent_remove_plate_id,
-                                    child_remove_plate_samples,
-                                    child_remove_plate_sample_times,
-                                    sample_times,
-                                    remove_plate_max_sample_time)
-                                
+                                parent_to_child_rotation_samples = (
+                                    _merge_rotation_samples(
+                                        rotation_model,
+                                        child_remove_plate_id,
+                                        remove_plate_id,
+                                        parent_remove_plate_id,
+                                        child_remove_plate_samples,
+                                        child_remove_plate_sample_times,
+                                        sample_times,
+                                        remove_plate_max_sample_time,
+                                    )
+                                )
+
                                 # Insert new samples at times where the difference between original and new rotation models exceeds a threshold.
                                 if accuracy_parameters is not None:
-                                    threshold_rotation_accuracy_degrees, threshold_time_interval, use_uniform_accuracy_times = accuracy_parameters
+                                    (
+                                        threshold_rotation_accuracy_degrees,
+                                        threshold_time_interval,
+                                        use_uniform_accuracy_times,
+                                    ) = accuracy_parameters
                                     _ensure_sequence_accuracy(
                                         rotation_model,
                                         parent_to_child_rotation_samples,
@@ -250,32 +307,43 @@ def remove_plates(
                                         remove_plate_max_sample_time,
                                         threshold_rotation_accuracy_degrees,
                                         threshold_time_interval,
-                                        use_uniform_accuracy_times)
-                                
+                                        use_uniform_accuracy_times,
+                                    )
+
                                 # Create a new rotation sequence.
                                 parent_to_child_rotation_feature = pygplates.Feature.create_total_reconstruction_sequence(
                                     parent_remove_plate_id,
                                     child_remove_plate_id,
-                                    pygplates.GpmlIrregularSampling(parent_to_child_rotation_samples),
-                                    child_remove_plate_rotation_feature.get_name(None),         # Note: specifying None avoids a pygplates crash in revs &lt; 20
-                                    child_remove_plate_rotation_feature.get_description(None))  # Note: specifying None avoids a pygplates crash in revs &lt; 20
-                                
+                                    pygplates.GpmlIrregularSampling(
+                                        parent_to_child_rotation_samples
+                                    ),
+                                    child_remove_plate_rotation_feature.get_name(
+                                        None
+                                    ),  # Note: specifying None avoids a pygplates crash in revs &lt; 20
+                                    child_remove_plate_rotation_feature.get_description(
+                                        None
+                                    ),
+                                )  # Note: specifying None avoids a pygplates crash in revs &lt; 20
+
                                 # Insert the new rotation feature to the current location in the feature collection.
                                 # This is better than adding to the end of the collection and thus reordering the order of rotation sequences
                                 # in the output collection/file (making it harder to visually find it in a text editor).
                                 # Also note that this won&#39;t affect &#39;rotation_model&#39; (since it used a cloned version of all features).
-                                rotation_feature_collection.insert(rotation_feature_index, parent_to_child_rotation_feature)
+                                rotation_feature_collection.insert(
+                                    rotation_feature_index,
+                                    parent_to_child_rotation_feature,
+                                )
                                 rotation_feature_index += 1
-                        
+
                         # The original rotation feature will no longer be needed because we remove plate sequences
                         # whose fixed plate is the current remove plate.
                         # We would have added one or more sequences above to replace it though.
                         # Also note that this won&#39;t affect &#39;rotation_model&#39; (since it used a cloned version of all features).
                         del rotation_feature_collection[rotation_feature_index]
                         rotation_feature_index -= 1
-                        
+
                 rotation_feature_index += 1
-        
+
         # Note that we don&#39;t join rotation sequences having the same moving/fixed plates.
         # However they will show up as a &#39;duplicate geo-time&#39; warning when loading into GPlates.
         # TODO: Remove duplicate geo-times and join the offending rotation sequences.
@@ -285,23 +353,26 @@ def remove_plates(
         # by the fixed plate of the removed sequence. In this situation the original crossover sequence
         # (really two sequences) could now have the same fixed plate ID, and since it also has the
         # same moving plate ID it should really be one sequence.
-    
+
     # Return our (potentially) modified feature collections as a list of pygplates.FeatureCollection.
-    return [pygplates.FeatureCollection(rotation_feature_collection)
-        for rotation_feature_collection in rotation_feature_collections]
+    return [
+        pygplates.FeatureCollection(rotation_feature_collection)
+        for rotation_feature_collection in rotation_feature_collections
+    ]
 
 
 def _merge_rotation_samples(
-        rotation_model,
-        child_remove_plate_id,
-        remove_plate_id,
-        parent_remove_plate_id,
-        child_remove_plate_samples,
-        child_remove_plate_sample_times,
-        sample_times,
-        remove_plate_max_sample_time):
+    rotation_model,
+    child_remove_plate_id,
+    remove_plate_id,
+    parent_remove_plate_id,
+    child_remove_plate_samples,
+    child_remove_plate_sample_times,
+    sample_times,
+    remove_plate_max_sample_time,
+):
     &#34;&#34;&#34;Gather the rotation samples from the child&#39;s moving plate to the removed plate&#39;s fixed plate.&#34;&#34;&#34;
-    
+
     # Gather the rotation samples from the child&#39;s moving plate to the removed plate&#39;s fixed plate.
     parent_to_child_rotation_samples = []
     for sample_time in sample_times:
@@ -314,7 +385,7 @@ def _merge_rotation_samples(
         # not the &#39;fixed_plate_id&#39; argument, in case there is no plate circuit path to anchor plate 000.
         # This also means the user doesn&#39;t have to load all rotations in the model,
         # only those that have the remove plate IDs as a moving or fixed plate.
-        
+
         if sample_time &gt; remove_plate_max_sample_time:
             # The time span of the (oldest) removed plate sequence is too short, so extend its oldest sample further into
             # the past (ie, assume a constant rotation). We do this by calculating R(0-&gt;t,parent_plate-&gt;remove_plate)
@@ -322,75 +393,97 @@ def _merge_rotation_samples(
             #
             # Note that the remove sequences are ordered by time (ie, first sequence should start at 0Ma, etc).
             # So &#39;max_sample_time&#39; should be the oldest time of the oldest removed plate sequence.
-            
+
             # R(0-&gt;t,parent_plate-&gt;remove_plate)
             parent_to_remove_rotation = rotation_model.get_rotation(
                 # Note the time is &#39;remove_plate_max_sample_time&#39; and not &#39;sample_time&#39;...
-                remove_plate_max_sample_time, remove_plate_id, anchor_plate_id=parent_remove_plate_id)
+                remove_plate_max_sample_time,
+                remove_plate_id,
+                anchor_plate_id=parent_remove_plate_id,
+            )
             # R(0-&gt;t,remove_plate-&gt;child_plate)
             remove_to_child_rotation = rotation_model.get_rotation(
-                sample_time, child_remove_plate_id, anchor_plate_id=remove_plate_id)
-            
-            parent_to_child_rotation = parent_to_remove_rotation * remove_to_child_rotation
+                sample_time, child_remove_plate_id, anchor_plate_id=remove_plate_id
+            )
+
+            parent_to_child_rotation = (
+                parent_to_remove_rotation * remove_to_child_rotation
+            )
         else:
             # Note that here we don&#39;t actually need to compose rotations as in the above equation because both rotations
             # are at the same (sample) time so we can just get pygplates.RotationModel.get_rotation() to compose them for us.
             #
             # R(0-&gt;t,parent_plate-&gt;child_plate)
             parent_to_child_rotation = rotation_model.get_rotation(
-                sample_time, child_remove_plate_id, anchor_plate_id=parent_remove_plate_id)
-        
+                sample_time,
+                child_remove_plate_id,
+                anchor_plate_id=parent_remove_plate_id,
+            )
+
         # If the sample time corresponds to an existing sample then use its description,
         # otherwise create a new sample description noting that the new sample is due to
         # the removal of a specific fixed plate.
         if sample_time in child_remove_plate_sample_times:
-            child_remove_plate_sample = child_remove_plate_samples[child_remove_plate_sample_times.index(sample_time)]
+            child_remove_plate_sample = child_remove_plate_samples[
+                child_remove_plate_sample_times.index(sample_time)
+            ]
             sample_description = child_remove_plate_sample.get_description()
         else:
-            sample_description = &#39;Removed fixed plate {0}&#39;.format(remove_plate_id)
-        
+            sample_description = &#34;Removed fixed plate {0}&#34;.format(remove_plate_id)
+
         parent_to_child_rotation_samples.append(
             pygplates.GpmlTimeSample(
                 pygplates.GpmlFiniteRotation(parent_to_child_rotation),
                 sample_time,
-                sample_description))
-    
+                sample_description,
+            )
+        )
+
     return parent_to_child_rotation_samples
 
 
 def _ensure_sequence_accuracy(
-        rotation_model,
-        parent_to_child_rotation_samples,
-        child_remove_plate_id,
-        remove_plate_id,
-        parent_remove_plate_id,
-        remove_plate_max_sample_time,
-        threshold_rotation_accuracy_degrees,
-        threshold_time_interval,
-        insert_poles_at_integer_multiples_of_time_interval):
+    rotation_model,
+    parent_to_child_rotation_samples,
+    child_remove_plate_id,
+    remove_plate_id,
+    parent_remove_plate_id,
+    remove_plate_max_sample_time,
+    threshold_rotation_accuracy_degrees,
+    threshold_time_interval,
+    insert_poles_at_integer_multiples_of_time_interval,
+):
     &#34;&#34;&#34;Insert new samples at times where the difference between original and new rotation models exceeds a threshold.&#34;&#34;&#34;
-    
+
     num_original_samples = len(parent_to_child_rotation_samples)
 
     sample_pair_stack = []
-    
+
     # Add the stage rotation intervals to the stack for later processing.
-    for sample_index in range(num_original_samples-1):
-        sample1, sample2 = parent_to_child_rotation_samples[sample_index], parent_to_child_rotation_samples[sample_index + 1]
+    for sample_index in range(num_original_samples - 1):
+        sample1, sample2 = (
+            parent_to_child_rotation_samples[sample_index],
+            parent_to_child_rotation_samples[sample_index + 1],
+        )
         sample_time1, sample_time2 = sample1.get_time(), sample2.get_time()
-        if pygplates.GeoTimeInstant(sample_time2 - sample_time1) &gt; threshold_time_interval:
+        if (
+            pygplates.GeoTimeInstant(sample_time2 - sample_time1)
+            &gt; threshold_time_interval
+        ):
             sample_pair_stack.append((sample1, sample2))
-    
+
     # Process the stage rotation intervals on the stack until it is empty.
     while sample_pair_stack:
         sample1, sample2 = sample_pair_stack.pop()
         sample_time1, sample_time2 = sample1.get_time(), sample2.get_time()
-        
+
         mid_sample_time = 0.5 * (sample_time1 + sample_time2)
-        
+
         if insert_poles_at_integer_multiples_of_time_interval:
             # Round to the nearest uniformly spaced interval.
-            interpolated_sample_time = threshold_time_interval * math.floor((mid_sample_time / threshold_time_interval) + 0.5)
+            interpolated_sample_time = threshold_time_interval * math.floor(
+                (mid_sample_time / threshold_time_interval) + 0.5
+            )
             if interpolated_sample_time &gt; mid_sample_time:
                 if interpolated_sample_time &gt;= pygplates.GeoTimeInstant(sample_time2):
                     # We rounded up and the time was greater-or-equal to the end sample time so subtract one time interval.
@@ -401,11 +494,11 @@ def _ensure_sequence_accuracy(
                     # We rounded down and the time was less-or-equal to the start sample time so add one time interval.
                     # This is guaranteed to remain within the start/end range since that range should exceed the time interval.
                     interpolated_sample_time += threshold_time_interval
-                
+
         else:
             # Just use the sample midway between &#39;sample1&#39; and &#39;sample2&#39;.
             interpolated_sample_time = mid_sample_time
-        
+
         interpolated_sample = _create_accurate_sample(
             rotation_model,
             interpolated_sample_time,
@@ -415,47 +508,61 @@ def _ensure_sequence_accuracy(
             remove_plate_id,
             parent_remove_plate_id,
             remove_plate_max_sample_time,
-            threshold_rotation_accuracy_degrees)
-        
+            threshold_rotation_accuracy_degrees,
+        )
+
         if interpolated_sample:
             parent_to_child_rotation_samples.append(interpolated_sample)
-            
+
             # Recurse if the time interval between start sample and the interpolated sample exceeds threshold interval.
-            if pygplates.GeoTimeInstant(interpolated_sample_time - sample_time1) &gt; threshold_time_interval:
+            if (
+                pygplates.GeoTimeInstant(interpolated_sample_time - sample_time1)
+                &gt; threshold_time_interval
+            ):
                 sample_pair_stack.append((sample1, interpolated_sample))
-            
+
             # Recurse if the time interval between the interpolated sample and end sample exceeds threshold interval.
-            if pygplates.GeoTimeInstant(sample_time2 - interpolated_sample_time) &gt; threshold_time_interval:
+            if (
+                pygplates.GeoTimeInstant(sample_time2 - interpolated_sample_time)
+                &gt; threshold_time_interval
+            ):
                 sample_pair_stack.append((interpolated_sample, sample2))
-    
+
     # Sort the sample by time (if we added any new samples).
     if len(parent_to_child_rotation_samples) &gt; num_original_samples:
-        parent_to_child_rotation_samples.sort(key = lambda sample: sample.get_time())
+        parent_to_child_rotation_samples.sort(key=lambda sample: sample.get_time())
 
 
 def _create_accurate_sample(
-        rotation_model,
-        interpolated_sample_time,
-        sample1,
-        sample2,
-        child_remove_plate_id,
-        remove_plate_id,
-        parent_remove_plate_id,
-        remove_plate_max_sample_time,
-        threshold_rotation_accuracy_degrees):
+    rotation_model,
+    interpolated_sample_time,
+    sample1,
+    sample2,
+    child_remove_plate_id,
+    remove_plate_id,
+    parent_remove_plate_id,
+    remove_plate_max_sample_time,
+    threshold_rotation_accuracy_degrees,
+):
     &#34;&#34;&#34;Create a new accurate interpolated sample if the difference between original and new rotation models exceeds a threshold, otherwise None.&#34;&#34;&#34;
-    
+
     # Find the *original* rotation from parent plate to child plate (through removed plate).
     #
     # R(0-&gt;t,parent_plate-&gt;remove_plate)
     parent_to_remove_rotation = rotation_model.get_rotation(
         # If the time span of the (oldest) removed plate sequence is too short then extend its oldest rotation to the interpolated-sample time...
-        min(interpolated_sample_time, remove_plate_max_sample_time), remove_plate_id, anchor_plate_id=parent_remove_plate_id)
+        min(interpolated_sample_time, remove_plate_max_sample_time),
+        remove_plate_id,
+        anchor_plate_id=parent_remove_plate_id,
+    )
     # R(0-&gt;t,remove_plate-&gt;child_plate)
     remove_to_child_rotation = rotation_model.get_rotation(
-        interpolated_sample_time, child_remove_plate_id, anchor_plate_id=remove_plate_id)
-    original_parent_to_child_rotation = parent_to_remove_rotation * remove_to_child_rotation
-    
+        interpolated_sample_time, child_remove_plate_id, anchor_plate_id=remove_plate_id
+    )
+    original_parent_to_child_rotation = (
+        parent_to_remove_rotation * remove_to_child_rotation
+    )
+
     # Find the *new* rotation from parent plate to child plate (through removed plate).
     #
     # This interpolates the newly calculated samples (that go directly from parent to child, ie, not via removed plate).
@@ -464,64 +571,61 @@ def _create_accurate_sample(
         sample2.get_value().get_finite_rotation(),
         sample1.get_time(),
         sample2.get_time(),
-        interpolated_sample_time)
-    
+        interpolated_sample_time,
+    )
+
     # If original and new parent-to-child rotations differ too much then add a new (accurate) sample at the interpolated-sample time.
     interpolated_sample = None
     if not pygplates.FiniteRotation.are_equal(
         original_parent_to_child_rotation,
         new_parent_to_child_rotation,
-        threshold_rotation_accuracy_degrees):
-        
+        threshold_rotation_accuracy_degrees,
+    ):
         interpolated_sample = pygplates.GpmlTimeSample(
             pygplates.GpmlFiniteRotation(original_parent_to_child_rotation),
             interpolated_sample_time,
-            &#39;Inserted pole to improve accuracy after removing fixed plate {0}&#39;.format(remove_plate_id))
-    
+            &#34;Inserted pole to improve accuracy after removing fixed plate {0}&#34;.format(
+                remove_plate_id
+            ),
+        )
+
     return interpolated_sample
 
 
-if __name__ == &#39;__main__&#39;:
-    
-    import os.path
-    
-    
-    # Check the imported pygplates version.
-    if not hasattr(pygplates, &#39;Version&#39;) or pygplates.Version.get_imported_version() &lt; PYGPLATES_VERSION_REQUIRED:
-        print(&#39;{0}: Error - imported pygplates version {1} but version {2} or greater is required&#39;.format(
-                os.path.basename(__file__), pygplates.Version.get_imported_version(), PYGPLATES_VERSION_REQUIRED),
-            file=sys.stderr)
-        sys.exit(1)
-    
-    
-    import argparse
+# Action to parse a tuple of accuracy parameters.
+class ArgParseAccuracyAction(argparse.Action):
+    def __call__(self, parser, namespace, values, option_string=None):
+        # Need two numbers (rotation threshold and threshold time interval).
+        if len(values) != 2:
+            parser.error(
+                &#34;accuracy must be specified as two numbers (rotation threshold and threshold time interval)&#34;
+            )
 
-    # Action to parse a tuple of accuracy parameters.
-    class ArgParseAccuracyAction(argparse.Action):
-        def __call__(self, parser, namespace, values, option_string=None):
-            # Need two numbers (rotation threshold and threshold time interval).
-            if len(values) != 2:
-                parser.error(&#39;accuracy must be specified as two numbers (rotation threshold and threshold time interval)&#39;)
-            
-            try:
-                # Convert strings to float.
-                threshold_rotation_accuracy_degrees = float(values[0])
-                threshold_time_interval = float(values[1])
-            except ValueError:
-                raise argparse.ArgumentTypeError(&#34;encountered a rotation threshold and threshold time interval that is not a number&#34;)
-            
-            if threshold_rotation_accuracy_degrees &lt; 0 or threshold_rotation_accuracy_degrees &gt; 90:
-                parser.error(&#39;rotation threshold must be in the range [0, 90]&#39;)
-            if threshold_time_interval &lt;= 0:
-                parser.error(&#39;threshold time interval must be positive&#39;)
-            
-            setattr(namespace, self.dest, (threshold_rotation_accuracy_degrees, threshold_time_interval))
-    
-    
-    def main():
-    
-        __description__ = \
-    &#34;&#34;&#34;Remove one or more plate IDs from a rotation model (consisting of one or more rotation files).
+        try:
+            # Convert strings to float.
+            threshold_rotation_accuracy_degrees = float(values[0])
+            threshold_time_interval = float(values[1])
+        except ValueError:
+            raise argparse.ArgumentTypeError(
+                &#34;encountered a rotation threshold and threshold time interval that is not a number&#34;
+            )
+
+        if (
+            threshold_rotation_accuracy_degrees &lt; 0
+            or threshold_rotation_accuracy_degrees &gt; 90
+        ):
+            parser.error(&#34;rotation threshold must be in the range [0, 90]&#34;)
+        if threshold_time_interval &lt;= 0:
+            parser.error(&#34;threshold time interval must be positive&#34;)
+
+        setattr(
+            namespace,
+            self.dest,
+            (threshold_rotation_accuracy_degrees, threshold_time_interval),
+        )
+
+
+__description__ = &#34;&#34;&#34;Remove one or more plate IDs from a rotation model (consisting of one or more rotation files).
     
     Any rotations with a fixed plate referencing one of the removed plates will be adjusted such that
     the rotation model effectively remains unchanged.
@@ -536,85 +640,154 @@ if __name__ == &#39;__main__&#39;:
     NOTE: Separate the positional and optional arguments with &#39;--&#39; (workaround for bug in argparse module).
     For example...
 
-    python %(prog)s -p 70 4 3 1 -o removed_ref_frames_ -- rotations.rot
-     &#34;&#34;&#34;
+    %(prog)s -p 70 4 3 1 -o removed_ref_frames_ -- rotations.rot
+    &#34;&#34;&#34;
 
-        # The command-line parser.
-        parser = argparse.ArgumentParser(description = __description__, formatter_class=argparse.RawDescriptionHelpFormatter)
-        
-        parser.add_argument(&#39;-p&#39;, &#39;--plates&#39;, type=int, nargs=&#39;+&#39;, required=True,
-                metavar=&#39;remove_plate_ID&#39;,
-                dest=&#39;plate_ids&#39;,
-                help=&#39;Plate IDs of one or more plates to remove.&#39;)
-        
-        parser.add_argument(
-            &#39;-a&#39;, &#39;--accuracy&#39;, nargs=2, action=ArgParseAccuracyAction,
-            metavar=(&#39;threshold_rotation_accuracy_degrees&#39;, &#39;threshold_time_interval_My&#39;),
-            help=&#39;Optional accuracy parameters. &#39;
-                 &#39;If specified then the first parameter is the threshold rotation accuracy (in degrees) and &#39;
-                 &#39;the second parameter is the threshold time interval. &#39;
-                 &#39;The first parameter is used to compare the latitude, longitude and angle of two rotations before and &#39;
-                 &#39;after removing a plate rotation. If any of those three parameters differ by more than the rotation accuracy (in degrees) then &#39;
-                 &#39;samples at times mid-way between samples are inserted to ensure before/after accuracy of rotations. &#39;
-                 &#39;This mid-way adaptive bisection is repeated (when there is inaccuracy) until the interval between samples &#39;
-                 &#39;becomes smaller than the second parameter (threshold time interval). &#39;
-                 &#39;Rotation threshold is in degrees and threshold time interval is in millions of years.&#39;)
-        
-        parser.add_argument(&#39;-u&#39;, &#39;--use_uniform_accuracy_times&#39;, action=&#34;store_true&#34;,
-                help=&#39;If specified then rotation poles inserted for accuracy (according to &#34;-a&#34; option) will be restricted to times &#39;
-                     &#39;that are integer multiples of the threshold time interval (specified in the &#34;-a&#34; option).&#39;)
-        
-        parser.add_argument(&#39;-o&#39;, &#39;--output_filename_prefix&#39;, type=str,
-                metavar=&#39;output_filename_prefix&#39;,
-                help=&#39;Optional output filename prefix. If one is provided then an output rotation file &#39;
-                    &#39;is created for each input rotation file by prefixing the input filenames. &#39;
-                    &#39;If no filename prefix is provided then the input files are overwritten.&#39;)
-        
-        parser.add_argument(&#39;input_rotation_filenames&#39;, type=str, nargs=&#39;+&#39;,
-                metavar=&#39;input_rotation_filename&#39;,
-                help=&#39;One or more rotation files of a rotation model.&#39;)
-        
-        # Parse command-line options.
-        args = parser.parse_args()
-        
-        # Initialise accuracy parameters (if used).
-        accuracy_parameters = None
-        if args.accuracy:
-            accuracy_parameters = args.accuracy[0], args.accuracy[1], args.use_uniform_accuracy_times
-        
-        # Read the input rotation feature collections.
-        input_rotation_feature_collections = [pygplates.FeatureCollection(input_rotation_filename)
-                for input_rotation_filename in args.input_rotation_filenames]
-        
-        # Remove plate rotations.
-        output_rotation_feature_collections = remove_plates(
-                input_rotation_feature_collections,
-                args.plate_ids,
-                accuracy_parameters)
-        
-        # Write the modified rotation feature collections to disk.
-        for rotation_feature_collection_index in range(len(output_rotation_feature_collections)):
-            output_rotation_feature_collection = output_rotation_feature_collections[rotation_feature_collection_index]
 
-            # Each output filename is the input filename with an optional prefix prepended.
-            input_rotation_filename = args.input_rotation_filenames[rotation_feature_collection_index]
-            if args.output_filename_prefix:
-                dir, file_basename = os.path.split(input_rotation_filename)
-                output_rotation_filename = os.path.join(dir, &#39;{0}{1}&#39;.format(args.output_filename_prefix, file_basename))
-            else:
-                output_rotation_filename = input_rotation_filename
-            
-            output_rotation_feature_collection.write(output_rotation_filename)
-        
-        sys.exit(0)
-    
-    import traceback
-    
+def main(args):
+    # Check the imported pygplates version.
+    if (
+        not hasattr(pygplates, &#34;Version&#34;)
+        or pygplates.Version.get_imported_version() &lt; PYGPLATES_VERSION_REQUIRED
+    ):
+        print(
+            &#34;{0}: Error - imported pygplates version {1} but version {2} or greater is required&#34;.format(
+                os.path.basename(__file__),
+                pygplates.Version.get_imported_version(),
+                PYGPLATES_VERSION_REQUIRED,
+            ),
+            file=sys.stderr,
+        )
+        sys.exit(1)
+
+    # Initialise accuracy parameters (if used).
+    accuracy_parameters = None
+    if args.accuracy:
+        accuracy_parameters = (
+            args.accuracy[0],
+            args.accuracy[1],
+            args.use_uniform_accuracy_times,
+        )
+
+    # Read the input rotation feature collections.
+    input_rotation_feature_collections = [
+        pygplates.FeatureCollection(input_rotation_filename)
+        for input_rotation_filename in args.input_rotation_filenames
+    ]
+
+    # Remove plate rotations.
+    output_rotation_feature_collections = remove_plates(
+        input_rotation_feature_collections, args.plate_ids, accuracy_parameters
+    )
+
+    # Write the modified rotation feature collections to disk.
+    for rotation_feature_collection_index in range(
+        len(output_rotation_feature_collections)
+    ):
+        output_rotation_feature_collection = output_rotation_feature_collections[
+            rotation_feature_collection_index
+        ]
+
+        # Each output filename is the input filename with an optional prefix prepended.
+        input_rotation_filename = args.input_rotation_filenames[
+            rotation_feature_collection_index
+        ]
+        if args.output_filename_prefix:
+            dir, file_basename = os.path.split(input_rotation_filename)
+            output_rotation_filename = os.path.join(
+                dir, &#34;{0}{1}&#34;.format(args.output_filename_prefix, file_basename)
+            )
+        else:
+            output_rotation_filename = input_rotation_filename
+
+        output_rotation_feature_collection.write(output_rotation_filename)
+
+    sys.exit(0)
+
+
+def add_arguments(parser):
+    parser.formatter_class = argparse.RawDescriptionHelpFormatter
+    parser.description = __description__
+
+    parser.set_defaults(func=main)
+
+    parser.add_argument(
+        &#34;-p&#34;,
+        &#34;--plates&#34;,
+        type=int,
+        nargs=&#34;+&#34;,
+        required=True,
+        metavar=&#34;remove_plate_ID&#34;,
+        dest=&#34;plate_ids&#34;,
+        help=&#34;Plate IDs of one or more plates to remove.&#34;,
+    )
+
+    parser.add_argument(
+        &#34;-a&#34;,
+        &#34;--accuracy&#34;,
+        nargs=2,
+        action=ArgParseAccuracyAction,
+        metavar=(
+            &#34;threshold_rotation_accuracy_degrees&#34;,
+            &#34;threshold_time_interval_My&#34;,
+        ),
+        help=&#34;Optional accuracy parameters. &#34;
+        &#34;If specified then the first parameter is the threshold rotation accuracy (in degrees) and &#34;
+        &#34;the second parameter is the threshold time interval. &#34;
+        &#34;The first parameter is used to compare the latitude, longitude and angle of two rotations before and &#34;
+        &#34;after removing a plate rotation. If any of those three parameters differ by more than the rotation accuracy (in degrees) then &#34;
+        &#34;samples at times mid-way between samples are inserted to ensure before/after accuracy of rotations. &#34;
+        &#34;This mid-way adaptive bisection is repeated (when there is inaccuracy) until the interval between samples &#34;
+        &#34;becomes smaller than the second parameter (threshold time interval). &#34;
+        &#34;Rotation threshold is in degrees and threshold time interval is in millions of years.&#34;,
+    )
+
+    parser.add_argument(
+        &#34;-u&#34;,
+        &#34;--use_uniform_accuracy_times&#34;,
+        action=&#34;store_true&#34;,
+        help=&#39;If specified then rotation poles inserted for accuracy (according to &#34;-a&#34; option) will be restricted to times &#39;
+        &#39;that are integer multiples of the threshold time interval (specified in the &#34;-a&#34; option).&#39;,
+    )
+
+    parser.add_argument(
+        &#34;-o&#34;,
+        &#34;--output_filename_prefix&#34;,
+        type=str,
+        metavar=&#34;output_filename_prefix&#34;,
+        help=&#34;Optional output filename prefix. If one is provided then an output rotation file &#34;
+        &#34;is created for each input rotation file by prefixing the input filenames. &#34;
+        &#34;If no filename prefix is provided then the input files are overwritten.&#34;,
+    )
+
+    parser.add_argument(
+        &#34;input_rotation_filenames&#34;,
+        type=str,
+        nargs=&#34;+&#34;,
+        metavar=&#34;input_rotation_filename&#34;,
+        help=&#34;One or more rotation files of a rotation model.&#34;,
+    )
+
+
+if __name__ == &#34;__main__&#34;:
+    # The command-line parser.
+    parser = argparse.ArgumentParser(
+        description=__description__,
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+    )
+
+    # add arguments
+    add_arguments(parser)
+
+    # Parse command-line options.
+    args = parser.parse_args()
+
+    # call main function
     try:
-        main()
+        main(args)
         sys.exit(0)
     except Exception as exc:
-        print(&#39;ERROR: {0}&#39;.format(exc), file=sys.stderr)
+        print(&#34;ERROR: {0}&#34;.format(exc), file=sys.stderr)
         # Uncomment this to print traceback to location of raised exception.
         # traceback.print_exc()
         sys.exit(1)</code></pre>
@@ -627,6 +800,149 @@ if __name__ == &#39;__main__&#39;:
 <section>
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
+<dt id="gplately.ptt.remove_plate_rotations.add_arguments"><code class="name flex">
+<span>def <span class="ident">add_arguments</span></span>(<span>parser)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def add_arguments(parser):
+    parser.formatter_class = argparse.RawDescriptionHelpFormatter
+    parser.description = __description__
+
+    parser.set_defaults(func=main)
+
+    parser.add_argument(
+        &#34;-p&#34;,
+        &#34;--plates&#34;,
+        type=int,
+        nargs=&#34;+&#34;,
+        required=True,
+        metavar=&#34;remove_plate_ID&#34;,
+        dest=&#34;plate_ids&#34;,
+        help=&#34;Plate IDs of one or more plates to remove.&#34;,
+    )
+
+    parser.add_argument(
+        &#34;-a&#34;,
+        &#34;--accuracy&#34;,
+        nargs=2,
+        action=ArgParseAccuracyAction,
+        metavar=(
+            &#34;threshold_rotation_accuracy_degrees&#34;,
+            &#34;threshold_time_interval_My&#34;,
+        ),
+        help=&#34;Optional accuracy parameters. &#34;
+        &#34;If specified then the first parameter is the threshold rotation accuracy (in degrees) and &#34;
+        &#34;the second parameter is the threshold time interval. &#34;
+        &#34;The first parameter is used to compare the latitude, longitude and angle of two rotations before and &#34;
+        &#34;after removing a plate rotation. If any of those three parameters differ by more than the rotation accuracy (in degrees) then &#34;
+        &#34;samples at times mid-way between samples are inserted to ensure before/after accuracy of rotations. &#34;
+        &#34;This mid-way adaptive bisection is repeated (when there is inaccuracy) until the interval between samples &#34;
+        &#34;becomes smaller than the second parameter (threshold time interval). &#34;
+        &#34;Rotation threshold is in degrees and threshold time interval is in millions of years.&#34;,
+    )
+
+    parser.add_argument(
+        &#34;-u&#34;,
+        &#34;--use_uniform_accuracy_times&#34;,
+        action=&#34;store_true&#34;,
+        help=&#39;If specified then rotation poles inserted for accuracy (according to &#34;-a&#34; option) will be restricted to times &#39;
+        &#39;that are integer multiples of the threshold time interval (specified in the &#34;-a&#34; option).&#39;,
+    )
+
+    parser.add_argument(
+        &#34;-o&#34;,
+        &#34;--output_filename_prefix&#34;,
+        type=str,
+        metavar=&#34;output_filename_prefix&#34;,
+        help=&#34;Optional output filename prefix. If one is provided then an output rotation file &#34;
+        &#34;is created for each input rotation file by prefixing the input filenames. &#34;
+        &#34;If no filename prefix is provided then the input files are overwritten.&#34;,
+    )
+
+    parser.add_argument(
+        &#34;input_rotation_filenames&#34;,
+        type=str,
+        nargs=&#34;+&#34;,
+        metavar=&#34;input_rotation_filename&#34;,
+        help=&#34;One or more rotation files of a rotation model.&#34;,
+    )</code></pre>
+</details>
+</dd>
+<dt id="gplately.ptt.remove_plate_rotations.main"><code class="name flex">
+<span>def <span class="ident">main</span></span>(<span>args)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def main(args):
+    # Check the imported pygplates version.
+    if (
+        not hasattr(pygplates, &#34;Version&#34;)
+        or pygplates.Version.get_imported_version() &lt; PYGPLATES_VERSION_REQUIRED
+    ):
+        print(
+            &#34;{0}: Error - imported pygplates version {1} but version {2} or greater is required&#34;.format(
+                os.path.basename(__file__),
+                pygplates.Version.get_imported_version(),
+                PYGPLATES_VERSION_REQUIRED,
+            ),
+            file=sys.stderr,
+        )
+        sys.exit(1)
+
+    # Initialise accuracy parameters (if used).
+    accuracy_parameters = None
+    if args.accuracy:
+        accuracy_parameters = (
+            args.accuracy[0],
+            args.accuracy[1],
+            args.use_uniform_accuracy_times,
+        )
+
+    # Read the input rotation feature collections.
+    input_rotation_feature_collections = [
+        pygplates.FeatureCollection(input_rotation_filename)
+        for input_rotation_filename in args.input_rotation_filenames
+    ]
+
+    # Remove plate rotations.
+    output_rotation_feature_collections = remove_plates(
+        input_rotation_feature_collections, args.plate_ids, accuracy_parameters
+    )
+
+    # Write the modified rotation feature collections to disk.
+    for rotation_feature_collection_index in range(
+        len(output_rotation_feature_collections)
+    ):
+        output_rotation_feature_collection = output_rotation_feature_collections[
+            rotation_feature_collection_index
+        ]
+
+        # Each output filename is the input filename with an optional prefix prepended.
+        input_rotation_filename = args.input_rotation_filenames[
+            rotation_feature_collection_index
+        ]
+        if args.output_filename_prefix:
+            dir, file_basename = os.path.split(input_rotation_filename)
+            output_rotation_filename = os.path.join(
+                dir, &#34;{0}{1}&#34;.format(args.output_filename_prefix, file_basename)
+            )
+        else:
+            output_rotation_filename = input_rotation_filename
+
+        output_rotation_feature_collection.write(output_rotation_filename)
+
+    sys.exit(0)</code></pre>
+</details>
+</dd>
 <dt id="gplately.ptt.remove_plate_rotations.remove_plates"><code class="name flex">
 <span>def <span class="ident">remove_plates</span></span>(<span>rotation_feature_collections, plate_ids, accuracy_parameters=None)</span>
 </code></dt>
@@ -666,23 +982,20 @@ Returned list is same length as <code>rotation_feature_collections</code>.</dd>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def remove_plates(
-        rotation_feature_collections,
-        plate_ids,
-        accuracy_parameters=None):
+<pre><code class="python">def remove_plates(rotation_feature_collections, plate_ids, accuracy_parameters=None):
     # Docstring in numpydoc format...
     &#34;&#34;&#34;Remove one or more plate IDs from a rotation model (consisting of one or more rotation feature collections).
-    
+
     Any rotations with a fixed plate referencing one of the removed plates will be adjusted such that
     the rotation model effectively remains unchanged.
-    
+
     Optional accuracy threshold parameters can be specified to ensure the rotation model after removing
     plate rotations is very similar to the rotation model before removal.
-    
+
     The results are returned as a list of pygplates.FeatureCollection (one per input rotation feature collection).
-    
+
     Ensure you specify all input rotation feature collections that contain the plate IDs to be removed (either as a moving or fixed plate ID).
-    
+
     Parameters
     ----------
     rotation_feature_collections : sequence of (str, or sequence of pygplates.Feature, or pygplates.FeatureCollection, or pygplates.Feature)
@@ -700,23 +1013,24 @@ Returned list is same length as <code>rotation_feature_collections</code>.</dd>
         This mid-way adaptive bisection is repeated (when there is inaccuracy) until the interval between samples
         becomes smaller than the second parameter (threshold time interval).
         Rotation threshold is in degrees and threshold time interval is in millions of years.
-    
+
     Returns
     -------
     list of pygplates.FeatureCollection
         The (potentially) modified feature collections.
         Returned list is same length as ``rotation_feature_collections``.
     &#34;&#34;&#34;
-    
+
     # Convert each feature collection into a list of features so we can more easily remove features
     # and insert features at arbitrary locations within each feature collection (for example removing
     # a plate sequence and replacing it with a sequence with the same plate ID).
-    rotation_feature_collections = [list(pygplates.FeatureCollection(rotation_feature_collection))
-        for rotation_feature_collection in rotation_feature_collections]
-    
+    rotation_feature_collections = [
+        list(pygplates.FeatureCollection(rotation_feature_collection))
+        for rotation_feature_collection in rotation_feature_collections
+    ]
+
     # Iterate over the plates to be removed and remove each one separately.
     for remove_plate_id in plate_ids:
-        
         # Rotation model before any modifications to rotation features.
         #
         # Previously we only created one instance of RotationModel in this function (to serve all removed plates).
@@ -733,7 +1047,7 @@ Returned list is same length as <code>rotation_feature_collections</code>.</dd>
         # However the RotationModel in the next loop iteration will be affected of course.
         # UPDATE: Since pygplates revision 25 cloning is no longer necessary (and has been deprecated).
         rotation_model = pygplates.RotationModel(rotation_feature_collections)
-        
+
         # Rotation sequences with the current remove plate ID as the *moving* plate ID.
         # Each sequence will have a different *fixed* plate ID.
         remove_plate_sequences = []
@@ -741,97 +1055,152 @@ Returned list is same length as <code>rotation_feature_collections</code>.</dd>
             rotation_feature_index = 0
             while rotation_feature_index &lt; len(rotation_feature_collection):
                 rotation_feature = rotation_feature_collection[rotation_feature_index]
-                total_reconstruction_pole = rotation_feature.get_total_reconstruction_pole()
+                total_reconstruction_pole = (
+                    rotation_feature.get_total_reconstruction_pole()
+                )
                 if total_reconstruction_pole:
-                    fixed_plate_id, moving_plate_id, rotation_sequence = total_reconstruction_pole
+                    (
+                        fixed_plate_id,
+                        moving_plate_id,
+                        rotation_sequence,
+                    ) = total_reconstruction_pole
                     if moving_plate_id == remove_plate_id:
-                        sample_times = [pygplates.GeoTimeInstant(sample.get_time())
-                            for sample in rotation_sequence.get_enabled_time_samples()]
+                        sample_times = [
+                            pygplates.GeoTimeInstant(sample.get_time())
+                            for sample in rotation_sequence.get_enabled_time_samples()
+                        ]
                         if sample_times:
                             remove_plate_sequences.append(
-                                (fixed_plate_id, sample_times))
+                                (fixed_plate_id, sample_times)
+                            )
                         # Remove plate sequences whose moving plate is the current remove plate.
                         # Note that this won&#39;t affect &#39;rotation_model&#39; (since it used a cloned version of all features).
                         del rotation_feature_collection[rotation_feature_index]
                         rotation_feature_index -= 1
-                
+
                 rotation_feature_index += 1
-        
+
         # Sort the remove plate sequences in time order.
         # This helps out below, to find the max sample time over the removed sequences (all having same *moving* plate ID).
         #
         # Easiest way to do this is to sort based on the first time sample in each sequence
         # (since each sequence should already be sorted internally).
-        remove_plate_sequences.sort(key = lambda sequence: sequence[1][0])
-        
+        remove_plate_sequences.sort(key=lambda sequence: sequence[1][0])
+
         # Find those sequences that need adjustment due to the plate removal.
         # These are sequences whose *fixed* plate is the plate currently being removed.
         for rotation_feature_collection in rotation_feature_collections:
             rotation_feature_index = 0
             while rotation_feature_index &lt; len(rotation_feature_collection):
                 rotation_feature = rotation_feature_collection[rotation_feature_index]
-                total_reconstruction_pole = rotation_feature.get_total_reconstruction_pole()
+                total_reconstruction_pole = (
+                    rotation_feature.get_total_reconstruction_pole()
+                )
                 if total_reconstruction_pole:
-                    fixed_plate_id, moving_plate_id, rotation_sequence = total_reconstruction_pole
+                    (
+                        fixed_plate_id,
+                        moving_plate_id,
+                        rotation_sequence,
+                    ) = total_reconstruction_pole
                     if fixed_plate_id == remove_plate_id:
                         child_remove_plate_id = moving_plate_id
                         child_remove_plate_rotation_feature = rotation_feature
-                        child_remove_plate_samples = rotation_sequence.get_time_samples()
-                        
-                        child_remove_plate_sample_times = [pygplates.GeoTimeInstant(sample.get_time())
-                            for sample in child_remove_plate_samples]
-                        child_remove_plate_min_sample_time = child_remove_plate_sample_times[0]
-                        child_remove_plate_max_sample_time = child_remove_plate_sample_times[-1]
-                        
+                        child_remove_plate_samples = (
+                            rotation_sequence.get_time_samples()
+                        )
+
+                        child_remove_plate_sample_times = [
+                            pygplates.GeoTimeInstant(sample.get_time())
+                            for sample in child_remove_plate_samples
+                        ]
+                        child_remove_plate_min_sample_time = (
+                            child_remove_plate_sample_times[0]
+                        )
+                        child_remove_plate_max_sample_time = (
+                            child_remove_plate_sample_times[-1]
+                        )
+
                         # Iterate over the removed sequences whose moving plate matched the current plate being removed.
-                        for remove_plate_sequence_index, (parent_remove_plate_id, remove_plate_sample_times) in enumerate(remove_plate_sequences):
+                        for remove_plate_sequence_index, (
+                            parent_remove_plate_id,
+                            remove_plate_sample_times,
+                        ) in enumerate(remove_plate_sequences):
                             remove_plate_min_sample_time = remove_plate_sample_times[0]
                             remove_plate_max_sample_time = remove_plate_sample_times[-1]
-                            
+
                             # Find the time overlap of the removed sequence and the (child) sequence requiring modification.
-                            min_sample_time = max(remove_plate_min_sample_time, child_remove_plate_min_sample_time)
-                            if remove_plate_sequence_index == len(remove_plate_sequences) - 1:
+                            min_sample_time = max(
+                                remove_plate_min_sample_time,
+                                child_remove_plate_min_sample_time,
+                            )
+                            if (
+                                remove_plate_sequence_index
+                                == len(remove_plate_sequences) - 1
+                            ):
                                 # We want the last remove plate sequence to go back to the child max sample time.
                                 # If it doesn&#39;t go that far back then we will artificially extend the remove plate sequence that far back.
                                 max_sample_time = child_remove_plate_max_sample_time
                             else:
-                                max_sample_time = min(remove_plate_max_sample_time, child_remove_plate_max_sample_time)
-                            
+                                max_sample_time = min(
+                                    remove_plate_max_sample_time,
+                                    child_remove_plate_max_sample_time,
+                                )
+
                             # Note that the remove sequences are ordered by time (ie, first sequence should start at 0Ma, etc).
                             # The two sequences must overlap.
                             # Note that this excludes the case where the min of one sequence equals the max of the other (or max and min).
                             if min_sample_time &lt; max_sample_time:
                                 sample_times = []
                                 # Find those sample times of the child sequence within the overlap range.
-                                for child_remove_plate_sample_time in child_remove_plate_sample_times:
-                                    if (child_remove_plate_sample_time &gt;= min_sample_time and
-                                        child_remove_plate_sample_time &lt;= max_sample_time):
-                                        sample_times.append(child_remove_plate_sample_time)
+                                for (
+                                    child_remove_plate_sample_time
+                                ) in child_remove_plate_sample_times:
+                                    if (
+                                        child_remove_plate_sample_time
+                                        &gt;= min_sample_time
+                                        and child_remove_plate_sample_time
+                                        &lt;= max_sample_time
+                                    ):
+                                        sample_times.append(
+                                            child_remove_plate_sample_time
+                                        )
                                 # Find those sample times of the remove sequence within the overlap range.
                                 # Also avoiding duplicating sample times (times already in the child sequence).
-                                for remove_plate_sample_time in remove_plate_sample_times:
+                                for (
+                                    remove_plate_sample_time
+                                ) in remove_plate_sample_times:
                                     # Only add the sample time if it&#39;s not already in the list.
-                                    if (remove_plate_sample_time not in child_remove_plate_sample_times and
-                                        remove_plate_sample_time &gt;= min_sample_time and
-                                        remove_plate_sample_time &lt;= max_sample_time):
+                                    if (
+                                        remove_plate_sample_time
+                                        not in child_remove_plate_sample_times
+                                        and remove_plate_sample_time &gt;= min_sample_time
+                                        and remove_plate_sample_time &lt;= max_sample_time
+                                    ):
                                         sample_times.append(remove_plate_sample_time)
                                 # Need to sort the sample times (since they&#39;re likely interleaved between remove and child sequences).
                                 sample_times.sort()
-                                
+
                                 # Gather the rotation samples from the child&#39;s moving plate to the removed plate&#39;s fixed plate.
-                                parent_to_child_rotation_samples = _merge_rotation_samples(
-                                    rotation_model,
-                                    child_remove_plate_id,
-                                    remove_plate_id,
-                                    parent_remove_plate_id,
-                                    child_remove_plate_samples,
-                                    child_remove_plate_sample_times,
-                                    sample_times,
-                                    remove_plate_max_sample_time)
-                                
+                                parent_to_child_rotation_samples = (
+                                    _merge_rotation_samples(
+                                        rotation_model,
+                                        child_remove_plate_id,
+                                        remove_plate_id,
+                                        parent_remove_plate_id,
+                                        child_remove_plate_samples,
+                                        child_remove_plate_sample_times,
+                                        sample_times,
+                                        remove_plate_max_sample_time,
+                                    )
+                                )
+
                                 # Insert new samples at times where the difference between original and new rotation models exceeds a threshold.
                                 if accuracy_parameters is not None:
-                                    threshold_rotation_accuracy_degrees, threshold_time_interval, use_uniform_accuracy_times = accuracy_parameters
+                                    (
+                                        threshold_rotation_accuracy_degrees,
+                                        threshold_time_interval,
+                                        use_uniform_accuracy_times,
+                                    ) = accuracy_parameters
                                     _ensure_sequence_accuracy(
                                         rotation_model,
                                         parent_to_child_rotation_samples,
@@ -841,32 +1210,43 @@ Returned list is same length as <code>rotation_feature_collections</code>.</dd>
                                         remove_plate_max_sample_time,
                                         threshold_rotation_accuracy_degrees,
                                         threshold_time_interval,
-                                        use_uniform_accuracy_times)
-                                
+                                        use_uniform_accuracy_times,
+                                    )
+
                                 # Create a new rotation sequence.
                                 parent_to_child_rotation_feature = pygplates.Feature.create_total_reconstruction_sequence(
                                     parent_remove_plate_id,
                                     child_remove_plate_id,
-                                    pygplates.GpmlIrregularSampling(parent_to_child_rotation_samples),
-                                    child_remove_plate_rotation_feature.get_name(None),         # Note: specifying None avoids a pygplates crash in revs &lt; 20
-                                    child_remove_plate_rotation_feature.get_description(None))  # Note: specifying None avoids a pygplates crash in revs &lt; 20
-                                
+                                    pygplates.GpmlIrregularSampling(
+                                        parent_to_child_rotation_samples
+                                    ),
+                                    child_remove_plate_rotation_feature.get_name(
+                                        None
+                                    ),  # Note: specifying None avoids a pygplates crash in revs &lt; 20
+                                    child_remove_plate_rotation_feature.get_description(
+                                        None
+                                    ),
+                                )  # Note: specifying None avoids a pygplates crash in revs &lt; 20
+
                                 # Insert the new rotation feature to the current location in the feature collection.
                                 # This is better than adding to the end of the collection and thus reordering the order of rotation sequences
                                 # in the output collection/file (making it harder to visually find it in a text editor).
                                 # Also note that this won&#39;t affect &#39;rotation_model&#39; (since it used a cloned version of all features).
-                                rotation_feature_collection.insert(rotation_feature_index, parent_to_child_rotation_feature)
+                                rotation_feature_collection.insert(
+                                    rotation_feature_index,
+                                    parent_to_child_rotation_feature,
+                                )
                                 rotation_feature_index += 1
-                        
+
                         # The original rotation feature will no longer be needed because we remove plate sequences
                         # whose fixed plate is the current remove plate.
                         # We would have added one or more sequences above to replace it though.
                         # Also note that this won&#39;t affect &#39;rotation_model&#39; (since it used a cloned version of all features).
                         del rotation_feature_collection[rotation_feature_index]
                         rotation_feature_index -= 1
-                        
+
                 rotation_feature_index += 1
-        
+
         # Note that we don&#39;t join rotation sequences having the same moving/fixed plates.
         # However they will show up as a &#39;duplicate geo-time&#39; warning when loading into GPlates.
         # TODO: Remove duplicate geo-times and join the offending rotation sequences.
@@ -876,15 +1256,112 @@ Returned list is same length as <code>rotation_feature_collections</code>.</dd>
         # by the fixed plate of the removed sequence. In this situation the original crossover sequence
         # (really two sequences) could now have the same fixed plate ID, and since it also has the
         # same moving plate ID it should really be one sequence.
-    
+
     # Return our (potentially) modified feature collections as a list of pygplates.FeatureCollection.
-    return [pygplates.FeatureCollection(rotation_feature_collection)
-        for rotation_feature_collection in rotation_feature_collections]</code></pre>
+    return [
+        pygplates.FeatureCollection(rotation_feature_collection)
+        for rotation_feature_collection in rotation_feature_collections
+    ]</code></pre>
 </details>
 </dd>
 </dl>
 </section>
 <section>
+<h2 class="section-title" id="header-classes">Classes</h2>
+<dl>
+<dt id="gplately.ptt.remove_plate_rotations.ArgParseAccuracyAction"><code class="flex name class">
+<span>class <span class="ident">ArgParseAccuracyAction</span></span>
+<span>(</span><span>option_strings, dest, nargs=None, const=None, default=None, type=None, choices=None, required=False, help=None, metavar=None)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Information about how to convert command line strings to Python objects.</p>
+<p>Action objects are used by an ArgumentParser to represent the information
+needed to parse a single argument from one or more strings from the
+command line. The keyword arguments to the Action constructor are also
+all attributes of Action instances.</p>
+<p>Keyword Arguments:</p>
+<pre><code>- option_strings -- A list of command-line option strings which
+    should be associated with this action.
+
+- dest -- The name of the attribute to hold the created object(s)
+
+- nargs -- The number of command-line arguments that should be
+    consumed. By default, one argument will be consumed and a single
+    value will be produced.  Other values include:
+        - N (an integer) consumes N arguments (and produces a list)
+        - '?' consumes zero or one arguments
+        - '*' consumes zero or more arguments (and produces a list)
+        - '+' consumes one or more arguments (and produces a list)
+    Note that the difference between the default and nargs=1 is that
+    with the default, a single value will be produced, while with
+    nargs=1, a list containing a single value will be produced.
+
+- const -- The value to be produced if the option is specified and the
+    option uses an action that takes no values.
+
+- default -- The value to be produced if the option is not specified.
+
+- type -- A callable that accepts a single string argument, and
+    returns the converted value.  The standard Python types str, int,
+    float, and complex are useful examples of such callables.  If None,
+    str is used.
+
+- choices -- A container of values that should be allowed. If not None,
+    after a command-line argument has been converted to the appropriate
+    type, an exception will be raised if it is not a member of this
+    collection.
+
+- required -- True if the action must always be specified at the
+    command line. This is only meaningful for optional command-line
+    arguments.
+
+- help -- The help string describing the argument.
+
+- metavar -- The name to be used for the option's argument with the
+    help string. If None, the 'dest' value will be used as the name.
+</code></pre></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class ArgParseAccuracyAction(argparse.Action):
+    def __call__(self, parser, namespace, values, option_string=None):
+        # Need two numbers (rotation threshold and threshold time interval).
+        if len(values) != 2:
+            parser.error(
+                &#34;accuracy must be specified as two numbers (rotation threshold and threshold time interval)&#34;
+            )
+
+        try:
+            # Convert strings to float.
+            threshold_rotation_accuracy_degrees = float(values[0])
+            threshold_time_interval = float(values[1])
+        except ValueError:
+            raise argparse.ArgumentTypeError(
+                &#34;encountered a rotation threshold and threshold time interval that is not a number&#34;
+            )
+
+        if (
+            threshold_rotation_accuracy_degrees &lt; 0
+            or threshold_rotation_accuracy_degrees &gt; 90
+        ):
+            parser.error(&#34;rotation threshold must be in the range [0, 90]&#34;)
+        if threshold_time_interval &lt;= 0:
+            parser.error(&#34;threshold time interval must be positive&#34;)
+
+        setattr(
+            namespace,
+            self.dest,
+            (threshold_rotation_accuracy_degrees, threshold_time_interval),
+        )</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>argparse.Action</li>
+<li>argparse._AttributeHolder</li>
+</ul>
+</dd>
+</dl>
 </section>
 </article>
 <nav id="sidebar">
@@ -905,7 +1382,16 @@ Returned list is same length as <code>rotation_feature_collections</code>.</dd>
 </li>
 <li><h3><a href="#header-functions">Functions</a></h3>
 <ul class="">
+<li><code><a title="gplately.ptt.remove_plate_rotations.add_arguments" href="#gplately.ptt.remove_plate_rotations.add_arguments">add_arguments</a></code></li>
+<li><code><a title="gplately.ptt.remove_plate_rotations.main" href="#gplately.ptt.remove_plate_rotations.main">main</a></code></li>
 <li><code><a title="gplately.ptt.remove_plate_rotations.remove_plates" href="#gplately.ptt.remove_plate_rotations.remove_plates">remove_plates</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-classes">Classes</a></h3>
+<ul>
+<li>
+<h4><code><a title="gplately.ptt.remove_plate_rotations.ArgParseAccuracyAction" href="#gplately.ptt.remove_plate_rotations.ArgParseAccuracyAction">ArgParseAccuracyAction</a></code></h4>
+</li>
 </ul>
 </li>
 </ul>

@@ -159,7 +159,87 @@ def filter_feature_collection(
                 break
         if keep_flag:
             new_feature_collection.add(feature)
-    return new_feature_collection</code></pre>
+    return new_feature_collection
+
+
+def add_parser(subparser):
+    &#34;&#34;&#34;add feature filter command line argument parser&#34;&#34;&#34;
+    filter_cmd = subparser.add_parser(
+        &#34;filter&#34;,
+        help=filter_feature_collection.__doc__,
+        description=filter_feature_collection.__doc__,
+    )
+
+    # feature filter command arguments
+    filter_cmd.set_defaults(func=run_filter_feature_collection)
+    filter_cmd.add_argument(&#34;filter_input_file&#34;, type=str)
+    filter_cmd.add_argument(&#34;filter_output_file&#34;, type=str)
+
+    name_group = filter_cmd.add_mutually_exclusive_group()
+    name_group.add_argument(&#34;-n&#34;, &#34;--names&#34;, type=str, dest=&#34;names&#34;, nargs=&#34;+&#34;)
+    name_group.add_argument(
+        &#34;--exclude-names&#34;, type=str, dest=&#34;exclude_names&#34;, nargs=&#34;+&#34;
+    )
+
+    pid_group = filter_cmd.add_mutually_exclusive_group()
+    pid_group.add_argument(&#34;-p&#34;, &#34;--pids&#34;, type=int, dest=&#34;pids&#34;, nargs=&#34;+&#34;)
+    pid_group.add_argument(&#34;--exclude-pids&#34;, type=int, dest=&#34;exclude_pids&#34;, nargs=&#34;+&#34;)
+
+    birth_age_group = filter_cmd.add_mutually_exclusive_group()
+    birth_age_group.add_argument(
+        &#34;-a&#34;, &#34;--min-birth-age&#34;, type=float, dest=&#34;min_birth_age&#34;
+    )
+    birth_age_group.add_argument(&#34;--max-birth-age&#34;, type=float, dest=&#34;max_birth_age&#34;)
+
+    filter_cmd.add_argument(
+        &#34;--case-sensitive&#34;, dest=&#34;case_sensitive&#34;, action=&#34;store_true&#34;
+    )
+    filter_cmd.add_argument(&#34;--exact-match&#34;, dest=&#34;exact_match&#34;, action=&#34;store_true&#34;)
+
+
+def run_filter_feature_collection(args):
+    &#34;&#34;&#34;Filter the input feature collection according to command line arguments.&#34;&#34;&#34;
+    input_feature_collection = pygplates.FeatureCollection(args.filter_input_file)
+
+    filters = []
+    if args.names:
+        filters.append(
+            FeatureNameFilter(
+                args.names,
+                exact_match=args.exact_match,
+                case_sensitive=args.case_sensitive,
+            )
+        )
+    elif args.exclude_names:
+        filters.append(
+            FeatureNameFilter(
+                args.exclude_names,
+                exclude=True,
+                exact_match=args.exact_match,
+                case_sensitive=args.case_sensitive,
+            )
+        )
+
+    if args.pids:
+        filters.append(PlateIDFilter(args.pids))
+    elif args.exclude_pids:
+        filters.append(PlateIDFilter(args.exclude_pids, exclude=True))
+
+    # print(args.max_birth_age)
+    if args.max_birth_age is not None:
+        filters.append(BirthAgeFilter(args.max_birth_age, keep_older=False))
+    elif args.min_birth_age is not None:
+        filters.append(BirthAgeFilter(args.min_birth_age))
+
+    new_fc = filter_feature_collection(
+        input_feature_collection,
+        filters,
+    )
+
+    new_fc.write(args.filter_output_file)
+    print(
+        f&#34;Done! The filtered feature collection has been saved to {args.filter_output_file}.&#34;
+    )</code></pre>
 </details>
 </section>
 <section>
@@ -169,6 +249,50 @@ def filter_feature_collection(
 <section>
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
+<dt id="gplately.feature_filter.add_parser"><code class="name flex">
+<span>def <span class="ident">add_parser</span></span>(<span>subparser)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>add feature filter command line argument parser</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def add_parser(subparser):
+    &#34;&#34;&#34;add feature filter command line argument parser&#34;&#34;&#34;
+    filter_cmd = subparser.add_parser(
+        &#34;filter&#34;,
+        help=filter_feature_collection.__doc__,
+        description=filter_feature_collection.__doc__,
+    )
+
+    # feature filter command arguments
+    filter_cmd.set_defaults(func=run_filter_feature_collection)
+    filter_cmd.add_argument(&#34;filter_input_file&#34;, type=str)
+    filter_cmd.add_argument(&#34;filter_output_file&#34;, type=str)
+
+    name_group = filter_cmd.add_mutually_exclusive_group()
+    name_group.add_argument(&#34;-n&#34;, &#34;--names&#34;, type=str, dest=&#34;names&#34;, nargs=&#34;+&#34;)
+    name_group.add_argument(
+        &#34;--exclude-names&#34;, type=str, dest=&#34;exclude_names&#34;, nargs=&#34;+&#34;
+    )
+
+    pid_group = filter_cmd.add_mutually_exclusive_group()
+    pid_group.add_argument(&#34;-p&#34;, &#34;--pids&#34;, type=int, dest=&#34;pids&#34;, nargs=&#34;+&#34;)
+    pid_group.add_argument(&#34;--exclude-pids&#34;, type=int, dest=&#34;exclude_pids&#34;, nargs=&#34;+&#34;)
+
+    birth_age_group = filter_cmd.add_mutually_exclusive_group()
+    birth_age_group.add_argument(
+        &#34;-a&#34;, &#34;--min-birth-age&#34;, type=float, dest=&#34;min_birth_age&#34;
+    )
+    birth_age_group.add_argument(&#34;--max-birth-age&#34;, type=float, dest=&#34;max_birth_age&#34;)
+
+    filter_cmd.add_argument(
+        &#34;--case-sensitive&#34;, dest=&#34;case_sensitive&#34;, action=&#34;store_true&#34;
+    )
+    filter_cmd.add_argument(&#34;--exact-match&#34;, dest=&#34;exact_match&#34;, action=&#34;store_true&#34;)</code></pre>
+</details>
+</dd>
 <dt id="gplately.feature_filter.filter_feature_collection"><code class="name flex">
 <span>def <span class="ident">filter_feature_collection</span></span>(<span>feature_collection: pygplates.FeatureCollection, filters: List[<a title="gplately.feature_filter.FeatureFilter" href="#gplately.feature_filter.FeatureFilter">FeatureFilter</a>])</span>
 </code></dt>
@@ -192,6 +316,60 @@ def filter_feature_collection(
         if keep_flag:
             new_feature_collection.add(feature)
     return new_feature_collection</code></pre>
+</details>
+</dd>
+<dt id="gplately.feature_filter.run_filter_feature_collection"><code class="name flex">
+<span>def <span class="ident">run_filter_feature_collection</span></span>(<span>args)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Filter the input feature collection according to command line arguments.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def run_filter_feature_collection(args):
+    &#34;&#34;&#34;Filter the input feature collection according to command line arguments.&#34;&#34;&#34;
+    input_feature_collection = pygplates.FeatureCollection(args.filter_input_file)
+
+    filters = []
+    if args.names:
+        filters.append(
+            FeatureNameFilter(
+                args.names,
+                exact_match=args.exact_match,
+                case_sensitive=args.case_sensitive,
+            )
+        )
+    elif args.exclude_names:
+        filters.append(
+            FeatureNameFilter(
+                args.exclude_names,
+                exclude=True,
+                exact_match=args.exact_match,
+                case_sensitive=args.case_sensitive,
+            )
+        )
+
+    if args.pids:
+        filters.append(PlateIDFilter(args.pids))
+    elif args.exclude_pids:
+        filters.append(PlateIDFilter(args.exclude_pids, exclude=True))
+
+    # print(args.max_birth_age)
+    if args.max_birth_age is not None:
+        filters.append(BirthAgeFilter(args.max_birth_age, keep_older=False))
+    elif args.min_birth_age is not None:
+        filters.append(BirthAgeFilter(args.min_birth_age))
+
+    new_fc = filter_feature_collection(
+        input_feature_collection,
+        filters,
+    )
+
+    new_fc.write(args.filter_output_file)
+    print(
+        f&#34;Done! The filtered feature collection has been saved to {args.filter_output_file}.&#34;
+    )</code></pre>
 </details>
 </dd>
 </dl>
@@ -481,7 +659,9 @@ PlateIDFilter([101,201,301], exclude=True) &ndash; keep features whose plate id 
 </li>
 <li><h3><a href="#header-functions">Functions</a></h3>
 <ul class="">
+<li><code><a title="gplately.feature_filter.add_parser" href="#gplately.feature_filter.add_parser">add_parser</a></code></li>
 <li><code><a title="gplately.feature_filter.filter_feature_collection" href="#gplately.feature_filter.filter_feature_collection">filter_feature_collection</a></code></li>
+<li><code><a title="gplately.feature_filter.run_filter_feature_collection" href="#gplately.feature_filter.run_filter_feature_collection">run_filter_feature_collection</a></code></li>
 </ul>
 </li>
 <li><h3><a href="#header-classes">Classes</a></h3>
