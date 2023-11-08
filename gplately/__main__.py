@@ -8,6 +8,8 @@ import pygplates
 
 from gplately import __version__, feature_filter
 
+from .ptt import fix_crossovers
+
 
 def combine_feature_collections(input_files: List[str], output_file: str):
     """Combine multiple feature collections into one."""
@@ -147,6 +149,13 @@ def main():
         add_help=True,
         description=create_agegrids.__doc__,
     )
+
+    fix_crossovers_cmd = subparser.add_parser(
+        "fix_crossovers",
+        help="fix crossovers",
+        add_help=True,
+    )
+    fix_crossovers.add_arguments(fix_crossovers_cmd)
 
     # combine command arguments
     combine_cmd.set_defaults(func=_run_combine_feature_collections)
