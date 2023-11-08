@@ -651,7 +651,13 @@ def _fill_edge_polygon(geometry, boundary, min_distance=None):
             else:
                 seg0 = substring(boundary, d0, 1, normalized=True)
                 seg1 = substring(boundary, 0, d1, normalized=True)
-            boundary_segment = linemerge([seg0, seg1])
+
+            if isinstance(seg0, Point) and isinstance(seg1, LineString):
+                boundary_segment = seg1
+            elif isinstance(seg1, Point) and isinstance(seg0, LineString):
+                boundary_segment = seg0
+            else:
+                boundary_segment = linemerge([seg0, seg1])
 
         if i == -1:
             out.append(segment_before)
