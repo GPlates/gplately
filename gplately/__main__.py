@@ -2,12 +2,7 @@ import argparse
 import os
 import sys
 import warnings
-from typing import (
-    List,
-    Optional,
-    Sequence,
-    Union,
-)
+from typing import List, Optional, Sequence, Union
 
 import pygplates
 
@@ -34,53 +29,6 @@ def _run_combine_feature_collections(args):
     )
 
 
-def filter_feature_collection(args):
-    """Filter the input feature collection according to command line arguments."""
-    input_feature_collection = pygplates.FeatureCollection(args.filter_input_file)
-
-    filters = []
-    if args.names:
-        filters.append(
-            feature_filter.FeatureNameFilter(
-                args.names,
-                exact_match=args.exact_match,
-                case_sensitive=args.case_sensitive,
-            )
-        )
-    elif args.exclude_names:
-        filters.append(
-            feature_filter.FeatureNameFilter(
-                args.exclude_names,
-                exclude=True,
-                exact_match=args.exact_match,
-                case_sensitive=args.case_sensitive,
-            )
-        )
-
-    if args.pids:
-        filters.append(feature_filter.PlateIDFilter(args.pids))
-    elif args.exclude_pids:
-        filters.append(feature_filter.PlateIDFilter(args.exclude_pids, exclude=True))
-
-    # print(args.max_birth_age)
-    if args.max_birth_age is not None:
-        filters.append(
-            feature_filter.BirthAgeFilter(args.max_birth_age, keep_older=False)
-        )
-    elif args.min_birth_age is not None:
-        filters.append(feature_filter.BirthAgeFilter(args.min_birth_age))
-
-    new_fc = feature_filter.filter_feature_collection(
-        input_feature_collection,
-        filters,
-    )
-
-    new_fc.write(args.filter_output_file)
-    print(
-        f"Done! The filtered feature collection has been saved to {args.filter_output_file}."
-    )
-
-
 def create_agegrids(
     input_filenames: Union[str, Sequence[str]],
     continents_filenames: Union[str, Sequence[str]],
@@ -97,15 +45,9 @@ def create_agegrids(
     unmasked: bool = False,
 ) -> None:
     """Create age grids for a plate model."""
-    from gplately import (
-        PlateReconstruction,
-        PlotTopologies,
-        SeafloorGrid,
-    )
+    from gplately import PlateReconstruction, PlotTopologies, SeafloorGrid
 
-    features = pygplates.FeaturesFunctionArgument(
-        input_filenames
-    ).get_features()
+    features = pygplates.FeaturesFunctionArgument(input_filenames).get_features()
     rotations = []
     topologies = []
     for i in features:
@@ -123,9 +65,7 @@ def create_agegrids(
         continents = pygplates.FeatureCollection()
     else:
         continents = pygplates.FeatureCollection(
-            pygplates.FeaturesFunctionArgument(
-                continents_filenames
-            ).get_features()
+            pygplates.FeaturesFunctionArgument(continents_filenames).get_features()
         )
 
     with warnings.catch_warnings():
@@ -197,11 +137,9 @@ def main():
         help=combine_feature_collections.__doc__,
         description=combine_feature_collections.__doc__,
     )
-    filter_cmd = subparser.add_parser(
-        "filter",
-        help=filter_feature_collection.__doc__,
-        description=filter_feature_collection.__doc__,
-    )
+
+    feature_filter.add_parser(subparser)
+
     agegrid_cmd = subparser.add_parser(
         "agegrid",
         aliases=("ag",),
@@ -215,32 +153,6 @@ def main():
     combine_cmd.add_argument("combine_first_input_file", type=str)
     combine_cmd.add_argument("combine_other_input_files", nargs="+", type=str)
     combine_cmd.add_argument("combine_output_file", type=str)
-
-    # feature filter command arguments
-    filter_cmd.set_defaults(func=filter_feature_collection)
-    filter_cmd.add_argument("filter_input_file", type=str)
-    filter_cmd.add_argument("filter_output_file", type=str)
-
-    name_group = filter_cmd.add_mutually_exclusive_group()
-    name_group.add_argument("-n", "--names", type=str, dest="names", nargs="+")
-    name_group.add_argument(
-        "--exclude-names", type=str, dest="exclude_names", nargs="+"
-    )
-
-    pid_group = filter_cmd.add_mutually_exclusive_group()
-    pid_group.add_argument("-p", "--pids", type=int, dest="pids", nargs="+")
-    pid_group.add_argument("--exclude-pids", type=int, dest="exclude_pids", nargs="+")
-
-    birth_age_group = filter_cmd.add_mutually_exclusive_group()
-    birth_age_group.add_argument(
-        "-a", "--min-birth-age", type=float, dest="min_birth_age"
-    )
-    birth_age_group.add_argument("--max-birth-age", type=float, dest="max_birth_age")
-
-    filter_cmd.add_argument(
-        "--case-sensitive", dest="case_sensitive", action="store_true"
-    )
-    filter_cmd.add_argument("--exact-match", dest="exact_match", action="store_true")
 
     # agegrid command arguments
     agegrid_cmd.set_defaults(func=_run_create_agegrids)
