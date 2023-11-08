@@ -163,6 +163,15 @@ seafloorgrid.reconstruct_by_topologies()
 
 __version__ = "1.1"
 
+try:
+    import plate_model_manager
+except ImportError:
+    print("The plate_model_manager is not installed, installing it now!")
+    import subprocess
+    import sys
+
+    subprocess.call([sys.executable, "-m", "pip", "install", "plate-model-manager"])
+    import plate_model_manager
 
 from . import (
     data,
@@ -170,19 +179,16 @@ from . import (
     geometry,
     gpml,
     grids,
+    oceans,
+    plot,
+    pygplates,
     read_geometries,
     reconstruction,
-    plot,
-    oceans,
-    pygplates,
 )
 
 from .data import DataCollection
 from .download import DataServer
-from .grids import (
-    Raster,
-    # TimeRaster,
-)
+from .grids import Raster
 from .read_geometries import get_valid_geometries, get_geometries
 from .plot import PlotTopologies
 from .reconstruction import (
@@ -202,11 +208,33 @@ __pdoc__ = {
     "_ReconstructByTopologies": False,
 }
 
-try:
-    import plate_model_manager
-except ImportError:
-    print("The plate_model_manager is not installed, installing it now!")
-    import subprocess
-    import sys
-
-    subprocess.call([sys.executable, "-m", "pip", "install", "plate-model-manager"])
+__all__ = [
+    # Modules
+    "data",
+    "download",
+    "geometry",
+    "gpml",
+    "grids",
+    "oceans",
+    "plot",
+    "pygplates",
+    "read_geometries",
+    "reconstruction",
+    "plate_model_manager",
+    # Classes
+    "DataCollection",
+    "DataServer",
+    "PlateReconstruction",
+    "PlotTopologies",
+    "Points",
+    "Raster",
+    "SeafloorGrid",
+    "_ContinentCollision",
+    "_DefaultCollision",
+    "_ReconstructByTopologies",
+    # Functions
+    "get_geometries",
+    "get_valid_geometries",
+    # Constants
+    "EARTH_RADIUS",
+]
