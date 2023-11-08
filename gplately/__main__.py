@@ -8,7 +8,7 @@ import pygplates
 
 from gplately import __version__, feature_filter
 
-from .ptt import fix_crossovers
+from .ptt import fix_crossovers, remove_plate_rotations
 
 
 def combine_feature_collections(input_files: List[str], output_file: str):
@@ -134,12 +134,15 @@ def main():
         title="subcommands",
         description="valid subcommands",
     )
+
+    # add combine feature sub-command
     combine_cmd = subparser.add_parser(
         "combine",
         help=combine_feature_collections.__doc__,
         description=combine_feature_collections.__doc__,
     )
 
+    # add feature filter sub-command
     feature_filter.add_parser(subparser)
 
     agegrid_cmd = subparser.add_parser(
@@ -150,12 +153,21 @@ def main():
         description=create_agegrids.__doc__,
     )
 
+    # add fix crossovers sub-command
     fix_crossovers_cmd = subparser.add_parser(
         "fix_crossovers",
         help="fix crossovers",
         add_help=True,
     )
     fix_crossovers.add_arguments(fix_crossovers_cmd)
+
+    # add remove plate rotations sub-command
+    remove_plate_rotations_cmd = subparser.add_parser(
+        "remove_rotations",
+        help="remove plate rotations",
+        add_help=True,
+    )
+    remove_plate_rotations.add_arguments(remove_plate_rotations_cmd)
 
     # combine command arguments
     combine_cmd.set_defaults(func=_run_combine_feature_collections)
