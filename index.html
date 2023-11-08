@@ -526,7 +526,15 @@ seafloorgrid.reconstruct_by_topologies()
 
 __version__ = &#34;1.1&#34;
 
-import plate_model_manager
+try:
+    import plate_model_manager
+except ImportError:
+    print(&#34;The plate_model_manager is not installed, installing it now!&#34;)
+    import subprocess
+    import sys
+
+    subprocess.call([sys.executable, &#34;-m&#34;, &#34;pip&#34;, &#34;install&#34;, &#34;plate-model-manager&#34;])
+    import plate_model_manager
 
 from . import (
     data,
