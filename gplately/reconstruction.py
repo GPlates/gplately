@@ -626,10 +626,10 @@ class PlateReconstruction(object):
             The specific geological time to reconstruct from. By default, this is set to present day. Raises
             `NotImplementedError` if `from_time` is not set to 0.0 Ma (present day).
 
-        anchor_plate_id : int, default=0
+        anchor_plate_id : int, default=None
             Reconstruct features with respect to a certain anchor plate. By default, reconstructions are made
-            with respect to the absolute reference frame, like a stationary geological element (e.g. a mantle
-            plume). This frame is given the plate ID of 0.
+            with respect to the absolute reference frame (anchor_plate_id = 0), like a stationary object in the mantle,
+            unless otherwise specified.
 
         **reconstruct_type : ReconstructType, default=ReconstructType.feature_geometry
             The specific reconstruction type to generate based on input feature geometry type. Can be provided as
@@ -1420,7 +1420,7 @@ class Points(object):
         """
         return self.get_geopandas_dataframe()
 
-    def reconstruct(self, time, anchor_plate_id=0, return_array=False, **kwargs):
+    def reconstruct(self, time, anchor_plate_id=None, return_array=False, **kwargs):
         """Reconstructs regular geological features, motion paths or flowlines to a specific geological time and extracts
         the latitudinal and longitudinal points of these features.
 
@@ -1432,10 +1432,10 @@ class Points(object):
         time : float
             The specific geological time (Ma) to reconstruct features to.
 
-        anchor_plate_id : int, default=0
+        anchor_plate_id : int, default=None
             Reconstruct features with respect to a certain anchor plate. By default, reconstructions are made
-            with respect to the absolute reference frame, like a stationary geological element (e.g. a mantle
-            plume). This frame is given the plate ID of 0.
+            with respect to the anchor_plate_ID specified in the `gplately.PlateReconstruction` object,
+            which is a default plate ID of 0 unless otherwise specified.
 
         return_array : bool, default False
             Return a `numpy.ndarray`, rather than a `Points` object.
@@ -1472,6 +1472,10 @@ class Points(object):
         """
         from_time = self.time
         to_time = time
+
+        if not anchor_plate_id:
+            anchor_plate_id = self.plate_reconstruction.anchor_plate_id
+
         reconstructed_features = self.plate_reconstruction.reconstruct(
             self.features, to_time, from_time, anchor_plate_id=anchor_plate_id, **kwargs
         )
@@ -1490,7 +1494,7 @@ class Points(object):
             gpts.add_attributes(**self.attributes.copy())
             return gpts
 
-    def reconstruct_to_birth_age(self, ages, anchor_plate_id=0, **kwargs):
+    def reconstruct_to_birth_age(self, ages, anchor_plate_id=None, **kwargs):
         """Reconstructs point features supplied to the `Points` object from the supplied initial time (`self.time`)
         to a range of times. The number of supplied times must equal the number of point features supplied to the Points object.
 
@@ -1499,10 +1503,10 @@ class Points(object):
         ages : array
             Geological times to reconstruct features to. Must have the same length as the `Points `object's `self.features` attribute
             (which holds all point features represented on a unit length sphere in 3D Cartesian coordinates).
-        anchor_plate_id : int, default=0
+        anchor_plate_id : int, default=None
             Reconstruct features with respect to a certain anchor plate. By default, reconstructions are made
-            with respect to the absolute reference frame, like a stationary geological element (e.g. a mantle
-            plume). This frame is given the plate ID of 0.
+            with respect to the anchor_plate_ID specified in the `gplately.PlateReconstruction` object,
+            which is a default plate ID of 0 unless otherwise specified.
         **kwargs
             Additional keyword arguments for the `gplately.PlateReconstruction.reconstruct` method.
 
@@ -1534,6 +1538,9 @@ class Points(object):
 
         """
         from_time = self.time
+        if not anchor_plate_id:
+            anchor_plate_id = self.plate_reconstruction.anchor_plate_id
+
         ages = np.array(ages)
 
         if len(ages) != len(self.features):
