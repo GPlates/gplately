@@ -180,7 +180,7 @@ def read_netcdf_grid(filename, return_grids=False, realign=False, resample=None)
     # possible permutations of lon/lat/z
     label_lon = ['lon', 'lons', 'longitude', 'x', 'east', 'easting', 'eastings']
     label_lat = ['lat', 'lats', 'latitude', 'y', 'north', 'northing', 'northings']
-    label_z   = ['z', 'data', 'values']
+    label_z   = ['z', 'data', 'values', 'Band1']
 
     # add capitalise and upper case permutations
     label_lon = label_lon + [label.capitalize() for label in label_lon] + [label.upper() for label in label_lon]
