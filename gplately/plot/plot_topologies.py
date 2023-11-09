@@ -2,6 +2,7 @@ import warnings
 
 import cartopy.crs as ccrs
 import geopandas as gpd
+import matplotlib.pyplot as plt
 import numpy as np
 import pygplates
 from shapely.geometry.base import BaseGeometry, BaseMultipartGeometry
@@ -1547,19 +1548,14 @@ class PlotTopologies:
 
     def plot_subduction_teeth(
         self,
-        ax,
-        spacing=None,
-        size=7.0,
+        ax=None,
+        size=6.0,
         aspect=1.0,
+        spacing=None,
         color="black",
         **kwargs
     ):
-        """Plot subduction teeth onto a standard map Projection.
-
-        Notes
-        -----
-        Subduction teeth are tessellated from `PlotTopologies` object attributes `trench_left` and
-        `trench_right`, and transformed into Shapely polygons for plotting.
+        """Plot subduction teeth on a map.
 
         Parameters
         ----------
@@ -1567,23 +1563,33 @@ class PlotTopologies:
             A subclass of `matplotlib.axes.Axes` which represents a map Projection.
             The map should be set at a particular Cartopy projection.
 
-        spacing : float, optional
-            Teeth spacing, in display units (usually inches). The default
-            of `None` will choose a value based on the area of the plot.
-
-        size : float, default: 7.0
-            Teeth size (alias: `markersize`).
+        size : float, default: 6.0
+            Teeth size in points (alias: `markersize`).
 
         aspect : float, default: 1.0
             Aspect ratio of teeth triangles (height / width).
+
+        spacing : float, optional
+            Teeth spacing, in display units (usually inches). The default
+            of `None` will choose a value based on the teeth size.
 
         color : str, default='black'
             The colour of the teeth (`markerfacecolor` and `markeredgecolor`).
 
         **kwargs :
             Further keyword arguments are passed to `matplotlib.pyplot.plot`.
-            See `Matplotlib` keyword arguments
+            See `matplotlib` keyword arguments
             [here](https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html).
+
+        Returns
+        -------
+        SubductionTeeth
+            The `gplately.plot.SubductionTeeth` object.
+
+        Notes
+        -----
+        Subduction teeth are tessellated from `PlotTopologies` object attributes `trench_left` and
+        `trench_right`, and transformed into Shapely polygons for plotting.
         """
         if self._time is None:
             raise ValueError(
@@ -1596,6 +1602,8 @@ class PlotTopologies:
             )
             kwargs.pop("transform")
 
+        if ax is None:
+            ax = plt.gca()
         central_meridian = _meridian_from_ax(ax)
         tessellate_degrees = 0.1  # should be small enough for any projection
 

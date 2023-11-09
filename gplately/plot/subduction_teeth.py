@@ -36,14 +36,15 @@ from ..geometry import (
 
 
 class SubductionTeeth:
+    """Add subduction zone teeth to a map."""
     def __init__(
         self,
         left: Sequence[Union[LineString, MultiLineString]],
         right: Sequence[Union[LineString, MultiLineString]],
         ax: Optional[Union[Axes, GeoAxes]] = None,
-        spacing: Optional[float] = None,
-        aspect: float = 1.0,
         size: float = 6.0,
+        aspect: float = 1.0,
+        spacing: Optional[float] = None,
         color="black",
         **kwargs
     ):
@@ -59,22 +60,22 @@ class SubductionTeeth:
             The axes on which to plot the subduction zone teeth. If not specified,
             will use the current axes.
 
-        spacing : float, optional
-            Teeth spacing, in display units (usually inches). The default
-            of `None` will choose a value based on the area of the plot.
+        size : float, default: 6.0
+            Teeth size in points (alias: `markersize`).
 
         aspect : float, default: 1.0
             Aspect ratio of teeth triangles (height / width).
 
-        size : float, default: 6.0
-            Teeth size (alias: `markersize`).
+        spacing : float, optional
+            Teeth spacing, in display units (usually inches). The default
+            of `None` will choose a value based on the teeth size.
 
         color : str, default='black'
             The colour of the teeth (`markerfacecolor` and `markeredgecolor`).
 
         **kwargs :
             Further keyword arguments are passed to `matplotlib.pyplot.plot`.
-            See `Matplotlib` keyword arguments
+            See `matplotlib` keyword arguments
             [here](https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html).
         """
         if ax is None:
@@ -85,6 +86,7 @@ class SubductionTeeth:
         self._right = _explode_geometries(right)
         self._right_projected = None
         self._aspect = float(aspect)
+        self._teeth = []
 
         if spacing is not None:
             spacing = float(spacing)
@@ -115,19 +117,31 @@ class SubductionTeeth:
         self.ax.set_ylim(*self.ax.get_ylim())
         self._draw_teeth()
 
-        callbacks = CallbackRegistry()
+        self._callbacks = CallbackRegistry()
+        self._callback_ids = set()
 
         def callback_func(ax):
             return self._draw_teeth(ax)
 
         for event in ("xlim_changed", "ylim_changed"):
-            callbacks.connect(event, callback_func)
-        ax.callbacks = callbacks
+            self._callback_ids.add(self._callbacks.connect(event, callback_func))
+        self._ax.callbacks = self._callbacks
+
+
+    def __del__(self):
+        for callback_id in self._callback_ids:
+            self._callbacks.disconnect(callback_id)
+        del self._ax.callbacks
 
 
     def _draw_teeth(self, ax=None):
         if ax is None:
             ax = self.ax
+
+        if self._teeth is not None:
+            for i in self._teeth:
+                i.remove()
+        self._teeth = []
 
         spacing = _transform_distance_axes(self.spacing, self.ax)
         left = self.left_projected
@@ -138,7 +152,6 @@ class SubductionTeeth:
         left = domain.intersection(left)
         right = domain.intersection(right)
 
-        out = []
         for polarity, geometries in zip(
             ("left", "right"),
             (left, right),
@@ -177,29 +190,27 @@ class SubductionTeeth:
                         Affine2D().rotate_deg(-90).rotate(angle)
                     )
                     p = ax.plot(point.x, point.y, marker=marker, **self.plot_kw)
-                    if p is not None:
-                        out.append(p)
-        return out
+                    self._teeth.extend(p)
 
-    def _get_default_spacing(self, ax=None) -> float:
-        if ax is None:
-            ax = self.ax
-        axes_bbox = ax.get_position()
-        fig_bbox = ax.figure.bbox_inches
-        axes_width = axes_bbox.width * fig_bbox.width
-        axes_height = axes_bbox.height * fig_bbox.height
-        # axes_area = axes_width * axes_height
-        # spacing = (axes_area / 1000.0) ** 0.5
-        spacing = axes_height / 30
+
+    @staticmethod
+    def _get_default_spacing(markersize: float, aspect: float) -> float:
+        """Default spacing is approximately 2 times triangle width."""
+        width = np.sqrt(2 * markersize / aspect)  # approximately
+        width /= 72  # convert from points to inches
+        spacing = 2 * width
         return spacing
+
 
     @property
     def ax(self):
         return self._ax
 
+
     @property
     def figure(self):
         return self.ax.figure
+
 
     @property
     def projection(self) -> Optional[ccrs.Projection]:
@@ -207,9 +218,11 @@ class SubductionTeeth:
             return self.ax.projection
         return None
 
+
     @property
     def left(self) -> List[LineString]:
         return self._left
+
 
     @property
     def left_projected(self) -> List[LineString]:
@@ -232,9 +245,11 @@ class SubductionTeeth:
                 self._left_projected = [merged]
         return self._left_projected
 
+
     @property
     def right(self) -> List[LineString]:
         return self._right
+
 
     @property
     def right_projected(self) -> List[LineString]:
@@ -257,10 +272,14 @@ class SubductionTeeth:
                 self._right_projected = [merged]
         return self._right_projected
 
+
     @property
     def spacing(self) -> float:
         if self._spacing is None:
-            return self._get_default_spacing()
+            return self._get_default_spacing(
+                self.plot_kw["markersize"],
+                self.aspect,
+            )
         return self._spacing
 
     @spacing.setter
@@ -270,9 +289,11 @@ class SubductionTeeth:
         self._spacing = x
         self._draw_teeth()
 
+
     @property
     def aspect(self):
         return self._aspect
+
 
     @property
     def plot_kw(self) -> Dict[str, Any]:
@@ -283,9 +304,9 @@ def plot_subduction_teeth(
     left: Sequence[Union[LineString, MultiLineString]],
     right: Sequence[Union[LineString, MultiLineString]],
     ax: Optional[Union[Axes, GeoAxes]] = None,
-    spacing: Optional[float] = None,
-    aspect: float = 1.0,
     size: float = 6.0,
+    aspect: float = 1.0,
+    spacing: Optional[float] = None,
     color="black",
     **kwargs,
 ):
@@ -301,23 +322,27 @@ def plot_subduction_teeth(
         The axes on which to plot the subduction zone teeth. If not specified,
         will use the current axes.
 
-    spacing : float, optional
-        Teeth spacing, in display units (usually inches). The default
-        of `None` will choose a value based on the area of the plot.
+    size : float, default: 6.0
+        Teeth size in points (alias: `markersize`).
 
     aspect : float, default: 1.0
         Aspect ratio of teeth triangles (height / width).
 
-    size : float, default: 6.0
-        Teeth size (alias: `markersize`).
+    spacing : float, optional
+        Teeth spacing, in display units (usually inches). The default
+        of `None` will choose a value based on the teeth size.
 
     color : str, default='black'
         The colour of the teeth (`markerfacecolor` and `markeredgecolor`).
 
     **kwargs :
         Further keyword arguments are passed to `matplotlib.pyplot.plot`.
-        See `Matplotlib` keyword arguments
+        See `matplotlib` keyword arguments
         [here](https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html).
+
+    Returns
+    -------
+    SubductionTeeth
 
     Notes
     -----
