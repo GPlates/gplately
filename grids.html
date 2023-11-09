@@ -226,7 +226,7 @@ def read_netcdf_grid(filename, return_grids=False, realign=False, resample=None)
     # possible permutations of lon/lat/z
     label_lon = [&#39;lon&#39;, &#39;lons&#39;, &#39;longitude&#39;, &#39;x&#39;, &#39;east&#39;, &#39;easting&#39;, &#39;eastings&#39;]
     label_lat = [&#39;lat&#39;, &#39;lats&#39;, &#39;latitude&#39;, &#39;y&#39;, &#39;north&#39;, &#39;northing&#39;, &#39;northings&#39;]
-    label_z   = [&#39;z&#39;, &#39;data&#39;, &#39;values&#39;]
+    label_z   = [&#39;z&#39;, &#39;data&#39;, &#39;values&#39;, &#39;Band1&#39;]
 
     # add capitalise and upper case permutations
     label_lon = label_lon + [label.capitalize() for label in label_lon] + [label.upper() for label in label_lon]
@@ -3203,7 +3203,7 @@ An example output of <code>cdf_lat</code> is:<pre><code>masked_array(data=[-90. 
     # possible permutations of lon/lat/z
     label_lon = [&#39;lon&#39;, &#39;lons&#39;, &#39;longitude&#39;, &#39;x&#39;, &#39;east&#39;, &#39;easting&#39;, &#39;eastings&#39;]
     label_lat = [&#39;lat&#39;, &#39;lats&#39;, &#39;latitude&#39;, &#39;y&#39;, &#39;north&#39;, &#39;northing&#39;, &#39;northings&#39;]
-    label_z   = [&#39;z&#39;, &#39;data&#39;, &#39;values&#39;]
+    label_z   = [&#39;z&#39;, &#39;data&#39;, &#39;values&#39;, &#39;Band1&#39;]
 
     # add capitalise and upper case permutations
     label_lon = label_lon + [label.capitalize() for label in label_lon] + [label.upper() for label in label_lon]
