@@ -45,21 +45,23 @@ class PlateReconstruction(object):
         rotation_model,
         topology_features=None,
         static_polygons=None,
-        default_anchor_plate_id=0,
+        anchor_plate_id=0,
     ):
         if hasattr(rotation_model, "reconstruction_identifier"):
             self.name = rotation_model.reconstruction_identifier
         else:
             self.name = None
 
+        self.anchor_plate_id = int(anchor_plate_id)
         self.rotation_model = _RotationModel(
-            rotation_model, default_anchor_plate_id=default_anchor_plate_id
+            rotation_model, default_anchor_plate_id=anchor_plate_id
         )
         self.topology_features = _load_FeatureCollection(topology_features)
         self.static_polygons = _load_FeatureCollection(static_polygons)
 
     def __getstate__(self):
-        filenames = {"rotation_model": self.rotation_model.filenames}
+        filenames = {"rotation_model": self.rotation_model.filenames,
+                     "anchor_plate_id": self.anchor_plate_id}
 
         if self.topology_features:
             filenames["topology_features"] = self.topology_features.filenames
@@ -78,7 +80,7 @@ class PlateReconstruction(object):
 
     def __setstate__(self, state):
         # reinstate unpicklable items
-        self.rotation_model = _RotationModel(state["rotation_model"])
+        self.rotation_model = _RotationModel(state["rotation_model"], default_anchor_plate_id=state["anchor_plate_id"])
 
         self.topology_features = None
         self.static_polygons = None
@@ -172,6 +174,8 @@ class PlateReconstruction(object):
 
         The delta time interval used for velocity calculations is, by default, assumed to be 1Ma.
         """
+        anchor_plate_id = kwargs.pop("anchor_plate_id", self.anchor_plate_id)
+
         if ignore_warnings:
             with warnings.catch_warnings():
                 warnings.simplefilter("ignore")
@@ -180,6 +184,7 @@ class PlateReconstruction(object):
                     self.topology_features,
                     tessellation_threshold_radians,
                     float(time),
+                    anchor_plate_id=anchor_plate_id,
                     **kwargs
                 )
 
@@ -189,6 +194,7 @@ class PlateReconstruction(object):
                 self.topology_features,
                 tessellation_threshold_radians,
                 float(time),
+                anchor_plate_id=anchor_plate_id,
                 **kwargs
             )
 
@@ -464,6 +470,8 @@ class PlateReconstruction(object):
             * spreading velocity magnitude (in cm/yr)
             * length of arc segment (in degrees) that current point is on
         """
+        anchor_plate_id = kwargs.pop("anchor_plate_id", self.anchor_plate_id)
+
         if ignore_warnings:
             with warnings.catch_warnings():
                 warnings.simplefilter("ignore")
@@ -474,6 +482,7 @@ class PlateReconstruction(object):
                     float(time),
                     tessellation_threshold_radians,
                     spreading_feature_types,
+                    anchor_plate_id=anchor_plate_id,
                     **kwargs
                 )
 
@@ -485,6 +494,7 @@ class PlateReconstruction(object):
                 float(time),
                 tessellation_threshold_radians,
                 spreading_feature_types,
+                anchor_plate_id=anchor_plate_id,
                 **kwargs
             )
 
@@ -599,7 +609,7 @@ class PlateReconstruction(object):
 
             return total_ridge_length_kms
 
-    def reconstruct(self, feature, to_time, from_time=0, anchor_plate_id=0, **kwargs):
+    def reconstruct(self, feature, to_time, from_time=0, anchor_plate_id=None, **kwargs):
         """Reconstructs regular geological features, motion paths or flowlines to a specific geological time.
 
         Parameters
@@ -657,6 +667,10 @@ class PlateReconstruction(object):
         from_time, to_time = float(from_time), float(to_time)
 
         reconstructed_features = []
+
+        if not anchor_plate_id:
+            anchor_plate_id = self.anchor_plate_id
+
         pygplates.reconstruct(
             feature,
             self.rotation_model,
@@ -780,7 +794,7 @@ class PlateReconstruction(object):
         lats,
         time_array,
         plate_id=None,
-        anchor_plate_id=0,
+        anchor_plate_id=None,
         return_rate_of_motion=False,
     ):
         """Create a path of points to mark the trajectory of a plate's motion
@@ -845,6 +859,9 @@ class PlateReconstruction(object):
         else:
             query_plate_id = False
             plate_ids = np.ones(len(lons), dtype=int) * plate_id
+
+        if not anchor_plate_id:
+            anchor_plate_id = self.anchor_plate_id
 
         seed_points = zip(lats, lons)
         for i, lat_lon in enumerate(seed_points):
