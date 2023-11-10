@@ -309,7 +309,16 @@ def _load_FeatureCollection(geometry):
     elif geometry is None:
         return None
     else:
-        raise ValueError(&#34;geometry is an invalid type&#34;, type(geometry))</code></pre>
+        try:
+            fc = pygplates.FeatureCollection(
+                pygplates.FeaturesFunctionArgument(geometry).get_features()
+            )
+            fc.filenames = []
+            return fc
+        except Exception as err:
+            raise TypeError(
+                &#34;geometry is an invalid type&#34;, type(geometry)
+            ) from err</code></pre>
 </details>
 </section>
 <section>
