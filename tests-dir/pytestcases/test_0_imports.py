@@ -29,6 +29,7 @@ def test_gplately_modules():
     from gplately import download
     from gplately import tools
     from gplately import grids
+    from gplately import ptt
 
 
 def test_jupyter_available():

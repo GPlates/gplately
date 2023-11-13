@@ -184,6 +184,7 @@ from . import (
     pygplates,
     read_geometries,
     reconstruction,
+    ptt
 )
 
 from .data import DataCollection
@@ -221,6 +222,7 @@ __all__ = [
     "read_geometries",
     "reconstruction",
     "plate_model_manager",
+    "ptt",
     # Classes
     "DataCollection",
     "DataServer",
