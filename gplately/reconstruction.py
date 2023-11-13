@@ -8,8 +8,8 @@ import warnings
 import numpy as np
 import pygplates
 
-from . import ptt
-from . import tools as _tools
+import gplately.ptt as ptt
+import gplately.tools as _tools
 from .gpml import _load_FeatureCollection
 from .pygplates import FeatureCollection as _FeatureCollection
 from .pygplates import RotationModel as _RotationModel
