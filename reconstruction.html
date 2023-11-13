@@ -114,6 +114,7 @@ class PlateReconstruction(object):
         # reinstate unpicklable items
         self.rotation_model = _RotationModel(state[&#34;rotation_model&#34;], default_anchor_plate_id=state[&#34;anchor_plate_id&#34;])
 
+        self.anchor_plate_id = state[&#34;anchor_plate_id&#34;]
         self.topology_features = None
         self.static_polygons = None
 
@@ -2823,6 +2824,7 @@ features.</dd>
         # reinstate unpicklable items
         self.rotation_model = _RotationModel(state[&#34;rotation_model&#34;], default_anchor_plate_id=state[&#34;anchor_plate_id&#34;])
 
+        self.anchor_plate_id = state[&#34;anchor_plate_id&#34;]
         self.topology_features = None
         self.static_polygons = None
 

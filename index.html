@@ -648,7 +648,7 @@ and other oceanic data from the <code><a title="gplately.PlateReconstruction" hr
 <div class="desc"><p>Tools to execute routines efficiently by parallelising
 them over several threads. This uses multiple processing units.</p></div>
 </dd>
-<dt><code class="name"><a title="gplately.plot" href="plot/index.html">gplately.plot</a></code></dt>
+<dt><code class="name"><a title="gplately.plot" href="plot.html">gplately.plot</a></code></dt>
 <dd>
 <div class="desc"><p>Tools for reconstructing and plotting geological features and feature data through time …</p></div>
 </dd>
@@ -4650,6 +4650,7 @@ features.</dd>
         # reinstate unpicklable items
         self.rotation_model = _RotationModel(state[&#34;rotation_model&#34;], default_anchor_plate_id=state[&#34;anchor_plate_id&#34;])
 
+        self.anchor_plate_id = state[&#34;anchor_plate_id&#34;]
         self.topology_features = None
         self.static_polygons = None
 
@@ -7313,7 +7314,7 @@ boundaries and passive continental boundaries.</dd>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">class PlotTopologies:
+<pre><code class="python">class PlotTopologies(object):
     &#34;&#34;&#34;A class with tools to read, reconstruct and plot topology features at specific
     reconstruction times.
 
@@ -7611,7 +7612,7 @@ boundaries and passive continental boundaries.</dd>
         Moreover, coastlines, continents and COBs are reconstructed to the new specified `time`.
         &#34;&#34;&#34;
         self._time = float(time)
-        resolved_topologies = resolve_topologies_into_features(
+        resolved_topologies = ptt.resolve_topologies.resolve_topologies_into_features(
             self.plate_reconstruction.rotation_model,
             self.plate_reconstruction.topology_features,
             self.time,
@@ -8773,6 +8774,76 @@ boundaries and passive continental boundaries.</dd>
             kwargs[&#34;transform&#34;] = self.base_projection
         return gdf.plot(ax=ax, facecolor=&#34;none&#34;, edgecolor=color, **kwargs)
 
+    def plot_subduction_teeth_deprecated(
+        self, ax, spacing=0.1, size=2.0, aspect=1, color=&#34;black&#34;, **kwargs
+    ):
+        &#34;&#34;&#34;Plot subduction teeth onto a standard map Projection.
+
+        Notes
+        -----
+        Subduction teeth are tessellated from `PlotTopologies` object attributes `trench_left` and
+        `trench_right`, and transformed into Shapely polygons for plotting.
+
+        Parameters
+        ----------
+        ax : instance of &lt;cartopy.mpl.geoaxes.GeoAxes&gt; or &lt;cartopy.mpl.geoaxes.GeoAxesSubplot&gt;
+            A subclass of `matplotlib.axes.Axes` which represents a map Projection.
+            The map should be set at a particular Cartopy projection.
+
+        spacing : float, default=0.1
+            The tessellation threshold (in radians). Parametrises subduction tooth density.
+            Triangles are generated only along line segments with distances that exceed
+            the given threshold ‘spacing’.
+
+        size : float, default=2.0
+            Length of teeth triangle base.
+
+        aspect : float, default=1
+            Aspect ratio of teeth triangles. Ratio is 1.0 by default.
+
+        color : str, default=’black’
+            The colour of the teeth. By default, it is set to black.
+
+        **kwargs :
+            Keyword arguments for parameters such as ‘alpha’, etc. for
+            plotting subduction tooth polygons.
+            See `Matplotlib` keyword arguments
+            [here](https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html).
+
+        Returns
+        -------
+        ax : instance of &lt;geopandas.GeoDataFrame.plot&gt;
+            A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map
+            with subduction teeth plotted onto the chosen map projection.
+        &#34;&#34;&#34;
+        import shapely
+
+        # add Subduction Teeth
+        subd_xL, subd_yL = self._tessellate_triangles(
+            self.trench_left,
+            tesselation_radians=spacing,
+            triangle_base_length=size,
+            triangle_aspect=-aspect,
+        )
+        subd_xR, subd_yR = self._tessellate_triangles(
+            self.trench_right,
+            tesselation_radians=spacing,
+            triangle_base_length=size,
+            triangle_aspect=aspect,
+        )
+
+        teeth = []
+        for tX, tY in zip(subd_xL, subd_yL):
+            triangle_xy_points = np.c_[tX, tY]
+            shp = shapely.geometry.Polygon(triangle_xy_points)
+            teeth.append(shp)
+
+        for tX, tY in zip(subd_xR, subd_yR):
+            triangle_xy_points = np.c_[tX, tY]
+            shp = shapely.geometry.Polygon(triangle_xy_points)
+            teeth.append(shp)
+
+        return ax.add_geometries(teeth, crs=self.base_projection, color=color, **kwargs)
 
     def get_subduction_direction(self):
         &#34;&#34;&#34;Create a geopandas.GeoDataFrame object containing geometries of trench directions.
@@ -8829,15 +8900,14 @@ boundaries and passive continental boundaries.</dd>
         return gdf_left, gdf_right
 
     def plot_subduction_teeth(
-        self,
-        ax=None,
-        size=6.0,
-        aspect=1.0,
-        spacing=None,
-        color=&#34;black&#34;,
-        **kwargs
+        self, ax, spacing=0.07, size=None, aspect=None, color=&#34;black&#34;, **kwargs
     ):
-        &#34;&#34;&#34;Plot subduction teeth on a map.
+        &#34;&#34;&#34;Plot subduction teeth onto a standard map Projection.
+
+        Notes
+        -----
+        Subduction teeth are tessellated from `PlotTopologies` object attributes `trench_left` and
+        `trench_right`, and transformed into Shapely polygons for plotting.
 
         Parameters
         ----------
@@ -8845,33 +8915,26 @@ boundaries and passive continental boundaries.</dd>
             A subclass of `matplotlib.axes.Axes` which represents a map Projection.
             The map should be set at a particular Cartopy projection.
 
-        size : float, default: 6.0
-            Teeth size in points (alias: `markersize`).
+        spacing : float, default=0.07
+            The tessellation threshold (in radians). Parametrises subduction tooth density.
+            Triangles are generated only along line segments with distances that exceed
+            the given threshold `spacing`.
 
-        aspect : float, default: 1.0
-            Aspect ratio of teeth triangles (height / width).
+        size : float, default=None
+            Length of teeth triangle base (in radians). If kept at `None`, then
+            `size = 0.5*spacing`.
 
-        spacing : float, optional
-            Teeth spacing, in display units (usually inches). The default
-            of `None` will choose a value based on the teeth size.
+        aspect : float, default=None
+            Aspect ratio of teeth triangles. If kept at `None`, then `aspect = 2/3*size`.
 
         color : str, default=&#39;black&#39;
-            The colour of the teeth (`markerfacecolor` and `markeredgecolor`).
+            The colour of the teeth. By default, it is set to black.
 
         **kwargs :
-            Further keyword arguments are passed to `matplotlib.pyplot.plot`.
-            See `matplotlib` keyword arguments
+            Keyword arguments parameters such as `alpha`, etc.
+            for plotting subduction tooth polygons.
+            See `Matplotlib` keyword arguments
             [here](https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html).
-
-        Returns
-        -------
-        SubductionTeeth
-            The `gplately.plot.SubductionTeeth` object.
-
-        Notes
-        -----
-        Subduction teeth are tessellated from `PlotTopologies` object attributes `trench_left` and
-        `trench_right`, and transformed into Shapely polygons for plotting.
         &#34;&#34;&#34;
         if self._time is None:
             raise ValueError(
@@ -8884,10 +8947,28 @@ boundaries and passive continental boundaries.</dd>
             )
             kwargs.pop(&#34;transform&#34;)
 
-        if ax is None:
-            ax = plt.gca()
         central_meridian = _meridian_from_ax(ax)
-        tessellate_degrees = 0.1  # should be small enough for any projection
+        tessellate_degrees = np.rad2deg(spacing)
+
+        try:
+            projection = ax.projection
+        except AttributeError:
+            print(
+                &#34;The ax.projection does not exist. You must set projection to plot Cartopy maps, such as ax = plt.subplot(211, projection=cartopy.crs.PlateCarree())&#34;
+            )
+            projection = None
+
+        if isinstance(projection, ccrs.PlateCarree):
+            spacing = math.degrees(spacing)
+        else:
+            spacing = spacing * EARTH_RADIUS * 1e3
+
+        if aspect is None:
+            aspect = 2.0 / 3.0
+        if size is None:
+            size = spacing * 0.5
+
+        height = size * aspect
 
         trench_left_features = shapelify_feature_lines(
             self.trench_left,
@@ -8899,15 +8980,28 @@ boundaries and passive continental boundaries.</dd>
             tessellate_degrees=tessellate_degrees,
             central_meridian=central_meridian,
         )
-        return plot_subduction_teeth(
-            left=trench_left_features,
-            right=trench_right_features,
-            spacing=spacing,
+
+        plot_subduction_teeth(
+            trench_left_features,
+            size,
+            &#34;l&#34;,
+            height,
+            spacing,
+            projection=projection,
             ax=ax,
-            aspect=aspect,
-            size=size,
             color=color,
-            **kwargs
+            **kwargs,
+        )
+        plot_subduction_teeth(
+            trench_right_features,
+            size,
+            &#34;r&#34;,
+            height,
+            spacing,
+            projection=projection,
+            ax=ax,
+            color=color,
+            **kwargs,
         )
 
     def plot_plate_id(self, ax, plate_id, **kwargs):
@@ -8984,7 +9078,7 @@ boundaries and passive continental boundaries.</dd>
         # Override matplotlib default origin (&#39;upper&#39;)
         origin = kwargs.pop(&#34;origin&#34;, &#34;lower&#34;)
 
-        from ..grids import Raster
+        from .grids import Raster
 
         if isinstance(grid, Raster):
             # extract extent and origin
@@ -9034,7 +9128,7 @@ boundaries and passive continental boundaries.</dd>
         # Override matplotlib default origin (&#39;upper&#39;)
         origin = kwargs.pop(&#34;origin&#34;, &#34;lower&#34;)
 
-        from ..grids import read_netcdf_grid
+        from .grids import read_netcdf_grid
 
         raster, lon_coords, lat_coords = read_netcdf_grid(filename, return_grids=True)
         extent = [lon_coords[0], lon_coords[-1], lat_coords[0], lat_coords[-1]]
@@ -9098,7 +9192,7 @@ boundaries and passive continental boundaries.</dd>
         lonq, latq = np.meshgrid(lons, lats)
 
         # create a feature from all the points
-        velocity_domain_features = make_GPML_velocity_feature(
+        velocity_domain_features = ptt.velocity_tools.make_GPML_velocity_feature(
             lonq.ravel(), latq.ravel()
         )
 
@@ -9106,7 +9200,7 @@ boundaries and passive continental boundaries.</dd>
         topology_features = self.plate_reconstruction.topology_features
 
         delta_time = 5.0
-        all_velocities = get_plate_velocities(
+        all_velocities = ptt.velocity_tools.get_plate_velocities(
             velocity_domain_features,
             topology_features,
             rotation_model,
@@ -9115,7 +9209,7 @@ boundaries and passive continental boundaries.</dd>
             &#34;vector_comp&#34;,
         )
 
-        X, Y, U, V = get_x_y_u_v(lons, lats, all_velocities)
+        X, Y, U, V = ptt.velocity_tools.get_x_y_u_v(lons, lats, all_velocities)
 
         if normalise:
             mag = np.hypot(U, V)
@@ -14218,7 +14312,7 @@ with the grid plotted onto the chosen map projection.</dd>
     # Override matplotlib default origin (&#39;upper&#39;)
     origin = kwargs.pop(&#34;origin&#34;, &#34;lower&#34;)
 
-    from ..grids import Raster
+    from .grids import Raster
 
     if isinstance(grid, Raster):
         # extract extent and origin
@@ -14300,7 +14394,7 @@ with the netCDF grid plotted onto the chosen map projection.</dd>
     # Override matplotlib default origin (&#39;upper&#39;)
     origin = kwargs.pop(&#34;origin&#34;, &#34;lower&#34;)
 
-    from ..grids import read_netcdf_grid
+    from .grids import read_netcdf_grid
 
     raster, lon_coords, lat_coords = read_netcdf_grid(filename, return_grids=True)
     extent = [lon_coords[0], lon_coords[-1], lat_coords[0], lat_coords[-1]]
@@ -14869,7 +14963,7 @@ with the velocity vector field plotted onto the chosen map projection.</dd>
     lonq, latq = np.meshgrid(lons, lats)
 
     # create a feature from all the points
-    velocity_domain_features = make_GPML_velocity_feature(
+    velocity_domain_features = ptt.velocity_tools.make_GPML_velocity_feature(
         lonq.ravel(), latq.ravel()
     )
 
@@ -14877,7 +14971,7 @@ with the velocity vector field plotted onto the chosen map projection.</dd>
     topology_features = self.plate_reconstruction.topology_features
 
     delta_time = 5.0
-    all_velocities = get_plate_velocities(
+    all_velocities = ptt.velocity_tools.get_plate_velocities(
         velocity_domain_features,
         topology_features,
         rotation_model,
@@ -14886,7 +14980,7 @@ with the velocity vector field plotted onto the chosen map projection.</dd>
         &#34;vector_comp&#34;,
     )
 
-    X, Y, U, V = get_x_y_u_v(lons, lats, all_velocities)
+    X, Y, U, V = ptt.velocity_tools.get_x_y_u_v(lons, lats, all_velocities)
 
     if normalise:
         mag = np.hypot(U, V)
@@ -15183,51 +15277,48 @@ with slab edges plotted onto the chosen map projection.</dd>
 </details>
 </dd>
 <dt id="gplately.PlotTopologies.plot_subduction_teeth"><code class="name flex">
-<span>def <span class="ident">plot_subduction_teeth</span></span>(<span>self, ax=None, size=6.0, aspect=1.0, spacing=None, color='black', **kwargs)</span>
+<span>def <span class="ident">plot_subduction_teeth</span></span>(<span>self, ax, spacing=0.07, size=None, aspect=None, color='black', **kwargs)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Plot subduction teeth on a map.</p>
+<div class="desc"><p>Plot subduction teeth onto a standard map Projection.</p>
+<h2 id="notes">Notes</h2>
+<p>Subduction teeth are tessellated from <code><a title="gplately.PlotTopologies" href="#gplately.PlotTopologies">PlotTopologies</a></code> object attributes <code>trench_left</code> and
+<code>trench_right</code>, and transformed into Shapely polygons for plotting.</p>
 <h2 id="parameters">Parameters</h2>
 <dl>
 <dt><strong><code>ax</code></strong> :&ensp;<code>instance</code> of <code>&lt;cartopy.mpl.geoaxes.GeoAxes&gt;</code> or <code>&lt;cartopy.mpl.geoaxes.GeoAxesSubplot&gt;</code></dt>
 <dd>A subclass of <code>matplotlib.axes.Axes</code> which represents a map Projection.
 The map should be set at a particular Cartopy projection.</dd>
-<dt><strong><code>size</code></strong> :&ensp;<code>float</code>, default<code>: 6.0</code></dt>
-<dd>Teeth size in points (alias: <code>markersize</code>).</dd>
-<dt><strong><code>aspect</code></strong> :&ensp;<code>float</code>, default<code>: 1.0</code></dt>
-<dd>Aspect ratio of teeth triangles (height / width).</dd>
-<dt><strong><code>spacing</code></strong> :&ensp;<code>float</code>, optional</dt>
-<dd>Teeth spacing, in display units (usually inches). The default
-of <code>None</code> will choose a value based on the teeth size.</dd>
+<dt><strong><code>spacing</code></strong> :&ensp;<code>float</code>, default=<code>0.07</code></dt>
+<dd>The tessellation threshold (in radians). Parametrises subduction tooth density.
+Triangles are generated only along line segments with distances that exceed
+the given threshold <code>spacing</code>.</dd>
+<dt><strong><code>size</code></strong> :&ensp;<code>float</code>, default=<code>None</code></dt>
+<dd>Length of teeth triangle base (in radians). If kept at <code>None</code>, then
+<code>size = 0.5*spacing</code>.</dd>
+<dt><strong><code>aspect</code></strong> :&ensp;<code>float</code>, default=<code>None</code></dt>
+<dd>Aspect ratio of teeth triangles. If kept at <code>None</code>, then <code>aspect = 2/3*size</code>.</dd>
 <dt><strong><code>color</code></strong> :&ensp;<code>str</code>, default=<code>'black'</code></dt>
-<dd>The colour of the teeth (<code>markerfacecolor</code> and <code>markeredgecolor</code>).</dd>
+<dd>The colour of the teeth. By default, it is set to black.</dd>
 </dl>
 <p>**kwargs :
-Further keyword arguments are passed to <code>matplotlib.pyplot.plot</code>.
-See <code>matplotlib</code> keyword arguments
-<a href="https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html">here</a>.</p>
-<h2 id="returns">Returns</h2>
-<dl>
-<dt><code>SubductionTeeth</code></dt>
-<dd>The <code><a title="gplately.plot.SubductionTeeth" href="plot/index.html#gplately.plot.SubductionTeeth">SubductionTeeth</a></code> object.</dd>
-</dl>
-<h2 id="notes">Notes</h2>
-<p>Subduction teeth are tessellated from <code><a title="gplately.PlotTopologies" href="#gplately.PlotTopologies">PlotTopologies</a></code> object attributes <code>trench_left</code> and
-<code>trench_right</code>, and transformed into Shapely polygons for plotting.</p></div>
+Keyword arguments parameters such as <code>alpha</code>, etc.
+for plotting subduction tooth polygons.
+See <code>Matplotlib</code> keyword arguments
+<a href="https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html">here</a>.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def plot_subduction_teeth(
-    self,
-    ax=None,
-    size=6.0,
-    aspect=1.0,
-    spacing=None,
-    color=&#34;black&#34;,
-    **kwargs
+    self, ax, spacing=0.07, size=None, aspect=None, color=&#34;black&#34;, **kwargs
 ):
-    &#34;&#34;&#34;Plot subduction teeth on a map.
+    &#34;&#34;&#34;Plot subduction teeth onto a standard map Projection.
+
+    Notes
+    -----
+    Subduction teeth are tessellated from `PlotTopologies` object attributes `trench_left` and
+    `trench_right`, and transformed into Shapely polygons for plotting.
 
     Parameters
     ----------
@@ -15235,33 +15326,26 @@ See <code>matplotlib</code> keyword arguments
         A subclass of `matplotlib.axes.Axes` which represents a map Projection.
         The map should be set at a particular Cartopy projection.
 
-    size : float, default: 6.0
-        Teeth size in points (alias: `markersize`).
+    spacing : float, default=0.07
+        The tessellation threshold (in radians). Parametrises subduction tooth density.
+        Triangles are generated only along line segments with distances that exceed
+        the given threshold `spacing`.
 
-    aspect : float, default: 1.0
-        Aspect ratio of teeth triangles (height / width).
+    size : float, default=None
+        Length of teeth triangle base (in radians). If kept at `None`, then
+        `size = 0.5*spacing`.
 
-    spacing : float, optional
-        Teeth spacing, in display units (usually inches). The default
-        of `None` will choose a value based on the teeth size.
+    aspect : float, default=None
+        Aspect ratio of teeth triangles. If kept at `None`, then `aspect = 2/3*size`.
 
     color : str, default=&#39;black&#39;
-        The colour of the teeth (`markerfacecolor` and `markeredgecolor`).
+        The colour of the teeth. By default, it is set to black.
 
     **kwargs :
-        Further keyword arguments are passed to `matplotlib.pyplot.plot`.
-        See `matplotlib` keyword arguments
+        Keyword arguments parameters such as `alpha`, etc.
+        for plotting subduction tooth polygons.
+        See `Matplotlib` keyword arguments
         [here](https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html).
-
-    Returns
-    -------
-    SubductionTeeth
-        The `gplately.plot.SubductionTeeth` object.
-
-    Notes
-    -----
-    Subduction teeth are tessellated from `PlotTopologies` object attributes `trench_left` and
-    `trench_right`, and transformed into Shapely polygons for plotting.
     &#34;&#34;&#34;
     if self._time is None:
         raise ValueError(
@@ -15274,10 +15358,28 @@ See <code>matplotlib</code> keyword arguments
         )
         kwargs.pop(&#34;transform&#34;)
 
-    if ax is None:
-        ax = plt.gca()
     central_meridian = _meridian_from_ax(ax)
-    tessellate_degrees = 0.1  # should be small enough for any projection
+    tessellate_degrees = np.rad2deg(spacing)
+
+    try:
+        projection = ax.projection
+    except AttributeError:
+        print(
+            &#34;The ax.projection does not exist. You must set projection to plot Cartopy maps, such as ax = plt.subplot(211, projection=cartopy.crs.PlateCarree())&#34;
+        )
+        projection = None
+
+    if isinstance(projection, ccrs.PlateCarree):
+        spacing = math.degrees(spacing)
+    else:
+        spacing = spacing * EARTH_RADIUS * 1e3
+
+    if aspect is None:
+        aspect = 2.0 / 3.0
+    if size is None:
+        size = spacing * 0.5
+
+    height = size * aspect
 
     trench_left_features = shapelify_feature_lines(
         self.trench_left,
@@ -15289,16 +15391,140 @@ See <code>matplotlib</code> keyword arguments
         tessellate_degrees=tessellate_degrees,
         central_meridian=central_meridian,
     )
-    return plot_subduction_teeth(
-        left=trench_left_features,
-        right=trench_right_features,
-        spacing=spacing,
+
+    plot_subduction_teeth(
+        trench_left_features,
+        size,
+        &#34;l&#34;,
+        height,
+        spacing,
+        projection=projection,
         ax=ax,
-        aspect=aspect,
-        size=size,
         color=color,
-        **kwargs
+        **kwargs,
+    )
+    plot_subduction_teeth(
+        trench_right_features,
+        size,
+        &#34;r&#34;,
+        height,
+        spacing,
+        projection=projection,
+        ax=ax,
+        color=color,
+        **kwargs,
     )</code></pre>
+</details>
+</dd>
+<dt id="gplately.PlotTopologies.plot_subduction_teeth_deprecated"><code class="name flex">
+<span>def <span class="ident">plot_subduction_teeth_deprecated</span></span>(<span>self, ax, spacing=0.1, size=2.0, aspect=1, color='black', **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Plot subduction teeth onto a standard map Projection.</p>
+<h2 id="notes">Notes</h2>
+<p>Subduction teeth are tessellated from <code><a title="gplately.PlotTopologies" href="#gplately.PlotTopologies">PlotTopologies</a></code> object attributes <code>trench_left</code> and
+<code>trench_right</code>, and transformed into Shapely polygons for plotting.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>ax</code></strong> :&ensp;<code>instance</code> of <code>&lt;cartopy.mpl.geoaxes.GeoAxes&gt;</code> or <code>&lt;cartopy.mpl.geoaxes.GeoAxesSubplot&gt;</code></dt>
+<dd>A subclass of <code>matplotlib.axes.Axes</code> which represents a map Projection.
+The map should be set at a particular Cartopy projection.</dd>
+<dt><strong><code>spacing</code></strong> :&ensp;<code>float</code>, default=<code>0.1</code></dt>
+<dd>The tessellation threshold (in radians). Parametrises subduction tooth density.
+Triangles are generated only along line segments with distances that exceed
+the given threshold ‘spacing’.</dd>
+<dt><strong><code>size</code></strong> :&ensp;<code>float</code>, default=<code>2.0</code></dt>
+<dd>Length of teeth triangle base.</dd>
+<dt><strong><code>aspect</code></strong> :&ensp;<code>float</code>, default=<code>1</code></dt>
+<dd>Aspect ratio of teeth triangles. Ratio is 1.0 by default.</dd>
+<dt><strong><code>color</code></strong> :&ensp;<code>str</code>, default=<code>’black’</code></dt>
+<dd>The colour of the teeth. By default, it is set to black.</dd>
+</dl>
+<p>**kwargs :
+Keyword arguments for parameters such as ‘alpha’, etc. for
+plotting subduction tooth polygons.
+See <code>Matplotlib</code> keyword arguments
+<a href="https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html">here</a>.</p>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><strong><code>ax</code></strong> :&ensp;<code>instance</code> of <code>&lt;geopandas.GeoDataFrame.plot&gt;</code></dt>
+<dd>A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map
+with subduction teeth plotted onto the chosen map projection.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def plot_subduction_teeth_deprecated(
+    self, ax, spacing=0.1, size=2.0, aspect=1, color=&#34;black&#34;, **kwargs
+):
+    &#34;&#34;&#34;Plot subduction teeth onto a standard map Projection.
+
+    Notes
+    -----
+    Subduction teeth are tessellated from `PlotTopologies` object attributes `trench_left` and
+    `trench_right`, and transformed into Shapely polygons for plotting.
+
+    Parameters
+    ----------
+    ax : instance of &lt;cartopy.mpl.geoaxes.GeoAxes&gt; or &lt;cartopy.mpl.geoaxes.GeoAxesSubplot&gt;
+        A subclass of `matplotlib.axes.Axes` which represents a map Projection.
+        The map should be set at a particular Cartopy projection.
+
+    spacing : float, default=0.1
+        The tessellation threshold (in radians). Parametrises subduction tooth density.
+        Triangles are generated only along line segments with distances that exceed
+        the given threshold ‘spacing’.
+
+    size : float, default=2.0
+        Length of teeth triangle base.
+
+    aspect : float, default=1
+        Aspect ratio of teeth triangles. Ratio is 1.0 by default.
+
+    color : str, default=’black’
+        The colour of the teeth. By default, it is set to black.
+
+    **kwargs :
+        Keyword arguments for parameters such as ‘alpha’, etc. for
+        plotting subduction tooth polygons.
+        See `Matplotlib` keyword arguments
+        [here](https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html).
+
+    Returns
+    -------
+    ax : instance of &lt;geopandas.GeoDataFrame.plot&gt;
+        A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map
+        with subduction teeth plotted onto the chosen map projection.
+    &#34;&#34;&#34;
+    import shapely
+
+    # add Subduction Teeth
+    subd_xL, subd_yL = self._tessellate_triangles(
+        self.trench_left,
+        tesselation_radians=spacing,
+        triangle_base_length=size,
+        triangle_aspect=-aspect,
+    )
+    subd_xR, subd_yR = self._tessellate_triangles(
+        self.trench_right,
+        tesselation_radians=spacing,
+        triangle_base_length=size,
+        triangle_aspect=aspect,
+    )
+
+    teeth = []
+    for tX, tY in zip(subd_xL, subd_yL):
+        triangle_xy_points = np.c_[tX, tY]
+        shp = shapely.geometry.Polygon(triangle_xy_points)
+        teeth.append(shp)
+
+    for tX, tY in zip(subd_xR, subd_yR):
+        triangle_xy_points = np.c_[tX, tY]
+        shp = shapely.geometry.Polygon(triangle_xy_points)
+        teeth.append(shp)
+
+    return ax.add_geometries(teeth, crs=self.base_projection, color=color, **kwargs)</code></pre>
 </details>
 </dd>
 <dt id="gplately.PlotTopologies.plot_sutures"><code class="name flex">
@@ -15850,7 +16076,7 @@ whenever it or the anchor plate is updated.</p>
     Moreover, coastlines, continents and COBs are reconstructed to the new specified `time`.
     &#34;&#34;&#34;
     self._time = float(time)
-    resolved_topologies = resolve_topologies_into_features(
+    resolved_topologies = ptt.resolve_topologies.resolve_topologies_into_features(
         self.plate_reconstruction.rotation_model,
         self.plate_reconstruction.topology_features,
         self.time,
@@ -22260,7 +22486,7 @@ other general z-values are saved to a gridding input file (.npz).</p></div>
 <li><code><a title="gplately.notebooks" href="notebooks/index.html">gplately.notebooks</a></code></li>
 <li><code><a title="gplately.oceans" href="oceans.html">gplately.oceans</a></code></li>
 <li><code><a title="gplately.parallel" href="parallel.html">gplately.parallel</a></code></li>
-<li><code><a title="gplately.plot" href="plot/index.html">gplately.plot</a></code></li>
+<li><code><a title="gplately.plot" href="plot.html">gplately.plot</a></code></li>
 <li><code><a title="gplately.ptt" href="ptt/index.html">gplately.ptt</a></code></li>
 <li><code><a title="gplately.pygplates" href="pygplates.html">gplately.pygplates</a></code></li>
 <li><code><a title="gplately.read_geometries" href="read_geometries.html">gplately.read_geometries</a></code></li>
@@ -22378,6 +22604,7 @@ other general z-values are saved to a gridding input file (.npz).</p></div>
 <li><code><a title="gplately.PlotTopologies.plot_ridges_and_transforms" href="#gplately.PlotTopologies.plot_ridges_and_transforms">plot_ridges_and_transforms</a></code></li>
 <li><code><a title="gplately.PlotTopologies.plot_slab_edges" href="#gplately.PlotTopologies.plot_slab_edges">plot_slab_edges</a></code></li>
 <li><code><a title="gplately.PlotTopologies.plot_subduction_teeth" href="#gplately.PlotTopologies.plot_subduction_teeth">plot_subduction_teeth</a></code></li>
+<li><code><a title="gplately.PlotTopologies.plot_subduction_teeth_deprecated" href="#gplately.PlotTopologies.plot_subduction_teeth_deprecated">plot_subduction_teeth_deprecated</a></code></li>
 <li><code><a title="gplately.PlotTopologies.plot_sutures" href="#gplately.PlotTopologies.plot_sutures">plot_sutures</a></code></li>
 <li><code><a title="gplately.PlotTopologies.plot_terrane_boundaries" href="#gplately.PlotTopologies.plot_terrane_boundaries">plot_terrane_boundaries</a></code></li>
 <li><code><a title="gplately.PlotTopologies.plot_transforms" href="#gplately.PlotTopologies.plot_transforms">plot_transforms</a></code></li>
