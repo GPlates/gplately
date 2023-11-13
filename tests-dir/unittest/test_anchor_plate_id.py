@@ -20,14 +20,14 @@ def main():
         C2020_rotation_file,
         C2020_topology_features,
         C2020_static_polygons,
-        default_anchor_plate_id=501,
+        anchor_plate_id=501,
     )
 
     C2020_101 = gplately.PlateReconstruction(
         C2020_rotation_file,
         C2020_topology_features,
         C2020_static_polygons,
-        default_anchor_plate_id=101,
+        anchor_plate_id=101,
     )
 
     gplot501 = gplately.PlotTopologies(C2020_501, time=130)
