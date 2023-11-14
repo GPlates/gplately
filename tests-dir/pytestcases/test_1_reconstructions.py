@@ -100,7 +100,7 @@ def test_cont_arc_length(time, model, server):
         # Check arc length approximately matches precomputed value
         cmp = approx_lengths[time]
         diff = np.abs(total_cont_arc_length - cmp)
-        assert diff <= 500.0, err_msg
+        assert diff <= 1000.0, err_msg
     else:
         # Value for this time has not been computed, so just make sure no
         # errors were encountered

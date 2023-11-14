@@ -8,6 +8,7 @@ import warnings
 import numpy as np
 import pygplates
 
+from . import ptt as _ptt
 from . import tools as _tools
 from .gpml import _load_FeatureCollection
 from .pygplates import FeatureCollection as _FeatureCollection
@@ -174,13 +175,12 @@ class PlateReconstruction(object):
 
         The delta time interval used for velocity calculations is, by default, assumed to be 1Ma.
         """
-        from . import ptt
         anchor_plate_id = kwargs.pop("anchor_plate_id", self.anchor_plate_id)
 
         if ignore_warnings:
             with warnings.catch_warnings():
                 warnings.simplefilter("ignore")
-                subduction_data = ptt.subduction_convergence.subduction_convergence(
+                subduction_data = _ptt.subduction_convergence.subduction_convergence(
                     self.rotation_model,
                     self.topology_features,
                     tessellation_threshold_radians,
@@ -190,7 +190,7 @@ class PlateReconstruction(object):
                 )
 
         else:
-            subduction_data = ptt.subduction_convergence.subduction_convergence(
+            subduction_data = _ptt.subduction_convergence.subduction_convergence(
                 self.rotation_model,
                 self.topology_features,
                 tessellation_threshold_radians,
@@ -269,8 +269,6 @@ class PlateReconstruction(object):
             The total subduction zone length (in km) at the specified `time`.
 
         """
-        from . import ptt
-
         if use_ptt:
             with warnings.catch_warnings():
                 warnings.simplefilter("ignore")
@@ -473,15 +471,13 @@ class PlateReconstruction(object):
             * spreading velocity magnitude (in cm/yr)
             * length of arc segment (in degrees) that current point is on
         """
-        from . import ptt
-
         anchor_plate_id = kwargs.pop("anchor_plate_id", self.anchor_plate_id)
 
         if ignore_warnings:
             with warnings.catch_warnings():
                 warnings.simplefilter("ignore")
                 spreading_feature_types = [pygplates.FeatureType.gpml_mid_ocean_ridge]
-                ridge_data = ptt.ridge_spreading_rate.spreading_rates(
+                ridge_data = _ptt.ridge_spreading_rate.spreading_rates(
                     self.rotation_model,
                     self.topology_features,
                     float(time),
@@ -493,7 +489,7 @@ class PlateReconstruction(object):
 
         else:
             spreading_feature_types = [pygplates.FeatureType.gpml_mid_ocean_ridge]
-            ridge_data = ptt.ridge_spreading_rate.spreading_rates(
+            ridge_data = _ptt.ridge_spreading_rate.spreading_rates(
                 self.rotation_model,
                 self.topology_features,
                 float(time),
@@ -504,7 +500,7 @@ class PlateReconstruction(object):
             )
 
         if not ridge_data:
-            # the ptt.ridge_spreading_rate.spreading_rates might return None
+            # the _ptt.ridge_spreading_rate.spreading_rates might return None
             return
 
         ridge_data = np.vstack(ridge_data)
@@ -564,7 +560,6 @@ class PlateReconstruction(object):
         total_ridge_length_kms : float
             The total length of global mid-ocean ridges (in kilometres) at the specified time.
         """
-        from . import ptt
 
         if use_ptt is True:
             with warnings.catch_warnings():
@@ -2602,7 +2597,7 @@ class _ReconstructByTopologies(object):
                     curr_valid_points.append(curr_point)
             # For each valid current point find the resolved topology containing it.
             resolved_topologies_containing_curr_valid_points = (
-                ptt.utils.points_in_polygons.find_polygons(
+                _ptt.utils.points_in_polygons.find_polygons(
                     curr_valid_points,
                     [
                         resolved_topology.get_resolved_boundary()
