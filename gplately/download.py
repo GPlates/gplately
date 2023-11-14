@@ -28,6 +28,12 @@ import hashlib as _hashlib
 import pathlib as _pathlib
 import shutil as _shutil
 import requests as _requests
+import warnings
+from plate_model_manager import PlateModelManager
+
+class DownloadWarning(RuntimeWarning):
+    pass
+
 
 def _test_internet_connection(url):
     """Test whether a connection to the required web server
@@ -1420,16 +1426,103 @@ class DataServer(object):
             Toggle print messages regarding server/internet connection status, file availability etc.
 
     """
-    def __init__(self, file_collection, verbose=True):
+    def __init__(self, file_collection, data_dir=None, verbose=True):
+
+        if not data_dir:
+            data_dir = path_to_cache()
 
         self.file_collection = file_collection.capitalize()
-        self.data_collection = DataCollection(self.file_collection)
+        self.pmm = PlateModelManager().get_model(self.file_collection, data_dir=data_dir)
+        self._available_layers = self.pmm.get_avail_layers()
+        self.verbose = verbose
 
-        if str(type(verbose)) == "<class 'bool'>":
-            self.verbose = verbose
-        else:
-            raise ValueError("The verbose toggle must be of Boolean type, not {}".format(type(verbose)))
+        # initialise empty attributes
+        self._rotation_model = None
+        self._topology_features = None
+        self._static_polygons = None
+        self._coastlines = None
+        self._continents = None
+        self._COBs = None
 
+    def _create_feature_collection(self, file_list):
+        feature_collection = _FeatureCollection()
+        for feature in file_list:
+            feature_collection.add( _FeatureCollection(feature) )
+        return feature_collection
+
+    @property
+    def rotation_model(self):
+        if self._rotation_model is None:
+            self._rotation_model = _RotationModel(self.pmm.get_rotation_model())
+            self._rotation_model.reconstruction_identifier = self.file_collection
+        return self._rotation_model
+
+    @property
+    def topology_features(self):
+        if self._topology_features is None:
+            if 'Topologies' in self._available_layers:
+                self._topology_features = self._create_feature_collection(self.pmm.get_topologies())
+            else:
+                warnings.warn("No topology features in {}. No FeatureCollection created - unable to plot trenches, ridges and transforms.".format(self.file_collection),
+                    DownloadWarning)
+                self._topology_features = []
+        return self._topology_features
+    
+    @property
+    def static_polygons(self):
+        if self._static_polygons is None:
+            if 'StaticPolygons' in self._available_layers:
+                self._static_polygons = self._create_feature_collection(self.pmm.get_static_polygons())
+            else:
+                warnings.warn("No static polygons in {}.".format(self.file_collection), DownloadWarning)
+                self._static_polygons = []
+        return self._static_polygons
+    
+    @property
+    def coastlines(self):
+        if self._coastlines is None:
+            if 'Coastlines' in self._available_layers:
+                self._coastlines = self._create_feature_collection(self.pmm.get_coastlines())
+            else:
+                warnings.warn("No Coastlines in {}.".format(self.file_collection), DownloadWarning)
+                self._coastlines = []
+        return self._coastlines
+    
+    @property
+    def continents(self):
+        if self._continents is None:
+            if "ContinentalPolygons" in self._available_layers:
+                self._continents = self._create_feature_collection(self.pmm.get_continental_polygons())
+            else:
+                warnings.warn("No Continental Polygons in {}.".format(self.file_collection), DownloadWarning)
+                self._continents = []
+        return self._continents
+    
+    @property
+    def COBs(self):
+        if self._COBs is None:
+            if "COBs" in self._available_layers:
+                self._COBs = self._create_feature_collection(self.pmm.get_COBs())
+            else:
+                warnings.warn("No continent-ocean boundaries in {}.".format(self.file_collection), DownloadWarning)
+                self._COBs = []
+        return self._COBs
+
+    @property
+    def from_age(self):
+        return self.pmm.get_big_time()
+
+    @property
+    def to_age(self):
+        return self.pmm.get_small_time()
+
+    @property
+    def time_range(self):
+        return self.from_age, self.to_age
+
+    @property
+    def valid_times(self):
+        return self.from_age, self.to_age
 
     def get_plate_reconstruction_files(self):
         """Downloads and constructs a `rotation model`, a set of `topology_features` and
@@ -1471,118 +1564,7 @@ class DataServer(object):
                 No continent-ocean boundaries in TorsvikCocks2017.
 
         """
-
-        verbose = self.verbose
-
-        rotation_filenames = []
-        rotation_model = []
-        topology_filenames = []
-        topology_features = _FeatureCollection()
-        static_polygons= _FeatureCollection()
-        static_polygon_filenames = []
-
-        # Locate all plate reconstruction files from GPlately's DataCollection
-        database = DataCollection.plate_reconstruction_files(self)
-
-        # Set to true if we find the given collection in our database
-        found_collection = False
-        for collection, url in database.items():
-
-            # Only continue if the user's chosen collection exists in our database
-            if self.file_collection.lower() == collection.lower():
-                found_collection = True
-                if len(url) == 1:
-                    fnames = _collection_sorter(
-                        download_from_web(url[0], verbose, model_name=self.file_collection), self.file_collection
-                    )
-                    rotation_filenames = _collect_file_extension(
-                        _str_in_folder(
-                            _str_in_filename(fnames,
-                                strings_to_include=DataCollection.rotation_strings_to_include(self),
-                                strings_to_ignore=DataCollection.rotation_strings_to_ignore(self),
-                                file_collection=self.file_collection,
-                                file_collection_sensitive=True
-                            ),
-                        strings_to_ignore=DataCollection.rotation_strings_to_ignore(self)
-                        ),
-                        [".rot"]
-                    )
-                    #print(rotation_filenames)
-                    rotation_model = _RotationModel(rotation_filenames)
-
-                    topology_filenames = _collect_file_extension(
-                        _str_in_folder(
-                            _str_in_filename(fnames, 
-                                strings_to_include=DataCollection.dynamic_polygon_strings_to_include(self),
-                                strings_to_ignore=DataCollection.dynamic_polygon_strings_to_ignore(self),
-                                file_collection=self.file_collection,
-                                file_collection_sensitive=False,
-                            ), 
-                            strings_to_ignore=DataCollection.dynamic_polygon_strings_to_ignore(self)
-                        ),
-                        [".gpml", ".gpmlz"]
-                    )
-                    #print(topology_filenames)
-                    for file in topology_filenames:
-                        topology_features.add(_FeatureCollection(file))
-
-                    static_polygon_filenames = _check_gpml_or_shp(
-                        _str_in_folder(
-                            _str_in_filename(fnames, 
-                                strings_to_include=DataCollection.static_polygon_strings_to_include(self),
-                                strings_to_ignore=DataCollection.static_polygon_strings_to_ignore(self),
-                                file_collection=self.file_collection,
-                                file_collection_sensitive=False
-                            ),
-                            strings_to_ignore=DataCollection.static_polygon_strings_to_ignore(self)
-                        )
-                    )
-                    #print(static_polygon_filenames)
-                    for stat in static_polygon_filenames:
-                        static_polygons.add(_FeatureCollection(stat))
-
-                else:
-                    for file in url[0]:
-                        rotation_filenames.append(_collect_file_extension(download_from_web(file, verbose, model_name=self.file_collection), [".rot"]))
-                        rotation_model = _RotationModel(rotation_filenames)
-
-                    for file in url[1]:
-                        topology_filenames.append(_collect_file_extension(download_from_web(file, verbose, model_name=self.file_collection), [".gpml"]))
-                        for file in topology_filenames:
-                            topology_features.add(_FeatureCollection(file))
-
-                    for file in url[2]:
-                        static_polygon_filenames.append(
-                            _check_gpml_or_shp(
-                                _str_in_folder(
-                                    _str_in_filename(download_from_web(url[0], verbose, model_name=self.file_collection), 
-                                        strings_to_include=DataCollection.static_polygon_strings_to_include(self)
-                                    ),    
-                                        strings_to_ignore=DataCollection.static_polygon_strings_to_ignore(self)
-                                )
-                            )   
-                        )
-                        for stat in static_polygon_filenames:
-                            static_polygons.add(_FeatureCollection(stat))
-                break
-
-        if found_collection is False:
-            raise ValueError("{} is not in GPlately's DataServer.".format(self.file_collection))
-
-        if not rotation_filenames:
-            print("No .rot files in {}. No rotation model created.".format(self.file_collection))
-            rotation_model = []
-        if not topology_filenames:
-            print("No topology features in {}. No FeatureCollection created - unable to plot trenches, ridges and transforms.".format(self.file_collection))
-            topology_features = []
-        if not static_polygons:
-            print("No static polygons in {}.".format(self.file_collection))
-            static_polygons = []
-
-        # add identifier for setting up DownloadServer independently
-        rotation_model.reconstruction_identifier = self.file_collection
-
-        return rotation_model, topology_features, static_polygons
+        return self.rotation_model, self.topology_features, self.static_polygons
 
 
     def get_topology_geometries(self):
@@ -1637,134 +1619,10 @@ class DataServer(object):
 
                 No continent-ocean boundaries in Matthews2016.
         """
-
-        verbose = self.verbose
-
-        # Locate all topology geometries from GPlately's DataCollection
-        database = DataCollection.topology_geometries(self)
-
-        coastlines = []
-        continents = []
-        COBs = []
-        
-        # Find the requested plate model data collection
-        found_collection = False
-        for collection, url in database.items():
-
-            if self.file_collection.lower() == collection.lower():
-                found_collection = True
-
-                if len(url) == 1:
-                    # Some plate models do not have reconstructable geometries i.e. Li et al. 2008
-                    if url[0] is None:
-                        break
-                    else:
-                        fnames = _collection_sorter(
-                            download_from_web(url[0], verbose, model_name=self.file_collection), self.file_collection
-                        )
-                        coastlines = _check_gpml_or_shp(
-                            _str_in_folder(
-                                _str_in_filename(
-                                    fnames,
-                                    strings_to_include=DataCollection.coastline_strings_to_include(self),
-                                    strings_to_ignore=DataCollection.coastline_strings_to_ignore(self),
-                                    file_collection=self.file_collection,
-                                    file_collection_sensitive=False
-                                ), 
-                                strings_to_ignore=DataCollection.coastline_strings_to_ignore(self)
-                            )
-                        )
-                        continents = _check_gpml_or_shp(
-                            _str_in_folder(
-                                _str_in_filename(
-                                    fnames, 
-                                    strings_to_include=DataCollection.continent_strings_to_include(self),
-                                    strings_to_ignore=DataCollection.continent_strings_to_ignore(self),
-                                    file_collection=self.file_collection,
-                                    file_collection_sensitive=False
-                                ), 
-                                strings_to_ignore=DataCollection.continent_strings_to_ignore(self)
-                            )
-                        )
-                        COBs = _check_gpml_or_shp(
-                            _str_in_folder(
-                                _str_in_filename(
-                                    fnames,
-                                    strings_to_include=DataCollection.COB_strings_to_include(self),
-                                    strings_to_ignore=DataCollection.COB_strings_to_ignore(self),
-                                    file_collection=self.file_collection,
-                                    file_collection_sensitive=False
-                                ), 
-                                strings_to_ignore=DataCollection.COB_strings_to_ignore(self)
-                            )
-                        )
-                else:
-                    for file in url[0]:
-                        if url[0] is not None:
-                            coastlines.append(_str_in_filename(
-                                download_from_web(file, verbose, model_name=self.file_collection), 
-                                strings_to_include=["coastline"])
-                            )
-                            coastlines = _check_gpml_or_shp(coastlines)
-                        else:
-                            coastlines = []
-
-                    for file in url[1]:
-                        if url[1] is not None:
-                            continents.append(_str_in_filename(
-                                download_from_web(file, verbose, model_name=self.file_collection), 
-                                strings_to_include=["continent"])
-                            )
-                            continents = _check_gpml_or_shp(continents)
-                        else:
-                            continents = []
-
-                    for file in url[2]:
-                        if url[2] is not None:
-                            COBs.append(_str_in_filename(
-                                download_from_web(file, verbose, model_name=self.file_collection), 
-                                strings_to_include=["cob"])
-                            )
-                            COBs = _check_gpml_or_shp(COBs)
-                        else:
-                            COBs = []
-                break
-
-        if found_collection is False:
-            raise ValueError("{} is not in GPlately's DataServer.".format(self.file_collection))
-
-        if not coastlines:
-            print("No coastlines in {}.".format(self.file_collection))
-            coastlines_featurecollection = []
-        else:
-            #print(coastlines)
-            coastlines_featurecollection = _FeatureCollection()
-            for coastline in coastlines:
-                coastlines_featurecollection.add(_FeatureCollection(coastline))
-        
-        if not continents:
-            print("No continents in {}.".format(self.file_collection))
-            continents_featurecollection = []
-        else:
-            #print(continents)
-            continents_featurecollection = _FeatureCollection()
-            for continent in continents:
-                continents_featurecollection.add(_FeatureCollection(continent))
-        
-        if not COBs:
-            print("No continent-ocean boundaries in {}.".format(self.file_collection))
-            COBs_featurecollection = []
-        else:
-            #print(COBs)
-            COBs_featurecollection = _FeatureCollection()
-            for COB in COBs:
-                COBs_featurecollection.add(_FeatureCollection(COB))
-        
-        geometries = coastlines_featurecollection, continents_featurecollection, COBs_featurecollection
-        return geometries
+        return self.coastlines, self.continents, self.COBs
 
 
-    def get_age_grid(self, time):
+    def get_age_grid(self, times):
         """Downloads seafloor and paleo-age grids from the plate reconstruction model (`file_collection`)
         passed into the `DataServer` object. Stores grids in the "gplately" cache.
 
@@ -1791,7 +1649,7 @@ class DataServer(object):
         
         Parameters
         ----------
-        time : int, or list of int, default=None
+        times : int, or list of int, default=None
             Request an age grid from one (an integer) or multiple reconstruction times (a
             list of integers).
 
@@ -1841,41 +1699,22 @@ class DataServer(object):
             age_grids = gDownload.get_age_grid([0, 1, 100])
             
         """
+        import numpy as np
+
+        if "AgeGrids" not in self.pmm.get_cfg()['TimeDepRasters']:
+            raise ValueError("AgeGrids are not currently available for {}".format(self.file_collection))
+
         age_grids = []
-        age_grid_links = DataCollection.netcdf4_age_grids(self, time)
 
-        if not isinstance(time, list):
-            time = [time]
+        time_array = np.atleast_1d(times)
 
-        # For a single time passed that isn't in the valid time range, 
-        if not age_grid_links:
-            raise ValueError(
-                "{} {}Ma age grids are not on GPlately's DataServer.".format(
-                    self.file_collection, 
-                    time[0]
-                )
-            )
+        if time_array.min() < self.to_age or time_array.max() > self.from_age:
+            raise ValueError("Specify a time range between {}".format(self.time_range))
 
-        # For a list of times passed...
-        for i, link in enumerate(age_grid_links):
-            if not link:
-                raise ValueError(
-                    "{} {}Ma age grids are not on GPlately's DataServer.".format(
-                        self.file_collection,
-                        time[i]
-                    )
-                )
-            age_grid_file = download_from_web(
-                link, 
-                verbose=self.verbose, 
-                model_name=self.file_collection
-            )
-            age_grid = _gplately.grids.Raster(data=age_grid_file)
-            age_grids.append(age_grid)
-
-        # One last check to alert user if the masked array grids were not processed properly
-        if not age_grids:
-            raise ValueError("{} netCDF4 age grids not found.".format(self.file_collection))
+        for ti in time_array:
+            agegrid_filename = self.pmm.get_raster("AgeGrids", ti)
+            agegrid = _gplately.grids.Raster(data=agegrid_filename)
+            age_grids.append(agegrid)
 
         if len(age_grids) == 1:
             return age_grids[0]
@@ -1883,7 +1722,7 @@ class DataServer(object):
             return age_grids
 
 
-    def get_spreading_rate_grid(self, time):
+    def get_spreading_rate_grid(self, times):
         """Downloads seafloor spreading rate grids from the plate reconstruction 
         model (`file_collection`) passed into the `DataServer` object. Stores 
         grids in the "gplately" cache.
@@ -1952,62 +1791,33 @@ class DataServer(object):
             spreading_rate_grids = gDownload.get_spreading_rate_grid([0, 1, 100])
             
         """
-        spreading_rate_grids = []
-        spreading_rate_grid_links = DataCollection.netcdf4_spreading_rate_grids(self, time)
+        import numpy as np
 
-        if not isinstance(time, list):
-            time = [time]
+        if "SpreadingRateGrids" not in self.pmm.get_cfg()['TimeDepRasters']:
+            raise ValueError("SpreadingRateGrids are not currently available for {}".format(self.file_collection))
 
-        # For a single time passed that isn't in the valid time range, 
-        if not spreading_rate_grid_links:
-            raise ValueError(
-                "{} {}Ma spreading rate grids are not on GPlately's DataServer.".format(
-                    self.file_collection,
-                    time[0]
-                )
-            )
-        # For a list of times passed...
-        for i, link in enumerate(spreading_rate_grid_links):
-            if not link:
-                raise ValueError(
-                    "{} {}Ma spreading rate grids are not on GPlately's DataServer.".format(
-                        self.file_collection,
-                        time[i]
-                    )
-                )
-            spreading_rate_grid_file = download_from_web(
-                link, 
-                verbose=self.verbose, 
-                model_name=self.file_collection
-            )
-            spreading_rate_grid = _gplately.grids.Raster(data=spreading_rate_grid_file)
-            spreading_rate_grids.append(spreading_rate_grid)
+        spread_grids = []
 
-        # One last check to alert user if the masked array grids were not processed properly
-        if not spreading_rate_grids:
-            raise ValueError("{} netCDF4 seafloor spreading rate grids not found.".format(self.file_collection))
+        time_array = np.atleast_1d(times)
 
-        if len(spreading_rate_grids) == 1:
-            return spreading_rate_grids[0]
+        if time_array.min() < self.to_age or time_array.max() > self.from_age:
+            raise ValueError("Specify a time range between {}".format(self.time_range))
+
+        for ti in time_array:
+            spreadgrid_filename = self.pmm.get_raster("SpreadingRateGrids", ti)
+            spreadgrid = _gplately.grids.Raster(data=spreadgrid_filename)
+            spread_grids.append(spreadgrid)
+
+        if len(spread_grids) == 1:
+            return spread_grids[0]
         else: 
-            return spreading_rate_grids
+            return spread_grids
 
 
     def get_valid_times(self):
-        """Returns a tuple of the valid plate model time range, (min_time, max_time).
+        """Returns a tuple of the valid plate model time range, (max_time, min_time).
         """
-        all_model_valid_times = DataCollection.plate_model_valid_reconstruction_times(self)
-
-        min_time = None
-        max_time = None
-        for plate_model_name, valid_times in list(all_model_valid_times.items()):
-            if plate_model_name.lower() == self.file_collection.lower():
-                min_time = valid_times[0]
-                max_time = valid_times[1]
-        if not min_time and not max_time:
-            raise ValueError("Could not find the valid reconstruction time of {}".format(self.file_collection))
-
-        return (min_time, max_time)
+        return self.from_age, self.to_age
 
 
     def get_raster(self, raster_id_string=None):
