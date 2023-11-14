@@ -546,8 +546,8 @@ from . import (
     plot,
     pygplates,
     read_geometries,
-    reconstruction,
-    ptt
+    ptt,
+    reconstruction
 )
 
 from .data import DataCollection
@@ -4745,6 +4745,7 @@ features.</dd>
 
         The delta time interval used for velocity calculations is, by default, assumed to be 1Ma.
         &#34;&#34;&#34;
+        from . import ptt
         anchor_plate_id = kwargs.pop(&#34;anchor_plate_id&#34;, self.anchor_plate_id)
 
         if ignore_warnings:
@@ -4839,6 +4840,8 @@ features.</dd>
             The total subduction zone length (in km) at the specified `time`.
 
         &#34;&#34;&#34;
+        from . import ptt
+
         if use_ptt:
             with warnings.catch_warnings():
                 warnings.simplefilter(&#34;ignore&#34;)
@@ -5041,6 +5044,8 @@ features.</dd>
             * spreading velocity magnitude (in cm/yr)
             * length of arc segment (in degrees) that current point is on
         &#34;&#34;&#34;
+        from . import ptt
+
         anchor_plate_id = kwargs.pop(&#34;anchor_plate_id&#34;, self.anchor_plate_id)
 
         if ignore_warnings:
@@ -5130,6 +5135,7 @@ features.</dd>
         total_ridge_length_kms : float
             The total length of global mid-ocean ridges (in kilometres) at the specified time.
         &#34;&#34;&#34;
+        from . import ptt
 
         if use_ptt is True:
             with warnings.catch_warnings():
@@ -6518,6 +6524,8 @@ Each tuple in the list corresponds to a tessellated point and has the following 
         * spreading velocity magnitude (in cm/yr)
         * length of arc segment (in degrees) that current point is on
     &#34;&#34;&#34;
+    from . import ptt
+
     anchor_plate_id = kwargs.pop(&#34;anchor_plate_id&#34;, self.anchor_plate_id)
 
     if ignore_warnings:
@@ -6725,6 +6733,7 @@ than -90) - note that this ignores the kinematics of the subducting plate.</p>
 
     The delta time interval used for velocity calculations is, by default, assumed to be 1Ma.
     &#34;&#34;&#34;
+    from . import ptt
     anchor_plate_id = kwargs.pop(&#34;anchor_plate_id&#34;, self.anchor_plate_id)
 
     if ignore_warnings:
@@ -6994,6 +7003,7 @@ Scales lengths to kilometres using the geocentric radius.</p>
     total_ridge_length_kms : float
         The total length of global mid-ocean ridges (in kilometres) at the specified time.
     &#34;&#34;&#34;
+    from . import ptt
 
     if use_ptt is True:
         with warnings.catch_warnings():
@@ -7119,6 +7129,8 @@ polarities and/or subducting plates.</dd>
         The total subduction zone length (in km) at the specified `time`.
 
     &#34;&#34;&#34;
+    from . import ptt
+
     if use_ptt:
         with warnings.catch_warnings():
             warnings.simplefilter(&#34;ignore&#34;)

@@ -40,8 +40,7 @@ import warnings
 import numpy as np
 import pygplates
 
-import gplately.ptt as ptt
-import gplately.tools as _tools
+from . import tools as _tools
 from .gpml import _load_FeatureCollection
 from .pygplates import FeatureCollection as _FeatureCollection
 from .pygplates import RotationModel as _RotationModel
@@ -207,6 +206,7 @@ class PlateReconstruction(object):
 
         The delta time interval used for velocity calculations is, by default, assumed to be 1Ma.
         &#34;&#34;&#34;
+        from . import ptt
         anchor_plate_id = kwargs.pop(&#34;anchor_plate_id&#34;, self.anchor_plate_id)
 
         if ignore_warnings:
@@ -301,6 +301,8 @@ class PlateReconstruction(object):
             The total subduction zone length (in km) at the specified `time`.
 
         &#34;&#34;&#34;
+        from . import ptt
+
         if use_ptt:
             with warnings.catch_warnings():
                 warnings.simplefilter(&#34;ignore&#34;)
@@ -503,6 +505,8 @@ class PlateReconstruction(object):
             * spreading velocity magnitude (in cm/yr)
             * length of arc segment (in degrees) that current point is on
         &#34;&#34;&#34;
+        from . import ptt
+
         anchor_plate_id = kwargs.pop(&#34;anchor_plate_id&#34;, self.anchor_plate_id)
 
         if ignore_warnings:
@@ -592,6 +596,7 @@ class PlateReconstruction(object):
         total_ridge_length_kms : float
             The total length of global mid-ocean ridges (in kilometres) at the specified time.
         &#34;&#34;&#34;
+        from . import ptt
 
         if use_ptt is True:
             with warnings.catch_warnings():
@@ -2917,6 +2922,7 @@ features.</dd>
 
         The delta time interval used for velocity calculations is, by default, assumed to be 1Ma.
         &#34;&#34;&#34;
+        from . import ptt
         anchor_plate_id = kwargs.pop(&#34;anchor_plate_id&#34;, self.anchor_plate_id)
 
         if ignore_warnings:
@@ -3011,6 +3017,8 @@ features.</dd>
             The total subduction zone length (in km) at the specified `time`.
 
         &#34;&#34;&#34;
+        from . import ptt
+
         if use_ptt:
             with warnings.catch_warnings():
                 warnings.simplefilter(&#34;ignore&#34;)
@@ -3213,6 +3221,8 @@ features.</dd>
             * spreading velocity magnitude (in cm/yr)
             * length of arc segment (in degrees) that current point is on
         &#34;&#34;&#34;
+        from . import ptt
+
         anchor_plate_id = kwargs.pop(&#34;anchor_plate_id&#34;, self.anchor_plate_id)
 
         if ignore_warnings:
@@ -3302,6 +3312,7 @@ features.</dd>
         total_ridge_length_kms : float
             The total length of global mid-ocean ridges (in kilometres) at the specified time.
         &#34;&#34;&#34;
+        from . import ptt
 
         if use_ptt is True:
             with warnings.catch_warnings():
@@ -4690,6 +4701,8 @@ Each tuple in the list corresponds to a tessellated point and has the following 
         * spreading velocity magnitude (in cm/yr)
         * length of arc segment (in degrees) that current point is on
     &#34;&#34;&#34;
+    from . import ptt
+
     anchor_plate_id = kwargs.pop(&#34;anchor_plate_id&#34;, self.anchor_plate_id)
 
     if ignore_warnings:
@@ -4897,6 +4910,7 @@ than -90) - note that this ignores the kinematics of the subducting plate.</p>
 
     The delta time interval used for velocity calculations is, by default, assumed to be 1Ma.
     &#34;&#34;&#34;
+    from . import ptt
     anchor_plate_id = kwargs.pop(&#34;anchor_plate_id&#34;, self.anchor_plate_id)
 
     if ignore_warnings:
@@ -5166,6 +5180,7 @@ Scales lengths to kilometres using the geocentric radius.</p>
     total_ridge_length_kms : float
         The total length of global mid-ocean ridges (in kilometres) at the specified time.
     &#34;&#34;&#34;
+    from . import ptt
 
     if use_ptt is True:
         with warnings.catch_warnings():
@@ -5291,6 +5306,8 @@ polarities and/or subducting plates.</dd>
         The total subduction zone length (in km) at the specified `time`.
 
     &#34;&#34;&#34;
+    from . import ptt
+
     if use_ptt:
         with warnings.catch_warnings():
             warnings.simplefilter(&#34;ignore&#34;)
