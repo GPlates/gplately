@@ -4745,13 +4745,12 @@ features.</dd>
 
         The delta time interval used for velocity calculations is, by default, assumed to be 1Ma.
         &#34;&#34;&#34;
-        from . import ptt
         anchor_plate_id = kwargs.pop(&#34;anchor_plate_id&#34;, self.anchor_plate_id)
 
         if ignore_warnings:
             with warnings.catch_warnings():
                 warnings.simplefilter(&#34;ignore&#34;)
-                subduction_data = ptt.subduction_convergence.subduction_convergence(
+                subduction_data = _ptt.subduction_convergence.subduction_convergence(
                     self.rotation_model,
                     self.topology_features,
                     tessellation_threshold_radians,
@@ -4761,7 +4760,7 @@ features.</dd>
                 )
 
         else:
-            subduction_data = ptt.subduction_convergence.subduction_convergence(
+            subduction_data = _ptt.subduction_convergence.subduction_convergence(
                 self.rotation_model,
                 self.topology_features,
                 tessellation_threshold_radians,
@@ -4840,8 +4839,6 @@ features.</dd>
             The total subduction zone length (in km) at the specified `time`.
 
         &#34;&#34;&#34;
-        from . import ptt
-
         if use_ptt:
             with warnings.catch_warnings():
                 warnings.simplefilter(&#34;ignore&#34;)
@@ -5044,15 +5041,13 @@ features.</dd>
             * spreading velocity magnitude (in cm/yr)
             * length of arc segment (in degrees) that current point is on
         &#34;&#34;&#34;
-        from . import ptt
-
         anchor_plate_id = kwargs.pop(&#34;anchor_plate_id&#34;, self.anchor_plate_id)
 
         if ignore_warnings:
             with warnings.catch_warnings():
                 warnings.simplefilter(&#34;ignore&#34;)
                 spreading_feature_types = [pygplates.FeatureType.gpml_mid_ocean_ridge]
-                ridge_data = ptt.ridge_spreading_rate.spreading_rates(
+                ridge_data = _ptt.ridge_spreading_rate.spreading_rates(
                     self.rotation_model,
                     self.topology_features,
                     float(time),
@@ -5064,7 +5059,7 @@ features.</dd>
 
         else:
             spreading_feature_types = [pygplates.FeatureType.gpml_mid_ocean_ridge]
-            ridge_data = ptt.ridge_spreading_rate.spreading_rates(
+            ridge_data = _ptt.ridge_spreading_rate.spreading_rates(
                 self.rotation_model,
                 self.topology_features,
                 float(time),
@@ -5075,7 +5070,7 @@ features.</dd>
             )
 
         if not ridge_data:
-            # the ptt.ridge_spreading_rate.spreading_rates might return None
+            # the _ptt.ridge_spreading_rate.spreading_rates might return None
             return
 
         ridge_data = np.vstack(ridge_data)
@@ -5135,7 +5130,6 @@ features.</dd>
         total_ridge_length_kms : float
             The total length of global mid-ocean ridges (in kilometres) at the specified time.
         &#34;&#34;&#34;
-        from . import ptt
 
         if use_ptt is True:
             with warnings.catch_warnings():
@@ -6524,15 +6518,13 @@ Each tuple in the list corresponds to a tessellated point and has the following 
         * spreading velocity magnitude (in cm/yr)
         * length of arc segment (in degrees) that current point is on
     &#34;&#34;&#34;
-    from . import ptt
-
     anchor_plate_id = kwargs.pop(&#34;anchor_plate_id&#34;, self.anchor_plate_id)
 
     if ignore_warnings:
         with warnings.catch_warnings():
             warnings.simplefilter(&#34;ignore&#34;)
             spreading_feature_types = [pygplates.FeatureType.gpml_mid_ocean_ridge]
-            ridge_data = ptt.ridge_spreading_rate.spreading_rates(
+            ridge_data = _ptt.ridge_spreading_rate.spreading_rates(
                 self.rotation_model,
                 self.topology_features,
                 float(time),
@@ -6544,7 +6536,7 @@ Each tuple in the list corresponds to a tessellated point and has the following 
 
     else:
         spreading_feature_types = [pygplates.FeatureType.gpml_mid_ocean_ridge]
-        ridge_data = ptt.ridge_spreading_rate.spreading_rates(
+        ridge_data = _ptt.ridge_spreading_rate.spreading_rates(
             self.rotation_model,
             self.topology_features,
             float(time),
@@ -6555,7 +6547,7 @@ Each tuple in the list corresponds to a tessellated point and has the following 
         )
 
     if not ridge_data:
-        # the ptt.ridge_spreading_rate.spreading_rates might return None
+        # the _ptt.ridge_spreading_rate.spreading_rates might return None
         return
 
     ridge_data = np.vstack(ridge_data)
@@ -6733,13 +6725,12 @@ than -90) - note that this ignores the kinematics of the subducting plate.</p>
 
     The delta time interval used for velocity calculations is, by default, assumed to be 1Ma.
     &#34;&#34;&#34;
-    from . import ptt
     anchor_plate_id = kwargs.pop(&#34;anchor_plate_id&#34;, self.anchor_plate_id)
 
     if ignore_warnings:
         with warnings.catch_warnings():
             warnings.simplefilter(&#34;ignore&#34;)
-            subduction_data = ptt.subduction_convergence.subduction_convergence(
+            subduction_data = _ptt.subduction_convergence.subduction_convergence(
                 self.rotation_model,
                 self.topology_features,
                 tessellation_threshold_radians,
@@ -6749,7 +6740,7 @@ than -90) - note that this ignores the kinematics of the subducting plate.</p>
             )
 
     else:
-        subduction_data = ptt.subduction_convergence.subduction_convergence(
+        subduction_data = _ptt.subduction_convergence.subduction_convergence(
             self.rotation_model,
             self.topology_features,
             tessellation_threshold_radians,
@@ -7003,7 +6994,6 @@ Scales lengths to kilometres using the geocentric radius.</p>
     total_ridge_length_kms : float
         The total length of global mid-ocean ridges (in kilometres) at the specified time.
     &#34;&#34;&#34;
-    from . import ptt
 
     if use_ptt is True:
         with warnings.catch_warnings():
@@ -7129,8 +7119,6 @@ polarities and/or subducting plates.</dd>
         The total subduction zone length (in km) at the specified `time`.
 
     &#34;&#34;&#34;
-    from . import ptt
-
     if use_ptt:
         with warnings.catch_warnings():
             warnings.simplefilter(&#34;ignore&#34;)
