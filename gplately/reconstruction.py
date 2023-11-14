@@ -8,7 +8,6 @@ import warnings
 import numpy as np
 import pygplates
 
-from . import ptt as _ptt
 from . import tools as _tools
 from .gpml import _load_FeatureCollection
 from .pygplates import FeatureCollection as _FeatureCollection
@@ -175,6 +174,7 @@ class PlateReconstruction(object):
 
         The delta time interval used for velocity calculations is, by default, assumed to be 1Ma.
         """
+        from . import ptt as _ptt
         anchor_plate_id = kwargs.pop("anchor_plate_id", self.anchor_plate_id)
 
         if ignore_warnings:
@@ -269,6 +269,8 @@ class PlateReconstruction(object):
             The total subduction zone length (in km) at the specified `time`.
 
         """
+        from . import ptt as _ptt
+
         if use_ptt:
             with warnings.catch_warnings():
                 warnings.simplefilter("ignore")
@@ -471,6 +473,7 @@ class PlateReconstruction(object):
             * spreading velocity magnitude (in cm/yr)
             * length of arc segment (in degrees) that current point is on
         """
+        from . import ptt as _ptt
         anchor_plate_id = kwargs.pop("anchor_plate_id", self.anchor_plate_id)
 
         if ignore_warnings:
@@ -560,6 +563,7 @@ class PlateReconstruction(object):
         total_ridge_length_kms : float
             The total length of global mid-ocean ridges (in kilometres) at the specified time.
         """
+        from . import ptt as _ptt
 
         if use_ptt is True:
             with warnings.catch_warnings():
@@ -2568,6 +2572,7 @@ class _ReconstructByTopologies(object):
                     self.curr_points[point_index] = None
 
     def _find_resolved_topologies_containing_points(self):
+        from . import ptt as _ptt
         current_time = self.get_current_time()
 
         # Resolve the plate polygons for the current time.
