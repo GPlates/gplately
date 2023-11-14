@@ -183,8 +183,8 @@ from . import (
     plot,
     pygplates,
     read_geometries,
-    reconstruction,
-    ptt
+    ptt,
+    reconstruction
 )
 
 from .data import DataCollection
