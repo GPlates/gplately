@@ -161,7 +161,7 @@ seafloorgrid.reconstruct_by_topologies()
 
 """
 
-__version__ = "1.1"
+__version__ = "1.2.5"
 
 try:
     import plate_model_manager
@@ -181,26 +181,25 @@ from . import (
     grids,
     oceans,
     plot,
+    ptt,
     pygplates,
     read_geometries,
-    ptt,
-    reconstruction
+    reconstruction,
 )
-
 from .data import DataCollection
 from .download import DataServer
 from .grids import Raster
-from .read_geometries import get_valid_geometries, get_geometries
+from .oceans import SeafloorGrid
 from .plot import PlotTopologies
+from .read_geometries import get_geometries, get_valid_geometries
 from .reconstruction import (
     PlateReconstruction,
     Points,
-    _DefaultCollision,
     _ContinentCollision,
+    _DefaultCollision,
     _ReconstructByTopologies,
 )
 from .tools import EARTH_RADIUS
-from .oceans import SeafloorGrid
 
 __pdoc__ = {
     "data": False,
