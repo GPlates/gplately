@@ -161,7 +161,7 @@ seafloorgrid.reconstruct_by_topologies()
 
 """
 
-__version__ = "1.2.5"
+__version__ = "1.2.8"
 
 try:
     import plate_model_manager
