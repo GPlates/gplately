@@ -17,31 +17,12 @@ permissions:
 
 jobs:
   deploy:
-
-    runs-on: ubuntu-20.04
+    runs-on: ubuntu-latest
 
     steps:
-    - uses: actions/checkout@v3
-    - name: Set up Python
-      uses: actions/setup-python@v3
-      with:
-        python-version: '3.8'
-    - name: Install dependencies
-      run: |
-        python -m pip install --upgrade pip
-        pip install flake8 pytest
-        if [ -f requirements.txt ]; then pip install -r requirements.txt; fi
-        sudo apt-get update
-        sudo apt-get install -yq wget libboost-python-dev libboost-program-options-dev libgdal-dev libglew-dev libglu1-mesa libproj-dev libqt5core5a libqt5gui5 libqt5network5 libqt5opengl5 libqt5svg5 libqt5widgets5 libqt5xml5 libqt5xmlpatterns5 libqwt-qt5-6
-        wget https://www.earthbyte.org/webdav/ftp/earthbyte/pygplates/pygplates-py3_rev33_ubuntu-20.04-amd64.deb -O pygplates_package.deb
-        yes | sudo dpkg -i pygplates_package.deb
-    - name: Build package
-      run: |
-        export PYTHONPATH=$PYTHONPATH:/usr/lib/
-        export LD_PRELOAD=/lib/x86_64-linux-gnu/libstdc++.so.6:$LD_PRELOAD
-        python setup.py sdist
-    - name: Publish package
-      uses: pypa/gh-action-pypi-publish@27b31702a0e7fc50959f5ad993c78deac1bdfc29
-      with:
-        user: __token__
-        password: ${{ secrets.PYPI_API_TOKEN }}
+      - name: Checkout
+        uses: actions/checkout@v3
+      - name: Publish package
+        run: |
+          chmod +x ./scripts/pypi-publish.sh
+          ./scripts/pypi-publish.sh '${{secrets.PYPI_API_TOKEN}}'

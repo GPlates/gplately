@@ -4,7 +4,7 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "gplately"
-version = "1.2.5"
+dynamic = ["version"]
 description = "Object-orientated Python interface to pyGPlates for plate tectonic reconstruction"
 readme = "README.md"
 authors = [{ name = "Ben Mather", email = "ben.mather@sydney.edu.au" }]
@@ -46,7 +46,10 @@ gplately = "gplately"
 "gplately.ptt.utils" = "gplately/ptt/utils"
 
 [tool.setuptools.package-data]
-gplately = ["notebooks/*", "examples/*"]
+gplately = []
+
+[tool.setuptools.dynamic]
+version = {attr = "gplately.__version__"}
 
 [project.optional-dependencies]
 dev = ["black", "bumpver", "isort", "pip-tools", "pytest"]
