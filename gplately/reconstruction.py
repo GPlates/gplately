@@ -8,7 +8,6 @@ import warnings
 import numpy as np
 import pygplates
 
-from . import ptt
 from . import tools as _tools
 from .gpml import _load_FeatureCollection
 from .pygplates import FeatureCollection as _FeatureCollection
@@ -45,21 +44,23 @@ class PlateReconstruction(object):
         rotation_model,
         topology_features=None,
         static_polygons=None,
-        default_anchor_plate_id=0,
+        anchor_plate_id=0,
     ):
         if hasattr(rotation_model, "reconstruction_identifier"):
             self.name = rotation_model.reconstruction_identifier
         else:
             self.name = None
 
+        self.anchor_plate_id = int(anchor_plate_id)
         self.rotation_model = _RotationModel(
-            rotation_model, default_anchor_plate_id=default_anchor_plate_id
+            rotation_model, default_anchor_plate_id=anchor_plate_id
         )
         self.topology_features = _load_FeatureCollection(topology_features)
         self.static_polygons = _load_FeatureCollection(static_polygons)
 
     def __getstate__(self):
-        filenames = {"rotation_model": self.rotation_model.filenames}
+        filenames = {"rotation_model": self.rotation_model.filenames,
+                     "anchor_plate_id": self.anchor_plate_id}
 
         if self.topology_features:
             filenames["topology_features"] = self.topology_features.filenames
@@ -78,8 +79,9 @@ class PlateReconstruction(object):
 
     def __setstate__(self, state):
         # reinstate unpicklable items
-        self.rotation_model = _RotationModel(state["rotation_model"])
+        self.rotation_model = _RotationModel(state["rotation_model"], default_anchor_plate_id=state["anchor_plate_id"])
 
+        self.anchor_plate_id = state["anchor_plate_id"]
         self.topology_features = None
         self.static_polygons = None
 
@@ -172,23 +174,28 @@ class PlateReconstruction(object):
 
         The delta time interval used for velocity calculations is, by default, assumed to be 1Ma.
         """
+        from . import ptt as _ptt
+        anchor_plate_id = kwargs.pop("anchor_plate_id", self.anchor_plate_id)
+
         if ignore_warnings:
             with warnings.catch_warnings():
                 warnings.simplefilter("ignore")
-                subduction_data = ptt.subduction_convergence.subduction_convergence(
+                subduction_data = _ptt.subduction_convergence.subduction_convergence(
                     self.rotation_model,
                     self.topology_features,
                     tessellation_threshold_radians,
                     float(time),
+                    anchor_plate_id=anchor_plate_id,
                     **kwargs
                 )
 
         else:
-            subduction_data = ptt.subduction_convergence.subduction_convergence(
+            subduction_data = _ptt.subduction_convergence.subduction_convergence(
                 self.rotation_model,
                 self.topology_features,
                 tessellation_threshold_radians,
                 float(time),
+                anchor_plate_id=anchor_plate_id,
                 **kwargs
             )
 
@@ -262,6 +269,8 @@ class PlateReconstruction(object):
             The total subduction zone length (in km) at the specified `time`.
 
         """
+        from . import ptt as _ptt
+
         if use_ptt:
             with warnings.catch_warnings():
                 warnings.simplefilter("ignore")
@@ -464,32 +473,37 @@ class PlateReconstruction(object):
             * spreading velocity magnitude (in cm/yr)
             * length of arc segment (in degrees) that current point is on
         """
+        from . import ptt as _ptt
+        anchor_plate_id = kwargs.pop("anchor_plate_id", self.anchor_plate_id)
+
         if ignore_warnings:
             with warnings.catch_warnings():
                 warnings.simplefilter("ignore")
                 spreading_feature_types = [pygplates.FeatureType.gpml_mid_ocean_ridge]
-                ridge_data = ptt.ridge_spreading_rate.spreading_rates(
+                ridge_data = _ptt.ridge_spreading_rate.spreading_rates(
                     self.rotation_model,
                     self.topology_features,
                     float(time),
                     tessellation_threshold_radians,
                     spreading_feature_types,
+                    anchor_plate_id=anchor_plate_id,
                     **kwargs
                 )
 
         else:
             spreading_feature_types = [pygplates.FeatureType.gpml_mid_ocean_ridge]
-            ridge_data = ptt.ridge_spreading_rate.spreading_rates(
+            ridge_data = _ptt.ridge_spreading_rate.spreading_rates(
                 self.rotation_model,
                 self.topology_features,
                 float(time),
                 tessellation_threshold_radians,
                 spreading_feature_types,
+                anchor_plate_id=anchor_plate_id,
                 **kwargs
             )
 
         if not ridge_data:
-            # the ptt.ridge_spreading_rate.spreading_rates might return None
+            # the _ptt.ridge_spreading_rate.spreading_rates might return None
             return
 
         ridge_data = np.vstack(ridge_data)
@@ -549,6 +563,7 @@ class PlateReconstruction(object):
         total_ridge_length_kms : float
             The total length of global mid-ocean ridges (in kilometres) at the specified time.
         """
+        from . import ptt as _ptt
 
         if use_ptt is True:
             with warnings.catch_warnings():
@@ -599,7 +614,7 @@ class PlateReconstruction(object):
 
             return total_ridge_length_kms
 
-    def reconstruct(self, feature, to_time, from_time=0, anchor_plate_id=0, **kwargs):
+    def reconstruct(self, feature, to_time, from_time=0, anchor_plate_id=None, **kwargs):
         """Reconstructs regular geological features, motion paths or flowlines to a specific geological time.
 
         Parameters
@@ -616,10 +631,10 @@ class PlateReconstruction(object):
             The specific geological time to reconstruct from. By default, this is set to present day. Raises
             `NotImplementedError` if `from_time` is not set to 0.0 Ma (present day).
 
-        anchor_plate_id : int, default=0
+        anchor_plate_id : int, default=None
             Reconstruct features with respect to a certain anchor plate. By default, reconstructions are made
-            with respect to the absolute reference frame, like a stationary geological element (e.g. a mantle
-            plume). This frame is given the plate ID of 0.
+            with respect to the absolute reference frame (anchor_plate_id = 0), like a stationary object in the mantle,
+            unless otherwise specified.
 
         **reconstruct_type : ReconstructType, default=ReconstructType.feature_geometry
             The specific reconstruction type to generate based on input feature geometry type. Can be provided as
@@ -657,6 +672,10 @@ class PlateReconstruction(object):
         from_time, to_time = float(from_time), float(to_time)
 
         reconstructed_features = []
+
+        if not anchor_plate_id:
+            anchor_plate_id = self.anchor_plate_id
+
         pygplates.reconstruct(
             feature,
             self.rotation_model,
@@ -780,7 +799,7 @@ class PlateReconstruction(object):
         lats,
         time_array,
         plate_id=None,
-        anchor_plate_id=0,
+        anchor_plate_id=None,
         return_rate_of_motion=False,
     ):
         """Create a path of points to mark the trajectory of a plate's motion
@@ -845,6 +864,9 @@ class PlateReconstruction(object):
         else:
             query_plate_id = False
             plate_ids = np.ones(len(lons), dtype=int) * plate_id
+
+        if not anchor_plate_id:
+            anchor_plate_id = self.anchor_plate_id
 
         seed_points = zip(lats, lons)
         for i, lat_lon in enumerate(seed_points):
@@ -1403,7 +1425,7 @@ class Points(object):
         """
         return self.get_geopandas_dataframe()
 
-    def reconstruct(self, time, anchor_plate_id=0, return_array=False, **kwargs):
+    def reconstruct(self, time, anchor_plate_id=None, return_array=False, **kwargs):
         """Reconstructs regular geological features, motion paths or flowlines to a specific geological time and extracts
         the latitudinal and longitudinal points of these features.
 
@@ -1415,10 +1437,10 @@ class Points(object):
         time : float
             The specific geological time (Ma) to reconstruct features to.
 
-        anchor_plate_id : int, default=0
+        anchor_plate_id : int, default=None
             Reconstruct features with respect to a certain anchor plate. By default, reconstructions are made
-            with respect to the absolute reference frame, like a stationary geological element (e.g. a mantle
-            plume). This frame is given the plate ID of 0.
+            with respect to the anchor_plate_ID specified in the `gplately.PlateReconstruction` object,
+            which is a default plate ID of 0 unless otherwise specified.
 
         return_array : bool, default False
             Return a `numpy.ndarray`, rather than a `Points` object.
@@ -1455,6 +1477,10 @@ class Points(object):
         """
         from_time = self.time
         to_time = time
+
+        if not anchor_plate_id:
+            anchor_plate_id = self.plate_reconstruction.anchor_plate_id
+
         reconstructed_features = self.plate_reconstruction.reconstruct(
             self.features, to_time, from_time, anchor_plate_id=anchor_plate_id, **kwargs
         )
@@ -1473,7 +1499,7 @@ class Points(object):
             gpts.add_attributes(**self.attributes.copy())
             return gpts
 
-    def reconstruct_to_birth_age(self, ages, anchor_plate_id=0, **kwargs):
+    def reconstruct_to_birth_age(self, ages, anchor_plate_id=None, **kwargs):
         """Reconstructs point features supplied to the `Points` object from the supplied initial time (`self.time`)
         to a range of times. The number of supplied times must equal the number of point features supplied to the Points object.
 
@@ -1482,10 +1508,10 @@ class Points(object):
         ages : array
             Geological times to reconstruct features to. Must have the same length as the `Points `object's `self.features` attribute
             (which holds all point features represented on a unit length sphere in 3D Cartesian coordinates).
-        anchor_plate_id : int, default=0
+        anchor_plate_id : int, default=None
             Reconstruct features with respect to a certain anchor plate. By default, reconstructions are made
-            with respect to the absolute reference frame, like a stationary geological element (e.g. a mantle
-            plume). This frame is given the plate ID of 0.
+            with respect to the anchor_plate_ID specified in the `gplately.PlateReconstruction` object,
+            which is a default plate ID of 0 unless otherwise specified.
         **kwargs
             Additional keyword arguments for the `gplately.PlateReconstruction.reconstruct` method.
 
@@ -1517,6 +1543,9 @@ class Points(object):
 
         """
         from_time = self.time
+        if not anchor_plate_id:
+            anchor_plate_id = self.plate_reconstruction.anchor_plate_id
+
         ages = np.array(ages)
 
         if len(ages) != len(self.features):
@@ -2543,6 +2572,7 @@ class _ReconstructByTopologies(object):
                     self.curr_points[point_index] = None
 
     def _find_resolved_topologies_containing_points(self):
+        from . import ptt as _ptt
         current_time = self.get_current_time()
 
         # Resolve the plate polygons for the current time.
@@ -2572,7 +2602,7 @@ class _ReconstructByTopologies(object):
                     curr_valid_points.append(curr_point)
             # For each valid current point find the resolved topology containing it.
             resolved_topologies_containing_curr_valid_points = (
-                ptt.utils.points_in_polygons.find_polygons(
+                _ptt.utils.points_in_polygons.find_polygons(
                     curr_valid_points,
                     [
                         resolved_topology.get_resolved_boundary()
