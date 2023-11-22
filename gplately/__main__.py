@@ -8,7 +8,17 @@ import pygplates
 
 from gplately import __version__, feature_filter
 
-from .ptt import fix_crossovers, remove_plate_rotations
+from .ptt import (
+    cleanup_topologies,
+    convert_xy_to_gplates,
+    diagnose_rotations,
+    fix_crossovers,
+    remove_plate_rotations,
+    resolve_topologies,
+    rotation_tools,
+    separate_ridge_transform_segments,
+    subduction_convergence,
+)
 
 
 def combine_feature_collections(input_files: List[str], output_file: str):
@@ -168,6 +178,64 @@ def main():
         add_help=True,
     )
     remove_plate_rotations.add_arguments(remove_plate_rotations_cmd)
+
+    # add cleanup topologies sub-command
+    cleanup_topologies_cmd = subparser.add_parser(
+        "cleanup_topologies",
+        help="cleanup topologies",
+        add_help=True,
+    )
+    cleanup_topologies.add_arguments(cleanup_topologies_cmd)
+
+    # add convert_xy_to_gplates sub-command
+    convert_xy_to_gplates_cmd = subparser.add_parser(
+        "convert_xy_to_gplates",
+        help="convert xy to GPlates",
+        add_help=True,
+    )
+    convert_xy_to_gplates.add_arguments(convert_xy_to_gplates_cmd)
+
+    # add diagnose_rotations sub-command
+    diagnose_rotations_cmd = subparser.add_parser(
+        "diagnose_rotations",
+        help="diagnose rotations",
+        add_help=True,
+    )
+    diagnose_rotations.add_arguments(diagnose_rotations_cmd)
+
+    # add resolve_topologies sub-command
+    resolve_topologies_cmd = subparser.add_parser(
+        "resolve_topologies",
+        help="resolve topologies",
+        add_help=True,
+    )
+    resolve_topologies.add_arguments(resolve_topologies_cmd)
+
+    # add rotation_tools sub-command
+    rotation_tools_cmd = subparser.add_parser(
+        "rotation_tools",
+        help="rotation tools",
+        add_help=True,
+    )
+    rotation_tools.add_arguments(rotation_tools_cmd)
+
+    # add separate_ridge_transform_segments sub-command
+    separate_ridge_transform_segments_cmd = subparser.add_parser(
+        "separate_ridge_transform_segments",
+        help="separate ridge transform segments",
+        add_help=True,
+    )
+    separate_ridge_transform_segments.add_arguments(
+        separate_ridge_transform_segments_cmd
+    )
+
+    # add subduction_convergence sub-command
+    subduction_convergence_cmd = subparser.add_parser(
+        "subduction_convergence",
+        help="subduction convergence",
+        add_help=True,
+    )
+    subduction_convergence.add_arguments(subduction_convergence_cmd)
 
     # combine command arguments
     combine_cmd.set_defaults(func=_run_combine_feature_collections)
