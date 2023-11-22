@@ -8,7 +8,7 @@ import pygplates
 
 from gplately import __version__, feature_filter
 
-from .ptt import fix_crossovers, remove_plate_rotations
+from .ptt import cleanup_topologies, fix_crossovers, remove_plate_rotations
 
 
 def combine_feature_collections(input_files: List[str], output_file: str):
@@ -168,6 +168,14 @@ def main():
         add_help=True,
     )
     remove_plate_rotations.add_arguments(remove_plate_rotations_cmd)
+
+    # add cleanup topologies sub-command
+    cleanup_topologies_cmd = subparser.add_parser(
+        "cleanup_topologies",
+        help="cleanup topologies",
+        add_help=True,
+    )
+    cleanup_topologies.add_arguments(cleanup_topologies_cmd)
 
     # combine command arguments
     combine_cmd.set_defaults(func=_run_combine_feature_collections)
