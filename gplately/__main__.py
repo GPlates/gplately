@@ -11,6 +11,7 @@ from gplately import __version__, feature_filter
 from .ptt import (
     cleanup_topologies,
     convert_xy_to_gplates,
+    diagnose_rotations,
     fix_crossovers,
     remove_plate_rotations,
 )
@@ -189,6 +190,14 @@ def main():
         add_help=True,
     )
     convert_xy_to_gplates.add_arguments(convert_xy_to_gplates_cmd)
+
+    # add diagnose_rotations sub-command
+    diagnose_rotations_cmd = subparser.add_parser(
+        "diagnose_rotations",
+        help="diagnose rotations",
+        add_help=True,
+    )
+    diagnose_rotations.add_arguments(diagnose_rotations_cmd)
 
     # combine command arguments
     combine_cmd.set_defaults(func=_run_combine_feature_collections)
