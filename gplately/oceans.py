@@ -108,14 +108,14 @@ import glob
 import os
 import re
 import warnings
-
+import pygplates
 import numpy as np
 import pandas as pd
-import pygplates
 from scipy.interpolate import griddata
+import math
 
 from . import grids, ptt, reconstruction, tools
-from .ptt import separate_ridge_transform_segments
+from .ptt import separate_ridge_transform_segments, continent_contours
 
 # -------------------------------------------------------------------------
 # Auxiliary functions for SeafloorGrid
@@ -367,11 +367,13 @@ class SeafloorGrid(object):
     zval_names : list of str
         A list containing string labels for the z values to attribute to points.
         Will be used as column headers for z value point dataframes.
-    continent_mask_filename : str
-        An optional parameter pointing to the full path to a continental mask for each timestep.
-        Assuming the time is in the filename, i.e. "/path/to/continent_mask_0Ma.nc", it should be
-        passed as "/path/to/continent_mask_{}Ma.nc" with curly brackets. Include decimal formatting
-        if needed.
+    contour_continents : bool, default False
+        If set to 'True', [Plate Tectonic Tools' continent contouring workflow](https://github.com/EarthByte/PlateTectonicTools/blob/master/ptt/continent_contours.py)
+        will be used to add a buffer to continental polygons and generate continent masks from
+        these buffered polygons. If set to 'True' and `continent_mask_filename`
+        is not None, `SeafloorGrid` will prioritise the masks in `continent_mask_filename`. If
+        no `continent_mask_filename` is passed, `SeafloorGrid` will generate buffered continent
+        masks.
     """
 
     def __init__(
@@ -392,6 +394,7 @@ class SeafloorGrid(object):
         resume_from_checkpoints=False,
         zval_names=("SPREADING_RATE",),
         continent_mask_filename=None,
+        contour_continents=False,
     ):
         # Provides a rotation model, topology features and reconstruction time for
         # the SeafloorGrid
@@ -399,6 +402,7 @@ class SeafloorGrid(object):
         self.rotation_model = self.PlateReconstruction_object.rotation_model
         self.topology_features = self.PlateReconstruction_object.topology_features
         self._PlotTopologies_object = PlotTopologies_object
+
         save_directory = str(save_directory)
         if not os.path.isdir(save_directory):
             print("Output directory does not exist; creating now: " + save_directory)
@@ -500,10 +504,49 @@ class SeafloorGrid(object):
             self._PlotTopologies_object.time = self._max_time
 
         # Essential features and meshes for the SeafloorGrid
+        self._PlotTopologies_object.continents = PlotTopologies_object.continents
+        self.continent_featurecollection = self._PlotTopologies_object._continents
+
         self.continental_polygons = ensure_polygon_geometry(
             self._PlotTopologies_object.continents, self.rotation_model, self._max_time
         )
-        self._PlotTopologies_object.continents = PlotTopologies_object.continents
+
+        # Parameters regarding continent contouring
+        self.contour_continents = contour_continents
+        if self.contour_continents and not self._PlotTopologies_object.continents:
+            raise ValueError(
+                "Please provide continents to the PlotTopologies object for continent contouring."
+            )
+
+        # If the user would like to contour continents, build a PTT ContinentContouring object here
+        if self.contour_continents:
+
+            # All accepted values determined empirically
+            continent_contouring_point_spacing_degrees = 0.1
+
+            continent_contouring_area_threshold_square_kms = 0
+            continent_contouring_area_threshold_steradians = continent_contouring_area_threshold_square_kms / (pygplates.Earth.mean_radius_in_kms * pygplates.Earth.mean_radius_in_kms)
+
+            continent_exclusion_area_threshold_square_kms = 900000
+            continent_exclusion_area_threshold_steradians = continent_exclusion_area_threshold_square_kms / (pygplates.Earth.mean_radius_in_kms * pygplates.Earth.mean_radius_in_kms)
+
+            continent_separation_distance_threshold_radians = 0.001
+
+            continent_contouring = ptt.continent_contours.ContinentContouring(
+                # Attributes taken from __init__()
+                self.rotation_model, 
+                self.continent_featurecollection,
+                # Use the grid spacing allocated in __init__()
+                continent_contouring_point_spacing_degrees = self.grid_spacing,
+                continent_contouring_area_threshold_steradians = continent_contouring_area_threshold_steradians,
+                # This is a callable parameter
+                continent_contouring_buffer_and_gap_distance_radians = self.continent_contouring_buffer_and_gap_distance_radians,
+                # Defined above
+                continent_exclusion_area_threshold_steradians = continent_exclusion_area_threshold_square_kms,
+                continent_separation_distance_threshold_radians = continent_separation_distance_threshold_radians
+            )
+            self.continent_contouring_object = continent_contouring
+
         (
             self.icosahedral_multi_point,
             self.icosahedral_global_mesh,
@@ -1134,8 +1177,161 @@ class SeafloorGrid(object):
             time_array = self.time_array
 
         # Build all continental masks and spreading ridge points (with z values)
-        self._create_continental_mask(time_array)
+        if not self.contour_continents:
+            self._create_continental_mask(time_array)
+        else: 
+            print("Creating contoured continent masks (this will take a couple of hours...)")
+
+            from joblib import delayed, Parallel
+
+            # For now, this is not user-input, by default use -3 processes
+            nprocs = int(-3)
+
+            # Create continent masks in parallel using the "threading" backend as this
+            # is the only backend compatible with pygplates reconstruction (can pickle)  
+            continent_contouring_results = Parallel(
+                n_jobs=nprocs, backend='threading'
+            )(
+                delayed(self.create_continent_contours)(time) for time in time_array
+            ) 
+
+            # Separate masks from polygon features
+            continent_contouring_results = np.array(
+                continent_contouring_results, dtype=object
+            )
+            all_continental_masks = continent_contouring_results[:,0]
+            all_continent_contour_polygon_features = continent_contouring_results[:,1]
+
+            # Save grids to netCDF in a different parallel routine under the "loky" backend
+            # This protects the netCDF file integrity (a "threading" backend often corrupts 
+            # netCDF files)
+            #Parallel(n_jobs=nprocs)(
+            # delayed(self._save_masks_to_netcdf)
+            #    (
+            #        all_continental_masks[t], 
+            #        time
+            #    ) for t, time in enumerate(time_array)
+            #)
+
+            for t, time in enumerate(time_array):
+                self._save_masks_to_netcdf(
+                    all_continental_masks[t], 
+                    time)
+                print("Saved {}Ma contoured continental masks to netCDF!".format(time))
+
+            final_continent_contour_features = []
+            for continent_contour_features in all_continent_contour_polygon_features:
+                for continent_contour_feature in continent_contour_features:
+                    final_continent_contour_features.append(continent_contour_feature)
+
+            gpml_output_filename = 'continent_contour_features.gpml'
+            if self.file_collection is not None:
+                output_basename = "{}_{}".format(
+                    self.file_collection,
+                    gpml_output_filename,
+                )
+            output_filename = os.path.join(
+                self.save_directory,
+                output_basename,
+            )
+            # Write the gpml file
+            pygplates.FeatureCollection(continent_contour_features).write(output_filename)
+            print("Saved contoured continents as a gpml file!")
+
         return
+
+
+    # FUNCTIONS FOR CONTINENT CONTOURING
+    def _save_masks_to_netcdf(self, continent_mask, time):
+
+        # Convert all continent contour geometries into features.
+        # Write out the continent mask as NetCDF.
+        output_basename = "continent_mask_{}Ma.nc".format(time)
+
+        if self.file_collection is not None:
+            output_basename = "{}_{}".format(
+                self.file_collection,
+                output_basename,
+            )
+        output_filename = os.path.join(
+            self.save_directory,
+            output_basename,
+        )
+
+        # Note that we need to convert the boolean mask grid 
+        # to a non-boolean number type for NetCDF 
+        # (and it seems floating-point for gplately).
+        continent_mask_grid = continent_mask.astype('float')
+
+        grids.write_netcdf_grid(
+                output_filename, continent_mask_grid, 
+                extent=[-180, 180, -90, 90]
+            )
+        return
+
+    def continent_contouring_buffer_and_gap_distance_radians(self, time, contoured_continent):
+
+        # One distance for time interval [1000, 300] and another for time interval [250, 0].
+        # And linearly interpolate between them over the time interval [300, 250].
+        pre_pangea_distance_radians = math.radians(2.25)  # convert degrees to radians
+        post_pangea_distance_radians = math.radians(0.0)  # convert degrees to radians
+        if time > 300:
+            buffer_and_gap_distance_radians = pre_pangea_distance_radians
+        elif time < 250:
+            buffer_and_gap_distance_radians = post_pangea_distance_radians
+        else:
+            # Linearly interpolate between 250 and 300 Ma.
+            interp = float(time - 250) / (300 - 250)
+            buffer_and_gap_distance_radians = interp * pre_pangea_distance_radians + (1 - interp) * post_pangea_distance_radians
+        
+        # Area of the contoured continent.
+        area_steradians = contoured_continent.get_area()
+
+        # Linearly reduce the buffer/gap distance for contoured continents with area smaller than 1 million km^2.
+        area_threshold_square_kms = 500000
+        area_threshold_steradians = area_threshold_square_kms / (pygplates.Earth.mean_radius_in_kms * pygplates.Earth.mean_radius_in_kms)
+        if area_steradians < area_threshold_steradians:
+            buffer_and_gap_distance_radians *= area_steradians / area_threshold_steradians
+
+        return buffer_and_gap_distance_radians
+
+
+    def create_continent_contours(self, time):
+        """A function that generates buffers around continental polygons and 
+        builds continent masks out of these buffered polygons. The masks are
+        set to the resolution specified when initiating `SeafloorGrid`.
+
+        This requires a `PlateReconstruction` and `PlotTopologies` object. 
+        These objects are taken from the `SeafloorGrid` instance.
+        """
+
+        # PlotTopologies already reconstructs continents - pass the 
+        # reconstructed feature geometry on sphere  to get contoured continents
+        self._PlotTopologies_object.time = time
+        continent_polygons_on_sphere = [r.get_reconstructed_geometry() for r in self._PlotTopologies_object.continents]
+
+        contoured_continents = self.continent_contouring_object.calculate_contoured_continents(continent_polygons_on_sphere, time)
+        continent_mask = self.continent_contouring_object.calculate_continent_mask(contoured_continents)
+
+        # continent_mask, contoured_continents = continent_contouring.get_continent_mask_and_contoured_continents(time)
+
+        continent_contour_features = []
+        time_interval = self.ridge_time_step
+        for contoured_continent in contoured_continents:
+            for continent_contour_geometry in contoured_continent.get_contours():
+                continent_contour_feature = pygplates.Feature()
+                continent_contour_feature.set_geometry(continent_contour_geometry)
+                continent_contour_feature.set_valid_time(
+                    time + 0.5 * time_interval - 1e-4,  # epsilon to avoid overlap at interval boundaries
+                    time - 0.5 * time_interval
+                )
+                continent_contour_features.append(continent_contour_feature)
+
+        # Return the continent mask and the continent contours at the current time.
+        print("Finished continent contouring: {}Ma...".format(time))
+
+        return continent_mask, continent_contour_features
+
 
     def _extract_zvalues_from_npz_to_ndarray(self, featurecollection, time):
         # NPZ file of seedpoint z values that emerged at this time
@@ -1180,6 +1376,7 @@ class SeafloorGrid(object):
         # - seeding was completed but the subsequent gridding input creation was interrupted,
         # seeding is assumed completed and skipped. The workflow automatically proceeds to re-gridding.
 
+        # If the user has not provided a continent mask filename...
         if self.continent_mask_filename is None:
             self.build_all_continental_masks()
         else:
@@ -1284,7 +1481,8 @@ class SeafloorGrid(object):
                 verbose=False,
             )
         else:
-            # If a continent mask is not provided, use the ones made.
+            # If a continent mask is not provided, use the ones made, whether it be from continent
+            # contouring or the regular continents
             mask_basename = r"continent_mask_{}Ma.nc"
             if self.file_collection is not None:
                 mask_basename = str(self.file_collection) + "_" + mask_basename
