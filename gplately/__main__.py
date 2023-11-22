@@ -17,6 +17,7 @@ from .ptt import (
     resolve_topologies,
     rotation_tools,
     separate_ridge_transform_segments,
+    subduction_convergence,
 )
 
 
@@ -227,6 +228,14 @@ def main():
     separate_ridge_transform_segments.add_arguments(
         separate_ridge_transform_segments_cmd
     )
+
+    # add subduction_convergence sub-command
+    subduction_convergence_cmd = subparser.add_parser(
+        "subduction_convergence",
+        help="subduction convergence",
+        add_help=True,
+    )
+    subduction_convergence.add_arguments(subduction_convergence_cmd)
 
     # combine command arguments
     combine_cmd.set_defaults(func=_run_combine_feature_collections)
