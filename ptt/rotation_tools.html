@@ -65,8 +65,10 @@ with this program; if not, write to Free Software Foundation, Inc.,
 
 
 from __future__ import print_function
+
+import argparse
 import sys
-import math
+
 import pygplates
 
 #
@@ -79,20 +81,27 @@ except AttributeError:
     # Python 3
     def itervalues(d):
         return iter(d.values())
+
     def iteritems(d):
         return iter(d.items())
+
     def listvalues(d):
         return list(d.values())
+
     def listitems(d):
         return list(d.items())
+
 else:
     # Python 2
     def itervalues(d):
         return d.itervalues()
+
     def iteritems(d):
         return d.iteritems()
+
     def listvalues(d):
         return d.values()
+
     def listitems(d):
         return d.items()
 
@@ -103,11 +112,11 @@ PYGPLATES_VERSION_REQUIRED = pygplates.Version(18)
 
 
 def extract_plate_pair_stage_rotations(
-        rotation_feature_collections,
-        plate_pair_filter=None):
+    rotation_feature_collections, plate_pair_filter=None
+):
     # Docstring in numpydoc format...
     &#34;&#34;&#34;Calculate stage rotations between consecutive finite rotations in each specified plate pair.
-    
+
     Parameters
     ----------
     rotation_feature_collections : sequence of (str, or sequence of pygplates.Feature, or pygplates.FeatureCollection, or pygplates.Feature)
@@ -118,85 +127,103 @@ def extract_plate_pair_stage_rotations(
         Optional filtering of plate pairs to apply operation to.
         Filter function (callable) accepting 3 arguments (), or
         a sequence of (moving, fixed) plate pairs to limit operation to.
-    
+
     Returns
     -------
     list of pygplates.FeatureCollection
         The modified feature collections.
         Returned list is same length as ``rotation_feature_collections``.
-    
+
     Notes
     -----
     The results are returned as a list of pygplates.FeatureCollection (one per input rotation feature collection).
-    
+
     Note that only the rotation features satisfying ``plate_pair_filter`` (if specified) are returned.
     So if a returned feature collection is empty then it means all of its features were filtered out.
     &#34;&#34;&#34;
-    
+
     if plate_pair_filter is None:
         plate_pair_filter = _all_filter
     # If caller specified a sequence of moving/fixed plate pairs then use them, otherwise it&#39;s a filter function (callable).
-    elif hasattr(plate_pair_filter, &#39;__iter__&#39;):
+    elif hasattr(plate_pair_filter, &#34;__iter__&#34;):
         plate_pair_filter = _is_in_plate_pair_sequence(plate_pair_filter)
     # else ...&#39;plate_pair_filter&#39; is a callable...
-    
+
     output_rotation_feature_collections = []
     for rotation_feature_collection in rotation_feature_collections:
         # Create an empty output rotation feature collection for each input rotation feature collection.
         # We&#39;ll only add output features when an input feature is modified.
         output_rotation_feature_collection = []
         output_rotation_feature_collections.append(output_rotation_feature_collection)
-        
+
         for rotation_feature in rotation_feature_collection:
             # Get the rotation feature information.
             total_reconstruction_pole = rotation_feature.get_total_reconstruction_pole()
             if not total_reconstruction_pole:
                 # Not a rotation feature.
                 continue
-        
-            fixed_plate_id, moving_plate_id, rotation_sequence = total_reconstruction_pole
+
+            (
+                fixed_plate_id,
+                moving_plate_id,
+                rotation_sequence,
+            ) = total_reconstruction_pole
             # We&#39;re only interested in rotation features with matching moving/fixed plate IDs.
-            if not plate_pair_filter(fixed_plate_id, moving_plate_id, rotation_sequence):
+            if not plate_pair_filter(
+                fixed_plate_id, moving_plate_id, rotation_sequence
+            ):
                 continue
-            
+
             # Clone the input feature before we start making modifications.
             # Otherwise we&#39;ll be modifying the input rotation feature (which the caller might not expect).
             output_rotation_feature = rotation_feature.clone()
-            
-            _, _, output_rotation_sequence = output_rotation_feature.get_total_reconstruction_pole()
-            
+
+            (
+                _,
+                _,
+                output_rotation_sequence,
+            ) = output_rotation_feature.get_total_reconstruction_pole()
+
             # Get the enabled rotation samples - ignore the disabled samples.
-            output_enabled_rotation_samples = output_rotation_sequence.get_enabled_time_samples()
+            output_enabled_rotation_samples = (
+                output_rotation_sequence.get_enabled_time_samples()
+            )
             if not output_enabled_rotation_samples:
                 # No time samples are enabled.
                 continue
-            
-            prev_finite_rotation = output_enabled_rotation_samples[0].get_value().get_finite_rotation()
+
+            prev_finite_rotation = (
+                output_enabled_rotation_samples[0].get_value().get_finite_rotation()
+            )
             # Replace first finite rotation with identity rotation.
             # This is the stage rotation of first finite rotation (which has no previous finite rotation).
-            output_enabled_rotation_samples[0].get_value().set_finite_rotation(pygplates.FiniteRotation())
-            
+            output_enabled_rotation_samples[0].get_value().set_finite_rotation(
+                pygplates.FiniteRotation()
+            )
+
             for rotation_sample_index in range(1, len(output_enabled_rotation_samples)):
                 time_sample = output_enabled_rotation_samples[rotation_sample_index]
                 finite_rotation = time_sample.get_value().get_finite_rotation()
-                
+
                 # The finite rotation at current time tc is composed of finite rotation at
                 # previous (younger) time tp and stage rotation between them:
                 #   R(0-&gt;tc) = R(tp-&gt;tc) * R(0-&gt;tp)
                 # The stage rotation from tp-&gt;tc:
                 #   R(tp-&gt;tc) = R(0-&gt;tc) * inverse[R(0-&gt;tp)]
                 stage_rotation = finite_rotation * prev_finite_rotation.get_inverse()
-                
+
                 # Replace current finite rotation with stage rotation.
                 time_sample.get_value().set_finite_rotation(stage_rotation)
-                
+
                 prev_finite_rotation = finite_rotation
-            
+
             output_rotation_feature_collection.append(output_rotation_feature)
-    
+
     # Return our output feature collections as a list of pygplates.FeatureCollection.
-    return [pygplates.FeatureCollection(rotation_feature_collection)
-        for rotation_feature_collection in output_rotation_feature_collections]
+    return [
+        pygplates.FeatureCollection(rotation_feature_collection)
+        for rotation_feature_collection in output_rotation_feature_collections
+    ]
 
 
 def _all_filter(*args, **kwargs):
@@ -207,136 +234,184 @@ def _all_filter(*args, **kwargs):
 def _is_in_plate_pair_sequence(plate_pairs):
     &#34;&#34;&#34;Returns a predicate filter function that returns True if a moving/fixed plate pair is in &#39;plate_pairs&#39;.&#34;&#34;&#34;
     plate_pairs = list(plate_pairs)
-    def filter_is_in_plate_pair_sequence(fixed_plate_id, moving_plate_id, rotation_sequence):
+
+    def filter_is_in_plate_pair_sequence(
+        fixed_plate_id, moving_plate_id, rotation_sequence
+    ):
         return (moving_plate_id, fixed_plate_id) in plate_pairs
+
     return filter_is_in_plate_pair_sequence
 
 
-if __name__ == &#39;__main__&#39;:
-    
-    import os.path
-    
-    
-    # Check the imported pygplates version.
-    if not hasattr(pygplates, &#39;Version&#39;) or pygplates.Version.get_imported_version() &lt; PYGPLATES_VERSION_REQUIRED:
-        print(&#39;{0}: Error - imported pygplates version {1} but version {2} or greater is required&#39;.format(
-                os.path.basename(__file__), pygplates.Version.get_imported_version(), PYGPLATES_VERSION_REQUIRED),
-            file=sys.stderr)
-        sys.exit(1)
-    
-    
-    import argparse
+# Action to parse a tuple of accuracy parameters.
+class ArgParseAccuracyAction(argparse.Action):
+    def __call__(self, parser, namespace, values, option_string=None):
+        # Need two numbers (rotation threshold and threshold time interval).
+        if len(values) != 2:
+            parser.error(
+                &#34;accuracy must be specified as two numbers (rotation threshold and threshold time interval)&#34;
+            )
 
-    # Action to parse a tuple of accuracy parameters.
-    class ArgParseAccuracyAction(argparse.Action):
+        try:
+            # Convert strings to float.
+            threshold_rotation_accuracy_degrees = float(values[0])
+            threshold_time_interval = float(values[1])
+        except ValueError:
+            raise argparse.ArgumentTypeError(
+                &#34;encountered a rotation threshold and threshold time interval that is not a number&#34;
+            )
+
+        if (
+            threshold_rotation_accuracy_degrees &lt;= 0
+            or threshold_rotation_accuracy_degrees &gt; 90
+        ):
+            parser.error(&#34;rotation threshold must be in the range (0, 90]&#34;)
+        if threshold_time_interval &lt;= 0:
+            parser.error(&#34;threshold time interval must be positive&#34;)
+
+        setattr(
+            namespace,
+            self.dest,
+            (threshold_rotation_accuracy_degrees, threshold_time_interval),
+        )
+
+
+__description__ = &#34;&#34;&#34;Calculate stage rotations between consecutive finite rotations in plate pairs.
+
+The results are written back to the input rotation files unless an output filename prefix is provided.
+
+Note that only the rotation features satisfying the &#39;plate_pairs&#39; option (if specified) are written back.
+So if an output rotation file is empty then it means all of its rotation features were filtered out.
+
+NOTE: Separate the positional and optional arguments with &#39;--&#39; (workaround for bug in argparse module).
+For example...
+
+%(prog)s -p 701 70 -o stage_ -- rotations.rot
+&#34;&#34;&#34;
+
+
+def add_arguments(parser: argparse.ArgumentParser):
+    &#34;&#34;&#34;add command line argument parser&#34;&#34;&#34;
+
+    parser.formatter_class = argparse.RawDescriptionHelpFormatter
+    parser.description = __description__
+
+    parser.set_defaults(func=main)
+
+    # Action to parse a list of plate pairs.
+    class PlatePairsAction(argparse.Action):
         def __call__(self, parser, namespace, values, option_string=None):
-            # Need two numbers (rotation threshold and threshold time interval).
-            if len(values) != 2:
-                parser.error(&#39;accuracy must be specified as two numbers (rotation threshold and threshold time interval)&#39;)
-            
+            # Should be an even number of numbers.
+            if len(values) % 2 != 0:
+                parser.error(&#34;the plate pairs must be supplied as *pairs* of numbers&#34;)
+
             try:
-                # Convert strings to float.
-                threshold_rotation_accuracy_degrees = float(values[0])
-                threshold_time_interval = float(values[1])
+                # Convert strings to integers.
+                integer_values = [int(v) for v in values]
+                list_of_plate_pair_tuples = zip(
+                    integer_values[::2], integer_values[1::2]
+                )
             except ValueError:
-                raise argparse.ArgumentTypeError(&#34;encountered a rotation threshold and threshold time interval that is not a number&#34;)
-            
-            if threshold_rotation_accuracy_degrees &lt;= 0 or threshold_rotation_accuracy_degrees &gt; 90:
-                parser.error(&#39;rotation threshold must be in the range (0, 90]&#39;)
-            if threshold_time_interval &lt;= 0:
-                parser.error(&#39;threshold time interval must be positive&#39;)
-            
-            setattr(namespace, self.dest, (threshold_rotation_accuracy_degrees, threshold_time_interval))
-    
-    
-    def main():
-    
-        __description__ = \
-    &#34;&#34;&#34;Calculate stage rotations between consecutive finite rotations in plate pairs.
-    
-    The results are written back to the input rotation files unless an output filename prefix is provided.
-    
-    Note that only the rotation features satisfying the &#39;plate_pairs&#39; option (if specified) are written back.
-    So if an output rotation file is empty then it means all of its rotation features were filtered out.
+                raise argparse.ArgumentTypeError(
+                    &#34;encountered a plate id that is not an integer&#34;
+                )
 
-    NOTE: Separate the positional and optional arguments with &#39;--&#39; (workaround for bug in argparse module).
-    For example...
+            setattr(namespace, self.dest, list_of_plate_pair_tuples)
 
-    python %(prog)s -p 701 70 -o stage_ -- rotations.rot
-     &#34;&#34;&#34;
+    parser.add_argument(
+        &#34;-p&#34;,
+        &#34;--plate_pairs&#34;,
+        nargs=&#34;+&#34;,
+        action=PlatePairsAction,
+        metavar=&#34;moving_plate_id fixed_plate_id&#34;,
+        help=&#34;One or more moving/fixed plate pairs to limit operation to. &#34;
+        &#34;If not specified then defaults to all plate pairs.&#34;,
+    )
 
-        # The command-line parser.
-        parser = argparse.ArgumentParser(description = __description__, formatter_class=argparse.RawDescriptionHelpFormatter)
-        
-        # Action to parse a list of plate pairs.
-        class PlatePairsAction(argparse.Action):
-            def __call__(self, parser, namespace, values, option_string=None):
-                # Should be an even number of numbers.
-                if len(values) % 2 != 0:
-                    parser.error(&#39;the plate pairs must be supplied as *pairs* of numbers&#39;)
-                
-                try:
-                    # Convert strings to integers.
-                    integer_values = map(int, values)
-                    list_of_plate_pair_tuples = zip(integer_values[::2], integer_values[1::2])
-                except ValueError:
-                    raise argparse.ArgumentTypeError(&#34;encountered a plate id that is not an integer&#34;)
+    parser.add_argument(
+        &#34;-o&#34;,
+        &#34;--output_filename_prefix&#34;,
+        type=str,
+        metavar=&#34;output_filename_prefix&#34;,
+        help=&#34;Optional output filename prefix. If one is provided then an output rotation file &#34;
+        &#34;is created for each input rotation file by prefixing the input filenames. &#34;
+        &#34;If no filename prefix is provided then the input files are overwritten.&#34;,
+    )
 
-                setattr(namespace, self.dest, list_of_plate_pair_tuples)
-        
-        parser.add_argument(&#39;-p&#39;, &#39;--plate_pairs&#39;, nargs=&#39;+&#39;, action=PlatePairsAction,
-                metavar=&#39;moving_plate_id fixed_plate_id&#39;,
-                help=&#39;One or more moving/fixed plate pairs to limit operation to. &#39;
-                     &#39;If not specified then defaults to all plate pairs.&#39;)
-        
-        parser.add_argument(&#39;-o&#39;, &#39;--output_filename_prefix&#39;, type=str,
-                metavar=&#39;output_filename_prefix&#39;,
-                help=&#39;Optional output filename prefix. If one is provided then an output rotation file &#39;
-                    &#39;is created for each input rotation file by prefixing the input filenames. &#39;
-                    &#39;If no filename prefix is provided then the input files are overwritten.&#39;)
-        
-        parser.add_argument(&#39;input_rotation_filenames&#39;, type=str, nargs=&#39;+&#39;,
-                metavar=&#39;input_rotation_filename&#39;,
-                help=&#39;One or more rotation files to perform an operation on.&#39;)
-        
-        # Parse command-line options.
-        args = parser.parse_args()
-        
-        # Read the input rotation feature collections.
-        input_rotation_feature_collections = [pygplates.FeatureCollection(input_rotation_filename)
-                for input_rotation_filename in args.input_rotation_filenames]
-        
-        # Operation.
-        output_rotation_feature_collections = extract_plate_pair_stage_rotations(
-                input_rotation_feature_collections,
-                args.plate_pairs)
-        
-        # Write the modified rotation feature collections to disk.
-        for rotation_feature_collection_index in range(len(output_rotation_feature_collections)):
-            output_rotation_feature_collection = output_rotation_feature_collections[rotation_feature_collection_index]
+    parser.add_argument(
+        &#34;input_rotation_filenames&#34;,
+        type=str,
+        nargs=&#34;+&#34;,
+        metavar=&#34;input_rotation_filename&#34;,
+        help=&#34;One or more rotation files to perform an operation on.&#34;,
+    )
 
-            # Each output filename is the input filename with an optional prefix prepended.
-            input_rotation_filename = args.input_rotation_filenames[rotation_feature_collection_index]
-            if args.output_filename_prefix:
-                dir, file_basename = os.path.split(input_rotation_filename)
-                output_rotation_filename = os.path.join(dir, &#39;{0}{1}&#39;.format(args.output_filename_prefix, file_basename))
-            else:
-                output_rotation_filename = input_rotation_filename
-            
-            output_rotation_feature_collection.write(output_rotation_filename)
-        
-        sys.exit(0)
-    
-    import traceback
-    
-    try:
-        main()
-        sys.exit(0)
-    except Exception as exc:
-        print(&#39;ERROR: {0}&#39;.format(exc), file=sys.stderr)
-        # Uncomment this to print traceback to location of raised exception.
-        # traceback.print_exc()
-        sys.exit(1)</code></pre>
+
+def main(args):
+    # Read the input rotation feature collections.
+    input_rotation_feature_collections = [
+        pygplates.FeatureCollection(input_rotation_filename)
+        for input_rotation_filename in args.input_rotation_filenames
+    ]
+
+    # Operation.
+    output_rotation_feature_collections = extract_plate_pair_stage_rotations(
+        input_rotation_feature_collections, args.plate_pairs
+    )
+
+    # Write the modified rotation feature collections to disk.
+    for rotation_feature_collection_index in range(
+        len(output_rotation_feature_collections)
+    ):
+        output_rotation_feature_collection = output_rotation_feature_collections[
+            rotation_feature_collection_index
+        ]
+
+        # Each output filename is the input filename with an optional prefix prepended.
+        input_rotation_filename = args.input_rotation_filenames[
+            rotation_feature_collection_index
+        ]
+        if args.output_filename_prefix:
+            dir, file_basename = os.path.split(input_rotation_filename)
+            output_rotation_filename = os.path.join(
+                dir, &#34;{0}{1}&#34;.format(args.output_filename_prefix, file_basename)
+            )
+        else:
+            output_rotation_filename = input_rotation_filename
+
+        output_rotation_feature_collection.write(output_rotation_filename)
+
+
+if __name__ == &#34;__main__&#34;:
+    # Check the imported pygplates version.
+    if (
+        not hasattr(pygplates, &#34;Version&#34;)
+        or pygplates.Version.get_imported_version() &lt; PYGPLATES_VERSION_REQUIRED
+    ):
+        print(
+            &#34;{0}: Error - imported pygplates version {1} but version {2} or greater is required&#34;.format(
+                os.path.basename(__file__),
+                pygplates.Version.get_imported_version(),
+                PYGPLATES_VERSION_REQUIRED,
+            ),
+            file=sys.stderr,
+        )
+        sys.exit(1)
+
+    # The command-line parser.
+    parser = argparse.ArgumentParser(
+        description=__description__,
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+    )
+
+    # add arguments
+    add_arguments(parser)
+
+    # Parse command-line options.
+    args = parser.parse_args()
+
+    # call main function
+    main(args)</code></pre>
 </details>
 </section>
 <section>
@@ -346,6 +421,72 @@ if __name__ == &#39;__main__&#39;:
 <section>
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
+<dt id="gplately.ptt.rotation_tools.add_arguments"><code class="name flex">
+<span>def <span class="ident">add_arguments</span></span>(<span>parser: argparse.ArgumentParser)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>add command line argument parser</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def add_arguments(parser: argparse.ArgumentParser):
+    &#34;&#34;&#34;add command line argument parser&#34;&#34;&#34;
+
+    parser.formatter_class = argparse.RawDescriptionHelpFormatter
+    parser.description = __description__
+
+    parser.set_defaults(func=main)
+
+    # Action to parse a list of plate pairs.
+    class PlatePairsAction(argparse.Action):
+        def __call__(self, parser, namespace, values, option_string=None):
+            # Should be an even number of numbers.
+            if len(values) % 2 != 0:
+                parser.error(&#34;the plate pairs must be supplied as *pairs* of numbers&#34;)
+
+            try:
+                # Convert strings to integers.
+                integer_values = [int(v) for v in values]
+                list_of_plate_pair_tuples = zip(
+                    integer_values[::2], integer_values[1::2]
+                )
+            except ValueError:
+                raise argparse.ArgumentTypeError(
+                    &#34;encountered a plate id that is not an integer&#34;
+                )
+
+            setattr(namespace, self.dest, list_of_plate_pair_tuples)
+
+    parser.add_argument(
+        &#34;-p&#34;,
+        &#34;--plate_pairs&#34;,
+        nargs=&#34;+&#34;,
+        action=PlatePairsAction,
+        metavar=&#34;moving_plate_id fixed_plate_id&#34;,
+        help=&#34;One or more moving/fixed plate pairs to limit operation to. &#34;
+        &#34;If not specified then defaults to all plate pairs.&#34;,
+    )
+
+    parser.add_argument(
+        &#34;-o&#34;,
+        &#34;--output_filename_prefix&#34;,
+        type=str,
+        metavar=&#34;output_filename_prefix&#34;,
+        help=&#34;Optional output filename prefix. If one is provided then an output rotation file &#34;
+        &#34;is created for each input rotation file by prefixing the input filenames. &#34;
+        &#34;If no filename prefix is provided then the input files are overwritten.&#34;,
+    )
+
+    parser.add_argument(
+        &#34;input_rotation_filenames&#34;,
+        type=str,
+        nargs=&#34;+&#34;,
+        metavar=&#34;input_rotation_filename&#34;,
+        help=&#34;One or more rotation files to perform an operation on.&#34;,
+    )</code></pre>
+</details>
+</dd>
 <dt id="gplately.ptt.rotation_tools.extract_plate_pair_stage_rotations"><code class="name flex">
 <span>def <span class="ident">extract_plate_pair_stage_rotations</span></span>(<span>rotation_feature_collections, plate_pair_filter=None)</span>
 </code></dt>
@@ -377,11 +518,11 @@ So if a returned feature collection is empty then it means all of its features w
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def extract_plate_pair_stage_rotations(
-        rotation_feature_collections,
-        plate_pair_filter=None):
+    rotation_feature_collections, plate_pair_filter=None
+):
     # Docstring in numpydoc format...
     &#34;&#34;&#34;Calculate stage rotations between consecutive finite rotations in each specified plate pair.
-    
+
     Parameters
     ----------
     rotation_feature_collections : sequence of (str, or sequence of pygplates.Feature, or pygplates.FeatureCollection, or pygplates.Feature)
@@ -392,85 +533,103 @@ So if a returned feature collection is empty then it means all of its features w
         Optional filtering of plate pairs to apply operation to.
         Filter function (callable) accepting 3 arguments (), or
         a sequence of (moving, fixed) plate pairs to limit operation to.
-    
+
     Returns
     -------
     list of pygplates.FeatureCollection
         The modified feature collections.
         Returned list is same length as ``rotation_feature_collections``.
-    
+
     Notes
     -----
     The results are returned as a list of pygplates.FeatureCollection (one per input rotation feature collection).
-    
+
     Note that only the rotation features satisfying ``plate_pair_filter`` (if specified) are returned.
     So if a returned feature collection is empty then it means all of its features were filtered out.
     &#34;&#34;&#34;
-    
+
     if plate_pair_filter is None:
         plate_pair_filter = _all_filter
     # If caller specified a sequence of moving/fixed plate pairs then use them, otherwise it&#39;s a filter function (callable).
-    elif hasattr(plate_pair_filter, &#39;__iter__&#39;):
+    elif hasattr(plate_pair_filter, &#34;__iter__&#34;):
         plate_pair_filter = _is_in_plate_pair_sequence(plate_pair_filter)
     # else ...&#39;plate_pair_filter&#39; is a callable...
-    
+
     output_rotation_feature_collections = []
     for rotation_feature_collection in rotation_feature_collections:
         # Create an empty output rotation feature collection for each input rotation feature collection.
         # We&#39;ll only add output features when an input feature is modified.
         output_rotation_feature_collection = []
         output_rotation_feature_collections.append(output_rotation_feature_collection)
-        
+
         for rotation_feature in rotation_feature_collection:
             # Get the rotation feature information.
             total_reconstruction_pole = rotation_feature.get_total_reconstruction_pole()
             if not total_reconstruction_pole:
                 # Not a rotation feature.
                 continue
-        
-            fixed_plate_id, moving_plate_id, rotation_sequence = total_reconstruction_pole
+
+            (
+                fixed_plate_id,
+                moving_plate_id,
+                rotation_sequence,
+            ) = total_reconstruction_pole
             # We&#39;re only interested in rotation features with matching moving/fixed plate IDs.
-            if not plate_pair_filter(fixed_plate_id, moving_plate_id, rotation_sequence):
+            if not plate_pair_filter(
+                fixed_plate_id, moving_plate_id, rotation_sequence
+            ):
                 continue
-            
+
             # Clone the input feature before we start making modifications.
             # Otherwise we&#39;ll be modifying the input rotation feature (which the caller might not expect).
             output_rotation_feature = rotation_feature.clone()
-            
-            _, _, output_rotation_sequence = output_rotation_feature.get_total_reconstruction_pole()
-            
+
+            (
+                _,
+                _,
+                output_rotation_sequence,
+            ) = output_rotation_feature.get_total_reconstruction_pole()
+
             # Get the enabled rotation samples - ignore the disabled samples.
-            output_enabled_rotation_samples = output_rotation_sequence.get_enabled_time_samples()
+            output_enabled_rotation_samples = (
+                output_rotation_sequence.get_enabled_time_samples()
+            )
             if not output_enabled_rotation_samples:
                 # No time samples are enabled.
                 continue
-            
-            prev_finite_rotation = output_enabled_rotation_samples[0].get_value().get_finite_rotation()
+
+            prev_finite_rotation = (
+                output_enabled_rotation_samples[0].get_value().get_finite_rotation()
+            )
             # Replace first finite rotation with identity rotation.
             # This is the stage rotation of first finite rotation (which has no previous finite rotation).
-            output_enabled_rotation_samples[0].get_value().set_finite_rotation(pygplates.FiniteRotation())
-            
+            output_enabled_rotation_samples[0].get_value().set_finite_rotation(
+                pygplates.FiniteRotation()
+            )
+
             for rotation_sample_index in range(1, len(output_enabled_rotation_samples)):
                 time_sample = output_enabled_rotation_samples[rotation_sample_index]
                 finite_rotation = time_sample.get_value().get_finite_rotation()
-                
+
                 # The finite rotation at current time tc is composed of finite rotation at
                 # previous (younger) time tp and stage rotation between them:
                 #   R(0-&gt;tc) = R(tp-&gt;tc) * R(0-&gt;tp)
                 # The stage rotation from tp-&gt;tc:
                 #   R(tp-&gt;tc) = R(0-&gt;tc) * inverse[R(0-&gt;tp)]
                 stage_rotation = finite_rotation * prev_finite_rotation.get_inverse()
-                
+
                 # Replace current finite rotation with stage rotation.
                 time_sample.get_value().set_finite_rotation(stage_rotation)
-                
+
                 prev_finite_rotation = finite_rotation
-            
+
             output_rotation_feature_collection.append(output_rotation_feature)
-    
+
     # Return our output feature collections as a list of pygplates.FeatureCollection.
-    return [pygplates.FeatureCollection(rotation_feature_collection)
-        for rotation_feature_collection in output_rotation_feature_collections]</code></pre>
+    return [
+        pygplates.FeatureCollection(rotation_feature_collection)
+        for rotation_feature_collection in output_rotation_feature_collections
+    ]</code></pre>
 </details>
 </dd>
 <dt id="gplately.ptt.rotation_tools.iteritems"><code class="name flex">
@@ -525,9 +684,148 @@ So if a returned feature collection is empty then it means all of its features w
     return list(d.values())</code></pre>
 </details>
 </dd>
+<dt id="gplately.ptt.rotation_tools.main"><code class="name flex">
+<span>def <span class="ident">main</span></span>(<span>args)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def main(args):
+    # Read the input rotation feature collections.
+    input_rotation_feature_collections = [
+        pygplates.FeatureCollection(input_rotation_filename)
+        for input_rotation_filename in args.input_rotation_filenames
+    ]
+
+    # Operation.
+    output_rotation_feature_collections = extract_plate_pair_stage_rotations(
+        input_rotation_feature_collections, args.plate_pairs
+    )
+
+    # Write the modified rotation feature collections to disk.
+    for rotation_feature_collection_index in range(
+        len(output_rotation_feature_collections)
+    ):
+        output_rotation_feature_collection = output_rotation_feature_collections[
+            rotation_feature_collection_index
+        ]
+
+        # Each output filename is the input filename with an optional prefix prepended.
+        input_rotation_filename = args.input_rotation_filenames[
+            rotation_feature_collection_index
+        ]
+        if args.output_filename_prefix:
+            dir, file_basename = os.path.split(input_rotation_filename)
+            output_rotation_filename = os.path.join(
+                dir, &#34;{0}{1}&#34;.format(args.output_filename_prefix, file_basename)
+            )
+        else:
+            output_rotation_filename = input_rotation_filename
+
+        output_rotation_feature_collection.write(output_rotation_filename)</code></pre>
+</details>
+</dd>
 </dl>
 </section>
 <section>
+<h2 class="section-title" id="header-classes">Classes</h2>
+<dl>
+<dt id="gplately.ptt.rotation_tools.ArgParseAccuracyAction"><code class="flex name class">
+<span>class <span class="ident">ArgParseAccuracyAction</span></span>
+<span>(</span><span>option_strings, dest, nargs=None, const=None, default=None, type=None, choices=None, required=False, help=None, metavar=None)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Information about how to convert command line strings to Python objects.</p>
+<p>Action objects are used by an ArgumentParser to represent the information
+needed to parse a single argument from one or more strings from the
+command line. The keyword arguments to the Action constructor are also
+all attributes of Action instances.</p>
+<p>Keyword Arguments:</p>
+<pre><code>- option_strings -- A list of command-line option strings which
+    should be associated with this action.
+
+- dest -- The name of the attribute to hold the created object(s)
+
+- nargs -- The number of command-line arguments that should be
+    consumed. By default, one argument will be consumed and a single
+    value will be produced.  Other values include:
+        - N (an integer) consumes N arguments (and produces a list)
+        - '?' consumes zero or one arguments
+        - '*' consumes zero or more arguments (and produces a list)
+        - '+' consumes one or more arguments (and produces a list)
+    Note that the difference between the default and nargs=1 is that
+    with the default, a single value will be produced, while with
+    nargs=1, a list containing a single value will be produced.
+
+- const -- The value to be produced if the option is specified and the
+    option uses an action that takes no values.
+
+- default -- The value to be produced if the option is not specified.
+
+- type -- A callable that accepts a single string argument, and
+    returns the converted value.  The standard Python types str, int,
+    float, and complex are useful examples of such callables.  If None,
+    str is used.
+
+- choices -- A container of values that should be allowed. If not None,
+    after a command-line argument has been converted to the appropriate
+    type, an exception will be raised if it is not a member of this
+    collection.
+
+- required -- True if the action must always be specified at the
+    command line. This is only meaningful for optional command-line
+    arguments.
+
+- help -- The help string describing the argument.
+
+- metavar -- The name to be used for the option's argument with the
+    help string. If None, the 'dest' value will be used as the name.
+</code></pre></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class ArgParseAccuracyAction(argparse.Action):
+    def __call__(self, parser, namespace, values, option_string=None):
+        # Need two numbers (rotation threshold and threshold time interval).
+        if len(values) != 2:
+            parser.error(
+                &#34;accuracy must be specified as two numbers (rotation threshold and threshold time interval)&#34;
+            )
+
+        try:
+            # Convert strings to float.
+            threshold_rotation_accuracy_degrees = float(values[0])
+            threshold_time_interval = float(values[1])
+        except ValueError:
+            raise argparse.ArgumentTypeError(
+                &#34;encountered a rotation threshold and threshold time interval that is not a number&#34;
+            )
+
+        if (
+            threshold_rotation_accuracy_degrees &lt;= 0
+            or threshold_rotation_accuracy_degrees &gt; 90
+        ):
+            parser.error(&#34;rotation threshold must be in the range (0, 90]&#34;)
+        if threshold_time_interval &lt;= 0:
+            parser.error(&#34;threshold time interval must be positive&#34;)
+
+        setattr(
+            namespace,
+            self.dest,
+            (threshold_rotation_accuracy_degrees, threshold_time_interval),
+        )</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>argparse.Action</li>
+<li>argparse._AttributeHolder</li>
+</ul>
+</dd>
+</dl>
 </section>
 </article>
 <nav id="sidebar">
@@ -548,11 +846,20 @@ So if a returned feature collection is empty then it means all of its features w
 </li>
 <li><h3><a href="#header-functions">Functions</a></h3>
 <ul class="">
+<li><code><a title="gplately.ptt.rotation_tools.add_arguments" href="#gplately.ptt.rotation_tools.add_arguments">add_arguments</a></code></li>
 <li><code><a title="gplately.ptt.rotation_tools.extract_plate_pair_stage_rotations" href="#gplately.ptt.rotation_tools.extract_plate_pair_stage_rotations">extract_plate_pair_stage_rotations</a></code></li>
 <li><code><a title="gplately.ptt.rotation_tools.iteritems" href="#gplately.ptt.rotation_tools.iteritems">iteritems</a></code></li>
 <li><code><a title="gplately.ptt.rotation_tools.itervalues" href="#gplately.ptt.rotation_tools.itervalues">itervalues</a></code></li>
 <li><code><a title="gplately.ptt.rotation_tools.listitems" href="#gplately.ptt.rotation_tools.listitems">listitems</a></code></li>
 <li><code><a title="gplately.ptt.rotation_tools.listvalues" href="#gplately.ptt.rotation_tools.listvalues">listvalues</a></code></li>
+<li><code><a title="gplately.ptt.rotation_tools.main" href="#gplately.ptt.rotation_tools.main">main</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-classes">Classes</a></h3>
+<ul>
+<li>
+<h4><code><a title="gplately.ptt.rotation_tools.ArgParseAccuracyAction" href="#gplately.ptt.rotation_tools.ArgParseAccuracyAction">ArgParseAccuracyAction</a></code></h4>
+</li>
 </ul>
 </li>
 </ul>

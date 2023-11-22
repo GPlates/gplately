@@ -58,46 +58,54 @@ with this program; if not, write to Free Software Foundation, Inc.,
 &#34;&#34;&#34;
 
 from __future__ import print_function
+
 import argparse
 import math
-from . import separate_ridge_transform_segments
-import sys
 import os.path
+import sys
+
 import pygplates
 
+from . import separate_ridge_transform_segments
+
 # PyGPlates version 26 supports default anchor plate ID in pygplates.RotationModel.__init__().
-USING_PYGPLATES_VERSION_GREATER_EQUAL_26 = (hasattr(pygplates, &#39;Version&#39;) and pygplates.Version.get_imported_version() &gt;= pygplates.Version(26))
+USING_PYGPLATES_VERSION_GREATER_EQUAL_26 = hasattr(
+    pygplates, &#34;Version&#34;
+) and pygplates.Version.get_imported_version() &gt;= pygplates.Version(26)
 # PyGPlates version 29 supports passing a RotationModel to RotationModel.__init__
-USING_PYGPLATES_VERSION_GREATER_EQUAL_29 = (hasattr(pygplates, &#39;Version&#39;) and pygplates.Version.get_imported_version() &gt;= pygplates.Version(29))
+USING_PYGPLATES_VERSION_GREATER_EQUAL_29 = hasattr(
+    pygplates, &#34;Version&#34;
+) and pygplates.Version.get_imported_version() &gt;= pygplates.Version(29)
 
 
-DEFAULT_OUTPUT_FILENAME_PREFIX = &#39;topology_&#39;
-DEFAULT_OUTPUT_FILENAME_EXTENSION = &#39;shp&#39;
+DEFAULT_OUTPUT_FILENAME_PREFIX = &#34;topology_&#34;
+DEFAULT_OUTPUT_FILENAME_EXTENSION = &#34;shp&#34;
 
 
 def resolve_topologies(
-        rotation_features_or_model,
-        topology_features,
-        time,
-        output_filename_prefix,
-        output_filename_extension,
-        transform_segment_deviation_in_radians = separate_ridge_transform_segments.DEFAULT_TRANSFORM_SEGMENT_DEVIATION_RADIANS,
-        anchor_plate_id=None):
+    rotation_features_or_model,
+    topology_features,
+    time,
+    output_filename_prefix,
+    output_filename_extension,
+    transform_segment_deviation_in_radians=separate_ridge_transform_segments.DEFAULT_TRANSFORM_SEGMENT_DEVIATION_RADIANS,
+    anchor_plate_id=None,
+):
     &#34;&#34;&#34;
     Resolves topologies at specified time and saves (to separate files) the resolved topologies, and their boundary sections as subduction zones,
     mid-ocean ridges (ridge/transform) and others (not subduction zones or mid-ocean ridges).
-    
+
     rotation_features_or_model: Rotation model or feature collection(s), or list of features, or filename(s).
-    
+
     topology_features: Topology feature collection(s), or list of features, or filename(s) or any combination of those.
-    
+
     time: Reconstruction time to resolved topologies.
-    
+
     transform_segment_deviation_in_radians: How much a mid-ocean ridge segment can deviate from the stage pole before
                                             it&#39;s considered a transform segment (in radians).
 
     anchor_plate_id: Anchor plate ID (optional, int).
-    
+
     Writes output files containing the following features...
             - resolved topology features (topological plates and networks)
             - ridge and transform boundary sections (resolved features)
@@ -114,25 +122,30 @@ def resolve_topologies(
         anchor_plate_id=anchor_plate_id,
     )
 
-    # Get topology features (could include filenames).    
-    topology_features = pygplates.FeaturesFunctionArgument(topology_features).get_features()
-    
+    # Get topology features (could include filenames).
+    topology_features = pygplates.FeaturesFunctionArgument(
+        topology_features
+    ).get_features()
+
     # Resolve our topological plate polygons (and deforming networks) to the current &#39;time&#39;.
     # We generate both the resolved topology boundaries and the boundary sections between them.
-    (resolved_topology_features,
-     ridge_transform_boundary_section_features,
-     ridge_boundary_section_features,
-     transform_boundary_section_features,
-     subduction_boundary_section_features,
-     left_subduction_boundary_section_features,
-     right_subduction_boundary_section_features,
-     other_boundary_section_features) = resolve_topologies_into_features(
-            rotation_model,
-            topology_features,
-            time,
-            transform_segment_deviation_in_radians,
-            anchor_plate_id=anchor_plate_id)
-    
+    (
+        resolved_topology_features,
+        ridge_transform_boundary_section_features,
+        ridge_boundary_section_features,
+        transform_boundary_section_features,
+        subduction_boundary_section_features,
+        left_subduction_boundary_section_features,
+        right_subduction_boundary_section_features,
+        other_boundary_section_features,
+    ) = resolve_topologies_into_features(
+        rotation_model,
+        topology_features,
+        time,
+        transform_segment_deviation_in_radians,
+        anchor_plate_id=anchor_plate_id,
+    )
+
     # Write each list of features to a separate file.
     _write_resolved_topologies(
         time,
@@ -145,30 +158,32 @@ def resolve_topologies(
         subduction_boundary_section_features,
         left_subduction_boundary_section_features,
         right_subduction_boundary_section_features,
-        other_boundary_section_features)
+        other_boundary_section_features,
+    )
 
 
 def resolve_topologies_into_features(
-        rotation_features_or_model,
-        topology_features,
-        time,
-        transform_segment_deviation_in_radians = separate_ridge_transform_segments.DEFAULT_TRANSFORM_SEGMENT_DEVIATION_RADIANS,
-        anchor_plate_id=None):
+    rotation_features_or_model,
+    topology_features,
+    time,
+    transform_segment_deviation_in_radians=separate_ridge_transform_segments.DEFAULT_TRANSFORM_SEGMENT_DEVIATION_RADIANS,
+    anchor_plate_id=None,
+):
     &#34;&#34;&#34;
     Resolves topologies at specified time and returns resolved topologies and their boundary sections as subduction zones,
     mid-ocean ridges (ridge/transform) and others (not subduction zones or mid-ocean ridges).
-    
+
     rotation_features_or_model: Rotation model or feature collection(s), or list of features, or filename(s).
-    
+
     topology_features: Topology feature collection(s), or list of features, or filename(s) or any combination of those.
-    
+
     time: Reconstruction time to resolved topologies.
-    
+
     transform_segment_deviation_in_radians: How much a mid-ocean ridge segment can deviate from the stage pole before
                                             it&#39;s considered a transform segment (in radians).
 
     anchor_plate_id: Anchor plate ID (optional, int).
-    
+
     Returns: A tuple containing the following lists...
             - resolved topology features (topological plates and networks)
             - ridge and transform boundary sections (resolved features)
@@ -188,7 +203,7 @@ def resolve_topologies_into_features(
 
     # Turn topology data into a list of features (if not already).
     topology_features = pygplates.FeaturesFunctionArgument(topology_features)
-    
+
     # Resolve our topological plate polygons (and deforming networks) to the current &#39;time&#39;.
     # We generate both the resolved topology boundaries and the boundary sections between them.
     resolved_topologies = []
@@ -219,82 +234,117 @@ def resolve_topologies_into_features(
 
     # Iterate over the shared boundary sections.
     for shared_boundary_section in shared_boundary_sections:
-        
         # Get all the geometries of the current boundary section.
-        boundary_section_features = [shared_sub_segment.get_resolved_feature()
-                for shared_sub_segment in shared_boundary_section.get_shared_sub_segments()]
-        
+        boundary_section_features = [
+            shared_sub_segment.get_resolved_feature()
+            for shared_sub_segment in shared_boundary_section.get_shared_sub_segments()
+        ]
+
         # Add the feature to the correct list depending on feature type, etc.
-        if shared_boundary_section.get_feature().get_feature_type() == pygplates.FeatureType.gpml_subduction_zone:
-            
+        if (
+            shared_boundary_section.get_feature().get_feature_type()
+            == pygplates.FeatureType.gpml_subduction_zone
+        ):
             # Put all subduction zones in one collection/file.
             subduction_boundary_section_features.extend(boundary_section_features)
-            
+
             # Also put subduction zones in left/right collection/file.
             polarity_property = shared_boundary_section.get_feature().get(
-                    pygplates.PropertyName.create_gpml(&#39;subductionPolarity&#39;))
+                pygplates.PropertyName.create_gpml(&#34;subductionPolarity&#34;)
+            )
             if polarity_property:
                 polarity = polarity_property.get_value().get_content()
-                if polarity == &#39;Left&#39;:
-                    left_subduction_boundary_section_features.extend(boundary_section_features)
-                elif polarity == &#39;Right&#39;:
-                    right_subduction_boundary_section_features.extend(boundary_section_features)
+                if polarity == &#34;Left&#34;:
+                    left_subduction_boundary_section_features.extend(
+                        boundary_section_features
+                    )
+                elif polarity == &#34;Right&#34;:
+                    right_subduction_boundary_section_features.extend(
+                        boundary_section_features
+                    )
 
-        elif shared_boundary_section.get_feature().get_feature_type() == pygplates.FeatureType.gpml_mid_ocean_ridge:
+        elif (
+            shared_boundary_section.get_feature().get_feature_type()
+            == pygplates.FeatureType.gpml_mid_ocean_ridge
+        ):
             ridge_transform_boundary_section_features.extend(boundary_section_features)
-            
+
             # Find the stage rotation of the MOR in the frame of reference of its reconstructed geometry at the current &#39;time&#39;.
             # The stage pole can then be directly geometrically compared to the reconstructed spreading geometry.
             spreading_stage_rotation = separate_ridge_transform_segments.get_stage_rotation_for_reconstructed_geometry(
-                    shared_boundary_section.get_feature(), rotation_model, time)
+                shared_boundary_section.get_feature(), rotation_model, time
+            )
             if spreading_stage_rotation:
-                boundary_section_geometries = [shared_sub_segment.get_resolved_geometry()
-                        for shared_sub_segment in shared_boundary_section.get_shared_sub_segments()]
-                for boundary_section_index, boundary_section_feature in enumerate(boundary_section_features):
+                boundary_section_geometries = [
+                    shared_sub_segment.get_resolved_geometry()
+                    for shared_sub_segment in shared_boundary_section.get_shared_sub_segments()
+                ]
+                for boundary_section_index, boundary_section_feature in enumerate(
+                    boundary_section_features
+                ):
                     # Split into ridge and transform segments.
                     ridge_and_transform_segment_geometries = separate_ridge_transform_segments.separate_geometry_into_ridges_and_transforms(
-                            spreading_stage_rotation,
-                            boundary_section_geometries[boundary_section_index],
-                            transform_segment_deviation_in_radians)
+                        spreading_stage_rotation,
+                        boundary_section_geometries[boundary_section_index],
+                        transform_segment_deviation_in_radians,
+                    )
                     if ridge_and_transform_segment_geometries:
-                        ridge_sub_segment_geometries, transform_sub_segment_geometries = ridge_and_transform_segment_geometries
+                        (
+                            ridge_sub_segment_geometries,
+                            transform_sub_segment_geometries,
+                        ) = ridge_and_transform_segment_geometries
 
                         if ridge_sub_segment_geometries:
-                            ridge_boundary_section_feature = boundary_section_feature.clone()
-                            ridge_boundary_section_feature.set_geometry(ridge_sub_segment_geometries)
-                            ridge_boundary_section_features.append(ridge_boundary_section_feature)
+                            ridge_boundary_section_feature = (
+                                boundary_section_feature.clone()
+                            )
+                            ridge_boundary_section_feature.set_geometry(
+                                ridge_sub_segment_geometries
+                            )
+                            ridge_boundary_section_features.append(
+                                ridge_boundary_section_feature
+                            )
 
                         if transform_sub_segment_geometries:
-                            transform_boundary_section_feature = boundary_section_feature.clone()
-                            transform_boundary_section_feature.set_geometry(transform_sub_segment_geometries)
-                            transform_boundary_section_features.append(transform_boundary_section_feature)
+                            transform_boundary_section_feature = (
+                                boundary_section_feature.clone()
+                            )
+                            transform_boundary_section_feature.set_geometry(
+                                transform_sub_segment_geometries
+                            )
+                            transform_boundary_section_features.append(
+                                transform_boundary_section_feature
+                            )
 
                     # else skip shared sub segment - it&#39;s not a polyline (or polygon).
-                
+
             # else most likely MOR doesn&#39;t have left/right plate IDs or reconstruction/conjugate plate IDs,
             # so don&#39;t split into ridge and transform segments.
 
         else:
             other_boundary_section_features.extend(boundary_section_features)
 
-    return (resolved_topology_features,
-            ridge_transform_boundary_section_features,
-            ridge_boundary_section_features,
-            transform_boundary_section_features,
-            subduction_boundary_section_features,
-            left_subduction_boundary_section_features,
-            right_subduction_boundary_section_features,
-            other_boundary_section_features)
-
-
-def find_total_boundary_length_in_kms(
+    return (
+        resolved_topology_features,
         ridge_transform_boundary_section_features,
         ridge_boundary_section_features,
         transform_boundary_section_features,
         subduction_boundary_section_features,
         left_subduction_boundary_section_features,
         right_subduction_boundary_section_features,
-        other_boundary_section_features):
+        other_boundary_section_features,
+    )
+
+
+def find_total_boundary_length_in_kms(
+    ridge_transform_boundary_section_features,
+    ridge_boundary_section_features,
+    transform_boundary_section_features,
+    subduction_boundary_section_features,
+    left_subduction_boundary_section_features,
+    right_subduction_boundary_section_features,
+    other_boundary_section_features,
+):
     &#34;&#34;&#34;
     Find the total length (in kms) of resolved topology boundary sections (in the various categories).
     &#34;&#34;&#34;
@@ -305,86 +355,142 @@ def find_total_boundary_length_in_kms(
             for geometry in feature.get_geometries():
                 total_length_features += geometry.get_arc_length()
         # Return total lengths in kms (converted from radians).
-        return  total_length_features * pygplates.Earth.mean_radius_in_kms
+        return total_length_features * pygplates.Earth.mean_radius_in_kms
 
     # Return total lengths in kms (converted from radians).
-    return (find_total_length(ridge_transform_boundary_section_features),
-            find_total_length(ridge_boundary_section_features),
-            find_total_length(transform_boundary_section_features),
-            find_total_length(subduction_boundary_section_features),
-            find_total_length(left_subduction_boundary_section_features),
-            find_total_length(right_subduction_boundary_section_features),
-            find_total_length(other_boundary_section_features))
+    return (
+        find_total_length(ridge_transform_boundary_section_features),
+        find_total_length(ridge_boundary_section_features),
+        find_total_length(transform_boundary_section_features),
+        find_total_length(subduction_boundary_section_features),
+        find_total_length(left_subduction_boundary_section_features),
+        find_total_length(right_subduction_boundary_section_features),
+        find_total_length(other_boundary_section_features),
+    )
 
 
 def _write_resolved_topologies(
-        time,
-        output_filename_prefix,
-        output_filename_extension,
-        resolved_topology_features,
-        ridge_transform_boundary_section_features,
-        ridge_boundary_section_features,
-        transform_boundary_section_features,
-        subduction_boundary_section_features,
-        left_subduction_boundary_section_features,
-        right_subduction_boundary_section_features,
-        other_boundary_section_features):
-
+    time,
+    output_filename_prefix,
+    output_filename_extension,
+    resolved_topology_features,
+    ridge_transform_boundary_section_features,
+    ridge_boundary_section_features,
+    transform_boundary_section_features,
+    subduction_boundary_section_features,
+    left_subduction_boundary_section_features,
+    right_subduction_boundary_section_features,
+    other_boundary_section_features,
+):
     if resolved_topology_features:
         # Put the features in a feature collection so we can write them to a file.
-        resolved_topology_feature_collection = pygplates.FeatureCollection(resolved_topology_features)
-        resolved_topology_features_filename = &#39;{0}boundary_polygons_{1:0.2f}Ma.{2}&#39;.format(
-                output_filename_prefix, time, output_filename_extension)
+        resolved_topology_feature_collection = pygplates.FeatureCollection(
+            resolved_topology_features
+        )
+        resolved_topology_features_filename = (
+            &#34;{0}boundary_polygons_{1:0.2f}Ma.{2}&#34;.format(
+                output_filename_prefix, time, output_filename_extension
+            )
+        )
         resolved_topology_feature_collection.write(resolved_topology_features_filename)
-        
+
     if ridge_transform_boundary_section_features:
         # Put the features in a feature collection so we can write them to a file.
-        ridge_transform_boundary_section_feature_collection = pygplates.FeatureCollection(ridge_transform_boundary_section_features)
-        ridge_transform_boundary_section_features_filename = &#39;{0}ridge_transform_boundaries_{1:0.2f}Ma.{2}&#39;.format(
-                output_filename_prefix, time, output_filename_extension)
-        ridge_transform_boundary_section_feature_collection.write(ridge_transform_boundary_section_features_filename)
-        
+        ridge_transform_boundary_section_feature_collection = (
+            pygplates.FeatureCollection(ridge_transform_boundary_section_features)
+        )
+        ridge_transform_boundary_section_features_filename = (
+            &#34;{0}ridge_transform_boundaries_{1:0.2f}Ma.{2}&#34;.format(
+                output_filename_prefix, time, output_filename_extension
+            )
+        )
+        ridge_transform_boundary_section_feature_collection.write(
+            ridge_transform_boundary_section_features_filename
+        )
+
     if ridge_boundary_section_features:
         # Put the features in a feature collection so we can write them to a file.
-        ridge_boundary_section_feature_collection = pygplates.FeatureCollection(ridge_boundary_section_features)
-        ridge_boundary_section_features_filename = &#39;{0}ridge_boundaries_{1:0.2f}Ma.{2}&#39;.format(
-                output_filename_prefix, time, output_filename_extension)
-        ridge_boundary_section_feature_collection.write(ridge_boundary_section_features_filename)
-        
+        ridge_boundary_section_feature_collection = pygplates.FeatureCollection(
+            ridge_boundary_section_features
+        )
+        ridge_boundary_section_features_filename = (
+            &#34;{0}ridge_boundaries_{1:0.2f}Ma.{2}&#34;.format(
+                output_filename_prefix, time, output_filename_extension
+            )
+        )
+        ridge_boundary_section_feature_collection.write(
+            ridge_boundary_section_features_filename
+        )
+
     if transform_boundary_section_features:
         # Put the features in a feature collection so we can write them to a file.
-        transform_boundary_section_feature_collection = pygplates.FeatureCollection(transform_boundary_section_features)
-        transform_boundary_section_features_filename = &#39;{0}transform_boundaries_{1:0.2f}Ma.{2}&#39;.format(
-                output_filename_prefix, time, output_filename_extension)
-        transform_boundary_section_feature_collection.write(transform_boundary_section_features_filename)
-        
+        transform_boundary_section_feature_collection = pygplates.FeatureCollection(
+            transform_boundary_section_features
+        )
+        transform_boundary_section_features_filename = (
+            &#34;{0}transform_boundaries_{1:0.2f}Ma.{2}&#34;.format(
+                output_filename_prefix, time, output_filename_extension
+            )
+        )
+        transform_boundary_section_feature_collection.write(
+            transform_boundary_section_features_filename
+        )
+
     if subduction_boundary_section_features:
         # Put the features in a feature collection so we can write them to a file.
-        subduction_boundary_section_feature_collection = pygplates.FeatureCollection(subduction_boundary_section_features)
-        subduction_boundary_section_features_filename = &#39;{0}subduction_boundaries_{1:0.2f}Ma.{2}&#39;.format(
-                output_filename_prefix, time, output_filename_extension)
-        subduction_boundary_section_feature_collection.write(subduction_boundary_section_features_filename)
-        
+        subduction_boundary_section_feature_collection = pygplates.FeatureCollection(
+            subduction_boundary_section_features
+        )
+        subduction_boundary_section_features_filename = (
+            &#34;{0}subduction_boundaries_{1:0.2f}Ma.{2}&#34;.format(
+                output_filename_prefix, time, output_filename_extension
+            )
+        )
+        subduction_boundary_section_feature_collection.write(
+            subduction_boundary_section_features_filename
+        )
+
     if left_subduction_boundary_section_features:
         # Put the features in a feature collection so we can write them to a file.
-        left_subduction_boundary_section_feature_collection = pygplates.FeatureCollection(left_subduction_boundary_section_features)
-        left_subduction_boundary_section_features_filename = &#39;{0}subduction_boundaries_sL_{1:0.2f}Ma.{2}&#39;.format(
-                output_filename_prefix, time, output_filename_extension)
-        left_subduction_boundary_section_feature_collection.write(left_subduction_boundary_section_features_filename)
-        
+        left_subduction_boundary_section_feature_collection = (
+            pygplates.FeatureCollection(left_subduction_boundary_section_features)
+        )
+        left_subduction_boundary_section_features_filename = (
+            &#34;{0}subduction_boundaries_sL_{1:0.2f}Ma.{2}&#34;.format(
+                output_filename_prefix, time, output_filename_extension
+            )
+        )
+        left_subduction_boundary_section_feature_collection.write(
+            left_subduction_boundary_section_features_filename
+        )
+
     if right_subduction_boundary_section_features:
         # Put the features in a feature collection so we can write them to a file.
-        right_subduction_boundary_section_feature_collection = pygplates.FeatureCollection(right_subduction_boundary_section_features)
-        right_subduction_boundary_section_features_filename = &#39;{0}subduction_boundaries_sR_{1:0.2f}Ma.{2}&#39;.format(
-                output_filename_prefix, time, output_filename_extension)
-        right_subduction_boundary_section_feature_collection.write(right_subduction_boundary_section_features_filename)
+        right_subduction_boundary_section_feature_collection = (
+            pygplates.FeatureCollection(right_subduction_boundary_section_features)
+        )
+        right_subduction_boundary_section_features_filename = (
+            &#34;{0}subduction_boundaries_sR_{1:0.2f}Ma.{2}&#34;.format(
+                output_filename_prefix, time, output_filename_extension
+            )
+        )
+        right_subduction_boundary_section_feature_collection.write(
+            right_subduction_boundary_section_features_filename
+        )
 
     if other_boundary_section_features:
         # Put the features in a feature collection so we can write them to a file.
-        other_boundary_section_feature_collection = pygplates.FeatureCollection(other_boundary_section_features)
-        other_boundary_section_features_filename = &#39;{0}other_boundaries_{1:0.2f}Ma.{2}&#39;.format(
-                output_filename_prefix, time, output_filename_extension)
-        other_boundary_section_feature_collection.write(other_boundary_section_features_filename)
+        other_boundary_section_feature_collection = pygplates.FeatureCollection(
+            other_boundary_section_features
+        )
+        other_boundary_section_features_filename = (
+            &#34;{0}other_boundaries_{1:0.2f}Ma.{2}&#34;.format(
+                output_filename_prefix, time, output_filename_extension
+            )
+        )
+        other_boundary_section_feature_collection.write(
+            other_boundary_section_features_filename
+        )
 
 
 def _parse_rotation_args(rotation_features_or_model, anchor_plate_id=None):
@@ -429,97 +535,154 @@ def _parse_rotation_args(rotation_features_or_model, anchor_plate_id=None):
     return pygplates.RotationModel(rotation_features_or_model)
 
 
-if __name__ == &#34;__main__&#34;:
+def add_arguments(parser: argparse.ArgumentParser):
+    &#34;&#34;&#34;add command line argument parser&#34;&#34;&#34;
 
-    # Check the imported pygplates version.
-    required_version = pygplates.Version(9)
-    if not hasattr(pygplates, &#39;Version&#39;) or pygplates.Version.get_imported_version() &lt; required_version:
-        print(&#39;{0}: Error - imported pygplates version {1} but version {2} or greater is required&#39;.format(
-                os.path.basename(__file__), pygplates.Version.get_imported_version(), required_version),
-            file=sys.stderr)
-        sys.exit(1)
+    parser.formatter_class = argparse.RawDescriptionHelpFormatter
+    parser.description = __description__
+
+    parser.set_defaults(func=main)
+
+    parser.add_argument(
+        &#34;-r&#34;,
+        &#34;--rotation_filenames&#34;,
+        type=str,
+        nargs=&#34;+&#34;,
+        required=True,
+        metavar=&#34;rotation_filename&#34;,
+        help=&#34;One or more rotation files.&#34;,
+    )
+    parser.add_argument(
+        &#34;-m&#34;,
+        &#34;--topology_filenames&#34;,
+        type=str,
+        nargs=&#34;+&#34;,
+        required=True,
+        metavar=&#34;topology_filename&#34;,
+        help=&#34;One or more topology files.&#34;,
+    )
+    parser.add_argument(
+        &#34;-a&#34;,
+        &#34;--anchor&#34;,
+        type=int,
+        default=0,
+        dest=&#34;anchor_plate_id&#34;,
+        help=&#34;Anchor plate id used for reconstructing. Defaults to zero.&#34;,
+    )
+
+    # User must specify a sequence of reconstruction times or a time range (but not both).
+    reconstruction_times_argument_group = parser.add_mutually_exclusive_group(
+        required=True
+    )
+    reconstruction_times_argument_group.add_argument(
+        &#34;-t&#34;,
+        &#34;--reconstruction_times&#34;,
+        type=int,
+        nargs=&#34;+&#34;,
+        metavar=&#34;reconstruction_time&#34;,
+        help=&#34;One or more times at which to reconstruct/resolve topologies.&#34;,
+    )
+    reconstruction_times_argument_group.add_argument(
+        &#34;-i&#34;,
+        &#34;--reconstruction_time_range&#34;,
+        type=int,
+        nargs=2,
+        metavar=(&#34;young_time&#34;, &#34;old_time&#34;),
+        help=&#34;The time range (in Ma) from young time to old time over which to reconstruct/resolve topologies (in increments of 1Myr).&#34;,
+    )
+
+    parser.add_argument(
+        &#34;-d&#34;,
+        &#34;--transform_segment_deviation_degrees&#34;,
+        type=float,
+        default=&#34;{0}&#34;.format(
+            separate_ridge_transform_segments.DEFAULT_TRANSFORM_SEGMENT_DEVIATION_DEGREES
+        ),
+        help=&#34;How many degrees a mid-ocean ridge spreading segment can deviate from its stage pole before it&#39;s considered a transform segment - &#34;
+        &#34;default is &#39;{0}&#39;&#34;.format(
+            separate_ridge_transform_segments.DEFAULT_TRANSFORM_SEGMENT_DEVIATION_DEGREES
+        ),
+    )
+
+    parser.add_argument(
+        &#34;-e&#34;,
+        &#34;--output_filename_extension&#34;,
+        type=str,
+        default=&#34;{0}&#34;.format(DEFAULT_OUTPUT_FILENAME_EXTENSION),
+        help=&#34;The filename extension of the output files containing the resolved topological boundaries and sections &#34;
+        &#34;- the default extension is &#39;{0}&#39; - supported extensions include &#39;shp&#39;, &#39;gmt&#39; and &#39;xy&#39;.&#34;.format(
+            DEFAULT_OUTPUT_FILENAME_EXTENSION
+        ),
+    )
+
+    parser.add_argument(
+        &#34;-nb&#34;,
+        &#34;--no_output_boundaries&#34;,
+        action=&#34;store_true&#34;,
+        help=&#34;Do not write geometries of resolved topologies and their boundaries to files. &#34;
+        &#39;This is most useful when used with the &#34;-l&#34; option to generate only the text file containing boundary lengths. &#39;
+        &#34;By default geometry files are written.&#34;,
+    )
+
+    parser.add_argument(
+        &#34;-l&#34;,
+        &#34;--output_boundary_lengths&#34;,
+        action=&#34;store_true&#34;,
+        help=&#34;Also generate a text file containing the total boundary lengths (in kms) of the resolved topology boundary sections &#34;
+        &#34;for the requested reconstruction times. By default no text file is generated.&#34;,
+    )
+
+    parser.add_argument(
+        &#34;output_filename_prefix&#34;,
+        type=str,
+        nargs=&#34;?&#34;,
+        default=&#34;{0}&#34;.format(DEFAULT_OUTPUT_FILENAME_PREFIX),
+        help=&#34;The prefix of the output files containing the resolved topological boundaries and sections &#34;
+        &#34;- the default prefix is &#39;{0}&#39;&#34;.format(DEFAULT_OUTPUT_FILENAME_PREFIX),
+    )
 
 
-    __description__ = \
-    &#34;&#34;&#34;Resolve topological plate polygons (and deforming networks) and saves (to separate files) the resolved topologies, and their
+__description__ = &#34;&#34;&#34;Resolve topological plate polygons (and deforming networks) and saves (to separate files) the resolved topologies, and their
     boundary sections as subduction zones, mid-ocean ridges (ridge/transform) and others (not subduction zones or mid-ocean ridges).
 
     NOTE: Separate the positional and optional arguments with &#39;--&#39; (workaround for bug in argparse module).
     For example...
 
-    python %(prog)s -r rotations1.rot rotations2.rot -m topologies1.gpml topologies2.gpml -t 10 -- topology_&#34;&#34;&#34;
+    %(prog)s -r rotations1.rot rotations2.rot -m topologies1.gpml topologies2.gpml -t 10 -- topology_&#34;&#34;&#34;
 
-    # The command-line parser.
-    parser = argparse.ArgumentParser(description = __description__, formatter_class=argparse.RawDescriptionHelpFormatter)
-    
-    parser.add_argument(&#39;-r&#39;, &#39;--rotation_filenames&#39;, type=str, nargs=&#39;+&#39;, required=True,
-            metavar=&#39;rotation_filename&#39;, help=&#39;One or more rotation files.&#39;)
-    parser.add_argument(&#39;-m&#39;, &#39;--topology_filenames&#39;, type=str, nargs=&#39;+&#39;, required=True,
-            metavar=&#39;topology_filename&#39;, help=&#39;One or more topology files.&#39;)
-    parser.add_argument(&#39;-a&#39;, &#39;--anchor&#39;, type=int, default=0,
-            dest=&#39;anchor_plate_id&#39;,
-            help=&#39;Anchor plate id used for reconstructing. Defaults to zero.&#39;)
-    
-    # User must specify a sequence of reconstruction times or a time range (but not both).
-    reconstruction_times_argument_group = parser.add_mutually_exclusive_group(required=True)
-    reconstruction_times_argument_group.add_argument(&#39;-t&#39;, &#39;--reconstruction_times&#39;, type=int, nargs=&#39;+&#39;,
-            metavar=&#39;reconstruction_time&#39;,
-            help=&#39;One or more times at which to reconstruct/resolve topologies.&#39;)
-    reconstruction_times_argument_group.add_argument(&#39;-i&#39;, &#39;--reconstruction_time_range&#39;, type=int, nargs=2,
-            metavar=(&#39;young_time&#39;, &#39;old_time&#39;),
-            help=&#39;The time range (in Ma) from young time to old time over which to reconstruct/resolve topologies (in increments of 1Myr).&#39;)
-    
-    parser.add_argument(&#39;-d&#39;, &#39;--transform_segment_deviation_degrees&#39;, type=float,
-            default=&#39;{0}&#39;.format(separate_ridge_transform_segments.DEFAULT_TRANSFORM_SEGMENT_DEVIATION_DEGREES),
-            help=&#34;How many degrees a mid-ocean ridge spreading segment can deviate from its stage pole before it&#39;s considered a transform segment - &#34;
-                &#34;default is &#39;{0}&#39;&#34;.format(separate_ridge_transform_segments.DEFAULT_TRANSFORM_SEGMENT_DEVIATION_DEGREES))
-    
-    parser.add_argument(&#39;-e&#39;, &#39;--output_filename_extension&#39;, type=str,
-            default=&#39;{0}&#39;.format(DEFAULT_OUTPUT_FILENAME_EXTENSION),
-            help=&#34;The filename extension of the output files containing the resolved topological boundaries and sections &#34;
-                &#34;- the default extension is &#39;{0}&#39; - supported extensions include &#39;shp&#39;, &#39;gmt&#39; and &#39;xy&#39;.&#34;
-                .format(DEFAULT_OUTPUT_FILENAME_EXTENSION))
-    
-    parser.add_argument(
-        &#39;-nb&#39;, &#39;--no_output_boundaries&#39;, action=&#39;store_true&#39;,
-        help=&#39;Do not write geometries of resolved topologies and their boundaries to files. &#39;
-             &#39;This is most useful when used with the &#34;-l&#34; option to generate only the text file containing boundary lengths. &#39;
-             &#39;By default geometry files are written.&#39;)
-    
-    parser.add_argument(
-        &#39;-l&#39;, &#39;--output_boundary_lengths&#39;, action=&#39;store_true&#39;,
-        help=&#39;Also generate a text file containing the total boundary lengths (in kms) of the resolved topology boundary sections &#39;
-             &#39;for the requested reconstruction times. By default no text file is generated.&#39;)
-    
-    parser.add_argument(&#39;output_filename_prefix&#39;, type=str, nargs=&#39;?&#39;,
-            default=&#39;{0}&#39;.format(DEFAULT_OUTPUT_FILENAME_PREFIX),
-            help=&#34;The prefix of the output files containing the resolved topological boundaries and sections &#34;
-                &#34;- the default prefix is &#39;{0}&#39;&#34;.format(DEFAULT_OUTPUT_FILENAME_PREFIX))
-    
-    
-    # Parse command-line options.
-    args = parser.parse_args()
 
+def main(args):
     if args.reconstruction_times:
         reconstruction_times = args.reconstruction_times
     else:
         if args.reconstruction_time_range[0] &gt; args.reconstruction_time_range[1]:
-            raise argparse.ArgumentTypeError(&#34;First (young) value in reconstruction time range is greater than second (old) value&#34;)
-        reconstruction_times = list(range(args.reconstruction_time_range[0], args.reconstruction_time_range[1] + 1))
+            raise argparse.ArgumentTypeError(
+                &#34;First (young) value in reconstruction time range is greater than second (old) value&#34;
+            )
+        reconstruction_times = list(
+            range(
+                args.reconstruction_time_range[0], args.reconstruction_time_range[1] + 1
+            )
+        )
 
     # Create a rotation model from rotation files.
-    #    
+    #
     # Note: We only special case &#39;anchor_plate_id != 0&#39; since that is the uncommon and the &#39;default_anchor_plate_id&#39;
     #       argument of &#39;pygplates.RotationModel.__init__()&#39; was only added in pyGPlates revision 26.
     #       If &#39;anchor_plate_id == 0&#39; then any pyGPlates revision will work.
     if args.anchor_plate_id != 0:
         if not USING_PYGPLATES_VERSION_GREATER_EQUAL_26:
-            raise RuntimeError(&#39;Using pygplates version {0} but version 0.26 or greater is required for non-zero anchor plate IDs&#39;.format(
-                    pygplates.Version.get_imported_version()))
-        rotation_model = pygplates.RotationModel(args.rotation_filenames, default_anchor_plate_id=args.anchor_plate_id)
+            raise RuntimeError(
+                &#34;Using pygplates version {0} but version 0.26 or greater is required for non-zero anchor plate IDs&#34;.format(
+                    pygplates.Version.get_imported_version()
+                )
+            )
+        rotation_model = pygplates.RotationModel(
+            args.rotation_filenames, default_anchor_plate_id=args.anchor_plate_id
+        )
     else:
         rotation_model = pygplates.RotationModel(args.rotation_filenames)
-    
+
     # Read topology features from topology files.
     topology_features = []
     for topology_filename in args.topology_filenames:
@@ -531,40 +694,44 @@ if __name__ == &#34;__main__&#34;:
             # all shapefile attributes.
             topology_feature.remove(pygplates.PropertyName.gpml_shapefile_attributes)
             topology_features.append(topology_feature)
-    
+
     if args.output_boundary_lengths:
         # Create the text file for writing.
-        boundary_lengths_filename = &#39;{0}boundary_lengths.txt&#39;.format(args.output_filename_prefix)
-        boundary_lengths_file = open(boundary_lengths_filename, mode=&#39;w&#39;)
+        boundary_lengths_filename = &#34;{0}boundary_lengths.txt&#34;.format(
+            args.output_filename_prefix
+        )
+        boundary_lengths_file = open(boundary_lengths_filename, mode=&#34;w&#34;)
         # Write the header line (showing what each column represents).
         boundary_lengths_file.write(
-            &#39;# time(Ma)&#39;
-            &#39; ridge-transform-boundary-sections(km)&#39;
-            &#39; ridge-boundary-sections(km)&#39;
-            &#39; transform-boundary-sections(km)&#39;
-            &#39; subduction-boundary-sections(km)&#39;
-            &#39; left-subduction-boundary-sections(km)&#39;
-            &#39; right-subduction-boundary-sections(km)&#39;
-            &#39; other-boundary-sections(km)\n&#39;)
+            &#34;# time(Ma)&#34;
+            &#34; ridge-transform-boundary-sections(km)&#34;
+            &#34; ridge-boundary-sections(km)&#34;
+            &#34; transform-boundary-sections(km)&#34;
+            &#34; subduction-boundary-sections(km)&#34;
+            &#34; left-subduction-boundary-sections(km)&#34;
+            &#34; right-subduction-boundary-sections(km)&#34;
+            &#34; other-boundary-sections(km)\n&#34;
+        )
 
-    
     for reconstruction_time in reconstruction_times:
-   
         # Resolve our topological plate polygons (and deforming networks) to the current &#39;time&#39;.
         # We generate both the resolved topology boundaries and the boundary sections between them.
-        (resolved_topology_features,
-         ridge_transform_boundary_section_features,
-         ridge_boundary_section_features,
-         transform_boundary_section_features,
-         subduction_boundary_section_features,
-         left_subduction_boundary_section_features,
-         right_subduction_boundary_section_features,
-         other_boundary_section_features) = resolve_topologies_into_features(
-                rotation_model,
-                topology_features,
-                reconstruction_time,
-                math.radians(args.transform_segment_deviation_degrees))
-        
+        (
+            resolved_topology_features,
+            ridge_transform_boundary_section_features,
+            ridge_boundary_section_features,
+            transform_boundary_section_features,
+            subduction_boundary_section_features,
+            left_subduction_boundary_section_features,
+            right_subduction_boundary_section_features,
+            other_boundary_section_features,
+        ) = resolve_topologies_into_features(
+            rotation_model,
+            topology_features,
+            reconstruction_time,
+            math.radians(args.transform_segment_deviation_degrees),
+        )
+
         # Write each list of features to a separate file.
         if not args.no_output_boundaries:
             _write_resolved_topologies(
@@ -578,36 +745,74 @@ if __name__ == &#34;__main__&#34;:
                 subduction_boundary_section_features,
                 left_subduction_boundary_section_features,
                 right_subduction_boundary_section_features,
-                other_boundary_section_features)
-        
+                other_boundary_section_features,
+            )
+
         # Write the total boundary lengths to a text file (if requested).
         if args.output_boundary_lengths:
-            (total_length_kms_ridge_transform_boundary_section_features,
-             total_length_kms_ridge_boundary_section_features,
-             total_length_kms_transform_boundary_section_features,
-             total_length_kms_subduction_boundary_section_features,
-             total_length_kms_left_subduction_boundary_section_features,
-             total_length_kms_right_subduction_boundary_section_features,
-             total_length_kms_other_boundary_section_features) = find_total_boundary_length_in_kms(
-                    ridge_transform_boundary_section_features,
-                    ridge_boundary_section_features,
-                    transform_boundary_section_features,
-                    subduction_boundary_section_features,
-                    left_subduction_boundary_section_features,
-                    right_subduction_boundary_section_features,
-                    other_boundary_section_features)
+            (
+                total_length_kms_ridge_transform_boundary_section_features,
+                total_length_kms_ridge_boundary_section_features,
+                total_length_kms_transform_boundary_section_features,
+                total_length_kms_subduction_boundary_section_features,
+                total_length_kms_left_subduction_boundary_section_features,
+                total_length_kms_right_subduction_boundary_section_features,
+                total_length_kms_other_boundary_section_features,
+            ) = find_total_boundary_length_in_kms(
+                ridge_transform_boundary_section_features,
+                ridge_boundary_section_features,
+                transform_boundary_section_features,
+                subduction_boundary_section_features,
+                left_subduction_boundary_section_features,
+                right_subduction_boundary_section_features,
+                other_boundary_section_features,
+            )
 
             boundary_lengths_file.write(
-                    &#39;{0} {1} {2} {3} {4} {5} {6} {7}\n&#39;.format(
-                        reconstruction_time,
-                        total_length_kms_ridge_transform_boundary_section_features,
-                        total_length_kms_ridge_boundary_section_features,
-                        total_length_kms_transform_boundary_section_features,
-                        total_length_kms_subduction_boundary_section_features,
-                        total_length_kms_left_subduction_boundary_section_features,
-                        total_length_kms_right_subduction_boundary_section_features,
-                        total_length_kms_other_boundary_section_features))
-            </code></pre>
+                &#34;{0} {1} {2} {3} {4} {5} {6} {7}\n&#34;.format(
+                    reconstruction_time,
+                    total_length_kms_ridge_transform_boundary_section_features,
+                    total_length_kms_ridge_boundary_section_features,
+                    total_length_kms_transform_boundary_section_features,
+                    total_length_kms_subduction_boundary_section_features,
+                    total_length_kms_left_subduction_boundary_section_features,
+                    total_length_kms_right_subduction_boundary_section_features,
+                    total_length_kms_other_boundary_section_features,
+                )
+            )
+
+
+if __name__ == &#34;__main__&#34;:
+    # Check the imported pygplates version.
+    required_version = pygplates.Version(9)
+    if (
+        not hasattr(pygplates, &#34;Version&#34;)
+        or pygplates.Version.get_imported_version() &lt; required_version
+    ):
+        print(
+            &#34;{0}: Error - imported pygplates version {1} but version {2} or greater is required&#34;.format(
+                os.path.basename(__file__),
+                pygplates.Version.get_imported_version(),
+                required_version,
+            ),
+            file=sys.stderr,
+        )
+        sys.exit(1)
+
+    # The command-line parser.
+    parser = argparse.ArgumentParser(
+        description=__description__,
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+    )
+
+    # add arguments
+    add_arguments(parser)
+
+    # Parse command-line options.
+    args = parser.parse_args()
+
+    # call main function
+    main(args)</code></pre>
 </details>
 </section>
 <section>
@@ -617,6 +822,122 @@ if __name__ == &#34;__main__&#34;:
 <section>
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
+<dt id="gplately.ptt.resolve_topologies.add_arguments"><code class="name flex">
+<span>def <span class="ident">add_arguments</span></span>(<span>parser: argparse.ArgumentParser)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>add command line argument parser</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def add_arguments(parser: argparse.ArgumentParser):
+    &#34;&#34;&#34;add command line argument parser&#34;&#34;&#34;
+
+    parser.formatter_class = argparse.RawDescriptionHelpFormatter
+    parser.description = __description__
+
+    parser.set_defaults(func=main)
+
+    parser.add_argument(
+        &#34;-r&#34;,
+        &#34;--rotation_filenames&#34;,
+        type=str,
+        nargs=&#34;+&#34;,
+        required=True,
+        metavar=&#34;rotation_filename&#34;,
+        help=&#34;One or more rotation files.&#34;,
+    )
+    parser.add_argument(
+        &#34;-m&#34;,
+        &#34;--topology_filenames&#34;,
+        type=str,
+        nargs=&#34;+&#34;,
+        required=True,
+        metavar=&#34;topology_filename&#34;,
+        help=&#34;One or more topology files.&#34;,
+    )
+    parser.add_argument(
+        &#34;-a&#34;,
+        &#34;--anchor&#34;,
+        type=int,
+        default=0,
+        dest=&#34;anchor_plate_id&#34;,
+        help=&#34;Anchor plate id used for reconstructing. Defaults to zero.&#34;,
+    )
+
+    # User must specify a sequence of reconstruction times or a time range (but not both).
+    reconstruction_times_argument_group = parser.add_mutually_exclusive_group(
+        required=True
+    )
+    reconstruction_times_argument_group.add_argument(
+        &#34;-t&#34;,
+        &#34;--reconstruction_times&#34;,
+        type=int,
+        nargs=&#34;+&#34;,
+        metavar=&#34;reconstruction_time&#34;,
+        help=&#34;One or more times at which to reconstruct/resolve topologies.&#34;,
+    )
+    reconstruction_times_argument_group.add_argument(
+        &#34;-i&#34;,
+        &#34;--reconstruction_time_range&#34;,
+        type=int,
+        nargs=2,
+        metavar=(&#34;young_time&#34;, &#34;old_time&#34;),
+        help=&#34;The time range (in Ma) from young time to old time over which to reconstruct/resolve topologies (in increments of 1Myr).&#34;,
+    )
+
+    parser.add_argument(
+        &#34;-d&#34;,
+        &#34;--transform_segment_deviation_degrees&#34;,
+        type=float,
+        default=&#34;{0}&#34;.format(
+            separate_ridge_transform_segments.DEFAULT_TRANSFORM_SEGMENT_DEVIATION_DEGREES
+        ),
+        help=&#34;How many degrees a mid-ocean ridge spreading segment can deviate from its stage pole before it&#39;s considered a transform segment - &#34;
+        &#34;default is &#39;{0}&#39;&#34;.format(
+            separate_ridge_transform_segments.DEFAULT_TRANSFORM_SEGMENT_DEVIATION_DEGREES
+        ),
+    )
+
+    parser.add_argument(
+        &#34;-e&#34;,
+        &#34;--output_filename_extension&#34;,
+        type=str,
+        default=&#34;{0}&#34;.format(DEFAULT_OUTPUT_FILENAME_EXTENSION),
+        help=&#34;The filename extension of the output files containing the resolved topological boundaries and sections &#34;
+        &#34;- the default extension is &#39;{0}&#39; - supported extensions include &#39;shp&#39;, &#39;gmt&#39; and &#39;xy&#39;.&#34;.format(
+            DEFAULT_OUTPUT_FILENAME_EXTENSION
+        ),
+    )
+
+    parser.add_argument(
+        &#34;-nb&#34;,
+        &#34;--no_output_boundaries&#34;,
+        action=&#34;store_true&#34;,
+        help=&#34;Do not write geometries of resolved topologies and their boundaries to files. &#34;
+        &#39;This is most useful when used with the &#34;-l&#34; option to generate only the text file containing boundary lengths. &#39;
+        &#34;By default geometry files are written.&#34;,
+    )
+
+    parser.add_argument(
+        &#34;-l&#34;,
+        &#34;--output_boundary_lengths&#34;,
+        action=&#34;store_true&#34;,
+        help=&#34;Also generate a text file containing the total boundary lengths (in kms) of the resolved topology boundary sections &#34;
+        &#34;for the requested reconstruction times. By default no text file is generated.&#34;,
+    )
+
+    parser.add_argument(
+        &#34;output_filename_prefix&#34;,
+        type=str,
+        nargs=&#34;?&#34;,
+        default=&#34;{0}&#34;.format(DEFAULT_OUTPUT_FILENAME_PREFIX),
+        help=&#34;The prefix of the output files containing the resolved topological boundaries and sections &#34;
+        &#34;- the default prefix is &#39;{0}&#39;&#34;.format(DEFAULT_OUTPUT_FILENAME_PREFIX),
+    )</code></pre>
+</details>
+</dd>
 <dt id="gplately.ptt.resolve_topologies.find_total_boundary_length_in_kms"><code class="name flex">
 <span>def <span class="ident">find_total_boundary_length_in_kms</span></span>(<span>ridge_transform_boundary_section_features, ridge_boundary_section_features, transform_boundary_section_features, subduction_boundary_section_features, left_subduction_boundary_section_features, right_subduction_boundary_section_features, other_boundary_section_features)</span>
 </code></dt>
@@ -627,13 +948,14 @@ if __name__ == &#34;__main__&#34;:
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def find_total_boundary_length_in_kms(
-        ridge_transform_boundary_section_features,
-        ridge_boundary_section_features,
-        transform_boundary_section_features,
-        subduction_boundary_section_features,
-        left_subduction_boundary_section_features,
-        right_subduction_boundary_section_features,
-        other_boundary_section_features):
+    ridge_transform_boundary_section_features,
+    ridge_boundary_section_features,
+    transform_boundary_section_features,
+    subduction_boundary_section_features,
+    left_subduction_boundary_section_features,
+    right_subduction_boundary_section_features,
+    other_boundary_section_features,
+):
     &#34;&#34;&#34;
     Find the total length (in kms) of resolved topology boundary sections (in the various categories).
     &#34;&#34;&#34;
@@ -644,16 +966,158 @@ if __name__ == &#34;__main__&#34;:
             for geometry in feature.get_geometries():
                 total_length_features += geometry.get_arc_length()
         # Return total lengths in kms (converted from radians).
-        return  total_length_features * pygplates.Earth.mean_radius_in_kms
+        return total_length_features * pygplates.Earth.mean_radius_in_kms
 
     # Return total lengths in kms (converted from radians).
-    return (find_total_length(ridge_transform_boundary_section_features),
-            find_total_length(ridge_boundary_section_features),
-            find_total_length(transform_boundary_section_features),
-            find_total_length(subduction_boundary_section_features),
-            find_total_length(left_subduction_boundary_section_features),
-            find_total_length(right_subduction_boundary_section_features),
-            find_total_length(other_boundary_section_features))</code></pre>
+    return (
+        find_total_length(ridge_transform_boundary_section_features),
+        find_total_length(ridge_boundary_section_features),
+        find_total_length(transform_boundary_section_features),
+        find_total_length(subduction_boundary_section_features),
+        find_total_length(left_subduction_boundary_section_features),
+        find_total_length(right_subduction_boundary_section_features),
+        find_total_length(other_boundary_section_features),
+    )</code></pre>
+</details>
+</dd>
+<dt id="gplately.ptt.resolve_topologies.main"><code class="name flex">
+<span>def <span class="ident">main</span></span>(<span>args)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def main(args):
+    if args.reconstruction_times:
+        reconstruction_times = args.reconstruction_times
+    else:
+        if args.reconstruction_time_range[0] &gt; args.reconstruction_time_range[1]:
+            raise argparse.ArgumentTypeError(
+                &#34;First (young) value in reconstruction time range is greater than second (old) value&#34;
+            )
+        reconstruction_times = list(
+            range(
+                args.reconstruction_time_range[0], args.reconstruction_time_range[1] + 1
+            )
+        )
+
+    # Create a rotation model from rotation files.
+    #
+    # Note: We only special case &#39;anchor_plate_id != 0&#39; since that is the uncommon and the &#39;default_anchor_plate_id&#39;
+    #       argument of &#39;pygplates.RotationModel.__init__()&#39; was only added in pyGPlates revision 26.
+    #       If &#39;anchor_plate_id == 0&#39; then any pyGPlates revision will work.
+    if args.anchor_plate_id != 0:
+        if not USING_PYGPLATES_VERSION_GREATER_EQUAL_26:
+            raise RuntimeError(
+                &#34;Using pygplates version {0} but version 0.26 or greater is required for non-zero anchor plate IDs&#34;.format(
+                    pygplates.Version.get_imported_version()
+                )
+            )
+        rotation_model = pygplates.RotationModel(
+            args.rotation_filenames, default_anchor_plate_id=args.anchor_plate_id
+        )
+    else:
+        rotation_model = pygplates.RotationModel(args.rotation_filenames)
+
+    # Read topology features from topology files.
+    topology_features = []
+    for topology_filename in args.topology_filenames:
+        for topology_feature in pygplates.FeatureCollection(topology_filename):
+            # FIXME: Temporary fix to avoid getting OGR GMT/Shapefile error &#34;Mismatch in field names...&#34; and
+            # missing geometries when saving resolved topologies/sections to GMT/Shapefile.
+            # It&#39;s caused by the OGR writer inside pyglates trying to write out features with different
+            # shapefiles attribute field (key) names to the same file. We get around this by removing
+            # all shapefile attributes.
+            topology_feature.remove(pygplates.PropertyName.gpml_shapefile_attributes)
+            topology_features.append(topology_feature)
+
+    if args.output_boundary_lengths:
+        # Create the text file for writing.
+        boundary_lengths_filename = &#34;{0}boundary_lengths.txt&#34;.format(
+            args.output_filename_prefix
+        )
+        boundary_lengths_file = open(boundary_lengths_filename, mode=&#34;w&#34;)
+        # Write the header line (showing what each column represents).
+        boundary_lengths_file.write(
+            &#34;# time(Ma)&#34;
+            &#34; ridge-transform-boundary-sections(km)&#34;
+            &#34; ridge-boundary-sections(km)&#34;
+            &#34; transform-boundary-sections(km)&#34;
+            &#34; subduction-boundary-sections(km)&#34;
+            &#34; left-subduction-boundary-sections(km)&#34;
+            &#34; right-subduction-boundary-sections(km)&#34;
+            &#34; other-boundary-sections(km)\n&#34;
+        )
+
+    for reconstruction_time in reconstruction_times:
+        # Resolve our topological plate polygons (and deforming networks) to the current &#39;time&#39;.
+        # We generate both the resolved topology boundaries and the boundary sections between them.
+        (
+            resolved_topology_features,
+            ridge_transform_boundary_section_features,
+            ridge_boundary_section_features,
+            transform_boundary_section_features,
+            subduction_boundary_section_features,
+            left_subduction_boundary_section_features,
+            right_subduction_boundary_section_features,
+            other_boundary_section_features,
+        ) = resolve_topologies_into_features(
+            rotation_model,
+            topology_features,
+            reconstruction_time,
+            math.radians(args.transform_segment_deviation_degrees),
+        )
+
+        # Write each list of features to a separate file.
+        if not args.no_output_boundaries:
+            _write_resolved_topologies(
+                reconstruction_time,
+                args.output_filename_prefix,
+                args.output_filename_extension,
+                resolved_topology_features,
+                ridge_transform_boundary_section_features,
+                ridge_boundary_section_features,
+                transform_boundary_section_features,
+                subduction_boundary_section_features,
+                left_subduction_boundary_section_features,
+                right_subduction_boundary_section_features,
+                other_boundary_section_features,
+            )
+
+        # Write the total boundary lengths to a text file (if requested).
+        if args.output_boundary_lengths:
+            (
+                total_length_kms_ridge_transform_boundary_section_features,
+                total_length_kms_ridge_boundary_section_features,
+                total_length_kms_transform_boundary_section_features,
+                total_length_kms_subduction_boundary_section_features,
+                total_length_kms_left_subduction_boundary_section_features,
+                total_length_kms_right_subduction_boundary_section_features,
+                total_length_kms_other_boundary_section_features,
+            ) = find_total_boundary_length_in_kms(
+                ridge_transform_boundary_section_features,
+                ridge_boundary_section_features,
+                transform_boundary_section_features,
+                subduction_boundary_section_features,
+                left_subduction_boundary_section_features,
+                right_subduction_boundary_section_features,
+                other_boundary_section_features,
+            )
+
+            boundary_lengths_file.write(
+                &#34;{0} {1} {2} {3} {4} {5} {6} {7}\n&#34;.format(
+                    reconstruction_time,
+                    total_length_kms_ridge_transform_boundary_section_features,
+                    total_length_kms_ridge_boundary_section_features,
+                    total_length_kms_transform_boundary_section_features,
+                    total_length_kms_subduction_boundary_section_features,
+                    total_length_kms_left_subduction_boundary_section_features,
+                    total_length_kms_right_subduction_boundary_section_features,
+                    total_length_kms_other_boundary_section_features,
+                )
+            )</code></pre>
 </details>
 </dd>
 <dt id="gplately.ptt.resolve_topologies.resolve_topologies"><code class="name flex">
@@ -682,28 +1146,29 @@ it's considered a transform segment (in radians).</p>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def resolve_topologies(
-        rotation_features_or_model,
-        topology_features,
-        time,
-        output_filename_prefix,
-        output_filename_extension,
-        transform_segment_deviation_in_radians = separate_ridge_transform_segments.DEFAULT_TRANSFORM_SEGMENT_DEVIATION_RADIANS,
-        anchor_plate_id=None):
+    rotation_features_or_model,
+    topology_features,
+    time,
+    output_filename_prefix,
+    output_filename_extension,
+    transform_segment_deviation_in_radians=separate_ridge_transform_segments.DEFAULT_TRANSFORM_SEGMENT_DEVIATION_RADIANS,
+    anchor_plate_id=None,
+):
     &#34;&#34;&#34;
     Resolves topologies at specified time and saves (to separate files) the resolved topologies, and their boundary sections as subduction zones,
     mid-ocean ridges (ridge/transform) and others (not subduction zones or mid-ocean ridges).
-    
+
     rotation_features_or_model: Rotation model or feature collection(s), or list of features, or filename(s).
-    
+
     topology_features: Topology feature collection(s), or list of features, or filename(s) or any combination of those.
-    
+
     time: Reconstruction time to resolved topologies.
-    
+
     transform_segment_deviation_in_radians: How much a mid-ocean ridge segment can deviate from the stage pole before
                                             it&#39;s considered a transform segment (in radians).
 
     anchor_plate_id: Anchor plate ID (optional, int).
-    
+
     Writes output files containing the following features...
             - resolved topology features (topological plates and networks)
             - ridge and transform boundary sections (resolved features)
@@ -720,25 +1185,30 @@ it's considered a transform segment (in radians).</p>
         anchor_plate_id=anchor_plate_id,
     )
 
-    # Get topology features (could include filenames).    
-    topology_features = pygplates.FeaturesFunctionArgument(topology_features).get_features()
-    
+    # Get topology features (could include filenames).
+    topology_features = pygplates.FeaturesFunctionArgument(
+        topology_features
+    ).get_features()
+
     # Resolve our topological plate polygons (and deforming networks) to the current &#39;time&#39;.
     # We generate both the resolved topology boundaries and the boundary sections between them.
-    (resolved_topology_features,
-     ridge_transform_boundary_section_features,
-     ridge_boundary_section_features,
-     transform_boundary_section_features,
-     subduction_boundary_section_features,
-     left_subduction_boundary_section_features,
-     right_subduction_boundary_section_features,
-     other_boundary_section_features) = resolve_topologies_into_features(
-            rotation_model,
-            topology_features,
-            time,
-            transform_segment_deviation_in_radians,
-            anchor_plate_id=anchor_plate_id)
-    
+    (
+        resolved_topology_features,
+        ridge_transform_boundary_section_features,
+        ridge_boundary_section_features,
+        transform_boundary_section_features,
+        subduction_boundary_section_features,
+        left_subduction_boundary_section_features,
+        right_subduction_boundary_section_features,
+        other_boundary_section_features,
+    ) = resolve_topologies_into_features(
+        rotation_model,
+        topology_features,
+        time,
+        transform_segment_deviation_in_radians,
+        anchor_plate_id=anchor_plate_id,
+    )
+
     # Write each list of features to a separate file.
     _write_resolved_topologies(
         time,
@@ -751,7 +1221,8 @@ it's considered a transform segment (in radians).</p>
         subduction_boundary_section_features,
         left_subduction_boundary_section_features,
         right_subduction_boundary_section_features,
-        other_boundary_section_features)</code></pre>
+        other_boundary_section_features,
+    )</code></pre>
 </details>
 </dd>
 <dt id="gplately.ptt.resolve_topologies.resolve_topologies_into_features"><code class="name flex">
@@ -780,26 +1251,27 @@ it's considered a transform segment (in radians).</p>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def resolve_topologies_into_features(
-        rotation_features_or_model,
-        topology_features,
-        time,
-        transform_segment_deviation_in_radians = separate_ridge_transform_segments.DEFAULT_TRANSFORM_SEGMENT_DEVIATION_RADIANS,
-        anchor_plate_id=None):
+    rotation_features_or_model,
+    topology_features,
+    time,
+    transform_segment_deviation_in_radians=separate_ridge_transform_segments.DEFAULT_TRANSFORM_SEGMENT_DEVIATION_RADIANS,
+    anchor_plate_id=None,
+):
     &#34;&#34;&#34;
     Resolves topologies at specified time and returns resolved topologies and their boundary sections as subduction zones,
     mid-ocean ridges (ridge/transform) and others (not subduction zones or mid-ocean ridges).
-    
+
     rotation_features_or_model: Rotation model or feature collection(s), or list of features, or filename(s).
-    
+
     topology_features: Topology feature collection(s), or list of features, or filename(s) or any combination of those.
-    
+
     time: Reconstruction time to resolved topologies.
-    
+
     transform_segment_deviation_in_radians: How much a mid-ocean ridge segment can deviate from the stage pole before
                                             it&#39;s considered a transform segment (in radians).
 
     anchor_plate_id: Anchor plate ID (optional, int).
-    
+
     Returns: A tuple containing the following lists...
             - resolved topology features (topological plates and networks)
             - ridge and transform boundary sections (resolved features)
@@ -819,7 +1291,7 @@ it's considered a transform segment (in radians).</p>
 
     # Turn topology data into a list of features (if not already).
     topology_features = pygplates.FeaturesFunctionArgument(topology_features)
-    
+
     # Resolve our topological plate polygons (and deforming networks) to the current &#39;time&#39;.
     # We generate both the resolved topology boundaries and the boundary sections between them.
     resolved_topologies = []
@@ -850,72 +1322,106 @@ it's considered a transform segment (in radians).</p>
 
     # Iterate over the shared boundary sections.
     for shared_boundary_section in shared_boundary_sections:
-        
         # Get all the geometries of the current boundary section.
-        boundary_section_features = [shared_sub_segment.get_resolved_feature()
-                for shared_sub_segment in shared_boundary_section.get_shared_sub_segments()]
-        
+        boundary_section_features = [
+            shared_sub_segment.get_resolved_feature()
+            for shared_sub_segment in shared_boundary_section.get_shared_sub_segments()
+        ]
+
         # Add the feature to the correct list depending on feature type, etc.
-        if shared_boundary_section.get_feature().get_feature_type() == pygplates.FeatureType.gpml_subduction_zone:
-            
+        if (
+            shared_boundary_section.get_feature().get_feature_type()
+            == pygplates.FeatureType.gpml_subduction_zone
+        ):
             # Put all subduction zones in one collection/file.
             subduction_boundary_section_features.extend(boundary_section_features)
-            
+
             # Also put subduction zones in left/right collection/file.
             polarity_property = shared_boundary_section.get_feature().get(
-                    pygplates.PropertyName.create_gpml(&#39;subductionPolarity&#39;))
+                pygplates.PropertyName.create_gpml(&#34;subductionPolarity&#34;)
+            )
             if polarity_property:
                 polarity = polarity_property.get_value().get_content()
-                if polarity == &#39;Left&#39;:
-                    left_subduction_boundary_section_features.extend(boundary_section_features)
-                elif polarity == &#39;Right&#39;:
-                    right_subduction_boundary_section_features.extend(boundary_section_features)
+                if polarity == &#34;Left&#34;:
+                    left_subduction_boundary_section_features.extend(
+                        boundary_section_features
+                    )
+                elif polarity == &#34;Right&#34;:
+                    right_subduction_boundary_section_features.extend(
+                        boundary_section_features
+                    )
 
-        elif shared_boundary_section.get_feature().get_feature_type() == pygplates.FeatureType.gpml_mid_ocean_ridge:
+        elif (
+            shared_boundary_section.get_feature().get_feature_type()
+            == pygplates.FeatureType.gpml_mid_ocean_ridge
+        ):
             ridge_transform_boundary_section_features.extend(boundary_section_features)
-            
+
             # Find the stage rotation of the MOR in the frame of reference of its reconstructed geometry at the current &#39;time&#39;.
             # The stage pole can then be directly geometrically compared to the reconstructed spreading geometry.
             spreading_stage_rotation = separate_ridge_transform_segments.get_stage_rotation_for_reconstructed_geometry(
-                    shared_boundary_section.get_feature(), rotation_model, time)
+                shared_boundary_section.get_feature(), rotation_model, time
+            )
             if spreading_stage_rotation:
-                boundary_section_geometries = [shared_sub_segment.get_resolved_geometry()
-                        for shared_sub_segment in shared_boundary_section.get_shared_sub_segments()]
-                for boundary_section_index, boundary_section_feature in enumerate(boundary_section_features):
+                boundary_section_geometries = [
+                    shared_sub_segment.get_resolved_geometry()
+                    for shared_sub_segment in shared_boundary_section.get_shared_sub_segments()
+                ]
+                for boundary_section_index, boundary_section_feature in enumerate(
+                    boundary_section_features
+                ):
                     # Split into ridge and transform segments.
                     ridge_and_transform_segment_geometries = separate_ridge_transform_segments.separate_geometry_into_ridges_and_transforms(
-                            spreading_stage_rotation,
-                            boundary_section_geometries[boundary_section_index],
-                            transform_segment_deviation_in_radians)
+                        spreading_stage_rotation,
+                        boundary_section_geometries[boundary_section_index],
+                        transform_segment_deviation_in_radians,
+                    )
                     if ridge_and_transform_segment_geometries:
-                        ridge_sub_segment_geometries, transform_sub_segment_geometries = ridge_and_transform_segment_geometries
+                        (
+                            ridge_sub_segment_geometries,
+                            transform_sub_segment_geometries,
+                        ) = ridge_and_transform_segment_geometries
 
                         if ridge_sub_segment_geometries:
-                            ridge_boundary_section_feature = boundary_section_feature.clone()
-                            ridge_boundary_section_feature.set_geometry(ridge_sub_segment_geometries)
-                            ridge_boundary_section_features.append(ridge_boundary_section_feature)
+                            ridge_boundary_section_feature = (
+                                boundary_section_feature.clone()
+                            )
+                            ridge_boundary_section_feature.set_geometry(
+                                ridge_sub_segment_geometries
+                            )
+                            ridge_boundary_section_features.append(
+                                ridge_boundary_section_feature
+                            )
 
                         if transform_sub_segment_geometries:
-                            transform_boundary_section_feature = boundary_section_feature.clone()
-                            transform_boundary_section_feature.set_geometry(transform_sub_segment_geometries)
-                            transform_boundary_section_features.append(transform_boundary_section_feature)
+                            transform_boundary_section_feature = (
+                                boundary_section_feature.clone()
+                            )
+                            transform_boundary_section_feature.set_geometry(
+                                transform_sub_segment_geometries
+                            )
+                            transform_boundary_section_features.append(
+                                transform_boundary_section_feature
+                            )
 
                     # else skip shared sub segment - it&#39;s not a polyline (or polygon).
-                
+
             # else most likely MOR doesn&#39;t have left/right plate IDs or reconstruction/conjugate plate IDs,
             # so don&#39;t split into ridge and transform segments.
 
         else:
             other_boundary_section_features.extend(boundary_section_features)
 
-    return (resolved_topology_features,
-            ridge_transform_boundary_section_features,
-            ridge_boundary_section_features,
-            transform_boundary_section_features,
-            subduction_boundary_section_features,
-            left_subduction_boundary_section_features,
-            right_subduction_boundary_section_features,
-            other_boundary_section_features)</code></pre>
+    return (
+        resolved_topology_features,
+        ridge_transform_boundary_section_features,
+        ridge_boundary_section_features,
+        transform_boundary_section_features,
+        subduction_boundary_section_features,
+        left_subduction_boundary_section_features,
+        right_subduction_boundary_section_features,
+        other_boundary_section_features,
+    )</code></pre>
 </details>
 </dd>
 </dl>
@@ -941,7 +1447,9 @@ it's considered a transform segment (in radians).</p>
 </li>
 <li><h3><a href="#header-functions">Functions</a></h3>
 <ul class="">
+<li><code><a title="gplately.ptt.resolve_topologies.add_arguments" href="#gplately.ptt.resolve_topologies.add_arguments">add_arguments</a></code></li>
 <li><code><a title="gplately.ptt.resolve_topologies.find_total_boundary_length_in_kms" href="#gplately.ptt.resolve_topologies.find_total_boundary_length_in_kms">find_total_boundary_length_in_kms</a></code></li>
+<li><code><a title="gplately.ptt.resolve_topologies.main" href="#gplately.ptt.resolve_topologies.main">main</a></code></li>
 <li><code><a title="gplately.ptt.resolve_topologies.resolve_topologies" href="#gplately.ptt.resolve_topologies.resolve_topologies">resolve_topologies</a></code></li>
 <li><code><a title="gplately.ptt.resolve_topologies.resolve_topologies_into_features" href="#gplately.ptt.resolve_topologies.resolve_topologies_into_features">resolve_topologies_into_features</a></code></li>
 </ul>

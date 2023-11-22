@@ -58,12 +58,12 @@ with this program; if not, write to Free Software Foundation, Inc.,
 &#34;&#34;&#34;
 
 from __future__ import print_function
-import argparse
-import math
-import sys
-import os.path
-import pygplates
 
+import argparse
+import os.path
+import sys
+
+import pygplates
 
 # The default is useful when the rotations were loaded from a PLATES rotation file
 # that stored rotation lat/lon/angle to 2 decimal places of accuracy.
@@ -71,8 +71,8 @@ DEFAULT_ROTATION_THRESHOLD_DEGREES = 0.01
 
 
 def diagnose_rotations(
-        rotation_features,
-        rotation_threshold_degrees=DEFAULT_ROTATION_THRESHOLD_DEGREES):
+    rotation_features, rotation_threshold_degrees=DEFAULT_ROTATION_THRESHOLD_DEGREES
+):
     &#34;&#34;&#34;
     Diagnose one or more rotation files to check for inconsistencies.
 
@@ -84,91 +84,127 @@ def diagnose_rotations(
     that are typically accurate to 2 decimal places (or threshold of 0.01).
     Specifing &#39;None&#39; is equivalent to having no threshold (see pygplates.FiniteRotation.are_equal).
     &#34;&#34;&#34;
-    
+
     # Use helper class to convert &#39;rotation_features&#39; argument to a list of features.
     rotation_features = pygplates.FeaturesFunctionArgument(rotation_features)
     rotation_feature_sequence = rotation_features.get_features()
-    
+
     # Make sure threshold is a number.
     if rotation_threshold_degrees is not None:
         rotation_threshold_degrees = float(rotation_threshold_degrees)
-    
+
     # A &#39;dict&#39; to map each moving plate to a list of total reconstruction poles
     # (one per moving/fixed plate pair)
     total_reconstruction_poles_by_moving_plate = {}
-    
+
     # Get the moving/fixed total reconstruction poles.
     for rotation_feature in rotation_feature_sequence:
         total_reconstruction_pole = rotation_feature.get_total_reconstruction_pole()
         # If the current feature is a valid rotation feature...
         if total_reconstruction_pole:
-            fixed_plate_id, moving_plate_id, rotation_sequence = total_reconstruction_pole
+            (
+                fixed_plate_id,
+                moving_plate_id,
+                rotation_sequence,
+            ) = total_reconstruction_pole
             # Each moving plate has a list of total reconstruction poles.
-            total_reconstruction_poles = total_reconstruction_poles_by_moving_plate.setdefault(moving_plate_id, [])
+            total_reconstruction_poles = (
+                total_reconstruction_poles_by_moving_plate.setdefault(
+                    moving_plate_id, []
+                )
+            )
             total_reconstruction_poles.append(total_reconstruction_pole)
-    
+
     # Iterate over the moving plates.
-    for moving_plate_id, total_reconstruction_poles in total_reconstruction_poles_by_moving_plate.items():
+    for (
+        moving_plate_id,
+        total_reconstruction_poles,
+    ) in total_reconstruction_poles_by_moving_plate.items():
         moving_plate_time_samples = []
-        
+
         # Iterate over the total reconstruction poles associated with the current moving plate.
         for total_reconstruction_pole in total_reconstruction_poles:
             fixed_plate_id = total_reconstruction_pole[0]
             rotation_sequence = total_reconstruction_pole[2]
-            
+
             # Skip moving/fixed plates 999 since they are used as comments in PLATES rotation file.
             if moving_plate_id == 999 and fixed_plate_id == 999:
                 continue
-            
+
             time_samples = rotation_sequence.get_enabled_time_samples()
             if not time_samples:
-                print(&#39;Moving_pid({0}), fixed_pid({1}): no enabled poles in sequence.&#39;.format(
-                        moving_plate_id, fixed_plate_id))
+                print(
+                    &#34;Moving_pid({0}), fixed_pid({1}): no enabled poles in sequence.&#34;.format(
+                        moving_plate_id, fixed_plate_id
+                    )
+                )
                 continue
             if len(time_samples) == 1:
-                print(&#39;Moving_pid({0}), fixed_pid({1}): only one enabled pole in sequence.&#39;.format(
-                        moving_plate_id, fixed_plate_id))
+                print(
+                    &#34;Moving_pid({0}), fixed_pid({1}): only one enabled pole in sequence.&#34;.format(
+                        moving_plate_id, fixed_plate_id
+                    )
+                )
                 continue
             times = [time_sample.get_time() for time_sample in time_samples]
             if sorted(times) != times:
-                print(&#39;Moving_pid({0}), fixed_pid({1}): times of enabled samples not monotonically increasing between {2} and {3}.&#39;.format(
-                        moving_plate_id, fixed_plate_id, times[0], times[-1]))
+                print(
+                    &#34;Moving_pid({0}), fixed_pid({1}): times of enabled samples not monotonically increasing between {2} and {3}.&#34;.format(
+                        moving_plate_id, fixed_plate_id, times[0], times[-1]
+                    )
+                )
                 continue
-            
+
             moving_plate_time_samples.append((fixed_plate_id, time_samples))
-        
+
         # Go through all rotation sequences with the same moving plate (and potentially different
         # fixed plates) to see if there&#39;s any overlap in their time ranges and to see if two
         # adjacent rotation sequences have matching rotations (or crossovers if fixed plates differ)
         # at the joint time.
-        for index1 in range(len(moving_plate_time_samples)-1):
+        for index1 in range(len(moving_plate_time_samples) - 1):
             for index2 in range(index1 + 1, len(moving_plate_time_samples)):
                 fixed_plate_id1 = moving_plate_time_samples[index1][0]
                 fixed_plate_id2 = moving_plate_time_samples[index2][0]
                 fixed_plate_time_samples1 = moving_plate_time_samples[index1][1]
                 fixed_plate_time_samples2 = moving_plate_time_samples[index2][1]
                 time_range1 = (
-                        pygplates.GeoTimeInstant(fixed_plate_time_samples1[0].get_time()),
-                        pygplates.GeoTimeInstant(fixed_plate_time_samples1[-1].get_time()))
+                    pygplates.GeoTimeInstant(fixed_plate_time_samples1[0].get_time()),
+                    pygplates.GeoTimeInstant(fixed_plate_time_samples1[-1].get_time()),
+                )
                 time_range2 = (
-                        pygplates.GeoTimeInstant(fixed_plate_time_samples2[0].get_time()),
-                        pygplates.GeoTimeInstant(fixed_plate_time_samples2[-1].get_time()))
-                
+                    pygplates.GeoTimeInstant(fixed_plate_time_samples2[0].get_time()),
+                    pygplates.GeoTimeInstant(fixed_plate_time_samples2[-1].get_time()),
+                )
+
                 if time_range1[0] &gt; time_range2[0]:
                     if time_range1[0] &lt; time_range2[1]:
-                        print(&#39;Moving_pid({0}), fixed_pid1({1}), fixed_pid2({2}): sequences overlap between {3} and {4}.&#39;.format(
-                                moving_plate_id, fixed_plate_id1, fixed_plate_id2,
-                                time_range1[0], time_range2[1]))
+                        print(
+                            &#34;Moving_pid({0}), fixed_pid1({1}), fixed_pid2({2}): sequences overlap between {3} and {4}.&#34;.format(
+                                moving_plate_id,
+                                fixed_plate_id1,
+                                fixed_plate_id2,
+                                time_range1[0],
+                                time_range2[1],
+                            )
+                        )
                     elif time_range1[0] == time_range2[1]:
                         # Sequence at &#39;index1&#39; is *older* than sequence at &#39;index2&#39; and abuts it.
                         if fixed_plate_id1 == fixed_plate_id2:
                             # Check that both rotations are equal.
                             if not pygplates.FiniteRotation.are_equal(
-                                    fixed_plate_time_samples1[0].get_value().get_finite_rotation(),
-                                    fixed_plate_time_samples2[-1].get_value().get_finite_rotation(),
-                                    rotation_threshold_degrees):
-                                print(&#39;Moving_pid({0}), fixed_pid({1}): two different rotations at time {2}.&#39;.format(
-                                        moving_plate_id, fixed_plate_id1, time_range1[0]))
+                                fixed_plate_time_samples1[0]
+                                .get_value()
+                                .get_finite_rotation(),
+                                fixed_plate_time_samples2[-1]
+                                .get_value()
+                                .get_finite_rotation(),
+                                rotation_threshold_degrees,
+                            ):
+                                print(
+                                    &#34;Moving_pid({0}), fixed_pid({1}): two different rotations at time {2}.&#34;.format(
+                                        moving_plate_id, fixed_plate_id1, time_range1[0]
+                                    )
+                                )
                         else:
                             # We have a crossover (different fixed plates).
                             # Check that the crossover is synchronised.
@@ -178,30 +214,59 @@ def diagnose_rotations(
                             #  3. Compare calculated rotation with previous rotation,
                             #  4. Re-enable crossover in older rotation sequence.
                             fixed_plate_time_samples1[0].set_disabled()
-                            rotation_model = pygplates.RotationModel(rotation_feature_sequence)
+                            rotation_model = pygplates.RotationModel(
+                                rotation_feature_sequence
+                            )
                             if not pygplates.FiniteRotation.are_equal(
-                                    rotation_model.get_rotation(time_range1[0], moving_plate_id, anchor_plate_id=fixed_plate_id1),
-                                    fixed_plate_time_samples1[0].get_value().get_finite_rotation(),
-                                    rotation_threshold_degrees):
-                                print(&#39;Moving_pid({0}), young_fixed_pid({1}), old_fixed_pid({2}): &#39;
-                                    &#39;crossover at time {3} needs fixing.&#39;.format(
-                                        moving_plate_id, fixed_plate_id2, fixed_plate_id1, time_range1[0]))
+                                rotation_model.get_rotation(
+                                    time_range1[0],
+                                    moving_plate_id,
+                                    anchor_plate_id=fixed_plate_id1,
+                                ),
+                                fixed_plate_time_samples1[0]
+                                .get_value()
+                                .get_finite_rotation(),
+                                rotation_threshold_degrees,
+                            ):
+                                print(
+                                    &#34;Moving_pid({0}), young_fixed_pid({1}), old_fixed_pid({2}): &#34;
+                                    &#34;crossover at time {3} needs fixing.&#34;.format(
+                                        moving_plate_id,
+                                        fixed_plate_id2,
+                                        fixed_plate_id1,
+                                        time_range1[0],
+                                    )
+                                )
                             fixed_plate_time_samples1[0].set_enabled()
-                else: # time_range1[0] &lt;= time_range2[0] ...
+                else:  # time_range1[0] &lt;= time_range2[0] ...
                     if time_range2[0] &lt; time_range1[1]:
-                        print(&#39;Moving_pid({0}), fixed_pid1({1}), fixed_pid2({2}): sequences overlap between {3} and {4}.&#39;.format(
-                                moving_plate_id, fixed_plate_id1, fixed_plate_id2,
-                                time_range2[0], time_range1[1]))
+                        print(
+                            &#34;Moving_pid({0}), fixed_pid1({1}), fixed_pid2({2}): sequences overlap between {3} and {4}.&#34;.format(
+                                moving_plate_id,
+                                fixed_plate_id1,
+                                fixed_plate_id2,
+                                time_range2[0],
+                                time_range1[1],
+                            )
+                        )
                     elif time_range2[0] == time_range1[1]:
                         # Sequence at &#39;index1&#39; is *younger* than sequence at &#39;index2&#39; and abuts it.
                         if fixed_plate_id1 == fixed_plate_id2:
                             # Check that both rotations are equal.
                             if not pygplates.FiniteRotation.are_equal(
-                                    fixed_plate_time_samples1[-1].get_value().get_finite_rotation(),
-                                    fixed_plate_time_samples2[0].get_value().get_finite_rotation(),
-                                    rotation_threshold_degrees):
-                                print(&#39;Moving_pid({0}), fixed_pid({1}): two different rotations at time {2}.&#39;.format(
-                                        moving_plate_id, fixed_plate_id1, time_range2[0]))
+                                fixed_plate_time_samples1[-1]
+                                .get_value()
+                                .get_finite_rotation(),
+                                fixed_plate_time_samples2[0]
+                                .get_value()
+                                .get_finite_rotation(),
+                                rotation_threshold_degrees,
+                            ):
+                                print(
+                                    &#34;Moving_pid({0}), fixed_pid({1}): two different rotations at time {2}.&#34;.format(
+                                        moving_plate_id, fixed_plate_id1, time_range2[0]
+                                    )
+                                )
                         else:
                             # We have a crossover (different fixed plates).
                             # Check that the crossover is synchronised.
@@ -211,65 +276,114 @@ def diagnose_rotations(
                             #  3. Compare calculated rotation with previous rotation,
                             #  4. Re-enable crossover in older rotation sequence.
                             fixed_plate_time_samples2[0].set_disabled()
-                            rotation_model = pygplates.RotationModel(rotation_feature_sequence)
+                            rotation_model = pygplates.RotationModel(
+                                rotation_feature_sequence
+                            )
                             if not pygplates.FiniteRotation.are_equal(
-                                    rotation_model.get_rotation(time_range2[0], moving_plate_id, anchor_plate_id=fixed_plate_id2),
-                                    fixed_plate_time_samples2[0].get_value().get_finite_rotation(),
-                                    rotation_threshold_degrees):
-                                print(&#39;Moving_pid({0}), young_fixed_pid({1}), old_fixed_pid({2}): &#39;
-                                    &#39;crossover at time {3} needs fixing.&#39;.format(
-                                        moving_plate_id, fixed_plate_id1, fixed_plate_id2, time_range2[0]))
+                                rotation_model.get_rotation(
+                                    time_range2[0],
+                                    moving_plate_id,
+                                    anchor_plate_id=fixed_plate_id2,
+                                ),
+                                fixed_plate_time_samples2[0]
+                                .get_value()
+                                .get_finite_rotation(),
+                                rotation_threshold_degrees,
+                            ):
+                                print(
+                                    &#34;Moving_pid({0}), young_fixed_pid({1}), old_fixed_pid({2}): &#34;
+                                    &#34;crossover at time {3} needs fixing.&#34;.format(
+                                        moving_plate_id,
+                                        fixed_plate_id1,
+                                        fixed_plate_id2,
+                                        time_range2[0],
+                                    )
+                                )
                             fixed_plate_time_samples2[0].set_enabled()
 
 
-if __name__ == &#34;__main__&#34;:
+__description__ = &#34;&#34;&#34;Diagnose one or more rotation files to check for inconsistencies.
 
-    # Check the imported pygplates version.
-    required_version = pygplates.Version(4)
-    if not hasattr(pygplates, &#39;Version&#39;) or pygplates.Version.get_imported_version() &lt; required_version:
-        print(&#39;{0}: Error - imported pygplates version {1} but version {2} or greater is required&#39;.format(
-                os.path.basename(__file__), pygplates.Version.get_imported_version(), required_version),
-            file=sys.stderr)
-        sys.exit(1)
-    
-    
-    __description__ = \
-    &#34;&#34;&#34;Diagnose one or more rotation files to check for inconsistencies.
+NOTE: Separate the positional and optional arguments with &#39;--&#39; (workaround for bug in argparse module).
+For example...
 
-    NOTE: Separate the positional and optional arguments with &#39;--&#39; (workaround for bug in argparse module).
-    For example...
+%(prog)s input_rotations1.rot input_rotations2.rot
+&#34;&#34;&#34;
 
-    python %(prog)s input_rotations1.rot input_rotations2.rot
-    &#34;&#34;&#34;
 
-    # The command-line parser.
-    parser = argparse.ArgumentParser(description = __description__, formatter_class=argparse.RawDescriptionHelpFormatter)
-        
+def add_arguments(parser: argparse.ArgumentParser):
+    &#34;&#34;&#34;add command line argument parser&#34;&#34;&#34;
+
+    parser.formatter_class = argparse.RawDescriptionHelpFormatter
+    parser.description = __description__
+
+    parser.set_defaults(func=main)
+
     def parse_positive_number(value_string):
         try:
             value = float(value_string)
         except ValueError:
             raise argparse.ArgumentTypeError(&#34;%s is not a number&#34; % value_string)
-        
+
         if value &lt; 0:
             raise argparse.ArgumentTypeError(&#34;%g is not a positive number&#34; % value)
-        
-        return value
-    
-    parser.add_argument(&#39;-t&#39;, &#39;--rotation_threshold_degrees&#39;,
-                        type=parse_positive_number, default=DEFAULT_ROTATION_THRESHOLD_DEGREES,
-                        help=&#39;Two rotations differ if either the rotation latitude, longitude or angle differ by &#39;
-                             &#39;the specified amount (in degrees). The default (0.01 degrees) is useful for some &#39;
-                             &#39;PLATES rotation files that are typically accurate to 2 decimal places.&#39;)
 
-    parser.add_argument(&#39;rotation_filenames&#39;, type=str, nargs=&#39;+&#39;,
-            metavar=&#39;rotation_filename&#39;,
-            help=&#39;One or more rotation filenames.&#39;)
-    
+        return value
+
+    parser.add_argument(
+        &#34;-t&#34;,
+        &#34;--rotation_threshold_degrees&#34;,
+        type=parse_positive_number,
+        default=DEFAULT_ROTATION_THRESHOLD_DEGREES,
+        help=&#34;Two rotations differ if either the rotation latitude, longitude or angle differ by &#34;
+        &#34;the specified amount (in degrees). The default (0.01 degrees) is useful for some &#34;
+        &#34;PLATES rotation files that are typically accurate to 2 decimal places.&#34;,
+    )
+
+    parser.add_argument(
+        &#34;rotation_filenames&#34;,
+        type=str,
+        nargs=&#34;+&#34;,
+        metavar=&#34;rotation_filename&#34;,
+        help=&#34;One or more rotation filenames.&#34;,
+    )
+
+
+def main(args):
+    diagnose_rotations(args.rotation_filenames, args.rotation_threshold_degrees)
+
+
+if __name__ == &#34;__main__&#34;:
+    # Check the imported pygplates version.
+    required_version = pygplates.Version(4)
+    if (
+        not hasattr(pygplates, &#34;Version&#34;)
+        or pygplates.Version.get_imported_version() &lt; required_version
+    ):
+        print(
+            &#34;{0}: Error - imported pygplates version {1} but version {2} or greater is required&#34;.format(
+                os.path.basename(__file__),
+                pygplates.Version.get_imported_version(),
+                required_version,
+            ),
+            file=sys.stderr,
+        )
+        sys.exit(1)
+
+    # The command-line parser.
+    parser = argparse.ArgumentParser(
+        description=__description__,
+        formatter_class=argparse.RawDescriptionHelpFormatter,
+    )
+
+    # add arguments
+    add_arguments(parser)
+
     # Parse command-line options.
     args = parser.parse_args()
-    
-    diagnose_rotations(args.rotation_filenames, args.rotation_threshold_degrees)</code></pre>
+
+    # call main function
+    main(args)</code></pre>
 </details>
 </section>
 <section>
@@ -279,6 +393,53 @@ if __name__ == &#34;__main__&#34;:
 <section>
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
+<dt id="gplately.ptt.diagnose_rotations.add_arguments"><code class="name flex">
+<span>def <span class="ident">add_arguments</span></span>(<span>parser: argparse.ArgumentParser)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>add command line argument parser</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def add_arguments(parser: argparse.ArgumentParser):
+    &#34;&#34;&#34;add command line argument parser&#34;&#34;&#34;
+
+    parser.formatter_class = argparse.RawDescriptionHelpFormatter
+    parser.description = __description__
+
+    parser.set_defaults(func=main)
+
+    def parse_positive_number(value_string):
+        try:
+            value = float(value_string)
+        except ValueError:
+            raise argparse.ArgumentTypeError(&#34;%s is not a number&#34; % value_string)
+
+        if value &lt; 0:
+            raise argparse.ArgumentTypeError(&#34;%g is not a positive number&#34; % value)
+
+        return value
+
+    parser.add_argument(
+        &#34;-t&#34;,
+        &#34;--rotation_threshold_degrees&#34;,
+        type=parse_positive_number,
+        default=DEFAULT_ROTATION_THRESHOLD_DEGREES,
+        help=&#34;Two rotations differ if either the rotation latitude, longitude or angle differ by &#34;
+        &#34;the specified amount (in degrees). The default (0.01 degrees) is useful for some &#34;
+        &#34;PLATES rotation files that are typically accurate to 2 decimal places.&#34;,
+    )
+
+    parser.add_argument(
+        &#34;rotation_filenames&#34;,
+        type=str,
+        nargs=&#34;+&#34;,
+        metavar=&#34;rotation_filename&#34;,
+        help=&#34;One or more rotation filenames.&#34;,
+    )</code></pre>
+</details>
+</dd>
 <dt id="gplately.ptt.diagnose_rotations.diagnose_rotations"><code class="name flex">
 <span>def <span class="ident">diagnose_rotations</span></span>(<span>rotation_features, rotation_threshold_degrees=0.01)</span>
 </code></dt>
@@ -295,8 +456,8 @@ Specifing 'None' is equivalent to having no threshold (see pygplates.FiniteRotat
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def diagnose_rotations(
-        rotation_features,
-        rotation_threshold_degrees=DEFAULT_ROTATION_THRESHOLD_DEGREES):
+    rotation_features, rotation_threshold_degrees=DEFAULT_ROTATION_THRESHOLD_DEGREES
+):
     &#34;&#34;&#34;
     Diagnose one or more rotation files to check for inconsistencies.
 
@@ -308,91 +469,127 @@ Specifing 'None' is equivalent to having no threshold (see pygplates.FiniteRotat
     that are typically accurate to 2 decimal places (or threshold of 0.01).
     Specifing &#39;None&#39; is equivalent to having no threshold (see pygplates.FiniteRotation.are_equal).
     &#34;&#34;&#34;
-    
+
     # Use helper class to convert &#39;rotation_features&#39; argument to a list of features.
     rotation_features = pygplates.FeaturesFunctionArgument(rotation_features)
     rotation_feature_sequence = rotation_features.get_features()
-    
+
     # Make sure threshold is a number.
     if rotation_threshold_degrees is not None:
         rotation_threshold_degrees = float(rotation_threshold_degrees)
-    
+
     # A &#39;dict&#39; to map each moving plate to a list of total reconstruction poles
     # (one per moving/fixed plate pair)
     total_reconstruction_poles_by_moving_plate = {}
-    
+
     # Get the moving/fixed total reconstruction poles.
     for rotation_feature in rotation_feature_sequence:
         total_reconstruction_pole = rotation_feature.get_total_reconstruction_pole()
         # If the current feature is a valid rotation feature...
         if total_reconstruction_pole:
-            fixed_plate_id, moving_plate_id, rotation_sequence = total_reconstruction_pole
+            (
+                fixed_plate_id,
+                moving_plate_id,
+                rotation_sequence,
+            ) = total_reconstruction_pole
             # Each moving plate has a list of total reconstruction poles.
-            total_reconstruction_poles = total_reconstruction_poles_by_moving_plate.setdefault(moving_plate_id, [])
+            total_reconstruction_poles = (
+                total_reconstruction_poles_by_moving_plate.setdefault(
+                    moving_plate_id, []
+                )
+            )
             total_reconstruction_poles.append(total_reconstruction_pole)
-    
+
     # Iterate over the moving plates.
-    for moving_plate_id, total_reconstruction_poles in total_reconstruction_poles_by_moving_plate.items():
+    for (
+        moving_plate_id,
+        total_reconstruction_poles,
+    ) in total_reconstruction_poles_by_moving_plate.items():
         moving_plate_time_samples = []
-        
+
         # Iterate over the total reconstruction poles associated with the current moving plate.
         for total_reconstruction_pole in total_reconstruction_poles:
             fixed_plate_id = total_reconstruction_pole[0]
             rotation_sequence = total_reconstruction_pole[2]
-            
+
             # Skip moving/fixed plates 999 since they are used as comments in PLATES rotation file.
             if moving_plate_id == 999 and fixed_plate_id == 999:
                 continue
-            
+
             time_samples = rotation_sequence.get_enabled_time_samples()
             if not time_samples:
-                print(&#39;Moving_pid({0}), fixed_pid({1}): no enabled poles in sequence.&#39;.format(
-                        moving_plate_id, fixed_plate_id))
+                print(
+                    &#34;Moving_pid({0}), fixed_pid({1}): no enabled poles in sequence.&#34;.format(
+                        moving_plate_id, fixed_plate_id
+                    )
+                )
                 continue
             if len(time_samples) == 1:
-                print(&#39;Moving_pid({0}), fixed_pid({1}): only one enabled pole in sequence.&#39;.format(
-                        moving_plate_id, fixed_plate_id))
+                print(
+                    &#34;Moving_pid({0}), fixed_pid({1}): only one enabled pole in sequence.&#34;.format(
+                        moving_plate_id, fixed_plate_id
+                    )
+                )
                 continue
             times = [time_sample.get_time() for time_sample in time_samples]
             if sorted(times) != times:
-                print(&#39;Moving_pid({0}), fixed_pid({1}): times of enabled samples not monotonically increasing between {2} and {3}.&#39;.format(
-                        moving_plate_id, fixed_plate_id, times[0], times[-1]))
+                print(
+                    &#34;Moving_pid({0}), fixed_pid({1}): times of enabled samples not monotonically increasing between {2} and {3}.&#34;.format(
+                        moving_plate_id, fixed_plate_id, times[0], times[-1]
+                    )
+                )
                 continue
-            
+
             moving_plate_time_samples.append((fixed_plate_id, time_samples))
-        
+
         # Go through all rotation sequences with the same moving plate (and potentially different
         # fixed plates) to see if there&#39;s any overlap in their time ranges and to see if two
         # adjacent rotation sequences have matching rotations (or crossovers if fixed plates differ)
         # at the joint time.
-        for index1 in range(len(moving_plate_time_samples)-1):
+        for index1 in range(len(moving_plate_time_samples) - 1):
             for index2 in range(index1 + 1, len(moving_plate_time_samples)):
                 fixed_plate_id1 = moving_plate_time_samples[index1][0]
                 fixed_plate_id2 = moving_plate_time_samples[index2][0]
                 fixed_plate_time_samples1 = moving_plate_time_samples[index1][1]
                 fixed_plate_time_samples2 = moving_plate_time_samples[index2][1]
                 time_range1 = (
-                        pygplates.GeoTimeInstant(fixed_plate_time_samples1[0].get_time()),
-                        pygplates.GeoTimeInstant(fixed_plate_time_samples1[-1].get_time()))
+                    pygplates.GeoTimeInstant(fixed_plate_time_samples1[0].get_time()),
+                    pygplates.GeoTimeInstant(fixed_plate_time_samples1[-1].get_time()),
+                )
                 time_range2 = (
-                        pygplates.GeoTimeInstant(fixed_plate_time_samples2[0].get_time()),
-                        pygplates.GeoTimeInstant(fixed_plate_time_samples2[-1].get_time()))
-                
+                    pygplates.GeoTimeInstant(fixed_plate_time_samples2[0].get_time()),
+                    pygplates.GeoTimeInstant(fixed_plate_time_samples2[-1].get_time()),
+                )
+
                 if time_range1[0] &gt; time_range2[0]:
                     if time_range1[0] &lt; time_range2[1]:
-                        print(&#39;Moving_pid({0}), fixed_pid1({1}), fixed_pid2({2}): sequences overlap between {3} and {4}.&#39;.format(
-                                moving_plate_id, fixed_plate_id1, fixed_plate_id2,
-                                time_range1[0], time_range2[1]))
+                        print(
+                            &#34;Moving_pid({0}), fixed_pid1({1}), fixed_pid2({2}): sequences overlap between {3} and {4}.&#34;.format(
+                                moving_plate_id,
+                                fixed_plate_id1,
+                                fixed_plate_id2,
+                                time_range1[0],
+                                time_range2[1],
+                            )
+                        )
                     elif time_range1[0] == time_range2[1]:
                         # Sequence at &#39;index1&#39; is *older* than sequence at &#39;index2&#39; and abuts it.
                         if fixed_plate_id1 == fixed_plate_id2:
                             # Check that both rotations are equal.
                             if not pygplates.FiniteRotation.are_equal(
-                                    fixed_plate_time_samples1[0].get_value().get_finite_rotation(),
-                                    fixed_plate_time_samples2[-1].get_value().get_finite_rotation(),
-                                    rotation_threshold_degrees):
-                                print(&#39;Moving_pid({0}), fixed_pid({1}): two different rotations at time {2}.&#39;.format(
-                                        moving_plate_id, fixed_plate_id1, time_range1[0]))
+                                fixed_plate_time_samples1[0]
+                                .get_value()
+                                .get_finite_rotation(),
+                                fixed_plate_time_samples2[-1]
+                                .get_value()
+                                .get_finite_rotation(),
+                                rotation_threshold_degrees,
+                            ):
+                                print(
+                                    &#34;Moving_pid({0}), fixed_pid({1}): two different rotations at time {2}.&#34;.format(
+                                        moving_plate_id, fixed_plate_id1, time_range1[0]
+                                    )
+                                )
                         else:
                             # We have a crossover (different fixed plates).
                             # Check that the crossover is synchronised.
@@ -402,30 +599,59 @@ Specifing 'None' is equivalent to having no threshold (see pygplates.FiniteRotat
                             #  3. Compare calculated rotation with previous rotation,
                             #  4. Re-enable crossover in older rotation sequence.
                             fixed_plate_time_samples1[0].set_disabled()
-                            rotation_model = pygplates.RotationModel(rotation_feature_sequence)
+                            rotation_model = pygplates.RotationModel(
+                                rotation_feature_sequence
+                            )
                             if not pygplates.FiniteRotation.are_equal(
-                                    rotation_model.get_rotation(time_range1[0], moving_plate_id, anchor_plate_id=fixed_plate_id1),
-                                    fixed_plate_time_samples1[0].get_value().get_finite_rotation(),
-                                    rotation_threshold_degrees):
-                                print(&#39;Moving_pid({0}), young_fixed_pid({1}), old_fixed_pid({2}): &#39;
-                                    &#39;crossover at time {3} needs fixing.&#39;.format(
-                                        moving_plate_id, fixed_plate_id2, fixed_plate_id1, time_range1[0]))
+                                rotation_model.get_rotation(
+                                    time_range1[0],
+                                    moving_plate_id,
+                                    anchor_plate_id=fixed_plate_id1,
+                                ),
+                                fixed_plate_time_samples1[0]
+                                .get_value()
+                                .get_finite_rotation(),
+                                rotation_threshold_degrees,
+                            ):
+                                print(
+                                    &#34;Moving_pid({0}), young_fixed_pid({1}), old_fixed_pid({2}): &#34;
+                                    &#34;crossover at time {3} needs fixing.&#34;.format(
+                                        moving_plate_id,
+                                        fixed_plate_id2,
+                                        fixed_plate_id1,
+                                        time_range1[0],
+                                    )
+                                )
                             fixed_plate_time_samples1[0].set_enabled()
-                else: # time_range1[0] &lt;= time_range2[0] ...
+                else:  # time_range1[0] &lt;= time_range2[0] ...
                     if time_range2[0] &lt; time_range1[1]:
-                        print(&#39;Moving_pid({0}), fixed_pid1({1}), fixed_pid2({2}): sequences overlap between {3} and {4}.&#39;.format(
-                                moving_plate_id, fixed_plate_id1, fixed_plate_id2,
-                                time_range2[0], time_range1[1]))
+                        print(
+                            &#34;Moving_pid({0}), fixed_pid1({1}), fixed_pid2({2}): sequences overlap between {3} and {4}.&#34;.format(
+                                moving_plate_id,
+                                fixed_plate_id1,
+                                fixed_plate_id2,
+                                time_range2[0],
+                                time_range1[1],
+                            )
+                        )
                     elif time_range2[0] == time_range1[1]:
                         # Sequence at &#39;index1&#39; is *younger* than sequence at &#39;index2&#39; and abuts it.
                         if fixed_plate_id1 == fixed_plate_id2:
                             # Check that both rotations are equal.
                             if not pygplates.FiniteRotation.are_equal(
-                                    fixed_plate_time_samples1[-1].get_value().get_finite_rotation(),
-                                    fixed_plate_time_samples2[0].get_value().get_finite_rotation(),
-                                    rotation_threshold_degrees):
-                                print(&#39;Moving_pid({0}), fixed_pid({1}): two different rotations at time {2}.&#39;.format(
-                                        moving_plate_id, fixed_plate_id1, time_range2[0]))
+                                fixed_plate_time_samples1[-1]
+                                .get_value()
+                                .get_finite_rotation(),
+                                fixed_plate_time_samples2[0]
+                                .get_value()
+                                .get_finite_rotation(),
+                                rotation_threshold_degrees,
+                            ):
+                                print(
+                                    &#34;Moving_pid({0}), fixed_pid({1}): two different rotations at time {2}.&#34;.format(
+                                        moving_plate_id, fixed_plate_id1, time_range2[0]
+                                    )
+                                )
                         else:
                             # We have a crossover (different fixed plates).
                             # Check that the crossover is synchronised.
@@ -435,15 +661,43 @@ Specifing 'None' is equivalent to having no threshold (see pygplates.FiniteRotat
                             #  3. Compare calculated rotation with previous rotation,
                             #  4. Re-enable crossover in older rotation sequence.
                             fixed_plate_time_samples2[0].set_disabled()
-                            rotation_model = pygplates.RotationModel(rotation_feature_sequence)
+                            rotation_model = pygplates.RotationModel(
+                                rotation_feature_sequence
+                            )
                             if not pygplates.FiniteRotation.are_equal(
-                                    rotation_model.get_rotation(time_range2[0], moving_plate_id, anchor_plate_id=fixed_plate_id2),
-                                    fixed_plate_time_samples2[0].get_value().get_finite_rotation(),
-                                    rotation_threshold_degrees):
-                                print(&#39;Moving_pid({0}), young_fixed_pid({1}), old_fixed_pid({2}): &#39;
-                                    &#39;crossover at time {3} needs fixing.&#39;.format(
-                                        moving_plate_id, fixed_plate_id1, fixed_plate_id2, time_range2[0]))
+                                rotation_model.get_rotation(
+                                    time_range2[0],
+                                    moving_plate_id,
+                                    anchor_plate_id=fixed_plate_id2,
+                                ),
+                                fixed_plate_time_samples2[0]
+                                .get_value()
+                                .get_finite_rotation(),
+                                rotation_threshold_degrees,
+                            ):
+                                print(
+                                    &#34;Moving_pid({0}), young_fixed_pid({1}), old_fixed_pid({2}): &#34;
+                                    &#34;crossover at time {3} needs fixing.&#34;.format(
+                                        moving_plate_id,
+                                        fixed_plate_id1,
+                                        fixed_plate_id2,
+                                        time_range2[0],
+                                    )
+                                )
                             fixed_plate_time_samples2[0].set_enabled()</code></pre>
+</details>
+</dd>
+<dt id="gplately.ptt.diagnose_rotations.main"><code class="name flex">
+<span>def <span class="ident">main</span></span>(<span>args)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def main(args):
+    diagnose_rotations(args.rotation_filenames, args.rotation_threshold_degrees)</code></pre>
 </details>
 </dd>
 </dl>
@@ -469,7 +723,9 @@ Specifing 'None' is equivalent to having no threshold (see pygplates.FiniteRotat
 </li>
 <li><h3><a href="#header-functions">Functions</a></h3>
 <ul class="">
+<li><code><a title="gplately.ptt.diagnose_rotations.add_arguments" href="#gplately.ptt.diagnose_rotations.add_arguments">add_arguments</a></code></li>
 <li><code><a title="gplately.ptt.diagnose_rotations.diagnose_rotations" href="#gplately.ptt.diagnose_rotations.diagnose_rotations">diagnose_rotations</a></code></li>
+<li><code><a title="gplately.ptt.diagnose_rotations.main" href="#gplately.ptt.diagnose_rotations.main">main</a></code></li>
 </ul>
 </li>
 </ul>
