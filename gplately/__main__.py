@@ -15,6 +15,7 @@ from .ptt import (
     fix_crossovers,
     remove_plate_rotations,
     resolve_topologies,
+    rotation_tools,
 )
 
 
@@ -207,6 +208,14 @@ def main():
         add_help=True,
     )
     resolve_topologies.add_arguments(resolve_topologies_cmd)
+
+    # add rotation_tools sub-command
+    rotation_tools_cmd = subparser.add_parser(
+        "rotation_tools",
+        help="rotation tools",
+        add_help=True,
+    )
+    rotation_tools.add_arguments(rotation_tools_cmd)
 
     # combine command arguments
     combine_cmd.set_defaults(func=_run_combine_feature_collections)
