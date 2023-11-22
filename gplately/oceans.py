@@ -367,6 +367,11 @@ class SeafloorGrid(object):
     zval_names : list of str
         A list containing string labels for the z values to attribute to points.
         Will be used as column headers for z value point dataframes.
+    continent_mask_filename : str
+        An optional parameter pointing to the full path to a continental mask for each timestep.
+        Assuming the time is in the filename, i.e. "/path/to/continent_mask_0Ma.nc", it should be
+        passed as "/path/to/continent_mask_{}Ma.nc" with curly brackets. Include decimal formatting
+        if needed.
     contour_continents : bool, default False
         If set to 'True', [Plate Tectonic Tools' continent contouring workflow](https://github.com/EarthByte/PlateTectonicTools/blob/master/ptt/continent_contours.py)
         will be used to add a buffer to continental polygons and generate continent masks from
