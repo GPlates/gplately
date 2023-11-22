@@ -16,6 +16,7 @@ from .ptt import (
     remove_plate_rotations,
     resolve_topologies,
     rotation_tools,
+    separate_ridge_transform_segments,
 )
 
 
@@ -216,6 +217,16 @@ def main():
         add_help=True,
     )
     rotation_tools.add_arguments(rotation_tools_cmd)
+
+    # add separate_ridge_transform_segments sub-command
+    separate_ridge_transform_segments_cmd = subparser.add_parser(
+        "separate_ridge_transform_segments",
+        help="separate ridge transform segments",
+        add_help=True,
+    )
+    separate_ridge_transform_segments.add_arguments(
+        separate_ridge_transform_segments_cmd
+    )
 
     # combine command arguments
     combine_cmd.set_defaults(func=_run_combine_feature_collections)
