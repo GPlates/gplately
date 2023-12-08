@@ -13,6 +13,7 @@ from .ptt import (
     convert_xy_to_gplates,
     diagnose_rotations,
     fix_crossovers,
+    gpmdb,
     remove_plate_rotations,
     resolve_topologies,
     rotation_tools,
@@ -236,6 +237,14 @@ def main():
         add_help=True,
     )
     subduction_convergence.add_arguments(subduction_convergence_cmd)
+
+    # add gpmdb sub-command
+    gpmdb_cmd = subparser.add_parser(
+        "gpmdb",
+        help="retrieve data from https://www.gpmdb.net and create VGP features",
+        add_help=True,
+    )
+    gpmdb.add_arguments(gpmdb_cmd)
 
     # combine command arguments
     combine_cmd.set_defaults(func=_run_combine_feature_collections)
