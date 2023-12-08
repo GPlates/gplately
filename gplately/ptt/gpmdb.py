@@ -141,7 +141,12 @@ def main(args):
 
     columns = []
     for c in query_data["columns"]:
-        columns += c
+        if isinstance(c, list):
+            columns += c
+        elif isinstance(c, str):
+            columns.append(c)
+        else:
+            raise Exception(f"Invalid comlumn type: {type(c)}")
 
     df_query = pd.DataFrame(np.array(query_data["data"]), columns=columns)
     df_query = df_query.sort_values(by=["RESULTNO"], ignore_index=True)
@@ -158,7 +163,12 @@ def main(args):
 
     columns = []
     for c in pmagresult_data["columns"]:
-        columns += c
+        if isinstance(c, list):
+            columns += c
+        elif isinstance(c, str):
+            columns.append(c)
+        else:
+            raise Exception(f"Invalid comlumn type: {type(c)}")
 
     df_pmagresult = pd.DataFrame(np.array(pmagresult_data["data"]), columns=columns)
     df_pmagresult = df_pmagresult.sort_values(by=["RESULTNO"], ignore_index=True)
