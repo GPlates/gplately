@@ -120,9 +120,27 @@ def add_arguments(parser: argparse.ArgumentParser):
     parser.add_argument("-o", "--outfile", type=str, dest="outfile")
 
 
-__description__ = """Retrieve paleomagnetic data from https://www.gpmdb.net and create GPlates-compatible VGP features which will be saved in a .gpmlz file.
+__description__ = """Retrieve paleomagnetic data from https://www.gpmdb.net, create GPlates-compatible VGP features and save the VGP features in a .gpmlz file.
 
-    Usage: gplately gpmdb -m zahirovic2022 -o test.gpmlz
+    The two URLs being used are 
+        - https://www.gpmdb.net/get_query_data/
+        - https://www.gpmdb.net/get_PMAGRESULT_data/?fmt=json
+
+    This command will create two files.
+        - the .gpmlz file -- contains the GPlates-compatible VGP features
+        - the pmag-result.csv -- contains the raw paleomagnetic data
+
+    Usage example: gplately gpmdb -m zahirovic2022 -o test.gpmlz
+
+    The default reconstruction model being used to assign plate IDs is "Muller2022". User can choose to specify the model with "-m/--model". 
+    The avaliable model names can be found with command `pmm ls` (plate-model-manager https://pypi.org/project/plate-model-manager/; use gplately conda env).
+
+    User can specify the output .gpmlz file name with "-o/--outfile". By default, the output file name will be "vgp_features_{model name}.gmplz".
+
+    The `gplately gpmdb` will use model "Muller2022" and create the output file "vgp_features_Muller2022.gmplz". 
+
+    The file name for the raw paleomagnetic data is always "pmag-result.csv".
+
     """
 
 
@@ -240,6 +258,7 @@ def main(args):
 
     pygplates.FeatureCollection(vgp_features).write(outfile_name)
 
+    df_pmagresult = df_pmagresult.drop(["ROCKUNITNO"], axis=1)
     df_pmagresult.to_csv("pmag-result.csv", index=False)
 
     print(
