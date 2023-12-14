@@ -1,4 +1,5 @@
 import abc
+import argparse
 from typing import List
 
 import pygplates
@@ -96,7 +97,7 @@ class BirthAgeFilter(FeatureFilter):
 
     for example:
         BirthAgeFilter(500) -- keep features whose time of apprearance are bigger than 500
-         BirthAgeFilter(500, keep_older=False) --  keep features whose time of apprearance are smaller than 500
+        BirthAgeFilter(500, keep_older=False) --  keep features whose time of apprearance are smaller than 500
 
     :param age: the age criterion
     :param keep_older: if True, return True when the feature's birth age is older than the age criterion. If False, otherwise.
@@ -120,7 +121,10 @@ class BirthAgeFilter(FeatureFilter):
 def filter_feature_collection(
     feature_collection: pygplates.FeatureCollection, filters: List[FeatureFilter]
 ):
-    """the loop to apply fiters"""
+    """Filter feature collection by various criteria.
+
+    See scripts/test_feature_filter.sh for usage examples.
+    """
     new_feature_collection = pygplates.FeatureCollection()
     for feature in feature_collection:
         keep_flag = True
@@ -137,9 +141,10 @@ def add_parser(subparser):
     """add feature filter command line argument parser"""
     filter_cmd = subparser.add_parser(
         "filter",
-        help=filter_feature_collection.__doc__,
+        help="Filter feature collection by various criteria.",
         description=filter_feature_collection.__doc__,
     )
+    filter_cmd.formatter_class = argparse.RawDescriptionHelpFormatter
 
     # feature filter command arguments
     filter_cmd.set_defaults(func=run_filter_feature_collection)
