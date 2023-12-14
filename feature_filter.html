@@ -28,6 +28,7 @@
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">import abc
+import argparse
 from typing import List
 
 import pygplates
@@ -125,7 +126,7 @@ class BirthAgeFilter(FeatureFilter):
 
     for example:
         BirthAgeFilter(500) -- keep features whose time of apprearance are bigger than 500
-         BirthAgeFilter(500, keep_older=False) --  keep features whose time of apprearance are smaller than 500
+        BirthAgeFilter(500, keep_older=False) --  keep features whose time of apprearance are smaller than 500
 
     :param age: the age criterion
     :param keep_older: if True, return True when the feature&#39;s birth age is older than the age criterion. If False, otherwise.
@@ -149,7 +150,10 @@ class BirthAgeFilter(FeatureFilter):
 def filter_feature_collection(
     feature_collection: pygplates.FeatureCollection, filters: List[FeatureFilter]
 ):
-    &#34;&#34;&#34;the loop to apply fiters&#34;&#34;&#34;
+    &#34;&#34;&#34;Filter feature collection by various criteria.
+
+    See scripts/test_feature_filter.sh for usage examples.
+    &#34;&#34;&#34;
     new_feature_collection = pygplates.FeatureCollection()
     for feature in feature_collection:
         keep_flag = True
@@ -166,9 +170,10 @@ def add_parser(subparser):
     &#34;&#34;&#34;add feature filter command line argument parser&#34;&#34;&#34;
     filter_cmd = subparser.add_parser(
         &#34;filter&#34;,
-        help=filter_feature_collection.__doc__,
+        help=&#34;Filter feature collection by various criteria.&#34;,
         description=filter_feature_collection.__doc__,
     )
+    filter_cmd.formatter_class = argparse.RawDescriptionHelpFormatter
 
     # feature filter command arguments
     filter_cmd.set_defaults(func=run_filter_feature_collection)
@@ -262,9 +267,10 @@ def run_filter_feature_collection(args):
     &#34;&#34;&#34;add feature filter command line argument parser&#34;&#34;&#34;
     filter_cmd = subparser.add_parser(
         &#34;filter&#34;,
-        help=filter_feature_collection.__doc__,
+        help=&#34;Filter feature collection by various criteria.&#34;,
         description=filter_feature_collection.__doc__,
     )
+    filter_cmd.formatter_class = argparse.RawDescriptionHelpFormatter
 
     # feature filter command arguments
     filter_cmd.set_defaults(func=run_filter_feature_collection)
@@ -297,7 +303,8 @@ def run_filter_feature_collection(args):
 <span>def <span class="ident">filter_feature_collection</span></span>(<span>feature_collection: pygplates.FeatureCollection, filters: List[<a title="gplately.feature_filter.FeatureFilter" href="#gplately.feature_filter.FeatureFilter">FeatureFilter</a>])</span>
 </code></dt>
 <dd>
-<div class="desc"><p>the loop to apply fiters</p></div>
+<div class="desc"><p>Filter feature collection by various criteria.</p>
+<p>See scripts/test_feature_filter.sh for usage examples.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -305,7 +312,10 @@ def run_filter_feature_collection(args):
 <pre><code class="python">def filter_feature_collection(
     feature_collection: pygplates.FeatureCollection, filters: List[FeatureFilter]
 ):
-    &#34;&#34;&#34;the loop to apply fiters&#34;&#34;&#34;
+    &#34;&#34;&#34;Filter feature collection by various criteria.
+
+    See scripts/test_feature_filter.sh for usage examples.
+    &#34;&#34;&#34;
     new_feature_collection = pygplates.FeatureCollection()
     for feature in feature_collection:
         keep_flag = True
@@ -398,7 +408,7 @@ keep features whose time of apprearance are smaller than 500</p>
 
     for example:
         BirthAgeFilter(500) -- keep features whose time of apprearance are bigger than 500
-         BirthAgeFilter(500, keep_older=False) --  keep features whose time of apprearance are smaller than 500
+        BirthAgeFilter(500, keep_older=False) --  keep features whose time of apprearance are smaller than 500
 
     :param age: the age criterion
     :param keep_older: if True, return True when the feature&#39;s birth age is older than the age criterion. If False, otherwise.
