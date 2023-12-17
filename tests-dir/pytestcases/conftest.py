@@ -19,6 +19,7 @@ test_geometry_n_points = 1000
 test_geometry_origins = ((20, -10), (175, -40))  # (lon, lat)
 test_geometry_radii = (100, 500, 1000, 2000)  # km
 test_geometry_azimuths = (45, -100)  # degrees
+projections = (ccrs.Mollweide(-10), ccrs.Orthographic(150, 75))
 
 
 @pytest.fixture(scope="module")
