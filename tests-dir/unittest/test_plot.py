@@ -13,12 +13,15 @@ from gplately import PlateReconstruction, PlotTopologies
 
 # test the plot function with the new PlateModel class
 
+# MODEL_NAME = "Clennett2020"
+MODEL_NAME = "Muller2019"
+
 
 def main(show=True):
     pm_manager = PlateModelManager()
 
     age = 55
-    model = pm_manager.get_model("Muller2019")
+    model = pm_manager.get_model(MODEL_NAME)
     model.set_data_dir("plate-model-repo")
 
     test_model = PlateReconstruction(

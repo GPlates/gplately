@@ -11,12 +11,15 @@ from common import save_fig
 
 import gplately
 
+MODEL_NAME = "Clennett2020"
+# MODEL_NAME = "Muller2019"
+
 
 def main(show=True):
     pm_manger = PlateModelManager()
-    model = pm_manger.get_model("Clennett2020")
+    model = pm_manger.get_model(MODEL_NAME)
     if not model:
-        raise Exception("Unable to get model Clennett2020!!!")
+        raise Exception(f"Unable to get model {MODEL_NAME}!!!")
     model.set_data_dir("test-plate-model-folder")
 
     C2020_rotation_file = model.get_rotation_model()

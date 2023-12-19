@@ -6,5 +6,5 @@
 
 ./test_plot.py save 
 
-python3 test_anchor_plate_id.py save
+./test_anchor_plate_id.py save
 
