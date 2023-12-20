@@ -34,7 +34,7 @@ dependencies = [
     "rasterio",
     "geopandas",
     "stripy",
-    "plate-model-manager"
+    "plate-model-manager>=1.2.0"
 ]
 
 [tool.setuptools]
