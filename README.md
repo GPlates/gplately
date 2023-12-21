@@ -117,7 +117,7 @@ pip install .
 GPlately uses objects to accomplish a variety of common tasks. The common objects include:
 
 - [`DataServer`](#the-dataserver-object) - download rotation files and topology features from plate models on EarthByte's webDAV server
-- [`PlateModelManager`](#the-platemodelmanager-object) - downloads and manages the plate reconstruction model files
+- [`PlateModelManager`](#the-platemodelmanager-object) - download and manage the plate reconstruction model files
 - [`PlateReconstruction`](#the-platereconstruction-object) - reconstruct features, tesselate mid ocean ridges, subduction zones
 - [`Points`](#the-points-object) - partition points onto plates, rotate back through time
 - [`Raster`](#the-raster-object) - read in NetCDF grids, interpolation, resampling
@@ -147,7 +147,7 @@ rotation_model, topology_features, static_polygons = gDownload.get_plate_reconst
 
 ### The `PlateModelManager` object
 
-... was designed as a substitute of `DataServer` object. The `PlateModelManager` downloads and manages the plate reconstruction model files.
+... was designed as a substitute of `DataServer` object. The `PlateModelManager` object can be used to download and manage the plate reconstruction model files.
 
 ```
   pm_manager = PlateModelManager()
