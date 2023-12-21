@@ -4629,8 +4629,10 @@ features.</dd>
         self.static_polygons = _load_FeatureCollection(static_polygons)
 
     def __getstate__(self):
-        filenames = {&#34;rotation_model&#34;: self.rotation_model.filenames,
-                     &#34;anchor_plate_id&#34;: self.anchor_plate_id}
+        filenames = {
+            &#34;rotation_model&#34;: self.rotation_model.filenames,
+            &#34;anchor_plate_id&#34;: self.anchor_plate_id,
+        }
 
         if self.topology_features:
             filenames[&#34;topology_features&#34;] = self.topology_features.filenames
@@ -4649,7 +4651,9 @@ features.</dd>
 
     def __setstate__(self, state):
         # reinstate unpicklable items
-        self.rotation_model = _RotationModel(state[&#34;rotation_model&#34;], default_anchor_plate_id=state[&#34;anchor_plate_id&#34;])
+        self.rotation_model = _RotationModel(
+            state[&#34;rotation_model&#34;], default_anchor_plate_id=state[&#34;anchor_plate_id&#34;]
+        )
 
         self.anchor_plate_id = state[&#34;anchor_plate_id&#34;]
         self.topology_features = None
@@ -4745,6 +4749,7 @@ features.</dd>
         The delta time interval used for velocity calculations is, by default, assumed to be 1Ma.
         &#34;&#34;&#34;
         from . import ptt as _ptt
+
         anchor_plate_id = kwargs.pop(&#34;anchor_plate_id&#34;, self.anchor_plate_id)
 
         if ignore_warnings:
@@ -5044,6 +5049,7 @@ features.</dd>
             * length of arc segment (in degrees) that current point is on
         &#34;&#34;&#34;
         from . import ptt as _ptt
+
         anchor_plate_id = kwargs.pop(&#34;anchor_plate_id&#34;, self.anchor_plate_id)
 
         if ignore_warnings:
@@ -5184,7 +5190,9 @@ features.</dd>
 
             return total_ridge_length_kms
 
-    def reconstruct(self, feature, to_time, from_time=0, anchor_plate_id=None, **kwargs):
+    def reconstruct(
+        self, feature, to_time, from_time=0, anchor_plate_id=None, **kwargs
+    ):
         &#34;&#34;&#34;Reconstructs regular geological features, motion paths or flowlines to a specific geological time.
 
         Parameters
@@ -5435,10 +5443,13 @@ features.</dd>
             query_plate_id = False
             plate_ids = np.ones(len(lons), dtype=int) * plate_id
 
-        if not anchor_plate_id:
+        if anchor_plate_id is None:
             anchor_plate_id = self.anchor_plate_id
 
         seed_points = zip(lats, lons)
+        if return_rate_of_motion is True:
+            StepTimes = np.empty(((len(time_array) - 1) * 2, len(lons)))
+            StepRates = np.empty(((len(time_array) - 1) * 2, len(lons)))
         for i, lat_lon in enumerate(seed_points):
             seed_points_at_digitisation_time = pygplates.PointOnSphere(
                 pygplates.LatLonPoint(float(lat_lon[0]), float(lat_lon[1]))
@@ -5457,15 +5468,15 @@ features.</dd>
                 seed_points_at_digitisation_time,
                 time_array,
                 valid_time=(time_array.max(), time_array.min()),
-                relative_plate=int(plate_id),
-                reconstruction_plate_id=int(anchor_plate_id),
+                relative_plate=int(anchor_plate_id),
+                reconstruction_plate_id=int(plate_id),
             )
 
             reconstructed_motion_paths = self.reconstruct(
                 motion_path_feature,
                 to_time=0,
                 reconstruct_type=pygplates.ReconstructType.motion_path,
-                anchor_plate_id=int(plate_id),
+                anchor_plate_id=int(anchor_plate_id),
             )
             # Turn motion paths in to lat-lon coordinates
             for reconstructed_motion_path in reconstructed_motion_paths:
@@ -5478,9 +5489,6 @@ features.</dd>
 
             # Obtain step-plot coordinates for rate of motion
             if return_rate_of_motion is True:
-                StepTimes = np.empty(((len(time_array) - 1) * 2, len(lons)))
-                StepRates = np.empty(((len(time_array) - 1) * 2, len(lons)))
-
                 # Get timestep
                 TimeStep = []
                 for j in range(len(time_array) - 1):
@@ -6053,10 +6061,13 @@ columns for n seed points.</dd>
         query_plate_id = False
         plate_ids = np.ones(len(lons), dtype=int) * plate_id
 
-    if not anchor_plate_id:
+    if anchor_plate_id is None:
         anchor_plate_id = self.anchor_plate_id
 
     seed_points = zip(lats, lons)
+    if return_rate_of_motion is True:
+        StepTimes = np.empty(((len(time_array) - 1) * 2, len(lons)))
+        StepRates = np.empty(((len(time_array) - 1) * 2, len(lons)))
     for i, lat_lon in enumerate(seed_points):
         seed_points_at_digitisation_time = pygplates.PointOnSphere(
             pygplates.LatLonPoint(float(lat_lon[0]), float(lat_lon[1]))
@@ -6075,15 +6086,15 @@ columns for n seed points.</dd>
             seed_points_at_digitisation_time,
             time_array,
             valid_time=(time_array.max(), time_array.min()),
-            relative_plate=int(plate_id),
-            reconstruction_plate_id=int(anchor_plate_id),
+            relative_plate=int(anchor_plate_id),
+            reconstruction_plate_id=int(plate_id),
         )
 
         reconstructed_motion_paths = self.reconstruct(
             motion_path_feature,
             to_time=0,
             reconstruct_type=pygplates.ReconstructType.motion_path,
-            anchor_plate_id=int(plate_id),
+            anchor_plate_id=int(anchor_plate_id),
         )
         # Turn motion paths in to lat-lon coordinates
         for reconstructed_motion_path in reconstructed_motion_paths:
@@ -6096,9 +6107,6 @@ columns for n seed points.</dd>
 
         # Obtain step-plot coordinates for rate of motion
         if return_rate_of_motion is True:
-            StepTimes = np.empty(((len(time_array) - 1) * 2, len(lons)))
-            StepRates = np.empty(((len(time_array) - 1) * 2, len(lons)))
-
             # Get timestep
             TimeStep = []
             for j in range(len(time_array) - 1):
@@ -6358,7 +6366,9 @@ of its reconstructed geometries.</dd>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def reconstruct(self, feature, to_time, from_time=0, anchor_plate_id=None, **kwargs):
+<pre><code class="python">def reconstruct(
+    self, feature, to_time, from_time=0, anchor_plate_id=None, **kwargs
+):
     &#34;&#34;&#34;Reconstructs regular geological features, motion paths or flowlines to a specific geological time.
 
     Parameters
@@ -6523,6 +6533,7 @@ Each tuple in the list corresponds to a tessellated point and has the following 
         * length of arc segment (in degrees) that current point is on
     &#34;&#34;&#34;
     from . import ptt as _ptt
+
     anchor_plate_id = kwargs.pop(&#34;anchor_plate_id&#34;, self.anchor_plate_id)
 
     if ignore_warnings:
@@ -6731,6 +6742,7 @@ than -90) - note that this ignores the kinematics of the subducting plate.</p>
     The delta time interval used for velocity calculations is, by default, assumed to be 1Ma.
     &#34;&#34;&#34;
     from . import ptt as _ptt
+
     anchor_plate_id = kwargs.pop(&#34;anchor_plate_id&#34;, self.anchor_plate_id)
 
     if ignore_warnings:
