@@ -9,14 +9,14 @@ from mpl_toolkits.axes_grid1 import make_axes_locatable
 from plate_model_manager import PlateModelManager
 
 sys.path.insert(0, "../..")
-from common import save_fig
+from common import MODEL_REPO_DIR, save_fig
 
 import gplately
 
 
 def main(show=True):
     pm_manager = PlateModelManager()
-    muller2019_model = pm_manager.get_model("Matthews2016", data_dir="plate-model-repo")
+    muller2019_model = pm_manager.get_model("Matthews2016", data_dir=MODEL_REPO_DIR)
 
     rotation_model = muller2019_model.get_rotation_model()
     topology_features = muller2019_model.get_topologies()

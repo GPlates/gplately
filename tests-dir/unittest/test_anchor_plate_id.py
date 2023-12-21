@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 from plate_model_manager import PlateModelManager
 
 sys.path.insert(0, "../")
-from common import save_fig
+from common import MODEL_REPO_DIR, save_fig
 
 import gplately
 
@@ -17,10 +17,9 @@ MODEL_NAME = "Clennett2020"
 
 def main(show=True):
     pm_manger = PlateModelManager()
-    model = pm_manger.get_model(MODEL_NAME)
+    model = pm_manger.get_model(MODEL_NAME, data_dir=MODEL_REPO_DIR)
     if not model:
         raise Exception(f"Unable to get model {MODEL_NAME}!!!")
-    model.set_data_dir("test-plate-model-folder")
 
     C2020_rotation_file = model.get_rotation_model()
     C2020_topology_features = model.get_topologies()

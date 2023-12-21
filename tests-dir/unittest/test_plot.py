@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 from plate_model_manager import PlateModelManager
 
 sys.path.insert(0, "../..")
-from common import save_fig
+from common import MODEL_REPO_DIR, save_fig
 
 from gplately import PlateReconstruction, PlotTopologies
 
@@ -21,8 +21,7 @@ def main(show=True):
     pm_manager = PlateModelManager()
 
     age = 55
-    model = pm_manager.get_model(MODEL_NAME)
-    model.set_data_dir("plate-model-repo")
+    model = pm_manager.get_model(MODEL_NAME, data_dir=MODEL_REPO_DIR)
 
     test_model = PlateReconstruction(
         model.get_rotation_model(),
