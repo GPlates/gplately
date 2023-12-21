@@ -117,6 +117,7 @@ pip install .
 GPlately uses objects to accomplish a variety of common tasks. The common objects include:
 
 - [`DataServer`](#the-dataserver-object) - download rotation files and topology features from plate models on EarthByte's webDAV server
+- [`PlateModelManager`](#the-platemodelmanager-object) - downloads and manages the plate reconstruction model files
 - [`PlateReconstruction`](#the-platereconstruction-object) - reconstruct features, tesselate mid ocean ridges, subduction zones
 - [`Points`](#the-points-object) - partition points onto plates, rotate back through time
 - [`Raster`](#the-raster-object) - read in NetCDF grids, interpolation, resampling
@@ -260,54 +261,54 @@ Documentation of GPlately's objects and methods can be found [here](https://gpla
 
 GPlately comes with a suite of useful command line tools. These tools are designed as GPlately subcommands. Run `gplately -h` to show the list of tools.
 
-- combine
+- **combine**
 
   Combine multiple feature collections into one. Run `gplately combine -h` for details.
 
-- filter
+- **filter**
 
   Filter feature collection by various criteria. See scripts/test_feature_filter.sh for usage examples. Run `glately filter -h` for details.
 
-- agegrid (ag)
+- **agegrid (ag)**
 
   Create age grids for a plate model. Run `glately agegrid -h` for details.
 
-- fix_crossovers
+- **fix_crossovers**
 
   Loads one or more input rotation files, fixes any crossovers and saves the rotations to output rotation files. Run `gplately fix_crossovers -h` for details.
 
-- remove_rotations
+- **remove_rotations**
 
   Remove one or more plate IDs from a rotation model (consisting of one or more rotation files). Run `gplately remove_rotations -h` for details.
 
-- cleanup_topologies
+- **cleanup_topologies**
 
   Remove any regular features not referenced by topological features. Run `gplately cleanup_topologies -h` for details.
 
-- convert_xy_to_gplates
+- **convert_xy_to_gplates**
 
   Converts geometry in one or more input ascii files (such as '.xy' files) to output files suitable for loading into GPlates. Run `gplately convert_xy_to_gplates -h` for details.
 
-- diagnose_rotations
+- **diagnose_rotations**
 
   Diagnose one or more rotation files to check for inconsistencies. Run `gplately diagnose_rotations -h` for details.
 
-- resolve_topologies
+- **resolve_topologies**
 
   Resolve topological plate polygons (and deforming networks) and saves (to separate files) the resolved topologies, and their boundary sections as subduction zones, mid-ocean ridges (ridge/transform) and others (not subduction zones or mid-ocean ridges). Run `gplately resolve_topologies -h` for details.
 
-- rotation_tools
+- **rotation_tools**
 
   Calculate stage rotations between consecutive finite rotations in plate pairs. Run `gplately rotation_tools -h` for details.
 
-- separate_ridge_transform_segments
+- **separate_ridge_transform_segments**
 
   Split the geometries of isochrons and mid-ocean ridges into ridge and transform segments. Run `gplately separate_ridge_transform_segments -h` for details.
 
-- subduction_convergence
+- **subduction_convergence**
 
   Find the convergence rates along trenches (subduction zones) over time. Run `gplately subduction_convergence -h` for details.
 
-- gpmdb
+- **gpmdb**
 
   Retrieve paleomagnetic data from https://www.gpmdb.net, create GPlates-compatible VGP features and save the VGP features in a .gpmlz file. Run `gplately gpmdb -h` for details.
