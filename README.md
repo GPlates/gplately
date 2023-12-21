@@ -42,7 +42,7 @@ eprint = {https://rmets.onlinelibrary.wiley.com/doi/pdf/10.1002/gdj3.185},
 ## Dependencies
 
 - [pyGPlates](https://www.gplates.org/docs/pygplates/pygplates_getting_started.html#installation)
-- [plate-model-manager](https://pypi.org/project/plate-model-manager/)
+- [plate-model-manager](https://pypi.org/project/plate-model-manager/) >= 1.2.0
 - [Shapely](https://shapely.readthedocs.io/en/stable/project.html#installing-shapely)
 - [NumPy](https://numpy.org/install/) > 1.16
 - [SciPy](https://scipy.org/install/) > 1.0
