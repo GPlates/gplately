@@ -1,7 +1,6 @@
 import sys
 from pathlib import Path
 
-import cartopy.crs as ccrs
 import matplotlib.pyplot as plt
 
 sys.path.insert(0, "../..")
@@ -10,6 +9,8 @@ sys.path.insert(0, "../..")
 OUTPUT_DIR = "output"
 
 Path(OUTPUT_DIR).mkdir(parents=True, exist_ok=True)
+
+MODEL_REPO_DIR = "plate-model-repo"
 
 
 def save_fig(filename):

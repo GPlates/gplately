@@ -57,8 +57,10 @@ class PlateReconstruction(object):
         self.static_polygons = _load_FeatureCollection(static_polygons)
 
     def __getstate__(self):
-        filenames = {"rotation_model": self.rotation_model.filenames,
-                     "anchor_plate_id": self.anchor_plate_id}
+        filenames = {
+            "rotation_model": self.rotation_model.filenames,
+            "anchor_plate_id": self.anchor_plate_id,
+        }
 
         if self.topology_features:
             filenames["topology_features"] = self.topology_features.filenames
@@ -77,7 +79,9 @@ class PlateReconstruction(object):
 
     def __setstate__(self, state):
         # reinstate unpicklable items
-        self.rotation_model = _RotationModel(state["rotation_model"], default_anchor_plate_id=state["anchor_plate_id"])
+        self.rotation_model = _RotationModel(
+            state["rotation_model"], default_anchor_plate_id=state["anchor_plate_id"]
+        )
 
         self.anchor_plate_id = state["anchor_plate_id"]
         self.topology_features = None
@@ -192,6 +196,7 @@ class PlateReconstruction(object):
         The delta time interval used for velocity calculations is, by default, assumed to be 1Ma.
         """
         from . import ptt as _ptt
+
         anchor_plate_id = kwargs.pop("anchor_plate_id", self.anchor_plate_id)
 
         if ignore_warnings:
@@ -491,6 +496,7 @@ class PlateReconstruction(object):
             * length of arc segment (in degrees) that current point is on
         """
         from . import ptt as _ptt
+
         anchor_plate_id = kwargs.pop("anchor_plate_id", self.anchor_plate_id)
 
         if ignore_warnings:
@@ -631,7 +637,9 @@ class PlateReconstruction(object):
 
             return total_ridge_length_kms
 
-    def reconstruct(self, feature, to_time, from_time=0, anchor_plate_id=None, **kwargs):
+    def reconstruct(
+        self, feature, to_time, from_time=0, anchor_plate_id=None, **kwargs
+    ):
         """Reconstructs regular geological features, motion paths or flowlines to a specific geological time.
 
         Parameters
@@ -882,10 +890,13 @@ class PlateReconstruction(object):
             query_plate_id = False
             plate_ids = np.ones(len(lons), dtype=int) * plate_id
 
-        if not anchor_plate_id:
+        if anchor_plate_id is None:
             anchor_plate_id = self.anchor_plate_id
 
         seed_points = zip(lats, lons)
+        if return_rate_of_motion is True:
+            StepTimes = np.empty(((len(time_array) - 1) * 2, len(lons)))
+            StepRates = np.empty(((len(time_array) - 1) * 2, len(lons)))
         for i, lat_lon in enumerate(seed_points):
             seed_points_at_digitisation_time = pygplates.PointOnSphere(
                 pygplates.LatLonPoint(float(lat_lon[0]), float(lat_lon[1]))
@@ -904,15 +915,15 @@ class PlateReconstruction(object):
                 seed_points_at_digitisation_time,
                 time_array,
                 valid_time=(time_array.max(), time_array.min()),
-                relative_plate=int(plate_id),
-                reconstruction_plate_id=int(anchor_plate_id),
+                relative_plate=int(anchor_plate_id),
+                reconstruction_plate_id=int(plate_id),
             )
 
             reconstructed_motion_paths = self.reconstruct(
                 motion_path_feature,
                 to_time=0,
                 reconstruct_type=pygplates.ReconstructType.motion_path,
-                anchor_plate_id=int(plate_id),
+                anchor_plate_id=int(anchor_plate_id),
             )
             # Turn motion paths in to lat-lon coordinates
             for reconstructed_motion_path in reconstructed_motion_paths:
@@ -925,9 +936,6 @@ class PlateReconstruction(object):
 
             # Obtain step-plot coordinates for rate of motion
             if return_rate_of_motion is True:
-                StepTimes = np.empty(((len(time_array) - 1) * 2, len(lons)))
-                StepRates = np.empty(((len(time_array) - 1) * 2, len(lons)))
-
                 # Get timestep
                 TimeStep = []
                 for j in range(len(time_array) - 1):
@@ -2590,6 +2598,7 @@ class _ReconstructByTopologies(object):
 
     def _find_resolved_topologies_containing_points(self):
         from . import ptt as _ptt
+
         current_time = self.get_current_time()
 
         # Resolve the plate polygons for the current time.

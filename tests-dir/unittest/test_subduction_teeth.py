@@ -7,7 +7,7 @@ import matplotlib.pyplot as plt
 from plate_model_manager import PlateModelManager
 
 sys.path.insert(0, "../..")
-from common import save_fig
+from common import MODEL_REPO_DIR, save_fig
 
 import gplately
 
@@ -16,8 +16,7 @@ import gplately
 
 def main(show=True):
     pm_manager = PlateModelManager()
-    model = pm_manager.get_model("Muller2019")
-    model.set_data_dir("plate-model-repo")
+    model = pm_manager.get_model("Muller2019", data_dir=MODEL_REPO_DIR)
 
     plt.figure(figsize=(12, 8))
 
