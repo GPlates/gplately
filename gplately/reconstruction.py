@@ -51,10 +51,8 @@ class PlateReconstruction(object):
         else:
             self.name = None
 
-        self.anchor_plate_id = int(anchor_plate_id)
-        self.rotation_model = _RotationModel(
-            rotation_model, default_anchor_plate_id=anchor_plate_id
-        )
+        self._anchor_plate_id = self._check_anchor_plate_id(anchor_plate_id)
+        self.rotation_model = _RotationModel(rotation_model, default_anchor_plate_id=anchor_plate_id)
         self.topology_features = _load_FeatureCollection(topology_features)
         self.static_polygons = _load_FeatureCollection(static_polygons)
 
@@ -94,6 +92,25 @@ class PlateReconstruction(object):
             self.static_polygons = _FeatureCollection()
             for polygon in state["static_polygons"]:
                 self.static_polygons.add(_FeatureCollection(polygon))
+
+
+    @property
+    def anchor_plate_id(self):
+        """Anchor plate ID for reconstruction. Must be an integer >= 0."""
+        return self._anchor_plate_id
+
+    @anchor_plate_id.setter
+    def anchor_plate_id(self, anchor_plate):
+        self._anchor_plate_id = self._check_anchor_plate_id(anchor_plate)
+        self.rotation_model = _RotationModel(self.rotation_model, default_anchor_plate_id=self._anchor_plate_id)
+
+    @staticmethod
+    def _check_anchor_plate_id(id):
+        id = int(id)
+        if id < 0:
+            raise ValueError("Invalid anchor plate ID: {}".format(id))
+        return id
+
 
     def tessellate_subduction_zones(
         self,

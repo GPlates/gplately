@@ -1035,6 +1035,7 @@ class PlotTopologies(object):
             self.plate_reconstruction.rotation_model,
             self.plate_reconstruction.topology_features,
             self.time,
+            anchor_plate_id=self.anchor_plate_id,
         )
 
         (
