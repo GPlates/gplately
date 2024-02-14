@@ -7686,6 +7686,11 @@ boundaries and passive continental boundaries.</dd>
             self.other,
         ) = resolved_topologies
 
+        self.ridges, self.transforms = ptt.separate_ridge_transform_segments.separate_features_into_ridges_and_transforms(
+            self.plate_reconstruction.rotation_model,
+            self.ridge_transforms
+        )
+
         # miscellaneous boundaries
         self.continental_rifts = []
         self.faults = []
@@ -7866,7 +7871,7 @@ boundaries and passive continental boundaries.</dd>
         self,
         feature,
         central_meridian=0.0,
-        tessellate_degrees=None,
+        tessellate_degrees=1,
     ):
         &#34;&#34;&#34;Create a geopandas.GeoDataFrame object containing geometries of reconstructed features.
 
@@ -7938,7 +7943,7 @@ boundaries and passive continental boundaries.</dd>
             kwargs[&#34;transform&#34;] = self.base_projection
         return gdf.plot(ax=ax, **kwargs)
 
-    def get_coastlines(self, central_meridian=0.0, tessellate_degrees=None):
+    def get_coastlines(self, central_meridian=0.0, tessellate_degrees=1):
         &#34;&#34;&#34;Create a geopandas.GeoDataFrame object containing geometries of reconstructed coastline polygons.
 
         Notes
@@ -8042,7 +8047,7 @@ boundaries and passive continental boundaries.</dd>
             kwargs[&#34;transform&#34;] = self.base_projection
         return gdf.plot(ax=ax, **kwargs)
 
-    def get_continents(self, central_meridian=0.0, tessellate_degrees=None):
+    def get_continents(self, central_meridian=0.0, tessellate_degrees=1):
         &#34;&#34;&#34;Create a geopandas.GeoDataFrame object containing geometries of reconstructed continental polygons.
 
         Notes
@@ -8149,7 +8154,7 @@ boundaries and passive continental boundaries.</dd>
     def get_continent_ocean_boundaries(
         self,
         central_meridian=0.0,
-        tessellate_degrees=None,
+        tessellate_degrees=1,
     ):
         &#34;&#34;&#34;Create a geopandas.GeoDataFrame object containing geometries of reconstructed continent-ocean
         boundary lines.
@@ -8260,7 +8265,7 @@ boundaries and passive continental boundaries.</dd>
             kwargs[&#34;transform&#34;] = self.base_projection
         return gdf.plot(ax=ax, **kwargs)
 
-    def get_ridges(self, central_meridian=0.0, tessellate_degrees=None):
+    def get_ridges(self, central_meridian=0.0, tessellate_degrees=1):
         &#34;&#34;&#34;Create a geopandas.GeoDataFrame object containing geometries of reconstructed ridge lines.
 
         Notes
@@ -8376,7 +8381,7 @@ boundaries and passive continental boundaries.</dd>
     def get_ridges_and_transforms(
         self,
         central_meridian=0.0,
-        tessellate_degrees=None,
+        tessellate_degrees=1,
     ):
         &#34;&#34;&#34;Create a geopandas.GeoDataFrame object containing geometries of reconstructed ridge and transform lines.
 
@@ -8493,7 +8498,7 @@ boundaries and passive continental boundaries.</dd>
             kwargs[&#34;transform&#34;] = self.base_projection
         return gdf.plot(ax=ax, facecolor=&#34;none&#34;, edgecolor=color, **kwargs)
 
-    def get_transforms(self, central_meridian=0.0, tessellate_degrees=None):
+    def get_transforms(self, central_meridian=0.0, tessellate_degrees=1):
         &#34;&#34;&#34;Create a geopandas.GeoDataFrame object containing geometries of reconstructed transform lines.
 
         Notes
@@ -8605,7 +8610,7 @@ boundaries and passive continental boundaries.</dd>
             kwargs[&#34;transform&#34;] = self.base_projection
         return gdf.plot(ax=ax, facecolor=&#34;none&#34;, edgecolor=color, **kwargs)
 
-    def get_trenches(self, central_meridian=0.0, tessellate_degrees=None):
+    def get_trenches(self, central_meridian=0.0, tessellate_degrees=1):
         &#34;&#34;&#34;Create a geopandas.GeoDataFrame object containing geometries of reconstructed trench lines.
 
         Notes
@@ -8718,7 +8723,7 @@ boundaries and passive continental boundaries.</dd>
             kwargs[&#34;transform&#34;] = self.base_projection
         return gdf.plot(ax=ax, facecolor=&#34;none&#34;, edgecolor=color, **kwargs)
 
-    def get_misc_boundaries(self, central_meridian=0.0, tessellate_degrees=None):
+    def get_misc_boundaries(self, central_meridian=0.0, tessellate_degrees=1):
         &#34;&#34;&#34;Create a geopandas.GeoDataFrame object containing geometries of other reconstructed lines.
 
         Notes
@@ -9282,7 +9287,7 @@ boundaries and passive continental boundaries.</dd>
     def get_continental_rifts(
         self,
         central_meridian=0.0,
-        tessellate_degrees=None,
+        tessellate_degrees=1,
     ):
         &#34;&#34;&#34;Create a geopandas.GeoDataFrame object containing geometries of reconstructed contiental rift lines.
 
@@ -9381,7 +9386,7 @@ boundaries and passive continental boundaries.</dd>
             kwargs[&#34;transform&#34;] = self.base_projection
         return gdf.plot(ax=ax, facecolor=&#34;none&#34;, edgecolor=color, **kwargs)
 
-    def get_faults(self, central_meridian=0.0, tessellate_degrees=None):
+    def get_faults(self, central_meridian=0.0, tessellate_degrees=1):
         &#34;&#34;&#34;Create a geopandas.GeoDataFrame object containing geometries of reconstructed fault lines.
 
         Notes
@@ -9477,7 +9482,7 @@ boundaries and passive continental boundaries.</dd>
             kwargs[&#34;transform&#34;] = self.base_projection
         return gdf.plot(ax=ax, facecolor=&#34;none&#34;, edgecolor=color, **kwargs)
 
-    def get_fracture_zones(self, central_meridian=0.0, tessellate_degrees=None):
+    def get_fracture_zones(self, central_meridian=0.0, tessellate_degrees=1):
         &#34;&#34;&#34;Create a geopandas.GeoDataFrame object containing geometries of reconstructed fracture zone lines.
 
         Notes
@@ -9576,7 +9581,7 @@ boundaries and passive continental boundaries.</dd>
     def get_inferred_paleo_boundaries(
         self,
         central_meridian=0.0,
-        tessellate_degrees=None,
+        tessellate_degrees=1,
     ):
         &#34;&#34;&#34;Create a geopandas.GeoDataFrame object containing geometries of reconstructed inferred paleo boundary lines.
 
@@ -9678,7 +9683,7 @@ boundaries and passive continental boundaries.</dd>
     def get_terrane_boundaries(
         self,
         central_meridian=0.0,
-        tessellate_degrees=None,
+        tessellate_degrees=1,
     ):
         &#34;&#34;&#34;Create a geopandas.GeoDataFrame object containing geometries of reconstructed terrane boundary lines.
 
@@ -9780,7 +9785,7 @@ boundaries and passive continental boundaries.</dd>
     def get_transitional_crusts(
         self,
         central_meridian=0.0,
-        tessellate_degrees=None,
+        tessellate_degrees=1,
     ):
         &#34;&#34;&#34;Create a geopandas.GeoDataFrame object containing geometries of reconstructed transitional crust lines.
 
@@ -9882,7 +9887,7 @@ boundaries and passive continental boundaries.</dd>
     def get_orogenic_belts(
         self,
         central_meridian=0.0,
-        tessellate_degrees=None,
+        tessellate_degrees=1,
     ):
         &#34;&#34;&#34;Create a geopandas.GeoDataFrame object containing geometries of reconstructed orogenic belt lines.
 
@@ -9979,7 +9984,7 @@ boundaries and passive continental boundaries.</dd>
             kwargs[&#34;transform&#34;] = self.base_projection
         return gdf.plot(ax=ax, facecolor=&#34;none&#34;, edgecolor=color, **kwargs)
 
-    def get_sutures(self, central_meridian=0.0, tessellate_degrees=None):
+    def get_sutures(self, central_meridian=0.0, tessellate_degrees=1):
         &#34;&#34;&#34;Create a geopandas.GeoDataFrame object containing geometries of reconstructed suture lines.
 
         Notes
@@ -10078,7 +10083,7 @@ boundaries and passive continental boundaries.</dd>
     def get_continental_crusts(
         self,
         central_meridian=0.0,
-        tessellate_degrees=None,
+        tessellate_degrees=1,
     ):
         &#34;&#34;&#34;Create a geopandas.GeoDataFrame object containing geometries of reconstructed continental crust lines.
 
@@ -10182,7 +10187,7 @@ boundaries and passive continental boundaries.</dd>
     def get_extended_continental_crusts(
         self,
         central_meridian=0.0,
-        tessellate_degrees=None,
+        tessellate_degrees=1,
     ):
         &#34;&#34;&#34;Create a geopandas.GeoDataFrame object containing geometries of reconstructed extended continental crust lines.
 
@@ -10286,7 +10291,7 @@ boundaries and passive continental boundaries.</dd>
     def get_passive_continental_boundaries(
         self,
         central_meridian=0.0,
-        tessellate_degrees=None,
+        tessellate_degrees=1,
     ):
         &#34;&#34;&#34;Create a geopandas.GeoDataFrame object containing geometries of reconstructed passive continental boundary lines.
 
@@ -10387,7 +10392,7 @@ boundaries and passive continental boundaries.</dd>
             kwargs[&#34;transform&#34;] = self.base_projection
         return gdf.plot(ax=ax, facecolor=&#34;none&#34;, edgecolor=color, **kwargs)
 
-    def get_slab_edges(self, central_meridian=0.0, tessellate_degrees=None):
+    def get_slab_edges(self, central_meridian=0.0, tessellate_degrees=1):
         &#34;&#34;&#34;Create a geopandas.GeoDataFrame object containing geometries of reconstructed slab edge lines.
 
         Notes
@@ -10486,7 +10491,7 @@ boundaries and passive continental boundaries.</dd>
     def get_misc_transforms(
         self,
         central_meridian=0.0,
-        tessellate_degrees=None,
+        tessellate_degrees=1,
     ):
         &#34;&#34;&#34;Create a geopandas.GeoDataFrame object containing geometries of reconstructed misc transform lines.
 
@@ -10586,7 +10591,7 @@ boundaries and passive continental boundaries.</dd>
     def get_unclassified_features(
         self,
         central_meridian=0.0,
-        tessellate_degrees=None,
+        tessellate_degrees=1,
     ):
         &#34;&#34;&#34;Create a geopandas.GeoDataFrame object containing geometries of reconstructed unclassified feature lines.
 
@@ -10688,7 +10693,7 @@ boundaries and passive continental boundaries.</dd>
     def get_all_topologies(
         self,
         central_meridian=0.0,
-        tessellate_degrees=None,
+        tessellate_degrees=1,
     ):
         &#34;&#34;&#34;Create a geopandas.GeoDataFrame object containing geometries of reconstructed unclassified feature lines.
 
@@ -10808,7 +10813,7 @@ boundaries and passive continental boundaries.</dd>
     def get_all_topological_sections(
         self,
         central_meridian=0.0,
-        tessellate_degrees=None,
+        tessellate_degrees=1,
     ):
         &#34;&#34;&#34;Create a geopandas.GeoDataFrame object containing geometries of
         resolved topological sections.
@@ -10988,7 +10993,7 @@ def time(self):
 <h3>Methods</h3>
 <dl>
 <dt id="gplately.PlotTopologies.get_all_topological_sections"><code class="name flex">
-<span>def <span class="ident">get_all_topological_sections</span></span>(<span>self, central_meridian=0.0, tessellate_degrees=None)</span>
+<span>def <span class="ident">get_all_topological_sections</span></span>(<span>self, central_meridian=0.0, tessellate_degrees=1)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Create a geopandas.GeoDataFrame object containing geometries of
@@ -11034,7 +11039,7 @@ coordinates are passed to a geopandas GeoDataFrame.</p></div>
 <pre><code class="python">def get_all_topological_sections(
     self,
     central_meridian=0.0,
-    tessellate_degrees=None,
+    tessellate_degrees=1,
 ):
     &#34;&#34;&#34;Create a geopandas.GeoDataFrame object containing geometries of
     resolved topological sections.
@@ -11139,7 +11144,7 @@ coordinates are passed to a geopandas GeoDataFrame.</p></div>
 </details>
 </dd>
 <dt id="gplately.PlotTopologies.get_all_topologies"><code class="name flex">
-<span>def <span class="ident">get_all_topologies</span></span>(<span>self, central_meridian=0.0, tessellate_degrees=None)</span>
+<span>def <span class="ident">get_all_topologies</span></span>(<span>self, central_meridian=0.0, tessellate_degrees=1)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Create a geopandas.GeoDataFrame object containing geometries of reconstructed unclassified feature lines.</p>
@@ -11178,7 +11183,7 @@ to wrapping.</dd>
 <pre><code class="python">def get_all_topologies(
     self,
     central_meridian=0.0,
-    tessellate_degrees=None,
+    tessellate_degrees=1,
 ):
     &#34;&#34;&#34;Create a geopandas.GeoDataFrame object containing geometries of reconstructed unclassified feature lines.
 
@@ -11252,7 +11257,7 @@ to wrapping.</dd>
 </details>
 </dd>
 <dt id="gplately.PlotTopologies.get_coastlines"><code class="name flex">
-<span>def <span class="ident">get_coastlines</span></span>(<span>self, central_meridian=0.0, tessellate_degrees=None)</span>
+<span>def <span class="ident">get_coastlines</span></span>(<span>self, central_meridian=0.0, tessellate_degrees=1)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Create a geopandas.GeoDataFrame object containing geometries of reconstructed coastline polygons.</p>
@@ -11288,7 +11293,7 @@ to wrapping.</dd>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def get_coastlines(self, central_meridian=0.0, tessellate_degrees=None):
+<pre><code class="python">def get_coastlines(self, central_meridian=0.0, tessellate_degrees=1):
     &#34;&#34;&#34;Create a geopandas.GeoDataFrame object containing geometries of reconstructed coastline polygons.
 
     Notes
@@ -11342,7 +11347,7 @@ to wrapping.</dd>
 </details>
 </dd>
 <dt id="gplately.PlotTopologies.get_continent_ocean_boundaries"><code class="name flex">
-<span>def <span class="ident">get_continent_ocean_boundaries</span></span>(<span>self, central_meridian=0.0, tessellate_degrees=None)</span>
+<span>def <span class="ident">get_continent_ocean_boundaries</span></span>(<span>self, central_meridian=0.0, tessellate_degrees=1)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Create a geopandas.GeoDataFrame object containing geometries of reconstructed continent-ocean
@@ -11382,7 +11387,7 @@ to wrapping.</dd>
 <pre><code class="python">def get_continent_ocean_boundaries(
     self,
     central_meridian=0.0,
-    tessellate_degrees=None,
+    tessellate_degrees=1,
 ):
     &#34;&#34;&#34;Create a geopandas.GeoDataFrame object containing geometries of reconstructed continent-ocean
     boundary lines.
@@ -11438,7 +11443,7 @@ to wrapping.</dd>
 </details>
 </dd>
 <dt id="gplately.PlotTopologies.get_continental_crusts"><code class="name flex">
-<span>def <span class="ident">get_continental_crusts</span></span>(<span>self, central_meridian=0.0, tessellate_degrees=None)</span>
+<span>def <span class="ident">get_continental_crusts</span></span>(<span>self, central_meridian=0.0, tessellate_degrees=1)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Create a geopandas.GeoDataFrame object containing geometries of reconstructed continental crust lines.</p>
@@ -11477,7 +11482,7 @@ to wrapping.</dd>
 <pre><code class="python">def get_continental_crusts(
     self,
     central_meridian=0.0,
-    tessellate_degrees=None,
+    tessellate_degrees=1,
 ):
     &#34;&#34;&#34;Create a geopandas.GeoDataFrame object containing geometries of reconstructed continental crust lines.
 
@@ -11535,7 +11540,7 @@ to wrapping.</dd>
 </details>
 </dd>
 <dt id="gplately.PlotTopologies.get_continental_rifts"><code class="name flex">
-<span>def <span class="ident">get_continental_rifts</span></span>(<span>self, central_meridian=0.0, tessellate_degrees=None)</span>
+<span>def <span class="ident">get_continental_rifts</span></span>(<span>self, central_meridian=0.0, tessellate_degrees=1)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Create a geopandas.GeoDataFrame object containing geometries of reconstructed contiental rift lines.</p>
@@ -11574,7 +11579,7 @@ to wrapping.</dd>
 <pre><code class="python">def get_continental_rifts(
     self,
     central_meridian=0.0,
-    tessellate_degrees=None,
+    tessellate_degrees=1,
 ):
     &#34;&#34;&#34;Create a geopandas.GeoDataFrame object containing geometries of reconstructed contiental rift lines.
 
@@ -11630,7 +11635,7 @@ to wrapping.</dd>
 </details>
 </dd>
 <dt id="gplately.PlotTopologies.get_continents"><code class="name flex">
-<span>def <span class="ident">get_continents</span></span>(<span>self, central_meridian=0.0, tessellate_degrees=None)</span>
+<span>def <span class="ident">get_continents</span></span>(<span>self, central_meridian=0.0, tessellate_degrees=1)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Create a geopandas.GeoDataFrame object containing geometries of reconstructed continental polygons.</p>
@@ -11666,7 +11671,7 @@ to wrapping.</dd>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def get_continents(self, central_meridian=0.0, tessellate_degrees=None):
+<pre><code class="python">def get_continents(self, central_meridian=0.0, tessellate_degrees=1):
     &#34;&#34;&#34;Create a geopandas.GeoDataFrame object containing geometries of reconstructed continental polygons.
 
     Notes
@@ -11720,7 +11725,7 @@ to wrapping.</dd>
 </details>
 </dd>
 <dt id="gplately.PlotTopologies.get_extended_continental_crusts"><code class="name flex">
-<span>def <span class="ident">get_extended_continental_crusts</span></span>(<span>self, central_meridian=0.0, tessellate_degrees=None)</span>
+<span>def <span class="ident">get_extended_continental_crusts</span></span>(<span>self, central_meridian=0.0, tessellate_degrees=1)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Create a geopandas.GeoDataFrame object containing geometries of reconstructed extended continental crust lines.</p>
@@ -11759,7 +11764,7 @@ to wrapping.</dd>
 <pre><code class="python">def get_extended_continental_crusts(
     self,
     central_meridian=0.0,
-    tessellate_degrees=None,
+    tessellate_degrees=1,
 ):
     &#34;&#34;&#34;Create a geopandas.GeoDataFrame object containing geometries of reconstructed extended continental crust lines.
 
@@ -11817,7 +11822,7 @@ to wrapping.</dd>
 </details>
 </dd>
 <dt id="gplately.PlotTopologies.get_faults"><code class="name flex">
-<span>def <span class="ident">get_faults</span></span>(<span>self, central_meridian=0.0, tessellate_degrees=None)</span>
+<span>def <span class="ident">get_faults</span></span>(<span>self, central_meridian=0.0, tessellate_degrees=1)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Create a geopandas.GeoDataFrame object containing geometries of reconstructed fault lines.</p>
@@ -11853,7 +11858,7 @@ to wrapping.</dd>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def get_faults(self, central_meridian=0.0, tessellate_degrees=None):
+<pre><code class="python">def get_faults(self, central_meridian=0.0, tessellate_degrees=1):
     &#34;&#34;&#34;Create a geopandas.GeoDataFrame object containing geometries of reconstructed fault lines.
 
     Notes
@@ -11906,7 +11911,7 @@ to wrapping.</dd>
 </details>
 </dd>
 <dt id="gplately.PlotTopologies.get_feature"><code class="name flex">
-<span>def <span class="ident">get_feature</span></span>(<span>self, feature, central_meridian=0.0, tessellate_degrees=None)</span>
+<span>def <span class="ident">get_feature</span></span>(<span>self, feature, central_meridian=0.0, tessellate_degrees=1)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Create a geopandas.GeoDataFrame object containing geometries of reconstructed features.</p>
@@ -11932,7 +11937,7 @@ passed to a geopandas GeoDataFrame.</p>
     self,
     feature,
     central_meridian=0.0,
-    tessellate_degrees=None,
+    tessellate_degrees=1,
 ):
     &#34;&#34;&#34;Create a geopandas.GeoDataFrame object containing geometries of reconstructed features.
 
@@ -11963,7 +11968,7 @@ passed to a geopandas GeoDataFrame.</p>
 </details>
 </dd>
 <dt id="gplately.PlotTopologies.get_fracture_zones"><code class="name flex">
-<span>def <span class="ident">get_fracture_zones</span></span>(<span>self, central_meridian=0.0, tessellate_degrees=None)</span>
+<span>def <span class="ident">get_fracture_zones</span></span>(<span>self, central_meridian=0.0, tessellate_degrees=1)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Create a geopandas.GeoDataFrame object containing geometries of reconstructed fracture zone lines.</p>
@@ -11999,7 +12004,7 @@ to wrapping.</dd>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def get_fracture_zones(self, central_meridian=0.0, tessellate_degrees=None):
+<pre><code class="python">def get_fracture_zones(self, central_meridian=0.0, tessellate_degrees=1):
     &#34;&#34;&#34;Create a geopandas.GeoDataFrame object containing geometries of reconstructed fracture zone lines.
 
     Notes
@@ -12052,7 +12057,7 @@ to wrapping.</dd>
 </details>
 </dd>
 <dt id="gplately.PlotTopologies.get_inferred_paleo_boundaries"><code class="name flex">
-<span>def <span class="ident">get_inferred_paleo_boundaries</span></span>(<span>self, central_meridian=0.0, tessellate_degrees=None)</span>
+<span>def <span class="ident">get_inferred_paleo_boundaries</span></span>(<span>self, central_meridian=0.0, tessellate_degrees=1)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Create a geopandas.GeoDataFrame object containing geometries of reconstructed inferred paleo boundary lines.</p>
@@ -12091,7 +12096,7 @@ to wrapping.</dd>
 <pre><code class="python">def get_inferred_paleo_boundaries(
     self,
     central_meridian=0.0,
-    tessellate_degrees=None,
+    tessellate_degrees=1,
 ):
     &#34;&#34;&#34;Create a geopandas.GeoDataFrame object containing geometries of reconstructed inferred paleo boundary lines.
 
@@ -12147,7 +12152,7 @@ to wrapping.</dd>
 </details>
 </dd>
 <dt id="gplately.PlotTopologies.get_misc_boundaries"><code class="name flex">
-<span>def <span class="ident">get_misc_boundaries</span></span>(<span>self, central_meridian=0.0, tessellate_degrees=None)</span>
+<span>def <span class="ident">get_misc_boundaries</span></span>(<span>self, central_meridian=0.0, tessellate_degrees=1)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Create a geopandas.GeoDataFrame object containing geometries of other reconstructed lines.</p>
@@ -12183,7 +12188,7 @@ to wrapping.</dd>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def get_misc_boundaries(self, central_meridian=0.0, tessellate_degrees=None):
+<pre><code class="python">def get_misc_boundaries(self, central_meridian=0.0, tessellate_degrees=1):
     &#34;&#34;&#34;Create a geopandas.GeoDataFrame object containing geometries of other reconstructed lines.
 
     Notes
@@ -12236,7 +12241,7 @@ to wrapping.</dd>
 </details>
 </dd>
 <dt id="gplately.PlotTopologies.get_misc_transforms"><code class="name flex">
-<span>def <span class="ident">get_misc_transforms</span></span>(<span>self, central_meridian=0.0, tessellate_degrees=None)</span>
+<span>def <span class="ident">get_misc_transforms</span></span>(<span>self, central_meridian=0.0, tessellate_degrees=1)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Create a geopandas.GeoDataFrame object containing geometries of reconstructed misc transform lines.</p>
@@ -12275,7 +12280,7 @@ to wrapping.</dd>
 <pre><code class="python">def get_misc_transforms(
     self,
     central_meridian=0.0,
-    tessellate_degrees=None,
+    tessellate_degrees=1,
 ):
     &#34;&#34;&#34;Create a geopandas.GeoDataFrame object containing geometries of reconstructed misc transform lines.
 
@@ -12329,7 +12334,7 @@ to wrapping.</dd>
 </details>
 </dd>
 <dt id="gplately.PlotTopologies.get_orogenic_belts"><code class="name flex">
-<span>def <span class="ident">get_orogenic_belts</span></span>(<span>self, central_meridian=0.0, tessellate_degrees=None)</span>
+<span>def <span class="ident">get_orogenic_belts</span></span>(<span>self, central_meridian=0.0, tessellate_degrees=1)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Create a geopandas.GeoDataFrame object containing geometries of reconstructed orogenic belt lines.</p>
@@ -12368,7 +12373,7 @@ to wrapping.</dd>
 <pre><code class="python">def get_orogenic_belts(
     self,
     central_meridian=0.0,
-    tessellate_degrees=None,
+    tessellate_degrees=1,
 ):
     &#34;&#34;&#34;Create a geopandas.GeoDataFrame object containing geometries of reconstructed orogenic belt lines.
 
@@ -12422,7 +12427,7 @@ to wrapping.</dd>
 </details>
 </dd>
 <dt id="gplately.PlotTopologies.get_passive_continental_boundaries"><code class="name flex">
-<span>def <span class="ident">get_passive_continental_boundaries</span></span>(<span>self, central_meridian=0.0, tessellate_degrees=None)</span>
+<span>def <span class="ident">get_passive_continental_boundaries</span></span>(<span>self, central_meridian=0.0, tessellate_degrees=1)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Create a geopandas.GeoDataFrame object containing geometries of reconstructed passive continental boundary lines.</p>
@@ -12461,7 +12466,7 @@ to wrapping.</dd>
 <pre><code class="python">def get_passive_continental_boundaries(
     self,
     central_meridian=0.0,
-    tessellate_degrees=None,
+    tessellate_degrees=1,
 ):
     &#34;&#34;&#34;Create a geopandas.GeoDataFrame object containing geometries of reconstructed passive continental boundary lines.
 
@@ -12519,7 +12524,7 @@ to wrapping.</dd>
 </details>
 </dd>
 <dt id="gplately.PlotTopologies.get_ridges"><code class="name flex">
-<span>def <span class="ident">get_ridges</span></span>(<span>self, central_meridian=0.0, tessellate_degrees=None)</span>
+<span>def <span class="ident">get_ridges</span></span>(<span>self, central_meridian=0.0, tessellate_degrees=1)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Create a geopandas.GeoDataFrame object containing geometries of reconstructed ridge lines.</p>
@@ -12555,7 +12560,7 @@ to wrapping.</dd>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def get_ridges(self, central_meridian=0.0, tessellate_degrees=None):
+<pre><code class="python">def get_ridges(self, central_meridian=0.0, tessellate_degrees=1):
     &#34;&#34;&#34;Create a geopandas.GeoDataFrame object containing geometries of reconstructed ridge lines.
 
     Notes
@@ -12609,7 +12614,7 @@ to wrapping.</dd>
 </details>
 </dd>
 <dt id="gplately.PlotTopologies.get_ridges_and_transforms"><code class="name flex">
-<span>def <span class="ident">get_ridges_and_transforms</span></span>(<span>self, central_meridian=0.0, tessellate_degrees=None)</span>
+<span>def <span class="ident">get_ridges_and_transforms</span></span>(<span>self, central_meridian=0.0, tessellate_degrees=1)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Create a geopandas.GeoDataFrame object containing geometries of reconstructed ridge and transform lines.</p>
@@ -12648,7 +12653,7 @@ to wrapping.</dd>
 <pre><code class="python">def get_ridges_and_transforms(
     self,
     central_meridian=0.0,
-    tessellate_degrees=None,
+    tessellate_degrees=1,
 ):
     &#34;&#34;&#34;Create a geopandas.GeoDataFrame object containing geometries of reconstructed ridge and transform lines.
 
@@ -12705,7 +12710,7 @@ to wrapping.</dd>
 </details>
 </dd>
 <dt id="gplately.PlotTopologies.get_slab_edges"><code class="name flex">
-<span>def <span class="ident">get_slab_edges</span></span>(<span>self, central_meridian=0.0, tessellate_degrees=None)</span>
+<span>def <span class="ident">get_slab_edges</span></span>(<span>self, central_meridian=0.0, tessellate_degrees=1)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Create a geopandas.GeoDataFrame object containing geometries of reconstructed slab edge lines.</p>
@@ -12741,7 +12746,7 @@ to wrapping.</dd>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def get_slab_edges(self, central_meridian=0.0, tessellate_degrees=None):
+<pre><code class="python">def get_slab_edges(self, central_meridian=0.0, tessellate_degrees=1):
     &#34;&#34;&#34;Create a geopandas.GeoDataFrame object containing geometries of reconstructed slab edge lines.
 
     Notes
@@ -12883,7 +12888,7 @@ converted into Shapely features whose coordinates are passed to a geopandas GeoD
 </details>
 </dd>
 <dt id="gplately.PlotTopologies.get_sutures"><code class="name flex">
-<span>def <span class="ident">get_sutures</span></span>(<span>self, central_meridian=0.0, tessellate_degrees=None)</span>
+<span>def <span class="ident">get_sutures</span></span>(<span>self, central_meridian=0.0, tessellate_degrees=1)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Create a geopandas.GeoDataFrame object containing geometries of reconstructed suture lines.</p>
@@ -12919,7 +12924,7 @@ to wrapping.</dd>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def get_sutures(self, central_meridian=0.0, tessellate_degrees=None):
+<pre><code class="python">def get_sutures(self, central_meridian=0.0, tessellate_degrees=1):
     &#34;&#34;&#34;Create a geopandas.GeoDataFrame object containing geometries of reconstructed suture lines.
 
     Notes
@@ -12972,7 +12977,7 @@ to wrapping.</dd>
 </details>
 </dd>
 <dt id="gplately.PlotTopologies.get_terrane_boundaries"><code class="name flex">
-<span>def <span class="ident">get_terrane_boundaries</span></span>(<span>self, central_meridian=0.0, tessellate_degrees=None)</span>
+<span>def <span class="ident">get_terrane_boundaries</span></span>(<span>self, central_meridian=0.0, tessellate_degrees=1)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Create a geopandas.GeoDataFrame object containing geometries of reconstructed terrane boundary lines.</p>
@@ -13011,7 +13016,7 @@ to wrapping.</dd>
 <pre><code class="python">def get_terrane_boundaries(
     self,
     central_meridian=0.0,
-    tessellate_degrees=None,
+    tessellate_degrees=1,
 ):
     &#34;&#34;&#34;Create a geopandas.GeoDataFrame object containing geometries of reconstructed terrane boundary lines.
 
@@ -13067,7 +13072,7 @@ to wrapping.</dd>
 </details>
 </dd>
 <dt id="gplately.PlotTopologies.get_transforms"><code class="name flex">
-<span>def <span class="ident">get_transforms</span></span>(<span>self, central_meridian=0.0, tessellate_degrees=None)</span>
+<span>def <span class="ident">get_transforms</span></span>(<span>self, central_meridian=0.0, tessellate_degrees=1)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Create a geopandas.GeoDataFrame object containing geometries of reconstructed transform lines.</p>
@@ -13103,7 +13108,7 @@ to wrapping.</dd>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def get_transforms(self, central_meridian=0.0, tessellate_degrees=None):
+<pre><code class="python">def get_transforms(self, central_meridian=0.0, tessellate_degrees=1):
     &#34;&#34;&#34;Create a geopandas.GeoDataFrame object containing geometries of reconstructed transform lines.
 
     Notes
@@ -13156,7 +13161,7 @@ to wrapping.</dd>
 </details>
 </dd>
 <dt id="gplately.PlotTopologies.get_transitional_crusts"><code class="name flex">
-<span>def <span class="ident">get_transitional_crusts</span></span>(<span>self, central_meridian=0.0, tessellate_degrees=None)</span>
+<span>def <span class="ident">get_transitional_crusts</span></span>(<span>self, central_meridian=0.0, tessellate_degrees=1)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Create a geopandas.GeoDataFrame object containing geometries of reconstructed transitional crust lines.</p>
@@ -13195,7 +13200,7 @@ to wrapping.</dd>
 <pre><code class="python">def get_transitional_crusts(
     self,
     central_meridian=0.0,
-    tessellate_degrees=None,
+    tessellate_degrees=1,
 ):
     &#34;&#34;&#34;Create a geopandas.GeoDataFrame object containing geometries of reconstructed transitional crust lines.
 
@@ -13251,7 +13256,7 @@ to wrapping.</dd>
 </details>
 </dd>
 <dt id="gplately.PlotTopologies.get_trenches"><code class="name flex">
-<span>def <span class="ident">get_trenches</span></span>(<span>self, central_meridian=0.0, tessellate_degrees=None)</span>
+<span>def <span class="ident">get_trenches</span></span>(<span>self, central_meridian=0.0, tessellate_degrees=1)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Create a geopandas.GeoDataFrame object containing geometries of reconstructed trench lines.</p>
@@ -13287,7 +13292,7 @@ to wrapping.</dd>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def get_trenches(self, central_meridian=0.0, tessellate_degrees=None):
+<pre><code class="python">def get_trenches(self, central_meridian=0.0, tessellate_degrees=1):
     &#34;&#34;&#34;Create a geopandas.GeoDataFrame object containing geometries of reconstructed trench lines.
 
     Notes
@@ -13340,7 +13345,7 @@ to wrapping.</dd>
 </details>
 </dd>
 <dt id="gplately.PlotTopologies.get_unclassified_features"><code class="name flex">
-<span>def <span class="ident">get_unclassified_features</span></span>(<span>self, central_meridian=0.0, tessellate_degrees=None)</span>
+<span>def <span class="ident">get_unclassified_features</span></span>(<span>self, central_meridian=0.0, tessellate_degrees=1)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Create a geopandas.GeoDataFrame object containing geometries of reconstructed unclassified feature lines.</p>
@@ -13379,7 +13384,7 @@ to wrapping.</dd>
 <pre><code class="python">def get_unclassified_features(
     self,
     central_meridian=0.0,
-    tessellate_degrees=None,
+    tessellate_degrees=1,
 ):
     &#34;&#34;&#34;Create a geopandas.GeoDataFrame object containing geometries of reconstructed unclassified feature lines.
 
@@ -16150,6 +16155,11 @@ whenever it or the anchor plate is updated.</p>
         self.trench_right,
         self.other,
     ) = resolved_topologies
+
+    self.ridges, self.transforms = ptt.separate_ridge_transform_segments.separate_features_into_ridges_and_transforms(
+        self.plate_reconstruction.rotation_model,
+        self.ridge_transforms
+    )
 
     # miscellaneous boundaries
     self.continental_rifts = []
