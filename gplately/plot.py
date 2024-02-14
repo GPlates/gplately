@@ -1049,6 +1049,11 @@ class PlotTopologies(object):
             self.other,
         ) = resolved_topologies
 
+        self.ridges, self.transforms = ptt.separate_ridge_transform_segments.separate_features_into_ridges_and_transforms(
+            self.plate_reconstruction.rotation_model,
+            self.ridge_transforms
+        )
+
         # miscellaneous boundaries
         self.continental_rifts = []
         self.faults = []
