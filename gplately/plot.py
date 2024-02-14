@@ -1290,7 +1290,7 @@ class PlotTopologies(object):
                 UserWarning,
             )
             kwargs.pop("transform")
-        tessellate_degrees = kwargs.pop("tessellate_degrees", None)
+        tessellate_degrees = kwargs.pop("tessellate_degrees", 1)
         central_meridian = kwargs.pop("central_meridian", None)
         if central_meridian is None:
             central_meridian = _meridian_from_ax(ax)
@@ -1395,7 +1395,7 @@ class PlotTopologies(object):
                 UserWarning,
             )
             kwargs.pop("transform")
-        tessellate_degrees = kwargs.pop("tessellate_degrees", None)
+        tessellate_degrees = kwargs.pop("tessellate_degrees", 1)
         central_meridian = kwargs.pop("central_meridian", None)
         if central_meridian is None:
             central_meridian = _meridian_from_ax(ax)
@@ -1499,7 +1499,7 @@ class PlotTopologies(object):
                 UserWarning,
             )
             kwargs.pop("transform")
-        tessellate_degrees = kwargs.pop("tessellate_degrees", None)
+        tessellate_degrees = kwargs.pop("tessellate_degrees", 1)
         central_meridian = kwargs.pop("central_meridian", None)
         if central_meridian is None:
             central_meridian = _meridian_from_ax(ax)
@@ -1613,7 +1613,7 @@ class PlotTopologies(object):
                 UserWarning,
             )
             kwargs.pop("transform")
-        tessellate_degrees = kwargs.pop("tessellate_degrees", None)
+        tessellate_degrees = kwargs.pop("tessellate_degrees", 1)
         central_meridian = kwargs.pop("central_meridian", None)
         if central_meridian is None:
             central_meridian = _meridian_from_ax(ax)
@@ -1726,7 +1726,7 @@ class PlotTopologies(object):
                 UserWarning,
             )
             kwargs.pop("transform")
-        tessellate_degrees = kwargs.pop("tessellate_degrees", None)
+        tessellate_degrees = kwargs.pop("tessellate_degrees", 1)
         central_meridian = kwargs.pop("central_meridian", None)
         if central_meridian is None:
             central_meridian = _meridian_from_ax(ax)
@@ -1846,7 +1846,7 @@ class PlotTopologies(object):
                 UserWarning,
             )
             kwargs.pop("transform")
-        tessellate_degrees = kwargs.pop("tessellate_degrees", None)
+        tessellate_degrees = kwargs.pop("tessellate_degrees", 1)
         central_meridian = kwargs.pop("central_meridian", None)
         if central_meridian is None:
             central_meridian = _meridian_from_ax(ax)
@@ -1958,7 +1958,7 @@ class PlotTopologies(object):
                 UserWarning,
             )
             kwargs.pop("transform")
-        tessellate_degrees = kwargs.pop("tessellate_degrees", None)
+        tessellate_degrees = kwargs.pop("tessellate_degrees", 1)
         central_meridian = kwargs.pop("central_meridian", None)
         if central_meridian is None:
             central_meridian = _meridian_from_ax(ax)
@@ -2071,7 +2071,7 @@ class PlotTopologies(object):
                 UserWarning,
             )
             kwargs.pop("transform")
-        tessellate_degrees = kwargs.pop("tessellate_degrees", None)
+        tessellate_degrees = kwargs.pop("tessellate_degrees", 1)
         central_meridian = kwargs.pop("central_meridian", None)
         if central_meridian is None:
             central_meridian = _meridian_from_ax(ax)
@@ -2184,7 +2184,7 @@ class PlotTopologies(object):
                 UserWarning,
             )
             kwargs.pop("transform")
-        tessellate_degrees = kwargs.pop("tessellate_degrees", None)
+        tessellate_degrees = kwargs.pop("tessellate_degrees", 1)
         central_meridian = kwargs.pop("central_meridian", None)
         if central_meridian is None:
             central_meridian = _meridian_from_ax(ax)
@@ -2450,7 +2450,7 @@ class PlotTopologies(object):
             [here](https://matplotlib.org/3.5.1/api/_as_gen/matplotlib.axes.Axes.imshow.html).
 
         """
-        tessellate_degrees = kwargs.pop("tessellate_degrees", None)
+        tessellate_degrees = kwargs.pop("tessellate_degrees", 1)
         central_meridian = kwargs.pop("central_meridian", None)
         if central_meridian is None:
             central_meridian = _meridian_from_ax(ax)
@@ -2734,7 +2734,7 @@ class PlotTopologies(object):
                 UserWarning,
             )
             kwargs.pop("transform")
-        tessellate_degrees = kwargs.pop("tessellate_degrees", None)
+        tessellate_degrees = kwargs.pop("tessellate_degrees", 1)
         central_meridian = kwargs.pop("central_meridian", None)
         if central_meridian is None:
             central_meridian = _meridian_from_ax(ax)
@@ -2830,7 +2830,7 @@ class PlotTopologies(object):
                 UserWarning,
             )
             kwargs.pop("transform")
-        tessellate_degrees = kwargs.pop("tessellate_degrees", None)
+        tessellate_degrees = kwargs.pop("tessellate_degrees", 1)
         central_meridian = kwargs.pop("central_meridian", None)
         if central_meridian is None:
             central_meridian = _meridian_from_ax(ax)
@@ -2926,7 +2926,7 @@ class PlotTopologies(object):
                 UserWarning,
             )
             kwargs.pop("transform")
-        tessellate_degrees = kwargs.pop("tessellate_degrees", None)
+        tessellate_degrees = kwargs.pop("tessellate_degrees", 1)
         central_meridian = kwargs.pop("central_meridian", None)
         if central_meridian is None:
             central_meridian = _meridian_from_ax(ax)
@@ -3028,7 +3028,7 @@ class PlotTopologies(object):
                 UserWarning,
             )
             kwargs.pop("transform")
-        tessellate_degrees = kwargs.pop("tessellate_degrees", None)
+        tessellate_degrees = kwargs.pop("tessellate_degrees", 1)
         central_meridian = kwargs.pop("central_meridian", None)
         if central_meridian is None:
             central_meridian = _meridian_from_ax(ax)
@@ -3130,7 +3130,7 @@ class PlotTopologies(object):
                 UserWarning,
             )
             kwargs.pop("transform")
-        tessellate_degrees = kwargs.pop("tessellate_degrees", None)
+        tessellate_degrees = kwargs.pop("tessellate_degrees", 1)
         central_meridian = kwargs.pop("central_meridian", None)
         if central_meridian is None:
             central_meridian = _meridian_from_ax(ax)
@@ -3232,7 +3232,7 @@ class PlotTopologies(object):
                 UserWarning,
             )
             kwargs.pop("transform")
-        tessellate_degrees = kwargs.pop("tessellate_degrees", None)
+        tessellate_degrees = kwargs.pop("tessellate_degrees", 1)
         central_meridian = kwargs.pop("central_meridian", None)
         if central_meridian is None:
             central_meridian = _meridian_from_ax(ax)
@@ -3332,7 +3332,7 @@ class PlotTopologies(object):
                 UserWarning,
             )
             kwargs.pop("transform")
-        tessellate_degrees = kwargs.pop("tessellate_degrees", None)
+        tessellate_degrees = kwargs.pop("tessellate_degrees", 1)
         central_meridian = kwargs.pop("central_meridian", None)
         if central_meridian is None:
             central_meridian = _meridian_from_ax(ax)
@@ -3428,7 +3428,7 @@ class PlotTopologies(object):
                 UserWarning,
             )
             kwargs.pop("transform")
-        tessellate_degrees = kwargs.pop("tessellate_degrees", None)
+        tessellate_degrees = kwargs.pop("tessellate_degrees", 1)
         central_meridian = kwargs.pop("central_meridian", None)
         if central_meridian is None:
             central_meridian = _meridian_from_ax(ax)
@@ -3532,7 +3532,7 @@ class PlotTopologies(object):
                 UserWarning,
             )
             kwargs.pop("transform")
-        tessellate_degrees = kwargs.pop("tessellate_degrees", None)
+        tessellate_degrees = kwargs.pop("tessellate_degrees", 1)
         central_meridian = kwargs.pop("central_meridian", None)
         if central_meridian is None:
             central_meridian = _meridian_from_ax(ax)
@@ -3636,7 +3636,7 @@ class PlotTopologies(object):
                 UserWarning,
             )
             kwargs.pop("transform")
-        tessellate_degrees = kwargs.pop("tessellate_degrees", None)
+        tessellate_degrees = kwargs.pop("tessellate_degrees", 1)
         central_meridian = kwargs.pop("central_meridian", None)
         if central_meridian is None:
             central_meridian = _meridian_from_ax(ax)
@@ -3740,7 +3740,7 @@ class PlotTopologies(object):
                 UserWarning,
             )
             kwargs.pop("transform")
-        tessellate_degrees = kwargs.pop("tessellate_degrees", None)
+        tessellate_degrees = kwargs.pop("tessellate_degrees", 1)
         central_meridian = kwargs.pop("central_meridian", None)
         if central_meridian is None:
             central_meridian = _meridian_from_ax(ax)
@@ -3836,7 +3836,7 @@ class PlotTopologies(object):
                 UserWarning,
             )
             kwargs.pop("transform")
-        tessellate_degrees = kwargs.pop("tessellate_degrees", None)
+        tessellate_degrees = kwargs.pop("tessellate_degrees", 1)
         central_meridian = kwargs.pop("central_meridian", None)
         if central_meridian is None:
             central_meridian = _meridian_from_ax(ax)
@@ -3936,7 +3936,7 @@ class PlotTopologies(object):
                 UserWarning,
             )
             kwargs.pop("transform")
-        tessellate_degrees = kwargs.pop("tessellate_degrees", None)
+        tessellate_degrees = kwargs.pop("tessellate_degrees", 1)
         central_meridian = kwargs.pop("central_meridian", None)
         if central_meridian is None:
             central_meridian = _meridian_from_ax(ax)
@@ -4038,7 +4038,7 @@ class PlotTopologies(object):
                 UserWarning,
             )
             kwargs.pop("transform")
-        tessellate_degrees = kwargs.pop("tessellate_degrees", None)
+        tessellate_degrees = kwargs.pop("tessellate_degrees", 1)
         central_meridian = kwargs.pop("central_meridian", None)
         if central_meridian is None:
             central_meridian = _meridian_from_ax(ax)
@@ -4158,7 +4158,7 @@ class PlotTopologies(object):
                 UserWarning,
             )
             kwargs.pop("transform")
-        tessellate_degrees = kwargs.pop("tessellate_degrees", None)
+        tessellate_degrees = kwargs.pop("tessellate_degrees", 1)
         central_meridian = kwargs.pop("central_meridian", None)
         if central_meridian is None:
             central_meridian = _meridian_from_ax(ax)
@@ -4309,7 +4309,7 @@ class PlotTopologies(object):
                 UserWarning,
             )
             kwargs.pop("transform")
-        tessellate_degrees = kwargs.pop("tessellate_degrees", None)
+        tessellate_degrees = kwargs.pop("tessellate_degrees", 1)
         central_meridian = kwargs.pop("central_meridian", None)
         if central_meridian is None:
             central_meridian = _meridian_from_ax(ax)
