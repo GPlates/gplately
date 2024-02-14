@@ -1234,7 +1234,7 @@ class PlotTopologies(object):
         self,
         feature,
         central_meridian=0.0,
-        tessellate_degrees=None,
+        tessellate_degrees=1,
     ):
         """Create a geopandas.GeoDataFrame object containing geometries of reconstructed features.
 
@@ -1306,7 +1306,7 @@ class PlotTopologies(object):
             kwargs["transform"] = self.base_projection
         return gdf.plot(ax=ax, **kwargs)
 
-    def get_coastlines(self, central_meridian=0.0, tessellate_degrees=None):
+    def get_coastlines(self, central_meridian=0.0, tessellate_degrees=1):
         """Create a geopandas.GeoDataFrame object containing geometries of reconstructed coastline polygons.
 
         Notes
@@ -1410,7 +1410,7 @@ class PlotTopologies(object):
             kwargs["transform"] = self.base_projection
         return gdf.plot(ax=ax, **kwargs)
 
-    def get_continents(self, central_meridian=0.0, tessellate_degrees=None):
+    def get_continents(self, central_meridian=0.0, tessellate_degrees=1):
         """Create a geopandas.GeoDataFrame object containing geometries of reconstructed continental polygons.
 
         Notes
@@ -1517,7 +1517,7 @@ class PlotTopologies(object):
     def get_continent_ocean_boundaries(
         self,
         central_meridian=0.0,
-        tessellate_degrees=None,
+        tessellate_degrees=1,
     ):
         """Create a geopandas.GeoDataFrame object containing geometries of reconstructed continent-ocean
         boundary lines.
@@ -1628,7 +1628,7 @@ class PlotTopologies(object):
             kwargs["transform"] = self.base_projection
         return gdf.plot(ax=ax, **kwargs)
 
-    def get_ridges(self, central_meridian=0.0, tessellate_degrees=None):
+    def get_ridges(self, central_meridian=0.0, tessellate_degrees=1):
         """Create a geopandas.GeoDataFrame object containing geometries of reconstructed ridge lines.
 
         Notes
@@ -1744,7 +1744,7 @@ class PlotTopologies(object):
     def get_ridges_and_transforms(
         self,
         central_meridian=0.0,
-        tessellate_degrees=None,
+        tessellate_degrees=1,
     ):
         """Create a geopandas.GeoDataFrame object containing geometries of reconstructed ridge and transform lines.
 
@@ -1861,7 +1861,7 @@ class PlotTopologies(object):
             kwargs["transform"] = self.base_projection
         return gdf.plot(ax=ax, facecolor="none", edgecolor=color, **kwargs)
 
-    def get_transforms(self, central_meridian=0.0, tessellate_degrees=None):
+    def get_transforms(self, central_meridian=0.0, tessellate_degrees=1):
         """Create a geopandas.GeoDataFrame object containing geometries of reconstructed transform lines.
 
         Notes
@@ -1973,7 +1973,7 @@ class PlotTopologies(object):
             kwargs["transform"] = self.base_projection
         return gdf.plot(ax=ax, facecolor="none", edgecolor=color, **kwargs)
 
-    def get_trenches(self, central_meridian=0.0, tessellate_degrees=None):
+    def get_trenches(self, central_meridian=0.0, tessellate_degrees=1):
         """Create a geopandas.GeoDataFrame object containing geometries of reconstructed trench lines.
 
         Notes
@@ -2086,7 +2086,7 @@ class PlotTopologies(object):
             kwargs["transform"] = self.base_projection
         return gdf.plot(ax=ax, facecolor="none", edgecolor=color, **kwargs)
 
-    def get_misc_boundaries(self, central_meridian=0.0, tessellate_degrees=None):
+    def get_misc_boundaries(self, central_meridian=0.0, tessellate_degrees=1):
         """Create a geopandas.GeoDataFrame object containing geometries of other reconstructed lines.
 
         Notes
@@ -2650,7 +2650,7 @@ class PlotTopologies(object):
     def get_continental_rifts(
         self,
         central_meridian=0.0,
-        tessellate_degrees=None,
+        tessellate_degrees=1,
     ):
         """Create a geopandas.GeoDataFrame object containing geometries of reconstructed contiental rift lines.
 
@@ -2749,7 +2749,7 @@ class PlotTopologies(object):
             kwargs["transform"] = self.base_projection
         return gdf.plot(ax=ax, facecolor="none", edgecolor=color, **kwargs)
 
-    def get_faults(self, central_meridian=0.0, tessellate_degrees=None):
+    def get_faults(self, central_meridian=0.0, tessellate_degrees=1):
         """Create a geopandas.GeoDataFrame object containing geometries of reconstructed fault lines.
 
         Notes
@@ -2845,7 +2845,7 @@ class PlotTopologies(object):
             kwargs["transform"] = self.base_projection
         return gdf.plot(ax=ax, facecolor="none", edgecolor=color, **kwargs)
 
-    def get_fracture_zones(self, central_meridian=0.0, tessellate_degrees=None):
+    def get_fracture_zones(self, central_meridian=0.0, tessellate_degrees=1):
         """Create a geopandas.GeoDataFrame object containing geometries of reconstructed fracture zone lines.
 
         Notes
@@ -2944,7 +2944,7 @@ class PlotTopologies(object):
     def get_inferred_paleo_boundaries(
         self,
         central_meridian=0.0,
-        tessellate_degrees=None,
+        tessellate_degrees=1,
     ):
         """Create a geopandas.GeoDataFrame object containing geometries of reconstructed inferred paleo boundary lines.
 
@@ -3046,7 +3046,7 @@ class PlotTopologies(object):
     def get_terrane_boundaries(
         self,
         central_meridian=0.0,
-        tessellate_degrees=None,
+        tessellate_degrees=1,
     ):
         """Create a geopandas.GeoDataFrame object containing geometries of reconstructed terrane boundary lines.
 
@@ -3148,7 +3148,7 @@ class PlotTopologies(object):
     def get_transitional_crusts(
         self,
         central_meridian=0.0,
-        tessellate_degrees=None,
+        tessellate_degrees=1,
     ):
         """Create a geopandas.GeoDataFrame object containing geometries of reconstructed transitional crust lines.
 
@@ -3250,7 +3250,7 @@ class PlotTopologies(object):
     def get_orogenic_belts(
         self,
         central_meridian=0.0,
-        tessellate_degrees=None,
+        tessellate_degrees=1,
     ):
         """Create a geopandas.GeoDataFrame object containing geometries of reconstructed orogenic belt lines.
 
@@ -3347,7 +3347,7 @@ class PlotTopologies(object):
             kwargs["transform"] = self.base_projection
         return gdf.plot(ax=ax, facecolor="none", edgecolor=color, **kwargs)
 
-    def get_sutures(self, central_meridian=0.0, tessellate_degrees=None):
+    def get_sutures(self, central_meridian=0.0, tessellate_degrees=1):
         """Create a geopandas.GeoDataFrame object containing geometries of reconstructed suture lines.
 
         Notes
@@ -3446,7 +3446,7 @@ class PlotTopologies(object):
     def get_continental_crusts(
         self,
         central_meridian=0.0,
-        tessellate_degrees=None,
+        tessellate_degrees=1,
     ):
         """Create a geopandas.GeoDataFrame object containing geometries of reconstructed continental crust lines.
 
@@ -3550,7 +3550,7 @@ class PlotTopologies(object):
     def get_extended_continental_crusts(
         self,
         central_meridian=0.0,
-        tessellate_degrees=None,
+        tessellate_degrees=1,
     ):
         """Create a geopandas.GeoDataFrame object containing geometries of reconstructed extended continental crust lines.
 
@@ -3654,7 +3654,7 @@ class PlotTopologies(object):
     def get_passive_continental_boundaries(
         self,
         central_meridian=0.0,
-        tessellate_degrees=None,
+        tessellate_degrees=1,
     ):
         """Create a geopandas.GeoDataFrame object containing geometries of reconstructed passive continental boundary lines.
 
@@ -3755,7 +3755,7 @@ class PlotTopologies(object):
             kwargs["transform"] = self.base_projection
         return gdf.plot(ax=ax, facecolor="none", edgecolor=color, **kwargs)
 
-    def get_slab_edges(self, central_meridian=0.0, tessellate_degrees=None):
+    def get_slab_edges(self, central_meridian=0.0, tessellate_degrees=1):
         """Create a geopandas.GeoDataFrame object containing geometries of reconstructed slab edge lines.
 
         Notes
@@ -3854,7 +3854,7 @@ class PlotTopologies(object):
     def get_misc_transforms(
         self,
         central_meridian=0.0,
-        tessellate_degrees=None,
+        tessellate_degrees=1,
     ):
         """Create a geopandas.GeoDataFrame object containing geometries of reconstructed misc transform lines.
 
@@ -3954,7 +3954,7 @@ class PlotTopologies(object):
     def get_unclassified_features(
         self,
         central_meridian=0.0,
-        tessellate_degrees=None,
+        tessellate_degrees=1,
     ):
         """Create a geopandas.GeoDataFrame object containing geometries of reconstructed unclassified feature lines.
 
@@ -4056,7 +4056,7 @@ class PlotTopologies(object):
     def get_all_topologies(
         self,
         central_meridian=0.0,
-        tessellate_degrees=None,
+        tessellate_degrees=1,
     ):
         """Create a geopandas.GeoDataFrame object containing geometries of reconstructed unclassified feature lines.
 
@@ -4176,7 +4176,7 @@ class PlotTopologies(object):
     def get_all_topological_sections(
         self,
         central_meridian=0.0,
-        tessellate_degrees=None,
+        tessellate_degrees=1,
     ):
         """Create a geopandas.GeoDataFrame object containing geometries of
         resolved topological sections.
