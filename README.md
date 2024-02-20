@@ -267,11 +267,11 @@ GPlately comes with a suite of useful command line tools. These tools are design
 
 - **filter**
 
-  Filter feature collection by various criteria. See scripts/test_feature_filter.sh for usage examples. Run `glately filter -h` for details.
+  Filter feature collection by various criteria. See scripts/test_feature_filter.sh for usage examples. Run `gplately filter -h` for details.
 
 - **agegrid (ag)**
 
-  Create age grids for a plate model. Run `glately agegrid -h` for details.
+  Create age grids for a plate model. Run `gplately agegrid -h` for details.
 
 - **fix_crossovers**
 
