@@ -7871,7 +7871,7 @@ boundaries and passive continental boundaries.</dd>
         self,
         feature,
         central_meridian=0.0,
-        tessellate_degrees=1,
+        tessellate_degrees=None,
     ):
         &#34;&#34;&#34;Create a geopandas.GeoDataFrame object containing geometries of reconstructed features.
 
@@ -7927,7 +7927,7 @@ boundaries and passive continental boundaries.</dd>
                 UserWarning,
             )
             kwargs.pop(&#34;transform&#34;)
-        tessellate_degrees = kwargs.pop(&#34;tessellate_degrees&#34;, 1)
+        tessellate_degrees = kwargs.pop(&#34;tessellate_degrees&#34;, None)
         central_meridian = kwargs.pop(&#34;central_meridian&#34;, None)
         if central_meridian is None:
             central_meridian = _meridian_from_ax(ax)
@@ -7943,7 +7943,7 @@ boundaries and passive continental boundaries.</dd>
             kwargs[&#34;transform&#34;] = self.base_projection
         return gdf.plot(ax=ax, **kwargs)
 
-    def get_coastlines(self, central_meridian=0.0, tessellate_degrees=1):
+    def get_coastlines(self, central_meridian=0.0, tessellate_degrees=None):
         &#34;&#34;&#34;Create a geopandas.GeoDataFrame object containing geometries of reconstructed coastline polygons.
 
         Notes
@@ -8032,7 +8032,7 @@ boundaries and passive continental boundaries.</dd>
                 UserWarning,
             )
             kwargs.pop(&#34;transform&#34;)
-        tessellate_degrees = kwargs.pop(&#34;tessellate_degrees&#34;, 1)
+        tessellate_degrees = kwargs.pop(&#34;tessellate_degrees&#34;, None)
         central_meridian = kwargs.pop(&#34;central_meridian&#34;, None)
         if central_meridian is None:
             central_meridian = _meridian_from_ax(ax)
@@ -8047,7 +8047,7 @@ boundaries and passive continental boundaries.</dd>
             kwargs[&#34;transform&#34;] = self.base_projection
         return gdf.plot(ax=ax, **kwargs)
 
-    def get_continents(self, central_meridian=0.0, tessellate_degrees=1):
+    def get_continents(self, central_meridian=0.0, tessellate_degrees=None):
         &#34;&#34;&#34;Create a geopandas.GeoDataFrame object containing geometries of reconstructed continental polygons.
 
         Notes
@@ -8136,7 +8136,7 @@ boundaries and passive continental boundaries.</dd>
                 UserWarning,
             )
             kwargs.pop(&#34;transform&#34;)
-        tessellate_degrees = kwargs.pop(&#34;tessellate_degrees&#34;, 1)
+        tessellate_degrees = kwargs.pop(&#34;tessellate_degrees&#34;, None)
         central_meridian = kwargs.pop(&#34;central_meridian&#34;, None)
         if central_meridian is None:
             central_meridian = _meridian_from_ax(ax)
@@ -8154,7 +8154,7 @@ boundaries and passive continental boundaries.</dd>
     def get_continent_ocean_boundaries(
         self,
         central_meridian=0.0,
-        tessellate_degrees=1,
+        tessellate_degrees=None,
     ):
         &#34;&#34;&#34;Create a geopandas.GeoDataFrame object containing geometries of reconstructed continent-ocean
         boundary lines.
@@ -8250,7 +8250,7 @@ boundaries and passive continental boundaries.</dd>
                 UserWarning,
             )
             kwargs.pop(&#34;transform&#34;)
-        tessellate_degrees = kwargs.pop(&#34;tessellate_degrees&#34;, 1)
+        tessellate_degrees = kwargs.pop(&#34;tessellate_degrees&#34;, None)
         central_meridian = kwargs.pop(&#34;central_meridian&#34;, None)
         if central_meridian is None:
             central_meridian = _meridian_from_ax(ax)
@@ -9287,7 +9287,7 @@ boundaries and passive continental boundaries.</dd>
     def get_continental_rifts(
         self,
         central_meridian=0.0,
-        tessellate_degrees=1,
+        tessellate_degrees=None,
     ):
         &#34;&#34;&#34;Create a geopandas.GeoDataFrame object containing geometries of reconstructed contiental rift lines.
 
@@ -9371,7 +9371,7 @@ boundaries and passive continental boundaries.</dd>
                 UserWarning,
             )
             kwargs.pop(&#34;transform&#34;)
-        tessellate_degrees = kwargs.pop(&#34;tessellate_degrees&#34;, 1)
+        tessellate_degrees = kwargs.pop(&#34;tessellate_degrees&#34;, None)
         central_meridian = kwargs.pop(&#34;central_meridian&#34;, None)
         if central_meridian is None:
             central_meridian = _meridian_from_ax(ax)
@@ -9386,7 +9386,7 @@ boundaries and passive continental boundaries.</dd>
             kwargs[&#34;transform&#34;] = self.base_projection
         return gdf.plot(ax=ax, facecolor=&#34;none&#34;, edgecolor=color, **kwargs)
 
-    def get_faults(self, central_meridian=0.0, tessellate_degrees=1):
+    def get_faults(self, central_meridian=0.0, tessellate_degrees=None):
         &#34;&#34;&#34;Create a geopandas.GeoDataFrame object containing geometries of reconstructed fault lines.
 
         Notes
@@ -9467,7 +9467,7 @@ boundaries and passive continental boundaries.</dd>
                 UserWarning,
             )
             kwargs.pop(&#34;transform&#34;)
-        tessellate_degrees = kwargs.pop(&#34;tessellate_degrees&#34;, 1)
+        tessellate_degrees = kwargs.pop(&#34;tessellate_degrees&#34;, None)
         central_meridian = kwargs.pop(&#34;central_meridian&#34;, None)
         if central_meridian is None:
             central_meridian = _meridian_from_ax(ax)
@@ -9482,7 +9482,7 @@ boundaries and passive continental boundaries.</dd>
             kwargs[&#34;transform&#34;] = self.base_projection
         return gdf.plot(ax=ax, facecolor=&#34;none&#34;, edgecolor=color, **kwargs)
 
-    def get_fracture_zones(self, central_meridian=0.0, tessellate_degrees=1):
+    def get_fracture_zones(self, central_meridian=0.0, tessellate_degrees=None):
         &#34;&#34;&#34;Create a geopandas.GeoDataFrame object containing geometries of reconstructed fracture zone lines.
 
         Notes
@@ -9563,7 +9563,7 @@ boundaries and passive continental boundaries.</dd>
                 UserWarning,
             )
             kwargs.pop(&#34;transform&#34;)
-        tessellate_degrees = kwargs.pop(&#34;tessellate_degrees&#34;, 1)
+        tessellate_degrees = kwargs.pop(&#34;tessellate_degrees&#34;, None)
         central_meridian = kwargs.pop(&#34;central_meridian&#34;, None)
         if central_meridian is None:
             central_meridian = _meridian_from_ax(ax)
@@ -9581,7 +9581,7 @@ boundaries and passive continental boundaries.</dd>
     def get_inferred_paleo_boundaries(
         self,
         central_meridian=0.0,
-        tessellate_degrees=1,
+        tessellate_degrees=None,
     ):
         &#34;&#34;&#34;Create a geopandas.GeoDataFrame object containing geometries of reconstructed inferred paleo boundary lines.
 
@@ -9665,7 +9665,7 @@ boundaries and passive continental boundaries.</dd>
                 UserWarning,
             )
             kwargs.pop(&#34;transform&#34;)
-        tessellate_degrees = kwargs.pop(&#34;tessellate_degrees&#34;, 1)
+        tessellate_degrees = kwargs.pop(&#34;tessellate_degrees&#34;, None)
         central_meridian = kwargs.pop(&#34;central_meridian&#34;, None)
         if central_meridian is None:
             central_meridian = _meridian_from_ax(ax)
@@ -9683,7 +9683,7 @@ boundaries and passive continental boundaries.</dd>
     def get_terrane_boundaries(
         self,
         central_meridian=0.0,
-        tessellate_degrees=1,
+        tessellate_degrees=None,
     ):
         &#34;&#34;&#34;Create a geopandas.GeoDataFrame object containing geometries of reconstructed terrane boundary lines.
 
@@ -9767,7 +9767,7 @@ boundaries and passive continental boundaries.</dd>
                 UserWarning,
             )
             kwargs.pop(&#34;transform&#34;)
-        tessellate_degrees = kwargs.pop(&#34;tessellate_degrees&#34;, 1)
+        tessellate_degrees = kwargs.pop(&#34;tessellate_degrees&#34;, None)
         central_meridian = kwargs.pop(&#34;central_meridian&#34;, None)
         if central_meridian is None:
             central_meridian = _meridian_from_ax(ax)
@@ -9785,7 +9785,7 @@ boundaries and passive continental boundaries.</dd>
     def get_transitional_crusts(
         self,
         central_meridian=0.0,
-        tessellate_degrees=1,
+        tessellate_degrees=None,
     ):
         &#34;&#34;&#34;Create a geopandas.GeoDataFrame object containing geometries of reconstructed transitional crust lines.
 
@@ -9869,7 +9869,7 @@ boundaries and passive continental boundaries.</dd>
                 UserWarning,
             )
             kwargs.pop(&#34;transform&#34;)
-        tessellate_degrees = kwargs.pop(&#34;tessellate_degrees&#34;, 1)
+        tessellate_degrees = kwargs.pop(&#34;tessellate_degrees&#34;, None)
         central_meridian = kwargs.pop(&#34;central_meridian&#34;, None)
         if central_meridian is None:
             central_meridian = _meridian_from_ax(ax)
@@ -9887,7 +9887,7 @@ boundaries and passive continental boundaries.</dd>
     def get_orogenic_belts(
         self,
         central_meridian=0.0,
-        tessellate_degrees=1,
+        tessellate_degrees=None,
     ):
         &#34;&#34;&#34;Create a geopandas.GeoDataFrame object containing geometries of reconstructed orogenic belt lines.
 
@@ -9969,7 +9969,7 @@ boundaries and passive continental boundaries.</dd>
                 UserWarning,
             )
             kwargs.pop(&#34;transform&#34;)
-        tessellate_degrees = kwargs.pop(&#34;tessellate_degrees&#34;, 1)
+        tessellate_degrees = kwargs.pop(&#34;tessellate_degrees&#34;, None)
         central_meridian = kwargs.pop(&#34;central_meridian&#34;, None)
         if central_meridian is None:
             central_meridian = _meridian_from_ax(ax)
@@ -9984,7 +9984,7 @@ boundaries and passive continental boundaries.</dd>
             kwargs[&#34;transform&#34;] = self.base_projection
         return gdf.plot(ax=ax, facecolor=&#34;none&#34;, edgecolor=color, **kwargs)
 
-    def get_sutures(self, central_meridian=0.0, tessellate_degrees=1):
+    def get_sutures(self, central_meridian=0.0, tessellate_degrees=None):
         &#34;&#34;&#34;Create a geopandas.GeoDataFrame object containing geometries of reconstructed suture lines.
 
         Notes
@@ -10065,7 +10065,7 @@ boundaries and passive continental boundaries.</dd>
                 UserWarning,
             )
             kwargs.pop(&#34;transform&#34;)
-        tessellate_degrees = kwargs.pop(&#34;tessellate_degrees&#34;, 1)
+        tessellate_degrees = kwargs.pop(&#34;tessellate_degrees&#34;, None)
         central_meridian = kwargs.pop(&#34;central_meridian&#34;, None)
         if central_meridian is None:
             central_meridian = _meridian_from_ax(ax)
@@ -10083,7 +10083,7 @@ boundaries and passive continental boundaries.</dd>
     def get_continental_crusts(
         self,
         central_meridian=0.0,
-        tessellate_degrees=1,
+        tessellate_degrees=None,
     ):
         &#34;&#34;&#34;Create a geopandas.GeoDataFrame object containing geometries of reconstructed continental crust lines.
 
@@ -10169,7 +10169,7 @@ boundaries and passive continental boundaries.</dd>
                 UserWarning,
             )
             kwargs.pop(&#34;transform&#34;)
-        tessellate_degrees = kwargs.pop(&#34;tessellate_degrees&#34;, 1)
+        tessellate_degrees = kwargs.pop(&#34;tessellate_degrees&#34;, None)
         central_meridian = kwargs.pop(&#34;central_meridian&#34;, None)
         if central_meridian is None:
             central_meridian = _meridian_from_ax(ax)
@@ -10187,7 +10187,7 @@ boundaries and passive continental boundaries.</dd>
     def get_extended_continental_crusts(
         self,
         central_meridian=0.0,
-        tessellate_degrees=1,
+        tessellate_degrees=None,
     ):
         &#34;&#34;&#34;Create a geopandas.GeoDataFrame object containing geometries of reconstructed extended continental crust lines.
 
@@ -10273,7 +10273,7 @@ boundaries and passive continental boundaries.</dd>
                 UserWarning,
             )
             kwargs.pop(&#34;transform&#34;)
-        tessellate_degrees = kwargs.pop(&#34;tessellate_degrees&#34;, 1)
+        tessellate_degrees = kwargs.pop(&#34;tessellate_degrees&#34;, None)
         central_meridian = kwargs.pop(&#34;central_meridian&#34;, None)
         if central_meridian is None:
             central_meridian = _meridian_from_ax(ax)
@@ -10291,7 +10291,7 @@ boundaries and passive continental boundaries.</dd>
     def get_passive_continental_boundaries(
         self,
         central_meridian=0.0,
-        tessellate_degrees=1,
+        tessellate_degrees=None,
     ):
         &#34;&#34;&#34;Create a geopandas.GeoDataFrame object containing geometries of reconstructed passive continental boundary lines.
 
@@ -10377,7 +10377,7 @@ boundaries and passive continental boundaries.</dd>
                 UserWarning,
             )
             kwargs.pop(&#34;transform&#34;)
-        tessellate_degrees = kwargs.pop(&#34;tessellate_degrees&#34;, 1)
+        tessellate_degrees = kwargs.pop(&#34;tessellate_degrees&#34;, None)
         central_meridian = kwargs.pop(&#34;central_meridian&#34;, None)
         if central_meridian is None:
             central_meridian = _meridian_from_ax(ax)
@@ -10392,7 +10392,7 @@ boundaries and passive continental boundaries.</dd>
             kwargs[&#34;transform&#34;] = self.base_projection
         return gdf.plot(ax=ax, facecolor=&#34;none&#34;, edgecolor=color, **kwargs)
 
-    def get_slab_edges(self, central_meridian=0.0, tessellate_degrees=1):
+    def get_slab_edges(self, central_meridian=0.0, tessellate_degrees=None):
         &#34;&#34;&#34;Create a geopandas.GeoDataFrame object containing geometries of reconstructed slab edge lines.
 
         Notes
@@ -10473,7 +10473,7 @@ boundaries and passive continental boundaries.</dd>
                 UserWarning,
             )
             kwargs.pop(&#34;transform&#34;)
-        tessellate_degrees = kwargs.pop(&#34;tessellate_degrees&#34;, 1)
+        tessellate_degrees = kwargs.pop(&#34;tessellate_degrees&#34;, None)
         central_meridian = kwargs.pop(&#34;central_meridian&#34;, None)
         if central_meridian is None:
             central_meridian = _meridian_from_ax(ax)
@@ -10491,7 +10491,7 @@ boundaries and passive continental boundaries.</dd>
     def get_misc_transforms(
         self,
         central_meridian=0.0,
-        tessellate_degrees=1,
+        tessellate_degrees=None,
     ):
         &#34;&#34;&#34;Create a geopandas.GeoDataFrame object containing geometries of reconstructed misc transform lines.
 
@@ -10573,7 +10573,7 @@ boundaries and passive continental boundaries.</dd>
                 UserWarning,
             )
             kwargs.pop(&#34;transform&#34;)
-        tessellate_degrees = kwargs.pop(&#34;tessellate_degrees&#34;, 1)
+        tessellate_degrees = kwargs.pop(&#34;tessellate_degrees&#34;, None)
         central_meridian = kwargs.pop(&#34;central_meridian&#34;, None)
         if central_meridian is None:
             central_meridian = _meridian_from_ax(ax)
@@ -10591,7 +10591,7 @@ boundaries and passive continental boundaries.</dd>
     def get_unclassified_features(
         self,
         central_meridian=0.0,
-        tessellate_degrees=1,
+        tessellate_degrees=None,
     ):
         &#34;&#34;&#34;Create a geopandas.GeoDataFrame object containing geometries of reconstructed unclassified feature lines.
 
@@ -10675,7 +10675,7 @@ boundaries and passive continental boundaries.</dd>
                 UserWarning,
             )
             kwargs.pop(&#34;transform&#34;)
-        tessellate_degrees = kwargs.pop(&#34;tessellate_degrees&#34;, 1)
+        tessellate_degrees = kwargs.pop(&#34;tessellate_degrees&#34;, None)
         central_meridian = kwargs.pop(&#34;central_meridian&#34;, None)
         if central_meridian is None:
             central_meridian = _meridian_from_ax(ax)
@@ -11257,7 +11257,7 @@ to wrapping.</dd>
 </details>
 </dd>
 <dt id="gplately.PlotTopologies.get_coastlines"><code class="name flex">
-<span>def <span class="ident">get_coastlines</span></span>(<span>self, central_meridian=0.0, tessellate_degrees=1)</span>
+<span>def <span class="ident">get_coastlines</span></span>(<span>self, central_meridian=0.0, tessellate_degrees=None)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Create a geopandas.GeoDataFrame object containing geometries of reconstructed coastline polygons.</p>
@@ -11293,7 +11293,7 @@ to wrapping.</dd>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def get_coastlines(self, central_meridian=0.0, tessellate_degrees=1):
+<pre><code class="python">def get_coastlines(self, central_meridian=0.0, tessellate_degrees=None):
     &#34;&#34;&#34;Create a geopandas.GeoDataFrame object containing geometries of reconstructed coastline polygons.
 
     Notes
@@ -11347,7 +11347,7 @@ to wrapping.</dd>
 </details>
 </dd>
 <dt id="gplately.PlotTopologies.get_continent_ocean_boundaries"><code class="name flex">
-<span>def <span class="ident">get_continent_ocean_boundaries</span></span>(<span>self, central_meridian=0.0, tessellate_degrees=1)</span>
+<span>def <span class="ident">get_continent_ocean_boundaries</span></span>(<span>self, central_meridian=0.0, tessellate_degrees=None)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Create a geopandas.GeoDataFrame object containing geometries of reconstructed continent-ocean
@@ -11387,7 +11387,7 @@ to wrapping.</dd>
 <pre><code class="python">def get_continent_ocean_boundaries(
     self,
     central_meridian=0.0,
-    tessellate_degrees=1,
+    tessellate_degrees=None,
 ):
     &#34;&#34;&#34;Create a geopandas.GeoDataFrame object containing geometries of reconstructed continent-ocean
     boundary lines.
@@ -11443,7 +11443,7 @@ to wrapping.</dd>
 </details>
 </dd>
 <dt id="gplately.PlotTopologies.get_continental_crusts"><code class="name flex">
-<span>def <span class="ident">get_continental_crusts</span></span>(<span>self, central_meridian=0.0, tessellate_degrees=1)</span>
+<span>def <span class="ident">get_continental_crusts</span></span>(<span>self, central_meridian=0.0, tessellate_degrees=None)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Create a geopandas.GeoDataFrame object containing geometries of reconstructed continental crust lines.</p>
@@ -11482,7 +11482,7 @@ to wrapping.</dd>
 <pre><code class="python">def get_continental_crusts(
     self,
     central_meridian=0.0,
-    tessellate_degrees=1,
+    tessellate_degrees=None,
 ):
     &#34;&#34;&#34;Create a geopandas.GeoDataFrame object containing geometries of reconstructed continental crust lines.
 
@@ -11540,7 +11540,7 @@ to wrapping.</dd>
 </details>
 </dd>
 <dt id="gplately.PlotTopologies.get_continental_rifts"><code class="name flex">
-<span>def <span class="ident">get_continental_rifts</span></span>(<span>self, central_meridian=0.0, tessellate_degrees=1)</span>
+<span>def <span class="ident">get_continental_rifts</span></span>(<span>self, central_meridian=0.0, tessellate_degrees=None)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Create a geopandas.GeoDataFrame object containing geometries of reconstructed contiental rift lines.</p>
@@ -11579,7 +11579,7 @@ to wrapping.</dd>
 <pre><code class="python">def get_continental_rifts(
     self,
     central_meridian=0.0,
-    tessellate_degrees=1,
+    tessellate_degrees=None,
 ):
     &#34;&#34;&#34;Create a geopandas.GeoDataFrame object containing geometries of reconstructed contiental rift lines.
 
@@ -11635,7 +11635,7 @@ to wrapping.</dd>
 </details>
 </dd>
 <dt id="gplately.PlotTopologies.get_continents"><code class="name flex">
-<span>def <span class="ident">get_continents</span></span>(<span>self, central_meridian=0.0, tessellate_degrees=1)</span>
+<span>def <span class="ident">get_continents</span></span>(<span>self, central_meridian=0.0, tessellate_degrees=None)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Create a geopandas.GeoDataFrame object containing geometries of reconstructed continental polygons.</p>
@@ -11671,7 +11671,7 @@ to wrapping.</dd>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def get_continents(self, central_meridian=0.0, tessellate_degrees=1):
+<pre><code class="python">def get_continents(self, central_meridian=0.0, tessellate_degrees=None):
     &#34;&#34;&#34;Create a geopandas.GeoDataFrame object containing geometries of reconstructed continental polygons.
 
     Notes
@@ -11725,7 +11725,7 @@ to wrapping.</dd>
 </details>
 </dd>
 <dt id="gplately.PlotTopologies.get_extended_continental_crusts"><code class="name flex">
-<span>def <span class="ident">get_extended_continental_crusts</span></span>(<span>self, central_meridian=0.0, tessellate_degrees=1)</span>
+<span>def <span class="ident">get_extended_continental_crusts</span></span>(<span>self, central_meridian=0.0, tessellate_degrees=None)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Create a geopandas.GeoDataFrame object containing geometries of reconstructed extended continental crust lines.</p>
@@ -11764,7 +11764,7 @@ to wrapping.</dd>
 <pre><code class="python">def get_extended_continental_crusts(
     self,
     central_meridian=0.0,
-    tessellate_degrees=1,
+    tessellate_degrees=None,
 ):
     &#34;&#34;&#34;Create a geopandas.GeoDataFrame object containing geometries of reconstructed extended continental crust lines.
 
@@ -11822,7 +11822,7 @@ to wrapping.</dd>
 </details>
 </dd>
 <dt id="gplately.PlotTopologies.get_faults"><code class="name flex">
-<span>def <span class="ident">get_faults</span></span>(<span>self, central_meridian=0.0, tessellate_degrees=1)</span>
+<span>def <span class="ident">get_faults</span></span>(<span>self, central_meridian=0.0, tessellate_degrees=None)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Create a geopandas.GeoDataFrame object containing geometries of reconstructed fault lines.</p>
@@ -11858,7 +11858,7 @@ to wrapping.</dd>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def get_faults(self, central_meridian=0.0, tessellate_degrees=1):
+<pre><code class="python">def get_faults(self, central_meridian=0.0, tessellate_degrees=None):
     &#34;&#34;&#34;Create a geopandas.GeoDataFrame object containing geometries of reconstructed fault lines.
 
     Notes
@@ -11911,7 +11911,7 @@ to wrapping.</dd>
 </details>
 </dd>
 <dt id="gplately.PlotTopologies.get_feature"><code class="name flex">
-<span>def <span class="ident">get_feature</span></span>(<span>self, feature, central_meridian=0.0, tessellate_degrees=1)</span>
+<span>def <span class="ident">get_feature</span></span>(<span>self, feature, central_meridian=0.0, tessellate_degrees=None)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Create a geopandas.GeoDataFrame object containing geometries of reconstructed features.</p>
@@ -11937,7 +11937,7 @@ passed to a geopandas GeoDataFrame.</p>
     self,
     feature,
     central_meridian=0.0,
-    tessellate_degrees=1,
+    tessellate_degrees=None,
 ):
     &#34;&#34;&#34;Create a geopandas.GeoDataFrame object containing geometries of reconstructed features.
 
@@ -11968,7 +11968,7 @@ passed to a geopandas GeoDataFrame.</p>
 </details>
 </dd>
 <dt id="gplately.PlotTopologies.get_fracture_zones"><code class="name flex">
-<span>def <span class="ident">get_fracture_zones</span></span>(<span>self, central_meridian=0.0, tessellate_degrees=1)</span>
+<span>def <span class="ident">get_fracture_zones</span></span>(<span>self, central_meridian=0.0, tessellate_degrees=None)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Create a geopandas.GeoDataFrame object containing geometries of reconstructed fracture zone lines.</p>
@@ -12004,7 +12004,7 @@ to wrapping.</dd>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def get_fracture_zones(self, central_meridian=0.0, tessellate_degrees=1):
+<pre><code class="python">def get_fracture_zones(self, central_meridian=0.0, tessellate_degrees=None):
     &#34;&#34;&#34;Create a geopandas.GeoDataFrame object containing geometries of reconstructed fracture zone lines.
 
     Notes
@@ -12057,7 +12057,7 @@ to wrapping.</dd>
 </details>
 </dd>
 <dt id="gplately.PlotTopologies.get_inferred_paleo_boundaries"><code class="name flex">
-<span>def <span class="ident">get_inferred_paleo_boundaries</span></span>(<span>self, central_meridian=0.0, tessellate_degrees=1)</span>
+<span>def <span class="ident">get_inferred_paleo_boundaries</span></span>(<span>self, central_meridian=0.0, tessellate_degrees=None)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Create a geopandas.GeoDataFrame object containing geometries of reconstructed inferred paleo boundary lines.</p>
@@ -12096,7 +12096,7 @@ to wrapping.</dd>
 <pre><code class="python">def get_inferred_paleo_boundaries(
     self,
     central_meridian=0.0,
-    tessellate_degrees=1,
+    tessellate_degrees=None,
 ):
     &#34;&#34;&#34;Create a geopandas.GeoDataFrame object containing geometries of reconstructed inferred paleo boundary lines.
 
@@ -12241,7 +12241,7 @@ to wrapping.</dd>
 </details>
 </dd>
 <dt id="gplately.PlotTopologies.get_misc_transforms"><code class="name flex">
-<span>def <span class="ident">get_misc_transforms</span></span>(<span>self, central_meridian=0.0, tessellate_degrees=1)</span>
+<span>def <span class="ident">get_misc_transforms</span></span>(<span>self, central_meridian=0.0, tessellate_degrees=None)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Create a geopandas.GeoDataFrame object containing geometries of reconstructed misc transform lines.</p>
@@ -12280,7 +12280,7 @@ to wrapping.</dd>
 <pre><code class="python">def get_misc_transforms(
     self,
     central_meridian=0.0,
-    tessellate_degrees=1,
+    tessellate_degrees=None,
 ):
     &#34;&#34;&#34;Create a geopandas.GeoDataFrame object containing geometries of reconstructed misc transform lines.
 
@@ -12334,7 +12334,7 @@ to wrapping.</dd>
 </details>
 </dd>
 <dt id="gplately.PlotTopologies.get_orogenic_belts"><code class="name flex">
-<span>def <span class="ident">get_orogenic_belts</span></span>(<span>self, central_meridian=0.0, tessellate_degrees=1)</span>
+<span>def <span class="ident">get_orogenic_belts</span></span>(<span>self, central_meridian=0.0, tessellate_degrees=None)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Create a geopandas.GeoDataFrame object containing geometries of reconstructed orogenic belt lines.</p>
@@ -12373,7 +12373,7 @@ to wrapping.</dd>
 <pre><code class="python">def get_orogenic_belts(
     self,
     central_meridian=0.0,
-    tessellate_degrees=1,
+    tessellate_degrees=None,
 ):
     &#34;&#34;&#34;Create a geopandas.GeoDataFrame object containing geometries of reconstructed orogenic belt lines.
 
@@ -12427,7 +12427,7 @@ to wrapping.</dd>
 </details>
 </dd>
 <dt id="gplately.PlotTopologies.get_passive_continental_boundaries"><code class="name flex">
-<span>def <span class="ident">get_passive_continental_boundaries</span></span>(<span>self, central_meridian=0.0, tessellate_degrees=1)</span>
+<span>def <span class="ident">get_passive_continental_boundaries</span></span>(<span>self, central_meridian=0.0, tessellate_degrees=None)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Create a geopandas.GeoDataFrame object containing geometries of reconstructed passive continental boundary lines.</p>
@@ -12466,7 +12466,7 @@ to wrapping.</dd>
 <pre><code class="python">def get_passive_continental_boundaries(
     self,
     central_meridian=0.0,
-    tessellate_degrees=1,
+    tessellate_degrees=None,
 ):
     &#34;&#34;&#34;Create a geopandas.GeoDataFrame object containing geometries of reconstructed passive continental boundary lines.
 
@@ -12710,7 +12710,7 @@ to wrapping.</dd>
 </details>
 </dd>
 <dt id="gplately.PlotTopologies.get_slab_edges"><code class="name flex">
-<span>def <span class="ident">get_slab_edges</span></span>(<span>self, central_meridian=0.0, tessellate_degrees=1)</span>
+<span>def <span class="ident">get_slab_edges</span></span>(<span>self, central_meridian=0.0, tessellate_degrees=None)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Create a geopandas.GeoDataFrame object containing geometries of reconstructed slab edge lines.</p>
@@ -12746,7 +12746,7 @@ to wrapping.</dd>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def get_slab_edges(self, central_meridian=0.0, tessellate_degrees=1):
+<pre><code class="python">def get_slab_edges(self, central_meridian=0.0, tessellate_degrees=None):
     &#34;&#34;&#34;Create a geopandas.GeoDataFrame object containing geometries of reconstructed slab edge lines.
 
     Notes
@@ -12888,7 +12888,7 @@ converted into Shapely features whose coordinates are passed to a geopandas GeoD
 </details>
 </dd>
 <dt id="gplately.PlotTopologies.get_sutures"><code class="name flex">
-<span>def <span class="ident">get_sutures</span></span>(<span>self, central_meridian=0.0, tessellate_degrees=1)</span>
+<span>def <span class="ident">get_sutures</span></span>(<span>self, central_meridian=0.0, tessellate_degrees=None)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Create a geopandas.GeoDataFrame object containing geometries of reconstructed suture lines.</p>
@@ -12924,7 +12924,7 @@ to wrapping.</dd>
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def get_sutures(self, central_meridian=0.0, tessellate_degrees=1):
+<pre><code class="python">def get_sutures(self, central_meridian=0.0, tessellate_degrees=None):
     &#34;&#34;&#34;Create a geopandas.GeoDataFrame object containing geometries of reconstructed suture lines.
 
     Notes
@@ -12977,7 +12977,7 @@ to wrapping.</dd>
 </details>
 </dd>
 <dt id="gplately.PlotTopologies.get_terrane_boundaries"><code class="name flex">
-<span>def <span class="ident">get_terrane_boundaries</span></span>(<span>self, central_meridian=0.0, tessellate_degrees=1)</span>
+<span>def <span class="ident">get_terrane_boundaries</span></span>(<span>self, central_meridian=0.0, tessellate_degrees=None)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Create a geopandas.GeoDataFrame object containing geometries of reconstructed terrane boundary lines.</p>
@@ -13016,7 +13016,7 @@ to wrapping.</dd>
 <pre><code class="python">def get_terrane_boundaries(
     self,
     central_meridian=0.0,
-    tessellate_degrees=1,
+    tessellate_degrees=None,
 ):
     &#34;&#34;&#34;Create a geopandas.GeoDataFrame object containing geometries of reconstructed terrane boundary lines.
 
@@ -13161,7 +13161,7 @@ to wrapping.</dd>
 </details>
 </dd>
 <dt id="gplately.PlotTopologies.get_transitional_crusts"><code class="name flex">
-<span>def <span class="ident">get_transitional_crusts</span></span>(<span>self, central_meridian=0.0, tessellate_degrees=1)</span>
+<span>def <span class="ident">get_transitional_crusts</span></span>(<span>self, central_meridian=0.0, tessellate_degrees=None)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Create a geopandas.GeoDataFrame object containing geometries of reconstructed transitional crust lines.</p>
@@ -13200,7 +13200,7 @@ to wrapping.</dd>
 <pre><code class="python">def get_transitional_crusts(
     self,
     central_meridian=0.0,
-    tessellate_degrees=1,
+    tessellate_degrees=None,
 ):
     &#34;&#34;&#34;Create a geopandas.GeoDataFrame object containing geometries of reconstructed transitional crust lines.
 
@@ -13345,7 +13345,7 @@ to wrapping.</dd>
 </details>
 </dd>
 <dt id="gplately.PlotTopologies.get_unclassified_features"><code class="name flex">
-<span>def <span class="ident">get_unclassified_features</span></span>(<span>self, central_meridian=0.0, tessellate_degrees=1)</span>
+<span>def <span class="ident">get_unclassified_features</span></span>(<span>self, central_meridian=0.0, tessellate_degrees=None)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Create a geopandas.GeoDataFrame object containing geometries of reconstructed unclassified feature lines.</p>
@@ -13384,7 +13384,7 @@ to wrapping.</dd>
 <pre><code class="python">def get_unclassified_features(
     self,
     central_meridian=0.0,
-    tessellate_degrees=1,
+    tessellate_degrees=None,
 ):
     &#34;&#34;&#34;Create a geopandas.GeoDataFrame object containing geometries of reconstructed unclassified feature lines.
 
@@ -13658,7 +13658,7 @@ with coastline features plotted onto the chosen map projection.</dd>
             UserWarning,
         )
         kwargs.pop(&#34;transform&#34;)
-    tessellate_degrees = kwargs.pop(&#34;tessellate_degrees&#34;, 1)
+    tessellate_degrees = kwargs.pop(&#34;tessellate_degrees&#34;, None)
     central_meridian = kwargs.pop(&#34;central_meridian&#34;, None)
     if central_meridian is None:
         central_meridian = _meridian_from_ax(ax)
@@ -13754,7 +13754,7 @@ with COB features plotted onto the chosen map projection.</dd>
             UserWarning,
         )
         kwargs.pop(&#34;transform&#34;)
-    tessellate_degrees = kwargs.pop(&#34;tessellate_degrees&#34;, 1)
+    tessellate_degrees = kwargs.pop(&#34;tessellate_degrees&#34;, None)
     central_meridian = kwargs.pop(&#34;central_meridian&#34;, None)
     if central_meridian is None:
         central_meridian = _meridian_from_ax(ax)
@@ -13828,7 +13828,7 @@ with continental crust lines plotted onto the chosen map projection.</dd>
             UserWarning,
         )
         kwargs.pop(&#34;transform&#34;)
-    tessellate_degrees = kwargs.pop(&#34;tessellate_degrees&#34;, 1)
+    tessellate_degrees = kwargs.pop(&#34;tessellate_degrees&#34;, None)
     central_meridian = kwargs.pop(&#34;central_meridian&#34;, None)
     if central_meridian is None:
         central_meridian = _meridian_from_ax(ax)
@@ -13902,7 +13902,7 @@ with continental rifts plotted onto the chosen map projection.</dd>
             UserWarning,
         )
         kwargs.pop(&#34;transform&#34;)
-    tessellate_degrees = kwargs.pop(&#34;tessellate_degrees&#34;, 1)
+    tessellate_degrees = kwargs.pop(&#34;tessellate_degrees&#34;, None)
     central_meridian = kwargs.pop(&#34;central_meridian&#34;, None)
     if central_meridian is None:
         central_meridian = _meridian_from_ax(ax)
@@ -13989,7 +13989,7 @@ with continent features plotted onto the chosen map projection.</dd>
             UserWarning,
         )
         kwargs.pop(&#34;transform&#34;)
-    tessellate_degrees = kwargs.pop(&#34;tessellate_degrees&#34;, 1)
+    tessellate_degrees = kwargs.pop(&#34;tessellate_degrees&#34;, None)
     central_meridian = kwargs.pop(&#34;central_meridian&#34;, None)
     if central_meridian is None:
         central_meridian = _meridian_from_ax(ax)
@@ -14063,7 +14063,7 @@ with extended continental crust lines plotted onto the chosen map projection.</d
             UserWarning,
         )
         kwargs.pop(&#34;transform&#34;)
-    tessellate_degrees = kwargs.pop(&#34;tessellate_degrees&#34;, 1)
+    tessellate_degrees = kwargs.pop(&#34;tessellate_degrees&#34;, None)
     central_meridian = kwargs.pop(&#34;central_meridian&#34;, None)
     if central_meridian is None:
         central_meridian = _meridian_from_ax(ax)
@@ -14137,7 +14137,7 @@ with faults plotted onto the chosen map projection.</dd>
             UserWarning,
         )
         kwargs.pop(&#34;transform&#34;)
-    tessellate_degrees = kwargs.pop(&#34;tessellate_degrees&#34;, 1)
+    tessellate_degrees = kwargs.pop(&#34;tessellate_degrees&#34;, None)
     central_meridian = kwargs.pop(&#34;central_meridian&#34;, None)
     if central_meridian is None:
         central_meridian = _meridian_from_ax(ax)
@@ -14207,7 +14207,7 @@ with coastline features plotted onto the chosen map projection.</dd>
             UserWarning,
         )
         kwargs.pop(&#34;transform&#34;)
-    tessellate_degrees = kwargs.pop(&#34;tessellate_degrees&#34;, 1)
+    tessellate_degrees = kwargs.pop(&#34;tessellate_degrees&#34;, None)
     central_meridian = kwargs.pop(&#34;central_meridian&#34;, None)
     if central_meridian is None:
         central_meridian = _meridian_from_ax(ax)
@@ -14282,7 +14282,7 @@ with fracture zones plotted onto the chosen map projection.</dd>
             UserWarning,
         )
         kwargs.pop(&#34;transform&#34;)
-    tessellate_degrees = kwargs.pop(&#34;tessellate_degrees&#34;, 1)
+    tessellate_degrees = kwargs.pop(&#34;tessellate_degrees&#34;, None)
     central_meridian = kwargs.pop(&#34;central_meridian&#34;, None)
     if central_meridian is None:
         central_meridian = _meridian_from_ax(ax)
@@ -14527,7 +14527,7 @@ with inferred paleo boundaries plotted onto the chosen map projection.</dd>
             UserWarning,
         )
         kwargs.pop(&#34;transform&#34;)
-    tessellate_degrees = kwargs.pop(&#34;tessellate_degrees&#34;, 1)
+    tessellate_degrees = kwargs.pop(&#34;tessellate_degrees&#34;, None)
     central_meridian = kwargs.pop(&#34;central_meridian&#34;, None)
     if central_meridian is None:
         central_meridian = _meridian_from_ax(ax)
@@ -14706,7 +14706,7 @@ with miscellaneous transform boundaries plotted onto the chosen map projection.<
             UserWarning,
         )
         kwargs.pop(&#34;transform&#34;)
-    tessellate_degrees = kwargs.pop(&#34;tessellate_degrees&#34;, 1)
+    tessellate_degrees = kwargs.pop(&#34;tessellate_degrees&#34;, None)
     central_meridian = kwargs.pop(&#34;central_meridian&#34;, None)
     if central_meridian is None:
         central_meridian = _meridian_from_ax(ax)
@@ -14780,7 +14780,7 @@ with orogenic belts plotted onto the chosen map projection.</dd>
             UserWarning,
         )
         kwargs.pop(&#34;transform&#34;)
-    tessellate_degrees = kwargs.pop(&#34;tessellate_degrees&#34;, 1)
+    tessellate_degrees = kwargs.pop(&#34;tessellate_degrees&#34;, None)
     central_meridian = kwargs.pop(&#34;central_meridian&#34;, None)
     if central_meridian is None:
         central_meridian = _meridian_from_ax(ax)
@@ -14854,7 +14854,7 @@ with passive continental boundaries plotted onto the chosen map projection.</dd>
             UserWarning,
         )
         kwargs.pop(&#34;transform&#34;)
-    tessellate_degrees = kwargs.pop(&#34;tessellate_degrees&#34;, 1)
+    tessellate_degrees = kwargs.pop(&#34;tessellate_degrees&#34;, None)
     central_meridian = kwargs.pop(&#34;central_meridian&#34;, None)
     if central_meridian is None:
         central_meridian = _meridian_from_ax(ax)
@@ -15322,7 +15322,7 @@ with slab edges plotted onto the chosen map projection.</dd>
             UserWarning,
         )
         kwargs.pop(&#34;transform&#34;)
-    tessellate_degrees = kwargs.pop(&#34;tessellate_degrees&#34;, 1)
+    tessellate_degrees = kwargs.pop(&#34;tessellate_degrees&#34;, None)
     central_meridian = kwargs.pop(&#34;central_meridian&#34;, None)
     if central_meridian is None:
         central_meridian = _meridian_from_ax(ax)
@@ -15647,7 +15647,7 @@ with sutures plotted onto the chosen map projection.</dd>
             UserWarning,
         )
         kwargs.pop(&#34;transform&#34;)
-    tessellate_degrees = kwargs.pop(&#34;tessellate_degrees&#34;, 1)
+    tessellate_degrees = kwargs.pop(&#34;tessellate_degrees&#34;, None)
     central_meridian = kwargs.pop(&#34;central_meridian&#34;, None)
     if central_meridian is None:
         central_meridian = _meridian_from_ax(ax)
@@ -15721,7 +15721,7 @@ with terrane boundaries plotted onto the chosen map projection.</dd>
             UserWarning,
         )
         kwargs.pop(&#34;transform&#34;)
-    tessellate_degrees = kwargs.pop(&#34;tessellate_degrees&#34;, 1)
+    tessellate_degrees = kwargs.pop(&#34;tessellate_degrees&#34;, None)
     central_meridian = kwargs.pop(&#34;central_meridian&#34;, None)
     if central_meridian is None:
         central_meridian = _meridian_from_ax(ax)
@@ -15898,7 +15898,7 @@ with transitional crust plotted onto the chosen map projection.</dd>
             UserWarning,
         )
         kwargs.pop(&#34;transform&#34;)
-    tessellate_degrees = kwargs.pop(&#34;tessellate_degrees&#34;, 1)
+    tessellate_degrees = kwargs.pop(&#34;tessellate_degrees&#34;, None)
     central_meridian = kwargs.pop(&#34;central_meridian&#34;, None)
     if central_meridian is None:
         central_meridian = _meridian_from_ax(ax)
@@ -16077,7 +16077,7 @@ with unclassified features plotted onto the chosen map projection.</dd>
             UserWarning,
         )
         kwargs.pop(&#34;transform&#34;)
-    tessellate_degrees = kwargs.pop(&#34;tessellate_degrees&#34;, 1)
+    tessellate_degrees = kwargs.pop(&#34;tessellate_degrees&#34;, None)
     central_meridian = kwargs.pop(&#34;central_meridian&#34;, None)
     if central_meridian is None:
         central_meridian = _meridian_from_ax(ax)
