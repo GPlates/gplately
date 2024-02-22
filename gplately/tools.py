@@ -551,6 +551,68 @@ def smooth_1D_gaussian(
     return smoothed_data
 
 
+def griddata_sphere(points, values, xi, method='nearest', **kwargs):
+    """
+    Interpolate unstructured D-D data on the sphere.
+
+    Parameters
+    ----------
+    points : 2-D ndarray of floats with shape (n, D), or length D tuple of 1-D ndarrays with shape (n,).
+        Data point coordinates in longitudes / latitudes.
+    values : ndarray of float or complex, shape (n,)
+        Data values.
+    xi : 2-D ndarray of floats with shape (m, D), or length D tuple of ndarrays broadcastable to the same shape.
+        Points at which to interpolate data in logitudes / latitudes.
+    method : {'linear', 'nearest', 'cubic'}, optional
+        Method of interpolation. One of
+
+        ``nearest``
+          return the value at the data point closest to
+          the point of interpolation. See `NearestNDInterpolator` for
+          more details.
+
+        ``rbf``
+          return the value determined from a radial basis function.
+          See `RBFInterpolator` for more details.
+
+    kwargs : dict of keyword-arguments
+        Pass optional arguments to interpolation objects specified in "method".
+        A default value of neighors=12 is automatically applied to rbf.
+
+    Returns
+    -------
+    ndarray
+        Array of interpolated values.
+    """
+
+    assert xi[0].shape == xi[1].shape, "ensure coordinates in xi are the same shape"
+    
+    lons = points[:,0]
+    lats = points[:,1]
+
+    # convert to Cartesian coordinates on the unit sphere
+    x0, y0, z0 = gplately.tools.lonlat2xyz(lons, lats, degrees=True)
+    x1, y1, z1 = gplately.tools.lonlat2xyz(xi[0], xi[1])
+
+    input_coords = np.c_[x0, y0, z0]
+    output_coords = np.c_[x1.ravel(), y1.ravel(), z1.ravel()]
+
+    out_shape = x1.shape
+
+    if method.lower() == "rbf":
+        from scipy.interpolate import RBFInterpolator
+        neighbors = kwargs.pop("neighbors", 12)
+        rbf = RBFInterpolator(input_coords, values, neighbors, **kwargs)
+        return rbf(output_coords).reshape(out_shape)
+
+    elif method.lower() == "nearest":
+        from scipy.interpolate import NearestNDInterpolator
+        nn = NearestNDInterpolator(input_coords, values, **kwargs)
+        return nn(output_coords).reshape(out_shape)
+
+    else:
+        raise NotImplementedError("{} interpolation is not yet supported".format(method))
+
 # From Simon Williams' GPRM
 def find_distance_to_nearest_ridge(resolved_topologies,shared_boundary_sections,
                                    point_features,fill_value=5000.):
