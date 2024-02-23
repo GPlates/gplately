@@ -39,6 +39,7 @@ from scipy.interpolate import griddata
 from .geometry import pygplates_to_shapely
 from .reconstruction import PlateReconstruction as _PlateReconstruction
 from .tools import _deg2pixels
+from .tools import griddata_sphere
 
 __all__ = [
     "fill_raster",
@@ -2194,7 +2195,7 @@ class Raster(object):
 
         # Interpolate lons, lats and zvals over a regular grid using nearest
         # neighbour interpolation
-        Z = griddata((out_lon, out_lat), zdata, (X, Y), method='nearest')
+        Z = griddata_sphere((out_lon, out_lat), zdata, (X, Y), method='nearest')
 
         # Write output grid to netCDF if requested.
         if output_name:
