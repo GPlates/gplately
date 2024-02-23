@@ -1884,6 +1884,102 @@ class Points(object):
                 "Cannot save to specified file type. Use csv, gpml, or xls file extension."
             )
 
+    def rotate_reference_frames(
+        self,
+        reconstruction_time,
+        from_rotation_features_or_model=None,  # filename(s), or pyGPlates feature(s)/collection(s) or a RotationModel
+        to_rotation_features_or_model=None,    # filename(s), or pyGPlates feature(s)/collection(s) or a RotationModel
+        from_rotation_reference_plate=0,
+        to_rotation_reference_plate=0,
+        non_reference_plate=701,
+        output_name=None,
+        return_array=False,
+    ):
+        """Rotate a grid defined in one plate model reference frame 
+        within a gplately.Raster object to another plate 
+        reconstruction model reference frame.
+
+        Parameters
+        ----------
+        reconstruction_time : float
+            The time at which to rotate the reconstructed points.
+        from_rotation_features_or_model : str, list of str, or instance of `pygplates.RotationModel`
+            A filename, or a list of filenames, or a pyGPlates 
+            RotationModel object that defines the rotation model
+            that the input grid is currently associated with.
+            `self.plate_reconstruction.rotation_model` is default.
+        to_rotation_features_or_model : str, list of str, or instance of `pygplates.RotationModel`
+            A filename, or a list of filenames, or a pyGPlates 
+            RotationModel object that defines the rotation model
+            that the input grid shall be rotated with.
+            `self.plate_reconstruction.rotation_model` is default.
+        from_rotation_reference_plate : int, default = 0
+            The current reference plate for the plate model the points
+            are defined in. Defaults to the anchor plate 0.
+        to_rotation_reference_plate : int, default = 0
+            The desired reference plate for the plate model the points
+            to be rotated to. Defaults to the anchor plate 0.
+        non_reference_plate : int, default = 701
+            An arbitrary placeholder reference frame with which 
+            to define the "from" and "to" reference frames.
+        output_name : str, default None
+            If passed, the rotated points are saved as a gpml to this filename.
+
+        Returns
+        -------
+        gplately.Points()
+            An instance of the gplately.Points object containing the rotated points.
+        """
+
+        if from_rotation_features_or_model is None:
+            from_rotation_features_or_model = self.plate_reconstruction.rotation_model
+        if to_rotation_features_or_model is None:
+            to_rotation_features_or_model = self.plate_reconstruction.rotation_model
+
+
+        # Create the pygplates.FiniteRotation that rotates 
+        # between the two reference frames.
+        from_rotation_model = pygplates.RotationModel(
+            from_rotation_features_or_model
+        )
+        to_rotation_model = pygplates.RotationModel(
+            to_rotation_features_or_model
+        )
+        from_rotation = from_rotation_model.get_rotation(
+            reconstruction_time, 
+            non_reference_plate, 
+            anchor_plate_id=from_rotation_reference_plate
+        )
+        to_rotation = to_rotation_model.get_rotation(
+            reconstruction_time, 
+            non_reference_plate, 
+            anchor_plate_id=to_rotation_reference_plate
+        )
+        reference_frame_conversion_rotation = to_rotation * from_rotation.get_inverse()
+
+        # reconstruct points to reconstruction_time
+        lons, lats = self.reconstruct(
+            reconstruction_time,
+            anchor_plate_id=from_rotation_reference_plate,
+            return_array=True)
+
+        # convert FeatureCollection to MultiPointOnSphere
+        input_points = pygplates.MultiPointOnSphere((lat, lon) for lon, lat in zip(lons, lats))
+
+        # Rotate grid nodes to the other reference frame
+        output_points = reference_frame_conversion_rotation * input_points
+
+        # Assemble rotated points with grid values.
+        out_lon = np.empty_like(self.lons)
+        out_lat = np.empty_like(self.lats)
+        for i, point in enumerate(output_points):
+            out_lat[i], out_lon[i] = point.to_lat_lon()
+
+        if return_array:
+            return out_lon, out_lat
+        else:
+            return Points(self.plate_reconstruction, out_lon, out_lat, time=reconstruction_time, plate_id=self.plate_id)
+
 
 # FROM RECONSTRUCT_BY_TOPOLOGIES.PY
 class _DefaultCollision(object):

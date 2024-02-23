@@ -2095,8 +2095,6 @@ class Raster(object):
         non_reference_plate=701,
         output_name=None
     ):
-        import time as timer
-
         """Rotate a grid defined in one plate model reference frame 
         within a gplately.Raster object to another plate 
         reconstruction model reference frame.
@@ -2157,44 +2155,30 @@ class Raster(object):
 
 
         # Resize the input grid to the specified output resolution before rotating
-        resX = _deg2pixels(
-            grid_spacing_degrees, self.extent[0], self.extent[1]
-        )
-        resY = _deg2pixels(
-            grid_spacing_degrees, self.extent[2], self.extent[3]
-        )
-        resized_input_grid = self.resize(
-            resX, resY, inplace=False
-        )
+        resX = _deg2pixels(grid_spacing_degrees, self.extent[0], self.extent[1])
+        resY = _deg2pixels(grid_spacing_degrees, self.extent[2], self.extent[3])
+        resized_input_grid = self.resize(resX, resY, inplace=False)
 
         # Get the flattened lons, lats
-        llons, llats = np.meshgrid(
-            resized_input_grid.lons, resized_input_grid.lats
-        )
-        llons = llons.flatten()
-        llats = llats.flatten()
-        input_coords = [(llons[i], llats[i]) for i in range(0, len(llons))]
-
+        llons, llats = np.meshgrid(resized_input_grid.lons, resized_input_grid.lats)
+        llons = llons.ravel()
+        llats = llats.ravel()
 
         # Convert lon-lat points of Raster grid to pyGPlates points
-        input_points = pygplates.MultiPointOnSphere(
-            (lat, lon) for lon, lat in input_coords
-        )
+        input_points = pygplates.MultiPointOnSphere((lat, lon) for lon, lat in zip(llons, llats))
         # Get grid values of the resized Raster object
-        values = np.array(resized_input_grid.data).flatten()
+        values = np.array(resized_input_grid.data).ravel()
 
         # Rotate grid nodes to the other reference frame
         output_points = reference_frame_conversion_rotation * input_points
 
         # Assemble rotated points with grid values.
-        out_lon = []
-        out_lat = []
-        zdata = []
-        for index, point in enumerate(output_points):
-            lat, lon = point.to_lat_lon()
-            out_lon.append(lon)
-            out_lat.append(lat)
-            zdata.append(values[index])
+        out_lon = np.empty_like(llons)
+        out_lat = np.empty_like(llats)
+        zdata = np.empty_like(values)
+        for i, point in enumerate(output_points):
+            out_lat[i], out_lon[i] = point.to_lat_lon()
+            zdata[i] = values[i]
 
         # Create a regular grid on which to interpolate lats, lons and zdata
         # Use the extent of the original Raster object
@@ -2203,39 +2187,19 @@ class Raster(object):
         resX = int(np.floor((extent_globe[1] - extent_globe[0]) / grid_spacing_degrees)) + 1
         resY = int(np.floor((extent_globe[3] - extent_globe[2]) / grid_spacing_degrees)) + 1
 
-        grid_lon = np.linspace(
-            extent_globe[0], 
-            extent_globe[1], 
-            resX
-        )
-        grid_lat = np.linspace(
-            extent_globe[2], 
-            extent_globe[3], 
-            resY
-        )
+        grid_lon = np.linspace(extent_globe[0], extent_globe[1], resX)
+        grid_lat = np.linspace(extent_globe[2], extent_globe[3], resY)
 
-        X, Y = np.meshgrid(
-            grid_lon, 
-            grid_lat
-        )
+        X, Y = np.meshgrid(grid_lon, grid_lat)
 
         # Interpolate lons, lats and zvals over a regular grid using nearest
         # neighbour interpolation
-        Z = griddata(
-            (out_lon, out_lat), 
-            zdata, 
-            (X, Y), 
-            method='nearest'
-        )
+        Z = griddata((out_lon, out_lat), zdata, (X, Y), method='nearest')
 
         # Write output grid to netCDF if requested.
         if output_name:
-            write_netcdf_grid(
-                output_name,
-                Z,
-                extent=extent_globe,
-            )
-            
+            write_netcdf_grid(output_name, Z, extent=extent_globe)
+
         return Raster(data=Z)
 
 
