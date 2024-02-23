@@ -1978,7 +1978,7 @@ class Points(object):
         if return_array:
             return out_lon, out_lat
         else:
-            return Points(model, out_lon, out_lat, time=reconstruction_time, plate_id=self.plate_id)
+            return Points(self.plate_reconstruction, out_lon, out_lat, time=reconstruction_time, plate_id=self.plate_id)
 
 
 # FROM RECONSTRUCT_BY_TOPOLOGIES.PY
