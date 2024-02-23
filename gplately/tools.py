@@ -594,8 +594,8 @@ def griddata_sphere(points, values, xi, method='nearest', **kwargs):
     lats = points[:,1]
 
     # convert to Cartesian coordinates on the unit sphere
-    x0, y0, z0 = gplately.tools.lonlat2xyz(lons, lats, degrees=True)
-    x1, y1, z1 = gplately.tools.lonlat2xyz(xi[0], xi[1])
+    x0, y0, z0 = lonlat2xyz(lons, lats, degrees=True)
+    x1, y1, z1 = lonlat2xyz(xi[0], xi[1])
 
     input_coords = np.c_[x0, y0, z0]
     output_coords = np.c_[x1.ravel(), y1.ravel(), z1.ravel()]
