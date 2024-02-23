@@ -2010,7 +2010,7 @@ class Points(object):
         if return_array:
             return out_lon, out_lat
         else:
-            return Points(self.plate_reconstruction, out_lon, out_lat, time=reconstruction_time, plate_id=self.plate_id)
+            return Points(model, out_lon, out_lat, time=reconstruction_time, plate_id=self.plate_id)
 
 
 # FROM RECONSTRUCT_BY_TOPOLOGIES.PY
@@ -6375,7 +6375,7 @@ if not provided.</dd>
         if return_array:
             return out_lon, out_lat
         else:
-            return Points(self.plate_reconstruction, out_lon, out_lat, time=reconstruction_time, plate_id=self.plate_id)</code></pre>
+            return Points(model, out_lon, out_lat, time=reconstruction_time, plate_id=self.plate_id)</code></pre>
 </details>
 <h3>Instance variables</h3>
 <dl>
@@ -7451,7 +7451,7 @@ to define the "from" and "to" reference frames.</dd>
     if return_array:
         return out_lon, out_lat
     else:
-        return Points(self.plate_reconstruction, out_lon, out_lat, time=reconstruction_time, plate_id=self.plate_id)</code></pre>
+        return Points(model, out_lon, out_lat, time=reconstruction_time, plate_id=self.plate_id)</code></pre>
 </details>
 </dd>
 <dt id="gplately.reconstruction.Points.save"><code class="name flex">

@@ -17112,7 +17112,7 @@ if not provided.</dd>
         if return_array:
             return out_lon, out_lat
         else:
-            return Points(self.plate_reconstruction, out_lon, out_lat, time=reconstruction_time, plate_id=self.plate_id)</code></pre>
+            return Points(model, out_lon, out_lat, time=reconstruction_time, plate_id=self.plate_id)</code></pre>
 </details>
 <h3>Instance variables</h3>
 <dl>
@@ -18188,7 +18188,7 @@ to define the "from" and "to" reference frames.</dd>
     if return_array:
         return out_lon, out_lat
     else:
-        return Points(self.plate_reconstruction, out_lon, out_lat, time=reconstruction_time, plate_id=self.plate_id)</code></pre>
+        return Points(model, out_lon, out_lat, time=reconstruction_time, plate_id=self.plate_id)</code></pre>
 </details>
 </dd>
 <dt id="gplately.Points.save"><code class="name flex">
@@ -19223,7 +19223,7 @@ reconstruction.</dd>
 
         # Interpolate lons, lats and zvals over a regular grid using nearest
         # neighbour interpolation
-        Z = griddata((out_lon, out_lat), zdata, (X, Y), method=&#39;nearest&#39;)
+        Z = griddata_sphere((out_lon, out_lat), zdata, (X, Y), method=&#39;nearest&#39;)
 
         # Write output grid to netCDF if requested.
         if output_name:
@@ -20495,7 +20495,7 @@ to define the "from" and "to" reference frames.</dd>
 
     # Interpolate lons, lats and zvals over a regular grid using nearest
     # neighbour interpolation
-    Z = griddata((out_lon, out_lat), zdata, (X, Y), method=&#39;nearest&#39;)
+    Z = griddata_sphere((out_lon, out_lat), zdata, (X, Y), method=&#39;nearest&#39;)
 
     # Write output grid to netCDF if requested.
     if output_name:
