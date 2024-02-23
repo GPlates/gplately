@@ -581,71 +581,6 @@ def smooth_1D_gaussian(
     return smoothed_data
 
 
-def griddata_sphere(points, values, xi, method=&#39;nearest&#39;, **kwargs):
-    &#34;&#34;&#34;
-    Interpolate unstructured D-D data on the sphere.
-
-    Parameters
-    ----------
-    points : 2-D ndarray of floats with shape (n, D), or length D tuple of 1-D ndarrays with shape (n,).
-        Data point coordinates in longitudes / latitudes.
-    values : ndarray of float or complex, shape (n,)
-        Data values.
-    xi : 2-D ndarray of floats with shape (m, D), or length D tuple of ndarrays broadcastable to the same shape.
-        Points at which to interpolate data in logitudes / latitudes.
-    method : {&#39;linear&#39;, &#39;nearest&#39;, &#39;cubic&#39;}, optional
-        Method of interpolation. One of
-
-        ``nearest``
-          return the value at the data point closest to
-          the point of interpolation. See `NearestNDInterpolator` for
-          more details.
-
-        ``rbf``
-          return the value determined from a radial basis function.
-          See `RBFInterpolator` for more details.
-
-    kwargs : dict of keyword-arguments
-        Pass optional arguments to interpolation objects specified in &#34;method&#34;.
-        A default value of neighors=12 is automatically applied to rbf.
-
-    Returns
-    -------
-    ndarray
-        Array of interpolated values.
-    &#34;&#34;&#34;
-
-    assert xi[0].shape == xi[1].shape, &#34;ensure coordinates in xi are the same shape&#34;
-
-    from scipy.interpolate.interpnd import _ndim_coords_from_arrays
-    points = _ndim_coords_from_arrays(points)
-    
-    lons = points[:,0]
-    lats = points[:,1]
-
-    # convert to Cartesian coordinates on the unit sphere
-    x0, y0, z0 = gplately.tools.lonlat2xyz(lons, lats, degrees=True)
-    x1, y1, z1 = gplately.tools.lonlat2xyz(xi[0], xi[1])
-
-    input_coords = np.c_[x0, y0, z0]
-    output_coords = np.c_[x1.ravel(), y1.ravel(), z1.ravel()]
-
-    out_shape = x1.shape
-
-    if method.lower() == &#34;rbf&#34;:
-        from scipy.interpolate import RBFInterpolator
-        neighbors = kwargs.pop(&#34;neighbors&#34;, 12)
-        rbf = RBFInterpolator(input_coords, values, neighbors, **kwargs)
-        return rbf(output_coords).reshape(out_shape)
-
-    elif method.lower() == &#34;nearest&#34;:
-        from scipy.interpolate import NearestNDInterpolator
-        nn = NearestNDInterpolator(input_coords, values, **kwargs)
-        return nn(output_coords).reshape(out_shape)
-
-    else:
-        raise NotImplementedError(&#34;{} interpolation is not yet supported&#34;.format(method))
-
 # From Simon Williams&#39; GPRM
 def find_distance_to_nearest_ridge(resolved_topologies,shared_boundary_sections,
                                    point_features,fill_value=5000.):
@@ -1159,109 +1094,6 @@ as the input feature array.</dd>
     den = (r1*coslat)**2 + (r2*sinlat)**2
     earth_radius = np.sqrt(num/den)
     return earth_radius</code></pre>
-</details>
-</dd>
-<dt id="gplately.tools.griddata_sphere"><code class="name flex">
-<span>def <span class="ident">griddata_sphere</span></span>(<span>points, values, xi, method='nearest', **kwargs)</span>
-</code></dt>
-<dd>
-<div class="desc"><p>Interpolate unstructured D-D data on the sphere.</p>
-<h2 id="parameters">Parameters</h2>
-<dl>
-<dt>points : 2-D ndarray of floats with shape (n, D), or length D tuple of 1-D ndarrays with shape (n,).</dt>
-<dt>Data point coordinates in longitudes / latitudes.</dt>
-<dt><strong><code>values</code></strong> :&ensp;<code>ndarray</code> of <code>float</code> or <code>complex, shape (n,)</code></dt>
-<dd>Data values.</dd>
-<dt>xi : 2-D ndarray of floats with shape (m, D), or length D tuple of ndarrays broadcastable to the same shape.</dt>
-<dt>Points at which to interpolate data in logitudes / latitudes.</dt>
-<dt><strong><code>method</code></strong> :&ensp;<code>{'linear', 'nearest', 'cubic'}</code>, optional</dt>
-<dd>
-<p>Method of interpolation. One of</p>
-<p><code>nearest</code>
-return the value at the data point closest to
-the point of interpolation. See <code>NearestNDInterpolator</code> for
-more details.</p>
-<p><code>rbf</code>
-return the value determined from a radial basis function.
-See <code>RBFInterpolator</code> for more details.</p>
-</dd>
-<dt><strong><code>kwargs</code></strong> :&ensp;<code>dict</code> of <code>keyword-arguments</code></dt>
-<dd>Pass optional arguments to interpolation objects specified in "method".
-A default value of neighors=12 is automatically applied to rbf.</dd>
-</dl>
-<h2 id="returns">Returns</h2>
-<dl>
-<dt><code>ndarray</code></dt>
-<dd>Array of interpolated values.</dd>
-</dl></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">def griddata_sphere(points, values, xi, method=&#39;nearest&#39;, **kwargs):
-    &#34;&#34;&#34;
-    Interpolate unstructured D-D data on the sphere.
-
-    Parameters
-    ----------
-    points : 2-D ndarray of floats with shape (n, D), or length D tuple of 1-D ndarrays with shape (n,).
-        Data point coordinates in longitudes / latitudes.
-    values : ndarray of float or complex, shape (n,)
-        Data values.
-    xi : 2-D ndarray of floats with shape (m, D), or length D tuple of ndarrays broadcastable to the same shape.
-        Points at which to interpolate data in logitudes / latitudes.
-    method : {&#39;linear&#39;, &#39;nearest&#39;, &#39;cubic&#39;}, optional
-        Method of interpolation. One of
-
-        ``nearest``
-          return the value at the data point closest to
-          the point of interpolation. See `NearestNDInterpolator` for
-          more details.
-
-        ``rbf``
-          return the value determined from a radial basis function.
-          See `RBFInterpolator` for more details.
-
-    kwargs : dict of keyword-arguments
-        Pass optional arguments to interpolation objects specified in &#34;method&#34;.
-        A default value of neighors=12 is automatically applied to rbf.
-
-    Returns
-    -------
-    ndarray
-        Array of interpolated values.
-    &#34;&#34;&#34;
-
-    assert xi[0].shape == xi[1].shape, &#34;ensure coordinates in xi are the same shape&#34;
-
-    from scipy.interpolate.interpnd import _ndim_coords_from_arrays
-    points = _ndim_coords_from_arrays(points)
-    
-    lons = points[:,0]
-    lats = points[:,1]
-
-    # convert to Cartesian coordinates on the unit sphere
-    x0, y0, z0 = gplately.tools.lonlat2xyz(lons, lats, degrees=True)
-    x1, y1, z1 = gplately.tools.lonlat2xyz(xi[0], xi[1])
-
-    input_coords = np.c_[x0, y0, z0]
-    output_coords = np.c_[x1.ravel(), y1.ravel(), z1.ravel()]
-
-    out_shape = x1.shape
-
-    if method.lower() == &#34;rbf&#34;:
-        from scipy.interpolate import RBFInterpolator
-        neighbors = kwargs.pop(&#34;neighbors&#34;, 12)
-        rbf = RBFInterpolator(input_coords, values, neighbors, **kwargs)
-        return rbf(output_coords).reshape(out_shape)
-
-    elif method.lower() == &#34;nearest&#34;:
-        from scipy.interpolate import NearestNDInterpolator
-        nn = NearestNDInterpolator(input_coords, values, **kwargs)
-        return nn(output_coords).reshape(out_shape)
-
-    else:
-        raise NotImplementedError(&#34;{} interpolation is not yet supported&#34;.format(method))</code></pre>
 </details>
 </dd>
 <dt id="gplately.tools.haversine_distance"><code class="name flex">
@@ -2047,7 +1879,6 @@ lon / lat (radians).</p>
 <li><code><a title="gplately.tools.extract_feature_lonlat" href="#gplately.tools.extract_feature_lonlat">extract_feature_lonlat</a></code></li>
 <li><code><a title="gplately.tools.find_distance_to_nearest_ridge" href="#gplately.tools.find_distance_to_nearest_ridge">find_distance_to_nearest_ridge</a></code></li>
 <li><code><a title="gplately.tools.geocentric_radius" href="#gplately.tools.geocentric_radius">geocentric_radius</a></code></li>
-<li><code><a title="gplately.tools.griddata_sphere" href="#gplately.tools.griddata_sphere">griddata_sphere</a></code></li>
 <li><code><a title="gplately.tools.haversine_distance" href="#gplately.tools.haversine_distance">haversine_distance</a></code></li>
 <li><code><a title="gplately.tools.lat_area_function" href="#gplately.tools.lat_area_function">lat_area_function</a></code></li>
 <li><code><a title="gplately.tools.lonlat2xyz" href="#gplately.tools.lonlat2xyz">lonlat2xyz</a></code></li>

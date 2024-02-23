@@ -232,6 +232,7 @@ import warnings
 import numpy as np
 import pandas as pd
 import pygplates
+from scipy.interpolate import griddata
 
 from . import grids, ptt, reconstruction, tools
 from .ptt import separate_ridge_transform_segments
@@ -1683,7 +1684,7 @@ def _lat_lon_z_to_netCDF_time(
 
     # Interpolate lons, lats and zvals over a regular grid using nearest
     # neighbour interpolation
-    Z = tools.griddata_sphere((lons, lats), zdata, (X, Y), method=&#34;nearest&#34;)
+    Z = griddata((lons, lats), zdata, (X, Y), method=&#34;nearest&#34;)
 
     # Access continental grids from the save directory
     if continent_mask_filename is None:
