@@ -52,4 +52,4 @@ def test_pickle_Points(gpts):
     gpts_load = pickle.loads(gpts_dump)
 
 def test_change_ancbor_plate(gpts):
-    gpts.rotate_reference_frame(50, from_rotation_reference_plate=0, to_rotation_reference_plate=101)
+    gpts.rotate_reference_frames(50, from_rotation_reference_plate=0, to_rotation_reference_plate=101)
