@@ -586,6 +586,9 @@ def griddata_sphere(points, values, xi, method='nearest', **kwargs):
     """
 
     assert xi[0].shape == xi[1].shape, "ensure coordinates in xi are the same shape"
+
+    from scipy.interpolate.interpnd import _ndim_coords_from_arrays
+    points = _ndim_coords_from_arrays(points)
     
     lons = points[:,0]
     lats = points[:,1]
