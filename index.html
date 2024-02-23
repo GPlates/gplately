@@ -19223,7 +19223,7 @@ reconstruction.</dd>
 
         # Interpolate lons, lats and zvals over a regular grid using nearest
         # neighbour interpolation
-        Z = griddata((out_lon, out_lat), zdata, (X, Y), method=&#39;nearest&#39;)
+        Z = griddata_sphere((out_lon, out_lat), zdata, (X, Y), method=&#39;nearest&#39;)
 
         # Write output grid to netCDF if requested.
         if output_name:
@@ -20495,7 +20495,7 @@ to define the "from" and "to" reference frames.</dd>
 
     # Interpolate lons, lats and zvals over a regular grid using nearest
     # neighbour interpolation
-    Z = griddata((out_lon, out_lat), zdata, (X, Y), method=&#39;nearest&#39;)
+    Z = griddata_sphere((out_lon, out_lat), zdata, (X, Y), method=&#39;nearest&#39;)
 
     # Write output grid to netCDF if requested.
     if output_name:
