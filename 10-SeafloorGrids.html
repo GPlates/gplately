@@ -7635,14 +7635,14 @@ a.anchor-link {
 <div class="highlight hl-ipython3"><pre><span></span><span class="k">if</span> <span class="ow">not</span> <span class="n">use_local_files</span><span class="p">:</span>
     <span class="c1"># Method 2: GPlately's DataServer</span>
     <span class="n">pm_manager</span> <span class="o">=</span> <span class="n">PlateModelManager</span><span class="p">()</span>
-    <span class="n">muller2019_model</span> <span class="o">=</span> <span class="n">pm_manager</span><span class="o">.</span><span class="n">get_model</span><span class="p">(</span><span class="s2">"Merdith2021"</span><span class="p">,</span> <span class="n">data_dir</span><span class="o">=</span><span class="s2">"plate-model-repo"</span><span class="p">)</span>
+    <span class="n">plate_model</span> <span class="o">=</span> <span class="n">pm_manager</span><span class="o">.</span><span class="n">get_model</span><span class="p">(</span><span class="s2">"Merdith2021"</span><span class="p">,</span> <span class="n">data_dir</span><span class="o">=</span><span class="s2">"plate-model-repo"</span><span class="p">)</span>
     
-    <span class="n">rotation_model</span> <span class="o">=</span> <span class="n">muller2019_model</span><span class="o">.</span><span class="n">get_rotation_model</span><span class="p">()</span>
-    <span class="n">topology_features</span> <span class="o">=</span> <span class="n">muller2019_model</span><span class="o">.</span><span class="n">get_topologies</span><span class="p">()</span>
-    <span class="n">static_polygons</span> <span class="o">=</span> <span class="n">muller2019_model</span><span class="o">.</span><span class="n">get_static_polygons</span><span class="p">()</span>
+    <span class="n">rotation_model</span> <span class="o">=</span> <span class="n">plate_model</span><span class="o">.</span><span class="n">get_rotation_model</span><span class="p">()</span>
+    <span class="n">topology_features</span> <span class="o">=</span> <span class="n">plate_model</span><span class="o">.</span><span class="n">get_topologies</span><span class="p">()</span>
+    <span class="n">static_polygons</span> <span class="o">=</span> <span class="n">plate_model</span><span class="o">.</span><span class="n">get_static_polygons</span><span class="p">()</span>
     
-    <span class="n">coastlines</span> <span class="o">=</span> <span class="n">muller2019_model</span><span class="o">.</span><span class="n">get_layer</span><span class="p">(</span><span class="s1">'Coastlines'</span><span class="p">)</span>
-    <span class="n">continents</span> <span class="o">=</span> <span class="n">muller2019_model</span><span class="o">.</span><span class="n">get_layer</span><span class="p">(</span><span class="s1">'ContinentalPolygons'</span><span class="p">)</span>
+    <span class="n">coastlines</span> <span class="o">=</span> <span class="n">plate_model</span><span class="o">.</span><span class="n">get_layer</span><span class="p">(</span><span class="s1">'Coastlines'</span><span class="p">)</span>
+    <span class="n">continents</span> <span class="o">=</span> <span class="n">plate_model</span><span class="o">.</span><span class="n">get_layer</span><span class="p">(</span><span class="s1">'ContinentalPolygons'</span><span class="p">)</span>
     <span class="n">COBs</span> <span class="o">=</span>  <span class="kc">None</span>
     
 </pre></div>
@@ -7822,7 +7822,7 @@ a.anchor-link {
 <div class="highlight hl-ipython3"><pre><span></span><span class="c1"># continent masks, initial ocean seed points, and gridding input files are kept here</span>
 <span class="n">output_parent_directory</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
     <span class="s2">"NotebookFiles"</span><span class="p">,</span>
-    <span class="s2">"Notebook9"</span><span class="p">,</span>
+    <span class="s2">"Notebook10"</span><span class="p">,</span>
 <span class="p">)</span>
 <span class="n">save_directory</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
     <span class="n">output_parent_directory</span><span class="p">,</span>
