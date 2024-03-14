@@ -1555,6 +1555,10 @@ def _lat_lon_z_to_netCDF_time(
     # zdata = np.where(zdata > 375, float("nan"), zdata), to deal with vmax in the future
     zdata = np.nan_to_num(zdata)
 
+    # Clip all ages greater than 250Ma to 250, and all ages below 0 to 0.
+    if zval_name == "SEAFLOOR_AGE":
+        zdata = np.clip(zdata, 0., 250.)
+
     # Create a regular grid on which to interpolate lats, lons and zdata
     extent_globe = extent
     grid_lon = np.linspace(extent_globe[0], extent_globe[1], resX)

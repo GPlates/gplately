@@ -152,7 +152,7 @@ class DataCollection(object):
             "Muller2008" : ["https://www.earthbyte.org/webdav/ftp/Data_Collections/Muller2008/Global_Model_Rigid_Internal_Release_2010.zip"],
             "Scotese2016" : ["https://www.earthbyte.org/webdav/ftp/Data_Collections/Scotese2016/PALEOMAP_GlobalPlateModel.zip"],
             "Shephard2013" : ["https://www.earthbyte.org/webdav/ftp/Data_Collections/Shephard_etal_2013_ESR.zip"],
-            "Muller2022" : ["https://www.earthbyte.org/webdav/ftp/Data_Collections/Muller_etal_2022_SE/Muller_etal_2022_SE_1Ga_Opt_PlateMotionModel_v1.1.zip"],
+            "Muller2022" : ["https://www.earthbyte.org/webdav/ftp/Data_Collections/Muller_etal_2022_SE/Muller_etal_2022_SE_1Ga_Opt_PlateMotionModel_v1.2.zip"],
             "Cao2023" :["https://www.earthbyte.org/webdav/ftp/Data_Collections/Cao_etal_2023/1.8Ga_model_submit.zip"],
             "Cao2023_Opt" : ["https://www.earthbyte.org/webdav/ftp/Data_Collections/Cao_etal_2023_Opt/Cao1800Opt.zip"],
 
@@ -327,7 +327,7 @@ class DataCollection(object):
             "Muller2008" : ["https://www.earthbyte.org/webdav/ftp/Data_Collections/Muller2008/Global_Model_Rigid_Internal_Release_2010.zip"],
             "Scotese2016" : ["https://www.earthbyte.org/webdav/ftp/Data_Collections/Scotese2016/PALEOMAP_GlobalPlateModel.zip"],
             "Shephard2013" : ["https://www.earthbyte.org/webdav/ftp/Data_Collections/Shephard_etal_2013_ESR.zip"],
-            "Muller2022" : ["https://www.earthbyte.org/webdav/ftp/Data_Collections/Muller_etal_2022_SE/Muller_etal_2022_SE_1Ga_Opt_PlateMotionModel_v1.1.zip"],
+            "Muller2022" : ["https://www.earthbyte.org/webdav/ftp/Data_Collections/Muller_etal_2022_SE/Muller_etal_2022_SE_1Ga_Opt_PlateMotionModel_v1.2.zip"],
             "Cao2023" :["https://www.earthbyte.org/webdav/ftp/Data_Collections/Cao_etal_2023/1.8Ga_model_submit.zip"],
             "Cao2023_Opt" : ["https://www.earthbyte.org/webdav/ftp/Data_Collections/Cao_etal_2023_Opt/Cao1800Opt.zip"],
 
