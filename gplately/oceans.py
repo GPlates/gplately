@@ -331,6 +331,8 @@ class SeafloorGrid(object):
         The minimum time for age gridding.
     ridge_time_step : float
         The delta time for resolving ridges (and thus age gridding).
+    clip_max_age : float, default 350.
+        The maximum age permitted for the initial age grid.
     save_directory : str, default None'
         The top-level directory to save all outputs to.
     file_collection : str, default None
@@ -380,6 +382,7 @@ class SeafloorGrid(object):
         max_time,
         min_time,
         ridge_time_step,
+        clip_max_age = 350.,
         save_directory="agegrids",
         file_collection=None,
         refinement_levels=5,
@@ -415,6 +418,7 @@ class SeafloorGrid(object):
 
         # Gridding parameters
         self.extent = extent
+        self.clip_max_age = clip_max_age
 
         # A list of degree spacings that allow an even division of the global lat-lon extent.
         divisible_degree_spacings = [0.1, 0.25, 0.5, 0.75, 1.0]
@@ -748,6 +752,9 @@ class SeafloorGrid(object):
 
         # Divide spreading rate by 2 to use half the mean spreading rate
         pAge = np.array(pZ) / (self.initial_ocean_mean_spreading_rate / 2.0)
+
+        # Clip the initial age grid to the user-defined max time
+        pAge = np.clip(pAge, 0., self.clip_max_age)
 
         initial_ocean_point_features = []
         initial_ocean_multipoints = []
@@ -1556,8 +1563,8 @@ def _lat_lon_z_to_netCDF_time(
     zdata = np.nan_to_num(zdata)
 
     # Clip all ages greater than 250Ma to 250, and all ages below 0 to 0.
-    if zval_name == "SEAFLOOR_AGE":
-        zdata = np.clip(zdata, 0., 250.)
+    #if zval_name == "SEAFLOOR_AGE":
+    #    zdata = np.clip(zdata, 0., 250.)
 
     # Create a regular grid on which to interpolate lats, lons and zdata
     extent_globe = extent
