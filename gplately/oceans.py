@@ -104,6 +104,7 @@ Classes
 * SeafloorGrid
 
 """
+
 import glob
 import os
 import re
@@ -313,7 +314,6 @@ def _pixels2deg(spacing_pixel, deg_min, deg_max):
 
 
 class SeafloorGrid(object):
-
     """A class to generate grids that track data atop global ocean basin points
     (which emerge from mid ocean ridges) through geological time.
 
@@ -1428,11 +1428,11 @@ class SeafloorGrid(object):
             if not topology_reconstruction.reconstruct_to_next_time():
                 break
 
-        print(
-            "Reconstruction done for {}!".format(
-                topology_reconstruction.get_current_time()
+            print(
+                "Reconstruction done for {}!".format(
+                    topology_reconstruction.get_current_time()
+                )
             )
-        )
         # return reconstruction_data
 
     def lat_lon_z_to_netCDF(
