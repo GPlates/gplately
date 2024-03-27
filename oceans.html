@@ -224,6 +224,7 @@ Classes
 * SeafloorGrid
 
 &#34;&#34;&#34;
+
 import glob
 import os
 import re
@@ -433,7 +434,6 @@ def _pixels2deg(spacing_pixel, deg_min, deg_max):
 
 
 class SeafloorGrid(object):
-
     &#34;&#34;&#34;A class to generate grids that track data atop global ocean basin points
     (which emerge from mid ocean ridges) through geological time.
 
@@ -1548,11 +1548,11 @@ class SeafloorGrid(object):
             if not topology_reconstruction.reconstruct_to_next_time():
                 break
 
-        print(
-            &#34;Reconstruction done for {}!&#34;.format(
-                topology_reconstruction.get_current_time()
+            print(
+                &#34;Reconstruction done for {}!&#34;.format(
+                    topology_reconstruction.get_current_time()
+                )
             )
-        )
         # return reconstruction_data
 
     def lat_lon_z_to_netCDF(
@@ -2099,7 +2099,6 @@ if needed.</dd>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class SeafloorGrid(object):
-
     &#34;&#34;&#34;A class to generate grids that track data atop global ocean basin points
     (which emerge from mid ocean ridges) through geological time.
 
@@ -3214,11 +3213,11 @@ if needed.</dd>
             if not topology_reconstruction.reconstruct_to_next_time():
                 break
 
-        print(
-            &#34;Reconstruction done for {}!&#34;.format(
-                topology_reconstruction.get_current_time()
+            print(
+                &#34;Reconstruction done for {}!&#34;.format(
+                    topology_reconstruction.get_current_time()
+                )
             )
-        )
         # return reconstruction_data
 
     def lat_lon_z_to_netCDF(
@@ -4200,11 +4199,11 @@ other general z-values are saved to a gridding input file (.npz).</p></div>
         if not topology_reconstruction.reconstruct_to_next_time():
             break
 
-    print(
-        &#34;Reconstruction done for {}!&#34;.format(
-            topology_reconstruction.get_current_time()
+        print(
+            &#34;Reconstruction done for {}!&#34;.format(
+                topology_reconstruction.get_current_time()
+            )
         )
-    )
     # return reconstruction_data</code></pre>
 </details>
 </dd>
