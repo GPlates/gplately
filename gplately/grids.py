@@ -15,6 +15,8 @@ Classes
 * RegularGridInterpolator
 * Raster
 """
+
+import math
 import warnings
 from multiprocessing import cpu_count
 
@@ -28,18 +30,14 @@ from rasterio.enums import MergeAlg
 from rasterio.features import rasterize as _rasterize
 from rasterio.transform import from_bounds as _from_bounds
 from scipy.interpolate import RegularGridInterpolator as _RGI
-from scipy.ndimage import (
-    distance_transform_edt,
-    map_coordinates,
-)
+from scipy.interpolate import griddata
+from scipy.ndimage import distance_transform_edt, map_coordinates
 from scipy.spatial import cKDTree as _cKDTree
 from scipy.spatial.transform import Rotation as _Rotation
-from scipy.interpolate import griddata
 
 from .geometry import pygplates_to_shapely
 from .reconstruction import PlateReconstruction as _PlateReconstruction
-from .tools import _deg2pixels
-from .tools import griddata_sphere
+from .tools import _deg2pixels, griddata_sphere
 
 __all__ = [
     "fill_raster",
@@ -55,24 +53,24 @@ __all__ = [
 ]
 
 
-def fill_raster(data,invalid=None):
+def fill_raster(data, invalid=None):
     """Search a grid of `data` for invalid cells (i.e NaN-type entries) and fill each
-    invalid cell with the value of its nearest valid neighbour. 
+    invalid cell with the value of its nearest valid neighbour.
 
     Notes
     -----
-    Uses `scipy`'s `distance_transform_edt` function to perform an Exact Euclidean 
-    Distance Transform (EEDT). This locates the nearest valid neighbours of an invalid 
-    `data` cell. 
+    Uses `scipy`'s `distance_transform_edt` function to perform an Exact Euclidean
+    Distance Transform (EEDT). This locates the nearest valid neighbours of an invalid
+    `data` cell.
 
-    An optional parameter, `invalid`, is a binary ndarray with the same dimensions 
+    An optional parameter, `invalid`, is a binary ndarray with the same dimensions
     as `data` and the following entries:
 
     * 1 if its corresponding entry in `data` is of NaN-type;
     * 0 if not NaN-type
 
-    This will be used to locate nearest neighbour fill values during the Exact Euclidian 
-    Distance Transform. If `invalid` is not passed to `fill_raster`, it will be created 
+    This will be used to locate nearest neighbour fill values during the Exact Euclidian
+    Distance Transform. If `invalid` is not passed to `fill_raster`, it will be created
     for the user.
 
     Parameters
@@ -81,16 +79,16 @@ def fill_raster(data,invalid=None):
         A MaskedArray of data that may have invalid cells (i.e. entries of type NaN).
 
     invalid : ndarray, optional, default=None
-        An ndarray with the same shape as `data` whose elements are 1 if its corresponding 
-        elements in `data` are of type `NaN`, and 0 if its corresponding entries in `data` 
-        are valid. An optional parameter - this will be created for the user if it isn’t 
+        An ndarray with the same shape as `data` whose elements are 1 if its corresponding
+        elements in `data` are of type `NaN`, and 0 if its corresponding entries in `data`
+        are valid. An optional parameter - this will be created for the user if it isn’t
         provided.
 
     Returns
     -------
     data : ndarray
-        An updated `data` array where each invalid cell has been replaced with the value 
-        of its nearest valid neighbour. 
+        An updated `data` array where each invalid cell has been replaced with the value
+        of its nearest valid neighbour.
     """
     masked_array = hasattr(data, "fill_value")
     if masked_array:
@@ -114,8 +112,8 @@ def realign_grid(array, lons, lats):
     # realign to -180/180
     if mask_lons.any():
         dlon = np.diff(lons).mean()
-        array = np.hstack([array[:,mask_lons], array[:,~mask_lons]])
-        lons  = np.hstack([lons[mask_lons] - 360 - dlon, lons[~mask_lons]])
+        array = np.hstack([array[:, mask_lons], array[:, ~mask_lons]])
+        lons = np.hstack([lons[mask_lons] - 360 - dlon, lons[~mask_lons]])
 
     if lats[0] > lats[-1]:
         array = np.flipud(array)
@@ -123,47 +121,48 @@ def realign_grid(array, lons, lats):
 
     return array, lons, lats
 
+
 def read_netcdf_grid(filename, return_grids=False, realign=False, resample=None):
     """Read a `netCDF` (.nc) grid from a given `filename` and return its data as a
     `MaskedArray`.
 
     Notes
     -----
-    If a `resample` tuple is passed with X and Y spacings (`spacingX`, `spacingY`), 
-    the gridded data in `filename` will be resampled with these resolutions. 
+    If a `resample` tuple is passed with X and Y spacings (`spacingX`, `spacingY`),
+    the gridded data in `filename` will be resampled with these resolutions.
 
-    By default, only the `MaskedArray` is returned to the user. However, if `return_grids` is 
-    set to `True`, the `MaskedArray` will be returned along with two additional arrays 
+    By default, only the `MaskedArray` is returned to the user. However, if `return_grids` is
+    set to `True`, the `MaskedArray` will be returned along with two additional arrays
     in a `tuple`:
 
     * A 1d `MaskedArray` containing the longitudes of the `netCDF` gridded data
-    * A 1d `MaskedArray` containing the latitudes of the `netCDF` gridded data 
-    
+    * A 1d `MaskedArray` containing the latitudes of the `netCDF` gridded data
+
     Parameters
     ----------
     filename : str
         Full path to the `netCDF` raster file.
-        
+
     return_grids : bool, optional, default=False
         If set to `True`, returns lon, lat arrays associated with the grid data.
 
     realign : bool, optional, default=False
         if set to `True`, realigns grid to -180/180 and flips the array if the
         latitudinal coordinates are decreasing.
-        
+
     resample : tuple, optional, default=None
-        If passed as `resample = (spacingX, spacingY)`, the given `netCDF` grid is resampled 
+        If passed as `resample = (spacingX, spacingY)`, the given `netCDF` grid is resampled
         with these x and y resolutions.
 
     Returns
     -------
     grid_z : MaskedArray
-        A `MaskedArray` containing the gridded data from the supplied netCDF4 `filename`. 
+        A `MaskedArray` containing the gridded data from the supplied netCDF4 `filename`.
         Entries' longitudes are re-aligned between -180 and 180 degrees.
 
     lon, lat : 1d MaskedArrays
-        `MaskedArrays` encasing longitude and latitude variables belonging to the 
-        supplied netCDF4 file. Longitudes are rescaled between -180 and 180 degrees. 
+        `MaskedArrays` encasing longitude and latitude variables belonging to the
+        supplied netCDF4 file. Longitudes are rescaled between -180 and 180 degrees.
         An example output of `cdf_lat` is:
 
             masked_array(data=[-90. , -89.9, -89.8, ...,  89.8,  89.9,  90. ], mask=False, fill_value=1e+20)
@@ -175,25 +174,36 @@ def read_netcdf_grid(filename, return_grids=False, realign=False, resample=None)
                 return label
         return None
 
-
     import netCDF4
 
     # possible permutations of lon/lat/z
-    label_lon = ['lon', 'lons', 'longitude', 'x', 'east', 'easting', 'eastings']
-    label_lat = ['lat', 'lats', 'latitude', 'y', 'north', 'northing', 'northings']
-    label_z   = ['z', 'data', 'values', 'Band1']
+    label_lon = ["lon", "lons", "longitude", "x", "east", "easting", "eastings"]
+    label_lat = ["lat", "lats", "latitude", "y", "north", "northing", "northings"]
+    label_z = ["z", "data", "values", "Band1"]
 
     # add capitalise and upper case permutations
-    label_lon = label_lon + [label.capitalize() for label in label_lon] + [label.upper() for label in label_lon]
-    label_lat = label_lat + [label.capitalize() for label in label_lat] + [label.upper() for label in label_lat]
-    label_z = label_z + [label.capitalize() for label in label_z] + [label.upper() for label in label_z]
+    label_lon = (
+        label_lon
+        + [label.capitalize() for label in label_lon]
+        + [label.upper() for label in label_lon]
+    )
+    label_lat = (
+        label_lat
+        + [label.capitalize() for label in label_lat]
+        + [label.upper() for label in label_lat]
+    )
+    label_z = (
+        label_z
+        + [label.capitalize() for label in label_z]
+        + [label.upper() for label in label_z]
+    )
 
     # open netCDF file and re-align from -180, 180 degrees
-    with netCDF4.Dataset(filename, 'r') as cdf:
+    with netCDF4.Dataset(filename, "r") as cdf:
         keys = cdf.variables.keys()
-        
+
         # find the names of variables
-        key_z   = find_label(keys, label_z)
+        key_z = find_label(keys, label_z)
         key_lon = find_label(keys, label_lon)
         key_lat = find_label(keys, label_lat)
 
@@ -204,8 +214,8 @@ def read_netcdf_grid(filename, return_grids=False, realign=False, resample=None)
 
         # extract data from cdf variables
         cdf_grid = cdf[key_z][:]
-        cdf_lon  = cdf[key_lon][:]
-        cdf_lat  = cdf[key_lat][:]
+        cdf_lon = cdf[key_lon][:]
+        cdf_lat = cdf[key_lat][:]
 
     if realign:
         # realign longitudes to -180/180 dateline
@@ -216,8 +226,8 @@ def read_netcdf_grid(filename, return_grids=False, realign=False, resample=None)
     # resample
     if resample is not None:
         spacingX, spacingY = resample
-        lon_grid = np.arange(cdf_lon.min(), cdf_lon.max()+spacingX, spacingX)
-        lat_grid = np.arange(cdf_lat.min(), cdf_lat.max()+spacingY, spacingY)
+        lon_grid = np.arange(cdf_lon.min(), cdf_lon.max() + spacingX, spacingX)
+        lat_grid = np.arange(cdf_lat.min(), cdf_lat.max() + spacingY, spacingY)
         lonq, latq = np.meshgrid(lon_grid, lat_grid)
         original_extent = (
             cdf_lon[0],
@@ -226,7 +236,8 @@ def read_netcdf_grid(filename, return_grids=False, realign=False, resample=None)
             cdf_lat[-1],
         )
         cdf_grid_z = sample_grid(
-            lonq, latq,
+            lonq,
+            latq,
             cdf_grid_z,
             method="nearest",
             extent=original_extent,
@@ -234,30 +245,31 @@ def read_netcdf_grid(filename, return_grids=False, realign=False, resample=None)
         )
         cdf_lon = lon_grid
         cdf_lat = lat_grid
-            
-    # Fix grids with 9e36 as the fill value for nan. 
-    #cdf_grid_z.fill_value = float('nan')
-    #cdf_grid_z.data[cdf_grid_z.data > 1e36] = cdf_grid_z.fill_value
-    
+
+    # Fix grids with 9e36 as the fill value for nan.
+    # cdf_grid_z.fill_value = float('nan')
+    # cdf_grid_z.data[cdf_grid_z.data > 1e36] = cdf_grid_z.fill_value
+
     if return_grids:
         return cdf_grid_z, cdf_lon, cdf_lat
     else:
         return cdf_grid_z
-    
-def write_netcdf_grid(filename, grid, extent=[-180,180,-90,90]):
-    """ Write geological data contained in a `grid` to a netCDF4 grid with a specified `filename`.
+
+
+def write_netcdf_grid(filename, grid, extent=[-180, 180, -90, 90]):
+    """Write geological data contained in a `grid` to a netCDF4 grid with a specified `filename`.
 
     Notes
     -----
-    The written netCDF4 grid has the same latitudinal and longitudinal (row and column) dimensions as `grid`. 
+    The written netCDF4 grid has the same latitudinal and longitudinal (row and column) dimensions as `grid`.
     It has three variables:
 
     * Latitudes of `grid` data
     * Longitudes of `grid` data
     * The data stored in `grid`
 
-    However, the latitudes and longitudes of the grid returned to the user are constrained to those 
-    specified in `extent`. 
+    However, the latitudes and longitudes of the grid returned to the user are constrained to those
+    specified in `extent`.
     By default, `extent` assumes a global latitudinal and longitudinal span: `extent=[-180,180,-90,90]`.
 
     Parameters
@@ -266,58 +278,58 @@ def write_netcdf_grid(filename, grid, extent=[-180,180,-90,90]):
         The full path (including a filename and the ".nc" extension) to save the created netCDF4 `grid` to.
 
     grid : array-like
-        An ndarray grid containing data to be written into a `netCDF` (.nc) file. Note: Rows correspond to 
+        An ndarray grid containing data to be written into a `netCDF` (.nc) file. Note: Rows correspond to
         the data's latitudes, while the columns correspond to the data's longitudes.
 
     extent : 1D numpy array, default=[-180,180,-90,90]
-        Four elements that specify the [min lon, max lon, min lat, max lat] to constrain the lat and lon 
-        variables of the netCDF grid to. If no extents are supplied, full global extent `[-180, 180, -90, 90]` 
-        is assumed. 
+        Four elements that specify the [min lon, max lon, min lat, max lat] to constrain the lat and lon
+        variables of the netCDF grid to. If no extents are supplied, full global extent `[-180, 180, -90, 90]`
+        is assumed.
 
     Returns
     -------
     A netCDF grid will be saved to the path specified in `filename`.
     """
     import netCDF4
-    
+
     nrows, ncols = np.shape(grid)
-    
+
     lon_grid = np.linspace(extent[0], extent[1], ncols)
     lat_grid = np.linspace(extent[2], extent[3], nrows)
-    
-    with netCDF4.Dataset(filename, 'w', driver=None) as cdf:
+
+    with netCDF4.Dataset(filename, "w", driver=None) as cdf:
         cdf.title = "Grid produced by gplately"
-        cdf.createDimension('lon', lon_grid.size)
-        cdf.createDimension('lat', lat_grid.size)
-        cdf_lon = cdf.createVariable('lon', lon_grid.dtype, ('lon',), zlib=True)
-        cdf_lat = cdf.createVariable('lat', lat_grid.dtype, ('lat',), zlib=True)
+        cdf.createDimension("lon", lon_grid.size)
+        cdf.createDimension("lat", lat_grid.size)
+        cdf_lon = cdf.createVariable("lon", lon_grid.dtype, ("lon",), zlib=True)
+        cdf_lat = cdf.createVariable("lat", lat_grid.dtype, ("lat",), zlib=True)
         cdf_lon[:] = lon_grid
         cdf_lat[:] = lat_grid
 
         # Units for Geographic Grid type
         cdf_lon.units = "degrees_east"
-        cdf_lon.standard_name = 'lon'
+        cdf_lon.standard_name = "lon"
         cdf_lon.actual_range = [lon_grid[0], lon_grid[-1]]
         cdf_lat.units = "degrees_north"
-        cdf_lat.standard_name = 'lat'
+        cdf_lat.standard_name = "lat"
         cdf_lat.actual_range = [lat_grid[0], lat_grid[-1]]
 
-        cdf_data = cdf.createVariable('z', grid.dtype, ('lat','lon'), zlib=True)
+        cdf_data = cdf.createVariable("z", grid.dtype, ("lat", "lon"), zlib=True)
         # netCDF4 uses the missing_value attribute as the default _FillValue
         # without this, _FillValue defaults to 9.969209968386869e+36
         cdf_data.missing_value = np.nan
-        cdf_data.standard_name = 'z'
-        #Ensure pygmt registers min and max z values properly
+        cdf_data.standard_name = "z"
+        # Ensure pygmt registers min and max z values properly
         cdf_data.actual_range = [np.nanmin(grid), np.nanmax(grid)]
 
-        cdf_data[:,:] = grid
+        cdf_data[:, :] = grid
 
 
 class RegularGridInterpolator(_RGI):
-    """A class to sample gridded data at a set of point coordinates using either linear or nearest-neighbour 
+    """A class to sample gridded data at a set of point coordinates using either linear or nearest-neighbour
     interpolation methods. It is a child class of `scipy 1.10`'s [`RegularGridInterpolator`](https://docs.scipy.org/doc/scipy/reference/generated/scipy.interpolate.RegularGridInterpolator.html) class.
 
-    This will only work for scipy version 1.10 onwards. 
+    This will only work for scipy version 1.10 onwards.
 
     Attributes
     ----------
@@ -330,25 +342,30 @@ class RegularGridInterpolator(_RGI):
         The method of interpolation to perform. Supported are "linear" and "nearest". Assumes “linear” by default.
     bounds_error : bool, default=false
         Choose whether to return a ValueError and terminate the interpolation if any provided sample points are out
-        of grid bounds. By default, it is set to `False`. In this case, all out-of-bound point values are replaced 
+        of grid bounds. By default, it is set to `False`. In this case, all out-of-bound point values are replaced
         with the `fill_value` (defined below) if supplied.
     fill_value : float, default=np.nan
         Used to replace point values that are out of grid bounds, provided that ‘bounds_error’ is false.
 
     """
-    def __init__(self, points, values, method="linear", bounds_error=False, fill_value=np.nan):
-        super(RegularGridInterpolator, self).__init__(points, values, method, bounds_error, fill_value)
+
+    def __init__(
+        self, points, values, method="linear", bounds_error=False, fill_value=np.nan
+    ):
+        super(RegularGridInterpolator, self).__init__(
+            points, values, method, bounds_error, fill_value
+        )
 
     def __call__(self, xi, method=None, return_indices=False, return_distances=False):
         """Samples gridded data at a set of point coordinates. Uses either a linear or nearest-neighbour interpolation `method`.
 
-        Uses the gridded data specified in the sample_grid method parameter. Note: if any provided sample points are out of 
-        grid bounds and a corresponding error message was suppressed (by specifying bounds_error=False), all out-of-bound 
+        Uses the gridded data specified in the sample_grid method parameter. Note: if any provided sample points are out of
+        grid bounds and a corresponding error message was suppressed (by specifying bounds_error=False), all out-of-bound
         point values are replaced with the self.fill_value attribute ascribed to the RegularGridInterpolator object (if it
         exists). Terminates otherwise.
 
         This is identical to scipy 1.10's RGI object.
-    
+
         Parameters
         ----------
         xi : ndarray of shape (..., ndim)
@@ -356,10 +373,10 @@ class RegularGridInterpolator(_RGI):
 
         method : str, default=None
             The method of interpolation to perform. Supported are "linear" and "Nearest". Assumes “linear” interpolation
-            if None provided.  
+            if None provided.
 
         return_indices : bool, default=False
-            Choose whether to return indices of neighbouring sampling points. 
+            Choose whether to return indices of neighbouring sampling points.
 
         return_distances : bool, default=False
             Choose whether to return normal distances between interpolated points and neighbouring sampling points.
@@ -368,16 +385,16 @@ class RegularGridInterpolator(_RGI):
         -------
         output_tuple : tuple of ndarrays
             The first ndarray in the output tuple holds the interpolated grid data. If sample point distances and indices are
-            required, these are returned as subsequent tuple elements. 
+            required, these are returned as subsequent tuple elements.
 
         Raises
         ------
         ValueError
             * Raised if the string method supplied is not “linear” or “nearest”.
-            * Raised if the provided sample points for interpolation (xi) do not have the same dimensions as the supplied grid. 
+            * Raised if the provided sample points for interpolation (xi) do not have the same dimensions as the supplied grid.
             * Raised if the provided sample points for interpolation include any point out of grid bounds. Alerts user which
             dimension (index) the point is located. Only raised if the RegularGridInterpolator attribute bounds_error is set
-            to True. If suppressed, out-of-bound points are replaced with a set fill_value. 
+            to True. If suppressed, out-of-bound points are replaced with a set fill_value.
         """
         method = self.method if method is None else method
         if method not in ["linear", "nearest"]:
@@ -388,14 +405,12 @@ class RegularGridInterpolator(_RGI):
         indices, norm_distances = self._find_indices(xi.T)
 
         if method == "linear":
-            result = self._evaluate_linear(indices,
-                                           norm_distances)
+            result = self._evaluate_linear(indices, norm_distances)
         elif method == "nearest":
-            result = self._evaluate_nearest(indices,
-                                            norm_distances)
+            result = self._evaluate_nearest(indices, norm_distances)
         if not self.bounds_error and self.fill_value is not None:
             result[out_of_bounds] = self.fill_value
-            
+
         interp_output = result.reshape(xi_shape[:-1] + self.values.shape[ndim:])
         output_tuple = [interp_output]
 
@@ -403,21 +418,23 @@ class RegularGridInterpolator(_RGI):
             output_tuple.append(indices)
         if return_distances:
             output_tuple.append(norm_distances)
-        
+
         if return_distances or return_indices:
             return tuple(output_tuple)
         else:
             return output_tuple[0]
 
-
     def _prepare_xi(self, xi):
         from scipy.interpolate.interpnd import _ndim_coords_from_arrays
+
         ndim = len(self.grid)
         xi = _ndim_coords_from_arrays(xi, ndim=ndim)
         if xi.shape[-1] != len(self.grid):
-            raise ValueError("The requested sample points xi have dimension "
-                             f"{xi.shape[-1]} but this "
-                             f"RegularGridInterpolator has dimension {ndim}")
+            raise ValueError(
+                "The requested sample points xi have dimension "
+                f"{xi.shape[-1]} but this "
+                f"RegularGridInterpolator has dimension {ndim}"
+            )
 
         xi_shape = xi.shape
         xi = xi.reshape(-1, xi_shape[-1])
@@ -427,16 +444,18 @@ class RegularGridInterpolator(_RGI):
 
         if self.bounds_error:
             for i, p in enumerate(xi.T):
-                if not np.logical_and(np.all(self.grid[i][0] <= p),
-                                      np.all(p <= self.grid[i][-1])):
-                    raise ValueError("One of the requested xi is out of bounds "
-                                     "in dimension %d" % i)
+                if not np.logical_and(
+                    np.all(self.grid[i][0] <= p), np.all(p <= self.grid[i][-1])
+                ):
+                    raise ValueError(
+                        "One of the requested xi is out of bounds "
+                        "in dimension %d" % i
+                    )
             out_of_bounds = None
         else:
             out_of_bounds = self._find_out_of_bounds(xi.T)
 
         return xi, xi_shape, ndim, nans, out_of_bounds
-
 
     def _find_out_of_bounds(self, xi):
         # check for out of bounds xi
@@ -447,11 +466,10 @@ class RegularGridInterpolator(_RGI):
             out_of_bounds += x > grid[-1]
         return out_of_bounds
 
-
     def _find_indices(self, xi):
-        """Index identifier outsourced from scipy 1.9's 
-        RegularGridInterpolator to ensure stable 
-        operations with all versions of scipy >1.0. 
+        """Index identifier outsourced from scipy 1.9's
+        RegularGridInterpolator to ensure stable
+        operations with all versions of scipy >1.0.
         """
         # find relevant edges between which xi are situated
         indices = []
@@ -467,21 +485,21 @@ class RegularGridInterpolator(_RGI):
             # compute norm_distances, incl length-1 grids,
             # where `grid[i+1] == grid[i]`
             denom = grid[i + 1] - grid[i]
-            with np.errstate(divide='ignore', invalid='ignore'):
+            with np.errstate(divide="ignore", invalid="ignore"):
                 norm_dist = np.where(denom != 0, (x - grid[i]) / denom, 0)
             norm_distances.append(norm_dist)
 
         return indices, norm_distances
 
-
     def _evaluate_linear(self, indices, norm_distances):
-        """Linear interpolator outsourced from scipy 1.9's 
-        RegularGridInterpolator to ensure stable 
+        """Linear interpolator outsourced from scipy 1.9's
+        RegularGridInterpolator to ensure stable
         operations with all versions of scipy >1.0.
         """
         import itertools
+
         # slice for broadcasting over trailing dimensions in self.values
-        vslice = (slice(None),) + (None,)*(self.values.ndim - len(indices))
+        vslice = (slice(None),) + (None,) * (self.values.ndim - len(indices))
 
         # Compute shifting up front before zipping everything together
         shift_norm_distances = [1 - yi for yi in norm_distances]
@@ -500,23 +518,23 @@ class RegularGridInterpolator(_RGI):
         # to get the terms in the above formula. This corresponds to iterating
         # over the vertices of a hypercube.
         hypercube = itertools.product(*zip(zipped1, zipped2))
-        values = 0.
+        values = 0.0
         for h in hypercube:
             edge_indices, weights = zip(*h)
-            weight = 1.
+            weight = 1.0
             for w in weights:
                 weight *= w
             values += np.asarray(self.values[edge_indices]) * weight[vslice]
         return values
 
-
     def _evaluate_nearest(self, indices, norm_distances):
-        """Nearest neighbour interpolator outsourced from scipy 1.9's 
-        RegularGridInterpolator to ensure stable 
-        operations with all versions of scipy >1.0. 
+        """Nearest neighbour interpolator outsourced from scipy 1.9's
+        RegularGridInterpolator to ensure stable
+        operations with all versions of scipy >1.0.
         """
-        idx_res = [np.where(yi <= .5, i, i + 1)
-                   for i, yi in zip(indices, norm_distances)]
+        idx_res = [
+            np.where(yi <= 0.5, i, i + 1) for i, yi in zip(indices, norm_distances)
+        ]
         return self.values[tuple(idx_res)]
 
 
@@ -738,9 +756,7 @@ def reconstruct_grid(
     if to_time == from_time:
         return grid
     elif rotation_model is None:
-        raise TypeError(
-            "`rotation_model` must be provided if `to_time` != `from_time`"
-        )
+        raise TypeError("`rotation_model` must be provided if `to_time` != `from_time`")
 
     extent = _parse_extent_origin(extent, origin)
     dtype = grid.dtype
@@ -772,14 +788,12 @@ def reconstruct_grid(
                 fill_value = tuple([0.0] * grid.shape[2])
     if isinstance(fill_value, str):
         if grid.ndim == 2:
-            raise TypeError(
-                "Invalid fill_value for 2D grid: {}".format(fill_value)
-            )
+            raise TypeError("Invalid fill_value for 2D grid: {}".format(fill_value))
         fill_value = np.array(matplotlib.colors.to_rgba(fill_value))
         if dtype.kind == "u":
             fill_value = (fill_value * 255.0).astype("u1")
             fill_value = np.clip(fill_value, 0, 255)
-        fill_value = tuple(fill_value)[:grid.shape[2]]
+        fill_value = tuple(fill_value)[: grid.shape[2]]
 
     if (
         grid.ndim == 3
@@ -805,9 +819,7 @@ def reconstruct_grid(
         )
     elif not isinstance(partitioning_features, pygplates.FeatureCollection):
         partitioning_features = pygplates.FeatureCollection(
-            pygplates.FeaturesFunctionArgument(
-                partitioning_features
-            ).get_features()
+            pygplates.FeaturesFunctionArgument(partitioning_features).get_features()
         )
 
     if not isinstance(rotation_model, pygplates.RotationModel):
@@ -818,9 +830,9 @@ def reconstruct_grid(
     m_lons, m_lats = np.meshgrid(lons, lats)
 
     valid_partitioning_features = [
-        i for i in partitioning_features
-        if i.is_valid_at_time(from_time)
-        and i.is_valid_at_time(to_time)
+        i
+        for i in partitioning_features
+        if i.is_valid_at_time(from_time) and i.is_valid_at_time(to_time)
     ]
     plate_ids = rasterise(
         features=valid_partitioning_features,
@@ -831,15 +843,18 @@ def reconstruct_grid(
         shape=grid.shape[:2],
         origin=origin,
     )
-    valid_output_mask = rasterise(
-        features=valid_partitioning_features,
-        rotation_model=rotation_model,
-        key="plate_id",
-        time=to_time,
-        extent=extent,
-        shape=grid.shape[:2],
-        origin=origin,
-    ) != -1
+    valid_output_mask = (
+        rasterise(
+            features=valid_partitioning_features,
+            rotation_model=rotation_model,
+            key="plate_id",
+            time=to_time,
+            extent=extent,
+            shape=grid.shape[:2],
+            origin=origin,
+        )
+        != -1
+    )
 
     valid_mask = plate_ids != -1
     valid_m_lons = m_lons[valid_mask]
@@ -879,9 +894,7 @@ def reconstruct_grid(
         angle = np.deg2rad(angle)
         vec = _lat_lon_to_vector(lat, lon, degrees=True)
         rotations_dict[plate] = vec * angle
-    rotations_array = np.array(
-        [rotations_dict[x] for x in unique_plate_ids]
-    )[inv]
+    rotations_array = np.array([rotations_dict[x] for x in unique_plate_ids])[inv]
     combined_rotations = _Rotation.from_rotvec(rotations_array)
 
     point_vecs = _lat_lon_to_vector(
@@ -906,10 +919,7 @@ def reconstruct_grid(
             workers=threads,
         )
     except TypeError as err:
-        if (
-            "Unexpected keyword argument" in err.args[0]
-            and "workers" in err.args[0]
-        ):
+        if "Unexpected keyword argument" in err.args[0] and "workers" in err.args[0]:
             _, indices = tree.query(
                 output_vecs,
                 k=1,
@@ -1158,8 +1168,7 @@ def _get_rasterise_values(
         dtype = np.int32
     else:
         raise ValueError(
-            "Invalid key: {}".format(key)
-            + "\nkey must be one of {}".format(valid_keys)
+            "Invalid key: {}".format(key) + "\nkey must be one of {}".format(valid_keys)
         )
     return values, fill_value, dtype
 
@@ -1276,16 +1285,11 @@ def _check_image_values(data):
     min_value = np.nanmin(data)
     max_value = np.nanmax(data)
     if min_value < 0:
-        raise ValueError(
-            "Invalid value for RGB(A) image: {}".format(min_value)
-        )
-    if (
-        (dtype.kind == "f" and max_value > 1.0)
-        or (dtype.kind == "u" and max_value > 255)
+        raise ValueError("Invalid value for RGB(A) image: {}".format(min_value))
+    if (dtype.kind == "f" and max_value > 1.0) or (
+        dtype.kind == "u" and max_value > 255
     ):
-        raise ValueError(
-            "Invalid value for RGB(A) image: {}".format(max_value)
-        )
+        raise ValueError("Invalid value for RGB(A) image: {}".format(max_value))
     return data
 
 
@@ -1312,9 +1316,7 @@ def _parse_extent_origin(extent, origin):
     if extent is None or extent == "global":
         extent = (-180.0, 180.0, -90.0, 90.0)
     elif len(extent) != 4:
-        raise TypeError(
-            "`extent` must be a four-element tuple, 'global', or None"
-        )
+        raise TypeError("`extent` must be a four-element tuple, 'global', or None")
     extent = tuple(float(i) for i in extent)
 
     if origin is not None:
@@ -1430,6 +1432,7 @@ class Raster(object):
         Reconstruct the raster from its initial time (`self.time`) to a new
         time.
     """
+
     def __init__(
         self,
         data=None,
@@ -1439,7 +1442,7 @@ class Raster(object):
         resample=None,
         time=0.0,
         origin=None,
-        **kwargs
+        **kwargs,
     ):
         """Constructs all necessary attributes for the raster object.
 
@@ -1509,8 +1512,7 @@ class Raster(object):
                 data = kwargs.pop("filename")
         if "array" in kwargs.keys():
             warnings.warn(
-                "`array` keyword argument has been deprecated, "
-                + "use `data` instead",
+                "`array` keyword argument has been deprecated, " + "use `data` instead",
                 DeprecationWarning,
             )
             if data is None:
@@ -1528,9 +1530,7 @@ class Raster(object):
         self._time = time
 
         if data is None:
-            raise TypeError(
-                "`data` argument (or `filename` or `array`) is required"
-            )
+            raise TypeError("`data` argument (or `filename` or `array`) is required")
         if isinstance(data, str):
             # Filename
             self._filename = data
@@ -1553,7 +1553,9 @@ class Raster(object):
             self._lats = np.linspace(extent[2], extent[3], self.data.shape[0])
             if realign:
                 # realign to -180,180 and flip grid
-                self._data, self._lons, self._lats = realign_grid(self._data, self._lons, self._lats)
+                self._data, self._lons, self._lats = realign_grid(
+                    self._data, self._lons, self._lats
+                )
 
         if (not isinstance(data, str)) and (resample is not None):
             self.resample(*resample, inplace=True)
@@ -1692,16 +1694,17 @@ class Raster(object):
                 reconstruction = _PlateReconstruction(reconstruction)
         self._plate_reconstruction = reconstruction
 
-
     def copy(self):
-        """ Returns a copy of the Raster
-        
+        """Returns a copy of the Raster
+
         Returns
         -------
         Raster
             A copy of the current Raster object
         """
-        return Raster(self.data.copy(), self.plate_reconstruction, self.extent, self.time)
+        return Raster(
+            self.data.copy(), self.plate_reconstruction, self.extent, self.time
+        )
 
     def interpolate(
         self,
@@ -1762,27 +1765,27 @@ class Raster(object):
         )
 
     def resample(self, spacingX, spacingY, method="linear", inplace=False):
-        """Resample the `grid` passed to the `Raster` object with a new `spacingX` and 
+        """Resample the `grid` passed to the `Raster` object with a new `spacingX` and
         `spacingY` using linear interpolation.
 
         Notes
         -----
         Ultimately, `resample` changes the lat-lon resolution of the gridded data. The
-        larger the x and y spacings given are, the larger the pixellation of raster data. 
+        larger the x and y spacings given are, the larger the pixellation of raster data.
 
         `resample` creates new latitude and longitude arrays with specified spacings in the
-        X and Y directions (`spacingX` and `spacingY`). These arrays are linearly interpolated 
-        into a new raster. If `inplace` is set to `True`, the respaced latitude array, longitude 
+        X and Y directions (`spacingX` and `spacingY`). These arrays are linearly interpolated
+        into a new raster. If `inplace` is set to `True`, the respaced latitude array, longitude
         array and raster will inplace the ones currently attributed to the `Raster` object.
 
         Parameters
         ----------
         spacingX, spacingY : ndarray
-            Specify the spacing in the X and Y directions with which to resample. The larger 
+            Specify the spacing in the X and Y directions with which to resample. The larger
             `spacingX` and `spacingY` are, the larger the raster pixels become (less resolved).
-            Note: to keep the size of the raster consistent, set `spacingX = spacingY`; 
-            otherwise, if for example `spacingX > spacingY`, the raster will appear stretched 
-            longitudinally. 
+            Note: to keep the size of the raster consistent, set `spacingX = spacingY`;
+            otherwise, if for example `spacingX > spacingY`, the raster will appear stretched
+            longitudinally.
 
         method : str or int; default: 'linear'
             The order of spline interpolation. Must be an integer in the range
@@ -1790,9 +1793,9 @@ class Raster(object):
             respectively.
 
         inplace : bool, default=False
-            Choose to overwrite the data (the `self.data` attribute), latitude array 
-            (`self.lats`) and longitude array (`self.lons`) currently attributed to the 
-            `Raster` object. 
+            Choose to overwrite the data (the `self.data` attribute), latitude array
+            (`self.lats`) and longitude array (`self.lons`) currently attributed to the
+            `Raster` object.
 
         Returns
         -------
@@ -1805,8 +1808,8 @@ class Raster(object):
         if self.origin == "upper":
             spacingY *= -1.0
 
-        lons = np.arange(self.extent[0], self.extent[1]+spacingX, spacingX)
-        lats = np.arange(self.extent[2], self.extent[3]+spacingY, spacingY)
+        lons = np.arange(self.extent[0], self.extent[1] + spacingX, spacingX)
+        lats = np.arange(self.extent[2], self.extent[3] + spacingY, spacingY)
         lonq, latq = np.meshgrid(lons, lats)
 
         data = self.interpolate(lonq, latq, method=method)
@@ -1817,19 +1820,18 @@ class Raster(object):
         else:
             return Raster(data, self.plate_reconstruction, self.extent, self.time)
 
-
     def resize(self, resX, resY, inplace=False, method="linear", return_array=False):
-        """Resize the grid passed to the `Raster` object with a new x and y resolution 
-        (`resX` and `resY`) using linear interpolation. 
+        """Resize the grid passed to the `Raster` object with a new x and y resolution
+        (`resX` and `resY`) using linear interpolation.
 
         Notes
         -----
         Ultimately, `resize` "stretches" a raster in the x and y directions. The larger
         the resolutions in x and y, the more stretched the raster appears in x and y.
 
-        It creates new latitude and longitude arrays with specific resolutions in 
+        It creates new latitude and longitude arrays with specific resolutions in
         the X and Y directions (`resX` and `resY`). These arrays are linearly interpolated
-        into a new raster. If `inplace` is set to `True`, the resized latitude, longitude 
+        into a new raster. If `inplace` is set to `True`, the resized latitude, longitude
         arrays and raster will inplace the ones currently attributed to the `Raster` object.
 
         Parameters
@@ -1845,9 +1847,9 @@ class Raster(object):
             respectively.
 
         inplace : bool, default=False
-            Choose to overwrite the data (the `self.data` attribute), latitude array 
-            (`self.lats`) and longitude array (`self.lons`) currently attributed to the 
-            `Raster` object. 
+            Choose to overwrite the data (the `self.data` attribute), latitude array
+            (`self.lats`) and longitude array (`self.lons`) currently attributed to the
+            `Raster` object.
 
         return_array : bool, default False
             Return a `numpy.ndarray`, rather than a `Raster`.
@@ -1873,9 +1875,8 @@ class Raster(object):
         else:
             return Raster(data, self.plate_reconstruction, self.extent, self.time)
 
-
     def fill_NaNs(self, inplace=False, return_array=False):
-        """Search raster for invalid ‘data’ cells containing NaN-type entries replaces them 
+        """Search raster for invalid ‘data’ cells containing NaN-type entries replaces them
         with the value of their nearest valid data cells.
 
         Parameters
@@ -1901,12 +1902,10 @@ class Raster(object):
         else:
             return Raster(data, self.plate_reconstruction, self.extent, self.time)
 
-
     def save_to_netcdf4(self, filename):
-        """ Saves the grid attributed to the `Raster` object to the given `filename` (including
+        """Saves the grid attributed to the `Raster` object to the given `filename` (including
         the ".nc" extension) in netCDF4 format."""
         write_netcdf_grid(str(filename), self.data, self.extent)
-
 
     def reconstruct(
         self,
@@ -1979,7 +1978,7 @@ class Raster(object):
             )
         if partitioning_features is None:
             partitioning_features = self.plate_reconstruction.static_polygons
-        result =  reconstruct_grid(
+        result = reconstruct_grid(
             grid=self.data,
             partitioning_features=partitioning_features,
             rotation_model=self.plate_reconstruction.rotation_model,
@@ -2008,7 +2007,6 @@ class Raster(object):
                 origin=self.origin,
             )
         return result
-
 
     def imshow(self, ax=None, projection=None, **kwargs):
         """Display raster data.
@@ -2084,20 +2082,19 @@ class Raster(object):
 
     plot = imshow
 
-
     def rotate_reference_frames(
         self,
-        grid_spacing_degrees, 
+        grid_spacing_degrees,
         reconstruction_time,
         from_rotation_features_or_model,  # filename(s), or pyGPlates feature(s)/collection(s) or a RotationModel
-        to_rotation_features_or_model,    # filename(s), or pyGPlates feature(s)/collection(s) or a RotationModel
+        to_rotation_features_or_model,  # filename(s), or pyGPlates feature(s)/collection(s) or a RotationModel
         from_rotation_reference_plate=0,
         to_rotation_reference_plate=0,
         non_reference_plate=701,
-        output_name=None
+        output_name=None,
     ):
-        """Rotate a grid defined in one plate model reference frame 
-        within a gplately.Raster object to another plate 
+        """Rotate a grid defined in one plate model reference frame
+        within a gplately.Raster object to another plate
         reconstruction model reference frame.
 
         Parameters
@@ -2107,11 +2104,11 @@ class Raster(object):
         reconstruction_time : float
             The time at which to rotate the input grid.
         from_rotation_features_or_model : str, list of str, or instance of pygplates.RotationModel
-            A filename, or a list of filenames, or a pyGPlates 
+            A filename, or a list of filenames, or a pyGPlates
             RotationModel object that defines the rotation model
             that the input grid is currently associated with.
         to_rotation_features_or_model : str, list of str, or instance of pygplates.RotationModel
-            A filename, or a list of filenames, or a pyGPlates 
+            A filename, or a list of filenames, or a pyGPlates
             RotationModel object that defines the rotation model
             that the input grid shall be rotated with.
         from_rotation_reference_plate : int, default = 0
@@ -2121,7 +2118,7 @@ class Raster(object):
             The desired reference plate for the plate model the grid
             is being rotated to. Defaults to the anchor plate 0.
         non_reference_plate : int, default = 701
-            An arbitrary placeholder reference frame with which 
+            An arbitrary placeholder reference frame with which
             to define the "from" and "to" reference frames.
         output_name : str, default None
             If passed, the rotated grid is saved as a netCDF grid to this filename.
@@ -2134,26 +2131,21 @@ class Raster(object):
 
         input_positions = []
 
-        # Create the pygplates.FiniteRotation that rotates 
+        # Create the pygplates.FiniteRotation that rotates
         # between the two reference frames.
-        from_rotation_model = pygplates.RotationModel(
-            from_rotation_features_or_model
-        )
-        to_rotation_model = pygplates.RotationModel(
-            to_rotation_features_or_model
-        )
+        from_rotation_model = pygplates.RotationModel(from_rotation_features_or_model)
+        to_rotation_model = pygplates.RotationModel(to_rotation_features_or_model)
         from_rotation = from_rotation_model.get_rotation(
-            reconstruction_time, 
-            non_reference_plate, 
-            anchor_plate_id=from_rotation_reference_plate
+            reconstruction_time,
+            non_reference_plate,
+            anchor_plate_id=from_rotation_reference_plate,
         )
         to_rotation = to_rotation_model.get_rotation(
-            reconstruction_time, 
-            non_reference_plate, 
-            anchor_plate_id=to_rotation_reference_plate
+            reconstruction_time,
+            non_reference_plate,
+            anchor_plate_id=to_rotation_reference_plate,
         )
         reference_frame_conversion_rotation = to_rotation * from_rotation.get_inverse()
-
 
         # Resize the input grid to the specified output resolution before rotating
         resX = _deg2pixels(grid_spacing_degrees, self.extent[0], self.extent[1])
@@ -2166,7 +2158,9 @@ class Raster(object):
         llats = llats.ravel()
 
         # Convert lon-lat points of Raster grid to pyGPlates points
-        input_points = pygplates.MultiPointOnSphere((lat, lon) for lon, lat in zip(llons, llats))
+        input_points = pygplates.MultiPointOnSphere(
+            (lat, lon) for lon, lat in zip(llons, llats)
+        )
         # Get grid values of the resized Raster object
         values = np.array(resized_input_grid.data).ravel()
 
@@ -2185,8 +2179,14 @@ class Raster(object):
         # Use the extent of the original Raster object
         extent_globe = self.extent
 
-        resX = int(np.floor((extent_globe[1] - extent_globe[0]) / grid_spacing_degrees)) + 1
-        resY = int(np.floor((extent_globe[3] - extent_globe[2]) / grid_spacing_degrees)) + 1
+        resX = (
+            int(np.floor((extent_globe[1] - extent_globe[0]) / grid_spacing_degrees))
+            + 1
+        )
+        resY = (
+            int(np.floor((extent_globe[3] - extent_globe[2]) / grid_spacing_degrees))
+            + 1
+        )
 
         grid_lon = np.linspace(extent_globe[0], extent_globe[1], resX)
         grid_lat = np.linspace(extent_globe[2], extent_globe[3], resY)
@@ -2195,7 +2195,7 @@ class Raster(object):
 
         # Interpolate lons, lats and zvals over a regular grid using nearest
         # neighbour interpolation
-        Z = griddata_sphere((out_lon, out_lat), zdata, (X, Y), method='nearest')
+        Z = griddata_sphere((out_lon, out_lat), zdata, (X, Y), method="nearest")
 
         # Write output grid to netCDF if requested.
         if output_name:
@@ -2203,10 +2203,79 @@ class Raster(object):
 
         return Raster(data=Z)
 
+    def query(self, lons, lats, region_of_interest=None):
+        """Given a set of location coordinates, return the grid values at these locations
+
+        Parameters
+        ----------
+        lons: list
+            a list of longitudes of the location coordinates
+        lats: list
+            a list of latitude of the location coordinates
+        region_of_interest: float
+            region of inerest in km
+
+
+        Returns
+        -------
+        list
+            a list of grid values for the given locations.
+
+        """
+
+        def degree_to_km(degree, radius=pygplates.Earth.mean_radius_in_kms):
+            """convert degree to km"""
+            return math.radians(degree) * radius
+
+        def km_to_degree(km, radius=pygplates.Earth.mean_radius_in_kms):
+            """convert km to degree"""
+            math.degrees(km / radius)
+
+        if not hasattr(self, "spatial_cKDTree"):
+            # build the spatial tree if the tree has not been built yet
+            x0 = self.extent[0]
+            x1 = self.extent[1]
+            y0 = self.extent[2]
+            y1 = self.extent[3]
+            yn = self.data.shape[0]
+            xn = self.data.shape[1]
+            # we assume the grid is Grid-line Registration, not Pixel Registration
+            # http://www.soest.hawaii.edu/pwessel/courses/gg710-01/GMT_grid.pdf
+            # TODO: support both Grid-line and Pixel Registration
+            grid_x, grid_y = np.meshgrid(
+                np.linspace(x0, x1, xn), np.linspace(y0, y1, yn)
+            )
+            self.grid_cell_radius = (
+                math.sqrt(math.pow(((y0 - y1) / yn), 2) + math.pow(((x0 - x1) / xn), 2))
+                / 2
+            )
+            self.data_mask = ~np.isnan(self.data)
+            grid_points = [
+                pygplates.PointOnSphere((float(p[1]), float(p[0]))).to_xyz()
+                for p in np.dstack((grid_x, grid_y))[self.data_mask]
+            ]
+            # build the spatial tree
+            self.spatial_cKDTree = _cKDTree(grid_points)
+
+        query_points = [
+            pygplates.PointOnSphere((float(p[1]), float(p[0]))).to_xyz()
+            for p in zip(lons, lats)
+        ]
+
+        if region_of_interest is None:
+            roi = degree_to_km(self.grid_cell_radius, radius=1)
+        else:
+            roi = region_of_interest
+        print(f"roi: {roi}")
+
+        dists, indices = self.spatial_cKDTree.query(
+            query_points, k=1, distance_upper_bound=roi
+        )
+        # print(dists, indices)
+        return np.concatenate((self.data[self.data_mask], [math.nan]))[indices]
 
     def __array__(self):
         return np.array(self.data)
-
 
     def __add__(self, other):
         if isinstance(other, Raster):
@@ -2220,10 +2289,8 @@ class Raster(object):
         new_raster.data = new_data
         return new_raster
 
-
     def __radd__(self, other):
         return self + other
-
 
     def __sub__(self, other):
         if isinstance(other, Raster):
@@ -2237,7 +2304,6 @@ class Raster(object):
         new_raster.data = new_data
         return new_raster
 
-
     def __rsub__(self, other):
         if isinstance(other, Raster):
             # Return array, since we don't know which Raster
@@ -2249,7 +2315,6 @@ class Raster(object):
         new_data = other - self.data
         new_raster.data = new_data
         return new_raster
-
 
     def __mul__(self, other):
         if isinstance(other, Raster):
@@ -2263,10 +2328,8 @@ class Raster(object):
         new_raster.data = new_data
         return new_raster
 
-
     def __rmul__(self, other):
         return self * other
-
 
     def __truediv__(self, other):
         if isinstance(other, Raster):
@@ -2280,7 +2343,6 @@ class Raster(object):
         new_raster.data = new_data
         return new_raster
 
-
     def __rtruediv__(self, other):
         if isinstance(other, Raster):
             # Return array, since we don't know which Raster
@@ -2292,7 +2354,6 @@ class Raster(object):
         new_data = other / self.data
         new_raster.data = new_data
         return new_raster
-
 
     def __floordiv__(self, other):
         if isinstance(other, Raster):
@@ -2306,7 +2367,6 @@ class Raster(object):
         new_raster.data = new_data
         return new_raster
 
-
     def __rfloordiv__(self, other):
         if isinstance(other, Raster):
             # Return array, since we don't know which Raster
@@ -2318,7 +2378,6 @@ class Raster(object):
         new_data = other // self.data
         new_raster.data = new_data
         return new_raster
-
 
     def __mod__(self, other):
         if isinstance(other, Raster):
@@ -2332,7 +2391,6 @@ class Raster(object):
         new_raster.data = new_data
         return new_raster
 
-
     def __rmod__(self, other):
         if isinstance(other, Raster):
             # Return array, since we don't know which Raster
@@ -2345,32 +2403,29 @@ class Raster(object):
         new_raster.data = new_data
         return new_raster
 
-
     def __pow__(self, other):
         if isinstance(other, Raster):
             # Return array, since we don't know which Raster
             # to take properties from
-            return self.data ** other.data
+            return self.data**other.data
 
         # Return Raster with new data
         new_raster = self.copy()
-        new_data = self.data ** other
+        new_data = self.data**other
         new_raster.data = new_data
         return new_raster
-
 
     def __rpow__(self, other):
         if isinstance(other, Raster):
             # Return array, since we don't know which Raster
             # to take properties from
-            return other.data ** self.data
+            return other.data**self.data
 
         # Return Raster with new data
         new_raster = self.copy()
-        new_data = other ** self.data
+        new_data = other**self.data
         new_raster.data = new_data
         return new_raster
-
 
 
 # class TimeRaster(Raster):
