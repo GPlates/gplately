@@ -2213,7 +2213,8 @@ class Raster(object):
         lats: list
             a list of latitude of the location coordinates
         region_of_interest: float
-            region of inerest in km
+            the radius of the region of interest in km
+            this is the arch length. we need to calculate the straight distance between the two points in 3D space from this arch length.
 
 
         Returns
@@ -2222,14 +2223,6 @@ class Raster(object):
             a list of grid values for the given locations.
 
         """
-
-        def degree_to_km(degree, radius=pygplates.Earth.mean_radius_in_kms):
-            """convert degree to km"""
-            return math.radians(degree) * radius
-
-        def km_to_degree(km, radius=pygplates.Earth.mean_radius_in_kms):
-            """convert km to degree"""
-            math.degrees(km / radius)
 
         if not hasattr(self, "spatial_cKDTree"):
             # build the spatial tree if the tree has not been built yet
@@ -2245,6 +2238,7 @@ class Raster(object):
             grid_x, grid_y = np.meshgrid(
                 np.linspace(x0, x1, xn), np.linspace(y0, y1, yn)
             )
+            # in degrees
             self.grid_cell_radius = (
                 math.sqrt(math.pow(((y0 - y1) / yn), 2) + math.pow(((x0 - x1) / xn), 2))
                 / 2
@@ -2254,7 +2248,7 @@ class Raster(object):
                 pygplates.PointOnSphere((float(p[1]), float(p[0]))).to_xyz()
                 for p in np.dstack((grid_x, grid_y))[self.data_mask]
             ]
-            # build the spatial tree
+            print("building the spatial tree...")
             self.spatial_cKDTree = _cKDTree(grid_points)
 
         query_points = [
@@ -2263,16 +2257,83 @@ class Raster(object):
         ]
 
         if region_of_interest is None:
-            roi = degree_to_km(self.grid_cell_radius, radius=1)
+            # convert the arch length(in degrees) to direct length in 3D space
+            roi = 2 * math.sin(math.radians(self.grid_cell_radius / 2.0))
         else:
-            roi = region_of_interest
-        print(f"roi: {roi}")
+            roi = 2 * math.sin(
+                region_of_interest / pygplates.Earth.mean_radius_in_kms / 2.0
+            )
 
         dists, indices = self.spatial_cKDTree.query(
             query_points, k=1, distance_upper_bound=roi
         )
         # print(dists, indices)
         return np.concatenate((self.data[self.data_mask], [math.nan]))[indices]
+
+    def clip_by_extent(self, extent):
+        """clip the raster according to a given extent [x_min, x_max, y_min, y_max]
+        the extent of the returned raster may be slightly bigger than the given extent.
+        this happens when the border of the given extent fall between two gird lines.
+
+        """
+        if (
+            extent[0] >= extent[1]
+            or extent[2] >= extent[3]
+            or extent[0] < -180
+            or extent[1] > 180
+            or extent[2] < -90
+            or extent[3] > 90
+        ):
+            raise Exception(f"Invalid extent: {extent}")
+        if (
+            extent[0] < self.extent[0]
+            or extent[1] > self.extent[1]
+            or extent[2] < self.extent[2]
+            or extent[3] > self.extent[3]
+        ):
+            raise Exception(
+                f"The given extent is out of scope. {extent} -- {self.extent}"
+            )
+        y_len, x_len = self.data.shape
+        # print(x_len, y_len)
+        x0 = math.floor(
+            (extent[0] - self.extent[0])
+            / (self.extent[1] - self.extent[0])
+            * (x_len - 1)
+        )
+        x1 = math.ceil(
+            (extent[1] - self.extent[0])
+            / (self.extent[1] - self.extent[0])
+            * (x_len - 1)
+        )
+        # print(x0, x1)
+        y0 = math.floor(
+            (extent[2] - self.extent[2])
+            / (self.extent[3] - self.extent[2])
+            * (y_len - 1)
+        )
+        y1 = math.ceil(
+            (extent[3] - self.extent[2])
+            / (self.extent[3] - self.extent[2])
+            * (y_len - 1)
+        )
+        # print(y0, y1)
+        new_extent = [
+            x0 / (x_len - 1) * (self.extent[1] - self.extent[0]) - 180,
+            x1 / (x_len - 1) * (self.extent[1] - self.extent[0]) - 180,
+            y0 / (y_len - 1) * (self.extent[3] - self.extent[2]) - 90,
+            y1 / (y_len - 1) * (self.extent[3] - self.extent[2]) - 90,
+        ]
+        # print(new_extent)
+        # print(self.data[y0 : y1 + 1, x0 : x1 + 1].shape)
+        return Raster(
+            data=self.data[y0 : y1 + 1, x0 : x1 + 1],
+            extent=new_extent,
+        )
+
+    def clip_by_polygon(self, polygon):
+        """TODO:"""
+        pass
 
     def __array__(self):
         return np.array(self.data)

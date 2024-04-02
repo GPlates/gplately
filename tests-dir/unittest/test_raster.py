@@ -19,14 +19,9 @@ def main(show=True):
     topology_features = plate_model.get_topologies()
     static_polygons = plate_model.get_static_polygons()
 
-    coastlines = plate_model.get_layer("Coastlines")
-    continents = plate_model.get_layer("ContinentalPolygons")
-    COBs = plate_model.get_layer("COBs")
-
     model = gplately.PlateReconstruction(
         rotation_model, topology_features, static_polygons
     )
-    gplot = gplately.PlotTopologies(model, coastlines, continents, COBs)
 
     age_grid_raster = gplately.Raster(
         data=plate_model.get_raster("AgeGrids", 100),
@@ -36,18 +31,34 @@ def main(show=True):
 
     xx, yy = np.meshgrid(np.linspace(-180, 180, 180), np.linspace(-90, 90, 90))
 
-    values = age_grid_raster.query(lons=xx.flatten(), lats=yy.flatten())
-    print(values[~np.isnan(values)])
+    values = age_grid_raster.query(
+        lons=xx.flatten(), lats=yy.flatten(), region_of_interest=8.8
+    )
+
+    # print(values[~np.isnan(values)])
 
     fig = plt.figure(figsize=(10, 5), dpi=96)
-    ax = fig.add_subplot(111, projection=ccrs.PlateCarree())
+    ax_1 = fig.add_subplot(121, projection=ccrs.PlateCarree())
 
-    ax.scatter(
+    # plot the values being returned from raster query
+    ax_1.scatter(
         xx.flatten(),
         yy.flatten(),
         c=values,
         marker="s",
         s=1,
+        transform=ccrs.PlateCarree(),
+        cmap="YlGnBu",
+        vmax=200,
+        vmin=0,
+    )
+
+    clipped_raster = age_grid_raster.clip_by_extent([-50, 50, -80, 40])
+
+    # plot the clipped raster
+    ax_2 = fig.add_subplot(122, projection=ccrs.PlateCarree())
+    clipped_raster.plot(
+        ax=ax_2,
         transform=ccrs.PlateCarree(),
         cmap="YlGnBu",
         vmax=200,
