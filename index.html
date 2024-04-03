@@ -601,7 +601,13 @@ __all__ = [
     &#34;get_valid_geometries&#34;,
     # Constants
     &#34;EARTH_RADIUS&#34;,
-]</code></pre>
+]
+
+from .utils import setup_logging, turn_on_debug_logging
+
+setup_logging()
+del setup_logging
+del utils</code></pre>
 </details>
 </section>
 <section>
@@ -677,6 +683,10 @@ working with point data, and calculating plate …</p></div>
 <dt><code class="name"><a title="gplately.tools" href="tools.html">gplately.tools</a></code></dt>
 <dd>
 <div class="desc"><p>A module that offers tools for executing common geological calculations, mathematical conversions and numpy conversions.</p></div>
+</dd>
+<dt><code class="name"><a title="gplately.utils" href="utils.html">gplately.utils</a></code></dt>
+<dd>
+<div class="desc"></div>
 </dd>
 </dl>
 </section>
@@ -18458,6 +18468,7 @@ reconstruction.</dd>
         Reconstruct the raster from its initial time (`self.time`) to a new
         time.
     &#34;&#34;&#34;
+
     def __init__(
         self,
         data=None,
@@ -18467,7 +18478,7 @@ reconstruction.</dd>
         resample=None,
         time=0.0,
         origin=None,
-        **kwargs
+        **kwargs,
     ):
         &#34;&#34;&#34;Constructs all necessary attributes for the raster object.
 
@@ -18537,8 +18548,7 @@ reconstruction.</dd>
                 data = kwargs.pop(&#34;filename&#34;)
         if &#34;array&#34; in kwargs.keys():
             warnings.warn(
-                &#34;`array` keyword argument has been deprecated, &#34;
-                + &#34;use `data` instead&#34;,
+                &#34;`array` keyword argument has been deprecated, &#34; + &#34;use `data` instead&#34;,
                 DeprecationWarning,
             )
             if data is None:
@@ -18556,9 +18566,7 @@ reconstruction.</dd>
         self._time = time
 
         if data is None:
-            raise TypeError(
-                &#34;`data` argument (or `filename` or `array`) is required&#34;
-            )
+            raise TypeError(&#34;`data` argument (or `filename` or `array`) is required&#34;)
         if isinstance(data, str):
             # Filename
             self._filename = data
@@ -18581,7 +18589,9 @@ reconstruction.</dd>
             self._lats = np.linspace(extent[2], extent[3], self.data.shape[0])
             if realign:
                 # realign to -180,180 and flip grid
-                self._data, self._lons, self._lats = realign_grid(self._data, self._lons, self._lats)
+                self._data, self._lons, self._lats = realign_grid(
+                    self._data, self._lons, self._lats
+                )
 
         if (not isinstance(data, str)) and (resample is not None):
             self.resample(*resample, inplace=True)
@@ -18720,16 +18730,17 @@ reconstruction.</dd>
                 reconstruction = _PlateReconstruction(reconstruction)
         self._plate_reconstruction = reconstruction
 
-
     def copy(self):
-        &#34;&#34;&#34; Returns a copy of the Raster
-        
+        &#34;&#34;&#34;Returns a copy of the Raster
+
         Returns
         -------
         Raster
             A copy of the current Raster object
         &#34;&#34;&#34;
-        return Raster(self.data.copy(), self.plate_reconstruction, self.extent, self.time)
+        return Raster(
+            self.data.copy(), self.plate_reconstruction, self.extent, self.time
+        )
 
     def interpolate(
         self,
@@ -18790,27 +18801,27 @@ reconstruction.</dd>
         )
 
     def resample(self, spacingX, spacingY, method=&#34;linear&#34;, inplace=False):
-        &#34;&#34;&#34;Resample the `grid` passed to the `Raster` object with a new `spacingX` and 
+        &#34;&#34;&#34;Resample the `grid` passed to the `Raster` object with a new `spacingX` and
         `spacingY` using linear interpolation.
 
         Notes
         -----
         Ultimately, `resample` changes the lat-lon resolution of the gridded data. The
-        larger the x and y spacings given are, the larger the pixellation of raster data. 
+        larger the x and y spacings given are, the larger the pixellation of raster data.
 
         `resample` creates new latitude and longitude arrays with specified spacings in the
-        X and Y directions (`spacingX` and `spacingY`). These arrays are linearly interpolated 
-        into a new raster. If `inplace` is set to `True`, the respaced latitude array, longitude 
+        X and Y directions (`spacingX` and `spacingY`). These arrays are linearly interpolated
+        into a new raster. If `inplace` is set to `True`, the respaced latitude array, longitude
         array and raster will inplace the ones currently attributed to the `Raster` object.
 
         Parameters
         ----------
         spacingX, spacingY : ndarray
-            Specify the spacing in the X and Y directions with which to resample. The larger 
+            Specify the spacing in the X and Y directions with which to resample. The larger
             `spacingX` and `spacingY` are, the larger the raster pixels become (less resolved).
-            Note: to keep the size of the raster consistent, set `spacingX = spacingY`; 
-            otherwise, if for example `spacingX &gt; spacingY`, the raster will appear stretched 
-            longitudinally. 
+            Note: to keep the size of the raster consistent, set `spacingX = spacingY`;
+            otherwise, if for example `spacingX &gt; spacingY`, the raster will appear stretched
+            longitudinally.
 
         method : str or int; default: &#39;linear&#39;
             The order of spline interpolation. Must be an integer in the range
@@ -18818,9 +18829,9 @@ reconstruction.</dd>
             respectively.
 
         inplace : bool, default=False
-            Choose to overwrite the data (the `self.data` attribute), latitude array 
-            (`self.lats`) and longitude array (`self.lons`) currently attributed to the 
-            `Raster` object. 
+            Choose to overwrite the data (the `self.data` attribute), latitude array
+            (`self.lats`) and longitude array (`self.lons`) currently attributed to the
+            `Raster` object.
 
         Returns
         -------
@@ -18833,8 +18844,8 @@ reconstruction.</dd>
         if self.origin == &#34;upper&#34;:
             spacingY *= -1.0
 
-        lons = np.arange(self.extent[0], self.extent[1]+spacingX, spacingX)
-        lats = np.arange(self.extent[2], self.extent[3]+spacingY, spacingY)
+        lons = np.arange(self.extent[0], self.extent[1] + spacingX, spacingX)
+        lats = np.arange(self.extent[2], self.extent[3] + spacingY, spacingY)
         lonq, latq = np.meshgrid(lons, lats)
 
         data = self.interpolate(lonq, latq, method=method)
@@ -18845,19 +18856,18 @@ reconstruction.</dd>
         else:
             return Raster(data, self.plate_reconstruction, self.extent, self.time)
 
-
     def resize(self, resX, resY, inplace=False, method=&#34;linear&#34;, return_array=False):
-        &#34;&#34;&#34;Resize the grid passed to the `Raster` object with a new x and y resolution 
-        (`resX` and `resY`) using linear interpolation. 
+        &#34;&#34;&#34;Resize the grid passed to the `Raster` object with a new x and y resolution
+        (`resX` and `resY`) using linear interpolation.
 
         Notes
         -----
         Ultimately, `resize` &#34;stretches&#34; a raster in the x and y directions. The larger
         the resolutions in x and y, the more stretched the raster appears in x and y.
 
-        It creates new latitude and longitude arrays with specific resolutions in 
+        It creates new latitude and longitude arrays with specific resolutions in
         the X and Y directions (`resX` and `resY`). These arrays are linearly interpolated
-        into a new raster. If `inplace` is set to `True`, the resized latitude, longitude 
+        into a new raster. If `inplace` is set to `True`, the resized latitude, longitude
         arrays and raster will inplace the ones currently attributed to the `Raster` object.
 
         Parameters
@@ -18873,9 +18883,9 @@ reconstruction.</dd>
             respectively.
 
         inplace : bool, default=False
-            Choose to overwrite the data (the `self.data` attribute), latitude array 
-            (`self.lats`) and longitude array (`self.lons`) currently attributed to the 
-            `Raster` object. 
+            Choose to overwrite the data (the `self.data` attribute), latitude array
+            (`self.lats`) and longitude array (`self.lons`) currently attributed to the
+            `Raster` object.
 
         return_array : bool, default False
             Return a `numpy.ndarray`, rather than a `Raster`.
@@ -18901,9 +18911,8 @@ reconstruction.</dd>
         else:
             return Raster(data, self.plate_reconstruction, self.extent, self.time)
 
-
     def fill_NaNs(self, inplace=False, return_array=False):
-        &#34;&#34;&#34;Search raster for invalid ‘data’ cells containing NaN-type entries replaces them 
+        &#34;&#34;&#34;Search raster for invalid ‘data’ cells containing NaN-type entries replaces them
         with the value of their nearest valid data cells.
 
         Parameters
@@ -18929,12 +18938,10 @@ reconstruction.</dd>
         else:
             return Raster(data, self.plate_reconstruction, self.extent, self.time)
 
-
     def save_to_netcdf4(self, filename):
-        &#34;&#34;&#34; Saves the grid attributed to the `Raster` object to the given `filename` (including
+        &#34;&#34;&#34;Saves the grid attributed to the `Raster` object to the given `filename` (including
         the &#34;.nc&#34; extension) in netCDF4 format.&#34;&#34;&#34;
         write_netcdf_grid(str(filename), self.data, self.extent)
-
 
     def reconstruct(
         self,
@@ -19007,7 +19014,7 @@ reconstruction.</dd>
             )
         if partitioning_features is None:
             partitioning_features = self.plate_reconstruction.static_polygons
-        result =  reconstruct_grid(
+        result = reconstruct_grid(
             grid=self.data,
             partitioning_features=partitioning_features,
             rotation_model=self.plate_reconstruction.rotation_model,
@@ -19036,7 +19043,6 @@ reconstruction.</dd>
                 origin=self.origin,
             )
         return result
-
 
     def imshow(self, ax=None, projection=None, **kwargs):
         &#34;&#34;&#34;Display raster data.
@@ -19112,20 +19118,19 @@ reconstruction.</dd>
 
     plot = imshow
 
-
     def rotate_reference_frames(
         self,
-        grid_spacing_degrees, 
+        grid_spacing_degrees,
         reconstruction_time,
         from_rotation_features_or_model,  # filename(s), or pyGPlates feature(s)/collection(s) or a RotationModel
-        to_rotation_features_or_model,    # filename(s), or pyGPlates feature(s)/collection(s) or a RotationModel
+        to_rotation_features_or_model,  # filename(s), or pyGPlates feature(s)/collection(s) or a RotationModel
         from_rotation_reference_plate=0,
         to_rotation_reference_plate=0,
         non_reference_plate=701,
-        output_name=None
+        output_name=None,
     ):
-        &#34;&#34;&#34;Rotate a grid defined in one plate model reference frame 
-        within a gplately.Raster object to another plate 
+        &#34;&#34;&#34;Rotate a grid defined in one plate model reference frame
+        within a gplately.Raster object to another plate
         reconstruction model reference frame.
 
         Parameters
@@ -19135,11 +19140,11 @@ reconstruction.</dd>
         reconstruction_time : float
             The time at which to rotate the input grid.
         from_rotation_features_or_model : str, list of str, or instance of pygplates.RotationModel
-            A filename, or a list of filenames, or a pyGPlates 
+            A filename, or a list of filenames, or a pyGPlates
             RotationModel object that defines the rotation model
             that the input grid is currently associated with.
         to_rotation_features_or_model : str, list of str, or instance of pygplates.RotationModel
-            A filename, or a list of filenames, or a pyGPlates 
+            A filename, or a list of filenames, or a pyGPlates
             RotationModel object that defines the rotation model
             that the input grid shall be rotated with.
         from_rotation_reference_plate : int, default = 0
@@ -19149,7 +19154,7 @@ reconstruction.</dd>
             The desired reference plate for the plate model the grid
             is being rotated to. Defaults to the anchor plate 0.
         non_reference_plate : int, default = 701
-            An arbitrary placeholder reference frame with which 
+            An arbitrary placeholder reference frame with which
             to define the &#34;from&#34; and &#34;to&#34; reference frames.
         output_name : str, default None
             If passed, the rotated grid is saved as a netCDF grid to this filename.
@@ -19162,26 +19167,21 @@ reconstruction.</dd>
 
         input_positions = []
 
-        # Create the pygplates.FiniteRotation that rotates 
+        # Create the pygplates.FiniteRotation that rotates
         # between the two reference frames.
-        from_rotation_model = pygplates.RotationModel(
-            from_rotation_features_or_model
-        )
-        to_rotation_model = pygplates.RotationModel(
-            to_rotation_features_or_model
-        )
+        from_rotation_model = pygplates.RotationModel(from_rotation_features_or_model)
+        to_rotation_model = pygplates.RotationModel(to_rotation_features_or_model)
         from_rotation = from_rotation_model.get_rotation(
-            reconstruction_time, 
-            non_reference_plate, 
-            anchor_plate_id=from_rotation_reference_plate
+            reconstruction_time,
+            non_reference_plate,
+            anchor_plate_id=from_rotation_reference_plate,
         )
         to_rotation = to_rotation_model.get_rotation(
-            reconstruction_time, 
-            non_reference_plate, 
-            anchor_plate_id=to_rotation_reference_plate
+            reconstruction_time,
+            non_reference_plate,
+            anchor_plate_id=to_rotation_reference_plate,
         )
         reference_frame_conversion_rotation = to_rotation * from_rotation.get_inverse()
-
 
         # Resize the input grid to the specified output resolution before rotating
         resX = _deg2pixels(grid_spacing_degrees, self.extent[0], self.extent[1])
@@ -19194,7 +19194,9 @@ reconstruction.</dd>
         llats = llats.ravel()
 
         # Convert lon-lat points of Raster grid to pyGPlates points
-        input_points = pygplates.MultiPointOnSphere((lat, lon) for lon, lat in zip(llons, llats))
+        input_points = pygplates.MultiPointOnSphere(
+            (lat, lon) for lon, lat in zip(llons, llats)
+        )
         # Get grid values of the resized Raster object
         values = np.array(resized_input_grid.data).ravel()
 
@@ -19213,8 +19215,14 @@ reconstruction.</dd>
         # Use the extent of the original Raster object
         extent_globe = self.extent
 
-        resX = int(np.floor((extent_globe[1] - extent_globe[0]) / grid_spacing_degrees)) + 1
-        resY = int(np.floor((extent_globe[3] - extent_globe[2]) / grid_spacing_degrees)) + 1
+        resX = (
+            int(np.floor((extent_globe[1] - extent_globe[0]) / grid_spacing_degrees))
+            + 1
+        )
+        resY = (
+            int(np.floor((extent_globe[3] - extent_globe[2]) / grid_spacing_degrees))
+            + 1
+        )
 
         grid_lon = np.linspace(extent_globe[0], extent_globe[1], resX)
         grid_lat = np.linspace(extent_globe[2], extent_globe[3], resY)
@@ -19223,7 +19231,7 @@ reconstruction.</dd>
 
         # Interpolate lons, lats and zvals over a regular grid using nearest
         # neighbour interpolation
-        Z = griddata_sphere((out_lon, out_lat), zdata, (X, Y), method=&#39;nearest&#39;)
+        Z = griddata_sphere((out_lon, out_lat), zdata, (X, Y), method=&#34;nearest&#34;)
 
         # Write output grid to netCDF if requested.
         if output_name:
@@ -19231,10 +19239,141 @@ reconstruction.</dd>
 
         return Raster(data=Z)
 
+    def query(self, lons, lats, region_of_interest=None):
+        &#34;&#34;&#34;Given a set of location coordinates, return the grid values at these locations
+
+        Parameters
+        ----------
+        lons: list
+            a list of longitudes of the location coordinates
+        lats: list
+            a list of latitude of the location coordinates
+        region_of_interest: float
+            the radius of the region of interest in km
+            this is the arch length. we need to calculate the straight distance between the two points in 3D space from this arch length.
+
+
+        Returns
+        -------
+        list
+            a list of grid values for the given locations.
+
+        &#34;&#34;&#34;
+
+        if not hasattr(self, &#34;spatial_cKDTree&#34;):
+            # build the spatial tree if the tree has not been built yet
+            x0 = self.extent[0]
+            x1 = self.extent[1]
+            y0 = self.extent[2]
+            y1 = self.extent[3]
+            yn = self.data.shape[0]
+            xn = self.data.shape[1]
+            # we assume the grid is Grid-line Registration, not Pixel Registration
+            # http://www.soest.hawaii.edu/pwessel/courses/gg710-01/GMT_grid.pdf
+            # TODO: support both Grid-line and Pixel Registration
+            grid_x, grid_y = np.meshgrid(
+                np.linspace(x0, x1, xn), np.linspace(y0, y1, yn)
+            )
+            # in degrees
+            self.grid_cell_radius = (
+                math.sqrt(math.pow(((y0 - y1) / yn), 2) + math.pow(((x0 - x1) / xn), 2))
+                / 2
+            )
+            self.data_mask = ~np.isnan(self.data)
+            grid_points = [
+                pygplates.PointOnSphere((float(p[1]), float(p[0]))).to_xyz()
+                for p in np.dstack((grid_x, grid_y))[self.data_mask]
+            ]
+            print(&#34;building the spatial tree...&#34;)
+            self.spatial_cKDTree = _cKDTree(grid_points)
+
+        query_points = [
+            pygplates.PointOnSphere((float(p[1]), float(p[0]))).to_xyz()
+            for p in zip(lons, lats)
+        ]
+
+        if region_of_interest is None:
+            # convert the arch length(in degrees) to direct length in 3D space
+            roi = 2 * math.sin(math.radians(self.grid_cell_radius / 2.0))
+        else:
+            roi = 2 * math.sin(
+                region_of_interest / pygplates.Earth.mean_radius_in_kms / 2.0
+            )
+
+        dists, indices = self.spatial_cKDTree.query(
+            query_points, k=1, distance_upper_bound=roi
+        )
+        # print(dists, indices)
+        return np.concatenate((self.data[self.data_mask], [math.nan]))[indices]
+
+    def clip_by_extent(self, extent):
+        &#34;&#34;&#34;clip the raster according to a given extent [x_min, x_max, y_min, y_max]
+        the extent of the returned raster may be slightly bigger than the given extent.
+        this happens when the border of the given extent fall between two gird lines.
+
+        &#34;&#34;&#34;
+        if (
+            extent[0] &gt;= extent[1]
+            or extent[2] &gt;= extent[3]
+            or extent[0] &lt; -180
+            or extent[1] &gt; 180
+            or extent[2] &lt; -90
+            or extent[3] &gt; 90
+        ):
+            raise Exception(f&#34;Invalid extent: {extent}&#34;)
+        if (
+            extent[0] &lt; self.extent[0]
+            or extent[1] &gt; self.extent[1]
+            or extent[2] &lt; self.extent[2]
+            or extent[3] &gt; self.extent[3]
+        ):
+            raise Exception(
+                f&#34;The given extent is out of scope. {extent} -- {self.extent}&#34;
+            )
+        y_len, x_len = self.data.shape
+        dev_logger.debug(f&#34;the shape of raster data x:{x_len} y:{y_len}&#34;)
+
+        x0 = math.floor(
+            (extent[0] - self.extent[0])
+            / (self.extent[1] - self.extent[0])
+            * (x_len - 1)
+        )
+        x1 = math.ceil(
+            (extent[1] - self.extent[0])
+            / (self.extent[1] - self.extent[0])
+            * (x_len - 1)
+        )
+        # print(x0, x1)
+        y0 = math.floor(
+            (extent[2] - self.extent[2])
+            / (self.extent[3] - self.extent[2])
+            * (y_len - 1)
+        )
+        y1 = math.ceil(
+            (extent[3] - self.extent[2])
+            / (self.extent[3] - self.extent[2])
+            * (y_len - 1)
+        )
+        # print(y0, y1)
+        new_extent = [
+            x0 / (x_len - 1) * (self.extent[1] - self.extent[0]) - 180,
+            x1 / (x_len - 1) * (self.extent[1] - self.extent[0]) - 180,
+            y0 / (y_len - 1) * (self.extent[3] - self.extent[2]) - 90,
+            y1 / (y_len - 1) * (self.extent[3] - self.extent[2]) - 90,
+        ]
+        # print(new_extent)
+        # print(self.data[y0 : y1 + 1, x0 : x1 + 1].shape)
+        return Raster(
+            data=self.data[y0 : y1 + 1, x0 : x1 + 1],
+            extent=new_extent,
+        )
+
+    def clip_by_polygon(self, polygon):
+        &#34;&#34;&#34;TODO:&#34;&#34;&#34;
+        pass
 
     def __array__(self):
         return np.array(self.data)
-
 
     def __add__(self, other):
         if isinstance(other, Raster):
@@ -19248,10 +19387,8 @@ reconstruction.</dd>
         new_raster.data = new_data
         return new_raster
 
-
     def __radd__(self, other):
         return self + other
-
 
     def __sub__(self, other):
         if isinstance(other, Raster):
@@ -19265,7 +19402,6 @@ reconstruction.</dd>
         new_raster.data = new_data
         return new_raster
 
-
     def __rsub__(self, other):
         if isinstance(other, Raster):
             # Return array, since we don&#39;t know which Raster
@@ -19277,7 +19413,6 @@ reconstruction.</dd>
         new_data = other - self.data
         new_raster.data = new_data
         return new_raster
-
 
     def __mul__(self, other):
         if isinstance(other, Raster):
@@ -19291,10 +19426,8 @@ reconstruction.</dd>
         new_raster.data = new_data
         return new_raster
 
-
     def __rmul__(self, other):
         return self * other
-
 
     def __truediv__(self, other):
         if isinstance(other, Raster):
@@ -19308,7 +19441,6 @@ reconstruction.</dd>
         new_raster.data = new_data
         return new_raster
 
-
     def __rtruediv__(self, other):
         if isinstance(other, Raster):
             # Return array, since we don&#39;t know which Raster
@@ -19320,7 +19452,6 @@ reconstruction.</dd>
         new_data = other / self.data
         new_raster.data = new_data
         return new_raster
-
 
     def __floordiv__(self, other):
         if isinstance(other, Raster):
@@ -19334,7 +19465,6 @@ reconstruction.</dd>
         new_raster.data = new_data
         return new_raster
 
-
     def __rfloordiv__(self, other):
         if isinstance(other, Raster):
             # Return array, since we don&#39;t know which Raster
@@ -19346,7 +19476,6 @@ reconstruction.</dd>
         new_data = other // self.data
         new_raster.data = new_data
         return new_raster
-
 
     def __mod__(self, other):
         if isinstance(other, Raster):
@@ -19360,7 +19489,6 @@ reconstruction.</dd>
         new_raster.data = new_data
         return new_raster
 
-
     def __rmod__(self, other):
         if isinstance(other, Raster):
             # Return array, since we don&#39;t know which Raster
@@ -19373,29 +19501,27 @@ reconstruction.</dd>
         new_raster.data = new_data
         return new_raster
 
-
     def __pow__(self, other):
         if isinstance(other, Raster):
             # Return array, since we don&#39;t know which Raster
             # to take properties from
-            return self.data ** other.data
+            return self.data**other.data
 
         # Return Raster with new data
         new_raster = self.copy()
-        new_data = self.data ** other
+        new_data = self.data**other
         new_raster.data = new_data
         return new_raster
-
 
     def __rpow__(self, other):
         if isinstance(other, Raster):
             # Return array, since we don&#39;t know which Raster
             # to take properties from
-            return other.data ** self.data
+            return other.data**self.data
 
         # Return Raster with new data
         new_raster = self.copy()
-        new_data = other ** self.data
+        new_data = other**self.data
         new_raster.data = new_data
         return new_raster</code></pre>
 </details>
@@ -19591,6 +19717,94 @@ def time(self):
 </dl>
 <h3>Methods</h3>
 <dl>
+<dt id="gplately.Raster.clip_by_extent"><code class="name flex">
+<span>def <span class="ident">clip_by_extent</span></span>(<span>self, extent)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>clip the raster according to a given extent [x_min, x_max, y_min, y_max]
+the extent of the returned raster may be slightly bigger than the given extent.
+this happens when the border of the given extent fall between two gird lines.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def clip_by_extent(self, extent):
+    &#34;&#34;&#34;clip the raster according to a given extent [x_min, x_max, y_min, y_max]
+    the extent of the returned raster may be slightly bigger than the given extent.
+    this happens when the border of the given extent fall between two gird lines.
+
+    &#34;&#34;&#34;
+    if (
+        extent[0] &gt;= extent[1]
+        or extent[2] &gt;= extent[3]
+        or extent[0] &lt; -180
+        or extent[1] &gt; 180
+        or extent[2] &lt; -90
+        or extent[3] &gt; 90
+    ):
+        raise Exception(f&#34;Invalid extent: {extent}&#34;)
+    if (
+        extent[0] &lt; self.extent[0]
+        or extent[1] &gt; self.extent[1]
+        or extent[2] &lt; self.extent[2]
+        or extent[3] &gt; self.extent[3]
+    ):
+        raise Exception(
+            f&#34;The given extent is out of scope. {extent} -- {self.extent}&#34;
+        )
+    y_len, x_len = self.data.shape
+    dev_logger.debug(f&#34;the shape of raster data x:{x_len} y:{y_len}&#34;)
+
+    x0 = math.floor(
+        (extent[0] - self.extent[0])
+        / (self.extent[1] - self.extent[0])
+        * (x_len - 1)
+    )
+    x1 = math.ceil(
+        (extent[1] - self.extent[0])
+        / (self.extent[1] - self.extent[0])
+        * (x_len - 1)
+    )
+    # print(x0, x1)
+    y0 = math.floor(
+        (extent[2] - self.extent[2])
+        / (self.extent[3] - self.extent[2])
+        * (y_len - 1)
+    )
+    y1 = math.ceil(
+        (extent[3] - self.extent[2])
+        / (self.extent[3] - self.extent[2])
+        * (y_len - 1)
+    )
+    # print(y0, y1)
+    new_extent = [
+        x0 / (x_len - 1) * (self.extent[1] - self.extent[0]) - 180,
+        x1 / (x_len - 1) * (self.extent[1] - self.extent[0]) - 180,
+        y0 / (y_len - 1) * (self.extent[3] - self.extent[2]) - 90,
+        y1 / (y_len - 1) * (self.extent[3] - self.extent[2]) - 90,
+    ]
+    # print(new_extent)
+    # print(self.data[y0 : y1 + 1, x0 : x1 + 1].shape)
+    return Raster(
+        data=self.data[y0 : y1 + 1, x0 : x1 + 1],
+        extent=new_extent,
+    )</code></pre>
+</details>
+</dd>
+<dt id="gplately.Raster.clip_by_polygon"><code class="name flex">
+<span>def <span class="ident">clip_by_polygon</span></span>(<span>self, polygon)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>TODO:</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def clip_by_polygon(self, polygon):
+    &#34;&#34;&#34;TODO:&#34;&#34;&#34;
+    pass</code></pre>
+</details>
+</dd>
 <dt id="gplately.Raster.copy"><code class="name flex">
 <span>def <span class="ident">copy</span></span>(<span>self)</span>
 </code></dt>
@@ -19606,14 +19820,16 @@ def time(self):
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def copy(self):
-    &#34;&#34;&#34; Returns a copy of the Raster
-    
+    &#34;&#34;&#34;Returns a copy of the Raster
+
     Returns
     -------
     Raster
         A copy of the current Raster object
     &#34;&#34;&#34;
-    return Raster(self.data.copy(), self.plate_reconstruction, self.extent, self.time)</code></pre>
+    return Raster(
+        self.data.copy(), self.plate_reconstruction, self.extent, self.time
+    )</code></pre>
 </details>
 </dd>
 <dt id="gplately.Raster.fill_NaNs"><code class="name flex">
@@ -19641,7 +19857,7 @@ one attributed to <code>data</code>.</dd>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def fill_NaNs(self, inplace=False, return_array=False):
-    &#34;&#34;&#34;Search raster for invalid ‘data’ cells containing NaN-type entries replaces them 
+    &#34;&#34;&#34;Search raster for invalid ‘data’ cells containing NaN-type entries replaces them
     with the value of their nearest valid data cells.
 
     Parameters
@@ -19992,6 +20208,98 @@ where appropriate.</dd>
     return im</code></pre>
 </details>
 </dd>
+<dt id="gplately.Raster.query"><code class="name flex">
+<span>def <span class="ident">query</span></span>(<span>self, lons, lats, region_of_interest=None)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Given a set of location coordinates, return the grid values at these locations</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>lons</code></strong> :&ensp;<code>list</code></dt>
+<dd>a list of longitudes of the location coordinates</dd>
+<dt><strong><code>lats</code></strong> :&ensp;<code>list</code></dt>
+<dd>a list of latitude of the location coordinates</dd>
+<dt><strong><code>region_of_interest</code></strong> :&ensp;<code>float</code></dt>
+<dd>the radius of the region of interest in km
+this is the arch length. we need to calculate the straight distance between the two points in 3D space from this arch length.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>list</code></dt>
+<dd>a list of grid values for the given locations.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def query(self, lons, lats, region_of_interest=None):
+    &#34;&#34;&#34;Given a set of location coordinates, return the grid values at these locations
+
+    Parameters
+    ----------
+    lons: list
+        a list of longitudes of the location coordinates
+    lats: list
+        a list of latitude of the location coordinates
+    region_of_interest: float
+        the radius of the region of interest in km
+        this is the arch length. we need to calculate the straight distance between the two points in 3D space from this arch length.
+
+
+    Returns
+    -------
+    list
+        a list of grid values for the given locations.
+
+    &#34;&#34;&#34;
+
+    if not hasattr(self, &#34;spatial_cKDTree&#34;):
+        # build the spatial tree if the tree has not been built yet
+        x0 = self.extent[0]
+        x1 = self.extent[1]
+        y0 = self.extent[2]
+        y1 = self.extent[3]
+        yn = self.data.shape[0]
+        xn = self.data.shape[1]
+        # we assume the grid is Grid-line Registration, not Pixel Registration
+        # http://www.soest.hawaii.edu/pwessel/courses/gg710-01/GMT_grid.pdf
+        # TODO: support both Grid-line and Pixel Registration
+        grid_x, grid_y = np.meshgrid(
+            np.linspace(x0, x1, xn), np.linspace(y0, y1, yn)
+        )
+        # in degrees
+        self.grid_cell_radius = (
+            math.sqrt(math.pow(((y0 - y1) / yn), 2) + math.pow(((x0 - x1) / xn), 2))
+            / 2
+        )
+        self.data_mask = ~np.isnan(self.data)
+        grid_points = [
+            pygplates.PointOnSphere((float(p[1]), float(p[0]))).to_xyz()
+            for p in np.dstack((grid_x, grid_y))[self.data_mask]
+        ]
+        print(&#34;building the spatial tree...&#34;)
+        self.spatial_cKDTree = _cKDTree(grid_points)
+
+    query_points = [
+        pygplates.PointOnSphere((float(p[1]), float(p[0]))).to_xyz()
+        for p in zip(lons, lats)
+    ]
+
+    if region_of_interest is None:
+        # convert the arch length(in degrees) to direct length in 3D space
+        roi = 2 * math.sin(math.radians(self.grid_cell_radius / 2.0))
+    else:
+        roi = 2 * math.sin(
+            region_of_interest / pygplates.Earth.mean_radius_in_kms / 2.0
+        )
+
+    dists, indices = self.spatial_cKDTree.query(
+        query_points, k=1, distance_upper_bound=roi
+    )
+    # print(dists, indices)
+    return np.concatenate((self.data[self.data_mask], [math.nan]))[indices]</code></pre>
+</details>
+</dd>
 <dt id="gplately.Raster.reconstruct"><code class="name flex">
 <span>def <span class="ident">reconstruct</span></span>(<span>self, time, fill_value=None, partitioning_features=None, threads=1, anchor_plate_id=0, inplace=False, return_array=False)</span>
 </code></dt>
@@ -20119,7 +20427,7 @@ value will be transparent black (0.0, 0.0, 0.0, 0.0) or
         )
     if partitioning_features is None:
         partitioning_features = self.plate_reconstruction.static_polygons
-    result =  reconstruct_grid(
+    result = reconstruct_grid(
         grid=self.data,
         partitioning_features=partitioning_features,
         rotation_model=self.plate_reconstruction.rotation_model,
@@ -20158,7 +20466,7 @@ value will be transparent black (0.0, 0.0, 0.0, 0.0) or
 <code>spacingY</code> using linear interpolation.</p>
 <h2 id="notes">Notes</h2>
 <p>Ultimately, <code>resample</code> changes the lat-lon resolution of the gridded data. The
-larger the x and y spacings given are, the larger the pixellation of raster data. </p>
+larger the x and y spacings given are, the larger the pixellation of raster data.</p>
 <p><code>resample</code> creates new latitude and longitude arrays with specified spacings in the
 X and Y directions (<code>spacingX</code> and <code>spacingY</code>). These arrays are linearly interpolated
 into a new raster. If <code>inplace</code> is set to <code>True</code>, the respaced latitude array, longitude
@@ -20191,27 +20499,27 @@ one attributed to <code>data</code>.</dd>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def resample(self, spacingX, spacingY, method=&#34;linear&#34;, inplace=False):
-    &#34;&#34;&#34;Resample the `grid` passed to the `Raster` object with a new `spacingX` and 
+    &#34;&#34;&#34;Resample the `grid` passed to the `Raster` object with a new `spacingX` and
     `spacingY` using linear interpolation.
 
     Notes
     -----
     Ultimately, `resample` changes the lat-lon resolution of the gridded data. The
-    larger the x and y spacings given are, the larger the pixellation of raster data. 
+    larger the x and y spacings given are, the larger the pixellation of raster data.
 
     `resample` creates new latitude and longitude arrays with specified spacings in the
-    X and Y directions (`spacingX` and `spacingY`). These arrays are linearly interpolated 
-    into a new raster. If `inplace` is set to `True`, the respaced latitude array, longitude 
+    X and Y directions (`spacingX` and `spacingY`). These arrays are linearly interpolated
+    into a new raster. If `inplace` is set to `True`, the respaced latitude array, longitude
     array and raster will inplace the ones currently attributed to the `Raster` object.
 
     Parameters
     ----------
     spacingX, spacingY : ndarray
-        Specify the spacing in the X and Y directions with which to resample. The larger 
+        Specify the spacing in the X and Y directions with which to resample. The larger
         `spacingX` and `spacingY` are, the larger the raster pixels become (less resolved).
-        Note: to keep the size of the raster consistent, set `spacingX = spacingY`; 
-        otherwise, if for example `spacingX &gt; spacingY`, the raster will appear stretched 
-        longitudinally. 
+        Note: to keep the size of the raster consistent, set `spacingX = spacingY`;
+        otherwise, if for example `spacingX &gt; spacingY`, the raster will appear stretched
+        longitudinally.
 
     method : str or int; default: &#39;linear&#39;
         The order of spline interpolation. Must be an integer in the range
@@ -20219,9 +20527,9 @@ one attributed to <code>data</code>.</dd>
         respectively.
 
     inplace : bool, default=False
-        Choose to overwrite the data (the `self.data` attribute), latitude array 
-        (`self.lats`) and longitude array (`self.lons`) currently attributed to the 
-        `Raster` object. 
+        Choose to overwrite the data (the `self.data` attribute), latitude array
+        (`self.lats`) and longitude array (`self.lons`) currently attributed to the
+        `Raster` object.
 
     Returns
     -------
@@ -20234,8 +20542,8 @@ one attributed to <code>data</code>.</dd>
     if self.origin == &#34;upper&#34;:
         spacingY *= -1.0
 
-    lons = np.arange(self.extent[0], self.extent[1]+spacingX, spacingX)
-    lats = np.arange(self.extent[2], self.extent[3]+spacingY, spacingY)
+    lons = np.arange(self.extent[0], self.extent[1] + spacingX, spacingX)
+    lats = np.arange(self.extent[2], self.extent[3] + spacingY, spacingY)
     lonq, latq = np.meshgrid(lons, lats)
 
     data = self.interpolate(lonq, latq, method=method)
@@ -20252,7 +20560,7 @@ one attributed to <code>data</code>.</dd>
 </code></dt>
 <dd>
 <div class="desc"><p>Resize the grid passed to the <code><a title="gplately.Raster" href="#gplately.Raster">Raster</a></code> object with a new x and y resolution
-(<code>resX</code> and <code>resY</code>) using linear interpolation. </p>
+(<code>resX</code> and <code>resY</code>) using linear interpolation.</p>
 <h2 id="notes">Notes</h2>
 <p>Ultimately, <code>resize</code> "stretches" a raster in the x and y directions. The larger
 the resolutions in x and y, the more stretched the raster appears in x and y.</p>
@@ -20288,17 +20596,17 @@ one attributed to <code>data</code>.</dd>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def resize(self, resX, resY, inplace=False, method=&#34;linear&#34;, return_array=False):
-    &#34;&#34;&#34;Resize the grid passed to the `Raster` object with a new x and y resolution 
-    (`resX` and `resY`) using linear interpolation. 
+    &#34;&#34;&#34;Resize the grid passed to the `Raster` object with a new x and y resolution
+    (`resX` and `resY`) using linear interpolation.
 
     Notes
     -----
     Ultimately, `resize` &#34;stretches&#34; a raster in the x and y directions. The larger
     the resolutions in x and y, the more stretched the raster appears in x and y.
 
-    It creates new latitude and longitude arrays with specific resolutions in 
+    It creates new latitude and longitude arrays with specific resolutions in
     the X and Y directions (`resX` and `resY`). These arrays are linearly interpolated
-    into a new raster. If `inplace` is set to `True`, the resized latitude, longitude 
+    into a new raster. If `inplace` is set to `True`, the resized latitude, longitude
     arrays and raster will inplace the ones currently attributed to the `Raster` object.
 
     Parameters
@@ -20314,9 +20622,9 @@ one attributed to <code>data</code>.</dd>
         respectively.
 
     inplace : bool, default=False
-        Choose to overwrite the data (the `self.data` attribute), latitude array 
-        (`self.lats`) and longitude array (`self.lons`) currently attributed to the 
-        `Raster` object. 
+        Choose to overwrite the data (the `self.data` attribute), latitude array
+        (`self.lats`) and longitude array (`self.lons`) currently attributed to the
+        `Raster` object.
 
     return_array : bool, default False
         Return a `numpy.ndarray`, rather than a `Raster`.
@@ -20387,17 +20695,17 @@ to define the "from" and "to" reference frames.</dd>
 </summary>
 <pre><code class="python">def rotate_reference_frames(
     self,
-    grid_spacing_degrees, 
+    grid_spacing_degrees,
     reconstruction_time,
     from_rotation_features_or_model,  # filename(s), or pyGPlates feature(s)/collection(s) or a RotationModel
-    to_rotation_features_or_model,    # filename(s), or pyGPlates feature(s)/collection(s) or a RotationModel
+    to_rotation_features_or_model,  # filename(s), or pyGPlates feature(s)/collection(s) or a RotationModel
     from_rotation_reference_plate=0,
     to_rotation_reference_plate=0,
     non_reference_plate=701,
-    output_name=None
+    output_name=None,
 ):
-    &#34;&#34;&#34;Rotate a grid defined in one plate model reference frame 
-    within a gplately.Raster object to another plate 
+    &#34;&#34;&#34;Rotate a grid defined in one plate model reference frame
+    within a gplately.Raster object to another plate
     reconstruction model reference frame.
 
     Parameters
@@ -20407,11 +20715,11 @@ to define the "from" and "to" reference frames.</dd>
     reconstruction_time : float
         The time at which to rotate the input grid.
     from_rotation_features_or_model : str, list of str, or instance of pygplates.RotationModel
-        A filename, or a list of filenames, or a pyGPlates 
+        A filename, or a list of filenames, or a pyGPlates
         RotationModel object that defines the rotation model
         that the input grid is currently associated with.
     to_rotation_features_or_model : str, list of str, or instance of pygplates.RotationModel
-        A filename, or a list of filenames, or a pyGPlates 
+        A filename, or a list of filenames, or a pyGPlates
         RotationModel object that defines the rotation model
         that the input grid shall be rotated with.
     from_rotation_reference_plate : int, default = 0
@@ -20421,7 +20729,7 @@ to define the "from" and "to" reference frames.</dd>
         The desired reference plate for the plate model the grid
         is being rotated to. Defaults to the anchor plate 0.
     non_reference_plate : int, default = 701
-        An arbitrary placeholder reference frame with which 
+        An arbitrary placeholder reference frame with which
         to define the &#34;from&#34; and &#34;to&#34; reference frames.
     output_name : str, default None
         If passed, the rotated grid is saved as a netCDF grid to this filename.
@@ -20434,26 +20742,21 @@ to define the "from" and "to" reference frames.</dd>
 
     input_positions = []
 
-    # Create the pygplates.FiniteRotation that rotates 
+    # Create the pygplates.FiniteRotation that rotates
     # between the two reference frames.
-    from_rotation_model = pygplates.RotationModel(
-        from_rotation_features_or_model
-    )
-    to_rotation_model = pygplates.RotationModel(
-        to_rotation_features_or_model
-    )
+    from_rotation_model = pygplates.RotationModel(from_rotation_features_or_model)
+    to_rotation_model = pygplates.RotationModel(to_rotation_features_or_model)
     from_rotation = from_rotation_model.get_rotation(
-        reconstruction_time, 
-        non_reference_plate, 
-        anchor_plate_id=from_rotation_reference_plate
+        reconstruction_time,
+        non_reference_plate,
+        anchor_plate_id=from_rotation_reference_plate,
     )
     to_rotation = to_rotation_model.get_rotation(
-        reconstruction_time, 
-        non_reference_plate, 
-        anchor_plate_id=to_rotation_reference_plate
+        reconstruction_time,
+        non_reference_plate,
+        anchor_plate_id=to_rotation_reference_plate,
     )
     reference_frame_conversion_rotation = to_rotation * from_rotation.get_inverse()
-
 
     # Resize the input grid to the specified output resolution before rotating
     resX = _deg2pixels(grid_spacing_degrees, self.extent[0], self.extent[1])
@@ -20466,7 +20769,9 @@ to define the "from" and "to" reference frames.</dd>
     llats = llats.ravel()
 
     # Convert lon-lat points of Raster grid to pyGPlates points
-    input_points = pygplates.MultiPointOnSphere((lat, lon) for lon, lat in zip(llons, llats))
+    input_points = pygplates.MultiPointOnSphere(
+        (lat, lon) for lon, lat in zip(llons, llats)
+    )
     # Get grid values of the resized Raster object
     values = np.array(resized_input_grid.data).ravel()
 
@@ -20485,8 +20790,14 @@ to define the "from" and "to" reference frames.</dd>
     # Use the extent of the original Raster object
     extent_globe = self.extent
 
-    resX = int(np.floor((extent_globe[1] - extent_globe[0]) / grid_spacing_degrees)) + 1
-    resY = int(np.floor((extent_globe[3] - extent_globe[2]) / grid_spacing_degrees)) + 1
+    resX = (
+        int(np.floor((extent_globe[1] - extent_globe[0]) / grid_spacing_degrees))
+        + 1
+    )
+    resY = (
+        int(np.floor((extent_globe[3] - extent_globe[2]) / grid_spacing_degrees))
+        + 1
+    )
 
     grid_lon = np.linspace(extent_globe[0], extent_globe[1], resX)
     grid_lat = np.linspace(extent_globe[2], extent_globe[3], resY)
@@ -20495,7 +20806,7 @@ to define the "from" and "to" reference frames.</dd>
 
     # Interpolate lons, lats and zvals over a regular grid using nearest
     # neighbour interpolation
-    Z = griddata_sphere((out_lon, out_lat), zdata, (X, Y), method=&#39;nearest&#39;)
+    Z = griddata_sphere((out_lon, out_lat), zdata, (X, Y), method=&#34;nearest&#34;)
 
     # Write output grid to netCDF if requested.
     if output_name:
@@ -20515,7 +20826,7 @@ the ".nc" extension) in netCDF4 format.</p></div>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def save_to_netcdf4(self, filename):
-    &#34;&#34;&#34; Saves the grid attributed to the `Raster` object to the given `filename` (including
+    &#34;&#34;&#34;Saves the grid attributed to the `Raster` object to the given `filename` (including
     the &#34;.nc&#34; extension) in netCDF4 format.&#34;&#34;&#34;
     write_netcdf_grid(str(filename), self.data, self.extent)</code></pre>
 </details>
@@ -22755,6 +23066,7 @@ other general z-values are saved to a gridding input file (.npz).</p></div>
 <li><code><a title="gplately.read_geometries" href="read_geometries.html">gplately.read_geometries</a></code></li>
 <li><code><a title="gplately.reconstruction" href="reconstruction.html">gplately.reconstruction</a></code></li>
 <li><code><a title="gplately.tools" href="tools.html">gplately.tools</a></code></li>
+<li><code><a title="gplately.utils" href="utils.html">gplately.utils</a></code></li>
 </ul>
 </li>
 <li><h3><a href="#header-functions">Functions</a></h3>
@@ -22899,6 +23211,8 @@ other general z-values are saved to a gridding input file (.npz).</p></div>
 <li>
 <h4><code><a title="gplately.Raster" href="#gplately.Raster">Raster</a></code></h4>
 <ul class="">
+<li><code><a title="gplately.Raster.clip_by_extent" href="#gplately.Raster.clip_by_extent">clip_by_extent</a></code></li>
+<li><code><a title="gplately.Raster.clip_by_polygon" href="#gplately.Raster.clip_by_polygon">clip_by_polygon</a></code></li>
 <li><code><a title="gplately.Raster.copy" href="#gplately.Raster.copy">copy</a></code></li>
 <li><code><a title="gplately.Raster.data" href="#gplately.Raster.data">data</a></code></li>
 <li><code><a title="gplately.Raster.dtype" href="#gplately.Raster.dtype">dtype</a></code></li>
@@ -22913,6 +23227,7 @@ other general z-values are saved to a gridding input file (.npz).</p></div>
 <li><code><a title="gplately.Raster.origin" href="#gplately.Raster.origin">origin</a></code></li>
 <li><code><a title="gplately.Raster.plate_reconstruction" href="#gplately.Raster.plate_reconstruction">plate_reconstruction</a></code></li>
 <li><code><a title="gplately.Raster.plot" href="#gplately.Raster.plot">plot</a></code></li>
+<li><code><a title="gplately.Raster.query" href="#gplately.Raster.query">query</a></code></li>
 <li><code><a title="gplately.Raster.reconstruct" href="#gplately.Raster.reconstruct">reconstruct</a></code></li>
 <li><code><a title="gplately.Raster.resample" href="#gplately.Raster.resample">resample</a></code></li>
 <li><code><a title="gplately.Raster.resize" href="#gplately.Raster.resize">resize</a></code></li>
