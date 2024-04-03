@@ -10,6 +10,8 @@ from plate_model_manager import PlateModelManager
 sys.path.insert(0, "../..")
 import gplately
 
+# gplately.turn_on_debug_logging()
+
 
 def main(show=True):
     pm_manager = PlateModelManager()

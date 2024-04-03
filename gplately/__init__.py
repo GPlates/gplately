@@ -239,3 +239,9 @@ __all__ = [
     # Constants
     "EARTH_RADIUS",
 ]
+
+from .utils import setup_logging, turn_on_debug_logging
+
+setup_logging()
+del setup_logging
+del utils

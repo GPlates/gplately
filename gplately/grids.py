@@ -16,6 +16,7 @@ Classes
 * Raster
 """
 
+import logging
 import math
 import warnings
 from multiprocessing import cpu_count
@@ -38,6 +39,8 @@ from scipy.spatial.transform import Rotation as _Rotation
 from .geometry import pygplates_to_shapely
 from .reconstruction import PlateReconstruction as _PlateReconstruction
 from .tools import _deg2pixels, griddata_sphere
+
+dev_logger = logging.getLogger("gplately")
 
 __all__ = [
     "fill_raster",
@@ -2295,7 +2298,8 @@ class Raster(object):
                 f"The given extent is out of scope. {extent} -- {self.extent}"
             )
         y_len, x_len = self.data.shape
-        # print(x_len, y_len)
+        dev_logger.debug(f"the shape of raster data x:{x_len} y:{y_len}")
+
         x0 = math.floor(
             (extent[0] - self.extent[0])
             / (self.extent[1] - self.extent[0])
