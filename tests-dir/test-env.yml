@@ -5,3 +5,4 @@ channels:
 dependencies:
   - gplately
   - pytest
+  - pyyaml
