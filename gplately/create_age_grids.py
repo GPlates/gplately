@@ -3,6 +3,9 @@ import warnings
 from typing import Optional, Sequence, Union
 
 import pygplates
+from plate_model_manager import PlateModelManager
+
+from gplately import PlateReconstruction, PlotTopologies, SeafloorGrid
 
 
 def add_parser(parser: argparse.ArgumentParser):
@@ -11,17 +14,18 @@ def add_parser(parser: argparse.ArgumentParser):
     agegrid_cmd = parser.add_parser(
         "agegrid",
         aliases=("ag",),
-        help=create_agegrids.__doc__,
+        help=__description__,
         add_help=True,
-        description=create_agegrids.__doc__,
+        description=__description__,
+        formatter_class=argparse.RawDescriptionHelpFormatter,
     )
 
     # agegrid command arguments
     agegrid_cmd.set_defaults(func=_run_create_agegrids)
     agegrid_cmd.add_argument(
         metavar="INPUT_FILE",
-        nargs="+",
-        help="input reconstruction files",
+        nargs="*",
+        help="input reconstruction files, including rotation files and topology files",
         dest="input_filenames",
     )
     agegrid_cmd.add_argument(
@@ -30,11 +34,19 @@ def add_parser(parser: argparse.ArgumentParser):
         dest="output_dir",
     )
     agegrid_cmd.add_argument(
+        "-m",
+        "--model",
+        metavar="MODEL_NAME",
+        help="reconstruction model name",
+        dest="model_name",
+        default=None,
+    )
+    agegrid_cmd.add_argument(
         "-c",
         "--continents",
         metavar="CONTINENTS_FILE",
-        nargs="+",
-        help="input continent files",
+        nargs="*",
+        help="input continental polygons files",
         dest="continents_filenames",
         default=None,
     )
@@ -114,7 +126,16 @@ def add_parser(parser: argparse.ArgumentParser):
     )
 
 
+__description__ = """Create age grids for a plate model.
+
+example usage: gplately ag plate-model-repo/muller2019/Rotations/Muller_etal_2019_CombinedRotations.rot plate-model-repo/muller2019/Topologies/Muller_etal_2019_PlateBoundaries_DeformingNetworks.gpmlz output -c plate-model-repo/muller2019/ContinentalPolygons/Global_EarthByte_GPlates_PresentDay_ContinentalPolygons_2019_v1.shp -e 0 -s 10
+               gplately ag output -m muller2019 -e 0 -s 10
+
+"""
+
+
 def create_agegrids(
+    model_name: str,
     input_filenames: Union[str, Sequence[str]],
     continents_filenames: Union[str, Sequence[str]],
     output_dir: str,
@@ -130,28 +151,47 @@ def create_agegrids(
     unmasked: bool = False,
 ) -> None:
     """Create age grids for a plate model."""
-    from gplately import PlateReconstruction, PlotTopologies, SeafloorGrid
 
-    features = pygplates.FeaturesFunctionArgument(input_filenames).get_features()
-    rotations = []
-    topologies = []
-    for i in features:
-        if (
-            i.get_feature_type().to_qualified_string()
-            == "gpml:TotalReconstructionSequence"
-        ):
-            rotations.append(i)
-        else:
-            topologies.append(i)
-    topologies = pygplates.FeatureCollection(topologies)
-    rotations = pygplates.RotationModel(rotations)
+    if model_name:
+        pm_manager = PlateModelManager()
+        plate_model = pm_manager.get_model(model_name, data_dir="plate-model-repo")
 
-    if continents_filenames is None:
-        continents = pygplates.FeatureCollection()
-    else:
-        continents = pygplates.FeatureCollection(
-            pygplates.FeaturesFunctionArgument(continents_filenames).get_features()
+        rotations = pygplates.FeatureCollection(
+            pygplates.FeaturesFunctionArgument(
+                plate_model.get_rotation_model()
+            ).get_features()
         )
+        topologies = pygplates.FeatureCollection(
+            pygplates.FeaturesFunctionArgument(
+                plate_model.get_topologies()
+            ).get_features()
+        )
+        continents = pygplates.FeatureCollection(
+            pygplates.FeaturesFunctionArgument(
+                plate_model.get_layer("ContinentalPolygons")
+            ).get_features()
+        )
+    else:
+        features = pygplates.FeaturesFunctionArgument(input_filenames).get_features()
+        rotations = []
+        topologies = []
+        for i in features:
+            if (
+                i.get_feature_type().to_qualified_string()
+                == "gpml:TotalReconstructionSequence"
+            ):
+                rotations.append(i)
+            else:
+                topologies.append(i)
+        topologies = pygplates.FeatureCollection(topologies)
+        rotations = pygplates.RotationModel(rotations)
+
+        if continents_filenames is None:
+            continents = pygplates.FeatureCollection()
+        else:
+            continents = pygplates.FeatureCollection(
+                pygplates.FeaturesFunctionArgument(continents_filenames).get_features()
+            )
 
     with warnings.catch_warnings():
         warnings.simplefilter("ignore", ImportWarning)
@@ -177,13 +217,14 @@ def create_agegrids(
             initial_ocean_mean_spreading_rate=initial_spreadrate,
             file_collection=file_collection,
         )
-    grid.reconstruct_by_topologies()
-    for val in ("SEAFLOOR_AGE", "SPREADING_RATE"):
-        grid.lat_lon_z_to_netCDF(val, unmasked=unmasked, nprocs=n_jobs)
+        grid.reconstruct_by_topologies()
+        for val in ("SEAFLOOR_AGE", "SPREADING_RATE"):
+            grid.lat_lon_z_to_netCDF(val, unmasked=unmasked, nprocs=n_jobs)
 
 
 def _run_create_agegrids(args):
     create_agegrids(
+        model_name=args.model_name,
         input_filenames=args.input_filenames,
         continents_filenames=args.continents_filenames,
         output_dir=args.output_dir,

@@ -106,6 +106,7 @@ Classes
 """
 
 import glob
+import logging
 import os
 import re
 import warnings
@@ -116,6 +117,8 @@ import pygplates
 
 from . import grids, ptt, reconstruction, tools
 from .ptt import separate_ridge_transform_segments
+
+logger = logging.getLogger("gplately")
 
 # -------------------------------------------------------------------------
 # Auxiliary functions for SeafloorGrid
@@ -1246,7 +1249,7 @@ class SeafloorGrid(object):
         All active points' latitudes, longitues, seafloor ages, spreading rates and all
         other general z-values are saved to a gridding input file (.npz).
         """
-        print("Preparing all initial files...")
+        logger.info("Preparing all initial files...")
 
         # Obtain all info from the ocean seed points and all MOR points through time, store in
         # arrays
