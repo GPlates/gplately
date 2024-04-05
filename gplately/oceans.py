@@ -106,6 +106,7 @@ Classes
 """
 
 import glob
+import logging
 import os
 import re
 import warnings
@@ -116,6 +117,8 @@ import pygplates
 
 from . import grids, ptt, reconstruction, tools
 from .ptt import separate_ridge_transform_segments
+
+logger = logging.getLogger("gplately")
 
 # -------------------------------------------------------------------------
 # Auxiliary functions for SeafloorGrid
@@ -400,7 +403,9 @@ class SeafloorGrid(object):
         self._PlotTopologies_object = PlotTopologies_object
         save_directory = str(save_directory)
         if not os.path.isdir(save_directory):
-            print("Output directory does not exist; creating now: " + save_directory)
+            logger.info(
+                "Output directory does not exist; creating now: " + save_directory
+            )
             os.makedirs(save_directory, exist_ok=True)
         self.save_directory = save_directory
         if file_collection is not None:
@@ -444,9 +449,7 @@ class SeafloorGrid(object):
                 with warnings.catch_warnings():
                     warnings.simplefilter("always")
                     warnings.warn(
-                        "The provided grid_spacing of {} is quite large. To preserve the grid resolution, a {} degree spacing has been employed instead".format(
-                            grid_spacing, self.grid_spacing
-                        )
+                        f"The provided grid_spacing of {grid_spacing} is quite large. To preserve the grid resolution, a {self.grid_spacing} degree spacing has been employed instead."
                     )
 
             # If the provided degree spacing is not in the list of permissible spacings, but below
@@ -470,9 +473,7 @@ class SeafloorGrid(object):
                 with warnings.catch_warnings():
                     warnings.simplefilter("always")
                     warnings.warn(
-                        "The provided grid_spacing of {} does not cleanly divide into the global extent. A degree spacing of {} has been employed instead.".format(
-                            grid_spacing, self.grid_spacing
-                        )
+                        f"The provided grid_spacing of {grid_spacing} does not cleanly divide into the global extent. A degree spacing of {self.grid_spacing} has been employed instead."
                     )
 
         else:
@@ -936,7 +937,7 @@ class SeafloorGrid(object):
                 self._collect_point_data_in_dataframe(
                     mor_points, point_spreading_rates, time
                 )
-            print("Finished building MOR seedpoints at {} Ma!".format(time))
+            logger.info(f"Finished building MOR seedpoints at {time} Ma!")
         return
 
     def build_all_MOR_seedpoints(self):
@@ -1060,7 +1061,7 @@ class SeafloorGrid(object):
             grids.write_netcdf_grid(
                 output_filename, final_grid, extent=[-180, 180, -90, 90]
             )
-            print("Finished building a continental mask at {} Ma!".format(time))
+            logger.info(f"Finished building a continental mask at {time} Ma!")
 
         return
 
@@ -1166,7 +1167,7 @@ class SeafloorGrid(object):
             initial_ocean_seed_points,
             initial_ocean_seed_points_mp,
         ) = self.create_initial_ocean_seed_points()
-        print("Finished building initial_ocean_seed_points!")
+        logger.info("Finished building initial_ocean_seed_points!")
 
         # MOR SEED POINTS AND CONTINENTAL MASKS --------------------------------------------
 
@@ -1182,7 +1183,7 @@ class SeafloorGrid(object):
         if self.continent_mask_filename is None:
             self.build_all_continental_masks()
         else:
-            print(
+            logger.info(
                 "Continent masks passed to SeafloorGrid - skipping continental mask generation!"
             )
 
@@ -1246,7 +1247,7 @@ class SeafloorGrid(object):
         All active points' latitudes, longitues, seafloor ages, spreading rates and all
         other general z-values are saved to a gridding input file (.npz).
         """
-        print("Preparing all initial files...")
+        logger.info("Preparing all initial files...")
 
         # Obtain all info from the ocean seed points and all MOR points through time, store in
         # arrays
@@ -1313,10 +1314,8 @@ class SeafloorGrid(object):
         # have been deactivated (subducted forward in time or consumed by MOR backward in time).
         reconstruction_data = []
         while True:
-            print(
-                "Reconstruct by topologies: working on time {:0.2f} Ma".format(
-                    topology_reconstruction.get_current_time()
-                )
+            logger.info(
+                f"Reconstruct by topologies: working on time {topology_reconstruction.get_current_time():0.2f} Ma"
             )
 
             # NOTE:
@@ -1423,15 +1422,24 @@ class SeafloorGrid(object):
                 gridding_input_filename = os.path.join(
                     self.save_directory, gridding_input_basename
                 )
+
+                # save debug file
+                if os.environ["GPLATELY_DEBUG"].lower() == "true":
+                    save_age_grid_sample_points_to_gpml(
+                        gridding_input_dictionary["CURRENT_LONGITUDES"],
+                        gridding_input_dictionary["CURRENT_LATITUDES"],
+                        gridding_input_dictionary["SEAFLOOR_AGE"],
+                        topology_reconstruction.get_current_time(),
+                        self.save_directory,
+                    )
+
                 np.savez_compressed(gridding_input_filename, *data_to_store)
 
             if not topology_reconstruction.reconstruct_to_next_time():
                 break
 
-            print(
-                "Reconstruction done for {}!".format(
-                    topology_reconstruction.get_current_time()
-                )
+            logger.info(
+                f"Reconstruction done for {topology_reconstruction.get_current_time()}!"
             )
         # return reconstruction_data
 
@@ -1606,4 +1614,18 @@ def _lat_lon_z_to_netCDF_time(
         Z,
         extent=extent,
     )
-    print("netCDF grids for {} Ma complete!".format(time))
+    logger.info(f"netCDF grids for {time} Ma complete!")
+
+
+def save_age_grid_sample_points_to_gpml(lons, lats, seafloor_ages, paleo_time, outdir):
+    logger.debug(f"saving age grid sample points to gpml file -- {paleo_time} Ma")
+    features = []
+    for lon, lat, age in zip(lons, lats, seafloor_ages):
+        f = pygplates.Feature()
+        p = pygplates.PointOnSphere(lat, lon)
+        f.set_geometry(p)
+        f.set_valid_time(age + paleo_time, paleo_time)
+        features.append(f)
+    pygplates.FeatureCollection(features).write(
+        os.path.join(outdir, f"age_grid_sample_points_{paleo_time}_Ma.gpmlz")
+    )

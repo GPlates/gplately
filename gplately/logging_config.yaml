@@ -15,26 +15,26 @@ handlers:
 
   gplatelylog:
     class: logging.FileHandler
-    level: WARNING
+    level: INFO
     formatter: simple
     filename: gplately.log
     mode: a
 
   pttlog:
     class: logging.FileHandler
-    level: WARNING
+    level: INFO
     formatter: simple
     filename: ptt.log
     mode: a
 
 loggers:
   gplately:
-    level: WARNING
+    level: INFO
     handlers: [console, gplatelylog]
     propagate: no
 
   ptt:
-    level: WARNING
+    level: INFO
     handlers: [console, pttlog]
     propagate: no
 
