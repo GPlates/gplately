@@ -1,4 +1,7 @@
 import argparse
+import datetime
+import logging
+import time
 import warnings
 from typing import Optional, Sequence, Union
 
@@ -6,6 +9,8 @@ import pygplates
 from plate_model_manager import PlateModelManager
 
 from gplately import PlateReconstruction, PlotTopologies, SeafloorGrid
+
+logger = logging.getLogger("gplately")
 
 
 def add_parser(parser: argparse.ArgumentParser):
@@ -128,9 +133,9 @@ def add_parser(parser: argparse.ArgumentParser):
 
 __description__ = """Create age grids for a plate model.
 
-example usage: gplately ag plate-model-repo/muller2019/Rotations/Muller_etal_2019_CombinedRotations.rot plate-model-repo/muller2019/Topologies/Muller_etal_2019_PlateBoundaries_DeformingNetworks.gpmlz output -c plate-model-repo/muller2019/ContinentalPolygons/Global_EarthByte_GPlates_PresentDay_ContinentalPolygons_2019_v1.shp -e 0 -s 10
-               gplately ag output -m muller2019 -e 0 -s 10
-
+example usage: 
+                - gplately ag output -m muller2019 -e 0 -s 10
+                - gplately ag plate-model-repo/muller2019/Rotations/Muller_etal_2019_CombinedRotations.rot plate-model-repo/muller2019/Topologies/Muller_etal_2019_PlateBoundaries_DeformingNetworks.gpmlz output -c plate-model-repo/muller2019/ContinentalPolygons/Global_EarthByte_GPlates_PresentDay_ContinentalPolygons_2019_v1.shp -e 0 -s 10
 """
 
 
@@ -156,25 +161,23 @@ def create_agegrids(
         pm_manager = PlateModelManager()
         plate_model = pm_manager.get_model(model_name, data_dir="plate-model-repo")
 
-        rotations = pygplates.FeatureCollection(
-            pygplates.FeaturesFunctionArgument(
-                plate_model.get_rotation_model()
-            ).get_features()
-        )
-        topologies = pygplates.FeatureCollection(
-            pygplates.FeaturesFunctionArgument(
-                plate_model.get_topologies()
-            ).get_features()
-        )
-        continents = pygplates.FeatureCollection(
-            pygplates.FeaturesFunctionArgument(
-                plate_model.get_layer("ContinentalPolygons")
-            ).get_features()
-        )
+        rotations = pygplates.FeaturesFunctionArgument(
+            plate_model.get_rotation_model()
+        ).get_features()
+
+        topologies = pygplates.FeaturesFunctionArgument(
+            plate_model.get_topologies()
+        ).get_features()
+
+        continents = pygplates.FeaturesFunctionArgument(
+            plate_model.get_layer("ContinentalPolygons")
+        ).get_features()
+
     else:
         features = pygplates.FeaturesFunctionArgument(input_filenames).get_features()
         rotations = []
         topologies = []
+        continents = []
         for i in features:
             if (
                 i.get_feature_type().to_qualified_string()
@@ -183,15 +186,15 @@ def create_agegrids(
                 rotations.append(i)
             else:
                 topologies.append(i)
-        topologies = pygplates.FeatureCollection(topologies)
-        rotations = pygplates.RotationModel(rotations)
 
-        if continents_filenames is None:
-            continents = pygplates.FeatureCollection()
-        else:
-            continents = pygplates.FeatureCollection(
-                pygplates.FeaturesFunctionArgument(continents_filenames).get_features()
-            )
+        if continents_filenames is not None:
+            continents = pygplates.FeaturesFunctionArgument(
+                continents_filenames
+            ).get_features()
+
+    topologies = pygplates.FeatureCollection(topologies)
+    rotations = pygplates.FeatureCollection(rotations)
+    continents = pygplates.FeatureCollection(continents)
 
     with warnings.catch_warnings():
         warnings.simplefilter("ignore", ImportWarning)
@@ -223,6 +226,8 @@ def create_agegrids(
 
 
 def _run_create_agegrids(args):
+    start = time.time()
+
     create_agegrids(
         model_name=args.model_name,
         input_filenames=args.input_filenames,
@@ -237,4 +242,10 @@ def _run_create_agegrids(args):
         initial_spreadrate=args.initial_spreadrate,
         file_collection=args.file_collection,
         unmasked=args.unmasked,
+    )
+
+    end = time.time()
+    hours_minutes_seconds = str(datetime.timedelta(seconds=end - start)).split(":")
+    logger.info(
+        f"Completed creating age grids in {hours_minutes_seconds[0]} Hours, {hours_minutes_seconds[1]} Minutes, {hours_minutes_seconds[2].split('.')[0]} Seconds "
     )
