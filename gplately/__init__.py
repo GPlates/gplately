@@ -245,7 +245,7 @@ import os
 from .utils import setup_logging, turn_on_debug_logging
 
 setup_logging()
-if os.environ["GPLATELY_DEBUG"].lower() == "true":
+if os.environ["GPLATELY_DEBUG"] and os.environ["GPLATELY_DEBUG"].lower() == "true":
     turn_on_debug_logging()
 
 del setup_logging
