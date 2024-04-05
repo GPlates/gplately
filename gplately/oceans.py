@@ -1422,6 +1422,17 @@ class SeafloorGrid(object):
                 gridding_input_filename = os.path.join(
                     self.save_directory, gridding_input_basename
                 )
+
+                # save debug file
+                if os.environ["GPLATELY_DEBUG"].lower() == "true":
+                    save_age_grid_sample_points_to_gpml(
+                        gridding_input_dictionary["CURRENT_LONGITUDES"],
+                        gridding_input_dictionary["CURRENT_LATITUDES"],
+                        gridding_input_dictionary["SEAFLOOR_AGE"],
+                        topology_reconstruction.get_current_time(),
+                        self.save_directory,
+                    )
+
                 np.savez_compressed(gridding_input_filename, *data_to_store)
 
             if not topology_reconstruction.reconstruct_to_next_time():
@@ -1604,3 +1615,17 @@ def _lat_lon_z_to_netCDF_time(
         extent=extent,
     )
     logger.info(f"netCDF grids for {time} Ma complete!")
+
+
+def save_age_grid_sample_points_to_gpml(lons, lats, seafloor_ages, paleo_time, outdir):
+    logger.debug(f"saving age grid sample points to gpml file -- {paleo_time} Ma")
+    features = []
+    for lon, lat, age in zip(lons, lats, seafloor_ages):
+        f = pygplates.Feature()
+        p = pygplates.PointOnSphere(lat, lon)
+        f.set_geometry(p)
+        f.set_valid_time(age + paleo_time, paleo_time)
+        features.append(f)
+    pygplates.FeatureCollection(features).write(
+        os.path.join(outdir, f"age_grid_sample_points_{paleo_time}_Ma.gpmlz")
+    )
