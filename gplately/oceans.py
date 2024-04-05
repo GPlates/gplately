@@ -1424,7 +1424,10 @@ class SeafloorGrid(object):
                 )
 
                 # save debug file
-                if os.environ["GPLATELY_DEBUG"].lower() == "true":
+                if (
+                    "GPLATELY_DEBUG" in os.environ
+                    and os.environ["GPLATELY_DEBUG"].lower() == "true"
+                ):
                     save_age_grid_sample_points_to_gpml(
                         gridding_input_dictionary["CURRENT_LONGITUDES"],
                         gridding_input_dictionary["CURRENT_LATITUDES"],
