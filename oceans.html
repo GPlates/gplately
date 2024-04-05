@@ -226,6 +226,7 @@ Classes
 &#34;&#34;&#34;
 
 import glob
+import logging
 import os
 import re
 import warnings
@@ -236,6 +237,8 @@ import pygplates
 
 from . import grids, ptt, reconstruction, tools
 from .ptt import separate_ridge_transform_segments
+
+logger = logging.getLogger(&#34;gplately&#34;)
 
 # -------------------------------------------------------------------------
 # Auxiliary functions for SeafloorGrid
@@ -520,7 +523,9 @@ class SeafloorGrid(object):
         self._PlotTopologies_object = PlotTopologies_object
         save_directory = str(save_directory)
         if not os.path.isdir(save_directory):
-            print(&#34;Output directory does not exist; creating now: &#34; + save_directory)
+            logger.info(
+                &#34;Output directory does not exist; creating now: &#34; + save_directory
+            )
             os.makedirs(save_directory, exist_ok=True)
         self.save_directory = save_directory
         if file_collection is not None:
@@ -564,9 +569,7 @@ class SeafloorGrid(object):
                 with warnings.catch_warnings():
                     warnings.simplefilter(&#34;always&#34;)
                     warnings.warn(
-                        &#34;The provided grid_spacing of {} is quite large. To preserve the grid resolution, a {} degree spacing has been employed instead&#34;.format(
-                            grid_spacing, self.grid_spacing
-                        )
+                        f&#34;The provided grid_spacing of {grid_spacing} is quite large. To preserve the grid resolution, a {self.grid_spacing} degree spacing has been employed instead.&#34;
                     )
 
             # If the provided degree spacing is not in the list of permissible spacings, but below
@@ -590,9 +593,7 @@ class SeafloorGrid(object):
                 with warnings.catch_warnings():
                     warnings.simplefilter(&#34;always&#34;)
                     warnings.warn(
-                        &#34;The provided grid_spacing of {} does not cleanly divide into the global extent. A degree spacing of {} has been employed instead.&#34;.format(
-                            grid_spacing, self.grid_spacing
-                        )
+                        f&#34;The provided grid_spacing of {grid_spacing} does not cleanly divide into the global extent. A degree spacing of {self.grid_spacing} has been employed instead.&#34;
                     )
 
         else:
@@ -1056,7 +1057,7 @@ class SeafloorGrid(object):
                 self._collect_point_data_in_dataframe(
                     mor_points, point_spreading_rates, time
                 )
-            print(&#34;Finished building MOR seedpoints at {} Ma!&#34;.format(time))
+            logger.info(f&#34;Finished building MOR seedpoints at {time} Ma!&#34;)
         return
 
     def build_all_MOR_seedpoints(self):
@@ -1180,7 +1181,7 @@ class SeafloorGrid(object):
             grids.write_netcdf_grid(
                 output_filename, final_grid, extent=[-180, 180, -90, 90]
             )
-            print(&#34;Finished building a continental mask at {} Ma!&#34;.format(time))
+            logger.info(f&#34;Finished building a continental mask at {time} Ma!&#34;)
 
         return
 
@@ -1286,7 +1287,7 @@ class SeafloorGrid(object):
             initial_ocean_seed_points,
             initial_ocean_seed_points_mp,
         ) = self.create_initial_ocean_seed_points()
-        print(&#34;Finished building initial_ocean_seed_points!&#34;)
+        logger.info(&#34;Finished building initial_ocean_seed_points!&#34;)
 
         # MOR SEED POINTS AND CONTINENTAL MASKS --------------------------------------------
 
@@ -1302,7 +1303,7 @@ class SeafloorGrid(object):
         if self.continent_mask_filename is None:
             self.build_all_continental_masks()
         else:
-            print(
+            logger.info(
                 &#34;Continent masks passed to SeafloorGrid - skipping continental mask generation!&#34;
             )
 
@@ -1366,7 +1367,7 @@ class SeafloorGrid(object):
         All active points&#39; latitudes, longitues, seafloor ages, spreading rates and all
         other general z-values are saved to a gridding input file (.npz).
         &#34;&#34;&#34;
-        print(&#34;Preparing all initial files...&#34;)
+        logger.info(&#34;Preparing all initial files...&#34;)
 
         # Obtain all info from the ocean seed points and all MOR points through time, store in
         # arrays
@@ -1433,10 +1434,8 @@ class SeafloorGrid(object):
         # have been deactivated (subducted forward in time or consumed by MOR backward in time).
         reconstruction_data = []
         while True:
-            print(
-                &#34;Reconstruct by topologies: working on time {:0.2f} Ma&#34;.format(
-                    topology_reconstruction.get_current_time()
-                )
+            logger.info(
+                f&#34;Reconstruct by topologies: working on time {topology_reconstruction.get_current_time():0.2f} Ma&#34;
             )
 
             # NOTE:
@@ -1543,15 +1542,27 @@ class SeafloorGrid(object):
                 gridding_input_filename = os.path.join(
                     self.save_directory, gridding_input_basename
                 )
+
+                # save debug file
+                if (
+                    &#34;GPLATELY_DEBUG&#34; in os.environ
+                    and os.environ[&#34;GPLATELY_DEBUG&#34;].lower() == &#34;true&#34;
+                ):
+                    save_age_grid_sample_points_to_gpml(
+                        gridding_input_dictionary[&#34;CURRENT_LONGITUDES&#34;],
+                        gridding_input_dictionary[&#34;CURRENT_LATITUDES&#34;],
+                        gridding_input_dictionary[&#34;SEAFLOOR_AGE&#34;],
+                        topology_reconstruction.get_current_time(),
+                        self.save_directory,
+                    )
+
                 np.savez_compressed(gridding_input_filename, *data_to_store)
 
             if not topology_reconstruction.reconstruct_to_next_time():
                 break
 
-            print(
-                &#34;Reconstruction done for {}!&#34;.format(
-                    topology_reconstruction.get_current_time()
-                )
+            logger.info(
+                f&#34;Reconstruction done for {topology_reconstruction.get_current_time()}!&#34;
             )
         # return reconstruction_data
 
@@ -1726,7 +1737,21 @@ def _lat_lon_z_to_netCDF_time(
         Z,
         extent=extent,
     )
-    print(&#34;netCDF grids for {} Ma complete!&#34;.format(time))</code></pre>
+    logger.info(f&#34;netCDF grids for {time} Ma complete!&#34;)
+
+
+def save_age_grid_sample_points_to_gpml(lons, lats, seafloor_ages, paleo_time, outdir):
+    logger.debug(f&#34;saving age grid sample points to gpml file -- {paleo_time} Ma&#34;)
+    features = []
+    for lon, lat, age in zip(lons, lats, seafloor_ages):
+        f = pygplates.Feature()
+        p = pygplates.PointOnSphere(lat, lon)
+        f.set_geometry(p)
+        f.set_valid_time(age + paleo_time, paleo_time)
+        features.append(f)
+    pygplates.FeatureCollection(features).write(
+        os.path.join(outdir, f&#34;age_grid_sample_points_{paleo_time}_Ma.gpmlz&#34;)
+    )</code></pre>
 </details>
 </section>
 <section>
@@ -2027,6 +2052,29 @@ in the COB terrane polygon.</dd>
     )</code></pre>
 </details>
 </dd>
+<dt id="gplately.oceans.save_age_grid_sample_points_to_gpml"><code class="name flex">
+<span>def <span class="ident">save_age_grid_sample_points_to_gpml</span></span>(<span>lons, lats, seafloor_ages, paleo_time, outdir)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def save_age_grid_sample_points_to_gpml(lons, lats, seafloor_ages, paleo_time, outdir):
+    logger.debug(f&#34;saving age grid sample points to gpml file -- {paleo_time} Ma&#34;)
+    features = []
+    for lon, lat, age in zip(lons, lats, seafloor_ages):
+        f = pygplates.Feature()
+        p = pygplates.PointOnSphere(lat, lon)
+        f.set_geometry(p)
+        f.set_valid_time(age + paleo_time, paleo_time)
+        features.append(f)
+    pygplates.FeatureCollection(features).write(
+        os.path.join(outdir, f&#34;age_grid_sample_points_{paleo_time}_Ma.gpmlz&#34;)
+    )</code></pre>
+</details>
+</dd>
 </dl>
 </section>
 <section>
@@ -2185,7 +2233,9 @@ if needed.</dd>
         self._PlotTopologies_object = PlotTopologies_object
         save_directory = str(save_directory)
         if not os.path.isdir(save_directory):
-            print(&#34;Output directory does not exist; creating now: &#34; + save_directory)
+            logger.info(
+                &#34;Output directory does not exist; creating now: &#34; + save_directory
+            )
             os.makedirs(save_directory, exist_ok=True)
         self.save_directory = save_directory
         if file_collection is not None:
@@ -2229,9 +2279,7 @@ if needed.</dd>
                 with warnings.catch_warnings():
                     warnings.simplefilter(&#34;always&#34;)
                     warnings.warn(
-                        &#34;The provided grid_spacing of {} is quite large. To preserve the grid resolution, a {} degree spacing has been employed instead&#34;.format(
-                            grid_spacing, self.grid_spacing
-                        )
+                        f&#34;The provided grid_spacing of {grid_spacing} is quite large. To preserve the grid resolution, a {self.grid_spacing} degree spacing has been employed instead.&#34;
                     )
 
             # If the provided degree spacing is not in the list of permissible spacings, but below
@@ -2255,9 +2303,7 @@ if needed.</dd>
                 with warnings.catch_warnings():
                     warnings.simplefilter(&#34;always&#34;)
                     warnings.warn(
-                        &#34;The provided grid_spacing of {} does not cleanly divide into the global extent. A degree spacing of {} has been employed instead.&#34;.format(
-                            grid_spacing, self.grid_spacing
-                        )
+                        f&#34;The provided grid_spacing of {grid_spacing} does not cleanly divide into the global extent. A degree spacing of {self.grid_spacing} has been employed instead.&#34;
                     )
 
         else:
@@ -2721,7 +2767,7 @@ if needed.</dd>
                 self._collect_point_data_in_dataframe(
                     mor_points, point_spreading_rates, time
                 )
-            print(&#34;Finished building MOR seedpoints at {} Ma!&#34;.format(time))
+            logger.info(f&#34;Finished building MOR seedpoints at {time} Ma!&#34;)
         return
 
     def build_all_MOR_seedpoints(self):
@@ -2845,7 +2891,7 @@ if needed.</dd>
             grids.write_netcdf_grid(
                 output_filename, final_grid, extent=[-180, 180, -90, 90]
             )
-            print(&#34;Finished building a continental mask at {} Ma!&#34;.format(time))
+            logger.info(f&#34;Finished building a continental mask at {time} Ma!&#34;)
 
         return
 
@@ -2951,7 +2997,7 @@ if needed.</dd>
             initial_ocean_seed_points,
             initial_ocean_seed_points_mp,
         ) = self.create_initial_ocean_seed_points()
-        print(&#34;Finished building initial_ocean_seed_points!&#34;)
+        logger.info(&#34;Finished building initial_ocean_seed_points!&#34;)
 
         # MOR SEED POINTS AND CONTINENTAL MASKS --------------------------------------------
 
@@ -2967,7 +3013,7 @@ if needed.</dd>
         if self.continent_mask_filename is None:
             self.build_all_continental_masks()
         else:
-            print(
+            logger.info(
                 &#34;Continent masks passed to SeafloorGrid - skipping continental mask generation!&#34;
             )
 
@@ -3031,7 +3077,7 @@ if needed.</dd>
         All active points&#39; latitudes, longitues, seafloor ages, spreading rates and all
         other general z-values are saved to a gridding input file (.npz).
         &#34;&#34;&#34;
-        print(&#34;Preparing all initial files...&#34;)
+        logger.info(&#34;Preparing all initial files...&#34;)
 
         # Obtain all info from the ocean seed points and all MOR points through time, store in
         # arrays
@@ -3098,10 +3144,8 @@ if needed.</dd>
         # have been deactivated (subducted forward in time or consumed by MOR backward in time).
         reconstruction_data = []
         while True:
-            print(
-                &#34;Reconstruct by topologies: working on time {:0.2f} Ma&#34;.format(
-                    topology_reconstruction.get_current_time()
-                )
+            logger.info(
+                f&#34;Reconstruct by topologies: working on time {topology_reconstruction.get_current_time():0.2f} Ma&#34;
             )
 
             # NOTE:
@@ -3208,15 +3252,27 @@ if needed.</dd>
                 gridding_input_filename = os.path.join(
                     self.save_directory, gridding_input_basename
                 )
+
+                # save debug file
+                if (
+                    &#34;GPLATELY_DEBUG&#34; in os.environ
+                    and os.environ[&#34;GPLATELY_DEBUG&#34;].lower() == &#34;true&#34;
+                ):
+                    save_age_grid_sample_points_to_gpml(
+                        gridding_input_dictionary[&#34;CURRENT_LONGITUDES&#34;],
+                        gridding_input_dictionary[&#34;CURRENT_LATITUDES&#34;],
+                        gridding_input_dictionary[&#34;SEAFLOOR_AGE&#34;],
+                        topology_reconstruction.get_current_time(),
+                        self.save_directory,
+                    )
+
                 np.savez_compressed(gridding_input_filename, *data_to_store)
 
             if not topology_reconstruction.reconstruct_to_next_time():
                 break
 
-            print(
-                &#34;Reconstruction done for {}!&#34;.format(
-                    topology_reconstruction.get_current_time()
-                )
+            logger.info(
+                f&#34;Reconstruction done for {topology_reconstruction.get_current_time()}!&#34;
             )
         # return reconstruction_data
 
@@ -3923,7 +3979,7 @@ all ridge points for all times in the reconstruction time array.</p></div>
         initial_ocean_seed_points,
         initial_ocean_seed_points_mp,
     ) = self.create_initial_ocean_seed_points()
-    print(&#34;Finished building initial_ocean_seed_points!&#34;)
+    logger.info(&#34;Finished building initial_ocean_seed_points!&#34;)
 
     # MOR SEED POINTS AND CONTINENTAL MASKS --------------------------------------------
 
@@ -3939,7 +3995,7 @@ all ridge points for all times in the reconstruction time array.</p></div>
     if self.continent_mask_filename is None:
         self.build_all_continental_masks()
     else:
-        print(
+        logger.info(
             &#34;Continent masks passed to SeafloorGrid - skipping continental mask generation!&#34;
         )
 
@@ -4017,7 +4073,7 @@ other general z-values are saved to a gridding input file (.npz).</p></div>
     All active points&#39; latitudes, longitues, seafloor ages, spreading rates and all
     other general z-values are saved to a gridding input file (.npz).
     &#34;&#34;&#34;
-    print(&#34;Preparing all initial files...&#34;)
+    logger.info(&#34;Preparing all initial files...&#34;)
 
     # Obtain all info from the ocean seed points and all MOR points through time, store in
     # arrays
@@ -4084,10 +4140,8 @@ other general z-values are saved to a gridding input file (.npz).</p></div>
     # have been deactivated (subducted forward in time or consumed by MOR backward in time).
     reconstruction_data = []
     while True:
-        print(
-            &#34;Reconstruct by topologies: working on time {:0.2f} Ma&#34;.format(
-                topology_reconstruction.get_current_time()
-            )
+        logger.info(
+            f&#34;Reconstruct by topologies: working on time {topology_reconstruction.get_current_time():0.2f} Ma&#34;
         )
 
         # NOTE:
@@ -4194,15 +4248,27 @@ other general z-values are saved to a gridding input file (.npz).</p></div>
             gridding_input_filename = os.path.join(
                 self.save_directory, gridding_input_basename
             )
+
+            # save debug file
+            if (
+                &#34;GPLATELY_DEBUG&#34; in os.environ
+                and os.environ[&#34;GPLATELY_DEBUG&#34;].lower() == &#34;true&#34;
+            ):
+                save_age_grid_sample_points_to_gpml(
+                    gridding_input_dictionary[&#34;CURRENT_LONGITUDES&#34;],
+                    gridding_input_dictionary[&#34;CURRENT_LATITUDES&#34;],
+                    gridding_input_dictionary[&#34;SEAFLOOR_AGE&#34;],
+                    topology_reconstruction.get_current_time(),
+                    self.save_directory,
+                )
+
             np.savez_compressed(gridding_input_filename, *data_to_store)
 
         if not topology_reconstruction.reconstruct_to_next_time():
             break
 
-        print(
-            &#34;Reconstruction done for {}!&#34;.format(
-                topology_reconstruction.get_current_time()
-            )
+        logger.info(
+            f&#34;Reconstruction done for {topology_reconstruction.get_current_time()}!&#34;
         )
     # return reconstruction_data</code></pre>
 </details>
@@ -4250,6 +4316,7 @@ other general z-values are saved to a gridding input file (.npz).</p></div>
 <li><code><a title="gplately.oceans.create_icosahedral_mesh" href="#gplately.oceans.create_icosahedral_mesh">create_icosahedral_mesh</a></code></li>
 <li><code><a title="gplately.oceans.ensure_polygon_geometry" href="#gplately.oceans.ensure_polygon_geometry">ensure_polygon_geometry</a></code></li>
 <li><code><a title="gplately.oceans.point_in_polygon_routine" href="#gplately.oceans.point_in_polygon_routine">point_in_polygon_routine</a></code></li>
+<li><code><a title="gplately.oceans.save_age_grid_sample_points_to_gpml" href="#gplately.oceans.save_age_grid_sample_points_to_gpml">save_age_grid_sample_points_to_gpml</a></code></li>
 </ul>
 </li>
 <li><h3><a href="#header-classes">Classes</a></h3>
