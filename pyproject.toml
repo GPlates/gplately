@@ -38,16 +38,10 @@ dependencies = [
     "pyyaml"
 ]
 
-[tool.setuptools]
-packages = ["gplately", "gplately.ptt", "gplately.ptt.utils"]
-
-[tool.setuptools.package-dir]
-gplately = "gplately"
-"gplately.ptt" = "gplately/ptt"
-"gplately.ptt.utils" = "gplately/ptt/utils"
-
-[tool.setuptools.package-data]
-gplately = []
+[tool.setuptools.packages.find]
+where = ["."]
+exclude = ['*.examples*','*.notebooks*']
+namespaces = true
 
 [tool.setuptools.dynamic]
 version = {attr = "gplately.__version__"}

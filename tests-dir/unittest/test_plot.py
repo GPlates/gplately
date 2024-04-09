@@ -1,15 +1,21 @@
 #!/usr/bin/env python3
 
+import os
 import sys
 
 import cartopy.crs as ccrs
 import matplotlib.pyplot as plt
 from plate_model_manager import PlateModelManager
 
-sys.path.insert(0, "../..")
+if "GPLATELY_DEBUG" in os.environ and os.environ["GPLATELY_DEBUG"].lower() == "true":
+    sys.path.insert(0, os.path.dirname(os.path.realpath(__file__)))
+
 from common import MODEL_REPO_DIR, save_fig
 
+import gplately
 from gplately import PlateReconstruction, PlotTopologies
+
+print(gplately.__file__)
 
 # test the plot function with the new PlateModel class
 
@@ -43,6 +49,7 @@ def main(show=True):
     gplot.plot_ridges_and_transforms(ax, color="red")
     gplot.plot_trenches(ax, color="orange")
     gplot.plot_subduction_teeth(ax, color="orange")
+    gplot.plot_ridges(ax, color="green")
     ax.set_global()
 
     ids = set([f.get_reconstruction_plate_id() for f in gplot.topologies])
