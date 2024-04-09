@@ -1,9 +1,11 @@
+import os
 import sys
 from pathlib import Path
 
 import matplotlib.pyplot as plt
 
-sys.path.insert(0, "../..")
+if "GPLATELY_DEBUG" in os.environ and os.environ["GPLATELY_DEBUG"].lower() == "true":
+    sys.path.insert(0, "../..")
 
 
 OUTPUT_DIR = "output"
