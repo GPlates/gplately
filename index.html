@@ -7554,7 +7554,8 @@ boundaries and passive continental boundaries.</dd>
         self.plate_reconstruction = plate_reconstruction
 
         if self.plate_reconstruction.topology_features is None:
-            raise ValueError(&#34;Plate model must have topology features.&#34;)
+            self.plate_reconstruction.topology_features = []
+            logger.warn(&#34;Plate model does not have topology features.&#34;)
 
         self.base_projection = ccrs.PlateCarree()
 
@@ -7706,9 +7707,10 @@ boundaries and passive continental boundaries.</dd>
             self.other,
         ) = resolved_topologies
 
-        self.ridges, self.transforms = ptt.separate_ridge_transform_segments.separate_features_into_ridges_and_transforms(
-            self.plate_reconstruction.rotation_model,
-            self.ridge_transforms
+        self.ridges, self.transforms = (
+            ptt.separate_ridge_transform_segments.separate_features_into_ridges_and_transforms(
+                self.plate_reconstruction.rotation_model, self.ridge_transforms
+            )
         )
 
         # miscellaneous boundaries
@@ -8285,119 +8287,6 @@ boundaries and passive continental boundaries.</dd>
             kwargs[&#34;transform&#34;] = self.base_projection
         return gdf.plot(ax=ax, **kwargs)
 
-    def get_ridges(self, central_meridian=0.0, tessellate_degrees=1):
-        &#34;&#34;&#34;Create a geopandas.GeoDataFrame object containing geometries of reconstructed ridge lines.
-
-        Notes
-        -----
-        The `ridges` needed to produce the GeoDataFrame are automatically constructed if the optional `time`
-        parameter is passed to the `PlotTopologies` object before calling this function. `time` can be passed
-        either when `PlotTopologies` is first called...
-
-            gplot = gplately.PlotTopologies(..., time=100,...)
-
-        or anytime afterwards, by setting:
-
-            time = 100 #Ma
-            gplot.time = time
-
-        ...after which this function can be re-run. Once the `ridges` are reconstructed, they are
-        converted into Shapely lines whose coordinates are passed to a geopandas GeoDataFrame.
-
-        Returns
-        -------
-        gdf : instance of &lt;geopandas.GeoDataFrame&gt;
-            A pandas.DataFrame that has a column with `ridges` geometry.
-        central_meridian : float
-            Central meridian around which to perform wrapping; default: 0.0.
-        tessellate_degrees : float or None
-            If provided, geometries will be tessellated to this resolution prior
-            to wrapping.
-
-        Raises
-        ------
-        ValueError
-            If the optional `time` parameter has not been passed to `PlotTopologies`. This is needed to construct
-            `ridges` to the requested `time` and thus populate the GeoDataFrame.
-
-        &#34;&#34;&#34;
-        if self._time is None:
-            raise ValueError(
-                &#34;No ridges have been resolved. Set `PlotTopologies.time` to construct ridges.&#34;
-            )
-
-        if self.ridges is None:
-            raise ValueError(&#34;No ridge topologies passed to PlotTopologies.&#34;)
-
-        ridge_lines = shapelify_feature_lines(
-            self.ridges,
-            central_meridian=central_meridian,
-            tessellate_degrees=tessellate_degrees,
-        )
-        gdf = gpd.GeoDataFrame({&#34;geometry&#34;: ridge_lines}, geometry=&#34;geometry&#34;)
-        return gdf
-
-    def plot_ridges(self, ax, color=&#34;black&#34;, **kwargs):
-        &#34;&#34;&#34;Plot reconstructed ridge polylines onto a standard map Projection.
-
-        Notes
-        -----
-        The `ridges` for plotting are accessed from the `PlotTopologies` object&#39;s
-        `ridges` attribute. These `ridges` are reconstructed to the `time`
-        passed to the `PlotTopologies` object and converted into Shapely polylines.
-        The reconstructed `ridges` are plotted onto the GeoAxes or GeoAxesSubplot map
-        `ax` using GeoPandas. Map presentation details (e.g. `facecolor`, `edgecolor`, `alpha`…)
-        are permitted as keyword arguments.
-
-        Ridge geometries are wrapped to the dateline using
-        pyGPlates&#39; [DateLineWrapper](https://www.gplates.org/docs/pygplates/generated/pygplates.datelinewrapper)
-        by splitting a polyline into multiple polylines at the dateline. This is to avoid
-        horizontal lines being formed between polylines at longitudes of -180 and 180 degrees.
-        Point features near the poles (-89 &amp; 89 degree latitude) are also clipped to ensure
-        compatibility with Cartopy.
-
-        Parameters
-        ----------
-        ax : instance of &lt;cartopy.mpl.geoaxes.GeoAxes&gt; or &lt;cartopy.mpl.geoaxes.GeoAxesSubplot&gt;
-            A subclass of `matplotlib.axes.Axes` which represents a map Projection.
-            The map should be set at a particular Cartopy projection.
-
-        color : str, default=’black’
-            The colour of the ridge lines. By default, it is set to black.
-
-        **kwargs :
-            Keyword arguments for parameters such as `alpha`, etc. for
-            plotting ridge geometries.
-            See `Matplotlib` keyword arguments
-            [here](https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html).
-
-        Returns
-        -------
-        ax : instance of &lt;geopandas.GeoDataFrame.plot&gt;
-            A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map
-            with ridge features plotted onto the chosen map projection.
-        &#34;&#34;&#34;
-        if &#34;transform&#34; in kwargs.keys():
-            warnings.warn(
-                &#34;&#39;transform&#39; keyword argument is ignored by PlotTopologies&#34;,
-                UserWarning,
-            )
-            kwargs.pop(&#34;transform&#34;)
-        tessellate_degrees = kwargs.pop(&#34;tessellate_degrees&#34;, 1)
-        central_meridian = kwargs.pop(&#34;central_meridian&#34;, None)
-        if central_meridian is None:
-            central_meridian = _meridian_from_ax(ax)
-
-        gdf = self.get_ridges(
-            central_meridian=central_meridian,
-            tessellate_degrees=tessellate_degrees,
-        )
-        if hasattr(ax, &#34;projection&#34;):
-            gdf = _clean_polygons(data=gdf, projection=ax.projection)
-        else:
-            kwargs[&#34;transform&#34;] = self.base_projection
-        return gdf.plot(ax=ax, facecolor=&#34;none&#34;, edgecolor=color, **kwargs)
-
     def get_ridges_and_transforms(
         self,
         central_meridian=0.0,
@@ -8497,6 +8386,12 @@ boundaries and passive continental boundaries.</dd>
             A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map
             with ridge &amp; transform features plotted onto the chosen map projection.
         &#34;&#34;&#34;
+        if not self.plate_reconstruction.topology_features:
+            logger.warn(
+                &#34;Plate model does not have topology features. Unable to plot_ridges_and_transforms.&#34;
+            )
+            return
+
         if &#34;transform&#34; in kwargs.keys():
             warnings.warn(
                 &#34;&#39;transform&#39; keyword argument is ignored by PlotTopologies&#34;,
@@ -8609,6 +8504,12 @@ boundaries and passive continental boundaries.</dd>
             A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map
             with transform features plotted onto the chosen map projection.
         &#34;&#34;&#34;
+        if not self.plate_reconstruction.topology_features:
+            logger.warn(
+                &#34;Plate model does not have topology features. Unable to plot_transforms.&#34;
+            )
+            return
+
         if &#34;transform&#34; in kwargs.keys():
             warnings.warn(
                 &#34;&#39;transform&#39; keyword argument is ignored by PlotTopologies&#34;,
@@ -8722,6 +8623,11 @@ boundaries and passive continental boundaries.</dd>
             A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map
             with transform features plotted onto the chosen map projection.
         &#34;&#34;&#34;
+        if not self.plate_reconstruction.topology_features:
+            logger.warn(
+                &#34;Plate model does not have topology features. Unable to plot_trenches.&#34;
+            )
+            return
         if &#34;transform&#34; in kwargs.keys():
             warnings.warn(
                 &#34;&#39;transform&#39; keyword argument is ignored by PlotTopologies&#34;,
@@ -9018,6 +8924,11 @@ boundaries and passive continental boundaries.</dd>
             See `Matplotlib` keyword arguments
             [here](https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html).
         &#34;&#34;&#34;
+        if not self.plate_reconstruction.topology_features:
+            logger.warn(
+                &#34;Plate model does not have topology features. Unable to plot_subduction_teeth.&#34;
+            )
+            return
         if self._time is None:
             raise ValueError(
                 &#34;No topologies have been resolved. Set `PlotTopologies.time` to construct them.&#34;
@@ -10979,7 +10890,9 @@ boundaries and passive continental boundaries.</dd>
             gdf = _clean_polygons(data=gdf, projection=ax.projection)
         else:
             kwargs[&#34;transform&#34;] = self.base_projection
-        return gdf.plot(ax=ax, color=color, **kwargs)</code></pre>
+        return gdf.plot(ax=ax, color=color, **kwargs)
+
+    from ._plot.ridge import get_ridges, plot_ridges</code></pre>
 </details>
 <h3>Instance variables</h3>
 <dl>
@@ -15157,6 +15070,12 @@ with ridge features plotted onto the chosen map projection.</dd>
         A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map
         with ridge features plotted onto the chosen map projection.
     &#34;&#34;&#34;
+    if not self.plate_reconstruction.topology_features:
+        logger.warn(
+            &#34;Plate model does not have topology features. Unable to plot_ridges.&#34;
+        )
+        return
+
     if &#34;transform&#34; in kwargs.keys():
         warnings.warn(
             &#34;&#39;transform&#39; keyword argument is ignored by PlotTopologies&#34;,
@@ -15262,6 +15181,12 @@ with ridge &amp; transform features plotted onto the chosen map projection.</dd>
         A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map
         with ridge &amp; transform features plotted onto the chosen map projection.
     &#34;&#34;&#34;
+    if not self.plate_reconstruction.topology_features:
+        logger.warn(
+            &#34;Plate model does not have topology features. Unable to plot_ridges_and_transforms.&#34;
+        )
+        return
+
     if &#34;transform&#34; in kwargs.keys():
         warnings.warn(
             &#34;&#39;transform&#39; keyword argument is ignored by PlotTopologies&#34;,
@@ -15429,6 +15354,11 @@ See <code>Matplotlib</code> keyword arguments
         See `Matplotlib` keyword arguments
         [here](https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html).
     &#34;&#34;&#34;
+    if not self.plate_reconstruction.topology_features:
+        logger.warn(
+            &#34;Plate model does not have topology features. Unable to plot_subduction_teeth.&#34;
+        )
+        return
     if self._time is None:
         raise ValueError(
             &#34;No topologies have been resolved. Set `PlotTopologies.time` to construct them.&#34;
@@ -15838,6 +15768,12 @@ with transform features plotted onto the chosen map projection.</dd>
         A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map
         with transform features plotted onto the chosen map projection.
     &#34;&#34;&#34;
+    if not self.plate_reconstruction.topology_features:
+        logger.warn(
+            &#34;Plate model does not have topology features. Unable to plot_transforms.&#34;
+        )
+        return
+
     if &#34;transform&#34; in kwargs.keys():
         warnings.warn(
             &#34;&#39;transform&#39; keyword argument is ignored by PlotTopologies&#34;,
@@ -16017,6 +15953,11 @@ with transform features plotted onto the chosen map projection.</dd>
         A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map
         with transform features plotted onto the chosen map projection.
     &#34;&#34;&#34;
+    if not self.plate_reconstruction.topology_features:
+        logger.warn(
+            &#34;Plate model does not have topology features. Unable to plot_trenches.&#34;
+        )
+        return
     if &#34;transform&#34; in kwargs.keys():
         warnings.warn(
             &#34;&#39;transform&#39; keyword argument is ignored by PlotTopologies&#34;,
@@ -16176,9 +16117,10 @@ whenever it or the anchor plate is updated.</p>
         self.other,
     ) = resolved_topologies
 
-    self.ridges, self.transforms = ptt.separate_ridge_transform_segments.separate_features_into_ridges_and_transforms(
-        self.plate_reconstruction.rotation_model,
-        self.ridge_transforms
+    self.ridges, self.transforms = (
+        ptt.separate_ridge_transform_segments.separate_features_into_ridges_and_transforms(
+            self.plate_reconstruction.rotation_model, self.ridge_transforms
+        )
     )
 
     # miscellaneous boundaries
