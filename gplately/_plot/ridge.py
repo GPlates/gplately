@@ -3,7 +3,8 @@ import warnings
 
 import geopandas as gpd
 
-from .utils import _clean_polygons, _meridian_from_ax, shapelify_feature_lines
+from .._utils.feature_utils import shapelify_features
+from .._utils.plot_utils import _clean_polygons, _meridian_from_ax
 
 logger = logging.getLogger("gplately")
 
@@ -52,7 +53,7 @@ def get_ridges(self, central_meridian=0.0, tessellate_degrees=1):
     if self.ridges is None:
         raise ValueError("No ridge topologies passed to PlotTopologies.")
 
-    ridge_lines = shapelify_feature_lines(
+    ridge_lines = shapelify_features(
         self.ridges,
         central_meridian=central_meridian,
         tessellate_degrees=tessellate_degrees,

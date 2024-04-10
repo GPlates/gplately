@@ -1,4 +1,3 @@
-# configurate the logging utility
 import logging.config
 import logging.handlers
 import os
@@ -6,6 +5,7 @@ import os
 import yaml
 
 
+# configurate the logging utility
 def setup_logging():
     cfg_file_path = f"{os.path.dirname(os.path.realpath(__file__))}/logging_config.yaml"
     if os.path.isfile(cfg_file_path):

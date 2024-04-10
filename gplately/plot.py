@@ -12,7 +12,6 @@ PlotTopologies
 
 import logging
 import math
-import re
 import warnings
 
 import cartopy.crs as ccrs
@@ -20,40 +19,19 @@ import geopandas as gpd
 import matplotlib.pyplot as plt
 import numpy as np
 import pygplates
-from shapely.geometry import (
-    LineString,
-    MultiLineString,
-    MultiPolygon,
-    Point,
-    Polygon,
-    box,
-)
 from shapely.geometry.base import BaseGeometry, BaseMultipartGeometry
-from shapely.ops import linemerge, substring
+from shapely.ops import linemerge
 
 from . import ptt
-from ._plot.utils import (
-    _calculate_triangle_vertices,
+from ._utils.feature_utils import shapelify_features as _shapelify_features
+from ._utils.plot_utils import (
     _clean_polygons,
-    _fill_all_edges,
-    _fill_edge_polygon,
     _find_polarity_column,
-    _get_geometries,
     _meridian_from_ax,
-    _meridian_from_projection,
-    _parse_geometries,
-    _parse_polarity,
-    _project_geometry,
     _tessellate_triangles,
-    shapelify_feature_lines,
-    shapelify_feature_polygons,
-    shapelify_features,
 )
-from .geometry import pygplates_to_shapely
 from .gpml import _load_FeatureCollection
 from .pygplates import FeatureCollection as _FeatureCollection
-from .pygplates import _is_string
-from .read_geometries import get_geometries as _get_geometries
 from .read_geometries import (
     get_valid_geometries,
 )  # included for backwards compatibility
@@ -61,6 +39,10 @@ from .reconstruction import PlateReconstruction as _PlateReconstruction
 from .tools import EARTH_RADIUS
 
 logger = logging.getLogger("gplately")
+
+shapelify_features = _shapelify_features
+shapelify_feature_lines = _shapelify_features
+shapelify_feature_polygons = _shapelify_features
 
 
 def plot_subduction_teeth(
