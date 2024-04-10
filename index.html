@@ -605,14 +605,13 @@ __all__ = [
 
 import os
 
-from .utils import setup_logging, turn_on_debug_logging
+from ._utils.log_utils import setup_logging, turn_on_debug_logging
 
 setup_logging()
 if &#34;GPLATELY_DEBUG&#34; in os.environ and os.environ[&#34;GPLATELY_DEBUG&#34;].lower() == &#34;true&#34;:
     turn_on_debug_logging()
 
 del setup_logging
-del utils
 del os</code></pre>
 </details>
 </section>
@@ -693,10 +692,6 @@ working with point data, and calculating plate …</p></div>
 <dt><code class="name"><a title="gplately.tools" href="tools.html">gplately.tools</a></code></dt>
 <dd>
 <div class="desc"><p>A module that offers tools for executing common geological calculations, mathematical conversions and numpy conversions.</p></div>
-</dd>
-<dt><code class="name"><a title="gplately.utils" href="utils.html">gplately.utils</a></code></dt>
-<dd>
-<div class="desc"></div>
 </dd>
 </dl>
 </section>
@@ -12537,7 +12532,7 @@ to wrapping.</dd>
     if self.ridges is None:
         raise ValueError(&#34;No ridge topologies passed to PlotTopologies.&#34;)
 
-    ridge_lines = shapelify_feature_lines(
+    ridge_lines = shapelify_features(
         self.ridges,
         central_meridian=central_meridian,
         tessellate_degrees=tessellate_degrees,
@@ -23037,7 +23032,6 @@ other general z-values are saved to a gridding input file (.npz).</p></div>
 <li><code><a title="gplately.read_geometries" href="read_geometries.html">gplately.read_geometries</a></code></li>
 <li><code><a title="gplately.reconstruction" href="reconstruction.html">gplately.reconstruction</a></code></li>
 <li><code><a title="gplately.tools" href="tools.html">gplately.tools</a></code></li>
-<li><code><a title="gplately.utils" href="utils.html">gplately.utils</a></code></li>
 </ul>
 </li>
 <li><h3><a href="#header-functions">Functions</a></h3>
