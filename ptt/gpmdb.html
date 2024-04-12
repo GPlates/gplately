@@ -178,8 +178,17 @@ def main(args):
 
     # get query data
     if not os.path.isfile(f&#34;{DATA_CACHE_DIR}/{QUERY_DATA_FILENAME}&#34;):
-        response = requests.get(QUERY_DATA_URL, verify=False)
-        query_data = response.json()
+        try:
+            response = requests.get(QUERY_DATA_URL, verify=False)
+            query_data = response.json()
+        except (
+            requests.exceptions.JSONDecodeError,
+            requests.exceptions.ConnectionError,
+        ):
+            print(
+                f&#34;FATAL: The {QUERY_DATA_URL} did not return valid data. Check and make sure the website is up and running!&#34;
+            )
+            sys.exit(1)
         with open(f&#34;{DATA_CACHE_DIR}/{QUERY_DATA_FILENAME}&#34;, &#34;w+&#34;) as outfile:
             outfile.write(json.dumps(query_data))
     else:
@@ -200,8 +209,17 @@ def main(args):
 
     # get pmag-result data
     if not os.path.isfile(f&#34;{DATA_CACHE_DIR}/{PMAG_RESULT_FILENAME}&#34;):
-        response = requests.get(PMAG_RESULT_URL, verify=False)
-        pmagresult_data = response.json()
+        try:
+            response = requests.get(PMAG_RESULT_URL, verify=False)
+            pmagresult_data = response.json()
+        except (
+            requests.exceptions.JSONDecodeError,
+            requests.exceptions.ConnectionError,
+        ):
+            print(
+                f&#34;FATAL: The {PMAG_RESULT_URL} did not return valid data. Check and make sure the website is up and running!&#34;
+            )
+            sys.exit(1)
         with open(f&#34;{DATA_CACHE_DIR}/{PMAG_RESULT_FILENAME}&#34;, &#34;w+&#34;) as outfile:
             outfile.write(json.dumps(pmagresult_data))
     else:
@@ -451,8 +469,17 @@ if __name__ == &#34;__main__&#34;:
 
     # get query data
     if not os.path.isfile(f&#34;{DATA_CACHE_DIR}/{QUERY_DATA_FILENAME}&#34;):
-        response = requests.get(QUERY_DATA_URL, verify=False)
-        query_data = response.json()
+        try:
+            response = requests.get(QUERY_DATA_URL, verify=False)
+            query_data = response.json()
+        except (
+            requests.exceptions.JSONDecodeError,
+            requests.exceptions.ConnectionError,
+        ):
+            print(
+                f&#34;FATAL: The {QUERY_DATA_URL} did not return valid data. Check and make sure the website is up and running!&#34;
+            )
+            sys.exit(1)
         with open(f&#34;{DATA_CACHE_DIR}/{QUERY_DATA_FILENAME}&#34;, &#34;w+&#34;) as outfile:
             outfile.write(json.dumps(query_data))
     else:
@@ -473,8 +500,17 @@ if __name__ == &#34;__main__&#34;:
 
     # get pmag-result data
     if not os.path.isfile(f&#34;{DATA_CACHE_DIR}/{PMAG_RESULT_FILENAME}&#34;):
-        response = requests.get(PMAG_RESULT_URL, verify=False)
-        pmagresult_data = response.json()
+        try:
+            response = requests.get(PMAG_RESULT_URL, verify=False)
+            pmagresult_data = response.json()
+        except (
+            requests.exceptions.JSONDecodeError,
+            requests.exceptions.ConnectionError,
+        ):
+            print(
+                f&#34;FATAL: The {PMAG_RESULT_URL} did not return valid data. Check and make sure the website is up and running!&#34;
+            )
+            sys.exit(1)
         with open(f&#34;{DATA_CACHE_DIR}/{PMAG_RESULT_FILENAME}&#34;, &#34;w+&#34;) as outfile:
             outfile.write(json.dumps(pmagresult_data))
     else:
