@@ -147,6 +147,11 @@ def add_arguments(parser: argparse.ArgumentParser):
         &#34;-m&#34;, &#34;--model&#34;, type=str, dest=&#34;model_name&#34;, default=&#34;Muller2022&#34;
     )
     parser.add_argument(&#34;-o&#34;, &#34;--outfile&#34;, type=str, dest=&#34;outfile&#34;)
+    parser.add_argument(
+        &#34;--use-cached-data&#34;,
+        action=&#34;store_true&#34;,
+        help=&#34;use cached data for debugging purpose&#34;,
+    )
 
 
 __description__ = &#34;&#34;&#34;Retrieve paleomagnetic data from https://www.gpmdb.net, create GPlates-compatible VGP features and save the VGP features in a .gpmlz file.
@@ -174,10 +179,10 @@ __description__ = &#34;&#34;&#34;Retrieve paleomagnetic data from https://www.gp
 
 
 def main(args):
-    Path(DATA_CACHE_DIR).mkdir(parents=True, exist_ok=True)
-
     # get query data
-    if not os.path.isfile(f&#34;{DATA_CACHE_DIR}/{QUERY_DATA_FILENAME}&#34;):
+    if not args.use_cached_data or not os.path.isfile(
+        f&#34;{DATA_CACHE_DIR}/{QUERY_DATA_FILENAME}&#34;
+    ):
         try:
             response = requests.get(QUERY_DATA_URL, verify=False)
             query_data = response.json()
@@ -189,6 +194,7 @@ def main(args):
                 f&#34;FATAL: The {QUERY_DATA_URL} did not return valid data. Check and make sure the website is up and running!&#34;
             )
             sys.exit(1)
+        Path(DATA_CACHE_DIR).mkdir(parents=True, exist_ok=True)
         with open(f&#34;{DATA_CACHE_DIR}/{QUERY_DATA_FILENAME}&#34;, &#34;w+&#34;) as outfile:
             outfile.write(json.dumps(query_data))
     else:
@@ -208,7 +214,9 @@ def main(args):
     df_query = df_query.sort_values(by=[&#34;RESULTNO&#34;], ignore_index=True)
 
     # get pmag-result data
-    if not os.path.isfile(f&#34;{DATA_CACHE_DIR}/{PMAG_RESULT_FILENAME}&#34;):
+    if not args.use_cached_data or not os.path.isfile(
+        f&#34;{DATA_CACHE_DIR}/{PMAG_RESULT_FILENAME}&#34;
+    ):
         try:
             response = requests.get(PMAG_RESULT_URL, verify=False)
             pmagresult_data = response.json()
@@ -356,7 +364,12 @@ if __name__ == &#34;__main__&#34;:
     parser.add_argument(
         &#34;-m&#34;, &#34;--model&#34;, type=str, dest=&#34;model_name&#34;, default=&#34;Muller2022&#34;
     )
-    parser.add_argument(&#34;-o&#34;, &#34;--outfile&#34;, type=str, dest=&#34;outfile&#34;)</code></pre>
+    parser.add_argument(&#34;-o&#34;, &#34;--outfile&#34;, type=str, dest=&#34;outfile&#34;)
+    parser.add_argument(
+        &#34;--use-cached-data&#34;,
+        action=&#34;store_true&#34;,
+        help=&#34;use cached data for debugging purpose&#34;,
+    )</code></pre>
 </details>
 </dd>
 <dt id="gplately.ptt.gpmdb.assign_plate_id"><code class="name flex">
@@ -465,10 +478,10 @@ if __name__ == &#34;__main__&#34;:
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">def main(args):
-    Path(DATA_CACHE_DIR).mkdir(parents=True, exist_ok=True)
-
     # get query data
-    if not os.path.isfile(f&#34;{DATA_CACHE_DIR}/{QUERY_DATA_FILENAME}&#34;):
+    if not args.use_cached_data or not os.path.isfile(
+        f&#34;{DATA_CACHE_DIR}/{QUERY_DATA_FILENAME}&#34;
+    ):
         try:
             response = requests.get(QUERY_DATA_URL, verify=False)
             query_data = response.json()
@@ -480,6 +493,7 @@ if __name__ == &#34;__main__&#34;:
                 f&#34;FATAL: The {QUERY_DATA_URL} did not return valid data. Check and make sure the website is up and running!&#34;
             )
             sys.exit(1)
+        Path(DATA_CACHE_DIR).mkdir(parents=True, exist_ok=True)
         with open(f&#34;{DATA_CACHE_DIR}/{QUERY_DATA_FILENAME}&#34;, &#34;w+&#34;) as outfile:
             outfile.write(json.dumps(query_data))
     else:
@@ -499,7 +513,9 @@ if __name__ == &#34;__main__&#34;:
     df_query = df_query.sort_values(by=[&#34;RESULTNO&#34;], ignore_index=True)
 
     # get pmag-result data
-    if not os.path.isfile(f&#34;{DATA_CACHE_DIR}/{PMAG_RESULT_FILENAME}&#34;):
+    if not args.use_cached_data or not os.path.isfile(
+        f&#34;{DATA_CACHE_DIR}/{PMAG_RESULT_FILENAME}&#34;
+    ):
         try:
             response = requests.get(PMAG_RESULT_URL, verify=False)
             pmagresult_data = response.json()
