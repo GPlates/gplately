@@ -44,10 +44,11 @@ from plate_model_manager import PlateModelManager
 # using gplately env is recommended
 # `micromamba activate gplately`
 
+DEFAULT_GPMDB_SERVER_URL = &#34;http://www.gpmdb.net&#34;
 DATA_CACHE_DIR = &#34;data-cache&#34;
-QUERY_DATA_URL = &#34;https://www.gpmdb.net/get_query_data/&#34;
+QUERY_DATA_URL = &#34;get_query_data/&#34;
 QUERY_DATA_FILENAME = &#34;query-data.json&#34;
-PMAG_RESULT_URL = &#34;https://gpmdb.net/get_PMAGRESULT_data/?fmt=json&#34;
+PMAG_RESULT_URL = &#34;get_PMAGRESULT_data/?fmt=json&#34;
 PMAG_RESULT_FILENAME = &#34;pmag-result.json&#34;
 
 
@@ -152,6 +153,13 @@ def add_arguments(parser: argparse.ArgumentParser):
         action=&#34;store_true&#34;,
         help=&#34;use cached data for debugging purpose&#34;,
     )
+    parser.add_argument(
+        &#34;--gpmdb-server-url&#34;,
+        type=str,
+        dest=&#34;gpmdb_server_url&#34;,
+        default=DEFAULT_GPMDB_SERVER_URL,
+        help=&#34;the GPMDB server URL &#34;,
+    )
 
 
 __description__ = &#34;&#34;&#34;Retrieve paleomagnetic data from https://www.gpmdb.net, create GPlates-compatible VGP features and save the VGP features in a .gpmlz file.
@@ -184,14 +192,16 @@ def main(args):
         f&#34;{DATA_CACHE_DIR}/{QUERY_DATA_FILENAME}&#34;
     ):
         try:
-            response = requests.get(QUERY_DATA_URL, verify=False)
+            response = requests.get(
+                f&#34;{args.gpmdb_server_url}/{QUERY_DATA_URL}&#34;, verify=False
+            )
             query_data = response.json()
         except (
             requests.exceptions.JSONDecodeError,
             requests.exceptions.ConnectionError,
         ):
             print(
-                f&#34;FATAL: The {QUERY_DATA_URL} did not return valid data. Check and make sure the website is up and running!&#34;
+                f&#34;FATAL: The {args.gpmdb_server_url}/{QUERY_DATA_URL} did not return valid data. Check and make sure the website is up and running!&#34;
             )
             sys.exit(1)
         Path(DATA_CACHE_DIR).mkdir(parents=True, exist_ok=True)
@@ -218,14 +228,16 @@ def main(args):
         f&#34;{DATA_CACHE_DIR}/{PMAG_RESULT_FILENAME}&#34;
     ):
         try:
-            response = requests.get(PMAG_RESULT_URL, verify=False)
+            response = requests.get(
+                f&#34;{args.gpmdb_server_url}/{PMAG_RESULT_URL}&#34;, verify=False
+            )
             pmagresult_data = response.json()
         except (
             requests.exceptions.JSONDecodeError,
             requests.exceptions.ConnectionError,
         ):
             print(
-                f&#34;FATAL: The {PMAG_RESULT_URL} did not return valid data. Check and make sure the website is up and running!&#34;
+                f&#34;FATAL: The {args.gpmdb_server_url}/{PMAG_RESULT_URL} did not return valid data. Check and make sure the website is up and running!&#34;
             )
             sys.exit(1)
         with open(f&#34;{DATA_CACHE_DIR}/{PMAG_RESULT_FILENAME}&#34;, &#34;w+&#34;) as outfile:
@@ -369,6 +381,13 @@ if __name__ == &#34;__main__&#34;:
         &#34;--use-cached-data&#34;,
         action=&#34;store_true&#34;,
         help=&#34;use cached data for debugging purpose&#34;,
+    )
+    parser.add_argument(
+        &#34;--gpmdb-server-url&#34;,
+        type=str,
+        dest=&#34;gpmdb_server_url&#34;,
+        default=DEFAULT_GPMDB_SERVER_URL,
+        help=&#34;the GPMDB server URL &#34;,
     )</code></pre>
 </details>
 </dd>
@@ -483,14 +502,16 @@ if __name__ == &#34;__main__&#34;:
         f&#34;{DATA_CACHE_DIR}/{QUERY_DATA_FILENAME}&#34;
     ):
         try:
-            response = requests.get(QUERY_DATA_URL, verify=False)
+            response = requests.get(
+                f&#34;{args.gpmdb_server_url}/{QUERY_DATA_URL}&#34;, verify=False
+            )
             query_data = response.json()
         except (
             requests.exceptions.JSONDecodeError,
             requests.exceptions.ConnectionError,
         ):
             print(
-                f&#34;FATAL: The {QUERY_DATA_URL} did not return valid data. Check and make sure the website is up and running!&#34;
+                f&#34;FATAL: The {args.gpmdb_server_url}/{QUERY_DATA_URL} did not return valid data. Check and make sure the website is up and running!&#34;
             )
             sys.exit(1)
         Path(DATA_CACHE_DIR).mkdir(parents=True, exist_ok=True)
@@ -517,14 +538,16 @@ if __name__ == &#34;__main__&#34;:
         f&#34;{DATA_CACHE_DIR}/{PMAG_RESULT_FILENAME}&#34;
     ):
         try:
-            response = requests.get(PMAG_RESULT_URL, verify=False)
+            response = requests.get(
+                f&#34;{args.gpmdb_server_url}/{PMAG_RESULT_URL}&#34;, verify=False
+            )
             pmagresult_data = response.json()
         except (
             requests.exceptions.JSONDecodeError,
             requests.exceptions.ConnectionError,
         ):
             print(
-                f&#34;FATAL: The {PMAG_RESULT_URL} did not return valid data. Check and make sure the website is up and running!&#34;
+                f&#34;FATAL: The {args.gpmdb_server_url}/{PMAG_RESULT_URL} did not return valid data. Check and make sure the website is up and running!&#34;
             )
             sys.exit(1)
         with open(f&#34;{DATA_CACHE_DIR}/{PMAG_RESULT_FILENAME}&#34;, &#34;w+&#34;) as outfile:
