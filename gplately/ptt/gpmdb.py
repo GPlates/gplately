@@ -15,10 +15,11 @@ from plate_model_manager import PlateModelManager
 # using gplately env is recommended
 # `micromamba activate gplately`
 
+DEFAULT_GPMDB_SERVER_URL = "http://www.gpmdb.net"
 DATA_CACHE_DIR = "data-cache"
-QUERY_DATA_URL = "https://www.gpmdb.net/get_query_data/"
+QUERY_DATA_URL = "get_query_data/"
 QUERY_DATA_FILENAME = "query-data.json"
-PMAG_RESULT_URL = "https://gpmdb.net/get_PMAGRESULT_data/?fmt=json"
+PMAG_RESULT_URL = "get_PMAGRESULT_data/?fmt=json"
 PMAG_RESULT_FILENAME = "pmag-result.json"
 
 
@@ -123,6 +124,13 @@ def add_arguments(parser: argparse.ArgumentParser):
         action="store_true",
         help="use cached data for debugging purpose",
     )
+    parser.add_argument(
+        "--gpmdb-server-url",
+        type=str,
+        dest="gpmdb_server_url",
+        default=DEFAULT_GPMDB_SERVER_URL,
+        help="the GPMDB server URL ",
+    )
 
 
 __description__ = """Retrieve paleomagnetic data from https://www.gpmdb.net, create GPlates-compatible VGP features and save the VGP features in a .gpmlz file.
@@ -155,14 +163,16 @@ def main(args):
         f"{DATA_CACHE_DIR}/{QUERY_DATA_FILENAME}"
     ):
         try:
-            response = requests.get(QUERY_DATA_URL, verify=False)
+            response = requests.get(
+                f"{args.gpmdb_server_url}/{QUERY_DATA_URL}", verify=False
+            )
             query_data = response.json()
         except (
             requests.exceptions.JSONDecodeError,
             requests.exceptions.ConnectionError,
         ):
             print(
-                f"FATAL: The {QUERY_DATA_URL} did not return valid data. Check and make sure the website is up and running!"
+                f"FATAL: The {args.gpmdb_server_url}/{QUERY_DATA_URL} did not return valid data. Check and make sure the website is up and running!"
             )
             sys.exit(1)
         Path(DATA_CACHE_DIR).mkdir(parents=True, exist_ok=True)
@@ -189,14 +199,16 @@ def main(args):
         f"{DATA_CACHE_DIR}/{PMAG_RESULT_FILENAME}"
     ):
         try:
-            response = requests.get(PMAG_RESULT_URL, verify=False)
+            response = requests.get(
+                f"{args.gpmdb_server_url}/{PMAG_RESULT_URL}", verify=False
+            )
             pmagresult_data = response.json()
         except (
             requests.exceptions.JSONDecodeError,
             requests.exceptions.ConnectionError,
         ):
             print(
-                f"FATAL: The {PMAG_RESULT_URL} did not return valid data. Check and make sure the website is up and running!"
+                f"FATAL: The {args.gpmdb_server_url}/{PMAG_RESULT_URL} did not return valid data. Check and make sure the website is up and running!"
             )
             sys.exit(1)
         with open(f"{DATA_CACHE_DIR}/{PMAG_RESULT_FILENAME}", "w+") as outfile:
