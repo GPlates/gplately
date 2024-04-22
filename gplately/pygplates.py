@@ -6,9 +6,10 @@ classes to keep track of filenames.
 Each object listed here will have a `self.filenames` attribute.
 """
 
+import warnings as _warnings
+
 import pygplates as _pygplates
 from pygplates import *
-import warnings as _warnings
 
 _warnings.simplefilter("always", ImportWarning)
 
@@ -396,7 +397,7 @@ class Feature(_pygplates.Feature):
 
     """
 
-    def __init__(self, feature):
+    def __init__(self, *args, **kwargs):
         """
 
         Parameters
@@ -422,8 +423,10 @@ class Feature(_pygplates.Feature):
             if `verify_information_model` is `VerifyInformationModel.yes` and `feature_type` is not a recognised feature type.
 
         """
-        super(Feature, self).__init__(feature)
+        super().__init__(**kwargs)
         self.filenames = []
+
+        feature = args[0] if len(args) > 0 else None
 
         # update filename list
         if _is_string(feature) and type(feature) is list:
