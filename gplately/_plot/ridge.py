@@ -3,8 +3,8 @@ import warnings
 
 import geopandas as gpd
 
-from .._utils.feature_utils import shapelify_features
-from .._utils.plot_utils import _clean_polygons, _meridian_from_ax
+from ..utils.feature_utils import shapelify_features
+from ..utils.plot_utils import _clean_polygons, _meridian_from_ax, _plot_geometries
 
 logger = logging.getLogger("gplately")
 
@@ -108,23 +108,4 @@ def plot_ridges(self, ax, color="black", **kwargs):
         )
         return
 
-    if "transform" in kwargs.keys():
-        warnings.warn(
-            "'transform' keyword argument is ignored by PlotTopologies",
-            UserWarning,
-        )
-        kwargs.pop("transform")
-    tessellate_degrees = kwargs.pop("tessellate_degrees", 1)
-    central_meridian = kwargs.pop("central_meridian", None)
-    if central_meridian is None:
-        central_meridian = _meridian_from_ax(ax)
-
-    gdf = self.get_ridges(
-        central_meridian=central_meridian,
-        tessellate_degrees=tessellate_degrees,
-    )
-    if hasattr(ax, "projection"):
-        gdf = _clean_polygons(data=gdf, projection=ax.projection)
-    else:
-        kwargs["transform"] = self.base_projection
-    return gdf.plot(ax=ax, facecolor="none", edgecolor=color, **kwargs)
+    return _plot_geometries(ax, self.base_projection, color, self.get_ridges, **kwargs)

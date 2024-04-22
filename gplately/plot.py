@@ -23,13 +23,6 @@ from shapely.geometry.base import BaseGeometry, BaseMultipartGeometry
 from shapely.ops import linemerge
 
 from . import ptt
-from ._utils.feature_utils import shapelify_features as _shapelify_features
-from ._utils.plot_utils import (
-    _clean_polygons,
-    _find_polarity_column,
-    _meridian_from_ax,
-    _tessellate_triangles,
-)
 from .gpml import _load_FeatureCollection
 from .pygplates import FeatureCollection as _FeatureCollection
 from .read_geometries import (
@@ -37,6 +30,13 @@ from .read_geometries import (
 )  # included for backwards compatibility
 from .reconstruction import PlateReconstruction as _PlateReconstruction
 from .tools import EARTH_RADIUS
+from .utils.feature_utils import shapelify_features as _shapelify_features
+from .utils.plot_utils import (
+    _clean_polygons,
+    _find_polarity_column,
+    _meridian_from_ax,
+    _tessellate_triangles,
+)
 
 logger = logging.getLogger("gplately")
 
@@ -1772,7 +1772,7 @@ class PlotTopologies(object):
             **kwargs,
         )
 
-    def plot_plate_id(self, ax, plate_id, **kwargs):
+    def plot_plate_polygon_by_id(self, ax, plate_id, **kwargs):
         """Plot a plate polygon with an associated `plate_id` onto a standard map Projection.
 
         Parameters
@@ -1806,6 +1806,10 @@ class PlotTopologies(object):
                     tessellate_degrees=tessellate_degrees,
                 )
                 return ax.add_geometries(ft_plate, crs=self.base_projection, **kwargs)
+
+    # the old function name(plot_plate_id) is bad. we should change the name
+    # for backward compatibility, we have to allow users to use the old name
+    plot_plate_id = plot_plate_polygon_by_id
 
     def plot_grid(self, ax, grid, extent=[-180, 180, -90, 90], **kwargs):
         """Plot a `MaskedArray` raster or grid onto a standard map Projection.

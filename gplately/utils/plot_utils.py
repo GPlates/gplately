@@ -1,5 +1,6 @@
 import logging
 import re
+import warnings
 
 import cartopy.crs as ccrs
 import geopandas as gpd
@@ -494,3 +495,26 @@ def _meridian_from_projection(projection):
     x = np.mean(projection.x_limits)
     y = np.mean(projection.y_limits)
     return ccrs.PlateCarree().transform_point(x, y, projection)[0]
+
+
+def _plot_geometries(ax, projection, color, get_data_func, **kwargs):
+    if "transform" in kwargs.keys():
+        warnings.warn(
+            "'transform' keyword argument is ignored by PlotTopologies",
+            UserWarning,
+        )
+        kwargs.pop("transform")
+    tessellate_degrees = kwargs.pop("tessellate_degrees", 1)
+    central_meridian = kwargs.pop("central_meridian", None)
+    if central_meridian is None:
+        central_meridian = _meridian_from_ax(ax)
+
+    gdf = get_data_func(
+        central_meridian=central_meridian,
+        tessellate_degrees=tessellate_degrees,
+    )
+    if hasattr(ax, "projection"):
+        gdf = _clean_polygons(data=gdf, projection=ax.projection)
+    else:
+        kwargs["transform"] = projection
+    return gdf.plot(ax=ax, facecolor="none", edgecolor=color, **kwargs)

@@ -242,7 +242,7 @@ __all__ = [
 
 import os
 
-from ._utils.log_utils import setup_logging, turn_on_debug_logging
+from .utils.log_utils import setup_logging, turn_on_debug_logging
 
 setup_logging()
 if "GPLATELY_DEBUG" in os.environ and os.environ["GPLATELY_DEBUG"].lower() == "true":
