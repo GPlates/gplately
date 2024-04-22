@@ -5,9 +5,9 @@ from typing import List
 
 import pygplates
 
-from gplately import __version__, feature_filter
+from gplately import __version__
 
-from . import create_age_grids
+from .commands import create_age_grids, feature_filter
 from .ptt import (
     cleanup_topologies,
     convert_xy_to_gplates,
