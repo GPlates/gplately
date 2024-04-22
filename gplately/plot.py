@@ -33,9 +33,9 @@ from .tools import EARTH_RADIUS
 from .utils.feature_utils import shapelify_features as _shapelify_features
 from .utils.plot_utils import (
     _clean_polygons,
-    _find_polarity_column,
     _meridian_from_ax,
-    _tessellate_triangles,
+    _plot_geometries,
+    plot_subduction_teeth,
 )
 
 logger = logging.getLogger("gplately")
@@ -43,126 +43,6 @@ logger = logging.getLogger("gplately")
 shapelify_features = _shapelify_features
 shapelify_feature_lines = _shapelify_features
 shapelify_feature_polygons = _shapelify_features
-
-
-def plot_subduction_teeth(
-    geometries,
-    width,
-    polarity=None,
-    height=None,
-    spacing=None,
-    projection="auto",
-    transform=None,
-    ax=None,
-    **kwargs,
-):
-    """Add subduction teeth to a plot.
-
-    The subduction polarity used for subduction teeth can be specified
-    manually or detected automatically if `geometries` is a
-    `geopandas.GeoDataFrame` object with a `polarity` column.
-
-    Parameters
-    ----------
-    geometries : geopandas.GeoDataFrame, sequence of shapely geometries, or str
-        If a `geopandas.GeoDataFrame` is given, its geometry attribute
-        will be used. If `geometries` is a string, it must be the path to
-        a file, which will be loaded with `geopandas.read_file`. Otherwise,
-        `geometries` must be a sequence of shapely geometry objects (instances
-        of the `shapely.geometry.base.BaseGeometry` class).
-    width : float
-        The (approximate) width of the subduction teeth. If a projection is
-        used, this value will be in projected units.
-    polarity : {"left", "l", "right", "r", None}, default None
-        The subduction polarity of the geometries. If no polarity is provided,
-        and `geometries` is a `geopandas.GeoDataFrame`, this function will
-        attempt to find a `polarity` column in the data frame and use the
-        values given there. If `polarity` is not manually specified and no
-        appropriate column can be found, an error will be raised.
-    height : float, default None
-        If provided, the height of the subduction teeth. As with `width`,
-        this value should be given in projected units. If no value is given,
-        the height of the teeth will be equal to 0.6 * `width`.
-    spacing : float, default None
-        If provided, the spacing between the subduction teeth. As with
-        `width` and `height`, this value should be given in projected units.
-        If no value is given, `spacing` will default to `width`, producing
-        tightly packed subduction teeth.
-    projection : cartopy.crs.Transform, "auto", or None, default "auto"
-        The projection of the plot. If the plot has no projection, this value
-        can be explicitly given as `None`. The default value is "auto", which
-        will acquire the projection automatically from the plot axes.
-    transform : cartopy.crs.Transform, or None, default None
-        If the plot is projected, a `transform` value is usually needed.
-        Frequently, the appropriate value is an instance of
-        `cartopy.crs.PlateCarree`.
-    ax : matplotlib.axes.Axes, or None, default None
-        The axes on which the subduction teeth will be drawn. By default,
-        the current axes will be acquired using `matplotlib.pyplot.gca`.
-    **kwargs
-        Any further keyword arguments will be passed to
-        `matplotlib.patches.Polygon`.
-
-    Raises
-    ------
-    ValueError
-        If `width` <= 0, or if `polarity` is an invalid value or could not
-        be determined.
-    """
-    if ax is None:
-        ax = plt.gca()
-
-    if projection == "auto":
-        try:
-            projection = ax.projection
-        except AttributeError:
-            projection = None
-    elif isinstance(projection, str):
-        raise ValueError("Invalid projection: {}".format(projection))
-
-    if polarity is None:
-        polarity_column = _find_polarity_column(geometries.columns.values)
-        if polarity_column is None:
-            raise ValueError(
-                "Could not automatically determine polarity; "
-                + "it must be defined manually instead."
-            )
-        triangles = []
-        for p in geometries[polarity_column].unique():
-            if p.lower() not in {"left", "l", "right", "r"}:
-                continue
-            gdf_polarity = geometries[geometries[polarity_column] == p]
-            triangles.extend(
-                _tessellate_triangles(
-                    gdf_polarity,
-                    width,
-                    p,
-                    height,
-                    spacing,
-                    projection,
-                    transform,
-                )
-            )
-    else:
-        triangles = _tessellate_triangles(
-            geometries,
-            width,
-            polarity,
-            height,
-            spacing,
-            projection,
-            transform,
-        )
-
-    if projection is not None:
-        domain = projection.domain
-        triangles = [domain.intersection(i) for i in triangles]
-
-    if hasattr(ax, "add_geometries") and projection is not None:
-        ax.add_geometries(triangles, crs=projection, **kwargs)
-    else:
-        for triangle in triangles:
-            ax.fill(*triangle.exterior.xy, **kwargs)
 
 
 class PlotTopologies(object):
@@ -3671,4 +3551,104 @@ class PlotTopologies(object):
             kwargs["transform"] = self.base_projection
         return gdf.plot(ax=ax, color=color, **kwargs)
 
-    from ._plot.ridge import get_ridges, plot_ridges
+    def get_ridges(self, central_meridian=0.0, tessellate_degrees=1):
+        """Create a geopandas.GeoDataFrame object containing geometries of reconstructed ridge lines.
+
+        Notes
+        -----
+        The `ridges` needed to produce the GeoDataFrame are automatically constructed if the optional `time`
+        parameter is passed to the `PlotTopologies` object before calling this function. `time` can be passed
+        either when `PlotTopologies` is first called...
+
+            gplot = gplately.PlotTopologies(..., time=100,...)
+
+        or anytime afterwards, by setting:
+
+            time = 100 #Ma
+            gplot.time = time
+
+        ...after which this function can be re-run. Once the `ridges` are reconstructed, they are
+        converted into Shapely lines whose coordinates are passed to a geopandas GeoDataFrame.
+
+        Returns
+        -------
+        gdf : instance of <geopandas.GeoDataFrame>
+            A pandas.DataFrame that has a column with `ridges` geometry.
+        central_meridian : float
+            Central meridian around which to perform wrapping; default: 0.0.
+        tessellate_degrees : float or None
+            If provided, geometries will be tessellated to this resolution prior
+            to wrapping.
+
+        Raises
+        ------
+        ValueError
+            If the optional `time` parameter has not been passed to `PlotTopologies`. This is needed to construct
+            `ridges` to the requested `time` and thus populate the GeoDataFrame.
+
+        """
+        if self._time is None:
+            raise ValueError(
+                "No ridges have been resolved. Set `PlotTopologies.time` to construct ridges."
+            )
+
+        if self.ridges is None:
+            raise ValueError("No ridge topologies passed to PlotTopologies.")
+
+        ridge_lines = shapelify_features(
+            self.ridges,
+            central_meridian=central_meridian,
+            tessellate_degrees=tessellate_degrees,
+        )
+        gdf = gpd.GeoDataFrame({"geometry": ridge_lines}, geometry="geometry")
+        return gdf
+
+    def plot_ridges(self, ax, color="black", **kwargs):
+        """Plot reconstructed ridge polylines onto a standard map Projection.
+
+        Notes
+        -----
+        The `ridges` for plotting are accessed from the `PlotTopologies` object's
+        `ridges` attribute. These `ridges` are reconstructed to the `time`
+        passed to the `PlotTopologies` object and converted into Shapely polylines.
+        The reconstructed `ridges` are plotted onto the GeoAxes or GeoAxesSubplot map
+        `ax` using GeoPandas. Map presentation details (e.g. `facecolor`, `edgecolor`, `alpha`…)
+        are permitted as keyword arguments.
+
+        Ridge geometries are wrapped to the dateline using
+        pyGPlates' [DateLineWrapper](https://www.gplates.org/docs/pygplates/generated/pygplates.datelinewrapper)
+        by splitting a polyline into multiple polylines at the dateline. This is to avoid
+        horizontal lines being formed between polylines at longitudes of -180 and 180 degrees.
+        Point features near the poles (-89 & 89 degree latitude) are also clipped to ensure
+        compatibility with Cartopy.
+
+        Parameters
+        ----------
+        ax : instance of <cartopy.mpl.geoaxes.GeoAxes> or <cartopy.mpl.geoaxes.GeoAxesSubplot>
+            A subclass of `matplotlib.axes.Axes` which represents a map Projection.
+            The map should be set at a particular Cartopy projection.
+
+        color : str, default=’black’
+            The colour of the ridge lines. By default, it is set to black.
+
+        **kwargs :
+            Keyword arguments for parameters such as `alpha`, etc. for
+            plotting ridge geometries.
+            See `Matplotlib` keyword arguments
+            [here](https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html).
+
+        Returns
+        -------
+        ax : instance of <geopandas.GeoDataFrame.plot>
+            A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map
+            with ridge features plotted onto the chosen map projection.
+        """
+        if not self.plate_reconstruction.topology_features:
+            logger.warn(
+                "Plate model does not have topology features. Unable to plot_ridges."
+            )
+            return
+
+        return _plot_geometries(
+            ax, self.base_projection, color, self.get_ridges, **kwargs
+        )

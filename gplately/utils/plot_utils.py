@@ -518,3 +518,123 @@ def _plot_geometries(ax, projection, color, get_data_func, **kwargs):
     else:
         kwargs["transform"] = projection
     return gdf.plot(ax=ax, facecolor="none", edgecolor=color, **kwargs)
+
+
+def plot_subduction_teeth(
+    geometries,
+    width,
+    polarity=None,
+    height=None,
+    spacing=None,
+    projection="auto",
+    transform=None,
+    ax=None,
+    **kwargs,
+):
+    """Add subduction teeth to a plot.
+
+    The subduction polarity used for subduction teeth can be specified
+    manually or detected automatically if `geometries` is a
+    `geopandas.GeoDataFrame` object with a `polarity` column.
+
+    Parameters
+    ----------
+    geometries : geopandas.GeoDataFrame, sequence of shapely geometries, or str
+        If a `geopandas.GeoDataFrame` is given, its geometry attribute
+        will be used. If `geometries` is a string, it must be the path to
+        a file, which will be loaded with `geopandas.read_file`. Otherwise,
+        `geometries` must be a sequence of shapely geometry objects (instances
+        of the `shapely.geometry.base.BaseGeometry` class).
+    width : float
+        The (approximate) width of the subduction teeth. If a projection is
+        used, this value will be in projected units.
+    polarity : {"left", "l", "right", "r", None}, default None
+        The subduction polarity of the geometries. If no polarity is provided,
+        and `geometries` is a `geopandas.GeoDataFrame`, this function will
+        attempt to find a `polarity` column in the data frame and use the
+        values given there. If `polarity` is not manually specified and no
+        appropriate column can be found, an error will be raised.
+    height : float, default None
+        If provided, the height of the subduction teeth. As with `width`,
+        this value should be given in projected units. If no value is given,
+        the height of the teeth will be equal to 0.6 * `width`.
+    spacing : float, default None
+        If provided, the spacing between the subduction teeth. As with
+        `width` and `height`, this value should be given in projected units.
+        If no value is given, `spacing` will default to `width`, producing
+        tightly packed subduction teeth.
+    projection : cartopy.crs.Transform, "auto", or None, default "auto"
+        The projection of the plot. If the plot has no projection, this value
+        can be explicitly given as `None`. The default value is "auto", which
+        will acquire the projection automatically from the plot axes.
+    transform : cartopy.crs.Transform, or None, default None
+        If the plot is projected, a `transform` value is usually needed.
+        Frequently, the appropriate value is an instance of
+        `cartopy.crs.PlateCarree`.
+    ax : matplotlib.axes.Axes, or None, default None
+        The axes on which the subduction teeth will be drawn. By default,
+        the current axes will be acquired using `matplotlib.pyplot.gca`.
+    **kwargs
+        Any further keyword arguments will be passed to
+        `matplotlib.patches.Polygon`.
+
+    Raises
+    ------
+    ValueError
+        If `width` <= 0, or if `polarity` is an invalid value or could not
+        be determined.
+    """
+    if ax is None:
+        ax = plt.gca()
+
+    if projection == "auto":
+        try:
+            projection = ax.projection
+        except AttributeError:
+            projection = None
+    elif isinstance(projection, str):
+        raise ValueError("Invalid projection: {}".format(projection))
+
+    if polarity is None:
+        polarity_column = _find_polarity_column(geometries.columns.values)
+        if polarity_column is None:
+            raise ValueError(
+                "Could not automatically determine polarity; "
+                + "it must be defined manually instead."
+            )
+        triangles = []
+        for p in geometries[polarity_column].unique():
+            if p.lower() not in {"left", "l", "right", "r"}:
+                continue
+            gdf_polarity = geometries[geometries[polarity_column] == p]
+            triangles.extend(
+                _tessellate_triangles(
+                    gdf_polarity,
+                    width,
+                    p,
+                    height,
+                    spacing,
+                    projection,
+                    transform,
+                )
+            )
+    else:
+        triangles = _tessellate_triangles(
+            geometries,
+            width,
+            polarity,
+            height,
+            spacing,
+            projection,
+            transform,
+        )
+
+    if projection is not None:
+        domain = projection.domain
+        triangles = [domain.intersection(i) for i in triangles]
+
+    if hasattr(ax, "add_geometries") and projection is not None:
+        ax.add_geometries(triangles, crs=projection, **kwargs)
+    else:
+        for triangle in triangles:
+            ax.fill(*triangle.exterior.xy, **kwargs)
