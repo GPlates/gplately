@@ -21,16 +21,39 @@ from shapely.geometry.base import BaseGeometry, BaseMultipartGeometry
 from shapely.ops import linemerge
 
 from . import ptt
+from .decorators import append_docstring
 from .gpml import _load_FeatureCollection
 from .pygplates import FeatureCollection as _FeatureCollection
 from .reconstruction import PlateReconstruction as _PlateReconstruction
 from .tools import EARTH_RADIUS
 from .utils.feature_utils import shapelify_features as _shapelify_features
-from .utils.plot_utils import (_clean_polygons, _meridian_from_ax,
-                               _plot_geometries)
+from .utils.plot_utils import _clean_polygons, _meridian_from_ax
 from .utils.plot_utils import plot_subduction_teeth as _plot_subduction_teeth
 
 logger = logging.getLogger("gplately")
+
+PLOT_DOCSTRING = """
+        Parameters
+        ----------
+        ax : instance of <cartopy.mpl.geoaxes.GeoAxes> or <cartopy.mpl.geoaxes.GeoAxesSubplot>
+            A subclass of `matplotlib.axes.Axes` which represents a map Projection.
+            The map should be set at a particular Cartopy projection.
+
+        color : str, default=’black’
+            The colour of the ridge lines. By default, it is set to black.
+
+        **kwargs :
+            Keyword arguments for parameters such as `alpha`, etc. for
+            plotting ridge geometries.
+            See `Matplotlib` keyword arguments
+            [here](https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html).
+
+        Returns
+        -------
+        ax : instance of <geopandas.GeoDataFrame.plot>
+            A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map
+            with ridge features plotted onto the chosen map projection.
+"""
 
 
 def shapelify_features(*args, **kwargs):
@@ -559,6 +582,7 @@ class PlotTopologies(object):
         feature,
         central_meridian=0.0,
         tessellate_degrees=None,
+        validate_reconstruction_time=True,
     ):
         """Create a geopandas.GeoDataFrame object containing geometries of reconstructed features.
 
@@ -579,13 +603,20 @@ class PlotTopologies(object):
             A pandas.DataFrame that has a column with `feature` geometries.
 
         """
+        if validate_reconstruction_time and self._time is None:
+            raise ValueError(
+                "The reconstruction time has not been set yet. Set `PlotTopologies.time` before calling plotting functions."
+            )
+        if feature is None:
+            raise ValueError(
+                "The 'feature' parameter is None. Make sure a valid `feature` object has been provided."
+            )
         shp = shapelify_features(
             feature,
             central_meridian=central_meridian,
             tessellate_degrees=tessellate_degrees,
         )
-        gdf = gpd.GeoDataFrame({"geometry": shp}, geometry="geometry")
-        return gdf
+        return gpd.GeoDataFrame({"geometry": shp}, geometry="geometry")
 
     def plot_feature(self, ax, feature, **kwargs):
         """Plot pygplates.FeatureCollection  or pygplates.Feature onto a map.
@@ -608,26 +639,48 @@ class PlotTopologies(object):
             A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map
             with coastline features plotted onto the chosen map projection.
         """
+        return self._plot_feature(ax, feature=feature, **kwargs)
+
+    def _plot_feature(self, ax, feature=None, get_feature_func=None, **kwargs):
+        if feature and get_feature_func:
+            logger.warn(
+                "Both 'feature' and 'get_feature_func' parameters are not None. Use 'feature' and ignore 'get_feature_func'."
+            )
         if "transform" in kwargs.keys():
             warnings.warn(
                 "'transform' keyword argument is ignored by PlotTopologies",
                 UserWarning,
             )
             kwargs.pop("transform")
-        tessellate_degrees = kwargs.pop("tessellate_degrees", None)
+        tessellate_degrees = kwargs.pop("tessellate_degrees", 1)
         central_meridian = kwargs.pop("central_meridian", None)
         if central_meridian is None:
             central_meridian = _meridian_from_ax(ax)
+        if feature:
+            gdf = self.get_feature(
+                feature,
+                central_meridian=central_meridian,
+                tessellate_degrees=tessellate_degrees,
+            )
+        elif get_feature_func:
+            gdf = get_feature_func(
+                central_meridian=central_meridian,
+                tessellate_degrees=tessellate_degrees,
+            )
+        else:
+            raise Exception(
+                "The caller must provide either a 'feature' or 'get_feature_func' parameter. Unable to plot the feature if both parameters are None."
+            )
 
-        gdf = self.get_feature(
-            feature,
-            central_meridian=central_meridian,
-            tessellate_degrees=tessellate_degrees,
-        )
+        if len(gdf) == 0:
+            logger.warn("No feature found for plotting. Do nothing and return.")
+            return ax
+
         if hasattr(ax, "projection"):
             gdf = _clean_polygons(data=gdf, projection=ax.projection)
         else:
             kwargs["transform"] = self.base_projection
+
         return gdf.plot(ax=ax, **kwargs)
 
     def get_coastlines(self, central_meridian=0.0, tessellate_degrees=None):
@@ -1055,7 +1108,7 @@ class PlotTopologies(object):
             logger.warn(
                 "Plate model does not have topology features. Unable to plot_ridges_and_transforms."
             )
-            return
+            return ax
 
         if "transform" in kwargs.keys():
             warnings.warn(
@@ -1173,7 +1226,7 @@ class PlotTopologies(object):
             logger.warn(
                 "Plate model does not have topology features. Unable to plot_transforms."
             )
-            return
+            return ax
 
         if "transform" in kwargs.keys():
             warnings.warn(
@@ -1292,7 +1345,7 @@ class PlotTopologies(object):
             logger.warn(
                 "Plate model does not have topology features. Unable to plot_trenches."
             )
-            return
+            return ax
         if "transform" in kwargs.keys():
             warnings.warn(
                 "'transform' keyword argument is ignored by PlotTopologies",
@@ -1593,7 +1646,7 @@ class PlotTopologies(object):
             logger.warn(
                 "Plate model does not have topology features. Unable to plot_subduction_teeth."
             )
-            return
+            return ax
         if self._time is None:
             raise ValueError(
                 "No topologies have been resolved. Set `PlotTopologies.time` to construct them."
@@ -3371,33 +3424,16 @@ class PlotTopologies(object):
         )
         return gdf
 
+    @append_docstring(PLOT_DOCSTRING)
     def plot_all_topologies(self, ax, color="black", **kwargs):
-        """Plot all topologies on a standard map projection.
+        """Plot all topologies on a standard map projection."""
 
-        Parameters
-        ----------
-        ax : instance of <cartopy.mpl.geoaxes.GeoAxes> or <cartopy.mpl.geoaxes.GeoAxesSubplot>
-            A subclass of `matplotlib.axes.Axes` which represents a map Projection.
-            The map should be set at a particular Cartopy projection.
-
-        color : str, default=’black’
-            The colour of the trench lines. By default, it is set to black.
-
-        **kwargs :
-            Keyword arguments for parameters such as `alpha`, etc.
-            for plotting trench geometries.
-            See `Matplotlib` keyword arguments
-            [here](https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html).
-
-        Returns
-        -------
-        ax : instance of <geopandas.GeoDataFrame.plot>
-            A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map
-            with unclassified features plotted onto the chosen map projection.
-        """
-
-        return _plot_geometries(
-            ax, self.base_projection, color, self.get_all_topologies, **kwargs
+        return self._plot_feature(
+            ax,
+            get_feature_func=self.get_all_topologies,
+            facecolor="none",
+            edgecolor=color,
+            **kwargs,
         )
 
     def get_all_topological_sections(
@@ -3506,33 +3542,15 @@ class PlotTopologies(object):
         )
         return gdf
 
+    @append_docstring(PLOT_DOCSTRING)
     def plot_all_topological_sections(self, ax, color="black", **kwargs):
-        """Plot all topologies on a standard map projection.
+        """Plot all topologies on a standard map projection."""
 
-        Parameters
-        ----------
-        ax : cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot
-            A subclass of `matplotlib.axes.Axes` which represents a map Projection.
-            The map should be set at a particular Cartopy projection.
-
-        color : str, default='black'
-            The colour of the topology lines. By default, it is set to black.
-
-        **kwargs
-            Keyword arguments for parameters such as `alpha`, etc.
-            for plotting trench geometries.
-            See `Matplotlib` keyword arguments
-            [here](https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html).
-
-        Returns
-        -------
-        ax : instance of <geopandas.GeoDataFrame.plot>
-            A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map
-            with unclassified features plotted onto the chosen map projection.
-        """
-
-        return _plot_geometries(
-            ax, self.base_projection, color, self.get_all_topological_sections, **kwargs
+        return self._plot_feature(
+            ax,
+            get_feature_func=self.get_all_topological_sections,
+            color=color,
+            **kwargs,
         )
 
     def get_ridges(self, central_meridian=0.0, tessellate_degrees=1):
@@ -3571,22 +3589,13 @@ class PlotTopologies(object):
             `ridges` to the requested `time` and thus populate the GeoDataFrame.
 
         """
-        if self._time is None:
-            raise ValueError(
-                "No ridges have been resolved. Set `PlotTopologies.time` to construct ridges."
-            )
-
-        if self.ridges is None:
-            raise ValueError("No ridge topologies passed to PlotTopologies.")
-
-        ridge_lines = shapelify_features(
+        return self.get_feature(
             self.ridges,
             central_meridian=central_meridian,
             tessellate_degrees=tessellate_degrees,
         )
-        gdf = gpd.GeoDataFrame({"geometry": ridge_lines}, geometry="geometry")
-        return gdf
 
+    @append_docstring(PLOT_DOCSTRING)
     def plot_ridges(self, ax, color="black", **kwargs):
         """Plot reconstructed ridge polylines onto a standard map Projection.
 
@@ -3606,26 +3615,6 @@ class PlotTopologies(object):
         Point features near the poles (-89 & 89 degree latitude) are also clipped to ensure
         compatibility with Cartopy.
 
-        Parameters
-        ----------
-        ax : instance of <cartopy.mpl.geoaxes.GeoAxes> or <cartopy.mpl.geoaxes.GeoAxesSubplot>
-            A subclass of `matplotlib.axes.Axes` which represents a map Projection.
-            The map should be set at a particular Cartopy projection.
-
-        color : str, default=’black’
-            The colour of the ridge lines. By default, it is set to black.
-
-        **kwargs :
-            Keyword arguments for parameters such as `alpha`, etc. for
-            plotting ridge geometries.
-            See `Matplotlib` keyword arguments
-            [here](https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html).
-
-        Returns
-        -------
-        ax : instance of <geopandas.GeoDataFrame.plot>
-            A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map
-            with ridge features plotted onto the chosen map projection.
         """
         if not self.plate_reconstruction.topology_features:
             logger.warn(
@@ -3633,6 +3622,10 @@ class PlotTopologies(object):
             )
             return ax
 
-        return _plot_geometries(
-            ax, self.base_projection, color, self.get_ridges, **kwargs
+        return self._plot_feature(
+            ax,
+            get_feature_func=self.get_ridges,
+            facecolor="none",
+            edgecolor=color,
+            **kwargs,
         )
