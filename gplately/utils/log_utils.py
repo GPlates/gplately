@@ -7,7 +7,9 @@ import yaml
 
 # configurate the logging utility
 def setup_logging():
-    cfg_file_path = f"{os.path.dirname(os.path.realpath(__file__))}/logging_config.yaml"
+    cfg_file_path = (
+        f"{os.path.dirname(os.path.realpath(__file__))}/../logging_config.yaml"
+    )
     if os.path.isfile(cfg_file_path):
         with open(cfg_file_path, "rt") as f:
             config = yaml.safe_load(f.read())

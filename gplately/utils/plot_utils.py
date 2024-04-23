@@ -9,7 +9,7 @@ from shapely.geometry import LineString, MultiPolygon, Point, Polygon, box
 from shapely.geometry.base import BaseGeometry, BaseMultipartGeometry
 from shapely.ops import linemerge, substring
 
-from ..read_geometries import get_geometries as _get_geometries
+from .io_utils import get_geometries as _get_geometries
 
 logger = logging.getLogger("gplately")
 
@@ -513,6 +513,11 @@ def _plot_geometries(ax, projection, color, get_data_func, **kwargs):
         central_meridian=central_meridian,
         tessellate_degrees=tessellate_degrees,
     )
+
+    if len(gdf) == 0:
+        logger.warn("No geometry found for plotting. Do nothing and return.")
+        return ax
+
     if hasattr(ax, "projection"):
         gdf = _clean_polygons(data=gdf, projection=ax.projection)
     else:

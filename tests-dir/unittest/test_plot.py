@@ -44,17 +44,42 @@ def main(show=True):
     fig = plt.figure(figsize=(10, 5), dpi=96)
     ax = fig.add_subplot(111, projection=ccrs.Robinson(central_longitude=180))
 
-    gplot.plot_continent_ocean_boundaries(ax, color="cornflowerblue")
-    gplot.plot_coastlines(ax, color="black")
-    gplot.plot_ridges_and_transforms(ax, color="red")
-    gplot.plot_trenches(ax, color="orange")
-    gplot.plot_subduction_teeth(ax, color="orange")
-    gplot.plot_ridges(ax, color="green")
+    plot_flag = {
+        "continent_ocean_boundaries": 1,
+        "coastlines": 1,
+        "ridges_and_transforms": 1,
+        "trenches": 1,
+        "subduction_teeth": 1,
+        "ridges": 1,
+        "all_topologies": 1,
+        "all_topological_sections": 1,
+        "plot_plate_polygon_by_id": 1,
+    }
+
+    if plot_flag["continent_ocean_boundaries"]:
+        gplot.plot_continent_ocean_boundaries(ax, color="cornflowerblue")
+    if plot_flag["coastlines"]:
+        gplot.plot_coastlines(ax, color="black")
+    if plot_flag["ridges_and_transforms"]:
+        gplot.plot_ridges_and_transforms(ax, color="red")
+    if plot_flag["trenches"]:
+        gplot.plot_trenches(ax, color="orange")
+    if plot_flag["subduction_teeth"]:
+        gplot.plot_subduction_teeth(ax, color="orange")
+    if plot_flag["ridges"]:
+        gplot.plot_ridges(ax, color="green")
+    if plot_flag["all_topologies"]:
+        gplot.plot_all_topologies(ax, color="red")
+    if plot_flag["all_topological_sections"]:
+        gplot.plot_all_topological_sections(ax, color="red")
     ax.set_global()
 
     ids = set([f.get_reconstruction_plate_id() for f in gplot.topologies])
     for id in ids:
-        gplot.plot_plate_id(ax, id, facecolor="None", edgecolor="lightgreen")
+        if plot_flag["plot_plate_polygon_by_id"]:
+            gplot.plot_plate_polygon_by_id(
+                ax, id, facecolor="None", edgecolor="lightgreen"
+            )
     plt.title(f"{age} Ma")
 
     if show:

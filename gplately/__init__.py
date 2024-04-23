@@ -183,7 +183,6 @@ from . import (
     plot,
     ptt,
     pygplates,
-    read_geometries,
     reconstruction,
 )
 from .data import DataCollection
@@ -191,7 +190,6 @@ from .download import DataServer
 from .grids import Raster
 from .oceans import SeafloorGrid
 from .plot import PlotTopologies
-from .read_geometries import get_geometries, get_valid_geometries
 from .reconstruction import (
     PlateReconstruction,
     Points,
@@ -200,6 +198,8 @@ from .reconstruction import (
     _ReconstructByTopologies,
 )
 from .tools import EARTH_RADIUS
+from .utils import io_utils
+from .utils.io_utils import get_geometries, get_valid_geometries
 
 __pdoc__ = {
     "data": False,
@@ -218,7 +218,7 @@ __all__ = [
     "oceans",
     "plot",
     "pygplates",
-    "read_geometries",
+    "io_utils",
     "reconstruction",
     "plate_model_manager",
     "ptt",
