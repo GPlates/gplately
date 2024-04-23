@@ -86,7 +86,7 @@ from .geometry import pygplates_to_shapely
 from .reconstruction import PlateReconstruction as _PlateReconstruction
 from .tools import _deg2pixels, griddata_sphere
 
-dev_logger = logging.getLogger(&#34;gplately&#34;)
+logger = logging.getLogger(&#34;gplately&#34;)
 
 __all__ = [
     &#34;fill_raster&#34;,
@@ -2297,7 +2297,7 @@ class Raster(object):
                 pygplates.PointOnSphere((float(p[1]), float(p[0]))).to_xyz()
                 for p in np.dstack((grid_x, grid_y))[self.data_mask]
             ]
-            print(&#34;building the spatial tree...&#34;)
+            logger.debug(&#34;building the spatial tree...&#34;)
             self.spatial_cKDTree = _cKDTree(grid_points)
 
         query_points = [
@@ -2344,7 +2344,7 @@ class Raster(object):
                 f&#34;The given extent is out of scope. {extent} -- {self.extent}&#34;
             )
         y_len, x_len = self.data.shape
-        dev_logger.debug(f&#34;the shape of raster data x:{x_len} y:{y_len}&#34;)
+        logger.debug(f&#34;the shape of raster data x:{x_len} y:{y_len}&#34;)
 
         x0 = math.floor(
             (extent[0] - self.extent[0])
@@ -5027,7 +5027,7 @@ reconstruction.</dd>
                 pygplates.PointOnSphere((float(p[1]), float(p[0]))).to_xyz()
                 for p in np.dstack((grid_x, grid_y))[self.data_mask]
             ]
-            print(&#34;building the spatial tree...&#34;)
+            logger.debug(&#34;building the spatial tree...&#34;)
             self.spatial_cKDTree = _cKDTree(grid_points)
 
         query_points = [
@@ -5074,7 +5074,7 @@ reconstruction.</dd>
                 f&#34;The given extent is out of scope. {extent} -- {self.extent}&#34;
             )
         y_len, x_len = self.data.shape
-        dev_logger.debug(f&#34;the shape of raster data x:{x_len} y:{y_len}&#34;)
+        logger.debug(f&#34;the shape of raster data x:{x_len} y:{y_len}&#34;)
 
         x0 = math.floor(
             (extent[0] - self.extent[0])
@@ -5496,7 +5496,7 @@ this happens when the border of the given extent fall between two gird lines.</p
             f&#34;The given extent is out of scope. {extent} -- {self.extent}&#34;
         )
     y_len, x_len = self.data.shape
-    dev_logger.debug(f&#34;the shape of raster data x:{x_len} y:{y_len}&#34;)
+    logger.debug(f&#34;the shape of raster data x:{x_len} y:{y_len}&#34;)
 
     x0 = math.floor(
         (extent[0] - self.extent[0])
@@ -6020,7 +6020,7 @@ this is the arch length. we need to calculate the straight distance between the 
             pygplates.PointOnSphere((float(p[1]), float(p[0]))).to_xyz()
             for p in np.dstack((grid_x, grid_y))[self.data_mask]
         ]
-        print(&#34;building the spatial tree...&#34;)
+        logger.debug(&#34;building the spatial tree...&#34;)
         self.spatial_cKDTree = _cKDTree(grid_points)
 
     query_points = [

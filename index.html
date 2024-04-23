@@ -546,7 +546,6 @@ from . import (
     plot,
     ptt,
     pygplates,
-    read_geometries,
     reconstruction,
 )
 from .data import DataCollection
@@ -554,7 +553,6 @@ from .download import DataServer
 from .grids import Raster
 from .oceans import SeafloorGrid
 from .plot import PlotTopologies
-from .read_geometries import get_geometries, get_valid_geometries
 from .reconstruction import (
     PlateReconstruction,
     Points,
@@ -563,6 +561,8 @@ from .reconstruction import (
     _ReconstructByTopologies,
 )
 from .tools import EARTH_RADIUS
+from .utils import io_utils
+from .utils.io_utils import get_geometries, get_valid_geometries
 
 __pdoc__ = {
     &#34;data&#34;: False,
@@ -581,7 +581,7 @@ __all__ = [
     &#34;oceans&#34;,
     &#34;plot&#34;,
     &#34;pygplates&#34;,
-    &#34;read_geometries&#34;,
+    &#34;io_utils&#34;,
     &#34;reconstruction&#34;,
     &#34;plate_model_manager&#34;,
     &#34;ptt&#34;,
@@ -605,7 +605,7 @@ __all__ = [
 
 import os
 
-from ._utils.log_utils import setup_logging, turn_on_debug_logging
+from .utils.log_utils import setup_logging, turn_on_debug_logging
 
 setup_logging()
 if &#34;GPLATELY_DEBUG&#34; in os.environ and os.environ[&#34;GPLATELY_DEBUG&#34;].lower() == &#34;true&#34;:
@@ -618,7 +618,7 @@ del os</code></pre>
 <section>
 <h2 class="section-title" id="header-submodules">Sub-modules</h2>
 <dl>
-<dt><code class="name"><a title="gplately.create_age_grids" href="create_age_grids.html">gplately.create_age_grids</a></code></dt>
+<dt><code class="name"><a title="gplately.commands" href="commands/index.html">gplately.commands</a></code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
@@ -628,10 +628,6 @@ del os</code></pre>
 main objects. Files are stored in the user's cache and can be …</p></div>
 </dd>
 <dt><code class="name"><a title="gplately.examples" href="examples/index.html">gplately.examples</a></code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-<dt><code class="name"><a title="gplately.feature_filter" href="feature_filter.html">gplately.feature_filter</a></code></dt>
 <dd>
 <div class="desc"></div>
 </dd>
@@ -678,12 +674,6 @@ them over several threads. This uses multiple processing units.</p></div>
 <a href="https://www.gplates.org/docs/pygplates/index.html"><code>pyGPlates</code></a>
 classes to keep track of filenames …</p></div>
 </dd>
-<dt><code class="name"><a title="gplately.read_geometries" href="read_geometries.html">gplately.read_geometries</a></code></dt>
-<dd>
-<div class="desc"><p>Tools to read geometry data from input files and output them as <code>Shapely</code>
-geometries. These geometries can be plotted directly with GPlately's
-…</p></div>
-</dd>
 <dt><code class="name"><a title="gplately.reconstruction" href="reconstruction.html">gplately.reconstruction</a></code></dt>
 <dd>
 <div class="desc"><p>Tools that wrap up pyGplates and Plate Tectonic Tools functionalities for reconstructing features,
@@ -692,6 +682,10 @@ working with point data, and calculating plate …</p></div>
 <dt><code class="name"><a title="gplately.tools" href="tools.html">gplately.tools</a></code></dt>
 <dd>
 <div class="desc"><p>A module that offers tools for executing common geological calculations, mathematical conversions and numpy conversions.</p></div>
+</dd>
+<dt><code class="name"><a title="gplately.utils" href="utils/index.html">gplately.utils</a></code></dt>
+<dd>
+<div class="desc"></div>
 </dd>
 </dl>
 </section>
@@ -8992,7 +8986,7 @@ boundaries and passive continental boundaries.</dd>
             **kwargs,
         )
 
-    def plot_plate_id(self, ax, plate_id, **kwargs):
+    def plot_plate_polygon_by_id(self, ax, plate_id, **kwargs):
         &#34;&#34;&#34;Plot a plate polygon with an associated `plate_id` onto a standard map Projection.
 
         Parameters
@@ -9026,6 +9020,16 @@ boundaries and passive continental boundaries.</dd>
                     tessellate_degrees=tessellate_degrees,
                 )
                 return ax.add_geometries(ft_plate, crs=self.base_projection, **kwargs)
+
+    # the old function name(plot_plate_id) is bad. we should change the name
+    # for backward compatibility, we have to allow users to use the old name
+    def plot_plate_id(self, *args, **kwargs):
+        logger.warn(
+            &#34;The class method plot_plate_id will be deprecated in the future soon. Use plot_plate_polygon_by_id instead.&#34;
+        )
+        return self.plot_plate_polygon_by_id(*args, **kwargs)
+
+    plot_plate_id.__doc__ = plot_plate_polygon_by_id.__doc__
 
     def plot_grid(self, ax, grid, extent=[-180, 180, -90, 90], **kwargs):
         &#34;&#34;&#34;Plot a `MaskedArray` raster or grid onto a standard map Projection.
@@ -10715,26 +10719,10 @@ boundaries and passive continental boundaries.</dd>
             A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map
             with unclassified features plotted onto the chosen map projection.
         &#34;&#34;&#34;
-        if &#34;transform&#34; in kwargs.keys():
-            warnings.warn(
-                &#34;&#39;transform&#39; keyword argument is ignored by PlotTopologies&#34;,
-                UserWarning,
-            )
-            kwargs.pop(&#34;transform&#34;)
-        tessellate_degrees = kwargs.pop(&#34;tessellate_degrees&#34;, 1)
-        central_meridian = kwargs.pop(&#34;central_meridian&#34;, None)
-        if central_meridian is None:
-            central_meridian = _meridian_from_ax(ax)
 
-        gdf = self.get_all_topologies(
-            central_meridian=central_meridian,
-            tessellate_degrees=tessellate_degrees,
+        return _plot_geometries(
+            ax, self.base_projection, color, self.get_all_topologies, **kwargs
         )
-        if hasattr(ax, &#34;projection&#34;):
-            gdf = _clean_polygons(data=gdf, projection=ax.projection)
-        else:
-            kwargs[&#34;transform&#34;] = self.base_projection
-        return gdf.plot(ax=ax, facecolor=&#34;none&#34;, edgecolor=color, **kwargs)
 
     def get_all_topological_sections(
         self,
@@ -10866,28 +10854,112 @@ boundaries and passive continental boundaries.</dd>
             A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map
             with unclassified features plotted onto the chosen map projection.
         &#34;&#34;&#34;
-        if &#34;transform&#34; in kwargs.keys():
-            warnings.warn(
-                &#34;&#39;transform&#39; keyword argument is ignored by PlotTopologies&#34;,
-                UserWarning,
-            )
-            kwargs.pop(&#34;transform&#34;)
-        tessellate_degrees = kwargs.pop(&#34;tessellate_degrees&#34;, 1)
-        central_meridian = kwargs.pop(&#34;central_meridian&#34;, None)
-        if central_meridian is None:
-            central_meridian = _meridian_from_ax(ax)
 
-        gdf = self.get_all_topological_sections(
+        return _plot_geometries(
+            ax, self.base_projection, color, self.get_all_topological_sections, **kwargs
+        )
+
+    def get_ridges(self, central_meridian=0.0, tessellate_degrees=1):
+        &#34;&#34;&#34;Create a geopandas.GeoDataFrame object containing geometries of reconstructed ridge lines.
+
+        Notes
+        -----
+        The `ridges` needed to produce the GeoDataFrame are automatically constructed if the optional `time`
+        parameter is passed to the `PlotTopologies` object before calling this function. `time` can be passed
+        either when `PlotTopologies` is first called...
+
+            gplot = gplately.PlotTopologies(..., time=100,...)
+
+        or anytime afterwards, by setting:
+
+            time = 100 #Ma
+            gplot.time = time
+
+        ...after which this function can be re-run. Once the `ridges` are reconstructed, they are
+        converted into Shapely lines whose coordinates are passed to a geopandas GeoDataFrame.
+
+        Returns
+        -------
+        gdf : instance of &lt;geopandas.GeoDataFrame&gt;
+            A pandas.DataFrame that has a column with `ridges` geometry.
+        central_meridian : float
+            Central meridian around which to perform wrapping; default: 0.0.
+        tessellate_degrees : float or None
+            If provided, geometries will be tessellated to this resolution prior
+            to wrapping.
+
+        Raises
+        ------
+        ValueError
+            If the optional `time` parameter has not been passed to `PlotTopologies`. This is needed to construct
+            `ridges` to the requested `time` and thus populate the GeoDataFrame.
+
+        &#34;&#34;&#34;
+        if self._time is None:
+            raise ValueError(
+                &#34;No ridges have been resolved. Set `PlotTopologies.time` to construct ridges.&#34;
+            )
+
+        if self.ridges is None:
+            raise ValueError(&#34;No ridge topologies passed to PlotTopologies.&#34;)
+
+        ridge_lines = shapelify_features(
+            self.ridges,
             central_meridian=central_meridian,
             tessellate_degrees=tessellate_degrees,
         )
-        if hasattr(ax, &#34;projection&#34;):
-            gdf = _clean_polygons(data=gdf, projection=ax.projection)
-        else:
-            kwargs[&#34;transform&#34;] = self.base_projection
-        return gdf.plot(ax=ax, color=color, **kwargs)
+        gdf = gpd.GeoDataFrame({&#34;geometry&#34;: ridge_lines}, geometry=&#34;geometry&#34;)
+        return gdf
 
-    from ._plot.ridge import get_ridges, plot_ridges</code></pre>
+    def plot_ridges(self, ax, color=&#34;black&#34;, **kwargs):
+        &#34;&#34;&#34;Plot reconstructed ridge polylines onto a standard map Projection.
+
+        Notes
+        -----
+        The `ridges` for plotting are accessed from the `PlotTopologies` object&#39;s
+        `ridges` attribute. These `ridges` are reconstructed to the `time`
+        passed to the `PlotTopologies` object and converted into Shapely polylines.
+        The reconstructed `ridges` are plotted onto the GeoAxes or GeoAxesSubplot map
+        `ax` using GeoPandas. Map presentation details (e.g. `facecolor`, `edgecolor`, `alpha`…)
+        are permitted as keyword arguments.
+
+        Ridge geometries are wrapped to the dateline using
+        pyGPlates&#39; [DateLineWrapper](https://www.gplates.org/docs/pygplates/generated/pygplates.datelinewrapper)
+        by splitting a polyline into multiple polylines at the dateline. This is to avoid
+        horizontal lines being formed between polylines at longitudes of -180 and 180 degrees.
+        Point features near the poles (-89 &amp; 89 degree latitude) are also clipped to ensure
+        compatibility with Cartopy.
+
+        Parameters
+        ----------
+        ax : instance of &lt;cartopy.mpl.geoaxes.GeoAxes&gt; or &lt;cartopy.mpl.geoaxes.GeoAxesSubplot&gt;
+            A subclass of `matplotlib.axes.Axes` which represents a map Projection.
+            The map should be set at a particular Cartopy projection.
+
+        color : str, default=’black’
+            The colour of the ridge lines. By default, it is set to black.
+
+        **kwargs :
+            Keyword arguments for parameters such as `alpha`, etc. for
+            plotting ridge geometries.
+            See `Matplotlib` keyword arguments
+            [here](https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html).
+
+        Returns
+        -------
+        ax : instance of &lt;geopandas.GeoDataFrame.plot&gt;
+            A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map
+            with ridge features plotted onto the chosen map projection.
+        &#34;&#34;&#34;
+        if not self.plate_reconstruction.topology_features:
+            logger.warn(
+                &#34;Plate model does not have topology features. Unable to plot_ridges.&#34;
+            )
+            return ax
+
+        return _plot_geometries(
+            ax, self.base_projection, color, self.get_ridges, **kwargs
+        )</code></pre>
 </details>
 <h3>Instance variables</h3>
 <dl>
@@ -13419,26 +13491,10 @@ with unclassified features plotted onto the chosen map projection.</dd>
         A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map
         with unclassified features plotted onto the chosen map projection.
     &#34;&#34;&#34;
-    if &#34;transform&#34; in kwargs.keys():
-        warnings.warn(
-            &#34;&#39;transform&#39; keyword argument is ignored by PlotTopologies&#34;,
-            UserWarning,
-        )
-        kwargs.pop(&#34;transform&#34;)
-    tessellate_degrees = kwargs.pop(&#34;tessellate_degrees&#34;, 1)
-    central_meridian = kwargs.pop(&#34;central_meridian&#34;, None)
-    if central_meridian is None:
-        central_meridian = _meridian_from_ax(ax)
 
-    gdf = self.get_all_topological_sections(
-        central_meridian=central_meridian,
-        tessellate_degrees=tessellate_degrees,
-    )
-    if hasattr(ax, &#34;projection&#34;):
-        gdf = _clean_polygons(data=gdf, projection=ax.projection)
-    else:
-        kwargs[&#34;transform&#34;] = self.base_projection
-    return gdf.plot(ax=ax, color=color, **kwargs)</code></pre>
+    return _plot_geometries(
+        ax, self.base_projection, color, self.get_all_topological_sections, **kwargs
+    )</code></pre>
 </details>
 </dd>
 <dt id="gplately.PlotTopologies.plot_all_topologies"><code class="name flex">
@@ -13493,26 +13549,10 @@ with unclassified features plotted onto the chosen map projection.</dd>
         A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map
         with unclassified features plotted onto the chosen map projection.
     &#34;&#34;&#34;
-    if &#34;transform&#34; in kwargs.keys():
-        warnings.warn(
-            &#34;&#39;transform&#39; keyword argument is ignored by PlotTopologies&#34;,
-            UserWarning,
-        )
-        kwargs.pop(&#34;transform&#34;)
-    tessellate_degrees = kwargs.pop(&#34;tessellate_degrees&#34;, 1)
-    central_meridian = kwargs.pop(&#34;central_meridian&#34;, None)
-    if central_meridian is None:
-        central_meridian = _meridian_from_ax(ax)
 
-    gdf = self.get_all_topologies(
-        central_meridian=central_meridian,
-        tessellate_degrees=tessellate_degrees,
-    )
-    if hasattr(ax, &#34;projection&#34;):
-        gdf = _clean_polygons(data=gdf, projection=ax.projection)
-    else:
-        kwargs[&#34;transform&#34;] = self.base_projection
-    return gdf.plot(ax=ax, facecolor=&#34;none&#34;, edgecolor=color, **kwargs)</code></pre>
+    return _plot_geometries(
+        ax, self.base_projection, color, self.get_all_topologies, **kwargs
+    )</code></pre>
 </details>
 </dd>
 <dt id="gplately.PlotTopologies.plot_coastlines"><code class="name flex">
@@ -14799,7 +14839,7 @@ with passive continental boundaries plotted onto the chosen map projection.</dd>
 </details>
 </dd>
 <dt id="gplately.PlotTopologies.plot_plate_id"><code class="name flex">
-<span>def <span class="ident">plot_plate_id</span></span>(<span>self, ax, plate_id, **kwargs)</span>
+<span>def <span class="ident">plot_plate_id</span></span>(<span>self, *args, **kwargs)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Plot a plate polygon with an associated <code>plate_id</code> onto a standard map Projection.</p>
@@ -14822,40 +14862,11 @@ See <code>Matplotlib</code>'s <code>imshow</code> keyword arguments
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def plot_plate_id(self, ax, plate_id, **kwargs):
-    &#34;&#34;&#34;Plot a plate polygon with an associated `plate_id` onto a standard map Projection.
-
-    Parameters
-    ----------
-    ax : instance of &lt;cartopy.mpl.geoaxes.GeoAxes&gt; or &lt;cartopy.mpl.geoaxes.GeoAxesSubplot&gt;
-        A subclass of `matplotlib.axes.Axes` which represents a map Projection.
-        The map should be set at a particular Cartopy projection.
-
-    plate_id : int
-        A plate ID that identifies the continental polygon to plot. See the
-        [Global EarthByte plate IDs list](https://www.earthbyte.org/webdav/ftp/earthbyte/GPlates/SampleData/FeatureCollections/Rotations/Global_EarthByte_PlateIDs_20071218.pdf)
-        for a full list of plate IDs to plot.
-
-    **kwargs :
-        Keyword arguments for map presentation parameters such as
-        `alpha`, etc. for plotting the grid.
-        See `Matplotlib`&#39;s `imshow` keyword arguments
-        [here](https://matplotlib.org/3.5.1/api/_as_gen/matplotlib.axes.Axes.imshow.html).
-
-    &#34;&#34;&#34;
-    tessellate_degrees = kwargs.pop(&#34;tessellate_degrees&#34;, 1)
-    central_meridian = kwargs.pop(&#34;central_meridian&#34;, None)
-    if central_meridian is None:
-        central_meridian = _meridian_from_ax(ax)
-
-    for feature in self.topologies:
-        if feature.get_reconstruction_plate_id() == plate_id:
-            ft_plate = shapelify_feature_polygons(
-                [feature],
-                central_meridian=central_meridian,
-                tessellate_degrees=tessellate_degrees,
-            )
-            return ax.add_geometries(ft_plate, crs=self.base_projection, **kwargs)</code></pre>
+<pre><code class="python">def plot_plate_id(self, *args, **kwargs):
+    logger.warn(
+        &#34;The class method plot_plate_id will be deprecated in the future soon. Use plot_plate_polygon_by_id instead.&#34;
+    )
+    return self.plot_plate_polygon_by_id(*args, **kwargs)</code></pre>
 </details>
 </dd>
 <dt id="gplately.PlotTopologies.plot_plate_motion_vectors"><code class="name flex">
@@ -14984,6 +14995,66 @@ with the velocity vector field plotted onto the chosen map projection.</dd>
     return quiver</code></pre>
 </details>
 </dd>
+<dt id="gplately.PlotTopologies.plot_plate_polygon_by_id"><code class="name flex">
+<span>def <span class="ident">plot_plate_polygon_by_id</span></span>(<span>self, ax, plate_id, **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Plot a plate polygon with an associated <code>plate_id</code> onto a standard map Projection.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>ax</code></strong> :&ensp;<code>instance</code> of <code>&lt;cartopy.mpl.geoaxes.GeoAxes&gt;</code> or <code>&lt;cartopy.mpl.geoaxes.GeoAxesSubplot&gt;</code></dt>
+<dd>A subclass of <code>matplotlib.axes.Axes</code> which represents a map Projection.
+The map should be set at a particular Cartopy projection.</dd>
+<dt><strong><code>plate_id</code></strong> :&ensp;<code>int</code></dt>
+<dd>A plate ID that identifies the continental polygon to plot. See the
+<a href="https://www.earthbyte.org/webdav/ftp/earthbyte/GPlates/SampleData/FeatureCollections/Rotations/Global_EarthByte_PlateIDs_20071218.pdf">Global EarthByte plate IDs list</a>
+for a full list of plate IDs to plot.</dd>
+</dl>
+<p>**kwargs :
+Keyword arguments for map presentation parameters such as
+<code>alpha</code>, etc. for plotting the grid.
+See <code>Matplotlib</code>'s <code>imshow</code> keyword arguments
+<a href="https://matplotlib.org/3.5.1/api/_as_gen/matplotlib.axes.Axes.imshow.html">here</a>.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def plot_plate_polygon_by_id(self, ax, plate_id, **kwargs):
+    &#34;&#34;&#34;Plot a plate polygon with an associated `plate_id` onto a standard map Projection.
+
+    Parameters
+    ----------
+    ax : instance of &lt;cartopy.mpl.geoaxes.GeoAxes&gt; or &lt;cartopy.mpl.geoaxes.GeoAxesSubplot&gt;
+        A subclass of `matplotlib.axes.Axes` which represents a map Projection.
+        The map should be set at a particular Cartopy projection.
+
+    plate_id : int
+        A plate ID that identifies the continental polygon to plot. See the
+        [Global EarthByte plate IDs list](https://www.earthbyte.org/webdav/ftp/earthbyte/GPlates/SampleData/FeatureCollections/Rotations/Global_EarthByte_PlateIDs_20071218.pdf)
+        for a full list of plate IDs to plot.
+
+    **kwargs :
+        Keyword arguments for map presentation parameters such as
+        `alpha`, etc. for plotting the grid.
+        See `Matplotlib`&#39;s `imshow` keyword arguments
+        [here](https://matplotlib.org/3.5.1/api/_as_gen/matplotlib.axes.Axes.imshow.html).
+
+    &#34;&#34;&#34;
+    tessellate_degrees = kwargs.pop(&#34;tessellate_degrees&#34;, 1)
+    central_meridian = kwargs.pop(&#34;central_meridian&#34;, None)
+    if central_meridian is None:
+        central_meridian = _meridian_from_ax(ax)
+
+    for feature in self.topologies:
+        if feature.get_reconstruction_plate_id() == plate_id:
+            ft_plate = shapelify_feature_polygons(
+                [feature],
+                central_meridian=central_meridian,
+                tessellate_degrees=tessellate_degrees,
+            )
+            return ax.add_geometries(ft_plate, crs=self.base_projection, **kwargs)</code></pre>
+</details>
+</dd>
 <dt id="gplately.PlotTopologies.plot_ridges"><code class="name flex">
 <span>def <span class="ident">plot_ridges</span></span>(<span>self, ax, color='black', **kwargs)</span>
 </code></dt>
@@ -15069,28 +15140,11 @@ with ridge features plotted onto the chosen map projection.</dd>
         logger.warn(
             &#34;Plate model does not have topology features. Unable to plot_ridges.&#34;
         )
-        return
+        return ax
 
-    if &#34;transform&#34; in kwargs.keys():
-        warnings.warn(
-            &#34;&#39;transform&#39; keyword argument is ignored by PlotTopologies&#34;,
-            UserWarning,
-        )
-        kwargs.pop(&#34;transform&#34;)
-    tessellate_degrees = kwargs.pop(&#34;tessellate_degrees&#34;, 1)
-    central_meridian = kwargs.pop(&#34;central_meridian&#34;, None)
-    if central_meridian is None:
-        central_meridian = _meridian_from_ax(ax)
-
-    gdf = self.get_ridges(
-        central_meridian=central_meridian,
-        tessellate_degrees=tessellate_degrees,
-    )
-    if hasattr(ax, &#34;projection&#34;):
-        gdf = _clean_polygons(data=gdf, projection=ax.projection)
-    else:
-        kwargs[&#34;transform&#34;] = self.base_projection
-    return gdf.plot(ax=ax, facecolor=&#34;none&#34;, edgecolor=color, **kwargs)</code></pre>
+    return _plot_geometries(
+        ax, self.base_projection, color, self.get_ridges, **kwargs
+    )</code></pre>
 </details>
 </dd>
 <dt id="gplately.PlotTopologies.plot_ridges_and_transforms"><code class="name flex">
@@ -19231,7 +19285,7 @@ reconstruction.</dd>
                 pygplates.PointOnSphere((float(p[1]), float(p[0]))).to_xyz()
                 for p in np.dstack((grid_x, grid_y))[self.data_mask]
             ]
-            print(&#34;building the spatial tree...&#34;)
+            logger.debug(&#34;building the spatial tree...&#34;)
             self.spatial_cKDTree = _cKDTree(grid_points)
 
         query_points = [
@@ -19278,7 +19332,7 @@ reconstruction.</dd>
                 f&#34;The given extent is out of scope. {extent} -- {self.extent}&#34;
             )
         y_len, x_len = self.data.shape
-        dev_logger.debug(f&#34;the shape of raster data x:{x_len} y:{y_len}&#34;)
+        logger.debug(f&#34;the shape of raster data x:{x_len} y:{y_len}&#34;)
 
         x0 = math.floor(
             (extent[0] - self.extent[0])
@@ -19700,7 +19754,7 @@ this happens when the border of the given extent fall between two gird lines.</p
             f&#34;The given extent is out of scope. {extent} -- {self.extent}&#34;
         )
     y_len, x_len = self.data.shape
-    dev_logger.debug(f&#34;the shape of raster data x:{x_len} y:{y_len}&#34;)
+    logger.debug(f&#34;the shape of raster data x:{x_len} y:{y_len}&#34;)
 
     x0 = math.floor(
         (extent[0] - self.extent[0])
@@ -20224,7 +20278,7 @@ this is the arch length. we need to calculate the straight distance between the 
             pygplates.PointOnSphere((float(p[1]), float(p[0]))).to_xyz()
             for p in np.dstack((grid_x, grid_y))[self.data_mask]
         ]
-        print(&#34;building the spatial tree...&#34;)
+        logger.debug(&#34;building the spatial tree...&#34;)
         self.spatial_cKDTree = _cKDTree(grid_points)
 
     query_points = [
@@ -23016,10 +23070,9 @@ other general z-values are saved to a gridding input file (.npz).</p></div>
 <ul id="index">
 <li><h3><a href="#header-submodules">Sub-modules</a></h3>
 <ul>
-<li><code><a title="gplately.create_age_grids" href="create_age_grids.html">gplately.create_age_grids</a></code></li>
+<li><code><a title="gplately.commands" href="commands/index.html">gplately.commands</a></code></li>
 <li><code><a title="gplately.download" href="download.html">gplately.download</a></code></li>
 <li><code><a title="gplately.examples" href="examples/index.html">gplately.examples</a></code></li>
-<li><code><a title="gplately.feature_filter" href="feature_filter.html">gplately.feature_filter</a></code></li>
 <li><code><a title="gplately.geometry" href="geometry.html">gplately.geometry</a></code></li>
 <li><code><a title="gplately.gpml" href="gpml.html">gplately.gpml</a></code></li>
 <li><code><a title="gplately.grids" href="grids.html">gplately.grids</a></code></li>
@@ -23029,9 +23082,9 @@ other general z-values are saved to a gridding input file (.npz).</p></div>
 <li><code><a title="gplately.plot" href="plot.html">gplately.plot</a></code></li>
 <li><code><a title="gplately.ptt" href="ptt/index.html">gplately.ptt</a></code></li>
 <li><code><a title="gplately.pygplates" href="pygplates.html">gplately.pygplates</a></code></li>
-<li><code><a title="gplately.read_geometries" href="read_geometries.html">gplately.read_geometries</a></code></li>
 <li><code><a title="gplately.reconstruction" href="reconstruction.html">gplately.reconstruction</a></code></li>
 <li><code><a title="gplately.tools" href="tools.html">gplately.tools</a></code></li>
+<li><code><a title="gplately.utils" href="utils/index.html">gplately.utils</a></code></li>
 </ul>
 </li>
 <li><h3><a href="#header-functions">Functions</a></h3>
@@ -23141,6 +23194,7 @@ other general z-values are saved to a gridding input file (.npz).</p></div>
 <li><code><a title="gplately.PlotTopologies.plot_passive_continental_boundaries" href="#gplately.PlotTopologies.plot_passive_continental_boundaries">plot_passive_continental_boundaries</a></code></li>
 <li><code><a title="gplately.PlotTopologies.plot_plate_id" href="#gplately.PlotTopologies.plot_plate_id">plot_plate_id</a></code></li>
 <li><code><a title="gplately.PlotTopologies.plot_plate_motion_vectors" href="#gplately.PlotTopologies.plot_plate_motion_vectors">plot_plate_motion_vectors</a></code></li>
+<li><code><a title="gplately.PlotTopologies.plot_plate_polygon_by_id" href="#gplately.PlotTopologies.plot_plate_polygon_by_id">plot_plate_polygon_by_id</a></code></li>
 <li><code><a title="gplately.PlotTopologies.plot_ridges" href="#gplately.PlotTopologies.plot_ridges">plot_ridges</a></code></li>
 <li><code><a title="gplately.PlotTopologies.plot_ridges_and_transforms" href="#gplately.PlotTopologies.plot_ridges_and_transforms">plot_ridges_and_transforms</a></code></li>
 <li><code><a title="gplately.PlotTopologies.plot_slab_edges" href="#gplately.PlotTopologies.plot_slab_edges">plot_slab_edges</a></code></li>

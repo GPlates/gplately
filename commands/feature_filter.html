@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
 <meta name="generator" content="pdoc 0.10.0" />
-<title>gplately.feature_filter API documentation</title>
+<title>gplately.commands.feature_filter API documentation</title>
 <meta name="description" content="" />
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/sanitize.min.css" integrity="sha256-PK9q560IAAa6WVRRh76LtCaI8pjTJ2z11v0miyNNjrs=" crossorigin>
 <link rel="preload stylesheet" as="style" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/11.0.1/typography.min.css" integrity="sha256-7l/o7C8jubJiy74VsKTidCy1yBkRtiUGbVkYBylBqUg=" crossorigin>
@@ -20,7 +20,7 @@
 <main>
 <article id="content">
 <header>
-<h1 class="title">Module <code>gplately.feature_filter</code></h1>
+<h1 class="title">Module <code>gplately.commands.feature_filter</code></h1>
 </header>
 <section id="section-intro">
 <details class="source">
@@ -254,7 +254,7 @@ def run_filter_feature_collection(args):
 <section>
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
-<dt id="gplately.feature_filter.add_parser"><code class="name flex">
+<dt id="gplately.commands.feature_filter.add_parser"><code class="name flex">
 <span>def <span class="ident">add_parser</span></span>(<span>subparser)</span>
 </code></dt>
 <dd>
@@ -299,8 +299,8 @@ def run_filter_feature_collection(args):
     filter_cmd.add_argument(&#34;--exact-match&#34;, dest=&#34;exact_match&#34;, action=&#34;store_true&#34;)</code></pre>
 </details>
 </dd>
-<dt id="gplately.feature_filter.filter_feature_collection"><code class="name flex">
-<span>def <span class="ident">filter_feature_collection</span></span>(<span>feature_collection: pygplates.FeatureCollection, filters: List[<a title="gplately.feature_filter.FeatureFilter" href="#gplately.feature_filter.FeatureFilter">FeatureFilter</a>])</span>
+<dt id="gplately.commands.feature_filter.filter_feature_collection"><code class="name flex">
+<span>def <span class="ident">filter_feature_collection</span></span>(<span>feature_collection: pygplates.FeatureCollection, filters: List[<a title="gplately.commands.feature_filter.FeatureFilter" href="#gplately.commands.feature_filter.FeatureFilter">FeatureFilter</a>])</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Filter feature collection by various criteria.</p>
@@ -328,7 +328,7 @@ def run_filter_feature_collection(args):
     return new_feature_collection</code></pre>
 </details>
 </dd>
-<dt id="gplately.feature_filter.run_filter_feature_collection"><code class="name flex">
+<dt id="gplately.commands.feature_filter.run_filter_feature_collection"><code class="name flex">
 <span>def <span class="ident">run_filter_feature_collection</span></span>(<span>args)</span>
 </code></dt>
 <dd>
@@ -387,7 +387,7 @@ def run_filter_feature_collection(args):
 <section>
 <h2 class="section-title" id="header-classes">Classes</h2>
 <dl>
-<dt id="gplately.feature_filter.BirthAgeFilter"><code class="flex name class">
+<dt id="gplately.commands.feature_filter.BirthAgeFilter"><code class="flex name class">
 <span>class <span class="ident">BirthAgeFilter</span></span>
 <span>(</span><span>age: float, keep_older=True)</span>
 </code></dt>
@@ -430,18 +430,18 @@ keep features whose time of apprearance are smaller than 500</p>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
-<li><a title="gplately.feature_filter.FeatureFilter" href="#gplately.feature_filter.FeatureFilter">FeatureFilter</a></li>
+<li><a title="gplately.commands.feature_filter.FeatureFilter" href="#gplately.commands.feature_filter.FeatureFilter">FeatureFilter</a></li>
 </ul>
 <h3>Inherited members</h3>
 <ul class="hlist">
-<li><code><b><a title="gplately.feature_filter.FeatureFilter" href="#gplately.feature_filter.FeatureFilter">FeatureFilter</a></b></code>:
+<li><code><b><a title="gplately.commands.feature_filter.FeatureFilter" href="#gplately.commands.feature_filter.FeatureFilter">FeatureFilter</a></b></code>:
 <ul class="hlist">
-<li><code><a title="gplately.feature_filter.FeatureFilter.should_keep" href="#gplately.feature_filter.FeatureFilter.should_keep">should_keep</a></code></li>
+<li><code><a title="gplately.commands.feature_filter.FeatureFilter.should_keep" href="#gplately.commands.feature_filter.FeatureFilter.should_keep">should_keep</a></code></li>
 </ul>
 </li>
 </ul>
 </dd>
-<dt id="gplately.feature_filter.FeatureFilter"><code class="flex name class">
+<dt id="gplately.commands.feature_filter.FeatureFilter"><code class="flex name class">
 <span>class <span class="ident">FeatureFilter</span></span>
 </code></dt>
 <dd>
@@ -472,13 +472,13 @@ keep features whose time of apprearance are smaller than 500</p>
 </details>
 <h3>Subclasses</h3>
 <ul class="hlist">
-<li><a title="gplately.feature_filter.BirthAgeFilter" href="#gplately.feature_filter.BirthAgeFilter">BirthAgeFilter</a></li>
-<li><a title="gplately.feature_filter.FeatureNameFilter" href="#gplately.feature_filter.FeatureNameFilter">FeatureNameFilter</a></li>
-<li><a title="gplately.feature_filter.PlateIDFilter" href="#gplately.feature_filter.PlateIDFilter">PlateIDFilter</a></li>
+<li><a title="gplately.commands.feature_filter.BirthAgeFilter" href="#gplately.commands.feature_filter.BirthAgeFilter">BirthAgeFilter</a></li>
+<li><a title="gplately.commands.feature_filter.FeatureNameFilter" href="#gplately.commands.feature_filter.FeatureNameFilter">FeatureNameFilter</a></li>
+<li><a title="gplately.commands.feature_filter.PlateIDFilter" href="#gplately.commands.feature_filter.PlateIDFilter">PlateIDFilter</a></li>
 </ul>
 <h3>Methods</h3>
 <dl>
-<dt id="gplately.feature_filter.FeatureFilter.should_keep"><code class="name flex">
+<dt id="gplately.commands.feature_filter.FeatureFilter.should_keep"><code class="name flex">
 <span>def <span class="ident">should_keep</span></span>(<span>self, feature: pygplates.Feature) ‑> bool</span>
 </code></dt>
 <dd>
@@ -503,7 +503,7 @@ def should_keep(self, feature: pygplates.Feature) -&gt; bool:
 </dd>
 </dl>
 </dd>
-<dt id="gplately.feature_filter.FeatureNameFilter"><code class="flex name class">
+<dt id="gplately.commands.feature_filter.FeatureNameFilter"><code class="flex name class">
 <span>class <span class="ident">FeatureNameFilter</span></span>
 <span>(</span><span>names: List[str], exact_match=False, case_sensitive=False, exclude=False)</span>
 </code></dt>
@@ -565,11 +565,11 @@ FeatureNameFilter(['Africa', 'Asia'], exclude=True, exact_match=True, case_sensi
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
-<li><a title="gplately.feature_filter.FeatureFilter" href="#gplately.feature_filter.FeatureFilter">FeatureFilter</a></li>
+<li><a title="gplately.commands.feature_filter.FeatureFilter" href="#gplately.commands.feature_filter.FeatureFilter">FeatureFilter</a></li>
 </ul>
 <h3>Methods</h3>
 <dl>
-<dt id="gplately.feature_filter.FeatureNameFilter.check_name"><code class="name flex">
+<dt id="gplately.commands.feature_filter.FeatureNameFilter.check_name"><code class="name flex">
 <span>def <span class="ident">check_name</span></span>(<span>self, name_1: str, name_2: str) ‑> bool</span>
 </code></dt>
 <dd>
@@ -595,14 +595,14 @@ FeatureNameFilter(['Africa', 'Asia'], exclude=True, exact_match=True, case_sensi
 </dl>
 <h3>Inherited members</h3>
 <ul class="hlist">
-<li><code><b><a title="gplately.feature_filter.FeatureFilter" href="#gplately.feature_filter.FeatureFilter">FeatureFilter</a></b></code>:
+<li><code><b><a title="gplately.commands.feature_filter.FeatureFilter" href="#gplately.commands.feature_filter.FeatureFilter">FeatureFilter</a></b></code>:
 <ul class="hlist">
-<li><code><a title="gplately.feature_filter.FeatureFilter.should_keep" href="#gplately.feature_filter.FeatureFilter.should_keep">should_keep</a></code></li>
+<li><code><a title="gplately.commands.feature_filter.FeatureFilter.should_keep" href="#gplately.commands.feature_filter.FeatureFilter.should_keep">should_keep</a></code></li>
 </ul>
 </li>
 </ul>
 </dd>
-<dt id="gplately.feature_filter.PlateIDFilter"><code class="flex name class">
+<dt id="gplately.commands.feature_filter.PlateIDFilter"><code class="flex name class">
 <span>class <span class="ident">PlateIDFilter</span></span>
 <span>(</span><span>pids: List[int], exclude=False)</span>
 </code></dt>
@@ -637,13 +637,13 @@ PlateIDFilter([101,201,301], exclude=True) &ndash; keep features whose plate id 
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
-<li><a title="gplately.feature_filter.FeatureFilter" href="#gplately.feature_filter.FeatureFilter">FeatureFilter</a></li>
+<li><a title="gplately.commands.feature_filter.FeatureFilter" href="#gplately.commands.feature_filter.FeatureFilter">FeatureFilter</a></li>
 </ul>
 <h3>Inherited members</h3>
 <ul class="hlist">
-<li><code><b><a title="gplately.feature_filter.FeatureFilter" href="#gplately.feature_filter.FeatureFilter">FeatureFilter</a></b></code>:
+<li><code><b><a title="gplately.commands.feature_filter.FeatureFilter" href="#gplately.commands.feature_filter.FeatureFilter">FeatureFilter</a></b></code>:
 <ul class="hlist">
-<li><code><a title="gplately.feature_filter.FeatureFilter.should_keep" href="#gplately.feature_filter.FeatureFilter.should_keep">should_keep</a></code></li>
+<li><code><a title="gplately.commands.feature_filter.FeatureFilter.should_keep" href="#gplately.commands.feature_filter.FeatureFilter.should_keep">should_keep</a></code></li>
 </ul>
 </li>
 </ul>
@@ -664,35 +664,35 @@ PlateIDFilter([101,201,301], exclude=True) &ndash; keep features whose plate id 
 <ul id="index">
 <li><h3>Super-module</h3>
 <ul>
-<li><code><a title="gplately" href="index.html">gplately</a></code></li>
+<li><code><a title="gplately.commands" href="index.html">gplately.commands</a></code></li>
 </ul>
 </li>
 <li><h3><a href="#header-functions">Functions</a></h3>
 <ul class="">
-<li><code><a title="gplately.feature_filter.add_parser" href="#gplately.feature_filter.add_parser">add_parser</a></code></li>
-<li><code><a title="gplately.feature_filter.filter_feature_collection" href="#gplately.feature_filter.filter_feature_collection">filter_feature_collection</a></code></li>
-<li><code><a title="gplately.feature_filter.run_filter_feature_collection" href="#gplately.feature_filter.run_filter_feature_collection">run_filter_feature_collection</a></code></li>
+<li><code><a title="gplately.commands.feature_filter.add_parser" href="#gplately.commands.feature_filter.add_parser">add_parser</a></code></li>
+<li><code><a title="gplately.commands.feature_filter.filter_feature_collection" href="#gplately.commands.feature_filter.filter_feature_collection">filter_feature_collection</a></code></li>
+<li><code><a title="gplately.commands.feature_filter.run_filter_feature_collection" href="#gplately.commands.feature_filter.run_filter_feature_collection">run_filter_feature_collection</a></code></li>
 </ul>
 </li>
 <li><h3><a href="#header-classes">Classes</a></h3>
 <ul>
 <li>
-<h4><code><a title="gplately.feature_filter.BirthAgeFilter" href="#gplately.feature_filter.BirthAgeFilter">BirthAgeFilter</a></code></h4>
+<h4><code><a title="gplately.commands.feature_filter.BirthAgeFilter" href="#gplately.commands.feature_filter.BirthAgeFilter">BirthAgeFilter</a></code></h4>
 </li>
 <li>
-<h4><code><a title="gplately.feature_filter.FeatureFilter" href="#gplately.feature_filter.FeatureFilter">FeatureFilter</a></code></h4>
+<h4><code><a title="gplately.commands.feature_filter.FeatureFilter" href="#gplately.commands.feature_filter.FeatureFilter">FeatureFilter</a></code></h4>
 <ul class="">
-<li><code><a title="gplately.feature_filter.FeatureFilter.should_keep" href="#gplately.feature_filter.FeatureFilter.should_keep">should_keep</a></code></li>
+<li><code><a title="gplately.commands.feature_filter.FeatureFilter.should_keep" href="#gplately.commands.feature_filter.FeatureFilter.should_keep">should_keep</a></code></li>
 </ul>
 </li>
 <li>
-<h4><code><a title="gplately.feature_filter.FeatureNameFilter" href="#gplately.feature_filter.FeatureNameFilter">FeatureNameFilter</a></code></h4>
+<h4><code><a title="gplately.commands.feature_filter.FeatureNameFilter" href="#gplately.commands.feature_filter.FeatureNameFilter">FeatureNameFilter</a></code></h4>
 <ul class="">
-<li><code><a title="gplately.feature_filter.FeatureNameFilter.check_name" href="#gplately.feature_filter.FeatureNameFilter.check_name">check_name</a></code></li>
+<li><code><a title="gplately.commands.feature_filter.FeatureNameFilter.check_name" href="#gplately.commands.feature_filter.FeatureNameFilter.check_name">check_name</a></code></li>
 </ul>
 </li>
 <li>
-<h4><code><a title="gplately.feature_filter.PlateIDFilter" href="#gplately.feature_filter.PlateIDFilter">PlateIDFilter</a></code></h4>
+<h4><code><a title="gplately.commands.feature_filter.PlateIDFilter" href="#gplately.commands.feature_filter.PlateIDFilter">PlateIDFilter</a></code></h4>
 </li>
 </ul>
 </li>
