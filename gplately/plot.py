@@ -21,7 +21,11 @@ from shapely.geometry.base import BaseGeometry, BaseMultipartGeometry
 from shapely.ops import linemerge
 
 from . import ptt
-from .decorators import append_docstring
+from .decorators import (
+    append_docstring,
+    validate_reconstruction_time,
+    validate_topology_availability,
+)
 from .gpml import _load_FeatureCollection
 from .pygplates import FeatureCollection as _FeatureCollection
 from .reconstruction import PlateReconstruction as _PlateReconstruction
@@ -53,6 +57,48 @@ PLOT_DOCSTRING = """
         ax : instance of <geopandas.GeoDataFrame.plot>
             A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map
             with ridge features plotted onto the chosen map projection.
+"""
+
+GET_DATE_DOCSTRING = """
+
+        Parameters
+        ----------
+        central_meridian : float
+            Central meridian around which to perform wrapping; default: 0.0.
+        tessellate_degrees : float or None
+            If provided, geometries will be tessellated to this resolution prior
+            to wrapping.
+
+        Returns
+        -------
+        geopandas.GeoDataFrame
+            A pandas.DataFrame that has a column with `{0}` geometry.
+
+        Raises
+        ------
+        ValueError
+            If the optional `time` parameter has not been passed to
+            `PlotTopologies`. This is needed to construct `{0}`
+            to the requested `time` and thus populate the GeoDataFrame.
+
+        Notes
+        -----
+        The `{0}` needed to produce the GeoDataFrame are automatically
+        constructed if the optional `time` parameter is passed to the
+        `PlotTopologies` object before calling this function. `time` can be
+        passed either when `PlotTopologies` is first called...
+
+            gplot = gplately.PlotTopologies(..., time=100,...)
+
+        or anytime afterwards, by setting:
+
+            time = 100 # Ma
+            gplot.time = time
+
+        ...after which this function can be re-run. Once the `{0}`
+        are reconstructed, they are converted into Shapely lines whose
+        coordinates are passed to a geopandas GeoDataFrame.
+
 """
 
 
@@ -577,6 +623,7 @@ class PlotTopologies(object):
 
         return np.array(triangle_pointsX), np.array(triangle_pointsY)
 
+    @validate_reconstruction_time
     def get_feature(
         self,
         feature,
@@ -603,10 +650,7 @@ class PlotTopologies(object):
             A pandas.DataFrame that has a column with `feature` geometries.
 
         """
-        if validate_reconstruction_time and self._time is None:
-            raise ValueError(
-                "The reconstruction time has not been set yet. Set `PlotTopologies.time` before calling plotting functions."
-            )
+
         if feature is None:
             raise ValueError(
                 "The 'feature' parameter is None. Make sure a valid `feature` object has been provided."
@@ -3436,6 +3480,8 @@ class PlotTopologies(object):
             **kwargs,
         )
 
+    @append_docstring(GET_DATE_DOCSTRING.format("topologies"))
+    @validate_reconstruction_time
     def get_all_topological_sections(
         self,
         central_meridian=0.0,
@@ -3444,43 +3490,6 @@ class PlotTopologies(object):
         """Create a geopandas.GeoDataFrame object containing geometries of
         resolved topological sections.
 
-        Parameters
-        ----------
-        central_meridian : float
-            Central meridian around which to perform wrapping; default: 0.0.
-        tessellate_degrees : float or None
-            If provided, geometries will be tessellated to this resolution prior
-            to wrapping.
-
-        Returns
-        -------
-        geopandas.GeoDataFrame
-            A pandas.DataFrame that has a column with `topologies` geometry.
-
-        Raises
-        ------
-        ValueError
-            If the optional `time` parameter has not been passed to
-            `PlotTopologies`. This is needed to construct `topologies`
-            to the requested `time` and thus populate the GeoDataFrame.
-
-        Notes
-        -----
-        The `topologies` needed to produce the GeoDataFrame are automatically
-        constructed if the optional `time` parameter is passed to the
-        `PlotTopologies` object before calling this function. `time` can be
-        passed either when `PlotTopologies` is first called...
-
-            gplot = gplately.PlotTopologies(..., time=100,...)
-
-        or anytime afterwards, by setting:
-
-            time = 100 # Ma
-            gplot.time = time
-
-        ...after which this function can be re-run. Once the `topologies`
-        are reconstructed, they are converted into Shapely lines whose
-        coordinates are passed to a geopandas GeoDataFrame.
         """
         if self._time is None:
             raise ValueError(
@@ -3553,42 +3562,9 @@ class PlotTopologies(object):
             **kwargs,
         )
 
+    @append_docstring(GET_DATE_DOCSTRING.format("ridges"))
     def get_ridges(self, central_meridian=0.0, tessellate_degrees=1):
-        """Create a geopandas.GeoDataFrame object containing geometries of reconstructed ridge lines.
-
-        Notes
-        -----
-        The `ridges` needed to produce the GeoDataFrame are automatically constructed if the optional `time`
-        parameter is passed to the `PlotTopologies` object before calling this function. `time` can be passed
-        either when `PlotTopologies` is first called...
-
-            gplot = gplately.PlotTopologies(..., time=100,...)
-
-        or anytime afterwards, by setting:
-
-            time = 100 #Ma
-            gplot.time = time
-
-        ...after which this function can be re-run. Once the `ridges` are reconstructed, they are
-        converted into Shapely lines whose coordinates are passed to a geopandas GeoDataFrame.
-
-        Returns
-        -------
-        gdf : instance of <geopandas.GeoDataFrame>
-            A pandas.DataFrame that has a column with `ridges` geometry.
-        central_meridian : float
-            Central meridian around which to perform wrapping; default: 0.0.
-        tessellate_degrees : float or None
-            If provided, geometries will be tessellated to this resolution prior
-            to wrapping.
-
-        Raises
-        ------
-        ValueError
-            If the optional `time` parameter has not been passed to `PlotTopologies`. This is needed to construct
-            `ridges` to the requested `time` and thus populate the GeoDataFrame.
-
-        """
+        """Create a geopandas.GeoDataFrame object containing geometries of reconstructed ridge lines."""
         return self.get_feature(
             self.ridges,
             central_meridian=central_meridian,
@@ -3596,6 +3572,7 @@ class PlotTopologies(object):
         )
 
     @append_docstring(PLOT_DOCSTRING)
+    @validate_topology_availability("ridges")
     def plot_ridges(self, ax, color="black", **kwargs):
         """Plot reconstructed ridge polylines onto a standard map Projection.
 
@@ -3616,12 +3593,6 @@ class PlotTopologies(object):
         compatibility with Cartopy.
 
         """
-        if not self.plate_reconstruction.topology_features:
-            logger.warn(
-                "Plate model does not have topology features. Unable to plot_ridges."
-            )
-            return ax
-
         return self._plot_feature(
             ax,
             get_feature_func=self.get_ridges,
