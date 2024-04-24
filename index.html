@@ -569,6 +569,11 @@ __pdoc__ = {
     &#34;_DefaultCollision&#34;: False,
     &#34;_ContinentCollision&#34;: False,
     &#34;_ReconstructByTopologies&#34;: False,
+    &#34;examples&#34;: False,
+    &#34;notebooks&#34;: False,
+    &#34;commands&#34;: False,
+    &#34;decorators&#34;: False,
+    &#34;exceptions&#34;: False,
 }
 
 __all__ = [
@@ -618,26 +623,10 @@ del os</code></pre>
 <section>
 <h2 class="section-title" id="header-submodules">Sub-modules</h2>
 <dl>
-<dt><code class="name"><a title="gplately.commands" href="commands/index.html">gplately.commands</a></code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-<dt><code class="name"><a title="gplately.decorators" href="decorators.html">gplately.decorators</a></code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
 <dt><code class="name"><a title="gplately.download" href="download.html">gplately.download</a></code></dt>
 <dd>
 <div class="desc"><p>Functions for downloading assorted plate reconstruction data to use with GPlately's
 main objects. Files are stored in the user's cache and can be …</p></div>
-</dd>
-<dt><code class="name"><a title="gplately.examples" href="examples/index.html">gplately.examples</a></code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-<dt><code class="name"><a title="gplately.exceptions" href="exceptions.html">gplately.exceptions</a></code></dt>
-<dd>
-<div class="desc"></div>
 </dd>
 <dt><code class="name"><a title="gplately.geometry" href="geometry.html">gplately.geometry</a></code></dt>
 <dd>
@@ -652,10 +641,6 @@ main objects. Files are stored in the user's cache and can be …</p></div>
 <dd>
 <div class="desc"><p>Tools for working with MaskedArray, ndarray and netCDF4 rasters, as well as
 gridded-data …</p></div>
-</dd>
-<dt><code class="name"><a title="gplately.notebooks" href="notebooks/index.html">gplately.notebooks</a></code></dt>
-<dd>
-<div class="desc"></div>
 </dd>
 <dt><code class="name"><a title="gplately.oceans" href="oceans.html">gplately.oceans</a></code></dt>
 <dd>
@@ -12367,7 +12352,41 @@ to wrapping.</dd>
 <span>def <span class="ident">get_ridges</span></span>(<span>self, central_meridian=0.0, tessellate_degrees=1)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Create a geopandas.GeoDataFrame object containing geometries of reconstructed ridge lines.</p></div>
+<div class="desc"><p>Create a geopandas.GeoDataFrame object containing geometries of reconstructed ridge lines.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>central_meridian</code></strong> :&ensp;<code>float</code></dt>
+<dd>Central meridian around which to perform wrapping; default: 0.0.</dd>
+<dt><strong><code>tessellate_degrees</code></strong> :&ensp;<code>float</code> or <code>None</code></dt>
+<dd>If provided, geometries will be tessellated to this resolution prior
+to wrapping.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>geopandas.GeoDataFrame</code></dt>
+<dd>A pandas.DataFrame that has a column with <code>ridges</code> geometry.</dd>
+</dl>
+<h2 id="raises">Raises</h2>
+<dl>
+<dt><code>ValueError</code></dt>
+<dd>If the optional <code>time</code> parameter has not been passed to
+<code><a title="gplately.PlotTopologies" href="#gplately.PlotTopologies">PlotTopologies</a></code>. This is needed to construct <code>ridges</code>
+to the requested <code>time</code> and thus populate the GeoDataFrame.</dd>
+</dl>
+<h2 id="notes">Notes</h2>
+<p>The <code>ridges</code> needed to produce the GeoDataFrame are automatically
+constructed if the optional <code>time</code> parameter is passed to the
+<code><a title="gplately.PlotTopologies" href="#gplately.PlotTopologies">PlotTopologies</a></code> object before calling this function. <code>time</code> can be
+passed either when <code><a title="gplately.PlotTopologies" href="#gplately.PlotTopologies">PlotTopologies</a></code> is first called&hellip;</p>
+<pre><code>gplot = gplately.PlotTopologies(..., time=100,...)
+</code></pre>
+<p>or anytime afterwards, by setting:</p>
+<pre><code>time = 100 # Ma
+gplot.time = time
+</code></pre>
+<p>&hellip;after which this function can be re-run. Once the <code>ridges</code>
+are reconstructed, they are converted into Shapely lines whose
+coordinates are passed to a geopandas GeoDataFrame.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -13212,7 +13231,27 @@ to wrapping.</dd>
 <span>def <span class="ident">plot_all_topological_sections</span></span>(<span>self, ax, color='black', **kwargs)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Plot all topologies on a standard map projection.</p></div>
+<div class="desc"><p>Plot all topologies on a standard map projection.
+Parameters</p>
+<hr>
+<dl>
+<dt><strong><code>ax</code></strong> :&ensp;<code>instance</code> of <code>&lt;cartopy.mpl.geoaxes.GeoAxes&gt;</code> or <code>&lt;cartopy.mpl.geoaxes.GeoAxesSubplot&gt;</code></dt>
+<dd>A subclass of <code>matplotlib.axes.Axes</code> which represents a map Projection.
+The map should be set at a particular Cartopy projection.</dd>
+<dt><strong><code>color</code></strong> :&ensp;<code>str</code>, default=<code>’black’</code></dt>
+<dd>The colour of the ridge lines. By default, it is set to black.</dd>
+</dl>
+<p>**kwargs :
+Keyword arguments for parameters such as <code>alpha</code>, etc. for
+plotting ridge geometries.
+See <code>Matplotlib</code> keyword arguments
+<a href="https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html">here</a>.</p>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><strong><code>ax</code></strong> :&ensp;<code>instance</code> of <code>&lt;geopandas.GeoDataFrame.plot&gt;</code></dt>
+<dd>A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map
+with ridge features plotted onto the chosen map projection.</dd>
+</dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -13233,7 +13272,27 @@ def plot_all_topological_sections(self, ax, color=&#34;black&#34;, **kwargs):
 <span>def <span class="ident">plot_all_topologies</span></span>(<span>self, ax, color='black', **kwargs)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Plot all topologies on a standard map projection.</p></div>
+<div class="desc"><p>Plot all topologies on a standard map projection.
+Parameters</p>
+<hr>
+<dl>
+<dt><strong><code>ax</code></strong> :&ensp;<code>instance</code> of <code>&lt;cartopy.mpl.geoaxes.GeoAxes&gt;</code> or <code>&lt;cartopy.mpl.geoaxes.GeoAxesSubplot&gt;</code></dt>
+<dd>A subclass of <code>matplotlib.axes.Axes</code> which represents a map Projection.
+The map should be set at a particular Cartopy projection.</dd>
+<dt><strong><code>color</code></strong> :&ensp;<code>str</code>, default=<code>’black’</code></dt>
+<dd>The colour of the ridge lines. By default, it is set to black.</dd>
+</dl>
+<p>**kwargs :
+Keyword arguments for parameters such as <code>alpha</code>, etc. for
+plotting ridge geometries.
+See <code>Matplotlib</code> keyword arguments
+<a href="https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html">here</a>.</p>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><strong><code>ax</code></strong> :&ensp;<code>instance</code> of <code>&lt;geopandas.GeoDataFrame.plot&gt;</code></dt>
+<dd>A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map
+with ridge features plotted onto the chosen map projection.</dd>
+</dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
@@ -22707,15 +22766,10 @@ other general z-values are saved to a gridding input file (.npz).</p></div>
 <ul id="index">
 <li><h3><a href="#header-submodules">Sub-modules</a></h3>
 <ul>
-<li><code><a title="gplately.commands" href="commands/index.html">gplately.commands</a></code></li>
-<li><code><a title="gplately.decorators" href="decorators.html">gplately.decorators</a></code></li>
 <li><code><a title="gplately.download" href="download.html">gplately.download</a></code></li>
-<li><code><a title="gplately.examples" href="examples/index.html">gplately.examples</a></code></li>
-<li><code><a title="gplately.exceptions" href="exceptions.html">gplately.exceptions</a></code></li>
 <li><code><a title="gplately.geometry" href="geometry.html">gplately.geometry</a></code></li>
 <li><code><a title="gplately.gpml" href="gpml.html">gplately.gpml</a></code></li>
 <li><code><a title="gplately.grids" href="grids.html">gplately.grids</a></code></li>
-<li><code><a title="gplately.notebooks" href="notebooks/index.html">gplately.notebooks</a></code></li>
 <li><code><a title="gplately.oceans" href="oceans.html">gplately.oceans</a></code></li>
 <li><code><a title="gplately.parallel" href="parallel.html">gplately.parallel</a></code></li>
 <li><code><a title="gplately.plot" href="plot.html">gplately.plot</a></code></li>
