@@ -206,6 +206,11 @@ __pdoc__ = {
     "_DefaultCollision": False,
     "_ContinentCollision": False,
     "_ReconstructByTopologies": False,
+    "examples": False,
+    "notebooks": False,
+    "commands": False,
+    "decorators": False,
+    "exceptions": False,
 }
 
 __all__ = [
