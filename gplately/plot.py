@@ -12,6 +12,7 @@ PlotTopologies
 import logging
 import math
 import warnings
+from functools import partial
 
 import cartopy.crs as ccrs
 import geopandas as gpd
@@ -683,13 +684,9 @@ class PlotTopologies(object):
             A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map
             with coastline features plotted onto the chosen map projection.
         """
-        return self._plot_feature(ax, feature=feature, **kwargs)
+        return self._plot_feature(ax, partial(self.get_feature, feature), **kwargs)
 
-    def _plot_feature(self, ax, feature=None, get_feature_func=None, **kwargs):
-        if feature and get_feature_func:
-            logger.warn(
-                "Both 'feature' and 'get_feature_func' parameters are not None. Use 'feature' and ignore 'get_feature_func'."
-            )
+    def _plot_feature(self, ax, get_feature_func, **kwargs):
         if "transform" in kwargs.keys():
             warnings.warn(
                 "'transform' keyword argument is ignored by PlotTopologies",
@@ -700,21 +697,13 @@ class PlotTopologies(object):
         central_meridian = kwargs.pop("central_meridian", None)
         if central_meridian is None:
             central_meridian = _meridian_from_ax(ax)
-        if feature:
-            gdf = self.get_feature(
-                feature,
-                central_meridian=central_meridian,
-                tessellate_degrees=tessellate_degrees,
-            )
-        elif get_feature_func:
-            gdf = get_feature_func(
-                central_meridian=central_meridian,
-                tessellate_degrees=tessellate_degrees,
-            )
-        else:
-            raise Exception(
-                "The caller must provide either a 'feature' or 'get_feature_func' parameter. Unable to plot the feature if both parameters are None."
-            )
+
+        if not callable(get_feature_func):
+            raise Exception("The 'get_feature_func' parameter must be callable.")
+        gdf = get_feature_func(
+            central_meridian=central_meridian,
+            tessellate_degrees=tessellate_degrees,
+        )
 
         if len(gdf) == 0:
             logger.warn("No feature found for plotting. Do nothing and return.")
@@ -3474,7 +3463,7 @@ class PlotTopologies(object):
 
         return self._plot_feature(
             ax,
-            get_feature_func=self.get_all_topologies,
+            self.get_all_topologies,
             facecolor="none",
             edgecolor=color,
             **kwargs,
@@ -3557,7 +3546,7 @@ class PlotTopologies(object):
 
         return self._plot_feature(
             ax,
-            get_feature_func=self.get_all_topological_sections,
+            self.get_all_topological_sections,
             color=color,
             **kwargs,
         )
@@ -3571,8 +3560,8 @@ class PlotTopologies(object):
             tessellate_degrees=tessellate_degrees,
         )
 
-    @append_docstring(PLOT_DOCSTRING)
     @validate_topology_availability("ridges")
+    @append_docstring(PLOT_DOCSTRING)
     def plot_ridges(self, ax, color="black", **kwargs):
         """Plot reconstructed ridge polylines onto a standard map Projection.
 
@@ -3593,9 +3582,9 @@ class PlotTopologies(object):
         compatibility with Cartopy.
 
         """
-        return self._plot_feature(
+        return self.plot_feature(
             ax,
-            get_feature_func=self.get_ridges,
+            self.ridges,
             facecolor="none",
             edgecolor=color,
             **kwargs,

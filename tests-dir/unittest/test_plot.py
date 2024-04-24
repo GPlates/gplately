@@ -45,15 +45,15 @@ def main(show=True):
     ax = fig.add_subplot(111, projection=ccrs.Robinson(central_longitude=180))
 
     plot_flag = {
-        "continent_ocean_boundaries": 1,
-        "coastlines": 1,
-        "ridges_and_transforms": 1,
-        "trenches": 1,
-        "subduction_teeth": 1,
+        "continent_ocean_boundaries": 0,
+        "coastlines": 0,
+        "ridges_and_transforms": 0,
+        "trenches": 0,
+        "subduction_teeth": 0,
         "ridges": 1,
-        "all_topologies": 1,
-        "all_topological_sections": 1,
-        "plot_plate_polygon_by_id": 1,
+        "all_topologies": 0,
+        "all_topological_sections": 0,
+        "plot_plate_polygon_by_id": 0,
     }
 
     if plot_flag["continent_ocean_boundaries"]:

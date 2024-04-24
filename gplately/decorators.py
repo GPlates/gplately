@@ -16,11 +16,15 @@ def append_docstring(docstring_to_add):
     """
 
     def inner(func_pointer):
+        if func_pointer.__doc__:
+            func_pointer.__doc__ += docstring_to_add
+        else:
+            func_pointer.__doc__ = docstring_to_add
+
         @wraps(func_pointer)
         def wrapper(*args, **kwargs):
             return func_pointer(*args, **kwargs)
 
-        wrapper.__doc__ = func_pointer.__doc__ + docstring_to_add
         return wrapper
 
     return inner
