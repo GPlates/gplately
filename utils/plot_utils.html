@@ -33,6 +33,7 @@ import warnings
 
 import cartopy.crs as ccrs
 import geopandas as gpd
+import matplotlib.pyplot as plt
 import numpy as np
 from shapely.geometry import LineString, MultiPolygon, Point, Polygon, box
 from shapely.geometry.base import BaseGeometry, BaseMultipartGeometry
@@ -524,34 +525,6 @@ def _meridian_from_projection(projection):
     x = np.mean(projection.x_limits)
     y = np.mean(projection.y_limits)
     return ccrs.PlateCarree().transform_point(x, y, projection)[0]
-
-
-def _plot_geometries(ax, projection, color, get_data_func, **kwargs):
-    if &#34;transform&#34; in kwargs.keys():
-        warnings.warn(
-            &#34;&#39;transform&#39; keyword argument is ignored by PlotTopologies&#34;,
-            UserWarning,
-        )
-        kwargs.pop(&#34;transform&#34;)
-    tessellate_degrees = kwargs.pop(&#34;tessellate_degrees&#34;, 1)
-    central_meridian = kwargs.pop(&#34;central_meridian&#34;, None)
-    if central_meridian is None:
-        central_meridian = _meridian_from_ax(ax)
-
-    gdf = get_data_func(
-        central_meridian=central_meridian,
-        tessellate_degrees=tessellate_degrees,
-    )
-
-    if len(gdf) == 0:
-        logger.warn(&#34;No geometry found for plotting. Do nothing and return.&#34;)
-        return ax
-
-    if hasattr(ax, &#34;projection&#34;):
-        gdf = _clean_polygons(data=gdf, projection=ax.projection)
-    else:
-        kwargs[&#34;transform&#34;] = projection
-    return gdf.plot(ax=ax, facecolor=&#34;none&#34;, edgecolor=color, **kwargs)
 
 
 def plot_subduction_teeth(
