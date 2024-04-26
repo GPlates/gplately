@@ -41,9 +41,10 @@ classes to keep track of filenames.
 Each object listed here will have a `self.filenames` attribute.
 &#34;&#34;&#34;
 
+import warnings as _warnings
+
 import pygplates as _pygplates
 from pygplates import *
-import warnings as _warnings
 
 _warnings.simplefilter(&#34;always&#34;, ImportWarning)
 
@@ -241,197 +242,17 @@ class Feature(_pygplates.Feature):
     [GPlates Geological Information Model (GPGIM)](https://www.gplates.org/docs/gpgim/).
     A feature consists of a collection of `properties`, a `feature type` and a `feature id`.
 
-    The following operations for iterating over the properties in a feature are supported:
+    See the link below for inherited methods
 
-    Iterating over `feature` `properties`
-    -------------------------------------
-    * `len(f)`: Number of properties in feature `f`
-
-    * `for p in f`: Iterates over the properties `p` in feature `f`
-
-
-    This wrapping of `pygplates.Feature` contains all `pygplates.Feature` functionality,
-    and in addition tracks the names of files from which the feature(s) are read
-    using the `gplately.pygplates.Feature.filenames` attribute.
-
-
-    Creating `feature`s
-    -------------------
-
-    The following methods provide convenient ways to create features:
-
-    * [`create_reconstructable_feature()`](https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature.create_reconstructable_feature)
-
-    * [`create_topological_feature()`](https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature.create_topological_feature)
-
-    * [`create_tectonic_section()`](https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature.create_tectonic_section)
-
-    * [`create_flowline()`](https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature.create_flowline)
-
-    * [`create_motion_path()`](https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature.create_motion_path)
-
-    * [`create_total_reconstruction_sequence()`](https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature.create_total_reconstruction_sequence)
-
-    The following methods return the feature type and feature id:
-
-    * [`get_feature_type()`](https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature.get_feature_type)
-
-    * [`get_feature_id()`](https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature.get_feature_id)
-
-
-    Working with `feature` properties
-    ---------------------------------
-
-    The following methods provide generic support for adding, removing, setting and getting properties:
-
-    * [`add()`](https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature.add)
-
-    * [`remove()`](https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature.remove)
-
-    * [`set()`](https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature.set)
-
-    * [`get()`](https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature.get)
-
-    * [`get_value()`](https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature.get_value)
-
-
-    Setting and getting `feature` geometries
-    ----------------------------------------
-
-    The following methods provide a convenient way to set and get feature geometry:
-
-    * [`set_geometry()`](https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature.set_geometry)
-
-    * [`get_geometry()`](https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature.get_geometry)
-
-    * [`get_geometries()`](https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature.get_geometries)
-
-    * [`get_all_geometries()`](https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature.get_all_geometries)
-
-
-    Setting and getting feature topological geometry
-    ------------------------------------------------
-
-    The following methods provide a convenient way to set and get feature topological geometry (which can be a topological line, polygon or network):
-
-    * [`set_topological_geometry()`](https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature.set_topological_geometry)
-
-    * [`get_topological_geometry()`](https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature.get_topological_geometry)
-
-    * [`get_topological_geometries()`](https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature.get_topological_geometries)
-
-    * [`get_all_topological_geometries()`](https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature.get_all_topological_geometries)
-
-
-    Setting and getting attributes imported from a shapefile
-    --------------------------------------------------------
-
-    The following methods provide a convenient way to set and get attributes imported from a Shapefile:
-
-    * [`set_shapefile_attribute()`](https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature.set_shapefile_attribute)
-
-    * [`set_shapefile_attributes()`](https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature.set_shapefile_attributes)
-
-    * [`get_shapefile_attribute()`](https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature.get_shapefile_attribute)
-
-    * [`get_shapefile_attributes()`](https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature.get_shapefile_attributes)
-
-
-    Setting and getting enumeration properties
-    ------------------------------------------
-
-    The following methods provide a convenient way to set and get enumeration properties:
-
-    * [`set_enumeration()`](https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature.set_enumeration)
-
-    * [`get_enumeration()`](https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature.get_enumerationß)
-
-
-
-    Setting and getting string, floating-point, integer and boolean properties
-    --------------------------------------------------------------------------
-
-    The following methods provide a convenient way to set and get string, floating-point, integer and boolean properties:
-
-    * [`set_string()`](set_string())
-
-    * [`get_string()`](https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature.get_string)
-
-    * [`set_double()`](https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature.set_double)
-
-    * [`get_double()`](https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature.get_double)
-
-    * [`set_integer()`](https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature.set_integer)
-
-    * [`get_integer()`](https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature.get_integer)
-
-    * [`set_boolean()`](https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature.set_boolean)
-
-    * [`get_boolean()`](https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature.get_boolean)
-
-
-    Setting and getting common `feature` `properties`
-    -------------------------------------------------
-
-    The following methods provide a convenient way to set and get some of the properties that are common to many feature types:
-
-    * [`set_name()`](https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature.set_name)
-
-    * [`get_name()`](https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature.get_name)
-
-    * [`set_description()`](https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature.set_description)
-
-    * [`get_description()`](https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature.get_description)
-
-    * [`set_valid_time()`](https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature.set_valid_time)
-
-    * [`get_valid_time()`](https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature.get_valid_time)
-
-    * [`is_valid_at_time()`](https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature.is_valid_at_time)
-
-    * [`set_reconstruction_plate_id()`](https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature.set_reconstruction_plate_id)
-
-    * [`get_reconstruction_plate_id()`](https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature.get_reconstruction_plate_id)
-
-    * [`set_conjugate_plate_id()`](https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature.get_reconstruction_plate_id)
-
-    * [`get_conjugate_plate_id()`](https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature.set_reconstruction_plate_id)
-
-    * [`set_left_plate()`](https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature.set_left_plate)
-
-    * [`get_left_plate()`](https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature.get_left_plate)
-
-    * [`set_right_plate()`](https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature.set_right_plate)
-
-    * [`get_right_plate()`](https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature.get_right_plate)
-
-    * [`set_relative_plate()`](https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature.set_relative_plate)
-
-    * [`get_relative_plate()`](https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature.get_relative_plate)
-
-    * [`set_times()`](https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature.set_times)
-
-    * [`get_times()`](https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature.get_times)
-
-    * [`set_reconstruction_method()`](https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature.set_reconstruction_method)
-
-    * [`get_reconstruction_method()`](https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature.get_reconstruction_method)
-
-    * [`set_geometry_import_time()`](https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature.set_geometry_import_time)
-
-    * [`get_geometry_import_time()`](https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature.get_geometry_import_time)
-
-    * [`set_total_reconstruction_pole()`](https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature.set_total_reconstruction_pole)
-
-    * [`get_total_reconstruction_pole()`](https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature.get_total_reconstruction_pole)
-
-    For other properties the generic `set()`, `get()` and `get_value()` methods will still need to be used.
-
-    A feature can be deep copied using `clone()`.
+    https://www.gplates.org/docs/pygplates/generated/pygplates.feature
 
     &#34;&#34;&#34;
 
-    def __init__(self, feature):
+    #
+    # this class seems unfinished. need to implement properly in the future.
+    #
+
+    def __init__(self, *args, **kwargs):
         &#34;&#34;&#34;
 
         Parameters
@@ -457,8 +278,13 @@ class Feature(_pygplates.Feature):
             if `verify_information_model` is `VerifyInformationModel.yes` and `feature_type` is not a recognised feature type.
 
         &#34;&#34;&#34;
-        super(Feature, self).__init__(feature)
+        super().__init__(**kwargs)
         self.filenames = []
+
+        # bugfix: gplately.pygplates.Feature is not compatible with pygplates.Feature
+        # see https://github.com/GPlates/gplately/issues/150
+        # this gplately.pygplates.Feature class seems not completed yet. for example, the clone() method returns nothing. It looks unfinished.
+        feature = args[0] if len(args) &gt; 0 else None
 
         # update filename list
         if _is_string(feature) and type(feature) is list:
@@ -712,243 +538,15 @@ class FeatureCollection(_pygplates.FeatureCollection):
 <dl>
 <dt id="gplately.pygplates.Feature"><code class="flex name class">
 <span>class <span class="ident">Feature</span></span>
-<span>(</span><span>feature)</span>
+<span>(</span><span>*args, **kwargs)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>A class that wraps the <code>pyGPlates.Feature</code> class. This contains tools to query and set
 geological or plate-tectonic feature properties defined by the
 <a href="https://www.gplates.org/docs/gpgim/">GPlates Geological Information Model (GPGIM)</a>.
 A feature consists of a collection of <code>properties</code>, a <code>feature type</code> and a <code>feature id</code>.</p>
-<p>The following operations for iterating over the properties in a feature are supported:</p>
-<h2 id="iterating-over-feature-properties">Iterating over <code>feature</code> <code>properties</code></h2>
-<ul>
-<li>
-<p><code>len(f)</code>: Number of properties in feature <code>f</code></p>
-</li>
-<li>
-<p><code>for p in f</code>: Iterates over the properties <code>p</code> in feature <code>f</code></p>
-</li>
-</ul>
-<p>This wrapping of <code>pygplates.Feature</code> contains all <code>pygplates.Feature</code> functionality,
-and in addition tracks the names of files from which the feature(s) are read
-using the <code>gplately.pygplates.Feature.filenames</code> attribute.</p>
-<h2 id="creating-features">Creating <code>feature</code>s</h2>
-<p>The following methods provide convenient ways to create features:</p>
-<ul>
-<li>
-<p><a href="https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature.create_reconstructable_feature"><code>create_reconstructable_feature()</code></a></p>
-</li>
-<li>
-<p><a href="https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature.create_topological_feature"><code>create_topological_feature()</code></a></p>
-</li>
-<li>
-<p><a href="https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature.create_tectonic_section"><code>create_tectonic_section()</code></a></p>
-</li>
-<li>
-<p><a href="https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature.create_flowline"><code>create_flowline()</code></a></p>
-</li>
-<li>
-<p><a href="https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature.create_motion_path"><code>create_motion_path()</code></a></p>
-</li>
-<li>
-<p><a href="https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature.create_total_reconstruction_sequence"><code>create_total_reconstruction_sequence()</code></a></p>
-</li>
-</ul>
-<p>The following methods return the feature type and feature id:</p>
-<ul>
-<li>
-<p><a href="https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature.get_feature_type"><code>get_feature_type()</code></a></p>
-</li>
-<li>
-<p><a href="https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature.get_feature_id"><code>get_feature_id()</code></a></p>
-</li>
-</ul>
-<h2 id="working-with-feature-properties">Working with <code>feature</code> properties</h2>
-<p>The following methods provide generic support for adding, removing, setting and getting properties:</p>
-<ul>
-<li>
-<p><a href="https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature.add"><code>add()</code></a></p>
-</li>
-<li>
-<p><a href="https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature.remove"><code>remove()</code></a></p>
-</li>
-<li>
-<p><a href="https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature.set"><code>set()</code></a></p>
-</li>
-<li>
-<p><a href="https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature.get"><code>get()</code></a></p>
-</li>
-<li>
-<p><a href="https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature.get_value"><code>get_value()</code></a></p>
-</li>
-</ul>
-<h2 id="setting-and-getting-feature-geometries">Setting and getting <code>feature</code> geometries</h2>
-<p>The following methods provide a convenient way to set and get feature geometry:</p>
-<ul>
-<li>
-<p><a href="https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature.set_geometry"><code>set_geometry()</code></a></p>
-</li>
-<li>
-<p><a href="https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature.get_geometry"><code>get_geometry()</code></a></p>
-</li>
-<li>
-<p><a href="https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature.get_geometries"><code>get_geometries()</code></a></p>
-</li>
-<li>
-<p><a href="https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature.get_all_geometries"><code>get_all_geometries()</code></a></p>
-</li>
-</ul>
-<h2 id="setting-and-getting-feature-topological-geometry">Setting And Getting Feature Topological Geometry</h2>
-<p>The following methods provide a convenient way to set and get feature topological geometry (which can be a topological line, polygon or network):</p>
-<ul>
-<li>
-<p><a href="https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature.set_topological_geometry"><code>set_topological_geometry()</code></a></p>
-</li>
-<li>
-<p><a href="https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature.get_topological_geometry"><code>get_topological_geometry()</code></a></p>
-</li>
-<li>
-<p><a href="https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature.get_topological_geometries"><code>get_topological_geometries()</code></a></p>
-</li>
-<li>
-<p><a href="https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature.get_all_topological_geometries"><code>get_all_topological_geometries()</code></a></p>
-</li>
-</ul>
-<h2 id="setting-and-getting-attributes-imported-from-a-shapefile">Setting And Getting Attributes Imported From A Shapefile</h2>
-<p>The following methods provide a convenient way to set and get attributes imported from a Shapefile:</p>
-<ul>
-<li>
-<p><a href="https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature.set_shapefile_attribute"><code>set_shapefile_attribute()</code></a></p>
-</li>
-<li>
-<p><a href="https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature.set_shapefile_attributes"><code>set_shapefile_attributes()</code></a></p>
-</li>
-<li>
-<p><a href="https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature.get_shapefile_attribute"><code>get_shapefile_attribute()</code></a></p>
-</li>
-<li>
-<p><a href="https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature.get_shapefile_attributes"><code>get_shapefile_attributes()</code></a></p>
-</li>
-</ul>
-<h2 id="setting-and-getting-enumeration-properties">Setting And Getting Enumeration Properties</h2>
-<p>The following methods provide a convenient way to set and get enumeration properties:</p>
-<ul>
-<li>
-<p><a href="https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature.set_enumeration"><code>set_enumeration()</code></a></p>
-</li>
-<li>
-<p><a href="https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature.get_enumerationß"><code>get_enumeration()</code></a></p>
-</li>
-</ul>
-<h2 id="setting-and-getting-string-floating-point-integer-and-boolean-properties">Setting and getting string, floating-point, integer and boolean properties</h2>
-<p>The following methods provide a convenient way to set and get string, floating-point, integer and boolean properties:</p>
-<ul>
-<li>
-<p><a href="set_string()"><code>set_string()</code></a></p>
-</li>
-<li>
-<p><a href="https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature.get_string"><code>get_string()</code></a></p>
-</li>
-<li>
-<p><a href="https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature.set_double"><code>set_double()</code></a></p>
-</li>
-<li>
-<p><a href="https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature.get_double"><code>get_double()</code></a></p>
-</li>
-<li>
-<p><a href="https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature.set_integer"><code>set_integer()</code></a></p>
-</li>
-<li>
-<p><a href="https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature.get_integer"><code>get_integer()</code></a></p>
-</li>
-<li>
-<p><a href="https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature.set_boolean"><code>set_boolean()</code></a></p>
-</li>
-<li>
-<p><a href="https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature.get_boolean"><code>get_boolean()</code></a></p>
-</li>
-</ul>
-<h2 id="setting-and-getting-common-feature-properties">Setting and getting common <code>feature</code> <code>properties</code></h2>
-<p>The following methods provide a convenient way to set and get some of the properties that are common to many feature types:</p>
-<ul>
-<li>
-<p><a href="https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature.set_name"><code>set_name()</code></a></p>
-</li>
-<li>
-<p><a href="https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature.get_name"><code>get_name()</code></a></p>
-</li>
-<li>
-<p><a href="https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature.set_description"><code>set_description()</code></a></p>
-</li>
-<li>
-<p><a href="https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature.get_description"><code>get_description()</code></a></p>
-</li>
-<li>
-<p><a href="https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature.set_valid_time"><code>set_valid_time()</code></a></p>
-</li>
-<li>
-<p><a href="https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature.get_valid_time"><code>get_valid_time()</code></a></p>
-</li>
-<li>
-<p><a href="https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature.is_valid_at_time"><code>is_valid_at_time()</code></a></p>
-</li>
-<li>
-<p><a href="https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature.set_reconstruction_plate_id"><code>set_reconstruction_plate_id()</code></a></p>
-</li>
-<li>
-<p><a href="https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature.get_reconstruction_plate_id"><code>get_reconstruction_plate_id()</code></a></p>
-</li>
-<li>
-<p><a href="https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature.get_reconstruction_plate_id"><code>set_conjugate_plate_id()</code></a></p>
-</li>
-<li>
-<p><a href="https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature.set_reconstruction_plate_id"><code>get_conjugate_plate_id()</code></a></p>
-</li>
-<li>
-<p><a href="https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature.set_left_plate"><code>set_left_plate()</code></a></p>
-</li>
-<li>
-<p><a href="https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature.get_left_plate"><code>get_left_plate()</code></a></p>
-</li>
-<li>
-<p><a href="https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature.set_right_plate"><code>set_right_plate()</code></a></p>
-</li>
-<li>
-<p><a href="https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature.get_right_plate"><code>get_right_plate()</code></a></p>
-</li>
-<li>
-<p><a href="https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature.set_relative_plate"><code>set_relative_plate()</code></a></p>
-</li>
-<li>
-<p><a href="https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature.get_relative_plate"><code>get_relative_plate()</code></a></p>
-</li>
-<li>
-<p><a href="https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature.set_times"><code>set_times()</code></a></p>
-</li>
-<li>
-<p><a href="https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature.get_times"><code>get_times()</code></a></p>
-</li>
-<li>
-<p><a href="https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature.set_reconstruction_method"><code>set_reconstruction_method()</code></a></p>
-</li>
-<li>
-<p><a href="https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature.get_reconstruction_method"><code>get_reconstruction_method()</code></a></p>
-</li>
-<li>
-<p><a href="https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature.set_geometry_import_time"><code>set_geometry_import_time()</code></a></p>
-</li>
-<li>
-<p><a href="https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature.get_geometry_import_time"><code>get_geometry_import_time()</code></a></p>
-</li>
-<li>
-<p><a href="https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature.set_total_reconstruction_pole"><code>set_total_reconstruction_pole()</code></a></p>
-</li>
-<li>
-<p><a href="https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature.get_total_reconstruction_pole"><code>get_total_reconstruction_pole()</code></a></p>
-</li>
-</ul>
-<p>For other properties the generic <code>set()</code>, <code>get()</code> and <code>get_value()</code> methods will still need to be used.</p>
-<p>A feature can be deep copied using <code>clone()</code>.</p>
+<p>See the link below for inherited methods</p>
+<p><a href="https://www.gplates.org/docs/pygplates/generated/pygplates.feature">https://www.gplates.org/docs/pygplates/generated/pygplates.feature</a></p>
 <h2 id="parameters">Parameters</h2>
 <dl>
 <dt><strong><code>feature_type</code></strong> :&ensp;<code>instance</code> of <code>pygplates.FeatureType</code></dt>
@@ -978,197 +576,17 @@ for a list of pygplates feature types.</dd>
     [GPlates Geological Information Model (GPGIM)](https://www.gplates.org/docs/gpgim/).
     A feature consists of a collection of `properties`, a `feature type` and a `feature id`.
 
-    The following operations for iterating over the properties in a feature are supported:
+    See the link below for inherited methods
 
-    Iterating over `feature` `properties`
-    -------------------------------------
-    * `len(f)`: Number of properties in feature `f`
-
-    * `for p in f`: Iterates over the properties `p` in feature `f`
-
-
-    This wrapping of `pygplates.Feature` contains all `pygplates.Feature` functionality,
-    and in addition tracks the names of files from which the feature(s) are read
-    using the `gplately.pygplates.Feature.filenames` attribute.
-
-
-    Creating `feature`s
-    -------------------
-
-    The following methods provide convenient ways to create features:
-
-    * [`create_reconstructable_feature()`](https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature.create_reconstructable_feature)
-
-    * [`create_topological_feature()`](https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature.create_topological_feature)
-
-    * [`create_tectonic_section()`](https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature.create_tectonic_section)
-
-    * [`create_flowline()`](https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature.create_flowline)
-
-    * [`create_motion_path()`](https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature.create_motion_path)
-
-    * [`create_total_reconstruction_sequence()`](https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature.create_total_reconstruction_sequence)
-
-    The following methods return the feature type and feature id:
-
-    * [`get_feature_type()`](https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature.get_feature_type)
-
-    * [`get_feature_id()`](https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature.get_feature_id)
-
-
-    Working with `feature` properties
-    ---------------------------------
-
-    The following methods provide generic support for adding, removing, setting and getting properties:
-
-    * [`add()`](https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature.add)
-
-    * [`remove()`](https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature.remove)
-
-    * [`set()`](https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature.set)
-
-    * [`get()`](https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature.get)
-
-    * [`get_value()`](https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature.get_value)
-
-
-    Setting and getting `feature` geometries
-    ----------------------------------------
-
-    The following methods provide a convenient way to set and get feature geometry:
-
-    * [`set_geometry()`](https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature.set_geometry)
-
-    * [`get_geometry()`](https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature.get_geometry)
-
-    * [`get_geometries()`](https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature.get_geometries)
-
-    * [`get_all_geometries()`](https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature.get_all_geometries)
-
-
-    Setting and getting feature topological geometry
-    ------------------------------------------------
-
-    The following methods provide a convenient way to set and get feature topological geometry (which can be a topological line, polygon or network):
-
-    * [`set_topological_geometry()`](https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature.set_topological_geometry)
-
-    * [`get_topological_geometry()`](https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature.get_topological_geometry)
-
-    * [`get_topological_geometries()`](https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature.get_topological_geometries)
-
-    * [`get_all_topological_geometries()`](https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature.get_all_topological_geometries)
-
-
-    Setting and getting attributes imported from a shapefile
-    --------------------------------------------------------
-
-    The following methods provide a convenient way to set and get attributes imported from a Shapefile:
-
-    * [`set_shapefile_attribute()`](https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature.set_shapefile_attribute)
-
-    * [`set_shapefile_attributes()`](https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature.set_shapefile_attributes)
-
-    * [`get_shapefile_attribute()`](https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature.get_shapefile_attribute)
-
-    * [`get_shapefile_attributes()`](https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature.get_shapefile_attributes)
-
-
-    Setting and getting enumeration properties
-    ------------------------------------------
-
-    The following methods provide a convenient way to set and get enumeration properties:
-
-    * [`set_enumeration()`](https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature.set_enumeration)
-
-    * [`get_enumeration()`](https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature.get_enumerationß)
-
-
-
-    Setting and getting string, floating-point, integer and boolean properties
-    --------------------------------------------------------------------------
-
-    The following methods provide a convenient way to set and get string, floating-point, integer and boolean properties:
-
-    * [`set_string()`](set_string())
-
-    * [`get_string()`](https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature.get_string)
-
-    * [`set_double()`](https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature.set_double)
-
-    * [`get_double()`](https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature.get_double)
-
-    * [`set_integer()`](https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature.set_integer)
-
-    * [`get_integer()`](https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature.get_integer)
-
-    * [`set_boolean()`](https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature.set_boolean)
-
-    * [`get_boolean()`](https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature.get_boolean)
-
-
-    Setting and getting common `feature` `properties`
-    -------------------------------------------------
-
-    The following methods provide a convenient way to set and get some of the properties that are common to many feature types:
-
-    * [`set_name()`](https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature.set_name)
-
-    * [`get_name()`](https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature.get_name)
-
-    * [`set_description()`](https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature.set_description)
-
-    * [`get_description()`](https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature.get_description)
-
-    * [`set_valid_time()`](https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature.set_valid_time)
-
-    * [`get_valid_time()`](https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature.get_valid_time)
-
-    * [`is_valid_at_time()`](https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature.is_valid_at_time)
-
-    * [`set_reconstruction_plate_id()`](https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature.set_reconstruction_plate_id)
-
-    * [`get_reconstruction_plate_id()`](https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature.get_reconstruction_plate_id)
-
-    * [`set_conjugate_plate_id()`](https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature.get_reconstruction_plate_id)
-
-    * [`get_conjugate_plate_id()`](https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature.set_reconstruction_plate_id)
-
-    * [`set_left_plate()`](https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature.set_left_plate)
-
-    * [`get_left_plate()`](https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature.get_left_plate)
-
-    * [`set_right_plate()`](https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature.set_right_plate)
-
-    * [`get_right_plate()`](https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature.get_right_plate)
-
-    * [`set_relative_plate()`](https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature.set_relative_plate)
-
-    * [`get_relative_plate()`](https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature.get_relative_plate)
-
-    * [`set_times()`](https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature.set_times)
-
-    * [`get_times()`](https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature.get_times)
-
-    * [`set_reconstruction_method()`](https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature.set_reconstruction_method)
-
-    * [`get_reconstruction_method()`](https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature.get_reconstruction_method)
-
-    * [`set_geometry_import_time()`](https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature.set_geometry_import_time)
-
-    * [`get_geometry_import_time()`](https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature.get_geometry_import_time)
-
-    * [`set_total_reconstruction_pole()`](https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature.set_total_reconstruction_pole)
-
-    * [`get_total_reconstruction_pole()`](https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature.get_total_reconstruction_pole)
-
-    For other properties the generic `set()`, `get()` and `get_value()` methods will still need to be used.
-
-    A feature can be deep copied using `clone()`.
+    https://www.gplates.org/docs/pygplates/generated/pygplates.feature
 
     &#34;&#34;&#34;
 
-    def __init__(self, feature):
+    #
+    # this class seems unfinished. need to implement properly in the future.
+    #
+
+    def __init__(self, *args, **kwargs):
         &#34;&#34;&#34;
 
         Parameters
@@ -1194,8 +612,13 @@ for a list of pygplates feature types.</dd>
             if `verify_information_model` is `VerifyInformationModel.yes` and `feature_type` is not a recognised feature type.
 
         &#34;&#34;&#34;
-        super(Feature, self).__init__(feature)
+        super().__init__(**kwargs)
         self.filenames = []
+
+        # bugfix: gplately.pygplates.Feature is not compatible with pygplates.Feature
+        # see https://github.com/GPlates/gplately/issues/150
+        # this gplately.pygplates.Feature class seems not completed yet. for example, the clone() method returns nothing. It looks unfinished.
+        feature = args[0] if len(args) &gt; 0 else None
 
         # update filename list
         if _is_string(feature) and type(feature) is list:
