@@ -183,7 +183,6 @@ from . import (
     plot,
     ptt,
     pygplates,
-    read_geometries,
     reconstruction,
 )
 from .data import DataCollection
@@ -191,7 +190,6 @@ from .download import DataServer
 from .grids import Raster
 from .oceans import SeafloorGrid
 from .plot import PlotTopologies
-from .read_geometries import get_geometries, get_valid_geometries
 from .reconstruction import (
     PlateReconstruction,
     Points,
@@ -200,12 +198,19 @@ from .reconstruction import (
     _ReconstructByTopologies,
 )
 from .tools import EARTH_RADIUS
+from .utils import io_utils
+from .utils.io_utils import get_geometries, get_valid_geometries
 
 __pdoc__ = {
     "data": False,
     "_DefaultCollision": False,
     "_ContinentCollision": False,
     "_ReconstructByTopologies": False,
+    "examples": False,
+    "notebooks": False,
+    "commands": False,
+    "decorators": False,
+    "exceptions": False,
 }
 
 __all__ = [
@@ -218,7 +223,7 @@ __all__ = [
     "oceans",
     "plot",
     "pygplates",
-    "read_geometries",
+    "io_utils",
     "reconstruction",
     "plate_model_manager",
     "ptt",
@@ -242,7 +247,7 @@ __all__ = [
 
 import os
 
-from ._utils.log_utils import setup_logging, turn_on_debug_logging
+from .utils.log_utils import setup_logging, turn_on_debug_logging
 
 setup_logging()
 if "GPLATELY_DEBUG" in os.environ and os.environ["GPLATELY_DEBUG"].lower() == "true":
