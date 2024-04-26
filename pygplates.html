@@ -252,11 +252,24 @@ class Feature(_pygplates.Feature):
     # this class seems unfinished. need to implement properly in the future.
     #
 
-    def __init__(self, *args, **kwargs):
+    def __init__(
+        self,
+        feature=None,
+        *,
+        feature_type=_pygplates.FeatureType.gpml_unclassified_feature,
+        feature_id=None,
+        verify_information_model=_pygplates.VerifyInformationModel.yes,
+    ):
         &#34;&#34;&#34;
+        Notes
+        -----
+        For Backward compatibility, the feature_type, feature_id and verify_information_model parameters must be passed as keyword arguments to avoid confusion.
 
         Parameters
         ----------
+        feature: `str`, `list` of `str`, `gplately.pygplates.Feature` or `None`
+            `Feature` filenames
+
         feature_type : instance of `pygplates.FeatureType`
             The type of feature. See
             [here](https://www.gplates.org/docs/pygplates/generated/pygplates.featuretype#pygplates.FeatureType)
@@ -268,6 +281,7 @@ class Feature(_pygplates.Feature):
         verify_information_model : instance of `VerifyInformationModel.yes` or `VerifyInformationModel.no`
             Specify whether to check `feature_type` with the information model (default) or not.
 
+
         Raises
         ------
         ImportWarning
@@ -278,13 +292,20 @@ class Feature(_pygplates.Feature):
             if `verify_information_model` is `VerifyInformationModel.yes` and `feature_type` is not a recognised feature type.
 
         &#34;&#34;&#34;
-        super().__init__(**kwargs)
-        self.filenames = []
 
         # bugfix: gplately.pygplates.Feature is not compatible with pygplates.Feature
         # see https://github.com/GPlates/gplately/issues/150
         # this gplately.pygplates.Feature class seems not completed yet. for example, the clone() method returns nothing. It looks unfinished.
-        feature = args[0] if len(args) &gt; 0 else None
+        # why is the parameter name is &#34;feature&#34;? shouldn&#39;t it be &#34;filenames&#34;? Why multiple file names?
+        super().__init__(feature_type, feature_id, verify_information_model)
+        self.filenames = []
+
+        # try the best to detect backward compatibility issue
+        if isinstance(feature, _pygplates.FeatureType):
+            raise Exception(
+                &#34;This is the wrapper class gplately.pygplates.Feature(). The first positional argument(besides self) is not &#39;feature_type&#39;. &#34;
+                + &#34;Check the online documentation https://gplates.github.io/gplately/pygplates.html&#34;
+            )
 
         # update filename list
         if _is_string(feature) and type(feature) is list:
@@ -538,7 +559,7 @@ class FeatureCollection(_pygplates.FeatureCollection):
 <dl>
 <dt id="gplately.pygplates.Feature"><code class="flex name class">
 <span>class <span class="ident">Feature</span></span>
-<span>(</span><span>*args, **kwargs)</span>
+<span>(</span><span>feature=None, *, feature_type=&lt;pygplates.FeatureType object&gt;, feature_id=None, verify_information_model=pygplates.VerifyInformationModel.yes)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>A class that wraps the <code>pyGPlates.Feature</code> class. This contains tools to query and set
@@ -547,8 +568,12 @@ geological or plate-tectonic feature properties defined by the
 A feature consists of a collection of <code>properties</code>, a <code>feature type</code> and a <code>feature id</code>.</p>
 <p>See the link below for inherited methods</p>
 <p><a href="https://www.gplates.org/docs/pygplates/generated/pygplates.feature">https://www.gplates.org/docs/pygplates/generated/pygplates.feature</a></p>
+<h2 id="notes">Notes</h2>
+<p>For Backward compatibility, the feature_type, feature_id and verify_information_model parameters must be passed as keyword arguments to avoid confusion.</p>
 <h2 id="parameters">Parameters</h2>
 <dl>
+<dt><strong><code>feature</code></strong> :&ensp;<code>str<code>,</code>list</code> of <code>str<code>,</code><a title="gplately.pygplates.Feature" href="#gplately.pygplates.Feature">Feature</a></code> or <code>None</code></dt>
+<dd><code><a title="gplately.pygplates.Feature" href="#gplately.pygplates.Feature">Feature</a></code> filenames</dd>
 <dt><strong><code>feature_type</code></strong> :&ensp;<code>instance</code> of <code>pygplates.FeatureType</code></dt>
 <dd>The type of feature. See
 <a href="https://www.gplates.org/docs/pygplates/generated/pygplates.featuretype#pygplates.FeatureType">here</a>
@@ -586,11 +611,24 @@ for a list of pygplates feature types.</dd>
     # this class seems unfinished. need to implement properly in the future.
     #
 
-    def __init__(self, *args, **kwargs):
+    def __init__(
+        self,
+        feature=None,
+        *,
+        feature_type=_pygplates.FeatureType.gpml_unclassified_feature,
+        feature_id=None,
+        verify_information_model=_pygplates.VerifyInformationModel.yes,
+    ):
         &#34;&#34;&#34;
+        Notes
+        -----
+        For Backward compatibility, the feature_type, feature_id and verify_information_model parameters must be passed as keyword arguments to avoid confusion.
 
         Parameters
         ----------
+        feature: `str`, `list` of `str`, `gplately.pygplates.Feature` or `None`
+            `Feature` filenames
+
         feature_type : instance of `pygplates.FeatureType`
             The type of feature. See
             [here](https://www.gplates.org/docs/pygplates/generated/pygplates.featuretype#pygplates.FeatureType)
@@ -602,6 +640,7 @@ for a list of pygplates feature types.</dd>
         verify_information_model : instance of `VerifyInformationModel.yes` or `VerifyInformationModel.no`
             Specify whether to check `feature_type` with the information model (default) or not.
 
+
         Raises
         ------
         ImportWarning
@@ -612,13 +651,20 @@ for a list of pygplates feature types.</dd>
             if `verify_information_model` is `VerifyInformationModel.yes` and `feature_type` is not a recognised feature type.
 
         &#34;&#34;&#34;
-        super().__init__(**kwargs)
-        self.filenames = []
 
         # bugfix: gplately.pygplates.Feature is not compatible with pygplates.Feature
         # see https://github.com/GPlates/gplately/issues/150
         # this gplately.pygplates.Feature class seems not completed yet. for example, the clone() method returns nothing. It looks unfinished.
-        feature = args[0] if len(args) &gt; 0 else None
+        # why is the parameter name is &#34;feature&#34;? shouldn&#39;t it be &#34;filenames&#34;? Why multiple file names?
+        super().__init__(feature_type, feature_id, verify_information_model)
+        self.filenames = []
+
+        # try the best to detect backward compatibility issue
+        if isinstance(feature, _pygplates.FeatureType):
+            raise Exception(
+                &#34;This is the wrapper class gplately.pygplates.Feature(). The first positional argument(besides self) is not &#39;feature_type&#39;. &#34;
+                + &#34;Check the online documentation https://gplates.github.io/gplately/pygplates.html&#34;
+            )
 
         # update filename list
         if _is_string(feature) and type(feature) is list:
