@@ -219,21 +219,21 @@ class Feature(_pygplates.Feature):
 
     def __init__(
         self,
-        feature=None,
-        *,
-        feature_type=_pygplates.FeatureType.gpml_unclassified_feature,
-        feature_id=None,
+        feature_type: _pygplates.FeatureType = _pygplates.FeatureType.gpml_unclassified_feature,
+        feature_id: str = None,
         verify_information_model=_pygplates.VerifyInformationModel.yes,
+        *,
+        filenames: str | list[str] = [],
+        feature: "Feature" = None,
     ):
         """
         Notes
         -----
-        For Backward compatibility, the feature_type, feature_id and verify_information_model parameters must be passed as keyword arguments to avoid confusion.
+        The signature of this constructor has been changed since gplately 1.3.0 to be compatible with pygplates.
+        THe 'filenames' and 'feature' parameters must be given as keyword argument.
 
         Parameters
         ----------
-        feature: `str`, `list` of `str`, `gplately.pygplates.Feature` or `None`
-            `Feature` filenames
 
         feature_type : instance of `pygplates.FeatureType`
             The type of feature. See
@@ -246,11 +246,16 @@ class Feature(_pygplates.Feature):
         verify_information_model : instance of `VerifyInformationModel.yes` or `VerifyInformationModel.no`
             Specify whether to check `feature_type` with the information model (default) or not.
 
+        filenames: `str` or `list` of `str`
+            The filenames being associated with this feature.
+
+        feature: instance of `gplately.pygplates.Feature`
+            The other "Feature" object
 
         Raises
         ------
         ImportWarning
-            If neither a `str`, `list` of `str`, `gplately.pygplates.Feature` or `None` is passed, no
+            If neither a `str` nor `list` of `str` is passed, no
             `Feature` filenames will be collected, and the user will be alerted of this.
 
         InformationModelError
@@ -261,36 +266,36 @@ class Feature(_pygplates.Feature):
         # bugfix: gplately.pygplates.Feature is not compatible with pygplates.Feature
         # see https://github.com/GPlates/gplately/issues/150
         # this gplately.pygplates.Feature class seems not completed yet. for example, the clone() method returns nothing. It looks unfinished.
-        # why is the parameter name is "feature"? shouldn't it be "filenames"? Why multiple file names?
+        # Why is a feature associated with multiple file names?
         super().__init__(feature_type, feature_id, verify_information_model)
         self.filenames = []
 
         # try the best to detect backward compatibility issue
-        if isinstance(feature, _pygplates.FeatureType):
+        if not isinstance(feature_type, _pygplates.FeatureType):
             raise Exception(
-                "This is the wrapper class gplately.pygplates.Feature(). The first positional argument(besides self) is not 'feature_type'. "
+                "The __init__() signature has been changed. The first positional argument(besides self) is 'feature_type' now. "
                 + "Check the online documentation https://gplates.github.io/gplately/pygplates.html"
             )
 
         # update filename list
-        if _is_string(feature) and type(feature) is list:
-            self.filenames = feature
-        elif _is_string(feature) and type(feature) is str:
-            self.filenames = [feature]
-        elif feature is None:
-            self.filenames = []
-        elif isinstance(feature, Feature):
-            self.filenames = feature.filenames
-        elif hasattr(feature, "filenames"):
-            self.filenames = feature.filenames
+        if isinstance(filenames, list) and all(
+            isinstance(filename, str) for filename in filenames
+        ):
+            self.filenames = filenames
+        elif isinstance(filenames, str):
+            self.filenames = [filenames]
         else:
-            msg = "\nFeature: No filename associated with {} in __init__".format(
-                type(feature)
+            msg = (
+                f"\nFeature: No filename associated with {type(filenames)} in __init__"
+                + "\n ensure pygplates is imported from gplately. Run,"
+                + "\n from gplately import pygplates"
             )
-            msg += "\n ensure pygplates is imported from gplately. Run,"
-            msg += "\n from gplately import pygplates"
             _warnings.warn(msg, ImportWarning)
             self.filenames = []
+
+        if feature:
+            self.filenames = feature.filenames
+            # TODO: also need to copy everything else in the other feature into this feature
 
     def add(self, feature):
         """Adds a property (or properties) to this feature. See original docs
