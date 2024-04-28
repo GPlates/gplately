@@ -7,7 +7,7 @@ Each object listed here will have a `self.filenames` attribute.
 """
 
 import warnings as _warnings
-from typing import List
+from typing import List, Union
 
 import pygplates as _pygplates
 from pygplates import *
@@ -224,7 +224,7 @@ class Feature(_pygplates.Feature):
         feature_id: str = None,
         verify_information_model=_pygplates.VerifyInformationModel.yes,
         *,
-        filenames: str | List[str] = [],
+        filenames: Union[str, List[str]] = [],
         feature: "Feature" = None,
     ):
         """
