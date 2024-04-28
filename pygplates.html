@@ -42,6 +42,7 @@ Each object listed here will have a `self.filenames` attribute.
 &#34;&#34;&#34;
 
 import warnings as _warnings
+from typing import List, Union
 
 import pygplates as _pygplates
 from pygplates import *
@@ -254,21 +255,21 @@ class Feature(_pygplates.Feature):
 
     def __init__(
         self,
-        feature=None,
-        *,
-        feature_type=_pygplates.FeatureType.gpml_unclassified_feature,
-        feature_id=None,
+        feature_type: _pygplates.FeatureType = _pygplates.FeatureType.gpml_unclassified_feature,
+        feature_id: str = None,
         verify_information_model=_pygplates.VerifyInformationModel.yes,
+        *,
+        filenames: Union[str, List[str]] = [],
+        feature: &#34;Feature&#34; = None,
     ):
         &#34;&#34;&#34;
         Notes
         -----
-        For Backward compatibility, the feature_type, feature_id and verify_information_model parameters must be passed as keyword arguments to avoid confusion.
+        The signature of this constructor has been changed since gplately 1.3.0 to be compatible with pygplates.
+        THe &#39;filenames&#39; and &#39;feature&#39; parameters must be given as keyword argument.
 
         Parameters
         ----------
-        feature: `str`, `list` of `str`, `gplately.pygplates.Feature` or `None`
-            `Feature` filenames
 
         feature_type : instance of `pygplates.FeatureType`
             The type of feature. See
@@ -281,11 +282,16 @@ class Feature(_pygplates.Feature):
         verify_information_model : instance of `VerifyInformationModel.yes` or `VerifyInformationModel.no`
             Specify whether to check `feature_type` with the information model (default) or not.
 
+        filenames: `str` or `list` of `str`
+            The filenames being associated with this feature.
+
+        feature: instance of `gplately.pygplates.Feature`
+            The other &#34;Feature&#34; object
 
         Raises
         ------
         ImportWarning
-            If neither a `str`, `list` of `str`, `gplately.pygplates.Feature` or `None` is passed, no
+            If neither a `str` nor `list` of `str` is passed, no
             `Feature` filenames will be collected, and the user will be alerted of this.
 
         InformationModelError
@@ -296,36 +302,36 @@ class Feature(_pygplates.Feature):
         # bugfix: gplately.pygplates.Feature is not compatible with pygplates.Feature
         # see https://github.com/GPlates/gplately/issues/150
         # this gplately.pygplates.Feature class seems not completed yet. for example, the clone() method returns nothing. It looks unfinished.
-        # why is the parameter name is &#34;feature&#34;? shouldn&#39;t it be &#34;filenames&#34;? Why multiple file names?
+        # Why is a feature associated with multiple file names?
         super().__init__(feature_type, feature_id, verify_information_model)
         self.filenames = []
 
         # try the best to detect backward compatibility issue
-        if isinstance(feature, _pygplates.FeatureType):
+        if not isinstance(feature_type, _pygplates.FeatureType):
             raise Exception(
-                &#34;This is the wrapper class gplately.pygplates.Feature(). The first positional argument(besides self) is not &#39;feature_type&#39;. &#34;
+                &#34;The __init__() signature has been changed. The first positional argument(besides self) is &#39;feature_type&#39; now. &#34;
                 + &#34;Check the online documentation https://gplates.github.io/gplately/pygplates.html&#34;
             )
 
         # update filename list
-        if _is_string(feature) and type(feature) is list:
-            self.filenames = feature
-        elif _is_string(feature) and type(feature) is str:
-            self.filenames = [feature]
-        elif feature is None:
-            self.filenames = []
-        elif isinstance(feature, Feature):
-            self.filenames = feature.filenames
-        elif hasattr(feature, &#34;filenames&#34;):
-            self.filenames = feature.filenames
+        if isinstance(filenames, list) and all(
+            isinstance(filename, str) for filename in filenames
+        ):
+            self.filenames = filenames
+        elif isinstance(filenames, str):
+            self.filenames = [filenames]
         else:
-            msg = &#34;\nFeature: No filename associated with {} in __init__&#34;.format(
-                type(feature)
+            msg = (
+                f&#34;\nFeature: No filename associated with {type(filenames)} in __init__&#34;
+                + &#34;\n ensure pygplates is imported from gplately. Run,&#34;
+                + &#34;\n from gplately import pygplates&#34;
             )
-            msg += &#34;\n ensure pygplates is imported from gplately. Run,&#34;
-            msg += &#34;\n from gplately import pygplates&#34;
             _warnings.warn(msg, ImportWarning)
             self.filenames = []
+
+        if feature:
+            self.filenames = feature.filenames
+            # TODO: also need to copy everything else in the other feature into this feature
 
     def add(self, feature):
         &#34;&#34;&#34;Adds a property (or properties) to this feature. See original docs
@@ -559,7 +565,7 @@ class FeatureCollection(_pygplates.FeatureCollection):
 <dl>
 <dt id="gplately.pygplates.Feature"><code class="flex name class">
 <span>class <span class="ident">Feature</span></span>
-<span>(</span><span>feature=None, *, feature_type=&lt;pygplates.FeatureType object&gt;, feature_id=None, verify_information_model=pygplates.VerifyInformationModel.yes)</span>
+<span>(</span><span>feature_type: pygplates.FeatureType = &lt;pygplates.FeatureType object&gt;, feature_id: str = None, verify_information_model=pygplates.VerifyInformationModel.yes, *, filenames: Union[str, List[str]] = [], feature: <a title="gplately.pygplates.Feature" href="#gplately.pygplates.Feature">Feature</a> = None)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>A class that wraps the <code>pyGPlates.Feature</code> class. This contains tools to query and set
@@ -569,11 +575,10 @@ A feature consists of a collection of <code>properties</code>, a <code>feature t
 <p>See the link below for inherited methods</p>
 <p><a href="https://www.gplates.org/docs/pygplates/generated/pygplates.feature">https://www.gplates.org/docs/pygplates/generated/pygplates.feature</a></p>
 <h2 id="notes">Notes</h2>
-<p>For Backward compatibility, the feature_type, feature_id and verify_information_model parameters must be passed as keyword arguments to avoid confusion.</p>
+<p>The signature of this constructor has been changed since gplately 1.3.0 to be compatible with pygplates.
+THe 'filenames' and 'feature' parameters must be given as keyword argument.</p>
 <h2 id="parameters">Parameters</h2>
 <dl>
-<dt><strong><code>feature</code></strong> :&ensp;<code>str<code>,</code>list</code> of <code>str<code>,</code><a title="gplately.pygplates.Feature" href="#gplately.pygplates.Feature">Feature</a></code> or <code>None</code></dt>
-<dd><code><a title="gplately.pygplates.Feature" href="#gplately.pygplates.Feature">Feature</a></code> filenames</dd>
 <dt><strong><code>feature_type</code></strong> :&ensp;<code>instance</code> of <code>pygplates.FeatureType</code></dt>
 <dd>The type of feature. See
 <a href="https://www.gplates.org/docs/pygplates/generated/pygplates.featuretype#pygplates.FeatureType">here</a>
@@ -582,11 +587,15 @@ for a list of pygplates feature types.</dd>
 <dd>The <a href="https://www.gplates.org/docs/pygplates/generated/pygplates.featureid#pygplates.FeatureID">feature identifier</a>.</dd>
 <dt><strong><code>verify_information_model</code></strong> :&ensp;<code>instance</code> of <code>VerifyInformationModel.yes</code> or <code>VerifyInformationModel.no</code></dt>
 <dd>Specify whether to check <code>feature_type</code> with the information model (default) or not.</dd>
+<dt><strong><code>filenames</code></strong> :&ensp;<code>str</code> or <code>list</code> of <code>str</code></dt>
+<dd>The filenames being associated with this feature.</dd>
+<dt><strong><code>feature</code></strong> :&ensp;<code>instance</code> of <code><a title="gplately.pygplates.Feature" href="#gplately.pygplates.Feature">Feature</a></code></dt>
+<dd>The other "Feature" object</dd>
 </dl>
 <h2 id="raises">Raises</h2>
 <dl>
 <dt><code>ImportWarning</code></dt>
-<dd>If neither a <code>str</code>, <code>list</code> of <code>str</code>, <code><a title="gplately.pygplates.Feature" href="#gplately.pygplates.Feature">Feature</a></code> or <code>None</code> is passed, no
+<dd>If neither a <code>str</code> nor <code>list</code> of <code>str</code> is passed, no
 <code><a title="gplately.pygplates.Feature" href="#gplately.pygplates.Feature">Feature</a></code> filenames will be collected, and the user will be alerted of this.</dd>
 <dt><code>InformationModelError</code></dt>
 <dd>if <code>verify_information_model</code> is <code>VerifyInformationModel.yes</code> and <code>feature_type</code> is not a recognised feature type.</dd>
@@ -613,21 +622,21 @@ for a list of pygplates feature types.</dd>
 
     def __init__(
         self,
-        feature=None,
-        *,
-        feature_type=_pygplates.FeatureType.gpml_unclassified_feature,
-        feature_id=None,
+        feature_type: _pygplates.FeatureType = _pygplates.FeatureType.gpml_unclassified_feature,
+        feature_id: str = None,
         verify_information_model=_pygplates.VerifyInformationModel.yes,
+        *,
+        filenames: Union[str, List[str]] = [],
+        feature: &#34;Feature&#34; = None,
     ):
         &#34;&#34;&#34;
         Notes
         -----
-        For Backward compatibility, the feature_type, feature_id and verify_information_model parameters must be passed as keyword arguments to avoid confusion.
+        The signature of this constructor has been changed since gplately 1.3.0 to be compatible with pygplates.
+        THe &#39;filenames&#39; and &#39;feature&#39; parameters must be given as keyword argument.
 
         Parameters
         ----------
-        feature: `str`, `list` of `str`, `gplately.pygplates.Feature` or `None`
-            `Feature` filenames
 
         feature_type : instance of `pygplates.FeatureType`
             The type of feature. See
@@ -640,11 +649,16 @@ for a list of pygplates feature types.</dd>
         verify_information_model : instance of `VerifyInformationModel.yes` or `VerifyInformationModel.no`
             Specify whether to check `feature_type` with the information model (default) or not.
 
+        filenames: `str` or `list` of `str`
+            The filenames being associated with this feature.
+
+        feature: instance of `gplately.pygplates.Feature`
+            The other &#34;Feature&#34; object
 
         Raises
         ------
         ImportWarning
-            If neither a `str`, `list` of `str`, `gplately.pygplates.Feature` or `None` is passed, no
+            If neither a `str` nor `list` of `str` is passed, no
             `Feature` filenames will be collected, and the user will be alerted of this.
 
         InformationModelError
@@ -655,36 +669,36 @@ for a list of pygplates feature types.</dd>
         # bugfix: gplately.pygplates.Feature is not compatible with pygplates.Feature
         # see https://github.com/GPlates/gplately/issues/150
         # this gplately.pygplates.Feature class seems not completed yet. for example, the clone() method returns nothing. It looks unfinished.
-        # why is the parameter name is &#34;feature&#34;? shouldn&#39;t it be &#34;filenames&#34;? Why multiple file names?
+        # Why is a feature associated with multiple file names?
         super().__init__(feature_type, feature_id, verify_information_model)
         self.filenames = []
 
         # try the best to detect backward compatibility issue
-        if isinstance(feature, _pygplates.FeatureType):
+        if not isinstance(feature_type, _pygplates.FeatureType):
             raise Exception(
-                &#34;This is the wrapper class gplately.pygplates.Feature(). The first positional argument(besides self) is not &#39;feature_type&#39;. &#34;
+                &#34;The __init__() signature has been changed. The first positional argument(besides self) is &#39;feature_type&#39; now. &#34;
                 + &#34;Check the online documentation https://gplates.github.io/gplately/pygplates.html&#34;
             )
 
         # update filename list
-        if _is_string(feature) and type(feature) is list:
-            self.filenames = feature
-        elif _is_string(feature) and type(feature) is str:
-            self.filenames = [feature]
-        elif feature is None:
-            self.filenames = []
-        elif isinstance(feature, Feature):
-            self.filenames = feature.filenames
-        elif hasattr(feature, &#34;filenames&#34;):
-            self.filenames = feature.filenames
+        if isinstance(filenames, list) and all(
+            isinstance(filename, str) for filename in filenames
+        ):
+            self.filenames = filenames
+        elif isinstance(filenames, str):
+            self.filenames = [filenames]
         else:
-            msg = &#34;\nFeature: No filename associated with {} in __init__&#34;.format(
-                type(feature)
+            msg = (
+                f&#34;\nFeature: No filename associated with {type(filenames)} in __init__&#34;
+                + &#34;\n ensure pygplates is imported from gplately. Run,&#34;
+                + &#34;\n from gplately import pygplates&#34;
             )
-            msg += &#34;\n ensure pygplates is imported from gplately. Run,&#34;
-            msg += &#34;\n from gplately import pygplates&#34;
             _warnings.warn(msg, ImportWarning)
             self.filenames = []
+
+        if feature:
+            self.filenames = feature.filenames
+            # TODO: also need to copy everything else in the other feature into this feature
 
     def add(self, feature):
         &#34;&#34;&#34;Adds a property (or properties) to this feature. See original docs
