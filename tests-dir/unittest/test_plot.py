@@ -8,7 +8,7 @@ import matplotlib.pyplot as plt
 from plate_model_manager import PlateModelManager
 
 if "GPLATELY_DEBUG" in os.environ and os.environ["GPLATELY_DEBUG"].lower() == "true":
-    sys.path.insert(0, os.path.dirname(os.path.realpath(__file__)))
+    sys.path.insert(0, f"{os.path.dirname(os.path.realpath(__file__))}/../..")
 
 from common import MODEL_REPO_DIR, save_fig
 
