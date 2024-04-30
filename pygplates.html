@@ -42,6 +42,7 @@ Each object listed here will have a `self.filenames` attribute.
 &#34;&#34;&#34;
 
 import warnings as _warnings
+from copy import copy
 from typing import List, Union
 
 import pygplates as _pygplates
@@ -386,92 +387,23 @@ class Feature(_pygplates.Feature):
 
 
 class FeatureCollection(_pygplates.FeatureCollection):
-    &#34;&#34;&#34;A class that wraps the
-    [`pyGPlates.FeatureCollection`](https://www.gplates.org/docs/pygplates/generated/pygplates.featurecollection#pygplates.FeatureCollection)
-    class. This aggregates a set of features into a collection.
-    This is traditionally so that a group of  features can be loaded, saved or
-    unloaded in a single operation.
+    &#34;&#34;&#34;A thin wrap of [`pyGPlates.FeatureCollection`](https://www.gplates.org/docs/pygplates/generated/pygplates.featurecollection#pygplates.FeatureCollection).
+    The derived FeatureCollection class contains a &#34;filenames&#34; attribute to track the names of files from which the feature collection is loaded.
 
-    This wrapping of `pygplates.FeatureCollection` contains all
-    [`pygplates.FeatureCollection` functionality](https://www.gplates.org/docs/pygplates/generated/pygplates.featurecollection#pygplates.FeatureCollection),
-    and in addition tracks the names of files from which the feature
-    collection(s) are read using the
-    `gplately.pygplates.FeatureCollection.filenames` attribute.
-
-    Examples
-    --------
-
-    For example, to read coastline features from a file:
-
-        coastline_feature_collection = pygplates.FeatureCollection(&#39;coastlines.gpml&#39;)
-
-    And to write coastline features to a file:
-
-        coastline_feature_collection = pygplates.FeatureCollection(coastline_features)
-        coastline_feature_collection.write(&#39;coastlines.gpml&#39;)
-
-    To create a new feature collection from a sequence of `features`:
-
-        feature_collection = pygplates.FeatureCollection([feature1, feature2])
-
-        # ...is the equivalent of...
-
-        feature_collection = pygplates.FeatureCollection()
-        feature_collection.add(feature1)
-        feature_collection.add(feature2)
-
-    The following feature collection file formats are currently supported:
-
-    ---
-
-    |         **File Format**        | **Filename  Extension** | **Supports  Read** | **Supports Write** |
-    |:------------------------------:|:-----------------------:|:------------------:|:------------------:|
-    |     GPlates Markup Language    |         ‘.gpml’         |         Yes        |         Yes        |
-    |         Compressed GPML        |  ‘.gpmlz’ or ‘.gpml.gz’ |         Yes        |         Yes        |
-    |          PLATES4 line          |     ‘.dat’ or ‘.pla’    |         Yes        |         Yes        |
-    |        PLATES4 rotation        |          ‘.rot’         |         Yes        |         Yes        |
-    |        GPlates rotation        |         ‘.grot’         |         Yes        |         Yes        |
-    |         ESRI Shapefile         |          ‘.shp’         |         Yes        |         Yes        |
-    |             GeoJSON            |  ‘.geojson’ or ‘.json’  |         Yes        |         Yes        |
-    |           GeoPackage           |         ‘.gpkg’         |         Yes        |         Yes        |
-    |             OGR GMT            |          ‘.gmt’         |         Yes        |         Yes        |
-    |             GMT xy             |          ‘.xy’          |         No         |         Yes        |
-    | GMAP Virtual Geomagnetic Poles |          ‘.vgp’         |         Yes        |         No         |
-
-    ---
-
-    In the future, support will be added to enable users to implement and register readers/writers for other file formats (or their own non-standard file formats).
-
-
-    Operations for accessing features
-    ---------------------------------
-
-    The following operations for accessing the features are supported:
-
-
-    * `len(fc)` : Number of features in feature collection `fc`.
-
-    * `for f in fc` : Iterates over the features `f` in feature collection `fc`.
-
-    * `fc[i]` : The feature of fc at index `i`.
-
-
-    For example:
-
-        num_features = len(feature_collection)
-        features_in_collection = [feature for feature in feature_collection]
-        # assert(num_features == len(features_in_collection))
+    See the doc of base class at https://www.gplates.org/docs/pygplates/generated/pygplates.featurecollection#pygplates.FeatureCollection.
 
     &#34;&#34;&#34;
 
-    def __init__(self, features=None):
-        &#34;&#34;&#34;
+    def __init__(self, features=None, *, filenames: List[str] = []):
+        &#34;&#34;&#34;The constructor is compatible with the base class pygplates.FeatureCollection.
 
         Parameters
         ----------
         features : instance of `Feature` or `str` or a sequence (eg, `list` or `tuple`) of `Feature`
             An optional filename, or sequence of features, or a single feature
 
+        filenames: a list of file path strings (must be given as keyword argument)
+            file paths
 
         Raises
         ------
@@ -482,66 +414,66 @@ class FeatureCollection(_pygplates.FeatureCollection):
             If file format (identified by the filename extension) does not support reading (when filename specified).
 
         &#34;&#34;&#34;
-        super(FeatureCollection, self).__init__(features)
-        self.filenames = []
+        super().__init__(features)
+        self._filenames = filenames
 
-        # update filename list
-        if _is_string(features) and type(features) is list:
-            self.filenames = features
-        elif _is_string(features) and type(features) is str:
-            self.filenames = [features]
-        elif features is None:
-            self.filenames = []
-        elif isinstance(features, FeatureCollection):
-            self.filenames = features.filenames
-        elif hasattr(features, &#34;filenames&#34;):
-            self.filenames = features.filenames
-        else:
-            msg = &#34;\nFeatureCollection: No filename associated with {} in __init__&#34;.format(
-                type(features)
+    @classmethod
+    def from_file_list(cls, filenames: List[str] = []):
+        &#34;&#34;&#34;class method to load a feature collection from multiple files.&#34;&#34;&#34;
+
+        if not (
+            isinstance(filenames, list)
+            and all(isinstance(filename, str) for filename in filenames)
+        ):
+            raise Exception(
+                f&#34;The &#39;filenames&#39; parameter must be a list of file path strings.&#34;
             )
-            msg += &#34;\n ensure pygplates is imported from gplately. Run,&#34;
-            msg += &#34;\n from gplately import pygplates&#34;
-            _warnings.warn(msg, ImportWarning)
-            self.filenames = []
 
-    def add(self, features):
-        &#34;&#34;&#34;Adds one or more features to this collection.
+        fc = _pygplates.FeatureCollection()
+        for filename in filenames:
+            fc.add(_pygplates.FeatureCollection(filename))
+
+        ret = cls([f for f in fc], filenames=filenames)
+        return ret
+
+    @property
+    def filenames(self):
+        return self._filenames
+
+    @filenames.setter
+    def filenames(self, filenames):
+        self._filenames = filenames
+
+    @filenames.deleter
+    def filenames(self):
+        del self._filenames
+
+    def add(self, feature=[], *, filename: str = None):
+        &#34;&#34;&#34;load one more file into the feature collection
 
         Parameters
         ----------
-        feature : instance of `Feature` or sequence (eg, `list` or `tuple`) of `Feature`
-            One or more features to add.
 
-        A feature collection is an unordered collection of features so there is no concept
-        of where a feature is inserted in the sequence of features.
+        feature : (Feature or sequence (eg, list or tuple) of Feature)
+            one or more features to add
 
-            feature_collection.add(feature)
-            feature_collection.add([feature1, feature2])
+        filename : str
+            file path string(must be passed as keyword argument)
+
         &#34;&#34;&#34;
-        super().add(features)
-
-        # update filename list
-        if isinstance(features, FeatureCollection):
-            self.filenames.extend(features.filenames)
-        elif _is_string(features):
-            self.filenames.extend(features)
-        elif hasattr(features, &#34;filenames&#34;):
-            self.filenames.extend(features.filenames)
-        else:
-            msg = &#34;\nFeatureCollection: No filename associated with {} in add&#34;.format(
-                type(features)
+        if isinstance(feature, str):
+            raise Exception(
+                &#34;The filename argument must be passed as keyword argument. The &#39;feature&#39; argument must be Feature or sequence of Features.&#34;
             )
-            msg += &#34;\n ensure pygplates is imported from gplately. Run,&#34;
-            msg += &#34;\n from gplately import pygplates&#34;
-            _warnings.warn(msg, ImportWarning)
+
+        if feature:
+            super().add(feature)
+        if filename:
+            super().add(_pygplates.FeatureCollection(filename))
+            self.filenames.append(filename)
 
     def clone(self):
         &#34;&#34;&#34;Create a duplicate of this feature collection instance.
-
-        This creates a new `FeatureCollection` instance with cloned versions of
-        this collection’s features. And the cloned features (in the cloned
-        collection) are each created with a unique `FeatureId`.
 
         Returns
         -------
@@ -549,9 +481,7 @@ class FeatureCollection(_pygplates.FeatureCollection):
             The cloned `FeatureCollection`.
 
         &#34;&#34;&#34;
-        fc = super().clone()
-        fc.filenames = self.filenames
-        return fc</code></pre>
+        return FeatureCollection([f for f in self], filenames=copy(self.filenames))</code></pre>
 </details>
 </section>
 <section>
@@ -855,143 +785,19 @@ The cloned feature is created with its own unique <code>pygplates.FeatureId</cod
 </dd>
 <dt id="gplately.pygplates.FeatureCollection"><code class="flex name class">
 <span>class <span class="ident">FeatureCollection</span></span>
-<span>(</span><span>features=None)</span>
+<span>(</span><span>features=None, *, filenames: List[str] = [])</span>
 </code></dt>
 <dd>
-<div class="desc"><p>A class that wraps the
-<a href="https://www.gplates.org/docs/pygplates/generated/pygplates.featurecollection#pygplates.FeatureCollection"><code>pyGPlates.FeatureCollection</code></a>
-class. This aggregates a set of features into a collection.
-This is traditionally so that a group of
-features can be loaded, saved or
-unloaded in a single operation.</p>
-<p>This wrapping of <code>pygplates.FeatureCollection</code> contains all
-<a href="https://www.gplates.org/docs/pygplates/generated/pygplates.featurecollection#pygplates.FeatureCollection"><code>pygplates.FeatureCollection</code> functionality</a>,
-and in addition tracks the names of files from which the feature
-collection(s) are read using the
-<code>gplately.pygplates.FeatureCollection.filenames</code> attribute.</p>
-<h2 id="examples">Examples</h2>
-<p>For example, to read coastline features from a file:</p>
-<pre><code>coastline_feature_collection = pygplates.FeatureCollection('coastlines.gpml')
-</code></pre>
-<p>And to write coastline features to a file:</p>
-<pre><code>coastline_feature_collection = pygplates.FeatureCollection(coastline_features)
-coastline_feature_collection.write('coastlines.gpml')
-</code></pre>
-<p>To create a new feature collection from a sequence of <code>features</code>:</p>
-<pre><code>feature_collection = pygplates.FeatureCollection([feature1, feature2])
-
-# ...is the equivalent of...
-
-feature_collection = pygplates.FeatureCollection()
-feature_collection.add(feature1)
-feature_collection.add(feature2)
-</code></pre>
-<p>The following feature collection file formats are currently supported:</p>
-<hr>
-<table>
-<thead>
-<tr>
-<th style="text-align: center;"><strong>File Format</strong></th>
-<th style="text-align: center;"><strong>Filename
-Extension</strong></th>
-<th style="text-align: center;"><strong>Supports
-Read</strong></th>
-<th style="text-align: center;"><strong>Supports Write</strong></th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td style="text-align: center;">GPlates Markup Language</td>
-<td style="text-align: center;">‘.gpml’</td>
-<td style="text-align: center;">Yes</td>
-<td style="text-align: center;">Yes</td>
-</tr>
-<tr>
-<td style="text-align: center;">Compressed GPML</td>
-<td style="text-align: center;">‘.gpmlz’ or ‘.gpml.gz’</td>
-<td style="text-align: center;">Yes</td>
-<td style="text-align: center;">Yes</td>
-</tr>
-<tr>
-<td style="text-align: center;">PLATES4 line</td>
-<td style="text-align: center;">‘.dat’ or ‘.pla’</td>
-<td style="text-align: center;">Yes</td>
-<td style="text-align: center;">Yes</td>
-</tr>
-<tr>
-<td style="text-align: center;">PLATES4 rotation</td>
-<td style="text-align: center;">‘.rot’</td>
-<td style="text-align: center;">Yes</td>
-<td style="text-align: center;">Yes</td>
-</tr>
-<tr>
-<td style="text-align: center;">GPlates rotation</td>
-<td style="text-align: center;">‘.grot’</td>
-<td style="text-align: center;">Yes</td>
-<td style="text-align: center;">Yes</td>
-</tr>
-<tr>
-<td style="text-align: center;">ESRI Shapefile</td>
-<td style="text-align: center;">‘.shp’</td>
-<td style="text-align: center;">Yes</td>
-<td style="text-align: center;">Yes</td>
-</tr>
-<tr>
-<td style="text-align: center;">GeoJSON</td>
-<td style="text-align: center;">‘.geojson’ or ‘.json’</td>
-<td style="text-align: center;">Yes</td>
-<td style="text-align: center;">Yes</td>
-</tr>
-<tr>
-<td style="text-align: center;">GeoPackage</td>
-<td style="text-align: center;">‘.gpkg’</td>
-<td style="text-align: center;">Yes</td>
-<td style="text-align: center;">Yes</td>
-</tr>
-<tr>
-<td style="text-align: center;">OGR GMT</td>
-<td style="text-align: center;">‘.gmt’</td>
-<td style="text-align: center;">Yes</td>
-<td style="text-align: center;">Yes</td>
-</tr>
-<tr>
-<td style="text-align: center;">GMT xy</td>
-<td style="text-align: center;">‘.xy’</td>
-<td style="text-align: center;">No</td>
-<td style="text-align: center;">Yes</td>
-</tr>
-<tr>
-<td style="text-align: center;">GMAP Virtual Geomagnetic Poles</td>
-<td style="text-align: center;">‘.vgp’</td>
-<td style="text-align: center;">Yes</td>
-<td style="text-align: center;">No</td>
-</tr>
-</tbody>
-</table>
-<hr>
-<p>In the future, support will be added to enable users to implement and register readers/writers for other file formats (or their own non-standard file formats).</p>
-<h2 id="operations-for-accessing-features">Operations For Accessing Features</h2>
-<p>The following operations for accessing the features are supported:</p>
-<ul>
-<li>
-<p><code>len(fc)</code> : Number of features in feature collection <code>fc</code>.</p>
-</li>
-<li>
-<p><code>for f in fc</code> : Iterates over the features <code>f</code> in feature collection <code>fc</code>.</p>
-</li>
-<li>
-<p><code>fc[i]</code> : The feature of fc at index <code>i</code>.</p>
-</li>
-</ul>
-<p>For example:</p>
-<pre><code>num_features = len(feature_collection)
-features_in_collection = [feature for feature in feature_collection]
-# assert(num_features == len(features_in_collection))
-</code></pre>
+<div class="desc"><p>A thin wrap of <a href="https://www.gplates.org/docs/pygplates/generated/pygplates.featurecollection#pygplates.FeatureCollection"><code>pyGPlates.FeatureCollection</code></a>.
+The derived FeatureCollection class contains a "filenames" attribute to track the names of files from which the feature collection is loaded.</p>
+<p>See the doc of base class at <a href="https://www.gplates.org/docs/pygplates/generated/pygplates.featurecollection#pygplates.FeatureCollection.">https://www.gplates.org/docs/pygplates/generated/pygplates.featurecollection#pygplates.FeatureCollection.</a></p>
+<p>The constructor is compatible with the base class pygplates.FeatureCollection.</p>
 <h2 id="parameters">Parameters</h2>
 <dl>
 <dt><strong><code>features</code></strong> :&ensp;<code>instance</code> of <code><a title="gplately.pygplates.Feature" href="#gplately.pygplates.Feature">Feature</a></code> or <code>str</code> or <code>a sequence (eg, </code>list<code> or </code>tuple<code>)</code> of <code><a title="gplately.pygplates.Feature" href="#gplately.pygplates.Feature">Feature</a></code></dt>
 <dd>An optional filename, or sequence of features, or a single feature</dd>
+<dt><strong><code>filenames</code></strong> :&ensp;<code>a list</code> of <code>file path strings (must be given as keyword argument)</code></dt>
+<dd>file paths</dd>
 </dl>
 <h2 id="raises">Raises</h2>
 <dl>
@@ -1005,92 +811,23 @@ features_in_collection = [feature for feature in feature_collection]
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class FeatureCollection(_pygplates.FeatureCollection):
-    &#34;&#34;&#34;A class that wraps the
-    [`pyGPlates.FeatureCollection`](https://www.gplates.org/docs/pygplates/generated/pygplates.featurecollection#pygplates.FeatureCollection)
-    class. This aggregates a set of features into a collection.
-    This is traditionally so that a group of  features can be loaded, saved or
-    unloaded in a single operation.
+    &#34;&#34;&#34;A thin wrap of [`pyGPlates.FeatureCollection`](https://www.gplates.org/docs/pygplates/generated/pygplates.featurecollection#pygplates.FeatureCollection).
+    The derived FeatureCollection class contains a &#34;filenames&#34; attribute to track the names of files from which the feature collection is loaded.
 
-    This wrapping of `pygplates.FeatureCollection` contains all
-    [`pygplates.FeatureCollection` functionality](https://www.gplates.org/docs/pygplates/generated/pygplates.featurecollection#pygplates.FeatureCollection),
-    and in addition tracks the names of files from which the feature
-    collection(s) are read using the
-    `gplately.pygplates.FeatureCollection.filenames` attribute.
-
-    Examples
-    --------
-
-    For example, to read coastline features from a file:
-
-        coastline_feature_collection = pygplates.FeatureCollection(&#39;coastlines.gpml&#39;)
-
-    And to write coastline features to a file:
-
-        coastline_feature_collection = pygplates.FeatureCollection(coastline_features)
-        coastline_feature_collection.write(&#39;coastlines.gpml&#39;)
-
-    To create a new feature collection from a sequence of `features`:
-
-        feature_collection = pygplates.FeatureCollection([feature1, feature2])
-
-        # ...is the equivalent of...
-
-        feature_collection = pygplates.FeatureCollection()
-        feature_collection.add(feature1)
-        feature_collection.add(feature2)
-
-    The following feature collection file formats are currently supported:
-
-    ---
-
-    |         **File Format**        | **Filename  Extension** | **Supports  Read** | **Supports Write** |
-    |:------------------------------:|:-----------------------:|:------------------:|:------------------:|
-    |     GPlates Markup Language    |         ‘.gpml’         |         Yes        |         Yes        |
-    |         Compressed GPML        |  ‘.gpmlz’ or ‘.gpml.gz’ |         Yes        |         Yes        |
-    |          PLATES4 line          |     ‘.dat’ or ‘.pla’    |         Yes        |         Yes        |
-    |        PLATES4 rotation        |          ‘.rot’         |         Yes        |         Yes        |
-    |        GPlates rotation        |         ‘.grot’         |         Yes        |         Yes        |
-    |         ESRI Shapefile         |          ‘.shp’         |         Yes        |         Yes        |
-    |             GeoJSON            |  ‘.geojson’ or ‘.json’  |         Yes        |         Yes        |
-    |           GeoPackage           |         ‘.gpkg’         |         Yes        |         Yes        |
-    |             OGR GMT            |          ‘.gmt’         |         Yes        |         Yes        |
-    |             GMT xy             |          ‘.xy’          |         No         |         Yes        |
-    | GMAP Virtual Geomagnetic Poles |          ‘.vgp’         |         Yes        |         No         |
-
-    ---
-
-    In the future, support will be added to enable users to implement and register readers/writers for other file formats (or their own non-standard file formats).
-
-
-    Operations for accessing features
-    ---------------------------------
-
-    The following operations for accessing the features are supported:
-
-
-    * `len(fc)` : Number of features in feature collection `fc`.
-
-    * `for f in fc` : Iterates over the features `f` in feature collection `fc`.
-
-    * `fc[i]` : The feature of fc at index `i`.
-
-
-    For example:
-
-        num_features = len(feature_collection)
-        features_in_collection = [feature for feature in feature_collection]
-        # assert(num_features == len(features_in_collection))
+    See the doc of base class at https://www.gplates.org/docs/pygplates/generated/pygplates.featurecollection#pygplates.FeatureCollection.
 
     &#34;&#34;&#34;
 
-    def __init__(self, features=None):
-        &#34;&#34;&#34;
+    def __init__(self, features=None, *, filenames: List[str] = []):
+        &#34;&#34;&#34;The constructor is compatible with the base class pygplates.FeatureCollection.
 
         Parameters
         ----------
         features : instance of `Feature` or `str` or a sequence (eg, `list` or `tuple`) of `Feature`
             An optional filename, or sequence of features, or a single feature
 
+        filenames: a list of file path strings (must be given as keyword argument)
+            file paths
 
         Raises
         ------
@@ -1101,66 +838,66 @@ features_in_collection = [feature for feature in feature_collection]
             If file format (identified by the filename extension) does not support reading (when filename specified).
 
         &#34;&#34;&#34;
-        super(FeatureCollection, self).__init__(features)
-        self.filenames = []
+        super().__init__(features)
+        self._filenames = filenames
 
-        # update filename list
-        if _is_string(features) and type(features) is list:
-            self.filenames = features
-        elif _is_string(features) and type(features) is str:
-            self.filenames = [features]
-        elif features is None:
-            self.filenames = []
-        elif isinstance(features, FeatureCollection):
-            self.filenames = features.filenames
-        elif hasattr(features, &#34;filenames&#34;):
-            self.filenames = features.filenames
-        else:
-            msg = &#34;\nFeatureCollection: No filename associated with {} in __init__&#34;.format(
-                type(features)
+    @classmethod
+    def from_file_list(cls, filenames: List[str] = []):
+        &#34;&#34;&#34;class method to load a feature collection from multiple files.&#34;&#34;&#34;
+
+        if not (
+            isinstance(filenames, list)
+            and all(isinstance(filename, str) for filename in filenames)
+        ):
+            raise Exception(
+                f&#34;The &#39;filenames&#39; parameter must be a list of file path strings.&#34;
             )
-            msg += &#34;\n ensure pygplates is imported from gplately. Run,&#34;
-            msg += &#34;\n from gplately import pygplates&#34;
-            _warnings.warn(msg, ImportWarning)
-            self.filenames = []
 
-    def add(self, features):
-        &#34;&#34;&#34;Adds one or more features to this collection.
+        fc = _pygplates.FeatureCollection()
+        for filename in filenames:
+            fc.add(_pygplates.FeatureCollection(filename))
+
+        ret = cls([f for f in fc], filenames=filenames)
+        return ret
+
+    @property
+    def filenames(self):
+        return self._filenames
+
+    @filenames.setter
+    def filenames(self, filenames):
+        self._filenames = filenames
+
+    @filenames.deleter
+    def filenames(self):
+        del self._filenames
+
+    def add(self, feature=[], *, filename: str = None):
+        &#34;&#34;&#34;load one more file into the feature collection
 
         Parameters
         ----------
-        feature : instance of `Feature` or sequence (eg, `list` or `tuple`) of `Feature`
-            One or more features to add.
 
-        A feature collection is an unordered collection of features so there is no concept
-        of where a feature is inserted in the sequence of features.
+        feature : (Feature or sequence (eg, list or tuple) of Feature)
+            one or more features to add
 
-            feature_collection.add(feature)
-            feature_collection.add([feature1, feature2])
+        filename : str
+            file path string(must be passed as keyword argument)
+
         &#34;&#34;&#34;
-        super().add(features)
-
-        # update filename list
-        if isinstance(features, FeatureCollection):
-            self.filenames.extend(features.filenames)
-        elif _is_string(features):
-            self.filenames.extend(features)
-        elif hasattr(features, &#34;filenames&#34;):
-            self.filenames.extend(features.filenames)
-        else:
-            msg = &#34;\nFeatureCollection: No filename associated with {} in add&#34;.format(
-                type(features)
+        if isinstance(feature, str):
+            raise Exception(
+                &#34;The filename argument must be passed as keyword argument. The &#39;feature&#39; argument must be Feature or sequence of Features.&#34;
             )
-            msg += &#34;\n ensure pygplates is imported from gplately. Run,&#34;
-            msg += &#34;\n from gplately import pygplates&#34;
-            _warnings.warn(msg, ImportWarning)
+
+        if feature:
+            super().add(feature)
+        if filename:
+            super().add(_pygplates.FeatureCollection(filename))
+            self.filenames.append(filename)
 
     def clone(self):
         &#34;&#34;&#34;Create a duplicate of this feature collection instance.
-
-        This creates a new `FeatureCollection` instance with cloned versions of
-        this collection’s features. And the cloned features (in the cloned
-        collection) are each created with a unique `FeatureId`.
 
         Returns
         -------
@@ -1168,66 +905,101 @@ features_in_collection = [feature for feature in feature_collection]
             The cloned `FeatureCollection`.
 
         &#34;&#34;&#34;
-        fc = super().clone()
-        fc.filenames = self.filenames
-        return fc</code></pre>
+        return FeatureCollection([f for f in self], filenames=copy(self.filenames))</code></pre>
 </details>
 <h3>Ancestors</h3>
 <ul class="hlist">
 <li>pygplates.FeatureCollection</li>
 <li>Boost.Python.instance</li>
 </ul>
-<h3>Methods</h3>
+<h3>Static methods</h3>
 <dl>
-<dt id="gplately.pygplates.FeatureCollection.add"><code class="name flex">
-<span>def <span class="ident">add</span></span>(<span>self, features)</span>
+<dt id="gplately.pygplates.FeatureCollection.from_file_list"><code class="name flex">
+<span>def <span class="ident">from_file_list</span></span>(<span>filenames: List[str] = [])</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Adds one or more features to this collection.</p>
-<h2 id="parameters">Parameters</h2>
-<dl>
-<dt><strong><code>feature</code></strong> :&ensp;<code>instance</code> of <code><a title="gplately.pygplates.Feature" href="#gplately.pygplates.Feature">Feature</a></code> or <code>sequence (eg, </code>list<code> or </code>tuple<code>)</code> of <code><a title="gplately.pygplates.Feature" href="#gplately.pygplates.Feature">Feature</a></code></dt>
-<dd>One or more features to add.</dd>
-</dl>
-<p>A feature collection is an unordered collection of features so there is no concept
-of where a feature is inserted in the sequence of features.</p>
-<pre><code>feature_collection.add(feature)
-feature_collection.add([feature1, feature2])
-</code></pre></div>
+<div class="desc"><p>class method to load a feature collection from multiple files.</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">def add(self, features):
-    &#34;&#34;&#34;Adds one or more features to this collection.
+<pre><code class="python">@classmethod
+def from_file_list(cls, filenames: List[str] = []):
+    &#34;&#34;&#34;class method to load a feature collection from multiple files.&#34;&#34;&#34;
+
+    if not (
+        isinstance(filenames, list)
+        and all(isinstance(filename, str) for filename in filenames)
+    ):
+        raise Exception(
+            f&#34;The &#39;filenames&#39; parameter must be a list of file path strings.&#34;
+        )
+
+    fc = _pygplates.FeatureCollection()
+    for filename in filenames:
+        fc.add(_pygplates.FeatureCollection(filename))
+
+    ret = cls([f for f in fc], filenames=filenames)
+    return ret</code></pre>
+</details>
+</dd>
+</dl>
+<h3>Instance variables</h3>
+<dl>
+<dt id="gplately.pygplates.FeatureCollection.filenames"><code class="name">var <span class="ident">filenames</span></code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def filenames(self):
+    return self._filenames</code></pre>
+</details>
+</dd>
+</dl>
+<h3>Methods</h3>
+<dl>
+<dt id="gplately.pygplates.FeatureCollection.add"><code class="name flex">
+<span>def <span class="ident">add</span></span>(<span>self, feature=[], *, filename: str = None)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>load one more file into the feature collection</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>feature</code></strong> :&ensp;<code>(<a title="gplately.pygplates.Feature" href="#gplately.pygplates.Feature">Feature</a></code> or <code>sequence (eg, list</code> or <code>tuple)</code> of <code><a title="gplately.pygplates.Feature" href="#gplately.pygplates.Feature">Feature</a>)</code></dt>
+<dd>one or more features to add</dd>
+<dt><strong><code>filename</code></strong> :&ensp;<code>str</code></dt>
+<dd>file path string(must be passed as keyword argument)</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def add(self, feature=[], *, filename: str = None):
+    &#34;&#34;&#34;load one more file into the feature collection
 
     Parameters
     ----------
-    feature : instance of `Feature` or sequence (eg, `list` or `tuple`) of `Feature`
-        One or more features to add.
 
-    A feature collection is an unordered collection of features so there is no concept
-    of where a feature is inserted in the sequence of features.
+    feature : (Feature or sequence (eg, list or tuple) of Feature)
+        one or more features to add
 
-        feature_collection.add(feature)
-        feature_collection.add([feature1, feature2])
+    filename : str
+        file path string(must be passed as keyword argument)
+
     &#34;&#34;&#34;
-    super().add(features)
-
-    # update filename list
-    if isinstance(features, FeatureCollection):
-        self.filenames.extend(features.filenames)
-    elif _is_string(features):
-        self.filenames.extend(features)
-    elif hasattr(features, &#34;filenames&#34;):
-        self.filenames.extend(features.filenames)
-    else:
-        msg = &#34;\nFeatureCollection: No filename associated with {} in add&#34;.format(
-            type(features)
+    if isinstance(feature, str):
+        raise Exception(
+            &#34;The filename argument must be passed as keyword argument. The &#39;feature&#39; argument must be Feature or sequence of Features.&#34;
         )
-        msg += &#34;\n ensure pygplates is imported from gplately. Run,&#34;
-        msg += &#34;\n from gplately import pygplates&#34;
-        _warnings.warn(msg, ImportWarning)</code></pre>
+
+    if feature:
+        super().add(feature)
+    if filename:
+        super().add(_pygplates.FeatureCollection(filename))
+        self.filenames.append(filename)</code></pre>
 </details>
 </dd>
 <dt id="gplately.pygplates.FeatureCollection.clone"><code class="name flex">
@@ -1235,9 +1007,6 @@ feature_collection.add([feature1, feature2])
 </code></dt>
 <dd>
 <div class="desc"><p>Create a duplicate of this feature collection instance.</p>
-<p>This creates a new <code><a title="gplately.pygplates.FeatureCollection" href="#gplately.pygplates.FeatureCollection">FeatureCollection</a></code> instance with cloned versions of
-this collection’s features. And the cloned features (in the cloned
-collection) are each created with a unique <code>FeatureId</code>.</p>
 <h2 id="returns">Returns</h2>
 <dl>
 <dt><strong><code>feature_collection</code></strong> :&ensp;<code>instance</code> of <code><a title="gplately.pygplates.FeatureCollection" href="#gplately.pygplates.FeatureCollection">FeatureCollection</a></code></dt>
@@ -1250,19 +1019,13 @@ collection) are each created with a unique <code>FeatureId</code>.</p>
 <pre><code class="python">def clone(self):
     &#34;&#34;&#34;Create a duplicate of this feature collection instance.
 
-    This creates a new `FeatureCollection` instance with cloned versions of
-    this collection’s features. And the cloned features (in the cloned
-    collection) are each created with a unique `FeatureId`.
-
     Returns
     -------
     feature_collection : instance of `gplately.pygplates.FeatureCollection`
         The cloned `FeatureCollection`.
 
     &#34;&#34;&#34;
-    fc = super().clone()
-    fc.filenames = self.filenames
-    return fc</code></pre>
+    return FeatureCollection([f for f in self], filenames=copy(self.filenames))</code></pre>
 </details>
 </dd>
 </dl>
@@ -1591,6 +1354,8 @@ rotation_model = pygplates.RotationModel(rotation_features_or_model)
 <ul class="">
 <li><code><a title="gplately.pygplates.FeatureCollection.add" href="#gplately.pygplates.FeatureCollection.add">add</a></code></li>
 <li><code><a title="gplately.pygplates.FeatureCollection.clone" href="#gplately.pygplates.FeatureCollection.clone">clone</a></code></li>
+<li><code><a title="gplately.pygplates.FeatureCollection.filenames" href="#gplately.pygplates.FeatureCollection.filenames">filenames</a></code></li>
+<li><code><a title="gplately.pygplates.FeatureCollection.from_file_list" href="#gplately.pygplates.FeatureCollection.from_file_list">from_file_list</a></code></li>
 </ul>
 </li>
 <li>
