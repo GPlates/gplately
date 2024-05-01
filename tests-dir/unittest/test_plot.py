@@ -5,7 +5,8 @@ import sys
 
 import cartopy.crs as ccrs
 import matplotlib.pyplot as plt
-from plate_model_manager import PlateModelManager
+import numpy as np
+from plate_model_manager import PlateModel, PlateModelManager
 
 if "GPLATELY_DEBUG" in os.environ and os.environ["GPLATELY_DEBUG"].lower() == "true":
     sys.path.insert(0, f"{os.path.dirname(os.path.realpath(__file__))}/../..")
@@ -24,10 +25,12 @@ MODEL_NAME = "Muller2019"
 
 
 def main(show=True):
-    pm_manager = PlateModelManager()
+    try:
+        model = PlateModelManager().get_model(MODEL_NAME, data_dir=MODEL_REPO_DIR)
+    except:
+        model = PlateModel(MODEL_NAME, data_dir=MODEL_REPO_DIR, readonly=True)
 
     age = 55
-    model = pm_manager.get_model(MODEL_NAME, data_dir=MODEL_REPO_DIR)
 
     test_model = PlateReconstruction(
         model.get_rotation_model(),
@@ -54,37 +57,39 @@ def main(show=True):
         "ridges": 1,
         "all_topologies": 0,
         "all_topological_sections": 0,
-        "plot_plate_polygon_by_id": 0,
+        "plate_polygon_by_id": 0,
         "unclassified_features": 0,
         "misc_transforms": 0,
+        "slab_edges": 0,
+        "passive_continental_boundaries": 0,
+        "extended_continental_crusts": 0,
+        "continental_crusts": 0,
+        "sutures": 0,
+        "orogenic_belts": 0,
+        "transitional_crusts": 0,
+        "terrane_boundaries": 0,
+        "inferred_paleo_boundaries": 0,
+        "fracture_zones": 0,
+        "faults": 0,
+        "continental_rifts": 0,
+        "misc_boundaries": 0,
+        "transforms": 0,
+        "continents": 0,
     }
 
-    if all_flag or plot_flag["continent_ocean_boundaries"]:
-        gplot.plot_continent_ocean_boundaries(ax, color="cornflowerblue")
-    if all_flag or plot_flag["coastlines"]:
-        gplot.plot_coastlines(ax, color="black")
-    if all_flag or plot_flag["ridges_and_transforms"]:
-        gplot.plot_ridges_and_transforms(ax, color="red")
-    if all_flag or plot_flag["trenches"]:
-        gplot.plot_trenches(ax, color="orange")
-    if all_flag or plot_flag["subduction_teeth"]:
-        gplot.plot_subduction_teeth(ax, color="orange")
-    if all_flag or plot_flag["ridges"]:
-        gplot.plot_ridges(ax, color="green")
-    if all_flag or plot_flag["all_topologies"]:
-        gplot.plot_all_topologies(ax, color="red")
-    if all_flag or plot_flag["all_topological_sections"]:
-        gplot.plot_all_topological_sections(ax, color="red")
-    if all_flag or plot_flag["misc_transforms"]:
-        gplot.plot_misc_transforms(ax, color="red")
-    if all_flag or plot_flag["unclassified_features"]:
-        gplot.plot_unclassified_features(ax, color="red")
+    for key in plot_flag:
+        if key == "plate_polygon_by_id":
+            continue
+        if all_flag or plot_flag[key]:
+            getattr(gplot, f"plot_{key}")(
+                ax, color=list(np.random.choice(range(256), size=3) / 256)
+            )
 
     ax.set_global()
 
     ids = set([f.get_reconstruction_plate_id() for f in gplot.topologies])
     for id in ids:
-        if all_flag or plot_flag["plot_plate_polygon_by_id"]:
+        if all_flag or plot_flag["plate_polygon_by_id"]:
             gplot.plot_plate_polygon_by_id(
                 ax, id, facecolor="None", edgecolor="lightgreen"
             )
