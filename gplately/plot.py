@@ -38,6 +38,7 @@ from .utils.plot_utils import plot_subduction_teeth as _plot_subduction_teeth
 logger = logging.getLogger("gplately")
 
 PLOT_DOCSTRING = """
+
         Parameters
         ----------
         ax : instance of <cartopy.mpl.geoaxes.GeoAxes> or <cartopy.mpl.geoaxes.GeoAxesSubplot>
@@ -663,28 +664,16 @@ class PlotTopologies(object):
         )
         return gpd.GeoDataFrame({"geometry": shp}, geometry="geometry")
 
-    def plot_feature(self, ax, feature, **kwargs):
-        """Plot pygplates.FeatureCollection  or pygplates.Feature onto a map.
-
-        Parameters
-        ----------
-        ax : instance of <cartopy.mpl.geoaxes.GeoAxes> or <cartopy.mpl.geoaxes.GeoAxesSubplot>
-            A subclass of `matplotlib.axes.Axes` which represents a map Projection.
-            The map should be set at a particular Cartopy projection.
-
-        **kwargs :
-            Keyword arguments for parameters such as `facecolor`, `alpha`,
-            etc. for plotting coastline geometries.
-            See `Matplotlib` keyword arguments
-            [here](https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html).
-
-        Returns
-        -------
-        ax : instance of <geopandas.GeoDataFrame.plot>
-            A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map
-            with coastline features plotted onto the chosen map projection.
-        """
-        return self._plot_feature(ax, partial(self.get_feature, feature), **kwargs)
+    @append_docstring(PLOT_DOCSTRING)
+    def plot_feature(self, ax, feature, feature_name="", **kwargs):
+        """Plot pygplates.FeatureCollection  or pygplates.Feature onto a map."""
+        if not feature:
+            logger.warn(
+                f"The given feature({feature_name}:{feature}) is empty and will not be plotted."
+            )
+            return ax
+        else:
+            return self._plot_feature(ax, partial(self.get_feature, feature), **kwargs)
 
     def _plot_feature(self, ax, get_feature_func, **kwargs):
         if "transform" in kwargs.keys():
@@ -716,59 +705,18 @@ class PlotTopologies(object):
 
         return gdf.plot(ax=ax, **kwargs)
 
+    @validate_reconstruction_time
+    @append_docstring(GET_DATE_DOCSTRING.format("coastlines"))
     def get_coastlines(self, central_meridian=0.0, tessellate_degrees=None):
-        """Create a geopandas.GeoDataFrame object containing geometries of reconstructed coastline polygons.
-
-        Notes
-        -----
-        The `coastlines` needed to produce the GeoDataFrame are automatically constructed if the optional `time`
-        parameter is passed to the `PlotTopologies` object before calling this function. `time` can be passed
-        either when `PlotTopologies` is first called...
-
-            gplot = gplately.PlotTopologies(..., time=100,...)
-
-        or anytime afterwards, by setting:
-
-            time = 100 #Ma
-            gplot.time = time
-
-        ...after which this function can be re-run. Once the `coastlines` are reconstructed, they are
-        converted into Shapely polygons whose coordinates are passed to a geopandas GeoDataFrame.
-
-        Returns
-        -------
-        gdf : instance of <geopandas.GeoDataFrame>
-            A pandas.DataFrame that has a column with `coastlines` geometry.
-        central_meridian : float
-            Central meridian around which to perform wrapping; default: 0.0.
-        tessellate_degrees : float or None
-            If provided, geometries will be tessellated to this resolution prior
-            to wrapping.
-
-        Raises
-        ------
-        ValueError
-            If the optional `time` parameter has not been passed to `PlotTopologies`. This is needed to construct
-            `coastlines` to the requested `time` and thus populate the GeoDataFrame.
-
-        """
-        if self._time is None:
-            raise ValueError(
-                "No coastlines have been resolved. Set `PlotTopologies.time` to construct coastlines."
-            )
-
-        if self.coastlines is None:
-            raise ValueError("Supply coastlines to PlotTopologies object")
-
-        coastline_polygons = shapelify_feature_polygons(
+        """Create a geopandas.GeoDataFrame object containing geometries of reconstructed coastline polygons."""
+        return self.get_feature(
             self.coastlines,
             central_meridian=central_meridian,
             tessellate_degrees=tessellate_degrees,
         )
-        gdf = gpd.GeoDataFrame({"geometry": coastline_polygons}, geometry="geometry")
-        return gdf
 
-    def plot_coastlines(self, ax, **kwargs):
+    @append_docstring(PLOT_DOCSTRING)
+    def plot_coastlines(self, ax, color="black", **kwargs):
         """Plot reconstructed coastline polygons onto a standard map Projection.
 
         Notes
@@ -780,99 +728,28 @@ class PlotTopologies(object):
         GeoPandas.
         Map resentation details (e.g. facecolor, edgecolor, alpha…) are permitted as keyword
         arguments.
-
-        Parameters
-        ----------
-        ax : instance of <cartopy.mpl.geoaxes.GeoAxes> or <cartopy.mpl.geoaxes.GeoAxesSubplot>
-            A subclass of `matplotlib.axes.Axes` which represents a map Projection.
-            The map should be set at a particular Cartopy projection.
-
-        **kwargs :
-            Keyword arguments for parameters such as `facecolor`, `alpha`,
-            etc. for plotting coastline geometries.
-            See `Matplotlib` keyword arguments
-            [here](https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html).
-
-        Returns
-        -------
-        ax : instance of <geopandas.GeoDataFrame.plot>
-            A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map
-            with coastline features plotted onto the chosen map projection.
         """
-        if "transform" in kwargs.keys():
-            warnings.warn(
-                "'transform' keyword argument is ignored by PlotTopologies",
-                UserWarning,
-            )
-            kwargs.pop("transform")
-        tessellate_degrees = kwargs.pop("tessellate_degrees", None)
-        central_meridian = kwargs.pop("central_meridian", None)
-        if central_meridian is None:
-            central_meridian = _meridian_from_ax(ax)
-
-        gdf = self.get_coastlines(
-            central_meridian=central_meridian,
-            tessellate_degrees=tessellate_degrees,
+        return self.plot_feature(
+            ax,
+            self.coastlines,
+            feature_name="coastlines",
+            facecolor="none",
+            edgecolor=color,
+            **kwargs,
         )
-        if hasattr(ax, "projection"):
-            gdf = _clean_polygons(data=gdf, projection=ax.projection)
-        else:
-            kwargs["transform"] = self.base_projection
-        return gdf.plot(ax=ax, **kwargs)
 
+    @validate_reconstruction_time
+    @append_docstring(GET_DATE_DOCSTRING.format("continents"))
     def get_continents(self, central_meridian=0.0, tessellate_degrees=None):
-        """Create a geopandas.GeoDataFrame object containing geometries of reconstructed continental polygons.
-
-        Notes
-        -----
-        The `continents` needed to produce the GeoDataFrame are automatically constructed if the optional `time`
-        parameter is passed to the `PlotTopologies` object before calling this function. `time` can be passed
-        either when `PlotTopologies` is first called...
-
-            gplot = gplately.PlotTopologies(..., time=100,...)
-
-        or anytime afterwards, by setting:
-
-            time = 100 #Ma
-            gplot.time = time
-
-        ...after which this function can be re-run. Once the `continents` are reconstructed, they are
-        converted into Shapely polygons whose coordinates are passed to a geopandas GeoDataFrame.
-
-        Returns
-        -------
-        gdf : instance of <geopandas.GeoDataFrame>
-            A pandas.DataFrame that has a column with `continents` geometry.
-        central_meridian : float
-            Central meridian around which to perform wrapping; default: 0.0.
-        tessellate_degrees : float or None
-            If provided, geometries will be tessellated to this resolution prior
-            to wrapping.
-
-        Raises
-        ------
-        ValueError
-            If the optional `time` parameter has not been passed to `PlotTopologies`. This is needed to construct
-            `continents` to the requested `time` and thus populate the GeoDataFrame.
-
-        """
-        if self._time is None:
-            raise ValueError(
-                "No continents have been resolved. Set `PlotTopologies.time` to construct continents."
-            )
-
-        if self.continents is None:
-            raise ValueError("Supply continents to PlotTopologies object")
-
-        continent_polygons = shapelify_feature_polygons(
+        """Create a geopandas.GeoDataFrame object containing geometries of reconstructed continental polygons."""
+        return self.get_feature(
             self.continents,
             central_meridian=central_meridian,
             tessellate_degrees=tessellate_degrees,
         )
-        gdf = gpd.GeoDataFrame({"geometry": continent_polygons}, geometry="geometry")
-        return gdf
 
-    def plot_continents(self, ax, **kwargs):
+    @append_docstring(PLOT_DOCSTRING)
+    def plot_continents(self, ax, color="black", **kwargs):
         """Plot reconstructed continental polygons onto a standard map Projection.
 
         Notes
@@ -884,104 +761,32 @@ class PlotTopologies(object):
         GeoPandas.
         Map presentation details (e.g. facecolor, edgecolor, alpha…) are permitted as
         keyword arguments.
-
-        Parameters
-        ----------
-        ax : instance of <cartopy.mpl.geoaxes.GeoAxes> or <cartopy.mpl.geoaxes.GeoAxesSubplot>
-            A subclass of `matplotlib.axes.Axes` which represents a map Projection.
-            The map should be set at a particular Cartopy projection.
-
-        **kwargs :
-            Keyword arguments for parameters such as `facecolor`, `alpha`,
-            etc. for plotting continental geometries.
-            See `Matplotlib` keyword arguments
-            [here](https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html).
-
-        Returns
-        -------
-        ax : instance of <geopandas.GeoDataFrame.plot>
-            A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map
-            with continent features plotted onto the chosen map projection.
         """
-        if "transform" in kwargs.keys():
-            warnings.warn(
-                "'transform' keyword argument is ignored by PlotTopologies",
-                UserWarning,
-            )
-            kwargs.pop("transform")
-        tessellate_degrees = kwargs.pop("tessellate_degrees", None)
-        central_meridian = kwargs.pop("central_meridian", None)
-        if central_meridian is None:
-            central_meridian = _meridian_from_ax(ax)
-
-        gdf = self.get_continents(
-            central_meridian=central_meridian,
-            tessellate_degrees=tessellate_degrees,
+        return self.plot_feature(
+            ax,
+            self.continents,
+            feature_name="continents",
+            facecolor="none",
+            edgecolor=color,
+            **kwargs,
         )
-        if hasattr(ax, "projection"):
-            gdf = _clean_polygons(data=gdf, projection=ax.projection)
-        else:
-            kwargs["transform"] = self.base_projection
-        return gdf.plot(ax=ax, **kwargs)
 
+    @validate_reconstruction_time
+    @append_docstring(GET_DATE_DOCSTRING.format("COBs"))
     def get_continent_ocean_boundaries(
         self,
         central_meridian=0.0,
         tessellate_degrees=None,
     ):
-        """Create a geopandas.GeoDataFrame object containing geometries of reconstructed continent-ocean
-        boundary lines.
-
-        Notes
-        -----
-        The `COBs` needed to produce the GeoDataFrame are automatically constructed if the optional `time`
-        parameter is passed to the `PlotTopologies` object before calling this function. `time` can be passed
-        either when `PlotTopologies` is first called...
-
-            gplot = gplately.PlotTopologies(..., time=100,...)
-
-        or anytime afterwards, by setting:
-
-            time = 100 #Ma
-            gplot.time = time
-
-        ...after which this function can be re-run. Once the `COBs` are reconstructed, they are
-        converted into Shapely lines whose coordinates are passed to a geopandas GeoDataFrame.
-
-        Returns
-        -------
-        gdf : instance of <geopandas.GeoDataFrame>
-            A pandas.DataFrame that has a column with `COBs` geometry.
-        central_meridian : float
-            Central meridian around which to perform wrapping; default: 0.0.
-        tessellate_degrees : float or None
-            If provided, geometries will be tessellated to this resolution prior
-            to wrapping.
-
-        Raises
-        ------
-        ValueError
-            If the optional `time` parameter has not been passed to `PlotTopologies`. This is needed to construct
-            `COBs` to the requested `time` and thus populate the GeoDataFrame.
-
-        """
-        if self._time is None:
-            raise ValueError(
-                "No geometries have been resolved. Set `PlotTopologies.time` to construct topologies."
-            )
-
-        if self.COBs is None:
-            raise ValueError("Supply COBs to PlotTopologies object")
-
-        COB_lines = shapelify_feature_lines(
+        """Create a geopandas.GeoDataFrame object containing geometries of reconstructed continent-ocean boundary lines."""
+        return self.get_feature(
             self.COBs,
             central_meridian=central_meridian,
             tessellate_degrees=tessellate_degrees,
         )
-        gdf = gpd.GeoDataFrame({"geometry": COB_lines}, geometry="geometry")
-        return gdf
 
-    def plot_continent_ocean_boundaries(self, ax, **kwargs):
+    @append_docstring(PLOT_DOCSTRING)
+    def plot_continent_ocean_boundaries(self, ax, color="black", **kwargs):
         """Plot reconstructed continent-ocean boundary (COB) polygons onto a standard
         map Projection.
 
@@ -998,104 +803,32 @@ class PlotTopologies(object):
         geometries and added onto the chosen map for a specific geological time (supplied to the
         PlotTopologies object). Map presentation details (e.g. facecolor, edgecolor, alpha…)
         are permitted.
-
-        Parameters
-        ----------
-        ax : instance of <cartopy.mpl.geoaxes.GeoAxes> or <cartopy.mpl.geoaxes.GeoAxesSubplot>
-            A subclass of `matplotlib.axes.Axes` which represents a map Projection.
-            The map should be set at a particular Cartopy projection.
-
-        **kwargs :
-            Keyword arguments for parameters such as `facecolor`, `alpha`,
-            etc. for plotting COB geometries.
-            See `Matplotlib` keyword arguments
-            [here](https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html).
-
-        Returns
-        -------
-        ax : instance of <geopandas.GeoDataFrame.plot>
-            A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map
-            with COB features plotted onto the chosen map projection.
         """
-        if "transform" in kwargs.keys():
-            warnings.warn(
-                "'transform' keyword argument is ignored by PlotTopologies",
-                UserWarning,
-            )
-            kwargs.pop("transform")
-        tessellate_degrees = kwargs.pop("tessellate_degrees", None)
-        central_meridian = kwargs.pop("central_meridian", None)
-        if central_meridian is None:
-            central_meridian = _meridian_from_ax(ax)
-
-        gdf = self.get_continent_ocean_boundaries(
-            central_meridian=central_meridian,
-            tessellate_degrees=tessellate_degrees,
+        return self.plot_feature(
+            ax,
+            self.COBs,
+            feature_name="continent_ocean_boundaries",
+            facecolor="none",
+            edgecolor=color,
+            **kwargs,
         )
-        if hasattr(ax, "projection"):
-            gdf = _clean_polygons(data=gdf, projection=ax.projection)
-        else:
-            kwargs["transform"] = self.base_projection
-        return gdf.plot(ax=ax, **kwargs)
 
+    @validate_reconstruction_time
+    @append_docstring(GET_DATE_DOCSTRING.format("ridges_and_transforms"))
     def get_ridges_and_transforms(
         self,
         central_meridian=0.0,
         tessellate_degrees=1,
     ):
-        """Create a geopandas.GeoDataFrame object containing geometries of reconstructed ridge and transform lines.
-
-        Notes
-        -----
-        The `ridge_transforms` needed to produce the GeoDataFrame are automatically constructed if the optional `time`
-        parameter is passed to the `PlotTopologies` object before calling this function. `time` can be passed
-        either when `PlotTopologies` is first called...
-
-            gplot = gplately.PlotTopologies(..., time=100,...)
-
-        or anytime afterwards, by setting:
-
-            time = 100 #Ma
-            gplot.time = time
-
-        ...after which this function can be re-run. Once the `ridge_transforms` are reconstructed, they are
-        converted into Shapely lines whose coordinates are passed to a geopandas GeoDataFrame.
-
-        Returns
-        -------
-        gdf : instance of <geopandas.GeoDataFrame>
-            A pandas.DataFrame that has a column with `ridges` geometry.
-        central_meridian : float
-            Central meridian around which to perform wrapping; default: 0.0.
-        tessellate_degrees : float or None
-            If provided, geometries will be tessellated to this resolution prior
-            to wrapping.
-
-        Raises
-        ------
-        ValueError
-            If the optional `time` parameter has not been passed to `PlotTopologies`. This is needed to construct
-            `ridge_transforms` to the requested `time` and thus populate the GeoDataFrame.
-
-        """
-        if self._time is None:
-            raise ValueError(
-                "No ridges and transforms have been resolved. Set `PlotTopologies.time` to construct ridges and transforms."
-            )
-
-        if self.ridge_transforms is None:
-            raise ValueError(
-                "No ridge and transform topologies passed to PlotTopologies."
-            )
-
-        ridge_transform_lines = shapelify_feature_lines(
+        """Create a geopandas.GeoDataFrame object containing geometries of reconstructed ridge and transform lines."""
+        return self.get_feature(
             self.ridge_transforms,
             central_meridian=central_meridian,
             tessellate_degrees=tessellate_degrees,
         )
-        gdf = gpd.GeoDataFrame({"geometry": ridge_transform_lines}, geometry="geometry")
-        return gdf
 
+    @validate_topology_availability("ridges_and_transforms")
+    @append_docstring(PLOT_DOCSTRING)
     def plot_ridges_and_transforms(self, ax, color="black", **kwargs):
         """Plot reconstructed ridge & transform boundary polylines onto a standard map
         Projection.
@@ -1115,106 +848,28 @@ class PlotTopologies(object):
         horizontal lines being formed between polylines at longitudes of -180 and 180 degrees.
         Point features near the poles (-89 & 89 degree latitude) are also clipped to ensure
         compatibility with Cartopy.
-
-        Parameters
-        ----------
-        ax : instance of <cartopy.mpl.geoaxes.GeoAxes> or <cartopy.mpl.geoaxes.GeoAxesSubplot>
-            A subclass of `matplotlib.axes.Axes` which represents a map Projection.
-            The map should be set at a particular Cartopy projection.
-
-        color : str, default=’black’
-            The colour of the ridge & transform lines. By default, it is set to black.
-
-        **kwargs :
-            Keyword arguments for parameters such as ‘alpha’, etc. for
-            plotting ridge & transform geometries.
-            See `Matplotlib` keyword arguments
-            [here](https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html).
-
-        Returns
-        -------
-        ax : instance of <geopandas.GeoDataFrame.plot>
-            A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map
-            with ridge & transform features plotted onto the chosen map projection.
         """
-        if not self.plate_reconstruction.topology_features:
-            logger.warn(
-                "Plate model does not have topology features. Unable to plot_ridges_and_transforms."
-            )
-            return ax
-
-        if "transform" in kwargs.keys():
-            warnings.warn(
-                "'transform' keyword argument is ignored by PlotTopologies",
-                UserWarning,
-            )
-            kwargs.pop("transform")
-        tessellate_degrees = kwargs.pop("tessellate_degrees", 1)
-        central_meridian = kwargs.pop("central_meridian", None)
-        if central_meridian is None:
-            central_meridian = _meridian_from_ax(ax)
-
-        gdf = self.get_ridges_and_transforms(
-            central_meridian=central_meridian,
-            tessellate_degrees=tessellate_degrees,
+        return self.plot_feature(
+            ax,
+            self.ridge_transforms,
+            feature_name="ridge_transforms",
+            facecolor="none",
+            edgecolor=color,
+            **kwargs,
         )
-        if hasattr(ax, "projection"):
-            gdf = _clean_polygons(data=gdf, projection=ax.projection)
-        else:
-            kwargs["transform"] = self.base_projection
-        return gdf.plot(ax=ax, facecolor="none", edgecolor=color, **kwargs)
 
+    @validate_reconstruction_time
+    @append_docstring(GET_DATE_DOCSTRING.format("transforms"))
     def get_transforms(self, central_meridian=0.0, tessellate_degrees=1):
-        """Create a geopandas.GeoDataFrame object containing geometries of reconstructed transform lines.
-
-        Notes
-        -----
-        The `transforms` needed to produce the GeoDataFrame are automatically constructed if the optional `time`
-        parameter is passed to the `PlotTopologies` object before calling this function. `time` can be passed
-        either when `PlotTopologies` is first called...
-
-            gplot = gplately.PlotTopologies(..., time=100,...)
-
-        or anytime afterwards, by setting:
-
-            time = 100 #Ma
-            gplot.time = time
-
-        ...after which this function can be re-run. Once the `transforms` are reconstructed, they are
-        converted into Shapely lines whose coordinates are passed to a geopandas GeoDataFrame.
-
-        Returns
-        -------
-        gdf : instance of <geopandas.GeoDataFrame>
-            A pandas.DataFrame that has a column with `transforms` geometry.
-        central_meridian : float
-            Central meridian around which to perform wrapping; default: 0.0.
-        tessellate_degrees : float or None
-            If provided, geometries will be tessellated to this resolution prior
-            to wrapping.
-
-        Raises
-        ------
-        ValueError
-            If the optional `time` parameter has not been passed to `PlotTopologies`. This is needed to construct
-            `transforms` to the requested `time` and thus populate the GeoDataFrame.
-        """
-        if self._time is None:
-            raise ValueError(
-                "No transforms have been resolved. Set `PlotTopologies.time` to construct transforms."
-            )
-
-        if self.transforms is None:
-            raise ValueError("No transform topologies passed to PlotTopologies.")
-
-        transform_lines = shapelify_feature_lines(
+        """Create a geopandas.GeoDataFrame object containing geometries of reconstructed transform lines."""
+        return self.get_feature(
             self.transforms,
             central_meridian=central_meridian,
             tessellate_degrees=tessellate_degrees,
         )
-        gdf = gpd.GeoDataFrame({"geometry": transform_lines}, geometry="geometry")
-        return gdf
 
+    @validate_topology_availability("transforms")
+    @append_docstring(PLOT_DOCSTRING)
     def plot_transforms(self, ax, color="black", **kwargs):
         """Plot reconstructed transform boundary polylines onto a standard map.
 
@@ -1233,106 +888,28 @@ class PlotTopologies(object):
         horizontal lines being formed between polylines at longitudes of -180 and 180 degrees.
         Point features near the poles (-89 & 89 degree latitude) are also clipped to ensure
         compatibility with Cartopy.
-
-        Parameters
-        ----------
-        ax : instance of <cartopy.mpl.geoaxes.GeoAxes> or <cartopy.mpl.geoaxes.GeoAxesSubplot>
-            A subclass of `matplotlib.axes.Axes` which represents a map Projection.
-            The map should be set at a particular Cartopy projection.
-
-        color : str, default=’black’
-            The colour of the transform lines. By default, it is set to black.
-
-        **kwargs :
-            Keyword arguments for parameters such as `alpha`, etc.
-            for plotting transform geometries.
-            See `Matplotlib` keyword arguments
-            [here](https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html).
-
-        Returns
-        -------
-        ax : instance of <geopandas.GeoDataFrame.plot>
-            A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map
-            with transform features plotted onto the chosen map projection.
         """
-        if not self.plate_reconstruction.topology_features:
-            logger.warn(
-                "Plate model does not have topology features. Unable to plot_transforms."
-            )
-            return ax
-
-        if "transform" in kwargs.keys():
-            warnings.warn(
-                "'transform' keyword argument is ignored by PlotTopologies",
-                UserWarning,
-            )
-            kwargs.pop("transform")
-        tessellate_degrees = kwargs.pop("tessellate_degrees", 1)
-        central_meridian = kwargs.pop("central_meridian", None)
-        if central_meridian is None:
-            central_meridian = _meridian_from_ax(ax)
-
-        gdf = self.get_transforms(
-            central_meridian=central_meridian,
-            tessellate_degrees=tessellate_degrees,
+        return self.plot_feature(
+            ax,
+            self.transforms,
+            feature_name="transforms",
+            facecolor="none",
+            edgecolor=color,
+            **kwargs,
         )
-        if hasattr(ax, "projection"):
-            gdf = _clean_polygons(data=gdf, projection=ax.projection)
-        else:
-            kwargs["transform"] = self.base_projection
-        return gdf.plot(ax=ax, facecolor="none", edgecolor=color, **kwargs)
 
+    @validate_reconstruction_time
+    @append_docstring(GET_DATE_DOCSTRING.format("trenches"))
     def get_trenches(self, central_meridian=0.0, tessellate_degrees=1):
-        """Create a geopandas.GeoDataFrame object containing geometries of reconstructed trench lines.
-
-        Notes
-        -----
-        The `trenches` needed to produce the GeoDataFrame are automatically constructed if the optional `time`
-        parameter is passed to the `PlotTopologies` object before calling this function. `time` can be passed
-        either when `PlotTopologies` is first called...
-
-            gplot = gplately.PlotTopologies(..., time=100,...)
-
-        or anytime afterwards, by setting:
-
-            time = 100 #Ma
-            gplot.time = time
-
-        ...after which this function can be re-run. Once the `trenches` are reconstructed, they are
-        converted into Shapely lines whose coordinates are passed to a geopandas GeoDataFrame.
-
-        Returns
-        -------
-        gdf : instance of <geopandas.GeoDataFrame>
-            A pandas.DataFrame that has a column with `trenches` geometry.
-        central_meridian : float
-            Central meridian around which to perform wrapping; default: 0.0.
-        tessellate_degrees : float or None
-            If provided, geometries will be tessellated to this resolution prior
-            to wrapping.
-
-        Raises
-        ------
-        ValueError
-            If the optional `time` parameter has not been passed to `PlotTopologies`. This is needed to construct
-            `trenches` to the requested `time` and thus populate the GeoDataFrame.
-        """
-        if self._time is None:
-            raise ValueError(
-                "No trenches have been resolved. Set `PlotTopologies.time` to construct trenches."
-            )
-
-        if self.trenches is None:
-            raise ValueError("No trenches passed to PlotTopologies.")
-
-        trench_lines = shapelify_feature_lines(
+        """Create a geopandas.GeoDataFrame object containing geometries of reconstructed trench lines."""
+        return self.get_feature(
             self.trenches,
             central_meridian=central_meridian,
             tessellate_degrees=tessellate_degrees,
         )
-        gdf = gpd.GeoDataFrame({"geometry": trench_lines}, geometry="geometry")
-        return gdf
 
+    @validate_topology_availability("trenches")
+    @append_docstring(PLOT_DOCSTRING)
     def plot_trenches(self, ax, color="black", **kwargs):
         """Plot reconstructed subduction trench polylines onto a standard map
         Projection.
@@ -1352,105 +929,27 @@ class PlotTopologies(object):
         horizontal lines being formed between polylines at longitudes of -180 and 180 degrees.
         Point features near the poles (-89 & 89 degree latitude) are also clipped to ensure
         compatibility with Cartopy.
-
-        Parameters
-        ----------
-        ax : instance of <cartopy.mpl.geoaxes.GeoAxes> or <cartopy.mpl.geoaxes.GeoAxesSubplot>
-            A subclass of `matplotlib.axes.Axes` which represents a map Projection.
-            The map should be set at a particular Cartopy projection.
-
-        color : str, default=’black’
-            The colour of the trench lines. By default, it is set to black.
-
-        **kwargs :
-            Keyword arguments for parameters such as `alpha`, etc.
-            for plotting trench geometries.
-            See `Matplotlib` keyword arguments
-            [here](https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html).
-
-        Returns
-        -------
-        ax : instance of <geopandas.GeoDataFrame.plot>
-            A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map
-            with transform features plotted onto the chosen map projection.
         """
-        if not self.plate_reconstruction.topology_features:
-            logger.warn(
-                "Plate model does not have topology features. Unable to plot_trenches."
-            )
-            return ax
-        if "transform" in kwargs.keys():
-            warnings.warn(
-                "'transform' keyword argument is ignored by PlotTopologies",
-                UserWarning,
-            )
-            kwargs.pop("transform")
-        tessellate_degrees = kwargs.pop("tessellate_degrees", 1)
-        central_meridian = kwargs.pop("central_meridian", None)
-        if central_meridian is None:
-            central_meridian = _meridian_from_ax(ax)
-
-        gdf = self.get_trenches(
-            central_meridian=central_meridian,
-            tessellate_degrees=tessellate_degrees,
+        return self.plot_feature(
+            ax,
+            self.trenches,
+            feature_name="trenches",
+            facecolor="none",
+            edgecolor=color,
+            **kwargs,
         )
-        if hasattr(ax, "projection"):
-            gdf = _clean_polygons(data=gdf, projection=ax.projection)
-        else:
-            kwargs["transform"] = self.base_projection
-        return gdf.plot(ax=ax, facecolor="none", edgecolor=color, **kwargs)
 
+    @validate_reconstruction_time
+    @append_docstring(GET_DATE_DOCSTRING.format("other"))
     def get_misc_boundaries(self, central_meridian=0.0, tessellate_degrees=1):
-        """Create a geopandas.GeoDataFrame object containing geometries of other reconstructed lines.
-
-        Notes
-        -----
-        The `other` geometries needed to produce the GeoDataFrame are automatically constructed if the optional `time`
-        parameter is passed to the `PlotTopologies` object before calling this function. `time` can be passed
-        either when `PlotTopologies` is first called...
-
-            gplot = gplately.PlotTopologies(..., time=100,...)
-
-        or anytime afterwards, by setting:
-
-            time = 100 #Ma
-            gplot.time = time
-
-        ...after which this function can be re-run. Once the `other` geometries are reconstructed, they are
-        converted into Shapely features whose coordinates are passed to a geopandas GeoDataFrame.
-
-        Returns
-        -------
-        gdf : instance of <geopandas.GeoDataFrame>
-            A pandas.DataFrame that has a column with `other` geometry.
-        central_meridian : float
-            Central meridian around which to perform wrapping; default: 0.0.
-        tessellate_degrees : float or None
-            If provided, geometries will be tessellated to this resolution prior
-            to wrapping.
-
-        Raises
-        ------
-        ValueError
-            If the optional `time` parameter has not been passed to `PlotTopologies`. This is needed to construct
-            `other` geometries to the requested `time` and thus populate the GeoDataFrame.
-        """
-        if self._time is None:
-            raise ValueError(
-                "No miscellaneous topologies have been resolved. Set `PlotTopologies.time` to construct them."
-            )
-
-        if self.other is None:
-            raise ValueError("No miscellaneous topologies passed to PlotTopologies.")
-
-        lines = shapelify_features(
+        """Create a geopandas.GeoDataFrame object containing geometries of other reconstructed lines."""
+        return self.get_feature(
             self.other,
             central_meridian=central_meridian,
             tessellate_degrees=tessellate_degrees,
         )
-        gdf = gpd.GeoDataFrame({"geometry": lines}, geometry="geometry")
-        return gdf
 
+    @append_docstring(PLOT_DOCSTRING)
     def plot_misc_boundaries(self, ax, color="black", **kwargs):
         """Plot reconstructed miscellaneous plate boundary polylines onto a standard
         map Projection.
@@ -1470,48 +969,15 @@ class PlotTopologies(object):
         horizontal lines being formed between polylines at longitudes of -180 and 180 degrees.
         Point features near the poles (-89 & 89 degree latitude) are also clipped to ensure
         compatibility with Cartopy.
-
-        Parameters
-        ----------
-        ax : instance of <cartopy.mpl.geoaxes.GeoAxes> or <cartopy.mpl.geoaxes.GeoAxesSubplot>
-            A subclass of `matplotlib.axes.Axes` which represents a map Projection.
-            The map should be set at a particular Cartopy projection.
-
-        color : str, default=’black’
-            The colour of the boundary lines. By default, it is set to black.
-
-        **kwargs :
-            Keyword arguments for parameters such as ‘alpha’, etc. for
-            plotting miscellaneous boundary geometries.
-            See `Matplotlib` keyword arguments
-            [here](https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html).
-
-        Returns
-        -------
-        ax : instance of <geopandas.GeoDataFrame.plot>
-            A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map
-            with miscellaneous boundary features plotted onto the chosen map projection.
         """
-        if "transform" in kwargs.keys():
-            warnings.warn(
-                "'transform' keyword argument is ignored by PlotTopologies",
-                UserWarning,
-            )
-            kwargs.pop("transform")
-        tessellate_degrees = kwargs.pop("tessellate_degrees", 1)
-        central_meridian = kwargs.pop("central_meridian", None)
-        if central_meridian is None:
-            central_meridian = _meridian_from_ax(ax)
-
-        gdf = self.get_misc_boundaries(
-            central_meridian=central_meridian,
-            tessellate_degrees=tessellate_degrees,
+        return self.plot_feature(
+            ax,
+            self.other,
+            feature_name="misc_boundaries",
+            facecolor="none",
+            edgecolor=color,
+            **kwargs,
         )
-        if hasattr(ax, "projection"):
-            gdf = _clean_polygons(data=gdf, projection=ax.projection)
-        else:
-            kwargs["transform"] = self.base_projection
-        return gdf.plot(ax=ax, facecolor="none", edgecolor=color, **kwargs)
 
     def plot_subduction_teeth_deprecated(
         self, ax, spacing=0.1, size=2.0, aspect=1, color="black", **kwargs
@@ -1976,1209 +1442,301 @@ class PlotTopologies(object):
             quiver = ax.quiver(X, Y, U, V, transform=self.base_projection, **kwargs)
         return quiver
 
+    @validate_reconstruction_time
+    @append_docstring(GET_DATE_DOCSTRING.format("continental_rifts"))
     def get_continental_rifts(
         self,
         central_meridian=0.0,
         tessellate_degrees=None,
     ):
-        """Create a geopandas.GeoDataFrame object containing geometries of reconstructed contiental rift lines.
-
-        Notes
-        -----
-        The `continental_rifts` needed to produce the GeoDataFrame are automatically constructed if the optional `time`
-        parameter is passed to the `PlotTopologies` object before calling this function. `time` can be passed
-        either when `PlotTopologies` is first called...
-
-            gplot = gplately.PlotTopologies(..., time=100,...)
-
-        or anytime afterwards, by setting:
-
-            time = 100 #Ma
-            gplot.time = time
-
-        ...after which this function can be re-run. Once the `continental_rifts` are reconstructed, they are
-        converted into Shapely lines whose coordinates are passed to a geopandas GeoDataFrame.
-
-        Returns
-        -------
-        gdf : instance of <geopandas.GeoDataFrame>
-            A pandas.DataFrame that has a column with `continental_rifts` geometry.
-        central_meridian : float
-            Central meridian around which to perform wrapping; default: 0.0.
-        tessellate_degrees : float or None
-            If provided, geometries will be tessellated to this resolution prior
-            to wrapping.
-
-        Raises
-        ------
-        ValueError
-            If the optional `time` parameter has not been passed to `PlotTopologies`. This is needed to construct
-            `continental_rifts` to the requested `time` and thus populate the GeoDataFrame.
-        """
-        if self._time is None:
-            raise ValueError(
-                "No continental rifts have been resolved. Set `PlotTopologies.time` to construct them."
-            )
-
-        if self.continental_rifts is None:
-            raise ValueError("No continental rifts passed to PlotTopologies.")
-
-        continental_rift_lines = shapelify_feature_lines(
+        """Create a geopandas.GeoDataFrame object containing geometries of reconstructed contiental rift lines."""
+        return self.get_feature(
             self.continental_rifts,
             central_meridian=central_meridian,
             tessellate_degrees=tessellate_degrees,
         )
-        gdf = gpd.GeoDataFrame(
-            {"geometry": continental_rift_lines}, geometry="geometry"
-        )
-        return gdf
 
+    @append_docstring(PLOT_DOCSTRING)
     def plot_continental_rifts(self, ax, color="black", **kwargs):
-        """Plot continental rifts on a standard map projection.
-
-        Parameters
-        ----------
-        ax : instance of <cartopy.mpl.geoaxes.GeoAxes> or <cartopy.mpl.geoaxes.GeoAxesSubplot>
-            A subclass of `matplotlib.axes.Axes` which represents a map Projection.
-            The map should be set at a particular Cartopy projection.
-
-        color : str, default=’black’
-            The colour of the trench lines. By default, it is set to black.
-
-        **kwargs :
-            Keyword arguments for parameters such as `alpha`, etc.
-            for plotting trench geometries.
-            See `Matplotlib` keyword arguments
-            [here](https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html).
-
-        Returns
-        -------
-        ax : instance of <geopandas.GeoDataFrame.plot>
-            A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map
-            with continental rifts plotted onto the chosen map projection.
-        """
-        if "transform" in kwargs.keys():
-            warnings.warn(
-                "'transform' keyword argument is ignored by PlotTopologies",
-                UserWarning,
-            )
-            kwargs.pop("transform")
-        tessellate_degrees = kwargs.pop("tessellate_degrees", None)
-        central_meridian = kwargs.pop("central_meridian", None)
-        if central_meridian is None:
-            central_meridian = _meridian_from_ax(ax)
-
-        gdf = self.get_continental_rifts(
-            central_meridian=central_meridian,
-            tessellate_degrees=tessellate_degrees,
+        """Plot continental rifts on a standard map projection."""
+        return self.plot_feature(
+            ax,
+            self.continental_rifts,
+            feature_name="continental_rifts",
+            facecolor="none",
+            edgecolor=color,
+            **kwargs,
         )
-        if hasattr(ax, "projection"):
-            gdf = _clean_polygons(data=gdf, projection=ax.projection)
-        else:
-            kwargs["transform"] = self.base_projection
-        return gdf.plot(ax=ax, facecolor="none", edgecolor=color, **kwargs)
 
+    @validate_reconstruction_time
+    @append_docstring(GET_DATE_DOCSTRING.format("faults"))
     def get_faults(self, central_meridian=0.0, tessellate_degrees=None):
-        """Create a geopandas.GeoDataFrame object containing geometries of reconstructed fault lines.
-
-        Notes
-        -----
-        The `faults` needed to produce the GeoDataFrame are automatically constructed if the optional `time`
-        parameter is passed to the `PlotTopologies` object before calling this function. `time` can be passed
-        either when `PlotTopologies` is first called...
-
-            gplot = gplately.PlotTopologies(..., time=100,...)
-
-        or anytime afterwards, by setting:
-
-            time = 100 #Ma
-            gplot.time = time
-
-        ...after which this function can be re-run. Once the `faults` are reconstructed, they are
-        converted into Shapely lines whose coordinates are passed to a geopandas GeoDataFrame.
-
-        Returns
-        -------
-        gdf : instance of <geopandas.GeoDataFrame>
-            A pandas.DataFrame that has a column with `faults` geometry.
-        central_meridian : float
-            Central meridian around which to perform wrapping; default: 0.0.
-        tessellate_degrees : float or None
-            If provided, geometries will be tessellated to this resolution prior
-            to wrapping.
-
-        Raises
-        ------
-        ValueError
-            If the optional `time` parameter has not been passed to `PlotTopologies`. This is needed to construct
-            `faults` to the requested `time` and thus populate the GeoDataFrame.
-        """
-        if self._time is None:
-            raise ValueError(
-                "No faults have been resolved. Set `PlotTopologies.time` to construct them."
-            )
-
-        if self.faults is None:
-            raise ValueError("No faults passed to PlotTopologies.")
-
-        fault_lines = shapelify_feature_lines(
+        """Create a geopandas.GeoDataFrame object containing geometries of reconstructed fault lines."""
+        return self.get_feature(
             self.faults,
             central_meridian=central_meridian,
             tessellate_degrees=tessellate_degrees,
         )
-        gdf = gpd.GeoDataFrame({"geometry": fault_lines}, geometry="geometry")
-        return gdf
 
+    @append_docstring(PLOT_DOCSTRING)
     def plot_faults(self, ax, color="black", **kwargs):
-        """Plot faults on a standard map projection.
-
-        Parameters
-        ----------
-        ax : instance of <cartopy.mpl.geoaxes.GeoAxes> or <cartopy.mpl.geoaxes.GeoAxesSubplot>
-            A subclass of `matplotlib.axes.Axes` which represents a map Projection.
-            The map should be set at a particular Cartopy projection.
-
-        color : str, default=’black’
-            The colour of the trench lines. By default, it is set to black.
-
-        **kwargs :
-            Keyword arguments for parameters such as `alpha`, etc.
-            for plotting trench geometries.
-            See `Matplotlib` keyword arguments
-            [here](https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html).
-
-        Returns
-        -------
-        ax : instance of <geopandas.GeoDataFrame.plot>
-            A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map
-            with faults plotted onto the chosen map projection.
-        """
-        if "transform" in kwargs.keys():
-            warnings.warn(
-                "'transform' keyword argument is ignored by PlotTopologies",
-                UserWarning,
-            )
-            kwargs.pop("transform")
-        tessellate_degrees = kwargs.pop("tessellate_degrees", None)
-        central_meridian = kwargs.pop("central_meridian", None)
-        if central_meridian is None:
-            central_meridian = _meridian_from_ax(ax)
-
-        gdf = self.get_faults(
-            central_meridian=central_meridian,
-            tessellate_degrees=tessellate_degrees,
+        """Plot faults on a standard map projection."""
+        return self.plot_feature(
+            ax,
+            self.faults,
+            feature_name="faults",
+            facecolor="none",
+            edgecolor=color,
+            **kwargs,
         )
-        if hasattr(ax, "projection"):
-            gdf = _clean_polygons(data=gdf, projection=ax.projection)
-        else:
-            kwargs["transform"] = self.base_projection
-        return gdf.plot(ax=ax, facecolor="none", edgecolor=color, **kwargs)
 
+    @validate_reconstruction_time
+    @append_docstring(GET_DATE_DOCSTRING.format("fracture_zones"))
     def get_fracture_zones(self, central_meridian=0.0, tessellate_degrees=None):
-        """Create a geopandas.GeoDataFrame object containing geometries of reconstructed fracture zone lines.
-
-        Notes
-        -----
-        The `fracture_zones` needed to produce the GeoDataFrame are automatically constructed if the optional `time`
-        parameter is passed to the `PlotTopologies` object before calling this function. `time` can be passed
-        either when `PlotTopologies` is first called...
-
-            gplot = gplately.PlotTopologies(..., time=100,...)
-
-        or anytime afterwards, by setting:
-
-            time = 100 #Ma
-            gplot.time = time
-
-        ...after which this function can be re-run. Once the `fracture_zones` are reconstructed, they are
-        converted into Shapely lines whose coordinates are passed to a geopandas GeoDataFrame.
-
-        Returns
-        -------
-        gdf : instance of <geopandas.GeoDataFrame>
-            A pandas.DataFrame that has a column with `fracture_zones` geometry.
-        central_meridian : float
-            Central meridian around which to perform wrapping; default: 0.0.
-        tessellate_degrees : float or None
-            If provided, geometries will be tessellated to this resolution prior
-            to wrapping.
-
-        Raises
-        ------
-        ValueError
-            If the optional `time` parameter has not been passed to `PlotTopologies`. This is needed to construct
-            `fracture_zones` to the requested `time` and thus populate the GeoDataFrame.
-        """
-        if self._time is None:
-            raise ValueError(
-                "No fracture zones have been resolved. Set `PlotTopologies.time` to construct them."
-            )
-
-        if self.fracture_zones is None:
-            raise ValueError("No fracture zones passed to PlotTopologies.")
-
-        fracture_zone_lines = shapelify_feature_lines(
+        """Create a geopandas.GeoDataFrame object containing geometries of reconstructed fracture zone lines."""
+        return self.get_feature(
             self.fracture_zones,
             central_meridian=central_meridian,
             tessellate_degrees=tessellate_degrees,
         )
-        gdf = gpd.GeoDataFrame({"geometry": fracture_zone_lines}, geometry="geometry")
-        return gdf
 
+    @append_docstring(PLOT_DOCSTRING)
     def plot_fracture_zones(self, ax, color="black", **kwargs):
-        """Plot fracture zones on a standard map projection.
-
-        Parameters
-        ----------
-        ax : instance of <cartopy.mpl.geoaxes.GeoAxes> or <cartopy.mpl.geoaxes.GeoAxesSubplot>
-            A subclass of `matplotlib.axes.Axes` which represents a map Projection.
-            The map should be set at a particular Cartopy projection.
-
-        color : str, default=’black’
-            The colour of the trench lines. By default, it is set to black.
-
-        **kwargs :
-            Keyword arguments for parameters such as `alpha`, etc.
-            for plotting trench geometries.
-            See `Matplotlib` keyword arguments
-            [here](https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html).
-
-        Returns
-        -------
-        ax : instance of <geopandas.GeoDataFrame.plot>
-            A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map
-            with fracture zones plotted onto the chosen map projection.
-        """
-        if "transform" in kwargs.keys():
-            warnings.warn(
-                "'transform' keyword argument is ignored by PlotTopologies",
-                UserWarning,
-            )
-            kwargs.pop("transform")
-        tessellate_degrees = kwargs.pop("tessellate_degrees", None)
-        central_meridian = kwargs.pop("central_meridian", None)
-        if central_meridian is None:
-            central_meridian = _meridian_from_ax(ax)
-
-        gdf = self.get_fracture_zones(
-            central_meridian=central_meridian,
-            tessellate_degrees=tessellate_degrees,
+        """Plot fracture zones on a standard map projection."""
+        return self.plot_feature(
+            ax,
+            self.fracture_zones,
+            feature_name="fracture_zones",
+            facecolor="none",
+            edgecolor=color,
+            **kwargs,
         )
-        if hasattr(ax, "projection"):
-            gdf = _clean_polygons(data=gdf, projection=ax.projection)
-        else:
-            kwargs["transform"] = self.base_projection
-        return gdf.plot(ax=ax, facecolor="none", edgecolor=color, **kwargs)
 
+    @validate_reconstruction_time
+    @append_docstring(GET_DATE_DOCSTRING.format("inferred_paleo_boundaries"))
     def get_inferred_paleo_boundaries(
         self,
         central_meridian=0.0,
         tessellate_degrees=None,
     ):
-        """Create a geopandas.GeoDataFrame object containing geometries of reconstructed inferred paleo boundary lines.
-
-        Notes
-        -----
-        The `inferred_paleo_boundaries` needed to produce the GeoDataFrame are automatically constructed if the optional `time`
-        parameter is passed to the `PlotTopologies` object before calling this function. `time` can be passed
-        either when `PlotTopologies` is first called...
-
-            gplot = gplately.PlotTopologies(..., time=100,...)
-
-        or anytime afterwards, by setting:
-
-            time = 100 #Ma
-            gplot.time = time
-
-        ...after which this function can be re-run. Once the `inferred_paleo_boundaries` are reconstructed, they are
-        converted into Shapely lines whose coordinates are passed to a geopandas GeoDataFrame.
-
-        Returns
-        -------
-        gdf : instance of <geopandas.GeoDataFrame>
-            A pandas.DataFrame that has a column with `inferred_paleo_boundaries` geometry.
-        central_meridian : float
-            Central meridian around which to perform wrapping; default: 0.0.
-        tessellate_degrees : float or None
-            If provided, geometries will be tessellated to this resolution prior
-            to wrapping.
-
-        Raises
-        ------
-        ValueError
-            If the optional `time` parameter has not been passed to `PlotTopologies`. This is needed to construct
-            `inferred_paleo_boundaries` to the requested `time` and thus populate the GeoDataFrame.
-        """
-        if self._time is None:
-            raise ValueError(
-                "No inferred paleo boundaries have been resolved. Set `PlotTopologies.time` to construct them."
-            )
-
-        if self.inferred_paleo_boundaries is None:
-            raise ValueError("No inferred paleo boundaries passed to PlotTopologies.")
-
-        inferred_paleo_boundary_lines = shapelify_feature_lines(
+        """Create a geopandas.GeoDataFrame object containing geometries of reconstructed inferred paleo boundary lines."""
+        return self.get_feature(
             self.inferred_paleo_boundaries,
             central_meridian=central_meridian,
             tessellate_degrees=tessellate_degrees,
         )
-        gdf = gpd.GeoDataFrame(
-            {"geometry": inferred_paleo_boundary_lines}, geometry="geometry"
-        )
-        return gdf
 
+    @append_docstring(PLOT_DOCSTRING)
     def plot_inferred_paleo_boundaries(self, ax, color="black", **kwargs):
-        """Plot inferred paleo boundaries on a standard map projection.
-
-        Parameters
-        ----------
-        ax : instance of <cartopy.mpl.geoaxes.GeoAxes> or <cartopy.mpl.geoaxes.GeoAxesSubplot>
-            A subclass of `matplotlib.axes.Axes` which represents a map Projection.
-            The map should be set at a particular Cartopy projection.
-
-        color : str, default=’black’
-            The colour of the trench lines. By default, it is set to black.
-
-        **kwargs :
-            Keyword arguments for parameters such as `alpha`, etc.
-            for plotting trench geometries.
-            See `Matplotlib` keyword arguments
-            [here](https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html).
-
-        Returns
-        -------
-        ax : instance of <geopandas.GeoDataFrame.plot>
-            A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map
-            with inferred paleo boundaries plotted onto the chosen map projection.
-        """
-        if "transform" in kwargs.keys():
-            warnings.warn(
-                "'transform' keyword argument is ignored by PlotTopologies",
-                UserWarning,
-            )
-            kwargs.pop("transform")
-        tessellate_degrees = kwargs.pop("tessellate_degrees", None)
-        central_meridian = kwargs.pop("central_meridian", None)
-        if central_meridian is None:
-            central_meridian = _meridian_from_ax(ax)
-
-        gdf = self.get_inferred_paleo_boundaries(
-            central_meridian=central_meridian,
-            tessellate_degrees=tessellate_degrees,
+        """Plot inferred paleo boundaries on a standard map projection."""
+        return self.plot_feature(
+            ax,
+            self.inferred_paleo_boundaries,
+            feature_name="inferred_paleo_boundaries",
+            facecolor="none",
+            edgecolor=color,
+            **kwargs,
         )
-        if hasattr(ax, "projection"):
-            gdf = _clean_polygons(data=gdf, projection=ax.projection)
-        else:
-            kwargs["transform"] = self.base_projection
-        return gdf.plot(ax=ax, facecolor="none", edgecolor=color, **kwargs)
 
+    @validate_reconstruction_time
+    @append_docstring(GET_DATE_DOCSTRING.format("terrane_boundaries"))
     def get_terrane_boundaries(
         self,
         central_meridian=0.0,
         tessellate_degrees=None,
     ):
-        """Create a geopandas.GeoDataFrame object containing geometries of reconstructed terrane boundary lines.
-
-        Notes
-        -----
-        The `terrane_boundaries` needed to produce the GeoDataFrame are automatically constructed if the optional `time`
-        parameter is passed to the `PlotTopologies` object before calling this function. `time` can be passed
-        either when `PlotTopologies` is first called...
-
-            gplot = gplately.PlotTopologies(..., time=100,...)
-
-        or anytime afterwards, by setting:
-
-            time = 100 #Ma
-            gplot.time = time
-
-        ...after which this function can be re-run. Once the `terrane_boundaries` are reconstructed, they are
-        converted into Shapely lines whose coordinates are passed to a geopandas GeoDataFrame.
-
-        Returns
-        -------
-        gdf : instance of <geopandas.GeoDataFrame>
-            A pandas.DataFrame that has a column with `terrane_boundaries` geometry.
-        central_meridian : float
-            Central meridian around which to perform wrapping; default: 0.0.
-        tessellate_degrees : float or None
-            If provided, geometries will be tessellated to this resolution prior
-            to wrapping.
-
-        Raises
-        ------
-        ValueError
-            If the optional `time` parameter has not been passed to `PlotTopologies`. This is needed to construct
-            `terrane_boundaries` to the requested `time` and thus populate the GeoDataFrame.
-        """
-        if self._time is None:
-            raise ValueError(
-                "No terrane boundaries have been resolved. Set `PlotTopologies.time` to construct them."
-            )
-
-        if self.terrane_boundaries is None:
-            raise ValueError("No terrane boundaries passed to PlotTopologies.")
-
-        terrane_boundary_lines = shapelify_feature_lines(
+        """Create a geopandas.GeoDataFrame object containing geometries of reconstructed terrane boundary lines."""
+        return self.get_feature(
             self.terrane_boundaries,
             central_meridian=central_meridian,
             tessellate_degrees=tessellate_degrees,
         )
-        gdf = gpd.GeoDataFrame(
-            {"geometry": terrane_boundary_lines}, geometry="geometry"
-        )
-        return gdf
 
+    @append_docstring(PLOT_DOCSTRING)
     def plot_terrane_boundaries(self, ax, color="black", **kwargs):
-        """Plot terrane boundaries on a standard map projection.
-
-        Parameters
-        ----------
-        ax : instance of <cartopy.mpl.geoaxes.GeoAxes> or <cartopy.mpl.geoaxes.GeoAxesSubplot>
-            A subclass of `matplotlib.axes.Axes` which represents a map Projection.
-            The map should be set at a particular Cartopy projection.
-
-        color : str, default=’black’
-            The colour of the trench lines. By default, it is set to black.
-
-        **kwargs :
-            Keyword arguments for parameters such as `alpha`, etc.
-            for plotting trench geometries.
-            See `Matplotlib` keyword arguments
-            [here](https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html).
-
-        Returns
-        -------
-        ax : instance of <geopandas.GeoDataFrame.plot>
-            A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map
-            with terrane boundaries plotted onto the chosen map projection.
-        """
-        if "transform" in kwargs.keys():
-            warnings.warn(
-                "'transform' keyword argument is ignored by PlotTopologies",
-                UserWarning,
-            )
-            kwargs.pop("transform")
-        tessellate_degrees = kwargs.pop("tessellate_degrees", None)
-        central_meridian = kwargs.pop("central_meridian", None)
-        if central_meridian is None:
-            central_meridian = _meridian_from_ax(ax)
-
-        gdf = self.get_terrane_boundaries(
-            central_meridian=central_meridian,
-            tessellate_degrees=tessellate_degrees,
+        """Plot terrane boundaries on a standard map projection."""
+        return self.plot_feature(
+            ax,
+            self.terrane_boundaries,
+            feature_name="terrane_boundaries",
+            facecolor="none",
+            edgecolor=color,
+            **kwargs,
         )
-        if hasattr(ax, "projection"):
-            gdf = _clean_polygons(data=gdf, projection=ax.projection)
-        else:
-            kwargs["transform"] = self.base_projection
-        return gdf.plot(ax=ax, facecolor="none", edgecolor=color, **kwargs)
 
+    @validate_reconstruction_time
+    @append_docstring(GET_DATE_DOCSTRING.format("transitional_crusts"))
     def get_transitional_crusts(
         self,
         central_meridian=0.0,
         tessellate_degrees=None,
     ):
-        """Create a geopandas.GeoDataFrame object containing geometries of reconstructed transitional crust lines.
-
-        Notes
-        -----
-        The `transitional_crusts` needed to produce the GeoDataFrame are automatically constructed if the optional `time`
-        parameter is passed to the `PlotTopologies` object before calling this function. `time` can be passed
-        either when `PlotTopologies` is first called...
-
-            gplot = gplately.PlotTopologies(..., time=100,...)
-
-        or anytime afterwards, by setting:
-
-            time = 100 #Ma
-            gplot.time = time
-
-        ...after which this function can be re-run. Once the `transitional_crusts` are reconstructed, they are
-        converted into Shapely lines whose coordinates are passed to a geopandas GeoDataFrame.
-
-        Returns
-        -------
-        gdf : instance of <geopandas.GeoDataFrame>
-            A pandas.DataFrame that has a column with `transitional_crusts` geometry.
-        central_meridian : float
-            Central meridian around which to perform wrapping; default: 0.0.
-        tessellate_degrees : float or None
-            If provided, geometries will be tessellated to this resolution prior
-            to wrapping.
-
-        Raises
-        ------
-        ValueError
-            If the optional `time` parameter has not been passed to `PlotTopologies`. This is needed to construct
-            `transitional_crusts` to the requested `time` and thus populate the GeoDataFrame.
-        """
-        if self._time is None:
-            raise ValueError(
-                "No transitional crusts have been resolved. Set `PlotTopologies.time` to construct them."
-            )
-
-        if self.transitional_crusts is None:
-            raise ValueError("No transitional crusts passed to PlotTopologies.")
-
-        transitional_crust_lines = shapelify_feature_lines(
+        """Create a geopandas.GeoDataFrame object containing geometries of reconstructed transitional crust lines."""
+        return self.get_feature(
             self.transitional_crusts,
             central_meridian=central_meridian,
             tessellate_degrees=tessellate_degrees,
         )
-        gdf = gpd.GeoDataFrame(
-            {"geometry": transitional_crust_lines}, geometry="geometry"
-        )
-        return gdf
 
+    @append_docstring(PLOT_DOCSTRING)
     def plot_transitional_crusts(self, ax, color="black", **kwargs):
-        """Plot transitional crust on a standard map projection.
-
-        Parameters
-        ----------
-        ax : instance of <cartopy.mpl.geoaxes.GeoAxes> or <cartopy.mpl.geoaxes.GeoAxesSubplot>
-            A subclass of `matplotlib.axes.Axes` which represents a map Projection.
-            The map should be set at a particular Cartopy projection.
-
-        color : str, default=’black’
-            The colour of the trench lines. By default, it is set to black.
-
-        **kwargs :
-            Keyword arguments for parameters such as `alpha`, etc.
-            for plotting trench geometries.
-            See `Matplotlib` keyword arguments
-            [here](https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html).
-
-        Returns
-        -------
-        ax : instance of <geopandas.GeoDataFrame.plot>
-            A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map
-            with transitional crust plotted onto the chosen map projection.
-        """
-        if "transform" in kwargs.keys():
-            warnings.warn(
-                "'transform' keyword argument is ignored by PlotTopologies",
-                UserWarning,
-            )
-            kwargs.pop("transform")
-        tessellate_degrees = kwargs.pop("tessellate_degrees", None)
-        central_meridian = kwargs.pop("central_meridian", None)
-        if central_meridian is None:
-            central_meridian = _meridian_from_ax(ax)
-
-        gdf = self.get_transitional_crusts(
-            central_meridian=central_meridian,
-            tessellate_degrees=tessellate_degrees,
+        """Plot transitional crust on a standard map projection."""
+        return self.plot_feature(
+            ax,
+            self.transitional_crusts,
+            feature_name="transitional_crusts",
+            facecolor="none",
+            edgecolor=color,
+            **kwargs,
         )
-        if hasattr(ax, "projection"):
-            gdf = _clean_polygons(data=gdf, projection=ax.projection)
-        else:
-            kwargs["transform"] = self.base_projection
-        return gdf.plot(ax=ax, facecolor="none", edgecolor=color, **kwargs)
 
+    @validate_reconstruction_time
+    @append_docstring(GET_DATE_DOCSTRING.format("orogenic_belts"))
     def get_orogenic_belts(
         self,
         central_meridian=0.0,
         tessellate_degrees=None,
     ):
-        """Create a geopandas.GeoDataFrame object containing geometries of reconstructed orogenic belt lines.
-
-        Notes
-        -----
-        The `orogenic_belts` needed to produce the GeoDataFrame are automatically constructed if the optional `time`
-        parameter is passed to the `PlotTopologies` object before calling this function. `time` can be passed
-        either when `PlotTopologies` is first called...
-
-            gplot = gplately.PlotTopologies(..., time=100,...)
-
-        or anytime afterwards, by setting:
-
-            time = 100 #Ma
-            gplot.time = time
-
-        ...after which this function can be re-run. Once the `orogenic_belts` are reconstructed, they are
-        converted into Shapely lines whose coordinates are passed to a geopandas GeoDataFrame.
-
-        Returns
-        -------
-        gdf : instance of <geopandas.GeoDataFrame>
-            A pandas.DataFrame that has a column with `orogenic_belts` geometry.
-        central_meridian : float
-            Central meridian around which to perform wrapping; default: 0.0.
-        tessellate_degrees : float or None
-            If provided, geometries will be tessellated to this resolution prior
-            to wrapping.
-
-        Raises
-        ------
-        ValueError
-            If the optional `time` parameter has not been passed to `PlotTopologies`. This is needed to construct
-            `orogenic_belts` to the requested `time` and thus populate the GeoDataFrame.
-        """
-        if self._time is None:
-            raise ValueError(
-                "No orogenic belts have been resolved. Set `PlotTopologies.time` to construct them."
-            )
-
-        if self.orogenic_belts is None:
-            raise ValueError("No orogenic belts passed to PlotTopologies.")
-
-        orogenic_belt_lines = shapelify_feature_lines(
+        """Create a geopandas.GeoDataFrame object containing geometries of reconstructed orogenic belt lines."""
+        return self.get_feature(
             self.orogenic_belts,
             central_meridian=central_meridian,
             tessellate_degrees=tessellate_degrees,
         )
-        gdf = gpd.GeoDataFrame({"geometry": orogenic_belt_lines}, geometry="geometry")
-        return gdf
 
+    @append_docstring(PLOT_DOCSTRING)
     def plot_orogenic_belts(self, ax, color="black", **kwargs):
-        """Plot orogenic belts on a standard map projection.
-
-        Parameters
-        ----------
-        ax : instance of <cartopy.mpl.geoaxes.GeoAxes> or <cartopy.mpl.geoaxes.GeoAxesSubplot>
-            A subclass of `matplotlib.axes.Axes` which represents a map Projection.
-            The map should be set at a particular Cartopy projection.
-
-        color : str, default=’black’
-            The colour of the trench lines. By default, it is set to black.
-
-        **kwargs :
-            Keyword arguments for parameters such as `alpha`, etc.
-            for plotting trench geometries.
-            See `Matplotlib` keyword arguments
-            [here](https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html).
-
-        Returns
-        -------
-        ax : instance of <geopandas.GeoDataFrame.plot>
-            A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map
-            with orogenic belts plotted onto the chosen map projection.
-        """
-        if "transform" in kwargs.keys():
-            warnings.warn(
-                "'transform' keyword argument is ignored by PlotTopologies",
-                UserWarning,
-            )
-            kwargs.pop("transform")
-        tessellate_degrees = kwargs.pop("tessellate_degrees", None)
-        central_meridian = kwargs.pop("central_meridian", None)
-        if central_meridian is None:
-            central_meridian = _meridian_from_ax(ax)
-
-        gdf = self.get_orogenic_belts(
-            central_meridian=central_meridian,
-            tessellate_degrees=tessellate_degrees,
+        """Plot orogenic belts on a standard map projection."""
+        return self.plot_feature(
+            ax,
+            self.orogenic_belts,
+            feature_name="orogenic_belts",
+            facecolor="none",
+            edgecolor=color,
+            **kwargs,
         )
-        if hasattr(ax, "projection"):
-            gdf = _clean_polygons(data=gdf, projection=ax.projection)
-        else:
-            kwargs["transform"] = self.base_projection
-        return gdf.plot(ax=ax, facecolor="none", edgecolor=color, **kwargs)
 
+    @validate_reconstruction_time
+    @append_docstring(GET_DATE_DOCSTRING.format("sutures"))
     def get_sutures(self, central_meridian=0.0, tessellate_degrees=None):
-        """Create a geopandas.GeoDataFrame object containing geometries of reconstructed suture lines.
-
-        Notes
-        -----
-        The `sutures` needed to produce the GeoDataFrame are automatically constructed if the optional `time`
-        parameter is passed to the `PlotTopologies` object before calling this function. `time` can be passed
-        either when `PlotTopologies` is first called...
-
-            gplot = gplately.PlotTopologies(..., time=100,...)
-
-        or anytime afterwards, by setting:
-
-            time = 100 #Ma
-            gplot.time = time
-
-        ...after which this function can be re-run. Once the `sutures` are reconstructed, they are
-        converted into Shapely lines whose coordinates are passed to a geopandas GeoDataFrame.
-
-        Returns
-        -------
-        gdf : instance of <geopandas.GeoDataFrame>
-            A pandas.DataFrame that has a column with `sutures` geometry.
-        central_meridian : float
-            Central meridian around which to perform wrapping; default: 0.0.
-        tessellate_degrees : float or None
-            If provided, geometries will be tessellated to this resolution prior
-            to wrapping.
-
-        Raises
-        ------
-        ValueError
-            If the optional `time` parameter has not been passed to `PlotTopologies`. This is needed to construct
-            `sutures` to the requested `time` and thus populate the GeoDataFrame.
-        """
-        if self._time is None:
-            raise ValueError(
-                "No sutures have been resolved. Set `PlotTopologies.time` to construct them."
-            )
-
-        if self.sutures is None:
-            raise ValueError("No sutures passed to PlotTopologies.")
-
-        suture_lines = shapelify_feature_lines(
+        """Create a geopandas.GeoDataFrame object containing geometries of reconstructed suture lines."""
+        return self.get_feature(
             self.sutures,
             central_meridian=central_meridian,
             tessellate_degrees=tessellate_degrees,
         )
-        gdf = gpd.GeoDataFrame({"geometry": suture_lines}, geometry="geometry")
-        return gdf
 
+    @append_docstring(PLOT_DOCSTRING)
     def plot_sutures(self, ax, color="black", **kwargs):
-        """Plot sutures on a standard map projection.
-
-        Parameters
-        ----------
-        ax : instance of <cartopy.mpl.geoaxes.GeoAxes> or <cartopy.mpl.geoaxes.GeoAxesSubplot>
-            A subclass of `matplotlib.axes.Axes` which represents a map Projection.
-            The map should be set at a particular Cartopy projection.
-
-        color : str, default=’black’
-            The colour of the trench lines. By default, it is set to black.
-
-        **kwargs :
-            Keyword arguments for parameters such as `alpha`, etc.
-            for plotting trench geometries.
-            See `Matplotlib` keyword arguments
-            [here](https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html).
-
-        Returns
-        -------
-        ax : instance of <geopandas.GeoDataFrame.plot>
-            A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map
-            with sutures plotted onto the chosen map projection.
-        """
-        if "transform" in kwargs.keys():
-            warnings.warn(
-                "'transform' keyword argument is ignored by PlotTopologies",
-                UserWarning,
-            )
-            kwargs.pop("transform")
-        tessellate_degrees = kwargs.pop("tessellate_degrees", None)
-        central_meridian = kwargs.pop("central_meridian", None)
-        if central_meridian is None:
-            central_meridian = _meridian_from_ax(ax)
-
-        gdf = self.get_sutures(
-            central_meridian=central_meridian,
-            tessellate_degrees=tessellate_degrees,
+        """Plot sutures on a standard map projection."""
+        return self.plot_feature(
+            ax,
+            self.sutures,
+            feature_name="sutures",
+            facecolor="none",
+            edgecolor=color,
+            **kwargs,
         )
-        if hasattr(ax, "projection"):
-            gdf = _clean_polygons(data=gdf, projection=ax.projection)
-        else:
-            kwargs["transform"] = self.base_projection
-        return gdf.plot(ax=ax, facecolor="none", edgecolor=color, **kwargs)
 
+    @validate_reconstruction_time
+    @append_docstring(GET_DATE_DOCSTRING.format("continental_crusts"))
     def get_continental_crusts(
         self,
         central_meridian=0.0,
         tessellate_degrees=None,
     ):
-        """Create a geopandas.GeoDataFrame object containing geometries of reconstructed continental crust lines.
-
-        Notes
-        -----
-        The `continental_crusts` needed to produce the GeoDataFrame are automatically constructed if the optional `time`
-        parameter is passed to the `PlotTopologies` object before calling this function. `time` can be passed
-        either when `PlotTopologies` is first called...
-
-            gplot = gplately.PlotTopologies(..., time=100,...)
-
-        or anytime afterwards, by setting:
-
-            time = 100 #Ma
-            gplot.time = time
-
-        ...after which this function can be re-run. Once the `continental_crusts` are reconstructed, they are
-        converted into Shapely lines whose coordinates are passed to a geopandas GeoDataFrame.
-
-        Returns
-        -------
-        gdf : instance of <geopandas.GeoDataFrame>
-            A pandas.DataFrame that has a column with `continental_crusts` geometry.
-        central_meridian : float
-            Central meridian around which to perform wrapping; default: 0.0.
-        tessellate_degrees : float or None
-            If provided, geometries will be tessellated to this resolution prior
-            to wrapping.
-
-        Raises
-        ------
-        ValueError
-            If the optional `time` parameter has not been passed to `PlotTopologies`. This is needed to construct
-            `continental_crusts` to the requested `time` and thus populate the GeoDataFrame.
-        """
-        if self._time is None:
-            raise ValueError(
-                "No continental crust topologies have been resolved. Set `PlotTopologies.time` to construct them."
-            )
-
-        if self.continental_crusts is None:
-            raise ValueError(
-                "No continental crust topologies passed to PlotTopologies."
-            )
-
-        continental_crust_lines = shapelify_feature_lines(
+        """Create a geopandas.GeoDataFrame object containing geometries of reconstructed continental crust lines."""
+        return self.get_feature(
             self.continental_crusts,
             central_meridian=central_meridian,
             tessellate_degrees=tessellate_degrees,
         )
-        gdf = gpd.GeoDataFrame(
-            {"geometry": continental_crust_lines}, geometry="geometry"
-        )
-        return gdf
 
+    @append_docstring(PLOT_DOCSTRING)
     def plot_continental_crusts(self, ax, color="black", **kwargs):
-        """Plot continental crust lines on a standard map projection.
-
-        Parameters
-        ----------
-        ax : instance of <cartopy.mpl.geoaxes.GeoAxes> or <cartopy.mpl.geoaxes.GeoAxesSubplot>
-            A subclass of `matplotlib.axes.Axes` which represents a map Projection.
-            The map should be set at a particular Cartopy projection.
-
-        color : str, default=’black’
-            The colour of the trench lines. By default, it is set to black.
-
-        **kwargs :
-            Keyword arguments for parameters such as `alpha`, etc.
-            for plotting trench geometries.
-            See `Matplotlib` keyword arguments
-            [here](https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html).
-
-        Returns
-        -------
-        ax : instance of <geopandas.GeoDataFrame.plot>
-            A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map
-            with continental crust lines plotted onto the chosen map projection.
-        """
-        if "transform" in kwargs.keys():
-            warnings.warn(
-                "'transform' keyword argument is ignored by PlotTopologies",
-                UserWarning,
-            )
-            kwargs.pop("transform")
-        tessellate_degrees = kwargs.pop("tessellate_degrees", None)
-        central_meridian = kwargs.pop("central_meridian", None)
-        if central_meridian is None:
-            central_meridian = _meridian_from_ax(ax)
-
-        gdf = self.get_continental_crusts(
-            central_meridian=central_meridian,
-            tessellate_degrees=tessellate_degrees,
+        """Plot continental crust lines on a standard map projection."""
+        return self.plot_feature(
+            ax,
+            self.continental_crusts,
+            feature_name="continental_crusts",
+            facecolor="none",
+            edgecolor=color,
+            **kwargs,
         )
-        if hasattr(ax, "projection"):
-            gdf = _clean_polygons(data=gdf, projection=ax.projection)
-        else:
-            kwargs["transform"] = self.base_projection
-        return gdf.plot(ax=ax, facecolor="none", edgecolor=color, **kwargs)
 
+    @validate_reconstruction_time
+    @append_docstring(GET_DATE_DOCSTRING.format("extended_continental_crusts"))
     def get_extended_continental_crusts(
         self,
         central_meridian=0.0,
         tessellate_degrees=None,
     ):
-        """Create a geopandas.GeoDataFrame object containing geometries of reconstructed extended continental crust lines.
-
-        Notes
-        -----
-        The `extended_continental_crusts` needed to produce the GeoDataFrame are automatically constructed if the optional `time`
-        parameter is passed to the `PlotTopologies` object before calling this function. `time` can be passed
-        either when `PlotTopologies` is first called...
-
-            gplot = gplately.PlotTopologies(..., time=100,...)
-
-        or anytime afterwards, by setting:
-
-            time = 100 #Ma
-            gplot.time = time
-
-        ...after which this function can be re-run. Once the `extended_continental_crusts` are reconstructed, they are
-        converted into Shapely lines whose coordinates are passed to a geopandas GeoDataFrame.
-
-        Returns
-        -------
-        gdf : instance of <geopandas.GeoDataFrame>
-            A pandas.DataFrame that has a column with `extended_continental_crusts` geometry.
-        central_meridian : float
-            Central meridian around which to perform wrapping; default: 0.0.
-        tessellate_degrees : float or None
-            If provided, geometries will be tessellated to this resolution prior
-            to wrapping.
-
-        Raises
-        ------
-        ValueError
-            If the optional `time` parameter has not been passed to `PlotTopologies`. This is needed to construct
-            `extended_continental_crusts` to the requested `time` and thus populate the GeoDataFrame.
-        """
-        if self._time is None:
-            raise ValueError(
-                "No extended continental crust topologies have been resolved. Set `PlotTopologies.time` to construct them."
-            )
-
-        if self.extended_continental_crusts is None:
-            raise ValueError(
-                "No extended continental crust topologies passed to PlotTopologies."
-            )
-
-        extended_continental_crust_lines = shapelify_feature_lines(
+        """Create a geopandas.GeoDataFrame object containing geometries of reconstructed extended continental crust lines."""
+        return self.get_feature(
             self.extended_continental_crusts,
             central_meridian=central_meridian,
             tessellate_degrees=tessellate_degrees,
         )
-        gdf = gpd.GeoDataFrame(
-            {"geometry": extended_continental_crust_lines}, geometry="geometry"
-        )
-        return gdf
 
+    @append_docstring(PLOT_DOCSTRING)
     def plot_extended_continental_crusts(self, ax, color="black", **kwargs):
-        """Plot extended continental crust lines on a standard map projection.
-
-        Parameters
-        ----------
-        ax : instance of <cartopy.mpl.geoaxes.GeoAxes> or <cartopy.mpl.geoaxes.GeoAxesSubplot>
-            A subclass of `matplotlib.axes.Axes` which represents a map Projection.
-            The map should be set at a particular Cartopy projection.
-
-        color : str, default=’black’
-            The colour of the trench lines. By default, it is set to black.
-
-        **kwargs :
-            Keyword arguments for parameters such as `alpha`, etc.
-            for plotting trench geometries.
-            See `Matplotlib` keyword arguments
-            [here](https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html).
-
-        Returns
-        -------
-        ax : instance of <geopandas.GeoDataFrame.plot>
-            A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map
-            with extended continental crust lines plotted onto the chosen map projection.
-        """
-        if "transform" in kwargs.keys():
-            warnings.warn(
-                "'transform' keyword argument is ignored by PlotTopologies",
-                UserWarning,
-            )
-            kwargs.pop("transform")
-        tessellate_degrees = kwargs.pop("tessellate_degrees", None)
-        central_meridian = kwargs.pop("central_meridian", None)
-        if central_meridian is None:
-            central_meridian = _meridian_from_ax(ax)
-
-        gdf = self.get_extended_continental_crusts(
-            central_meridian=central_meridian,
-            tessellate_degrees=tessellate_degrees,
+        """Plot extended continental crust lines on a standard map projection."""
+        return self.plot_feature(
+            ax,
+            self.extended_continental_crusts,
+            feature_name="extended_continental_crusts",
+            facecolor="none",
+            edgecolor=color,
+            **kwargs,
         )
-        if hasattr(ax, "projection"):
-            gdf = _clean_polygons(data=gdf, projection=ax.projection)
-        else:
-            kwargs["transform"] = self.base_projection
-        return gdf.plot(ax=ax, facecolor="none", edgecolor=color, **kwargs)
 
+    @validate_reconstruction_time
+    @append_docstring(GET_DATE_DOCSTRING.format("slab_edges"))
     def get_passive_continental_boundaries(
         self,
         central_meridian=0.0,
         tessellate_degrees=None,
     ):
-        """Create a geopandas.GeoDataFrame object containing geometries of reconstructed passive continental boundary lines.
-
-        Notes
-        -----
-        The `passive_continental_boundaries` needed to produce the GeoDataFrame are automatically constructed if the optional `time`
-        parameter is passed to the `PlotTopologies` object before calling this function. `time` can be passed
-        either when `PlotTopologies` is first called...
-
-            gplot = gplately.PlotTopologies(..., time=100,...)
-
-        or anytime afterwards, by setting:
-
-            time = 100 #Ma
-            gplot.time = time
-
-        ...after which this function can be re-run. Once the `passive_continental_boundaries` are reconstructed, they are
-        converted into Shapely lines whose coordinates are passed to a geopandas GeoDataFrame.
-
-        Returns
-        -------
-        gdf : instance of <geopandas.GeoDataFrame>
-            A pandas.DataFrame that has a column with `passive_continental_boundaries` geometry.
-        central_meridian : float
-            Central meridian around which to perform wrapping; default: 0.0.
-        tessellate_degrees : float or None
-            If provided, geometries will be tessellated to this resolution prior
-            to wrapping.
-
-        Raises
-        ------
-        ValueError
-            If the optional `time` parameter has not been passed to `PlotTopologies`. This is needed to construct
-            `passive_continental_boundaries` to the requested `time` and thus populate the GeoDataFrame.
-        """
-        if self._time is None:
-            raise ValueError(
-                "No passive continental boundaries have been resolved. Set `PlotTopologies.time` to construct them."
-            )
-
-        if self.passive_continental_boundaries is None:
-            raise ValueError(
-                "No passive continental boundaries passed to PlotTopologies."
-            )
-
-        passive_continental_boundary_lines = shapelify_feature_lines(
+        """Create a geopandas.GeoDataFrame object containing geometries of reconstructed passive continental boundary lines."""
+        return self.get_feature(
             self.passive_continental_boundaries,
             central_meridian=central_meridian,
             tessellate_degrees=tessellate_degrees,
         )
-        gdf = gpd.GeoDataFrame(
-            {"geometry": passive_continental_boundary_lines}, geometry="geometry"
-        )
-        return gdf
 
+    @append_docstring(PLOT_DOCSTRING)
     def plot_passive_continental_boundaries(self, ax, color="black", **kwargs):
-        """Plot passive continental boundaries on a standard map projection.
-
-        Parameters
-        ----------
-        ax : instance of <cartopy.mpl.geoaxes.GeoAxes> or <cartopy.mpl.geoaxes.GeoAxesSubplot>
-            A subclass of `matplotlib.axes.Axes` which represents a map Projection.
-            The map should be set at a particular Cartopy projection.
-
-        color : str, default=’black’
-            The colour of the trench lines. By default, it is set to black.
-
-        **kwargs :
-            Keyword arguments for parameters such as `alpha`, etc.
-            for plotting trench geometries.
-            See `Matplotlib` keyword arguments
-            [here](https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html).
-
-        Returns
-        -------
-        ax : instance of <geopandas.GeoDataFrame.plot>
-            A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map
-            with passive continental boundaries plotted onto the chosen map projection.
-        """
-        if "transform" in kwargs.keys():
-            warnings.warn(
-                "'transform' keyword argument is ignored by PlotTopologies",
-                UserWarning,
-            )
-            kwargs.pop("transform")
-        tessellate_degrees = kwargs.pop("tessellate_degrees", None)
-        central_meridian = kwargs.pop("central_meridian", None)
-        if central_meridian is None:
-            central_meridian = _meridian_from_ax(ax)
-
-        gdf = self.get_passive_continental_boundaries(
-            central_meridian=central_meridian,
-            tessellate_degrees=tessellate_degrees,
+        """Plot passive continental boundaries on a standard map projection."""
+        return self.plot_feature(
+            ax,
+            self.passive_continental_boundaries,
+            feature_name="passive_continental_boundaries",
+            facecolor="none",
+            edgecolor=color,
+            **kwargs,
         )
-        if hasattr(ax, "projection"):
-            gdf = _clean_polygons(data=gdf, projection=ax.projection)
-        else:
-            kwargs["transform"] = self.base_projection
-        return gdf.plot(ax=ax, facecolor="none", edgecolor=color, **kwargs)
 
+    @validate_reconstruction_time
+    @append_docstring(GET_DATE_DOCSTRING.format("slab_edges"))
     def get_slab_edges(self, central_meridian=0.0, tessellate_degrees=None):
-        """Create a geopandas.GeoDataFrame object containing geometries of reconstructed slab edge lines.
-
-        Notes
-        -----
-        The `slab_edges` needed to produce the GeoDataFrame are automatically constructed if the optional `time`
-        parameter is passed to the `PlotTopologies` object before calling this function. `time` can be passed
-        either when `PlotTopologies` is first called...
-
-            gplot = gplately.PlotTopologies(..., time=100,...)
-
-        or anytime afterwards, by setting:
-
-            time = 100 #Ma
-            gplot.time = time
-
-        ...after which this function can be re-run. Once the `slab_edges` are reconstructed, they are
-        converted into Shapely lines whose coordinates are passed to a geopandas GeoDataFrame.
-
-        Returns
-        -------
-        gdf : instance of <geopandas.GeoDataFrame>
-            A pandas.DataFrame that has a column with `slab_edges` geometry.
-        central_meridian : float
-            Central meridian around which to perform wrapping; default: 0.0.
-        tessellate_degrees : float or None
-            If provided, geometries will be tessellated to this resolution prior
-            to wrapping.
-
-        Raises
-        ------
-        ValueError
-            If the optional `time` parameter has not been passed to `PlotTopologies`. This is needed to construct
-            `slab_edges` to the requested `time` and thus populate the GeoDataFrame.
-        """
-        if self._time is None:
-            raise ValueError(
-                "No slab edges have been resolved. Set `PlotTopologies.time` to construct them."
-            )
-
-        if self.slab_edges is None:
-            raise ValueError("No slab edges passed to PlotTopologies.")
-
-        slab_edge_lines = shapelify_feature_lines(
+        """Create a geopandas.GeoDataFrame object containing geometries of reconstructed slab edge lines."""
+        return self.get_feature(
             self.slab_edges,
             central_meridian=central_meridian,
             tessellate_degrees=tessellate_degrees,
         )
-        gdf = gpd.GeoDataFrame({"geometry": slab_edge_lines}, geometry="geometry")
-        return gdf
 
+    @append_docstring(PLOT_DOCSTRING)
     def plot_slab_edges(self, ax, color="black", **kwargs):
-        """Plot slab edges on a standard map projection.
-
-        Parameters
-        ----------
-        ax : instance of <cartopy.mpl.geoaxes.GeoAxes> or <cartopy.mpl.geoaxes.GeoAxesSubplot>
-            A subclass of `matplotlib.axes.Axes` which represents a map Projection.
-            The map should be set at a particular Cartopy projection.
-
-        color : str, default=’black’
-            The colour of the trench lines. By default, it is set to black.
-
-        **kwargs :
-            Keyword arguments for parameters such as `alpha`, etc.
-            for plotting trench geometries.
-            See `Matplotlib` keyword arguments
-            [here](https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html).
-
-        Returns
-        -------
-        ax : instance of <geopandas.GeoDataFrame.plot>
-            A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map
-            with slab edges plotted onto the chosen map projection.
-        """
-        if "transform" in kwargs.keys():
-            warnings.warn(
-                "'transform' keyword argument is ignored by PlotTopologies",
-                UserWarning,
-            )
-            kwargs.pop("transform")
-        tessellate_degrees = kwargs.pop("tessellate_degrees", None)
-        central_meridian = kwargs.pop("central_meridian", None)
-        if central_meridian is None:
-            central_meridian = _meridian_from_ax(ax)
-
-        gdf = self.get_slab_edges(
-            central_meridian=central_meridian,
-            tessellate_degrees=tessellate_degrees,
+        """Plot slab edges on a standard map projection."""
+        return self.plot_feature(
+            ax,
+            self.slab_edges,
+            feature_name="slab_edges",
+            facecolor="none",
+            edgecolor=color,
+            **kwargs,
         )
-        if hasattr(ax, "projection"):
-            gdf = _clean_polygons(data=gdf, projection=ax.projection)
-        else:
-            kwargs["transform"] = self.base_projection
-        return gdf.plot(ax=ax, facecolor="none", edgecolor=color, **kwargs)
 
     @validate_reconstruction_time
     @append_docstring(GET_DATE_DOCSTRING.format("misc_transforms"))
@@ -3200,6 +1758,7 @@ class PlotTopologies(object):
         return self.plot_feature(
             ax,
             self.misc_transforms,
+            feature_name="misc_transforms",
             facecolor="none",
             edgecolor=color,
             **kwargs,
@@ -3225,6 +1784,7 @@ class PlotTopologies(object):
         return self.plot_feature(
             ax,
             self.unclassified_features,
+            feature_name="unclassified_features",
             facecolor="none",
             edgecolor=color,
             **kwargs,
@@ -3381,11 +1941,11 @@ class PlotTopologies(object):
         horizontal lines being formed between polylines at longitudes of -180 and 180 degrees.
         Point features near the poles (-89 & 89 degree latitude) are also clipped to ensure
         compatibility with Cartopy.
-
         """
         return self.plot_feature(
             ax,
             self.ridges,
+            feature_name="ridges",
             facecolor="none",
             edgecolor=color,
             **kwargs,
