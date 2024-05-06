@@ -1335,6 +1335,10 @@ class SeafloorGrid(object):
             curr_points_including_inactive = (
                 topology_reconstruction.get_all_current_points()
             )
+            logger.debug(f"the number of current active points is :{len(curr_points)}")
+            logger.debug(
+                f"the number of all current  points is :{len(curr_points_including_inactive)}"
+            )
 
             # Collect latitudes and longitudes of currently ACTIVE points in the ocean basin
             curr_lat_lon_points = [point.to_lat_lon() for point in curr_points]
@@ -1428,6 +1432,10 @@ class SeafloorGrid(object):
                     "GPLATELY_DEBUG" in os.environ
                     and os.environ["GPLATELY_DEBUG"].lower() == "true"
                 ):
+                    seafloor_ages = gridding_input_dictionary["SEAFLOOR_AGE"]
+                    logger.debug(
+                        f"The max and min values of seafloor age are: {np.max(seafloor_ages)} - {np.min(seafloor_ages)} ({topology_reconstruction.get_current_time()}Ma)"
+                    )
                     save_age_grid_sample_points_to_gpml(
                         gridding_input_dictionary["CURRENT_LONGITUDES"],
                         gridding_input_dictionary["CURRENT_LATITUDES"],

@@ -6,7 +6,7 @@ import warnings
 from typing import Optional, Sequence, Union
 
 import pygplates
-from plate_model_manager import PlateModelManager
+from plate_model_manager import PlateModel, PlateModelManager
 
 from gplately import PlateReconstruction, PlotTopologies, SeafloorGrid
 
@@ -133,9 +133,9 @@ def add_parser(parser: argparse.ArgumentParser):
 
 __description__ = """Create age grids for a plate model.
 
-example usage: 
-                - gplately ag output -m muller2019 -e 0 -s 10
-                - gplately ag plate-model-repo/muller2019/Rotations/Muller_etal_2019_CombinedRotations.rot plate-model-repo/muller2019/Topologies/Muller_etal_2019_PlateBoundaries_DeformingNetworks.gpmlz output -c plate-model-repo/muller2019/ContinentalPolygons/Global_EarthByte_GPlates_PresentDay_ContinentalPolygons_2019_v1.shp -e 0 -s 10
+Example usage: 
+    - gplately ag output -m muller2019 -e 0 -s 10
+    - gplately ag plate-model-repo/muller2019/Rotations/Muller_etal_2019_CombinedRotations.rot plate-model-repo/muller2019/Topologies/Muller_etal_2019_PlateBoundaries_DeformingNetworks.gpmlz output -c plate-model-repo/muller2019/ContinentalPolygons/Global_EarthByte_GPlates_PresentDay_ContinentalPolygons_2019_v1.shp -e 0 -s 10
 """
 
 
@@ -158,8 +158,14 @@ def create_agegrids(
     """Create age grids for a plate model."""
 
     if model_name:
-        pm_manager = PlateModelManager()
-        plate_model = pm_manager.get_model(model_name, data_dir="plate-model-repo")
+        try:
+            plate_model = PlateModelManager().get_model(
+                model_name, data_dir="plate-model-repo"
+            )
+        except:
+            plate_model = PlateModel(
+                model_name, data_dir="plate-model-repo", readonly=True
+            )
 
         rotations = pygplates.FeaturesFunctionArgument(
             plate_model.get_rotation_model()
