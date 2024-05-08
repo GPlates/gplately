@@ -733,7 +733,6 @@ class PlotTopologies(object):
             ax,
             self.coastlines,
             feature_name="coastlines",
-            facecolor="none",
             edgecolor=color,
             **kwargs,
         )
@@ -766,7 +765,6 @@ class PlotTopologies(object):
             ax,
             self.continents,
             feature_name="continents",
-            facecolor="none",
             edgecolor=color,
             **kwargs,
         )
@@ -808,7 +806,6 @@ class PlotTopologies(object):
             ax,
             self.COBs,
             feature_name="continent_ocean_boundaries",
-            facecolor="none",
             edgecolor=color,
             **kwargs,
         )
