@@ -1615,7 +1615,7 @@ def _lat_lon_z_to_netCDF_time(
     unmasked_basename = f"{zval_name}_grid_unmasked_{time}Ma.nc"
     grid_basename = f"{zval_name}_grid_{time}Ma.nc"
     if file_collection is not None:
-        unmasked_basename = f"{file_collection}_{grid_basename}"
+        unmasked_basename = f"{file_collection}_{unmasked_basename}"
         grid_basename = f"{file_collection}_{grid_basename}"
     output_dir = os.path.join(save_directory, zval_name)
     Path(output_dir).mkdir(parents=True, exist_ok=True)
