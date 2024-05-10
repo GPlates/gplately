@@ -4,14 +4,14 @@ import sys
 import cartopy.crs as ccrs
 import matplotlib.pyplot as plt
 import numpy as np
+from common import MODEL_REPO_DIR, save_fig
 from matplotlib.gridspec import GridSpec
 from mpl_toolkits.axes_grid1 import make_axes_locatable
 from plate_model_manager import PlateModelManager
 
-sys.path.insert(0, "../..")
-from common import MODEL_REPO_DIR, save_fig
-
 import gplately
+
+print(gplately.__file__)
 
 
 def main(show=True):

@@ -665,7 +665,7 @@ class PlotTopologies(object):
         return gpd.GeoDataFrame({"geometry": shp}, geometry="geometry")
 
     @append_docstring(PLOT_DOCSTRING)
-    def plot_feature(self, ax, feature, feature_name="", **kwargs):
+    def plot_feature(self, ax, feature, feature_name="", color="black", **kwargs):
         """Plot pygplates.FeatureCollection  or pygplates.Feature onto a map."""
         if not feature:
             logger.warn(
@@ -673,6 +673,10 @@ class PlotTopologies(object):
             )
             return ax
         else:
+            if "edgecolor" not in kwargs.keys():
+                kwargs["edgecolor"] = color
+            if "facecolor" not in kwargs.keys():
+                kwargs["facecolor"] = "none"
             return self._plot_feature(ax, partial(self.get_feature, feature), **kwargs)
 
     def _plot_feature(self, ax, get_feature_func, **kwargs):
@@ -733,7 +737,7 @@ class PlotTopologies(object):
             ax,
             self.coastlines,
             feature_name="coastlines",
-            edgecolor=color,
+            color=color,
             **kwargs,
         )
 
@@ -765,7 +769,7 @@ class PlotTopologies(object):
             ax,
             self.continents,
             feature_name="continents",
-            edgecolor=color,
+            color=color,
             **kwargs,
         )
 
@@ -806,7 +810,7 @@ class PlotTopologies(object):
             ax,
             self.COBs,
             feature_name="continent_ocean_boundaries",
-            edgecolor=color,
+            color=color,
             **kwargs,
         )
 
