@@ -1,13 +1,9 @@
 #!/usr/bin/env python3
 
 import os
-import sys
-
-if "GPLATELY_DEBUG" in os.environ and os.environ["GPLATELY_DEBUG"].lower() == "true":
-    sys.path.insert(0, f"{os.path.dirname(os.path.realpath(__file__))}/../..")
-
 
 import pygplates as _pygplates
+from common import *
 
 import gplately
 

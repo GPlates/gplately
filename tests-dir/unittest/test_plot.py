@@ -1,17 +1,12 @@
 #!/usr/bin/env python3
 
-import os
 import sys
 
 import cartopy.crs as ccrs
 import matplotlib.pyplot as plt
 import numpy as np
-from plate_model_manager import PlateModel, PlateModelManager
-
-if "GPLATELY_DEBUG" in os.environ and os.environ["GPLATELY_DEBUG"].lower() == "true":
-    sys.path.insert(0, f"{os.path.dirname(os.path.realpath(__file__))}/../..")
-
 from common import MODEL_REPO_DIR, save_fig
+from plate_model_manager import PlateModel, PlateModelManager
 
 import gplately
 from gplately import PlateReconstruction, PlotTopologies
@@ -41,6 +36,7 @@ def main(show=True):
         test_model,
         coastlines=model.get_layer("Coastlines"),
         COBs=model.get_layer("COBs"),
+        continents=model.get_layer("ContinentalPolygons"),
         time=age,
     )
 
@@ -54,7 +50,7 @@ def main(show=True):
         "ridges_and_transforms": 0,
         "trenches": 0,
         "subduction_teeth": 0,
-        "ridges": 1,
+        "ridges": 0,
         "all_topologies": 0,
         "all_topological_sections": 0,
         "plate_polygon_by_id": 0,
@@ -74,8 +70,11 @@ def main(show=True):
         "continental_rifts": 0,
         "misc_boundaries": 0,
         "transforms": 0,
-        "continents": 0,
+        "continents": 1,
     }
+
+    gplot.plot_continents(ax, color="grey", facecolor="0.8")
+    gplot.plot_coastlines(ax, edgecolor="blue", facecolor="0.5")
 
     for key in plot_flag:
         if key == "plate_polygon_by_id":

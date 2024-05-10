@@ -35,3 +35,17 @@ def turn_on_debug_logging():
     for h in ptt_logger.handlers:
         h.setLevel(logging.DEBUG)
         h.setFormatter(debug_formatter)
+
+    gplately_logger.debug("The GPlately debug logging has been turned on.")
+
+
+def get_debug_level():
+    if "GPLATELY_DEBUG" in os.environ:
+        if os.environ["GPLATELY_DEBUG"].lower() == "true":
+            return 1
+        try:
+            return int(os.environ["GPLATELY_DEBUG"])
+        except:
+            return 0
+    else:
+        return 0

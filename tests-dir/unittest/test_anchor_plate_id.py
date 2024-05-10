@@ -4,12 +4,12 @@ import sys
 
 import cartopy.crs as ccrs
 import matplotlib.pyplot as plt
+from common import MODEL_REPO_DIR, save_fig
 from plate_model_manager import PlateModelManager
 
-sys.path.insert(0, "../")
-from common import MODEL_REPO_DIR, save_fig
-
 import gplately
+
+print(gplately.__file__)
 
 MODEL_NAME = "Clennett2020"
 # MODEL_NAME = "Muller2019"

@@ -3,12 +3,12 @@ import sys
 
 import cartopy.crs as ccrs
 import matplotlib.pyplot as plt
-import numpy as np
 from common import MODEL_REPO_DIR, save_fig
 from plate_model_manager import PlateModelManager
 
-sys.path.insert(0, "../..")
 import gplately
+
+print(gplately.__file__)
 
 
 def main(show=True):
