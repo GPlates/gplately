@@ -46,17 +46,17 @@ PLOT_DOCSTRING = """
             The map should be set at a particular Cartopy projection.
 
         color : str, default=’black’
-            The colour of the {0} lines. By default, it is set to black.
+            The colour of the `{0}` lines. By default, it is set to black.
 
         **kwargs :
-            Keyword arguments for parameters such as `alpha`, etc. for plotting {0} geometries.
+            Keyword arguments for parameters such as `alpha`, etc. for plotting `{0}` geometries.
             See `Matplotlib` keyword arguments [here](https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html).
 
         Returns
         -------
         ax : instance of <geopandas.GeoDataFrame.plot>
             A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map
-            with {0} features plotted onto the chosen map projection.
+            with `{0}` features plotted onto the chosen map projection.
 """
 
 GET_DATE_DOCSTRING = """
@@ -781,8 +781,7 @@ class PlotTopologies(object):
 
     @append_docstring(PLOT_DOCSTRING.format("continent ocean boundaries"))
     def plot_continent_ocean_boundaries(self, ax, color="black", **kwargs):
-        """Plot reconstructed continent-ocean boundary (COB) polygons onto a standard
-        map Projection.
+        """Plot reconstructed continent-ocean boundary (COB) polygons onto a standard map Projection.
 
         Notes
         -----
@@ -793,10 +792,8 @@ class PlotTopologies(object):
         `ax` using GeoPandas. Map presentation details (e.g. `facecolor`, `edgecolor`, `alpha`…)
         are permitted as keyword arguments.
 
-        These COBs are transformed into shapely
-        geometries and added onto the chosen map for a specific geological time (supplied to the
-        PlotTopologies object). Map presentation details (e.g. facecolor, edgecolor, alpha…)
-        are permitted.
+        These COBs are transformed into shapely geometries and added onto the chosen map for a specific geological time
+        (supplied to the PlotTopologies object). Map presentation details (e.g. facecolor, edgecolor, alpha…) are permitted.
         """
         return self.plot_feature(
             ax,

@@ -110,6 +110,7 @@ import logging
 import os
 import re
 import warnings
+from pathlib import Path
 
 import numpy as np
 import pandas as pd
@@ -352,8 +353,7 @@ class SeafloorGrid(object):
         final grids. If `grid_spacing` is provided, all grids will use it. If not,
         `grid_spacing` defaults to 0.1.
     subduction_collision_parameters : len-2 tuple of float, default (5.0, 10.0)
-        A 2-tuple of (threshold velocity delta in kms/my, threshold distance to boundary
-        per My in kms/my)
+        A 2-tuple of (threshold velocity delta in kms/my, threshold distance to boundary per My in kms/my)
     initial_ocean_mean_spreading_rate : float, default 75.
         A spreading rate to uniformly allocate to points that define the initial ocean
         basin. These points will have inaccurate ages, but most of them will be phased
@@ -373,8 +373,7 @@ class SeafloorGrid(object):
     continent_mask_filename : str
         An optional parameter pointing to the full path to a continental mask for each timestep.
         Assuming the time is in the filename, i.e. "/path/to/continent_mask_0Ma.nc", it should be
-        passed as "/path/to/continent_mask_{}Ma.nc" with curly brackets. Include decimal formatting
-        if needed.
+        passed as "/path/to/continent_mask_{}Ma.nc" with curly brackets. Include decimal formatting if needed.
     """
 
     def __init__(
@@ -384,7 +383,7 @@ class SeafloorGrid(object):
         max_time,
         min_time,
         ridge_time_step,
-        save_directory="agegrids",
+        save_directory: str = "agegrids",
         file_collection=None,
         refinement_levels=5,
         ridge_sampling=0.5,
@@ -396,22 +395,57 @@ class SeafloorGrid(object):
         zval_names=("SPREADING_RATE",),
         continent_mask_filename=None,
     ):
+
         # Provides a rotation model, topology features and reconstruction time for
         # the SeafloorGrid
         self.PlateReconstruction_object = PlateReconstruction_object
         self.rotation_model = self.PlateReconstruction_object.rotation_model
         self.topology_features = self.PlateReconstruction_object.topology_features
         self._PlotTopologies_object = PlotTopologies_object
-        save_directory = str(save_directory)
-        if not os.path.isdir(save_directory):
-            logger.info(
-                "Output directory does not exist; creating now: " + save_directory
-            )
-            os.makedirs(save_directory, exist_ok=True)
+
+        # create various folders for output files
         self.save_directory = save_directory
-        if file_collection is not None:
-            file_collection = str(file_collection)
+
+        self.zvalues_directory = os.path.join(self.save_directory, "zvalues")
+        Path(self.zvalues_directory).mkdir(parents=True, exist_ok=True)
+        self.zvalues_file_basename = "point_data_dataframe_{0}Ma.npz"
+
+        self.mor_directory = os.path.join(self.save_directory, "middle_ocean_ridges")
+        Path(self.mor_directory).mkdir(parents=True, exist_ok=True)
+        self.mor_file_basename = "MOR_plus_one_points_{:0.2f}.gpmlz"
+
+        self.continent_mask_directory = os.path.join(
+            self.save_directory, "continent_mask"
+        )
+        Path(self.continent_mask_directory).mkdir(parents=True, exist_ok=True)
+        self.continent_mask_file_basename = "continent_mask_{}Ma.nc"
+
+        self.gridding_input_directory = os.path.join(
+            self.save_directory, "gridding_input"
+        )
+        Path(self.gridding_input_directory).mkdir(parents=True, exist_ok=True)
+        self.gridding_input_basename = "gridding_input_{:0.1f}Ma.npz"
+
+        self.sample_points_directory = os.path.join(
+            self.save_directory, "sample_points"
+        )
+        Path(self.sample_points_directory).mkdir(parents=True, exist_ok=True)
+        self.sample_points_basename = "age_grid_sample_points_{0}_Ma.gpmlz"
+        self.sample_points_filename = os.path.join(
+            self.sample_points_directory, self.sample_points_basename
+        )
+
         self.file_collection = file_collection
+
+        if self.file_collection is not None:
+            gridding_basename = "{}_{}".format(
+                file_collection, self.gridding_input_basename
+            )
+        else:
+            gridding_basename = self.gridding_input_basename
+        self.gridding_input_filename = os.path.join(
+            self.gridding_input_directory, gridding_basename
+        )
 
         # Topological parameters
         self.refinement_levels = refinement_levels
@@ -552,6 +586,14 @@ class SeafloorGrid(object):
             _, self.percentage = _map_res_to_node_percentage(
                 self, self.continent_mask_filename
             )
+        else:
+            mask_basename = self.continent_mask_file_basename
+            if self.file_collection is not None:
+                mask_basename = "{}_{}".format(self.file_collection, mask_basename)
+            self.continent_mask_filename = os.path.join(
+                self.continent_mask_directory, mask_basename
+            )
+            self.percentage = 0.1
 
     # Allow SeafloorGrid time to be updated, and to update the internally-used
     # PlotTopologies' time attribute too. If PlotTopologies is used outside the
@@ -581,8 +623,7 @@ class SeafloorGrid(object):
     ):
         """At a given timestep, create a pandas dataframe holding all attributes of point features.
 
-        Rather than store z values as shapefile attributes, store them in a dataframe indexed by
-        feature ID.
+        Rather than store z values as shapefile attributes, store them in a dataframe indexed by feature ID.
         """
         # Turn the zval_ndarray into a numPy array
         zval_ndarray = np.array(zval_ndarray)
@@ -594,7 +635,7 @@ class SeafloorGrid(object):
         # Prepare the zval ndarray (can be of any shape) to be saved with default point data
         zvals_to_store = {}
 
-        # If only one zvalue (fow now, spreading rate)
+        # If only one zvalue (for now, spreading rate)
         if zval_ndarray.ndim == 1:
             zvals_to_store[self.zval_names[0]] = zval_ndarray
             data_to_store = [zvals_to_store[i] for i in zvals_to_store]
@@ -605,11 +646,15 @@ class SeafloorGrid(object):
                 ][i]
             data_to_store = [zvals_to_store[i] for i in zvals_to_store]
 
-        basename = "point_data_dataframe_{}Ma".format(time)
+        basename = self.zvalues_file_basename.format(time)
         if self.file_collection is not None:
             basename = "{}_{}".format(self.file_collection, basename)
-        filename = os.path.join(self.save_directory, basename)
-        np.savez_compressed(filename, FEATURE_ID=feature_id, *data_to_store)
+
+        np.savez_compressed(
+            os.path.join(self.zvalues_directory, basename),
+            FEATURE_ID=feature_id,
+            *data_to_store,
+        )
         return
 
     def create_initial_ocean_seed_points(self):
@@ -655,7 +700,7 @@ class SeafloorGrid(object):
             A feature collection of point objects on the ocean basin.
         """
 
-        if self.continent_mask_filename is None:
+        if not os.path.isfile(self.continent_mask_filename.format(self._max_time)):
             # Ensure COB terranes at max time have reconstruction IDs and valid times
             COB_polygons = ensure_polygon_geometry(
                 self._PlotTopologies_object.continents,
@@ -929,10 +974,10 @@ class SeafloorGrid(object):
             mor_points = pygplates.FeatureCollection(mor_point_features)
 
             # Write MOR points at `time` to gpmlz
-            basename = "MOR_plus_one_points_{:0.2f}.gpmlz".format(time)
+            basename = self.mor_file_basename.format(time)
             if self.file_collection is not None:
                 basename = "{}_{}".format(self.file_collection, basename)
-            mor_points.write(os.path.join(self.save_directory, basename))
+            mor_points.write(os.path.join(self.mor_directory, basename))
             # Make sure the max time dataframe is for the initial ocean points only
             if time != self._max_time:
                 self._collect_point_data_in_dataframe(
@@ -980,14 +1025,16 @@ class SeafloorGrid(object):
         get_mid_ocean_ridge_seedpoints() has been adapted from
         https://github.com/siwill22/agegrid-0.1/blob/master/automatic_age_grid_seeding.py#L117.
         """
-
+        logger.debug(self.mor_directory + "/" + self.mor_file_basename[:10] + "*")
         # If we mustn't overwrite existing files in the `save_directory`, check the status of MOR seeding
         # to know where to start/continue seeding
         if self.resume_from_checkpoints:
             # Check the last MOR seedpoint gpmlz file that was built
             checkpointed_MOR_seedpoints = [
                 s.split("/")[-1]
-                for s in glob.glob(self.save_directory + "/" + "*MOR_plus_one_points*")
+                for s in glob.glob(
+                    self.mor_directory + "/" + self.mor_file_basename[:10] + "*"
+                )
             ]
             try:
                 # -2 as an index accesses the age (float type), safeguards against identifying numbers in the SeafloorGrid.file_collection string
@@ -1038,6 +1085,13 @@ class SeafloorGrid(object):
             )
 
         for time in time_array:
+            mask_fn = self.continent_mask_filename.format(time)
+            if os.path.isfile(mask_fn):
+                logger.info(
+                    f"Continent mask file exists and will not create again.\n{mask_fn}"
+                )
+                continue
+
             self._PlotTopologies_object.time = time
             geoms = self._PlotTopologies_object.continents
             final_grid = grids.rasterise(
@@ -1049,18 +1103,10 @@ class SeafloorGrid(object):
             )
             final_grid[np.isnan(final_grid)] = 0.0
 
-            output_basename = "continent_mask_{}Ma.nc".format(time)
-            if self.file_collection is not None:
-                output_basename = "{}_{}".format(
-                    self.file_collection,
-                    output_basename,
-                )
-            output_filename = os.path.join(
-                self.save_directory,
-                output_basename,
-            )
             grids.write_netcdf_grid(
-                output_filename, final_grid, extent=[-180, 180, -90, 90]
+                self.continent_mask_filename.format(time),
+                final_grid,
+                extent=[-180, 180, -90, 90],
             )
             logger.info(f"Finished building a continental mask at {time} Ma!")
 
@@ -1097,7 +1143,11 @@ class SeafloorGrid(object):
             # Check the last continental mask that could be built
             checkpointed_continental_masks = [
                 s.split("/")[-1]
-                for s in glob.glob(self.save_directory + "/" + "*continent_mask*")
+                for s in glob.glob(
+                    self.continent_mask_directory
+                    + "/"
+                    + self.continent_mask_file_basename.format("*")
+                )
             ]
             try:
                 # -2 as an index accesses the age (float type), safeguards against identifying numbers in the SeafloorGrid.file_collection string
@@ -1140,11 +1190,10 @@ class SeafloorGrid(object):
 
     def _extract_zvalues_from_npz_to_ndarray(self, featurecollection, time):
         # NPZ file of seedpoint z values that emerged at this time
-        basename = "point_data_dataframe_{}Ma.npz".format(time)
+        basename = self.zvalues_file_basename.format(time)
         if self.file_collection is not None:
             basename = "{}_{}".format(self.file_collection, basename)
-        filename = os.path.join(self.save_directory, basename)
-        loaded_npz = np.load(filename)
+        loaded_npz = np.load(os.path.join(self.zvalues_directory, basename))
 
         curr_zvalues = np.empty([len(featurecollection), len(self.zval_names)])
         for i in range(len(self.zval_names)):
@@ -1181,12 +1230,7 @@ class SeafloorGrid(object):
         # - seeding was completed but the subsequent gridding input creation was interrupted,
         # seeding is assumed completed and skipped. The workflow automatically proceeds to re-gridding.
 
-        if self.continent_mask_filename is None:
-            self.build_all_continental_masks()
-        else:
-            logger.info(
-                "Continent masks passed to SeafloorGrid - skipping continental mask generation!"
-            )
+        self.build_all_continental_masks()
 
         self.build_all_MOR_seedpoints()
 
@@ -1220,12 +1264,13 @@ class SeafloorGrid(object):
             # Otherwise, we'd be preparing MOR points and their z values
             else:
                 # GPMLZ file of MOR seedpoints
-                basename = "MOR_plus_one_points_{:0.2f}.gpmlz".format(time)
+                basename = self.mor_file_basename.format(time)
                 if self.file_collection is not None:
                     basename = "{}_{}".format(self.file_collection, basename)
-                filename = os.path.join(self.save_directory, basename)
-                features = pygplates.FeatureCollection(filename)
 
+                features = pygplates.FeatureCollection(
+                    os.path.join(self.mor_directory, basename)
+                )
                 for feature in features:
                     if feature.get_valid_time()[0] < self.time_array[0]:
                         active_points.append(feature.get_geometry())
@@ -1275,26 +1320,13 @@ class SeafloorGrid(object):
             ]
         )
         # In addition to the default subduction detection, also detect continental collisions
-        # Use the input continent mask if it is provided.
-        if self.continent_mask_filename is not None:
-            collision_spec = reconstruction._ContinentCollision(
-                # This filename string should not have a time formatted into it - this is
-                # taken care of later.
-                self.continent_mask_filename,
-                default_collision,
-                verbose=False,
-            )
-        else:
-            # If a continent mask is not provided, use the ones made.
-            mask_basename = r"continent_mask_{}Ma.nc"
-            if self.file_collection is not None:
-                mask_basename = str(self.file_collection) + "_" + mask_basename
-            mask_template = os.path.join(self.save_directory, mask_basename)
-            collision_spec = reconstruction._ContinentCollision(
-                mask_template,
-                default_collision,
-                verbose=False,
-            )
+        collision_spec = reconstruction._ContinentCollision(
+            # This filename string should not have a time formatted into it - this is
+            # taken care of later.
+            self.continent_mask_filename,
+            default_collision,
+            verbose=False,
+        )
 
         # Call the reconstruct by topologies object
         topology_reconstruction = reconstruction._ReconstructByTopologies(
@@ -1416,7 +1448,7 @@ class SeafloorGrid(object):
                         gridding_input_dictionary[i] for i in gridding_input_dictionary
                     ]
 
-                gridding_input_basename = "gridding_input_{:0.1f}Ma".format(
+                gridding_input_basename = self.gridding_input_basename.format(
                     topology_reconstruction.get_current_time()
                 )
                 if self.file_collection is not None:
@@ -1425,7 +1457,7 @@ class SeafloorGrid(object):
                         gridding_input_basename,
                     )
                 gridding_input_filename = os.path.join(
-                    self.save_directory, gridding_input_basename
+                    self.gridding_input_directory, gridding_input_basename
                 )
 
                 # save debug file
@@ -1439,7 +1471,7 @@ class SeafloorGrid(object):
                         gridding_input_dictionary["CURRENT_LATITUDES"],
                         gridding_input_dictionary["SEAFLOOR_AGE"],
                         topology_reconstruction.get_current_time(),
-                        self.save_directory,
+                        self.sample_points_filename,
                     )
 
                 np.savez_compressed(gridding_input_filename, *data_to_store)
@@ -1513,6 +1545,7 @@ class SeafloorGrid(object):
                     resY=self.spacingY,
                     unmasked=unmasked,
                     continent_mask_filename=self.continent_mask_filename,
+                    gridding_input_filename=self.gridding_input_filename,
                 )
         else:
             from joblib import delayed
@@ -1529,6 +1562,7 @@ class SeafloorGrid(object):
                     resY=self.spacingY,
                     unmasked=unmasked,
                     continent_mask_filename=self.continent_mask_filename,
+                    gridding_input_filename=self.gridding_input_filename,
                 )
                 for time in time_arr
             )
@@ -1543,17 +1577,13 @@ def _lat_lon_z_to_netCDF_time(
     extent,
     resX,
     resY,
+    continent_mask_filename: str,
+    gridding_input_filename: str,
     unmasked=False,
-    continent_mask_filename=None,
 ):
     # Read the gridding input made by ReconstructByTopologies:
-    gridding_basename = "gridding_input_{:0.1f}Ma.npz".format(time)
-    if file_collection is not None:
-        gridding_basename = "{}_{}".format(file_collection, gridding_basename)
-    gridding_input = os.path.join(save_directory, gridding_basename)
-
     # Use pandas to load in lons, lats and z values from npz files
-    npz = np.load(gridding_input)
+    npz = np.load(gridding_input_filename.format(time))
     curr_data = pd.DataFrame.from_dict(
         {item: npz[item] for item in npz.files}, orient="columns"
     )
@@ -1582,27 +1612,21 @@ def _lat_lon_z_to_netCDF_time(
     # neighbour interpolation
     Z = tools.griddata_sphere((lons, lats), zdata, (X, Y), method="nearest")
 
-    # Access continental grids from the save directory
-    if continent_mask_filename is None:
-        mask_basename = "continent_mask_{}Ma.nc"
-        if file_collection is not None:
-            mask_basename = "{}_{}".format(file_collection, mask_basename)
-        continent_mask_filename = os.path.join(save_directory, mask_basename)
-    continent_mask_filename = continent_mask_filename.format(time)
-
-    unmasked_basename = "{}_grid_unmasked_{}Ma.nc".format(zval_name, time)
-    grid_basename = "{}_grid_{}Ma.nc".format(zval_name, time)
+    unmasked_basename = f"{zval_name}_grid_unmasked_{time}Ma.nc"
+    grid_basename = f"{zval_name}_grid_{time}Ma.nc"
     if file_collection is not None:
-        unmasked_basename = "{}_{}".format(file_collection, unmasked_basename)
-        grid_basename = "{}_{}".format(file_collection, grid_basename)
-    grid_output_unmasked = os.path.join(save_directory, unmasked_basename)
-    grid_output = os.path.join(save_directory, grid_basename)
+        unmasked_basename = f"{file_collection}_{grid_basename}"
+        grid_basename = f"{file_collection}_{grid_basename}"
+    output_dir = os.path.join(save_directory, zval_name)
+    Path(output_dir).mkdir(parents=True, exist_ok=True)
+    grid_output_unmasked = os.path.join(output_dir, unmasked_basename)
+    grid_output = os.path.join(output_dir, grid_basename)
 
     if unmasked:
         grids.write_netcdf_grid(grid_output_unmasked, Z, extent=extent)
 
     # Identify regions in the grid in the continental mask
-    cont_mask = grids.Raster(data=continent_mask_filename)
+    cont_mask = grids.Raster(data=continent_mask_filename.format(time))
 
     # We need the continental mask to match the number of nodes
     # in the uniform grid defined above. This is important if we
@@ -1623,10 +1647,12 @@ def _lat_lon_z_to_netCDF_time(
         Z,
         extent=extent,
     )
-    logger.info(f"netCDF grids for {time} Ma complete!")
+    logger.info(f"{zval_name} netCDF grids for {time} Ma complete!")
 
 
-def save_age_grid_sample_points_to_gpml(lons, lats, seafloor_ages, paleo_time, outdir):
+def save_age_grid_sample_points_to_gpml(
+    lons, lats, seafloor_ages, paleo_time, output_filename
+):
     logger.debug(f"saving age grid sample points to gpml file -- {paleo_time} Ma")
     features = []
     for lon, lat, age in zip(lons, lats, seafloor_ages):
@@ -1635,6 +1661,4 @@ def save_age_grid_sample_points_to_gpml(lons, lats, seafloor_ages, paleo_time, o
         f.set_geometry(p)
         f.set_valid_time(age + paleo_time, paleo_time)
         features.append(f)
-    pygplates.FeatureCollection(features).write(
-        os.path.join(outdir, f"age_grid_sample_points_{paleo_time}_Ma.gpmlz")
-    )
+    pygplates.FeatureCollection(features).write(output_filename.format(paleo_time))
