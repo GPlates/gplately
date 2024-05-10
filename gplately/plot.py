@@ -46,19 +46,17 @@ PLOT_DOCSTRING = """
             The map should be set at a particular Cartopy projection.
 
         color : str, default=’black’
-            The colour of the ridge lines. By default, it is set to black.
+            The colour of the {0} lines. By default, it is set to black.
 
         **kwargs :
-            Keyword arguments for parameters such as `alpha`, etc. for
-            plotting ridge geometries.
-            See `Matplotlib` keyword arguments
-            [here](https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html).
+            Keyword arguments for parameters such as `alpha`, etc. for plotting {0} geometries.
+            See `Matplotlib` keyword arguments [here](https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html).
 
         Returns
         -------
         ax : instance of <geopandas.GeoDataFrame.plot>
             A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map
-            with ridge features plotted onto the chosen map projection.
+            with {0} features plotted onto the chosen map projection.
 """
 
 GET_DATE_DOCSTRING = """
@@ -664,7 +662,7 @@ class PlotTopologies(object):
         )
         return gpd.GeoDataFrame({"geometry": shp}, geometry="geometry")
 
-    @append_docstring(PLOT_DOCSTRING)
+    @append_docstring(PLOT_DOCSTRING.format("feature"))
     def plot_feature(self, ax, feature, feature_name="", color="black", **kwargs):
         """Plot pygplates.FeatureCollection  or pygplates.Feature onto a map."""
         if not feature:
@@ -719,19 +717,16 @@ class PlotTopologies(object):
             tessellate_degrees=tessellate_degrees,
         )
 
-    @append_docstring(PLOT_DOCSTRING)
+    @append_docstring(PLOT_DOCSTRING.format("coastlines"))
     def plot_coastlines(self, ax, color="black", **kwargs):
         """Plot reconstructed coastline polygons onto a standard map Projection.
 
         Notes
         -----
-        The `coastlines` for plotting are accessed from the `PlotTopologies` object's
-        `coastlines` attribute. These `coastlines` are reconstructed to the `time`
-        passed to the `PlotTopologies` object and converted into Shapely polylines. The
-        reconstructed `coastlines` are added onto the GeoAxes or GeoAxesSubplot map `ax` using
-        GeoPandas.
-        Map resentation details (e.g. facecolor, edgecolor, alpha…) are permitted as keyword
-        arguments.
+        The `coastlines` for plotting are accessed from the `PlotTopologies` object's `coastlines` attribute.
+        These `coastlines` are reconstructed to the `time` passed to the `PlotTopologies` object and converted into Shapely polylines.
+        The reconstructed `coastlines` are added onto the GeoAxes or GeoAxesSubplot map `ax` using GeoPandas.
+        Map resentation details (e.g. facecolor, edgecolor, alpha…) are permitted as keyword arguments.
         """
         return self.plot_feature(
             ax,
@@ -751,19 +746,16 @@ class PlotTopologies(object):
             tessellate_degrees=tessellate_degrees,
         )
 
-    @append_docstring(PLOT_DOCSTRING)
+    @append_docstring(PLOT_DOCSTRING.format("continents"))
     def plot_continents(self, ax, color="black", **kwargs):
         """Plot reconstructed continental polygons onto a standard map Projection.
 
         Notes
         -----
-        The `continents` for plotting are accessed from the `PlotTopologies` object's
-        `continents` attribute. These `continents` are reconstructed to the `time`
-        passed to the `PlotTopologies` object and converted into Shapely polygons.
-        The reconstructed `coastlines` are plotted onto the GeoAxes or GeoAxesSubplot map `ax` using
-        GeoPandas.
-        Map presentation details (e.g. facecolor, edgecolor, alpha…) are permitted as
-        keyword arguments.
+        The `continents` for plotting are accessed from the `PlotTopologies` object's `continents` attribute.
+        These `continents` are reconstructed to the `time` passed to the `PlotTopologies` object and converted into Shapely polygons.
+        The reconstructed `coastlines` are plotted onto the GeoAxes or GeoAxesSubplot map `ax` using GeoPandas.
+        Map presentation details (e.g. facecolor, edgecolor, alpha…) are permitted as keyword arguments.
         """
         return self.plot_feature(
             ax,
@@ -787,7 +779,7 @@ class PlotTopologies(object):
             tessellate_degrees=tessellate_degrees,
         )
 
-    @append_docstring(PLOT_DOCSTRING)
+    @append_docstring(PLOT_DOCSTRING.format("continent ocean boundaries"))
     def plot_continent_ocean_boundaries(self, ax, color="black", **kwargs):
         """Plot reconstructed continent-ocean boundary (COB) polygons onto a standard
         map Projection.
@@ -815,7 +807,7 @@ class PlotTopologies(object):
         )
 
     @validate_reconstruction_time
-    @append_docstring(GET_DATE_DOCSTRING.format("ridges_and_transforms"))
+    @append_docstring(GET_DATE_DOCSTRING.format("ridges and transforms"))
     def get_ridges_and_transforms(
         self,
         central_meridian=0.0,
@@ -829,7 +821,7 @@ class PlotTopologies(object):
         )
 
     @validate_topology_availability("ridges_and_transforms")
-    @append_docstring(PLOT_DOCSTRING)
+    @append_docstring(PLOT_DOCSTRING.format("ridges and transforms"))
     def plot_ridges_and_transforms(self, ax, color="black", **kwargs):
         """Plot reconstructed ridge & transform boundary polylines onto a standard map
         Projection.
@@ -870,7 +862,7 @@ class PlotTopologies(object):
         )
 
     @validate_topology_availability("transforms")
-    @append_docstring(PLOT_DOCSTRING)
+    @append_docstring(PLOT_DOCSTRING.format("transforms"))
     def plot_transforms(self, ax, color="black", **kwargs):
         """Plot reconstructed transform boundary polylines onto a standard map.
 
@@ -910,7 +902,7 @@ class PlotTopologies(object):
         )
 
     @validate_topology_availability("trenches")
-    @append_docstring(PLOT_DOCSTRING)
+    @append_docstring(PLOT_DOCSTRING.format("trenches"))
     def plot_trenches(self, ax, color="black", **kwargs):
         """Plot reconstructed subduction trench polylines onto a standard map
         Projection.
@@ -950,7 +942,7 @@ class PlotTopologies(object):
             tessellate_degrees=tessellate_degrees,
         )
 
-    @append_docstring(PLOT_DOCSTRING)
+    @append_docstring(PLOT_DOCSTRING.format("other"))
     def plot_misc_boundaries(self, ax, color="black", **kwargs):
         """Plot reconstructed miscellaneous plate boundary polylines onto a standard
         map Projection.
@@ -1444,7 +1436,7 @@ class PlotTopologies(object):
         return quiver
 
     @validate_reconstruction_time
-    @append_docstring(GET_DATE_DOCSTRING.format("continental_rifts"))
+    @append_docstring(GET_DATE_DOCSTRING.format("continental rifts"))
     def get_continental_rifts(
         self,
         central_meridian=0.0,
@@ -1457,7 +1449,7 @@ class PlotTopologies(object):
             tessellate_degrees=tessellate_degrees,
         )
 
-    @append_docstring(PLOT_DOCSTRING)
+    @append_docstring(PLOT_DOCSTRING.format("continental rifts"))
     def plot_continental_rifts(self, ax, color="black", **kwargs):
         """Plot continental rifts on a standard map projection."""
         return self.plot_feature(
@@ -1479,7 +1471,7 @@ class PlotTopologies(object):
             tessellate_degrees=tessellate_degrees,
         )
 
-    @append_docstring(PLOT_DOCSTRING)
+    @append_docstring(PLOT_DOCSTRING.format("faults"))
     def plot_faults(self, ax, color="black", **kwargs):
         """Plot faults on a standard map projection."""
         return self.plot_feature(
@@ -1492,7 +1484,7 @@ class PlotTopologies(object):
         )
 
     @validate_reconstruction_time
-    @append_docstring(GET_DATE_DOCSTRING.format("fracture_zones"))
+    @append_docstring(GET_DATE_DOCSTRING.format("fracture zones"))
     def get_fracture_zones(self, central_meridian=0.0, tessellate_degrees=None):
         """Create a geopandas.GeoDataFrame object containing geometries of reconstructed fracture zone lines."""
         return self.get_feature(
@@ -1501,7 +1493,7 @@ class PlotTopologies(object):
             tessellate_degrees=tessellate_degrees,
         )
 
-    @append_docstring(PLOT_DOCSTRING)
+    @append_docstring(PLOT_DOCSTRING.format("fracturezones"))
     def plot_fracture_zones(self, ax, color="black", **kwargs):
         """Plot fracture zones on a standard map projection."""
         return self.plot_feature(
@@ -1514,7 +1506,7 @@ class PlotTopologies(object):
         )
 
     @validate_reconstruction_time
-    @append_docstring(GET_DATE_DOCSTRING.format("inferred_paleo_boundaries"))
+    @append_docstring(GET_DATE_DOCSTRING.format("inferred paleo-boundaries"))
     def get_inferred_paleo_boundaries(
         self,
         central_meridian=0.0,
@@ -1527,7 +1519,7 @@ class PlotTopologies(object):
             tessellate_degrees=tessellate_degrees,
         )
 
-    @append_docstring(PLOT_DOCSTRING)
+    @append_docstring(PLOT_DOCSTRING.format("inferred paleo-boundaries"))
     def plot_inferred_paleo_boundaries(self, ax, color="black", **kwargs):
         """Plot inferred paleo boundaries on a standard map projection."""
         return self.plot_feature(
@@ -1540,7 +1532,7 @@ class PlotTopologies(object):
         )
 
     @validate_reconstruction_time
-    @append_docstring(GET_DATE_DOCSTRING.format("terrane_boundaries"))
+    @append_docstring(GET_DATE_DOCSTRING.format("terrane boundaries"))
     def get_terrane_boundaries(
         self,
         central_meridian=0.0,
@@ -1553,7 +1545,7 @@ class PlotTopologies(object):
             tessellate_degrees=tessellate_degrees,
         )
 
-    @append_docstring(PLOT_DOCSTRING)
+    @append_docstring(PLOT_DOCSTRING.format("terrane boundaries"))
     def plot_terrane_boundaries(self, ax, color="black", **kwargs):
         """Plot terrane boundaries on a standard map projection."""
         return self.plot_feature(
@@ -1566,7 +1558,7 @@ class PlotTopologies(object):
         )
 
     @validate_reconstruction_time
-    @append_docstring(GET_DATE_DOCSTRING.format("transitional_crusts"))
+    @append_docstring(GET_DATE_DOCSTRING.format("transitional crusts"))
     def get_transitional_crusts(
         self,
         central_meridian=0.0,
@@ -1579,7 +1571,7 @@ class PlotTopologies(object):
             tessellate_degrees=tessellate_degrees,
         )
 
-    @append_docstring(PLOT_DOCSTRING)
+    @append_docstring(PLOT_DOCSTRING.format("transitional crusts"))
     def plot_transitional_crusts(self, ax, color="black", **kwargs):
         """Plot transitional crust on a standard map projection."""
         return self.plot_feature(
@@ -1592,7 +1584,7 @@ class PlotTopologies(object):
         )
 
     @validate_reconstruction_time
-    @append_docstring(GET_DATE_DOCSTRING.format("orogenic_belts"))
+    @append_docstring(GET_DATE_DOCSTRING.format("orogenic belts"))
     def get_orogenic_belts(
         self,
         central_meridian=0.0,
@@ -1605,7 +1597,7 @@ class PlotTopologies(object):
             tessellate_degrees=tessellate_degrees,
         )
 
-    @append_docstring(PLOT_DOCSTRING)
+    @append_docstring(PLOT_DOCSTRING.format("orogenic belts"))
     def plot_orogenic_belts(self, ax, color="black", **kwargs):
         """Plot orogenic belts on a standard map projection."""
         return self.plot_feature(
@@ -1627,7 +1619,7 @@ class PlotTopologies(object):
             tessellate_degrees=tessellate_degrees,
         )
 
-    @append_docstring(PLOT_DOCSTRING)
+    @append_docstring(PLOT_DOCSTRING.format("sutures"))
     def plot_sutures(self, ax, color="black", **kwargs):
         """Plot sutures on a standard map projection."""
         return self.plot_feature(
@@ -1640,7 +1632,7 @@ class PlotTopologies(object):
         )
 
     @validate_reconstruction_time
-    @append_docstring(GET_DATE_DOCSTRING.format("continental_crusts"))
+    @append_docstring(GET_DATE_DOCSTRING.format("continental crusts"))
     def get_continental_crusts(
         self,
         central_meridian=0.0,
@@ -1653,7 +1645,7 @@ class PlotTopologies(object):
             tessellate_degrees=tessellate_degrees,
         )
 
-    @append_docstring(PLOT_DOCSTRING)
+    @append_docstring(PLOT_DOCSTRING.format("continental crusts"))
     def plot_continental_crusts(self, ax, color="black", **kwargs):
         """Plot continental crust lines on a standard map projection."""
         return self.plot_feature(
@@ -1666,7 +1658,7 @@ class PlotTopologies(object):
         )
 
     @validate_reconstruction_time
-    @append_docstring(GET_DATE_DOCSTRING.format("extended_continental_crusts"))
+    @append_docstring(GET_DATE_DOCSTRING.format("extended continental crusts"))
     def get_extended_continental_crusts(
         self,
         central_meridian=0.0,
@@ -1679,7 +1671,7 @@ class PlotTopologies(object):
             tessellate_degrees=tessellate_degrees,
         )
 
-    @append_docstring(PLOT_DOCSTRING)
+    @append_docstring(PLOT_DOCSTRING.format("extended continental crusts"))
     def plot_extended_continental_crusts(self, ax, color="black", **kwargs):
         """Plot extended continental crust lines on a standard map projection."""
         return self.plot_feature(
@@ -1692,7 +1684,7 @@ class PlotTopologies(object):
         )
 
     @validate_reconstruction_time
-    @append_docstring(GET_DATE_DOCSTRING.format("slab_edges"))
+    @append_docstring(GET_DATE_DOCSTRING.format("passive continental boundaries"))
     def get_passive_continental_boundaries(
         self,
         central_meridian=0.0,
@@ -1705,7 +1697,7 @@ class PlotTopologies(object):
             tessellate_degrees=tessellate_degrees,
         )
 
-    @append_docstring(PLOT_DOCSTRING)
+    @append_docstring(PLOT_DOCSTRING.format("passive continental boundaries"))
     def plot_passive_continental_boundaries(self, ax, color="black", **kwargs):
         """Plot passive continental boundaries on a standard map projection."""
         return self.plot_feature(
@@ -1718,7 +1710,7 @@ class PlotTopologies(object):
         )
 
     @validate_reconstruction_time
-    @append_docstring(GET_DATE_DOCSTRING.format("slab_edges"))
+    @append_docstring(GET_DATE_DOCSTRING.format("slab edges"))
     def get_slab_edges(self, central_meridian=0.0, tessellate_degrees=None):
         """Create a geopandas.GeoDataFrame object containing geometries of reconstructed slab edge lines."""
         return self.get_feature(
@@ -1727,7 +1719,7 @@ class PlotTopologies(object):
             tessellate_degrees=tessellate_degrees,
         )
 
-    @append_docstring(PLOT_DOCSTRING)
+    @append_docstring(PLOT_DOCSTRING.format("slab edges"))
     def plot_slab_edges(self, ax, color="black", **kwargs):
         """Plot slab edges on a standard map projection."""
         return self.plot_feature(
@@ -1740,7 +1732,7 @@ class PlotTopologies(object):
         )
 
     @validate_reconstruction_time
-    @append_docstring(GET_DATE_DOCSTRING.format("misc_transforms"))
+    @append_docstring(GET_DATE_DOCSTRING.format("misc transforms"))
     def get_misc_transforms(
         self,
         central_meridian=0.0,
@@ -1753,7 +1745,7 @@ class PlotTopologies(object):
             tessellate_degrees=tessellate_degrees,
         )
 
-    @append_docstring(PLOT_DOCSTRING)
+    @append_docstring(PLOT_DOCSTRING.format("misc transforms"))
     def plot_misc_transforms(self, ax, color="black", **kwargs):
         """Plot miscellaneous transform boundaries on a standard map projection."""
         return self.plot_feature(
@@ -1766,7 +1758,7 @@ class PlotTopologies(object):
         )
 
     @validate_reconstruction_time
-    @append_docstring(GET_DATE_DOCSTRING.format("unclassified_features"))
+    @append_docstring(GET_DATE_DOCSTRING.format("unclassified features"))
     def get_unclassified_features(
         self,
         central_meridian=0.0,
@@ -1779,7 +1771,7 @@ class PlotTopologies(object):
             tessellate_degrees=tessellate_degrees,
         )
 
-    @append_docstring(PLOT_DOCSTRING)
+    @append_docstring(PLOT_DOCSTRING.format("unclassified features"))
     def plot_unclassified_features(self, ax, color="black", **kwargs):
         """Plot GPML unclassified features on a standard map projection."""
         return self.plot_feature(
@@ -1830,7 +1822,7 @@ class PlotTopologies(object):
         return gdf
 
     @validate_topology_availability("all topologies")
-    @append_docstring(PLOT_DOCSTRING)
+    @append_docstring(PLOT_DOCSTRING.format("topologies"))
     def plot_all_topologies(self, ax, color="black", **kwargs):
         """Plot topological polygons and networks on a standard map projection."""
 
@@ -1902,7 +1894,7 @@ class PlotTopologies(object):
         return gdf
 
     @validate_topology_availability("all topological sections")
-    @append_docstring(PLOT_DOCSTRING)
+    @append_docstring(PLOT_DOCSTRING.format("topologies"))
     def plot_all_topological_sections(self, ax, color="black", **kwargs):
         """Plot all topologies on a standard map projection."""
 
@@ -1923,7 +1915,7 @@ class PlotTopologies(object):
         )
 
     @validate_topology_availability("ridges")
-    @append_docstring(PLOT_DOCSTRING)
+    @append_docstring(PLOT_DOCSTRING.format("ridges"))
     def plot_ridges(self, ax, color="black", **kwargs):
         """Plot reconstructed ridge polylines onto a standard map Projection.
 

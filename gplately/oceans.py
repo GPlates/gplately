@@ -117,6 +117,7 @@ import pygplates
 
 from . import grids, ptt, reconstruction, tools
 from .ptt import separate_ridge_transform_segments
+from .utils.log_utils import get_debug_level
 
 logger = logging.getLogger("gplately")
 
@@ -1428,10 +1429,7 @@ class SeafloorGrid(object):
                 )
 
                 # save debug file
-                if (
-                    "GPLATELY_DEBUG" in os.environ
-                    and os.environ["GPLATELY_DEBUG"].lower() == "true"
-                ):
+                if get_debug_level() > 100:
                     seafloor_ages = gridding_input_dictionary["SEAFLOOR_AGE"]
                     logger.debug(
                         f"The max and min values of seafloor age are: {np.max(seafloor_ages)} - {np.min(seafloor_ages)} ({topology_reconstruction.get_current_time()}Ma)"
