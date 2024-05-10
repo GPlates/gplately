@@ -134,7 +134,7 @@ def add_parser(parser: argparse.ArgumentParser):
 __description__ = """Create age grids for a plate model.
 
 Example usage: 
-    - gplately ag output -m muller2019 -e 0 -s 10
+    - gplately ag output -m merdith2021 -e 0 -s 10
     - gplately ag plate-model-repo/muller2019/Rotations/Muller_etal_2019_CombinedRotations.rot plate-model-repo/muller2019/Topologies/Muller_etal_2019_PlateBoundaries_DeformingNetworks.gpmlz output -c plate-model-repo/muller2019/ContinentalPolygons/Global_EarthByte_GPlates_PresentDay_ContinentalPolygons_2019_v1.shp -e 0 -s 10
 """
 
