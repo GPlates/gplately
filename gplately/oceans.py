@@ -406,13 +406,11 @@ class SeafloorGrid(object):
         # create various folders for output files
         self.save_directory = save_directory
 
-        self.zvalues_directory = os.path.join(self.save_directory, "zvalues_files")
+        self.zvalues_directory = os.path.join(self.save_directory, "zvalues")
         Path(self.zvalues_directory).mkdir(parents=True, exist_ok=True)
         self.zvalues_file_basename = "point_data_dataframe_{0}Ma.npz"
 
-        self.mor_directory = os.path.join(
-            self.save_directory, "middle_ocean_ridge_files"
-        )
+        self.mor_directory = os.path.join(self.save_directory, "middle_ocean_ridges")
         Path(self.mor_directory).mkdir(parents=True, exist_ok=True)
         self.mor_file_basename = "MOR_plus_one_points_{:0.2f}.gpmlz"
 
@@ -595,6 +593,7 @@ class SeafloorGrid(object):
             self.continent_mask_filename = os.path.join(
                 self.continent_mask_directory, mask_basename
             )
+            self.percentage = 0.1
 
     # Allow SeafloorGrid time to be updated, and to update the internally-used
     # PlotTopologies' time attribute too. If PlotTopologies is used outside the
@@ -1089,7 +1088,7 @@ class SeafloorGrid(object):
             mask_fn = self.continent_mask_filename.format(time)
             if os.path.isfile(mask_fn):
                 logger.info(
-                    f"Continent mask file exists and will not create again -- {mask_fn}"
+                    f"Continent mask file exists and will not create again.\n{mask_fn}"
                 )
                 continue
 
@@ -1613,22 +1612,21 @@ def _lat_lon_z_to_netCDF_time(
     # neighbour interpolation
     Z = tools.griddata_sphere((lons, lats), zdata, (X, Y), method="nearest")
 
-    # Access continental grids from the save directory
-    continent_mask_filename = continent_mask_filename.format(time)
-
-    unmasked_basename = "{}_grid_unmasked_{}Ma.nc".format(zval_name, time)
-    grid_basename = "{}_grid_{}Ma.nc".format(zval_name, time)
+    unmasked_basename = f"{zval_name}_grid_unmasked_{time}Ma.nc"
+    grid_basename = f"{zval_name}_grid_{time}Ma.nc"
     if file_collection is not None:
-        unmasked_basename = "{}_{}".format(file_collection, unmasked_basename)
-        grid_basename = "{}_{}".format(file_collection, grid_basename)
-    grid_output_unmasked = os.path.join(save_directory, unmasked_basename)
-    grid_output = os.path.join(save_directory, grid_basename)
+        unmasked_basename = f"{file_collection}_{grid_basename}"
+        grid_basename = f"{file_collection}_{grid_basename}"
+    output_dir = os.path.join(save_directory, zval_name)
+    Path(output_dir).mkdir(parents=True, exist_ok=True)
+    grid_output_unmasked = os.path.join(output_dir, unmasked_basename)
+    grid_output = os.path.join(output_dir, grid_basename)
 
     if unmasked:
         grids.write_netcdf_grid(grid_output_unmasked, Z, extent=extent)
 
     # Identify regions in the grid in the continental mask
-    cont_mask = grids.Raster(data=continent_mask_filename)
+    cont_mask = grids.Raster(data=continent_mask_filename.format(time))
 
     # We need the continental mask to match the number of nodes
     # in the uniform grid defined above. This is important if we
@@ -1649,7 +1647,7 @@ def _lat_lon_z_to_netCDF_time(
         Z,
         extent=extent,
     )
-    logger.info(f"netCDF grids for {time} Ma complete!")
+    logger.info(f"{zval_name} netCDF grids for {time} Ma complete!")
 
 
 def save_age_grid_sample_points_to_gpml(
