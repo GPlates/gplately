@@ -610,10 +610,11 @@ __all__ = [
 
 import os
 
-from .utils.log_utils import setup_logging, turn_on_debug_logging
+from .utils.log_utils import get_debug_level, setup_logging, turn_on_debug_logging
 
 setup_logging()
-if &#34;GPLATELY_DEBUG&#34; in os.environ and os.environ[&#34;GPLATELY_DEBUG&#34;].lower() == &#34;true&#34;:
+
+if get_debug_level() &gt; 0:
     turn_on_debug_logging()
 
 del setup_logging
@@ -7912,8 +7913,8 @@ boundaries and passive continental boundaries.</dd>
         )
         return gpd.GeoDataFrame({&#34;geometry&#34;: shp}, geometry=&#34;geometry&#34;)
 
-    @append_docstring(PLOT_DOCSTRING)
-    def plot_feature(self, ax, feature, feature_name=&#34;&#34;, **kwargs):
+    @append_docstring(PLOT_DOCSTRING.format(&#34;feature&#34;))
+    def plot_feature(self, ax, feature, feature_name=&#34;&#34;, color=&#34;black&#34;, **kwargs):
         &#34;&#34;&#34;Plot pygplates.FeatureCollection  or pygplates.Feature onto a map.&#34;&#34;&#34;
         if not feature:
             logger.warn(
@@ -7921,6 +7922,10 @@ boundaries and passive continental boundaries.</dd>
             )
             return ax
         else:
+            if &#34;edgecolor&#34; not in kwargs.keys():
+                kwargs[&#34;edgecolor&#34;] = color
+            if &#34;facecolor&#34; not in kwargs.keys():
+                kwargs[&#34;facecolor&#34;] = &#34;none&#34;
             return self._plot_feature(ax, partial(self.get_feature, feature), **kwargs)
 
     def _plot_feature(self, ax, get_feature_func, **kwargs):
@@ -7963,26 +7968,22 @@ boundaries and passive continental boundaries.</dd>
             tessellate_degrees=tessellate_degrees,
         )
 
-    @append_docstring(PLOT_DOCSTRING)
+    @append_docstring(PLOT_DOCSTRING.format(&#34;coastlines&#34;))
     def plot_coastlines(self, ax, color=&#34;black&#34;, **kwargs):
         &#34;&#34;&#34;Plot reconstructed coastline polygons onto a standard map Projection.
 
         Notes
         -----
-        The `coastlines` for plotting are accessed from the `PlotTopologies` object&#39;s
-        `coastlines` attribute. These `coastlines` are reconstructed to the `time`
-        passed to the `PlotTopologies` object and converted into Shapely polylines. The
-        reconstructed `coastlines` are added onto the GeoAxes or GeoAxesSubplot map `ax` using
-        GeoPandas.
-        Map resentation details (e.g. facecolor, edgecolor, alpha…) are permitted as keyword
-        arguments.
+        The `coastlines` for plotting are accessed from the `PlotTopologies` object&#39;s `coastlines` attribute.
+        These `coastlines` are reconstructed to the `time` passed to the `PlotTopologies` object and converted into Shapely polylines.
+        The reconstructed `coastlines` are added onto the GeoAxes or GeoAxesSubplot map `ax` using GeoPandas.
+        Map resentation details (e.g. facecolor, edgecolor, alpha…) are permitted as keyword arguments.
         &#34;&#34;&#34;
         return self.plot_feature(
             ax,
             self.coastlines,
             feature_name=&#34;coastlines&#34;,
-            facecolor=&#34;none&#34;,
-            edgecolor=color,
+            color=color,
             **kwargs,
         )
 
@@ -7996,26 +7997,22 @@ boundaries and passive continental boundaries.</dd>
             tessellate_degrees=tessellate_degrees,
         )
 
-    @append_docstring(PLOT_DOCSTRING)
+    @append_docstring(PLOT_DOCSTRING.format(&#34;continents&#34;))
     def plot_continents(self, ax, color=&#34;black&#34;, **kwargs):
         &#34;&#34;&#34;Plot reconstructed continental polygons onto a standard map Projection.
 
         Notes
         -----
-        The `continents` for plotting are accessed from the `PlotTopologies` object&#39;s
-        `continents` attribute. These `continents` are reconstructed to the `time`
-        passed to the `PlotTopologies` object and converted into Shapely polygons.
-        The reconstructed `coastlines` are plotted onto the GeoAxes or GeoAxesSubplot map `ax` using
-        GeoPandas.
-        Map presentation details (e.g. facecolor, edgecolor, alpha…) are permitted as
-        keyword arguments.
+        The `continents` for plotting are accessed from the `PlotTopologies` object&#39;s `continents` attribute.
+        These `continents` are reconstructed to the `time` passed to the `PlotTopologies` object and converted into Shapely polygons.
+        The reconstructed `coastlines` are plotted onto the GeoAxes or GeoAxesSubplot map `ax` using GeoPandas.
+        Map presentation details (e.g. facecolor, edgecolor, alpha…) are permitted as keyword arguments.
         &#34;&#34;&#34;
         return self.plot_feature(
             ax,
             self.continents,
             feature_name=&#34;continents&#34;,
-            facecolor=&#34;none&#34;,
-            edgecolor=color,
+            color=color,
             **kwargs,
         )
 
@@ -8033,7 +8030,7 @@ boundaries and passive continental boundaries.</dd>
             tessellate_degrees=tessellate_degrees,
         )
 
-    @append_docstring(PLOT_DOCSTRING)
+    @append_docstring(PLOT_DOCSTRING.format(&#34;continent ocean boundaries&#34;))
     def plot_continent_ocean_boundaries(self, ax, color=&#34;black&#34;, **kwargs):
         &#34;&#34;&#34;Plot reconstructed continent-ocean boundary (COB) polygons onto a standard
         map Projection.
@@ -8056,13 +8053,12 @@ boundaries and passive continental boundaries.</dd>
             ax,
             self.COBs,
             feature_name=&#34;continent_ocean_boundaries&#34;,
-            facecolor=&#34;none&#34;,
-            edgecolor=color,
+            color=color,
             **kwargs,
         )
 
     @validate_reconstruction_time
-    @append_docstring(GET_DATE_DOCSTRING.format(&#34;ridges_and_transforms&#34;))
+    @append_docstring(GET_DATE_DOCSTRING.format(&#34;ridges and transforms&#34;))
     def get_ridges_and_transforms(
         self,
         central_meridian=0.0,
@@ -8076,7 +8072,7 @@ boundaries and passive continental boundaries.</dd>
         )
 
     @validate_topology_availability(&#34;ridges_and_transforms&#34;)
-    @append_docstring(PLOT_DOCSTRING)
+    @append_docstring(PLOT_DOCSTRING.format(&#34;ridges and transforms&#34;))
     def plot_ridges_and_transforms(self, ax, color=&#34;black&#34;, **kwargs):
         &#34;&#34;&#34;Plot reconstructed ridge &amp; transform boundary polylines onto a standard map
         Projection.
@@ -8117,7 +8113,7 @@ boundaries and passive continental boundaries.</dd>
         )
 
     @validate_topology_availability(&#34;transforms&#34;)
-    @append_docstring(PLOT_DOCSTRING)
+    @append_docstring(PLOT_DOCSTRING.format(&#34;transforms&#34;))
     def plot_transforms(self, ax, color=&#34;black&#34;, **kwargs):
         &#34;&#34;&#34;Plot reconstructed transform boundary polylines onto a standard map.
 
@@ -8157,7 +8153,7 @@ boundaries and passive continental boundaries.</dd>
         )
 
     @validate_topology_availability(&#34;trenches&#34;)
-    @append_docstring(PLOT_DOCSTRING)
+    @append_docstring(PLOT_DOCSTRING.format(&#34;trenches&#34;))
     def plot_trenches(self, ax, color=&#34;black&#34;, **kwargs):
         &#34;&#34;&#34;Plot reconstructed subduction trench polylines onto a standard map
         Projection.
@@ -8197,7 +8193,7 @@ boundaries and passive continental boundaries.</dd>
             tessellate_degrees=tessellate_degrees,
         )
 
-    @append_docstring(PLOT_DOCSTRING)
+    @append_docstring(PLOT_DOCSTRING.format(&#34;other&#34;))
     def plot_misc_boundaries(self, ax, color=&#34;black&#34;, **kwargs):
         &#34;&#34;&#34;Plot reconstructed miscellaneous plate boundary polylines onto a standard
         map Projection.
@@ -8691,7 +8687,7 @@ boundaries and passive continental boundaries.</dd>
         return quiver
 
     @validate_reconstruction_time
-    @append_docstring(GET_DATE_DOCSTRING.format(&#34;continental_rifts&#34;))
+    @append_docstring(GET_DATE_DOCSTRING.format(&#34;continental rifts&#34;))
     def get_continental_rifts(
         self,
         central_meridian=0.0,
@@ -8704,7 +8700,7 @@ boundaries and passive continental boundaries.</dd>
             tessellate_degrees=tessellate_degrees,
         )
 
-    @append_docstring(PLOT_DOCSTRING)
+    @append_docstring(PLOT_DOCSTRING.format(&#34;continental rifts&#34;))
     def plot_continental_rifts(self, ax, color=&#34;black&#34;, **kwargs):
         &#34;&#34;&#34;Plot continental rifts on a standard map projection.&#34;&#34;&#34;
         return self.plot_feature(
@@ -8726,7 +8722,7 @@ boundaries and passive continental boundaries.</dd>
             tessellate_degrees=tessellate_degrees,
         )
 
-    @append_docstring(PLOT_DOCSTRING)
+    @append_docstring(PLOT_DOCSTRING.format(&#34;faults&#34;))
     def plot_faults(self, ax, color=&#34;black&#34;, **kwargs):
         &#34;&#34;&#34;Plot faults on a standard map projection.&#34;&#34;&#34;
         return self.plot_feature(
@@ -8739,7 +8735,7 @@ boundaries and passive continental boundaries.</dd>
         )
 
     @validate_reconstruction_time
-    @append_docstring(GET_DATE_DOCSTRING.format(&#34;fracture_zones&#34;))
+    @append_docstring(GET_DATE_DOCSTRING.format(&#34;fracture zones&#34;))
     def get_fracture_zones(self, central_meridian=0.0, tessellate_degrees=None):
         &#34;&#34;&#34;Create a geopandas.GeoDataFrame object containing geometries of reconstructed fracture zone lines.&#34;&#34;&#34;
         return self.get_feature(
@@ -8748,7 +8744,7 @@ boundaries and passive continental boundaries.</dd>
             tessellate_degrees=tessellate_degrees,
         )
 
-    @append_docstring(PLOT_DOCSTRING)
+    @append_docstring(PLOT_DOCSTRING.format(&#34;fracturezones&#34;))
     def plot_fracture_zones(self, ax, color=&#34;black&#34;, **kwargs):
         &#34;&#34;&#34;Plot fracture zones on a standard map projection.&#34;&#34;&#34;
         return self.plot_feature(
@@ -8761,7 +8757,7 @@ boundaries and passive continental boundaries.</dd>
         )
 
     @validate_reconstruction_time
-    @append_docstring(GET_DATE_DOCSTRING.format(&#34;inferred_paleo_boundaries&#34;))
+    @append_docstring(GET_DATE_DOCSTRING.format(&#34;inferred paleo-boundaries&#34;))
     def get_inferred_paleo_boundaries(
         self,
         central_meridian=0.0,
@@ -8774,7 +8770,7 @@ boundaries and passive continental boundaries.</dd>
             tessellate_degrees=tessellate_degrees,
         )
 
-    @append_docstring(PLOT_DOCSTRING)
+    @append_docstring(PLOT_DOCSTRING.format(&#34;inferred paleo-boundaries&#34;))
     def plot_inferred_paleo_boundaries(self, ax, color=&#34;black&#34;, **kwargs):
         &#34;&#34;&#34;Plot inferred paleo boundaries on a standard map projection.&#34;&#34;&#34;
         return self.plot_feature(
@@ -8787,7 +8783,7 @@ boundaries and passive continental boundaries.</dd>
         )
 
     @validate_reconstruction_time
-    @append_docstring(GET_DATE_DOCSTRING.format(&#34;terrane_boundaries&#34;))
+    @append_docstring(GET_DATE_DOCSTRING.format(&#34;terrane boundaries&#34;))
     def get_terrane_boundaries(
         self,
         central_meridian=0.0,
@@ -8800,7 +8796,7 @@ boundaries and passive continental boundaries.</dd>
             tessellate_degrees=tessellate_degrees,
         )
 
-    @append_docstring(PLOT_DOCSTRING)
+    @append_docstring(PLOT_DOCSTRING.format(&#34;terrane boundaries&#34;))
     def plot_terrane_boundaries(self, ax, color=&#34;black&#34;, **kwargs):
         &#34;&#34;&#34;Plot terrane boundaries on a standard map projection.&#34;&#34;&#34;
         return self.plot_feature(
@@ -8813,7 +8809,7 @@ boundaries and passive continental boundaries.</dd>
         )
 
     @validate_reconstruction_time
-    @append_docstring(GET_DATE_DOCSTRING.format(&#34;transitional_crusts&#34;))
+    @append_docstring(GET_DATE_DOCSTRING.format(&#34;transitional crusts&#34;))
     def get_transitional_crusts(
         self,
         central_meridian=0.0,
@@ -8826,7 +8822,7 @@ boundaries and passive continental boundaries.</dd>
             tessellate_degrees=tessellate_degrees,
         )
 
-    @append_docstring(PLOT_DOCSTRING)
+    @append_docstring(PLOT_DOCSTRING.format(&#34;transitional crusts&#34;))
     def plot_transitional_crusts(self, ax, color=&#34;black&#34;, **kwargs):
         &#34;&#34;&#34;Plot transitional crust on a standard map projection.&#34;&#34;&#34;
         return self.plot_feature(
@@ -8839,7 +8835,7 @@ boundaries and passive continental boundaries.</dd>
         )
 
     @validate_reconstruction_time
-    @append_docstring(GET_DATE_DOCSTRING.format(&#34;orogenic_belts&#34;))
+    @append_docstring(GET_DATE_DOCSTRING.format(&#34;orogenic belts&#34;))
     def get_orogenic_belts(
         self,
         central_meridian=0.0,
@@ -8852,7 +8848,7 @@ boundaries and passive continental boundaries.</dd>
             tessellate_degrees=tessellate_degrees,
         )
 
-    @append_docstring(PLOT_DOCSTRING)
+    @append_docstring(PLOT_DOCSTRING.format(&#34;orogenic belts&#34;))
     def plot_orogenic_belts(self, ax, color=&#34;black&#34;, **kwargs):
         &#34;&#34;&#34;Plot orogenic belts on a standard map projection.&#34;&#34;&#34;
         return self.plot_feature(
@@ -8874,7 +8870,7 @@ boundaries and passive continental boundaries.</dd>
             tessellate_degrees=tessellate_degrees,
         )
 
-    @append_docstring(PLOT_DOCSTRING)
+    @append_docstring(PLOT_DOCSTRING.format(&#34;sutures&#34;))
     def plot_sutures(self, ax, color=&#34;black&#34;, **kwargs):
         &#34;&#34;&#34;Plot sutures on a standard map projection.&#34;&#34;&#34;
         return self.plot_feature(
@@ -8887,7 +8883,7 @@ boundaries and passive continental boundaries.</dd>
         )
 
     @validate_reconstruction_time
-    @append_docstring(GET_DATE_DOCSTRING.format(&#34;continental_crusts&#34;))
+    @append_docstring(GET_DATE_DOCSTRING.format(&#34;continental crusts&#34;))
     def get_continental_crusts(
         self,
         central_meridian=0.0,
@@ -8900,7 +8896,7 @@ boundaries and passive continental boundaries.</dd>
             tessellate_degrees=tessellate_degrees,
         )
 
-    @append_docstring(PLOT_DOCSTRING)
+    @append_docstring(PLOT_DOCSTRING.format(&#34;continental crusts&#34;))
     def plot_continental_crusts(self, ax, color=&#34;black&#34;, **kwargs):
         &#34;&#34;&#34;Plot continental crust lines on a standard map projection.&#34;&#34;&#34;
         return self.plot_feature(
@@ -8913,7 +8909,7 @@ boundaries and passive continental boundaries.</dd>
         )
 
     @validate_reconstruction_time
-    @append_docstring(GET_DATE_DOCSTRING.format(&#34;extended_continental_crusts&#34;))
+    @append_docstring(GET_DATE_DOCSTRING.format(&#34;extended continental crusts&#34;))
     def get_extended_continental_crusts(
         self,
         central_meridian=0.0,
@@ -8926,7 +8922,7 @@ boundaries and passive continental boundaries.</dd>
             tessellate_degrees=tessellate_degrees,
         )
 
-    @append_docstring(PLOT_DOCSTRING)
+    @append_docstring(PLOT_DOCSTRING.format(&#34;extended continental crusts&#34;))
     def plot_extended_continental_crusts(self, ax, color=&#34;black&#34;, **kwargs):
         &#34;&#34;&#34;Plot extended continental crust lines on a standard map projection.&#34;&#34;&#34;
         return self.plot_feature(
@@ -8939,7 +8935,7 @@ boundaries and passive continental boundaries.</dd>
         )
 
     @validate_reconstruction_time
-    @append_docstring(GET_DATE_DOCSTRING.format(&#34;slab_edges&#34;))
+    @append_docstring(GET_DATE_DOCSTRING.format(&#34;passive continental boundaries&#34;))
     def get_passive_continental_boundaries(
         self,
         central_meridian=0.0,
@@ -8952,7 +8948,7 @@ boundaries and passive continental boundaries.</dd>
             tessellate_degrees=tessellate_degrees,
         )
 
-    @append_docstring(PLOT_DOCSTRING)
+    @append_docstring(PLOT_DOCSTRING.format(&#34;passive continental boundaries&#34;))
     def plot_passive_continental_boundaries(self, ax, color=&#34;black&#34;, **kwargs):
         &#34;&#34;&#34;Plot passive continental boundaries on a standard map projection.&#34;&#34;&#34;
         return self.plot_feature(
@@ -8965,7 +8961,7 @@ boundaries and passive continental boundaries.</dd>
         )
 
     @validate_reconstruction_time
-    @append_docstring(GET_DATE_DOCSTRING.format(&#34;slab_edges&#34;))
+    @append_docstring(GET_DATE_DOCSTRING.format(&#34;slab edges&#34;))
     def get_slab_edges(self, central_meridian=0.0, tessellate_degrees=None):
         &#34;&#34;&#34;Create a geopandas.GeoDataFrame object containing geometries of reconstructed slab edge lines.&#34;&#34;&#34;
         return self.get_feature(
@@ -8974,7 +8970,7 @@ boundaries and passive continental boundaries.</dd>
             tessellate_degrees=tessellate_degrees,
         )
 
-    @append_docstring(PLOT_DOCSTRING)
+    @append_docstring(PLOT_DOCSTRING.format(&#34;slab edges&#34;))
     def plot_slab_edges(self, ax, color=&#34;black&#34;, **kwargs):
         &#34;&#34;&#34;Plot slab edges on a standard map projection.&#34;&#34;&#34;
         return self.plot_feature(
@@ -8987,7 +8983,7 @@ boundaries and passive continental boundaries.</dd>
         )
 
     @validate_reconstruction_time
-    @append_docstring(GET_DATE_DOCSTRING.format(&#34;misc_transforms&#34;))
+    @append_docstring(GET_DATE_DOCSTRING.format(&#34;misc transforms&#34;))
     def get_misc_transforms(
         self,
         central_meridian=0.0,
@@ -9000,7 +8996,7 @@ boundaries and passive continental boundaries.</dd>
             tessellate_degrees=tessellate_degrees,
         )
 
-    @append_docstring(PLOT_DOCSTRING)
+    @append_docstring(PLOT_DOCSTRING.format(&#34;misc transforms&#34;))
     def plot_misc_transforms(self, ax, color=&#34;black&#34;, **kwargs):
         &#34;&#34;&#34;Plot miscellaneous transform boundaries on a standard map projection.&#34;&#34;&#34;
         return self.plot_feature(
@@ -9013,7 +9009,7 @@ boundaries and passive continental boundaries.</dd>
         )
 
     @validate_reconstruction_time
-    @append_docstring(GET_DATE_DOCSTRING.format(&#34;unclassified_features&#34;))
+    @append_docstring(GET_DATE_DOCSTRING.format(&#34;unclassified features&#34;))
     def get_unclassified_features(
         self,
         central_meridian=0.0,
@@ -9026,7 +9022,7 @@ boundaries and passive continental boundaries.</dd>
             tessellate_degrees=tessellate_degrees,
         )
 
-    @append_docstring(PLOT_DOCSTRING)
+    @append_docstring(PLOT_DOCSTRING.format(&#34;unclassified features&#34;))
     def plot_unclassified_features(self, ax, color=&#34;black&#34;, **kwargs):
         &#34;&#34;&#34;Plot GPML unclassified features on a standard map projection.&#34;&#34;&#34;
         return self.plot_feature(
@@ -9077,7 +9073,7 @@ boundaries and passive continental boundaries.</dd>
         return gdf
 
     @validate_topology_availability(&#34;all topologies&#34;)
-    @append_docstring(PLOT_DOCSTRING)
+    @append_docstring(PLOT_DOCSTRING.format(&#34;topologies&#34;))
     def plot_all_topologies(self, ax, color=&#34;black&#34;, **kwargs):
         &#34;&#34;&#34;Plot topological polygons and networks on a standard map projection.&#34;&#34;&#34;
 
@@ -9149,7 +9145,7 @@ boundaries and passive continental boundaries.</dd>
         return gdf
 
     @validate_topology_availability(&#34;all topological sections&#34;)
-    @append_docstring(PLOT_DOCSTRING)
+    @append_docstring(PLOT_DOCSTRING.format(&#34;topologies&#34;))
     def plot_all_topological_sections(self, ax, color=&#34;black&#34;, **kwargs):
         &#34;&#34;&#34;Plot all topologies on a standard map projection.&#34;&#34;&#34;
 
@@ -9170,7 +9166,7 @@ boundaries and passive continental boundaries.</dd>
         )
 
     @validate_topology_availability(&#34;ridges&#34;)
-    @append_docstring(PLOT_DOCSTRING)
+    @append_docstring(PLOT_DOCSTRING.format(&#34;ridges&#34;))
     def plot_ridges(self, ax, color=&#34;black&#34;, **kwargs):
         &#34;&#34;&#34;Plot reconstructed ridge polylines onto a standard map Projection.
 
@@ -9543,17 +9539,17 @@ to wrapping.</dd>
 <h2 id="returns">Returns</h2>
 <dl>
 <dt><code>geopandas.GeoDataFrame</code></dt>
-<dd>A pandas.DataFrame that has a column with <code>continental_crusts</code> geometry.</dd>
+<dd>A pandas.DataFrame that has a column with <code>continental crusts</code> geometry.</dd>
 </dl>
 <h2 id="raises">Raises</h2>
 <dl>
 <dt><code>ValueError</code></dt>
 <dd>If the optional <code>time</code> parameter has not been passed to
-<code><a title="gplately.PlotTopologies" href="#gplately.PlotTopologies">PlotTopologies</a></code>. This is needed to construct <code>continental_crusts</code>
+<code><a title="gplately.PlotTopologies" href="#gplately.PlotTopologies">PlotTopologies</a></code>. This is needed to construct <code>continental crusts</code>
 to the requested <code>time</code> and thus populate the GeoDataFrame.</dd>
 </dl>
 <h2 id="notes">Notes</h2>
-<p>The <code>continental_crusts</code> needed to produce the GeoDataFrame are automatically
+<p>The <code>continental crusts</code> needed to produce the GeoDataFrame are automatically
 constructed if the optional <code>time</code> parameter is passed to the
 <code><a title="gplately.PlotTopologies" href="#gplately.PlotTopologies">PlotTopologies</a></code> object before calling this function. <code>time</code> can be
 passed either when <code><a title="gplately.PlotTopologies" href="#gplately.PlotTopologies">PlotTopologies</a></code> is first called&hellip;</p>
@@ -9563,7 +9559,7 @@ passed either when <code><a title="gplately.PlotTopologies" href="#gplately.Plot
 <pre><code>time = 100 # Ma
 gplot.time = time
 </code></pre>
-<p>&hellip;after which this function can be re-run. Once the <code>continental_crusts</code>
+<p>&hellip;after which this function can be re-run. Once the <code>continental crusts</code>
 are reconstructed, they are converted into Shapely lines whose
 coordinates are passed to a geopandas GeoDataFrame.</p></div>
 <details class="source">
@@ -9571,7 +9567,7 @@ coordinates are passed to a geopandas GeoDataFrame.</p></div>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@validate_reconstruction_time
-@append_docstring(GET_DATE_DOCSTRING.format(&#34;continental_crusts&#34;))
+@append_docstring(GET_DATE_DOCSTRING.format(&#34;continental crusts&#34;))
 def get_continental_crusts(
     self,
     central_meridian=0.0,
@@ -9601,17 +9597,17 @@ to wrapping.</dd>
 <h2 id="returns">Returns</h2>
 <dl>
 <dt><code>geopandas.GeoDataFrame</code></dt>
-<dd>A pandas.DataFrame that has a column with <code>continental_rifts</code> geometry.</dd>
+<dd>A pandas.DataFrame that has a column with <code>continental rifts</code> geometry.</dd>
 </dl>
 <h2 id="raises">Raises</h2>
 <dl>
 <dt><code>ValueError</code></dt>
 <dd>If the optional <code>time</code> parameter has not been passed to
-<code><a title="gplately.PlotTopologies" href="#gplately.PlotTopologies">PlotTopologies</a></code>. This is needed to construct <code>continental_rifts</code>
+<code><a title="gplately.PlotTopologies" href="#gplately.PlotTopologies">PlotTopologies</a></code>. This is needed to construct <code>continental rifts</code>
 to the requested <code>time</code> and thus populate the GeoDataFrame.</dd>
 </dl>
 <h2 id="notes">Notes</h2>
-<p>The <code>continental_rifts</code> needed to produce the GeoDataFrame are automatically
+<p>The <code>continental rifts</code> needed to produce the GeoDataFrame are automatically
 constructed if the optional <code>time</code> parameter is passed to the
 <code><a title="gplately.PlotTopologies" href="#gplately.PlotTopologies">PlotTopologies</a></code> object before calling this function. <code>time</code> can be
 passed either when <code><a title="gplately.PlotTopologies" href="#gplately.PlotTopologies">PlotTopologies</a></code> is first called&hellip;</p>
@@ -9621,7 +9617,7 @@ passed either when <code><a title="gplately.PlotTopologies" href="#gplately.Plot
 <pre><code>time = 100 # Ma
 gplot.time = time
 </code></pre>
-<p>&hellip;after which this function can be re-run. Once the <code>continental_rifts</code>
+<p>&hellip;after which this function can be re-run. Once the <code>continental rifts</code>
 are reconstructed, they are converted into Shapely lines whose
 coordinates are passed to a geopandas GeoDataFrame.</p></div>
 <details class="source">
@@ -9629,7 +9625,7 @@ coordinates are passed to a geopandas GeoDataFrame.</p></div>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@validate_reconstruction_time
-@append_docstring(GET_DATE_DOCSTRING.format(&#34;continental_rifts&#34;))
+@append_docstring(GET_DATE_DOCSTRING.format(&#34;continental rifts&#34;))
 def get_continental_rifts(
     self,
     central_meridian=0.0,
@@ -9713,17 +9709,17 @@ to wrapping.</dd>
 <h2 id="returns">Returns</h2>
 <dl>
 <dt><code>geopandas.GeoDataFrame</code></dt>
-<dd>A pandas.DataFrame that has a column with <code>extended_continental_crusts</code> geometry.</dd>
+<dd>A pandas.DataFrame that has a column with <code>extended continental crusts</code> geometry.</dd>
 </dl>
 <h2 id="raises">Raises</h2>
 <dl>
 <dt><code>ValueError</code></dt>
 <dd>If the optional <code>time</code> parameter has not been passed to
-<code><a title="gplately.PlotTopologies" href="#gplately.PlotTopologies">PlotTopologies</a></code>. This is needed to construct <code>extended_continental_crusts</code>
+<code><a title="gplately.PlotTopologies" href="#gplately.PlotTopologies">PlotTopologies</a></code>. This is needed to construct <code>extended continental crusts</code>
 to the requested <code>time</code> and thus populate the GeoDataFrame.</dd>
 </dl>
 <h2 id="notes">Notes</h2>
-<p>The <code>extended_continental_crusts</code> needed to produce the GeoDataFrame are automatically
+<p>The <code>extended continental crusts</code> needed to produce the GeoDataFrame are automatically
 constructed if the optional <code>time</code> parameter is passed to the
 <code><a title="gplately.PlotTopologies" href="#gplately.PlotTopologies">PlotTopologies</a></code> object before calling this function. <code>time</code> can be
 passed either when <code><a title="gplately.PlotTopologies" href="#gplately.PlotTopologies">PlotTopologies</a></code> is first called&hellip;</p>
@@ -9733,7 +9729,7 @@ passed either when <code><a title="gplately.PlotTopologies" href="#gplately.Plot
 <pre><code>time = 100 # Ma
 gplot.time = time
 </code></pre>
-<p>&hellip;after which this function can be re-run. Once the <code>extended_continental_crusts</code>
+<p>&hellip;after which this function can be re-run. Once the <code>extended continental crusts</code>
 are reconstructed, they are converted into Shapely lines whose
 coordinates are passed to a geopandas GeoDataFrame.</p></div>
 <details class="source">
@@ -9741,7 +9737,7 @@ coordinates are passed to a geopandas GeoDataFrame.</p></div>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@validate_reconstruction_time
-@append_docstring(GET_DATE_DOCSTRING.format(&#34;extended_continental_crusts&#34;))
+@append_docstring(GET_DATE_DOCSTRING.format(&#34;extended continental crusts&#34;))
 def get_extended_continental_crusts(
     self,
     central_meridian=0.0,
@@ -9888,17 +9884,17 @@ to wrapping.</dd>
 <h2 id="returns">Returns</h2>
 <dl>
 <dt><code>geopandas.GeoDataFrame</code></dt>
-<dd>A pandas.DataFrame that has a column with <code>fracture_zones</code> geometry.</dd>
+<dd>A pandas.DataFrame that has a column with <code>fracture zones</code> geometry.</dd>
 </dl>
 <h2 id="raises">Raises</h2>
 <dl>
 <dt><code>ValueError</code></dt>
 <dd>If the optional <code>time</code> parameter has not been passed to
-<code><a title="gplately.PlotTopologies" href="#gplately.PlotTopologies">PlotTopologies</a></code>. This is needed to construct <code>fracture_zones</code>
+<code><a title="gplately.PlotTopologies" href="#gplately.PlotTopologies">PlotTopologies</a></code>. This is needed to construct <code>fracture zones</code>
 to the requested <code>time</code> and thus populate the GeoDataFrame.</dd>
 </dl>
 <h2 id="notes">Notes</h2>
-<p>The <code>fracture_zones</code> needed to produce the GeoDataFrame are automatically
+<p>The <code>fracture zones</code> needed to produce the GeoDataFrame are automatically
 constructed if the optional <code>time</code> parameter is passed to the
 <code><a title="gplately.PlotTopologies" href="#gplately.PlotTopologies">PlotTopologies</a></code> object before calling this function. <code>time</code> can be
 passed either when <code><a title="gplately.PlotTopologies" href="#gplately.PlotTopologies">PlotTopologies</a></code> is first called&hellip;</p>
@@ -9908,7 +9904,7 @@ passed either when <code><a title="gplately.PlotTopologies" href="#gplately.Plot
 <pre><code>time = 100 # Ma
 gplot.time = time
 </code></pre>
-<p>&hellip;after which this function can be re-run. Once the <code>fracture_zones</code>
+<p>&hellip;after which this function can be re-run. Once the <code>fracture zones</code>
 are reconstructed, they are converted into Shapely lines whose
 coordinates are passed to a geopandas GeoDataFrame.</p></div>
 <details class="source">
@@ -9916,7 +9912,7 @@ coordinates are passed to a geopandas GeoDataFrame.</p></div>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@validate_reconstruction_time
-@append_docstring(GET_DATE_DOCSTRING.format(&#34;fracture_zones&#34;))
+@append_docstring(GET_DATE_DOCSTRING.format(&#34;fracture zones&#34;))
 def get_fracture_zones(self, central_meridian=0.0, tessellate_degrees=None):
     &#34;&#34;&#34;Create a geopandas.GeoDataFrame object containing geometries of reconstructed fracture zone lines.&#34;&#34;&#34;
     return self.get_feature(
@@ -9942,17 +9938,17 @@ to wrapping.</dd>
 <h2 id="returns">Returns</h2>
 <dl>
 <dt><code>geopandas.GeoDataFrame</code></dt>
-<dd>A pandas.DataFrame that has a column with <code>inferred_paleo_boundaries</code> geometry.</dd>
+<dd>A pandas.DataFrame that has a column with <code>inferred paleo-boundaries</code> geometry.</dd>
 </dl>
 <h2 id="raises">Raises</h2>
 <dl>
 <dt><code>ValueError</code></dt>
 <dd>If the optional <code>time</code> parameter has not been passed to
-<code><a title="gplately.PlotTopologies" href="#gplately.PlotTopologies">PlotTopologies</a></code>. This is needed to construct <code>inferred_paleo_boundaries</code>
+<code><a title="gplately.PlotTopologies" href="#gplately.PlotTopologies">PlotTopologies</a></code>. This is needed to construct <code>inferred paleo-boundaries</code>
 to the requested <code>time</code> and thus populate the GeoDataFrame.</dd>
 </dl>
 <h2 id="notes">Notes</h2>
-<p>The <code>inferred_paleo_boundaries</code> needed to produce the GeoDataFrame are automatically
+<p>The <code>inferred paleo-boundaries</code> needed to produce the GeoDataFrame are automatically
 constructed if the optional <code>time</code> parameter is passed to the
 <code><a title="gplately.PlotTopologies" href="#gplately.PlotTopologies">PlotTopologies</a></code> object before calling this function. <code>time</code> can be
 passed either when <code><a title="gplately.PlotTopologies" href="#gplately.PlotTopologies">PlotTopologies</a></code> is first called&hellip;</p>
@@ -9962,7 +9958,7 @@ passed either when <code><a title="gplately.PlotTopologies" href="#gplately.Plot
 <pre><code>time = 100 # Ma
 gplot.time = time
 </code></pre>
-<p>&hellip;after which this function can be re-run. Once the <code>inferred_paleo_boundaries</code>
+<p>&hellip;after which this function can be re-run. Once the <code>inferred paleo-boundaries</code>
 are reconstructed, they are converted into Shapely lines whose
 coordinates are passed to a geopandas GeoDataFrame.</p></div>
 <details class="source">
@@ -9970,7 +9966,7 @@ coordinates are passed to a geopandas GeoDataFrame.</p></div>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@validate_reconstruction_time
-@append_docstring(GET_DATE_DOCSTRING.format(&#34;inferred_paleo_boundaries&#34;))
+@append_docstring(GET_DATE_DOCSTRING.format(&#34;inferred paleo-boundaries&#34;))
 def get_inferred_paleo_boundaries(
     self,
     central_meridian=0.0,
@@ -10054,17 +10050,17 @@ to wrapping.</dd>
 <h2 id="returns">Returns</h2>
 <dl>
 <dt><code>geopandas.GeoDataFrame</code></dt>
-<dd>A pandas.DataFrame that has a column with <code>misc_transforms</code> geometry.</dd>
+<dd>A pandas.DataFrame that has a column with <code>misc transforms</code> geometry.</dd>
 </dl>
 <h2 id="raises">Raises</h2>
 <dl>
 <dt><code>ValueError</code></dt>
 <dd>If the optional <code>time</code> parameter has not been passed to
-<code><a title="gplately.PlotTopologies" href="#gplately.PlotTopologies">PlotTopologies</a></code>. This is needed to construct <code>misc_transforms</code>
+<code><a title="gplately.PlotTopologies" href="#gplately.PlotTopologies">PlotTopologies</a></code>. This is needed to construct <code>misc transforms</code>
 to the requested <code>time</code> and thus populate the GeoDataFrame.</dd>
 </dl>
 <h2 id="notes">Notes</h2>
-<p>The <code>misc_transforms</code> needed to produce the GeoDataFrame are automatically
+<p>The <code>misc transforms</code> needed to produce the GeoDataFrame are automatically
 constructed if the optional <code>time</code> parameter is passed to the
 <code><a title="gplately.PlotTopologies" href="#gplately.PlotTopologies">PlotTopologies</a></code> object before calling this function. <code>time</code> can be
 passed either when <code><a title="gplately.PlotTopologies" href="#gplately.PlotTopologies">PlotTopologies</a></code> is first called&hellip;</p>
@@ -10074,7 +10070,7 @@ passed either when <code><a title="gplately.PlotTopologies" href="#gplately.Plot
 <pre><code>time = 100 # Ma
 gplot.time = time
 </code></pre>
-<p>&hellip;after which this function can be re-run. Once the <code>misc_transforms</code>
+<p>&hellip;after which this function can be re-run. Once the <code>misc transforms</code>
 are reconstructed, they are converted into Shapely lines whose
 coordinates are passed to a geopandas GeoDataFrame.</p></div>
 <details class="source">
@@ -10082,7 +10078,7 @@ coordinates are passed to a geopandas GeoDataFrame.</p></div>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@validate_reconstruction_time
-@append_docstring(GET_DATE_DOCSTRING.format(&#34;misc_transforms&#34;))
+@append_docstring(GET_DATE_DOCSTRING.format(&#34;misc transforms&#34;))
 def get_misc_transforms(
     self,
     central_meridian=0.0,
@@ -10112,17 +10108,17 @@ to wrapping.</dd>
 <h2 id="returns">Returns</h2>
 <dl>
 <dt><code>geopandas.GeoDataFrame</code></dt>
-<dd>A pandas.DataFrame that has a column with <code>orogenic_belts</code> geometry.</dd>
+<dd>A pandas.DataFrame that has a column with <code>orogenic belts</code> geometry.</dd>
 </dl>
 <h2 id="raises">Raises</h2>
 <dl>
 <dt><code>ValueError</code></dt>
 <dd>If the optional <code>time</code> parameter has not been passed to
-<code><a title="gplately.PlotTopologies" href="#gplately.PlotTopologies">PlotTopologies</a></code>. This is needed to construct <code>orogenic_belts</code>
+<code><a title="gplately.PlotTopologies" href="#gplately.PlotTopologies">PlotTopologies</a></code>. This is needed to construct <code>orogenic belts</code>
 to the requested <code>time</code> and thus populate the GeoDataFrame.</dd>
 </dl>
 <h2 id="notes">Notes</h2>
-<p>The <code>orogenic_belts</code> needed to produce the GeoDataFrame are automatically
+<p>The <code>orogenic belts</code> needed to produce the GeoDataFrame are automatically
 constructed if the optional <code>time</code> parameter is passed to the
 <code><a title="gplately.PlotTopologies" href="#gplately.PlotTopologies">PlotTopologies</a></code> object before calling this function. <code>time</code> can be
 passed either when <code><a title="gplately.PlotTopologies" href="#gplately.PlotTopologies">PlotTopologies</a></code> is first called&hellip;</p>
@@ -10132,7 +10128,7 @@ passed either when <code><a title="gplately.PlotTopologies" href="#gplately.Plot
 <pre><code>time = 100 # Ma
 gplot.time = time
 </code></pre>
-<p>&hellip;after which this function can be re-run. Once the <code>orogenic_belts</code>
+<p>&hellip;after which this function can be re-run. Once the <code>orogenic belts</code>
 are reconstructed, they are converted into Shapely lines whose
 coordinates are passed to a geopandas GeoDataFrame.</p></div>
 <details class="source">
@@ -10140,7 +10136,7 @@ coordinates are passed to a geopandas GeoDataFrame.</p></div>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@validate_reconstruction_time
-@append_docstring(GET_DATE_DOCSTRING.format(&#34;orogenic_belts&#34;))
+@append_docstring(GET_DATE_DOCSTRING.format(&#34;orogenic belts&#34;))
 def get_orogenic_belts(
     self,
     central_meridian=0.0,
@@ -10170,17 +10166,17 @@ to wrapping.</dd>
 <h2 id="returns">Returns</h2>
 <dl>
 <dt><code>geopandas.GeoDataFrame</code></dt>
-<dd>A pandas.DataFrame that has a column with <code>slab_edges</code> geometry.</dd>
+<dd>A pandas.DataFrame that has a column with <code>passive continental boundaries</code> geometry.</dd>
 </dl>
 <h2 id="raises">Raises</h2>
 <dl>
 <dt><code>ValueError</code></dt>
 <dd>If the optional <code>time</code> parameter has not been passed to
-<code><a title="gplately.PlotTopologies" href="#gplately.PlotTopologies">PlotTopologies</a></code>. This is needed to construct <code>slab_edges</code>
+<code><a title="gplately.PlotTopologies" href="#gplately.PlotTopologies">PlotTopologies</a></code>. This is needed to construct <code>passive continental boundaries</code>
 to the requested <code>time</code> and thus populate the GeoDataFrame.</dd>
 </dl>
 <h2 id="notes">Notes</h2>
-<p>The <code>slab_edges</code> needed to produce the GeoDataFrame are automatically
+<p>The <code>passive continental boundaries</code> needed to produce the GeoDataFrame are automatically
 constructed if the optional <code>time</code> parameter is passed to the
 <code><a title="gplately.PlotTopologies" href="#gplately.PlotTopologies">PlotTopologies</a></code> object before calling this function. <code>time</code> can be
 passed either when <code><a title="gplately.PlotTopologies" href="#gplately.PlotTopologies">PlotTopologies</a></code> is first called&hellip;</p>
@@ -10190,7 +10186,7 @@ passed either when <code><a title="gplately.PlotTopologies" href="#gplately.Plot
 <pre><code>time = 100 # Ma
 gplot.time = time
 </code></pre>
-<p>&hellip;after which this function can be re-run. Once the <code>slab_edges</code>
+<p>&hellip;after which this function can be re-run. Once the <code>passive continental boundaries</code>
 are reconstructed, they are converted into Shapely lines whose
 coordinates are passed to a geopandas GeoDataFrame.</p></div>
 <details class="source">
@@ -10198,7 +10194,7 @@ coordinates are passed to a geopandas GeoDataFrame.</p></div>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@validate_reconstruction_time
-@append_docstring(GET_DATE_DOCSTRING.format(&#34;slab_edges&#34;))
+@append_docstring(GET_DATE_DOCSTRING.format(&#34;passive continental boundaries&#34;))
 def get_passive_continental_boundaries(
     self,
     central_meridian=0.0,
@@ -10281,17 +10277,17 @@ to wrapping.</dd>
 <h2 id="returns">Returns</h2>
 <dl>
 <dt><code>geopandas.GeoDataFrame</code></dt>
-<dd>A pandas.DataFrame that has a column with <code>ridges_and_transforms</code> geometry.</dd>
+<dd>A pandas.DataFrame that has a column with <code>ridges and transforms</code> geometry.</dd>
 </dl>
 <h2 id="raises">Raises</h2>
 <dl>
 <dt><code>ValueError</code></dt>
 <dd>If the optional <code>time</code> parameter has not been passed to
-<code><a title="gplately.PlotTopologies" href="#gplately.PlotTopologies">PlotTopologies</a></code>. This is needed to construct <code>ridges_and_transforms</code>
+<code><a title="gplately.PlotTopologies" href="#gplately.PlotTopologies">PlotTopologies</a></code>. This is needed to construct <code>ridges and transforms</code>
 to the requested <code>time</code> and thus populate the GeoDataFrame.</dd>
 </dl>
 <h2 id="notes">Notes</h2>
-<p>The <code>ridges_and_transforms</code> needed to produce the GeoDataFrame are automatically
+<p>The <code>ridges and transforms</code> needed to produce the GeoDataFrame are automatically
 constructed if the optional <code>time</code> parameter is passed to the
 <code><a title="gplately.PlotTopologies" href="#gplately.PlotTopologies">PlotTopologies</a></code> object before calling this function. <code>time</code> can be
 passed either when <code><a title="gplately.PlotTopologies" href="#gplately.PlotTopologies">PlotTopologies</a></code> is first called&hellip;</p>
@@ -10301,7 +10297,7 @@ passed either when <code><a title="gplately.PlotTopologies" href="#gplately.Plot
 <pre><code>time = 100 # Ma
 gplot.time = time
 </code></pre>
-<p>&hellip;after which this function can be re-run. Once the <code>ridges_and_transforms</code>
+<p>&hellip;after which this function can be re-run. Once the <code>ridges and transforms</code>
 are reconstructed, they are converted into Shapely lines whose
 coordinates are passed to a geopandas GeoDataFrame.</p></div>
 <details class="source">
@@ -10309,7 +10305,7 @@ coordinates are passed to a geopandas GeoDataFrame.</p></div>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@validate_reconstruction_time
-@append_docstring(GET_DATE_DOCSTRING.format(&#34;ridges_and_transforms&#34;))
+@append_docstring(GET_DATE_DOCSTRING.format(&#34;ridges and transforms&#34;))
 def get_ridges_and_transforms(
     self,
     central_meridian=0.0,
@@ -10339,17 +10335,17 @@ to wrapping.</dd>
 <h2 id="returns">Returns</h2>
 <dl>
 <dt><code>geopandas.GeoDataFrame</code></dt>
-<dd>A pandas.DataFrame that has a column with <code>slab_edges</code> geometry.</dd>
+<dd>A pandas.DataFrame that has a column with <code>slab edges</code> geometry.</dd>
 </dl>
 <h2 id="raises">Raises</h2>
 <dl>
 <dt><code>ValueError</code></dt>
 <dd>If the optional <code>time</code> parameter has not been passed to
-<code><a title="gplately.PlotTopologies" href="#gplately.PlotTopologies">PlotTopologies</a></code>. This is needed to construct <code>slab_edges</code>
+<code><a title="gplately.PlotTopologies" href="#gplately.PlotTopologies">PlotTopologies</a></code>. This is needed to construct <code>slab edges</code>
 to the requested <code>time</code> and thus populate the GeoDataFrame.</dd>
 </dl>
 <h2 id="notes">Notes</h2>
-<p>The <code>slab_edges</code> needed to produce the GeoDataFrame are automatically
+<p>The <code>slab edges</code> needed to produce the GeoDataFrame are automatically
 constructed if the optional <code>time</code> parameter is passed to the
 <code><a title="gplately.PlotTopologies" href="#gplately.PlotTopologies">PlotTopologies</a></code> object before calling this function. <code>time</code> can be
 passed either when <code><a title="gplately.PlotTopologies" href="#gplately.PlotTopologies">PlotTopologies</a></code> is first called&hellip;</p>
@@ -10359,7 +10355,7 @@ passed either when <code><a title="gplately.PlotTopologies" href="#gplately.Plot
 <pre><code>time = 100 # Ma
 gplot.time = time
 </code></pre>
-<p>&hellip;after which this function can be re-run. Once the <code>slab_edges</code>
+<p>&hellip;after which this function can be re-run. Once the <code>slab edges</code>
 are reconstructed, they are converted into Shapely lines whose
 coordinates are passed to a geopandas GeoDataFrame.</p></div>
 <details class="source">
@@ -10367,7 +10363,7 @@ coordinates are passed to a geopandas GeoDataFrame.</p></div>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@validate_reconstruction_time
-@append_docstring(GET_DATE_DOCSTRING.format(&#34;slab_edges&#34;))
+@append_docstring(GET_DATE_DOCSTRING.format(&#34;slab edges&#34;))
 def get_slab_edges(self, central_meridian=0.0, tessellate_degrees=None):
     &#34;&#34;&#34;Create a geopandas.GeoDataFrame object containing geometries of reconstructed slab edge lines.&#34;&#34;&#34;
     return self.get_feature(
@@ -10536,17 +10532,17 @@ to wrapping.</dd>
 <h2 id="returns">Returns</h2>
 <dl>
 <dt><code>geopandas.GeoDataFrame</code></dt>
-<dd>A pandas.DataFrame that has a column with <code>terrane_boundaries</code> geometry.</dd>
+<dd>A pandas.DataFrame that has a column with <code>terrane boundaries</code> geometry.</dd>
 </dl>
 <h2 id="raises">Raises</h2>
 <dl>
 <dt><code>ValueError</code></dt>
 <dd>If the optional <code>time</code> parameter has not been passed to
-<code><a title="gplately.PlotTopologies" href="#gplately.PlotTopologies">PlotTopologies</a></code>. This is needed to construct <code>terrane_boundaries</code>
+<code><a title="gplately.PlotTopologies" href="#gplately.PlotTopologies">PlotTopologies</a></code>. This is needed to construct <code>terrane boundaries</code>
 to the requested <code>time</code> and thus populate the GeoDataFrame.</dd>
 </dl>
 <h2 id="notes">Notes</h2>
-<p>The <code>terrane_boundaries</code> needed to produce the GeoDataFrame are automatically
+<p>The <code>terrane boundaries</code> needed to produce the GeoDataFrame are automatically
 constructed if the optional <code>time</code> parameter is passed to the
 <code><a title="gplately.PlotTopologies" href="#gplately.PlotTopologies">PlotTopologies</a></code> object before calling this function. <code>time</code> can be
 passed either when <code><a title="gplately.PlotTopologies" href="#gplately.PlotTopologies">PlotTopologies</a></code> is first called&hellip;</p>
@@ -10556,7 +10552,7 @@ passed either when <code><a title="gplately.PlotTopologies" href="#gplately.Plot
 <pre><code>time = 100 # Ma
 gplot.time = time
 </code></pre>
-<p>&hellip;after which this function can be re-run. Once the <code>terrane_boundaries</code>
+<p>&hellip;after which this function can be re-run. Once the <code>terrane boundaries</code>
 are reconstructed, they are converted into Shapely lines whose
 coordinates are passed to a geopandas GeoDataFrame.</p></div>
 <details class="source">
@@ -10564,7 +10560,7 @@ coordinates are passed to a geopandas GeoDataFrame.</p></div>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@validate_reconstruction_time
-@append_docstring(GET_DATE_DOCSTRING.format(&#34;terrane_boundaries&#34;))
+@append_docstring(GET_DATE_DOCSTRING.format(&#34;terrane boundaries&#34;))
 def get_terrane_boundaries(
     self,
     central_meridian=0.0,
@@ -10648,17 +10644,17 @@ to wrapping.</dd>
 <h2 id="returns">Returns</h2>
 <dl>
 <dt><code>geopandas.GeoDataFrame</code></dt>
-<dd>A pandas.DataFrame that has a column with <code>transitional_crusts</code> geometry.</dd>
+<dd>A pandas.DataFrame that has a column with <code>transitional crusts</code> geometry.</dd>
 </dl>
 <h2 id="raises">Raises</h2>
 <dl>
 <dt><code>ValueError</code></dt>
 <dd>If the optional <code>time</code> parameter has not been passed to
-<code><a title="gplately.PlotTopologies" href="#gplately.PlotTopologies">PlotTopologies</a></code>. This is needed to construct <code>transitional_crusts</code>
+<code><a title="gplately.PlotTopologies" href="#gplately.PlotTopologies">PlotTopologies</a></code>. This is needed to construct <code>transitional crusts</code>
 to the requested <code>time</code> and thus populate the GeoDataFrame.</dd>
 </dl>
 <h2 id="notes">Notes</h2>
-<p>The <code>transitional_crusts</code> needed to produce the GeoDataFrame are automatically
+<p>The <code>transitional crusts</code> needed to produce the GeoDataFrame are automatically
 constructed if the optional <code>time</code> parameter is passed to the
 <code><a title="gplately.PlotTopologies" href="#gplately.PlotTopologies">PlotTopologies</a></code> object before calling this function. <code>time</code> can be
 passed either when <code><a title="gplately.PlotTopologies" href="#gplately.PlotTopologies">PlotTopologies</a></code> is first called&hellip;</p>
@@ -10668,7 +10664,7 @@ passed either when <code><a title="gplately.PlotTopologies" href="#gplately.Plot
 <pre><code>time = 100 # Ma
 gplot.time = time
 </code></pre>
-<p>&hellip;after which this function can be re-run. Once the <code>transitional_crusts</code>
+<p>&hellip;after which this function can be re-run. Once the <code>transitional crusts</code>
 are reconstructed, they are converted into Shapely lines whose
 coordinates are passed to a geopandas GeoDataFrame.</p></div>
 <details class="source">
@@ -10676,7 +10672,7 @@ coordinates are passed to a geopandas GeoDataFrame.</p></div>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@validate_reconstruction_time
-@append_docstring(GET_DATE_DOCSTRING.format(&#34;transitional_crusts&#34;))
+@append_docstring(GET_DATE_DOCSTRING.format(&#34;transitional crusts&#34;))
 def get_transitional_crusts(
     self,
     central_meridian=0.0,
@@ -10760,17 +10756,17 @@ to wrapping.</dd>
 <h2 id="returns">Returns</h2>
 <dl>
 <dt><code>geopandas.GeoDataFrame</code></dt>
-<dd>A pandas.DataFrame that has a column with <code>unclassified_features</code> geometry.</dd>
+<dd>A pandas.DataFrame that has a column with <code>unclassified features</code> geometry.</dd>
 </dl>
 <h2 id="raises">Raises</h2>
 <dl>
 <dt><code>ValueError</code></dt>
 <dd>If the optional <code>time</code> parameter has not been passed to
-<code><a title="gplately.PlotTopologies" href="#gplately.PlotTopologies">PlotTopologies</a></code>. This is needed to construct <code>unclassified_features</code>
+<code><a title="gplately.PlotTopologies" href="#gplately.PlotTopologies">PlotTopologies</a></code>. This is needed to construct <code>unclassified features</code>
 to the requested <code>time</code> and thus populate the GeoDataFrame.</dd>
 </dl>
 <h2 id="notes">Notes</h2>
-<p>The <code>unclassified_features</code> needed to produce the GeoDataFrame are automatically
+<p>The <code>unclassified features</code> needed to produce the GeoDataFrame are automatically
 constructed if the optional <code>time</code> parameter is passed to the
 <code><a title="gplately.PlotTopologies" href="#gplately.PlotTopologies">PlotTopologies</a></code> object before calling this function. <code>time</code> can be
 passed either when <code><a title="gplately.PlotTopologies" href="#gplately.PlotTopologies">PlotTopologies</a></code> is first called&hellip;</p>
@@ -10780,7 +10776,7 @@ passed either when <code><a title="gplately.PlotTopologies" href="#gplately.Plot
 <pre><code>time = 100 # Ma
 gplot.time = time
 </code></pre>
-<p>&hellip;after which this function can be re-run. Once the <code>unclassified_features</code>
+<p>&hellip;after which this function can be re-run. Once the <code>unclassified features</code>
 are reconstructed, they are converted into Shapely lines whose
 coordinates are passed to a geopandas GeoDataFrame.</p></div>
 <details class="source">
@@ -10788,7 +10784,7 @@ coordinates are passed to a geopandas GeoDataFrame.</p></div>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@validate_reconstruction_time
-@append_docstring(GET_DATE_DOCSTRING.format(&#34;unclassified_features&#34;))
+@append_docstring(GET_DATE_DOCSTRING.format(&#34;unclassified features&#34;))
 def get_unclassified_features(
     self,
     central_meridian=0.0,
@@ -10813,25 +10809,23 @@ def get_unclassified_features(
 <dd>A subclass of <code>matplotlib.axes.Axes</code> which represents a map Projection.
 The map should be set at a particular Cartopy projection.</dd>
 <dt><strong><code>color</code></strong> :&ensp;<code>str</code>, default=<code>’black’</code></dt>
-<dd>The colour of the ridge lines. By default, it is set to black.</dd>
+<dd>The colour of the topologies lines. By default, it is set to black.</dd>
 </dl>
 <p>**kwargs :
-Keyword arguments for parameters such as <code>alpha</code>, etc. for
-plotting ridge geometries.
-See <code>Matplotlib</code> keyword arguments
-<a href="https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html">here</a>.</p>
+Keyword arguments for parameters such as <code>alpha</code>, etc. for plotting topologies geometries.
+See <code>Matplotlib</code> keyword arguments <a href="https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html">here</a>.</p>
 <h2 id="returns">Returns</h2>
 <dl>
 <dt><strong><code>ax</code></strong> :&ensp;<code>instance</code> of <code>&lt;geopandas.GeoDataFrame.plot&gt;</code></dt>
 <dd>A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map
-with ridge features plotted onto the chosen map projection.</dd>
+with topologies features plotted onto the chosen map projection.</dd>
 </dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@validate_topology_availability(&#34;all topological sections&#34;)
-@append_docstring(PLOT_DOCSTRING)
+@append_docstring(PLOT_DOCSTRING.format(&#34;topologies&#34;))
 def plot_all_topological_sections(self, ax, color=&#34;black&#34;, **kwargs):
     &#34;&#34;&#34;Plot all topologies on a standard map projection.&#34;&#34;&#34;
 
@@ -10854,25 +10848,23 @@ def plot_all_topological_sections(self, ax, color=&#34;black&#34;, **kwargs):
 <dd>A subclass of <code>matplotlib.axes.Axes</code> which represents a map Projection.
 The map should be set at a particular Cartopy projection.</dd>
 <dt><strong><code>color</code></strong> :&ensp;<code>str</code>, default=<code>’black’</code></dt>
-<dd>The colour of the ridge lines. By default, it is set to black.</dd>
+<dd>The colour of the topologies lines. By default, it is set to black.</dd>
 </dl>
 <p>**kwargs :
-Keyword arguments for parameters such as <code>alpha</code>, etc. for
-plotting ridge geometries.
-See <code>Matplotlib</code> keyword arguments
-<a href="https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html">here</a>.</p>
+Keyword arguments for parameters such as <code>alpha</code>, etc. for plotting topologies geometries.
+See <code>Matplotlib</code> keyword arguments <a href="https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html">here</a>.</p>
 <h2 id="returns">Returns</h2>
 <dl>
 <dt><strong><code>ax</code></strong> :&ensp;<code>instance</code> of <code>&lt;geopandas.GeoDataFrame.plot&gt;</code></dt>
 <dd>A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map
-with ridge features plotted onto the chosen map projection.</dd>
+with topologies features plotted onto the chosen map projection.</dd>
 </dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@validate_topology_availability(&#34;all topologies&#34;)
-@append_docstring(PLOT_DOCSTRING)
+@append_docstring(PLOT_DOCSTRING.format(&#34;topologies&#34;))
 def plot_all_topologies(self, ax, color=&#34;black&#34;, **kwargs):
     &#34;&#34;&#34;Plot topological polygons and networks on a standard map projection.&#34;&#34;&#34;
 
@@ -10891,56 +10883,47 @@ def plot_all_topologies(self, ax, color=&#34;black&#34;, **kwargs):
 <dd>
 <div class="desc"><p>Plot reconstructed coastline polygons onto a standard map Projection.</p>
 <h2 id="notes">Notes</h2>
-<p>The <code>coastlines</code> for plotting are accessed from the <code><a title="gplately.PlotTopologies" href="#gplately.PlotTopologies">PlotTopologies</a></code> object's
-<code>coastlines</code> attribute. These <code>coastlines</code> are reconstructed to the <code>time</code>
-passed to the <code><a title="gplately.PlotTopologies" href="#gplately.PlotTopologies">PlotTopologies</a></code> object and converted into Shapely polylines. The
-reconstructed <code>coastlines</code> are added onto the GeoAxes or GeoAxesSubplot map <code>ax</code> using
-GeoPandas.
-Map resentation details (e.g. facecolor, edgecolor, alpha…) are permitted as keyword
-arguments.</p>
+<p>The <code>coastlines</code> for plotting are accessed from the <code><a title="gplately.PlotTopologies" href="#gplately.PlotTopologies">PlotTopologies</a></code> object's <code>coastlines</code> attribute.
+These <code>coastlines</code> are reconstructed to the <code>time</code> passed to the <code><a title="gplately.PlotTopologies" href="#gplately.PlotTopologies">PlotTopologies</a></code> object and converted into Shapely polylines.
+The reconstructed <code>coastlines</code> are added onto the GeoAxes or GeoAxesSubplot map <code>ax</code> using GeoPandas.
+Map resentation details (e.g. facecolor, edgecolor, alpha…) are permitted as keyword arguments.</p>
 <h2 id="parameters">Parameters</h2>
 <dl>
 <dt><strong><code>ax</code></strong> :&ensp;<code>instance</code> of <code>&lt;cartopy.mpl.geoaxes.GeoAxes&gt;</code> or <code>&lt;cartopy.mpl.geoaxes.GeoAxesSubplot&gt;</code></dt>
 <dd>A subclass of <code>matplotlib.axes.Axes</code> which represents a map Projection.
 The map should be set at a particular Cartopy projection.</dd>
 <dt><strong><code>color</code></strong> :&ensp;<code>str</code>, default=<code>’black’</code></dt>
-<dd>The colour of the ridge lines. By default, it is set to black.</dd>
+<dd>The colour of the coastlines lines. By default, it is set to black.</dd>
 </dl>
 <p>**kwargs :
-Keyword arguments for parameters such as <code>alpha</code>, etc. for
-plotting ridge geometries.
-See <code>Matplotlib</code> keyword arguments
-<a href="https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html">here</a>.</p>
+Keyword arguments for parameters such as <code>alpha</code>, etc. for plotting coastlines geometries.
+See <code>Matplotlib</code> keyword arguments <a href="https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html">here</a>.</p>
 <h2 id="returns">Returns</h2>
 <dl>
 <dt><strong><code>ax</code></strong> :&ensp;<code>instance</code> of <code>&lt;geopandas.GeoDataFrame.plot&gt;</code></dt>
 <dd>A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map
-with ridge features plotted onto the chosen map projection.</dd>
+with coastlines features plotted onto the chosen map projection.</dd>
 </dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">@append_docstring(PLOT_DOCSTRING)
+<pre><code class="python">@append_docstring(PLOT_DOCSTRING.format(&#34;coastlines&#34;))
 def plot_coastlines(self, ax, color=&#34;black&#34;, **kwargs):
     &#34;&#34;&#34;Plot reconstructed coastline polygons onto a standard map Projection.
 
     Notes
     -----
-    The `coastlines` for plotting are accessed from the `PlotTopologies` object&#39;s
-    `coastlines` attribute. These `coastlines` are reconstructed to the `time`
-    passed to the `PlotTopologies` object and converted into Shapely polylines. The
-    reconstructed `coastlines` are added onto the GeoAxes or GeoAxesSubplot map `ax` using
-    GeoPandas.
-    Map resentation details (e.g. facecolor, edgecolor, alpha…) are permitted as keyword
-    arguments.
+    The `coastlines` for plotting are accessed from the `PlotTopologies` object&#39;s `coastlines` attribute.
+    These `coastlines` are reconstructed to the `time` passed to the `PlotTopologies` object and converted into Shapely polylines.
+    The reconstructed `coastlines` are added onto the GeoAxes or GeoAxesSubplot map `ax` using GeoPandas.
+    Map resentation details (e.g. facecolor, edgecolor, alpha…) are permitted as keyword arguments.
     &#34;&#34;&#34;
     return self.plot_feature(
         ax,
         self.coastlines,
         feature_name=&#34;coastlines&#34;,
-        facecolor=&#34;none&#34;,
-        edgecolor=color,
+        color=color,
         **kwargs,
     )</code></pre>
 </details>
@@ -10968,24 +10951,22 @@ are permitted.</p>
 <dd>A subclass of <code>matplotlib.axes.Axes</code> which represents a map Projection.
 The map should be set at a particular Cartopy projection.</dd>
 <dt><strong><code>color</code></strong> :&ensp;<code>str</code>, default=<code>’black’</code></dt>
-<dd>The colour of the ridge lines. By default, it is set to black.</dd>
+<dd>The colour of the continent ocean boundaries lines. By default, it is set to black.</dd>
 </dl>
 <p>**kwargs :
-Keyword arguments for parameters such as <code>alpha</code>, etc. for
-plotting ridge geometries.
-See <code>Matplotlib</code> keyword arguments
-<a href="https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html">here</a>.</p>
+Keyword arguments for parameters such as <code>alpha</code>, etc. for plotting continent ocean boundaries geometries.
+See <code>Matplotlib</code> keyword arguments <a href="https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html">here</a>.</p>
 <h2 id="returns">Returns</h2>
 <dl>
 <dt><strong><code>ax</code></strong> :&ensp;<code>instance</code> of <code>&lt;geopandas.GeoDataFrame.plot&gt;</code></dt>
 <dd>A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map
-with ridge features plotted onto the chosen map projection.</dd>
+with continent ocean boundaries features plotted onto the chosen map projection.</dd>
 </dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">@append_docstring(PLOT_DOCSTRING)
+<pre><code class="python">@append_docstring(PLOT_DOCSTRING.format(&#34;continent ocean boundaries&#34;))
 def plot_continent_ocean_boundaries(self, ax, color=&#34;black&#34;, **kwargs):
     &#34;&#34;&#34;Plot reconstructed continent-ocean boundary (COB) polygons onto a standard
     map Projection.
@@ -11008,8 +10989,7 @@ def plot_continent_ocean_boundaries(self, ax, color=&#34;black&#34;, **kwargs):
         ax,
         self.COBs,
         feature_name=&#34;continent_ocean_boundaries&#34;,
-        facecolor=&#34;none&#34;,
-        edgecolor=color,
+        color=color,
         **kwargs,
     )</code></pre>
 </details>
@@ -11025,24 +11005,22 @@ def plot_continent_ocean_boundaries(self, ax, color=&#34;black&#34;, **kwargs):
 <dd>A subclass of <code>matplotlib.axes.Axes</code> which represents a map Projection.
 The map should be set at a particular Cartopy projection.</dd>
 <dt><strong><code>color</code></strong> :&ensp;<code>str</code>, default=<code>’black’</code></dt>
-<dd>The colour of the ridge lines. By default, it is set to black.</dd>
+<dd>The colour of the continental crusts lines. By default, it is set to black.</dd>
 </dl>
 <p>**kwargs :
-Keyword arguments for parameters such as <code>alpha</code>, etc. for
-plotting ridge geometries.
-See <code>Matplotlib</code> keyword arguments
-<a href="https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html">here</a>.</p>
+Keyword arguments for parameters such as <code>alpha</code>, etc. for plotting continental crusts geometries.
+See <code>Matplotlib</code> keyword arguments <a href="https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html">here</a>.</p>
 <h2 id="returns">Returns</h2>
 <dl>
 <dt><strong><code>ax</code></strong> :&ensp;<code>instance</code> of <code>&lt;geopandas.GeoDataFrame.plot&gt;</code></dt>
 <dd>A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map
-with ridge features plotted onto the chosen map projection.</dd>
+with continental crusts features plotted onto the chosen map projection.</dd>
 </dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">@append_docstring(PLOT_DOCSTRING)
+<pre><code class="python">@append_docstring(PLOT_DOCSTRING.format(&#34;continental crusts&#34;))
 def plot_continental_crusts(self, ax, color=&#34;black&#34;, **kwargs):
     &#34;&#34;&#34;Plot continental crust lines on a standard map projection.&#34;&#34;&#34;
     return self.plot_feature(
@@ -11066,24 +11044,22 @@ def plot_continental_crusts(self, ax, color=&#34;black&#34;, **kwargs):
 <dd>A subclass of <code>matplotlib.axes.Axes</code> which represents a map Projection.
 The map should be set at a particular Cartopy projection.</dd>
 <dt><strong><code>color</code></strong> :&ensp;<code>str</code>, default=<code>’black’</code></dt>
-<dd>The colour of the ridge lines. By default, it is set to black.</dd>
+<dd>The colour of the continental rifts lines. By default, it is set to black.</dd>
 </dl>
 <p>**kwargs :
-Keyword arguments for parameters such as <code>alpha</code>, etc. for
-plotting ridge geometries.
-See <code>Matplotlib</code> keyword arguments
-<a href="https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html">here</a>.</p>
+Keyword arguments for parameters such as <code>alpha</code>, etc. for plotting continental rifts geometries.
+See <code>Matplotlib</code> keyword arguments <a href="https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html">here</a>.</p>
 <h2 id="returns">Returns</h2>
 <dl>
 <dt><strong><code>ax</code></strong> :&ensp;<code>instance</code> of <code>&lt;geopandas.GeoDataFrame.plot&gt;</code></dt>
 <dd>A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map
-with ridge features plotted onto the chosen map projection.</dd>
+with continental rifts features plotted onto the chosen map projection.</dd>
 </dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">@append_docstring(PLOT_DOCSTRING)
+<pre><code class="python">@append_docstring(PLOT_DOCSTRING.format(&#34;continental rifts&#34;))
 def plot_continental_rifts(self, ax, color=&#34;black&#34;, **kwargs):
     &#34;&#34;&#34;Plot continental rifts on a standard map projection.&#34;&#34;&#34;
     return self.plot_feature(
@@ -11102,56 +11078,47 @@ def plot_continental_rifts(self, ax, color=&#34;black&#34;, **kwargs):
 <dd>
 <div class="desc"><p>Plot reconstructed continental polygons onto a standard map Projection.</p>
 <h2 id="notes">Notes</h2>
-<p>The <code>continents</code> for plotting are accessed from the <code><a title="gplately.PlotTopologies" href="#gplately.PlotTopologies">PlotTopologies</a></code> object's
-<code>continents</code> attribute. These <code>continents</code> are reconstructed to the <code>time</code>
-passed to the <code><a title="gplately.PlotTopologies" href="#gplately.PlotTopologies">PlotTopologies</a></code> object and converted into Shapely polygons.
-The reconstructed <code>coastlines</code> are plotted onto the GeoAxes or GeoAxesSubplot map <code>ax</code> using
-GeoPandas.
-Map presentation details (e.g. facecolor, edgecolor, alpha…) are permitted as
-keyword arguments.</p>
+<p>The <code>continents</code> for plotting are accessed from the <code><a title="gplately.PlotTopologies" href="#gplately.PlotTopologies">PlotTopologies</a></code> object's <code>continents</code> attribute.
+These <code>continents</code> are reconstructed to the <code>time</code> passed to the <code><a title="gplately.PlotTopologies" href="#gplately.PlotTopologies">PlotTopologies</a></code> object and converted into Shapely polygons.
+The reconstructed <code>coastlines</code> are plotted onto the GeoAxes or GeoAxesSubplot map <code>ax</code> using GeoPandas.
+Map presentation details (e.g. facecolor, edgecolor, alpha…) are permitted as keyword arguments.</p>
 <h2 id="parameters">Parameters</h2>
 <dl>
 <dt><strong><code>ax</code></strong> :&ensp;<code>instance</code> of <code>&lt;cartopy.mpl.geoaxes.GeoAxes&gt;</code> or <code>&lt;cartopy.mpl.geoaxes.GeoAxesSubplot&gt;</code></dt>
 <dd>A subclass of <code>matplotlib.axes.Axes</code> which represents a map Projection.
 The map should be set at a particular Cartopy projection.</dd>
 <dt><strong><code>color</code></strong> :&ensp;<code>str</code>, default=<code>’black’</code></dt>
-<dd>The colour of the ridge lines. By default, it is set to black.</dd>
+<dd>The colour of the continents lines. By default, it is set to black.</dd>
 </dl>
 <p>**kwargs :
-Keyword arguments for parameters such as <code>alpha</code>, etc. for
-plotting ridge geometries.
-See <code>Matplotlib</code> keyword arguments
-<a href="https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html">here</a>.</p>
+Keyword arguments for parameters such as <code>alpha</code>, etc. for plotting continents geometries.
+See <code>Matplotlib</code> keyword arguments <a href="https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html">here</a>.</p>
 <h2 id="returns">Returns</h2>
 <dl>
 <dt><strong><code>ax</code></strong> :&ensp;<code>instance</code> of <code>&lt;geopandas.GeoDataFrame.plot&gt;</code></dt>
 <dd>A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map
-with ridge features plotted onto the chosen map projection.</dd>
+with continents features plotted onto the chosen map projection.</dd>
 </dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">@append_docstring(PLOT_DOCSTRING)
+<pre><code class="python">@append_docstring(PLOT_DOCSTRING.format(&#34;continents&#34;))
 def plot_continents(self, ax, color=&#34;black&#34;, **kwargs):
     &#34;&#34;&#34;Plot reconstructed continental polygons onto a standard map Projection.
 
     Notes
     -----
-    The `continents` for plotting are accessed from the `PlotTopologies` object&#39;s
-    `continents` attribute. These `continents` are reconstructed to the `time`
-    passed to the `PlotTopologies` object and converted into Shapely polygons.
-    The reconstructed `coastlines` are plotted onto the GeoAxes or GeoAxesSubplot map `ax` using
-    GeoPandas.
-    Map presentation details (e.g. facecolor, edgecolor, alpha…) are permitted as
-    keyword arguments.
+    The `continents` for plotting are accessed from the `PlotTopologies` object&#39;s `continents` attribute.
+    These `continents` are reconstructed to the `time` passed to the `PlotTopologies` object and converted into Shapely polygons.
+    The reconstructed `coastlines` are plotted onto the GeoAxes or GeoAxesSubplot map `ax` using GeoPandas.
+    Map presentation details (e.g. facecolor, edgecolor, alpha…) are permitted as keyword arguments.
     &#34;&#34;&#34;
     return self.plot_feature(
         ax,
         self.continents,
         feature_name=&#34;continents&#34;,
-        facecolor=&#34;none&#34;,
-        edgecolor=color,
+        color=color,
         **kwargs,
     )</code></pre>
 </details>
@@ -11167,24 +11134,22 @@ def plot_continents(self, ax, color=&#34;black&#34;, **kwargs):
 <dd>A subclass of <code>matplotlib.axes.Axes</code> which represents a map Projection.
 The map should be set at a particular Cartopy projection.</dd>
 <dt><strong><code>color</code></strong> :&ensp;<code>str</code>, default=<code>’black’</code></dt>
-<dd>The colour of the ridge lines. By default, it is set to black.</dd>
+<dd>The colour of the extended continental crusts lines. By default, it is set to black.</dd>
 </dl>
 <p>**kwargs :
-Keyword arguments for parameters such as <code>alpha</code>, etc. for
-plotting ridge geometries.
-See <code>Matplotlib</code> keyword arguments
-<a href="https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html">here</a>.</p>
+Keyword arguments for parameters such as <code>alpha</code>, etc. for plotting extended continental crusts geometries.
+See <code>Matplotlib</code> keyword arguments <a href="https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html">here</a>.</p>
 <h2 id="returns">Returns</h2>
 <dl>
 <dt><strong><code>ax</code></strong> :&ensp;<code>instance</code> of <code>&lt;geopandas.GeoDataFrame.plot&gt;</code></dt>
 <dd>A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map
-with ridge features plotted onto the chosen map projection.</dd>
+with extended continental crusts features plotted onto the chosen map projection.</dd>
 </dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">@append_docstring(PLOT_DOCSTRING)
+<pre><code class="python">@append_docstring(PLOT_DOCSTRING.format(&#34;extended continental crusts&#34;))
 def plot_extended_continental_crusts(self, ax, color=&#34;black&#34;, **kwargs):
     &#34;&#34;&#34;Plot extended continental crust lines on a standard map projection.&#34;&#34;&#34;
     return self.plot_feature(
@@ -11208,24 +11173,22 @@ def plot_extended_continental_crusts(self, ax, color=&#34;black&#34;, **kwargs):
 <dd>A subclass of <code>matplotlib.axes.Axes</code> which represents a map Projection.
 The map should be set at a particular Cartopy projection.</dd>
 <dt><strong><code>color</code></strong> :&ensp;<code>str</code>, default=<code>’black’</code></dt>
-<dd>The colour of the ridge lines. By default, it is set to black.</dd>
+<dd>The colour of the faults lines. By default, it is set to black.</dd>
 </dl>
 <p>**kwargs :
-Keyword arguments for parameters such as <code>alpha</code>, etc. for
-plotting ridge geometries.
-See <code>Matplotlib</code> keyword arguments
-<a href="https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html">here</a>.</p>
+Keyword arguments for parameters such as <code>alpha</code>, etc. for plotting faults geometries.
+See <code>Matplotlib</code> keyword arguments <a href="https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html">here</a>.</p>
 <h2 id="returns">Returns</h2>
 <dl>
 <dt><strong><code>ax</code></strong> :&ensp;<code>instance</code> of <code>&lt;geopandas.GeoDataFrame.plot&gt;</code></dt>
 <dd>A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map
-with ridge features plotted onto the chosen map projection.</dd>
+with faults features plotted onto the chosen map projection.</dd>
 </dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">@append_docstring(PLOT_DOCSTRING)
+<pre><code class="python">@append_docstring(PLOT_DOCSTRING.format(&#34;faults&#34;))
 def plot_faults(self, ax, color=&#34;black&#34;, **kwargs):
     &#34;&#34;&#34;Plot faults on a standard map projection.&#34;&#34;&#34;
     return self.plot_feature(
@@ -11239,7 +11202,7 @@ def plot_faults(self, ax, color=&#34;black&#34;, **kwargs):
 </details>
 </dd>
 <dt id="gplately.PlotTopologies.plot_feature"><code class="name flex">
-<span>def <span class="ident">plot_feature</span></span>(<span>self, ax, feature, feature_name='', **kwargs)</span>
+<span>def <span class="ident">plot_feature</span></span>(<span>self, ax, feature, feature_name='', color='black', **kwargs)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Plot pygplates.FeatureCollection
@@ -11250,25 +11213,23 @@ or pygplates.Feature onto a map.</p>
 <dd>A subclass of <code>matplotlib.axes.Axes</code> which represents a map Projection.
 The map should be set at a particular Cartopy projection.</dd>
 <dt><strong><code>color</code></strong> :&ensp;<code>str</code>, default=<code>’black’</code></dt>
-<dd>The colour of the ridge lines. By default, it is set to black.</dd>
+<dd>The colour of the feature lines. By default, it is set to black.</dd>
 </dl>
 <p>**kwargs :
-Keyword arguments for parameters such as <code>alpha</code>, etc. for
-plotting ridge geometries.
-See <code>Matplotlib</code> keyword arguments
-<a href="https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html">here</a>.</p>
+Keyword arguments for parameters such as <code>alpha</code>, etc. for plotting feature geometries.
+See <code>Matplotlib</code> keyword arguments <a href="https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html">here</a>.</p>
 <h2 id="returns">Returns</h2>
 <dl>
 <dt><strong><code>ax</code></strong> :&ensp;<code>instance</code> of <code>&lt;geopandas.GeoDataFrame.plot&gt;</code></dt>
 <dd>A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map
-with ridge features plotted onto the chosen map projection.</dd>
+with feature features plotted onto the chosen map projection.</dd>
 </dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">@append_docstring(PLOT_DOCSTRING)
-def plot_feature(self, ax, feature, feature_name=&#34;&#34;, **kwargs):
+<pre><code class="python">@append_docstring(PLOT_DOCSTRING.format(&#34;feature&#34;))
+def plot_feature(self, ax, feature, feature_name=&#34;&#34;, color=&#34;black&#34;, **kwargs):
     &#34;&#34;&#34;Plot pygplates.FeatureCollection  or pygplates.Feature onto a map.&#34;&#34;&#34;
     if not feature:
         logger.warn(
@@ -11276,6 +11237,10 @@ def plot_feature(self, ax, feature, feature_name=&#34;&#34;, **kwargs):
         )
         return ax
     else:
+        if &#34;edgecolor&#34; not in kwargs.keys():
+            kwargs[&#34;edgecolor&#34;] = color
+        if &#34;facecolor&#34; not in kwargs.keys():
+            kwargs[&#34;facecolor&#34;] = &#34;none&#34;
         return self._plot_feature(ax, partial(self.get_feature, feature), **kwargs)</code></pre>
 </details>
 </dd>
@@ -11290,24 +11255,22 @@ def plot_feature(self, ax, feature, feature_name=&#34;&#34;, **kwargs):
 <dd>A subclass of <code>matplotlib.axes.Axes</code> which represents a map Projection.
 The map should be set at a particular Cartopy projection.</dd>
 <dt><strong><code>color</code></strong> :&ensp;<code>str</code>, default=<code>’black’</code></dt>
-<dd>The colour of the ridge lines. By default, it is set to black.</dd>
+<dd>The colour of the fracturezones lines. By default, it is set to black.</dd>
 </dl>
 <p>**kwargs :
-Keyword arguments for parameters such as <code>alpha</code>, etc. for
-plotting ridge geometries.
-See <code>Matplotlib</code> keyword arguments
-<a href="https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html">here</a>.</p>
+Keyword arguments for parameters such as <code>alpha</code>, etc. for plotting fracturezones geometries.
+See <code>Matplotlib</code> keyword arguments <a href="https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html">here</a>.</p>
 <h2 id="returns">Returns</h2>
 <dl>
 <dt><strong><code>ax</code></strong> :&ensp;<code>instance</code> of <code>&lt;geopandas.GeoDataFrame.plot&gt;</code></dt>
 <dd>A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map
-with ridge features plotted onto the chosen map projection.</dd>
+with fracturezones features plotted onto the chosen map projection.</dd>
 </dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">@append_docstring(PLOT_DOCSTRING)
+<pre><code class="python">@append_docstring(PLOT_DOCSTRING.format(&#34;fracturezones&#34;))
 def plot_fracture_zones(self, ax, color=&#34;black&#34;, **kwargs):
     &#34;&#34;&#34;Plot fracture zones on a standard map projection.&#34;&#34;&#34;
     return self.plot_feature(
@@ -11502,24 +11465,22 @@ with the netCDF grid plotted onto the chosen map projection.</dd>
 <dd>A subclass of <code>matplotlib.axes.Axes</code> which represents a map Projection.
 The map should be set at a particular Cartopy projection.</dd>
 <dt><strong><code>color</code></strong> :&ensp;<code>str</code>, default=<code>’black’</code></dt>
-<dd>The colour of the ridge lines. By default, it is set to black.</dd>
+<dd>The colour of the inferred paleo-boundaries lines. By default, it is set to black.</dd>
 </dl>
 <p>**kwargs :
-Keyword arguments for parameters such as <code>alpha</code>, etc. for
-plotting ridge geometries.
-See <code>Matplotlib</code> keyword arguments
-<a href="https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html">here</a>.</p>
+Keyword arguments for parameters such as <code>alpha</code>, etc. for plotting inferred paleo-boundaries geometries.
+See <code>Matplotlib</code> keyword arguments <a href="https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html">here</a>.</p>
 <h2 id="returns">Returns</h2>
 <dl>
 <dt><strong><code>ax</code></strong> :&ensp;<code>instance</code> of <code>&lt;geopandas.GeoDataFrame.plot&gt;</code></dt>
 <dd>A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map
-with ridge features plotted onto the chosen map projection.</dd>
+with inferred paleo-boundaries features plotted onto the chosen map projection.</dd>
 </dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">@append_docstring(PLOT_DOCSTRING)
+<pre><code class="python">@append_docstring(PLOT_DOCSTRING.format(&#34;inferred paleo-boundaries&#34;))
 def plot_inferred_paleo_boundaries(self, ax, color=&#34;black&#34;, **kwargs):
     &#34;&#34;&#34;Plot inferred paleo boundaries on a standard map projection.&#34;&#34;&#34;
     return self.plot_feature(
@@ -11557,24 +11518,22 @@ compatibility with Cartopy.</p>
 <dd>A subclass of <code>matplotlib.axes.Axes</code> which represents a map Projection.
 The map should be set at a particular Cartopy projection.</dd>
 <dt><strong><code>color</code></strong> :&ensp;<code>str</code>, default=<code>’black’</code></dt>
-<dd>The colour of the ridge lines. By default, it is set to black.</dd>
+<dd>The colour of the other lines. By default, it is set to black.</dd>
 </dl>
 <p>**kwargs :
-Keyword arguments for parameters such as <code>alpha</code>, etc. for
-plotting ridge geometries.
-See <code>Matplotlib</code> keyword arguments
-<a href="https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html">here</a>.</p>
+Keyword arguments for parameters such as <code>alpha</code>, etc. for plotting other geometries.
+See <code>Matplotlib</code> keyword arguments <a href="https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html">here</a>.</p>
 <h2 id="returns">Returns</h2>
 <dl>
 <dt><strong><code>ax</code></strong> :&ensp;<code>instance</code> of <code>&lt;geopandas.GeoDataFrame.plot&gt;</code></dt>
 <dd>A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map
-with ridge features plotted onto the chosen map projection.</dd>
+with other features plotted onto the chosen map projection.</dd>
 </dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">@append_docstring(PLOT_DOCSTRING)
+<pre><code class="python">@append_docstring(PLOT_DOCSTRING.format(&#34;other&#34;))
 def plot_misc_boundaries(self, ax, color=&#34;black&#34;, **kwargs):
     &#34;&#34;&#34;Plot reconstructed miscellaneous plate boundary polylines onto a standard
     map Projection.
@@ -11616,24 +11575,22 @@ def plot_misc_boundaries(self, ax, color=&#34;black&#34;, **kwargs):
 <dd>A subclass of <code>matplotlib.axes.Axes</code> which represents a map Projection.
 The map should be set at a particular Cartopy projection.</dd>
 <dt><strong><code>color</code></strong> :&ensp;<code>str</code>, default=<code>’black’</code></dt>
-<dd>The colour of the ridge lines. By default, it is set to black.</dd>
+<dd>The colour of the misc transforms lines. By default, it is set to black.</dd>
 </dl>
 <p>**kwargs :
-Keyword arguments for parameters such as <code>alpha</code>, etc. for
-plotting ridge geometries.
-See <code>Matplotlib</code> keyword arguments
-<a href="https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html">here</a>.</p>
+Keyword arguments for parameters such as <code>alpha</code>, etc. for plotting misc transforms geometries.
+See <code>Matplotlib</code> keyword arguments <a href="https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html">here</a>.</p>
 <h2 id="returns">Returns</h2>
 <dl>
 <dt><strong><code>ax</code></strong> :&ensp;<code>instance</code> of <code>&lt;geopandas.GeoDataFrame.plot&gt;</code></dt>
 <dd>A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map
-with ridge features plotted onto the chosen map projection.</dd>
+with misc transforms features plotted onto the chosen map projection.</dd>
 </dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">@append_docstring(PLOT_DOCSTRING)
+<pre><code class="python">@append_docstring(PLOT_DOCSTRING.format(&#34;misc transforms&#34;))
 def plot_misc_transforms(self, ax, color=&#34;black&#34;, **kwargs):
     &#34;&#34;&#34;Plot miscellaneous transform boundaries on a standard map projection.&#34;&#34;&#34;
     return self.plot_feature(
@@ -11657,24 +11614,22 @@ def plot_misc_transforms(self, ax, color=&#34;black&#34;, **kwargs):
 <dd>A subclass of <code>matplotlib.axes.Axes</code> which represents a map Projection.
 The map should be set at a particular Cartopy projection.</dd>
 <dt><strong><code>color</code></strong> :&ensp;<code>str</code>, default=<code>’black’</code></dt>
-<dd>The colour of the ridge lines. By default, it is set to black.</dd>
+<dd>The colour of the orogenic belts lines. By default, it is set to black.</dd>
 </dl>
 <p>**kwargs :
-Keyword arguments for parameters such as <code>alpha</code>, etc. for
-plotting ridge geometries.
-See <code>Matplotlib</code> keyword arguments
-<a href="https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html">here</a>.</p>
+Keyword arguments for parameters such as <code>alpha</code>, etc. for plotting orogenic belts geometries.
+See <code>Matplotlib</code> keyword arguments <a href="https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html">here</a>.</p>
 <h2 id="returns">Returns</h2>
 <dl>
 <dt><strong><code>ax</code></strong> :&ensp;<code>instance</code> of <code>&lt;geopandas.GeoDataFrame.plot&gt;</code></dt>
 <dd>A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map
-with ridge features plotted onto the chosen map projection.</dd>
+with orogenic belts features plotted onto the chosen map projection.</dd>
 </dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">@append_docstring(PLOT_DOCSTRING)
+<pre><code class="python">@append_docstring(PLOT_DOCSTRING.format(&#34;orogenic belts&#34;))
 def plot_orogenic_belts(self, ax, color=&#34;black&#34;, **kwargs):
     &#34;&#34;&#34;Plot orogenic belts on a standard map projection.&#34;&#34;&#34;
     return self.plot_feature(
@@ -11698,24 +11653,22 @@ def plot_orogenic_belts(self, ax, color=&#34;black&#34;, **kwargs):
 <dd>A subclass of <code>matplotlib.axes.Axes</code> which represents a map Projection.
 The map should be set at a particular Cartopy projection.</dd>
 <dt><strong><code>color</code></strong> :&ensp;<code>str</code>, default=<code>’black’</code></dt>
-<dd>The colour of the ridge lines. By default, it is set to black.</dd>
+<dd>The colour of the passive continental boundaries lines. By default, it is set to black.</dd>
 </dl>
 <p>**kwargs :
-Keyword arguments for parameters such as <code>alpha</code>, etc. for
-plotting ridge geometries.
-See <code>Matplotlib</code> keyword arguments
-<a href="https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html">here</a>.</p>
+Keyword arguments for parameters such as <code>alpha</code>, etc. for plotting passive continental boundaries geometries.
+See <code>Matplotlib</code> keyword arguments <a href="https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html">here</a>.</p>
 <h2 id="returns">Returns</h2>
 <dl>
 <dt><strong><code>ax</code></strong> :&ensp;<code>instance</code> of <code>&lt;geopandas.GeoDataFrame.plot&gt;</code></dt>
 <dd>A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map
-with ridge features plotted onto the chosen map projection.</dd>
+with passive continental boundaries features plotted onto the chosen map projection.</dd>
 </dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">@append_docstring(PLOT_DOCSTRING)
+<pre><code class="python">@append_docstring(PLOT_DOCSTRING.format(&#34;passive continental boundaries&#34;))
 def plot_passive_continental_boundaries(self, ax, color=&#34;black&#34;, **kwargs):
     &#34;&#34;&#34;Plot passive continental boundaries on a standard map projection.&#34;&#34;&#34;
     return self.plot_feature(
@@ -11969,25 +11922,23 @@ compatibility with Cartopy.</p>
 <dd>A subclass of <code>matplotlib.axes.Axes</code> which represents a map Projection.
 The map should be set at a particular Cartopy projection.</dd>
 <dt><strong><code>color</code></strong> :&ensp;<code>str</code>, default=<code>’black’</code></dt>
-<dd>The colour of the ridge lines. By default, it is set to black.</dd>
+<dd>The colour of the ridges lines. By default, it is set to black.</dd>
 </dl>
 <p>**kwargs :
-Keyword arguments for parameters such as <code>alpha</code>, etc. for
-plotting ridge geometries.
-See <code>Matplotlib</code> keyword arguments
-<a href="https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html">here</a>.</p>
+Keyword arguments for parameters such as <code>alpha</code>, etc. for plotting ridges geometries.
+See <code>Matplotlib</code> keyword arguments <a href="https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html">here</a>.</p>
 <h2 id="returns">Returns</h2>
 <dl>
 <dt><strong><code>ax</code></strong> :&ensp;<code>instance</code> of <code>&lt;geopandas.GeoDataFrame.plot&gt;</code></dt>
 <dd>A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map
-with ridge features plotted onto the chosen map projection.</dd>
+with ridges features plotted onto the chosen map projection.</dd>
 </dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@validate_topology_availability(&#34;ridges&#34;)
-@append_docstring(PLOT_DOCSTRING)
+@append_docstring(PLOT_DOCSTRING.format(&#34;ridges&#34;))
 def plot_ridges(self, ax, color=&#34;black&#34;, **kwargs):
     &#34;&#34;&#34;Plot reconstructed ridge polylines onto a standard map Projection.
 
@@ -12042,25 +11993,23 @@ compatibility with Cartopy.</p>
 <dd>A subclass of <code>matplotlib.axes.Axes</code> which represents a map Projection.
 The map should be set at a particular Cartopy projection.</dd>
 <dt><strong><code>color</code></strong> :&ensp;<code>str</code>, default=<code>’black’</code></dt>
-<dd>The colour of the ridge lines. By default, it is set to black.</dd>
+<dd>The colour of the ridges and transforms lines. By default, it is set to black.</dd>
 </dl>
 <p>**kwargs :
-Keyword arguments for parameters such as <code>alpha</code>, etc. for
-plotting ridge geometries.
-See <code>Matplotlib</code> keyword arguments
-<a href="https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html">here</a>.</p>
+Keyword arguments for parameters such as <code>alpha</code>, etc. for plotting ridges and transforms geometries.
+See <code>Matplotlib</code> keyword arguments <a href="https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html">here</a>.</p>
 <h2 id="returns">Returns</h2>
 <dl>
 <dt><strong><code>ax</code></strong> :&ensp;<code>instance</code> of <code>&lt;geopandas.GeoDataFrame.plot&gt;</code></dt>
 <dd>A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map
-with ridge features plotted onto the chosen map projection.</dd>
+with ridges and transforms features plotted onto the chosen map projection.</dd>
 </dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@validate_topology_availability(&#34;ridges_and_transforms&#34;)
-@append_docstring(PLOT_DOCSTRING)
+@append_docstring(PLOT_DOCSTRING.format(&#34;ridges and transforms&#34;))
 def plot_ridges_and_transforms(self, ax, color=&#34;black&#34;, **kwargs):
     &#34;&#34;&#34;Plot reconstructed ridge &amp; transform boundary polylines onto a standard map
     Projection.
@@ -12102,24 +12051,22 @@ def plot_ridges_and_transforms(self, ax, color=&#34;black&#34;, **kwargs):
 <dd>A subclass of <code>matplotlib.axes.Axes</code> which represents a map Projection.
 The map should be set at a particular Cartopy projection.</dd>
 <dt><strong><code>color</code></strong> :&ensp;<code>str</code>, default=<code>’black’</code></dt>
-<dd>The colour of the ridge lines. By default, it is set to black.</dd>
+<dd>The colour of the slab edges lines. By default, it is set to black.</dd>
 </dl>
 <p>**kwargs :
-Keyword arguments for parameters such as <code>alpha</code>, etc. for
-plotting ridge geometries.
-See <code>Matplotlib</code> keyword arguments
-<a href="https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html">here</a>.</p>
+Keyword arguments for parameters such as <code>alpha</code>, etc. for plotting slab edges geometries.
+See <code>Matplotlib</code> keyword arguments <a href="https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html">here</a>.</p>
 <h2 id="returns">Returns</h2>
 <dl>
 <dt><strong><code>ax</code></strong> :&ensp;<code>instance</code> of <code>&lt;geopandas.GeoDataFrame.plot&gt;</code></dt>
 <dd>A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map
-with ridge features plotted onto the chosen map projection.</dd>
+with slab edges features plotted onto the chosen map projection.</dd>
 </dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">@append_docstring(PLOT_DOCSTRING)
+<pre><code class="python">@append_docstring(PLOT_DOCSTRING.format(&#34;slab edges&#34;))
 def plot_slab_edges(self, ax, color=&#34;black&#34;, **kwargs):
     &#34;&#34;&#34;Plot slab edges on a standard map projection.&#34;&#34;&#34;
     return self.plot_feature(
@@ -12399,24 +12346,22 @@ with subduction teeth plotted onto the chosen map projection.</dd>
 <dd>A subclass of <code>matplotlib.axes.Axes</code> which represents a map Projection.
 The map should be set at a particular Cartopy projection.</dd>
 <dt><strong><code>color</code></strong> :&ensp;<code>str</code>, default=<code>’black’</code></dt>
-<dd>The colour of the ridge lines. By default, it is set to black.</dd>
+<dd>The colour of the sutures lines. By default, it is set to black.</dd>
 </dl>
 <p>**kwargs :
-Keyword arguments for parameters such as <code>alpha</code>, etc. for
-plotting ridge geometries.
-See <code>Matplotlib</code> keyword arguments
-<a href="https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html">here</a>.</p>
+Keyword arguments for parameters such as <code>alpha</code>, etc. for plotting sutures geometries.
+See <code>Matplotlib</code> keyword arguments <a href="https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html">here</a>.</p>
 <h2 id="returns">Returns</h2>
 <dl>
 <dt><strong><code>ax</code></strong> :&ensp;<code>instance</code> of <code>&lt;geopandas.GeoDataFrame.plot&gt;</code></dt>
 <dd>A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map
-with ridge features plotted onto the chosen map projection.</dd>
+with sutures features plotted onto the chosen map projection.</dd>
 </dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">@append_docstring(PLOT_DOCSTRING)
+<pre><code class="python">@append_docstring(PLOT_DOCSTRING.format(&#34;sutures&#34;))
 def plot_sutures(self, ax, color=&#34;black&#34;, **kwargs):
     &#34;&#34;&#34;Plot sutures on a standard map projection.&#34;&#34;&#34;
     return self.plot_feature(
@@ -12440,24 +12385,22 @@ def plot_sutures(self, ax, color=&#34;black&#34;, **kwargs):
 <dd>A subclass of <code>matplotlib.axes.Axes</code> which represents a map Projection.
 The map should be set at a particular Cartopy projection.</dd>
 <dt><strong><code>color</code></strong> :&ensp;<code>str</code>, default=<code>’black’</code></dt>
-<dd>The colour of the ridge lines. By default, it is set to black.</dd>
+<dd>The colour of the terrane boundaries lines. By default, it is set to black.</dd>
 </dl>
 <p>**kwargs :
-Keyword arguments for parameters such as <code>alpha</code>, etc. for
-plotting ridge geometries.
-See <code>Matplotlib</code> keyword arguments
-<a href="https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html">here</a>.</p>
+Keyword arguments for parameters such as <code>alpha</code>, etc. for plotting terrane boundaries geometries.
+See <code>Matplotlib</code> keyword arguments <a href="https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html">here</a>.</p>
 <h2 id="returns">Returns</h2>
 <dl>
 <dt><strong><code>ax</code></strong> :&ensp;<code>instance</code> of <code>&lt;geopandas.GeoDataFrame.plot&gt;</code></dt>
 <dd>A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map
-with ridge features plotted onto the chosen map projection.</dd>
+with terrane boundaries features plotted onto the chosen map projection.</dd>
 </dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">@append_docstring(PLOT_DOCSTRING)
+<pre><code class="python">@append_docstring(PLOT_DOCSTRING.format(&#34;terrane boundaries&#34;))
 def plot_terrane_boundaries(self, ax, color=&#34;black&#34;, **kwargs):
     &#34;&#34;&#34;Plot terrane boundaries on a standard map projection.&#34;&#34;&#34;
     return self.plot_feature(
@@ -12494,25 +12437,23 @@ compatibility with Cartopy.</p>
 <dd>A subclass of <code>matplotlib.axes.Axes</code> which represents a map Projection.
 The map should be set at a particular Cartopy projection.</dd>
 <dt><strong><code>color</code></strong> :&ensp;<code>str</code>, default=<code>’black’</code></dt>
-<dd>The colour of the ridge lines. By default, it is set to black.</dd>
+<dd>The colour of the transforms lines. By default, it is set to black.</dd>
 </dl>
 <p>**kwargs :
-Keyword arguments for parameters such as <code>alpha</code>, etc. for
-plotting ridge geometries.
-See <code>Matplotlib</code> keyword arguments
-<a href="https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html">here</a>.</p>
+Keyword arguments for parameters such as <code>alpha</code>, etc. for plotting transforms geometries.
+See <code>Matplotlib</code> keyword arguments <a href="https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html">here</a>.</p>
 <h2 id="returns">Returns</h2>
 <dl>
 <dt><strong><code>ax</code></strong> :&ensp;<code>instance</code> of <code>&lt;geopandas.GeoDataFrame.plot&gt;</code></dt>
 <dd>A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map
-with ridge features plotted onto the chosen map projection.</dd>
+with transforms features plotted onto the chosen map projection.</dd>
 </dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@validate_topology_availability(&#34;transforms&#34;)
-@append_docstring(PLOT_DOCSTRING)
+@append_docstring(PLOT_DOCSTRING.format(&#34;transforms&#34;))
 def plot_transforms(self, ax, color=&#34;black&#34;, **kwargs):
     &#34;&#34;&#34;Plot reconstructed transform boundary polylines onto a standard map.
 
@@ -12553,24 +12494,22 @@ def plot_transforms(self, ax, color=&#34;black&#34;, **kwargs):
 <dd>A subclass of <code>matplotlib.axes.Axes</code> which represents a map Projection.
 The map should be set at a particular Cartopy projection.</dd>
 <dt><strong><code>color</code></strong> :&ensp;<code>str</code>, default=<code>’black’</code></dt>
-<dd>The colour of the ridge lines. By default, it is set to black.</dd>
+<dd>The colour of the transitional crusts lines. By default, it is set to black.</dd>
 </dl>
 <p>**kwargs :
-Keyword arguments for parameters such as <code>alpha</code>, etc. for
-plotting ridge geometries.
-See <code>Matplotlib</code> keyword arguments
-<a href="https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html">here</a>.</p>
+Keyword arguments for parameters such as <code>alpha</code>, etc. for plotting transitional crusts geometries.
+See <code>Matplotlib</code> keyword arguments <a href="https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html">here</a>.</p>
 <h2 id="returns">Returns</h2>
 <dl>
 <dt><strong><code>ax</code></strong> :&ensp;<code>instance</code> of <code>&lt;geopandas.GeoDataFrame.plot&gt;</code></dt>
 <dd>A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map
-with ridge features plotted onto the chosen map projection.</dd>
+with transitional crusts features plotted onto the chosen map projection.</dd>
 </dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">@append_docstring(PLOT_DOCSTRING)
+<pre><code class="python">@append_docstring(PLOT_DOCSTRING.format(&#34;transitional crusts&#34;))
 def plot_transitional_crusts(self, ax, color=&#34;black&#34;, **kwargs):
     &#34;&#34;&#34;Plot transitional crust on a standard map projection.&#34;&#34;&#34;
     return self.plot_feature(
@@ -12608,25 +12547,23 @@ compatibility with Cartopy.</p>
 <dd>A subclass of <code>matplotlib.axes.Axes</code> which represents a map Projection.
 The map should be set at a particular Cartopy projection.</dd>
 <dt><strong><code>color</code></strong> :&ensp;<code>str</code>, default=<code>’black’</code></dt>
-<dd>The colour of the ridge lines. By default, it is set to black.</dd>
+<dd>The colour of the trenches lines. By default, it is set to black.</dd>
 </dl>
 <p>**kwargs :
-Keyword arguments for parameters such as <code>alpha</code>, etc. for
-plotting ridge geometries.
-See <code>Matplotlib</code> keyword arguments
-<a href="https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html">here</a>.</p>
+Keyword arguments for parameters such as <code>alpha</code>, etc. for plotting trenches geometries.
+See <code>Matplotlib</code> keyword arguments <a href="https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html">here</a>.</p>
 <h2 id="returns">Returns</h2>
 <dl>
 <dt><strong><code>ax</code></strong> :&ensp;<code>instance</code> of <code>&lt;geopandas.GeoDataFrame.plot&gt;</code></dt>
 <dd>A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map
-with ridge features plotted onto the chosen map projection.</dd>
+with trenches features plotted onto the chosen map projection.</dd>
 </dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">@validate_topology_availability(&#34;trenches&#34;)
-@append_docstring(PLOT_DOCSTRING)
+@append_docstring(PLOT_DOCSTRING.format(&#34;trenches&#34;))
 def plot_trenches(self, ax, color=&#34;black&#34;, **kwargs):
     &#34;&#34;&#34;Plot reconstructed subduction trench polylines onto a standard map
     Projection.
@@ -12668,24 +12605,22 @@ def plot_trenches(self, ax, color=&#34;black&#34;, **kwargs):
 <dd>A subclass of <code>matplotlib.axes.Axes</code> which represents a map Projection.
 The map should be set at a particular Cartopy projection.</dd>
 <dt><strong><code>color</code></strong> :&ensp;<code>str</code>, default=<code>’black’</code></dt>
-<dd>The colour of the ridge lines. By default, it is set to black.</dd>
+<dd>The colour of the unclassified features lines. By default, it is set to black.</dd>
 </dl>
 <p>**kwargs :
-Keyword arguments for parameters such as <code>alpha</code>, etc. for
-plotting ridge geometries.
-See <code>Matplotlib</code> keyword arguments
-<a href="https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html">here</a>.</p>
+Keyword arguments for parameters such as <code>alpha</code>, etc. for plotting unclassified features geometries.
+See <code>Matplotlib</code> keyword arguments <a href="https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html">here</a>.</p>
 <h2 id="returns">Returns</h2>
 <dl>
 <dt><strong><code>ax</code></strong> :&ensp;<code>instance</code> of <code>&lt;geopandas.GeoDataFrame.plot&gt;</code></dt>
 <dd>A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map
-with ridge features plotted onto the chosen map projection.</dd>
+with unclassified features features plotted onto the chosen map projection.</dd>
 </dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">@append_docstring(PLOT_DOCSTRING)
+<pre><code class="python">@append_docstring(PLOT_DOCSTRING.format(&#34;unclassified features&#34;))
 def plot_unclassified_features(self, ax, color=&#34;black&#34;, **kwargs):
     &#34;&#34;&#34;Plot GPML unclassified features on a standard map projection.&#34;&#34;&#34;
     return self.plot_feature(
@@ -18615,10 +18550,7 @@ if needed.</dd>
                 )
 
                 # save debug file
-                if (
-                    &#34;GPLATELY_DEBUG&#34; in os.environ
-                    and os.environ[&#34;GPLATELY_DEBUG&#34;].lower() == &#34;true&#34;
-                ):
+                if get_debug_level() &gt; 100:
                     seafloor_ages = gridding_input_dictionary[&#34;SEAFLOOR_AGE&#34;]
                     logger.debug(
                         f&#34;The max and min values of seafloor age are: {np.max(seafloor_ages)} - {np.min(seafloor_ages)} ({topology_reconstruction.get_current_time()}Ma)&#34;
@@ -19619,10 +19551,7 @@ other general z-values are saved to a gridding input file (.npz).</p></div>
             )
 
             # save debug file
-            if (
-                &#34;GPLATELY_DEBUG&#34; in os.environ
-                and os.environ[&#34;GPLATELY_DEBUG&#34;].lower() == &#34;true&#34;
-            ):
+            if get_debug_level() &gt; 100:
                 seafloor_ages = gridding_input_dictionary[&#34;SEAFLOOR_AGE&#34;]
                 logger.debug(
                     f&#34;The max and min values of seafloor age are: {np.max(seafloor_ages)} - {np.min(seafloor_ages)} ({topology_reconstruction.get_current_time()}Ma)&#34;

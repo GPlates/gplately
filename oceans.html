@@ -237,6 +237,7 @@ import pygplates
 
 from . import grids, ptt, reconstruction, tools
 from .ptt import separate_ridge_transform_segments
+from .utils.log_utils import get_debug_level
 
 logger = logging.getLogger(&#34;gplately&#34;)
 
@@ -1548,10 +1549,7 @@ class SeafloorGrid(object):
                 )
 
                 # save debug file
-                if (
-                    &#34;GPLATELY_DEBUG&#34; in os.environ
-                    and os.environ[&#34;GPLATELY_DEBUG&#34;].lower() == &#34;true&#34;
-                ):
+                if get_debug_level() &gt; 100:
                     seafloor_ages = gridding_input_dictionary[&#34;SEAFLOOR_AGE&#34;]
                     logger.debug(
                         f&#34;The max and min values of seafloor age are: {np.max(seafloor_ages)} - {np.min(seafloor_ages)} ({topology_reconstruction.get_current_time()}Ma)&#34;
@@ -3266,10 +3264,7 @@ if needed.</dd>
                 )
 
                 # save debug file
-                if (
-                    &#34;GPLATELY_DEBUG&#34; in os.environ
-                    and os.environ[&#34;GPLATELY_DEBUG&#34;].lower() == &#34;true&#34;
-                ):
+                if get_debug_level() &gt; 100:
                     seafloor_ages = gridding_input_dictionary[&#34;SEAFLOOR_AGE&#34;]
                     logger.debug(
                         f&#34;The max and min values of seafloor age are: {np.max(seafloor_ages)} - {np.min(seafloor_ages)} ({topology_reconstruction.get_current_time()}Ma)&#34;
@@ -4270,10 +4265,7 @@ other general z-values are saved to a gridding input file (.npz).</p></div>
             )
 
             # save debug file
-            if (
-                &#34;GPLATELY_DEBUG&#34; in os.environ
-                and os.environ[&#34;GPLATELY_DEBUG&#34;].lower() == &#34;true&#34;
-            ):
+            if get_debug_level() &gt; 100:
                 seafloor_ages = gridding_input_dictionary[&#34;SEAFLOOR_AGE&#34;]
                 logger.debug(
                     f&#34;The max and min values of seafloor age are: {np.max(seafloor_ages)} - {np.min(seafloor_ages)} ({topology_reconstruction.get_current_time()}Ma)&#34;

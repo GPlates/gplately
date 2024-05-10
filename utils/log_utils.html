@@ -63,7 +63,21 @@ def turn_on_debug_logging():
     ptt_logger.setLevel(logging.DEBUG)
     for h in ptt_logger.handlers:
         h.setLevel(logging.DEBUG)
-        h.setFormatter(debug_formatter)</code></pre>
+        h.setFormatter(debug_formatter)
+
+    gplately_logger.debug(&#34;The GPlately debug logging has been turned on.&#34;)
+
+
+def get_debug_level():
+    if &#34;GPLATELY_DEBUG&#34; in os.environ:
+        if os.environ[&#34;GPLATELY_DEBUG&#34;].lower() == &#34;true&#34;:
+            return 1
+        try:
+            return int(os.environ[&#34;GPLATELY_DEBUG&#34;])
+        except:
+            return 0
+    else:
+        return 0</code></pre>
 </details>
 </section>
 <section>
@@ -73,6 +87,27 @@ def turn_on_debug_logging():
 <section>
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
+<dt id="gplately.utils.log_utils.get_debug_level"><code class="name flex">
+<span>def <span class="ident">get_debug_level</span></span>(<span>)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def get_debug_level():
+    if &#34;GPLATELY_DEBUG&#34; in os.environ:
+        if os.environ[&#34;GPLATELY_DEBUG&#34;].lower() == &#34;true&#34;:
+            return 1
+        try:
+            return int(os.environ[&#34;GPLATELY_DEBUG&#34;])
+        except:
+            return 0
+    else:
+        return 0</code></pre>
+</details>
+</dd>
 <dt id="gplately.utils.log_utils.setup_logging"><code class="name flex">
 <span>def <span class="ident">setup_logging</span></span>(<span>)</span>
 </code></dt>
@@ -119,7 +154,9 @@ def turn_on_debug_logging():
     ptt_logger.setLevel(logging.DEBUG)
     for h in ptt_logger.handlers:
         h.setLevel(logging.DEBUG)
-        h.setFormatter(debug_formatter)</code></pre>
+        h.setFormatter(debug_formatter)
+
+    gplately_logger.debug(&#34;The GPlately debug logging has been turned on.&#34;)</code></pre>
 </details>
 </dd>
 </dl>
@@ -145,6 +182,7 @@ def turn_on_debug_logging():
 </li>
 <li><h3><a href="#header-functions">Functions</a></h3>
 <ul class="">
+<li><code><a title="gplately.utils.log_utils.get_debug_level" href="#gplately.utils.log_utils.get_debug_level">get_debug_level</a></code></li>
 <li><code><a title="gplately.utils.log_utils.setup_logging" href="#gplately.utils.log_utils.setup_logging">setup_logging</a></code></li>
 <li><code><a title="gplately.utils.log_utils.turn_on_debug_logging" href="#gplately.utils.log_utils.turn_on_debug_logging">turn_on_debug_logging</a></code></li>
 </ul>
