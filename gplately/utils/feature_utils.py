@@ -4,8 +4,7 @@ from ..geometry import pygplates_to_shapely
 
 
 def shapelify_features(features, central_meridian=0.0, tessellate_degrees=None):
-    """Generate Shapely `MultiPolygon` or `MultiLineString` geometries
-    from reconstructed feature polygons.
+    """Generate Shapely `MultiPolygon` or `MultiLineString` geometries from reconstructed feature polygons.
 
     Notes
     -----
@@ -15,8 +14,7 @@ def shapelify_features(features, central_meridian=0.0, tessellate_degrees=None):
     lines may manifest on GeoAxes plots as horizontal lines that span the entire
     global extent. To prevent this, `shapelify_features` uses pyGPlates'
     [DateLineWrapper](https://www.gplates.org/docs/pygplates/generated/pygplates.datelinewrapper)
-    to split a feature polygon into multiple closed polygons if it happens to cut the
-    antimeridian.
+    to split a feature polygon into multiple closed polygons if it happens to cut the antimeridian.
     Another measure taken to ensure features are valid is to order exterior coordinates
     of Shapely polygons anti-clockwise.
 
@@ -27,8 +25,7 @@ def shapelify_features(features, central_meridian=0.0, tessellate_degrees=None):
     central_meridian : float
         Central meridian around which to perform wrapping; default: 0.0.
     tessellate_degrees : float or None
-        If provided, geometries will be tessellated to this resolution prior
-        to wrapping.
+        If provided, geometries will be tessellated to this resolution prior to wrapping.
 
     Returns
     -------
