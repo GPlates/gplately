@@ -1,6 +1,5 @@
 """
-A light wrapping of some 
-[`pyGPlates`](https://www.gplates.org/docs/pygplates/index.html) 
+A light wrapping of some [`pyGPlates`](https://www.gplates.org/docs/pygplates/index.html) 
 classes to keep track of filenames.
 
 Each object listed here will have a `self.filenames` attribute.

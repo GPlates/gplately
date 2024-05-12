@@ -111,211 +111,39 @@ import os
 import re
 import warnings
 from pathlib import Path
+from typing import Union
 
 import numpy as np
 import pandas as pd
 import pygplates
 
-from . import grids, ptt, reconstruction, tools
+from . import grids, reconstruction, tools
 from .ptt import separate_ridge_transform_segments
+from .tools import _deg2pixels, _pixels2deg
+from .utils import seafloor_grid_utils
 from .utils.log_utils import get_debug_level
 
 logger = logging.getLogger("gplately")
 
-# -------------------------------------------------------------------------
-# Auxiliary functions for SeafloorGrid
 
-
+# JUST FOR PYDOC TO GENERATE THE SAME DOC AS BEFORE
 def create_icosahedral_mesh(refinement_levels):
-    """Define a global point mesh with Stripy's
-    [icosahedral triangulated mesh](https://github.com/underworldcode/stripy/blob/294354c00dd72e085a018e69c345d9353c6fafef/stripy/spherical_meshes.py#L27)
-    and turn all mesh domains into pyGPlates MultiPointOnSphere types.
-
-    This global mesh will be masked with a set of continental or COB terrane
-    polygons to define the ocean basin at a given reconstruction time.
-    The `refinement_levels` integer is proportional to the resolution of the
-    mesh and the ocean/continent boundary.
-
-    Parameters
-    ----------
-    refinement_levels : int
-        Refine the number of points in the triangulation. The larger the
-        refinement level, the sharper the ocean basin resolution.
-
-    Returns
-    -------
-    multi_point : instance of <pygplates.MultiPointOnSphere>
-        The longitues and latitudes that make up the icosahedral ocean mesh
-        collated into a MultiPointOnSphere object.
-    icosahedral_global_mesh : instance of <stripy.spherical_meshes.icosahedral_mesh>
-        The original global icosahedral triangulated mesh.
-    """
-    import stripy
-
-    # Create the ocean basin mesh using Stripy's icosahedral spherical mesh
-    icosahedral_global_mesh = stripy.spherical_meshes.icosahedral_mesh(
-        refinement_levels, include_face_points=False, trisection=False, tree=False
-    )
-    # Get lons and lats of mesh, and turn them into a MultiPointOnSphere
-    lats_arr = np.rad2deg(icosahedral_global_mesh.lats)
-    lons_arr = np.rad2deg(icosahedral_global_mesh.lons)
-    multi_point = pygplates.MultiPointOnSphere(zip(lats_arr, lons_arr))
-
-    return multi_point, icosahedral_global_mesh
+    return seafloor_grid_utils.create_icosahedral_mesh(refinement_levels)
 
 
 def ensure_polygon_geometry(reconstructed_polygons, rotation_model, time):
-    """Ensure COB terrane/continental polygon geometries are polygons
-    with reconstruction plate IDs and valid times.
-
-    Notes
-    -----
-    This step must be done so that the initial set of ocean basin points
-    (the Stripy icosahedral mesh) can be partitioned into plates using
-    each reconstruction plate ID for the given plate `model`.
-
-    This allows for an oceanic point-in-continental
-    polygon query for every identified plate ID. See documentation for
-    `point_in_polygon_routine` for more details.
-
-    `ensure_polygon_geometry` works as follows:
-    COB terrane/continental polygons are assumed to have been reconstructed
-    already in `reconstructed_polygons` (a list of
-    type <pygplates.ReconstructedFeatureGeometry>). The list contents are
-    turned into a <pygplates.FeatureCollection> to be ascribed a
-    `PolygonOnSphere` geometry, a reconstruction plate ID, and a valid time.
-    Once finished, this feature collection is turned back into a list of
-    instance <pygplates.ReconstructedFeatureGeometry> and returned.
-
-    This revert must be completed for compatibility with the subsequent
-    point-in-polygon routine.
-
-    Parameters
-    ----------
-    reconstructed_polygons : list of instance <pygplates.ReconstructedFeatureGeometry>
-        If used in `SeafloorGrid`, these are automatically obtained from the
-        `PlotTopologies.continents` attribute (the reconstructed continental
-        polygons at the current reconstruction time).
-
-    rotation_model : instance of <pygplates.RotationModel>
-        A parameter for turning the <pygplates.FeatureCollection> back into a
-        list of instance <pygplates.ReconstructedFeatureGeometry> for
-        compatibility with the point-in-polygon routine.
-
-    """
-    continent_FeatCol = []
-    # self._PlotTopologies_object.continents
-    for n in reconstructed_polygons:
-        continent_FeatCol.append(n.get_feature())
-
-    polygon_feats = pygplates.FeatureCollection(continent_FeatCol)
-
-    # From GPRM's force_polygon_geometries(); set feature attributes
-    # like valid times and plate IDs to each masking polygon
-    polygons = []
-    for feature in polygon_feats:
-        for geom in feature.get_all_geometries():
-            polygon = pygplates.Feature(feature.get_feature_type())
-            polygon.set_geometry(pygplates.PolygonOnSphere(geom))
-            polygon.set_reconstruction_plate_id(feature.get_reconstruction_plate_id())
-            # Avoid features in COBTerranes with invalid time
-            if feature.get_valid_time()[0] >= feature.get_valid_time()[1]:
-                polygon.set_valid_time(
-                    feature.get_valid_time()[0], feature.get_valid_time()[1]
-                )
-                polygons.append(polygon)
-    cobter_polygon_features = pygplates.FeatureCollection(polygons)
-
-    # Turn the feature collection back into ReconstructedFeatureGeometry
-    # objects otherwise it will not work with PIP
-    reconstructed_cobter_polygons = []
-    pygplates.reconstruct(
-        cobter_polygon_features, rotation_model, reconstructed_cobter_polygons, time
+    return seafloor_grid_utils.ensure_polygon_geometry(
+        reconstructed_polygons, rotation_model, time
     )
-    return reconstructed_cobter_polygons
 
 
 def point_in_polygon_routine(multi_point, COB_polygons):
-    """Perform Plate Tectonic Tools' point in polygon routine to partition
-    points in a `multi_point` MultiPointOnSphere feature based on whether
-    they are inside or outside the polygons in `COB_polygons`.
-
-    Notes
-    -----
-    Assuming the `COB_polygons` have passed through `ensure_polygon_geometry`,
-    each polygon should have a plate ID assigned to it.
-
-    This PIP routine serves two purposes for `SeafloorGrid`:
-
-    1) It identifies continental regions in the icosahedral global mesh
-    MultiPointOnSphere feature and 'erases' in-continent oceanic points
-    for the construction of a continental mask at each timestep;
-
-    2) It identifies oceanic points in the icosahedral global mesh.
-    These points will be passed to a function that calculates each point's
-    proximity to its nearest MOR segment (if any) within the polygonal domain
-    of its allocated plate ID. Each distance is divided by half the
-    `initial_ocean_mean_spreading_rate` (an attribute of `SeafloorGrids`) to
-    determine a simplified seafloor age for each point.
-
-    Number 2) only happens once at the start of the gridding process to
-    momentarily fill the gridding region with initial ocean points that have
-    set ages (albeit not from a plate model file). After multiple time steps
-    of reconstruction, the ocean basin will be filled with new points (with
-    plate-model prescribed ages) that emerge from ridge topologies.
+    return seafloor_grid_utils.point_in_polygon_routine(multi_point, COB_polygons)
 
 
-    Returns
-    -------
-    pygplates.MultiPointOnSphere(points_in_arr) : instance <pygplates.MultiPointOnSphere>
-        Point features that are within COB terrane polygons.
-    pygplates.MultiPointOnSphere(points_out_arr) : instance <pygplates.MultiPointOnSphere>
-        Point features that are outside COB terrane polygons.
-    zvals : list
-        A binary list. If an entry is == 0, its corresponing point in the
-        MultiPointOnSphere object is on the ocean. If == 1, the point is
-        in the COB terrane polygon.
-    """
-    # Convert MultiPointOnSphere to array of PointOnSphere
-    multi_point = np.array(multi_point.get_points(), dtype="object")
-
-    # Collect reconstructed geometries of continental polygons
-    polygons = np.empty(len(COB_polygons), dtype="object")
-    for ind, i in enumerate(COB_polygons):
-        if isinstance(i, pygplates.ReconstructedFeatureGeometry):
-            geom = i.get_reconstructed_geometry()
-        elif isinstance(i, pygplates.GeometryOnSphere):
-            geom = i
-        else:  # e.g. ndarray of coordinates
-            geom = pygplates.PolygonOnSphere(i)
-        polygons[ind] = geom
-    proxies = np.ones(polygons.size)
-
-    pip_result = ptt.utils.points_in_polygons.find_polygons(
-        multi_point, polygons, proxies, all_polygons=False
-    )  # 1 for points in polygons, None for points outside
-    zvals = np.array(
-        pip_result,
-        dtype="float",
-    ).ravel()
-    zvals[np.isnan(zvals)] = 0.0
-    zvals = zvals.astype("int")
-    points_in_arr = multi_point[zvals == 1]
-    points_out_arr = multi_point[zvals != 1]
-
-    return (
-        pygplates.MultiPointOnSphere(points_in_arr),
-        pygplates.MultiPointOnSphere(points_out_arr),
-        zvals,
-    )
-
-
-def _deg2pixels(deg_res, deg_min, deg_max):
-    return int(np.floor((deg_max - deg_min) / deg_res)) + 1
-
-
-def _pixels2deg(spacing_pixel, deg_min, deg_max):
-    return (deg_max - deg_min) / np.floor(int(spacing_pixel - 1))
+create_icosahedral_mesh.__doc__ = seafloor_grid_utils.create_icosahedral_mesh.__doc__
+ensure_polygon_geometry.__doc__ = seafloor_grid_utils.ensure_polygon_geometry.__doc__
+point_in_polygon_routine.__doc__ = seafloor_grid_utils.point_in_polygon_routine.__doc__
 
 
 class SeafloorGrid(object):
@@ -338,7 +166,7 @@ class SeafloorGrid(object):
         The delta time for resolving ridges (and thus age gridding).
     save_directory : str, default None'
         The top-level directory to save all outputs to.
-    file_collection : str, default None
+    file_collection : str, default ""
         A string to identify the plate model used (will be automated later).
     refinement_levels : int, default 5
         Control the number of points in the icosahedral mesh (higher integer
@@ -383,8 +211,8 @@ class SeafloorGrid(object):
         max_time,
         min_time,
         ridge_time_step,
-        save_directory: str = "agegrids",
-        file_collection=None,
+        save_directory: Union[str, Path] = "agegrids-output",
+        file_collection: str = "",
         refinement_levels=5,
         ridge_sampling=0.5,
         extent=(-180, 180, -90, 90),
@@ -394,6 +222,7 @@ class SeafloorGrid(object):
         resume_from_checkpoints=False,
         zval_names=("SPREADING_RATE",),
         continent_mask_filename=None,
+        grid_resolution=(3601, 1801),
     ):
 
         # Provides a rotation model, topology features and reconstruction time for
@@ -403,49 +232,8 @@ class SeafloorGrid(object):
         self.topology_features = self.PlateReconstruction_object.topology_features
         self._PlotTopologies_object = PlotTopologies_object
 
-        # create various folders for output files
-        self.save_directory = save_directory
-
-        self.zvalues_directory = os.path.join(self.save_directory, "zvalues")
-        Path(self.zvalues_directory).mkdir(parents=True, exist_ok=True)
-        self.zvalues_file_basename = "point_data_dataframe_{0}Ma.npz"
-
-        self.mor_directory = os.path.join(self.save_directory, "middle_ocean_ridges")
-        Path(self.mor_directory).mkdir(parents=True, exist_ok=True)
-        self.mor_file_basename = "MOR_plus_one_points_{:0.2f}.gpmlz"
-
-        self.continent_mask_directory = os.path.join(
-            self.save_directory, "continent_mask"
-        )
-        Path(self.continent_mask_directory).mkdir(parents=True, exist_ok=True)
-        self.continent_mask_file_basename = "continent_mask_{}Ma.nc"
-
-        self.gridding_input_directory = os.path.join(
-            self.save_directory, "gridding_input"
-        )
-        Path(self.gridding_input_directory).mkdir(parents=True, exist_ok=True)
-        self.gridding_input_basename = "gridding_input_{:0.1f}Ma.npz"
-
-        self.sample_points_directory = os.path.join(
-            self.save_directory, "sample_points"
-        )
-        Path(self.sample_points_directory).mkdir(parents=True, exist_ok=True)
-        self.sample_points_basename = "age_grid_sample_points_{0}_Ma.gpmlz"
-        self.sample_points_filename = os.path.join(
-            self.sample_points_directory, self.sample_points_basename
-        )
-
         self.file_collection = file_collection
-
-        if self.file_collection is not None:
-            gridding_basename = "{}_{}".format(
-                file_collection, self.gridding_input_basename
-            )
-        else:
-            gridding_basename = self.gridding_input_basename
-        self.gridding_input_filename = os.path.join(
-            self.gridding_input_directory, gridding_basename
-        )
+        self._setup_output_paths(save_directory)
 
         # Topological parameters
         self.refinement_levels = refinement_levels
@@ -456,67 +244,7 @@ class SeafloorGrid(object):
         # Gridding parameters
         self.extent = extent
 
-        # A list of degree spacings that allow an even division of the global lat-lon extent.
-        divisible_degree_spacings = [0.1, 0.25, 0.5, 0.75, 1.0]
-
-        if grid_spacing:
-            # If the provided degree spacing is in the list of permissible spacings, use it
-            # and prepare the number of pixels in x and y (spacingX and spacingY)
-            if grid_spacing in divisible_degree_spacings:
-                self.grid_spacing = grid_spacing
-                self.spacingX = _deg2pixels(
-                    grid_spacing, self.extent[0], self.extent[1]
-                )
-                self.spacingY = _deg2pixels(
-                    grid_spacing, self.extent[2], self.extent[3]
-                )
-
-            # If the provided spacing is >>1 degree, use 1 degree
-            elif grid_spacing >= divisible_degree_spacings[-1]:
-                self.grid_spacing = divisible_degree_spacings[-1]
-                self.spacingX = _deg2pixels(
-                    divisible_degree_spacings[-1], self.extent[0], self.extent[1]
-                )
-                self.spacingY = _deg2pixels(
-                    divisible_degree_spacings[-1], self.extent[2], self.extent[3]
-                )
-
-                with warnings.catch_warnings():
-                    warnings.simplefilter("always")
-                    warnings.warn(
-                        f"The provided grid_spacing of {grid_spacing} is quite large. To preserve the grid resolution, a {self.grid_spacing} degree spacing has been employed instead."
-                    )
-
-            # If the provided degree spacing is not in the list of permissible spacings, but below
-            # a degree, find the closest permissible degree spacing. Use this and find
-            # spacingX and spacingY.
-            else:
-                for divisible_degree_spacing in divisible_degree_spacings:
-                    # The tolerance is half the difference between consecutive divisible spacings.
-                    # Max is 1 degree for now - other integers work but may provide too little of a
-                    # grid resolution.
-                    if abs(grid_spacing - divisible_degree_spacing) <= 0.125:
-                        new_deg_res = divisible_degree_spacing
-                        self.grid_spacing = new_deg_res
-                        self.spacingX = _deg2pixels(
-                            new_deg_res, self.extent[0], self.extent[1]
-                        )
-                        self.spacingY = _deg2pixels(
-                            new_deg_res, self.extent[2], self.extent[3]
-                        )
-
-                with warnings.catch_warnings():
-                    warnings.simplefilter("always")
-                    warnings.warn(
-                        f"The provided grid_spacing of {grid_spacing} does not cleanly divide into the global extent. A degree spacing of {self.grid_spacing} has been employed instead."
-                    )
-
-        else:
-            # If a spacing degree is not provided, use default
-            # resolution and get default spacingX and spacingY
-            self.grid_spacing = 0.1
-            self.spacingX = 3601
-            self.spacingY = 1801
+        self._set_grid_resolution(grid_spacing, grid_resolution)
 
         self.resume_from_checkpoints = resume_from_checkpoints
 
@@ -588,12 +316,113 @@ class SeafloorGrid(object):
             )
         else:
             mask_basename = self.continent_mask_file_basename
-            if self.file_collection is not None:
+            if self.file_collection:
                 mask_basename = "{}_{}".format(self.file_collection, mask_basename)
             self.continent_mask_filename = os.path.join(
                 self.continent_mask_directory, mask_basename
             )
             self.percentage = 0.1
+
+    def _setup_output_paths(self, save_directory):
+        """create various folders for output files"""
+        self.save_directory = Path(save_directory)
+
+        self.zvalues_directory = os.path.join(self.save_directory, "zvalues")
+        Path(self.zvalues_directory).mkdir(parents=True, exist_ok=True)
+        self.zvalues_file_basename = "point_data_dataframe_{0}Ma.npz"
+
+        self.mor_directory = os.path.join(self.save_directory, "middle_ocean_ridges")
+        Path(self.mor_directory).mkdir(parents=True, exist_ok=True)
+        self.mor_file_basename = "MOR_plus_one_points_{:0.2f}.gpmlz"
+
+        self.continent_mask_directory = os.path.join(
+            self.save_directory, "continent_mask"
+        )
+        Path(self.continent_mask_directory).mkdir(parents=True, exist_ok=True)
+        self.continent_mask_file_basename = "continent_mask_{}Ma.nc"
+
+        self.gridding_input_directory = os.path.join(
+            self.save_directory, "gridding_input"
+        )
+        Path(self.gridding_input_directory).mkdir(parents=True, exist_ok=True)
+        self.gridding_input_basename = "gridding_input_{:0.1f}Ma.npz"
+
+        self.sample_points_directory = os.path.join(
+            self.save_directory, "sample_points"
+        )
+        Path(self.sample_points_directory).mkdir(parents=True, exist_ok=True)
+        self.sample_points_basename = "age_grid_sample_points_{0}_Ma.gpmlz"
+        self.sample_points_filename = os.path.join(
+            self.sample_points_directory, self.sample_points_basename
+        )
+        if self.file_collection:
+            gridding_basename = "{}_{}".format(
+                self.file_collection, self.gridding_input_basename
+            )
+        else:
+            gridding_basename = self.gridding_input_basename
+        self.gridding_input_filename = os.path.join(
+            self.gridding_input_directory, gridding_basename
+        )
+
+    def _set_grid_resolution(self, grid_spacing, grid_resolution):
+        """determine the output grid resolution"""
+        # A list of degree spacings that allow an even division of the global lat-lon extent.
+        divisible_degree_spacings = [0.1, 0.25, 0.5, 0.75, 1.0]
+        if grid_spacing:
+            # If the provided degree spacing is in the list of permissible spacings, use it
+            # and prepare the number of pixels in x and y (spacingX and spacingY)
+            if grid_spacing in divisible_degree_spacings:
+                self.grid_spacing = grid_spacing
+                self.spacingX = _deg2pixels(
+                    grid_spacing, self.extent[0], self.extent[1]
+                )
+                self.spacingY = _deg2pixels(
+                    grid_spacing, self.extent[2], self.extent[3]
+                )
+
+            # If the provided spacing is >>1 degree, use 1 degree
+            elif grid_spacing >= divisible_degree_spacings[-1]:
+                self.grid_spacing = divisible_degree_spacings[-1]
+                self.spacingX = _deg2pixels(
+                    divisible_degree_spacings[-1], self.extent[0], self.extent[1]
+                )
+                self.spacingY = _deg2pixels(
+                    divisible_degree_spacings[-1], self.extent[2], self.extent[3]
+                )
+
+                with warnings.catch_warnings():
+                    warnings.simplefilter("always")
+                    warnings.warn(
+                        f"The provided grid_spacing of {grid_spacing} is quite large. To preserve the grid resolution, a {self.grid_spacing} degree spacing has been employed instead."
+                    )
+
+            # If the provided degree spacing is not in the list of permissible spacings, but below
+            # a degree, find the closest permissible degree spacing. Use this and find
+            # spacingX and spacingY.
+            else:
+                for divisible_degree_spacing in divisible_degree_spacings:
+                    # The tolerance is half the difference between consecutive divisible spacings.
+                    # Max is 1 degree for now - other integers work but may provide too little of a
+                    # grid resolution.
+                    if abs(grid_spacing - divisible_degree_spacing) <= 0.125:
+                        new_deg_res = divisible_degree_spacing
+                        self.grid_spacing = new_deg_res
+                        self.spacingX = _deg2pixels(
+                            new_deg_res, self.extent[0], self.extent[1]
+                        )
+                        self.spacingY = _deg2pixels(
+                            new_deg_res, self.extent[2], self.extent[3]
+                        )
+
+                with warnings.catch_warnings():
+                    warnings.simplefilter("always")
+                    warnings.warn(
+                        f"The provided grid_spacing of {grid_spacing} does not cleanly divide into the global extent. A degree spacing of {self.grid_spacing} has been employed instead."
+                    )
+
+        else:
+            self.spacingX, self.spacingY = grid_resolution
 
     # Allow SeafloorGrid time to be updated, and to update the internally-used
     # PlotTopologies' time attribute too. If PlotTopologies is used outside the
@@ -647,7 +476,7 @@ class SeafloorGrid(object):
             data_to_store = [zvals_to_store[i] for i in zvals_to_store]
 
         basename = self.zvalues_file_basename.format(time)
-        if self.file_collection is not None:
+        if self.file_collection:
             basename = "{}_{}".format(self.file_collection, basename)
 
         np.savez_compressed(
@@ -818,7 +647,7 @@ class SeafloorGrid(object):
             self.refinement_levels,
             self._max_time,
         )
-        if self.file_collection is not None:
+        if self.file_collection:
             basename = "{}_{}".format(self.file_collection, basename)
         output_filename = os.path.join(self.save_directory, basename)
         initial_ocean_feature_collection = pygplates.FeatureCollection(
@@ -975,7 +804,7 @@ class SeafloorGrid(object):
 
             # Write MOR points at `time` to gpmlz
             basename = self.mor_file_basename.format(time)
-            if self.file_collection is not None:
+            if self.file_collection:
                 basename = "{}_{}".format(self.file_collection, basename)
             mor_points.write(os.path.join(self.mor_directory, basename))
             # Make sure the max time dataframe is for the initial ocean points only
@@ -1191,7 +1020,7 @@ class SeafloorGrid(object):
     def _extract_zvalues_from_npz_to_ndarray(self, featurecollection, time):
         # NPZ file of seedpoint z values that emerged at this time
         basename = self.zvalues_file_basename.format(time)
-        if self.file_collection is not None:
+        if self.file_collection:
             basename = "{}_{}".format(self.file_collection, basename)
         loaded_npz = np.load(os.path.join(self.zvalues_directory, basename))
 
@@ -1265,7 +1094,7 @@ class SeafloorGrid(object):
             else:
                 # GPMLZ file of MOR seedpoints
                 basename = self.mor_file_basename.format(time)
-                if self.file_collection is not None:
+                if self.file_collection:
                     basename = "{}_{}".format(self.file_collection, basename)
 
                 features = pygplates.FeatureCollection(
@@ -1451,7 +1280,7 @@ class SeafloorGrid(object):
                 gridding_input_basename = self.gridding_input_basename.format(
                     topology_reconstruction.get_current_time()
                 )
-                if self.file_collection is not None:
+                if self.file_collection:
                     gridding_input_basename = "{}_{}".format(
                         self.file_collection,
                         gridding_input_basename,
@@ -1572,7 +1401,7 @@ def _lat_lon_z_to_netCDF_time(
     time,
     zval_name,
     file_collection,
-    save_directory,
+    save_directory: Union[str, Path],
     total_column_headers,
     extent,
     resX,
@@ -1614,7 +1443,7 @@ def _lat_lon_z_to_netCDF_time(
 
     unmasked_basename = f"{zval_name}_grid_unmasked_{time}Ma.nc"
     grid_basename = f"{zval_name}_grid_{time}Ma.nc"
-    if file_collection is not None:
+    if file_collection:
         unmasked_basename = f"{file_collection}_{unmasked_basename}"
         grid_basename = f"{file_collection}_{grid_basename}"
     output_dir = os.path.join(save_directory, zval_name)

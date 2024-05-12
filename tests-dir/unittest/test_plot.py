@@ -29,7 +29,7 @@ def main(show=True):
 
     test_model = PlateReconstruction(
         model.get_rotation_model(),
-        topology_features=model.get_layer("Topologies"),
+        # topology_features=model.get_layer("Topologies"),
         static_polygons=model.get_layer("StaticPolygons"),
     )
     gplot = PlotTopologies(

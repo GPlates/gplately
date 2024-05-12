@@ -46,6 +46,7 @@ class PlateReconstruction(object):
         topology_features=None,
         static_polygons=None,
         anchor_plate_id=0,
+        plate_model_name: str = "Nemo",
     ):
         if hasattr(rotation_model, "reconstruction_identifier"):
             self.name = rotation_model.reconstruction_identifier
@@ -58,6 +59,7 @@ class PlateReconstruction(object):
         )
         self.topology_features = _load_FeatureCollection(topology_features)
         self.static_polygons = _load_FeatureCollection(static_polygons)
+        self.plate_model_name = plate_model_name
 
     def __getstate__(self):
         filenames = {
