@@ -211,7 +211,7 @@ class SeafloorGrid(object):
         max_time,
         min_time,
         ridge_time_step,
-        save_directory: Union[str, Path] = "agegrids-output",
+        save_directory: Union[str, Path] = "seafloor-grid-output",
         file_collection: str = "",
         refinement_levels=5,
         ridge_sampling=0.5,
@@ -222,7 +222,6 @@ class SeafloorGrid(object):
         resume_from_checkpoints=False,
         zval_names=("SPREADING_RATE",),
         continent_mask_filename=None,
-        grid_resolution=(3601, 1801),
     ):
 
         # Provides a rotation model, topology features and reconstruction time for
@@ -244,7 +243,7 @@ class SeafloorGrid(object):
         # Gridding parameters
         self.extent = extent
 
-        self._set_grid_resolution(grid_spacing, grid_resolution)
+        self._set_grid_resolution(grid_spacing)
 
         self.resume_from_checkpoints = resume_from_checkpoints
 
@@ -256,11 +255,8 @@ class SeafloorGrid(object):
             self._max_time, self.min_time - 0.1, -self.ridge_time_step
         )
 
-        # If PlotTopologies' time attribute is not equal to the maximum time in the
-        # seafloor grid reconstruction tree, make it equal. This will ensure the time
-        # for continental masking is consistent.
-        if self._PlotTopologies_object.time != self._max_time:
-            self._PlotTopologies_object.time = self._max_time
+        # ensure the time for continental masking is consistent.
+        self._PlotTopologies_object.time = self._max_time
 
         # Essential features and meshes for the SeafloorGrid
         self.continental_polygons = ensure_polygon_geometry(
@@ -281,16 +277,14 @@ class SeafloorGrid(object):
             "BIRTH_LAT_SNAPSHOT",
             "POINT_ID_SNAPSHOT",
         ]
-        self.total_column_headers = np.concatenate(
-            [self.default_column_headers, self.zval_names]
-        )
+        self.total_column_headers = self.default_column_headers + list(self.zval_names)
 
         # Filename for continental masks that the user can provide instead of building it here
         self.continent_mask_filename = continent_mask_filename
 
         # If the user provides a continental mask filename, we need to downsize the mask
         # resolution for when we create the initial ocean mesh. The mesh does not need to be high-res.
-        if self.continent_mask_filename is not None:
+        if self.continent_mask_filename:
             # Determine which percentage to use to scale the continent mask resolution at max time
             def _map_res_to_node_percentage(self, continent_mask_filename):
                 maskY, maskX = grids.read_netcdf_grid(
@@ -365,64 +359,59 @@ class SeafloorGrid(object):
             self.gridding_input_directory, gridding_basename
         )
 
-    def _set_grid_resolution(self, grid_spacing, grid_resolution):
+    def _set_grid_resolution(self, grid_spacing=0.1):
         """determine the output grid resolution"""
+        if not grid_spacing:
+            grid_spacing = 0.1
         # A list of degree spacings that allow an even division of the global lat-lon extent.
         divisible_degree_spacings = [0.1, 0.25, 0.5, 0.75, 1.0]
-        if grid_spacing:
-            # If the provided degree spacing is in the list of permissible spacings, use it
-            # and prepare the number of pixels in x and y (spacingX and spacingY)
-            if grid_spacing in divisible_degree_spacings:
-                self.grid_spacing = grid_spacing
-                self.spacingX = _deg2pixels(
-                    grid_spacing, self.extent[0], self.extent[1]
+
+        # If the provided degree spacing is in the list of permissible spacings, use it
+        # and prepare the number of pixels in x and y (spacingX and spacingY)
+        if grid_spacing in divisible_degree_spacings:
+            self.grid_spacing = grid_spacing
+            self.spacingX = _deg2pixels(grid_spacing, self.extent[0], self.extent[1])
+            self.spacingY = _deg2pixels(grid_spacing, self.extent[2], self.extent[3])
+
+        # If the provided spacing is >>1 degree, use 1 degree
+        elif grid_spacing >= divisible_degree_spacings[-1]:
+            self.grid_spacing = divisible_degree_spacings[-1]
+            self.spacingX = _deg2pixels(
+                divisible_degree_spacings[-1], self.extent[0], self.extent[1]
+            )
+            self.spacingY = _deg2pixels(
+                divisible_degree_spacings[-1], self.extent[2], self.extent[3]
+            )
+
+            with warnings.catch_warnings():
+                warnings.simplefilter("always")
+                warnings.warn(
+                    f"The provided grid_spacing of {grid_spacing} is quite large. To preserve the grid resolution, a {self.grid_spacing} degree spacing has been employed instead."
                 )
-                self.spacingY = _deg2pixels(
-                    grid_spacing, self.extent[2], self.extent[3]
-                )
 
-            # If the provided spacing is >>1 degree, use 1 degree
-            elif grid_spacing >= divisible_degree_spacings[-1]:
-                self.grid_spacing = divisible_degree_spacings[-1]
-                self.spacingX = _deg2pixels(
-                    divisible_degree_spacings[-1], self.extent[0], self.extent[1]
-                )
-                self.spacingY = _deg2pixels(
-                    divisible_degree_spacings[-1], self.extent[2], self.extent[3]
-                )
-
-                with warnings.catch_warnings():
-                    warnings.simplefilter("always")
-                    warnings.warn(
-                        f"The provided grid_spacing of {grid_spacing} is quite large. To preserve the grid resolution, a {self.grid_spacing} degree spacing has been employed instead."
-                    )
-
-            # If the provided degree spacing is not in the list of permissible spacings, but below
-            # a degree, find the closest permissible degree spacing. Use this and find
-            # spacingX and spacingY.
-            else:
-                for divisible_degree_spacing in divisible_degree_spacings:
-                    # The tolerance is half the difference between consecutive divisible spacings.
-                    # Max is 1 degree for now - other integers work but may provide too little of a
-                    # grid resolution.
-                    if abs(grid_spacing - divisible_degree_spacing) <= 0.125:
-                        new_deg_res = divisible_degree_spacing
-                        self.grid_spacing = new_deg_res
-                        self.spacingX = _deg2pixels(
-                            new_deg_res, self.extent[0], self.extent[1]
-                        )
-                        self.spacingY = _deg2pixels(
-                            new_deg_res, self.extent[2], self.extent[3]
-                        )
-
-                with warnings.catch_warnings():
-                    warnings.simplefilter("always")
-                    warnings.warn(
-                        f"The provided grid_spacing of {grid_spacing} does not cleanly divide into the global extent. A degree spacing of {self.grid_spacing} has been employed instead."
-                    )
-
+        # If the provided degree spacing is not in the list of permissible spacings, but below
+        # a degree, find the closest permissible degree spacing. Use this and find
+        # spacingX and spacingY.
         else:
-            self.spacingX, self.spacingY = grid_resolution
+            for divisible_degree_spacing in divisible_degree_spacings:
+                # The tolerance is half the difference between consecutive divisible spacings.
+                # Max is 1 degree for now - other integers work but may provide too little of a
+                # grid resolution.
+                if abs(grid_spacing - divisible_degree_spacing) <= 0.125:
+                    new_deg_res = divisible_degree_spacing
+                    self.grid_spacing = new_deg_res
+                    self.spacingX = _deg2pixels(
+                        new_deg_res, self.extent[0], self.extent[1]
+                    )
+                    self.spacingY = _deg2pixels(
+                        new_deg_res, self.extent[2], self.extent[3]
+                    )
+
+            with warnings.catch_warnings():
+                warnings.simplefilter("always")
+                warnings.warn(
+                    f"The provided grid_spacing of {grid_spacing} does not cleanly divide into the global extent. A degree spacing of {self.grid_spacing} has been employed instead."
+                )
 
     # Allow SeafloorGrid time to be updated, and to update the internally-used
     # PlotTopologies' time attribute too. If PlotTopologies is used outside the
