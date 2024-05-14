@@ -378,12 +378,11 @@ class PlotTopologies(object):
         ValueError
             If the chosen reconstruction time is <0 Ma.
         """
-        if var == self.time:
-            pass
-        elif var >= 0:
+        if var < 0:
+            raise ValueError("The 'time' property must be greater than 0.")
+
+        if self.time is None or (not math.isclose(var, self.time)):
             self.update_time(var)
-        else:
-            raise ValueError("Enter a valid time >= 0")
 
     @property
     def anchor_plate_id(self):
