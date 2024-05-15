@@ -279,12 +279,9 @@ class SeafloorGrid(object):
         ]
         self.total_column_headers = self.default_column_headers + self.zval_names
 
-        # Filename for continental masks that the user can provide instead of building it here
-        self.continent_mask_filename = continent_mask_filename
-
-        # If the user provides a continental mask filename, we need to downsize the mask
-        # resolution for when we create the initial ocean mesh. The mesh does not need to be high-res.
-        if self.continent_mask_filename:
+        if continent_mask_filename:
+            # Filename for continental masks that the user can provide instead of building it here
+            self.continent_mask_filename = continent_mask_filename
             self.get_ocean_points_from_continent_mask_flag = True
         else:
             mask_basename = self.continent_mask_file_basename
@@ -517,6 +514,8 @@ class SeafloorGrid(object):
         max_time_cont_mask = grids.Raster(
             self.continent_mask_filename.format(self._max_time)
         )
+        # If the user provides a continental mask filename, we need to downsize the mask
+        # resolution for when we create the initial ocean mesh. The mesh does not need to be high-res.
         # If the input grid is at 0.5 degree uniform spacing, then the input
         # grid is 7x more populated than a 6-level stripy icosahedral mesh and
         # using this resolution for the initial ocean mesh will dramatically slow down reconstruction by topologies.
@@ -642,7 +641,7 @@ class SeafloorGrid(object):
             os.path.join(self.save_directory, basename)
         )
 
-        # Collect all point feature data into a pandas dataframe
+        # save the zvalue(spreading rate) of the initial ocean points to file "point_data_dataframe_{max_time}Ma.npz"
         self._collect_point_data_in_dataframe(
             initial_ocean_feature_collection,
             np.array(
