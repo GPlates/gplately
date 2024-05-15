@@ -213,19 +213,18 @@ class SeafloorGrid(object):
         ridge_time_step: Union[float, int],
         save_directory: Union[str, Path] = "seafloor-grid-output",
         file_collection: str = "",
-        refinement_levels=5,
-        ridge_sampling=0.5,
+        refinement_levels: int = 5,
+        ridge_sampling: float = 0.5,
         extent: Tuple[float] = (-180, 180, -90, 90),
         grid_spacing: float = 0.1,
         subduction_collision_parameters=(5.0, 10.0),
-        initial_ocean_mean_spreading_rate=75.0,
+        initial_ocean_mean_spreading_rate: float = 75.0,
         resume_from_checkpoints=False,
         zval_names: List[str] = ["SPREADING_RATE"],
         continent_mask_filename=None,
     ):
 
-        # Provides a rotation model, topology features and reconstruction time for
-        # the SeafloorGrid
+        # Provides a rotation model, topology features and reconstruction time for the SeafloorGrid
         self.PlateReconstruction_object = PlateReconstruction_object
         self.rotation_model = self.PlateReconstruction_object.rotation_model
         self.topology_features = self.PlateReconstruction_object.topology_features
@@ -236,9 +235,9 @@ class SeafloorGrid(object):
         if continent_mask_filename:
             # Filename for continental masks that the user can provide instead of building it here
             self.continent_mask_filepath = continent_mask_filename
-            self.get_ocean_points_from_continent_mask_flag = True
+            self.continent_mask_is_provided = True
         else:
-            self.get_ocean_points_from_continent_mask_flag = False
+            self.continent_mask_is_provided = False
 
         self._setup_output_paths(save_directory)
 
@@ -257,10 +256,10 @@ class SeafloorGrid(object):
 
         # Temporal parameters
         self._max_time = max_time
-        self.min_time = min_time
-        self.ridge_time_step = ridge_time_step
-        self.time_array = np.arange(
-            self._max_time, self.min_time - 0.1, -self.ridge_time_step
+        self._min_time = min_time
+        self._ridge_time_step = ridge_time_step
+        self._times = np.arange(
+            self._max_time, self._min_time - 0.1, -self._ridge_time_step
         )
 
         # ensure the time for continental masking is consistent.
@@ -331,7 +330,7 @@ class SeafloorGrid(object):
 
         # continent mask files
         # only generate continent mask files if user does not provide them
-        if not self.get_ocean_points_from_continent_mask_flag:
+        if not self.continent_mask_is_provided:
             self.continent_mask_directory = os.path.join(
                 self.save_directory, "continent_mask"
             )
@@ -519,7 +518,6 @@ class SeafloorGrid(object):
             partition_return=pygplates.PartitionReturn.separate_partitioned_and_unpartitioned,
             properties_to_copy=[pygplates.PropertyName.gpml_shapefile_attributes],
         )
-        print(paleogeography[1][0].get_geometries())
         return paleogeography[1]  # points in oceans
 
     def _get_ocean_points_from_continent_mask(self):
@@ -599,7 +597,7 @@ class SeafloorGrid(object):
 
         if (
             os.path.isfile(self.continent_mask_filepath.format(self._max_time))
-            and self.get_ocean_points_from_continent_mask_flag
+            and self.continent_mask_is_provided
         ):
             # If a set of continent masks was passed, we can use max_time's continental
             # mask to build the initial profile of seafloor age.
@@ -762,7 +760,7 @@ class SeafloorGrid(object):
                                 left_plates=[left_plate] * len(lons),
                                 right_plates=[right_plate] * len(lons),
                                 rotation_model=self.rotation_model,
-                                delta_time=self.ridge_time_step,
+                                delta_time=self._ridge_time_step,
                             )
 
                         else:
@@ -871,26 +869,26 @@ class SeafloorGrid(object):
 
             # If MOR seeding has not started, start it from the top
             if last_seed_time == "nil":
-                time_array = self.time_array
+                time_array = self._times
 
             # If the last seed time it could identify is outside the time bounds of the current instance of SeafloorGrid, start
             # from the top (this may happen if we use the same save directory for grids for a new set of times)
-            elif last_seed_time not in self.time_array:
-                time_array = self.time_array
+            elif last_seed_time not in self._times:
+                time_array = self._times
 
             # If seeding was done to the min_time, we are finished
-            elif last_seed_time == self.min_time:
+            elif last_seed_time == self._min_time:
                 return
 
             # If seeding to `min_time` has been interrupted, resume it at last_masked_time.
             else:
                 time_array = np.arange(
-                    last_seed_time, self.min_time - 0.1, -self.ridge_time_step
+                    last_seed_time, self._min_time - 0.1, -self._ridge_time_step
                 )
 
         # If we must overwrite all files in `save_directory`, start from `max_time`.
         else:
-            time_array = self.time_array
+            time_array = self._times
 
         # Build all continental masks and spreading ridge points (with z values)
         self._get_mid_ocean_ridge_seedpoints(time_array)
@@ -933,81 +931,48 @@ class SeafloorGrid(object):
 
         return
 
+    def _build_continental_mask(self, time: float, overwrite=False):
+        """Create a continental mask for a given time."""
+        mask_fn = self.continent_mask_filepath.format(time)
+        if os.path.isfile(mask_fn) and not overwrite:
+            logger.info(
+                f"Continent mask file exists and will not create again.\n{mask_fn}"
+            )
+            return
+
+        self._PlotTopologies_object.time = time
+        final_grid = grids.rasterise(
+            self._PlotTopologies_object.continents,
+            key=1.0,
+            shape=(self.spacingY, self.spacingX),
+            extent=self.extent,
+            origin="lower",
+        )
+        final_grid[np.isnan(final_grid)] = 0.0
+
+        grids.write_netcdf_grid(
+            self.continent_mask_filepath.format(time),
+            final_grid,
+            extent=[-180, 180, -90, 90],
+        )
+        logger.info(f"Finished building a continental mask at {time} Ma!")
+
     def build_all_continental_masks(self):
-        """Create a continental mask to define the ocean basin for all times between
-        `min_time` and `max_time`.  as well as to use as continental collision
-        boundaries in `ReconstructByTopologies`.
+        """Create a continental mask to define the ocean basin for all times between `min_time` and `max_time`.
 
         Notes
         -----
         Continental masking progress is safeguarded if ever masking is interrupted,
         provided that `resume_from_checkpoints` is set to `True`.
 
-        If `ReconstructByTopologies` identifies a continental collision
-        between oceanic points and the boundaries of this continental
-        mask at `time`, those points are deleted at `time`.
-
-        The continental mask is also saved to "/continent_mask_{}Ma.nc" as a
-        compressed netCDF4 file if a `save_directory` is passed. Otherwise,
-        the final grid is returned as a NumPy ndarray object.
-
-        Returns
-        -------
-        all_continental_masks : list of ndarray
-            A masked grid per timestep in `time_array` with 1=continental point,
-            and 0=ocean point, for all points on the full global icosahedral mesh.
+        The continental masks will be saved to f"continent_mask_{time}Ma.nc" as compressed netCDF4 files.
         """
-
-        # If we mustn't overwrite existing files in the `save_directory`, check the status
-        # of continental masking to know where to start/continue masking
-        if self.resume_from_checkpoints:
-            # Check the last continental mask that could be built
-            checkpointed_continental_masks = [
-                s.split("/")[-1]
-                for s in glob.glob(
-                    self.continent_mask_directory
-                    + "/"
-                    + self.continent_mask_file_basename.format("*")
-                )
-            ]
-            try:
-                # -2 as an index accesses the age (float type), safeguards against identifying numbers in the SeafloorGrid.file_collection string
-                last_masked_time = np.sort(
-                    [
-                        float(re.findall(r"\d+", s)[-2])
-                        for s in checkpointed_continental_masks
-                    ]
-                )[0]
-            # If none were built yet
-            except:
-                last_masked_time = "nil"
-
-            # If masking has not started, start it from the top
-            if last_masked_time == "nil":
-                time_array = self.time_array
-
-            # If the last seed time it could identify is outside the time bounds of the current instance of SeafloorGrid, start
-            # from the top (this may happen if we use the same save directory for grids for a new set of times)
-            elif last_masked_time not in self.time_array:
-                time_array = self.time_array
-
-            # If masking was done to the min_time, we are finished
-            elif last_masked_time == self.min_time:
-                return
-
-            # If masking to `min_time` has been interrupted, resume it at last_masked_time.
-            else:
-                time_array = np.arange(
-                    last_masked_time, self.min_time - 0.1, -self.ridge_time_step
-                )
-
-        # If we must overwrite all files in `save_directory`, start from `max_time`.
-        else:
-            time_array = self.time_array
-
-        # Build all continental masks and spreading ridge points (with z values)
-        self._create_continental_mask(time_array)
-        return
+        if not self.continent_mask_is_provided:
+            overwrite = True
+            if self.resume_from_checkpoints:
+                overwrite = False
+            for time in self._times:
+                self._build_continental_mask(time, overwrite)
 
     def _extract_zvalues_from_npz_to_ndarray(self, featurecollection, time):
         # NPZ file of seedpoint z values that emerged at this time
@@ -1060,7 +1025,7 @@ class SeafloorGrid(object):
         # Extract point feature attributes from MOR seed points
         all_mor_features = []
         zvalues = np.empty((0, len(self.zval_names)))
-        for time in self.time_array:
+        for time in self._times:
             # If we're at the maximum time, start preparing points from the initial ocean mesh
             # as well as their z values
             if time == self._max_time:
@@ -1081,7 +1046,7 @@ class SeafloorGrid(object):
                 # GPMLZ file of MOR seedpoints
                 features = pygplates.FeatureCollection(self.mor_filepath.format(time))
                 for feature in features:
-                    if feature.get_valid_time()[0] < self.time_array[0]:
+                    if feature.get_valid_time()[0] < self._times[0]:
                         active_points.append(feature.get_geometry())
                         appearance_time.append(feature.get_valid_time()[0])
                         birth_lat.append(feature.get_geometry().to_lat_lon_list()[0][0])
@@ -1142,8 +1107,8 @@ class SeafloorGrid(object):
             self.rotation_model,
             self.topology_features,
             self._max_time,
-            self.min_time,
-            self.ridge_time_step,
+            self._min_time,
+            self._ridge_time_step,
             active_points,
             point_begin_times=appearance_time,
             detect_collisions=collision_spec,
@@ -1332,7 +1297,7 @@ class SeafloorGrid(object):
         # User can put any time array within SeafloorGrid bounds, but if none
         # is provided, it defaults to the attributed time array
         if time_arr is None:
-            time_arr = self.time_array
+            time_arr = self._times
 
         if parallel is None:
             for time in time_arr:
