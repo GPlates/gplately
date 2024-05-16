@@ -1106,7 +1106,6 @@ class SeafloorGrid(object):
         prev_lon = []
 
         # Extract point feature attributes from MOR seed points
-        all_mor_features = []
         zvalues = np.empty((0, len(self.zval_names)))
         for time in self._times:
             # If we're at the maximum time, start preparing points from the initial ocean mesh
@@ -1439,6 +1438,14 @@ def _lat_lon_z_to_netCDF_time(
     )
     curr_data.columns = total_column_headers
 
+    # drop invalid data
+    curr_data = curr_data.replace([np.inf, -np.inf], np.nan)
+    curr_data = curr_data.dropna(
+        subset=["CURRENT_LONGITUDES", "CURRENT_LATITUDES", zval_name]
+    )
+    if "SEAFLOOR_AGE" == zval_name:
+        curr_data = curr_data.drop(curr_data[curr_data.SEAFLOOR_AGE > 350].index)
+
     # Drop duplicate latitudes and longitudes
     unique_data = curr_data.drop_duplicates(
         subset=["CURRENT_LONGITUDES", "CURRENT_LATITUDES"]
@@ -1450,7 +1457,7 @@ def _lat_lon_z_to_netCDF_time(
     zdata = np.array(unique_data[zval_name].to_list())
 
     # zdata = np.where(zdata > 375, float("nan"), zdata), to deal with vmax in the future
-    zdata = np.nan_to_num(zdata)
+    # zdata = np.nan_to_num(zdata)
 
     # Create a regular grid on which to interpolate lats, lons and zdata
     extent_globe = extent
@@ -1458,8 +1465,7 @@ def _lat_lon_z_to_netCDF_time(
     grid_lat = np.linspace(extent_globe[2], extent_globe[3], resY)
     X, Y = np.meshgrid(grid_lon, grid_lat)
 
-    # Interpolate lons, lats and zvals over a regular grid using nearest
-    # neighbour interpolation
+    # Interpolate lons, lats and zvals over a regular grid using nearest neighbour interpolation
     Z = tools.griddata_sphere((lons, lats), zdata, (X, Y), method="nearest")
 
     unmasked_basename = f"{zval_name}_grid_unmasked_{time}Ma.nc"
