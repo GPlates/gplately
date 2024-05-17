@@ -175,9 +175,11 @@ def create_agegrids(
             plate_model.get_topologies()
         ).get_features()
 
-        continents = pygplates.FeaturesFunctionArgument(
-            plate_model.get_layer("ContinentalPolygons")
-        ).get_features()
+        continents_files = plate_model.get_layer("ContinentalPolygons")
+        if "Cratons" in plate_model.get_avail_layers():
+            continents_files += plate_model.get_layer("Cratons")
+        continents = pygplates.FeaturesFunctionArgument(continents_files).get_features()
+        print(continents_files)
 
     else:
         features = pygplates.FeaturesFunctionArgument(input_filenames).get_features()
