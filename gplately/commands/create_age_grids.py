@@ -1,6 +1,7 @@
 import argparse
 import datetime
 import logging
+import multiprocessing
 import time
 import warnings
 from typing import Optional, Sequence, Union
@@ -112,9 +113,9 @@ def add_parser(parser: argparse.ArgumentParser):
     agegrid_cmd.add_argument(
         "-j",
         "--n_jobs",
-        help="number of processes to use; default: 1",
+        help="number of processes to use; default: use all CPU available",
         metavar="N_JOBS",
-        default=1,
+        default=None,
         dest="n_jobs",
     )
     agegrid_cmd.add_argument(
@@ -226,6 +227,12 @@ def create_agegrids(
 
 
 def _run_create_agegrids(args):
+    n_jobs = args.n_jobs
+    if not n_jobs:
+        try:
+            n_jobs = multiprocessing.cpu_count()
+        except NotImplementedError:
+            n_jobs = 1
     start = time.time()
 
     create_agegrids(
@@ -235,7 +242,7 @@ def _run_create_agegrids(args):
         output_dir=args.output_dir,
         min_time=args.min_time,
         max_time=args.max_time,
-        n_jobs=args.n_jobs,
+        n_jobs=n_jobs,
         refinement_levels=args.refinement_levels,
         grid_spacing=args.grid_spacing,
         ridge_sampling=args.ridge_sampling,
