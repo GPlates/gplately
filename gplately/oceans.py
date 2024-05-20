@@ -1068,6 +1068,8 @@ class SeafloorGrid(object):
                             partial(
                                 _build_continental_mask_with_contouring,
                                 continent_mask_filepath=self.continent_mask_filepath,
+                                rotation_files=self.rotation_model.filenames,
+                                continent_files=self._PlotTopologies_object._continents.filenames,
                                 overwrite=overwrite,
                             ),
                             self._times,
@@ -1543,7 +1545,11 @@ def save_age_grid_sample_points_to_gpml(
 
 
 def _build_continental_mask_with_contouring(
-    time: float, continent_mask_filepath, overwrite=False
+    time: float,
+    continent_mask_filepath,
+    rotation_files,
+    continent_files,
+    overwrite=False,
 ):
     """build the continent mask for a given time with continent contouring method"""
     mask_fn = continent_mask_filepath.format(time)
@@ -1598,18 +1604,9 @@ def _build_continental_mask_with_contouring(
 
         return buffer_and_gap_distance_radians
 
-    MODEL_NAME = "merdith2021"
-    MODEL_REPO_DIR = "."
-    try:
-        model = PlateModelManager().get_model(MODEL_NAME, data_dir=MODEL_REPO_DIR)
-    except:
-        model = PlateModel(MODEL_NAME, data_dir=MODEL_REPO_DIR, readonly=True)
-
-    rotation_model = pygplates.RotationModel(model.get_rotation_model())
-    continent_files = model.get_continental_polygons() + model.get_layer("Cratons")
     continent_features = [pygplates.FeatureCollection(f) for f in continent_files]
     continent_contouring = continent_contours.ContinentContouring(
-        rotation_model,
+        pygplates.RotationModel(rotation_files),
         continent_features,
         continent_contouring_point_spacing_degrees,
         continent_contouring_area_threshold_steradians,

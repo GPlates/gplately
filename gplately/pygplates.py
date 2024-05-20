@@ -1,8 +1,6 @@
 """
 A light wrapping of some [`pyGPlates`](https://www.gplates.org/docs/pygplates/index.html) 
-classes to keep track of filenames.
-
-Each object listed here will have a `self.filenames` attribute.
+classes to keep track of filenames. Each object listed here will have a `self.filenames` attribute.
 """
 
 import warnings as _warnings
@@ -15,191 +13,41 @@ from pygplates import *
 _warnings.simplefilter("always", ImportWarning)
 
 
-def _is_string(value):
-    # convert sets to list
-    if type(value) is set:
-        value = list(value)
-
-    # check for strings inside a list
-    if type(value) is list:
-        bl = []
-        for val in value:
-            bl.append(type(val) is str)
-        return all(bl)
-
-    # if no list, check if string
-    else:
-        return type(value) is str
-
-
 class RotationModel(_pygplates.RotationModel):
-    """A class that wraps the
-    [`pyGPlates.RotationModel` class](https://www.gplates.org/docs/pygplates/generated/pygplates.rotationmodel#pygplates.RotationModel).
-    This queries a finite rotation of a moving plate relative to any other plate,
-    optionally between two instants in geological time.
+    """A class that wraps the [`pyGPlates.RotationModel` class](https://www.gplates.org/docs/pygplates/generated/pygplates.rotationmodel#pygplates.RotationModel)."""
 
-    See [Plate reconstruction hierarchy](https://www.gplates.org/docs/pygplates/pygplates_foundations.html#pygplates-foundations-plate-reconstruction-hierarchy).
-
-    This class provides an easy way to query rotations in any of the four
-    combinations of total/stage and equivalent/relative rotations using
-    [`get_rotation()`](https://www.gplates.org/docs/pygplates/generated/pygplates.rotationmodel#pygplates.RotationModel.get_rotation).
-
-    Reconstruction trees can also be created at any instant
-    of geological time and these are cached internally depending on a
-    user-specified cache size parameter pass to `gplately.pygplates.RotationModel.__init__()`.
-    The reconstruction_tree_cache_size parameter of those methods controls the
-    size of an internal least-recently-used cache of reconstruction trees
-    (evicts least recently requested reconstruction tree when a new
-    reconstruction time is requested that does not currently exist in the cache).
-    This enables reconstruction trees associated with different reconstruction
-    times to be re-used instead of re-creating them, provided they have not been
-    evicted from the cache. This benefit also applies when querying rotations with
-    [`get_rotation()`](https://www.gplates.org/docs/pygplates/generated/pygplates.rotationmodel#pygplates.RotationModel.get_rotation)
-    since it, in turn, requests reconstruction trees.
-
-
-    This wrapping of `pygplates.RotationModel` contains all
-    [`pygplates.RotationModel` functionality](https://www.gplates.org/docs/pygplates/generated/pygplates.rotationmodel#pygplates.RotationModel),
-    and in addition tracks the names of files from which the rotation feature(s) are read
-    using the `gplately.pygplates.RotationModel.filenames` attribute.
-
-
-    """
-
-    def __init__(self, rotation_features, default_anchor_plate_id=0):
-        """**A RotationModel object can be constructed in three ways.**
-
-        ---
-        **1. Create from rotation feature collection(s) and/or rotation filename(s)**
-        --------------------------------------------------------------------------
-
-        Parameters
-        ----------
-        rotation_features : instance of `pygplates.FeatureCollection` or `str` or instance of `pygplates.Feature` or sequence of `pygplates.Feature` or sequence of any combination of those four types
-            A rotation feature collection, or rotation filename, or rotation feature,
-            or sequence of rotation features, or a sequence (eg, `list` or `tuple`) of
-            any combination of those four types.
-
-        reconstruction_tree_cache_size : int, default 150
-            Number of reconstruction trees to cache internally. Defaults to 150.
-
-        extend_total_reconstruction_poles_to_distant_past : bool, default False
-            Extend each moving plate sequence back infinitely far into the distant
-            past such that reconstructed geometries will not snap back to their
-            present day positions when the reconstruction time is older than
-            the oldest times specified in the rotation features (defaults to False).
-
-        default_anchor_plate_id : int, default 0
-            The default anchored plate id to use when
-            [`get_rotation()`](https://www.gplates.org/docs/pygplates/generated/pygplates.rotationmodel#pygplates.RotationModel.get_rotation)
-            and [`get_reconstruction_tree()`](https://www.gplates.org/docs/pygplates/generated/pygplates.rotationmodel#pygplates.RotationModel.get_reconstruction_tree)
-            are called without specifying their `anchor_plate_id` parameter. Defaults to 0.
-
-        Raises
-        ------
-        OpenFileForReadingError
-            If any file is not readable (when filenames specified)
-
-        FileFormatNotSupportedError
-            If any file format (identified by the filename extensions)
-            does not support reading (when filenames specified)
-
-
-        Note that `rotation_features` can be a rotation `FeatureCollection` or a rotation filename or a rotation Feature or a sequence of rotation features, or a sequence (eg, `list` or `tuple`) of any combination of those four types.
-
-        If any rotation filenames are specified then this method uses `FeatureCollection` internally to read the rotation files.
-
-
-        Example
-        -------
-        Load a rotation file and some rotation adjustments (as a collection of rotation features) into a rotation model:
-
-            rotation_adjustments = pygplates.FeatureCollection()
-            ...
-            rotation_model = pygplates.RotationModel(['rotations.rot', rotation_adjustments])
-
-
-        ---
-        **2. Create from an existing rotation model but adapt it with a potentially different cache size and/or default anchor plate ID**
-        ---------------------------------------------------------------------------------------------------------------------------------
-
-        Parameters
-        ----------
-        rotation_model : instance of `pygplates.RotationModel`
-            An existing rotation model.
-
-        reconstruction_tree_cache_size : int, default 2
-            Number of reconstruction trees to cache internally.
-            Defaults to 2 - this is much lower than the usual default
-            cache size since the existing rotation model likely
-            already has a sizeable cache anyway - and if you are
-            leaving this at its default value then you are presumably
-            only interested in changing the default anchor plate ID
-            (not increasing the cache size).
-
-        default_anchor_plate_id : int, defaults to the default anchor plate of `rotation_model`
-            The default anchored plate id to use when
-            [`get_rotation()`](https://www.gplates.org/docs/pygplates/generated/pygplates.rotationmodel#pygplates.RotationModel.get_rotation)
-            and [`get_reconstruction_tree()`](https://www.gplates.org/docs/pygplates/generated/pygplates.rotationmodel#pygplates.RotationModel.get_reconstruction_tree)
-            are called without specifying their `anchor_plate_id` parameter.
-            Defaults to the default anchor plate of `rotation_model`.
-
-
-        This is useful if you want to use an existing rotation model but with a
-        larger cache size or a different default anchor plate ID:
-
-        Example
-        -------
-        The below example changes the default anchor plate ID:
-
-            rotation_model = pygplates.RotationModel(rotation_files)
-            ...
-            rotation_model_anchor_1 = pygplates.RotationModel(rotation_model, default_anchor_plate_id=1)
-
-        ---
-        **3. Return an existing rotation model as a convenience**
-        -------------------------------------------------------
-
-        This is useful when defining your own function that accepts
-        rotation features or a rotation model. It avoids the hassle
-        of having to explicitly test for each source type:
-
-            def my_function(rotation_features_or_model):
-            # The appropriate constructor (__init__) overload is chosen depending on argument type.
-            rotation_model = pygplates.RotationModel(rotation_features_or_model)
-            ...
-
-        Parameters
-        ----------
-        rotation_model : instance of `pygplates.RotationModel` or `gplately.pygplates.RotationModel`
-            An existing rotation model.
-
-        ---
-        """
+    def __init__(
+        self,
+        rotation_features,
+        reconstruction_tree_cache_size=150,
+        extend_total_reconstruction_poles_to_distant_past=False,
+        default_anchor_plate_id=0,
+    ):
         super(RotationModel, self).__init__(
-            rotation_features, default_anchor_plate_id=default_anchor_plate_id
+            rotation_features,
+            reconstruction_tree_cache_size=reconstruction_tree_cache_size,
+            extend_total_reconstruction_poles_to_distant_past=extend_total_reconstruction_poles_to_distant_past,
+            default_anchor_plate_id=default_anchor_plate_id,
         )
-        self.filenames = []
 
-        # update filename list
-        if _is_string(rotation_features) and type(rotation_features) is list:
-            self.filenames = rotation_features
-        elif _is_string(rotation_features) and type(rotation_features) is str:
-            self.filenames = [rotation_features]
-        elif rotation_features is None:
-            self.filenames = []
-        elif isinstance(rotation_features, RotationModel):
-            self.filenames = rotation_features.filenames
-        elif hasattr(rotation_features, "filenames"):
-            self.filenames = rotation_features.filenames
+        if isinstance(rotation_features, str):
+            self._filenames = [rotation_features]
+        elif all(isinstance(f, str) for f in rotation_features):
+            self._filenames = list(rotation_features)
         else:
-            msg = "\nRotationModel: No filename associated with {} in __init__".format(
-                type(rotation_features)
-            )
-            msg += "\n ensure pygplates is imported from gplately. Run,"
-            msg += "\n from gplately import pygplates"
-            _warnings.warn(msg, ImportWarning)
-            self.filenames = []
+            self._filenames = []
+
+    @property
+    def filenames(self):
+        return self._filenames
+
+    @filenames.setter
+    def filenames(self, filenames):
+        self._filenames = filenames
+
+    @filenames.deleter
+    def filenames(self):
+        del self._filenames
 
 
 class Feature(_pygplates.Feature):
@@ -446,3 +294,20 @@ class FeatureCollection(_pygplates.FeatureCollection):
 
         """
         return FeatureCollection([f for f in self], filenames=copy(self.filenames))
+
+
+def _is_string(value):
+    # convert sets to list
+    if type(value) is set:
+        value = list(value)
+
+    # check for strings inside a list
+    if type(value) is list:
+        bl = []
+        for val in value:
+            bl.append(type(val) is str)
+        return all(bl)
+
+    # if no list, check if string
+    else:
+        return type(value) is str

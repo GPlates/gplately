@@ -5,10 +5,13 @@ import time
 import warnings
 from typing import Optional, Sequence, Union
 
-import pygplates
 from plate_model_manager import PlateModel, PlateModelManager
 
 from gplately import PlateReconstruction, PlotTopologies, SeafloorGrid
+
+from ..pygplates import FeatureCollection as gFeatureCollection
+from ..pygplates import FeaturesFunctionArgument
+from ..pygplates import RotationModel as gRotationModel
 
 logger = logging.getLogger("gplately")
 
@@ -167,42 +170,31 @@ def create_agegrids(
                 model_name, data_dir="plate-model-repo", readonly=True
             )
 
-        rotations = pygplates.FeaturesFunctionArgument(
-            plate_model.get_rotation_model()
-        ).get_features()
-
-        topologies = pygplates.FeaturesFunctionArgument(
-            plate_model.get_topologies()
-        ).get_features()
-
-        continents_files = plate_model.get_layer("ContinentalPolygons")
+        rotation_files = plate_model.get_rotation_model()
+        topology_files = plate_model.get_topologies()
+        continent_files = plate_model.get_layer("ContinentalPolygons")
         if "Cratons" in plate_model.get_avail_layers():
-            continents_files += plate_model.get_layer("Cratons")
-        continents = pygplates.FeaturesFunctionArgument(continents_files).get_features()
-        print(continents_files)
+            continent_files += plate_model.get_layer("Cratons")
 
     else:
-        features = pygplates.FeaturesFunctionArgument(input_filenames).get_features()
-        rotations = []
-        topologies = []
-        continents = []
-        for i in features:
-            if (
-                i.get_feature_type().to_qualified_string()
-                == "gpml:TotalReconstructionSequence"
-            ):
-                rotations.append(i)
-            else:
-                topologies.append(i)
+        rotation_files = []
+        topology_files = []
+        for fn in input_filenames:
+            features = FeaturesFunctionArgument([fn]).get_features()
+            if len(features) > 0:
+                if (
+                    features[0].get_feature_type().to_qualified_string()
+                    == "gpml:TotalReconstructionSequence"
+                ):
+                    rotation_files.append(fn)
+                else:
+                    topology_files.append(fn)
 
-        if continents_filenames is not None:
-            continents = pygplates.FeaturesFunctionArgument(
-                continents_filenames
-            ).get_features()
+        continent_files = continents_filenames
 
-    topologies = pygplates.FeatureCollection(topologies)
-    rotations = pygplates.FeatureCollection(rotations)
-    continents = pygplates.FeatureCollection(continents)
+    rotations = gRotationModel(rotation_files)
+    topologies = gFeatureCollection.from_file_list(topology_files)
+    continents = gFeatureCollection.from_file_list(continent_files)
 
     with warnings.catch_warnings():
         warnings.simplefilter("ignore", ImportWarning)
