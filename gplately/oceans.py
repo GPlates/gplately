@@ -315,7 +315,7 @@ class SeafloorGrid(object):
         # zvalue files
         self.zvalues_directory = os.path.join(self.save_directory, "zvalues")
         Path(self.zvalues_directory).mkdir(parents=True, exist_ok=True)
-        zvalues_file_basename = "point_data_dataframe_{0}Ma.npz"
+        zvalues_file_basename = "point_data_dataframe_{:0.1f}Ma.npz"
         if self.file_collection:
             zvalues_file_basename = self.file_collection + "_" + zvalues_file_basename
         self.zvalues_file_basepath = os.path.join(
