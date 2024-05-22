@@ -105,20 +105,22 @@ Classes
 
 """
 
-import glob
 import logging
+import math
+import multiprocessing
 import os
-import re
 import warnings
+from functools import partial
 from pathlib import Path
-from typing import Union
+from typing import List, Tuple, Union
 
 import numpy as np
 import pandas as pd
 import pygplates
+from plate_model_manager import PlateModel, PlateModelManager
 
 from . import grids, reconstruction, tools
-from .ptt import separate_ridge_transform_segments
+from .ptt import continent_contours, separate_ridge_transform_segments
 from .tools import _deg2pixels, _pixels2deg
 from .utils import seafloor_grid_utils
 from .utils.log_utils import get_debug_level
@@ -173,10 +175,10 @@ class SeafloorGrid(object):
         means higher resolution of continent masks).
     ridge_sampling : float, default 0.5
         Spatial resolution (in degrees) at which points that emerge from ridges are tessellated.
-    extent : list of float or int, default [-180.,180.,-90.,90.]
-        A list containing the mininum longitude, maximum longitude, minimum latitude and
+    extent : tuple of float, default (-180.,180.,-90.,90.)
+        A tuple containing the mininum longitude, maximum longitude, minimum latitude and
         maximum latitude extents for all masking and final grids.
-    grid_spacing : float, default None
+    grid_spacing : float, default 0.1
         The degree spacing/interval with which to space grid points across all masking and
         final grids. If `grid_spacing` is provided, all grids will use it. If not,
         `grid_spacing` defaults to 0.1.
@@ -208,31 +210,37 @@ class SeafloorGrid(object):
         self,
         PlateReconstruction_object,
         PlotTopologies_object,
-        max_time,
-        min_time,
-        ridge_time_step,
-        save_directory: Union[str, Path] = "agegrids-output",
+        max_time: Union[float, int],
+        min_time: Union[float, int],
+        ridge_time_step: Union[float, int],
+        save_directory: Union[str, Path] = "seafloor-grid-output",
         file_collection: str = "",
-        refinement_levels=5,
-        ridge_sampling=0.5,
-        extent=(-180, 180, -90, 90),
-        grid_spacing=None,
+        refinement_levels: int = 5,
+        ridge_sampling: float = 0.5,
+        extent: Tuple[float] = (-180, 180, -90, 90),
+        grid_spacing: float = 0.1,
         subduction_collision_parameters=(5.0, 10.0),
-        initial_ocean_mean_spreading_rate=75.0,
+        initial_ocean_mean_spreading_rate: float = 75.0,
         resume_from_checkpoints=False,
-        zval_names=("SPREADING_RATE",),
+        zval_names: List[str] = ["SPREADING_RATE"],
         continent_mask_filename=None,
-        grid_resolution=(3601, 1801),
     ):
 
-        # Provides a rotation model, topology features and reconstruction time for
-        # the SeafloorGrid
+        # Provides a rotation model, topology features and reconstruction time for the SeafloorGrid
         self.PlateReconstruction_object = PlateReconstruction_object
         self.rotation_model = self.PlateReconstruction_object.rotation_model
         self.topology_features = self.PlateReconstruction_object.topology_features
         self._PlotTopologies_object = PlotTopologies_object
 
         self.file_collection = file_collection
+
+        if continent_mask_filename:
+            # Filename for continental masks that the user can provide instead of building it here
+            self.continent_mask_filepath = continent_mask_filename
+            self.continent_mask_is_provided = True
+        else:
+            self.continent_mask_is_provided = False
+
         self._setup_output_paths(save_directory)
 
         # Topological parameters
@@ -244,23 +252,20 @@ class SeafloorGrid(object):
         # Gridding parameters
         self.extent = extent
 
-        self._set_grid_resolution(grid_spacing, grid_resolution)
+        self._set_grid_resolution(grid_spacing)
 
         self.resume_from_checkpoints = resume_from_checkpoints
 
         # Temporal parameters
-        self._max_time = float(max_time)
-        self.min_time = float(min_time)
-        self.ridge_time_step = float(ridge_time_step)
-        self.time_array = np.arange(
-            self._max_time, self.min_time - 0.1, -self.ridge_time_step
+        self._max_time = max_time
+        self._min_time = min_time
+        self._ridge_time_step = ridge_time_step
+        self._times = np.arange(
+            self._max_time, self._min_time - 0.1, -self._ridge_time_step
         )
 
-        # If PlotTopologies' time attribute is not equal to the maximum time in the
-        # seafloor grid reconstruction tree, make it equal. This will ensure the time
-        # for continental masking is consistent.
-        if self._PlotTopologies_object.time != self._max_time:
-            self._PlotTopologies_object.time = self._max_time
+        # ensure the time for continental masking is consistent.
+        self._PlotTopologies_object.time = self._max_time
 
         # Essential features and meshes for the SeafloorGrid
         self.continental_polygons = ensure_polygon_geometry(
@@ -281,148 +286,145 @@ class SeafloorGrid(object):
             "BIRTH_LAT_SNAPSHOT",
             "POINT_ID_SNAPSHOT",
         ]
-        self.total_column_headers = np.concatenate(
-            [self.default_column_headers, self.zval_names]
-        )
+        self.total_column_headers = self.default_column_headers + self.zval_names
 
-        # Filename for continental masks that the user can provide instead of building it here
-        self.continent_mask_filename = continent_mask_filename
+    def _map_res_to_node_percentage(self, continent_mask_filename):
+        """Determine which percentage to use to scale the continent mask resolution at max time"""
+        maskY, maskX = grids.read_netcdf_grid(
+            continent_mask_filename.format(self._max_time)
+        ).shape
 
-        # If the user provides a continental mask filename, we need to downsize the mask
-        # resolution for when we create the initial ocean mesh. The mesh does not need to be high-res.
-        if self.continent_mask_filename is not None:
-            # Determine which percentage to use to scale the continent mask resolution at max time
-            def _map_res_to_node_percentage(self, continent_mask_filename):
-                maskY, maskX = grids.read_netcdf_grid(
-                    continent_mask_filename.format(self._max_time)
-                ).shape
+        mask_deg = _pixels2deg(maskX, self.extent[0], self.extent[1])
 
-                mask_deg = _pixels2deg(maskX, self.extent[0], self.extent[1])
-
-                if mask_deg <= 0.1:
-                    percentage = 0.1
-                elif mask_deg <= 0.25:
-                    percentage = 0.3
-                elif mask_deg <= 0.5:
-                    percentage = 0.5
-                elif mask_deg < 0.75:
-                    percentage = 0.6
-                elif mask_deg >= 1:
-                    percentage = 0.75
-                return mask_deg, percentage
-
-            _, self.percentage = _map_res_to_node_percentage(
-                self, self.continent_mask_filename
-            )
-        else:
-            mask_basename = self.continent_mask_file_basename
-            if self.file_collection:
-                mask_basename = "{}_{}".format(self.file_collection, mask_basename)
-            self.continent_mask_filename = os.path.join(
-                self.continent_mask_directory, mask_basename
-            )
-            self.percentage = 0.1
+        if mask_deg <= 0.1:
+            percentage = 0.1
+        elif mask_deg <= 0.25:
+            percentage = 0.3
+        elif mask_deg <= 0.5:
+            percentage = 0.5
+        elif mask_deg < 0.75:
+            percentage = 0.6
+        elif mask_deg >= 1:
+            percentage = 0.75
+        return mask_deg, percentage
 
     def _setup_output_paths(self, save_directory):
         """create various folders for output files"""
         self.save_directory = Path(save_directory)
 
+        # zvalue files
         self.zvalues_directory = os.path.join(self.save_directory, "zvalues")
         Path(self.zvalues_directory).mkdir(parents=True, exist_ok=True)
-        self.zvalues_file_basename = "point_data_dataframe_{0}Ma.npz"
+        zvalues_file_basename = "point_data_dataframe_{:0.1f}Ma.npz"
+        if self.file_collection:
+            zvalues_file_basename = self.file_collection + "_" + zvalues_file_basename
+        self.zvalues_file_basepath = os.path.join(
+            self.zvalues_directory, zvalues_file_basename
+        )
 
+        # middle ocean ridge files
         self.mor_directory = os.path.join(self.save_directory, "middle_ocean_ridges")
         Path(self.mor_directory).mkdir(parents=True, exist_ok=True)
-        self.mor_file_basename = "MOR_plus_one_points_{:0.2f}.gpmlz"
+        mor_file_basename = "MOR_plus_one_points_{:0.2f}.gpmlz"
+        if self.file_collection:
+            mor_file_basename = self.file_collection + "_" + mor_file_basename
+        self.mor_filepath = os.path.join(self.mor_directory, mor_file_basename)
 
-        self.continent_mask_directory = os.path.join(
-            self.save_directory, "continent_mask"
-        )
-        Path(self.continent_mask_directory).mkdir(parents=True, exist_ok=True)
-        self.continent_mask_file_basename = "continent_mask_{}Ma.nc"
+        # continent mask files
+        # only generate continent mask files if user does not provide them
+        if not self.continent_mask_is_provided:
+            self.continent_mask_directory = os.path.join(
+                self.save_directory, "continent_mask"
+            )
+            Path(self.continent_mask_directory).mkdir(parents=True, exist_ok=True)
+            continent_mask_file_basename = "continent_mask_{}Ma.nc"
+            if self.file_collection:
+                continent_mask_file_basename = (
+                    self.file_collection + "_" + continent_mask_file_basename
+                )
+            self.continent_mask_filepath = os.path.join(
+                self.continent_mask_directory, continent_mask_file_basename
+            )
 
-        self.gridding_input_directory = os.path.join(
-            self.save_directory, "gridding_input"
-        )
-        Path(self.gridding_input_directory).mkdir(parents=True, exist_ok=True)
-        self.gridding_input_basename = "gridding_input_{:0.1f}Ma.npz"
-
+        # sample points for debug purpose
         self.sample_points_directory = os.path.join(
             self.save_directory, "sample_points"
         )
         Path(self.sample_points_directory).mkdir(parents=True, exist_ok=True)
-        self.sample_points_basename = "age_grid_sample_points_{0}_Ma.gpmlz"
-        self.sample_points_filename = os.path.join(
-            self.sample_points_directory, self.sample_points_basename
-        )
+        sample_points_basename = "age_grid_sample_points_{0}_Ma.gpmlz"
         if self.file_collection:
-            gridding_basename = "{}_{}".format(
-                self.file_collection, self.gridding_input_basename
-            )
-        else:
-            gridding_basename = self.gridding_input_basename
-        self.gridding_input_filename = os.path.join(
-            self.gridding_input_directory, gridding_basename
+            sample_points_basename = self.file_collection + "_" + sample_points_basename
+        self.sample_points_filepath = os.path.join(
+            self.sample_points_directory, sample_points_basename
         )
 
-    def _set_grid_resolution(self, grid_spacing, grid_resolution):
+        # gridding input files
+        self.gridding_input_directory = os.path.join(
+            self.save_directory, "gridding_input"
+        )
+        Path(self.gridding_input_directory).mkdir(parents=True, exist_ok=True)
+        gridding_input_basename = "gridding_input_{:0.1f}Ma.npz"
+        if self.file_collection:
+            gridding_input_basename = (
+                self.file_collection + "_" + gridding_input_basename
+            )
+        self.gridding_input_filepath = os.path.join(
+            self.gridding_input_directory, gridding_input_basename
+        )
+
+    def _set_grid_resolution(self, grid_spacing=0.1):
         """determine the output grid resolution"""
+        if not grid_spacing:
+            grid_spacing = 0.1
         # A list of degree spacings that allow an even division of the global lat-lon extent.
         divisible_degree_spacings = [0.1, 0.25, 0.5, 0.75, 1.0]
-        if grid_spacing:
-            # If the provided degree spacing is in the list of permissible spacings, use it
-            # and prepare the number of pixels in x and y (spacingX and spacingY)
-            if grid_spacing in divisible_degree_spacings:
-                self.grid_spacing = grid_spacing
-                self.spacingX = _deg2pixels(
-                    grid_spacing, self.extent[0], self.extent[1]
+
+        # If the provided degree spacing is in the list of permissible spacings, use it
+        # and prepare the number of pixels in x and y (spacingX and spacingY)
+        if grid_spacing in divisible_degree_spacings:
+            self.grid_spacing = grid_spacing
+            self.spacingX = _deg2pixels(grid_spacing, self.extent[0], self.extent[1])
+            self.spacingY = _deg2pixels(grid_spacing, self.extent[2], self.extent[3])
+
+        # If the provided spacing is >>1 degree, use 1 degree
+        elif grid_spacing >= divisible_degree_spacings[-1]:
+            self.grid_spacing = divisible_degree_spacings[-1]
+            self.spacingX = _deg2pixels(
+                divisible_degree_spacings[-1], self.extent[0], self.extent[1]
+            )
+            self.spacingY = _deg2pixels(
+                divisible_degree_spacings[-1], self.extent[2], self.extent[3]
+            )
+
+            with warnings.catch_warnings():
+                warnings.simplefilter("always")
+                warnings.warn(
+                    f"The provided grid_spacing of {grid_spacing} is quite large. To preserve the grid resolution, a {self.grid_spacing} degree spacing has been employed instead."
                 )
-                self.spacingY = _deg2pixels(
-                    grid_spacing, self.extent[2], self.extent[3]
-                )
 
-            # If the provided spacing is >>1 degree, use 1 degree
-            elif grid_spacing >= divisible_degree_spacings[-1]:
-                self.grid_spacing = divisible_degree_spacings[-1]
-                self.spacingX = _deg2pixels(
-                    divisible_degree_spacings[-1], self.extent[0], self.extent[1]
-                )
-                self.spacingY = _deg2pixels(
-                    divisible_degree_spacings[-1], self.extent[2], self.extent[3]
-                )
-
-                with warnings.catch_warnings():
-                    warnings.simplefilter("always")
-                    warnings.warn(
-                        f"The provided grid_spacing of {grid_spacing} is quite large. To preserve the grid resolution, a {self.grid_spacing} degree spacing has been employed instead."
-                    )
-
-            # If the provided degree spacing is not in the list of permissible spacings, but below
-            # a degree, find the closest permissible degree spacing. Use this and find
-            # spacingX and spacingY.
-            else:
-                for divisible_degree_spacing in divisible_degree_spacings:
-                    # The tolerance is half the difference between consecutive divisible spacings.
-                    # Max is 1 degree for now - other integers work but may provide too little of a
-                    # grid resolution.
-                    if abs(grid_spacing - divisible_degree_spacing) <= 0.125:
-                        new_deg_res = divisible_degree_spacing
-                        self.grid_spacing = new_deg_res
-                        self.spacingX = _deg2pixels(
-                            new_deg_res, self.extent[0], self.extent[1]
-                        )
-                        self.spacingY = _deg2pixels(
-                            new_deg_res, self.extent[2], self.extent[3]
-                        )
-
-                with warnings.catch_warnings():
-                    warnings.simplefilter("always")
-                    warnings.warn(
-                        f"The provided grid_spacing of {grid_spacing} does not cleanly divide into the global extent. A degree spacing of {self.grid_spacing} has been employed instead."
-                    )
-
+        # If the provided degree spacing is not in the list of permissible spacings, but below
+        # a degree, find the closest permissible degree spacing. Use this and find
+        # spacingX and spacingY.
         else:
-            self.spacingX, self.spacingY = grid_resolution
+            for divisible_degree_spacing in divisible_degree_spacings:
+                # The tolerance is half the difference between consecutive divisible spacings.
+                # Max is 1 degree for now - other integers work but may provide too little of a
+                # grid resolution.
+                if abs(grid_spacing - divisible_degree_spacing) <= 0.125:
+                    new_deg_res = divisible_degree_spacing
+                    self.grid_spacing = new_deg_res
+                    self.spacingX = _deg2pixels(
+                        new_deg_res, self.extent[0], self.extent[1]
+                    )
+                    self.spacingY = _deg2pixels(
+                        new_deg_res, self.extent[2], self.extent[3]
+                    )
+
+            with warnings.catch_warnings():
+                warnings.simplefilter("always")
+                warnings.warn(
+                    f"The provided grid_spacing of {grid_spacing} does not cleanly divide into the global extent. A degree spacing of {self.grid_spacing} has been employed instead."
+                )
 
     # Allow SeafloorGrid time to be updated, and to update the internally-used
     # PlotTopologies' time attribute too. If PlotTopologies is used outside the
@@ -447,56 +449,101 @@ class SeafloorGrid(object):
         self._max_time = float(max_time)
         self._PlotTopologies_object.time = float(max_time)
 
-    def _collect_point_data_in_dataframe(
-        self, pygplates_featurecollection, zval_ndarray, time
-    ):
+    def _collect_point_data_in_dataframe(self, feature_collection, zval_ndarray, time):
         """At a given timestep, create a pandas dataframe holding all attributes of point features.
 
         Rather than store z values as shapefile attributes, store them in a dataframe indexed by feature ID.
         """
-        # Turn the zval_ndarray into a numPy array
-        zval_ndarray = np.array(zval_ndarray)
-
-        feature_id = []
-        for feature in pygplates_featurecollection:
-            feature_id.append(str(feature.get_feature_id()))
-
-        # Prepare the zval ndarray (can be of any shape) to be saved with default point data
-        zvals_to_store = {}
-
-        # If only one zvalue (for now, spreading rate)
-        if zval_ndarray.ndim == 1:
-            zvals_to_store[self.zval_names[0]] = zval_ndarray
-            data_to_store = [zvals_to_store[i] for i in zvals_to_store]
-        else:
-            for i in zval_ndarray.shape[1]:
-                zvals_to_store[self.zval_names[i]] = [
-                    list(j) for j in zip(*zval_ndarray)
-                ][i]
-            data_to_store = [zvals_to_store[i] for i in zvals_to_store]
-
-        basename = self.zvalues_file_basename.format(time)
-        if self.file_collection:
-            basename = "{}_{}".format(self.file_collection, basename)
-
-        np.savez_compressed(
-            os.path.join(self.zvalues_directory, basename),
-            FEATURE_ID=feature_id,
-            *data_to_store,
+        return _collect_point_data_in_dataframe(
+            self.zvalues_file_basepath,
+            feature_collection,
+            self.zval_names,
+            zval_ndarray,
+            time,
         )
-        return
+
+    def _get_ocean_points(self):
+        """generate ocean points by using the icosahedral mesh"""
+        # Ensure COB terranes at max time have reconstruction IDs and valid times
+        COB_polygons = ensure_polygon_geometry(
+            self._PlotTopologies_object.continents,
+            self.rotation_model,
+            self._max_time,
+        )
+
+        # zval is a binary array encoding whether a point
+        # coordinate is within a COB terrane polygon or not.
+        # Use the icosahedral mesh MultiPointOnSphere attribute
+        _, ocean_basin_point_mesh, zvals = point_in_polygon_routine(
+            self.icosahedral_multi_point, COB_polygons
+        )
+
+        # Plates to partition with
+        plate_partitioner = pygplates.PlatePartitioner(
+            COB_polygons,
+            self.rotation_model,
+        )
+
+        # Plate partition the ocean basin points
+        meshnode_feature = pygplates.Feature(
+            pygplates.FeatureType.create_from_qualified_string("gpml:MeshNode")
+        )
+        meshnode_feature.set_geometry(
+            ocean_basin_point_mesh
+            # multi_point
+        )
+        ocean_basin_meshnode = pygplates.FeatureCollection(meshnode_feature)
+
+        paleogeography = plate_partitioner.partition_features(
+            ocean_basin_meshnode,
+            partition_return=pygplates.PartitionReturn.separate_partitioned_and_unpartitioned,
+            properties_to_copy=[pygplates.PropertyName.gpml_shapefile_attributes],
+        )
+        return paleogeography[1]  # points in oceans
+
+    def _get_ocean_points_from_continent_mask(self):
+        """get the ocean points from continent mask grid"""
+        max_time_cont_mask = grids.Raster(
+            self.continent_mask_filepath.format(self._max_time)
+        )
+        # If the user provides a continental mask filename, we need to downsize the mask
+        # resolution for when we create the initial ocean mesh. The mesh does not need to be high-res.
+        # If the input grid is at 0.5 degree uniform spacing, then the input
+        # grid is 7x more populated than a 6-level stripy icosahedral mesh and
+        # using this resolution for the initial ocean mesh will dramatically slow down reconstruction by topologies.
+        # Scale down the resolution based on the input mask resolution
+        _, percentage = self._map_res_to_node_percentage(self.continent_mask_filepath)
+        max_time_cont_mask.resize(
+            int(max_time_cont_mask.shape[0] * percentage),
+            int(max_time_cont_mask.shape[1] * percentage),
+            inplace=True,
+        )
+
+        lat = np.linspace(-90, 90, max_time_cont_mask.shape[0])
+        lon = np.linspace(-180, 180, max_time_cont_mask.shape[1])
+
+        llon, llat = np.meshgrid(lon, lat)
+
+        mask_inds = np.where(max_time_cont_mask.data.flatten() == 0)
+        mask_vals = max_time_cont_mask.data.flatten()
+        mask_lon = llon.flatten()[mask_inds]
+        mask_lat = llat.flatten()[mask_inds]
+
+        ocean_pt_feature = pygplates.Feature()
+        ocean_pt_feature.set_geometry(
+            pygplates.MultiPointOnSphere(zip(mask_lat, mask_lon))
+        )
+        return [ocean_pt_feature]
 
     def create_initial_ocean_seed_points(self):
         """Create the initial ocean basin seed point domain (at `max_time` only)
-        using Stripy's icosahedral triangulation with the specified
-        `self.refinement_levels`.
+        using Stripy's icosahedral triangulation with the specified `self.refinement_levels`.
 
         The ocean mesh starts off as a global-spanning Stripy icosahedral mesh.
         `create_initial_ocean_seed_points` passes the automatically-resolved-to-current-time
         continental polygons from the `PlotTopologies_object`'s `continents` attribute
         (which can be from a COB terrane file or a continental polygon file) into
-        Plate Tectonic Tools' point-in-polygon routine. It identifies ocean basin points
-        that lie:
+        Plate Tectonic Tools' point-in-polygon routine. It identifies ocean basin points that lie:
         * outside the polygons (for the ocean basin point domain)
         * inside the polygons (for the continental mask)
 
@@ -525,88 +572,24 @@ class SeafloorGrid(object):
 
         Returns
         -------
-        ocean_basin_point_mesh : pygplates.FeatureCollection of pygplates.MultiPointOnSphere
-            A feature collection of point objects on the ocean basin.
+        ocean_basin_point_mesh : pygplates.FeatureCollection
+            A feature collection of pygplates.PointOnSphere objects on the ocean basin.
         """
 
-        if not os.path.isfile(self.continent_mask_filename.format(self._max_time)):
-            # Ensure COB terranes at max time have reconstruction IDs and valid times
-            COB_polygons = ensure_polygon_geometry(
-                self._PlotTopologies_object.continents,
-                self.rotation_model,
-                self._max_time,
-            )
-
-            # zval is a binary array encoding whether a point
-            # coordinate is within a COB terrane polygon or not.
-            # Use the icosahedral mesh MultiPointOnSphere attribute
-            _, ocean_basin_point_mesh, zvals = point_in_polygon_routine(
-                self.icosahedral_multi_point, COB_polygons
-            )
-
-            # Plates to partition with
-            plate_partitioner = pygplates.PlatePartitioner(
-                COB_polygons,
-                self.rotation_model,
-            )
-
-            # Plate partition the ocean basin points
-            meshnode_feature = pygplates.Feature(
-                pygplates.FeatureType.create_from_qualified_string("gpml:MeshNode")
-            )
-            meshnode_feature.set_geometry(
-                ocean_basin_point_mesh
-                # multi_point
-            )
-            ocean_basin_meshnode = pygplates.FeatureCollection(meshnode_feature)
-
-            paleogeography = plate_partitioner.partition_features(
-                ocean_basin_meshnode,
-                partition_return=pygplates.PartitionReturn.separate_partitioned_and_unpartitioned,
-                properties_to_copy=[pygplates.PropertyName.gpml_shapefile_attributes],
-            )
-            ocean_points = paleogeography[1]  # Separate those inside polygons
-            continent_points = paleogeography[0]  # Separate those outside polygons
-
-        # If a set of continent masks was passed, we can use max_time's continental
-        # mask to build the initial profile of seafloor age.
+        if (
+            os.path.isfile(self.continent_mask_filepath.format(self._max_time))
+            and self.continent_mask_is_provided
+        ):
+            # If a set of continent masks was passed, we can use max_time's continental
+            # mask to build the initial profile of seafloor age.
+            ocean_points = self._get_ocean_points_from_continent_mask()
         else:
-            max_time_cont_mask = grids.Raster(
-                self.continent_mask_filename.format(self._max_time)
-            )
-            # If the input grid is at 0.5 degree uniform spacing, then the input
-            # grid is 7x more populated than a 6-level stripy icosahedral mesh and
-            # using this resolution for the initial ocean mesh will dramatically slow down
-            # reconstruction by topologies.
-            # Scale down the resolution based on the input mask resolution
-            # (percentage was found in __init__.)
-            max_time_cont_mask.resize(
-                int(max_time_cont_mask.shape[0] * self.percentage),
-                int(max_time_cont_mask.shape[1] * self.percentage),
-                inplace=True,
-            )
-
-            lat = np.linspace(-90, 90, max_time_cont_mask.shape[0])
-            lon = np.linspace(-180, 180, max_time_cont_mask.shape[1])
-
-            llon, llat = np.meshgrid(lon, lat)
-
-            mask_inds = np.where(max_time_cont_mask.data.flatten() == 0)
-            mask_vals = max_time_cont_mask.data.flatten()
-            mask_lon = llon.flatten()[mask_inds]
-            mask_lat = llat.flatten()[mask_inds]
-
-            ocean_pt_feature = pygplates.Feature()
-            ocean_pt_feature.set_geometry(
-                pygplates.MultiPointOnSphere(zip(mask_lat, mask_lon))
-            )
-            ocean_points = [ocean_pt_feature]
+            ocean_points = self._get_ocean_points()
 
         # Now that we have ocean points...
         # Determine age of ocean basin points using their proximity to MOR features
         # and an assumed globally-uniform ocean basin mean spreading rate.
-        # We need resolved topologies at the `max_time` to pass into the proximity
-        # function
+        # We need resolved topologies at the `max_time` to pass into the proximity function
         resolved_topologies = []
         shared_boundary_sections = []
         pygplates.resolve_topologies(
@@ -626,8 +609,6 @@ class SeafloorGrid(object):
         pAge = np.array(pZ) / (self.initial_ocean_mean_spreading_rate / 2.0)
 
         initial_ocean_point_features = []
-        initial_ocean_multipoints = []
-
         for point in zip(pX, pY, pAge):
             point_feature = pygplates.Feature()
             point_feature.set_geometry(pygplates.PointOnSphere(point[1], point[0]))
@@ -638,10 +619,6 @@ class SeafloorGrid(object):
             # For now: custom zvals are added as shapefile attributes - will attempt pandas data frames
             # point_feature = set_shapefile_attribute(point_feature, self.initial_ocean_mean_spreading_rate, "SPREADING_RATE")  # Seems like static data
             initial_ocean_point_features.append(point_feature)
-            initial_ocean_multipoints.append(point_feature.get_geometry())
-
-        # print(initial_ocean_point_features)
-        multi_point_feature = pygplates.MultiPointOnSphere(initial_ocean_multipoints)
 
         basename = "ocean_basin_seed_points_{}_RLs_{}Ma.gpmlz".format(
             self.refinement_levels,
@@ -649,13 +626,14 @@ class SeafloorGrid(object):
         )
         if self.file_collection:
             basename = "{}_{}".format(self.file_collection, basename)
-        output_filename = os.path.join(self.save_directory, basename)
         initial_ocean_feature_collection = pygplates.FeatureCollection(
             initial_ocean_point_features
         )
-        initial_ocean_feature_collection.write(output_filename)
+        initial_ocean_feature_collection.write(
+            os.path.join(self.save_directory, basename)
+        )
 
-        # Collect all point feature data into a pandas dataframe
+        # save the zvalue(spreading rate) of the initial ocean points to file "point_data_dataframe_{max_time}Ma.npz"
         self._collect_point_data_in_dataframe(
             initial_ocean_feature_collection,
             np.array(
@@ -664,9 +642,18 @@ class SeafloorGrid(object):
             self._max_time,
         )
 
-        return (
-            pygplates.FeatureCollection(initial_ocean_point_features),
-            multi_point_feature,
+        return pygplates.FeatureCollection(initial_ocean_point_features)
+
+    def _get_mid_ocean_ridge_points(self, time: float, overwrite=True):
+        """generate middle ocean ridge seed points at a given time"""
+        return _get_mid_ocean_ridge_points(
+            time,
+            self.mor_filepath,
+            self.rotation_model.filenames,
+            self.topology_features.filenames,
+            self.zvalues_file_basepath,
+            self.zval_names,
+            overwrite=overwrite,
         )
 
     def _get_mid_ocean_ridge_seedpoints(self, time_array):
@@ -766,7 +753,7 @@ class SeafloorGrid(object):
                                 left_plates=[left_plate] * len(lons),
                                 right_plates=[right_plate] * len(lons),
                                 rotation_model=self.rotation_model,
-                                delta_time=self.ridge_time_step,
+                                delta_time=self._ridge_time_step,
                             )
 
                         else:
@@ -803,10 +790,7 @@ class SeafloorGrid(object):
             mor_points = pygplates.FeatureCollection(mor_point_features)
 
             # Write MOR points at `time` to gpmlz
-            basename = self.mor_file_basename.format(time)
-            if self.file_collection:
-                basename = "{}_{}".format(self.file_collection, basename)
-            mor_points.write(os.path.join(self.mor_directory, basename))
+            mor_points.write(self.mor_filepath.format(time))
             # Make sure the max time dataframe is for the initial ocean points only
             if time != self._max_time:
                 self._collect_point_data_in_dataframe(
@@ -837,72 +821,39 @@ class SeafloorGrid(object):
         (which occurs during preparation for ReconstructByTopologies and can take several hours)
         can be safeguarded against run interruptions.
 
-        Parameters
-        ----------
-        time : float
-            The time at which to resolve ridge points and stage-rotate them off the ridge.
-
-        Returns
-        -------
-        mor_point_features : FeatureCollection
-            All ridge seed points that have emerged from all ridge topologies at `time`.
-            These points have spread by being slightly rotated away from
-            ridge locations at `time`.
-
         References
         ----------
         get_mid_ocean_ridge_seedpoints() has been adapted from
         https://github.com/siwill22/agegrid-0.1/blob/master/automatic_age_grid_seeding.py#L117.
         """
-        logger.debug(self.mor_directory + "/" + self.mor_file_basename[:10] + "*")
-        # If we mustn't overwrite existing files in the `save_directory`, check the status of MOR seeding
-        # to know where to start/continue seeding
+        overwrite = True
         if self.resume_from_checkpoints:
-            # Check the last MOR seedpoint gpmlz file that was built
-            checkpointed_MOR_seedpoints = [
-                s.split("/")[-1]
-                for s in glob.glob(
-                    self.mor_directory + "/" + self.mor_file_basename[:10] + "*"
+            overwrite = False
+
+        try:
+            num_cpus = multiprocessing.cpu_count()
+        except NotImplementedError:
+            num_cpus = 1
+
+        if num_cpus > 1:
+            with multiprocessing.Pool(num_cpus) as pool:
+                pool.map(
+                    partial(
+                        _get_mid_ocean_ridge_points,
+                        delta_time=self._ridge_time_step,
+                        mor_filepath=self.mor_filepath,
+                        rotation_files=self.rotation_model.filenames,
+                        topology_files=self.topology_features.filenames,
+                        zvalues_file_basepath=self.zvalues_file_basepath,
+                        zval_names=self.zval_names,
+                        ridge_sampling=self.ridge_sampling,
+                        overwrite=overwrite,
+                    ),
+                    self._times[1:],
                 )
-            ]
-            try:
-                # -2 as an index accesses the age (float type), safeguards against identifying numbers in the SeafloorGrid.file_collection string
-                last_seed_time = np.sort(
-                    [
-                        float(re.findall(r"\d+", s)[-2])
-                        for s in checkpointed_MOR_seedpoints
-                    ]
-                )[0]
-            # If none were built yet
-            except:
-                last_seed_time = "nil"
-
-            # If MOR seeding has not started, start it from the top
-            if last_seed_time == "nil":
-                time_array = self.time_array
-
-            # If the last seed time it could identify is outside the time bounds of the current instance of SeafloorGrid, start
-            # from the top (this may happen if we use the same save directory for grids for a new set of times)
-            elif last_seed_time not in self.time_array:
-                time_array = self.time_array
-
-            # If seeding was done to the min_time, we are finished
-            elif last_seed_time == self.min_time:
-                return
-
-            # If seeding to `min_time` has been interrupted, resume it at last_masked_time.
-            else:
-                time_array = np.arange(
-                    last_seed_time, self.min_time - 0.1, -self.ridge_time_step
-                )
-
-        # If we must overwrite all files in `save_directory`, start from `max_time`.
         else:
-            time_array = self.time_array
-
-        # Build all continental masks and spreading ridge points (with z values)
-        self._get_mid_ocean_ridge_seedpoints(time_array)
-        return
+            for time in self._times[1:]:
+                self._get_mid_ocean_ridge_points(time, overwrite)
 
     def _create_continental_mask(self, time_array):
         """Create a continental mask for each timestep."""
@@ -914,7 +865,7 @@ class SeafloorGrid(object):
             )
 
         for time in time_array:
-            mask_fn = self.continent_mask_filename.format(time)
+            mask_fn = self.continent_mask_filepath.format(time)
             if os.path.isfile(mask_fn):
                 logger.info(
                     f"Continent mask file exists and will not create again.\n{mask_fn}"
@@ -933,7 +884,7 @@ class SeafloorGrid(object):
             final_grid[np.isnan(final_grid)] = 0.0
 
             grids.write_netcdf_grid(
-                self.continent_mask_filename.format(time),
+                self.continent_mask_filepath.format(time),
                 final_grid,
                 extent=[-180, 180, -90, 90],
             )
@@ -941,88 +892,74 @@ class SeafloorGrid(object):
 
         return
 
-    def build_all_continental_masks(self):
-        """Create a continental mask to define the ocean basin for all times between
-        `min_time` and `max_time`.  as well as to use as continental collision
-        boundaries in `ReconstructByTopologies`.
+    def _build_continental_mask(self, time: float, overwrite=False):
+        """Create a continental mask for a given time."""
+        mask_fn = self.continent_mask_filepath.format(time)
+        if os.path.isfile(mask_fn) and not overwrite:
+            logger.info(
+                f"Continent mask file exists and will not create again.\n{mask_fn}"
+            )
+            return
+
+        self._PlotTopologies_object.time = time
+        final_grid = grids.rasterise(
+            self._PlotTopologies_object.continents,
+            key=1.0,
+            shape=(self.spacingY, self.spacingX),
+            extent=self.extent,
+            origin="lower",
+        )
+        final_grid[np.isnan(final_grid)] = 0.0
+
+        grids.write_netcdf_grid(
+            self.continent_mask_filepath.format(time),
+            final_grid,
+            extent=[-180, 180, -90, 90],
+        )
+        logger.info(f"Finished building a continental mask at {time} Ma!")
+
+    def build_all_continental_masks(self, use_continent_contouring=True):
+        """Create a continental mask to define the ocean basin for all times between `min_time` and `max_time`.
 
         Notes
         -----
         Continental masking progress is safeguarded if ever masking is interrupted,
         provided that `resume_from_checkpoints` is set to `True`.
 
-        If `ReconstructByTopologies` identifies a continental collision
-        between oceanic points and the boundaries of this continental
-        mask at `time`, those points are deleted at `time`.
-
-        The continental mask is also saved to "/continent_mask_{}Ma.nc" as a
-        compressed netCDF4 file if a `save_directory` is passed. Otherwise,
-        the final grid is returned as a NumPy ndarray object.
-
-        Returns
-        -------
-        all_continental_masks : list of ndarray
-            A masked grid per timestep in `time_array` with 1=continental point,
-            and 0=ocean point, for all points on the full global icosahedral mesh.
+        The continental masks will be saved to f"continent_mask_{time}Ma.nc" as compressed netCDF4 files.
         """
+        if not self.continent_mask_is_provided:
+            overwrite = True
+            if self.resume_from_checkpoints:
+                overwrite = False
+            if use_continent_contouring:
+                try:
+                    num_cpus = multiprocessing.cpu_count()
+                except NotImplementedError:
+                    num_cpus = 1
 
-        # If we mustn't overwrite existing files in the `save_directory`, check the status
-        # of continental masking to know where to start/continue masking
-        if self.resume_from_checkpoints:
-            # Check the last continental mask that could be built
-            checkpointed_continental_masks = [
-                s.split("/")[-1]
-                for s in glob.glob(
-                    self.continent_mask_directory
-                    + "/"
-                    + self.continent_mask_file_basename.format("*")
-                )
-            ]
-            try:
-                # -2 as an index accesses the age (float type), safeguards against identifying numbers in the SeafloorGrid.file_collection string
-                last_masked_time = np.sort(
-                    [
-                        float(re.findall(r"\d+", s)[-2])
-                        for s in checkpointed_continental_masks
-                    ]
-                )[0]
-            # If none were built yet
-            except:
-                last_masked_time = "nil"
-
-            # If masking has not started, start it from the top
-            if last_masked_time == "nil":
-                time_array = self.time_array
-
-            # If the last seed time it could identify is outside the time bounds of the current instance of SeafloorGrid, start
-            # from the top (this may happen if we use the same save directory for grids for a new set of times)
-            elif last_masked_time not in self.time_array:
-                time_array = self.time_array
-
-            # If masking was done to the min_time, we are finished
-            elif last_masked_time == self.min_time:
-                return
-
-            # If masking to `min_time` has been interrupted, resume it at last_masked_time.
+                if num_cpus > 1:
+                    with multiprocessing.Pool(num_cpus) as pool:
+                        pool.map(
+                            partial(
+                                _build_continental_mask_with_contouring,
+                                continent_mask_filepath=self.continent_mask_filepath,
+                                rotation_files=self.rotation_model.filenames,
+                                continent_files=self._PlotTopologies_object._continents.filenames,
+                                overwrite=overwrite,
+                            ),
+                            self._times,
+                        )
+                else:
+                    for time in self._times:
+                        self._build_continental_mask_with_contouring(time, overwrite)
             else:
-                time_array = np.arange(
-                    last_masked_time, self.min_time - 0.1, -self.ridge_time_step
-                )
-
-        # If we must overwrite all files in `save_directory`, start from `max_time`.
-        else:
-            time_array = self.time_array
-
-        # Build all continental masks and spreading ridge points (with z values)
-        self._create_continental_mask(time_array)
-        return
+                for time in self._times:
+                    self._build_continental_mask(time, overwrite)
 
     def _extract_zvalues_from_npz_to_ndarray(self, featurecollection, time):
         # NPZ file of seedpoint z values that emerged at this time
-        basename = self.zvalues_file_basename.format(time)
-        if self.file_collection:
-            basename = "{}_{}".format(self.file_collection, basename)
-        loaded_npz = np.load(os.path.join(self.zvalues_directory, basename))
+        loaded_npz = np.load(self.zvalues_file_basepath.format(time))
 
         curr_zvalues = np.empty([len(featurecollection), len(self.zval_names)])
         for i in range(len(self.zval_names)):
@@ -1042,10 +979,7 @@ class SeafloorGrid(object):
         """
 
         # INITIAL OCEAN SEED POINT MESH ----------------------------------------------------
-        (
-            initial_ocean_seed_points,
-            initial_ocean_seed_points_mp,
-        ) = self.create_initial_ocean_seed_points()
+        initial_ocean_seed_points = self.create_initial_ocean_seed_points()
         logger.info("Finished building initial_ocean_seed_points!")
 
         # MOR SEED POINTS AND CONTINENTAL MASKS --------------------------------------------
@@ -1072,9 +1006,8 @@ class SeafloorGrid(object):
         prev_lon = []
 
         # Extract point feature attributes from MOR seed points
-        all_mor_features = []
         zvalues = np.empty((0, len(self.zval_names)))
-        for time in self.time_array:
+        for time in self._times:
             # If we're at the maximum time, start preparing points from the initial ocean mesh
             # as well as their z values
             if time == self._max_time:
@@ -1093,15 +1026,9 @@ class SeafloorGrid(object):
             # Otherwise, we'd be preparing MOR points and their z values
             else:
                 # GPMLZ file of MOR seedpoints
-                basename = self.mor_file_basename.format(time)
-                if self.file_collection:
-                    basename = "{}_{}".format(self.file_collection, basename)
-
-                features = pygplates.FeatureCollection(
-                    os.path.join(self.mor_directory, basename)
-                )
+                features = pygplates.FeatureCollection(self.mor_filepath.format(time))
                 for feature in features:
-                    if feature.get_valid_time()[0] < self.time_array[0]:
+                    if feature.get_valid_time()[0] < self._times[0]:
                         active_points.append(feature.get_geometry())
                         appearance_time.append(feature.get_valid_time()[0])
                         birth_lat.append(feature.get_geometry().to_lat_lon_list()[0][0])
@@ -1152,7 +1079,7 @@ class SeafloorGrid(object):
         collision_spec = reconstruction._ContinentCollision(
             # This filename string should not have a time formatted into it - this is
             # taken care of later.
-            self.continent_mask_filename,
+            self.continent_mask_filepath,
             default_collision,
             verbose=False,
         )
@@ -1162,8 +1089,8 @@ class SeafloorGrid(object):
             self.rotation_model,
             self.topology_features,
             self._max_time,
-            self.min_time,
-            self.ridge_time_step,
+            self._min_time,
+            self._ridge_time_step,
             active_points,
             point_begin_times=appearance_time,
             detect_collisions=collision_spec,
@@ -1277,33 +1204,26 @@ class SeafloorGrid(object):
                         gridding_input_dictionary[i] for i in gridding_input_dictionary
                     ]
 
-                gridding_input_basename = self.gridding_input_basename.format(
-                    topology_reconstruction.get_current_time()
-                )
-                if self.file_collection:
-                    gridding_input_basename = "{}_{}".format(
-                        self.file_collection,
-                        gridding_input_basename,
-                    )
-                gridding_input_filename = os.path.join(
-                    self.gridding_input_directory, gridding_input_basename
-                )
-
                 # save debug file
                 if get_debug_level() > 100:
                     seafloor_ages = gridding_input_dictionary["SEAFLOOR_AGE"]
                     logger.debug(
                         f"The max and min values of seafloor age are: {np.max(seafloor_ages)} - {np.min(seafloor_ages)} ({topology_reconstruction.get_current_time()}Ma)"
                     )
-                    save_age_grid_sample_points_to_gpml(
+                    _save_age_grid_sample_points_to_gpml(
                         gridding_input_dictionary["CURRENT_LONGITUDES"],
                         gridding_input_dictionary["CURRENT_LATITUDES"],
                         gridding_input_dictionary["SEAFLOOR_AGE"],
                         topology_reconstruction.get_current_time(),
-                        self.sample_points_filename,
+                        self.sample_points_filepath,
                     )
 
-                np.savez_compressed(gridding_input_filename, *data_to_store)
+                np.savez_compressed(
+                    self.gridding_input_filepath.format(
+                        topology_reconstruction.get_current_time()
+                    ),
+                    *data_to_store,
+                )
 
             if not topology_reconstruction.reconstruct_to_next_time():
                 break
@@ -1359,7 +1279,7 @@ class SeafloorGrid(object):
         # User can put any time array within SeafloorGrid bounds, but if none
         # is provided, it defaults to the attributed time array
         if time_arr is None:
-            time_arr = self.time_array
+            time_arr = self._times
 
         if parallel is None:
             for time in time_arr:
@@ -1373,8 +1293,8 @@ class SeafloorGrid(object):
                     resX=self.spacingX,
                     resY=self.spacingY,
                     unmasked=unmasked,
-                    continent_mask_filename=self.continent_mask_filename,
-                    gridding_input_filename=self.gridding_input_filename,
+                    continent_mask_filename=self.continent_mask_filepath,
+                    gridding_input_filename=self.gridding_input_filepath,
                 )
         else:
             from joblib import delayed
@@ -1390,8 +1310,8 @@ class SeafloorGrid(object):
                     resX=self.spacingX,
                     resY=self.spacingY,
                     unmasked=unmasked,
-                    continent_mask_filename=self.continent_mask_filename,
-                    gridding_input_filename=self.gridding_input_filename,
+                    continent_mask_filename=self.continent_mask_filepath,
+                    gridding_input_filename=self.gridding_input_filepath,
                 )
                 for time in time_arr
             )
@@ -1418,6 +1338,14 @@ def _lat_lon_z_to_netCDF_time(
     )
     curr_data.columns = total_column_headers
 
+    # drop invalid data
+    curr_data = curr_data.replace([np.inf, -np.inf], np.nan)
+    curr_data = curr_data.dropna(
+        subset=["CURRENT_LONGITUDES", "CURRENT_LATITUDES", zval_name]
+    )
+    if "SEAFLOOR_AGE" == zval_name:
+        curr_data = curr_data.drop(curr_data[curr_data.SEAFLOOR_AGE > 350].index)
+
     # Drop duplicate latitudes and longitudes
     unique_data = curr_data.drop_duplicates(
         subset=["CURRENT_LONGITUDES", "CURRENT_LATITUDES"]
@@ -1429,7 +1357,7 @@ def _lat_lon_z_to_netCDF_time(
     zdata = np.array(unique_data[zval_name].to_list())
 
     # zdata = np.where(zdata > 375, float("nan"), zdata), to deal with vmax in the future
-    zdata = np.nan_to_num(zdata)
+    # zdata = np.nan_to_num(zdata)
 
     # Create a regular grid on which to interpolate lats, lons and zdata
     extent_globe = extent
@@ -1437,8 +1365,7 @@ def _lat_lon_z_to_netCDF_time(
     grid_lat = np.linspace(extent_globe[2], extent_globe[3], resY)
     X, Y = np.meshgrid(grid_lon, grid_lat)
 
-    # Interpolate lons, lats and zvals over a regular grid using nearest
-    # neighbour interpolation
+    # Interpolate lons, lats and zvals over a regular grid using nearest neighbour interpolation
     Z = tools.griddata_sphere((lons, lats), zdata, (X, Y), method="nearest")
 
     unmasked_basename = f"{zval_name}_grid_unmasked_{time}Ma.nc"
@@ -1479,7 +1406,7 @@ def _lat_lon_z_to_netCDF_time(
     logger.info(f"{zval_name} netCDF grids for {time} Ma complete!")
 
 
-def save_age_grid_sample_points_to_gpml(
+def _save_age_grid_sample_points_to_gpml(
     lons, lats, seafloor_ages, paleo_time, output_filename
 ):
     logger.debug(f"saving age grid sample points to gpml file -- {paleo_time} Ma")
@@ -1491,3 +1418,254 @@ def save_age_grid_sample_points_to_gpml(
         f.set_valid_time(age + paleo_time, paleo_time)
         features.append(f)
     pygplates.FeatureCollection(features).write(output_filename.format(paleo_time))
+
+
+def _build_continental_mask_with_contouring(
+    time: float,
+    continent_mask_filepath,
+    rotation_files,
+    continent_files,
+    overwrite=False,
+):
+    """build the continent mask for a given time with continent contouring method"""
+    mask_fn = continent_mask_filepath.format(time)
+    if os.path.isfile(mask_fn) and not overwrite:
+        logger.info(f"Continent mask file exists and will not create again.\n{mask_fn}")
+        return
+
+    continent_contouring_point_spacing_degrees = 0.25
+    continent_contouring_area_threshold_square_kms = 0
+    continent_contouring_area_threshold_steradians = (
+        continent_contouring_area_threshold_square_kms
+        / (pygplates.Earth.mean_radius_in_kms * pygplates.Earth.mean_radius_in_kms)
+    )
+    continent_exclusion_area_threshold_square_kms = 800000
+    continent_exclusion_area_threshold_steradians = (
+        continent_exclusion_area_threshold_square_kms
+        / (pygplates.Earth.mean_radius_in_kms * pygplates.Earth.mean_radius_in_kms)
+    )
+    continent_separation_distance_threshold_radians = (
+        continent_contours.DEFAULT_CONTINENT_SEPARATION_DISTANCE_THRESHOLD_RADIANS
+    )
+
+    def continent_contouring_buffer_and_gap_distance_radians(time, contoured_continent):
+        # One distance for time interval [1000, 300] and another for time interval [250, 0].
+        # And linearly interpolate between them over the time interval [300, 250].
+        pre_pangea_distance_radians = math.radians(2.5)  # convert degrees to radians
+        post_pangea_distance_radians = math.radians(0.0)  # convert degrees to radians
+        if time > 300:
+            buffer_and_gap_distance_radians = pre_pangea_distance_radians
+        elif time < 250:
+            buffer_and_gap_distance_radians = post_pangea_distance_radians
+        else:
+            # Linearly interpolate between 250 and 300 Ma.
+            interp = float(time - 250) / (300 - 250)
+            buffer_and_gap_distance_radians = (
+                interp * pre_pangea_distance_radians
+                + (1 - interp) * post_pangea_distance_radians
+            )
+
+        # Area of the contoured continent.
+        area_steradians = contoured_continent.get_area()
+
+        # Linearly reduce the buffer/gap distance for contoured continents with area smaller than 1 million km^2.
+        area_threshold_square_kms = 500000
+        area_threshold_steradians = area_threshold_square_kms / (
+            pygplates.Earth.mean_radius_in_kms * pygplates.Earth.mean_radius_in_kms
+        )
+        if area_steradians < area_threshold_steradians:
+            buffer_and_gap_distance_radians *= (
+                area_steradians / area_threshold_steradians
+            )
+
+        return buffer_and_gap_distance_radians
+
+    continent_features = [pygplates.FeatureCollection(f) for f in continent_files]
+    continent_contouring = continent_contours.ContinentContouring(
+        pygplates.RotationModel(rotation_files),
+        continent_features,
+        continent_contouring_point_spacing_degrees,
+        continent_contouring_area_threshold_steradians,
+        continent_contouring_buffer_and_gap_distance_radians,
+        continent_exclusion_area_threshold_steradians,
+        continent_separation_distance_threshold_radians,
+    )
+    continent_mask, _ = (
+        continent_contouring.get_continent_mask_and_contoured_continents(time)
+    )
+    grids.write_netcdf_grid(
+        continent_mask_filepath.format(time),
+        continent_mask.astype("float"),
+        extent=[-180, 180, -90, 90],
+    )
+    logger.info(
+        f"Finished building a continental mask at {time} Ma! (continent_contouring)"
+    )
+
+
+def _get_mid_ocean_ridge_points(
+    time: float,
+    delta_time: float,
+    mor_filepath: str,
+    rotation_files: List[str],
+    topology_files: List[str],
+    zvalues_file_basepath,
+    zval_names,
+    ridge_sampling,
+    overwrite=True,
+):
+    """generate middle ocean ridge seed points at a given time"""
+    mor_fn = mor_filepath.format(time)
+    if os.path.isfile(mor_fn) and not overwrite:
+        logger.info(
+            f"Middle ocean ridge file exists and will not create again.\n{mor_fn}"
+        )
+        return
+
+    topology_features_extracted = pygplates.FeaturesFunctionArgument(topology_files)
+    rotation_model = pygplates.RotationModel(rotation_files)
+
+    # Points and their z values that emerge from MORs at this time.
+    shifted_mor_points = []
+    point_spreading_rates = []
+
+    # Resolve topologies to the current time.
+    resolved_topologies = []
+    shared_boundary_sections = []
+    pygplates.resolve_topologies(
+        topology_features_extracted.get_features(),
+        rotation_model,
+        resolved_topologies,
+        time,
+        shared_boundary_sections,
+    )
+
+    # pygplates.ResolvedTopologicalSection objects.
+    for shared_boundary_section in shared_boundary_sections:
+        if (
+            shared_boundary_section.get_feature().get_feature_type()
+            == pygplates.FeatureType.create_gpml("MidOceanRidge")
+        ):
+            spreading_feature = shared_boundary_section.get_feature()
+
+            # Find the stage rotation of the spreading feature in the
+            # frame of reference of its geometry at the current
+            # reconstruction time (the MOR is currently actively spreading).
+            # The stage pole can then be directly geometrically compared
+            # to the *reconstructed* spreading geometry.
+            stage_rotation = separate_ridge_transform_segments.get_stage_rotation_for_reconstructed_geometry(
+                spreading_feature, rotation_model, time
+            )
+            if not stage_rotation:
+                # Skip current feature - it's not a spreading feature.
+                continue
+
+            # Get the stage pole of the stage rotation.
+            # Note that the stage rotation is already in frame of
+            # reference of the *reconstructed* geometry at the spreading time.
+            stage_pole, _ = stage_rotation.get_euler_pole_and_angle()
+
+            # One way rotates left and the other right, but don't know
+            # which - doesn't matter in our example though.
+            rotate_slightly_off_mor_one_way = pygplates.FiniteRotation(
+                stage_pole, np.radians(0.01)
+            )
+            rotate_slightly_off_mor_opposite_way = (
+                rotate_slightly_off_mor_one_way.get_inverse()
+            )
+
+            # Iterate over the shared sub-segments.
+            for shared_sub_segment in shared_boundary_section.get_shared_sub_segments():
+                # Tessellate MOR section.
+                mor_points = pygplates.MultiPointOnSphere(
+                    shared_sub_segment.get_resolved_geometry().to_tessellated(
+                        np.radians(ridge_sampling)
+                    )
+                )
+
+                coords = mor_points.to_lat_lon_list()
+                lats = [i[0] for i in coords]
+                lons = [i[1] for i in coords]
+                boundary_feature = shared_boundary_section.get_feature()
+                left_plate = boundary_feature.get_left_plate(None)
+                right_plate = boundary_feature.get_right_plate(None)
+                if left_plate is not None and right_plate is not None:
+                    # Get the spreading rates for all points in this sub segment
+                    (
+                        spreading_rates,
+                        _,
+                    ) = tools.calculate_spreading_rates(
+                        time=time,
+                        lons=lons,
+                        lats=lats,
+                        left_plates=[left_plate] * len(lons),
+                        right_plates=[right_plate] * len(lons),
+                        rotation_model=rotation_model,
+                        delta_time=delta_time,
+                    )
+
+                else:
+                    spreading_rates = [np.nan] * len(lons)
+
+                # Loop through all but the 1st and last points in the current sub segment
+                for point, rate in zip(
+                    mor_points.get_points()[1:-1],
+                    spreading_rates[1:-1],
+                ):
+                    # Add the point "twice" to the main shifted_mor_points list; once for a L-side
+                    # spread, another for a R-side spread. Then add the same spreading rate twice
+                    # to the list - this therefore assumes spreading rate is symmetric.
+                    shifted_mor_points.append(rotate_slightly_off_mor_one_way * point)
+                    shifted_mor_points.append(
+                        rotate_slightly_off_mor_opposite_way * point
+                    )
+                    point_spreading_rates.extend([rate] * 2)
+
+    # Summarising get_isochrons_for_ridge_snapshot;
+    # Write out the ridge point born at 'ridge_time' but their position at 'ridge_time - time_step'.
+    mor_point_features = []
+    for curr_point in shifted_mor_points:
+        feature = pygplates.Feature()
+        feature.set_geometry(curr_point)
+        feature.set_valid_time(time, -999)  # delete - time_step
+        mor_point_features.append(feature)
+
+    mor_points = pygplates.FeatureCollection(mor_point_features)
+
+    # Write MOR points at `time` to gpmlz
+    mor_points.write(mor_filepath.format(time))
+
+    # write zvalue spreading rates to file point_data_dataframe_{time}Ma.npz
+    _collect_point_data_in_dataframe(
+        zvalues_file_basepath, mor_points, zval_names, point_spreading_rates, time
+    )
+    logger.info(f"Finished building MOR seedpoints at {time} Ma!")
+
+
+def _collect_point_data_in_dataframe(
+    zvalues_file_basepath, feature_collection, zval_names, zval_ndarray, time
+):
+    """At a given timestep, create a pandas dataframe holding all attributes of point features.
+
+    Rather than store z values as shapefile attributes, store them in a dataframe indexed by feature ID.
+    """
+    # Turn the zval_ndarray into a numPy array
+    zval_ndarray = np.array(zval_ndarray)
+
+    # Prepare the zval ndarray (can be of any shape) to be saved with default point data
+    zvals_to_store = {}
+
+    # If only one zvalue (for now, spreading rate)
+    if zval_ndarray.ndim == 1:
+        zvals_to_store[zval_names[0]] = zval_ndarray
+        data_to_store = [zvals_to_store[i] for i in zvals_to_store]
+    else:
+        for i in zval_ndarray.shape[1]:
+            zvals_to_store[zval_names[i]] = [list(j) for j in zip(*zval_ndarray)][i]
+        data_to_store = [zvals_to_store[i] for i in zvals_to_store]
+
+    np.savez_compressed(
+        zvalues_file_basepath.format(time),
+        FEATURE_ID=[str(feature.get_feature_id()) for feature in feature_collection],
+        *data_to_store,
+    )

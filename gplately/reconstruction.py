@@ -54,9 +54,12 @@ class PlateReconstruction(object):
             self.name = None
 
         self._anchor_plate_id = self._check_anchor_plate_id(anchor_plate_id)
-        self.rotation_model = _RotationModel(
-            rotation_model, default_anchor_plate_id=anchor_plate_id
-        )
+        if isinstance(rotation_model, _RotationModel):
+            self.rotation_model = rotation_model
+        else:
+            self.rotation_model = _RotationModel(
+                rotation_model, default_anchor_plate_id=anchor_plate_id
+            )
         self.topology_features = _load_FeatureCollection(topology_features)
         self.static_polygons = _load_FeatureCollection(static_polygons)
         self.plate_model_name = plate_model_name

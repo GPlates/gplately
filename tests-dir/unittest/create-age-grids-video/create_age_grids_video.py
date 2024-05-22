@@ -11,6 +11,11 @@ from plate_model_manager import PlateModel, PlateModelManager
 import gplately
 from gplately import PlateReconstruction, PlotTopologies
 
+seafloor_grid_data_dir = ".."
+age_grid_filepath = seafloor_grid_data_dir + "/SEAFLOOR_AGE/SEAFLOOR_AGE_grid_{}.0Ma.nc"
+image_output_dir = "./images"
+image_filepath = image_output_dir + "/agegrid-{}-Ma.png"
+
 time = 0
 
 try:
@@ -33,7 +38,7 @@ gplot = PlotTopologies(
 for time in range(1001):
     fig = plt.figure(figsize=(12, 8), dpi=300)
     ax = plt.axes(projection=ccrs.PlateCarree(), frameon=True)
-    img = Dataset(f"../agegrid-output/SEAFLOOR_AGE_grid_{time}.0Ma.nc")  # load grid
+    img = Dataset(age_grid_filepath.format(time))  # load grid
     cb = ax.imshow(
         img.variables["z"],
         origin="lower",
@@ -51,17 +56,16 @@ for time in range(1001):
     gplot.plot_all_topologies(ax, color="blue")
     # plt.show()
 
-    OUTPUT_DIR = "images"
-    Path(OUTPUT_DIR).mkdir(parents=True, exist_ok=True)
-    output_file = f"{OUTPUT_DIR}/agegrid-{time}-Ma.png"
-    plt.gcf().savefig(output_file, dpi=120, bbox_inches="tight")  # transparent=True)
-    print(f"Done! The {output_file} has been saved.")
+    Path(image_output_dir).mkdir(parents=True, exist_ok=True)
+    plt.gcf().savefig(
+        image_filepath.format(time), dpi=120, bbox_inches="tight"
+    )  # transparent=True)
+    print(f"Done! The {image_filepath.format(time)} has been saved.")
     plt.close(plt.gcf())
-
 
 import moviepy.editor as mpy
 
-frame_list = [f"{OUTPUT_DIR}/agegrid-{time}-Ma.png" for time in range(1001)]
+frame_list = [image_filepath.format(time) for time in range(1001)]
 frame_list.reverse()
 # print(frame_list)
 clip = mpy.ImageSequenceClip(frame_list, fps=6)

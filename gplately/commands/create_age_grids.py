@@ -1,14 +1,18 @@
 import argparse
 import datetime
 import logging
+import multiprocessing
 import time
 import warnings
 from typing import Optional, Sequence, Union
 
-import pygplates
 from plate_model_manager import PlateModel, PlateModelManager
 
 from gplately import PlateReconstruction, PlotTopologies, SeafloorGrid
+
+from ..pygplates import FeatureCollection as gFeatureCollection
+from ..pygplates import FeaturesFunctionArgument
+from ..pygplates import RotationModel as gRotationModel
 
 logger = logging.getLogger("gplately")
 
@@ -109,9 +113,9 @@ def add_parser(parser: argparse.ArgumentParser):
     agegrid_cmd.add_argument(
         "-j",
         "--n_jobs",
-        help="number of processes to use; default: 1",
+        help="number of processes to use; default: use all CPU available",
         metavar="N_JOBS",
-        default=1,
+        default=None,
         dest="n_jobs",
     )
     agegrid_cmd.add_argument(
@@ -167,40 +171,31 @@ def create_agegrids(
                 model_name, data_dir="plate-model-repo", readonly=True
             )
 
-        rotations = pygplates.FeaturesFunctionArgument(
-            plate_model.get_rotation_model()
-        ).get_features()
-
-        topologies = pygplates.FeaturesFunctionArgument(
-            plate_model.get_topologies()
-        ).get_features()
-
-        continents = pygplates.FeaturesFunctionArgument(
-            plate_model.get_layer("ContinentalPolygons")
-        ).get_features()
+        rotation_files = plate_model.get_rotation_model()
+        topology_files = plate_model.get_topologies()
+        continent_files = plate_model.get_layer("ContinentalPolygons")
+        if "Cratons" in plate_model.get_avail_layers():
+            continent_files += plate_model.get_layer("Cratons")
 
     else:
-        features = pygplates.FeaturesFunctionArgument(input_filenames).get_features()
-        rotations = []
-        topologies = []
-        continents = []
-        for i in features:
-            if (
-                i.get_feature_type().to_qualified_string()
-                == "gpml:TotalReconstructionSequence"
-            ):
-                rotations.append(i)
-            else:
-                topologies.append(i)
+        rotation_files = []
+        topology_files = []
+        for fn in input_filenames:
+            features = FeaturesFunctionArgument([fn]).get_features()
+            if len(features) > 0:
+                if (
+                    features[0].get_feature_type().to_qualified_string()
+                    == "gpml:TotalReconstructionSequence"
+                ):
+                    rotation_files.append(fn)
+                else:
+                    topology_files.append(fn)
 
-        if continents_filenames is not None:
-            continents = pygplates.FeaturesFunctionArgument(
-                continents_filenames
-            ).get_features()
+        continent_files = continents_filenames
 
-    topologies = pygplates.FeatureCollection(topologies)
-    rotations = pygplates.FeatureCollection(rotations)
-    continents = pygplates.FeatureCollection(continents)
+    rotations = gRotationModel(rotation_files)
+    topologies = gFeatureCollection.from_file_list(topology_files)
+    continents = gFeatureCollection.from_file_list(continent_files)
 
     with warnings.catch_warnings():
         warnings.simplefilter("ignore", ImportWarning)
@@ -232,6 +227,12 @@ def create_agegrids(
 
 
 def _run_create_agegrids(args):
+    n_jobs = args.n_jobs
+    if not n_jobs:
+        try:
+            n_jobs = multiprocessing.cpu_count()
+        except NotImplementedError:
+            n_jobs = 1
     start = time.time()
 
     create_agegrids(
@@ -241,7 +242,7 @@ def _run_create_agegrids(args):
         output_dir=args.output_dir,
         min_time=args.min_time,
         max_time=args.max_time,
-        n_jobs=args.n_jobs,
+        n_jobs=n_jobs,
         refinement_levels=args.refinement_levels,
         grid_spacing=args.grid_spacing,
         ridge_sampling=args.ridge_sampling,
