@@ -1511,8 +1511,8 @@ def _lat_lon_z_to_netCDF_time(
     # Interpolate lons, lats and zvals over a regular grid using nearest neighbour interpolation
     Z = tools.griddata_sphere((lons, lats), zdata, (X, Y), method="nearest")
 
-    unmasked_basename = f"{zval_name}_grid_unmasked_{time}Ma.nc"
-    grid_basename = f"{zval_name}_grid_{time}Ma.nc"
+    unmasked_basename = f"{zval_name}_grid_unmasked_{time:0.2f}Ma.nc"
+    grid_basename = f"{zval_name}_grid_{time:0.2f}Ma.nc"
     if file_collection:
         unmasked_basename = f"{file_collection}_{unmasked_basename}"
         grid_basename = f"{file_collection}_{grid_basename}"
@@ -1548,7 +1548,7 @@ def _lat_lon_z_to_netCDF_time(
         Z,
         extent=extent,
     )
-    logger.info(f"{zval_name} netCDF grids for {time} Ma complete!")
+    logger.info(f"{zval_name} netCDF grids for {time:0.2f} Ma complete!")
 
 
 def _save_age_grid_sample_points_to_gpml(
