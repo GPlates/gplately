@@ -222,7 +222,8 @@ def create_agegrids(
             file_collection=file_collection,
         )
 
-        grid.reconstruct_by_topologies()
+        # grid.reconstruct_by_topologies()
+        grid.reconstruct_by_topological_model()
         for val in ("SEAFLOOR_AGE", "SPREADING_RATE"):
             grid.lat_lon_z_to_netCDF(val, unmasked=unmasked, nprocs=n_jobs)
 

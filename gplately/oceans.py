@@ -1175,7 +1175,9 @@ class SeafloorGrid(object):
                 reconstructed_points = reconstructed_time_span.get_geometry_points(
                     next_time, return_inactive_points=True
                 )
-                print(len(reconstructed_points))
+                logger.info(
+                    f"Finished topological reconstruction of {len(self.current_active_points_df)} points from {time} to {next_time} Ma."
+                )
                 self._update_current_active_points(reconstructed_points)
                 self._load_middle_ocean_ridge_points(next_time)
                 time = next_time
