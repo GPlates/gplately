@@ -221,6 +221,7 @@ def create_agegrids(
             initial_ocean_mean_spreading_rate=initial_spreadrate,
             file_collection=file_collection,
         )
+
         grid.reconstruct_by_topologies()
         for val in ("SEAFLOOR_AGE", "SPREADING_RATE"):
             grid.lat_lon_z_to_netCDF(val, unmasked=unmasked, nprocs=n_jobs)

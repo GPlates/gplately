@@ -231,6 +231,9 @@ class SeafloorGrid(object):
         self.rotation_model = self.PlateReconstruction_object.rotation_model
         self.topology_features = self.PlateReconstruction_object.topology_features
         self._PlotTopologies_object = PlotTopologies_object
+        self.topological_model = pygplates.TopologicalModel(
+            self.topology_features.filenames, self.rotation_model.filenames
+        )
 
         self.file_collection = file_collection
 
@@ -315,7 +318,7 @@ class SeafloorGrid(object):
         # zvalue files
         self.zvalues_directory = os.path.join(self.save_directory, "zvalues")
         Path(self.zvalues_directory).mkdir(parents=True, exist_ok=True)
-        zvalues_file_basename = "point_data_dataframe_{:0.1f}Ma.npz"
+        zvalues_file_basename = "point_data_dataframe_{:0.2f}Ma.npz"
         if self.file_collection:
             zvalues_file_basename = self.file_collection + "_" + zvalues_file_basename
         self.zvalues_file_basepath = os.path.join(
@@ -337,7 +340,7 @@ class SeafloorGrid(object):
                 self.save_directory, "continent_mask"
             )
             Path(self.continent_mask_directory).mkdir(parents=True, exist_ok=True)
-            continent_mask_file_basename = "continent_mask_{}Ma.nc"
+            continent_mask_file_basename = "continent_mask_{:0.2f}Ma.nc"
             if self.file_collection:
                 continent_mask_file_basename = (
                     self.file_collection + "_" + continent_mask_file_basename
@@ -351,7 +354,7 @@ class SeafloorGrid(object):
             self.save_directory, "sample_points"
         )
         Path(self.sample_points_directory).mkdir(parents=True, exist_ok=True)
-        sample_points_basename = "age_grid_sample_points_{0}_Ma.gpmlz"
+        sample_points_basename = "age_grid_sample_points_{:0.2f}_Ma.gpmlz"
         if self.file_collection:
             sample_points_basename = self.file_collection + "_" + sample_points_basename
         self.sample_points_filepath = os.path.join(
@@ -363,7 +366,7 @@ class SeafloorGrid(object):
             self.save_directory, "gridding_input"
         )
         Path(self.gridding_input_directory).mkdir(parents=True, exist_ok=True)
-        gridding_input_basename = "gridding_input_{:0.1f}Ma.npz"
+        gridding_input_basename = "gridding_input_{:0.2f}Ma.npz"
         if self.file_collection:
             gridding_input_basename = (
                 self.file_collection + "_" + gridding_input_basename
@@ -641,6 +644,16 @@ class SeafloorGrid(object):
             ),  # for now, spreading rate is one zvalue for initial ocean points. will other zvalues need to have a generalised workflow?
             self._max_time,
         )
+
+        assert len(self.zval_names) > 0
+        data = {
+            "lon": pX,
+            "lat": pY,
+            "begin_time": pAge + self._max_time,
+            "end_time": 0,
+            self.zval_names[0]: [self.initial_ocean_mean_spreading_rate] * len(pX),
+        }
+        self.initial_ocean_point_df = pd.DataFrame(data=data)
 
         return pygplates.FeatureCollection(initial_ocean_point_features)
 
@@ -1041,6 +1054,134 @@ class SeafloorGrid(object):
 
         return active_points, appearance_time, birth_lat, prev_lat, prev_lon, zvalues
 
+    def _update_current_active_points(
+        self, reconstructed_points: List[pygplates.PointOnSphere]
+    ):
+        """use reconstructed coordinates to update the current active points"""
+        assert len(self.zval_names) > 0
+        lons = []
+        lats = []
+        begin_times = []
+        end_times = []
+        spread_rates = []
+        for i in range(len(reconstructed_points)):
+            if reconstructed_points[i]:
+                lat_lon = reconstructed_points[i].to_lat_lon()
+                lons.append(lat_lon[1])
+                lats.append(lat_lon[0])
+                begin_times.append(self.current_active_points_df.loc[i, "begin_time"])
+                end_times.append(self.current_active_points_df.loc[i, "end_time"])
+                spread_rates.append(
+                    self.current_active_points_df.loc[i, self.zval_names[0]]
+                )
+
+        data = {
+            "lon": lons,
+            "lat": lats,
+            "begin_time": begin_times,
+            "end_time": end_times,
+            self.zval_names[0]: spread_rates,
+        }
+        self.current_active_points_df = pd.DataFrame(data=data)
+
+    def _load_middle_ocean_ridge_points(self, time):
+        """add middle ocean ridge points at `time` to current_active_points_df"""
+        fc = pygplates.FeatureCollection(self.mor_filepath.format(time))
+        assert len(self.zval_names) > 0
+        lons = []
+        lats = []
+        begin_times = []
+        end_times = []
+        for feature in fc:
+            lat_lon = feature.get_geometry().to_lat_lon()
+            valid_time = feature.get_valid_time()
+            lons.append(lat_lon[1])
+            lats.append(lat_lon[0])
+            begin_times.append(valid_time[0])
+            end_times.append(valid_time[1])
+
+        curr_zvalues = self._extract_zvalues_from_npz_to_ndarray(fc, time)
+        data = {
+            "lon": lons,
+            "lat": lats,
+            "begin_time": begin_times,
+            "end_time": end_times,
+            self.zval_names[0]: curr_zvalues[:, 0],
+        }
+
+        self.current_active_points_df = pd.concat(
+            [self.current_active_points_df, pd.DataFrame(data=data)], ignore_index=True
+        )
+
+    def _save_gridding_input_data(self, time):
+        """save the data into file for creating netcdf file later"""
+        data_len = len(self.current_active_points_df["lon"])
+        np.savez_compressed(
+            self.gridding_input_filepath.format(time),
+            CURRENT_LONGITUDES=self.current_active_points_df["lon"],
+            CURRENT_LATITUDES=self.current_active_points_df["lat"],
+            SEAFLOOR_AGE=self.current_active_points_df["begin_time"] - time,
+            BIRTH_LAT_SNAPSHOT=[0] * data_len,
+            POINT_ID_SNAPSHOT=[0] * data_len,
+            SPREADING_RATE=self.current_active_points_df["SPREADING_RATE"],
+        )
+
+    def reconstruct_by_topological_model(self):
+        """Use pygplates TopologicalModel to reconstruct seed points"""
+        self.create_initial_ocean_seed_points()
+        logger.info("Finished building initial_ocean_seed_points!")
+        # print(self.initial_ocean_point_df)
+
+        self.build_all_continental_masks()
+        self.build_all_MOR_seedpoints()
+
+        self.current_active_points_df = self.initial_ocean_point_df
+        time = int(self._max_time)
+        while True:
+            self._save_gridding_input_data(time)
+            # save debug file
+            if get_debug_level() > 100:
+                _save_age_grid_sample_points_to_gpml(
+                    self.current_active_points_df["lon"],
+                    self.current_active_points_df["lat"],
+                    self.current_active_points_df["begin_time"] - time,
+                    time,
+                    self.sample_points_filepath,
+                )
+            next_time = time - int(self._ridge_time_step)
+            if next_time >= int(self._min_time):
+                points = [
+                    pygplates.PointOnSphere(row.lat, row.lon)
+                    for index, row in self.current_active_points_df.iterrows()
+                ]
+                # reconstruct_geometry() needs time to be integral value
+                # https://www.gplates.org/docs/pygplates/generated/pygplates.topologicalmodel#pygplates.TopologicalModel.reconstruct_geometry
+                reconstructed_time_span = self.topological_model.reconstruct_geometry(
+                    points,
+                    initial_time=time,
+                    youngest_time=next_time,
+                    time_increment=int(self._ridge_time_step),
+                    deactivate_points=pygplates.ReconstructedGeometryTimeSpan.DefaultDeactivatePoints(
+                        threshold_velocity_delta=self.subduction_collision_parameters[
+                            0
+                        ],  # cms/yr
+                        threshold_distance_to_boundary=self.subduction_collision_parameters[
+                            1
+                        ],  # kms/myr
+                        deactivate_points_that_fall_outside_a_network=True,
+                    ),
+                )
+
+                reconstructed_points = reconstructed_time_span.get_geometry_points(
+                    next_time, return_inactive_points=True
+                )
+                print(len(reconstructed_points))
+                self._update_current_active_points(reconstructed_points)
+                self._load_middle_ocean_ridge_points(next_time)
+                time = next_time
+            else:
+                break
+
     def reconstruct_by_topologies(self):
         """Obtain all active ocean seed points at `time` - these are
         points that have not been consumed at subduction zones or have not
@@ -1392,7 +1533,9 @@ def _lat_lon_z_to_netCDF_time(
 
     # Use the continental mask
     Z = np.ma.array(
-        grids.Raster(data=Z).data.data, mask=cont_mask.data.data, fill_value=np.nan
+        grids.Raster(data=Z.astype("float")).data.data,
+        mask=cont_mask.data.data,
+        fill_value=np.nan,
     )
 
     # grd = cont_mask.interpolate(X, Y) > 0.5
