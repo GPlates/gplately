@@ -1084,6 +1084,33 @@ class SeafloorGrid(object):
         }
         self.current_active_points_df = pd.DataFrame(data=data)
 
+    def _remove_continent_points(self, time):
+        """remove all the points which are inside continents"""
+        gridZ, gridX, gridY = grids.read_netcdf_grid(
+            self.continent_mask_filepath.format(time), return_grids=True
+        )
+        ni, nj = gridZ.shape
+        xmin = np.nanmin(gridX)
+        xmax = np.nanmax(gridX)
+        ymin = np.nanmin(gridY)
+        ymax = np.nanmax(gridY)
+
+        def remove_points_on_continents(row):
+            i = int(round((ni - 1) * ((row.lat - ymin) / (ymax - ymin))))
+            j = int(round((nj - 1) * ((row.lon - xmin) / (xmax - xmin))))
+            i = 0 if i < 0 else i
+            j = 0 if j < 0 else j
+            i = ni - 1 if i > ni - 1 else i
+            j = nj - 1 if j > nj - 1 else j
+
+            if gridZ[i, j] > 0:
+                return False
+            else:
+                return True
+
+        m = self.current_active_points_df.apply(remove_points_on_continents, axis=1)
+        self.current_active_points_df = self.current_active_points_df[m]
+
     def _load_middle_ocean_ridge_points(self, time):
         """add middle ocean ridge points at `time` to current_active_points_df"""
         fc = pygplates.FeatureCollection(self.mor_filepath.format(time))
@@ -1162,9 +1189,8 @@ class SeafloorGrid(object):
                     youngest_time=next_time,
                     time_increment=int(self._ridge_time_step),
                     deactivate_points=pygplates.ReconstructedGeometryTimeSpan.DefaultDeactivatePoints(
-                        threshold_velocity_delta=self.subduction_collision_parameters[
-                            0
-                        ],  # cms/yr
+                        threshold_velocity_delta=self.subduction_collision_parameters[0]
+                        / 10,  # cms/yr
                         threshold_distance_to_boundary=self.subduction_collision_parameters[
                             1
                         ],  # kms/myr
@@ -1178,7 +1204,9 @@ class SeafloorGrid(object):
                 logger.info(
                     f"Finished topological reconstruction of {len(self.current_active_points_df)} points from {time} to {next_time} Ma."
                 )
+                # update the current activate points to prepare for the reconstruction to "next time"
                 self._update_current_active_points(reconstructed_points)
+                self._remove_continent_points(next_time)
                 self._load_middle_ocean_ridge_points(next_time)
                 time = next_time
             else:
