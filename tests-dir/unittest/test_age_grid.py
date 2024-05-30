@@ -57,10 +57,15 @@ def main():
         file_collection=model_name,
         resume_from_checkpoints=True,
     )
-    grid.reconstruct_by_topological_model()
-    # grid.reconstruct_by_topologies()
-    for val in ("SEAFLOOR_AGE", "SPREADING_RATE"):
-        grid.lat_lon_z_to_netCDF(val, unmasked=False, nprocs=8)
+    test_new = 1
+    if test_new:
+        grid.reconstruct_by_topological_model()
+        for val in ("SEAFLOOR_AGE", "SPREADING_RATE"):
+            grid.save_netcdf_files(val)
+    else:
+        grid.reconstruct_by_topologies()
+        for val in ("SEAFLOOR_AGE", "SPREADING_RATE"):
+            grid.lat_lon_z_to_netCDF(val, unmasked=False, nprocs=5)
 
 
 if __name__ == "__main__":
