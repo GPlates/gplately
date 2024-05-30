@@ -58,7 +58,6 @@ def main():
         resume_from_checkpoints=True,
     )
     grid.reconstruct_by_topological_model()
-
     # grid.reconstruct_by_topologies()
     for val in ("SEAFLOOR_AGE", "SPREADING_RATE"):
         grid.lat_lon_z_to_netCDF(val, unmasked=False, nprocs=8)
