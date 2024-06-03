@@ -130,9 +130,9 @@ def test_lat_lon_z_to_netCDF(zval_name, seafloorgrid):
     _reconstruct_by_topologies(time, seafloorgrid)
     seafloorgrid.lat_lon_z_to_netCDF(zval_name, unmasked=True)
 
-    grid_output_unmasked = f"{seafloorgrid.save_directory}/{zval_name}/{seafloorgrid.file_collection}_{zval_name}_grid_unmasked_{time}Ma.nc"
+    grid_output_unmasked = f"{seafloorgrid.save_directory}/{zval_name}/{seafloorgrid.file_collection}_{zval_name}_grid_unmasked_{time:0.2f}Ma.nc"
 
-    grid_output_dir = f"{seafloorgrid.save_directory}/{zval_name}/{seafloorgrid.file_collection}_{zval_name}_grid_{time}Ma.nc"
+    grid_output_dir = f"{seafloorgrid.save_directory}/{zval_name}/{seafloorgrid.file_collection}_{zval_name}_grid_{time:0.2f}Ma.nc"
 
     age_grid_unmasked = gplately.Raster(
         data=grid_output_unmasked, extent=[-180, 180, -90, 90]
