@@ -61,7 +61,7 @@ def _reconstruct_by_topologies(time, seafloorgrid, clean=False):
     # Otherwise, the following lines then test the validity of written gridding inputs.
 
     # Accounts for a given save directory only
-    npz_gridding_input = "{:s}/{}_gridding_input_{:0.1f}Ma.npz".format(
+    npz_gridding_input = "{:s}/{}_gridding_input_{:0.2f}Ma.npz".format(
         seafloorgrid.gridding_input_directory, seafloorgrid.file_collection, time
     )
 
