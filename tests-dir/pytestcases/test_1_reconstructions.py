@@ -187,3 +187,11 @@ def test_pickle_Points():
     model_dump = pickle.dumps(model)
     model_load = pickle.loads(model_dump)
     logger.info("Testing test_pickle_Points")
+
+
+def test_rotation_model_copy(model):
+    rot_model = model.rotation_model
+    rot_model_copy = gplately.pygplates.RotationModel(rot_model)
+    rot1 = rot_model.get_rotation(50, 101)
+    rot2 = rot_model_copy.get_rotation(50, 101)
+    assert rot1 == rot2
