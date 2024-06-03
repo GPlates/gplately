@@ -479,7 +479,7 @@ class SeafloorGrid(object):
             time,
         )
 
-    def _get_ocean_points(self):
+    def _generate_ocean_points(self):
         """generate ocean points by using the icosahedral mesh"""
         # Ensure COB terranes at max time have reconstruction IDs and valid times
         COB_polygons = ensure_polygon_geometry(
@@ -601,7 +601,7 @@ class SeafloorGrid(object):
             # mask to build the initial profile of seafloor age.
             ocean_points = self._get_ocean_points_from_continent_mask()
         else:
-            ocean_points = self._get_ocean_points()
+            ocean_points = self._generate_ocean_points()
 
         # Now that we have ocean points...
         # Determine age of ocean basin points using their proximity to MOR features
@@ -1400,7 +1400,6 @@ class SeafloorGrid(object):
                         name=name,
                         file_collection=self.file_collection,
                         save_directory=self.save_directory,
-                        total_column_headers=self.total_column_headers,
                         extent=self.extent,
                         resX=self.spacingX,
                         resY=self.spacingY,
@@ -1417,7 +1416,6 @@ class SeafloorGrid(object):
                     name=name,
                     file_collection=self.file_collection,
                     save_directory=self.save_directory,
-                    total_column_headers=self.total_column_headers,
                     extent=self.extent,
                     resX=self.spacingX,
                     resY=self.spacingY,
@@ -1432,7 +1430,6 @@ def _save_netcdf_file(
     name,
     file_collection,
     save_directory: Union[str, Path],
-    total_column_headers,
     extent,
     resX,
     resY,
