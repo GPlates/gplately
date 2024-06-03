@@ -23,16 +23,29 @@ class RotationModel(_pygplates.RotationModel):
         extend_total_reconstruction_poles_to_distant_past=False,
         default_anchor_plate_id=0,
     ):
-        super(RotationModel, self).__init__(
-            rotation_features,
-            reconstruction_tree_cache_size=reconstruction_tree_cache_size,
-            extend_total_reconstruction_poles_to_distant_past=extend_total_reconstruction_poles_to_distant_past,
-            default_anchor_plate_id=default_anchor_plate_id,
-        )
+        # N.B. if rotation_features is a RotationModel, the constructor
+        # will not accept 'extend_total_reconstruction_poles_to_distant_past'
+        # as an argument
+        if isinstance(rotation_features, _pygplates.RotationModel):
+            super(RotationModel, self).__init__(
+                rotation_features,
+                reconstruction_tree_cache_size=reconstruction_tree_cache_size,
+                default_anchor_plate_id=default_anchor_plate_id,
+            )
+        else:
+            super(RotationModel, self).__init__(
+                rotation_features,
+                reconstruction_tree_cache_size=reconstruction_tree_cache_size,
+                extend_total_reconstruction_poles_to_distant_past=extend_total_reconstruction_poles_to_distant_past,
+                default_anchor_plate_id=default_anchor_plate_id,
+            )
 
         if isinstance(rotation_features, str):
             self._filenames = [rotation_features]
-        elif all(isinstance(f, str) for f in rotation_features):
+        elif (
+            hasattr(rotation_features, "__iter__")
+            and all(isinstance(f, str) for f in rotation_features)
+        ):
             self._filenames = list(rotation_features)
         else:
             self._filenames = []
