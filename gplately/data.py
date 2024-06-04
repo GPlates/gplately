@@ -138,7 +138,7 @@ class DataCollection(object):
             "Clennett2020" : ["https://www.earthbyte.org/webdav/ftp/Data_Collections/Clennett_etal_2020_G3/Global_Model_WD_Internal_Release_2019_v2_Clennett_NE_Pacific.zip"],
             "Seton2012" : ["https://www.earthbyte.org/webdav/ftp/Data_Collections/Seton_etal_2012_ESR.zip"],
             #"Merdith2021" : ["https://zenodo.org/record/4485738/files/SM2_4485738_V2.zip"],
-            "Merdith2021" : ["https://earthbyte.org/webdav/ftp/Data_Collections/Merdith_etal_2021_ESR/SM2-Merdith_et_al_1_Ga_reconstruction_v1.1.zip"],
+            "Merdith2021" : ["https://earthbyte.org/webdav/ftp/Data_Collections/Merdith_etal_2021_ESR/SM2-Merdith_et_al_1_Ga_reconstruction_v1.2.zip"],
             "Matthews2016" : ["https://www.earthbyte.org/webdav/ftp/Data_Collections/Matthews_etal_2016_Global_Plate_Model_GPC.zip"], 
             "Merdith2017" : ["https://www.earthbyte.org/webdav/ftp/Data_Collections/Merdith_etal_2017_GR.zip"], 
             "Li2008" : ["https://www.earthbyte.org/webdav/ftp/Data_Collections/Li_etal_2008_RodiniaModel.zip"],
@@ -152,9 +152,10 @@ class DataCollection(object):
             "Muller2008" : ["https://www.earthbyte.org/webdav/ftp/Data_Collections/Muller2008/Global_Model_Rigid_Internal_Release_2010.zip"],
             "Scotese2016" : ["https://www.earthbyte.org/webdav/ftp/Data_Collections/Scotese2016/PALEOMAP_GlobalPlateModel.zip"],
             "Shephard2013" : ["https://www.earthbyte.org/webdav/ftp/Data_Collections/Shephard_etal_2013_ESR.zip"],
-            "Muller2022" : ["https://www.earthbyte.org/webdav/ftp/Data_Collections/Muller_etal_2022_SE/Muller_etal_2022_SE_1Ga_Opt_PlateMotionModel_v1.1.zip"],
+            "Muller2022" : ["https://www.earthbyte.org/webdav/ftp/Data_Collections/Muller_etal_2022_SE/Muller_etal_2022_SE_1Ga_Opt_PlateMotionModel_v1.2.2.zip"],
             "Cao2023" :["https://www.earthbyte.org/webdav/ftp/Data_Collections/Cao_etal_2023/1.8Ga_model_submit.zip"],
             "Cao2023_Opt" : ["https://www.earthbyte.org/webdav/ftp/Data_Collections/Cao_etal_2023_Opt/Cao1800Opt.zip"],
+            "Hu2022" : ["https://www.earthbyte.org/webdav/ftp/Data_Collections/Hu_etal_2022_NatureGeosci/Plate_model_Hu_etal_2022.zip"],
 
         }
 
@@ -187,6 +188,7 @@ class DataCollection(object):
             "Muller2022" : [0,1000],
             "Cao2023" : [0,1800],
             "Cao2023_Opt" : [0,1800],
+            "Hu2022" : [0, 250], 
 
         }  
         return database
@@ -196,7 +198,7 @@ class DataCollection(object):
 
         strings = [
 
-            "Muller2022 1000_0_rotfile_Merdith_et_al_optimised.rot", # For Muller et al. 2022
+            "Muller2022 1000_0_rotfile_MantleOptimised.rot", # For Muller et al. 2022
         ]
         return strings
 
@@ -207,7 +209,7 @@ class DataCollection(object):
             "OLD",
             "__MACOSX",
             "DO_NOT",
-            "Blocks_crossing_Poles"
+            "Blocks_crossing_Poles",
         ]    
         return strings
 
@@ -247,6 +249,8 @@ class DataCollection(object):
             "Clennett_2020_NAm_boundaries",
             "Shephard_etal_ESR2013_Global_EarthByte_2013", # For Shephard et al. 2013
             "1800-1000Ma-plate-boundary_new_valid_time_and_subduction_polarity.gpml", # for Cao2023
+            "Kamchatka_arcs",
+            "NW_Pacific_features",
 
         ]
         return strings 
@@ -267,6 +271,8 @@ class DataCollection(object):
             "PALEOMAP_PoliticalBoundaries", # Scotese 2016
             "SimplifiedFiles",  # Muller et al. 2019 (updated)
             "1000-410_poles", # Merdith 
+            "Muller2022 250-0_plate_boundaries_Merdith_et_al",
+            "Muller2022 410-250_plate_boundaries_Merdith_et_al"
         ]
         return strings
 
@@ -313,7 +319,7 @@ class DataCollection(object):
             "Clennett2020" : ["https://www.earthbyte.org/webdav/ftp/Data_Collections/Clennett_etal_2020_G3/Global_Model_WD_Internal_Release_2019_v2_Clennett_NE_Pacific.zip"],
             "Seton2012" : ["https://www.earthbyte.org/webdav/ftp/Data_Collections/Seton_etal_2012_ESR.zip"],
             #"Merdith2021" : ["https://zenodo.org/record/4485738/files/SM2_4485738_V2.zip"],
-            "Merdith2021" : ["https://earthbyte.org/webdav/ftp/Data_Collections/Merdith_etal_2021_ESR/SM2-Merdith_et_al_1_Ga_reconstruction_v1.1.zip"],
+            "Merdith2021" : ["https://earthbyte.org/webdav/ftp/Data_Collections/Merdith_etal_2021_ESR/SM2-Merdith_et_al_1_Ga_reconstruction_v1.2.zip"],
             "Matthews2016" : ["https://www.earthbyte.org/webdav/ftp/Data_Collections/Matthews_etal_2016_Global_Plate_Model_GPC.zip"], 
             "Merdith2017" : ["https://www.earthbyte.org/webdav/ftp/Data_Collections/Merdith_etal_2017_GR.zip"],  
             "Li2008" : [None],
@@ -326,10 +332,11 @@ class DataCollection(object):
             "Clennett2020_S2013" : ["https://www.earthbyte.org/webdav/ftp/Data_Collections/Clennett_etal_2020_G3/Clennett_etal_2020_S2013.zip"],
             "Muller2008" : ["https://www.earthbyte.org/webdav/ftp/Data_Collections/Muller2008/Global_Model_Rigid_Internal_Release_2010.zip"],
             "Scotese2016" : ["https://www.earthbyte.org/webdav/ftp/Data_Collections/Scotese2016/PALEOMAP_GlobalPlateModel.zip"],
-            "Shephard2013" : ["https://www.earthbyte.org/webdav/ftp/Data_Collections/Shephard_etal_2013_ESR.zip"],
-            "Muller2022" : ["https://www.earthbyte.org/webdav/ftp/Data_Collections/Muller_etal_2022_SE/Muller_etal_2022_SE_1Ga_Opt_PlateMotionModel_v1.1.zip"],
+            "Shephard2013" : ["https://www.earthbyte.org/webdav/ftp/Data_Collections/Shephard2013/GPlates.zip"],
+            "Muller2022" : ["https://www.earthbyte.org/webdav/ftp/Data_Collections/Muller_etal_2022_SE/Muller_etal_2022_SE_1Ga_Opt_PlateMotionModel_v1.2.2.zip"],
             "Cao2023" :["https://www.earthbyte.org/webdav/ftp/Data_Collections/Cao_etal_2023/1.8Ga_model_submit.zip"],
             "Cao2023_Opt" : ["https://www.earthbyte.org/webdav/ftp/Data_Collections/Cao_etal_2023_Opt/Cao1800Opt.zip"],
+            "Hu2022" : ["https://www.earthbyte.org/webdav/ftp/Data_Collections/Hu_etal_2022_NatureGeosci/Plate_model_Hu_etal_2022.zip"],
 
         }
         return database

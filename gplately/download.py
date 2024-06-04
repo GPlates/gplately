@@ -679,6 +679,18 @@ def _str_in_filename(fnames, strings_to_include=None, strings_to_ignore=None, fi
 
         if strings_to_ignore is not None:
             for s in strings_to_ignore:
+                if file_collection is not None:
+                    
+                    # If the file collection is in the provided list of strings to ignore...
+                    strings_with_file_collection = [s for s in strings_to_ignore if file_collection.lower() in s.lower()]
+                    if strings_with_file_collection:
+
+                        # Include the string, and break out.
+                        for s in strings_with_file_collection:
+                            if s.split(" ")[-1].lower() in basename.lower():
+                                keep = False
+                                break
+
                 if s.lower() in basename.lower():
                     keep = False
                     break
