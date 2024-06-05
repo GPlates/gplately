@@ -265,9 +265,10 @@ def _load_FeatureCollection(geometry):
         fc = _FeatureCollection()
         for geom in geometry:
             fc.add( _FeatureCollection(geom) )
+        fc.filenames = list(geometry)
         return fc
     elif _is_string(geometry):
-        return _FeatureCollection(geometry)
+        return _FeatureCollection(geometry, filenames=[geometry])
     elif geometry is None:
         return None
     else:
