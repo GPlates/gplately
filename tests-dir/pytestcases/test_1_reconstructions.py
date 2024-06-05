@@ -1,4 +1,6 @@
 import logging
+import os
+import pickle
 
 import numpy as np
 import pytest
@@ -182,8 +184,6 @@ def test_point_velocities(time, model):
 
 
 def test_pickle_Points():
-    import pickle
-
     model_dump = pickle.dumps(model)
     model_load = pickle.loads(model_dump)
     logger.info("Testing test_pickle_Points")
@@ -195,3 +195,15 @@ def test_rotation_model_copy(model):
     rot1 = rot_model.get_rotation(50, 101)
     rot2 = rot_model_copy.get_rotation(50, 101)
     assert rot1 == rot2
+
+
+def test_reconstruction_filenames(model):
+    assert (
+        "Muller_etal_2019_PlateBoundaries_DeformingNetworks.gpmlz"
+        in [os.path.basename(i) for i in model.topology_features.filenames]
+    )
+
+
+def test_pickle_reconstruction(model):
+    pickled = pickle.loads(pickle.dumps(model))
+    assert len(model.topology_features) == len(pickled.topology_features)
