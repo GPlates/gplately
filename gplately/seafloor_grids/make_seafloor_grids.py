@@ -11,8 +11,9 @@ from plate_model_manager import PlateModel, PlateModelManager
 
 from ..ptt.utils import points_in_polygons
 from ..utils.log_utils import get_debug_level
-from .build_continental_mask import _build_all_continental_masks
+from .continental_mask import _build_continental_masks
 from .initial_seed_points import _get_initial_active_points_df
+from .mid_ocean_ridges import _generate_mid_ocean_ridge_points
 
 logger = logging.getLogger("gplately")
 
@@ -61,11 +62,25 @@ def make_seafloor_grids(
     continental_mask_file_path = os.path.join(
         continental_mask_dir, "continent_mask_{:0.2f}Ma.nc"
     )
-    _build_all_continental_masks(
+    _build_continental_masks(
         output_file_path=continental_mask_file_path,
         times=times,
         rotation_files=rotation_files,
         continent_files=continent_files,
+    )
+
+    mid_ocean_ridge_dir = "./mid_ocean_ridges"
+    Path(mid_ocean_ridge_dir).mkdir(parents=True, exist_ok=True)
+    mid_ocean_ridge_file_path = os.path.join(
+        mid_ocean_ridge_dir, "MOR_df_{:0.2f}_Ma.pkl"
+    )
+    _generate_mid_ocean_ridge_points(
+        times,
+        delta_time=1,
+        output_file_path=mid_ocean_ridge_file_path,
+        rotation_files=rotation_files,
+        topology_files=topology_files,
+        ridge_sampling=0.5,
     )
 
     """

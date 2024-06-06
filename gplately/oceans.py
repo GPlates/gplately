@@ -726,11 +726,13 @@ class SeafloorGrid(object):
             for time in self._times[1:]:
                 _generate_mid_ocean_ridge_points(
                     time,
-                    self.mid_ocean_ridges_file_path,
-                    self.rotation_model.filenames,
-                    self.topology_features.filenames,
-                    self.zvalues_file_basepath,
-                    self.zval_names,
+                    delta_time=self._ridge_time_step,
+                    mid_ocean_ridges_file_path=self.mid_ocean_ridges_file_path,
+                    rotation_files=self.rotation_model.filenames,
+                    topology_files=self.topology_features.filenames,
+                    zvalues_file_basepath=self.zvalues_file_basepath,
+                    zval_names=self.zval_names,
+                    ridge_sampling=self.ridge_sampling,
                     overwrite=overwrite,
                 )
 
