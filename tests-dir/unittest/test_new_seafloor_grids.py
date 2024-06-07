@@ -15,8 +15,7 @@ from gplately.seafloor_grids import make_seafloor_grids
 
 def main():
     model_name = "merdith2021"
-    times = list(range(410, 400, -1))
-    make_seafloor_grids(model_name, times)
+    make_seafloor_grids(model_name, initial_time=410, youngest_time=400)
 
 
 if __name__ == "__main__":

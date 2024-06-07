@@ -17,7 +17,7 @@ logger = logging.getLogger("gplately")
 MOR_GPMLZ_FILE_NAME = "MOR_plus_one_points_{:0.2f}.gpmlz"
 
 
-def _generate_mid_ocean_ridge_points(
+def _generate_all_mid_ocean_ridge_points(
     times,
     delta_time,
     output_file_path,
@@ -37,7 +37,7 @@ def _generate_mid_ocean_ridge_points(
             with multiprocessing.Pool(num_cpus) as pool:
                 pool.map(
                     partial(
-                        _generate_mid_ocean_ridge_points_at_time,
+                        _generate_mid_ocean_ridge_points,
                         delta_time=delta_time,
                         output_file_path=output_file_path,
                         rotation_files=rotation_files,
@@ -49,7 +49,7 @@ def _generate_mid_ocean_ridge_points(
                 )
         else:
             for time in times:
-                _generate_mid_ocean_ridge_points_at_time(
+                _generate_mid_ocean_ridge_points(
                     time,
                     delta_time=delta_time,
                     output_file_path=output_file_path,
@@ -60,7 +60,7 @@ def _generate_mid_ocean_ridge_points(
                 )
 
 
-def _generate_mid_ocean_ridge_points_at_time(
+def _generate_mid_ocean_ridge_points(
     time: float,
     delta_time: float,
     output_file_path: str,

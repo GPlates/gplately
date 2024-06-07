@@ -94,7 +94,7 @@ def _build_continental_mask_with_contouring(
     )
 
 
-def _build_continental_masks(
+def _build_all_continental_masks(
     output_file_path,
     times,
     rotation_files,
