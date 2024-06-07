@@ -13,6 +13,7 @@ from ..grids import read_netcdf_grid
 from ..ptt.utils import points_in_polygons
 from ..utils.log_utils import get_debug_level
 from .continental_mask import _build_all_continental_masks
+from .create_netcdf import _create_netcdf_files
 from .initial_seed_points import _get_initial_active_points_df
 from .mid_ocean_ridges import _generate_all_mid_ocean_ridge_points
 
@@ -61,7 +62,6 @@ def make_seafloor_grids(
         level=level,
         initial_ocean_mean_spreading_rate=initial_ocean_mean_spreading_rate,
     )
-    print(current_active_points_df)
 
     continental_mask_dir = "./continent_masks"
     Path(continental_mask_dir).mkdir(parents=True, exist_ok=True)
@@ -102,6 +102,15 @@ def make_seafloor_grids(
 
     # save the initial active seed points
     current_active_points_df.to_pickle(seed_points_file_path.format(initial_time))
+    # save debug file
+    if get_debug_level() > 100:
+        _save_age_grid_seed_points_to_gpml(
+            current_active_points_df["lon"],
+            current_active_points_df["lat"],
+            current_active_points_df["begin_time"] - initial_time,
+            initial_time,
+            seed_points_dir,
+        )
 
     while next_time >= youngest_time:
         points = [
@@ -145,6 +154,28 @@ def make_seafloor_grids(
 
         # save the reconstructed active seed points
         current_active_points_df.to_pickle(seed_points_file_path.format(current_time))
+        # save debug file
+        if get_debug_level() > 100:
+            _save_age_grid_seed_points_to_gpml(
+                current_active_points_df["lon"],
+                current_active_points_df["lat"],
+                current_active_points_df["begin_time"] - current_time,
+                current_time,
+                seed_points_dir,
+            )
+
+    seafloor_age_dir = "./seafloor_age"
+    Path(seafloor_age_dir).mkdir(parents=True, exist_ok=True)
+    seafloor_age_file_path = os.path.join(
+        seafloor_age_dir, "SEAFLOOR_AGE_grid_{:0.2f}_Ma.nc"
+    )
+    _create_netcdf_files(
+        variable_name="SEAFLOOR_AGE",
+        times=times,
+        seed_points_file_path=seed_points_file_path,
+        continent_mask_file_path=continental_mask_file_path,
+        output_file_path=seafloor_age_file_path,
+    )
 
 
 def _update_current_active_points_coordinates(
@@ -212,10 +243,31 @@ def _load_middle_ocean_ridge_points(
 ):
     """add middle ocean ridge points at `time` to current_active_points_df"""
     df = pd.read_pickle(mid_ocean_ridges_file_path.format(time))
+    df["begin_time"] = time
+    df["end_time"] = 0
     return pd.concat(
         [
             current_active_points_df,
             df,
         ],
         ignore_index=True,
+    )
+
+
+def _save_age_grid_seed_points_to_gpml(
+    lons, lats, seafloor_ages, paleo_time, output_file_dir
+):
+    """save sample points to .gpmlz for debug purpose"""
+    logger.debug(f"saving age grid sample points to gpml file -- {paleo_time} Ma")
+    features = []
+    for lon, lat, age in zip(lons, lats, seafloor_ages):
+        f = pygplates.Feature()
+        p = pygplates.PointOnSphere(lat, lon)
+        f.set_geometry(p)
+        f.set_valid_time(age + paleo_time, paleo_time)
+        features.append(f)
+    pygplates.FeatureCollection(features).write(
+        os.path.join(
+            output_file_dir, "MOR_plus_one_points_{:0.2f}.gpmlz".format(paleo_time)
+        )
     )
