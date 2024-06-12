@@ -12,6 +12,7 @@ from plate_model_manager import PlateModel, PlateModelManager
 from ..grids import read_netcdf_grid
 from ..ptt.utils import points_in_polygons
 from ..utils.log_utils import get_debug_level
+from . import topological_reconstruction
 from .continental_mask import _build_all_continental_masks
 from .create_netcdf import _create_netcdf_files
 from .initial_seed_points import _get_initial_active_points_df
@@ -117,23 +118,32 @@ def make_seafloor_grids(
             pygplates.PointOnSphere(row.lat, row.lon)
             for index, row in current_active_points_df.iterrows()
         ]
-        # reconstruct_geometry() needs time to be integral value
-        # https://www.gplates.org/docs/pygplates/generated/pygplates.topologicalmodel#pygplates.TopologicalModel.reconstruct_geometry
-        reconstructed_time_span = topological_model.reconstruct_geometry(
-            points,
-            initial_time=current_time,
-            youngest_time=next_time,
-            time_increment=time_increment,
-            deactivate_points=pygplates.ReconstructedGeometryTimeSpan.DefaultDeactivatePoints(
-                threshold_velocity_delta=threshold_velocity_delta,  # cms/yr
-                threshold_distance_to_boundary=threshold_distance_to_boundary,  # kms/myr
-                deactivate_points_that_fall_outside_a_network=True,
-            ),
-        )
+        if 0:
+            # reconstruct_geometry() needs time to be integral value
+            # https://www.gplates.org/docs/pygplates/generated/pygplates.topologicalmodel#pygplates.TopologicalModel.reconstruct_geometry
+            reconstructed_time_span = topological_model.reconstruct_geometry(
+                points,
+                initial_time=current_time,
+                youngest_time=next_time,
+                time_increment=time_increment,
+                deactivate_points=pygplates.ReconstructedGeometryTimeSpan.DefaultDeactivatePoints(
+                    threshold_velocity_delta=threshold_velocity_delta,  # cms/yr
+                    threshold_distance_to_boundary=threshold_distance_to_boundary,  # kms/myr
+                    deactivate_points_that_fall_outside_a_network=True,
+                ),
+            )
 
-        reconstructed_points = reconstructed_time_span.get_geometry_points(
-            next_time, return_inactive_points=True
-        )
+            reconstructed_points = reconstructed_time_span.get_geometry_points(
+                next_time, return_inactive_points=True
+            )
+        else:
+            reconstructed_points = topological_reconstruction.reconstruct(
+                points,
+                rotation_files=rotation_files,
+                topology_files=topology_files,
+                from_time=current_time,
+                to_time=next_time,
+            )
         logger.info(
             f"Finished topological reconstruction of {len(current_active_points_df)} points from {current_time} to {next_time} Ma."
         )
