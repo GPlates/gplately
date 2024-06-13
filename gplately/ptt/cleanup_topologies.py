@@ -15,7 +15,6 @@
     51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 """
 
-
 ##################################################################################################
 # Clean up topologies, including:                                                                #
 #   * Removing any regular features not referenced by topologies.                                #
@@ -26,6 +25,7 @@
 from __future__ import print_function
 
 import argparse
+import os
 import sys
 
 import pygplates

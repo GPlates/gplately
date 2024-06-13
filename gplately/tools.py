@@ -1,8 +1,9 @@
 """A module that offers tools for executing common geological calculations, mathematical conversions and numpy conversions.
 """
+
 import numpy as np
-import pygplates
 import pandas as pd
+import pygplates
 import scipy
 
 EARTH_RADIUS = pygplates.Earth.mean_radius_in_kms
@@ -52,9 +53,9 @@ def plate_temp(
     z = np.atleast_1d(z)
 
     sine_arg = np.pi * z / plate_thickness
-    exp_arg = -kappa * (np.pi ** 2) * aged / (plate_thickness ** 2)
+    exp_arg = -kappa * (np.pi**2) * aged / (plate_thickness**2)
     k = np.arange(1, 20).reshape(-1, 1)
-    cumsum = (np.sin(k * sine_arg) * np.exp((k ** 2) * exp_arg) / k).sum(axis=0)
+    cumsum = (np.sin(k * sine_arg) * np.exp((k**2) * exp_arg) / k).sum(axis=0)
 
     result = (
         t_surface
@@ -69,14 +70,14 @@ def plate_temp(
 
 def plate_isotherm_depth(
     age,
-    temp=1150.,
+    temp=1150.0,
     plate_thickness=_DEFAULT_PLATE_THICKNESS,
     maxiter=50,
     tol=0.001,
     require_convergence=False,
     **kwargs
 ):
-    """Computes the depth to the temp - isotherm in a cooling plate mode. Solution by iteration. 
+    """Computes the depth to the temp - isotherm in a cooling plate mode. Solution by iteration.
 
     By default the plate thickness is 125 km as in Parsons/Sclater.
 
@@ -122,9 +123,7 @@ def plate_isotherm_depth(
 
     maxiter = int(maxiter)
     if maxiter <= 0:
-        raise ValueError(
-            "`maxiter` must be greater than zero ({})".format(maxiter)
-        )
+        raise ValueError("`maxiter` must be greater than zero ({})".format(maxiter))
     age = np.atleast_1d(age)
 
     non_zero_ages = age[age > 0.0]
@@ -169,17 +168,17 @@ def plate_isotherm_depth(
 
 
 def points_to_features(lons, lats, plate_ID=None):
-    """Creates point features represented on a unit length sphere in 3D cartesian coordinates from a latitude and 
+    """Creates point features represented on a unit length sphere in 3D cartesian coordinates from a latitude and
     longitude list.
 
     Parameters
     ----------
     lons : list
         The longitudes of needed point features.
-        
+
     lats : list
         The latitudes of needed point features.
-        
+
     plate_ID : int, default=None
         The reconstruction plate ID to assign to the needed point features.
 
@@ -221,6 +220,7 @@ def points_to_features(lons, lats, plate_ID=None):
     if len(point_features) == 1:
         return point_features[0]
     return point_features
+
 
 def extract_feature_lonlat(features):
     """Extracts the latitudes and longitudes of topological feature points.
@@ -268,8 +268,9 @@ def lonlat2xyz(lon, lat, degrees=True):
     zs = np.sin(lat)
     return xs, ys, zs
 
+
 def xyz2lonlat(x, y, z, validate=False, degrees=True):
-    """Converts Cartesian (x,y,z) representation of points (on the unit sphere) for spherical triangulation into 
+    """Converts Cartesian (x,y,z) representation of points (on the unit sphere) for spherical triangulation into
     lon / lat (radians).
 
     Note: No check is made here that (x,y,z) are unit vectors - it is assumed.
@@ -292,7 +293,7 @@ def xyz2lonlat(x, y, z, validate=False, degrees=True):
     y = np.atleast_1d(y)
     z = np.atleast_1d(z)
     if validate:
-        mags = np.sqrt(x ** 2 + y ** 2 + z ** 2)
+        mags = np.sqrt(x**2 + y**2 + z**2)
         ones = np.full_like(mags, 1)
         if not np.all(np.equal(mags, ones)):
             raise ValueError("All (x, y, z) must be unit vectors")
@@ -309,7 +310,7 @@ def xyz2lonlat(x, y, z, validate=False, degrees=True):
 
 
 def haversine_distance(lon1, lon2, lat1, lat2, degrees=True):
-    """Computes the Haversine distance (the shortest distance on the surface of an ideal spherical Earth) between two 
+    """Computes the Haversine distance (the shortest distance on the surface of an ideal spherical Earth) between two
     points given their latitudes and longitudes.
 
     Sources
@@ -352,7 +353,7 @@ def haversine_distance(lon1, lon2, lat1, lat2, degrees=True):
 
 
 def geocentric_radius(lat, degrees=True):
-    """ Calculates the latitude-dependent radius of an ellipsoid Earth. 
+    """Calculates the latitude-dependent radius of an ellipsoid Earth.
 
     Parameters
     ----------
@@ -375,74 +376,83 @@ def geocentric_radius(lat, degrees=True):
     sinlat = np.sin(rlat)
     r1 = 6384.4e3
     r2 = 6352.8e3
-    num = (r1**2*coslat)**2 + (r2**2*sinlat)**2
-    den = (r1*coslat)**2 + (r2*sinlat)**2
-    earth_radius = np.sqrt(num/den)
+    num = (r1**2 * coslat) ** 2 + (r2**2 * sinlat) ** 2
+    den = (r1 * coslat) ** 2 + (r2 * sinlat) ** 2
+    earth_radius = np.sqrt(num / den)
     return earth_radius
 
 
 def plate_partitioner_for_point(lat_lon_tuple, topology_features, rotation_model):
-    """ Determine the present-day plate ID of a (lat, lon) coordinate pair if 
+    """Determine the present-day plate ID of a (lat, lon) coordinate pair if
     it is not specified.
     """
     if not isinstance(rotation_model, pygplates.RotationModel):
         rotation_model = pygplates.RotationModel(rotation_model)
     plate_partitioner = pygplates.PlatePartitioner(
-        pygplates.FeatureCollection(topology_features), 
+        pygplates.FeatureCollection(topology_features),
         rotation_model,
-        reconstruction_time=float(0)
+        reconstruction_time=float(0),
     )
     partitioning_plate = plate_partitioner.partition_point(
-        pygplates.PointOnSphere(
-            (float(lat_lon_tuple[0]), float(lat_lon_tuple[1]))
-        )
+        pygplates.PointOnSphere((float(lat_lon_tuple[0]), float(lat_lon_tuple[1])))
     )
-    plate_id_at_present_day = partitioning_plate.get_feature().get_reconstruction_plate_id()
-    return(plate_id_at_present_day)
+    plate_id_at_present_day = (
+        partitioning_plate.get_feature().get_reconstruction_plate_id()
+    )
+    return plate_id_at_present_day
 
 
 def read_rotation_file_pandas(rotation_file_paths):
-    """ Written by Nicky M Wright. Extract data from one rotation file, and write 
+    """Written by Nicky M Wright. Extract data from one rotation file, and write
     it to a pandas dataframe.
     """
     rotation_file = pd.read_csv(
-        rotation_file_paths, 
-        names = ['reconstruction_plate_id', 'age', 'lat', 'lon', 'angle', 'anchor_plate_id', 'comment'], 
-        delim_whitespace=True, 
-        comment='!'
+        rotation_file_paths,
+        names=[
+            "reconstruction_plate_id",
+            "age",
+            "lat",
+            "lon",
+            "angle",
+            "anchor_plate_id",
+            "comment",
+        ],
+        delim_whitespace=True,
+        comment="!",
     )
-    with open(rotation_file_paths, 'r') as f:
+    with open(rotation_file_paths, "r") as f:
         lines = f.readlines()
         output = []
 
-        comment = '!'
+        comment = "!"
         for line in lines:
             head, sep, tail = line.partition(comment)
-            tail = tail.strip('\n')
+            tail = tail.strip("\n")
             output.append(tail)
-    
-    rotation_file['comment'] = output
-    
+
+    rotation_file["comment"] = output
+
     return rotation_file
 
 
 def correct_longitudes_for_dateline(lons):
-    lons[lons < 0] += 360 # correct for dateline
+    lons[lons < 0] += 360  # correct for dateline
     return lons
+
 
 # Auxiliary functions for the Muller et al. 2022 paper "Evolution of Earth’s tectonic carbon conveyor belt"
 def surface_area_oblate_spheroid(r1, r2):
-    e = np.sqrt(1.0 - r2**2/r1**2)
-    return 2.0*np.pi*r1**2*(1.0 + (1.0-e**2)/e * np.arctanh(e))
+    e = np.sqrt(1.0 - r2**2 / r1**2)
+    return 2.0 * np.pi * r1**2 * (1.0 + (1.0 - e**2) / e * np.arctanh(e))
 
 
 def geocentric_area(latitude_one, latitude_two, longitude_resolution):
     '''
     Calculates the point area of an evenly gridded lat/lon mesh
     Longitude resolution is lon2 - lon1
-    '''
+    """
     dlat = np.sin(np.radians(latitude_two)) - np.sin(np.radians(latitude_one))
-    lat_area = 2 * np.pi * 6371.009e3**2 * np.abs(dlat)/longitude_resolution
+    lat_area = 2 * np.pi * 6371.009e3**2 * np.abs(dlat) / longitude_resolution
     return lat_area
 
 
@@ -450,16 +460,17 @@ lat_area_function = geocentric_area
 
 
 def smooth_1D(array, sigma=3.0, axis=0):
-    """ Gaussian filter with standard deviation """
+    """Gaussian filter with standard deviation"""
     return scipy.ndimage.gaussian_filter1d(array, sigma, axis=axis)
 
 
 def My2s(Ma):
-    return Ma*3.1536e13
+    return Ma * 3.1536e13
 
 
 def update_progress(progress):
     from IPython.display import clear_output
+
     bar_length = 20
     if isinstance(progress, int):
         progress = float(progress)
@@ -469,55 +480,61 @@ def update_progress(progress):
         progress = 0
     if progress >= 1:
         progress = 1
-    
+
     bar_length = 20
     block = int(round(bar_length * progress))
 
-    clear_output(wait = True)
-    text = "Progress: [{0}] {1:.1f}%".format( "#" * block + "-" * (bar_length - block), progress * 100)
+    clear_output(wait=True)
+    text = "Progress: [{0}] {1:.1f}%".format(
+        "#" * block + "-" * (bar_length - block), progress * 100
+    )
     print(text)
 
 
 def read_csv(filename, readcols):
-    """ read csv and reorder from 0 - 250 Ma """
-    Ma = np.loadtxt(filename, delimiter=',', usecols=(0,), skiprows=1, dtype=int, unpack=True)
-    data = np.loadtxt(filename, delimiter=',', usecols=readcols, skiprows=1, unpack=False)
+    """read csv and reorder from 0 - 250 Ma"""
+    Ma = np.loadtxt(
+        filename, delimiter=",", usecols=(0,), skiprows=1, dtype=int, unpack=True
+    )
+    data = np.loadtxt(
+        filename, delimiter=",", usecols=readcols, skiprows=1, unpack=False
+    )
     return data[Ma]
 
 
 def smooth_1D_gaussian(
-    input_data, time_window, 
-    axis=-1, output=None, mode="reflect", truncate=4.0):
-    """Smooth every data element in the 1D `input_data` array over a 
-    specified `time_window`, using a one-dimensional, zeroth order 
-    Gaussian filter. 
-    
-    The `time_window`, or Gaussian kernel diameter, is used to 
+    input_data, time_window, axis=-1, output=None, mode="reflect", truncate=4.0
+):
+    """Smooth every data element in the 1D `input_data` array over a
+    specified `time_window`, using a one-dimensional, zeroth order
+    Gaussian filter.
+
+    The `time_window`, or Gaussian kernel diameter, is used to
     calculate a sigma for the Gaussian kernel.
-    
+
     For example, if a `time_window` of 20 Myr is supplied, an array with 21
-    elements (10 Myr on each side of a central point, including the central 
-    point) is produced. Each element is filled with the Gaussian evaluated 
-    at that point. 
-    
+    elements (10 Myr on each side of a central point, including the central
+    point) is produced. Each element is filled with the Gaussian evaluated
+    at that point.
+
     This Gaussian is correlated to each data point in the input_array to
     smooth the data.
-    
+
     Parameters
     ----------
     input_data : 1d array
         A one-dimensional array of input data to smooth using a Gaussian filter.
     time_window : float, default = 5 (Myr)
         A float or integer to specify the full width of the Gaussian filter with
-        which to smooth each data point in `input_data`. 1 pixel : 1 Myr. 
+        which to smooth each data point in `input_data`. 1 pixel : 1 Myr.
     axis : int, default = -1
         The axis of `input_data` along which to smooth. Default is -1.
     output : array or dtype, optional
-        The array in which to place the output, or the dtype of the returned array. 
+        The array in which to place the output, or the dtype of the returned array.
         By default an array of the same dtype as input will be created.
     mode : str, default "reflect"
         The way the input_array is extended beyond its bounds to ensure all data
-        points can be convolved with the created Gaussian. See 
+        points can be convolved with the created Gaussian. See
         [scipy's docs](https://docs.scipy.org/doc/scipy/reference/generated/scipy.ndimage.gaussian_filter1d.html)
         to see the full list of extension methods. By default, `"reflect"` extends
         `input_array` such that [a b c d] becomes (d c b a | a b c d | d c b a),
@@ -525,36 +542,38 @@ def smooth_1D_gaussian(
     truncate : float or int, default = 4.0
         A multiplicative factor that truncates the number of standard deviations, or
         sigmas, that the Gaussian distribution spans in either direction from the
-        centre. This impacts the number of pixels that the Gaussian kernel spans. 
+        centre. This impacts the number of pixels that the Gaussian kernel spans.
         By default, this is set to 4 standard deviations.
     """
     # Sigma, the magnitude of standard deviation in pixel units, is truncated
     # by a specified number of permissible standard deviations; 4 by default
     # half the time window defines the width of the gaussian kernel
-    radius = time_window/2
-    sigma = int(radius-0.5)/int(truncate)
-    
-    # Produce the gaussian kernel given a sigma and kernel full-width/diameter 
-    # (time_window). The coefficient 1/sqrt(2*pi)*sigma is omitted as it 
+    radius = time_window / 2
+    sigma = int(radius - 0.5) / int(truncate)
+
+    # Produce the gaussian kernel given a sigma and kernel full-width/diameter
+    # (time_window). The coefficient 1/sqrt(2*pi)*sigma is omitted as it
     # just scales the kernel distribution and does not impact smoothing weights
-    time_window_array = np.arange(-radius, radius+1)
-    kernel = np.exp(-0.5 / sigma**2 * time_window_array ** 2)
-    
+    time_window_array = np.arange(-radius, radius + 1)
+    kernel = np.exp(-0.5 / sigma**2 * time_window_array**2)
+
     # Ensure sum of kernel is normalised to unity
     kernel = kernel / kernel.sum()
-    
+
     # Correlate the input data to the Gaussian kernel
     smoothed_data = scipy.ndimage.correlate1d(
-        input_data, 
-        kernel, 
-        axis, output, mode,
-        origin=0, # 0 centers the filter over the pixel
-        cval=0.0 # Only applicable if mode is 'constant', extends filter by 0s everywhere. 
+        input_data,
+        kernel,
+        axis,
+        output,
+        mode,
+        origin=0,  # 0 centers the filter over the pixel
+        cval=0.0,  # Only applicable if mode is 'constant', extends filter by 0s everywhere.
     )
     return smoothed_data
 
 
-def griddata_sphere(points, values, xi, method='nearest', **kwargs):
+def griddata_sphere(points, values, xi, method="nearest", **kwargs):
     """
     Interpolate unstructured D-D data on the sphere.
 
@@ -591,10 +610,11 @@ def griddata_sphere(points, values, xi, method='nearest', **kwargs):
     assert xi[0].shape == xi[1].shape, "ensure coordinates in xi are the same shape"
 
     from scipy.interpolate.interpnd import _ndim_coords_from_arrays
+
     points = _ndim_coords_from_arrays(points)
-    
-    lons = points[:,0]
-    lats = points[:,1]
+
+    lons = points[:, 0]
+    lats = points[:, 1]
 
     # convert to Cartesian coordinates on the unit sphere
     x0, y0, z0 = lonlat2xyz(lons, lats, degrees=True)
@@ -607,21 +627,27 @@ def griddata_sphere(points, values, xi, method='nearest', **kwargs):
 
     if method.lower() == "rbf":
         from scipy.interpolate import RBFInterpolator
+
         neighbors = kwargs.pop("neighbors", 12)
         rbf = RBFInterpolator(input_coords, values, neighbors, **kwargs)
         return rbf(output_coords).reshape(out_shape)
 
     elif method.lower() == "nearest":
         from scipy.interpolate import NearestNDInterpolator
+
         nn = NearestNDInterpolator(input_coords, values, **kwargs)
         return nn(output_coords).reshape(out_shape)
 
     else:
-        raise NotImplementedError("{} interpolation is not yet supported".format(method))
+        raise NotImplementedError(
+            "{} interpolation is not yet supported".format(method)
+        )
+
 
 # From Simon Williams' GPRM
-def find_distance_to_nearest_ridge(resolved_topologies,shared_boundary_sections,
-                                   point_features,fill_value=5000.):
+def find_distance_to_nearest_ridge(
+    resolved_topologies, shared_boundary_sections, point_features, fill_value=5000.0
+):
 
     all_point_distance_to_ridge = []
     all_point_lats = []
@@ -634,12 +660,24 @@ def find_distance_to_nearest_ridge(resolved_topologies,shared_boundary_sections,
         mid_ocean_ridges_on_plate = []
         for shared_boundary_section in shared_boundary_sections:
 
-            if shared_boundary_section.get_feature().get_feature_type() == pygplates.FeatureType.create_gpml('MidOceanRidge'):
-                for shared_subsegment in shared_boundary_section.get_shared_sub_segments():
-                    sharing_resolved_topologies = shared_subsegment.get_sharing_resolved_topologies()
+            if (
+                shared_boundary_section.get_feature().get_feature_type()
+                == pygplates.FeatureType.create_gpml("MidOceanRidge")
+            ):
+                for (
+                    shared_subsegment
+                ) in shared_boundary_section.get_shared_sub_segments():
+                    sharing_resolved_topologies = (
+                        shared_subsegment.get_sharing_resolved_topologies()
+                    )
                     for resolved_polygon in sharing_resolved_topologies:
-                        if resolved_polygon.get_feature().get_reconstruction_plate_id() == plate_id:
-                            mid_ocean_ridges_on_plate.append(shared_subsegment.get_resolved_geometry())
+                        if (
+                            resolved_polygon.get_feature().get_reconstruction_plate_id()
+                            == plate_id
+                        ):
+                            mid_ocean_ridges_on_plate.append(
+                                shared_subsegment.get_resolved_geometry()
+                            )
 
         point_distance_to_ridge = []
         point_lats = []
@@ -652,17 +690,22 @@ def find_distance_to_nearest_ridge(resolved_topologies,shared_boundary_sections,
 
                     if topology.get_resolved_geometry().is_point_in_polygon(point):
 
-                        if len(mid_ocean_ridges_on_plate)>0:
+                        if len(mid_ocean_ridges_on_plate) > 0:
 
                             min_distance_to_ridge = None
 
                             for ridge in mid_ocean_ridges_on_plate:
-                                distance_to_ridge = pygplates.GeometryOnSphere.distance(point,ridge,min_distance_to_ridge)
+                                distance_to_ridge = pygplates.GeometryOnSphere.distance(
+                                    point, ridge, min_distance_to_ridge
+                                )
 
                                 if distance_to_ridge is not None:
                                     min_distance_to_ridge = distance_to_ridge
 
-                            point_distance_to_ridge.append(min_distance_to_ridge*pygplates.Earth.mean_radius_in_kms)
+                            point_distance_to_ridge.append(
+                                min_distance_to_ridge
+                                * pygplates.Earth.mean_radius_in_kms
+                            )
                             point_lats.append(point.to_lat_lon()[0])
                             point_lons.append(point.to_lat_lon()[1])
 
@@ -678,14 +721,13 @@ def find_distance_to_nearest_ridge(resolved_topologies,shared_boundary_sections,
                             # point_lons.append(None)
 
                             # Try skipping the point (this causes the workflow to use nearest neighbour interpolation to fill these regions)
-                            #continue
+                            # continue
 
         all_point_distance_to_ridge.extend(point_distance_to_ridge)
         all_point_lats.extend(point_lats)
         all_point_lons.extend(point_lons)
 
-
-    return all_point_lons,all_point_lats,all_point_distance_to_ridge
+    return all_point_lons, all_point_lats, all_point_distance_to_ridge
 
 
 def calculate_spreading_rates(
@@ -701,8 +743,8 @@ def calculate_spreading_rates(
 ):
 
     VELOCITY_UNITS = {
-    pygplates.VelocityUnits.kms_per_my,
-    pygplates.VelocityUnits.cms_per_yr,
+        pygplates.VelocityUnits.kms_per_my,
+        pygplates.VelocityUnits.cms_per_yr,
     }
     SPREADING_FEATURES = {
         "gpml:MidOceanRidge",
@@ -713,7 +755,7 @@ def calculate_spreading_rates(
         raise ValueError("Invalid `units` argument: {}".format(units))
 
     time = float(time)
-    #delta_time = float(time)
+    # delta_time = float(time)
     delta_time = float(delta_time)
 
     if len(set(len(i) for i in (lons, lats, left_plates, right_plates))) > 1:
@@ -780,20 +822,16 @@ def calculate_spreading_rates(
         for index, velocity in zip(indices, velocities):
             out[index] = velocity
 
-    #print(out)
-    #print(sorted(out))
-    #print("\n")
+    # print(out)
+    # print(sorted(out))
+    # print("\n")
 
-    return [out[i] for i in sorted(out)], indices #[indices[i] for i in sorted(indices)]
+    return [
+        out[i] for i in sorted(out)
+    ], indices  # [indices[i] for i in sorted(indices)]
 
 
-def _get_rotation(
-    plate_pair,
-    rotation_model,
-    time,
-    delta_time=1.0,
-    **kwargs
-):
+def _get_rotation(plate_pair, rotation_model, time, delta_time=1.0, **kwargs):
     to_time = time - delta_time * 0.5
     from_time = time + delta_time * 0.5
 
@@ -815,7 +853,6 @@ def _get_rotation(
 def _deg2pixels(deg_res, deg_min, deg_max):
     return int(np.floor((deg_max - deg_min) / deg_res)) + 1
 
+
 def _pixels2deg(spacing_pixel, deg_min, deg_max):
     return (deg_max - deg_min) / np.floor(int(spacing_pixel - 1))
-    
-

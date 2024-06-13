@@ -1,0 +1,43 @@
+version: 1
+disable_existing_loggers: False
+
+formatters:
+  simple:
+    format: "%(asctime)s - %(name)s - %(levelname)s - %(message)s"
+    datefmt: "%Y-%m-%d %H:%M:%S"
+
+handlers:
+  console:
+    class: logging.StreamHandler
+    level: DEBUG
+    formatter: simple
+    stream: ext://sys.stdout
+
+  gplatelylog:
+    class: logging.FileHandler
+    level: INFO
+    formatter: simple
+    filename: gplately.log
+    mode: a
+
+  pttlog:
+    class: logging.FileHandler
+    level: INFO
+    formatter: simple
+    filename: ptt.log
+    mode: a
+
+loggers:
+  gplately:
+    level: INFO
+    handlers: [console, gplatelylog]
+    propagate: no
+
+  ptt:
+    level: INFO
+    handlers: [console, pttlog]
+    propagate: no
+
+root:
+  level: WARNING
+  handlers: [console, gplatelylog, pttlog]

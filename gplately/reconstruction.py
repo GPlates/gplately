@@ -1,6 +1,7 @@
 """Tools that wrap up pyGplates and Plate Tectonic Tools functionalities for reconstructing features,
  working with point data, and calculating plate velocities at specific geological times. 
 """
+
 import math
 import os
 import warnings
@@ -45,6 +46,7 @@ class PlateReconstruction(object):
         topology_features=None,
         static_polygons=None,
         anchor_plate_id=0,
+        plate_model_name: str = "Nemo",
     ):
         if hasattr(rotation_model, "reconstruction_identifier"):
             self.name = rotation_model.reconstruction_identifier
@@ -52,9 +54,15 @@ class PlateReconstruction(object):
             self.name = None
 
         self._anchor_plate_id = self._check_anchor_plate_id(anchor_plate_id)
-        self.rotation_model = _RotationModel(rotation_model, default_anchor_plate_id=anchor_plate_id)
+        if isinstance(rotation_model, _RotationModel):
+            self.rotation_model = rotation_model
+        else:
+            self.rotation_model = _RotationModel(
+                rotation_model, default_anchor_plate_id=anchor_plate_id
+            )
         self.topology_features = _load_FeatureCollection(topology_features)
         self.static_polygons = _load_FeatureCollection(static_polygons)
+        self.plate_model_name = plate_model_name
 
     def __getstate__(self):
         filenames = {
@@ -97,7 +105,6 @@ class PlateReconstruction(object):
             for polygon in state["static_polygons"]:
                 self.static_polygons.add(_FeatureCollection(polygon))
 
-
     @property
     def anchor_plate_id(self):
         """Anchor plate ID for reconstruction. Must be an integer >= 0."""
@@ -106,7 +113,9 @@ class PlateReconstruction(object):
     @anchor_plate_id.setter
     def anchor_plate_id(self, anchor_plate):
         self._anchor_plate_id = self._check_anchor_plate_id(anchor_plate)
-        self.rotation_model = _RotationModel(self.rotation_model, default_anchor_plate_id=self._anchor_plate_id)
+        self.rotation_model = _RotationModel(
+            self.rotation_model, default_anchor_plate_id=self._anchor_plate_id
+        )
 
     @staticmethod
     def _check_anchor_plate_id(id):
@@ -114,7 +123,6 @@ class PlateReconstruction(object):
         if id < 0:
             raise ValueError("Invalid anchor plate ID: {}".format(id))
         return id
-
 
     def tessellate_subduction_zones(
         self,
@@ -1888,15 +1896,15 @@ class Points(object):
         self,
         reconstruction_time,
         from_rotation_features_or_model=None,  # filename(s), or pyGPlates feature(s)/collection(s) or a RotationModel
-        to_rotation_features_or_model=None,    # filename(s), or pyGPlates feature(s)/collection(s) or a RotationModel
+        to_rotation_features_or_model=None,  # filename(s), or pyGPlates feature(s)/collection(s) or a RotationModel
         from_rotation_reference_plate=0,
         to_rotation_reference_plate=0,
         non_reference_plate=701,
         output_name=None,
         return_array=False,
     ):
-        """Rotate a grid defined in one plate model reference frame 
-        within a gplately.Raster object to another plate 
+        """Rotate a grid defined in one plate model reference frame
+        within a gplately.Raster object to another plate
         reconstruction model reference frame.
 
         Parameters
@@ -1904,12 +1912,12 @@ class Points(object):
         reconstruction_time : float
             The time at which to rotate the reconstructed points.
         from_rotation_features_or_model : str, list of str, or instance of `pygplates.RotationModel`
-            A filename, or a list of filenames, or a pyGPlates 
+            A filename, or a list of filenames, or a pyGPlates
             RotationModel object that defines the rotation model
             that the input grid is currently associated with.
             `self.plate_reconstruction.rotation_model` is default.
         to_rotation_features_or_model : str, list of str, or instance of `pygplates.RotationModel`
-            A filename, or a list of filenames, or a pyGPlates 
+            A filename, or a list of filenames, or a pyGPlates
             RotationModel object that defines the rotation model
             that the input grid shall be rotated with.
             `self.plate_reconstruction.rotation_model` is default.
@@ -1920,7 +1928,7 @@ class Points(object):
             The desired reference plate for the plate model the points
             to be rotated to. Defaults to the anchor plate 0.
         non_reference_plate : int, default = 701
-            An arbitrary placeholder reference frame with which 
+            An arbitrary placeholder reference frame with which
             to define the "from" and "to" reference frames.
         output_name : str, default None
             If passed, the rotated points are saved as a gpml to this filename.
@@ -1936,24 +1944,19 @@ class Points(object):
         if to_rotation_features_or_model is None:
             to_rotation_features_or_model = self.plate_reconstruction.rotation_model
 
-
-        # Create the pygplates.FiniteRotation that rotates 
+        # Create the pygplates.FiniteRotation that rotates
         # between the two reference frames.
-        from_rotation_model = pygplates.RotationModel(
-            from_rotation_features_or_model
-        )
-        to_rotation_model = pygplates.RotationModel(
-            to_rotation_features_or_model
-        )
+        from_rotation_model = pygplates.RotationModel(from_rotation_features_or_model)
+        to_rotation_model = pygplates.RotationModel(to_rotation_features_or_model)
         from_rotation = from_rotation_model.get_rotation(
-            reconstruction_time, 
-            non_reference_plate, 
-            anchor_plate_id=from_rotation_reference_plate
+            reconstruction_time,
+            non_reference_plate,
+            anchor_plate_id=from_rotation_reference_plate,
         )
         to_rotation = to_rotation_model.get_rotation(
-            reconstruction_time, 
-            non_reference_plate, 
-            anchor_plate_id=to_rotation_reference_plate
+            reconstruction_time,
+            non_reference_plate,
+            anchor_plate_id=to_rotation_reference_plate,
         )
         reference_frame_conversion_rotation = to_rotation * from_rotation.get_inverse()
 
@@ -1961,10 +1964,13 @@ class Points(object):
         lons, lats = self.reconstruct(
             reconstruction_time,
             anchor_plate_id=from_rotation_reference_plate,
-            return_array=True)
+            return_array=True,
+        )
 
         # convert FeatureCollection to MultiPointOnSphere
-        input_points = pygplates.MultiPointOnSphere((lat, lon) for lon, lat in zip(lons, lats))
+        input_points = pygplates.MultiPointOnSphere(
+            (lat, lon) for lon, lat in zip(lons, lats)
+        )
 
         # Rotate grid nodes to the other reference frame
         output_points = reference_frame_conversion_rotation * input_points
@@ -1978,7 +1984,13 @@ class Points(object):
         if return_array:
             return out_lon, out_lat
         else:
-            return Points(self.plate_reconstruction, out_lon, out_lat, time=reconstruction_time, plate_id=self.plate_id)
+            return Points(
+                self.plate_reconstruction,
+                out_lon,
+                out_lat,
+                time=reconstruction_time,
+                plate_id=self.plate_id,
+            )
 
 
 # FROM RECONSTRUCT_BY_TOPOLOGIES.PY
@@ -2108,9 +2120,9 @@ class _DefaultCollision(object):
                 prev_location_velocity_stage_rotation = rotation_model.get_rotation(
                     time + 1, prev_topology_plate_id, time
                 )
-                self.velocity_stage_rotation_dict[
-                    prev_topology_plate_id
-                ] = prev_location_velocity_stage_rotation
+                self.velocity_stage_rotation_dict[prev_topology_plate_id] = (
+                    prev_location_velocity_stage_rotation
+                )
             curr_location_velocity_stage_rotation = (
                 self.velocity_stage_rotation_dict.get(curr_topology_plate_id)
             )
@@ -2118,9 +2130,9 @@ class _DefaultCollision(object):
                 curr_location_velocity_stage_rotation = rotation_model.get_rotation(
                     time + 1, curr_topology_plate_id, time
                 )
-                self.velocity_stage_rotation_dict[
-                    curr_topology_plate_id
-                ] = curr_location_velocity_stage_rotation
+                self.velocity_stage_rotation_dict[curr_topology_plate_id] = (
+                    curr_location_velocity_stage_rotation
+                )
 
             # Note that even though the current point is not inside the previous boundary (because different plate ID), we can still
             # calculate a velocity using its plate ID (because we really should use the same point in our velocity comparison).
@@ -2567,7 +2579,6 @@ class _ReconstructByTopologies(object):
                 # Current point is currently active but it fell outside all resolved polygons.
                 # So instead we just reconstruct using its plate ID (that was manually assigned by the user/caller).
                 curr_plate_id = self.point_plate_ids[point_index]
-                continue
 
             # Get the stage rotation that will move the point from where it is at the current time to its
             # location at the next time step, based on the plate id that contains the point at the current time.
@@ -2760,6 +2771,6 @@ class _ReconstructByTopologies(object):
                 continue
 
             # Set the plate ID of resolved topology containing current point.
-            self.curr_topology_plate_ids[
-                point_index
-            ] = curr_polygon.get_feature().get_reconstruction_plate_id()
+            self.curr_topology_plate_ids[point_index] = (
+                curr_polygon.get_feature().get_reconstruction_plate_id()
+            )

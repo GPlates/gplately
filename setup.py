@@ -36,7 +36,7 @@ if "Windows" in platform.system():
 
 # in development set version to none and ...
 PYPI_VERSION = (
-    "1.2.6"  # Note: don't add any dashes if you want to use conda, use b1 not .b1
+    "1.3.0"  # Note: don't add any dashes if you want to use conda, use b1 not .b1
 )
 
 # Return the git revision as a string (from numpy)
@@ -98,6 +98,7 @@ if __name__ == "__main__":
             "geopandas",
             "stripy",
             "plate-model-manager",
+            "pyyaml",
         ],
         packages=["gplately"],
         # package_data={
@@ -109,12 +110,12 @@ if __name__ == "__main__":
         include_package_data=True,
         classifiers=[
             "Programming Language :: Python :: 3",
-            "Programming Language :: Python :: 3.5",
             "Programming Language :: Python :: 3.6",
             "Programming Language :: Python :: 3.7",
             "Programming Language :: Python :: 3.8",
             "Programming Language :: Python :: 3.9",
             "Programming Language :: Python :: 3.10",
             "Programming Language :: Python :: 3.11",
+            "Programming Language :: Python :: 3.12",
         ],
     )

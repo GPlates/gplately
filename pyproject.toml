@@ -13,13 +13,13 @@ classifiers = [
     "License :: OSI Approved :: GNU General Public License v2 (GPLv2)",
     "Programming Language :: Python",
     "Programming Language :: Python :: 3",
-    "Programming Language :: Python :: 3.5",
     "Programming Language :: Python :: 3.6",
     "Programming Language :: Python :: 3.7",
     "Programming Language :: Python :: 3.8",
     "Programming Language :: Python :: 3.9",
     "Programming Language :: Python :: 3.10",
-    "Programming Language :: Python :: 3.11"
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12"
 ]
 keywords = ["Tectonics", "Earth"]
 dependencies = [
@@ -34,19 +34,14 @@ dependencies = [
     "rasterio",
     "geopandas",
     "stripy",
-    "plate-model-manager>=1.2.0"
+    "plate-model-manager>=1.2.0",
+    "pyyaml"
 ]
 
-[tool.setuptools]
-packages = ["gplately", "gplately.ptt", "gplately.ptt.utils"]
-
-[tool.setuptools.package-dir]
-gplately = "gplately"
-"gplately.ptt" = "gplately/ptt"
-"gplately.ptt.utils" = "gplately/ptt/utils"
-
-[tool.setuptools.package-data]
-gplately = []
+[tool.setuptools.packages.find]
+where = ["."]
+exclude = ['*.examples*','*.notebooks*','tests-dir*','Notebooks*', 'scripts*']
+namespaces = true
 
 [tool.setuptools.dynamic]
 version = {attr = "gplately.__version__"}
