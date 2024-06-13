@@ -447,7 +447,7 @@ def surface_area_oblate_spheroid(r1, r2):
 
 
 def geocentric_area(latitude_one, latitude_two, longitude_resolution):
-    '''
+    """
     Calculates the point area of an evenly gridded lat/lon mesh
     Longitude resolution is lon2 - lon1
     """
