@@ -243,7 +243,59 @@ def read_netcdf_grid(filename, return_grids=False, realign=False, resample=None)
         return cdf_grid_z, cdf_lon, cdf_lat
     else:
         return cdf_grid_z
+
+
+def write_netcdf(filename, lons, lats, data):
+    """ Write geospatial data to a netCDF4 grid with a specified `filename`.
+    The latitude, longitude, and data variabels must be of the same size.
+
+    Parameters
+    ----------
+    filename : str
+        The full path (including a filename and the ".nc" extension) to save the created netCDF4 file.
+
+    lons : 1D array
+        List of longitudinal coordinates to be written into a netCDF4 (.nc) file.
+
+    lats : 1D array
+        List of latitudinal coordinates to be written into a netCDF4 (.nc) file.
+
+    data : 1D array
+        List of data values at lon / lat coordinates to be written into a netCDF4 (.nc) file.
+    """
+    import netCDF4
+
+    lons = np.asarray(lons)
+    lats = np.asarray(lats)
+    data = np.asarray(data)
     
+    with netCDF4.Dataset(filename, 'w', driver=None) as cdf:
+        cdf.title = "Grid produced by gplately"
+        cdf.createDimension('lon', lons.size)
+        cdf_lon = cdf.createVariable('lon', lons.dtype, ('lon',), zlib=True)
+        cdf_lat = cdf.createVariable('lat', lats.dtype, ('lon',), zlib=True)
+        cdf_lon[:] = lons
+        cdf_lat[:] = lats
+
+        # Units for Geographic Grid type
+        cdf_lon.units = "degrees_east"
+        cdf_lon.standard_name = 'lon'
+        cdf_lon.actual_range = [np.min(lons), np.max(lons)]
+        cdf_lat.units = "degrees_north"
+        cdf_lat.standard_name = 'lat'
+        cdf_lat.actual_range = [np.min(lats), np.max(lats)]
+
+        cdf_data = cdf.createVariable('z', data.dtype, ('lon',), zlib=True)
+        # netCDF4 uses the missing_value attribute as the default _FillValue
+        # without this, _FillValue defaults to 9.969209968386869e+36
+        cdf_data.missing_value = np.nan
+        cdf_data.standard_name = 'z'
+        #Ensure pygmt registers min and max z values properly
+        cdf_data.actual_range = [np.nanmin(data), np.nanmax(data)]
+
+        cdf_data[:] = data
+
+
 def write_netcdf_grid(filename, grid, extent=[-180,180,-90,90]):
     """ Write geological data contained in a `grid` to a netCDF4 grid with a specified `filename`.
 
@@ -2089,8 +2141,8 @@ class Raster(object):
         self,
         grid_spacing_degrees, 
         reconstruction_time,
-        from_rotation_features_or_model,  # filename(s), or pyGPlates feature(s)/collection(s) or a RotationModel
-        to_rotation_features_or_model,    # filename(s), or pyGPlates feature(s)/collection(s) or a RotationModel
+        from_rotation_features_or_model=None,  # filename(s), or pyGPlates feature(s)/collection(s) or a RotationModel
+        to_rotation_features_or_model=None,    # filename(s), or pyGPlates feature(s)/collection(s) or a RotationModel
         from_rotation_reference_plate=0,
         to_rotation_reference_plate=0,
         non_reference_plate=701,
@@ -2131,6 +2183,16 @@ class Raster(object):
         gplately.Raster()
             An instance of the gplately.Raster object containing the rotated grid.
         """
+
+        if from_rotation_features_or_model is None:
+            if self.plate_reconstruction is None:
+                raise ValueError("Set a plate reconstruction model")
+            from_rotation_features_or_model = self.plate_reconstruction.rotation_model
+        if to_rotation_features_or_model is None:
+            if self.plate_reconstruction is None:
+                raise ValueError("Set a plate reconstruction model")
+            to_rotation_features_or_model = self.plate_reconstruction.rotation_model
+
 
         input_positions = []
 
