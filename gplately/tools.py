@@ -436,7 +436,7 @@ def surface_area_oblate_spheroid(r1, r2):
     return 2.0*np.pi*r1**2*(1.0 + (1.0-e**2)/e * np.arctanh(e))
 
 
-def lat_area_function(latitude_one, latitude_two, longitude_resolution):
+def geocentric_area(latitude_one, latitude_two, longitude_resolution):
     '''
     Calculates the point area of an evenly gridded lat/lon mesh
     Longitude resolution is lon2 - lon1
@@ -444,6 +444,9 @@ def lat_area_function(latitude_one, latitude_two, longitude_resolution):
     dlat = np.sin(np.radians(latitude_two)) - np.sin(np.radians(latitude_one))
     lat_area = 2 * np.pi * 6371.009e3**2 * np.abs(dlat)/longitude_resolution
     return lat_area
+
+
+lat_area_function = geocentric_area
 
 
 def smooth_1D(array, sigma=3.0, axis=0):
