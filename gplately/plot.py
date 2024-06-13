@@ -1001,7 +1001,8 @@ class PlotTopologies(object):
     @anchor_plate_id.setter
     def anchor_plate_id(self, anchor_plate):
         self._anchor_plate_id = self._check_anchor_plate_id(anchor_plate)
-        self.update_time(self.time)
+        if self.time is not None:
+            self.update_time(self.time)
 
     @staticmethod
     def _check_anchor_plate_id(id):
@@ -1030,6 +1031,8 @@ class PlotTopologies(object):
 
         Moreover, coastlines, continents and COBs are reconstructed to the new specified `time`.
         """
+        assert time is not None, "time must be set to a valid reconstruction time"
+
         self._time = float(time)
         resolved_topologies = ptt.resolve_topologies.resolve_topologies_into_features(
             self.plate_reconstruction.rotation_model,
