@@ -1,5 +1,7 @@
+import datetime
 import logging
 import os
+import time
 from pathlib import Path
 from typing import List, Tuple, Union
 
@@ -113,12 +115,15 @@ def make_seafloor_grids(
             seed_points_dir,
         )
 
+    if get_debug_level() > 0:
+        start = time.time()
+
     while next_time >= youngest_time:
         points = [
             pygplates.PointOnSphere(row.lat, row.lon)
             for index, row in current_active_points_df.iterrows()
         ]
-        if 0:
+        if 1:
             # reconstruct_geometry() needs time to be integral value
             # https://www.gplates.org/docs/pygplates/generated/pygplates.topologicalmodel#pygplates.TopologicalModel.reconstruct_geometry
             reconstructed_time_span = topological_model.reconstruct_geometry(
@@ -137,6 +142,8 @@ def make_seafloor_grids(
                 next_time, return_inactive_points=True
             )
         else:
+            # reconstruct points with Python code
+            # put these code here for performance comparison purpose only
             reconstructed_points = topological_reconstruction.reconstruct(
                 points,
                 rotation_files=rotation_files,
@@ -152,9 +159,11 @@ def make_seafloor_grids(
         current_active_points_df = _update_current_active_points_coordinates(
             current_active_points_df, reconstructed_points
         )
+        # use the continental mask to get rid of points on land
         current_active_points_df = _remove_continental_points(
             current_active_points_df, next_time, continental_mask_file_path
         )
+        # load the middle ocean ridge points borned at 'next_time'
         current_active_points_df = _load_middle_ocean_ridge_points(
             current_active_points_df, next_time, mid_ocean_ridge_file_path
         )
@@ -173,6 +182,13 @@ def make_seafloor_grids(
                 current_time,
                 seed_points_dir,
             )
+
+    if get_debug_level() > 0:
+        end = time.time()
+        hours_minutes_seconds = str(datetime.timedelta(seconds=end - start)).split(":")
+        logger.debug(
+            f"Completed reconstructing points in {hours_minutes_seconds[0]} Hours, {hours_minutes_seconds[1]} Minutes, {hours_minutes_seconds[2].split('.')[0]} Seconds "
+        )
 
     seafloor_age_dir = "./seafloor_age"
     Path(seafloor_age_dir).mkdir(parents=True, exist_ok=True)
