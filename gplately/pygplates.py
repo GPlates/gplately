@@ -42,9 +42,8 @@ class RotationModel(_pygplates.RotationModel):
 
         if isinstance(rotation_features, str):
             self._filenames = [rotation_features]
-        elif (
-            hasattr(rotation_features, "__iter__")
-            and all(isinstance(f, str) for f in rotation_features)
+        elif hasattr(rotation_features, "__iter__") and all(
+            isinstance(f, str) for f in rotation_features
         ):
             self._filenames = list(rotation_features)
         else:
@@ -240,7 +239,12 @@ class FeatureCollection(_pygplates.FeatureCollection):
 
         """
         super().__init__(features)
+
         self._filenames = filenames
+
+        # if the caller passed a file name as `features`, we should track the file name as well.
+        if isinstance(features, str):
+            self._filenames.append(features)
 
     @classmethod
     def from_file_list(cls, filenames: List[str] = []):
