@@ -46,4 +46,3 @@ jobs:
           branch: gh-pages
           folder: api/gplately/
           target-folder: dev-doc/
-          dry-run: true
