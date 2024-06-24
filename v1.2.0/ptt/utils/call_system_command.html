@@ -1,0 +1,292 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
+<meta name="generator" content="pdoc 0.8.1" />
+<title>gplately.ptt.utils.call_system_command API documentation</title>
+<meta name="description" content="Copyright (C) 2017 The University of Sydney, Australia …" />
+<link href='https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.0/normalize.min.css' rel='stylesheet'>
+<link href='https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/8.0.0/sanitize.min.css' rel='stylesheet'>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css" rel="stylesheet">
+<style>.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:30px;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:1em 0 .50em 0}h3{font-size:1.4em;margin:25px 0 10px 0}h4{margin:0;font-size:105%}a{color:#058;text-decoration:none;transition:color .3s ease-in-out}a:hover{color:#e82}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900}pre code{background:#f8f8f8;font-size:.8em;line-height:1.4em}code{background:#f2f2f1;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{background:#f8f8f8;border:0;border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0;padding:1ex}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-weight:bold;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}.admonition{padding:.1em .5em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.item .name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul{padding-left:1.5em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+<script async src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS_CHTML'></script>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>gplately.ptt.utils.call_system_command</code></h1>
+</header>
+<section id="section-intro">
+<p>Copyright (C) 2017 The University of Sydney, Australia</p>
+<p>This program is free software; you can redistribute it and/or modify it under
+the terms of the GNU General Public License, version 2, as published by
+the Free Software Foundation.</p>
+<p>This program is distributed in the hope that it will be useful, but WITHOUT
+ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+FITNESS FOR A PARTICULAR PURPOSE.
+See the GNU General Public License
+for more details.</p>
+<p>You should have received a copy of the GNU General Public License along
+with this program; if not, write to Free Software Foundation, Inc.,
+51 Franklin Street, Fifth Floor, Boston, MA
+02110-1301, USA.</p>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">&#34;&#34;&#34;
+    Copyright (C) 2017 The University of Sydney, Australia
+    
+    This program is free software; you can redistribute it and/or modify it under
+    the terms of the GNU General Public License, version 2, as published by
+    the Free Software Foundation.
+    
+    This program is distributed in the hope that it will be useful, but WITHOUT
+    ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+    FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+    for more details.
+    
+    You should have received a copy of the GNU General Public License along
+    with this program; if not, write to Free Software Foundation, Inc.,
+    51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+&#34;&#34;&#34;
+
+from __future__ import print_function
+
+import subprocess
+import sys
+
+
+# Function to call a command on the system (based on &#39;subprocess&#39; module).
+#   Option to check return code of command and which return code to check (defaults to checking code 0 for success).
+#   Option to raise error or return False on failure (raises by default).
+#   Option to print an error message to stderr on failure (prints by default).
+#   Option to pass a stdin string to the standard input of command (not passed by default).
+#   Option to receive stdout/stderr strings from the standard output/error of command (not received by default).
+#   Optionally pass advanced parameters to &#39;subprocess.Popen()&#39; such as &#39;shell=True&#39; (no advanced parameters passed by default).
+#
+# On success:
+#    Returns (stdout, stderr) tuple of strings if &#39;return_stdout&#39; and &#39;return_stderr&#39; are True,
+#    else returns stdout string if only &#39;return_stdout&#39; is True,
+#    else returns stderr string if only &#39;return_stderr&#39; is True,
+#    else returns True (if both &#39;return_stdout&#39; and &#39;return_stderr&#39; are False).
+#
+# On failure:
+#    Raises an exception if &#39;raise_errors&#39; is True,
+#    else returns None (which can be tested as if it was &#39;False&#39;).
+#
+def call_system_command(
+        args,  # Command and its arguments - either a single string or a sequence of arguments (see subprocess.Popen()).
+        check_return_code=0,  # Check command&#39;s return code with this value (set to None to avoid checking).
+        raise_errors=True,  # Whether to raise an exception when there&#39;s an error (terminates calling script unless caught).
+        print_errors=True,  # Whether to print an error message to stderr when there&#39;s an error.
+        stdin=None,  # Optional string to send to stdin of the command.
+        return_stdout=False,  # Whether to capture, and return, stdout of the command,
+        return_stderr=False,  # Whether to capture, and return, stderr of the command,
+        **subprocess_options):  # Advanced options passed directly to subprocess.Popen().
+    
+    # Whether to send stdin to command.
+    if stdin is not None:
+        stdin_pipe = subprocess.PIPE
+    else:
+        stdin_pipe = None
+    
+    # Whether to receive stdout/stderr from command.
+    if return_stdout:
+        stdout_pipe = subprocess.PIPE
+    else:
+        stdout_pipe = None
+    if return_stderr:
+        stderr_pipe = subprocess.PIPE
+    else:
+        stderr_pipe = None
+    
+    # Execute command.
+    try:
+        command = subprocess.Popen(args, stdin=stdin_pipe, stdout=stdout_pipe, stderr=stderr_pipe, universal_newlines=True, **subprocess_options)
+        stdout, stderr = command.communicate(stdin)
+    except ValueError as e:
+        if print_errors:
+            print(&#34;System command called with invalid arguments: {0}&#34;.format(e), file=sys.stderr)
+        if not raise_errors:
+            return None
+        raise
+    except OSError as e:
+        if print_errors:
+            print(&#34;Unable to execute system command: {0} {1}&#34;.format(args, e), file=sys.stderr)
+        if not raise_errors:
+            return None
+        raise
+    
+    # Check return code (if requested).
+    if check_return_code is not None:
+        command_return_code = command.poll()
+        if command_return_code != check_return_code:
+            if print_errors:
+                print(&#34;System command failed: {0} return code: {1}&#34;.format(args, command_return_code), file=sys.stderr)
+            if not raise_errors:
+                return None
+            
+            # Raise same error that subprocess.check_call() does.
+            raise subprocess.CalledProcessError(command_return_code, args, output=stdout)
+    
+    # Return (stdout, stderr) tuple if requested.
+    if return_stdout and return_stderr:
+        return stdout, stderr
+    elif return_stdout:
+        return stdout
+    elif return_stderr:
+        return stderr
+    
+    return True
+
+
+#   if __name__ == &#39;__main__&#39;:
+#
+#       # Windows &#39;dir&#39; command (change to &#39;ls -l&#39;, for example, on Mac and Linux).
+#       call_system_command(&#39;dir /w&#39;, shell=True)
+#       call_system_command([&#39;dir&#39;, &#39;/w&#39;], print_errors=False, shell=True)
+#       if not call_system_command([&#39;dir&#39;, &#39;/w&#39;], raise_errors=False, shell=True):
+#           print &#39;Failed directory listing.&#39;
+#
+#       # Info on a grid file.
+#       call_system_command([&#39;gmt&#39;, &#39;grdinfo&#39;, &#39;mohoGOCE180.nc&#39;])
+#
+#       # Sample a grid file at specified points.
+#       # Send stdin (the lon/lat points to sample) and receive stdout (the sampled raster values).
+#       output = call_system_command([&#34;gmt&#34;, &#34;grdtrack&#34;, &#34;-nl&#34;, &#34;-GmohoGOCE180.nc&#34;], stdin=&#39;10 20\n-10 -20\n&#39;, return_stdout=True, return_stderr=True, raise_errors=False)
+#       # Check return value since we&#39;re not raising exceptions (due to &#34;raise_errors=False&#34;).
+#       # Note: Need to test &#39;output&#39; *before* attempting to extract tuple components from it.
+#       if output:
+#           stdout, stderr = output
+#           print stdout
+#       # Run again but only return stdout (not stderr).
+#       stdout = call_system_command([&#34;gmt&#34;, &#34;grdtrack&#34;, &#34;-nl&#34;, &#34;-GmohoGOCE180.nc&#34;], stdin=&#39;10 20\n-10 -20\n&#39;, return_stdout=True, raise_errors=False)
+#       # Check return value since we&#39;re not raising exceptions (due to &#34;raise_errors=False&#34;).
+#       if stdout is not None:
+#           print stdout
+#           pass</code></pre>
+</details>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-functions">Functions</h2>
+<dl>
+<dt id="gplately.ptt.utils.call_system_command.call_system_command"><code class="name flex">
+<span>def <span class="ident">call_system_command</span></span>(<span>args, check_return_code=0, raise_errors=True, print_errors=True, stdin=None, return_stdout=False, return_stderr=False, **subprocess_options)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def call_system_command(
+        args,  # Command and its arguments - either a single string or a sequence of arguments (see subprocess.Popen()).
+        check_return_code=0,  # Check command&#39;s return code with this value (set to None to avoid checking).
+        raise_errors=True,  # Whether to raise an exception when there&#39;s an error (terminates calling script unless caught).
+        print_errors=True,  # Whether to print an error message to stderr when there&#39;s an error.
+        stdin=None,  # Optional string to send to stdin of the command.
+        return_stdout=False,  # Whether to capture, and return, stdout of the command,
+        return_stderr=False,  # Whether to capture, and return, stderr of the command,
+        **subprocess_options):  # Advanced options passed directly to subprocess.Popen().
+    
+    # Whether to send stdin to command.
+    if stdin is not None:
+        stdin_pipe = subprocess.PIPE
+    else:
+        stdin_pipe = None
+    
+    # Whether to receive stdout/stderr from command.
+    if return_stdout:
+        stdout_pipe = subprocess.PIPE
+    else:
+        stdout_pipe = None
+    if return_stderr:
+        stderr_pipe = subprocess.PIPE
+    else:
+        stderr_pipe = None
+    
+    # Execute command.
+    try:
+        command = subprocess.Popen(args, stdin=stdin_pipe, stdout=stdout_pipe, stderr=stderr_pipe, universal_newlines=True, **subprocess_options)
+        stdout, stderr = command.communicate(stdin)
+    except ValueError as e:
+        if print_errors:
+            print(&#34;System command called with invalid arguments: {0}&#34;.format(e), file=sys.stderr)
+        if not raise_errors:
+            return None
+        raise
+    except OSError as e:
+        if print_errors:
+            print(&#34;Unable to execute system command: {0} {1}&#34;.format(args, e), file=sys.stderr)
+        if not raise_errors:
+            return None
+        raise
+    
+    # Check return code (if requested).
+    if check_return_code is not None:
+        command_return_code = command.poll()
+        if command_return_code != check_return_code:
+            if print_errors:
+                print(&#34;System command failed: {0} return code: {1}&#34;.format(args, command_return_code), file=sys.stderr)
+            if not raise_errors:
+                return None
+            
+            # Raise same error that subprocess.check_call() does.
+            raise subprocess.CalledProcessError(command_return_code, args, output=stdout)
+    
+    # Return (stdout, stderr) tuple if requested.
+    if return_stdout and return_stderr:
+        return stdout, stderr
+    elif return_stdout:
+        return stdout
+    elif return_stderr:
+        return stderr
+    
+    return True</code></pre>
+</details>
+</dd>
+</dl>
+</section>
+<section>
+</section>
+</article>
+<nav id="sidebar">
+<header>
+<a class="homelink" rel="home" title="GPlately Home" href="https://gplates.github.io/gplately/">
+<img src="https://raw.githubusercontent.com/GPlates/gplately/master/Notebooks/NotebookFiles/ReadMe_Files/GPlately_Main_logo.png" alt="GPlately logo" height="172" width="205">
+</a>
+</header>
+<h1>Index</h1>
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3>Super-module</h3>
+<ul>
+<li><code><a title="gplately.ptt.utils" href="index.html">gplately.ptt.utils</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-functions">Functions</a></h3>
+<ul class="">
+<li><code><a title="gplately.ptt.utils.call_system_command.call_system_command" href="#gplately.ptt.utils.call_system_command.call_system_command">call_system_command</a></code></li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc"><cite>pdoc</cite> 0.8.1</a>.</p>
+</footer>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+<script>hljs.initHighlightingOnLoad()</script>
+</body>
+</html>

@@ -1,0 +1,482 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
+<meta name="generator" content="pdoc 0.8.1" />
+<title>gplately.ptt.diagnose_rotations API documentation</title>
+<meta name="description" content="Copyright (C) 2020 The University of Sydney, Australia …" />
+<link href='https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.0/normalize.min.css' rel='stylesheet'>
+<link href='https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/8.0.0/sanitize.min.css' rel='stylesheet'>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css" rel="stylesheet">
+<style>.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:30px;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:1em 0 .50em 0}h3{font-size:1.4em;margin:25px 0 10px 0}h4{margin:0;font-size:105%}a{color:#058;text-decoration:none;transition:color .3s ease-in-out}a:hover{color:#e82}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900}pre code{background:#f8f8f8;font-size:.8em;line-height:1.4em}code{background:#f2f2f1;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{background:#f8f8f8;border:0;border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0;padding:1ex}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-weight:bold;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}.admonition{padding:.1em .5em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.item .name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul{padding-left:1.5em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+<script async src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS_CHTML'></script>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>gplately.ptt.diagnose_rotations</code></h1>
+</header>
+<section id="section-intro">
+<p>Copyright (C) 2020 The University of Sydney, Australia</p>
+<p>This program is free software; you can redistribute it and/or modify it under
+the terms of the GNU General Public License, version 2, as published by
+the Free Software Foundation.</p>
+<p>This program is distributed in the hope that it will be useful, but WITHOUT
+ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+FITNESS FOR A PARTICULAR PURPOSE.
+See the GNU General Public License
+for more details.</p>
+<p>You should have received a copy of the GNU General Public License along
+with this program; if not, write to Free Software Foundation, Inc.,
+51 Franklin Street, Fifth Floor, Boston, MA
+02110-1301, USA.</p>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">&#34;&#34;&#34;
+    Copyright (C) 2020 The University of Sydney, Australia
+    
+    This program is free software; you can redistribute it and/or modify it under
+    the terms of the GNU General Public License, version 2, as published by
+    the Free Software Foundation.
+    
+    This program is distributed in the hope that it will be useful, but WITHOUT
+    ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+    FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+    for more details.
+    
+    You should have received a copy of the GNU General Public License along
+    with this program; if not, write to Free Software Foundation, Inc.,
+    51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+&#34;&#34;&#34;
+
+from __future__ import print_function
+import argparse
+import math
+import sys
+import os.path
+import pygplates
+
+
+# The default is useful when the rotations were loaded from a PLATES rotation file
+# that stored rotation lat/lon/angle to 2 decimal places of accuracy.
+DEFAULT_ROTATION_THRESHOLD_DEGREES = 0.01
+
+
+def diagnose_rotations(
+        rotation_features,
+        rotation_threshold_degrees=DEFAULT_ROTATION_THRESHOLD_DEGREES):
+    &#34;&#34;&#34;
+    Diagnose one or more rotation files to check for inconsistencies.
+
+    &#39;rotation_features&#39; can be a rotation feature collection, or rotation filename, or rotation feature, or
+    sequence of rotation features, or a sequence (eg, list or tuple) of any combination of those four types.
+
+    &#39;rotation_threshold_degrees&#39; allows two rotations to compare equal if their rotation latitude, longitude or angle
+    differ by less than the specified amount (in degrees). The default value is useful for some PLATES rotation files
+    that are typically accurate to 2 decimal places (or threshold of 0.01).
+    Specifing &#39;None&#39; is equivalent to having no threshold (see pygplates.FiniteRotation.are_equal).
+    &#34;&#34;&#34;
+    
+    # Use helper class to convert &#39;rotation_features&#39; argument to a list of features.
+    rotation_features = pygplates.FeaturesFunctionArgument(rotation_features)
+    rotation_feature_sequence = rotation_features.get_features()
+    
+    # Make sure threshold is a number.
+    if rotation_threshold_degrees is not None:
+        rotation_threshold_degrees = float(rotation_threshold_degrees)
+    
+    # A &#39;dict&#39; to map each moving plate to a list of total reconstruction poles
+    # (one per moving/fixed plate pair)
+    total_reconstruction_poles_by_moving_plate = {}
+    
+    # Get the moving/fixed total reconstruction poles.
+    for rotation_feature in rotation_feature_sequence:
+        total_reconstruction_pole = rotation_feature.get_total_reconstruction_pole()
+        # If the current feature is a valid rotation feature...
+        if total_reconstruction_pole:
+            fixed_plate_id, moving_plate_id, rotation_sequence = total_reconstruction_pole
+            # Each moving plate has a list of total reconstruction poles.
+            total_reconstruction_poles = total_reconstruction_poles_by_moving_plate.setdefault(moving_plate_id, [])
+            total_reconstruction_poles.append(total_reconstruction_pole)
+    
+    # Iterate over the moving plates.
+    for moving_plate_id, total_reconstruction_poles in total_reconstruction_poles_by_moving_plate.items():
+        moving_plate_time_samples = []
+        
+        # Iterate over the total reconstruction poles associated with the current moving plate.
+        for total_reconstruction_pole in total_reconstruction_poles:
+            fixed_plate_id = total_reconstruction_pole[0]
+            rotation_sequence = total_reconstruction_pole[2]
+            
+            # Skip moving/fixed plates 999 since they are used as comments in PLATES rotation file.
+            if moving_plate_id == 999 and fixed_plate_id == 999:
+                continue
+            
+            time_samples = rotation_sequence.get_enabled_time_samples()
+            if not time_samples:
+                print(&#39;Moving_pid({0}), fixed_pid({1}): no enabled poles in sequence.&#39;.format(
+                        moving_plate_id, fixed_plate_id))
+                continue
+            if len(time_samples) == 1:
+                print(&#39;Moving_pid({0}), fixed_pid({1}): only one enabled pole in sequence.&#39;.format(
+                        moving_plate_id, fixed_plate_id))
+                continue
+            times = [time_sample.get_time() for time_sample in time_samples]
+            if sorted(times) != times:
+                print(&#39;Moving_pid({0}), fixed_pid({1}): times of enabled samples not monotonically increasing between {2} and {3}.&#39;.format(
+                        moving_plate_id, fixed_plate_id, times[0], times[-1]))
+                continue
+            
+            moving_plate_time_samples.append((fixed_plate_id, time_samples))
+        
+        # Go through all rotation sequences with the same moving plate (and potentially different
+        # fixed plates) to see if there&#39;s any overlap in their time ranges and to see if two
+        # adjacent rotation sequences have matching rotations (or crossovers if fixed plates differ)
+        # at the joint time.
+        for index1 in range(len(moving_plate_time_samples)-1):
+            for index2 in range(index1 + 1, len(moving_plate_time_samples)):
+                fixed_plate_id1 = moving_plate_time_samples[index1][0]
+                fixed_plate_id2 = moving_plate_time_samples[index2][0]
+                fixed_plate_time_samples1 = moving_plate_time_samples[index1][1]
+                fixed_plate_time_samples2 = moving_plate_time_samples[index2][1]
+                time_range1 = (
+                        pygplates.GeoTimeInstant(fixed_plate_time_samples1[0].get_time()),
+                        pygplates.GeoTimeInstant(fixed_plate_time_samples1[-1].get_time()))
+                time_range2 = (
+                        pygplates.GeoTimeInstant(fixed_plate_time_samples2[0].get_time()),
+                        pygplates.GeoTimeInstant(fixed_plate_time_samples2[-1].get_time()))
+                
+                if time_range1[0] &gt; time_range2[0]:
+                    if time_range1[0] &lt; time_range2[1]:
+                        print(&#39;Moving_pid({0}), fixed_pid1({1}), fixed_pid2({2}): sequences overlap between {3} and {4}.&#39;.format(
+                                moving_plate_id, fixed_plate_id1, fixed_plate_id2,
+                                time_range1[0], time_range2[1]))
+                    elif time_range1[0] == time_range2[1]:
+                        # Sequence at &#39;index1&#39; is *older* than sequence at &#39;index2&#39; and abuts it.
+                        if fixed_plate_id1 == fixed_plate_id2:
+                            # Check that both rotations are equal.
+                            if not pygplates.FiniteRotation.are_equal(
+                                    fixed_plate_time_samples1[0].get_value().get_finite_rotation(),
+                                    fixed_plate_time_samples2[-1].get_value().get_finite_rotation(),
+                                    rotation_threshold_degrees):
+                                print(&#39;Moving_pid({0}), fixed_pid({1}): two different rotations at time {2}.&#39;.format(
+                                        moving_plate_id, fixed_plate_id1, time_range1[0]))
+                        else:
+                            # We have a crossover (different fixed plates).
+                            # Check that the crossover is synchronised.
+                            # Implementation follows that in pygplates.synchronise_crossovers():
+                            #  1. Disable crossover in older rotation sequence,
+                            #  2. Calculate rotation relative to older crossover&#39;s fixed plate,
+                            #  3. Compare calculated rotation with previous rotation,
+                            #  4. Re-enable crossover in older rotation sequence.
+                            fixed_plate_time_samples1[0].set_disabled()
+                            rotation_model = pygplates.RotationModel(rotation_feature_sequence)
+                            if not pygplates.FiniteRotation.are_equal(
+                                    rotation_model.get_rotation(time_range1[0], moving_plate_id, anchor_plate_id=fixed_plate_id1),
+                                    fixed_plate_time_samples1[0].get_value().get_finite_rotation(),
+                                    rotation_threshold_degrees):
+                                print(&#39;Moving_pid({0}), young_fixed_pid({1}), old_fixed_pid({2}): &#39;
+                                    &#39;crossover at time {3} needs fixing.&#39;.format(
+                                        moving_plate_id, fixed_plate_id2, fixed_plate_id1, time_range1[0]))
+                            fixed_plate_time_samples1[0].set_enabled()
+                else: # time_range1[0] &lt;= time_range2[0] ...
+                    if time_range2[0] &lt; time_range1[1]:
+                        print(&#39;Moving_pid({0}), fixed_pid1({1}), fixed_pid2({2}): sequences overlap between {3} and {4}.&#39;.format(
+                                moving_plate_id, fixed_plate_id1, fixed_plate_id2,
+                                time_range2[0], time_range1[1]))
+                    elif time_range2[0] == time_range1[1]:
+                        # Sequence at &#39;index1&#39; is *younger* than sequence at &#39;index2&#39; and abuts it.
+                        if fixed_plate_id1 == fixed_plate_id2:
+                            # Check that both rotations are equal.
+                            if not pygplates.FiniteRotation.are_equal(
+                                    fixed_plate_time_samples1[-1].get_value().get_finite_rotation(),
+                                    fixed_plate_time_samples2[0].get_value().get_finite_rotation(),
+                                    rotation_threshold_degrees):
+                                print(&#39;Moving_pid({0}), fixed_pid({1}): two different rotations at time {2}.&#39;.format(
+                                        moving_plate_id, fixed_plate_id1, time_range2[0]))
+                        else:
+                            # We have a crossover (different fixed plates).
+                            # Check that the crossover is synchronised.
+                            # Implementation follows that in pygplates.synchronise_crossovers():
+                            #  1. Disable crossover in older rotation sequence,
+                            #  2. Calculate rotation relative to older crossover&#39;s fixed plate,
+                            #  3. Compare calculated rotation with previous rotation,
+                            #  4. Re-enable crossover in older rotation sequence.
+                            fixed_plate_time_samples2[0].set_disabled()
+                            rotation_model = pygplates.RotationModel(rotation_feature_sequence)
+                            if not pygplates.FiniteRotation.are_equal(
+                                    rotation_model.get_rotation(time_range2[0], moving_plate_id, anchor_plate_id=fixed_plate_id2),
+                                    fixed_plate_time_samples2[0].get_value().get_finite_rotation(),
+                                    rotation_threshold_degrees):
+                                print(&#39;Moving_pid({0}), young_fixed_pid({1}), old_fixed_pid({2}): &#39;
+                                    &#39;crossover at time {3} needs fixing.&#39;.format(
+                                        moving_plate_id, fixed_plate_id1, fixed_plate_id2, time_range2[0]))
+                            fixed_plate_time_samples2[0].set_enabled()
+
+
+if __name__ == &#34;__main__&#34;:
+
+    # Check the imported pygplates version.
+    required_version = pygplates.Version(4)
+    if not hasattr(pygplates, &#39;Version&#39;) or pygplates.Version.get_imported_version() &lt; required_version:
+        print(&#39;{0}: Error - imported pygplates version {1} but version {2} or greater is required&#39;.format(
+                os.path.basename(__file__), pygplates.Version.get_imported_version(), required_version),
+            file=sys.stderr)
+        sys.exit(1)
+    
+    
+    __description__ = \
+    &#34;&#34;&#34;Diagnose one or more rotation files to check for inconsistencies.
+
+    NOTE: Separate the positional and optional arguments with &#39;--&#39; (workaround for bug in argparse module).
+    For example...
+
+    python %(prog)s input_rotations1.rot input_rotations2.rot
+    &#34;&#34;&#34;
+
+    # The command-line parser.
+    parser = argparse.ArgumentParser(description = __description__, formatter_class=argparse.RawDescriptionHelpFormatter)
+        
+    def parse_positive_number(value_string):
+        try:
+            value = float(value_string)
+        except ValueError:
+            raise argparse.ArgumentTypeError(&#34;%s is not a number&#34; % value_string)
+        
+        if value &lt; 0:
+            raise argparse.ArgumentTypeError(&#34;%g is not a positive number&#34; % value)
+        
+        return value
+    
+    parser.add_argument(&#39;-t&#39;, &#39;--rotation_threshold_degrees&#39;,
+                        type=parse_positive_number, default=DEFAULT_ROTATION_THRESHOLD_DEGREES,
+                        help=&#39;Two rotations differ if either the rotation latitude, longitude or angle differ by &#39;
+                             &#39;the specified amount (in degrees). The default (0.01 degrees) is useful for some &#39;
+                             &#39;PLATES rotation files that are typically accurate to 2 decimal places.&#39;)
+
+    parser.add_argument(&#39;rotation_filenames&#39;, type=str, nargs=&#39;+&#39;,
+            metavar=&#39;rotation_filename&#39;,
+            help=&#39;One or more rotation filenames.&#39;)
+    
+    # Parse command-line options.
+    args = parser.parse_args()
+    
+    diagnose_rotations(args.rotation_filenames, args.rotation_threshold_degrees)</code></pre>
+</details>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-functions">Functions</h2>
+<dl>
+<dt id="gplately.ptt.diagnose_rotations.diagnose_rotations"><code class="name flex">
+<span>def <span class="ident">diagnose_rotations</span></span>(<span>rotation_features, rotation_threshold_degrees=0.01)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Diagnose one or more rotation files to check for inconsistencies.</p>
+<p>'rotation_features' can be a rotation feature collection, or rotation filename, or rotation feature, or
+sequence of rotation features, or a sequence (eg, list or tuple) of any combination of those four types.</p>
+<p>'rotation_threshold_degrees' allows two rotations to compare equal if their rotation latitude, longitude or angle
+differ by less than the specified amount (in degrees). The default value is useful for some PLATES rotation files
+that are typically accurate to 2 decimal places (or threshold of 0.01).
+Specifing 'None' is equivalent to having no threshold (see pygplates.FiniteRotation.are_equal).</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def diagnose_rotations(
+        rotation_features,
+        rotation_threshold_degrees=DEFAULT_ROTATION_THRESHOLD_DEGREES):
+    &#34;&#34;&#34;
+    Diagnose one or more rotation files to check for inconsistencies.
+
+    &#39;rotation_features&#39; can be a rotation feature collection, or rotation filename, or rotation feature, or
+    sequence of rotation features, or a sequence (eg, list or tuple) of any combination of those four types.
+
+    &#39;rotation_threshold_degrees&#39; allows two rotations to compare equal if their rotation latitude, longitude or angle
+    differ by less than the specified amount (in degrees). The default value is useful for some PLATES rotation files
+    that are typically accurate to 2 decimal places (or threshold of 0.01).
+    Specifing &#39;None&#39; is equivalent to having no threshold (see pygplates.FiniteRotation.are_equal).
+    &#34;&#34;&#34;
+    
+    # Use helper class to convert &#39;rotation_features&#39; argument to a list of features.
+    rotation_features = pygplates.FeaturesFunctionArgument(rotation_features)
+    rotation_feature_sequence = rotation_features.get_features()
+    
+    # Make sure threshold is a number.
+    if rotation_threshold_degrees is not None:
+        rotation_threshold_degrees = float(rotation_threshold_degrees)
+    
+    # A &#39;dict&#39; to map each moving plate to a list of total reconstruction poles
+    # (one per moving/fixed plate pair)
+    total_reconstruction_poles_by_moving_plate = {}
+    
+    # Get the moving/fixed total reconstruction poles.
+    for rotation_feature in rotation_feature_sequence:
+        total_reconstruction_pole = rotation_feature.get_total_reconstruction_pole()
+        # If the current feature is a valid rotation feature...
+        if total_reconstruction_pole:
+            fixed_plate_id, moving_plate_id, rotation_sequence = total_reconstruction_pole
+            # Each moving plate has a list of total reconstruction poles.
+            total_reconstruction_poles = total_reconstruction_poles_by_moving_plate.setdefault(moving_plate_id, [])
+            total_reconstruction_poles.append(total_reconstruction_pole)
+    
+    # Iterate over the moving plates.
+    for moving_plate_id, total_reconstruction_poles in total_reconstruction_poles_by_moving_plate.items():
+        moving_plate_time_samples = []
+        
+        # Iterate over the total reconstruction poles associated with the current moving plate.
+        for total_reconstruction_pole in total_reconstruction_poles:
+            fixed_plate_id = total_reconstruction_pole[0]
+            rotation_sequence = total_reconstruction_pole[2]
+            
+            # Skip moving/fixed plates 999 since they are used as comments in PLATES rotation file.
+            if moving_plate_id == 999 and fixed_plate_id == 999:
+                continue
+            
+            time_samples = rotation_sequence.get_enabled_time_samples()
+            if not time_samples:
+                print(&#39;Moving_pid({0}), fixed_pid({1}): no enabled poles in sequence.&#39;.format(
+                        moving_plate_id, fixed_plate_id))
+                continue
+            if len(time_samples) == 1:
+                print(&#39;Moving_pid({0}), fixed_pid({1}): only one enabled pole in sequence.&#39;.format(
+                        moving_plate_id, fixed_plate_id))
+                continue
+            times = [time_sample.get_time() for time_sample in time_samples]
+            if sorted(times) != times:
+                print(&#39;Moving_pid({0}), fixed_pid({1}): times of enabled samples not monotonically increasing between {2} and {3}.&#39;.format(
+                        moving_plate_id, fixed_plate_id, times[0], times[-1]))
+                continue
+            
+            moving_plate_time_samples.append((fixed_plate_id, time_samples))
+        
+        # Go through all rotation sequences with the same moving plate (and potentially different
+        # fixed plates) to see if there&#39;s any overlap in their time ranges and to see if two
+        # adjacent rotation sequences have matching rotations (or crossovers if fixed plates differ)
+        # at the joint time.
+        for index1 in range(len(moving_plate_time_samples)-1):
+            for index2 in range(index1 + 1, len(moving_plate_time_samples)):
+                fixed_plate_id1 = moving_plate_time_samples[index1][0]
+                fixed_plate_id2 = moving_plate_time_samples[index2][0]
+                fixed_plate_time_samples1 = moving_plate_time_samples[index1][1]
+                fixed_plate_time_samples2 = moving_plate_time_samples[index2][1]
+                time_range1 = (
+                        pygplates.GeoTimeInstant(fixed_plate_time_samples1[0].get_time()),
+                        pygplates.GeoTimeInstant(fixed_plate_time_samples1[-1].get_time()))
+                time_range2 = (
+                        pygplates.GeoTimeInstant(fixed_plate_time_samples2[0].get_time()),
+                        pygplates.GeoTimeInstant(fixed_plate_time_samples2[-1].get_time()))
+                
+                if time_range1[0] &gt; time_range2[0]:
+                    if time_range1[0] &lt; time_range2[1]:
+                        print(&#39;Moving_pid({0}), fixed_pid1({1}), fixed_pid2({2}): sequences overlap between {3} and {4}.&#39;.format(
+                                moving_plate_id, fixed_plate_id1, fixed_plate_id2,
+                                time_range1[0], time_range2[1]))
+                    elif time_range1[0] == time_range2[1]:
+                        # Sequence at &#39;index1&#39; is *older* than sequence at &#39;index2&#39; and abuts it.
+                        if fixed_plate_id1 == fixed_plate_id2:
+                            # Check that both rotations are equal.
+                            if not pygplates.FiniteRotation.are_equal(
+                                    fixed_plate_time_samples1[0].get_value().get_finite_rotation(),
+                                    fixed_plate_time_samples2[-1].get_value().get_finite_rotation(),
+                                    rotation_threshold_degrees):
+                                print(&#39;Moving_pid({0}), fixed_pid({1}): two different rotations at time {2}.&#39;.format(
+                                        moving_plate_id, fixed_plate_id1, time_range1[0]))
+                        else:
+                            # We have a crossover (different fixed plates).
+                            # Check that the crossover is synchronised.
+                            # Implementation follows that in pygplates.synchronise_crossovers():
+                            #  1. Disable crossover in older rotation sequence,
+                            #  2. Calculate rotation relative to older crossover&#39;s fixed plate,
+                            #  3. Compare calculated rotation with previous rotation,
+                            #  4. Re-enable crossover in older rotation sequence.
+                            fixed_plate_time_samples1[0].set_disabled()
+                            rotation_model = pygplates.RotationModel(rotation_feature_sequence)
+                            if not pygplates.FiniteRotation.are_equal(
+                                    rotation_model.get_rotation(time_range1[0], moving_plate_id, anchor_plate_id=fixed_plate_id1),
+                                    fixed_plate_time_samples1[0].get_value().get_finite_rotation(),
+                                    rotation_threshold_degrees):
+                                print(&#39;Moving_pid({0}), young_fixed_pid({1}), old_fixed_pid({2}): &#39;
+                                    &#39;crossover at time {3} needs fixing.&#39;.format(
+                                        moving_plate_id, fixed_plate_id2, fixed_plate_id1, time_range1[0]))
+                            fixed_plate_time_samples1[0].set_enabled()
+                else: # time_range1[0] &lt;= time_range2[0] ...
+                    if time_range2[0] &lt; time_range1[1]:
+                        print(&#39;Moving_pid({0}), fixed_pid1({1}), fixed_pid2({2}): sequences overlap between {3} and {4}.&#39;.format(
+                                moving_plate_id, fixed_plate_id1, fixed_plate_id2,
+                                time_range2[0], time_range1[1]))
+                    elif time_range2[0] == time_range1[1]:
+                        # Sequence at &#39;index1&#39; is *younger* than sequence at &#39;index2&#39; and abuts it.
+                        if fixed_plate_id1 == fixed_plate_id2:
+                            # Check that both rotations are equal.
+                            if not pygplates.FiniteRotation.are_equal(
+                                    fixed_plate_time_samples1[-1].get_value().get_finite_rotation(),
+                                    fixed_plate_time_samples2[0].get_value().get_finite_rotation(),
+                                    rotation_threshold_degrees):
+                                print(&#39;Moving_pid({0}), fixed_pid({1}): two different rotations at time {2}.&#39;.format(
+                                        moving_plate_id, fixed_plate_id1, time_range2[0]))
+                        else:
+                            # We have a crossover (different fixed plates).
+                            # Check that the crossover is synchronised.
+                            # Implementation follows that in pygplates.synchronise_crossovers():
+                            #  1. Disable crossover in older rotation sequence,
+                            #  2. Calculate rotation relative to older crossover&#39;s fixed plate,
+                            #  3. Compare calculated rotation with previous rotation,
+                            #  4. Re-enable crossover in older rotation sequence.
+                            fixed_plate_time_samples2[0].set_disabled()
+                            rotation_model = pygplates.RotationModel(rotation_feature_sequence)
+                            if not pygplates.FiniteRotation.are_equal(
+                                    rotation_model.get_rotation(time_range2[0], moving_plate_id, anchor_plate_id=fixed_plate_id2),
+                                    fixed_plate_time_samples2[0].get_value().get_finite_rotation(),
+                                    rotation_threshold_degrees):
+                                print(&#39;Moving_pid({0}), young_fixed_pid({1}), old_fixed_pid({2}): &#39;
+                                    &#39;crossover at time {3} needs fixing.&#39;.format(
+                                        moving_plate_id, fixed_plate_id1, fixed_plate_id2, time_range2[0]))
+                            fixed_plate_time_samples2[0].set_enabled()</code></pre>
+</details>
+</dd>
+</dl>
+</section>
+<section>
+</section>
+</article>
+<nav id="sidebar">
+<header>
+<a class="homelink" rel="home" title="GPlately Home" href="https://gplates.github.io/gplately/">
+<img src="https://raw.githubusercontent.com/GPlates/gplately/master/Notebooks/NotebookFiles/ReadMe_Files/GPlately_Main_logo.png" alt="GPlately logo" height="172" width="205">
+</a>
+</header>
+<h1>Index</h1>
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3>Super-module</h3>
+<ul>
+<li><code><a title="gplately.ptt" href="index.html">gplately.ptt</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-functions">Functions</a></h3>
+<ul class="">
+<li><code><a title="gplately.ptt.diagnose_rotations.diagnose_rotations" href="#gplately.ptt.diagnose_rotations.diagnose_rotations">diagnose_rotations</a></code></li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc"><cite>pdoc</cite> 0.8.1</a>.</p>
+</footer>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+<script>hljs.initHighlightingOnLoad()</script>
+</body>
+</html>
