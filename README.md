@@ -147,7 +147,7 @@ rotation_model, topology_features, static_polygons = gDownload.get_plate_reconst
 
 ### The `PlateModelManager` object
 
-... was designed as a substitute of `DataServer` object. The `PlateModelManager` object can be used to download and manage the plate reconstruction model files.
+... was introduced as an alternative/substitute to the `DataServer` object. The `PlateModelManager` object can be used to download and manage plate reconstruction models.
 
 ```
   pm_manager = PlateModelManager()
