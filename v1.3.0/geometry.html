@@ -1,0 +1,1751 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
+<meta name="generator" content="pdoc 0.8.1" />
+<title>gplately.geometry API documentation</title>
+<meta name="description" content="Tools for converting PyGPlates or GPlately geometries to Shapely geometries for mapping (and vice versa) …" />
+<link href='https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.0/normalize.min.css' rel='stylesheet'>
+<link href='https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/8.0.0/sanitize.min.css' rel='stylesheet'>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css" rel="stylesheet">
+<style>.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:30px;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:1em 0 .50em 0}h3{font-size:1.4em;margin:25px 0 10px 0}h4{margin:0;font-size:105%}a{color:#058;text-decoration:none;transition:color .3s ease-in-out}a:hover{color:#e82}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900}pre code{background:#f8f8f8;font-size:.8em;line-height:1.4em}code{background:#f2f2f1;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{background:#f8f8f8;border:0;border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0;padding:1ex}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-weight:bold;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}.admonition{padding:.1em .5em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.item .name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul{padding-left:1.5em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+<script async src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS_CHTML'></script>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>gplately.geometry</code></h1>
+</header>
+<section id="section-intro">
+<p>Tools for converting PyGPlates or GPlately geometries to Shapely geometries for mapping (and vice versa). </p>
+<p>Supported PyGPlates geometries inherit from the following classes:</p>
+<ul>
+<li>
+<p><a href="https://www.gplates.org/docs/pygplates/generated/pygplates.geometryonsphere">pygplates.GeometryOnSphere</a>: This
+class has the following derived GeometryOnSphere classes:</p>
+<ul>
+<li><a href="https://www.gplates.org/docs/pygplates/generated/pygplates.pointonsphere#pygplates.PointOnSphere">pygplates.PointOnSphere</a></li>
+<li><a href="https://www.gplates.org/docs/pygplates/generated/pygplates.multipointonsphere#pygplates.MultiPointOnSphere">pygplates.MultiPointOnSphere</a></li>
+<li><a href="https://www.gplates.org/docs/pygplates/generated/pygplates.polylineonsphere#pygplates.PolylineOnSphere">pygplates.PolylineOnSphere</a></li>
+<li><a href="https://www.gplates.org/docs/pygplates/generated/pygplates.polygononsphere#pygplates.PolygonOnSphere">pygplates.PolygonOnSphere</a></li>
+</ul>
+</li>
+<li>
+<p><a href="https://www.gplates.org/docs/pygplates/generated/pygplates.latlonpoint">pygplates.LatLonPoint</a></p>
+</li>
+<li><a href="https://www.gplates.org/docs/pygplates/generated/pygplates.reconstructedfeaturegeometry">pygplates.ReconstructedFeatureGeometry</a></li>
+<li><a href="https://www.gplates.org/docs/pygplates/generated/pygplates.resolvedtopologicalline">pygplates.ResolvedTopologicalLine</a></li>
+<li><a href="https://www.gplates.org/docs/pygplates/generated/pygplates.resolvedtopologicalboundary">pygplates.ResolvedTopologicalBoundary</a></li>
+<li><a href="https://www.gplates.org/docs/pygplates/generated/pygplates.resolvedtopologicalnetwork">pygplates.ResolvedTopologicalNetwork</a></li>
+</ul>
+<p>Note: GPlately geometries derive from the <code><a title="gplately.geometry.GeometryOnSphere" href="#gplately.geometry.GeometryOnSphere">GeometryOnSphere</a></code> and <code>pygplates.GeometryOnSphere</code> base classes. </p>
+<p>Supported Shapely geometric objects include:</p>
+<ul>
+<li><strong>Point</strong>: a single point in 2D space with coordinate tuple (x,y) or 3D space with coordinate tuple (x,y,z).</li>
+<li><strong>LineString</strong>: a sequence of points joined together to form a line (a list of point coordinate tuples).</li>
+<li><strong>Polygon</strong>: a sequence of points joined together to form the outer ring of a filled area, or a hole (a list of at least
+three point coordinate tuples).</li>
+</ul>
+<p>Also supported are collections of geometric objects, such as:</p>
+<ul>
+<li><strong>MultiPoint</strong>: a list of <strong>Point</strong> objects (a list of point coordinate tuples).</li>
+<li><strong>MultiLineString</strong>: a list of <strong>LineString</strong> objects (a list containing lists of point coordinate tuples).</li>
+<li><strong>MultiPolygon</strong>:
+a list of <strong>Polygon</strong> objects (a list containing lists of point coordinate tuples that define exterior rings and/or holes).</li>
+</ul>
+<p><strong>Converting PyGPlates geometries into Shapely geometries</strong> involves:</p>
+<ul>
+<li><strong>wrapping geometries at the dateline</strong>: this involves splitting a polygon, MultiPolygon, line segment or MultiLine segment between
+connecting points at the dateline. This is to ensure the geometry's points are joined along the short path rather than
+the long path horizontally across the 2D map projection display.</li>
+<li><strong>ordering geometries counter-clockwise</strong></li>
+</ul>
+<p>Input PyGPlates geometries are converted to the following Shapely geometries:</p>
+<ul>
+<li><code><a title="gplately.geometry.PointOnSphere" href="#gplately.geometry.PointOnSphere">PointOnSphere</a></code> or <code><a title="gplately.geometry.LatLonPoint" href="#gplately.geometry.LatLonPoint">LatLonPoint</a></code>: <code>Point</code></li>
+<li><code><a title="gplately.geometry.MultiPointOnSphere" href="#gplately.geometry.MultiPointOnSphere">MultiPointOnSphere</a></code>: <code>MultiPoint</code></li>
+<li><code><a title="gplately.geometry.PolylineOnSphere" href="#gplately.geometry.PolylineOnSphere">PolylineOnSphere</a></code>: <code>LineString</code> or <code>MultiLineString</code></li>
+<li><code><a title="gplately.geometry.PolygonOnSphere" href="#gplately.geometry.PolygonOnSphere">PolygonOnSphere</a></code>: <code>Polygon</code> or <code>MultiPolygon</code></li>
+</ul>
+<p><strong>Converting Shapely geometries into PyGPlates geometries</strong>:
+Input Shapely geometries are converted to the following PyGPlates geometries:</p>
+<ul>
+<li><code>Point</code>: <code><a title="gplately.geometry.PointOnSphere" href="#gplately.geometry.PointOnSphere">PointOnSphere</a></code></li>
+<li><code>MultiPoint</code>: <code><a title="gplately.geometry.MultiPointOnSphere" href="#gplately.geometry.MultiPointOnSphere">MultiPointOnSphere</a></code></li>
+<li><code>LineString</code>: <code><a title="gplately.geometry.PolylineOnSphere" href="#gplately.geometry.PolylineOnSphere">PolylineOnSphere</a></code></li>
+<li><code>LinearRing</code> or <code>Polygon</code>: <code><a title="gplately.geometry.PolygonOnSphere" href="#gplately.geometry.PolygonOnSphere">PolygonOnSphere</a></code></li>
+</ul>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">&#34;&#34;&#34;Tools for converting PyGPlates or GPlately geometries to Shapely geometries for mapping (and vice versa). 
+
+Supported PyGPlates geometries inherit from the following classes:
+
+* [pygplates.GeometryOnSphere](https://www.gplates.org/docs/pygplates/generated/pygplates.geometryonsphere): This 
+class has the following derived GeometryOnSphere classes:
+    * [pygplates.PointOnSphere](https://www.gplates.org/docs/pygplates/generated/pygplates.pointonsphere#pygplates.PointOnSphere)
+    * [pygplates.MultiPointOnSphere](https://www.gplates.org/docs/pygplates/generated/pygplates.multipointonsphere#pygplates.MultiPointOnSphere)
+    * [pygplates.PolylineOnSphere](https://www.gplates.org/docs/pygplates/generated/pygplates.polylineonsphere#pygplates.PolylineOnSphere)
+    * [pygplates.PolygonOnSphere](https://www.gplates.org/docs/pygplates/generated/pygplates.polygononsphere#pygplates.PolygonOnSphere)
+    
+
+* [pygplates.LatLonPoint](https://www.gplates.org/docs/pygplates/generated/pygplates.latlonpoint)
+* [pygplates.ReconstructedFeatureGeometry](https://www.gplates.org/docs/pygplates/generated/pygplates.reconstructedfeaturegeometry)
+* [pygplates.ResolvedTopologicalLine](https://www.gplates.org/docs/pygplates/generated/pygplates.resolvedtopologicalline)
+* [pygplates.ResolvedTopologicalBoundary](https://www.gplates.org/docs/pygplates/generated/pygplates.resolvedtopologicalboundary)
+* [pygplates.ResolvedTopologicalNetwork](https://www.gplates.org/docs/pygplates/generated/pygplates.resolvedtopologicalnetwork)
+
+Note: GPlately geometries derive from the `GeometryOnSphere` and `pygplates.GeometryOnSphere` base classes. 
+
+Supported Shapely geometric objects include:
+
+* __Point__: a single point in 2D space with coordinate tuple (x,y) or 3D space with coordinate tuple (x,y,z).
+* __LineString__: a sequence of points joined together to form a line (a list of point coordinate tuples).
+* __Polygon__: a sequence of points joined together to form the outer ring of a filled area, or a hole (a list of at least
+three point coordinate tuples).
+
+Also supported are collections of geometric objects, such as:
+
+* __MultiPoint__: a list of __Point__ objects (a list of point coordinate tuples).
+* __MultiLineString__: a list of __LineString__ objects (a list containing lists of point coordinate tuples).
+* __MultiPolygon__:  a list of __Polygon__ objects (a list containing lists of point coordinate tuples that define exterior rings and/or holes).
+
+
+__Converting PyGPlates geometries into Shapely geometries__ involves:
+
+* __wrapping geometries at the dateline__: this involves splitting a polygon, MultiPolygon, line segment or MultiLine segment between
+connecting points at the dateline. This is to ensure the geometry&#39;s points are joined along the short path rather than 
+the long path horizontally across the 2D map projection display.
+* __ordering geometries counter-clockwise__
+
+Input PyGPlates geometries are converted to the following Shapely geometries:
+
+- `PointOnSphere` or `LatLonPoint`: `Point`
+- `MultiPointOnSphere`: `MultiPoint`
+- `PolylineOnSphere`: `LineString` or `MultiLineString`
+- `PolygonOnSphere`: `Polygon` or `MultiPolygon`
+
+__Converting Shapely geometries into PyGPlates geometries__: 
+Input Shapely geometries are converted to the following PyGPlates geometries:
+
+- `Point`: `PointOnSphere`
+- `MultiPoint`: `MultiPointOnSphere`
+- `LineString`: `PolylineOnSphere`
+- `LinearRing` or `Polygon`: `PolygonOnSphere`
+
+&#34;&#34;&#34;
+import numpy as np
+import pygplates
+from shapely.geometry import (
+    LinearRing as _LinearRing,
+    LineString as _LineString,
+    MultiLineString as _MultiLineString,
+    MultiPoint as _MultiPoint,
+    MultiPolygon as _MultiPolygon,
+    Point as _Point,
+    Polygon as _Polygon,
+)
+from shapely.geometry.base import (
+    BaseGeometry as _BaseGeometry,
+    BaseMultipartGeometry as _BaseMultipartGeometry,
+)
+
+__all__ = [
+    &#34;GeometryOnSphere&#34;,
+    &#34;LatLonPoint&#34;,
+    &#34;MultiPointOnSphere&#34;,
+    &#34;PointOnSphere&#34;,
+    &#34;PolygonOnSphere&#34;,
+    &#34;PolylineOnSphere&#34;,
+    &#34;pygplates_to_shapely&#34;,
+    &#34;shapely_to_pygplates&#34;,
+    &#34;wrap_geometries&#34;,
+]
+
+
+class GeometryOnSphere(pygplates.GeometryOnSphere):
+    &#34;&#34;&#34;Class to mix in `to_shapely` method to all GPlately geometry classes.
+
+    All GPlately geometry classes inherit from this class, in addition
+    to their PyGPlates base class.
+    &#34;&#34;&#34;
+
+    def to_shapely(
+        self,
+        central_meridian=0.0,
+        tessellate_degrees=None,
+        validate=False,
+        force_ccw=False,
+        explode=False,
+    ):
+        &#34;&#34;&#34;Convert to Shapely geometry.
+
+        See Also
+        --------
+        pygplates_to_shapely : Equivalent function.
+        &#34;&#34;&#34;
+        return pygplates_to_shapely(
+            self,
+            central_meridian=central_meridian,
+            tessellate_degrees=tessellate_degrees,
+            validate=validate,
+            force_ccw=force_ccw,
+            explode=explode,
+        )
+
+    @classmethod
+    def from_shapely(cls, geom):
+        converted = shapely_to_pygplates(geom)
+        return cls(converted)
+
+
+class PointOnSphere(pygplates.PointOnSphere, GeometryOnSphere):
+    &#34;&#34;&#34;GPlately equivalent of `pygplates.PointOnSphere`, incorporating
+    `to_shapely` method
+    &#34;&#34;&#34;
+
+    pass
+
+
+class MultiPointOnSphere(pygplates.MultiPointOnSphere, GeometryOnSphere):
+    &#34;&#34;&#34;GPlately equivalent of `pygplates.MultiPointOnSphere`, incorporating
+    `to_shapely` method
+    &#34;&#34;&#34;
+
+    pass
+
+
+class PolylineOnSphere(pygplates.PolylineOnSphere, GeometryOnSphere):
+    &#34;&#34;&#34;GPlately equivalent of `pygplates.PolylineOnSphere`, incorporating
+    `to_shapely` method
+    &#34;&#34;&#34;
+
+    pass
+
+
+class PolygonOnSphere(pygplates.PolygonOnSphere, GeometryOnSphere):
+    &#34;&#34;&#34;GPlately equivalent of `pygplates.PolygonOnSphere`, incorporating
+    `to_shapely` method
+    &#34;&#34;&#34;
+
+    pass
+
+
+class LatLonPoint(pygplates.LatLonPoint):
+    &#34;&#34;&#34;GPlately equivalent of `pygplates.LatLonPoint`, incorporating
+    `to_shapely` method
+    &#34;&#34;&#34;
+
+    def to_shapely(self, central_meridian=0.0, tessellate_degrees=None):
+        return pygplates_to_shapely(
+            self,
+            central_meridian=central_meridian,
+            tessellate_degrees=tessellate_degrees,
+        )
+
+
+def pygplates_to_shapely(
+    geometry,
+    central_meridian=0.0,
+    tessellate_degrees=None,
+    validate=False,
+    force_ccw=False,
+    explode=False
+):
+    &#34;&#34;&#34;Convert one or more PyGPlates or GPlately geometries to Shapely format.
+
+    Parameters
+    ----------
+    geometry : pygplates.GeometryOnSphere or pygplates.LatLonPoint or list
+        The geometry or geometries to convert.
+    central_meridian : float, default: 0.0
+        The central meridian around which to wrap geometries;
+        geometries will be split at the antimeridian.
+    tessellate_degrees : float, optional
+        If provided, the geometry will be tessellated to this
+        resolution prior to conversion.
+    validate : bool, default: False
+        Attempt to ensure output geometry is valid by applying a buffer of 0.
+    force_ccw : bool, default: False
+        Ensure the coordinates of the output geometry are counter-clockwise
+        (only applies to polygons).
+    explode : bool, default: False
+        Convert multi-part output geometries to multiple single-part
+        geometries.
+
+    Returns
+    -------
+    output_geometry : shapely.geometry.base.BaseGeometry or list
+        Converted Shapely geometry or geometries.
+
+    Notes
+    -----
+    If a single input geometry was passed, `output_geometry` will be a
+    subclass of `shapely.geometry.base.BaseGeometry`. Otherwise,
+    `output_geometry` will be a list of the same length as the input.
+
+    Input geometries that were split while wrapping around
+    `central_meridian` will produce multi-part output geometries, unless
+    `explode=True` is specified.
+
+    Input geometry types are converted as follows:
+        - `PointOnSphere` or `LatLonPoint`:
+            `Point`
+        - `MultiPointOnSphere`:
+            `MultiPoint`
+        - `PolylineOnSphere`:
+            `LineString` or
+            `MultiLineString`
+        - `PolygonOnSphere`:
+            `Polygon` or
+            `MultiPolygon`
+    &#34;&#34;&#34;
+    if _contains_pygplates_geometries(geometry):
+        return [
+            pygplates_to_shapely(
+                i,
+                central_meridian=central_meridian,
+                tessellate_degrees=tessellate_degrees,
+                validate=validate,
+                force_ccw=force_ccw,
+            )
+            for i in geometry
+        ]
+
+    if isinstance(geometry, pygplates.LatLonPoint):
+        geometry = geometry.to_point_on_sphere()
+    if isinstance(geometry, pygplates.ReconstructedFeatureGeometry):
+        geometry = geometry.get_reconstructed_geometry()
+    if isinstance(
+        geometry,
+        (
+            pygplates.ResolvedTopologicalLine,
+            pygplates.ResolvedTopologicalBoundary,
+            pygplates.ResolvedTopologicalNetwork,
+        ),
+    ):
+        geometry = geometry.get_resolved_geometry()
+    if not isinstance(geometry, pygplates.GeometryOnSphere):
+        raise TypeError(&#34;Invalid geometry type: &#34; + str(type(geometry)))
+
+    wrapper = pygplates.DateLineWrapper(central_meridian=central_meridian)
+    wrapped = wrapper.wrap(geometry, tessellate_degrees=tessellate_degrees)
+
+    if isinstance(wrapped, pygplates.LatLonPoint):
+        return _Point(wrapped.to_lat_lon()[::-1])
+    if isinstance(wrapped, pygplates.DateLineWrapper.LatLonMultiPoint):
+        points = wrapped.get_points()
+        return _MultiPoint([i.to_lat_lon()[::-1] for i in points])
+
+    output_geoms = []
+    output_type = None
+    for i in wrapped:
+        if isinstance(i, pygplates.DateLineWrapper.LatLonPolyline):
+            tmp = _LineString([j.to_lat_lon()[::-1] for j in i.get_points()])
+            output_geoms.append(tmp)
+            output_type = _MultiLineString
+        elif isinstance(i, pygplates.DateLineWrapper.LatLonPolygon):
+            tmp = np.array([j.to_lat_lon()[::-1] for j in i.get_exterior_points()])
+            # tmp[:,1] = np.clip(tmp[:,1], -89, 89) # clip polygons near poles
+            tmp = _Polygon(tmp)
+            if (
+                force_ccw
+                and tmp.exterior is not None
+                and not tmp.exterior.is_ccw
+            ):
+                tmp = _Polygon(list(tmp.exterior.coords)[::-1])
+                # tmp.exterior.coords = list(tmp.exterior.coords)[::-1]
+            if validate:
+                tmp = tmp.buffer(0.0)
+            # this is for pole-clipped polygons turned into MultiPolygons
+            if isinstance(tmp, _MultiPolygon):
+                #for geom in list(tmp):
+                for geom in tmp.geoms:
+                    output_geoms.append(geom)
+            else:
+                output_geoms.append(tmp)
+            output_type = _MultiPolygon
+        else:
+            raise TypeError(
+                &#34;Unrecognised output from `pygplates.DateLineWrapper.wrap`: &#34;
+                + str(type(i))
+            )
+    if output_type is None:
+        raise TypeError(
+            &#34;Unrecognised output from `pygplates.DateLineWrapper.wrap`: &#34;
+            + str(type(wrapped[0]))
+        )
+    # Empty geometries can sometimes occur by this point, causing nearly all
+    # subsequent geometric operations to fail
+    output_geoms = [i for i in output_geoms if not i.is_empty]
+    if force_ccw:
+        output_geoms = [_ensure_ccw(i) for i in output_geoms]
+    if len(output_geoms) == 1:
+        return output_geoms[0]
+    if explode:
+        return output_geoms
+    return output_type(output_geoms)
+
+
+def _ensure_ccw(geometry):
+    if (
+        isinstance(geometry, _Polygon)
+        and geometry.exterior is not None
+        and not geometry.exterior.is_ccw
+    ):
+        return _Polygon(list(geometry.exterior.coords)[::-1])
+    return geometry
+
+
+def shapely_to_pygplates(geometry):
+    &#34;&#34;&#34;Convert one or more Shapely geometries to gplately format.
+
+    Parameters
+    ----------
+    geometry : shapely.geometry.base.BaseGeometry or list
+        The geometry or geometries to convert.
+
+    Returns
+    -------
+    output_geometry : GeometryOnSphere or list
+        Converted gplately geometry or geometries.
+
+    Notes
+    -----
+    If a single input geometry was passed, `output_geometry` will be a
+    subclass of `GeometryOnSphere`. Otherwise, `output_geometry`
+    will be a list of `GeometryOnSphere`, of the same length as
+    the input.
+
+    Input geometry types are converted as follows:
+        - `Point`: `PointOnSphere`
+        - `MultiPoint`: `MultiPointOnSphere`
+        - `LineString`: `PolylineOnSphere`
+        - `LinearRing` or `Polygon`: `PolygonOnSphere`
+
+    Multi-part input geometry types other than `MultiPoint` will be treated
+    as an iterable of their component single-part geometries.
+    &#34;&#34;&#34;
+    pygplates_conversion = {
+        _Point: PointOnSphere,
+        _MultiPoint: MultiPointOnSphere,
+        _LineString: PolylineOnSphere,
+        _LinearRing: PolygonOnSphere,
+        _Polygon: PolygonOnSphere,
+    }
+
+    if isinstance(geometry, _BaseMultipartGeometry) and not isinstance(
+        geometry, _MultiPoint
+    ):
+        return [shapely_to_pygplates(i) for i in geometry.geoms]
+    if _contains_shapely_geometries(geometry):
+        # Recursively convert all elements in iterable of geometries
+        out = []
+        for i in geometry:
+            tmp = shapely_to_pygplates(i)
+            if isinstance(tmp, pygplates.GeometryOnSphere):
+                # Output is a single geometry
+                out.append(tmp)
+            else:
+                # Output should be a list of geometries
+                out.extend(tmp)
+        return out
+
+    for input_type in pygplates_conversion:
+        if isinstance(geometry, input_type):
+            output_type = pygplates_conversion[input_type]
+            break
+    else:
+        raise TypeError(&#34;Invalid geometry type: &#34; + str(type(geometry)))
+    if isinstance(geometry, _MultiPoint):
+        coords = np.array([i.coords for i in geometry.geoms]).squeeze()
+    elif isinstance(geometry, _Polygon):
+        if geometry.exterior is None:
+            raise AttributeError(&#34;Polygon geometry has no exterior&#34;)
+        coords = np.array(geometry.exterior.coords).squeeze()[:-1, ...]
+    elif hasattr(geometry, &#34;coords&#34;):
+        coords = np.array(geometry.coords).squeeze()
+    else:
+        raise TypeError(&#34;Invalid geometry type: &#34; + str(type(geometry)))
+    if coords.ndim &gt; 1:
+        coords = np.fliplr(coords)
+    else:
+        coords = np.flip(coords)
+    return output_type(coords)
+
+
+def wrap_geometries(
+    geometries,
+    central_meridian=0.0,
+    tessellate_degrees=None,
+    validate=False,
+    force_ccw=False,
+    explode=False,
+):
+    &#34;&#34;&#34;Wrap one or more Shapely geometries around a central meridian.
+
+    Wrapped geometries will be split at the antimeridian.
+
+    Parameters
+    ----------
+    geometry : shapely.geometry.base.BaseGeometry or list
+        The geometry or geometries to wrap.
+    central_meridian : float, default: 0.0
+        The central meridian around which to wrap geometries;
+        geometries will be split at the antimeridian.
+    tessellate_degrees : float, optional
+        If provided, the geometry will be tessellated to this
+        resolution prior to wrapping.
+    validate : bool, default: False
+        Attempt to ensure output geometry is valid by applying a buffer of 0.
+    force_ccw : bool, default: False
+        Ensure the coordinates of the output geometry are counter-clockwise
+        (only applies to polygons).
+    explode : bool, default: False
+        Convert multi-part output geometries to multiple single-part
+        geometries.
+
+    Returns
+    -------
+    output_geometries : shapely.geometry.base.BaseGeometry or list
+        Wrapped Shapely geometry or geometries.
+
+    Notes
+    -----
+    If a single input geometry was passed, `output_geometry` will be a
+    subclass of `shapely.geometry.base.BaseGeometry`. Otherwise,
+    `output_geometry` will be a list of the same length as the input,
+    unless `explode=True` is specified.
+
+    Input geometries that were split while wrapping around
+    `central_meridian` will produce multi-part output geometries, unless
+    `explode=True` is specified.
+    &#34;&#34;&#34;
+    if isinstance(geometries, _BaseGeometry):
+        return _wrap_geometry(
+            geometry=geometries,
+            central_meridian=central_meridian,
+            tessellate_degrees=tessellate_degrees,
+            validate=validate,
+            force_ccw=force_ccw,
+            explode=explode,
+        )
+    else:
+        out = []
+        for i in geometries:
+            tmp = _wrap_geometry(
+                geometry=i,
+                central_meridian=central_meridian,
+                tessellate_degrees=tessellate_degrees,
+                validate=validate,
+                force_ccw=force_ccw,
+                explode=explode,
+            )
+            if isinstance(tmp, _BaseGeometry):
+                out.append(tmp)
+            else:
+                out.extend(tmp)
+        return out
+
+
+def _wrap_geometry(
+    geometry,
+    central_meridian=0.0,
+    tessellate_degrees=None,
+    validate=False,
+    force_ccw=False,
+    explode=False,
+):
+    if not isinstance(geometry, _BaseGeometry):
+        raise TypeError(&#34;Invalid geometry type: &#34; + str(type(geometry)))
+
+    converted = shapely_to_pygplates(geometry)
+    if isinstance(converted, pygplates.GeometryOnSphere):
+        out = [converted]
+    else:
+        out = []
+        for i in converted:
+            if isinstance(i, pygplates.GeometryOnSphere):
+                out.append(i)
+            else:
+                out.extend(i)
+    if explode:
+        out_tmp = []
+        for i in out:
+            tmp = pygplates_to_shapely(
+                geometry=i,
+                central_meridian=central_meridian,
+                tessellate_degrees=tessellate_degrees,
+                validate=validate,
+                force_ccw=force_ccw,
+                explode=explode,
+            )
+            if isinstance(tmp, _BaseGeometry):
+                out_tmp.append(tmp)
+            else:
+                out_tmp.extend(tmp)
+        out = out_tmp
+    else:
+        out = [
+            pygplates_to_shapely(
+                geometry=i,
+                central_meridian=central_meridian,
+                tessellate_degrees=tessellate_degrees,
+                validate=validate,
+                force_ccw=force_ccw,
+                explode=explode,
+            )
+            for i in out
+        ]
+    if len(out) == 1:
+        return out[0]
+    if explode:
+        return out
+    if isinstance(geometry, (_Point, _MultiPoint)):
+        return _MultiPoint(out)
+    if isinstance(geometry, (_LineString, _MultiLineString)):
+        return _MultiLineString(out)
+    if isinstance(geometry, (_LinearRing, _Polygon, _MultiPolygon)):
+        return _MultiPolygon(out)
+
+
+def _contains_shapely_geometries(i):
+    &#34;&#34;&#34;Check if input is an iterable containing only Shapely geometries.&#34;&#34;&#34;
+    if isinstance(i, _BaseGeometry):
+        return False
+    try:
+        # Check all elements in i are Shapely geometries
+        for j in i:
+            if not isinstance(j, _BaseGeometry):
+                break
+        else:
+            return True
+    except TypeError:  # i is not iterable
+        pass
+    return False
+
+
+def _is_pygplates_geometry(geom):
+    return isinstance(
+        geom,
+        (
+            pygplates.GeometryOnSphere,
+            pygplates.LatLonPoint,
+            pygplates.ReconstructedFeatureGeometry,
+            pygplates.ResolvedTopologicalLine,
+            pygplates.ResolvedTopologicalBoundary,
+            pygplates.ResolvedTopologicalNetwork,
+        ),
+    )
+
+
+def _contains_pygplates_geometries(i):
+    &#34;&#34;&#34;Check if input is an iterable containing only PyGPlates geometries.&#34;&#34;&#34;
+    if _is_pygplates_geometry(i):
+        return False
+    try:
+        # Check all elements in i are PyGPlates geometries
+        for j in i:
+            if not _is_pygplates_geometry(j):
+                break
+        else:
+            return True
+    except TypeError:  # i is not iterable
+        pass
+    return False</code></pre>
+</details>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-functions">Functions</h2>
+<dl>
+<dt id="gplately.geometry.pygplates_to_shapely"><code class="name flex">
+<span>def <span class="ident">pygplates_to_shapely</span></span>(<span>geometry, central_meridian=0.0, tessellate_degrees=None, validate=False, force_ccw=False, explode=False)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Convert one or more PyGPlates or GPlately geometries to Shapely format.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>geometry</code></strong> :&ensp;<code>pygplates.GeometryOnSphere</code> or <code>pygplates.LatLonPoint</code> or <code>list</code></dt>
+<dd>The geometry or geometries to convert.</dd>
+<dt><strong><code>central_meridian</code></strong> :&ensp;<code>float</code>, default<code>: 0.0</code></dt>
+<dd>The central meridian around which to wrap geometries;
+geometries will be split at the antimeridian.</dd>
+<dt><strong><code>tessellate_degrees</code></strong> :&ensp;<code>float</code>, optional</dt>
+<dd>If provided, the geometry will be tessellated to this
+resolution prior to conversion.</dd>
+<dt><strong><code>validate</code></strong> :&ensp;<code>bool</code>, default<code>: False</code></dt>
+<dd>Attempt to ensure output geometry is valid by applying a buffer of 0.</dd>
+<dt><strong><code>force_ccw</code></strong> :&ensp;<code>bool</code>, default<code>: False</code></dt>
+<dd>Ensure the coordinates of the output geometry are counter-clockwise
+(only applies to polygons).</dd>
+<dt><strong><code>explode</code></strong> :&ensp;<code>bool</code>, default<code>: False</code></dt>
+<dd>Convert multi-part output geometries to multiple single-part
+geometries.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><strong><code>output_geometry</code></strong> :&ensp;<code>shapely.geometry.base.BaseGeometry</code> or <code>list</code></dt>
+<dd>Converted Shapely geometry or geometries.</dd>
+</dl>
+<h2 id="notes">Notes</h2>
+<p>If a single input geometry was passed, <code>output_geometry</code> will be a
+subclass of <code>shapely.geometry.base.BaseGeometry</code>. Otherwise,
+<code>output_geometry</code> will be a list of the same length as the input.</p>
+<p>Input geometries that were split while wrapping around
+<code>central_meridian</code> will produce multi-part output geometries, unless
+<code>explode=True</code> is specified.</p>
+<p>Input geometry types are converted as follows:
+- <code><a title="gplately.geometry.PointOnSphere" href="#gplately.geometry.PointOnSphere">PointOnSphere</a></code> or <code><a title="gplately.geometry.LatLonPoint" href="#gplately.geometry.LatLonPoint">LatLonPoint</a></code>:
+<code>Point</code>
+- <code><a title="gplately.geometry.MultiPointOnSphere" href="#gplately.geometry.MultiPointOnSphere">MultiPointOnSphere</a></code>:
+<code>MultiPoint</code>
+- <code><a title="gplately.geometry.PolylineOnSphere" href="#gplately.geometry.PolylineOnSphere">PolylineOnSphere</a></code>:
+<code>LineString</code> or
+<code>MultiLineString</code>
+- <code><a title="gplately.geometry.PolygonOnSphere" href="#gplately.geometry.PolygonOnSphere">PolygonOnSphere</a></code>:
+<code>Polygon</code> or
+<code>MultiPolygon</code></p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def pygplates_to_shapely(
+    geometry,
+    central_meridian=0.0,
+    tessellate_degrees=None,
+    validate=False,
+    force_ccw=False,
+    explode=False
+):
+    &#34;&#34;&#34;Convert one or more PyGPlates or GPlately geometries to Shapely format.
+
+    Parameters
+    ----------
+    geometry : pygplates.GeometryOnSphere or pygplates.LatLonPoint or list
+        The geometry or geometries to convert.
+    central_meridian : float, default: 0.0
+        The central meridian around which to wrap geometries;
+        geometries will be split at the antimeridian.
+    tessellate_degrees : float, optional
+        If provided, the geometry will be tessellated to this
+        resolution prior to conversion.
+    validate : bool, default: False
+        Attempt to ensure output geometry is valid by applying a buffer of 0.
+    force_ccw : bool, default: False
+        Ensure the coordinates of the output geometry are counter-clockwise
+        (only applies to polygons).
+    explode : bool, default: False
+        Convert multi-part output geometries to multiple single-part
+        geometries.
+
+    Returns
+    -------
+    output_geometry : shapely.geometry.base.BaseGeometry or list
+        Converted Shapely geometry or geometries.
+
+    Notes
+    -----
+    If a single input geometry was passed, `output_geometry` will be a
+    subclass of `shapely.geometry.base.BaseGeometry`. Otherwise,
+    `output_geometry` will be a list of the same length as the input.
+
+    Input geometries that were split while wrapping around
+    `central_meridian` will produce multi-part output geometries, unless
+    `explode=True` is specified.
+
+    Input geometry types are converted as follows:
+        - `PointOnSphere` or `LatLonPoint`:
+            `Point`
+        - `MultiPointOnSphere`:
+            `MultiPoint`
+        - `PolylineOnSphere`:
+            `LineString` or
+            `MultiLineString`
+        - `PolygonOnSphere`:
+            `Polygon` or
+            `MultiPolygon`
+    &#34;&#34;&#34;
+    if _contains_pygplates_geometries(geometry):
+        return [
+            pygplates_to_shapely(
+                i,
+                central_meridian=central_meridian,
+                tessellate_degrees=tessellate_degrees,
+                validate=validate,
+                force_ccw=force_ccw,
+            )
+            for i in geometry
+        ]
+
+    if isinstance(geometry, pygplates.LatLonPoint):
+        geometry = geometry.to_point_on_sphere()
+    if isinstance(geometry, pygplates.ReconstructedFeatureGeometry):
+        geometry = geometry.get_reconstructed_geometry()
+    if isinstance(
+        geometry,
+        (
+            pygplates.ResolvedTopologicalLine,
+            pygplates.ResolvedTopologicalBoundary,
+            pygplates.ResolvedTopologicalNetwork,
+        ),
+    ):
+        geometry = geometry.get_resolved_geometry()
+    if not isinstance(geometry, pygplates.GeometryOnSphere):
+        raise TypeError(&#34;Invalid geometry type: &#34; + str(type(geometry)))
+
+    wrapper = pygplates.DateLineWrapper(central_meridian=central_meridian)
+    wrapped = wrapper.wrap(geometry, tessellate_degrees=tessellate_degrees)
+
+    if isinstance(wrapped, pygplates.LatLonPoint):
+        return _Point(wrapped.to_lat_lon()[::-1])
+    if isinstance(wrapped, pygplates.DateLineWrapper.LatLonMultiPoint):
+        points = wrapped.get_points()
+        return _MultiPoint([i.to_lat_lon()[::-1] for i in points])
+
+    output_geoms = []
+    output_type = None
+    for i in wrapped:
+        if isinstance(i, pygplates.DateLineWrapper.LatLonPolyline):
+            tmp = _LineString([j.to_lat_lon()[::-1] for j in i.get_points()])
+            output_geoms.append(tmp)
+            output_type = _MultiLineString
+        elif isinstance(i, pygplates.DateLineWrapper.LatLonPolygon):
+            tmp = np.array([j.to_lat_lon()[::-1] for j in i.get_exterior_points()])
+            # tmp[:,1] = np.clip(tmp[:,1], -89, 89) # clip polygons near poles
+            tmp = _Polygon(tmp)
+            if (
+                force_ccw
+                and tmp.exterior is not None
+                and not tmp.exterior.is_ccw
+            ):
+                tmp = _Polygon(list(tmp.exterior.coords)[::-1])
+                # tmp.exterior.coords = list(tmp.exterior.coords)[::-1]
+            if validate:
+                tmp = tmp.buffer(0.0)
+            # this is for pole-clipped polygons turned into MultiPolygons
+            if isinstance(tmp, _MultiPolygon):
+                #for geom in list(tmp):
+                for geom in tmp.geoms:
+                    output_geoms.append(geom)
+            else:
+                output_geoms.append(tmp)
+            output_type = _MultiPolygon
+        else:
+            raise TypeError(
+                &#34;Unrecognised output from `pygplates.DateLineWrapper.wrap`: &#34;
+                + str(type(i))
+            )
+    if output_type is None:
+        raise TypeError(
+            &#34;Unrecognised output from `pygplates.DateLineWrapper.wrap`: &#34;
+            + str(type(wrapped[0]))
+        )
+    # Empty geometries can sometimes occur by this point, causing nearly all
+    # subsequent geometric operations to fail
+    output_geoms = [i for i in output_geoms if not i.is_empty]
+    if force_ccw:
+        output_geoms = [_ensure_ccw(i) for i in output_geoms]
+    if len(output_geoms) == 1:
+        return output_geoms[0]
+    if explode:
+        return output_geoms
+    return output_type(output_geoms)</code></pre>
+</details>
+</dd>
+<dt id="gplately.geometry.shapely_to_pygplates"><code class="name flex">
+<span>def <span class="ident">shapely_to_pygplates</span></span>(<span>geometry)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Convert one or more Shapely geometries to gplately format.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>geometry</code></strong> :&ensp;<code>shapely.geometry.base.BaseGeometry</code> or <code>list</code></dt>
+<dd>The geometry or geometries to convert.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><strong><code>output_geometry</code></strong> :&ensp;<code><a title="gplately.geometry.GeometryOnSphere" href="#gplately.geometry.GeometryOnSphere">GeometryOnSphere</a></code> or <code>list</code></dt>
+<dd>Converted gplately geometry or geometries.</dd>
+</dl>
+<h2 id="notes">Notes</h2>
+<p>If a single input geometry was passed, <code>output_geometry</code> will be a
+subclass of <code><a title="gplately.geometry.GeometryOnSphere" href="#gplately.geometry.GeometryOnSphere">GeometryOnSphere</a></code>. Otherwise, <code>output_geometry</code>
+will be a list of <code><a title="gplately.geometry.GeometryOnSphere" href="#gplately.geometry.GeometryOnSphere">GeometryOnSphere</a></code>, of the same length as
+the input.</p>
+<p>Input geometry types are converted as follows:
+- <code>Point</code>: <code><a title="gplately.geometry.PointOnSphere" href="#gplately.geometry.PointOnSphere">PointOnSphere</a></code>
+- <code>MultiPoint</code>: <code><a title="gplately.geometry.MultiPointOnSphere" href="#gplately.geometry.MultiPointOnSphere">MultiPointOnSphere</a></code>
+- <code>LineString</code>: <code><a title="gplately.geometry.PolylineOnSphere" href="#gplately.geometry.PolylineOnSphere">PolylineOnSphere</a></code>
+- <code>LinearRing</code> or <code>Polygon</code>: <code><a title="gplately.geometry.PolygonOnSphere" href="#gplately.geometry.PolygonOnSphere">PolygonOnSphere</a></code></p>
+<p>Multi-part input geometry types other than <code>MultiPoint</code> will be treated
+as an iterable of their component single-part geometries.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def shapely_to_pygplates(geometry):
+    &#34;&#34;&#34;Convert one or more Shapely geometries to gplately format.
+
+    Parameters
+    ----------
+    geometry : shapely.geometry.base.BaseGeometry or list
+        The geometry or geometries to convert.
+
+    Returns
+    -------
+    output_geometry : GeometryOnSphere or list
+        Converted gplately geometry or geometries.
+
+    Notes
+    -----
+    If a single input geometry was passed, `output_geometry` will be a
+    subclass of `GeometryOnSphere`. Otherwise, `output_geometry`
+    will be a list of `GeometryOnSphere`, of the same length as
+    the input.
+
+    Input geometry types are converted as follows:
+        - `Point`: `PointOnSphere`
+        - `MultiPoint`: `MultiPointOnSphere`
+        - `LineString`: `PolylineOnSphere`
+        - `LinearRing` or `Polygon`: `PolygonOnSphere`
+
+    Multi-part input geometry types other than `MultiPoint` will be treated
+    as an iterable of their component single-part geometries.
+    &#34;&#34;&#34;
+    pygplates_conversion = {
+        _Point: PointOnSphere,
+        _MultiPoint: MultiPointOnSphere,
+        _LineString: PolylineOnSphere,
+        _LinearRing: PolygonOnSphere,
+        _Polygon: PolygonOnSphere,
+    }
+
+    if isinstance(geometry, _BaseMultipartGeometry) and not isinstance(
+        geometry, _MultiPoint
+    ):
+        return [shapely_to_pygplates(i) for i in geometry.geoms]
+    if _contains_shapely_geometries(geometry):
+        # Recursively convert all elements in iterable of geometries
+        out = []
+        for i in geometry:
+            tmp = shapely_to_pygplates(i)
+            if isinstance(tmp, pygplates.GeometryOnSphere):
+                # Output is a single geometry
+                out.append(tmp)
+            else:
+                # Output should be a list of geometries
+                out.extend(tmp)
+        return out
+
+    for input_type in pygplates_conversion:
+        if isinstance(geometry, input_type):
+            output_type = pygplates_conversion[input_type]
+            break
+    else:
+        raise TypeError(&#34;Invalid geometry type: &#34; + str(type(geometry)))
+    if isinstance(geometry, _MultiPoint):
+        coords = np.array([i.coords for i in geometry.geoms]).squeeze()
+    elif isinstance(geometry, _Polygon):
+        if geometry.exterior is None:
+            raise AttributeError(&#34;Polygon geometry has no exterior&#34;)
+        coords = np.array(geometry.exterior.coords).squeeze()[:-1, ...]
+    elif hasattr(geometry, &#34;coords&#34;):
+        coords = np.array(geometry.coords).squeeze()
+    else:
+        raise TypeError(&#34;Invalid geometry type: &#34; + str(type(geometry)))
+    if coords.ndim &gt; 1:
+        coords = np.fliplr(coords)
+    else:
+        coords = np.flip(coords)
+    return output_type(coords)</code></pre>
+</details>
+</dd>
+<dt id="gplately.geometry.wrap_geometries"><code class="name flex">
+<span>def <span class="ident">wrap_geometries</span></span>(<span>geometries, central_meridian=0.0, tessellate_degrees=None, validate=False, force_ccw=False, explode=False)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Wrap one or more Shapely geometries around a central meridian.</p>
+<p>Wrapped geometries will be split at the antimeridian.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>geometry</code></strong> :&ensp;<code>shapely.geometry.base.BaseGeometry</code> or <code>list</code></dt>
+<dd>The geometry or geometries to wrap.</dd>
+<dt><strong><code>central_meridian</code></strong> :&ensp;<code>float</code>, default<code>: 0.0</code></dt>
+<dd>The central meridian around which to wrap geometries;
+geometries will be split at the antimeridian.</dd>
+<dt><strong><code>tessellate_degrees</code></strong> :&ensp;<code>float</code>, optional</dt>
+<dd>If provided, the geometry will be tessellated to this
+resolution prior to wrapping.</dd>
+<dt><strong><code>validate</code></strong> :&ensp;<code>bool</code>, default<code>: False</code></dt>
+<dd>Attempt to ensure output geometry is valid by applying a buffer of 0.</dd>
+<dt><strong><code>force_ccw</code></strong> :&ensp;<code>bool</code>, default<code>: False</code></dt>
+<dd>Ensure the coordinates of the output geometry are counter-clockwise
+(only applies to polygons).</dd>
+<dt><strong><code>explode</code></strong> :&ensp;<code>bool</code>, default<code>: False</code></dt>
+<dd>Convert multi-part output geometries to multiple single-part
+geometries.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><strong><code>output_geometries</code></strong> :&ensp;<code>shapely.geometry.base.BaseGeometry</code> or <code>list</code></dt>
+<dd>Wrapped Shapely geometry or geometries.</dd>
+</dl>
+<h2 id="notes">Notes</h2>
+<p>If a single input geometry was passed, <code>output_geometry</code> will be a
+subclass of <code>shapely.geometry.base.BaseGeometry</code>. Otherwise,
+<code>output_geometry</code> will be a list of the same length as the input,
+unless <code>explode=True</code> is specified.</p>
+<p>Input geometries that were split while wrapping around
+<code>central_meridian</code> will produce multi-part output geometries, unless
+<code>explode=True</code> is specified.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def wrap_geometries(
+    geometries,
+    central_meridian=0.0,
+    tessellate_degrees=None,
+    validate=False,
+    force_ccw=False,
+    explode=False,
+):
+    &#34;&#34;&#34;Wrap one or more Shapely geometries around a central meridian.
+
+    Wrapped geometries will be split at the antimeridian.
+
+    Parameters
+    ----------
+    geometry : shapely.geometry.base.BaseGeometry or list
+        The geometry or geometries to wrap.
+    central_meridian : float, default: 0.0
+        The central meridian around which to wrap geometries;
+        geometries will be split at the antimeridian.
+    tessellate_degrees : float, optional
+        If provided, the geometry will be tessellated to this
+        resolution prior to wrapping.
+    validate : bool, default: False
+        Attempt to ensure output geometry is valid by applying a buffer of 0.
+    force_ccw : bool, default: False
+        Ensure the coordinates of the output geometry are counter-clockwise
+        (only applies to polygons).
+    explode : bool, default: False
+        Convert multi-part output geometries to multiple single-part
+        geometries.
+
+    Returns
+    -------
+    output_geometries : shapely.geometry.base.BaseGeometry or list
+        Wrapped Shapely geometry or geometries.
+
+    Notes
+    -----
+    If a single input geometry was passed, `output_geometry` will be a
+    subclass of `shapely.geometry.base.BaseGeometry`. Otherwise,
+    `output_geometry` will be a list of the same length as the input,
+    unless `explode=True` is specified.
+
+    Input geometries that were split while wrapping around
+    `central_meridian` will produce multi-part output geometries, unless
+    `explode=True` is specified.
+    &#34;&#34;&#34;
+    if isinstance(geometries, _BaseGeometry):
+        return _wrap_geometry(
+            geometry=geometries,
+            central_meridian=central_meridian,
+            tessellate_degrees=tessellate_degrees,
+            validate=validate,
+            force_ccw=force_ccw,
+            explode=explode,
+        )
+    else:
+        out = []
+        for i in geometries:
+            tmp = _wrap_geometry(
+                geometry=i,
+                central_meridian=central_meridian,
+                tessellate_degrees=tessellate_degrees,
+                validate=validate,
+                force_ccw=force_ccw,
+                explode=explode,
+            )
+            if isinstance(tmp, _BaseGeometry):
+                out.append(tmp)
+            else:
+                out.extend(tmp)
+        return out</code></pre>
+</details>
+</dd>
+</dl>
+</section>
+<section>
+<h2 class="section-title" id="header-classes">Classes</h2>
+<dl>
+<dt id="gplately.geometry.GeometryOnSphere"><code class="flex name class">
+<span>class <span class="ident">GeometryOnSphere</span></span>
+<span>(</span><span>...)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Class to mix in <code>to_shapely</code> method to all GPlately geometry classes.</p>
+<p>All GPlately geometry classes inherit from this class, in addition
+to their PyGPlates base class.</p>
+<p>Raises an exception
+This class cannot be instantiated from Python</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class GeometryOnSphere(pygplates.GeometryOnSphere):
+    &#34;&#34;&#34;Class to mix in `to_shapely` method to all GPlately geometry classes.
+
+    All GPlately geometry classes inherit from this class, in addition
+    to their PyGPlates base class.
+    &#34;&#34;&#34;
+
+    def to_shapely(
+        self,
+        central_meridian=0.0,
+        tessellate_degrees=None,
+        validate=False,
+        force_ccw=False,
+        explode=False,
+    ):
+        &#34;&#34;&#34;Convert to Shapely geometry.
+
+        See Also
+        --------
+        pygplates_to_shapely : Equivalent function.
+        &#34;&#34;&#34;
+        return pygplates_to_shapely(
+            self,
+            central_meridian=central_meridian,
+            tessellate_degrees=tessellate_degrees,
+            validate=validate,
+            force_ccw=force_ccw,
+            explode=explode,
+        )
+
+    @classmethod
+    def from_shapely(cls, geom):
+        converted = shapely_to_pygplates(geom)
+        return cls(converted)</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>pygplates.pygplates.GeometryOnSphere</li>
+<li>Boost.Python.instance</li>
+</ul>
+<h3>Subclasses</h3>
+<ul class="hlist">
+<li><a title="gplately.geometry.MultiPointOnSphere" href="#gplately.geometry.MultiPointOnSphere">MultiPointOnSphere</a></li>
+<li><a title="gplately.geometry.PointOnSphere" href="#gplately.geometry.PointOnSphere">PointOnSphere</a></li>
+<li><a title="gplately.geometry.PolygonOnSphere" href="#gplately.geometry.PolygonOnSphere">PolygonOnSphere</a></li>
+<li><a title="gplately.geometry.PolylineOnSphere" href="#gplately.geometry.PolylineOnSphere">PolylineOnSphere</a></li>
+</ul>
+<h3>Static methods</h3>
+<dl>
+<dt id="gplately.geometry.GeometryOnSphere.from_shapely"><code class="name flex">
+<span>def <span class="ident">from_shapely</span></span>(<span>geom)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@classmethod
+def from_shapely(cls, geom):
+    converted = shapely_to_pygplates(geom)
+    return cls(converted)</code></pre>
+</details>
+</dd>
+</dl>
+<h3>Methods</h3>
+<dl>
+<dt id="gplately.geometry.GeometryOnSphere.to_shapely"><code class="name flex">
+<span>def <span class="ident">to_shapely</span></span>(<span>self, central_meridian=0.0, tessellate_degrees=None, validate=False, force_ccw=False, explode=False)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Convert to Shapely geometry.</p>
+<h2 id="see-also">See Also</h2>
+<dl>
+<dt><code><a title="gplately.geometry.pygplates_to_shapely" href="#gplately.geometry.pygplates_to_shapely">pygplates_to_shapely()</a></code></dt>
+<dd>Equivalent function.</dd>
+</dl></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def to_shapely(
+    self,
+    central_meridian=0.0,
+    tessellate_degrees=None,
+    validate=False,
+    force_ccw=False,
+    explode=False,
+):
+    &#34;&#34;&#34;Convert to Shapely geometry.
+
+    See Also
+    --------
+    pygplates_to_shapely : Equivalent function.
+    &#34;&#34;&#34;
+    return pygplates_to_shapely(
+        self,
+        central_meridian=central_meridian,
+        tessellate_degrees=tessellate_degrees,
+        validate=validate,
+        force_ccw=force_ccw,
+        explode=explode,
+    )</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+<dt id="gplately.geometry.LatLonPoint"><code class="flex name class">
+<span>class <span class="ident">LatLonPoint</span></span>
+<span>(</span><span>...)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>GPlately equivalent of <code>pygplates.LatLonPoint</code>, incorporating
+<code>to_shapely</code> method</p>
+<p><strong>init</strong>(latitude, longitude)
+Create a <em>LatLonPoint</em> instance from a <em>latitude</em> and <em>longitude</em>.</p>
+<p>:param latitude: the latitude (in degrees)
+:type latitude: float
+:param longitude: the longitude (in degrees)
+:type longitude: float
+:raises: InvalidLatLonError if <em>latitude</em> or <em>longitude</em> is invalid</p>
+<p>::</p>
+<pre><code>point = pygplates.LatLonPoint(latitude, longitude)
+</code></pre>
+<p>!!! note "Note:&ensp;<em>latitude</em> must satisfy :meth:<code>is_valid_latitude</code> and <em>longitude</em> must satisfy :meth:<code>is_valid_longitude</code>, otherwise <em>InvalidLatLonError</em> will be raised."</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class LatLonPoint(pygplates.LatLonPoint):
+    &#34;&#34;&#34;GPlately equivalent of `pygplates.LatLonPoint`, incorporating
+    `to_shapely` method
+    &#34;&#34;&#34;
+
+    def to_shapely(self, central_meridian=0.0, tessellate_degrees=None):
+        return pygplates_to_shapely(
+            self,
+            central_meridian=central_meridian,
+            tessellate_degrees=tessellate_degrees,
+        )</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>pygplates.pygplates.LatLonPoint</li>
+<li>Boost.Python.instance</li>
+</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="gplately.geometry.LatLonPoint.to_shapely"><code class="name flex">
+<span>def <span class="ident">to_shapely</span></span>(<span>self, central_meridian=0.0, tessellate_degrees=None)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def to_shapely(self, central_meridian=0.0, tessellate_degrees=None):
+    return pygplates_to_shapely(
+        self,
+        central_meridian=central_meridian,
+        tessellate_degrees=tessellate_degrees,
+    )</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+<dt id="gplately.geometry.MultiPointOnSphere"><code class="flex name class">
+<span>class <span class="ident">MultiPointOnSphere</span></span>
+<span>(</span><span>...)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>GPlately equivalent of <code>pygplates.MultiPointOnSphere</code>, incorporating
+<code>to_shapely</code> method</p>
+<p><strong>init</strong>(&hellip;)
+A <em>MultiPointOnSphere</em> object can be constructed in more than one way&hellip;</p>
+<p><strong>init</strong>(points)
+Create a multi-point from a sequence of (x,y,z) or (latitude,longitude) points.</p>
+<p>:param points: A sequence of (x,y,z) points, or (latitude,longitude) points (in degrees).
+:type points: Any sequence of :class:<code><a title="gplately.geometry.PointOnSphere" href="#gplately.geometry.PointOnSphere">PointOnSphere</a></code> or :class:<code><a title="gplately.geometry.LatLonPoint" href="#gplately.geometry.LatLonPoint">LatLonPoint</a></code> or tuple (float,float,float) or tuple (float,float)
+:raises: InvalidLatLonError if any <em>latitude</em> or <em>longitude</em> is invalid
+:raises: ViolatedUnitVectorInvariantError if any (x,y,z) is not unit magnitude
+:raises: InsufficientPointsForMultiPointConstructionError if point sequence is empty</p>
+<p>!!! note "Note:&ensp;The sequence must contain at least one point, otherwise <em>InsufficientPointsForMultiPointConstructionError</em> will be raised."</p>
+<p>The following example shows a few different ways to create a :class:<code>multi-point&lt;MultiPointOnSphere&gt;</code>:
+::</p>
+<pre><code>points = []
+points.append(pygplates.PointOnSphere(...))
+points.append(pygplates.PointOnSphere(...))
+points.append(pygplates.PointOnSphere(...))
+multi_point = pygplates.MultiPointOnSphere(points)
+
+points = []
+points.append((lat1,lon1))
+points.append((lat2,lon2))
+points.append((lat3,lon3))
+multi_point = pygplates.MultiPointOnSphere(points)
+
+points = []
+points.append([x1,y1,z1])
+points.append([x2,y2,z2])
+points.append([x3,y3,z3])
+multi_point = pygplates.MultiPointOnSphere(points)
+</code></pre>
+<p>If you have latitude/longitude values but they are not a sequence of tuples or if the latitude/longitude order is swapped then the following examples demonstrate how you could restructure them:
+::</p>
+<pre><code># Flat lat/lon array.
+points = numpy.array([lat1, lon1, lat2, lon2, lat3, lon3])
+multi_point = pygplates.MultiPointOnSphere(zip(points[::2],points[1::2]))
+
+# Flat lon/lat list (ie, different latitude/longitude order).
+points = [lon1, lat1, lon2, lat2, lon3, lat3]
+multi_point = pygplates.MultiPointOnSphere(zip(points[1::2],points[::2]))
+
+# Separate lat/lon arrays.
+lats = numpy.array([lat1, lat2, lat3])
+lons = numpy.array([lon1, lon2, lon3])
+multi_point = pygplates.MultiPointOnSphere(zip(lats,lons))
+
+# Lon/lat list of tuples (ie, different latitude/longitude order).
+points = [(lon1, lat1), (lon2, lat2), (lon3, lat3)]
+multi_point = pygplates.MultiPointOnSphere([(lat,lon) for lon, lat in points])
+</code></pre>
+<p><strong>init</strong>(geometry)
+Create a multipoint from a :class:<code><a title="gplately.geometry.GeometryOnSphere" href="#gplately.geometry.GeometryOnSphere">GeometryOnSphere</a></code>.</p>
+<p>:param geometry: The point, multi-point, polyline or polygon geometry to convert from.
+:type geometry: :class:<code><a title="gplately.geometry.GeometryOnSphere" href="#gplately.geometry.GeometryOnSphere">GeometryOnSphere</a></code></p>
+<p>To create a MultiPointOnSphere from any geometry type:
+::</p>
+<pre><code>multipoint = pygplates.MultiPointOnSphere(geometry)
+</code></pre>
+<p>!!! note "Note:&ensp;If <em>geometry</em> is a polygon then points from both its exterior and interior rings are added to the multipoint."</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class MultiPointOnSphere(pygplates.MultiPointOnSphere, GeometryOnSphere):
+    &#34;&#34;&#34;GPlately equivalent of `pygplates.MultiPointOnSphere`, incorporating
+    `to_shapely` method
+    &#34;&#34;&#34;
+
+    pass</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>pygplates.pygplates.MultiPointOnSphere</li>
+<li><a title="gplately.geometry.GeometryOnSphere" href="#gplately.geometry.GeometryOnSphere">GeometryOnSphere</a></li>
+<li>pygplates.pygplates.GeometryOnSphere</li>
+<li>Boost.Python.instance</li>
+</ul>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="gplately.geometry.GeometryOnSphere" href="#gplately.geometry.GeometryOnSphere">GeometryOnSphere</a></b></code>:
+<ul class="hlist">
+<li><code><a title="gplately.geometry.GeometryOnSphere.to_shapely" href="#gplately.geometry.GeometryOnSphere.to_shapely">to_shapely</a></code></li>
+</ul>
+</li>
+</ul>
+</dd>
+<dt id="gplately.geometry.PointOnSphere"><code class="flex name class">
+<span>class <span class="ident">PointOnSphere</span></span>
+<span>(</span><span>...)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>GPlately equivalent of <code>pygplates.PointOnSphere</code>, incorporating
+<code>to_shapely</code> method</p>
+<p><strong>init</strong>(&hellip;)
+A <em>PointOnSphere</em> object can be constructed in more than one way&hellip;</p>
+<p><strong>init</strong>(point)
+Create a <em>PointOnSphere</em> instance from a (x,y,z) or (latitude,longitude) point.</p>
+<p>:param point: (x,y,z) point, or (latitude,longitude) point (in degrees)
+:type point: :class:<code><a title="gplately.geometry.PointOnSphere" href="#gplately.geometry.PointOnSphere">PointOnSphere</a></code> or :class:<code><a title="gplately.geometry.LatLonPoint" href="#gplately.geometry.LatLonPoint">LatLonPoint</a></code> or tuple (float,float,float) or tuple (float,float)
+:raises: InvalidLatLonError if <em>latitude</em> or <em>longitude</em> is invalid
+:raises: ViolatedUnitVectorInvariantError if (x,y,z) is not unit magnitude</p>
+<p>The following example shows a few different ways to use this method:
+::</p>
+<pre><code>point = pygplates.PointOnSphere((x,y,z))
+point = pygplates.PointOnSphere([x,y,z])
+point = pygplates.PointOnSphere(numpy.array([x,y,z]))
+point = pygplates.PointOnSphere(pygplates.LatLonPoint(latitude,longitude))
+point = pygplates.PointOnSphere((latitude,longitude))
+point = pygplates.PointOnSphere([latitude,longitude])
+point = pygplates.PointOnSphere(numpy.array([latitude,longitude]))
+point = pygplates.PointOnSphere(pygplates.PointOnSphere(x,y,z))
+</code></pre>
+<p><strong>init</strong>(latitude, longitude)
+Create a <em>PointOnSphere</em> instance from a <em>latitude</em> and <em>longitude</em>.</p>
+<p>:param latitude: the latitude (in degrees)
+:type latitude: float
+:param longitude: the longitude (in degrees)
+:type longitude: float
+:raises: InvalidLatLonError if <em>latitude</em> or <em>longitude</em> is invalid</p>
+<p>!!! note "Note:&ensp;<em>latitude</em> must satisfy :meth:<code>LatLonPoint.is_valid_latitude</code> and <em>longitude</em> must satisfy :meth:<code>LatLonPoint.is_valid_longitude</code>, otherwise <em>InvalidLatLonError</em> will be raised."</p>
+<p>::</p>
+<pre><code>point = pygplates.PointOnSphere(latitude, longitude)
+</code></pre>
+<p><strong>init</strong>(x, y, z, [normalise=False])
+Create a <em>PointOnSphere</em> instance from a 3D cartesian coordinate consisting of floating-point coordinates <em>x</em>, <em>y</em> and <em>z</em>.</p>
+<p>:param x: the <em>x</em> component of the 3D unit vector
+:type x: float
+:param y: the <em>y</em> component of the 3D unit vector
+:type y: float
+:param z: the <em>z</em> component of the 3D unit vector
+:type z: float
+:param normalise: whether to normalise (to unit-length magnitude) the vector (x,y,z) - defaults to <code>False</code>
+:type normalise: bool
+:raises: ViolatedUnitVectorInvariantError if <em>normalise</em> is <code>False</code> and the resulting vector does not have unit magnitude
+:raises: UnableToNormaliseZeroVectorError if <em>normalise</em> is <code>True</code> and the resulting vector is (0,0,0) (ie, has zero magnitude)</p>
+<p><strong>NOTE:</strong> If the length of the 3D vector (x,y,z) is not 1.0 then you should set <em>normalise</em> to <code>True</code> (to normalise the vector components such that the 3D vector has unit magnitude). Otherwise if (x,y,z) is not unit magnitude then <em>ViolatedUnitVectorInvariantError</em> is raised.
+::</p>
+<pre><code># If you know that (x,y,z) has unit magnitude (is on the unit globe).
+point = pygplates.PointOnSphere(x, y, z)
+
+# If (x,y,z) might not be on the unit globe.
+point = pygplates.PointOnSphere(x, y, z, normalise=True)
+</code></pre></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class PointOnSphere(pygplates.PointOnSphere, GeometryOnSphere):
+    &#34;&#34;&#34;GPlately equivalent of `pygplates.PointOnSphere`, incorporating
+    `to_shapely` method
+    &#34;&#34;&#34;
+
+    pass</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>pygplates.pygplates.PointOnSphere</li>
+<li><a title="gplately.geometry.GeometryOnSphere" href="#gplately.geometry.GeometryOnSphere">GeometryOnSphere</a></li>
+<li>pygplates.pygplates.GeometryOnSphere</li>
+<li>Boost.Python.instance</li>
+</ul>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="gplately.geometry.GeometryOnSphere" href="#gplately.geometry.GeometryOnSphere">GeometryOnSphere</a></b></code>:
+<ul class="hlist">
+<li><code><a title="gplately.geometry.GeometryOnSphere.to_shapely" href="#gplately.geometry.GeometryOnSphere.to_shapely">to_shapely</a></code></li>
+</ul>
+</li>
+</ul>
+</dd>
+<dt id="gplately.geometry.PolygonOnSphere"><code class="flex name class">
+<span>class <span class="ident">PolygonOnSphere</span></span>
+<span>(</span><span>...)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>GPlately equivalent of <code>pygplates.PolygonOnSphere</code>, incorporating
+<code>to_shapely</code> method</p>
+<p><strong>init</strong>(&hellip;)
+A <em>PolygonOnSphere</em> object can be constructed in more than one way&hellip;</p>
+<p><strong>init</strong>(exterior_ring, [interior_rings])
+Create a polygon from an exterior ring and optional interior rings, where each ring is a sequence of (x,y,z) or (latitude,longitude) points.</p>
+<p>:param exterior_ring: Exterior ring sequence of (x,y,z) points, or (latitude,longitude) points (in degrees).
+:type exterior_ring: Any sequence of :class:<code><a title="gplately.geometry.PointOnSphere" href="#gplately.geometry.PointOnSphere">PointOnSphere</a></code> or :class:<code><a title="gplately.geometry.LatLonPoint" href="#gplately.geometry.LatLonPoint">LatLonPoint</a></code> or tuple (float,float,float) or tuple (float,float).
+:param interior_rings: Optional sequence of interior rings where each ring is a sequence of (x,y,z) points, or (latitude,longitude) points (in degrees).
+:type interior_rings: Any sequence of rings (where ring is any sequence of :class:<code><a title="gplately.geometry.PointOnSphere" href="#gplately.geometry.PointOnSphere">PointOnSphere</a></code> or :class:<code><a title="gplately.geometry.LatLonPoint" href="#gplately.geometry.LatLonPoint">LatLonPoint</a></code> or tuple (float,float,float) or tuple (float,float)), or None.
+:raises: InvalidLatLonError if any <em>latitude</em> or <em>longitude</em> is invalid
+:raises: ViolatedUnitVectorInvariantError if any (x,y,z) is not unit magnitude
+:raises: InvalidPointsForPolygonConstructionError if any ring has less than three points or if any two points (adjacent in a ring) are antipodal to each other (on opposite sides of the globe)</p>
+<p>!!! note "Note:&ensp;Each ring must contain at least three points in order for the polygon to be valid, otherwise <em>InvalidPointsForPolygonConstructionError</em> will be raised."</p>
+<p>During creation, a :class:<code>GreatCircleArc</code> is created between each adjacent pair of of points in a ring - see :meth:<code>get_segments</code>. The last arc in each ring is created between the last and first points in that ring to close the loop of the ring. For this reason you do <em>not</em> need to ensure that the first and last points in a ring have the same position (although it's not an error if this is the case because the final arc in the ring will then just have a zero length).</p>
+<p>It is <em>not</em> an error for adjacent points in a ring to be coincident. In this case each :class:<code>GreatCircleArc</code> between two such adjacent points will have zero length (:meth:<code>GreatCircleArc.is_zero_length</code> will return <code>True</code>) and will have no rotation axis (:meth:<code>GreatCircleArc.get_rotation_axis</code> will raise an error).</p>
+<p>The following example shows a few different ways to create a :class:<code>polygon&lt;PolygonOnSphere&gt;</code>:
+::</p>
+<pre><code># Polygon with only an exterior ring.
+points = []
+points.append(pygplates.PointOnSphere(...))
+points.append(pygplates.PointOnSphere(...))
+points.append(pygplates.PointOnSphere(...))
+polygon = pygplates.PolygonOnSphere(points)
+
+# Polygon with only an exterior ring.
+points = []
+points.append((lat1,lon1))
+points.append((lat2,lon2))
+points.append((lat3,lon3))
+polygon = pygplates.PolygonOnSphere(points)
+
+# Polygon with only an exterior ring.
+points = []
+points.append([x1,y1,z1])
+points.append([x2,y2,z2])
+points.append([x3,y3,z3])
+polygon = pygplates.PolygonOnSphere(points)
+
+# Polygon with an exterior ring and interior rings.
+exterior_ring = []
+exterior_ring.append(pygplates.PointOnSphere(...))
+...
+interior_rings = []
+first_interior_ring = []
+first_interior_ring.append(pygplates.PointOnSphere(...))
+...
+interior_rings.append(first_interior_ring)
+second_interior_ring = []
+second_interior_ring.append(pygplates.PointOnSphere(...))
+...
+interior_rings.append(second_interior_ring)
+polygon = pygplates.PolygonOnSphere(exterior_ring, interior_rings)
+</code></pre>
+<p>If you have latitude/longitude values but they are not a sequence of tuples or if the latitude/longitude order is swapped then the following examples demonstrate how you could restructure them:
+::</p>
+<pre><code># Flat lat/lon array.
+points = numpy.array([lat1, lon1, lat2, lon2, lat3, lon3])
+polygon = pygplates.PolygonOnSphere(zip(points[::2],points[1::2]))
+
+# Flat lon/lat list (ie, different latitude/longitude order).
+points = [lon1, lat1, lon2, lat2, lon3, lat3]
+polygon = pygplates.PolygonOnSphere(zip(points[1::2],points[::2]))
+
+# Separate lat/lon arrays.
+lats = numpy.array([lat1, lat2, lat3])
+lons = numpy.array([lon1, lon2, lon3])
+polygon = pygplates.PolygonOnSphere(zip(lats,lons))
+
+# Lon/lat list of tuples (ie, different latitude/longitude order).
+points = [(lon1, lat1), (lon2, lat2), (lon3, lat3)]
+polygon = pygplates.PolygonOnSphere([(lat,lon) for lon, lat in points])
+</code></pre>
+<p>!!! versionchanged "Changed in version:&ensp;0.36"
+Can now optionally specify interior rings (in addition to the exterior ring).</p>
+<p><strong>init</strong>(geometry, [allow_one_or_two_points=True])
+Create a polygon from a :class:<code><a title="gplately.geometry.GeometryOnSphere" href="#gplately.geometry.GeometryOnSphere">GeometryOnSphere</a></code>.</p>
+<p>:param geometry: The point, multi-point, polyline or polygon geometry to convert from.
+:type geometry: :class:<code><a title="gplately.geometry.GeometryOnSphere" href="#gplately.geometry.GeometryOnSphere">GeometryOnSphere</a></code>
+:param allow_one_or_two_points: Whether <em>geometry</em> is allowed to be a :class:<code><a title="gplately.geometry.PointOnSphere" href="#gplately.geometry.PointOnSphere">PointOnSphere</a></code> or a :class:<code><a title="gplately.geometry.MultiPointOnSphere" href="#gplately.geometry.MultiPointOnSphere">MultiPointOnSphere</a></code> containing only one or two points - if allowed then one of those points is duplicated since a PolygonOnSphere requires at least three points - default is <code>True</code>.
+:type allow_one_or_two_points: bool
+:raises: InvalidPointsForPolygonConstructionError if <em>geometry</em> is a :class:<code><a title="gplately.geometry.PointOnSphere" href="#gplately.geometry.PointOnSphere">PointOnSphere</a></code>, or a :class:<code><a title="gplately.geometry.MultiPointOnSphere" href="#gplately.geometry.MultiPointOnSphere">MultiPointOnSphere</a></code> with one or two points (and <em>allow_one_or_two_points</em> is <code>False</code>), or if any two consecutive points in a :class:<code><a title="gplately.geometry.MultiPointOnSphere" href="#gplately.geometry.MultiPointOnSphere">MultiPointOnSphere</a></code> are antipodal to each other (on opposite sides of the globe)</p>
+<p>If <em>allow_one_or_two_points</em> is <code>True</code> then <em>geometry</em> can be :class:<code><a title="gplately.geometry.PointOnSphere" href="#gplately.geometry.PointOnSphere">PointOnSphere</a></code>, :class:<code><a title="gplately.geometry.MultiPointOnSphere" href="#gplately.geometry.MultiPointOnSphere">MultiPointOnSphere</a></code>, :class:<code><a title="gplately.geometry.PolylineOnSphere" href="#gplately.geometry.PolylineOnSphere">PolylineOnSphere</a></code> or :class:<code><a title="gplately.geometry.PolygonOnSphere" href="#gplately.geometry.PolygonOnSphere">PolygonOnSphere</a></code>. However if <em>allow_one_or_two_points</em> is <code>False</code> then <em>geometry</em> must be a :class:<code><a title="gplately.geometry.PolygonOnSphere" href="#gplately.geometry.PolygonOnSphere">PolygonOnSphere</a></code>, or a :class:<code><a title="gplately.geometry.MultiPointOnSphere" href="#gplately.geometry.MultiPointOnSphere">MultiPointOnSphere</a></code> or :class:<code><a title="gplately.geometry.PolylineOnSphere" href="#gplately.geometry.PolylineOnSphere">PolylineOnSphere</a></code> containing at least three points to avoid raising <em>InvalidPointsForPolygonConstructionError</em>.</p>
+<p>During creation, a :class:<code>GreatCircleArc</code> is created between each adjacent pair of geometry points - see :meth:<code>get_segments</code>.</p>
+<p>It is <em>not</em> an error for adjacent points in a geometry sequence to be coincident. In this case each :class:<code>GreatCircleArc</code> between two such adjacent points will have zero length (:meth:<code>GreatCircleArc.is_zero_length</code> will return <code>True</code>) and will have no rotation axis (:meth:<code>GreatCircleArc.get_rotation_axis</code> will raise an error). However if two such adjacent points are antipodal (on opposite sides of the globe) then InvalidPointsForPolygonConstructionError will be raised</p>
+<p>To create a PolygonOnSphere from any geometry type:
+::</p>
+<pre><code>polygon = pygplates.PolygonOnSphere(geometry)
+</code></pre>
+<p>To create a PolygonOnSphere from any geometry containing at least three points:
+::</p>
+<pre><code>try:
+    polygon = pygplates.PolygonOnSphere(geometry, allow_one_or_two_points=False)
+except pygplates.InvalidPointsForPolygonConstructionError:
+    ... # Handle failure to convert 'geometry' to a PolygonOnSphere.
+</code></pre>
+<p>!!! note "Note:&ensp;The created polygon will have no interior rings unless <em>geometry</em> is also a :class:<code><a title="gplately.geometry.PolygonOnSphere" href="#gplately.geometry.PolygonOnSphere">PolygonOnSphere</a></code> and has interior rings."</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class PolygonOnSphere(pygplates.PolygonOnSphere, GeometryOnSphere):
+    &#34;&#34;&#34;GPlately equivalent of `pygplates.PolygonOnSphere`, incorporating
+    `to_shapely` method
+    &#34;&#34;&#34;
+
+    pass</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>pygplates.pygplates.PolygonOnSphere</li>
+<li><a title="gplately.geometry.GeometryOnSphere" href="#gplately.geometry.GeometryOnSphere">GeometryOnSphere</a></li>
+<li>pygplates.pygplates.GeometryOnSphere</li>
+<li>Boost.Python.instance</li>
+</ul>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="gplately.geometry.GeometryOnSphere" href="#gplately.geometry.GeometryOnSphere">GeometryOnSphere</a></b></code>:
+<ul class="hlist">
+<li><code><a title="gplately.geometry.GeometryOnSphere.to_shapely" href="#gplately.geometry.GeometryOnSphere.to_shapely">to_shapely</a></code></li>
+</ul>
+</li>
+</ul>
+</dd>
+<dt id="gplately.geometry.PolylineOnSphere"><code class="flex name class">
+<span>class <span class="ident">PolylineOnSphere</span></span>
+<span>(</span><span>...)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>GPlately equivalent of <code>pygplates.PolylineOnSphere</code>, incorporating
+<code>to_shapely</code> method</p>
+<p><strong>init</strong>(&hellip;)
+A <em>PolylineOnSphere</em> object can be constructed in more than one way&hellip;</p>
+<p><strong>init</strong>(points)
+Create a polyline from a sequence of (x,y,z) or (latitude,longitude) points.</p>
+<p>:param points: A sequence of (x,y,z) points, or (latitude,longitude) points (in degrees).
+:type points: Any sequence of :class:<code><a title="gplately.geometry.PointOnSphere" href="#gplately.geometry.PointOnSphere">PointOnSphere</a></code> or :class:<code><a title="gplately.geometry.LatLonPoint" href="#gplately.geometry.LatLonPoint">LatLonPoint</a></code> or tuple (float,float,float) or tuple (float,float)
+:raises: InvalidLatLonError if any <em>latitude</em> or <em>longitude</em> is invalid
+:raises: ViolatedUnitVectorInvariantError if any (x,y,z) is not unit magnitude
+:raises: InvalidPointsForPolylineConstructionError if sequence has less than two points or if any two points (adjacent in the <em>points</em> sequence) are antipodal to each other (on opposite sides of the globe)</p>
+<p>!!! note "Note:&ensp;The sequence must contain at least two points in order to be a valid polyline, otherwise <em>InvalidPointsForPolylineConstructionError</em> will be raised."</p>
+<p>During creation, a :class:<code>GreatCircleArc</code> is created between each adjacent pair of points in <em>points</em> - see :meth:<code>get_segments</code>.</p>
+<p>It is <em>not</em> an error for adjacent points in the sequence to be coincident. In this case each :class:<code>GreatCircleArc</code> between two such adjacent points will have zero length (:meth:<code>GreatCircleArc.is_zero_length</code> will return <code>True</code>) and will have no rotation axis (:meth:<code>GreatCircleArc.get_rotation_axis</code> will raise an error). However if two such adjacent points are antipodal (on opposite sides of the globe) then InvalidPointsForPolylineConstructionError will be raised.</p>
+<p>The following example shows a few different ways to create a :class:<code>polyline&lt;PolylineOnSphere&gt;</code>:
+::</p>
+<pre><code>points = []
+points.append(pygplates.PointOnSphere(...))
+points.append(pygplates.PointOnSphere(...))
+points.append(pygplates.PointOnSphere(...))
+polyline = pygplates.PolylineOnSphere(points)
+
+points = []
+points.append((lat1,lon1))
+points.append((lat2,lon2))
+points.append((lat3,lon3))
+polyline = pygplates.PolylineOnSphere(points)
+
+points = []
+points.append([x1,y1,z1])
+points.append([x2,y2,z2])
+points.append([x3,y3,z3])
+polyline = pygplates.PolylineOnSphere(points)
+</code></pre>
+<p>If you have latitude/longitude values but they are not a sequence of tuples or if the latitude/longitude order is swapped then the following examples demonstrate how you could restructure them:
+::</p>
+<pre><code># Flat lat/lon array.
+points = numpy.array([lat1, lon1, lat2, lon2, lat3, lon3])
+polyline = pygplates.PolylineOnSphere(zip(points[::2],points[1::2]))
+
+# Flat lon/lat list (ie, different latitude/longitude order).
+points = [lon1, lat1, lon2, lat2, lon3, lat3]
+polyline = pygplates.PolylineOnSphere(zip(points[1::2],points[::2]))
+
+# Separate lat/lon arrays.
+lats = numpy.array([lat1, lat2, lat3])
+lons = numpy.array([lon1, lon2, lon3])
+polyline = pygplates.PolylineOnSphere(zip(lats,lons))
+
+# Lon/lat list of tuples (ie, different latitude/longitude order).
+points = [(lon1, lat1), (lon2, lat2), (lon3, lat3)]
+polyline = pygplates.PolylineOnSphere([(lat,lon) for lon, lat in points])
+</code></pre>
+<p><strong>init</strong>(geometry, [allow_one_point=True])
+Create a polyline from a :class:<code><a title="gplately.geometry.GeometryOnSphere" href="#gplately.geometry.GeometryOnSphere">GeometryOnSphere</a></code>.</p>
+<p>:param geometry: The point, multi-point, polyline or polygon geometry to convert from.
+:type geometry: :class:<code><a title="gplately.geometry.GeometryOnSphere" href="#gplately.geometry.GeometryOnSphere">GeometryOnSphere</a></code>
+:param allow_one_point: Whether <em>geometry</em> is allowed to be a :class:<code><a title="gplately.geometry.PointOnSphere" href="#gplately.geometry.PointOnSphere">PointOnSphere</a></code> or a :class:<code><a title="gplately.geometry.MultiPointOnSphere" href="#gplately.geometry.MultiPointOnSphere">MultiPointOnSphere</a></code> containing only a single point - if allowed then that single point is duplicated since a PolylineOnSphere requires at least two points - default is <code>True</code>.
+:type allow_one_point: bool
+:raises: InvalidPointsForPolylineConstructionError if <em>geometry</em> is a :class:<code><a title="gplately.geometry.PointOnSphere" href="#gplately.geometry.PointOnSphere">PointOnSphere</a></code> (and <em>allow_one_point</em> is <code>False</code>), or a :class:<code><a title="gplately.geometry.MultiPointOnSphere" href="#gplately.geometry.MultiPointOnSphere">MultiPointOnSphere</a></code> with one point (and <em>allow_one_point</em> is <code>False</code>), or if any two consecutive points in a :class:<code><a title="gplately.geometry.MultiPointOnSphere" href="#gplately.geometry.MultiPointOnSphere">MultiPointOnSphere</a></code> are antipodal to each other (on opposite sides of the globe)</p>
+<p>If <em>allow_one_point</em> is <code>True</code> then <em>geometry</em> can be :class:<code><a title="gplately.geometry.PointOnSphere" href="#gplately.geometry.PointOnSphere">PointOnSphere</a></code>, :class:<code><a title="gplately.geometry.MultiPointOnSphere" href="#gplately.geometry.MultiPointOnSphere">MultiPointOnSphere</a></code>, :class:<code><a title="gplately.geometry.PolylineOnSphere" href="#gplately.geometry.PolylineOnSphere">PolylineOnSphere</a></code> or :class:<code><a title="gplately.geometry.PolygonOnSphere" href="#gplately.geometry.PolygonOnSphere">PolygonOnSphere</a></code>. However if <em>allow_one_point</em> is <code>False</code> then <em>geometry</em> must be a :class:<code><a title="gplately.geometry.PolylineOnSphere" href="#gplately.geometry.PolylineOnSphere">PolylineOnSphere</a></code>, or a :class:<code><a title="gplately.geometry.PolygonOnSphere" href="#gplately.geometry.PolygonOnSphere">PolygonOnSphere</a></code>, or a :class:<code><a title="gplately.geometry.MultiPointOnSphere" href="#gplately.geometry.MultiPointOnSphere">MultiPointOnSphere</a></code> containing at least two points to avoid raising <em>InvalidPointsForPolylineConstructionError</em>.</p>
+<p>During creation, a :class:<code>GreatCircleArc</code> is created between each adjacent pair of geometry points - see :meth:<code>get_segments</code>.</p>
+<p>It is <em>not</em> an error for adjacent points in a geometry sequence to be coincident. In this case each :class:<code>GreatCircleArc</code> between two such adjacent points will have zero length (:meth:<code>GreatCircleArc.is_zero_length</code> will return <code>True</code>) and will have no rotation axis (:meth:<code>GreatCircleArc.get_rotation_axis</code> will raise an error). However if two such adjacent points are antipodal (on opposite sides of the globe) then InvalidPointsForPolylineConstructionError will be raised</p>
+<p>To create a PolylineOnSphere from any geometry type:
+::</p>
+<pre><code>polyline = pygplates.PolylineOnSphere(geometry)
+</code></pre>
+<p>To create a PolylineOnSphere from any geometry containing at least two points:
+::</p>
+<pre><code>try:
+    polyline = pygplates.PolylineOnSphere(geometry, allow_one_point=False)
+except pygplates.InvalidPointsForPolylineConstructionError:
+    ... # Handle failure to convert 'geometry' to a PolylineOnSphere.
+</code></pre>
+<p>!!! note "Note:&ensp;If <em>geometry</em> is a polygon then only its exterior ring is converted (interior rings are ignored)."</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class PolylineOnSphere(pygplates.PolylineOnSphere, GeometryOnSphere):
+    &#34;&#34;&#34;GPlately equivalent of `pygplates.PolylineOnSphere`, incorporating
+    `to_shapely` method
+    &#34;&#34;&#34;
+
+    pass</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li>pygplates.pygplates.PolylineOnSphere</li>
+<li><a title="gplately.geometry.GeometryOnSphere" href="#gplately.geometry.GeometryOnSphere">GeometryOnSphere</a></li>
+<li>pygplates.pygplates.GeometryOnSphere</li>
+<li>Boost.Python.instance</li>
+</ul>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="gplately.geometry.GeometryOnSphere" href="#gplately.geometry.GeometryOnSphere">GeometryOnSphere</a></b></code>:
+<ul class="hlist">
+<li><code><a title="gplately.geometry.GeometryOnSphere.to_shapely" href="#gplately.geometry.GeometryOnSphere.to_shapely">to_shapely</a></code></li>
+</ul>
+</li>
+</ul>
+</dd>
+</dl>
+</section>
+</article>
+<nav id="sidebar">
+<header>
+<a class="homelink" rel="home" title="GPlately Home" href="https://gplates.github.io/gplately/">
+<img src="https://raw.githubusercontent.com/GPlates/gplately/master/Notebooks/NotebookFiles/ReadMe_Files/GPlately_Main_logo.png" alt="GPlately logo" height="172" width="205">
+</a>
+</header>
+<h1>Index</h1>
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3>Super-module</h3>
+<ul>
+<li><code><a title="gplately" href="index.html">gplately</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-functions">Functions</a></h3>
+<ul class="">
+<li><code><a title="gplately.geometry.pygplates_to_shapely" href="#gplately.geometry.pygplates_to_shapely">pygplates_to_shapely</a></code></li>
+<li><code><a title="gplately.geometry.shapely_to_pygplates" href="#gplately.geometry.shapely_to_pygplates">shapely_to_pygplates</a></code></li>
+<li><code><a title="gplately.geometry.wrap_geometries" href="#gplately.geometry.wrap_geometries">wrap_geometries</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-classes">Classes</a></h3>
+<ul>
+<li>
+<h4><code><a title="gplately.geometry.GeometryOnSphere" href="#gplately.geometry.GeometryOnSphere">GeometryOnSphere</a></code></h4>
+<ul class="">
+<li><code><a title="gplately.geometry.GeometryOnSphere.from_shapely" href="#gplately.geometry.GeometryOnSphere.from_shapely">from_shapely</a></code></li>
+<li><code><a title="gplately.geometry.GeometryOnSphere.to_shapely" href="#gplately.geometry.GeometryOnSphere.to_shapely">to_shapely</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="gplately.geometry.LatLonPoint" href="#gplately.geometry.LatLonPoint">LatLonPoint</a></code></h4>
+<ul class="">
+<li><code><a title="gplately.geometry.LatLonPoint.to_shapely" href="#gplately.geometry.LatLonPoint.to_shapely">to_shapely</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="gplately.geometry.MultiPointOnSphere" href="#gplately.geometry.MultiPointOnSphere">MultiPointOnSphere</a></code></h4>
+</li>
+<li>
+<h4><code><a title="gplately.geometry.PointOnSphere" href="#gplately.geometry.PointOnSphere">PointOnSphere</a></code></h4>
+</li>
+<li>
+<h4><code><a title="gplately.geometry.PolygonOnSphere" href="#gplately.geometry.PolygonOnSphere">PolygonOnSphere</a></code></h4>
+</li>
+<li>
+<h4><code><a title="gplately.geometry.PolylineOnSphere" href="#gplately.geometry.PolylineOnSphere">PolylineOnSphere</a></code></h4>
+</li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc"><cite>pdoc</cite> 0.8.1</a>.</p>
+</footer>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+<script>hljs.initHighlightingOnLoad()</script>
+</body>
+</html>

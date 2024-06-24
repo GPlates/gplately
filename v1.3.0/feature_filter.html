@@ -1,0 +1,706 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1" />
+<meta name="generator" content="pdoc 0.8.1" />
+<title>gplately.feature_filter API documentation</title>
+<meta name="description" content="" />
+<link href='https://cdnjs.cloudflare.com/ajax/libs/normalize/8.0.0/normalize.min.css' rel='stylesheet'>
+<link href='https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/8.0.0/sanitize.min.css' rel='stylesheet'>
+<link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/github.min.css" rel="stylesheet">
+<style>.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:30px;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:1em 0 .50em 0}h3{font-size:1.4em;margin:25px 0 10px 0}h4{margin:0;font-size:105%}a{color:#058;text-decoration:none;transition:color .3s ease-in-out}a:hover{color:#e82}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900}pre code{background:#f8f8f8;font-size:.8em;line-height:1.4em}code{background:#f2f2f1;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{background:#f8f8f8;border:0;border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0;padding:1ex}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-weight:bold;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}.admonition{padding:.1em .5em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.item .name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul{padding-left:1.5em}.toc > ul > li{margin-top:.5em}}</style>
+<style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
+<script async src='https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS_CHTML'></script>
+</head>
+<body>
+<main>
+<article id="content">
+<header>
+<h1 class="title">Module <code>gplately.feature_filter</code></h1>
+</header>
+<section id="section-intro">
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">import abc
+import argparse
+from typing import List
+
+import pygplates
+
+
+class FeatureFilter(metaclass=abc.ABCMeta):
+    @classmethod
+    def __subclasshook__(cls, subclass):
+        return (
+            hasattr(subclass, &#34;should_keep&#34;)
+            and callable(subclass.should_keep)
+            or NotImplemented
+        )
+
+    @abc.abstractmethod
+    def should_keep(self, feature: pygplates.Feature) -&gt; bool:
+        &#34;&#34;&#34;This abstract method must be implemented in subclass.
+
+        :param feature: pygplates.Feature
+
+        :returns: true if the feature should be kept; false otherwise
+        &#34;&#34;&#34;
+
+        raise NotImplementedError
+
+
+class FeatureNameFilter(FeatureFilter):
+    &#34;&#34;&#34;filter features by name
+
+    for example:
+        FeatureNameFilter([&#39;Africa&#39;, &#39;Asia&#39;]) -- keep features who name contains &#39;Africa&#39; or &#39;Asia&#39;
+        FeatureNameFilter([&#39;Africa&#39;, &#39;Asia&#39;], exclude=True) -- keep features who name does not contain &#39;Africa&#39; or &#39;Asia&#39;
+        FeatureNameFilter([&#39;Africa&#39;, &#39;Asia&#39;], exact_match=True) -- keep features who name is &#39;Africa&#39; or &#39;Asia&#39;
+        FeatureNameFilter([&#39;Africa&#39;, &#39;Asia&#39;], exclude=True, exact_match=True) -- keep features who name is not &#39;Africa&#39; or &#39;Asia&#39;
+        FeatureNameFilter([&#39;Africa&#39;, &#39;Asia&#39;], exclude=True, exact_match=True, case_sensitive=True) -- keep features who name is not &#39;Africa&#39; or &#39;Asia&#39; (case sensitive)
+    &#34;&#34;&#34;
+
+    def __init__(
+        self, names: List[str], exact_match=False, case_sensitive=False, exclude=False
+    ):
+        self.names = names
+        self.exact_match = exact_match
+        self.case_sensitive = case_sensitive
+        self.exclude = exclude
+
+    def check_name(self, name_1: str, name_2: str) -&gt; bool:
+        &#34;&#34;&#34;check if two names are the same or name_2 contains name_1&#34;&#34;&#34;
+        if not self.case_sensitive:
+            name_1_tmp = name_1.lower()
+            name_2_tmp = name_2.lower()
+        else:
+            name_1_tmp = name_1
+            name_2_tmp = name_2
+        if self.exact_match:
+            return name_1_tmp == name_2_tmp
+        else:
+            return name_1_tmp in name_2_tmp
+
+    def should_keep(self, feature: pygplates.Feature) -&gt; bool:
+        if self.exclude:
+            for name in self.names:
+                if self.check_name(name, feature.get_name()):
+                    return False
+            return True
+        else:
+            for name in self.names:
+                if self.check_name(name, feature.get_name()):
+                    return True
+            return False
+
+
+class PlateIDFilter(FeatureFilter):
+    &#34;&#34;&#34;filter features by plate ID
+
+    for example:
+        PlateIDFilter([101,201,301]) -- keep features whose plate id is 101 or 201 or 301
+        PlateIDFilter([101,201,301], exclude=True) -- keep features whose plate id is not 101 nor 201 nor 301
+
+    &#34;&#34;&#34;
+
+    def __init__(self, pids: List[int], exclude=False):
+        self.pids = pids
+        self.exclude = exclude
+
+    def should_keep(self, feature: pygplates.Feature) -&gt; bool:
+        if not self.exclude and feature.get_reconstruction_plate_id() in self.pids:
+            return True
+        if self.exclude and feature.get_reconstruction_plate_id() not in self.pids:
+            return True
+        return False
+
+
+class BirthAgeFilter(FeatureFilter):
+    &#34;&#34;&#34;filter features by the time of appearance
+
+    for example:
+        BirthAgeFilter(500) -- keep features whose time of apprearance are bigger than 500
+        BirthAgeFilter(500, keep_older=False) --  keep features whose time of apprearance are smaller than 500
+
+    :param age: the age criterion
+    :param keep_older: if True, return True when the feature&#39;s birth age is older than the age criterion. If False, otherwise.
+
+    &#34;&#34;&#34;
+
+    def __init__(self, age: float, keep_older=True):
+        self.age = age
+        self.keep_older = keep_older
+
+    def should_keep(self, feature: pygplates.Feature) -&gt; bool:
+        valid_time = feature.get_valid_time(None)
+        if valid_time:
+            if self.keep_older and valid_time[0] &gt; self.age:
+                return True
+            if not self.keep_older and valid_time[0] &lt; self.age:
+                return True
+        return False
+
+
+def filter_feature_collection(
+    feature_collection: pygplates.FeatureCollection, filters: List[FeatureFilter]
+):
+    &#34;&#34;&#34;Filter feature collection by various criteria.
+
+    See scripts/test_feature_filter.sh for usage examples.
+    &#34;&#34;&#34;
+    new_feature_collection = pygplates.FeatureCollection()
+    for feature in feature_collection:
+        keep_flag = True
+        for filter in filters:
+            if not filter.should_keep(feature):
+                keep_flag = False
+                break
+        if keep_flag:
+            new_feature_collection.add(feature)
+    return new_feature_collection
+
+
+def add_parser(subparser):
+    &#34;&#34;&#34;add feature filter command line argument parser&#34;&#34;&#34;
+    filter_cmd = subparser.add_parser(
+        &#34;filter&#34;,
+        help=&#34;Filter feature collection by various criteria.&#34;,
+        description=filter_feature_collection.__doc__,
+    )
+    filter_cmd.formatter_class = argparse.RawDescriptionHelpFormatter
+
+    # feature filter command arguments
+    filter_cmd.set_defaults(func=run_filter_feature_collection)
+    filter_cmd.add_argument(&#34;filter_input_file&#34;, type=str)
+    filter_cmd.add_argument(&#34;filter_output_file&#34;, type=str)
+
+    name_group = filter_cmd.add_mutually_exclusive_group()
+    name_group.add_argument(&#34;-n&#34;, &#34;--names&#34;, type=str, dest=&#34;names&#34;, nargs=&#34;+&#34;)
+    name_group.add_argument(
+        &#34;--exclude-names&#34;, type=str, dest=&#34;exclude_names&#34;, nargs=&#34;+&#34;
+    )
+
+    pid_group = filter_cmd.add_mutually_exclusive_group()
+    pid_group.add_argument(&#34;-p&#34;, &#34;--pids&#34;, type=int, dest=&#34;pids&#34;, nargs=&#34;+&#34;)
+    pid_group.add_argument(&#34;--exclude-pids&#34;, type=int, dest=&#34;exclude_pids&#34;, nargs=&#34;+&#34;)
+
+    birth_age_group = filter_cmd.add_mutually_exclusive_group()
+    birth_age_group.add_argument(
+        &#34;-a&#34;, &#34;--min-birth-age&#34;, type=float, dest=&#34;min_birth_age&#34;
+    )
+    birth_age_group.add_argument(&#34;--max-birth-age&#34;, type=float, dest=&#34;max_birth_age&#34;)
+
+    filter_cmd.add_argument(
+        &#34;--case-sensitive&#34;, dest=&#34;case_sensitive&#34;, action=&#34;store_true&#34;
+    )
+    filter_cmd.add_argument(&#34;--exact-match&#34;, dest=&#34;exact_match&#34;, action=&#34;store_true&#34;)
+
+
+def run_filter_feature_collection(args):
+    &#34;&#34;&#34;Filter the input feature collection according to command line arguments.&#34;&#34;&#34;
+    input_feature_collection = pygplates.FeatureCollection(args.filter_input_file)
+
+    filters = []
+    if args.names:
+        filters.append(
+            FeatureNameFilter(
+                args.names,
+                exact_match=args.exact_match,
+                case_sensitive=args.case_sensitive,
+            )
+        )
+    elif args.exclude_names:
+        filters.append(
+            FeatureNameFilter(
+                args.exclude_names,
+                exclude=True,
+                exact_match=args.exact_match,
+                case_sensitive=args.case_sensitive,
+            )
+        )
+
+    if args.pids:
+        filters.append(PlateIDFilter(args.pids))
+    elif args.exclude_pids:
+        filters.append(PlateIDFilter(args.exclude_pids, exclude=True))
+
+    # print(args.max_birth_age)
+    if args.max_birth_age is not None:
+        filters.append(BirthAgeFilter(args.max_birth_age, keep_older=False))
+    elif args.min_birth_age is not None:
+        filters.append(BirthAgeFilter(args.min_birth_age))
+
+    new_fc = filter_feature_collection(
+        input_feature_collection,
+        filters,
+    )
+
+    new_fc.write(args.filter_output_file)
+    print(
+        f&#34;Done! The filtered feature collection has been saved to {args.filter_output_file}.&#34;
+    )</code></pre>
+</details>
+</section>
+<section>
+</section>
+<section>
+</section>
+<section>
+<h2 class="section-title" id="header-functions">Functions</h2>
+<dl>
+<dt id="gplately.feature_filter.add_parser"><code class="name flex">
+<span>def <span class="ident">add_parser</span></span>(<span>subparser)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>add feature filter command line argument parser</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def add_parser(subparser):
+    &#34;&#34;&#34;add feature filter command line argument parser&#34;&#34;&#34;
+    filter_cmd = subparser.add_parser(
+        &#34;filter&#34;,
+        help=&#34;Filter feature collection by various criteria.&#34;,
+        description=filter_feature_collection.__doc__,
+    )
+    filter_cmd.formatter_class = argparse.RawDescriptionHelpFormatter
+
+    # feature filter command arguments
+    filter_cmd.set_defaults(func=run_filter_feature_collection)
+    filter_cmd.add_argument(&#34;filter_input_file&#34;, type=str)
+    filter_cmd.add_argument(&#34;filter_output_file&#34;, type=str)
+
+    name_group = filter_cmd.add_mutually_exclusive_group()
+    name_group.add_argument(&#34;-n&#34;, &#34;--names&#34;, type=str, dest=&#34;names&#34;, nargs=&#34;+&#34;)
+    name_group.add_argument(
+        &#34;--exclude-names&#34;, type=str, dest=&#34;exclude_names&#34;, nargs=&#34;+&#34;
+    )
+
+    pid_group = filter_cmd.add_mutually_exclusive_group()
+    pid_group.add_argument(&#34;-p&#34;, &#34;--pids&#34;, type=int, dest=&#34;pids&#34;, nargs=&#34;+&#34;)
+    pid_group.add_argument(&#34;--exclude-pids&#34;, type=int, dest=&#34;exclude_pids&#34;, nargs=&#34;+&#34;)
+
+    birth_age_group = filter_cmd.add_mutually_exclusive_group()
+    birth_age_group.add_argument(
+        &#34;-a&#34;, &#34;--min-birth-age&#34;, type=float, dest=&#34;min_birth_age&#34;
+    )
+    birth_age_group.add_argument(&#34;--max-birth-age&#34;, type=float, dest=&#34;max_birth_age&#34;)
+
+    filter_cmd.add_argument(
+        &#34;--case-sensitive&#34;, dest=&#34;case_sensitive&#34;, action=&#34;store_true&#34;
+    )
+    filter_cmd.add_argument(&#34;--exact-match&#34;, dest=&#34;exact_match&#34;, action=&#34;store_true&#34;)</code></pre>
+</details>
+</dd>
+<dt id="gplately.feature_filter.filter_feature_collection"><code class="name flex">
+<span>def <span class="ident">filter_feature_collection</span></span>(<span>feature_collection: pygplates.pygplates.FeatureCollection, filters: List[<a title="gplately.feature_filter.FeatureFilter" href="#gplately.feature_filter.FeatureFilter">FeatureFilter</a>])</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Filter feature collection by various criteria.</p>
+<p>See scripts/test_feature_filter.sh for usage examples.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def filter_feature_collection(
+    feature_collection: pygplates.FeatureCollection, filters: List[FeatureFilter]
+):
+    &#34;&#34;&#34;Filter feature collection by various criteria.
+
+    See scripts/test_feature_filter.sh for usage examples.
+    &#34;&#34;&#34;
+    new_feature_collection = pygplates.FeatureCollection()
+    for feature in feature_collection:
+        keep_flag = True
+        for filter in filters:
+            if not filter.should_keep(feature):
+                keep_flag = False
+                break
+        if keep_flag:
+            new_feature_collection.add(feature)
+    return new_feature_collection</code></pre>
+</details>
+</dd>
+<dt id="gplately.feature_filter.run_filter_feature_collection"><code class="name flex">
+<span>def <span class="ident">run_filter_feature_collection</span></span>(<span>args)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Filter the input feature collection according to command line arguments.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def run_filter_feature_collection(args):
+    &#34;&#34;&#34;Filter the input feature collection according to command line arguments.&#34;&#34;&#34;
+    input_feature_collection = pygplates.FeatureCollection(args.filter_input_file)
+
+    filters = []
+    if args.names:
+        filters.append(
+            FeatureNameFilter(
+                args.names,
+                exact_match=args.exact_match,
+                case_sensitive=args.case_sensitive,
+            )
+        )
+    elif args.exclude_names:
+        filters.append(
+            FeatureNameFilter(
+                args.exclude_names,
+                exclude=True,
+                exact_match=args.exact_match,
+                case_sensitive=args.case_sensitive,
+            )
+        )
+
+    if args.pids:
+        filters.append(PlateIDFilter(args.pids))
+    elif args.exclude_pids:
+        filters.append(PlateIDFilter(args.exclude_pids, exclude=True))
+
+    # print(args.max_birth_age)
+    if args.max_birth_age is not None:
+        filters.append(BirthAgeFilter(args.max_birth_age, keep_older=False))
+    elif args.min_birth_age is not None:
+        filters.append(BirthAgeFilter(args.min_birth_age))
+
+    new_fc = filter_feature_collection(
+        input_feature_collection,
+        filters,
+    )
+
+    new_fc.write(args.filter_output_file)
+    print(
+        f&#34;Done! The filtered feature collection has been saved to {args.filter_output_file}.&#34;
+    )</code></pre>
+</details>
+</dd>
+</dl>
+</section>
+<section>
+<h2 class="section-title" id="header-classes">Classes</h2>
+<dl>
+<dt id="gplately.feature_filter.BirthAgeFilter"><code class="flex name class">
+<span>class <span class="ident">BirthAgeFilter</span></span>
+<span>(</span><span>age: float, keep_older=True)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>filter features by the time of appearance</p>
+<p>for example:
+BirthAgeFilter(500) &ndash; keep features whose time of apprearance are bigger than 500
+BirthAgeFilter(500, keep_older=False) &ndash;
+keep features whose time of apprearance are smaller than 500</p>
+<p>:param age: the age criterion
+:param keep_older: if True, return True when the feature's birth age is older than the age criterion. If False, otherwise.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class BirthAgeFilter(FeatureFilter):
+    &#34;&#34;&#34;filter features by the time of appearance
+
+    for example:
+        BirthAgeFilter(500) -- keep features whose time of apprearance are bigger than 500
+        BirthAgeFilter(500, keep_older=False) --  keep features whose time of apprearance are smaller than 500
+
+    :param age: the age criterion
+    :param keep_older: if True, return True when the feature&#39;s birth age is older than the age criterion. If False, otherwise.
+
+    &#34;&#34;&#34;
+
+    def __init__(self, age: float, keep_older=True):
+        self.age = age
+        self.keep_older = keep_older
+
+    def should_keep(self, feature: pygplates.Feature) -&gt; bool:
+        valid_time = feature.get_valid_time(None)
+        if valid_time:
+            if self.keep_older and valid_time[0] &gt; self.age:
+                return True
+            if not self.keep_older and valid_time[0] &lt; self.age:
+                return True
+        return False</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="gplately.feature_filter.FeatureFilter" href="#gplately.feature_filter.FeatureFilter">FeatureFilter</a></li>
+</ul>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="gplately.feature_filter.FeatureFilter" href="#gplately.feature_filter.FeatureFilter">FeatureFilter</a></b></code>:
+<ul class="hlist">
+<li><code><a title="gplately.feature_filter.FeatureFilter.should_keep" href="#gplately.feature_filter.FeatureFilter.should_keep">should_keep</a></code></li>
+</ul>
+</li>
+</ul>
+</dd>
+<dt id="gplately.feature_filter.FeatureFilter"><code class="flex name class">
+<span>class <span class="ident">FeatureFilter</span></span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class FeatureFilter(metaclass=abc.ABCMeta):
+    @classmethod
+    def __subclasshook__(cls, subclass):
+        return (
+            hasattr(subclass, &#34;should_keep&#34;)
+            and callable(subclass.should_keep)
+            or NotImplemented
+        )
+
+    @abc.abstractmethod
+    def should_keep(self, feature: pygplates.Feature) -&gt; bool:
+        &#34;&#34;&#34;This abstract method must be implemented in subclass.
+
+        :param feature: pygplates.Feature
+
+        :returns: true if the feature should be kept; false otherwise
+        &#34;&#34;&#34;
+
+        raise NotImplementedError</code></pre>
+</details>
+<h3>Subclasses</h3>
+<ul class="hlist">
+<li><a title="gplately.feature_filter.BirthAgeFilter" href="#gplately.feature_filter.BirthAgeFilter">BirthAgeFilter</a></li>
+<li><a title="gplately.feature_filter.FeatureNameFilter" href="#gplately.feature_filter.FeatureNameFilter">FeatureNameFilter</a></li>
+<li><a title="gplately.feature_filter.PlateIDFilter" href="#gplately.feature_filter.PlateIDFilter">PlateIDFilter</a></li>
+</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="gplately.feature_filter.FeatureFilter.should_keep"><code class="name flex">
+<span>def <span class="ident">should_keep</span></span>(<span>self, feature: pygplates.pygplates.Feature) -> bool</span>
+</code></dt>
+<dd>
+<div class="desc"><p>This abstract method must be implemented in subclass.</p>
+<p>:param feature: pygplates.Feature</p>
+<p>:returns: true if the feature should be kept; false otherwise</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@abc.abstractmethod
+def should_keep(self, feature: pygplates.Feature) -&gt; bool:
+    &#34;&#34;&#34;This abstract method must be implemented in subclass.
+
+    :param feature: pygplates.Feature
+
+    :returns: true if the feature should be kept; false otherwise
+    &#34;&#34;&#34;
+
+    raise NotImplementedError</code></pre>
+</details>
+</dd>
+</dl>
+</dd>
+<dt id="gplately.feature_filter.FeatureNameFilter"><code class="flex name class">
+<span>class <span class="ident">FeatureNameFilter</span></span>
+<span>(</span><span>names: List[str], exact_match=False, case_sensitive=False, exclude=False)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>filter features by name</p>
+<p>for example:
+FeatureNameFilter(['Africa', 'Asia']) &ndash; keep features who name contains 'Africa' or 'Asia'
+FeatureNameFilter(['Africa', 'Asia'], exclude=True) &ndash; keep features who name does not contain 'Africa' or 'Asia'
+FeatureNameFilter(['Africa', 'Asia'], exact_match=True) &ndash; keep features who name is 'Africa' or 'Asia'
+FeatureNameFilter(['Africa', 'Asia'], exclude=True, exact_match=True) &ndash; keep features who name is not 'Africa' or 'Asia'
+FeatureNameFilter(['Africa', 'Asia'], exclude=True, exact_match=True, case_sensitive=True) &ndash; keep features who name is not 'Africa' or 'Asia' (case sensitive)</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class FeatureNameFilter(FeatureFilter):
+    &#34;&#34;&#34;filter features by name
+
+    for example:
+        FeatureNameFilter([&#39;Africa&#39;, &#39;Asia&#39;]) -- keep features who name contains &#39;Africa&#39; or &#39;Asia&#39;
+        FeatureNameFilter([&#39;Africa&#39;, &#39;Asia&#39;], exclude=True) -- keep features who name does not contain &#39;Africa&#39; or &#39;Asia&#39;
+        FeatureNameFilter([&#39;Africa&#39;, &#39;Asia&#39;], exact_match=True) -- keep features who name is &#39;Africa&#39; or &#39;Asia&#39;
+        FeatureNameFilter([&#39;Africa&#39;, &#39;Asia&#39;], exclude=True, exact_match=True) -- keep features who name is not &#39;Africa&#39; or &#39;Asia&#39;
+        FeatureNameFilter([&#39;Africa&#39;, &#39;Asia&#39;], exclude=True, exact_match=True, case_sensitive=True) -- keep features who name is not &#39;Africa&#39; or &#39;Asia&#39; (case sensitive)
+    &#34;&#34;&#34;
+
+    def __init__(
+        self, names: List[str], exact_match=False, case_sensitive=False, exclude=False
+    ):
+        self.names = names
+        self.exact_match = exact_match
+        self.case_sensitive = case_sensitive
+        self.exclude = exclude
+
+    def check_name(self, name_1: str, name_2: str) -&gt; bool:
+        &#34;&#34;&#34;check if two names are the same or name_2 contains name_1&#34;&#34;&#34;
+        if not self.case_sensitive:
+            name_1_tmp = name_1.lower()
+            name_2_tmp = name_2.lower()
+        else:
+            name_1_tmp = name_1
+            name_2_tmp = name_2
+        if self.exact_match:
+            return name_1_tmp == name_2_tmp
+        else:
+            return name_1_tmp in name_2_tmp
+
+    def should_keep(self, feature: pygplates.Feature) -&gt; bool:
+        if self.exclude:
+            for name in self.names:
+                if self.check_name(name, feature.get_name()):
+                    return False
+            return True
+        else:
+            for name in self.names:
+                if self.check_name(name, feature.get_name()):
+                    return True
+            return False</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="gplately.feature_filter.FeatureFilter" href="#gplately.feature_filter.FeatureFilter">FeatureFilter</a></li>
+</ul>
+<h3>Methods</h3>
+<dl>
+<dt id="gplately.feature_filter.FeatureNameFilter.check_name"><code class="name flex">
+<span>def <span class="ident">check_name</span></span>(<span>self, name_1: str, name_2: str) -> bool</span>
+</code></dt>
+<dd>
+<div class="desc"><p>check if two names are the same or name_2 contains name_1</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">def check_name(self, name_1: str, name_2: str) -&gt; bool:
+    &#34;&#34;&#34;check if two names are the same or name_2 contains name_1&#34;&#34;&#34;
+    if not self.case_sensitive:
+        name_1_tmp = name_1.lower()
+        name_2_tmp = name_2.lower()
+    else:
+        name_1_tmp = name_1
+        name_2_tmp = name_2
+    if self.exact_match:
+        return name_1_tmp == name_2_tmp
+    else:
+        return name_1_tmp in name_2_tmp</code></pre>
+</details>
+</dd>
+</dl>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="gplately.feature_filter.FeatureFilter" href="#gplately.feature_filter.FeatureFilter">FeatureFilter</a></b></code>:
+<ul class="hlist">
+<li><code><a title="gplately.feature_filter.FeatureFilter.should_keep" href="#gplately.feature_filter.FeatureFilter.should_keep">should_keep</a></code></li>
+</ul>
+</li>
+</ul>
+</dd>
+<dt id="gplately.feature_filter.PlateIDFilter"><code class="flex name class">
+<span>class <span class="ident">PlateIDFilter</span></span>
+<span>(</span><span>pids: List[int], exclude=False)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>filter features by plate ID</p>
+<p>for example:
+PlateIDFilter([101,201,301]) &ndash; keep features whose plate id is 101 or 201 or 301
+PlateIDFilter([101,201,301], exclude=True) &ndash; keep features whose plate id is not 101 nor 201 nor 301</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">class PlateIDFilter(FeatureFilter):
+    &#34;&#34;&#34;filter features by plate ID
+
+    for example:
+        PlateIDFilter([101,201,301]) -- keep features whose plate id is 101 or 201 or 301
+        PlateIDFilter([101,201,301], exclude=True) -- keep features whose plate id is not 101 nor 201 nor 301
+
+    &#34;&#34;&#34;
+
+    def __init__(self, pids: List[int], exclude=False):
+        self.pids = pids
+        self.exclude = exclude
+
+    def should_keep(self, feature: pygplates.Feature) -&gt; bool:
+        if not self.exclude and feature.get_reconstruction_plate_id() in self.pids:
+            return True
+        if self.exclude and feature.get_reconstruction_plate_id() not in self.pids:
+            return True
+        return False</code></pre>
+</details>
+<h3>Ancestors</h3>
+<ul class="hlist">
+<li><a title="gplately.feature_filter.FeatureFilter" href="#gplately.feature_filter.FeatureFilter">FeatureFilter</a></li>
+</ul>
+<h3>Inherited members</h3>
+<ul class="hlist">
+<li><code><b><a title="gplately.feature_filter.FeatureFilter" href="#gplately.feature_filter.FeatureFilter">FeatureFilter</a></b></code>:
+<ul class="hlist">
+<li><code><a title="gplately.feature_filter.FeatureFilter.should_keep" href="#gplately.feature_filter.FeatureFilter.should_keep">should_keep</a></code></li>
+</ul>
+</li>
+</ul>
+</dd>
+</dl>
+</section>
+</article>
+<nav id="sidebar">
+<header>
+<a class="homelink" rel="home" title="GPlately Home" href="https://gplates.github.io/gplately/">
+<img src="https://raw.githubusercontent.com/GPlates/gplately/master/Notebooks/NotebookFiles/ReadMe_Files/GPlately_Main_logo.png" alt="GPlately logo" height="172" width="205">
+</a>
+</header>
+<h1>Index</h1>
+<div class="toc">
+<ul></ul>
+</div>
+<ul id="index">
+<li><h3>Super-module</h3>
+<ul>
+<li><code><a title="gplately" href="index.html">gplately</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-functions">Functions</a></h3>
+<ul class="">
+<li><code><a title="gplately.feature_filter.add_parser" href="#gplately.feature_filter.add_parser">add_parser</a></code></li>
+<li><code><a title="gplately.feature_filter.filter_feature_collection" href="#gplately.feature_filter.filter_feature_collection">filter_feature_collection</a></code></li>
+<li><code><a title="gplately.feature_filter.run_filter_feature_collection" href="#gplately.feature_filter.run_filter_feature_collection">run_filter_feature_collection</a></code></li>
+</ul>
+</li>
+<li><h3><a href="#header-classes">Classes</a></h3>
+<ul>
+<li>
+<h4><code><a title="gplately.feature_filter.BirthAgeFilter" href="#gplately.feature_filter.BirthAgeFilter">BirthAgeFilter</a></code></h4>
+</li>
+<li>
+<h4><code><a title="gplately.feature_filter.FeatureFilter" href="#gplately.feature_filter.FeatureFilter">FeatureFilter</a></code></h4>
+<ul class="">
+<li><code><a title="gplately.feature_filter.FeatureFilter.should_keep" href="#gplately.feature_filter.FeatureFilter.should_keep">should_keep</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="gplately.feature_filter.FeatureNameFilter" href="#gplately.feature_filter.FeatureNameFilter">FeatureNameFilter</a></code></h4>
+<ul class="">
+<li><code><a title="gplately.feature_filter.FeatureNameFilter.check_name" href="#gplately.feature_filter.FeatureNameFilter.check_name">check_name</a></code></li>
+</ul>
+</li>
+<li>
+<h4><code><a title="gplately.feature_filter.PlateIDFilter" href="#gplately.feature_filter.PlateIDFilter">PlateIDFilter</a></code></h4>
+</li>
+</ul>
+</li>
+</ul>
+</nav>
+</main>
+<footer id="footer">
+<p>Generated by <a href="https://pdoc3.github.io/pdoc"><cite>pdoc</cite> 0.8.1</a>.</p>
+</footer>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/highlight.min.js"></script>
+<script>hljs.initHighlightingOnLoad()</script>
+</body>
+</html>
