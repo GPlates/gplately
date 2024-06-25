@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1">
 <meta name="generator" content="pdoc3 0.11.0">
 <title>gplately.ptt.cleanup_topologies API documentation</title>
-<meta name="description" content="Copyright (C) 2019 The University of Sydney, Australia …">
+<meta name="description" content="Clean up topologies, including: …">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/13.0.0/sanitize.min.css" integrity="sha512-y1dtMcuvtTMJc1yPgEqF0ZjQbhnc/bFhyvIyVNb9Zk5mIGtqVaAB1Ttl28su8AvFMOY0EwRbAe+HCLqj6W7/KA==" crossorigin>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/13.0.0/typography.min.css" integrity="sha512-Y1DYSb995BAfxobCkKepB1BqJJTPrOp3zPL74AWFugHHmmdcvO+C48WLrUOlhGMc0QG7AE3f7gmvvcrmX2fDoA==" crossorigin>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/default.min.css" crossorigin>
@@ -27,19 +27,13 @@ hljs.highlightAll();
 <h1 class="title">Module <code>gplately.ptt.cleanup_topologies</code></h1>
 </header>
 <section id="section-intro">
-<p>Copyright (C) 2019 The University of Sydney, Australia</p>
-<p>This program is free software; you can redistribute it and/or modify it under
-the terms of the GNU General Public License, version 2, as published by
-the Free Software Foundation.</p>
-<p>This program is distributed in the hope that it will be useful, but WITHOUT
-ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-FITNESS FOR A PARTICULAR PURPOSE.
-See the GNU General Public License
-for more details.</p>
-<p>You should have received a copy of the GNU General Public License along
-with this program; if not, write to Free Software Foundation, Inc.,
-51 Franklin Street, Fifth Floor, Boston, MA
-02110-1301, USA.</p>
+<p>Clean up topologies, including:
+</p>
+<ul>
+<li>Removing any regular features not referenced by topologies.
+</li>
+<li>Restricting the time periods of referenced features to match the referencing topologies.</li>
+</ul>
 </section>
 <section>
 </section>
@@ -48,12 +42,6 @@ with this program; if not, write to Free Software Foundation, Inc.,
 <section>
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
-<dt id="gplately.ptt.cleanup_topologies.add_arguments"><code class="name flex">
-<span>def <span class="ident">add_arguments</span></span>(<span>parser: argparse.ArgumentParser)</span>
-</code></dt>
-<dd>
-<div class="desc"><p>add command line argument parser</p></div>
-</dd>
 <dt id="gplately.ptt.cleanup_topologies.iteritems"><code class="name flex">
 <span>def <span class="ident">iteritems</span></span>(<span>d)</span>
 </code></dt>
@@ -135,7 +123,6 @@ Returned list is same length as <code>feature_collections</code>.</dd>
 </li>
 <li><h3><a href="#header-functions">Functions</a></h3>
 <ul class="">
-<li><code><a title="gplately.ptt.cleanup_topologies.add_arguments" href="#gplately.ptt.cleanup_topologies.add_arguments">add_arguments</a></code></li>
 <li><code><a title="gplately.ptt.cleanup_topologies.iteritems" href="#gplately.ptt.cleanup_topologies.iteritems">iteritems</a></code></li>
 <li><code><a title="gplately.ptt.cleanup_topologies.itervalues" href="#gplately.ptt.cleanup_topologies.itervalues">itervalues</a></code></li>
 <li><code><a title="gplately.ptt.cleanup_topologies.listitems" href="#gplately.ptt.cleanup_topologies.listitems">listitems</a></code></li>
