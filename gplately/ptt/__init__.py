@@ -15,4 +15,11 @@ from . import (
 )
 from .documentation import install_documentation
 
-__pdoc__ = {"cleanup_topologies.add_arguments": False}
+__pdoc__ = {
+    "cleanup_topologies.add_arguments": False,
+    "cleanup_topologies.iteritems": False,
+    "cleanup_topologies.main": False,
+    "cleanup_topologies.itervalues": False,
+    "cleanup_topologies.listitems": False,
+    "cleanup_topologies.listvalues": False,
+}
