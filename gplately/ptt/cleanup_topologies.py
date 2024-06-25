@@ -1,25 +1,26 @@
+#
+#    Copyright (C) 2019 The University of Sydney, Australia
+#
+#    This program is free software; you can redistribute it and/or modify it under
+#    the terms of the GNU General Public License, version 2, as published by
+#    the Free Software Foundation.
+#
+#    This program is distributed in the hope that it will be useful, but WITHOUT
+#    ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+#    FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+#    for more details.
+#
+#    You should have received a copy of the GNU General Public License along
+#    with this program; if not, write to Free Software Foundation, Inc.,
+#    51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+#
 """
-    Copyright (C) 2019 The University of Sydney, Australia
-    
-    This program is free software; you can redistribute it and/or modify it under
-    the terms of the GNU General Public License, version 2, as published by
-    the Free Software Foundation.
-    
-    This program is distributed in the hope that it will be useful, but WITHOUT
-    ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-    FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
-    for more details.
-    
-    You should have received a copy of the GNU General Public License along
-    with this program; if not, write to Free Software Foundation, Inc.,
-    51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-"""
+Clean up topologies, including:   
 
-##################################################################################################
-# Clean up topologies, including:                                                                #
-#   * Removing any regular features not referenced by topologies.                                #
-#   * Restricting the time periods of referenced features to match the referencing topologies.   #
-##################################################################################################
+- Removing any regular features not referenced by topologies.                                
+- Restricting the time periods of referenced features to match the referencing topologies.   
+
+"""
 
 
 from __future__ import print_function

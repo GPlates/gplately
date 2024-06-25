@@ -1,12 +1,18 @@
+"""Plate Tectonic Tools"""
+
+from . import (
+    cleanup_topologies,
+    continent_contours,
+    convert_xy_to_gplates,
+    remove_plate_rotations,
+    resolve_topologies,
+    ridge_spreading_rate,
+    rotation_tools,
+    separate_ridge_transform_segments,
+    subduction_convergence,
+    utils,
+    velocity_tools,
+)
 from .documentation import install_documentation
-from . import utils
-from . import cleanup_topologies
-from . import convert_xy_to_gplates
-from . import continent_contours
-from . import remove_plate_rotations
-from . import resolve_topologies
-from . import ridge_spreading_rate
-from . import rotation_tools
-from . import separate_ridge_transform_segments
-from . import subduction_convergence
-from . import velocity_tools
+
+__pdoc__ = {"cleanup_topologies.add_arguments": False}
