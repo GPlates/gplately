@@ -1884,15 +1884,12 @@ class Points(object):
             df = self._get_dataframe()
             df.to_xml(filename, index=False)
 
-        elif filename.endswith(".gpml") or filename.endswith(".gpmlz"):
-            self.FeatureCollection.write(filename)
-
-        elif filename.endswith(".shp"):
+        elif filename.endswith(".gpml") or filename.endswith(".gpmlz") or filename.endswith(".shp"):
             self.FeatureCollection.write(filename)
 
         else:
             raise ValueError(
-                "Cannot save to specified file type. Use csv, gpml, or xls file extension."
+                "Cannot save to specified file type. Use csv, gpml, shp or xls file extension."
             )
 
     def rotate_reference_frames(
