@@ -225,11 +225,14 @@ def pygplates_to_shapely(
             )
             for i in geometry
         ]
+    # temporary debug code by Michael Chin
+    return _Polygon([(p[1], p[0]) for p in geometry.to_lat_lon_list()])
 
     if isinstance(geometry, pygplates.LatLonPoint):
         geometry = geometry.to_point_on_sphere()
     if isinstance(geometry, pygplates.ReconstructedFeatureGeometry):
         geometry = geometry.get_reconstructed_geometry()
+
     if isinstance(
         geometry,
         (
@@ -239,6 +242,7 @@ def pygplates_to_shapely(
         ),
     ):
         geometry = geometry.get_resolved_geometry()
+
     if not isinstance(geometry, pygplates.GeometryOnSphere):
         raise TypeError("Invalid geometry type: " + str(type(geometry)))
 

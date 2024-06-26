@@ -376,6 +376,8 @@ def _clean_polygons(data, projection):
         data = data.overlay(rects, how="difference")
 
     projected = data.to_crs(projection)
+    # temporary debug code by Michael Chin
+    return projected
 
     # If no [Multi]Polygons, return projected data
     for geom in projected.geometry:

@@ -25,11 +25,11 @@ def main(show=True):
     except:
         model = PlateModel(MODEL_NAME, data_dir=MODEL_REPO_DIR, readonly=True)
 
-    age = 55
+    age = 52
 
     test_model = PlateReconstruction(
         model.get_rotation_model(),
-        # topology_features=model.get_layer("Topologies"),
+        topology_features=model.get_layer("Topologies"),
         static_polygons=model.get_layer("StaticPolygons"),
     )
     gplot = PlotTopologies(
@@ -41,9 +41,12 @@ def main(show=True):
     )
 
     fig = plt.figure(figsize=(10, 5), dpi=96)
-    ax = fig.add_subplot(111, projection=ccrs.Robinson(central_longitude=180))
+    # ax = fig.add_subplot(111, projection=ccrs.Robinson(central_longitude=180))
+    ax = fig.add_subplot(
+        111, projection=ccrs.Orthographic(central_longitude=-165, central_latitude=15)
+    )
 
-    all_flag = 1
+    all_flag = 0
     plot_flag = {
         "continent_ocean_boundaries": 0,
         "coastlines": 0,
@@ -51,7 +54,7 @@ def main(show=True):
         "trenches": 0,
         "subduction_teeth": 0,
         "ridges": 0,
-        "all_topologies": 0,
+        "all_topologies": 1,
         "all_topological_sections": 0,
         "plate_polygon_by_id": 0,
         "unclassified_features": 0,
@@ -70,11 +73,11 @@ def main(show=True):
         "continental_rifts": 0,
         "misc_boundaries": 0,
         "transforms": 0,
-        "continents": 1,
+        "continents": 0,
     }
 
-    gplot.plot_continents(ax, color="grey", facecolor="0.8")
-    gplot.plot_coastlines(ax, edgecolor="blue", facecolor="0.5")
+    # gplot.plot_continents(ax, color="grey", facecolor="0.8")
+    # gplot.plot_coastlines(ax, edgecolor="blue", facecolor="0.5")
 
     for key in plot_flag:
         if key == "plate_polygon_by_id":
