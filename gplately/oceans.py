@@ -1058,7 +1058,7 @@ class SeafloorGrid(object):
             self._save_gridding_input_data(time)
             # save debug file
             if get_debug_level() > 100:
-                _save_age_grid_sample_points_to_gpml(
+                _save_seed_points_as_multipoint_coverage(
                     self.current_active_points_df["lon"],
                     self.current_active_points_df["lat"],
                     self.current_active_points_df["begin_time"] - time,
@@ -1271,7 +1271,7 @@ class SeafloorGrid(object):
                     logger.debug(
                         f"The max and min values of seafloor age are: {np.max(seafloor_ages)} - {np.min(seafloor_ages)} ({topology_reconstruction.get_current_time()}Ma)"
                     )
-                    _save_age_grid_sample_points_to_gpml(
+                    _save_seed_points_as_multipoint_coverage(
                         gridding_input_dictionary["CURRENT_LONGITUDES"],
                         gridding_input_dictionary["CURRENT_LATITUDES"],
                         gridding_input_dictionary["SEAFLOOR_AGE"],
@@ -1604,6 +1604,24 @@ def _save_age_grid_sample_points_to_gpml(
         features.append(f)
     pygplates.FeatureCollection(features).write(
         os.path.join(output_file_dir, SAMPLE_POINTS_GPMLZ_FILE_NAME.format(paleo_time))
+    )
+
+
+def _save_seed_points_as_multipoint_coverage(
+    lons, lats, seafloor_ages, paleo_time, output_file_dir
+):
+    """save seed points to .gpmlz as multipoint coverage for debug purpose"""
+    f = pygplates.Feature()
+    coverage_geometry = pygplates.MultiPointOnSphere(zip(lats, lons))
+    coverage_scalars = {
+        pygplates.ScalarType.create_gpml("SeafloorAge"): seafloor_ages,
+    }
+    f.set_geometry((coverage_geometry, coverage_scalars))
+    f.set_valid_time(paleo_time + 0.5, paleo_time - 0.5)
+    pygplates.FeatureCollection([f]).write(
+        os.path.join(
+            output_file_dir, "seed_points_coverage_{:0.2f}_Ma.gpmlz".format(paleo_time)
+        )
     )
 
 
