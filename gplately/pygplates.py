@@ -378,6 +378,24 @@ class FeatureCollection(_pygplates.FeatureCollection):
         fc.filenames = self.filenames
         return fc
 
+    @classmethod
+    def from_file_list(cls, filenames: List[str] = []):
+        """class method to load a feature collection from multiple files."""
+
+        if not (
+            isinstance(filenames, list)
+            and all(isinstance(filename, str) for filename in filenames)
+        ):
+            raise Exception(
+                f"The 'filenames' parameter must be a list of file path strings."
+            )
+
+        fc = cls()
+        for filename in filenames:
+            fc.add(cls(filename))
+
+        return fc
+
 
 def _is_string(value):
     # convert sets to list

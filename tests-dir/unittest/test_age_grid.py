@@ -48,7 +48,7 @@ def main():
         gplot,
         min_time=400,
         max_time=410,
-        save_directory="test-age-grid-output-0528",
+        save_directory="test-age-grid-output-0627",
         ridge_time_step=1,
         refinement_levels=5,
         grid_spacing=0.1,
