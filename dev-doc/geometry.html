@@ -432,58 +432,7 @@ Create a multipoint from a :class:<code><a title="gplately.geometry.GeometryOnSp
 <span>(</span><span>...)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>GPlately equivalent of <code>pygplates.PointOnSphere</code>, incorporating
-<code>to_shapely</code> method</p>
-<p><strong>init</strong>(&hellip;)
-A <em>PointOnSphere</em> object can be constructed in more than one way&hellip;</p>
-<p><strong>init</strong>(point)
-Create a <em>PointOnSphere</em> instance from a (x,y,z) or (latitude,longitude) point.</p>
-<p>:param point: (x,y,z) point, or (latitude,longitude) point (in degrees)
-:type point: :class:<code><a title="gplately.geometry.PointOnSphere" href="#gplately.geometry.PointOnSphere">PointOnSphere</a></code> or :class:<code><a title="gplately.geometry.LatLonPoint" href="#gplately.geometry.LatLonPoint">LatLonPoint</a></code> or tuple (float,float,float) or tuple (float,float)
-:raises: InvalidLatLonError if <em>latitude</em> or <em>longitude</em> is invalid
-:raises: ViolatedUnitVectorInvariantError if (x,y,z) is not unit magnitude</p>
-<p>The following example shows a few different ways to use this method:
-::</p>
-<pre><code>point = pygplates.PointOnSphere((x,y,z))
-point = pygplates.PointOnSphere([x,y,z])
-point = pygplates.PointOnSphere(numpy.array([x,y,z]))
-point = pygplates.PointOnSphere(pygplates.LatLonPoint(latitude,longitude))
-point = pygplates.PointOnSphere((latitude,longitude))
-point = pygplates.PointOnSphere([latitude,longitude])
-point = pygplates.PointOnSphere(numpy.array([latitude,longitude]))
-point = pygplates.PointOnSphere(pygplates.PointOnSphere(x,y,z))
-</code></pre>
-<p><strong>init</strong>(latitude, longitude)
-Create a <em>PointOnSphere</em> instance from a <em>latitude</em> and <em>longitude</em>.</p>
-<p>:param latitude: the latitude (in degrees)
-:type latitude: float
-:param longitude: the longitude (in degrees)
-:type longitude: float
-:raises: InvalidLatLonError if <em>latitude</em> or <em>longitude</em> is invalid</p>
-<p>!!! note "Note:&ensp;<em>latitude</em> must satisfy :meth:<code>LatLonPoint.is_valid_latitude</code> and <em>longitude</em> must satisfy :meth:<code>LatLonPoint.is_valid_longitude</code>, otherwise <em>InvalidLatLonError</em> will be raised."</p>
-<p>::</p>
-<pre><code>point = pygplates.PointOnSphere(latitude, longitude)
-</code></pre>
-<p><strong>init</strong>(x, y, z, [normalise=False])
-Create a <em>PointOnSphere</em> instance from a 3D cartesian coordinate consisting of floating-point coordinates <em>x</em>, <em>y</em> and <em>z</em>.</p>
-<p>:param x: the <em>x</em> component of the 3D unit vector
-:type x: float
-:param y: the <em>y</em> component of the 3D unit vector
-:type y: float
-:param z: the <em>z</em> component of the 3D unit vector
-:type z: float
-:param normalise: whether to normalise (to unit-length magnitude) the vector (x,y,z) - defaults to <code>False</code>
-:type normalise: bool
-:raises: ViolatedUnitVectorInvariantError if <em>normalise</em> is <code>False</code> and the resulting vector does not have unit magnitude
-:raises: UnableToNormaliseZeroVectorError if <em>normalise</em> is <code>True</code> and the resulting vector is (0,0,0) (ie, has zero magnitude)</p>
-<p><strong>NOTE:</strong> If the length of the 3D vector (x,y,z) is not 1.0 then you should set <em>normalise</em> to <code>True</code> (to normalise the vector components such that the 3D vector has unit magnitude). Otherwise if (x,y,z) is not unit magnitude then <em>ViolatedUnitVectorInvariantError</em> is raised.
-::</p>
-<pre><code># If you know that (x,y,z) has unit magnitude (is on the unit globe).
-point = pygplates.PointOnSphere(x, y, z)
-
-# If (x,y,z) might not be on the unit globe.
-point = pygplates.PointOnSphere(x, y, z, normalise=True)
-</code></pre></div>
+<div class="desc"><p>GPlately equivalent of <code>pygplates.PointOnSphere</code>, incorporating <code>to_shapely</code> method</p></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
