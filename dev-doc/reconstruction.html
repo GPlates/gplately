@@ -2398,12 +2398,12 @@ if not provided.</dd>
             df = self._get_dataframe()
             df.to_xml(filename, index=False)
 
-        elif filename.endswith(&#34;.gpml&#34;) or filename.endswith(&#34;.gpmlz&#34;):
+        elif filename.endswith(&#34;.gpml&#34;) or filename.endswith(&#34;.gpmlz&#34;) or filename.endswith(&#34;.shp&#34;):
             self.FeatureCollection.write(filename)
 
         else:
             raise ValueError(
-                &#34;Cannot save to specified file type. Use csv, gpml, or xls file extension.&#34;
+                &#34;Cannot save to specified file type. Use csv, gpml, shp or xls file extension.&#34;
             )
 
     def rotate_reference_frames(

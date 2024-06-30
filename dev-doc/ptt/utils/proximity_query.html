@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1">
 <meta name="generator" content="pdoc3 0.11.0">
 <title>gplately.ptt.utils.proximity_query API documentation</title>
-<meta name="description" content="Copyright (C) 2017 The University of Sydney, Australia …">
+<meta name="description" content="Efficient distance queries involving many points tested against geometries …">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/13.0.0/sanitize.min.css" integrity="sha512-y1dtMcuvtTMJc1yPgEqF0ZjQbhnc/bFhyvIyVNb9Zk5mIGtqVaAB1Ttl28su8AvFMOY0EwRbAe+HCLqj6W7/KA==" crossorigin>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/13.0.0/typography.min.css" integrity="sha512-Y1DYSb995BAfxobCkKepB1BqJJTPrOp3zPL74AWFugHHmmdcvO+C48WLrUOlhGMc0QG7AE3f7gmvvcrmX2fDoA==" crossorigin>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/default.min.css" crossorigin>
@@ -27,19 +27,132 @@ hljs.highlightAll();
 <h1 class="title">Module <code>gplately.ptt.utils.proximity_query</code></h1>
 </header>
 <section id="section-intro">
-<p>Copyright (C) 2017 The University of Sydney, Australia</p>
-<p>This program is free software; you can redistribute it and/or modify it under
-the terms of the GNU General Public License, version 2, as published by
-the Free Software Foundation.</p>
-<p>This program is distributed in the hope that it will be useful, but WITHOUT
-ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-FITNESS FOR A PARTICULAR PURPOSE.
-See the GNU General Public License
-for more details.</p>
-<p>You should have received a copy of the GNU General Public License along
-with this program; if not, write to Free Software Foundation, Inc.,
-51 Franklin Street, Fifth Floor, Boston, MA
-02110-1301, USA.</p>
+<p>Efficient distance queries involving many points tested against geometries.
+</p>
+<p>Uses a point spatial tree to improve efficiency over single point/geometry queries.
+Most efficient when points are relatively uniformly spaced points.
+</p>
+<p>EXAMPLE 1: Find the closest geometry(s) to each point in a sequence of points. </p>
+<pre><code class="language-python">    import proximity_query
+    import math
+
+    # A list of 'pygplates.PointOnSphere' points.
+    points = [...]
+
+    # Some geometry features (eg, coastlines).
+    geometry_feature_collection = pygplates.FeatureCollection('geometries.gpml')
+
+    # Look for features within 90 degrees of each point.
+    distance_threshold_radians = math.radians(90.0)
+
+    # Extract the geometries from the features.
+    geometries = []
+    geometry_features = []
+    for geometry_feature in geometry_feature_collection:
+        geometries.append(geometry_feature.get_geometry())
+        geometry_features.append(geometry_feature)
+
+
+    # Find the closest geometry (feature) to each point (within threshold distance).
+
+    geometry_features_closest_to_points = proximity_query.find_closest_geometries_to_points(
+            points,
+            geometries,
+            geometry_features,
+            distance_threshold_radians = distance_threshold_radians)
+
+    # Print name of closest feature to each point (if any).
+    for point_index, closest_geometry_feature in enumerate(geometry_features_closest_to_points):
+        if closest_geometry_feature is not None:
+            distance, geometry_feature = closest_geometry_feature
+            print('Closest feature to', points[point_index].to_lat_lon(), 'is', geometry_feature.get_name(),
+                    'with distance', distance * pygplates.Earth.mean_radius_in_kms, 'kms')
+        else:
+            print('No features close to', points[point_index].to_lat_lon())
+
+    #
+    # Find all geometries (features) near each point (within threshold distance).
+    #
+    geometry_features_closest_to_points = proximity_query.find_closest_geometries_to_points(
+            points,
+            geometries,
+            geometry_features,
+            distance_threshold_radians = distance_threshold_radians,
+            all_geometries=True)
+
+    # Print names of the closest features to each point (if any).
+    for point_index, geometry_feature_list in enumerate(geometry_features_closest_to_points):
+        if geometry_feature_list:
+            print('Closest features to', points[point_index].to_lat_lon(), 'are...')
+            for distance, geometry_feature in geometry_feature_list:
+                print('    ', geometry_feature.get_name(), 'with distance',
+                        distance * pygplates.Earth.mean_radius_in_kms, 'kms')
+        else:
+            print('No features close to', points[point_index].to_lat_lon())
+
+</code></pre>
+<p>EXAMPLE 2: Find the closest point(s) to each geometry in a sequence of geometries. </p>
+<pre><code class="language-python">    import proximity_query
+    import math
+
+    # Some geometry features (eg, coastlines).
+    geometry_feature_collection = pygplates.FeatureCollection('geometries.gpml')
+
+    # Extract the geometries from the features.
+    geometries = []
+    geometry_features = []
+    for geometry_feature in geometry_feature_collection:
+        geometries.append(geometry_feature.get_geometry())
+        geometry_features.append(geometry_feature)
+
+    # Some uniformly spaced lat/lon points.
+    points = []
+    lon_lat_points = []
+    for lat in range(-90, 91):
+        for lon in range(-180, 181):
+            points.append(pygplates.PointOnSphere(lat, lon))
+            lon_lat_points.append((lon, lat))
+
+    # Look for points within 5 degrees of each geometry.
+    distance_threshold_radians = math.radians(5.0)
+
+    #
+    # Find the closest point (lon, lat) to each geometry (within threshold distance).
+    #
+    lon_lat_points_closest_to_geometries = proximity_query.find_closest_points_to_geometries(
+            geometries,
+            points,
+            lon_lat_points,
+            distance_threshold_radians = distance_threshold_radians)
+
+    # Print longitude/latitude of closest point to each geometry (if any).
+    for geometry_index, closest_lon_lat_point in enumerate(lon_lat_points_closest_to_geometries):
+        if closest_lon_lat_point is not None:
+            distance, lon_lat_point = closest_lon_lat_point
+            print('Closest point to geometry', geometry_features[geometry_index].get_name(), 'is',
+                     lon_lat_point, 'with distance', distance * pygplates.Earth.mean_radius_in_kms, 'kms')
+        else:
+            print('No points close to geometry', geometry_features[geometry_index].get_name())
+
+    #
+    # Find all points (lon, lat) near each geometry (within threshold distance).
+    #
+    lon_lat_points_closest_to_geometries = proximity_query.find_closest_points_to_geometries(
+            geometries,
+            points,
+            lon_lat_points,
+            distance_threshold_radians = distance_threshold_radians,
+            all_points=True)
+
+    # Print longitude/latitude of the closest points to each geometry (if any).
+    for geometry_index, lon_lat_point_list in enumerate(lon_lat_points_closest_to_geometries):
+        if lon_lat_point_list:
+            print('Closest points to geometry', geometry_features[geometry_index].get_name(), 'are...')
+            for distance, lon_lat_point in lon_lat_point_list:
+                print('    ', lon_lat_point, 'with distance', distance * pygplates.Earth.mean_radius_in_kms, 'kms')
+        else:
+            print('No points close to geometry', geometry_features[geometry_index].get_name())
+</code></pre>
 </section>
 <section>
 </section>

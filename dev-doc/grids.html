@@ -1303,7 +1303,7 @@ reconstruction.</dd>
         grid_spacing_degrees,
         reconstruction_time,
         from_rotation_features_or_model=None,  # filename(s), or pyGPlates feature(s)/collection(s) or a RotationModel
-        to_rotation_features_or_model=None,    # filename(s), or pyGPlates feature(s)/collection(s) or a RotationModel
+        to_rotation_features_or_model=None,  # filename(s), or pyGPlates feature(s)/collection(s) or a RotationModel
         from_rotation_reference_plate=0,
         to_rotation_reference_plate=0,
         non_reference_plate=701,
@@ -1353,7 +1353,6 @@ reconstruction.</dd>
             if self.plate_reconstruction is None:
                 raise ValueError(&#34;Set a plate reconstruction model&#34;)
             to_rotation_features_or_model = self.plate_reconstruction.rotation_model
-
 
         input_positions = []
 

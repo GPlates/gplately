@@ -1198,7 +1198,7 @@ passed as "/path/to/continent_mask_{}Ma.nc" with curly brackets. Include decimal
             self._save_gridding_input_data(time)
             # save debug file
             if get_debug_level() &gt; 100:
-                _save_age_grid_sample_points_to_gpml(
+                _save_seed_points_as_multipoint_coverage(
                     self.current_active_points_df[&#34;lon&#34;],
                     self.current_active_points_df[&#34;lat&#34;],
                     self.current_active_points_df[&#34;begin_time&#34;] - time,
@@ -1411,7 +1411,7 @@ passed as "/path/to/continent_mask_{}Ma.nc" with curly brackets. Include decimal
                     logger.debug(
                         f&#34;The max and min values of seafloor age are: {np.max(seafloor_ages)} - {np.min(seafloor_ages)} ({topology_reconstruction.get_current_time()}Ma)&#34;
                     )
-                    _save_age_grid_sample_points_to_gpml(
+                    _save_seed_points_as_multipoint_coverage(
                         gridding_input_dictionary[&#34;CURRENT_LONGITUDES&#34;],
                         gridding_input_dictionary[&#34;CURRENT_LATITUDES&#34;],
                         gridding_input_dictionary[&#34;SEAFLOOR_AGE&#34;],

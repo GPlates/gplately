@@ -5,7 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1">
 <meta name="generator" content="pdoc3 0.11.0">
 <title>gplately.ptt.separate_ridge_transform_segments API documentation</title>
-<meta name="description" content="Copyright (C) 2017 The University of Sydney, Australia …">
+<meta name="description" content="Split the geometries of isochrons and mid-ocean ridges into ridge and transform segments
+based on each segment’s alignment with the geometry’s stage …">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/13.0.0/sanitize.min.css" integrity="sha512-y1dtMcuvtTMJc1yPgEqF0ZjQbhnc/bFhyvIyVNb9Zk5mIGtqVaAB1Ttl28su8AvFMOY0EwRbAe+HCLqj6W7/KA==" crossorigin>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/13.0.0/typography.min.css" integrity="sha512-Y1DYSb995BAfxobCkKepB1BqJJTPrOp3zPL74AWFugHHmmdcvO+C48WLrUOlhGMc0QG7AE3f7gmvvcrmX2fDoA==" crossorigin>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/default.min.css" crossorigin>
@@ -27,19 +28,10 @@ hljs.highlightAll();
 <h1 class="title">Module <code>gplately.ptt.separate_ridge_transform_segments</code></h1>
 </header>
 <section id="section-intro">
-<p>Copyright (C) 2017 The University of Sydney, Australia</p>
-<p>This program is free software; you can redistribute it and/or modify it under
-the terms of the GNU General Public License, version 2, as published by
-the Free Software Foundation.</p>
-<p>This program is distributed in the hope that it will be useful, but WITHOUT
-ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-FITNESS FOR A PARTICULAR PURPOSE.
-See the GNU General Public License
-for more details.</p>
-<p>You should have received a copy of the GNU General Public License along
-with this program; if not, write to Free Software Foundation, Inc.,
-51 Franklin Street, Fifth Floor, Boston, MA
-02110-1301, USA.</p>
+<p>Split the geometries of isochrons and mid-ocean ridges into ridge and transform segments
+based on each segment’s alignment with the geometry’s stage pole at its time of appearance.</p>
+<p>Source code is based on:
+<a href="http://www.gplates.org/docs/pygplates/sample-code/pygplates_split_isochron_into_ridges_and_transforms.html">http://www.gplates.org/docs/pygplates/sample-code/pygplates_split_isochron_into_ridges_and_transforms.html</a></p>
 </section>
 <section>
 </section>
@@ -77,12 +69,6 @@ will be the stage pole in the frame of reference of the geometry at the spreadin
      have spreading time not in distant past or future, and
      have non-zero stage rotation from 'spreading_time + 1' to 'spreading_time').
 </code></pre></div>
-</dd>
-<dt id="gplately.ptt.separate_ridge_transform_segments.main"><code class="name flex">
-<span>def <span class="ident">main</span></span>(<span>args)</span>
-</code></dt>
-<dd>
-<div class="desc"></div>
 </dd>
 <dt id="gplately.ptt.separate_ridge_transform_segments.separate_features_into_ridges_and_transforms"><code class="name flex">
 <span>def <span class="ident">separate_features_into_ridges_and_transforms</span></span>(<span>rotation_features_or_model, spreading_features, spreading_feature_types=None, transform_segment_deviation_in_radians=0.7853981633974483)</span>
@@ -142,7 +128,6 @@ Returns None if 'geometry_at_spreading_time' is not a polyline (or polygon).</p>
 <ul class="">
 <li><code><a title="gplately.ptt.separate_ridge_transform_segments.add_arguments" href="#gplately.ptt.separate_ridge_transform_segments.add_arguments">add_arguments</a></code></li>
 <li><code><a title="gplately.ptt.separate_ridge_transform_segments.get_stage_rotation_for_reconstructed_geometry" href="#gplately.ptt.separate_ridge_transform_segments.get_stage_rotation_for_reconstructed_geometry">get_stage_rotation_for_reconstructed_geometry</a></code></li>
-<li><code><a title="gplately.ptt.separate_ridge_transform_segments.main" href="#gplately.ptt.separate_ridge_transform_segments.main">main</a></code></li>
 <li><code><a title="gplately.ptt.separate_ridge_transform_segments.separate_features_into_ridges_and_transforms" href="#gplately.ptt.separate_ridge_transform_segments.separate_features_into_ridges_and_transforms">separate_features_into_ridges_and_transforms</a></code></li>
 <li><code><a title="gplately.ptt.separate_ridge_transform_segments.separate_geometry_into_ridges_and_transforms" href="#gplately.ptt.separate_ridge_transform_segments.separate_geometry_into_ridges_and_transforms">separate_geometry_into_ridges_and_transforms</a></code></li>
 </ul>

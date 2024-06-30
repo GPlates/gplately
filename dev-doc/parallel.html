@@ -58,37 +58,37 @@ a single thread is run.</dd>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class Parallel(object):
-    &#34;&#34;&#34;A class that uses multiple processors with `multiprocessing` 
+    &#34;&#34;&#34;A class that uses multiple processors with `multiprocessing`
     to execute routines in parallel over several threads.
-    
+
     Parameters
     -----------
     nprocs : int, default=1
         The number of separate executions of a process. By default,
-        a single thread is run. 
+        a single thread is run.
     &#34;&#34;&#34;
+
     def __init__(self, nprocs=1):
 
         self.nprocs = nprocs
 
-
     def parallelise_routine(self, function, *args, **kwargs):
-        &#34;&#34;&#34;Execute a routine over multiple threads on different 
+        &#34;&#34;&#34;Execute a routine over multiple threads on different
         processors, ultimately reducing computation time.
 
-        `parallelise_routine` permits one item through the process 
-        queue when an executed item is extracted with get(). 
+        `parallelise_routine` permits one item through the process
+        queue when an executed item is extracted with get().
 
         Parameters
         ----------
         self.nprocs : int, default=1
-            The number of separate executions of a process. By 
+            The number of separate executions of a process. By
             default, a single thread is run.
 
         function : method from an instance of an object
-            The process to be executed in parallel. Should be 
+            The process to be executed in parallel. Should be
             supplied as module.class.method (if belonging to a class)
-            or module.method. 
+            or module.method.
 
         *args : tuple
             Contains all necessary input parameters for the ‘function’.
@@ -109,11 +109,12 @@ a single thread is run.</dd>
             q_in = Queue(1)
             q_out = Queue()
 
-
             for i in range(self.nprocs):
                 pass_args = [function]
                 pass_args.extend(args)
-                p = Process(target=self._func_queue, args=tuple(pass_args), kwargs=kwargs)
+                p = Process(
+                    target=self._func_queue, args=tuple(pass_args), kwargs=kwargs
+                )
                 processes.append(p)
 
             for p in processes:
@@ -130,12 +131,10 @@ a single thread is run.</dd>
                 index, result = q_out.get()
                 results[index] = result
 
-
             # wait until each processor has finished
             [p.join() for p in processes]
 
             return results
-
 
     def _func_queue(self, function, q_in, q_out, *args, **kwargs):
         while True:
@@ -156,7 +155,7 @@ a single thread is run.</dd>
 <div class="desc"><p>Execute a routine over multiple threads on different
 processors, ultimately reducing computation time.</p>
 <p><code>parallelise_routine</code> permits one item through the process
-queue when an executed item is extracted with get(). </p>
+queue when an executed item is extracted with get().</p>
 <h2 id="parameters">Parameters</h2>
 <p>self.nprocs : int, default=1
 The number of separate executions of a process. By
