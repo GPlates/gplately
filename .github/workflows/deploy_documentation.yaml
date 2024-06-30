@@ -1,8 +1,12 @@
 name: Build docs and deploy to GitHub Pages
 
-on:
+on: 
   push:
-    branches: [update-doc]
+    branches: 
+      - master
+  pull_request:
+    branches: 
+      - master
 
 jobs:
   build-and-deploy:
@@ -40,3 +44,4 @@ jobs:
         with:
           branch: gh-pages
           folder: api/gplately/
+          target-folder: dev-doc/

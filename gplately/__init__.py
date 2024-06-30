@@ -1,3 +1,20 @@
+#
+#    Copyright (C) 2024 The University of Sydney, Australia
+#
+#    This program is free software; you can redistribute it and/or modify it under
+#    the terms of the GNU General Public License, version 2, as published by
+#    the Free Software Foundation.
+#
+#    This program is distributed in the hope that it will be useful, but WITHOUT
+#    ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+#    FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+#    for more details.
+#
+#    You should have received a copy of the GNU General Public License along
+#    with this program; if not, write to Free Software Foundation, Inc.,
+#    51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+#
+
 """
 
 ![Intro GIF](https://raw.githubusercontent.com/GPlates/gplately/master/Notebooks/NotebookFiles/pdoc_Files/docs_muller19_seed_points.gif)
@@ -5,7 +22,7 @@
 ## Main objects
 GPlately's common objects include:
 
-### [DataServer ](https://gplates.github.io/gplately/download.html#gplately.download.DataServer)
+### [DataServer](https://gplates.github.io/gplately/download.html#gplately.download.DataServer)
 The `DataServer` object automatically downloads and caches files needed for plate reconstructions to a folder in your system.
 These plate reconstruction files include rotation models, topology features and static polygons and geometries such as 
 coastlines, continents and continent-ocean boundaries. Additional data like rasters, grids and feature data can also be installed. 
@@ -51,6 +68,27 @@ etopo = gdownload.get_raster("ETOPO1_tif")
 |           Shephard2013           |        ✅       |           ✅           |          ✅          |        ✅        |        ❌        |     ❌    |       ❌       |       ❌      |
 
 ------------------
+
+### [PlateModelManager](https://pypi.org/project/plate-model-manager/)
+The `PlateModelManager` object was introduced as an alternative/substitute to the `DataServer` object. It can be used to download and manage plate reconstruction models.
+
+```python
+pm_manager = PlateModelManager()
+model = pm_manager.get_model("Muller2019")
+model.set_data_dir("plate-model-repo")
+
+recon_model = PlateReconstruction(
+    model.get_rotation_model(),
+    topology_features=model.get_layer("Topologies"),
+    static_polygons=model.get_layer("StaticPolygons"),
+)
+gplot = PlotTopologies(
+    recon_model,
+    coastlines=model.get_layer("Coastlines"),
+    COBs=model.get_layer("COBs"),
+    time=55,
+)
+```
 
 ### [PlateReconstruction](https://gplates.github.io/gplately/reconstruction.html#gplately.reconstruction.PlateReconstruction)
 The `PlateReconstruction` object contains tools to reconstruct geological features like tectonic plates and plate boundaries,
@@ -158,6 +196,7 @@ seafloorgrid.reconstruct_by_topologies()
 - [__08 - Predicting Slab Flux__](08-PredictingSlabFlux.html): Predicting the average slab dip angle of subducting oceanic lithosphere.
 - [__09 - Motion Paths and Flowlines__](09-CreatingMotionPathsAndFlowlines.html): Using pyGPlates to create motion paths and flowines of points on a tectonic plate to illustrate the plate's trajectory through geological time.
 - [__10 - SeafloorGrid__](10-SeafloorGrids.html): Defines the parameters needed to set up a `SeafloorGrid` object, and demonstrates how to produce age and spreading rate grids from a set of plate reconstruction model files.
+- [__11 - AndesFluxes__](11-AndesFluxes.html): Demonstrates how the reconstructed subduction history along the Andean margin can be potentially used in the plate kinematics anylysis and data mining.
 
 """
 

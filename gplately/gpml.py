@@ -1,3 +1,20 @@
+#
+#    Copyright (C) 2024 The University of Sydney, Australia
+#
+#    This program is free software; you can redistribute it and/or modify it under
+#    the terms of the GNU General Public License, version 2, as published by
+#    the Free Software Foundation.
+#
+#    This program is distributed in the hope that it will be useful, but WITHOUT
+#    ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+#    FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+#    for more details.
+#
+#    You should have received a copy of the GNU General Public License along
+#    with this program; if not, write to Free Software Foundation, Inc.,
+#    51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+#
+
 r"""Tools for manipulating GPML (`.gpml`, `.gpmlz`) files and
 `pygplates.Feature` and `pygplates.FeatureCollection` objects.
 
@@ -12,6 +29,7 @@ The following functions are defined here:
 import os
 
 import pygplates
+
 from .pygplates import FeatureCollection as _FeatureCollection
 from .pygplates import _is_string
 
@@ -248,12 +266,11 @@ def _parse_features_function_arguments(features):
         if str(type(e)) == "<class 'Boost.Python.ArgumentError'>":
             # This is the easiest way of catching Boost.Python.ArgumentError,
             # since it cannot be directly imported into Python
-            raise TypeError(
-                "Invalid argument type: `{}`".format(type(features))
-            ) from e
+            raise TypeError("Invalid argument type: `{}`".format(type(features))) from e
         else:
             raise e
     return features
+
 
 def _load_FeatureCollection(geometry):
     if isinstance(geometry, _FeatureCollection):
@@ -264,7 +281,7 @@ def _load_FeatureCollection(geometry):
     elif _is_string(geometry) and type(geometry) is list:
         fc = _FeatureCollection()
         for geom in geometry:
-            fc.add( _FeatureCollection(geom) )
+            fc.add(_FeatureCollection(geom))
         fc.filenames = list(geometry)
         return fc
     elif _is_string(geometry):

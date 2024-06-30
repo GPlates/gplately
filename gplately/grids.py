@@ -1,3 +1,20 @@
+#
+#    Copyright (C) 2024 The University of Sydney, Australia
+#
+#    This program is free software; you can redistribute it and/or modify it under
+#    the terms of the GNU General Public License, version 2, as published by
+#    the Free Software Foundation.
+#
+#    This program is distributed in the hope that it will be useful, but WITHOUT
+#    ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+#    FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+#    for more details.
+#
+#    You should have received a copy of the GNU General Public License along
+#    with this program; if not, write to Free Software Foundation, Inc.,
+#    51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+#
+
 """Tools for working with MaskedArray, ndarray and netCDF4 rasters, as well as
 gridded-data.
 
@@ -260,7 +277,7 @@ def read_netcdf_grid(filename, return_grids=False, realign=False, resample=None)
 
 
 def write_netcdf(filename, lons, lats, data):
-    """ Write geospatial data to a netCDF4 grid with a specified `filename`.
+    """Write geospatial data to a netCDF4 grid with a specified `filename`.
     The latitude, longitude, and data variabels must be of the same size.
 
     Parameters
@@ -282,36 +299,36 @@ def write_netcdf(filename, lons, lats, data):
     lons = np.asarray(lons)
     lats = np.asarray(lats)
     data = np.asarray(data)
-    
-    with netCDF4.Dataset(filename, 'w', driver=None) as cdf:
+
+    with netCDF4.Dataset(filename, "w", driver=None) as cdf:
         cdf.title = "Grid produced by gplately"
-        cdf.createDimension('lon', lons.size)
-        cdf_lon = cdf.createVariable('lon', lons.dtype, ('lon',), zlib=True)
-        cdf_lat = cdf.createVariable('lat', lats.dtype, ('lon',), zlib=True)
+        cdf.createDimension("lon", lons.size)
+        cdf_lon = cdf.createVariable("lon", lons.dtype, ("lon",), zlib=True)
+        cdf_lat = cdf.createVariable("lat", lats.dtype, ("lon",), zlib=True)
         cdf_lon[:] = lons
         cdf_lat[:] = lats
 
         # Units for Geographic Grid type
         cdf_lon.units = "degrees_east"
-        cdf_lon.standard_name = 'lon'
+        cdf_lon.standard_name = "lon"
         cdf_lon.actual_range = [np.min(lons), np.max(lons)]
         cdf_lat.units = "degrees_north"
-        cdf_lat.standard_name = 'lat'
+        cdf_lat.standard_name = "lat"
         cdf_lat.actual_range = [np.min(lats), np.max(lats)]
 
-        cdf_data = cdf.createVariable('z', data.dtype, ('lon',), zlib=True)
+        cdf_data = cdf.createVariable("z", data.dtype, ("lon",), zlib=True)
         # netCDF4 uses the missing_value attribute as the default _FillValue
         # without this, _FillValue defaults to 9.969209968386869e+36
         cdf_data.missing_value = np.nan
-        cdf_data.standard_name = 'z'
-        #Ensure pygmt registers min and max z values properly
+        cdf_data.standard_name = "z"
+        # Ensure pygmt registers min and max z values properly
         cdf_data.actual_range = [np.nanmin(data), np.nanmax(data)]
 
         cdf_data[:] = data
 
 
-def write_netcdf_grid(filename, grid, extent=[-180,180,-90,90]):
-    """ Write geological data contained in a `grid` to a netCDF4 grid with a specified `filename`.
+def write_netcdf_grid(filename, grid, extent=[-180, 180, -90, 90]):
+    """Write geological data contained in a `grid` to a netCDF4 grid with a specified `filename`.
 
     Notes
     -----
@@ -1985,7 +2002,7 @@ class Raster(object):
             The features used to partition the raster grid and assign plate
             IDs. By default, `self.plate_reconstruction.static_polygons`
             will be used, but alternatively any valid argument to
-            `pygplates.FeaturesFunctionArgument` can be specified here.
+            'pygplates.FeaturesFunctionArgument' can be specified here.
         threads : int, default 1
             Number of threads to use for certain computationally heavy
             routines.
@@ -2141,7 +2158,7 @@ class Raster(object):
         grid_spacing_degrees,
         reconstruction_time,
         from_rotation_features_or_model=None,  # filename(s), or pyGPlates feature(s)/collection(s) or a RotationModel
-        to_rotation_features_or_model=None,    # filename(s), or pyGPlates feature(s)/collection(s) or a RotationModel
+        to_rotation_features_or_model=None,  # filename(s), or pyGPlates feature(s)/collection(s) or a RotationModel
         from_rotation_reference_plate=0,
         to_rotation_reference_plate=0,
         non_reference_plate=701,
@@ -2191,7 +2208,6 @@ class Raster(object):
             if self.plate_reconstruction is None:
                 raise ValueError("Set a plate reconstruction model")
             to_rotation_features_or_model = self.plate_reconstruction.rotation_model
-
 
         input_positions = []
 

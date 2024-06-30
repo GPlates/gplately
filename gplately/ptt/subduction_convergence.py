@@ -1,24 +1,23 @@
-"""
-    Copyright (C) 2016 The University of Sydney, Australia
-    
-    This program is free software; you can redistribute it and/or modify it under
-    the terms of the GNU General Public License, version 2, as published by
-    the Free Software Foundation.
-    
-    This program is distributed in the hope that it will be useful, but WITHOUT
-    ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
-    FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
-    for more details.
-    
-    You should have received a copy of the GNU General Public License along
-    with this program; if not, write to Free Software Foundation, Inc.,
-    51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
-"""
+#
+#    Copyright (C) 2016 The University of Sydney, Australia
+#
+#    This program is free software; you can redistribute it and/or modify it under
+#    the terms of the GNU General Public License, version 2, as published by
+#    the Free Software Foundation.
+#
+#    This program is distributed in the hope that it will be useful, but WITHOUT
+#    ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+#    FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+#    for more details.
+#
+#    You should have received a copy of the GNU General Public License along
+#    with this program; if not, write to Free Software Foundation, Inc.,
+#    51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+#
 
-
-#############################################################
-# Find the convergence rate of trenches (subduction zones). #
-#############################################################
+"""
+Find the convergence rate of trenches (subduction zones). 
+"""
 
 
 from __future__ import print_function
@@ -1120,19 +1119,19 @@ def create_coverage_feature_from_convergence_data(
         optional_parameter_index += 1
     if output_trench_normal:
         all_trench_normal_x = parameter_lists[optional_parameter_index]
-        coverage_scalars[
-            pygplates.ScalarType.create_gpml("TrenchNormalX")
-        ] = all_trench_normal_x
+        coverage_scalars[pygplates.ScalarType.create_gpml("TrenchNormalX")] = (
+            all_trench_normal_x
+        )
         optional_parameter_index += 1
         all_trench_normal_y = parameter_lists[optional_parameter_index]
-        coverage_scalars[
-            pygplates.ScalarType.create_gpml("TrenchNormalY")
-        ] = all_trench_normal_y
+        coverage_scalars[pygplates.ScalarType.create_gpml("TrenchNormalY")] = (
+            all_trench_normal_y
+        )
         optional_parameter_index += 1
         all_trench_normal_z = parameter_lists[optional_parameter_index]
-        coverage_scalars[
-            pygplates.ScalarType.create_gpml("TrenchNormalZ")
-        ] = all_trench_normal_z
+        coverage_scalars[pygplates.ScalarType.create_gpml("TrenchNormalZ")] = (
+            all_trench_normal_z
+        )
         optional_parameter_index += 1
 
     coverage_feature.set_geometry((coverage_geometry, coverage_scalars))
