@@ -238,7 +238,7 @@ class FeatureCollection(_pygplates.FeatureCollection):
     [`pygplates.FeatureCollection` functionality](https://www.gplates.org/docs/pygplates/generated/pygplates.featurecollection#pygplates.FeatureCollection),
     and in addition tracks the names of files from which the feature
     collection(s) are read using the
-    `gplately.pygplates.FeatureCollection.filenames` attribute.
+    'gplately.pygplates.FeatureCollection.filenames' attribute.
 
     Examples
     --------

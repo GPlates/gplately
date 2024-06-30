@@ -62,8 +62,7 @@ def get_geometries(filename, buffer=None):
     -------
     geometries : list or geopandas.GeoSeries
         `shapely` geometries that define the feature geometry held in the
-        shapefile. Can be plotted directly using
-        `gplately.plot.add_geometries`.
+        shapefile.
     """
     if USE_GEOPANDAS:
         return _get_geometries_geopandas(filename, buffer=buffer)
@@ -87,8 +86,7 @@ def get_valid_geometries(filename):
     -------
     geometries : list or geopandas.GeoSeries
         Valid `shapely` geometries that define the feature geometry held in the
-        shapefile. Can be plotted directly using
-        `gplately.plot.add_geometries`.
+        shapefile.
     """
     return get_geometries(filename, buffer=0.0)
 

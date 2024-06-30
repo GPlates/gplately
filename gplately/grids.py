@@ -2002,7 +2002,7 @@ class Raster(object):
             The features used to partition the raster grid and assign plate
             IDs. By default, `self.plate_reconstruction.static_polygons`
             will be used, but alternatively any valid argument to
-            `pygplates.FeaturesFunctionArgument` can be specified here.
+            'pygplates.FeaturesFunctionArgument' can be specified here.
         threads : int, default 1
             Number of threads to use for certain computationally heavy
             routines.

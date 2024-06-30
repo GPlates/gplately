@@ -97,6 +97,10 @@ __all__ = [
     "wrap_geometries",
 ]
 
+__pdoc__ = {
+    "PointOnSphere": """GPlately equivalent of `pygplates.PointOnSphere`, incorporating `to_shapely` method"""
+}
+
 
 class GeometryOnSphere(pygplates.GeometryOnSphere):
     """Class to mix in `to_shapely` method to all GPlately geometry classes.

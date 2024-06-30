@@ -17,7 +17,7 @@
 
 """ A module to generate grids of seafloor age, seafloor spreading rate 
 and other oceanic data from the `gplately.PlateReconstruction` and 
-`gplately.PlotToplogies` objects. 
+`gplately.plot.PlotTopologies` objects. 
 
 Gridding methods in this module have been adapted from Simon Williams' 
 development repository for an 
