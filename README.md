@@ -252,6 +252,7 @@ To see GPlately in action, launch a Jupyter Notebook environment and check out t
 - [**08 - Predicting Slab Flux**](https://github.com/GPlates/gplately/blob/master/Notebooks/08-PredictingSlabFlux.ipynb): Predicting the average slab dip angle of subducting oceanic lithosphere.
 - [**09 - Motion Paths and Flowlines**](https://github.com/GPlates/gplately/blob/master/Notebooks/09-CreatingMotionPathsAndFlowlines.ipynb): Using pyGPlates to create motion paths and flowines of points on a tectonic plate to illustrate the plate's trajectory through geological time.
 - [**10 - SeafloorGrid**](https://github.com/GPlates/gplately/blob/master/Notebooks/10-SeafloorGrids.ipynb): Defines the parameters needed to set up a `SeafloorGrid` object, and demonstrates how to produce age and spreading rate grids from a set of plate reconstruction model files.
+- [**11 - AndesFluxes**](https://github.com/GPlates/gplately/blob/master/Notebooks/11-AndesFluxes.ipynb): Demonstrates how the reconstructed subduction history along the Andean margin can be potentially used in the plate kinematics anylysis and data mining.
 
 ## API Documentation
 
