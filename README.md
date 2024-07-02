@@ -255,7 +255,14 @@ To see GPlately in action, launch a Jupyter Notebook environment and check out t
 
 ## API Documentation
 
-Documentation of GPlately's objects and methods can be found [here](https://gplates.github.io/gplately/)!
+Documentation of GPlately's objects and methods can be found [here](https://gplates.github.io/gplately/)(**latest official release**)!
+
+Other documentation versions:
+- [Documentation in development](https://gplates.github.io/gplately/dev-doc)
+- [Documentation v1.3.0](https://gplates.github.io/gplately/v1.3.0/)
+- [Documentation v1.2.0](https://gplates.github.io/gplately/v1.2.0/)
+- [Documentation v1.1.0](https://gplates.github.io/gplately/v1.1.0/)
+- [Documentation v1.0.0](https://gplates.github.io/gplately/v1.0.0/)
 
 ## Command Line Tools
 
