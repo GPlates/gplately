@@ -5545,6 +5545,7 @@ boundaries and passive continental boundaries.</dd>
             central_meridian=central_meridian,
             tessellate_degrees=tessellate_degrees,
         )
+
         return gpd.GeoDataFrame({&#34;geometry&#34;: shp}, geometry=&#34;geometry&#34;)
 
     @append_docstring(PLOT_DOCSTRING.format(&#34;feature&#34;))
@@ -5552,7 +5553,7 @@ boundaries and passive continental boundaries.</dd>
         &#34;&#34;&#34;Plot pygplates.FeatureCollection  or pygplates.Feature onto a map.&#34;&#34;&#34;
         if not feature:
             logger.warn(
-                f&#34;The given feature({feature_name}:{feature}) is empty and will not be plotted.&#34;
+                f&#34;The given feature({feature_name}:{feature}) in model:{self.plate_reconstruction.plate_model_name} is empty and will not be plotted.&#34;
             )
             return ax
         else:
