@@ -679,6 +679,7 @@ class PlotTopologies(object):
             central_meridian=central_meridian,
             tessellate_degrees=tessellate_degrees,
         )
+
         return gpd.GeoDataFrame({"geometry": shp}, geometry="geometry")
 
     @append_docstring(PLOT_DOCSTRING.format("feature"))
@@ -686,7 +687,7 @@ class PlotTopologies(object):
         """Plot pygplates.FeatureCollection  or pygplates.Feature onto a map."""
         if not feature:
             logger.warn(
-                f"The given feature({feature_name}:{feature}) is empty and will not be plotted."
+                f"The given feature({feature_name}:{feature}) in model:{self.plate_reconstruction.plate_model_name} is empty and will not be plotted."
             )
             return ax
         else:
