@@ -204,7 +204,7 @@ gpts = gplately.Points(model, pt_lon, pt_lat)
 relief rasters. You can also reconstruct raster data back through geological time!
 
 ```python
-etopo = gdownload.get_raster("ETOPO1_tif")
+etopo = gDownload.get_raster("ETOPO1_tif")
 
 raster = gplately.Raster(
     model,
