@@ -151,21 +151,22 @@ rotation_model, topology_features, static_polygons = gDownload.get_plate_reconst
 ... was introduced as an alternative/substitute to the `DataServer` object. The `PlateModelManager` object can be used to download and manage plate reconstruction models.
 
 ```
-  pm_manager = PlateModelManager()
-  model = pm_manager.get_model("Muller2019")
-  model.set_data_dir("plate-model-repo")
+from plate_model_manager import PlateModelManager
+pm_manager = PlateModelManager()
+model = pm_manager.get_model("Muller2019")
+model.set_data_dir("plate-model-repo")
 
-  recon_model = PlateReconstruction(
-      model.get_rotation_model(),
-      topology_features=model.get_layer("Topologies"),
-      static_polygons=model.get_layer("StaticPolygons"),
-  )
-  gplot = PlotTopologies(
-      recon_model,
-      coastlines=model.get_layer("Coastlines"),
-      COBs=model.get_layer("COBs"),
-      time=55,
-  )
+recon_model = PlateReconstruction(
+    model.get_rotation_model(),
+    topology_features=model.get_layer("Topologies"),
+    static_polygons=model.get_layer("StaticPolygons"),
+)
+gplot = PlotTopologies(
+    recon_model,
+    coastlines=model.get_layer("Coastlines"),
+    COBs=model.get_layer("COBs"),
+    time=55,
+)
 ```
 
 ### The `PlateReconstruction` object
