@@ -141,6 +141,7 @@ we can download a `rotation model`, a set of `topology features` and some `stati
 global Mesozoic–Cenozoic deforming plate motion model.
 
 ```python
+import gplately
 gDownload = gplately.DataServer("Muller2019")
 rotation_model, topology_features, static_polygons = gDownload.get_plate_reconstruction_files()
 ```
