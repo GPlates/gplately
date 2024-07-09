@@ -1,20 +1,16 @@
 #!/usr/bin/env python3
 
 import math
-import random
 import sys
 from pathlib import Path
 
 import cartopy.crs as ccrs
 import matplotlib.pyplot as plt
-import matplotlib.ticker as mticker
-import numpy as np
-from cartopy.mpl.gridliner import LATITUDE_FORMATTER, LONGITUDE_FORMATTER
 from common import MODEL_REPO_DIR, OUTPUT_DIR, save_fig
 from plate_model_manager import PlateModel, PlateModelManager
 
 import gplately
-from gplately import PlateReconstruction, PlotTopologies, ptt
+from gplately import ptt
 
 print(gplately.__file__)
 
@@ -58,6 +54,19 @@ def plot_ridges_and_transforms(ax, angle):
                 color="lightgrey",
                 transform=ccrs.Geodetic(),
             )
+
+    for rt in ridge_transforms:
+        for geom in rt.get_all_geometries():
+            if not geom:
+                continue
+            lats, lons = zip(*geom.to_lat_lon_list())
+            ax.plot(
+                lons,
+                lats,
+                color="black",
+                transform=ccrs.Geodetic(),
+            )
+
     for transform in transforms:
         for geom in transform.get_all_geometries():
             if not geom:
@@ -83,27 +92,6 @@ def plot_ridges_and_transforms(ax, angle):
             )
 
     ax.set_global()
-
-    # ax.coastlines()
-
-    """
-    gl = ax.gridlines(
-        crs=ccrs.PlateCarree(),
-        draw_labels=True,
-        linewidth=2,
-        color="gray",
-        alpha=0.5,
-        linestyle="--",
-    )
-    gl.xlabels_top = False
-    gl.ylabels_left = False
-    gl.xlines = False
-    gl.xlocator = mticker.FixedLocator([-180, -45, 0, 45, 180])
-    gl.xformatter = LONGITUDE_FORMATTER
-    gl.yformatter = LATITUDE_FORMATTER
-    gl.xlabel_style = {"size": 15, "color": "gray"}
-    gl.xlabel_style = {"color": "red", "weight": "bold"}
-    """
 
     ax.set_title(f"{model_name}({age}Ma) angle:{angle}", fontsize=16)
 

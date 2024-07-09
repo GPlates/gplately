@@ -442,13 +442,6 @@ class PlotTopologies(object):
         assert time is not None, "time must be set to a valid reconstruction time"
 
         self._time = float(time)
-        resolved_topologies = ptt.resolve_topologies.resolve_topologies_into_features(
-            self.plate_reconstruction.rotation_model,
-            self.plate_reconstruction.topology_features,
-            self.time,
-            anchor_plate_id=self.anchor_plate_id,
-        )
-
         (
             self.topologies,
             self.ridge_transforms,
@@ -458,12 +451,11 @@ class PlotTopologies(object):
             self.trench_left,
             self.trench_right,
             self.other,
-        ) = resolved_topologies
-
-        self.ridges, self.transforms = (
-            ptt.separate_ridge_transform_segments.separate_features_into_ridges_and_transforms(
-                self.plate_reconstruction.rotation_model, self.ridge_transforms
-            )
+        ) = ptt.resolve_topologies.resolve_topologies_into_features(
+            self.plate_reconstruction.rotation_model,
+            self.plate_reconstruction.topology_features,
+            self.time,
+            anchor_plate_id=self.anchor_plate_id,
         )
 
         # miscellaneous boundaries
