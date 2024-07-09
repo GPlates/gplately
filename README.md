@@ -141,6 +141,7 @@ we can download a `rotation model`, a set of `topology features` and some `stati
 global Mesozoic–Cenozoic deforming plate motion model.
 
 ```python
+import gplately
 gDownload = gplately.DataServer("Muller2019")
 rotation_model, topology_features, static_polygons = gDownload.get_plate_reconstruction_files()
 ```
@@ -150,21 +151,24 @@ rotation_model, topology_features, static_polygons = gDownload.get_plate_reconst
 ... was introduced as an alternative/substitute to the `DataServer` object. The `PlateModelManager` object can be used to download and manage plate reconstruction models.
 
 ```
-  pm_manager = PlateModelManager()
-  model = pm_manager.get_model("Muller2019")
-  model.set_data_dir("plate-model-repo")
+from gplately import PlateReconstruction, PlotTopologies
+from plate_model_manager import PlateModelManager
 
-  recon_model = PlateReconstruction(
-      model.get_rotation_model(),
-      topology_features=model.get_layer("Topologies"),
-      static_polygons=model.get_layer("StaticPolygons"),
-  )
-  gplot = PlotTopologies(
-      recon_model,
-      coastlines=model.get_layer("Coastlines"),
-      COBs=model.get_layer("COBs"),
-      time=55,
-  )
+pm_manager = PlateModelManager()
+model = pm_manager.get_model("Muller2019")
+model.set_data_dir("plate-model-repo")
+
+recon_model = PlateReconstruction(
+    model.get_rotation_model(),
+    topology_features=model.get_layer("Topologies"),
+    static_polygons=model.get_layer("StaticPolygons"),
+)
+gplot = PlotTopologies(
+    recon_model,
+    coastlines=model.get_layer("Coastlines"),
+    COBs=model.get_layer("COBs"),
+    time=55,
+)
 ```
 
 ### The `PlateReconstruction` object
@@ -200,7 +204,7 @@ gpts = gplately.Points(model, pt_lon, pt_lat)
 relief rasters. You can also reconstruct raster data back through geological time!
 
 ```python
-etopo = gdownload.get_raster("ETOPO1_tif")
+etopo = gDownload.get_raster("ETOPO1_tif")
 
 raster = gplately.Raster(
     model,
