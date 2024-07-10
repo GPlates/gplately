@@ -657,13 +657,6 @@ boundaries and passive continental boundaries.</dd>
         assert time is not None, &#34;time must be set to a valid reconstruction time&#34;
 
         self._time = float(time)
-        resolved_topologies = ptt.resolve_topologies.resolve_topologies_into_features(
-            self.plate_reconstruction.rotation_model,
-            self.plate_reconstruction.topology_features,
-            self.time,
-            anchor_plate_id=self.anchor_plate_id,
-        )
-
         (
             self.topologies,
             self.ridge_transforms,
@@ -673,12 +666,11 @@ boundaries and passive continental boundaries.</dd>
             self.trench_left,
             self.trench_right,
             self.other,
-        ) = resolved_topologies
-
-        self.ridges, self.transforms = (
-            ptt.separate_ridge_transform_segments.separate_features_into_ridges_and_transforms(
-                self.plate_reconstruction.rotation_model, self.ridge_transforms
-            )
+        ) = ptt.resolve_topologies.resolve_topologies_into_features(
+            self.plate_reconstruction.rotation_model,
+            self.plate_reconstruction.topology_features,
+            self.time,
+            anchor_plate_id=self.anchor_plate_id,
         )
 
         # miscellaneous boundaries
