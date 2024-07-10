@@ -97,10 +97,6 @@ __all__ = [
     "wrap_geometries",
 ]
 
-__pdoc__ = {
-    "PointOnSphere": """GPlately equivalent of `pygplates.PointOnSphere`, incorporating `to_shapely` method"""
-}
-
 
 class GeometryOnSphere(pygplates.GeometryOnSphere):
     """Class to mix in `to_shapely` method to all GPlately geometry classes.
@@ -577,3 +573,12 @@ def _contains_pygplates_geometries(i):
     except TypeError:  # i is not iterable
         pass
     return False
+
+
+__pdoc__ = {
+    "PointOnSphere": PointOnSphere.__doc__,
+    "PolygonOnSphere": PolygonOnSphere.__doc__,
+    "LatLonPoint": LatLonPoint.__doc__,
+    "MultiPointOnSphere": MultiPointOnSphere.__doc__,
+    "PolylineOnSphere": PolylineOnSphere.__doc__,
+}
