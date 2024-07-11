@@ -32,7 +32,6 @@ from . import (
     utils,
     velocity_tools,
 )
-from .documentation import install_documentation
 
 __pdoc__ = {
     "cleanup_topologies.add_arguments": False,
