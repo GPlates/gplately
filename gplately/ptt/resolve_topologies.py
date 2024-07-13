@@ -173,6 +173,7 @@ def resolve_topologies_into_features(
         time,
         shared_boundary_sections,
         anchor_plate_id=anchor_plate_id,
+        resolve_topology_types=pygplates.ResolveTopologyType.boundary,
     )
 
     # We'll create a feature for each boundary polygon feature and each type of
