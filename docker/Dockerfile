@@ -1,11 +1,11 @@
 #
 # to build this docker container image
 # step 1: git clone https://github.com/GPlates/gplately.git
-# step 2: go into folder gplately
-# step 3: docker build -f docker/Dockerfile -t gplates/gplately .
+# step 2: cd gplately
+# step 3: docker build -f docker/Dockerfile -t gplately .
 #
 # run the docker container
-# docker run --rm -ti -p 8888:8888 -v `pwd`:/workspace/my_stuff gplates/gplately 
+# docker run --rm -ti -p 8888:8888 -v `pwd`:/workspace/my_stuff gplately 
 #
 
 # if error, try with --no-cache option

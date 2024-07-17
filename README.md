@@ -112,6 +112,14 @@ git pull # fetch all recent changes from this branch
 pip install .
 ```
 
+### 3. Using Docker 🐳
+
+- `docker pull ghcr.io/gplates/gplately`
+- `docker run --rm -ti -p 8888:8888  gplates/gplately`
+- http://localhost:8888
+
+See details [docker/README.md](docker/README.md).
+
 ## Usage
 
 GPlately uses objects to accomplish a variety of common tasks. The common objects include:
@@ -146,7 +154,7 @@ gDownload = gplately.DataServer("Muller2019")
 rotation_model, topology_features, static_polygons = gDownload.get_plate_reconstruction_files()
 ```
 
-### The `PlateModelManager` object
+### The `PlateModelManager` object 🚀
 
 ... was introduced as an alternative/substitute to the `DataServer` object. The `PlateModelManager` object can be used to download and manage plate reconstruction models.
 
