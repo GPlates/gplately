@@ -114,7 +114,7 @@ pip install .
 
 ### 3. Using Docker 🐳
 
-- `docker pull ghcr.io/gplates/gplately`
+- `docker pull gplates/gplately`
 - `docker run --rm -ti -p 8888:8888  gplates/gplately`
 - http://localhost:8888
 
