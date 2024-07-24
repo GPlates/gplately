@@ -40,4 +40,5 @@ __pdoc__ = {
     "log_utils": False,
     "plot_utils": False,
     "seafloor_grid_utils": False,
+    "crustal_production": False,
 }
