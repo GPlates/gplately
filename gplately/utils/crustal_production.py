@@ -1,15 +1,49 @@
+import logging
+import os
+import sys
+
 import pygmt
 import xarray as xr
 
-# age threshold
-x = 14
+logger = logging.getLogger("gplately")
 
-# https://www.earthbyte.org/webdav/ftp/Data_Collections/Muller_etal_2019_Tectonics/Muller_etal_2019_Agegrids/Muller_etal_2019_Tectonics_v2.0_netCDF/Muller_etal_2019_Tectonics_v2.0_AgeGrid-0.nc
-age_grid = xr.open_dataset("Muller_etal_2019_Tectonics_v2.0_AgeGrid-0.nc")
-data = age_grid.to_dataarray()
 
-data = data.where(data < x)
+def compute_crustal_production(agegrid_fn: str, age_threshold: int = 3):
+    """mask out all values greater than the age threshold in the age grid;
+    find the total area which is covered by the remaining age values;
+    divide the area by the age threshold to obtain crustal production rate in km2/my
 
-output_dataframe = pygmt.grdvolume(grid=data, contour=[0], output_type="pandas")
-print(output_dataframe)
-print(output_dataframe.iloc[0, 1])
+    Parameters
+    ----------
+    agegrid_fn: str
+        the file path to the age grid file(NetCDF)
+    age_threshold: int
+        use the age threshold to mask age grid and calculate the crustal production rate
+
+    Returns
+    -------
+    a floating point number(crustal production rate in km2/my)
+    """
+
+    if not os.path.isfile(agegrid_fn):
+        logging.error(
+            f"The given age grid file({agegrid_fn}) does not exist or is not a file."
+        )
+
+    if age_threshold < 3:
+        logging.warn(
+            f"The give age threshold({age_threshold}) is too small. It is highly recommended that the value >=3."
+        )
+
+    age_grid = xr.open_dataset(agegrid_fn)
+    data = age_grid.to_dataarray()
+
+    if len(data.dims) == 3:
+        data = data[0]
+
+    data = data.where(data < age_threshold + sys.float_info.epsilon)
+
+    output_dataframe = pygmt.grdvolume(grid=data, contour=[0], output_type="pandas")
+
+    rate = output_dataframe.iloc[0, 1] / age_threshold
+    return round(rate, 2)
