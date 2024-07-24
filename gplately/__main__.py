@@ -23,7 +23,7 @@ import pygplates
 
 from gplately import __version__
 
-from .commands import create_age_grids, feature_filter
+from .commands import create_age_grids, feature_filter, list_models
 from .ptt import (
     cleanup_topologies,
     convert_xy_to_gplates,
@@ -181,6 +181,9 @@ def main():
     combine_cmd.add_argument("combine_first_input_file", type=str)
     combine_cmd.add_argument("combine_other_input_files", nargs="+", type=str)
     combine_cmd.add_argument("combine_output_file", type=str)
+
+    # add "list models" sub-command
+    list_models.add_parser(subparser)
 
     if len(sys.argv) == 1:
         parser.print_help(sys.stderr)
