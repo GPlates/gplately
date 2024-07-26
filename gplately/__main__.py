@@ -79,6 +79,8 @@ def main():
         title="subcommands",
         description="valid subcommands",
     )
+    # add "list models" sub-command
+    list_models.add_parser(subparser)
 
     # add "combine feature" sub-command
     combine_cmd = subparser.add_parser(
@@ -181,9 +183,6 @@ def main():
     combine_cmd.add_argument("combine_first_input_file", type=str)
     combine_cmd.add_argument("combine_other_input_files", nargs="+", type=str)
     combine_cmd.add_argument("combine_output_file", type=str)
-
-    # add "list models" sub-command
-    list_models.add_parser(subparser)
 
     if len(sys.argv) == 1:
         parser.print_help(sys.stderr)
