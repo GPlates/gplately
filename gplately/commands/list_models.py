@@ -15,13 +15,19 @@
 #    51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
 
-import abc
 import argparse
-from typing import List
+import logging
 
-import pygplates
+import requests
+from plate_model_manager import PlateModelManager
 
-__description__ = """Show a list of available reconstruction models.
+from ..exceptions import UnableToGetModelList
+
+logger = logging.getLogger("gplately")
+
+help_str = "Show a list of available reconstruction models."
+
+__description__ = f"""{help_str}
 
 Example usage: 
     - gplately list
@@ -33,7 +39,7 @@ def add_parser(subparser):
     """add 'list model' command line argument parser"""
     list_cmd = subparser.add_parser(
         "list",
-        help=__description__,
+        help=help_str,
         add_help=True,
         description=__description__,
         formatter_class=argparse.RawDescriptionHelpFormatter,
@@ -45,6 +51,63 @@ def add_parser(subparser):
 
 
 def run_list_models(args):
-    print("run_list_models")
     if args.model:
-        print(args.model)
+        print()
+        print("Layers:")
+        for l in get_layer_names(args.model[0]):
+            print(f"    {l}")
+        print()
+        print(f"Model name: {args.model[0]}")
+        print(f"Model URL: {get_model_url(args.model[0])}")
+        print()
+    else:
+        print()
+        print("Models:")
+        for n in get_model_names():
+            print(f"    {n}")
+        print()
+
+
+def get_model_names():
+    model_list_urls = [
+        "https://repo.gplates.org/webdav/pmm/config/gplately_model_list.json",
+        "https://www.earthbyte.org/webdav/pmm/config/gplately_model_list.json",
+        "https://portal.gplates.org/static/pmm/config/gplately_model_list.json",
+    ]
+    names = []
+    for url in model_list_urls:
+        try:
+            response = requests.get(url, timeout=(5, 5))
+            if response.status_code == 200:
+                models = response.json()
+                pm_mgr = PlateModelManager()
+                mnames = pm_mgr.get_available_model_names()
+                for model in models:
+                    if model in mnames:
+                        names.append(model)
+                return names
+            else:
+                continue
+        except:
+            continue
+    logger.error(
+        "Unable to get a list of model names from the servers. Check the network connection. See the server list below."
+    )
+    logger.info(model_list_urls)
+    raise UnableToGetModelList
+
+
+def get_layer_names(model):
+    pm_mgr = PlateModelManager()
+    m = pm_mgr.get_model(model)
+    return m.get_avail_layers()
+
+
+def get_model_url(model):
+    pm_mgr = PlateModelManager()
+    m = pm_mgr.get_model(model)
+    cfg = m.get_cfg()
+    if "URL" in cfg:
+        return cfg["URL"]
+    else:
+        return ""

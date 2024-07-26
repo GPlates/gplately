@@ -23,3 +23,12 @@ class ReconstructionTimeNotSet(Exception):
         super().__init__(
             "The reconstruction time has not been set yet. Set `PlotTopologies.time` before calling plotting functions."
         )
+
+
+class UnableToGetModelList(Exception):
+    """raise this exception when failed to get a list of model names over Internet"""
+
+    def __init__(self):
+        super().__init__(
+            "Unable to get a list of model names over Internet. Your network may be down or the servers may be offline."
+        )

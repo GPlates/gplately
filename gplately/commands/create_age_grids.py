@@ -40,7 +40,7 @@ def add_parser(parser: argparse.ArgumentParser):
     agegrid_cmd = parser.add_parser(
         "agegrid",
         aliases=("ag",),
-        help=__description__,
+        help=help_str,
         add_help=True,
         description=__description__,
         formatter_class=argparse.RawDescriptionHelpFormatter,
@@ -152,7 +152,9 @@ def add_parser(parser: argparse.ArgumentParser):
     )
 
 
-__description__ = """Create age grids for a plate model.
+help_str = "Create age grids for a plate model."
+
+__description__ = f"""{help_str}
 
 Example usage: 
     - gplately ag output -m merdith2021 -e 0 -s 10
