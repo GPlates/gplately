@@ -8,7 +8,7 @@ import xarray as xr
 logger = logging.getLogger("gplately")
 
 
-def compute_crustal_production(agegrid_fn: str, age_threshold: int = 3):
+def compute_crustal_production_rate(agegrid_fn: str, age_threshold: int = 3):
     """mask out all values greater than the age threshold in the age grid;
     find the total area which is covered by the remaining age values;
     divide the area by the age threshold to obtain crustal production rate in km2/my
@@ -22,7 +22,7 @@ def compute_crustal_production(agegrid_fn: str, age_threshold: int = 3):
 
     Returns
     -------
-    a floating point number(crustal production rate in km2/my)
+    a floating point number(crustal production rate in km2/year)
     """
 
     if not os.path.isfile(agegrid_fn):
@@ -43,7 +43,16 @@ def compute_crustal_production(agegrid_fn: str, age_threshold: int = 3):
 
     data = data.where(data < age_threshold + sys.float_info.epsilon)
 
-    output_dataframe = pygmt.grdvolume(grid=data, contour=[0], output_type="pandas")
-
-    rate = output_dataframe.iloc[0, 1] / age_threshold
+    output_dataframe = pygmt.grdvolume(
+        grid=data,
+        contour=[0],
+        output_type="pandas",
+        region=[-180, 180, -90, 90],
+        unit="k",  # specify the area unit, 'k' means kilometers
+        f="g",  # To make sure your Cartesian grid is recognized as geographical, use the -fg option.
+    )
+    # print(output_dataframe)
+    million_years = 1000000
+    # the rate is in km2/year
+    rate = output_dataframe.iloc[0, 1] / age_threshold / million_years
     return round(rate, 2)

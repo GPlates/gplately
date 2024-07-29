@@ -23,8 +23,8 @@ if __name__ == "__main__":
     else:
         print(f"The local age grid is still good. No need to download again!")
 
-    for i in range(3, 10):
-        crustal_production_rate = crustal_production.compute_crustal_production(
+    for i in range(3, 11):
+        crustal_production_rate = crustal_production.compute_crustal_production_rate(
             f"{data_dir}/Muller_etal_2019_Tectonics_v2.0_AgeGrid-0.nc", i
         )
         print(f"{i}: {crustal_production_rate}")
