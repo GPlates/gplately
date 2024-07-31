@@ -32,11 +32,11 @@ jobs:
         shell: bash -el {0}
 
       - name: test jupyter-nbconvert
-        run: jupyter-nbconvert
+        run: jupyter-nbconvert --version
         shell: bash -el {0}
 
       - name: test pdoc
-        run: pdoc
+        run: pdoc --version
         shell: bash -el {0}
 
       - name: Generate documentation with pdoc3
