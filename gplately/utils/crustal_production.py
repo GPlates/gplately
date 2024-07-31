@@ -11,7 +11,7 @@ logger = logging.getLogger("gplately")
 def compute_crustal_production_rate(agegrid_fn: str, age_threshold: int = 3):
     """mask out all values greater than the age threshold in the age grid;
     find the total area which is covered by the remaining age values;
-    divide the area by the age threshold to obtain crustal production rate in km2/my
+    divide the area by the age threshold to obtain crustal production rate in km2/year
 
     Parameters
     ----------
@@ -38,6 +38,7 @@ def compute_crustal_production_rate(agegrid_fn: str, age_threshold: int = 3):
     age_grid = xr.open_dataset(agegrid_fn)
     data = age_grid.to_dataarray()
 
+    # just in case the age grid netcdf is 3-dimensional
     if len(data.dims) == 3:
         data = data[0]
 

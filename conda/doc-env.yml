@@ -1,0 +1,10 @@
+name: test-env
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - gplately
+  - pygmt
+  - pyyaml
+  - jupyter
+  - pdoc3
