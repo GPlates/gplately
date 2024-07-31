@@ -1,4 +1,4 @@
-name: test-env
+name: doc-env
 channels:
   - conda-forge
   - defaults
@@ -8,3 +8,4 @@ dependencies:
   - pyyaml
   - jupyter
   - pdoc3
+  - rioxarray
