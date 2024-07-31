@@ -27,6 +27,18 @@ jobs:
         run: |
           pip install . --no-binary :all: --no-cache-dir --no-dependencies
 
+      - name: test pygmt
+        run: python -c "import pygmt"
+        shell: bash -el {0}
+
+      - name: test jupyter-nbconvert
+        run: jupyter-nbconvert
+        shell: bash -el {0}
+
+      - name: test pdoc
+        run: pdoc
+        shell: bash -el {0}
+
       - name: Generate documentation with pdoc3
         run: |
           pdoc3 --config latex_math=True --template-dir .pdoc_template --html -o api --force gplately
@@ -34,7 +46,7 @@ jobs:
       - name: Convert jupyter notebooks to html
         run: |
           jupyter-nbconvert --to=html --output-dir=api/gplately/ Notebooks/*.ipynb
-          
+
       - name: Deploy to gh-pages
         uses: JamesIves/github-pages-deploy-action@v4.2.2
         with:
