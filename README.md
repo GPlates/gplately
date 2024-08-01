@@ -54,6 +54,8 @@ eprint = {https://rmets.onlinelibrary.wiley.com/doi/pdf/10.1002/gdj3.185},
 - [Pooch](https://github.com/fatiando/pooch)
 - [GeoPandas](https://geopandas.org/en/stable/getting_started.html)
 - [netCDF4](https://unidata.github.io/netcdf4-python/#quick-install)
+- [pygmt](https://www.pygmt.org/latest/)
+- [rioxarray](https://github.com/corteva/rioxarray)
 
 ## Installation
 
@@ -116,9 +118,20 @@ pip install .
 
 ### 3. Using Docker 🐳
 
+Run GPlately example notebooks
+
 - `docker pull gplates/gplately`
 - `docker run --rm -ti -p 8888:8888  gplates/gplately`
 - http://localhost:8888
+
+Run GPlately command with Docker
+
+- `docker run gplates/gplately gplately --version`
+- `docker run gplates/gplately gplately --help`
+
+Run your Python script with Docker
+
+- `docker run -it --rm -v "$PWD":/ws -w /ws gplates/gplately python my_script_to_run.py` (assume my_script_to_run.py is in current working directory)
 
 See details [docker/README.md](docker/README.md).
 
@@ -282,6 +295,20 @@ Other documentation versions:
 ## Command Line Tools
 
 GPlately comes with a suite of useful command line tools. These tools are designed as GPlately subcommands. Run `gplately -h` to show the list of tools.
+
+- **list**
+
+  Display a list of available plate models from GPlates server. These model names can then be used by the Plate Model Manager to download model files over Internet. Run `gplately list -h` for details.
+
+  Examples:
+
+    - `gplately list`
+    - `gplately list -m merdith2021`
+
+    If you are using GPlately Docker image
+
+    - `docker run gplates/gplately gplately list`
+    - `docker run gplates/gplately gplately list -m merdith2021`
 
 - **combine**
 
