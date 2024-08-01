@@ -40,8 +40,8 @@ def main(show=True):
         time=age,
     )
 
-    age = 100
-    gplot.time = age
+    # age = 100
+    # gplot.time = age
 
     fig = plt.figure(figsize=(10, 5), dpi=96)
     ax = fig.add_subplot(111, projection=ccrs.Robinson(central_longitude=180))
@@ -56,7 +56,7 @@ def main(show=True):
         "ridges": 0,
         "all_topologies": 0,
         "all_topological_sections": 0,
-        "plate_polygon_by_id": 1,
+        "plate_polygon_by_id": 0,
         "unclassified_features": 0,
         "misc_transforms": 0,
         "slab_edges": 0,
@@ -74,6 +74,7 @@ def main(show=True):
         "misc_boundaries": 0,
         "transforms": 0,
         "continents": 0,
+        "topological_plate_boundaries": 1,
     }
 
     for key in plot_flag:

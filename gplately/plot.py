@@ -320,7 +320,7 @@ class PlotTopologies(object):
         self.coastlines = None
         self.continents = None
         self.COBs = None
-        self.topological_plate_boundaries = None
+        self._topological_plate_boundaries = None
         self._topologies = None
 
         self._anchor_plate_id = self._check_anchor_plate_id(anchor_plate_id)
@@ -450,7 +450,7 @@ class PlotTopologies(object):
 
         self._time = float(time)
         (
-            self.topological_plate_boundaries,
+            self._topological_plate_boundaries,
             self.ridge_transforms,
             self.ridges,
             self.transforms,
@@ -687,7 +687,7 @@ class PlotTopologies(object):
 
     @append_docstring(PLOT_DOCSTRING.format("feature"))
     def plot_feature(self, ax, feature, feature_name="", color="black", **kwargs):
-        """Plot pygplates.FeatureCollection  or pygplates.Feature onto a map."""
+        """Plot pygplates.FeatureCollection or pygplates.Feature onto a map."""
         if not feature:
             logger.warn(
                 f"The given feature({feature_name}:{feature}) in model:{self.plate_reconstruction.plate_model_name} is empty and will not be plotted."
@@ -1976,3 +1976,26 @@ class PlotTopologies(object):
                 anchor_plate_id=self.anchor_plate_id,
             )
             self._topologies = [t.get_resolved_feature() for t in resolved_topologies]
+
+    @validate_reconstruction_time
+    @append_docstring(GET_DATE_DOCSTRING.format("topological plate boundaries"))
+    def get_topological_plate_boundaries(
+        self, central_meridian=0.0, tessellate_degrees=1
+    ):
+        """Create a geopandas.GeoDataFrame object containing geometries of reconstructed rigid topological plate boundaries."""
+        return self.get_feature(
+            self._topological_plate_boundaries,
+            central_meridian=central_meridian,
+            tessellate_degrees=tessellate_degrees,
+        )
+
+    @validate_topology_availability("topological plate boundaries")
+    @append_docstring(PLOT_DOCSTRING.format("topological plate boundaries"))
+    def plot_topological_plate_boundaries(self, ax, color="black", **kwargs):
+        return self.plot_feature(
+            ax,
+            self._topological_plate_boundaries,
+            feature_name="topological plate boundaries",
+            color=color,
+            **kwargs,
+        )
