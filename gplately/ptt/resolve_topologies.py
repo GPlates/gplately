@@ -126,6 +126,9 @@ def resolve_topologies_into_features(
     time,
     transform_segment_deviation_in_radians=separate_ridge_transform_segments.DEFAULT_TRANSFORM_SEGMENT_DEVIATION_RADIANS,
     anchor_plate_id=None,
+    resolve_topology_types: int = (
+        pygplates.ResolveTopologyType.boundary | pygplates.ResolveTopologyType.network
+    ),
 ):
     """
     Resolves topologies at specified time and returns resolved topologies and their boundary sections as subduction zones,
@@ -173,6 +176,7 @@ def resolve_topologies_into_features(
         time,
         shared_boundary_sections,
         anchor_plate_id=anchor_plate_id,
+        resolve_topology_types=resolve_topology_types,
     )
 
     # We'll create a feature for each boundary polygon feature and each type of

@@ -24,7 +24,8 @@ jobs:
     defaults:
       run:
         shell: bash -el {0}
-
+        
+    if: github.event.pull_request.draft == false
     steps:
       - uses: actions/checkout@v4
       - uses: mamba-org/setup-micromamba@v1
