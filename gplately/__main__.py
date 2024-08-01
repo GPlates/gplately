@@ -23,7 +23,7 @@ import pygplates
 
 from gplately import __version__
 
-from .commands import create_age_grids, feature_filter
+from .commands import create_age_grids, feature_filter, list_models
 from .ptt import (
     cleanup_topologies,
     convert_xy_to_gplates,
@@ -79,6 +79,8 @@ def main():
         title="subcommands",
         description="valid subcommands",
     )
+    # add "list models" sub-command
+    list_models.add_parser(subparser)
 
     # add "combine feature" sub-command
     combine_cmd = subparser.add_parser(
