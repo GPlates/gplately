@@ -535,6 +535,8 @@ boundaries and passive continental boundaries.</dd>
         self.coastlines = None
         self.continents = None
         self.COBs = None
+        self._topological_plate_boundaries = None
+        self._topologies = None
 
         self._anchor_plate_id = self._check_anchor_plate_id(anchor_plate_id)
 
@@ -594,6 +596,11 @@ boundaries and passive continental boundaries.</dd>
         self._anchor_plate_id = state[&#34;plate_id&#34;]
         self.base_projection = ccrs.PlateCarree()
         self._time = None
+
+    @property
+    def topologies(self):
+        self._resolve_both_boundaries_and_networks()
+        return self._topologies
 
     @property
     def time(self):
@@ -658,7 +665,7 @@ boundaries and passive continental boundaries.</dd>
 
         self._time = float(time)
         (
-            self.topologies,
+            self._topological_plate_boundaries,
             self.ridge_transforms,
             self.ridges,
             self.transforms,
@@ -671,7 +678,11 @@ boundaries and passive continental boundaries.</dd>
             self.plate_reconstruction.topology_features,
             self.time,
             anchor_plate_id=self.anchor_plate_id,
+            # use ResolveTopologyType.boundary parameter to resolve rigid plate boundary only
+            # because the Mid-ocean ridges(and transforms) should not contain lines from topological networks
+            resolve_topology_types=pygplates.ResolveTopologyType.boundary,
         )
+        self._topologies = None
 
         # miscellaneous boundaries
         self.continental_rifts = []
@@ -891,7 +902,7 @@ boundaries and passive continental boundaries.</dd>
 
     @append_docstring(PLOT_DOCSTRING.format(&#34;feature&#34;))
     def plot_feature(self, ax, feature, feature_name=&#34;&#34;, color=&#34;black&#34;, **kwargs):
-        &#34;&#34;&#34;Plot pygplates.FeatureCollection  or pygplates.Feature onto a map.&#34;&#34;&#34;
+        &#34;&#34;&#34;Plot pygplates.FeatureCollection or pygplates.Feature onto a map.&#34;&#34;&#34;
         if not feature:
             logger.warn(
                 f&#34;The given feature({feature_name}:{feature}) in model:{self.plate_reconstruction.plate_model_name} is empty and will not be plotted.&#34;
@@ -1431,7 +1442,7 @@ boundaries and passive continental boundaries.</dd>
             **kwargs,
         )
 
-    def plot_plate_polygon_by_id(self, ax, plate_id, **kwargs):
+    def plot_plate_polygon_by_id(self, ax, plate_id, color=&#34;black&#34;, **kwargs):
         &#34;&#34;&#34;Plot a plate polygon with an associated `plate_id` onto a standard map Projection.
 
         Parameters
@@ -1452,19 +1463,16 @@ boundaries and passive continental boundaries.</dd>
             [here](https://matplotlib.org/3.5.1/api/_as_gen/matplotlib.axes.Axes.imshow.html).
 
         &#34;&#34;&#34;
-        tessellate_degrees = kwargs.pop(&#34;tessellate_degrees&#34;, 1)
-        central_meridian = kwargs.pop(&#34;central_meridian&#34;, None)
-        if central_meridian is None:
-            central_meridian = _meridian_from_ax(ax)
-
-        for feature in self.topologies:
-            if feature.get_reconstruction_plate_id() == plate_id:
-                ft_plate = shapelify_feature_polygons(
-                    [feature],
-                    central_meridian=central_meridian,
-                    tessellate_degrees=tessellate_degrees,
-                )
-                return ax.add_geometries(ft_plate, crs=self.base_projection, **kwargs)
+        return self.plot_feature(
+            ax,
+            [
+                feature
+                for feature in self.topologies
+                if feature.get_reconstruction_plate_id() == plate_id
+            ],
+            color=color,
+            **kwargs,
+        )
 
     # the old function name(plot_plate_id) is bad. we should change the name
     # for backward compatibility, we have to allow users to use the old name
@@ -2015,6 +2023,7 @@ boundaries and passive continental boundaries.</dd>
         tessellate_degrees=1,
     ):
         &#34;&#34;&#34;Create a geopandas.GeoDataFrame object containing geometries of reconstructed unclassified feature lines.&#34;&#34;&#34;
+
         # get plate IDs and feature types to add to geodataframe
         plate_IDs = []
         feature_types = []
@@ -2166,6 +2175,44 @@ boundaries and passive continental boundaries.</dd>
             facecolor=&#34;none&#34;,
             edgecolor=color,
             **kwargs,
+        )
+
+    def _resolve_both_boundaries_and_networks(self):
+        &#34;&#34;&#34;need to resolve_topologies for both rigid boundaries and networks if not done yet&#34;&#34;&#34;
+        if self._topologies is None:
+            resolved_topologies = []
+            shared_boundary_sections = []
+            pygplates.resolve_topologies(
+                self.plate_reconstruction.topology_features,
+                self.plate_reconstruction.rotation_model,
+                resolved_topologies,
+                self.time,
+                shared_boundary_sections,
+                anchor_plate_id=self.anchor_plate_id,
+            )
+            self._topologies = [t.get_resolved_feature() for t in resolved_topologies]
+
+    @validate_reconstruction_time
+    @append_docstring(GET_DATE_DOCSTRING.format(&#34;topological plate boundaries&#34;))
+    def get_topological_plate_boundaries(
+        self, central_meridian=0.0, tessellate_degrees=1
+    ):
+        &#34;&#34;&#34;Create a geopandas.GeoDataFrame object containing geometries of reconstructed rigid topological plate boundaries.&#34;&#34;&#34;
+        return self.get_feature(
+            self._topological_plate_boundaries,
+            central_meridian=central_meridian,
+            tessellate_degrees=tessellate_degrees,
+        )
+
+    @validate_topology_availability(&#34;topological plate boundaries&#34;)
+    @append_docstring(PLOT_DOCSTRING.format(&#34;topological plate boundaries&#34;))
+    def plot_topological_plate_boundaries(self, ax, color=&#34;black&#34;, **kwargs):
+        return self.plot_feature(
+            ax,
+            self._topological_plate_boundaries,
+            feature_name=&#34;topological plate boundaries&#34;,
+            color=color,
+            **kwargs,
         )</code></pre>
 </details>
 <h3>Instance variables</h3>
@@ -2194,6 +2241,19 @@ def anchor_plate_id(self):
 def time(self):
     &#34;&#34;&#34;The reconstruction time.&#34;&#34;&#34;
     return self._time</code></pre>
+</details>
+</dd>
+<dt id="gplately.plot.PlotTopologies.topologies"><code class="name">prop <span class="ident">topologies</span></code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def topologies(self):
+    self._resolve_both_boundaries_and_networks()
+    return self._topologies</code></pre>
 </details>
 </dd>
 </dl>
@@ -3050,6 +3110,46 @@ gplot.time = time
 are reconstructed, they are converted into Shapely lines whose
 coordinates are passed to a geopandas GeoDataFrame.</p></div>
 </dd>
+<dt id="gplately.plot.PlotTopologies.get_topological_plate_boundaries"><code class="name flex">
+<span>def <span class="ident">get_topological_plate_boundaries</span></span>(<span>self, central_meridian=0.0, tessellate_degrees=1)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Create a geopandas.GeoDataFrame object containing geometries of reconstructed rigid topological plate boundaries.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>central_meridian</code></strong> :&ensp;<code>float</code></dt>
+<dd>Central meridian around which to perform wrapping; default: 0.0.</dd>
+<dt><strong><code>tessellate_degrees</code></strong> :&ensp;<code>float</code> or <code>None</code></dt>
+<dd>If provided, geometries will be tessellated to this resolution prior
+to wrapping.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>geopandas.GeoDataFrame</code></dt>
+<dd>A pandas.DataFrame that has a column with <code>topological plate boundaries</code> geometry.</dd>
+</dl>
+<h2 id="raises">Raises</h2>
+<dl>
+<dt><code>ValueError</code></dt>
+<dd>If the optional <code>time</code> parameter has not been passed to
+<code><a title="gplately.plot.PlotTopologies" href="#gplately.plot.PlotTopologies">PlotTopologies</a></code>. This is needed to construct <code>topological plate boundaries</code>
+to the requested <code>time</code> and thus populate the GeoDataFrame.</dd>
+</dl>
+<h2 id="notes">Notes</h2>
+<p>The <code>topological plate boundaries</code> needed to produce the GeoDataFrame are automatically
+constructed if the optional <code>time</code> parameter is passed to the
+<code><a title="gplately.plot.PlotTopologies" href="#gplately.plot.PlotTopologies">PlotTopologies</a></code> object before calling this function. <code>time</code> can be
+passed either when <code><a title="gplately.plot.PlotTopologies" href="#gplately.plot.PlotTopologies">PlotTopologies</a></code> is first called&hellip;</p>
+<pre><code>gplot = gplately.PlotTopologies(..., time=100,...)
+</code></pre>
+<p>or anytime afterwards, by setting:</p>
+<pre><code>time = 100 # Ma
+gplot.time = time
+</code></pre>
+<p>&hellip;after which this function can be re-run. Once the <code>topological plate boundaries</code>
+are reconstructed, they are converted into Shapely lines whose
+coordinates are passed to a geopandas GeoDataFrame.</p></div>
+</dd>
 <dt id="gplately.plot.PlotTopologies.get_transforms"><code class="name flex">
 <span>def <span class="ident">get_transforms</span></span>(<span>self, central_meridian=0.0, tessellate_degrees=1)</span>
 </code></dt>
@@ -3440,8 +3540,7 @@ with <code>faults</code> features plotted onto the chosen map projection.</dd>
 <span>def <span class="ident">plot_feature</span></span>(<span>self, ax, feature, feature_name='', color='black', **kwargs)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Plot pygplates.FeatureCollection
-or pygplates.Feature onto a map.</p>
+<div class="desc"><p>Plot pygplates.FeatureCollection or pygplates.Feature onto a map.</p>
 <h2 id="parameters">Parameters</h2>
 <dl>
 <dt><strong><code>ax</code></strong> :&ensp;<code>instance</code> of <code>&lt;cartopy.mpl.geoaxes.GeoAxes&gt;</code> or <code>&lt;cartopy.mpl.geoaxes.GeoAxesSubplot&gt;</code></dt>
@@ -3736,7 +3835,7 @@ with the velocity vector field plotted onto the chosen map projection.</dd>
 </dl></div>
 </dd>
 <dt id="gplately.plot.PlotTopologies.plot_plate_polygon_by_id"><code class="name flex">
-<span>def <span class="ident">plot_plate_polygon_by_id</span></span>(<span>self, ax, plate_id, **kwargs)</span>
+<span>def <span class="ident">plot_plate_polygon_by_id</span></span>(<span>self, ax, plate_id, color='black', **kwargs)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Plot a plate polygon with an associated <code>plate_id</code> onto a standard map Projection.</p>
@@ -3965,6 +4064,28 @@ See <code>Matplotlib</code> keyword arguments <a href="https://matplotlib.org/st
 with <code>terrane boundaries</code> features plotted onto the chosen map projection.</dd>
 </dl></div>
 </dd>
+<dt id="gplately.plot.PlotTopologies.plot_topological_plate_boundaries"><code class="name flex">
+<span>def <span class="ident">plot_topological_plate_boundaries</span></span>(<span>self, ax, color='black', **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"><h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>ax</code></strong> :&ensp;<code>instance</code> of <code>&lt;cartopy.mpl.geoaxes.GeoAxes&gt;</code> or <code>&lt;cartopy.mpl.geoaxes.GeoAxesSubplot&gt;</code></dt>
+<dd>A subclass of <code>matplotlib.axes.Axes</code> which represents a map Projection.
+The map should be set at a particular Cartopy projection.</dd>
+<dt><strong><code>color</code></strong> :&ensp;<code>str</code>, default=<code>’black’</code></dt>
+<dd>The colour of the <code>topological plate boundaries</code> lines. By default, it is set to black.</dd>
+</dl>
+<p>**kwargs :
+Keyword arguments for parameters such as <code>alpha</code>, etc. for plotting <code>topological plate boundaries</code> geometries.
+See <code>Matplotlib</code> keyword arguments <a href="https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html">here</a>.</p>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><strong><code>ax</code></strong> :&ensp;<code>instance</code> of <code>&lt;geopandas.GeoDataFrame.plot&gt;</code></dt>
+<dd>A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map
+with <code>topological plate boundaries</code> features plotted onto the chosen map projection.</dd>
+</dl></div>
+</dd>
 <dt id="gplately.plot.PlotTopologies.plot_transforms"><code class="name flex">
 <span>def <span class="ident">plot_transforms</span></span>(<span>self, ax, color='black', **kwargs)</span>
 </code></dt>
@@ -4163,6 +4284,7 @@ whenever it or the anchor plate is updated.</p>
 <li><code><a title="gplately.plot.PlotTopologies.get_subduction_direction" href="#gplately.plot.PlotTopologies.get_subduction_direction">get_subduction_direction</a></code></li>
 <li><code><a title="gplately.plot.PlotTopologies.get_sutures" href="#gplately.plot.PlotTopologies.get_sutures">get_sutures</a></code></li>
 <li><code><a title="gplately.plot.PlotTopologies.get_terrane_boundaries" href="#gplately.plot.PlotTopologies.get_terrane_boundaries">get_terrane_boundaries</a></code></li>
+<li><code><a title="gplately.plot.PlotTopologies.get_topological_plate_boundaries" href="#gplately.plot.PlotTopologies.get_topological_plate_boundaries">get_topological_plate_boundaries</a></code></li>
 <li><code><a title="gplately.plot.PlotTopologies.get_transforms" href="#gplately.plot.PlotTopologies.get_transforms">get_transforms</a></code></li>
 <li><code><a title="gplately.plot.PlotTopologies.get_transitional_crusts" href="#gplately.plot.PlotTopologies.get_transitional_crusts">get_transitional_crusts</a></code></li>
 <li><code><a title="gplately.plot.PlotTopologies.get_trenches" href="#gplately.plot.PlotTopologies.get_trenches">get_trenches</a></code></li>
@@ -4195,11 +4317,13 @@ whenever it or the anchor plate is updated.</p>
 <li><code><a title="gplately.plot.PlotTopologies.plot_subduction_teeth_deprecated" href="#gplately.plot.PlotTopologies.plot_subduction_teeth_deprecated">plot_subduction_teeth_deprecated</a></code></li>
 <li><code><a title="gplately.plot.PlotTopologies.plot_sutures" href="#gplately.plot.PlotTopologies.plot_sutures">plot_sutures</a></code></li>
 <li><code><a title="gplately.plot.PlotTopologies.plot_terrane_boundaries" href="#gplately.plot.PlotTopologies.plot_terrane_boundaries">plot_terrane_boundaries</a></code></li>
+<li><code><a title="gplately.plot.PlotTopologies.plot_topological_plate_boundaries" href="#gplately.plot.PlotTopologies.plot_topological_plate_boundaries">plot_topological_plate_boundaries</a></code></li>
 <li><code><a title="gplately.plot.PlotTopologies.plot_transforms" href="#gplately.plot.PlotTopologies.plot_transforms">plot_transforms</a></code></li>
 <li><code><a title="gplately.plot.PlotTopologies.plot_transitional_crusts" href="#gplately.plot.PlotTopologies.plot_transitional_crusts">plot_transitional_crusts</a></code></li>
 <li><code><a title="gplately.plot.PlotTopologies.plot_trenches" href="#gplately.plot.PlotTopologies.plot_trenches">plot_trenches</a></code></li>
 <li><code><a title="gplately.plot.PlotTopologies.plot_unclassified_features" href="#gplately.plot.PlotTopologies.plot_unclassified_features">plot_unclassified_features</a></code></li>
 <li><code><a title="gplately.plot.PlotTopologies.time" href="#gplately.plot.PlotTopologies.time">time</a></code></li>
+<li><code><a title="gplately.plot.PlotTopologies.topologies" href="#gplately.plot.PlotTopologies.topologies">topologies</a></code></li>
 <li><code><a title="gplately.plot.PlotTopologies.update_time" href="#gplately.plot.PlotTopologies.update_time">update_time</a></code></li>
 </ul>
 </li>
