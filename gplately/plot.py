@@ -320,6 +320,8 @@ class PlotTopologies(object):
         self.coastlines = None
         self.continents = None
         self.COBs = None
+        self.topological_plate_boundaries = None
+        self._topologies = None
 
         self._anchor_plate_id = self._check_anchor_plate_id(anchor_plate_id)
 
@@ -379,6 +381,11 @@ class PlotTopologies(object):
         self._anchor_plate_id = state["plate_id"]
         self.base_projection = ccrs.PlateCarree()
         self._time = None
+
+    @property
+    def topologies(self):
+        self._resolve_both_boundaries_and_networks()
+        return self._topologies
 
     @property
     def time(self):
@@ -443,7 +450,7 @@ class PlotTopologies(object):
 
         self._time = float(time)
         (
-            self.topologies,
+            self.topological_plate_boundaries,
             self.ridge_transforms,
             self.ridges,
             self.transforms,
@@ -456,7 +463,11 @@ class PlotTopologies(object):
             self.plate_reconstruction.topology_features,
             self.time,
             anchor_plate_id=self.anchor_plate_id,
+            # use ResolveTopologyType.boundary parameter to resolve rigid plate boundary only
+            # because the Mid-ocean ridges(and transforms) should not contain lines from topological networks
+            resolve_topology_types=pygplates.ResolveTopologyType.boundary,
         )
+        self._topologies = None
 
         # miscellaneous boundaries
         self.continental_rifts = []
@@ -1216,7 +1227,7 @@ class PlotTopologies(object):
             **kwargs,
         )
 
-    def plot_plate_polygon_by_id(self, ax, plate_id, **kwargs):
+    def plot_plate_polygon_by_id(self, ax, plate_id, color="black", **kwargs):
         """Plot a plate polygon with an associated `plate_id` onto a standard map Projection.
 
         Parameters
@@ -1237,19 +1248,16 @@ class PlotTopologies(object):
             [here](https://matplotlib.org/3.5.1/api/_as_gen/matplotlib.axes.Axes.imshow.html).
 
         """
-        tessellate_degrees = kwargs.pop("tessellate_degrees", 1)
-        central_meridian = kwargs.pop("central_meridian", None)
-        if central_meridian is None:
-            central_meridian = _meridian_from_ax(ax)
-
-        for feature in self.topologies:
-            if feature.get_reconstruction_plate_id() == plate_id:
-                ft_plate = shapelify_feature_polygons(
-                    [feature],
-                    central_meridian=central_meridian,
-                    tessellate_degrees=tessellate_degrees,
-                )
-                return ax.add_geometries(ft_plate, crs=self.base_projection, **kwargs)
+        return self.plot_feature(
+            ax,
+            [
+                feature
+                for feature in self.topologies
+                if feature.get_reconstruction_plate_id() == plate_id
+            ],
+            color=color,
+            **kwargs,
+        )
 
     # the old function name(plot_plate_id) is bad. we should change the name
     # for backward compatibility, we have to allow users to use the old name
@@ -1800,6 +1808,7 @@ class PlotTopologies(object):
         tessellate_degrees=1,
     ):
         """Create a geopandas.GeoDataFrame object containing geometries of reconstructed unclassified feature lines."""
+
         # get plate IDs and feature types to add to geodataframe
         plate_IDs = []
         feature_types = []
@@ -1952,3 +1961,18 @@ class PlotTopologies(object):
             edgecolor=color,
             **kwargs,
         )
+
+    def _resolve_both_boundaries_and_networks(self):
+        """need to resolve_topologies for both rigid boundaries and networks if not done yet"""
+        if self._topologies is None:
+            resolved_topologies = []
+            shared_boundary_sections = []
+            pygplates.resolve_topologies(
+                self.plate_reconstruction.topology_features,
+                self.plate_reconstruction.rotation_model,
+                resolved_topologies,
+                self.time,
+                shared_boundary_sections,
+                anchor_plate_id=self.anchor_plate_id,
+            )
+            self._topologies = [t.get_resolved_feature() for t in resolved_topologies]

@@ -29,7 +29,7 @@ def main(show=True):
 
     test_model = PlateReconstruction(
         model.get_rotation_model(),
-        # topology_features=model.get_layer("Topologies"),
+        topology_features=model.get_layer("Topologies"),
         static_polygons=model.get_layer("StaticPolygons"),
     )
     gplot = PlotTopologies(
@@ -40,10 +40,13 @@ def main(show=True):
         time=age,
     )
 
+    age = 100
+    gplot.time = age
+
     fig = plt.figure(figsize=(10, 5), dpi=96)
     ax = fig.add_subplot(111, projection=ccrs.Robinson(central_longitude=180))
 
-    all_flag = 1
+    all_flag = 0
     plot_flag = {
         "continent_ocean_boundaries": 0,
         "coastlines": 0,
@@ -53,7 +56,7 @@ def main(show=True):
         "ridges": 0,
         "all_topologies": 0,
         "all_topological_sections": 0,
-        "plate_polygon_by_id": 0,
+        "plate_polygon_by_id": 1,
         "unclassified_features": 0,
         "misc_transforms": 0,
         "slab_edges": 0,
@@ -70,14 +73,19 @@ def main(show=True):
         "continental_rifts": 0,
         "misc_boundaries": 0,
         "transforms": 0,
-        "continents": 1,
+        "continents": 0,
     }
-
-    gplot.plot_continents(ax, color="grey", facecolor="0.8")
-    gplot.plot_coastlines(ax, edgecolor="blue", facecolor="0.5")
 
     for key in plot_flag:
         if key == "plate_polygon_by_id":
+            continue
+        if key == "continents":
+            if plot_flag["continents"]:
+                gplot.plot_continents(ax, color="grey", facecolor="0.8")
+            continue
+        if key == "coastlines":
+            if plot_flag["coastlines"]:
+                gplot.plot_coastlines(ax, edgecolor="blue", facecolor="0.5")
             continue
         if all_flag or plot_flag[key]:
             getattr(gplot, f"plot_{key}")(
@@ -90,7 +98,10 @@ def main(show=True):
     for id in ids:
         if all_flag or plot_flag["plate_polygon_by_id"]:
             gplot.plot_plate_polygon_by_id(
-                ax, id, facecolor="None", edgecolor="lightgreen"
+                ax,
+                id,
+                facecolor="None",
+                edgecolor=list(np.random.choice(range(256), size=3) / 256),
             )
     plt.title(f"{age} Ma")
 
