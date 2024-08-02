@@ -118,18 +118,18 @@ pip install .
 
 ### 3. Using Docker 🐳
 
-Run GPlately example notebooks
+👉 Run GPlately example notebooks
 
 - `docker pull gplates/gplately`
 - `docker run --rm -ti -p 8888:8888  gplates/gplately`
 - http://localhost:8888
 
-Run GPlately command with Docker
+👉 Run GPlately command with Docker
 
 - `docker run gplates/gplately gplately --version`
 - `docker run gplates/gplately gplately --help`
 
-Run your Python script with Docker
+👉 Run your Python script with Docker
 
 - `docker run -it --rm -v "$PWD":/ws -w /ws gplates/gplately python my_script_to_run.py` (assume my_script_to_run.py is in current working directory)
 

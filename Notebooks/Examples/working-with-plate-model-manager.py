@@ -35,7 +35,7 @@ def main():
 
     gplot.plot_continent_ocean_boundaries(ax, color="cornflowerblue")
     gplot.plot_coastlines(ax, color="black")
-    gplot.plot_ridges_and_transforms(ax, color="red")
+    gplot.plot_ridges(ax, color="red")
     gplot.plot_trenches(ax, color="orange")
     gplot.plot_subduction_teeth(ax, color="orange")
     ax.set_global()

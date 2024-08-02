@@ -45,7 +45,7 @@ def main(show=True):
 
     gplot.plot_continents(ax1, facecolor="0.8")
     gplot.plot_coastlines(ax1, color="0.5")
-    gplot.plot_ridges_and_transforms(ax1, color="red")
+    gplot.plot_ridges(ax1, color="red")
     gplot.plot_trenches(ax1, color="k")
     gplot.plot_subduction_teeth(ax1, color="k")
     im = gplot.plot_grid(ax1, agegrid.data, cmap="YlGnBu", vmin=0, vmax=200)

@@ -827,24 +827,23 @@ class PlotTopologies(object):
         )
 
     @validate_reconstruction_time
-    @append_docstring(GET_DATE_DOCSTRING.format("ridges and transforms"))
-    def get_ridges_and_transforms(
+    @append_docstring(GET_DATE_DOCSTRING.format("ridges"))
+    def get_ridges(
         self,
         central_meridian=0.0,
         tessellate_degrees=1,
     ):
-        """Create a geopandas.GeoDataFrame object containing geometries of reconstructed ridge and transform lines."""
+        """Create a geopandas.GeoDataFrame object containing geometries of reconstructed mid-ocean ridge lines(gpml:MidOceanRidge)."""
         return self.get_feature(
             self.ridge_transforms,
             central_meridian=central_meridian,
             tessellate_degrees=tessellate_degrees,
         )
 
-    @validate_topology_availability("ridges_and_transforms")
-    @append_docstring(PLOT_DOCSTRING.format("ridges and transforms"))
-    def plot_ridges_and_transforms(self, ax, color="black", **kwargs):
-        """Plot reconstructed ridge & transform boundary polylines onto a standard map
-        Projection.
+    @validate_topology_availability("ridges")
+    @append_docstring(PLOT_DOCSTRING.format("ridges"))
+    def plot_ridges(self, ax, color="black", **kwargs):
+        """Plot reconstructed mid-ocean ridge lines(gpml:MidOceanRidge) onto a map.
 
         Notes
         -----
@@ -866,46 +865,6 @@ class PlotTopologies(object):
             ax,
             self.ridge_transforms,
             feature_name="ridge_transforms",
-            facecolor="none",
-            edgecolor=color,
-            **kwargs,
-        )
-
-    @validate_reconstruction_time
-    @append_docstring(GET_DATE_DOCSTRING.format("transforms"))
-    def get_transforms(self, central_meridian=0.0, tessellate_degrees=1):
-        """Create a geopandas.GeoDataFrame object containing geometries of reconstructed transform lines."""
-        return self.get_feature(
-            self.transforms,
-            central_meridian=central_meridian,
-            tessellate_degrees=tessellate_degrees,
-        )
-
-    @validate_topology_availability("transforms")
-    @append_docstring(PLOT_DOCSTRING.format("transforms"))
-    def plot_transforms(self, ax, color="black", **kwargs):
-        """Plot reconstructed transform boundary polylines onto a standard map.
-
-        Notes
-        -----
-        The transform sections for plotting are accessed from the
-        `PlotTopologies` object's `transforms` attribute. These `transforms`
-        are reconstructed to the `time` passed to the `PlotTopologies` object and converted
-        into Shapely polylines. The reconstructed `transforms` are plotted onto the
-        GeoAxes or GeoAxesSubplot map `ax` using GeoPandas. Map presentation details
-        (e.g. `facecolor`, `edgecolor`, `alpha`…) are permitted as keyword arguments.
-
-        Transform geometries are wrapped to the dateline using
-        pyGPlates' [DateLineWrapper](https://www.gplates.org/docs/pygplates/generated/pygplates.datelinewrapper)
-        by splitting a polyline into multiple polylines at the dateline. This is to avoid
-        horizontal lines being formed between polylines at longitudes of -180 and 180 degrees.
-        Point features near the poles (-89 & 89 degree latitude) are also clipped to ensure
-        compatibility with Cartopy.
-        """
-        return self.plot_feature(
-            ax,
-            self.transforms,
-            feature_name="transforms",
             facecolor="none",
             edgecolor=color,
             **kwargs,
@@ -1749,26 +1708,26 @@ class PlotTopologies(object):
         )
 
     @validate_reconstruction_time
-    @append_docstring(GET_DATE_DOCSTRING.format("misc transforms"))
-    def get_misc_transforms(
+    @append_docstring(GET_DATE_DOCSTRING.format("transforms"))
+    def get_transforms(
         self,
         central_meridian=0.0,
         tessellate_degrees=None,
     ):
-        """Create a geopandas.GeoDataFrame object containing geometries of reconstructed misc transform lines."""
+        """Create a geopandas.GeoDataFrame object containing geometries of reconstructed transform lines(gpml:Transform)."""
         return self.get_feature(
             self.misc_transforms,
             central_meridian=central_meridian,
             tessellate_degrees=tessellate_degrees,
         )
 
-    @append_docstring(PLOT_DOCSTRING.format("misc transforms"))
-    def plot_misc_transforms(self, ax, color="black", **kwargs):
-        """Plot miscellaneous transform boundaries on a standard map projection."""
+    @append_docstring(PLOT_DOCSTRING.format("transforms"))
+    def plot_transforms(self, ax, color="black", **kwargs):
+        """Plot transform boundaries(gpml:Transform) onto a map."""
         return self.plot_feature(
             ax,
             self.misc_transforms,
-            feature_name="misc_transforms",
+            feature_name="transforms",
             facecolor="none",
             edgecolor=color,
             **kwargs,
@@ -1920,45 +1879,6 @@ class PlotTopologies(object):
             ax,
             self.get_all_topological_sections,
             color=color,
-            **kwargs,
-        )
-
-    @append_docstring(GET_DATE_DOCSTRING.format("ridges"))
-    def get_ridges(self, central_meridian=0.0, tessellate_degrees=1):
-        """Create a geopandas.GeoDataFrame object containing geometries of reconstructed ridge lines."""
-        return self.get_feature(
-            self.ridges,
-            central_meridian=central_meridian,
-            tessellate_degrees=tessellate_degrees,
-        )
-
-    @validate_topology_availability("ridges")
-    @append_docstring(PLOT_DOCSTRING.format("ridges"))
-    def plot_ridges(self, ax, color="black", **kwargs):
-        """Plot reconstructed ridge polylines onto a standard map Projection.
-
-        Notes
-        -----
-        The `ridges` for plotting are accessed from the `PlotTopologies` object's
-        `ridges` attribute. These `ridges` are reconstructed to the `time`
-        passed to the `PlotTopologies` object and converted into Shapely polylines.
-        The reconstructed `ridges` are plotted onto the GeoAxes or GeoAxesSubplot map
-        `ax` using GeoPandas. Map presentation details (e.g. `facecolor`, `edgecolor`, `alpha`…)
-        are permitted as keyword arguments.
-
-        Ridge geometries are wrapped to the dateline using
-        pyGPlates' [DateLineWrapper](https://www.gplates.org/docs/pygplates/generated/pygplates.datelinewrapper)
-        by splitting a polyline into multiple polylines at the dateline. This is to avoid
-        horizontal lines being formed between polylines at longitudes of -180 and 180 degrees.
-        Point features near the poles (-89 & 89 degree latitude) are also clipped to ensure
-        compatibility with Cartopy.
-        """
-        return self.plot_feature(
-            ax,
-            self.ridges,
-            feature_name="ridges",
-            facecolor="none",
-            edgecolor=color,
             **kwargs,
         )
 

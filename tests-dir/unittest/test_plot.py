@@ -50,7 +50,6 @@ def main(show=True):
     plot_flag = {
         "continent_ocean_boundaries": 0,
         "coastlines": 0,
-        "ridges_and_transforms": 0,
         "trenches": 0,
         "subduction_teeth": 0,
         "ridges": 0,
@@ -58,7 +57,6 @@ def main(show=True):
         "all_topological_sections": 0,
         "plate_polygon_by_id": 0,
         "unclassified_features": 0,
-        "misc_transforms": 0,
         "slab_edges": 0,
         "passive_continental_boundaries": 0,
         "extended_continental_crusts": 0,
