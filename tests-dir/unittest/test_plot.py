@@ -17,6 +17,7 @@ print(gplately.__file__)
 
 # MODEL_NAME = "Clennett2020"
 MODEL_NAME = "Muller2019"
+# MODEL_NAME = "merdith2021"
 
 
 def main(show=True):
@@ -52,7 +53,7 @@ def main(show=True):
         "coastlines": 0,
         "trenches": 0,
         "subduction_teeth": 0,
-        "ridges": 0,
+        "ridges": 1,
         "all_topologies": 0,
         "all_topological_sections": 0,
         "plate_polygon_by_id": 0,
@@ -72,7 +73,7 @@ def main(show=True):
         "misc_boundaries": 0,
         "transforms": 0,
         "continents": 0,
-        "topological_plate_boundaries": 1,
+        "topological_plate_boundaries": 0,
     }
 
     for key in plot_flag:
@@ -105,6 +106,18 @@ def main(show=True):
     plt.title(f"{age} Ma")
 
     if show:
+        # LOOK HERE! 👀👀 👇👇
+        # If the figure did not show up, you need to set your matplotlib plotting backend properly.
+        # On Windows, you may install PyQt and do
+        # import matplotlib
+        # matplotlib.use('QtAgg')
+
+        # if you are interested in finding what backends available on your computer and what is your current backend, do the following
+        # import matplotlib.rcsetup as rcsetup
+        # print(rcsetup.all_backends) # get all available backends
+        # import matplotlib
+        # matplotlib.get_backend() # your current backend
+        #
         plt.show()
     else:
         save_fig(__file__)

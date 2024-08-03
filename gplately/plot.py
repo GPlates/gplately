@@ -383,6 +383,12 @@ class PlotTopologies(object):
         self._time = None
 
     @property
+    def topological_plate_boundaries(self):
+        if self._topological_plate_boundaries is None:
+            self.update_time(self.time)
+        return self._topological_plate_boundaries
+
+    @property
     def topologies(self):
         self._resolve_both_boundaries_and_networks()
         return self._topologies
@@ -451,9 +457,9 @@ class PlotTopologies(object):
         self._time = float(time)
         (
             self._topological_plate_boundaries,
-            self.ridge_transforms,
             self.ridges,
-            self.transforms,
+            self._ridges_do_not_use_for_now,
+            self._transforms_do_not_use_for_now,
             self.trenches,
             self.trench_left,
             self.trench_right,
@@ -482,7 +488,7 @@ class PlotTopologies(object):
         self.extended_continental_crusts = []
         self.passive_continental_boundaries = []
         self.slab_edges = []
-        self.misc_transforms = []
+        self.transforms = []
         self.unclassified_features = []
 
         for topol in self.other:
@@ -539,7 +545,7 @@ class PlotTopologies(object):
                 self.slab_edges.append(topol)
 
             elif topol.get_feature_type() == pygplates.FeatureType.gpml_transform:
-                self.misc_transforms.append(topol)
+                self.transforms.append(topol)
 
             elif (
                 topol.get_feature_type()
@@ -835,7 +841,7 @@ class PlotTopologies(object):
     ):
         """Create a geopandas.GeoDataFrame object containing geometries of reconstructed mid-ocean ridge lines(gpml:MidOceanRidge)."""
         return self.get_feature(
-            self.ridge_transforms,
+            self.ridges,
             central_meridian=central_meridian,
             tessellate_degrees=tessellate_degrees,
         )
@@ -863,7 +869,7 @@ class PlotTopologies(object):
         """
         return self.plot_feature(
             ax,
-            self.ridge_transforms,
+            self.ridges,
             feature_name="ridge_transforms",
             facecolor="none",
             edgecolor=color,
@@ -1716,7 +1722,7 @@ class PlotTopologies(object):
     ):
         """Create a geopandas.GeoDataFrame object containing geometries of reconstructed transform lines(gpml:Transform)."""
         return self.get_feature(
-            self.misc_transforms,
+            self.transforms,
             central_meridian=central_meridian,
             tessellate_degrees=tessellate_degrees,
         )
@@ -1726,7 +1732,7 @@ class PlotTopologies(object):
         """Plot transform boundaries(gpml:Transform) onto a map."""
         return self.plot_feature(
             ax,
-            self.misc_transforms,
+            self.transforms,
             feature_name="transforms",
             facecolor="none",
             edgecolor=color,
@@ -1826,9 +1832,7 @@ class PlotTopologies(object):
         feature_types = []
         feature_names = []
         for topo in [
-            *self.ridge_transforms,
             *self.ridges,
-            *self.transforms,
             *self.trenches,
             *self.trench_left,
             *self.trench_right,
