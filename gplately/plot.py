@@ -853,14 +853,14 @@ class PlotTopologies(object):
 
         Notes
         -----
-        The ridge & transform sections for plotting are accessed from the
-        `PlotTopologies` object's `ridge_transforms` attribute. These `ridge_transforms`
+        The ridges sections for plotting are accessed from the
+        `PlotTopologies` object's `ridges` attribute. These `ridges`
         are reconstructed to the `time` passed to the `PlotTopologies` object and converted
-        into Shapely polylines. The reconstructed `ridge_transforms` are plotted onto the
+        into Shapely polylines. The reconstructed `ridges` are plotted onto the
         GeoAxes or GeoAxesSubplot map `ax` using GeoPandas. Map presentation details
         (e.g. `facecolor`, `edgecolor`, `alpha`…) are permitted as keyword arguments.
 
-        Note: Ridge & transform geometries are wrapped to the dateline using
+        Note: The `ridges` geometries are wrapped to the dateline using
         pyGPlates' [DateLineWrapper](https://www.gplates.org/docs/pygplates/generated/pygplates.datelinewrapper)
         by splitting a polyline into multiple polylines at the dateline. This is to avoid
         horizontal lines being formed between polylines at longitudes of -180 and 180 degrees.
@@ -870,7 +870,7 @@ class PlotTopologies(object):
         return self.plot_feature(
             ax,
             self.ridges,
-            feature_name="ridge_transforms",
+            feature_name="ridges",
             facecolor="none",
             edgecolor=color,
             **kwargs,
@@ -1734,7 +1734,6 @@ class PlotTopologies(object):
             ax,
             self.transforms,
             feature_name="transforms",
-            facecolor="none",
             edgecolor=color,
             **kwargs,
         )

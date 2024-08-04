@@ -16,8 +16,8 @@ print(gplately.__file__)
 # test the plot function with the new PlateModel class
 
 # MODEL_NAME = "Clennett2020"
-MODEL_NAME = "Muller2019"
-# MODEL_NAME = "merdith2021"
+# MODEL_NAME = "Muller2019"
+MODEL_NAME = "merdith2021"
 
 
 def main(show=True):
@@ -36,7 +36,7 @@ def main(show=True):
     gplot = PlotTopologies(
         test_model,
         coastlines=model.get_layer("Coastlines"),
-        COBs=model.get_layer("COBs"),
+        COBs=model.get_layer("COBs", return_none_if_not_exist=True),
         continents=model.get_layer("ContinentalPolygons"),
         time=age,
     )
@@ -53,7 +53,7 @@ def main(show=True):
         "coastlines": 0,
         "trenches": 0,
         "subduction_teeth": 0,
-        "ridges": 1,
+        "ridges": 0,
         "all_topologies": 0,
         "all_topological_sections": 0,
         "plate_polygon_by_id": 0,
@@ -71,7 +71,7 @@ def main(show=True):
         "faults": 0,
         "continental_rifts": 0,
         "misc_boundaries": 0,
-        "transforms": 0,
+        "transforms": 1,
         "continents": 0,
         "topological_plate_boundaries": 0,
     }
