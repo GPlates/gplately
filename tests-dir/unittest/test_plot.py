@@ -16,7 +16,8 @@ print(gplately.__file__)
 # test the plot function with the new PlateModel class
 
 # MODEL_NAME = "Clennett2020"
-MODEL_NAME = "Muller2019"
+# MODEL_NAME = "Muller2019"
+MODEL_NAME = "merdith2021"
 
 
 def main(show=True):
@@ -35,7 +36,7 @@ def main(show=True):
     gplot = PlotTopologies(
         test_model,
         coastlines=model.get_layer("Coastlines"),
-        COBs=model.get_layer("COBs"),
+        COBs=model.get_layer("COBs", return_none_if_not_exist=True),
         continents=model.get_layer("ContinentalPolygons"),
         time=age,
     )
@@ -50,7 +51,6 @@ def main(show=True):
     plot_flag = {
         "continent_ocean_boundaries": 0,
         "coastlines": 0,
-        "ridges_and_transforms": 0,
         "trenches": 0,
         "subduction_teeth": 0,
         "ridges": 0,
@@ -58,7 +58,6 @@ def main(show=True):
         "all_topological_sections": 0,
         "plate_polygon_by_id": 0,
         "unclassified_features": 0,
-        "misc_transforms": 0,
         "slab_edges": 0,
         "passive_continental_boundaries": 0,
         "extended_continental_crusts": 0,
@@ -72,9 +71,9 @@ def main(show=True):
         "faults": 0,
         "continental_rifts": 0,
         "misc_boundaries": 0,
-        "transforms": 0,
+        "transforms": 1,
         "continents": 0,
-        "topological_plate_boundaries": 1,
+        "topological_plate_boundaries": 0,
     }
 
     for key in plot_flag:
@@ -107,6 +106,18 @@ def main(show=True):
     plt.title(f"{age} Ma")
 
     if show:
+        # LOOK HERE! 👀👀 👇👇
+        # If the figure did not show up, you need to set your matplotlib plotting backend properly.
+        # On Windows, you may install PyQt and do
+        # import matplotlib
+        # matplotlib.use('QtAgg')
+
+        # if you are interested in finding what backends available on your computer and what is your current backend, do the following
+        # import matplotlib.rcsetup as rcsetup
+        # print(rcsetup.all_backends) # get all available backends
+        # import matplotlib
+        # matplotlib.get_backend() # your current backend
+        #
         plt.show()
     else:
         save_fig(__file__)
