@@ -5249,6 +5249,12 @@ boundaries and passive continental boundaries.</dd>
         self._time = None
 
     @property
+    def topological_plate_boundaries(self):
+        if self._topological_plate_boundaries is None:
+            self.update_time(self.time)
+        return self._topological_plate_boundaries
+
+    @property
     def topologies(self):
         self._resolve_both_boundaries_and_networks()
         return self._topologies
@@ -5317,9 +5323,9 @@ boundaries and passive continental boundaries.</dd>
         self._time = float(time)
         (
             self._topological_plate_boundaries,
-            self.ridge_transforms,
             self.ridges,
-            self.transforms,
+            self._ridges_do_not_use_for_now,
+            self._transforms_do_not_use_for_now,
             self.trenches,
             self.trench_left,
             self.trench_right,
@@ -5348,7 +5354,7 @@ boundaries and passive continental boundaries.</dd>
         self.extended_continental_crusts = []
         self.passive_continental_boundaries = []
         self.slab_edges = []
-        self.misc_transforms = []
+        self.transforms = []
         self.unclassified_features = []
 
         for topol in self.other:
@@ -5405,7 +5411,7 @@ boundaries and passive continental boundaries.</dd>
                 self.slab_edges.append(topol)
 
             elif topol.get_feature_type() == pygplates.FeatureType.gpml_transform:
-                self.misc_transforms.append(topol)
+                self.transforms.append(topol)
 
             elif (
                 topol.get_feature_type()
@@ -5693,35 +5699,34 @@ boundaries and passive continental boundaries.</dd>
         )
 
     @validate_reconstruction_time
-    @append_docstring(GET_DATE_DOCSTRING.format(&#34;ridges and transforms&#34;))
-    def get_ridges_and_transforms(
+    @append_docstring(GET_DATE_DOCSTRING.format(&#34;ridges&#34;))
+    def get_ridges(
         self,
         central_meridian=0.0,
         tessellate_degrees=1,
     ):
-        &#34;&#34;&#34;Create a geopandas.GeoDataFrame object containing geometries of reconstructed ridge and transform lines.&#34;&#34;&#34;
+        &#34;&#34;&#34;Create a geopandas.GeoDataFrame object containing geometries of reconstructed mid-ocean ridge lines(gpml:MidOceanRidge).&#34;&#34;&#34;
         return self.get_feature(
-            self.ridge_transforms,
+            self.ridges,
             central_meridian=central_meridian,
             tessellate_degrees=tessellate_degrees,
         )
 
-    @validate_topology_availability(&#34;ridges_and_transforms&#34;)
-    @append_docstring(PLOT_DOCSTRING.format(&#34;ridges and transforms&#34;))
-    def plot_ridges_and_transforms(self, ax, color=&#34;black&#34;, **kwargs):
-        &#34;&#34;&#34;Plot reconstructed ridge &amp; transform boundary polylines onto a standard map
-        Projection.
+    @validate_topology_availability(&#34;ridges&#34;)
+    @append_docstring(PLOT_DOCSTRING.format(&#34;ridges&#34;))
+    def plot_ridges(self, ax, color=&#34;black&#34;, **kwargs):
+        &#34;&#34;&#34;Plot reconstructed mid-ocean ridge lines(gpml:MidOceanRidge) onto a map.
 
         Notes
         -----
-        The ridge &amp; transform sections for plotting are accessed from the
-        `PlotTopologies` object&#39;s `ridge_transforms` attribute. These `ridge_transforms`
+        The ridges sections for plotting are accessed from the
+        `PlotTopologies` object&#39;s `ridges` attribute. These `ridges`
         are reconstructed to the `time` passed to the `PlotTopologies` object and converted
-        into Shapely polylines. The reconstructed `ridge_transforms` are plotted onto the
+        into Shapely polylines. The reconstructed `ridges` are plotted onto the
         GeoAxes or GeoAxesSubplot map `ax` using GeoPandas. Map presentation details
         (e.g. `facecolor`, `edgecolor`, `alpha`…) are permitted as keyword arguments.
 
-        Note: Ridge &amp; transform geometries are wrapped to the dateline using
+        Note: The `ridges` geometries are wrapped to the dateline using
         pyGPlates&#39; [DateLineWrapper](https://www.gplates.org/docs/pygplates/generated/pygplates.datelinewrapper)
         by splitting a polyline into multiple polylines at the dateline. This is to avoid
         horizontal lines being formed between polylines at longitudes of -180 and 180 degrees.
@@ -5730,48 +5735,8 @@ boundaries and passive continental boundaries.</dd>
         &#34;&#34;&#34;
         return self.plot_feature(
             ax,
-            self.ridge_transforms,
-            feature_name=&#34;ridge_transforms&#34;,
-            facecolor=&#34;none&#34;,
-            edgecolor=color,
-            **kwargs,
-        )
-
-    @validate_reconstruction_time
-    @append_docstring(GET_DATE_DOCSTRING.format(&#34;transforms&#34;))
-    def get_transforms(self, central_meridian=0.0, tessellate_degrees=1):
-        &#34;&#34;&#34;Create a geopandas.GeoDataFrame object containing geometries of reconstructed transform lines.&#34;&#34;&#34;
-        return self.get_feature(
-            self.transforms,
-            central_meridian=central_meridian,
-            tessellate_degrees=tessellate_degrees,
-        )
-
-    @validate_topology_availability(&#34;transforms&#34;)
-    @append_docstring(PLOT_DOCSTRING.format(&#34;transforms&#34;))
-    def plot_transforms(self, ax, color=&#34;black&#34;, **kwargs):
-        &#34;&#34;&#34;Plot reconstructed transform boundary polylines onto a standard map.
-
-        Notes
-        -----
-        The transform sections for plotting are accessed from the
-        `PlotTopologies` object&#39;s `transforms` attribute. These `transforms`
-        are reconstructed to the `time` passed to the `PlotTopologies` object and converted
-        into Shapely polylines. The reconstructed `transforms` are plotted onto the
-        GeoAxes or GeoAxesSubplot map `ax` using GeoPandas. Map presentation details
-        (e.g. `facecolor`, `edgecolor`, `alpha`…) are permitted as keyword arguments.
-
-        Transform geometries are wrapped to the dateline using
-        pyGPlates&#39; [DateLineWrapper](https://www.gplates.org/docs/pygplates/generated/pygplates.datelinewrapper)
-        by splitting a polyline into multiple polylines at the dateline. This is to avoid
-        horizontal lines being formed between polylines at longitudes of -180 and 180 degrees.
-        Point features near the poles (-89 &amp; 89 degree latitude) are also clipped to ensure
-        compatibility with Cartopy.
-        &#34;&#34;&#34;
-        return self.plot_feature(
-            ax,
-            self.transforms,
-            feature_name=&#34;transforms&#34;,
+            self.ridges,
+            feature_name=&#34;ridges&#34;,
             facecolor=&#34;none&#34;,
             edgecolor=color,
             **kwargs,
@@ -6615,27 +6580,26 @@ boundaries and passive continental boundaries.</dd>
         )
 
     @validate_reconstruction_time
-    @append_docstring(GET_DATE_DOCSTRING.format(&#34;misc transforms&#34;))
-    def get_misc_transforms(
+    @append_docstring(GET_DATE_DOCSTRING.format(&#34;transforms&#34;))
+    def get_transforms(
         self,
         central_meridian=0.0,
         tessellate_degrees=None,
     ):
-        &#34;&#34;&#34;Create a geopandas.GeoDataFrame object containing geometries of reconstructed misc transform lines.&#34;&#34;&#34;
+        &#34;&#34;&#34;Create a geopandas.GeoDataFrame object containing geometries of reconstructed transform lines(gpml:Transform).&#34;&#34;&#34;
         return self.get_feature(
-            self.misc_transforms,
+            self.transforms,
             central_meridian=central_meridian,
             tessellate_degrees=tessellate_degrees,
         )
 
-    @append_docstring(PLOT_DOCSTRING.format(&#34;misc transforms&#34;))
-    def plot_misc_transforms(self, ax, color=&#34;black&#34;, **kwargs):
-        &#34;&#34;&#34;Plot miscellaneous transform boundaries on a standard map projection.&#34;&#34;&#34;
+    @append_docstring(PLOT_DOCSTRING.format(&#34;transforms&#34;))
+    def plot_transforms(self, ax, color=&#34;black&#34;, **kwargs):
+        &#34;&#34;&#34;Plot transform boundaries(gpml:Transform) onto a map.&#34;&#34;&#34;
         return self.plot_feature(
             ax,
-            self.misc_transforms,
-            feature_name=&#34;misc_transforms&#34;,
-            facecolor=&#34;none&#34;,
+            self.transforms,
+            feature_name=&#34;transforms&#34;,
             edgecolor=color,
             **kwargs,
         )
@@ -6733,9 +6697,7 @@ boundaries and passive continental boundaries.</dd>
         feature_types = []
         feature_names = []
         for topo in [
-            *self.ridge_transforms,
             *self.ridges,
-            *self.transforms,
             *self.trenches,
             *self.trench_left,
             *self.trench_right,
@@ -6786,45 +6748,6 @@ boundaries and passive continental boundaries.</dd>
             ax,
             self.get_all_topological_sections,
             color=color,
-            **kwargs,
-        )
-
-    @append_docstring(GET_DATE_DOCSTRING.format(&#34;ridges&#34;))
-    def get_ridges(self, central_meridian=0.0, tessellate_degrees=1):
-        &#34;&#34;&#34;Create a geopandas.GeoDataFrame object containing geometries of reconstructed ridge lines.&#34;&#34;&#34;
-        return self.get_feature(
-            self.ridges,
-            central_meridian=central_meridian,
-            tessellate_degrees=tessellate_degrees,
-        )
-
-    @validate_topology_availability(&#34;ridges&#34;)
-    @append_docstring(PLOT_DOCSTRING.format(&#34;ridges&#34;))
-    def plot_ridges(self, ax, color=&#34;black&#34;, **kwargs):
-        &#34;&#34;&#34;Plot reconstructed ridge polylines onto a standard map Projection.
-
-        Notes
-        -----
-        The `ridges` for plotting are accessed from the `PlotTopologies` object&#39;s
-        `ridges` attribute. These `ridges` are reconstructed to the `time`
-        passed to the `PlotTopologies` object and converted into Shapely polylines.
-        The reconstructed `ridges` are plotted onto the GeoAxes or GeoAxesSubplot map
-        `ax` using GeoPandas. Map presentation details (e.g. `facecolor`, `edgecolor`, `alpha`…)
-        are permitted as keyword arguments.
-
-        Ridge geometries are wrapped to the dateline using
-        pyGPlates&#39; [DateLineWrapper](https://www.gplates.org/docs/pygplates/generated/pygplates.datelinewrapper)
-        by splitting a polyline into multiple polylines at the dateline. This is to avoid
-        horizontal lines being formed between polylines at longitudes of -180 and 180 degrees.
-        Point features near the poles (-89 &amp; 89 degree latitude) are also clipped to ensure
-        compatibility with Cartopy.
-        &#34;&#34;&#34;
-        return self.plot_feature(
-            ax,
-            self.ridges,
-            feature_name=&#34;ridges&#34;,
-            facecolor=&#34;none&#34;,
-            edgecolor=color,
             **kwargs,
         )
 
@@ -6892,6 +6815,20 @@ def anchor_plate_id(self):
 def time(self):
     &#34;&#34;&#34;The reconstruction time.&#34;&#34;&#34;
     return self._time</code></pre>
+</details>
+</dd>
+<dt id="gplately.PlotTopologies.topological_plate_boundaries"><code class="name">prop <span class="ident">topological_plate_boundaries</span></code></dt>
+<dd>
+<div class="desc"></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def topological_plate_boundaries(self):
+    if self._topological_plate_boundaries is None:
+        self.update_time(self.time)
+    return self._topological_plate_boundaries</code></pre>
 </details>
 </dd>
 <dt id="gplately.PlotTopologies.topologies"><code class="name">prop <span class="ident">topologies</span></code></dt>
@@ -7410,46 +7347,6 @@ gplot.time = time
 are reconstructed, they are converted into Shapely lines whose
 coordinates are passed to a geopandas GeoDataFrame.</p></div>
 </dd>
-<dt id="gplately.PlotTopologies.get_misc_transforms"><code class="name flex">
-<span>def <span class="ident">get_misc_transforms</span></span>(<span>self, central_meridian=0.0, tessellate_degrees=None)</span>
-</code></dt>
-<dd>
-<div class="desc"><p>Create a geopandas.GeoDataFrame object containing geometries of reconstructed misc transform lines.</p>
-<h2 id="parameters">Parameters</h2>
-<dl>
-<dt><strong><code>central_meridian</code></strong> :&ensp;<code>float</code></dt>
-<dd>Central meridian around which to perform wrapping; default: 0.0.</dd>
-<dt><strong><code>tessellate_degrees</code></strong> :&ensp;<code>float</code> or <code>None</code></dt>
-<dd>If provided, geometries will be tessellated to this resolution prior
-to wrapping.</dd>
-</dl>
-<h2 id="returns">Returns</h2>
-<dl>
-<dt><code>geopandas.GeoDataFrame</code></dt>
-<dd>A pandas.DataFrame that has a column with <code>misc transforms</code> geometry.</dd>
-</dl>
-<h2 id="raises">Raises</h2>
-<dl>
-<dt><code>ValueError</code></dt>
-<dd>If the optional <code>time</code> parameter has not been passed to
-<code><a title="gplately.PlotTopologies" href="#gplately.PlotTopologies">PlotTopologies</a></code>. This is needed to construct <code>misc transforms</code>
-to the requested <code>time</code> and thus populate the GeoDataFrame.</dd>
-</dl>
-<h2 id="notes">Notes</h2>
-<p>The <code>misc transforms</code> needed to produce the GeoDataFrame are automatically
-constructed if the optional <code>time</code> parameter is passed to the
-<code><a title="gplately.PlotTopologies" href="#gplately.PlotTopologies">PlotTopologies</a></code> object before calling this function. <code>time</code> can be
-passed either when <code><a title="gplately.PlotTopologies" href="#gplately.PlotTopologies">PlotTopologies</a></code> is first called&hellip;</p>
-<pre><code>gplot = gplately.PlotTopologies(..., time=100,...)
-</code></pre>
-<p>or anytime afterwards, by setting:</p>
-<pre><code>time = 100 # Ma
-gplot.time = time
-</code></pre>
-<p>&hellip;after which this function can be re-run. Once the <code>misc transforms</code>
-are reconstructed, they are converted into Shapely lines whose
-coordinates are passed to a geopandas GeoDataFrame.</p></div>
-</dd>
 <dt id="gplately.PlotTopologies.get_orogenic_belts"><code class="name flex">
 <span>def <span class="ident">get_orogenic_belts</span></span>(<span>self, central_meridian=0.0, tessellate_degrees=None)</span>
 </code></dt>
@@ -7534,7 +7431,7 @@ coordinates are passed to a geopandas GeoDataFrame.</p></div>
 <span>def <span class="ident">get_ridges</span></span>(<span>self, central_meridian=0.0, tessellate_degrees=1)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Create a geopandas.GeoDataFrame object containing geometries of reconstructed ridge lines.</p>
+<div class="desc"><p>Create a geopandas.GeoDataFrame object containing geometries of reconstructed mid-ocean ridge lines(gpml:MidOceanRidge).</p>
 <h2 id="parameters">Parameters</h2>
 <dl>
 <dt><strong><code>central_meridian</code></strong> :&ensp;<code>float</code></dt>
@@ -7567,46 +7464,6 @@ passed either when <code><a title="gplately.PlotTopologies" href="#gplately.Plot
 gplot.time = time
 </code></pre>
 <p>&hellip;after which this function can be re-run. Once the <code>ridges</code>
-are reconstructed, they are converted into Shapely lines whose
-coordinates are passed to a geopandas GeoDataFrame.</p></div>
-</dd>
-<dt id="gplately.PlotTopologies.get_ridges_and_transforms"><code class="name flex">
-<span>def <span class="ident">get_ridges_and_transforms</span></span>(<span>self, central_meridian=0.0, tessellate_degrees=1)</span>
-</code></dt>
-<dd>
-<div class="desc"><p>Create a geopandas.GeoDataFrame object containing geometries of reconstructed ridge and transform lines.</p>
-<h2 id="parameters">Parameters</h2>
-<dl>
-<dt><strong><code>central_meridian</code></strong> :&ensp;<code>float</code></dt>
-<dd>Central meridian around which to perform wrapping; default: 0.0.</dd>
-<dt><strong><code>tessellate_degrees</code></strong> :&ensp;<code>float</code> or <code>None</code></dt>
-<dd>If provided, geometries will be tessellated to this resolution prior
-to wrapping.</dd>
-</dl>
-<h2 id="returns">Returns</h2>
-<dl>
-<dt><code>geopandas.GeoDataFrame</code></dt>
-<dd>A pandas.DataFrame that has a column with <code>ridges and transforms</code> geometry.</dd>
-</dl>
-<h2 id="raises">Raises</h2>
-<dl>
-<dt><code>ValueError</code></dt>
-<dd>If the optional <code>time</code> parameter has not been passed to
-<code><a title="gplately.PlotTopologies" href="#gplately.PlotTopologies">PlotTopologies</a></code>. This is needed to construct <code>ridges and transforms</code>
-to the requested <code>time</code> and thus populate the GeoDataFrame.</dd>
-</dl>
-<h2 id="notes">Notes</h2>
-<p>The <code>ridges and transforms</code> needed to produce the GeoDataFrame are automatically
-constructed if the optional <code>time</code> parameter is passed to the
-<code><a title="gplately.PlotTopologies" href="#gplately.PlotTopologies">PlotTopologies</a></code> object before calling this function. <code>time</code> can be
-passed either when <code><a title="gplately.PlotTopologies" href="#gplately.PlotTopologies">PlotTopologies</a></code> is first called&hellip;</p>
-<pre><code>gplot = gplately.PlotTopologies(..., time=100,...)
-</code></pre>
-<p>or anytime afterwards, by setting:</p>
-<pre><code>time = 100 # Ma
-gplot.time = time
-</code></pre>
-<p>&hellip;after which this function can be re-run. Once the <code>ridges and transforms</code>
 are reconstructed, they are converted into Shapely lines whose
 coordinates are passed to a geopandas GeoDataFrame.</p></div>
 </dd>
@@ -7802,10 +7659,10 @@ are reconstructed, they are converted into Shapely lines whose
 coordinates are passed to a geopandas GeoDataFrame.</p></div>
 </dd>
 <dt id="gplately.PlotTopologies.get_transforms"><code class="name flex">
-<span>def <span class="ident">get_transforms</span></span>(<span>self, central_meridian=0.0, tessellate_degrees=1)</span>
+<span>def <span class="ident">get_transforms</span></span>(<span>self, central_meridian=0.0, tessellate_degrees=None)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Create a geopandas.GeoDataFrame object containing geometries of reconstructed transform lines.</p>
+<div class="desc"><p>Create a geopandas.GeoDataFrame object containing geometries of reconstructed transform lines(gpml:Transform).</p>
 <h2 id="parameters">Parameters</h2>
 <dl>
 <dt><strong><code>central_meridian</code></strong> :&ensp;<code>float</code></dt>
@@ -8355,29 +8212,6 @@ See <code>Matplotlib</code> keyword arguments <a href="https://matplotlib.org/st
 with <code>other</code> features plotted onto the chosen map projection.</dd>
 </dl></div>
 </dd>
-<dt id="gplately.PlotTopologies.plot_misc_transforms"><code class="name flex">
-<span>def <span class="ident">plot_misc_transforms</span></span>(<span>self, ax, color='black', **kwargs)</span>
-</code></dt>
-<dd>
-<div class="desc"><p>Plot miscellaneous transform boundaries on a standard map projection.</p>
-<h2 id="parameters">Parameters</h2>
-<dl>
-<dt><strong><code>ax</code></strong> :&ensp;<code>instance</code> of <code>&lt;cartopy.mpl.geoaxes.GeoAxes&gt;</code> or <code>&lt;cartopy.mpl.geoaxes.GeoAxesSubplot&gt;</code></dt>
-<dd>A subclass of <code>matplotlib.axes.Axes</code> which represents a map Projection.
-The map should be set at a particular Cartopy projection.</dd>
-<dt><strong><code>color</code></strong> :&ensp;<code>str</code>, default=<code>’black’</code></dt>
-<dd>The colour of the <code>misc transforms</code> lines. By default, it is set to black.</dd>
-</dl>
-<p>**kwargs :
-Keyword arguments for parameters such as <code>alpha</code>, etc. for plotting <code>misc transforms</code> geometries.
-See <code>Matplotlib</code> keyword arguments <a href="https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html">here</a>.</p>
-<h2 id="returns">Returns</h2>
-<dl>
-<dt><strong><code>ax</code></strong> :&ensp;<code>instance</code> of <code>&lt;geopandas.GeoDataFrame.plot&gt;</code></dt>
-<dd>A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map
-with <code>misc transforms</code> features plotted onto the chosen map projection.</dd>
-</dl></div>
-</dd>
 <dt id="gplately.PlotTopologies.plot_orogenic_belts"><code class="name flex">
 <span>def <span class="ident">plot_orogenic_belts</span></span>(<span>self, ax, color='black', **kwargs)</span>
 </code></dt>
@@ -8510,15 +8344,15 @@ See <code>Matplotlib</code>'s <code>imshow</code> keyword arguments
 <span>def <span class="ident">plot_ridges</span></span>(<span>self, ax, color='black', **kwargs)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Plot reconstructed ridge polylines onto a standard map Projection.</p>
+<div class="desc"><p>Plot reconstructed mid-ocean ridge lines(gpml:MidOceanRidge) onto a map.</p>
 <h2 id="notes">Notes</h2>
-<p>The <code>ridges</code> for plotting are accessed from the <code><a title="gplately.PlotTopologies" href="#gplately.PlotTopologies">PlotTopologies</a></code> object's
-<code>ridges</code> attribute. These <code>ridges</code> are reconstructed to the <code>time</code>
-passed to the <code><a title="gplately.PlotTopologies" href="#gplately.PlotTopologies">PlotTopologies</a></code> object and converted into Shapely polylines.
-The reconstructed <code>ridges</code> are plotted onto the GeoAxes or GeoAxesSubplot map
-<code>ax</code> using GeoPandas. Map presentation details (e.g. <code>facecolor</code>, <code>edgecolor</code>, <code>alpha</code>…)
-are permitted as keyword arguments.</p>
-<p>Ridge geometries are wrapped to the dateline using
+<p>The ridges sections for plotting are accessed from the
+<code><a title="gplately.PlotTopologies" href="#gplately.PlotTopologies">PlotTopologies</a></code> object's <code>ridges</code> attribute. These <code>ridges</code>
+are reconstructed to the <code>time</code> passed to the <code><a title="gplately.PlotTopologies" href="#gplately.PlotTopologies">PlotTopologies</a></code> object and converted
+into Shapely polylines. The reconstructed <code>ridges</code> are plotted onto the
+GeoAxes or GeoAxesSubplot map <code>ax</code> using GeoPandas. Map presentation details
+(e.g. <code>facecolor</code>, <code>edgecolor</code>, <code>alpha</code>…) are permitted as keyword arguments.</p>
+<p>Note: The <code>ridges</code> geometries are wrapped to the dateline using
 pyGPlates' <a href="https://www.gplates.org/docs/pygplates/generated/pygplates.datelinewrapper">DateLineWrapper</a>
 by splitting a polyline into multiple polylines at the dateline. This is to avoid
 horizontal lines being formed between polylines at longitudes of -180 and 180 degrees.
@@ -8540,43 +8374,6 @@ See <code>Matplotlib</code> keyword arguments <a href="https://matplotlib.org/st
 <dt><strong><code>ax</code></strong> :&ensp;<code>instance</code> of <code>&lt;geopandas.GeoDataFrame.plot&gt;</code></dt>
 <dd>A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map
 with <code>ridges</code> features plotted onto the chosen map projection.</dd>
-</dl></div>
-</dd>
-<dt id="gplately.PlotTopologies.plot_ridges_and_transforms"><code class="name flex">
-<span>def <span class="ident">plot_ridges_and_transforms</span></span>(<span>self, ax, color='black', **kwargs)</span>
-</code></dt>
-<dd>
-<div class="desc"><p>Plot reconstructed ridge &amp; transform boundary polylines onto a standard map
-Projection.</p>
-<h2 id="notes">Notes</h2>
-<p>The ridge &amp; transform sections for plotting are accessed from the
-<code><a title="gplately.PlotTopologies" href="#gplately.PlotTopologies">PlotTopologies</a></code> object's <code>ridge_transforms</code> attribute. These <code>ridge_transforms</code>
-are reconstructed to the <code>time</code> passed to the <code><a title="gplately.PlotTopologies" href="#gplately.PlotTopologies">PlotTopologies</a></code> object and converted
-into Shapely polylines. The reconstructed <code>ridge_transforms</code> are plotted onto the
-GeoAxes or GeoAxesSubplot map <code>ax</code> using GeoPandas. Map presentation details
-(e.g. <code>facecolor</code>, <code>edgecolor</code>, <code>alpha</code>…) are permitted as keyword arguments.</p>
-<p>Note: Ridge &amp; transform geometries are wrapped to the dateline using
-pyGPlates' <a href="https://www.gplates.org/docs/pygplates/generated/pygplates.datelinewrapper">DateLineWrapper</a>
-by splitting a polyline into multiple polylines at the dateline. This is to avoid
-horizontal lines being formed between polylines at longitudes of -180 and 180 degrees.
-Point features near the poles (-89 &amp; 89 degree latitude) are also clipped to ensure
-compatibility with Cartopy.</p>
-<h2 id="parameters">Parameters</h2>
-<dl>
-<dt><strong><code>ax</code></strong> :&ensp;<code>instance</code> of <code>&lt;cartopy.mpl.geoaxes.GeoAxes&gt;</code> or <code>&lt;cartopy.mpl.geoaxes.GeoAxesSubplot&gt;</code></dt>
-<dd>A subclass of <code>matplotlib.axes.Axes</code> which represents a map Projection.
-The map should be set at a particular Cartopy projection.</dd>
-<dt><strong><code>color</code></strong> :&ensp;<code>str</code>, default=<code>’black’</code></dt>
-<dd>The colour of the <code>ridges and transforms</code> lines. By default, it is set to black.</dd>
-</dl>
-<p>**kwargs :
-Keyword arguments for parameters such as <code>alpha</code>, etc. for plotting <code>ridges and transforms</code> geometries.
-See <code>Matplotlib</code> keyword arguments <a href="https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html">here</a>.</p>
-<h2 id="returns">Returns</h2>
-<dl>
-<dt><strong><code>ax</code></strong> :&ensp;<code>instance</code> of <code>&lt;geopandas.GeoDataFrame.plot&gt;</code></dt>
-<dd>A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map
-with <code>ridges and transforms</code> features plotted onto the chosen map projection.</dd>
 </dl></div>
 </dd>
 <dt id="gplately.PlotTopologies.plot_slab_edges"><code class="name flex">
@@ -8741,20 +8538,7 @@ with <code>topological plate boundaries</code> features plotted onto the chosen 
 <span>def <span class="ident">plot_transforms</span></span>(<span>self, ax, color='black', **kwargs)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Plot reconstructed transform boundary polylines onto a standard map.</p>
-<h2 id="notes">Notes</h2>
-<p>The transform sections for plotting are accessed from the
-<code><a title="gplately.PlotTopologies" href="#gplately.PlotTopologies">PlotTopologies</a></code> object's <code>transforms</code> attribute. These <code>transforms</code>
-are reconstructed to the <code>time</code> passed to the <code><a title="gplately.PlotTopologies" href="#gplately.PlotTopologies">PlotTopologies</a></code> object and converted
-into Shapely polylines. The reconstructed <code>transforms</code> are plotted onto the
-GeoAxes or GeoAxesSubplot map <code>ax</code> using GeoPandas. Map presentation details
-(e.g. <code>facecolor</code>, <code>edgecolor</code>, <code>alpha</code>…) are permitted as keyword arguments.</p>
-<p>Transform geometries are wrapped to the dateline using
-pyGPlates' <a href="https://www.gplates.org/docs/pygplates/generated/pygplates.datelinewrapper">DateLineWrapper</a>
-by splitting a polyline into multiple polylines at the dateline. This is to avoid
-horizontal lines being formed between polylines at longitudes of -180 and 180 degrees.
-Point features near the poles (-89 &amp; 89 degree latitude) are also clipped to ensure
-compatibility with Cartopy.</p>
+<div class="desc"><p>Plot transform boundaries(gpml:Transform) onto a map.</p>
 <h2 id="parameters">Parameters</h2>
 <dl>
 <dt><strong><code>ax</code></strong> :&ensp;<code>instance</code> of <code>&lt;cartopy.mpl.geoaxes.GeoAxes&gt;</code> or <code>&lt;cartopy.mpl.geoaxes.GeoAxesSubplot&gt;</code></dt>
@@ -13565,11 +13349,9 @@ other general z-values are saved to a gridding input file (.npz).</p></div>
 <li><code><a title="gplately.PlotTopologies.get_fracture_zones" href="#gplately.PlotTopologies.get_fracture_zones">get_fracture_zones</a></code></li>
 <li><code><a title="gplately.PlotTopologies.get_inferred_paleo_boundaries" href="#gplately.PlotTopologies.get_inferred_paleo_boundaries">get_inferred_paleo_boundaries</a></code></li>
 <li><code><a title="gplately.PlotTopologies.get_misc_boundaries" href="#gplately.PlotTopologies.get_misc_boundaries">get_misc_boundaries</a></code></li>
-<li><code><a title="gplately.PlotTopologies.get_misc_transforms" href="#gplately.PlotTopologies.get_misc_transforms">get_misc_transforms</a></code></li>
 <li><code><a title="gplately.PlotTopologies.get_orogenic_belts" href="#gplately.PlotTopologies.get_orogenic_belts">get_orogenic_belts</a></code></li>
 <li><code><a title="gplately.PlotTopologies.get_passive_continental_boundaries" href="#gplately.PlotTopologies.get_passive_continental_boundaries">get_passive_continental_boundaries</a></code></li>
 <li><code><a title="gplately.PlotTopologies.get_ridges" href="#gplately.PlotTopologies.get_ridges">get_ridges</a></code></li>
-<li><code><a title="gplately.PlotTopologies.get_ridges_and_transforms" href="#gplately.PlotTopologies.get_ridges_and_transforms">get_ridges_and_transforms</a></code></li>
 <li><code><a title="gplately.PlotTopologies.get_slab_edges" href="#gplately.PlotTopologies.get_slab_edges">get_slab_edges</a></code></li>
 <li><code><a title="gplately.PlotTopologies.get_subduction_direction" href="#gplately.PlotTopologies.get_subduction_direction">get_subduction_direction</a></code></li>
 <li><code><a title="gplately.PlotTopologies.get_sutures" href="#gplately.PlotTopologies.get_sutures">get_sutures</a></code></li>
@@ -13594,14 +13376,12 @@ other general z-values are saved to a gridding input file (.npz).</p></div>
 <li><code><a title="gplately.PlotTopologies.plot_grid_from_netCDF" href="#gplately.PlotTopologies.plot_grid_from_netCDF">plot_grid_from_netCDF</a></code></li>
 <li><code><a title="gplately.PlotTopologies.plot_inferred_paleo_boundaries" href="#gplately.PlotTopologies.plot_inferred_paleo_boundaries">plot_inferred_paleo_boundaries</a></code></li>
 <li><code><a title="gplately.PlotTopologies.plot_misc_boundaries" href="#gplately.PlotTopologies.plot_misc_boundaries">plot_misc_boundaries</a></code></li>
-<li><code><a title="gplately.PlotTopologies.plot_misc_transforms" href="#gplately.PlotTopologies.plot_misc_transforms">plot_misc_transforms</a></code></li>
 <li><code><a title="gplately.PlotTopologies.plot_orogenic_belts" href="#gplately.PlotTopologies.plot_orogenic_belts">plot_orogenic_belts</a></code></li>
 <li><code><a title="gplately.PlotTopologies.plot_passive_continental_boundaries" href="#gplately.PlotTopologies.plot_passive_continental_boundaries">plot_passive_continental_boundaries</a></code></li>
 <li><code><a title="gplately.PlotTopologies.plot_plate_id" href="#gplately.PlotTopologies.plot_plate_id">plot_plate_id</a></code></li>
 <li><code><a title="gplately.PlotTopologies.plot_plate_motion_vectors" href="#gplately.PlotTopologies.plot_plate_motion_vectors">plot_plate_motion_vectors</a></code></li>
 <li><code><a title="gplately.PlotTopologies.plot_plate_polygon_by_id" href="#gplately.PlotTopologies.plot_plate_polygon_by_id">plot_plate_polygon_by_id</a></code></li>
 <li><code><a title="gplately.PlotTopologies.plot_ridges" href="#gplately.PlotTopologies.plot_ridges">plot_ridges</a></code></li>
-<li><code><a title="gplately.PlotTopologies.plot_ridges_and_transforms" href="#gplately.PlotTopologies.plot_ridges_and_transforms">plot_ridges_and_transforms</a></code></li>
 <li><code><a title="gplately.PlotTopologies.plot_slab_edges" href="#gplately.PlotTopologies.plot_slab_edges">plot_slab_edges</a></code></li>
 <li><code><a title="gplately.PlotTopologies.plot_subduction_teeth" href="#gplately.PlotTopologies.plot_subduction_teeth">plot_subduction_teeth</a></code></li>
 <li><code><a title="gplately.PlotTopologies.plot_subduction_teeth_deprecated" href="#gplately.PlotTopologies.plot_subduction_teeth_deprecated">plot_subduction_teeth_deprecated</a></code></li>
@@ -13613,6 +13393,7 @@ other general z-values are saved to a gridding input file (.npz).</p></div>
 <li><code><a title="gplately.PlotTopologies.plot_trenches" href="#gplately.PlotTopologies.plot_trenches">plot_trenches</a></code></li>
 <li><code><a title="gplately.PlotTopologies.plot_unclassified_features" href="#gplately.PlotTopologies.plot_unclassified_features">plot_unclassified_features</a></code></li>
 <li><code><a title="gplately.PlotTopologies.time" href="#gplately.PlotTopologies.time">time</a></code></li>
+<li><code><a title="gplately.PlotTopologies.topological_plate_boundaries" href="#gplately.PlotTopologies.topological_plate_boundaries">topological_plate_boundaries</a></code></li>
 <li><code><a title="gplately.PlotTopologies.topologies" href="#gplately.PlotTopologies.topologies">topologies</a></code></li>
 <li><code><a title="gplately.PlotTopologies.update_time" href="#gplately.PlotTopologies.update_time">update_time</a></code></li>
 </ul>
