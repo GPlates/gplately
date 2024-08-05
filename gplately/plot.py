@@ -271,11 +271,8 @@ class PlotTopologies(object):
         A list containing ridge and transform boundary sections of type
         pygplates.FeatureType.gpml_mid_ocean_ridge
 
-    ridges : iterable/list of <pygplates.Feature>
-        A list containing ridge boundary sections of type pygplates.FeatureType.gpml_mid_ocean_ridge
-
     transforms : iterable/list of <pygplates.Feature>
-        A list containing transform boundary sections of type pygplates.FeatureType.gpml_mid_ocean_ridge
+        A list containing transform boundary sections of type pygplates.FeatureType.gpml_transforms
 
     trenches : iterable/list of <pygplates.Feature>
         A list containing trench boundary sections of type pygplates.FeatureType.gpml_subduction_zone
