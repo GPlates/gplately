@@ -267,7 +267,7 @@ class PlotTopologies(object):
         - pygplates.FeatureType.gpml_topological_slab_boundary
         - pygplates.FeatureType.gpml_topological_closed_plate_boundary
 
-    ridge_transforms : iterable/list of <pygplates.Feature>
+    ridges : iterable/list of <pygplates.Feature>
         A list containing ridge and transform boundary sections of type
         pygplates.FeatureType.gpml_mid_ocean_ridge
 
@@ -853,7 +853,7 @@ class PlotTopologies(object):
 
         Notes
         -----
-        The ridges sections for plotting are accessed from the
+        The `ridges` sections for plotting are accessed from the
         `PlotTopologies` object's `ridges` attribute. These `ridges`
         are reconstructed to the `time` passed to the `PlotTopologies` object and converted
         into Shapely polylines. The reconstructed `ridges` are plotted onto the

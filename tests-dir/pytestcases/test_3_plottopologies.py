@@ -1,8 +1,8 @@
-import pytest
 import matplotlib.pyplot as plt
 import numpy as np
-from conftest import reconstruction_times
+import pytest
 from conftest import gplately_plot_topologies_object as gplot
+from conftest import reconstruction_times
 
 # ========================================= <gplately.PlotTopologies> =========================================
 
@@ -47,55 +47,124 @@ methods in the object are tested:
             - plot_plate_motion_vectors
 """
 
+
 # CALL THE PLOT TOPOLOGIES OBJECT
 @pytest.mark.parametrize("time", reconstruction_times)
 def test_gplately_plotTopologies_object(time, gplot):
-    #assert gplot, "No <gplately.PlotTopologies> object made with {}.".format(model)
-    assert gplot, "Unable to create a <gplately.PlotTopologies> object with Müller et al. (2019) at {} Ma.".format(time)
+    # assert gplot, "No <gplately.PlotTopologies> object made with {}.".format(model)
+    assert (
+        gplot
+    ), "Unable to create a <gplately.PlotTopologies> object with Müller et al. (2019) at {} Ma.".format(
+        time
+    )
+
 
 # ================================================================================================================================================================================================================
+
 
 # ENSURE PLOT TOPOLOGIES' ATTRIBUTES EXIST AND ARE CORRECT
 # Topologies
 @pytest.mark.parametrize("time", reconstruction_times)
 def test_PlotTopologies_topologies(time, gplot):
-    assert gplot.topologies, "No topological features from Müller et al. (2019) at {} Ma are attributed to <gplately.PlotTopologies>.".format(time)  
+    assert (
+        gplot.topologies
+    ), "No topological features from Müller et al. (2019) at {} Ma are attributed to <gplately.PlotTopologies>.".format(
+        time
+    )
+
 
 # Ridge_transforms
 @pytest.mark.parametrize("time", reconstruction_times)
 def test_PlotTopologies_ridge_transforms(time, gplot):
-    assert gplot.ridge_transforms, "No ridge/transform features from Müller et al. (2019) at {} Ma are attributed to <gplately.PlotTopologies>.".format(time)
-    assert [ridge_transform.get_feature_type() == "gpml:MidOceanRidge" for ridge_transform in gplot.ridge_transforms], "<gplately.PlotTopologies> ridge/transforms are not all of type gpml:MidOceanRidge in Müller et al. (2019) at {} Ma.".format(time)
+    assert (
+        gplot.ridges
+    ), "No ridge/transform features from Müller et al. (2019) at {} Ma are attributed to <gplately.PlotTopologies>.".format(
+        time
+    )
+    assert [
+        ridge_transform.get_feature_type() == "gpml:MidOceanRidge"
+        for ridge_transform in gplot.ridges
+    ], "<gplately.PlotTopologies> ridge/transforms are not all of type gpml:MidOceanRidge in Müller et al. (2019) at {} Ma.".format(
+        time
+    )
+
 
 # Ridges
 @pytest.mark.parametrize("time", reconstruction_times)
 def test_PlotTopologies_ridges(time, gplot):
-    assert gplot.ridges, "No ridge features from Müller et al. (2019) at {} Ma are attributed to <gplately.PlotTopologies>.".format(time)
-    assert [ridge.get_feature_type() == "gpml:MidOceanRidge" for ridge in gplot.ridges], "<gplately.PlotTopologies> ridges are not all of type gpml:MidOceanRidge in Müller et al. (2019) at {} Ma.".format(time)
+    assert (
+        gplot.ridges
+    ), "No ridge features from Müller et al. (2019) at {} Ma are attributed to <gplately.PlotTopologies>.".format(
+        time
+    )
+    assert [
+        ridge.get_feature_type() == "gpml:MidOceanRidge" for ridge in gplot.ridges
+    ], "<gplately.PlotTopologies> ridges are not all of type gpml:MidOceanRidge in Müller et al. (2019) at {} Ma.".format(
+        time
+    )
+
 
 # Transforms
 @pytest.mark.parametrize("time", reconstruction_times)
 def test_PlotTopologies_transforms(time, gplot):
-    assert gplot.transforms, "No transform features from Müller et al. (2019) at {} Ma are attributed to <gplately.PlotTopologies>.".format(time)
-    assert [transform.get_feature_type() == "gpml:MidOceanRidge" for transform in gplot.transforms], "<gplately.PlotTopologies> transforms are not all of type gpml:MidOceanRidge in Müller et al. (2019) at {} Ma.".format(time)
+    assert (
+        gplot.transforms
+    ), "No transform features from Müller et al. (2019) at {} Ma are attributed to <gplately.PlotTopologies>.".format(
+        time
+    )
+    assert [
+        transform.get_feature_type() == "gpml:MidOceanRidge"
+        for transform in gplot.transforms
+    ], "<gplately.PlotTopologies> transforms are not all of type gpml:MidOceanRidge in Müller et al. (2019) at {} Ma.".format(
+        time
+    )
+
 
 # Trenches
 @pytest.mark.parametrize("time", reconstruction_times)
 def test_PlotTopologies_trenches(time, gplot):
-    assert gplot.trenches, "No trench features from Müller et al. (2019) at {} Ma are attributed to <gplately.PlotTopologies>.".format(time)
-    assert [trench.get_feature_type() == "gpml:SubductionZone" for trench in gplot.trenches], "<gplately.PlotTopologies> trenches are not all of type gpml:SubductionZone in Müller et al. (2019) at {} Ma.".format(time)
+    assert (
+        gplot.trenches
+    ), "No trench features from Müller et al. (2019) at {} Ma are attributed to <gplately.PlotTopologies>.".format(
+        time
+    )
+    assert [
+        trench.get_feature_type() == "gpml:SubductionZone" for trench in gplot.trenches
+    ], "<gplately.PlotTopologies> trenches are not all of type gpml:SubductionZone in Müller et al. (2019) at {} Ma.".format(
+        time
+    )
+
 
 # Trench_left
 @pytest.mark.parametrize("time", reconstruction_times)
 def test_PlotTopologies_trench_L(time, gplot):
-    assert gplot.trench_left, "No trench (L) features from Müller et al. (2019) at {} Ma are attributed to <gplately.PlotTopologies>.".format(time)
-    assert [trench_l.get_feature_type() == "gpml:SubductionZone" for trench_l in gplot.trench_left], "<gplately.PlotTopologies> trenches (L) are not all of type gpml:SubductionZone in Müller et al. (2019) at {} Ma.".format(time)
+    assert (
+        gplot.trench_left
+    ), "No trench (L) features from Müller et al. (2019) at {} Ma are attributed to <gplately.PlotTopologies>.".format(
+        time
+    )
+    assert [
+        trench_l.get_feature_type() == "gpml:SubductionZone"
+        for trench_l in gplot.trench_left
+    ], "<gplately.PlotTopologies> trenches (L) are not all of type gpml:SubductionZone in Müller et al. (2019) at {} Ma.".format(
+        time
+    )
+
 
 # Trench_right
 @pytest.mark.parametrize("time", reconstruction_times)
 def test_PlotTopologies_trench_R(time, gplot):
-    assert gplot.trench_right, "No trench (R) features from Müller et al. (2019) at {} Ma are attributed to <gplately.PlotTopologies>.".format(time)
-    assert [trench_r.get_feature_type() == "gpml:SubductionZone" for trench_r in gplot.trench_right], "<gplately.PlotTopologies> trenches (R) are not all of type gpml:SubductionZone in Müller et al. (2019) at {} Ma.".format(time)
+    assert (
+        gplot.trench_right
+    ), "No trench (R) features from Müller et al. (2019) at {} Ma are attributed to <gplately.PlotTopologies>.".format(
+        time
+    )
+    assert [
+        trench_r.get_feature_type() == "gpml:SubductionZone"
+        for trench_r in gplot.trench_right
+    ], "<gplately.PlotTopologies> trenches (R) are not all of type gpml:SubductionZone in Müller et al. (2019) at {} Ma.".format(
+        time
+    )
 
 
 # Subduction teeth
@@ -108,5 +177,6 @@ def test_PlotTopologies_subduction_teeth(gplot):
 
 def test_pickle_Points():
     import pickle
+
     gplot_dump = pickle.dumps(gplot)
     gplot_load = pickle.loads(gplot_dump)
