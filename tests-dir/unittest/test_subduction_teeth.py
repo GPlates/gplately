@@ -4,20 +4,19 @@ import sys
 
 import cartopy
 import matplotlib.pyplot as plt
+from common import MODEL_REPO_DIR, save_fig
 from plate_model_manager import PlateModelManager
 
-sys.path.insert(0, "../..")
-from common import save_fig
-
 import gplately
+
+print(gplately.__file__)
 
 # test plotting subduction teeth
 
 
 def main(show=True):
     pm_manager = PlateModelManager()
-    model = pm_manager.get_model("Muller2019")
-    model.set_data_dir("plate-model-repo")
+    model = pm_manager.get_model("Muller2019", data_dir=MODEL_REPO_DIR)
 
     plt.figure(figsize=(12, 8))
 
@@ -33,13 +32,13 @@ def main(show=True):
     plot_plates.time = 100
 
     ax1.set_extent([50, 105, -10, 40], crs=cartopy.crs.PlateCarree())
-    plot_plates.plot_ridges_and_transforms(ax1, color="r")
+    plot_plates.plot_ridges(ax1, color="r")
     plot_plates.plot_trenches(ax1, color="b")
     plot_plates.plot_faults(ax1, color="k")
     plot_plates.plot_subduction_teeth(ax1, color="green")
 
     ax2.set_global()
-    plot_plates.plot_ridges_and_transforms(ax2, color="r")
+    plot_plates.plot_ridges(ax2, color="r")
     plot_plates.plot_trenches(ax2, color="b")
     plot_plates.plot_faults(ax2, color="k")
     plot_plates.plot_subduction_teeth(ax2, color="green")

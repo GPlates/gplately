@@ -1,3 +1,20 @@
+#
+#    Copyright (C) 2024 The University of Sydney, Australia
+#
+#    This program is free software; you can redistribute it and/or modify it under
+#    the terms of the GNU General Public License, version 2, as published by
+#    the Free Software Foundation.
+#
+#    This program is distributed in the hope that it will be useful, but WITHOUT
+#    ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+#    FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+#    for more details.
+#
+#    You should have received a copy of the GNU General Public License along
+#    with this program; if not, write to Free Software Foundation, Inc.,
+#    51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+#
+
 """
 
 ![Intro GIF](https://raw.githubusercontent.com/GPlates/gplately/master/Notebooks/NotebookFiles/pdoc_Files/docs_muller19_seed_points.gif)
@@ -5,7 +22,7 @@
 ## Main objects
 GPlately's common objects include:
 
-### [DataServer ](https://gplates.github.io/gplately/download.html#gplately.download.DataServer)
+### [DataServer](https://gplates.github.io/gplately/download.html#gplately.download.DataServer)
 The `DataServer` object automatically downloads and caches files needed for plate reconstructions to a folder in your system.
 These plate reconstruction files include rotation models, topology features and static polygons and geometries such as 
 coastlines, continents and continent-ocean boundaries. Additional data like rasters, grids and feature data can also be installed. 
@@ -51,6 +68,27 @@ etopo = gdownload.get_raster("ETOPO1_tif")
 |           Shephard2013           |        ✅       |           ✅           |          ✅          |        ✅        |        ❌        |     ❌    |       ❌       |       ❌      |
 
 ------------------
+
+### [PlateModelManager](https://pypi.org/project/plate-model-manager/)
+The `PlateModelManager` object was introduced as an alternative/substitute to the `DataServer` object. It can be used to download and manage plate reconstruction models.
+
+```python
+pm_manager = PlateModelManager()
+model = pm_manager.get_model("Muller2019")
+model.set_data_dir("plate-model-repo")
+
+recon_model = PlateReconstruction(
+    model.get_rotation_model(),
+    topology_features=model.get_layer("Topologies"),
+    static_polygons=model.get_layer("StaticPolygons"),
+)
+gplot = PlotTopologies(
+    recon_model,
+    coastlines=model.get_layer("Coastlines"),
+    COBs=model.get_layer("COBs"),
+    time=55,
+)
+```
 
 ### [PlateReconstruction](https://gplates.github.io/gplately/reconstruction.html#gplately.reconstruction.PlateReconstruction)
 The `PlateReconstruction` object contains tools to reconstruct geological features like tectonic plates and plate boundaries,
@@ -158,20 +196,81 @@ seafloorgrid.reconstruct_by_topologies()
 - [__08 - Predicting Slab Flux__](08-PredictingSlabFlux.html): Predicting the average slab dip angle of subducting oceanic lithosphere.
 - [__09 - Motion Paths and Flowlines__](09-CreatingMotionPathsAndFlowlines.html): Using pyGPlates to create motion paths and flowines of points on a tectonic plate to illustrate the plate's trajectory through geological time.
 - [__10 - SeafloorGrid__](10-SeafloorGrids.html): Defines the parameters needed to set up a `SeafloorGrid` object, and demonstrates how to produce age and spreading rate grids from a set of plate reconstruction model files.
+- [__11 - AndesFluxes__](11-AndesFluxes.html): Demonstrates how the reconstructed subduction history along the Andean margin can be potentially used in the plate kinematics anylysis and data mining.
 
 """
 
-__version__ = "1.1"
+__version__ = "1.3.0"
+REQUIRED_PMM_VERSION = "1.2.0"
+USING_DEV_VERSION = True  ## change this to False before official release
 
-try:
-    import plate_model_manager
-except ImportError:
-    print("The plate_model_manager is not installed, installing it now!")
+if USING_DEV_VERSION:
+    print("##########################################################################")
+    print(
+        """
+        WARNING: 
+        You are using a DEV version GPlately. 
+        You might need to install the DEV version plate_model_manager 
+        from https://github.com/michaelchin/plate-model-manager.
+        """
+    )
+    print("##########################################################################")
+
+import logging
+import os
+
+from .utils.log_utils import get_debug_level, setup_logging, turn_on_debug_logging
+
+setup_logging()
+
+if get_debug_level() > 0:
+    turn_on_debug_logging()
+
+del setup_logging
+del os
+
+logger = logging.getLogger("gplately")
+
+
+def install_and_update_pmm():
     import subprocess
     import sys
 
-    subprocess.call([sys.executable, "-m", "pip", "install", "plate-model-manager"])
+    subprocess.call(
+        [sys.executable, "-m", "pip", "install", "plate-model-manager", "--upgrade"]
+    )
+
+
+def check_version(installed_version, required_version):
+    """return True if the installed_version is good enough, otherwise False"""
+    installed_version_numbers = installed_version.split(".")
+    required_version_numbers = required_version.split(".")
+    if int(installed_version_numbers[0]) > int(required_version_numbers[0]):
+        return True
+    elif int(installed_version_numbers[0]) == int(required_version_numbers[0]):
+        if int(installed_version_numbers[1]) > int(required_version_numbers[1]):
+            return True
+        elif int(installed_version_numbers[1]) == int(required_version_numbers[1]):
+            if int(installed_version_numbers[2]) >= int(required_version_numbers[2]):
+                return True
+    return False
+
+
+try:
     import plate_model_manager
+except (ImportError, ModuleNotFoundError):
+    logger.info("The plate_model_manager is not installed, installing it now!")
+    install_and_update_pmm()
+    import plate_model_manager
+
+
+if not check_version(plate_model_manager.__version__, REQUIRED_PMM_VERSION):
+    logger.info("The plate_model_manager is outdated, updating it now!")
+    install_and_update_pmm()
+    import importlib
+
+    importlib.reload(plate_model_manager)
+
 
 from . import (
     data,
@@ -181,32 +280,36 @@ from . import (
     grids,
     oceans,
     plot,
+    ptt,
     pygplates,
-    read_geometries,
     reconstruction,
-    ptt
 )
-
 from .data import DataCollection
 from .download import DataServer
 from .grids import Raster
-from .read_geometries import get_valid_geometries, get_geometries
+from .oceans import SeafloorGrid
 from .plot import PlotTopologies
 from .reconstruction import (
     PlateReconstruction,
     Points,
-    _DefaultCollision,
     _ContinentCollision,
+    _DefaultCollision,
     _ReconstructByTopologies,
 )
 from .tools import EARTH_RADIUS
-from .oceans import SeafloorGrid
+from .utils import io_utils
+from .utils.io_utils import get_geometries, get_valid_geometries
 
 __pdoc__ = {
     "data": False,
     "_DefaultCollision": False,
     "_ContinentCollision": False,
     "_ReconstructByTopologies": False,
+    "examples": False,
+    "notebooks": False,
+    "commands": False,
+    "decorators": False,
+    "exceptions": False,
 }
 
 __all__ = [
@@ -219,7 +322,7 @@ __all__ = [
     "oceans",
     "plot",
     "pygplates",
-    "read_geometries",
+    "io_utils",
     "reconstruction",
     "plate_model_manager",
     "ptt",

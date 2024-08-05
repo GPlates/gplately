@@ -50,3 +50,6 @@ def test_pickle_Points(gpts):
     gpts.add_attributes(FROMAGE=attr, TOAGE=attr)
     gpts_dump = pickle.dumps(gpts)
     gpts_load = pickle.loads(gpts_dump)
+
+def test_change_ancbor_plate(gpts):
+    gpts.rotate_reference_frames(50, from_rotation_reference_plate=0, to_rotation_reference_plate=101)
