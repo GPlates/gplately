@@ -1414,6 +1414,45 @@ class PlotTopologies(object):
             quiver = ax.quiver(X, Y, U, V, transform=self.base_projection, **kwargs)
         return quiver
 
+
+    def plot_pole(self, ax, lon, lat, a95, **kwargs):
+        """
+        Plot pole onto a matplotlib axes.
+
+        Parameters
+        ----------
+        ax : instance of <cartopy.mpl.geoaxes.GeoAxes> or <cartopy.mpl.geoaxes.GeoAxesSubplot>
+            A subclass of `matplotlib.axes.Axes` which represents a map Projection.
+            The map should be set at a particular Cartopy projection.
+
+        lon : float
+            Longitudinal coordinate to place pole
+        lat : float
+            Latitudinal coordinate to place pole
+        a95 : float
+            The size of the pole (in degrees)
+
+        Returns
+        -------
+        matplotlib.patches.Circle handle
+        """
+        from matplotlib import patches as mpatches
+
+        # Define the projection used to display the circle:
+        proj1 = ccrs.Orthographic(central_longitude=lon, central_latitude=lat)
+
+
+        def compute_radius(ortho, radius_degrees):
+            phi1 = lat + radius_degrees if lat <= 0 else lat - radius_degrees
+            _, y1 = ortho.transform_point(lon, phi1, ccrs.PlateCarree())
+            return abs(y1)
+
+        r_ortho = compute_radius(proj1, a95)
+
+        # adding a patch
+        patch = ax.add_patch(mpatches.Circle(xy=[lon, lat], radius=r_ortho, transform=proj1, **kwargs))
+        return patch
+
     @validate_reconstruction_time
     @append_docstring(GET_DATE_DOCSTRING.format("continental rifts"))
     def get_continental_rifts(
