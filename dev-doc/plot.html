@@ -1627,6 +1627,45 @@ boundaries and passive continental boundaries.</dd>
             quiver = ax.quiver(X, Y, U, V, transform=self.base_projection, **kwargs)
         return quiver
 
+
+    def plot_pole(self, ax, lon, lat, a95, **kwargs):
+        &#34;&#34;&#34;
+        Plot pole onto a matplotlib axes.
+
+        Parameters
+        ----------
+        ax : instance of &lt;cartopy.mpl.geoaxes.GeoAxes&gt; or &lt;cartopy.mpl.geoaxes.GeoAxesSubplot&gt;
+            A subclass of `matplotlib.axes.Axes` which represents a map Projection.
+            The map should be set at a particular Cartopy projection.
+
+        lon : float
+            Longitudinal coordinate to place pole
+        lat : float
+            Latitudinal coordinate to place pole
+        a95 : float
+            The size of the pole (in degrees)
+
+        Returns
+        -------
+        matplotlib.patches.Circle handle
+        &#34;&#34;&#34;
+        from matplotlib import patches as mpatches
+
+        # Define the projection used to display the circle:
+        proj1 = ccrs.Orthographic(central_longitude=lon, central_latitude=lat)
+
+
+        def compute_radius(ortho, radius_degrees):
+            phi1 = lat + radius_degrees if lat &lt;= 0 else lat - radius_degrees
+            _, y1 = ortho.transform_point(lon, phi1, ccrs.PlateCarree())
+            return abs(y1)
+
+        r_ortho = compute_radius(proj1, a95)
+
+        # adding a patch
+        patch = ax.add_patch(mpatches.Circle(xy=[lon, lat], radius=r_ortho, transform=proj1, **kwargs))
+        return patch
+
     @validate_reconstruction_time
     @append_docstring(GET_DATE_DOCSTRING.format(&#34;continental rifts&#34;))
     def get_continental_rifts(
@@ -3684,6 +3723,29 @@ Keyword arguments for map presentation parameters such as
 See <code>Matplotlib</code>'s <code>imshow</code> keyword arguments
 <a href="https://matplotlib.org/3.5.1/api/_as_gen/matplotlib.axes.Axes.imshow.html">here</a>.</p></div>
 </dd>
+<dt id="gplately.plot.PlotTopologies.plot_pole"><code class="name flex">
+<span>def <span class="ident">plot_pole</span></span>(<span>self, ax, lon, lat, a95, **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Plot pole onto a matplotlib axes.</p>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>ax</code></strong> :&ensp;<code>instance</code> of <code>&lt;cartopy.mpl.geoaxes.GeoAxes&gt;</code> or <code>&lt;cartopy.mpl.geoaxes.GeoAxesSubplot&gt;</code></dt>
+<dd>A subclass of <code>matplotlib.axes.Axes</code> which represents a map Projection.
+The map should be set at a particular Cartopy projection.</dd>
+<dt><strong><code>lon</code></strong> :&ensp;<code>float</code></dt>
+<dd>Longitudinal coordinate to place pole</dd>
+<dt><strong><code>lat</code></strong> :&ensp;<code>float</code></dt>
+<dd>Latitudinal coordinate to place pole</dd>
+<dt><strong><code>a95</code></strong> :&ensp;<code>float</code></dt>
+<dd>The size of the pole (in degrees)</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>matplotlib.patches.Circle handle</code></dt>
+<dd>&nbsp;</dd>
+</dl></div>
+</dd>
 <dt id="gplately.plot.PlotTopologies.plot_ridges"><code class="name flex">
 <span>def <span class="ident">plot_ridges</span></span>(<span>self, ax, color='black', **kwargs)</span>
 </code></dt>
@@ -4086,6 +4148,7 @@ whenever it or the anchor plate is updated.</p>
 <li><code><a title="gplately.plot.PlotTopologies.plot_plate_id" href="#gplately.plot.PlotTopologies.plot_plate_id">plot_plate_id</a></code></li>
 <li><code><a title="gplately.plot.PlotTopologies.plot_plate_motion_vectors" href="#gplately.plot.PlotTopologies.plot_plate_motion_vectors">plot_plate_motion_vectors</a></code></li>
 <li><code><a title="gplately.plot.PlotTopologies.plot_plate_polygon_by_id" href="#gplately.plot.PlotTopologies.plot_plate_polygon_by_id">plot_plate_polygon_by_id</a></code></li>
+<li><code><a title="gplately.plot.PlotTopologies.plot_pole" href="#gplately.plot.PlotTopologies.plot_pole">plot_pole</a></code></li>
 <li><code><a title="gplately.plot.PlotTopologies.plot_ridges" href="#gplately.plot.PlotTopologies.plot_ridges">plot_ridges</a></code></li>
 <li><code><a title="gplately.plot.PlotTopologies.plot_slab_edges" href="#gplately.plot.PlotTopologies.plot_slab_edges">plot_slab_edges</a></code></li>
 <li><code><a title="gplately.plot.PlotTopologies.plot_subduction_teeth" href="#gplately.plot.PlotTopologies.plot_subduction_teeth">plot_subduction_teeth</a></code></li>
