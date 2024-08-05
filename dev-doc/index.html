@@ -4985,7 +4985,7 @@ if these features are sourced from the <code><a title="gplately.DataServer" href
 <li>pygplates.FeatureType.gpml_topological_closed_plate_boundary</li>
 </ul>
 </dd>
-<dt><strong><code>ridge_transforms</code></strong> :&ensp;<code>iterable/list</code> of <code>&lt;pygplates.Feature&gt;</code></dt>
+<dt><strong><code>ridges</code></strong> :&ensp;<code>iterable/list</code> of <code>&lt;pygplates.Feature&gt;</code></dt>
 <dd>A list containing ridge and transform boundary sections of type
 pygplates.FeatureType.gpml_mid_ocean_ridge</dd>
 <dt><strong><code>ridges</code></strong> :&ensp;<code>iterable/list</code> of <code>&lt;pygplates.Feature&gt;</code></dt>
@@ -5133,7 +5133,7 @@ boundaries and passive continental boundaries.</dd>
         - pygplates.FeatureType.gpml_topological_slab_boundary
         - pygplates.FeatureType.gpml_topological_closed_plate_boundary
 
-    ridge_transforms : iterable/list of &lt;pygplates.Feature&gt;
+    ridges : iterable/list of &lt;pygplates.Feature&gt;
         A list containing ridge and transform boundary sections of type
         pygplates.FeatureType.gpml_mid_ocean_ridge
 
@@ -5719,7 +5719,7 @@ boundaries and passive continental boundaries.</dd>
 
         Notes
         -----
-        The ridges sections for plotting are accessed from the
+        The `ridges` sections for plotting are accessed from the
         `PlotTopologies` object&#39;s `ridges` attribute. These `ridges`
         are reconstructed to the `time` passed to the `PlotTopologies` object and converted
         into Shapely polylines. The reconstructed `ridges` are plotted onto the
@@ -8346,7 +8346,7 @@ See <code>Matplotlib</code>'s <code>imshow</code> keyword arguments
 <dd>
 <div class="desc"><p>Plot reconstructed mid-ocean ridge lines(gpml:MidOceanRidge) onto a map.</p>
 <h2 id="notes">Notes</h2>
-<p>The ridges sections for plotting are accessed from the
+<p>The <code>ridges</code> sections for plotting are accessed from the
 <code><a title="gplately.PlotTopologies" href="#gplately.PlotTopologies">PlotTopologies</a></code> object's <code>ridges</code> attribute. These <code>ridges</code>
 are reconstructed to the <code>time</code> passed to the <code><a title="gplately.PlotTopologies" href="#gplately.PlotTopologies">PlotTopologies</a></code> object and converted
 into Shapely polylines. The reconstructed <code>ridges</code> are plotted onto the
