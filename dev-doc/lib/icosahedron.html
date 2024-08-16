@@ -4,7 +4,7 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1">
 <meta name="generator" content="pdoc3 0.11.1">
-<title>gplately.lib API documentation</title>
+<title>gplately.lib.icosahedron API documentation</title>
 <meta name="description" content="">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/13.0.0/sanitize.min.css" integrity="sha512-y1dtMcuvtTMJc1yPgEqF0ZjQbhnc/bFhyvIyVNb9Zk5mIGtqVaAB1Ttl28su8AvFMOY0EwRbAe+HCLqj6W7/KA==" crossorigin>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/13.0.0/typography.min.css" integrity="sha512-Y1DYSb995BAfxobCkKepB1BqJJTPrOp3zPL74AWFugHHmmdcvO+C48WLrUOlhGMc0QG7AE3f7gmvvcrmX2fDoA==" crossorigin>
@@ -24,42 +24,44 @@ hljs.highlightAll();
 <main>
 <article id="content">
 <header>
-<h1 class="title">Module <code>gplately.lib</code></h1>
+<h1 class="title">Module <code>gplately.lib.icosahedron</code></h1>
 </header>
 <section id="section-intro">
 </section>
 <section>
-<h2 class="section-title" id="header-submodules">Sub-modules</h2>
-<dl>
-<dt><code class="name"><a title="gplately.lib.icosahedron" href="icosahedron.html">gplately.lib.icosahedron</a></code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-<dt><code class="name"><a title="gplately.lib.polyline" href="polyline.html">gplately.lib.polyline</a></code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-</dl>
 </section>
 <section>
 </section>
 <section>
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
-<dt id="gplately.lib.discretize_polyline"><code class="name flex">
-<span>def <span class="ident">discretize_polyline</span></span>(<span>line, distance, strict=False)</span>
+<dt id="gplately.lib.icosahedron.bisect"><code class="name flex">
+<span>def <span class="ident">bisect</span></span>(<span>vertices, faces, level=3)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>travel along a polyline; take a sampling point for each <code>distance</code>; return a list of the sampling points.</p>
-<p>:param line: a list of (lat, lon) in radians
-:param distance: the distance of the adjacent sampling points in radians
-:param strict: in strict mode, we guarantee the distance, sacrifice the end point if necessary.
-in unstrict mode, we always keep the end point</p>
-<p>:returns: the new line
-a list of (lat, lon) in radians.
-If the input line is shorter than distance,
-in strict mode, return [];
-in unstrict mode, return [start_point, end_point]</p></div>
+<div class="desc"></div>
+</dd>
+<dt id="gplately.lib.icosahedron.get_mesh"><code class="name flex">
+<span>def <span class="ident">get_mesh</span></span>(<span>level=5)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>call this function to get the mesh</p></div>
+</dd>
+<dt id="gplately.lib.icosahedron.normalize"><code class="name flex">
+<span>def <span class="ident">normalize</span></span>(<span>v)</span>
+</code></dt>
+<dd>
+<div class="desc"></div>
+</dd>
+<dt id="gplately.lib.icosahedron.xyz2lonlat"><code class="name flex">
+<span>def <span class="ident">xyz2lonlat</span></span>(<span>x, y, z)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>x = R * cos(lat) * cos(lon)
+y = R * cos(lat) * sin(lon)
+z = R *sin(lat)
+lat = asin(z / R)
+lon = atan2(y, x)</p></div>
 </dd>
 </dl>
 </section>
@@ -78,18 +80,15 @@ in unstrict mode, return [start_point, end_point]</p></div>
 <ul id="index">
 <li><h3>Super-module</h3>
 <ul>
-<li><code><a title="gplately" href="../index.html">gplately</a></code></li>
-</ul>
-</li>
-<li><h3><a href="#header-submodules">Sub-modules</a></h3>
-<ul>
-<li><code><a title="gplately.lib.icosahedron" href="icosahedron.html">gplately.lib.icosahedron</a></code></li>
-<li><code><a title="gplately.lib.polyline" href="polyline.html">gplately.lib.polyline</a></code></li>
+<li><code><a title="gplately.lib" href="index.html">gplately.lib</a></code></li>
 </ul>
 </li>
 <li><h3><a href="#header-functions">Functions</a></h3>
 <ul class="">
-<li><code><a title="gplately.lib.discretize_polyline" href="#gplately.lib.discretize_polyline">discretize_polyline</a></code></li>
+<li><code><a title="gplately.lib.icosahedron.bisect" href="#gplately.lib.icosahedron.bisect">bisect</a></code></li>
+<li><code><a title="gplately.lib.icosahedron.get_mesh" href="#gplately.lib.icosahedron.get_mesh">get_mesh</a></code></li>
+<li><code><a title="gplately.lib.icosahedron.normalize" href="#gplately.lib.icosahedron.normalize">normalize</a></code></li>
+<li><code><a title="gplately.lib.icosahedron.xyz2lonlat" href="#gplately.lib.icosahedron.xyz2lonlat">xyz2lonlat</a></code></li>
 </ul>
 </li>
 </ul>
