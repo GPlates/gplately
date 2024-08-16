@@ -322,6 +322,7 @@ __pdoc__ = {
     "commands": False,
     "decorators": False,
     "exceptions": False,
+    "lib": False,
 }
 
 __all__ = [
