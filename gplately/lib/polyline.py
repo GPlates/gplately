@@ -17,14 +17,14 @@
 
 import math
 
-import rotation
+from . import rotation
 
 
 def _find_next_point(line, distance, strict=False, accum_length=0):
     """recursive function to find the next point along the polyline
 
     :param line: a list of (lat, lon) in radians
-    :param distance: the distance to the next point
+    :param distance: the distance to the next point in radians
     :param strict: in strict mode, we guarantee the distance. sacrifice the end point if necessary
     :accum_length: parameter to pass down the accumulated length for this recursive function
 
@@ -65,7 +65,7 @@ def discretize_polyline(line, distance, strict=False):
     """travel along a polyline; take a sampling point for each `distance`; return a list of the sampling points.
 
     :param line: a list of (lat, lon) in radians
-    :param distance: the distance of the adjacent sampling points
+    :param distance: the distance of the adjacent sampling points in radians
     :param strict: in strict mode, we guarantee the distance, sacrifice the end point if necessary.
         in unstrict mode, we always keep the end point
 
