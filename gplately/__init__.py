@@ -204,20 +204,32 @@ __version__ = "1.3.0"
 REQUIRED_PMM_VERSION = "1.2.0"
 USING_DEV_VERSION = True  ## change this to False before official release
 
-if USING_DEV_VERSION:
+import os
+
+disable_dev_warning = (
+    "DISABLE_GPLATELY_DEV_WARNING" in os.environ
+    and os.environ["DISABLE_GPLATELY_DEV_WARNING"].lower() == "true"
+)
+if USING_DEV_VERSION and not disable_dev_warning:
+    print()
     print("##########################################################################")
     print(
         """
         WARNING: 
-        You are using a DEV version GPlately. 
-        You might need to install the DEV version plate_model_manager 
-        from https://github.com/michaelchin/plate-model-manager.
+        You are using a DEV version GPlately. Some functionalities have not been tested thoroughly.
+        The DEV version may break your code or produce wrong results due to its unstable nature(DEV in progress).
+        You might also need to install the DEV version plate_model_manager 
+        from https://github.com/michaelchin/plate-model-manager to use this DEV version GPlately.
+
+        To disable this warning, set USING_DEV_VERSION to False in __init__.py or
+        set DISABLE_GPLATELY_DEV_WARNING environment variable to true.
+        `export DISABLE_GPLATELY_DEV_WARNING=true`
         """
     )
     print("##########################################################################")
+    print()
 
 import logging
-import os
 
 from .utils.log_utils import get_debug_level, setup_logging, turn_on_debug_logging
 
