@@ -60,3 +60,11 @@ gplately filter "$IN_FILE" output/no_africa_north_america.gpmlz --exclude-names 
 # get features whose name does not conain "Africa" or "North America" and plate ID is not in 401 702
 
 gplately filter "$IN_FILE" output/no_africa_north_america_no_401_702.gpmlz --exclude-names Africa "North America" --exclude-pids 401 702
+
+# get all gpml:Basin features
+
+gplately filter "$IN_FILE" output/basins.gpmlz -t gpml:Basin 
+
+# get all gpml:Basin + gpml:IslandArc features
+
+gplately filter "$IN_FILE" output/basin_islandarc.gpmlz -t "gpml:IslandArc|gpml:Basin"

@@ -17,9 +17,13 @@
 
 import abc
 import argparse
+import logging
+import re
 from typing import List
 
 import pygplates
+
+logger = logging.getLogger("gplately")
 
 
 class FeatureFilter(metaclass=abc.ABCMeta):
@@ -135,6 +139,34 @@ class BirthAgeFilter(FeatureFilter):
         return False
 
 
+class FeatureTypeFilter(FeatureFilter):
+    """filter features by the feature type(regular expression)
+
+    examples:
+        - gplately filter "$IN_FILE" output/basins.gpmlz -t gpml:Basin
+        - gplately filter "$IN_FILE" output/basin_islandarc.gpmlz -t "gpml:IslandArc|gpml:Basin"
+
+    :param feature_type_re: the regular expression to match the feature type
+
+    """
+
+    def __init__(self, feature_type_re: str):
+        self._feature_type_re = feature_type_re
+
+    def should_keep(self, feature: pygplates.Feature) -> bool:
+        feature_type = feature.get_feature_type()
+        if re.fullmatch(self._feature_type_re, feature_type.to_qualified_string()):
+            logger.debug(
+                f"feature type match: {self._feature_type_re} {feature_type.to_qualified_string()}"
+            )
+            return True
+        else:
+            logger.debug(
+                f"feature type not match: {self._feature_type_re} {feature_type.to_qualified_string()}"
+            )
+            return False
+
+
 def filter_feature_collection(
     feature_collection: pygplates.FeatureCollection, filters: List[FeatureFilter]
 ):
@@ -168,26 +200,55 @@ def add_parser(subparser):
     filter_cmd.add_argument("filter_input_file", type=str)
     filter_cmd.add_argument("filter_output_file", type=str)
 
+    # filter by feature name
     name_group = filter_cmd.add_mutually_exclusive_group()
-    name_group.add_argument("-n", "--names", type=str, dest="names", nargs="+")
     name_group.add_argument(
-        "--exclude-names", type=str, dest="exclude_names", nargs="+"
+        "-n", "--names", type=str, dest="names", nargs="+", metavar="feature_name"
+    )
+    name_group.add_argument(
+        "--exclude-names",
+        type=str,
+        dest="exclude_names",
+        nargs="+",
+        metavar="feature_name",
     )
 
+    # filter by plate ID
     pid_group = filter_cmd.add_mutually_exclusive_group()
-    pid_group.add_argument("-p", "--pids", type=int, dest="pids", nargs="+")
-    pid_group.add_argument("--exclude-pids", type=int, dest="exclude_pids", nargs="+")
+    pid_group.add_argument(
+        "-p", "--pids", type=int, dest="pids", nargs="+", metavar="pid"
+    )
+    pid_group.add_argument(
+        "--exclude-pids", type=int, dest="exclude_pids", nargs="+", metavar="pid"
+    )
 
+    # filter by birth age
     birth_age_group = filter_cmd.add_mutually_exclusive_group()
     birth_age_group.add_argument(
-        "-a", "--min-birth-age", type=float, dest="min_birth_age"
+        "-a",
+        "--min-birth-age",
+        type=float,
+        dest="min_birth_age",
+        metavar="min_birth_age",
     )
-    birth_age_group.add_argument("--max-birth-age", type=float, dest="max_birth_age")
+    birth_age_group.add_argument(
+        "--max-birth-age", type=float, dest="max_birth_age", metavar="max_birth_age"
+    )
 
     filter_cmd.add_argument(
         "--case-sensitive", dest="case_sensitive", action="store_true"
     )
     filter_cmd.add_argument("--exact-match", dest="exact_match", action="store_true")
+
+    # filter by feature type
+    filter_cmd.add_argument(
+        "-t",
+        "--feature-type",
+        type=str,
+        dest="feature_type_re",
+        metavar="feature_type",
+        help="the regular expression of feature type",
+    )
 
 
 def run_filter_feature_collection(args):
@@ -224,12 +285,15 @@ def run_filter_feature_collection(args):
     elif args.min_birth_age is not None:
         filters.append(BirthAgeFilter(args.min_birth_age))
 
+    if args.feature_type_re is not None:
+        filters.append(FeatureTypeFilter(args.feature_type_re))
+
     new_fc = filter_feature_collection(
         input_feature_collection,
         filters,
     )
 
     new_fc.write(args.filter_output_file)
-    print(
+    logger.info(
         f"Done! The filtered feature collection has been saved to {args.filter_output_file}."
     )
