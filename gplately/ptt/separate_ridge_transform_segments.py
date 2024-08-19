@@ -315,6 +315,77 @@ def separate_geometry_into_ridges_and_transforms(
     return ridge_segment_geometries, transform_segment_geometries
 
 
+def get_ridge_like_from_geometry(
+    stage_rotation,
+    geometry_at_spreading_time,
+):
+    """
+    For each segment of the geometry of an isochron or mid-ocean ridge, calculate a value in the range [0, 1]
+    where 0 is pure transform (no crustal production) and 1 is pure ridge spreading (segment is perpendicular to spreading direction).
+
+    Values between 0 and 1 represent segments that are neither parallel nor perpendicular to the spreading direction.
+
+    For isochrons the geometry should be at its time of appearance (ie, when formed at mid-ocean ridge).
+    For mid-ocean ridges the geometry can be any time when the ridge is actively spreading.
+
+    stage_rotation: The stage rotation that can be applied to the geometry at the spreading time.
+                    NOTE: It must have already had transforms to and from the stage pole reference frame applied.
+                    In other words, if you get the stage pole from it, using 'get_euler_pole_and_angle()', then it
+                    should be the stage pole in the frame of reference of the geometry at the spreading time.
+
+    geometry_at_spreading_time: The polyline (or polygon) at the spreading time.
+
+    Returns: A ridge-like value in the range [0, 1] for each segment of the geometry, of type list of float.
+             Returns None if 'geometry_at_spreading_time' is not a polyline (or polygon).
+             Note that the number of values returned equals the number of segment of the geometry (including zero-length segments).
+    """
+
+    # Iterate over the segments of the geometry.
+    # Note that we're assuming the geometry is a polyline (or polygon) - otherwise we ignore the geometry.
+    try:
+        segments = geometry_at_spreading_time.get_segments()
+    except AttributeError:
+        return
+
+    # Get the stage pole of the stage rotation.
+    # Note that the stage rotation is already in frame of reference of the geometry at the spreading time.
+    stage_pole, _ = stage_rotation.get_euler_pole_and_angle()
+
+    segments_are_ridge_like = []
+
+    for segment in segments:
+        # Zero length segments don't have a direction, so just treat them as transform-like (ie, no crustal production).
+        if segment.is_zero_length():
+            segments_are_ridge_like.append(0.0)
+            continue
+
+        # Get the point in the middle of the segment and its tangential direction.
+        segment_midpoint = segment.get_arc_point(0.5)
+        segment_direction_at_midpoint = segment.get_arc_direction(0.5)
+
+        # Get the direction from the segment midpoint to the stage pole.
+        # This is the tangential direction at the start of an arc from the segment
+        # midpoint to the stage pole (the zero parameter indicates the arc start point
+        # which is the segment midpoint).
+        segment_to_stage_pole_direction = pygplates.GreatCircleArc(
+            segment_midpoint, stage_pole
+        ).get_arc_direction(0)
+
+        # A value in the range [0, 1] where '0' is pure transform (no crustal production) and
+        # '1' is pure ridge spreading (segment is perpendicular to spreading direction).
+        #
+        # If the segment direction is parallel to the direction from segment midpoint to stage pole
+        # then the spreading direction is perpendicular to the segment direction (ie, pure ridge spreading).
+        segment_is_ridge_like = math.fabs(
+            pygplates.Vector3D.dot(
+                segment_direction_at_midpoint, segment_to_stage_pole_direction
+            )
+        )
+        segments_are_ridge_like.append(segment_is_ridge_like)
+
+    return segments_are_ridge_like
+
+
 def get_stage_rotation_for_reconstructed_geometry(
     spreading_feature, rotation_model, spreading_time=None
 ):

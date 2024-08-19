@@ -122,67 +122,78 @@ def spreading_rates(
         # These are the parts of the line that actually contribute to topological boundaries.
         for shared_sub_segment in shared_boundary_section.get_shared_sub_segments():
 
-            # Split into ridge and transform segments.
-            ridge_and_transform_segment_geometries = separate_ridge_transform_segments.separate_geometry_into_ridges_and_transforms(
+            shared_sub_segment_geometry = shared_sub_segment.get_resolved_geometry()
+
+            # Determine how ridge-like each segment of the geometry is.
+            #
+            # This calculates, for each segment of the geometry, a value in the range [0, 1] where 0 is pure transform (no crustal production)
+            # and 1 is pure ridge spreading (segment is perpendicular to spreading direction), and values inbetween are a mixture.
+            segments_are_ridge_like = separate_ridge_transform_segments.get_ridge_like_from_geometry(
                 spreading_stage_rotation,
-                shared_sub_segment.get_resolved_geometry(),
-                transform_segment_deviation_in_radians,
+                shared_sub_segment_geometry,
             )
-            if not ridge_and_transform_segment_geometries:
+            if not segments_are_ridge_like:
                 # Skip shared sub segment - it's not a polyline (or polygon).
                 continue
 
-            # Only interested in ridge segments.
-            ridge_sub_segment_geometries, _ = ridge_and_transform_segment_geometries
+            # Iterate over the segments (of the geometry), tessellate them and get the tessellated segment midpoints and lengths.
+            tessellated_segment_midpoints = []
+            tessellated_segment_lengths = []
+            tessellated_segments_are_ridge_like = []
+            for segment_index, segment in enumerate(shared_sub_segment_geometry.get_segments()):
+                # Is the current segment ridge-like?
+                # Note: The length of 'segments_are_ridge_like' equals the number of un-tessellated segments.
+                segment_is_ridge_like = segments_are_ridge_like[segment_index]
 
-            # Ensure the ridge sub-segments are tessellated to within the threshold sampling distance.
-            tessellated_shared_sub_segment_polylines = [
-                ridge_sub_segment_geometry.to_tessellated(
-                    threshold_sampling_distance_radians
-                )
-                for ridge_sub_segment_geometry in ridge_sub_segment_geometries
-            ]
+                # Ensure the current segment is tessellated to within the threshold sampling distance.
+                tessellated_segment_points = segment.to_tessellated(threshold_sampling_distance_radians)
 
-            # Iterate over the great circle arcs of the tessellated polylines to get the arc midpoints and lengths.
-            # There is an arc between each adjacent pair of points in the polyline.
-            arc_midpoints = []
-            arc_lengths = []
-            for (
-                tessellated_shared_sub_segment_polyline
-            ) in tessellated_shared_sub_segment_polylines:
-                for arc in tessellated_shared_sub_segment_polyline.get_segments():
-                    if not arc.is_zero_length():
-                        arc_midpoints.append(arc.get_arc_point(0.5))
-                        arc_lengths.append(arc.get_arc_length())
+                # Iterate over tessellated points and create tessellated segments.
+                # Note: There should be at least two tessellated points.
+                for i in range(1, len(tessellated_segment_points)):
+                    tessellated_segment = pygplates.GreatCircleArc(tessellated_segment_points[i-1], tessellated_segment_points[i])
 
-            # Shouldn't happen, but just in case ridge sub-segment polylines coincide with points.
-            if not arc_midpoints:
-                continue
+                    # Ignore zero length segments.
+                    if tessellated_segment.is_zero_length():
+                        continue
 
-            # Calculate the spreading velocities at the arc midpoints.
+                    # Tessellated segment mid-point direction, and length.
+                    tessellated_segment_midpoints.append(tessellated_segment.get_arc_point(0.5))
+                    tessellated_segment_lengths.append(tessellated_segment.get_arc_length())
+
+                    # The current tessellated segment is ridge-like if it was tessellated from a segment that is ridge-like.
+                    tessellated_segments_are_ridge_like.append(segment_is_ridge_like)
+
+            # Calculate the spreading velocities at the tessellated segment midpoints.
             #
             # Note that the stage rotation can be used directly on the reconstructed geometries because
             # it is already in the frame of reference of the reconstructed geometries.
-            spreading_velocity_vectors = pygplates.calculate_velocities(
-                arc_midpoints,
+            tessellated_spreading_velocity_vectors = pygplates.calculate_velocities(
+                tessellated_segment_midpoints,
                 spreading_stage_rotation,
                 velocity_delta_time,
                 pygplates.VelocityUnits.cms_per_yr,
             )
 
-            for arc_index in range(len(arc_midpoints)):
+            for tessellated_segment_index in range(len(tessellated_segment_midpoints)):
 
-                arc_midpoint = arc_midpoints[arc_index]
-                arc_length = arc_lengths[arc_index]
-                lat, lon = arc_midpoint.to_lat_lon()
+                tessellated_lat, tessellated_lon = tessellated_segment_midpoints[tessellated_segment_index].to_lat_lon()
+                tessellated_segment_length = tessellated_segment_lengths[tessellated_segment_index]
+                tessellated_segment_is_ridge_like = tessellated_segments_are_ridge_like[tessellated_segment_index]
 
-                spreading_velocity_magnitude = spreading_velocity_vectors[
-                    arc_index
+                tessellated_ridge_spreading_velocity_magnitude = tessellated_spreading_velocity_vectors[
+                    tessellated_segment_index
                 ].get_magnitude()
+
+                # Modulate the segment length by how ridge-like (in range [0, 1]) the segment is.
+                #
+                # If it's pure ridge-like then it retains the full segment length.
+                # If it's pure transform then it gets zero length.
+                tessellated_ridge_spreading_length = tessellated_segment_is_ridge_like * tessellated_segment_length
 
                 # The data will be output in GMT format (ie, lon first, then lat, etc).
                 output_data.append(
-                    (lon, lat, spreading_velocity_magnitude, math.degrees(arc_length))
+                    (tessellated_lon, tessellated_lat, tessellated_ridge_spreading_velocity_magnitude, math.degrees(tessellated_ridge_spreading_length))
                 )
 
     return output_data
