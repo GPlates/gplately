@@ -248,11 +248,13 @@ class ContinentContouring(object):
         # If this parameter is not specified then buffer expansion is not applied.
         #
         # This parameter can also be a function (that returns the distance).
-        # The function can have a single function argument: (1) accepting time (in Ma).
-        # Or it can have two function arguments: (1) the first accepting time (in Ma) and
-        # (2) the second accepting the contoured continent (a 'ContouredContinent' object)
+        # The function can have a single function argument, accepting time (in Ma).
+        # Or it can have two function arguments, with the second accepting the contoured continent (a 'ContouredContinent' object)
         # of the (unexpanded) contoured continent that the buffer/gap distance will apply to.
+        # Or it can have three function arguments, with the third accepting a list of reconstructed polygons ('pygplates.ReconstructedFeatureGeometry' objects)
+        # used to contour the (unexpanded) contoured continent that the buffer/gap distance will apply to.
         # Hence a function with *two* arguments means a different buffer/gap distance can be specified for each contoured continent (eg, based on its area).
+        # And a function with *three* arguments can also use the feature properties (eg, plate ID) of the reconstructed polygons in the contoured continent.
         #
         # Note: Units here are for normalised sphere (ie, radians).
         #       So 1.0 radian is approximately 6371 km (where Earth radius is 6371 km).
@@ -325,26 +327,37 @@ class ContinentContouring(object):
             )
 
         if continent_contouring_buffer_and_gap_distance_radians:
-            # Convert buffer/gap threshold to a function of time, if not already a function.
+            # Convert buffer/gap threshold to a function, if not already a function.
             if callable(continent_contouring_buffer_and_gap_distance_radians):
                 callable_signature = signature(
                     continent_contouring_buffer_and_gap_distance_radians
                 )
                 callable_num_args = len(callable_signature.parameters)
-                if not (callable_num_args == 1 or callable_num_args == 2):
+                if not (callable_num_args == 1 or callable_num_args == 2 or callable_num_args == 3):
                     raise TypeError(
-                        "Buffer/gap distance is a callable but does not have 1 or 2 arguments"
+                        "Buffer/gap distance is a callable but does not have 1 or 2 or 3 arguments"
                     )
-                if callable_num_args == 2:
+                if callable_num_args == 3:
                     # We can call the specified function directly.
                     self.continent_contouring_buffer_and_gap_distance_radians_function = (
                         continent_contouring_buffer_and_gap_distance_radians
                     )
-                else:  # callable_num_args == 1
-                    # The specified function only accepts age (not area).
-                    # So use a delegate function that calls it and ignores area.
+                elif callable_num_args == 2:
+                    # The specified function only accepts age and contoured continent (not continent feature polygons).
+                    # So use a delegate function that calls it and ignores continent feature polygons.
                     def continent_contouring_buffer_and_gap_distance_radians_function(
-                        age, area
+                        age, contoured_continent, continent_feature_polygons
+                    ):
+                        return continent_contouring_buffer_and_gap_distance_radians(age, contoured_continent)
+
+                    self.continent_contouring_buffer_and_gap_distance_radians_function = (
+                        continent_contouring_buffer_and_gap_distance_radians_function
+                    )
+                else:  # callable_num_args == 1
+                    # The specified function only accepts age (not contoured continent or continent feature polygons).
+                    # So use a delegate function that calls it and ignores contoured continent and continent feature polygons.
+                    def continent_contouring_buffer_and_gap_distance_radians_function(
+                        age, contoured_continent, continent_feature_polygons
                     ):
                         return continent_contouring_buffer_and_gap_distance_radians(age)
 
@@ -354,7 +367,7 @@ class ContinentContouring(object):
             else:
                 # Use a delegate function that returns the specified parameter.
                 def continent_contouring_buffer_and_gap_distance_radians_function(
-                    age, area
+                    age, contoured_continent, continent_feature_polygons
                 ):
                     return continent_contouring_buffer_and_gap_distance_radians
 
@@ -364,7 +377,7 @@ class ContinentContouring(object):
         else:  # no buffer/gap distance (specified either None or zero)
             # Use a delegate function that returns zero.
             def continent_contouring_buffer_and_gap_distance_radians_function(
-                age, area
+                age, contoured_continent, continent_feature_polygons
             ):
                 return 0
 
@@ -550,7 +563,9 @@ class ContinentContouring(object):
         Note that these are just the original continent polygons (but reconstructed).
         They are NOT contoured, so they can still overlap/abutt each other.
 
-        Returns a list of 'pygplates.PolygonOnSphere'.
+        Returns a list of 2-tuple ('pygplates.PolygonOnSphere', 'pygplates.ReconstructedFeatureGeometry') where
+        the polygon is obtained from the reconstructed feature geometry.
+        The reconstructed feature geometry can be used to query the associated 'pygplates.Feature' and its properties.
         """
 
         # Reconstruct static continental polygons.
@@ -562,13 +577,16 @@ class ContinentContouring(object):
             age,
         )
 
-        # Get a list of polygons.
+        # Return a list of 2-tuple ('pygplates.PolygonOnSphere', 'pygplates.ReconstructedFeatureGeometry').
         #
         # We should have polygons (not polylines) but turn into a polygon if happens to be a polyline
         # (but that actually only works if the polyline is a closed loop and not just part of a polygon's boundary).
         return [
-            pygplates.PolygonOnSphere(
-                reconstructed_feature_geometry.get_reconstructed_geometry()
+            (
+                pygplates.PolygonOnSphere(
+                    reconstructed_feature_geometry.get_reconstructed_geometry()
+                ),
+                reconstructed_feature_geometry
             )
             for reconstructed_feature_geometry in reconstructed_feature_geometries
         ]
@@ -612,8 +630,13 @@ class ContinentContouring(object):
         # Create the initial contoured continents, only excluding those with area below the area threshold (if specified).
         for continent_polygons in continent_polygon_groups:
             # Find the grid points inside the current continent's polygons.
+            #
+            # Note: Each continent polygon is actually a 2-tuple of (pygplates.PolygonOnSphere, pygplates.ReconstructedFeatureGeometry).
+            polygons = [
+                continent_polygon[0] for continent_polygon in continent_polygons
+            ]
             grid_points_inside_continent = self._find_grid_points_inside_polygons(
-                continent_polygons
+                polygons
             )
 
             # Skip the current continent if its polygons are too small such that they miss all the grid points.
@@ -637,9 +660,17 @@ class ContinentContouring(object):
                 continue
 
             # The distance threshold for the current contoured continent.
+            #
+            # Note: Each continent polygon is actually a 2-tuple of (pygplates.PolygonOnSphere, pygplates.ReconstructedFeatureGeometry).
+            #       Passing 'pygplates.ReconstructedFeatureGeometry's to the buffer/gap distance function helps it decide the appropriate
+            #       buffer/gap for the contoured continent (that contours the associated polygons). For example, the function can look
+            #       at the plate IDs of the polygons (via their pygplates.Feature obtained from 'continent_feature_polygon.get_feature()').
+            continent_feature_polygons = [
+                continent_polygon[1] for continent_polygon in continent_polygons
+            ]
             contouring_buffer_and_gap_distance_radians = (
                 self.continent_contouring_buffer_and_gap_distance_radians_function(
-                    age, contoured_continent
+                    age, contoured_continent, continent_feature_polygons
                 )
             )
 
@@ -781,13 +812,15 @@ class ContinentContouring(object):
                 + continent2.contouring_buffer_and_gap_distance_radians,
             )
             # Test all pairs of polygons between each continent.
-            for continent1_polygon in continent1.continent_polygons:
-                for continent2_polygon in continent2.continent_polygons:
+            #
+            # Note: Each continent polygon is actually a 2-tuple of (pygplates.PolygonOnSphere, pygplates.ReconstructedFeatureGeometry).
+            for polygon1, _ in continent1.continent_polygons:
+                for polygon2, _ in continent2.continent_polygons:
                     # See if the two continent polygons are near each other (within the distance threshold).
                     if (
                         pygplates.GeometryOnSphere.distance(
-                            continent1_polygon,
-                            continent2_polygon,
+                            polygon1,
+                            polygon2,
                             distance_threshold_radians,
                             geometry1_is_solid=True,
                             geometry2_is_solid=True,
@@ -1025,6 +1058,9 @@ class ContinentContouring(object):
 
         continent_polygon_groups = []
         for continent_polygon in continent_polygons:
+            # Each continent polygon is actually a 2-tuple of (pygplates.PolygonOnSphere, pygplates.ReconstructedFeatureGeometry).
+            polygon, _ = continent_polygon
+
             # See if the current continent polygon is near any polygon in any group.
             continent_polygon_group_index = None  # index of first group found (if any)
 
@@ -1032,11 +1068,13 @@ class ContinentContouring(object):
             group_index = 0
             while group_index < len(continent_polygon_groups):
                 # Iterate over polygons in the current group.
-                for polygon_in_group in continent_polygon_groups[group_index]:
+                #
+                # Note: Each continent polygon is actually a 2-tuple of (pygplates.PolygonOnSphere, pygplates.ReconstructedFeatureGeometry).
+                for polygon_in_group, _ in continent_polygon_groups[group_index]:
                     # See if the current continent polygon is near the current polygon in the current group.
                     if (
                         pygplates.GeometryOnSphere.distance(
-                            continent_polygon,
+                            polygon,
                             polygon_in_group,
                             distance_threshold_radians,
                             geometry1_is_solid=True,
@@ -1173,11 +1211,14 @@ class ContinentContouring(object):
             )
             if distance_threshold_radians > 0:
 
-                # Find the continent polygons (if any) near each point.
+                # Each continent polygon is actually a 2-tuple of (pygplates.PolygonOnSphere, pygplates.ReconstructedFeatureGeometry).
+                polygons = [continent_polygon[0] for continent_polygon in continent.continent_polygons]
+
+                # Find the polygons (if any) near each point.
                 points_near_continent = proximity_query.find_closest_geometries_to_points_using_points_spatial_tree(
                     self.contouring_points,
                     self.contouring_points_spatial_tree,
-                    continent.continent_polygons,
+                    polygons,
                     distance_threshold_radians=distance_threshold_radians,
                 )
 
