@@ -71,7 +71,7 @@ will be the stage pole in the frame of reference of the geometry at the spreadin
 </code></pre></div>
 </dd>
 <dt id="gplately.ptt.separate_ridge_transform_segments.separate_features_into_ridges_and_transforms"><code class="name flex">
-<span>def <span class="ident">separate_features_into_ridges_and_transforms</span></span>(<span>rotation_features_or_model, spreading_features, spreading_feature_types=None, transform_segment_deviation_in_radians=0.7853981633974483)</span>
+<span>def <span class="ident">separate_features_into_ridges_and_transforms</span></span>(<span>rotation_features_or_model, spreading_features, spreading_feature_types=None, transform_segment_deviation_in_radians=1.2217304763960306)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Split the geometries of isochrons and mid-ocean ridges into ridge and transform segments based
@@ -86,7 +86,7 @@ it's considered a transform segment (in radians).</p>
 2-tuple (list of pygplates.Feature, list of pygplates.Feature).</p></div>
 </dd>
 <dt id="gplately.ptt.separate_ridge_transform_segments.separate_geometry_into_ridges_and_transforms"><code class="name flex">
-<span>def <span class="ident">separate_geometry_into_ridges_and_transforms</span></span>(<span>stage_rotation, geometry_at_spreading_time, transform_segment_deviation_in_radians=0.7853981633974483)</span>
+<span>def <span class="ident">separate_geometry_into_ridges_and_transforms</span></span>(<span>stage_rotation, geometry_at_spreading_time, transform_segment_deviation_in_radians=1.2217304763960306)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Split the geometry of an isochron or mid-ocean ridge (at a time when there is spreading) into ridge and

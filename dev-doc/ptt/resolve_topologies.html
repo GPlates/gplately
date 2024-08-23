@@ -54,7 +54,7 @@ hljs.highlightAll();
 <div class="desc"></div>
 </dd>
 <dt id="gplately.ptt.resolve_topologies.resolve_topologies"><code class="name flex">
-<span>def <span class="ident">resolve_topologies</span></span>(<span>rotation_features_or_model, topology_features, time, output_filename_prefix, output_filename_extension, transform_segment_deviation_in_radians=0.7853981633974483, anchor_plate_id=None)</span>
+<span>def <span class="ident">resolve_topologies</span></span>(<span>rotation_features_or_model, topology_features, time, output_filename_prefix, output_filename_extension, transform_segment_deviation_in_radians=1.2217304763960306, anchor_plate_id=None)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Resolves topologies at specified time and saves (to separate files) the resolved topologies, and their boundary sections as subduction zones,
@@ -76,7 +76,7 @@ it's considered a transform segment (in radians).</p>
 - other boundary sections (resolved features) that are not subduction zones or mid-ocean ridges (ridge/transform)</p></div>
 </dd>
 <dt id="gplately.ptt.resolve_topologies.resolve_topologies_into_features"><code class="name flex">
-<span>def <span class="ident">resolve_topologies_into_features</span></span>(<span>rotation_features_or_model, topology_features, time, transform_segment_deviation_in_radians=0.7853981633974483, anchor_plate_id=None, resolve_topology_types: int = 6)</span>
+<span>def <span class="ident">resolve_topologies_into_features</span></span>(<span>rotation_features_or_model, topology_features, time, transform_segment_deviation_in_radians=1.2217304763960306, anchor_plate_id=None, resolve_topology_types: int = 6)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Resolves topologies at specified time and returns resolved topologies and their boundary sections as subduction zones,
