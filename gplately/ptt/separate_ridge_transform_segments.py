@@ -35,7 +35,13 @@ import os.path
 import pygplates
 
 # How much a segment can deviate from the stage pole before it's considered a transform segment.
-DEFAULT_TRANSFORM_SEGMENT_DEVIATION_DEGREES = 45  # An even 45 degrees split
+#
+# Use a 70 degree angle.
+# This used to be an even 45 degree split, but we need to gravitate towards favouring ridge segments (by increasing the angle).
+# This is because, according to Dietmar, there are self-inconsistencies in the plate model (between the way plate boundaries are drawn
+# and labelled and their correspondence to associated plate velocities) that are more apparent in deep time (eg, before 200 Ma) where
+# there are mid-ocean ridges in large oceans NOT surrounding by passive margins.
+DEFAULT_TRANSFORM_SEGMENT_DEVIATION_DEGREES = 70
 DEFAULT_TRANSFORM_SEGMENT_DEVIATION_RADIANS = math.radians(
     DEFAULT_TRANSFORM_SEGMENT_DEVIATION_DEGREES
 )
