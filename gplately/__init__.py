@@ -202,7 +202,7 @@ seafloorgrid.reconstruct_by_topologies()
 
 
 def get_distribution_version():
-    from importlib.metadata import PackageNotFoundError, version
+    from importlib.metadata import PackageNotFoundError, files, version
 
     try:
         return version(__name__)
@@ -211,6 +211,7 @@ def get_distribution_version():
 
 
 __version__ = get_distribution_version()
+# __version__ = "1.3.0"
 REQUIRED_PMM_VERSION = "1.2.0"
 USING_DEV_VERSION = True  ## change this to False before official release
 
@@ -222,22 +223,30 @@ disable_dev_warning = (
 )
 if USING_DEV_VERSION and not disable_dev_warning:
     print()
-    print("##########################################################################")
+    print(
+        "##################################################################################################"
+    )
     print(
         f"""
         WARNING: 
-        You are using a DEV version 👉({__version__})👈 GPlately. Some functionalities have not been tested thoroughly.
-        The DEV version may break your code or produce wrong results due to its unstable nature (DEV in progress).
+        You are using a DEV version 👉({__version__})👈 GPlately.     
+        Some functionalities in the DEV version have not been tested thoroughly, 
+        and may break your code or produce wrong results due to 
+        its unstable nature(DEV in progress).
         You might also need to install the DEV version plate_model_manager 
-        from https://github.com/michaelchin/plate-model-manager to use this DEV version GPlately.
+        from https://github.com/michaelchin/plate-model-manager.
 
         🚫 To disable this warning, set USING_DEV_VERSION to False in __init__.py or
         set DISABLE_GPLATELY_DEV_WARNING environment variable to true.
         👉`export DISABLE_GPLATELY_DEV_WARNING=true`👈
         """
     )
-    print("##########################################################################")
+
+    print(
+        "##################################################################################################"
+    )
     print()
+
 
 import logging
 
@@ -249,9 +258,22 @@ if get_debug_level() > 0:
     turn_on_debug_logging()
 
 del setup_logging
-del os
+
 
 logger = logging.getLogger("gplately")
+
+if USING_DEV_VERSION and not disable_dev_warning:
+    if os.path.isdir(
+        f"{os.path.dirname(os.path.realpath(__file__))}/../.git"
+    ) or not os.path.isfile(
+        f"{os.path.dirname(os.path.realpath(__file__))}/../../../../bin/gplately"
+    ):
+        logger.warn(
+            f"The location of GPlately currently in use is {os.path.dirname(os.path.realpath(__file__))}. "
+            + f"It seems that you are using GPlately source code directly(without `pip install`), the version number({__version__}) may not be accurate."
+        )
+
+del os
 
 
 def install_and_update_pmm():
