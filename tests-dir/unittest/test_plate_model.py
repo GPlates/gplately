@@ -3,6 +3,11 @@
 from common import MODEL_REPO_DIR
 from plate_model_manager import PlateModelManager
 
+import gplately
+
+print(gplately.__version__)
+print(gplately.__file__)
+
 
 def main():
     pm_manger = PlateModelManager()
