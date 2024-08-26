@@ -9,7 +9,7 @@ for f in pygplates.FeatureCollection("shapes_continents.gpml"):
         pygplates.VerifyInformationModel.yes,
     )
     for p in f:
-        new_f.add(p.get_name(), p.get_value())
+        new_f.add(p.get_name(), p.get_value(), pygplates.VerifyInformationModel.yes)
     new_fc.add(new_f)
 
 new_fc.write("new_shapes_continents.gpmlz")
