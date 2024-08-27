@@ -35,10 +35,13 @@ __all__ = [
 ]
 
 __pdoc__ = {
+    "check_pmm": False,
+    "dev_warning": False,
     "feature_utils": False,
     "io_utils": False,
     "log_utils": False,
     "plot_utils": False,
     "seafloor_grid_utils": False,
+    "version": False,
     # "crustal_production": False,
 }

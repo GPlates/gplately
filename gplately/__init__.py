@@ -199,122 +199,27 @@ seafloorgrid.reconstruct_by_topologies()
 - [__11 - AndesFluxes__](11-AndesFluxes.html): Demonstrates how the reconstructed subduction history along the Andean margin can be potentially used in the plate kinematics anylysis and data mining.
 
 """
+from .utils import dev_warning
+from .utils.check_pmm import ensure_plate_model_manager_compatible
+from .utils.log_utils import get_debug_level, setup_logging, turn_on_debug_logging
+from .utils.version import get_distribution_version
 
-
-def get_distribution_version():
-    from importlib.metadata import PackageNotFoundError, files, version
-
-    try:
-        return version(__name__)
-    except PackageNotFoundError:
-        return "UNKNOWN VERSION"
-
-
-__version__ = get_distribution_version()
-# __version__ = "1.3.0"
 REQUIRED_PMM_VERSION = "1.2.0"
 USING_DEV_VERSION = True  ## change this to False before official release
 
-import os
-
-disable_dev_warning = (
-    "DISABLE_GPLATELY_DEV_WARNING" in os.environ
-    and os.environ["DISABLE_GPLATELY_DEV_WARNING"].lower() == "true"
-)
-if USING_DEV_VERSION and not disable_dev_warning:
-    print()
-    print(
-        "##################################################################################################"
-    )
-    print(
-        f"""
-        WARNING: 
-        You are using a DEV version 👉({__version__})👈 GPlately.     
-        Some functionalities in the DEV version have not been tested thoroughly, 
-        and may break your code or produce wrong results due to 
-        its unstable nature(DEV in progress).
-        You might also need to install the DEV version plate_model_manager 
-        from https://github.com/michaelchin/plate-model-manager.
-
-        🚫 To disable this warning, set USING_DEV_VERSION to False in __init__.py or
-        set DISABLE_GPLATELY_DEV_WARNING environment variable to true.
-        👉`export DISABLE_GPLATELY_DEV_WARNING=true`👈
-        """
-    )
-
-    print(
-        "##################################################################################################"
-    )
-    print()
-
-
-import logging
-
-from .utils.log_utils import get_debug_level, setup_logging, turn_on_debug_logging
+__version__ = get_distribution_version()
+del get_distribution_version
 
 setup_logging()
-
-if get_debug_level() > 0:
-    turn_on_debug_logging()
-
 del setup_logging
 
+if USING_DEV_VERSION:
+    dev_warning.print_dev_warning(__version__)
+    dev_warning.print_using_source_code_warning(__version__)
+del dev_warning
 
-logger = logging.getLogger("gplately")
-
-if USING_DEV_VERSION and not disable_dev_warning:
-    if os.path.isdir(
-        f"{os.path.dirname(os.path.realpath(__file__))}/../.git"
-    ) or not os.path.isfile(
-        f"{os.path.dirname(os.path.realpath(__file__))}/../../../../bin/gplately"
-    ):
-        logger.warn(
-            f"The location of GPlately currently in use is {os.path.dirname(os.path.realpath(__file__))}. "
-            + f"It seems that you are using GPlately source code directly(without `pip install`), the version number({__version__}) may not be accurate."
-        )
-
-del os
-
-
-def install_and_update_pmm():
-    import subprocess
-    import sys
-
-    subprocess.call(
-        [sys.executable, "-m", "pip", "install", "plate-model-manager", "--upgrade"]
-    )
-
-
-def check_version(installed_version, required_version):
-    """return True if the installed_version is good enough, otherwise False"""
-    installed_version_numbers = installed_version.split(".")
-    required_version_numbers = required_version.split(".")
-    if int(installed_version_numbers[0]) > int(required_version_numbers[0]):
-        return True
-    elif int(installed_version_numbers[0]) == int(required_version_numbers[0]):
-        if int(installed_version_numbers[1]) > int(required_version_numbers[1]):
-            return True
-        elif int(installed_version_numbers[1]) == int(required_version_numbers[1]):
-            if int(installed_version_numbers[2]) >= int(required_version_numbers[2]):
-                return True
-    return False
-
-
-try:
-    import plate_model_manager
-except (ImportError, ModuleNotFoundError):
-    logger.info("The plate_model_manager is not installed, installing it now!")
-    install_and_update_pmm()
-    import plate_model_manager
-
-
-if not check_version(plate_model_manager.__version__, REQUIRED_PMM_VERSION):
-    logger.info("The plate_model_manager is outdated, updating it now!")
-    install_and_update_pmm()
-    import importlib
-
-    importlib.reload(plate_model_manager)
-
+ensure_plate_model_manager_compatible(REQUIRED_PMM_VERSION)
+del ensure_plate_model_manager_compatible
 
 from . import (
     data,

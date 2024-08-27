@@ -35,6 +35,8 @@ def setup_logging():
             logging.getLogger("gplately").debug(f"logger: {name}")
             for h in logging.getLogger(name).handlers:
                 logging.getLogger("gplately").debug(h)
+    if get_debug_level() > 0:
+        turn_on_debug_logging()
 
 
 def turn_on_debug_logging():
