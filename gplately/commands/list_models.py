@@ -69,6 +69,10 @@ def run_list_models(args):
 
 
 def get_model_names():
+    """return a list of model names from the servers.
+    the function will try a list of urls one by one. if the first url is not working, try the second one.
+    if the second one is still not working, try the thrid one. Repeat until the end of the list.
+    """
     model_list_urls = [
         "https://repo.gplates.org/webdav/pmm/config/gplately_model_list.json",
         "https://www.earthbyte.org/webdav/pmm/config/gplately_model_list.json",
