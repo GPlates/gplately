@@ -209,7 +209,7 @@ Examples:
     - `gplately filter input_file output_file -t "gpml:IslandArc|gpml:Basin"`
         (get all gpml:Basin and gpml:IslandArc features)
 
-    See test_feature_filter.sh for more examples.
+    See https://github.com/GPlates/gplately/blob/master/tests-dir/unittest/test_feature_filter.sh for more examples. 
 """
 
 

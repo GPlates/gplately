@@ -35,7 +35,9 @@ Example usage:
         (change all gpml:ContinentalFragment and gpml:Coastline to gpml:UnclassifiedFeature)
         
     - `gplately reset_feature_type -s ".*" -t gpml:UnclassifiedFeature input_file output_file` 
-        (change all feature types to gpml:UnclassifiedFeature)        
+        (change all feature types to gpml:UnclassifiedFeature)     
+
+    See https://github.com/GPlates/gplately/blob/master/tests-dir/unittest/test_reset_feature_type.sh for more examples. 
 """
 
 
