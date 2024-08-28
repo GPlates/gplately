@@ -226,14 +226,7 @@ if USING_DEV_VERSION and not disable_dev_warning:
     print(
         f"""
         WARNING: 
-        You are using a DEV version 👉({__version__})👈 GPlately. Some functionalities have not been tested thoroughly.
-        The DEV version may break your code or produce wrong results due to its unstable nature (DEV in progress).
-        You might also need to install the DEV version plate_model_manager 
-        from https://github.com/michaelchin/plate-model-manager to use this DEV version GPlately.
-
-        🚫 To disable this warning, set USING_DEV_VERSION to False in __init__.py or
-        set DISABLE_GPLATELY_DEV_WARNING environment variable to true.
-        👉`export DISABLE_GPLATELY_DEV_WARNING=true`👈
+        git 
         """
     )
     print("##########################################################################")
