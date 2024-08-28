@@ -23,7 +23,7 @@ import pygplates
 
 from gplately import __version__
 
-from .commands import create_age_grids, feature_filter, list_models
+from .commands import create_age_grids, feature_filter, list_models, reset_feature_type
 from .ptt import (
     cleanup_topologies,
     convert_xy_to_gplates,
@@ -92,6 +92,9 @@ def main():
 
     # add "feature filter" sub-command
     feature_filter.add_parser(subparser)
+
+    # add "reset feature type" sub-command
+    reset_feature_type.add_parser(subparser)
 
     # add "create age grids" sub-command
     create_age_grids.add_parser(subparser)
