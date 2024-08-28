@@ -44,7 +44,11 @@ def print_dev_warning(version: str):
 
             To disable this warning, set USING_DEV_VERSION to False in __init__.py or
             set DISABLE_GPLATELY_DEV_WARNING environment variable to true.
+
             `export DISABLE_GPLATELY_DEV_WARNING=true`
+            
+            If you prefer not seeing this warning always, you may set the environment variable 
+            in your boot scripts, such as .bashrc, .profile, autoexec.bat, etc.
             """
         )
         print(
