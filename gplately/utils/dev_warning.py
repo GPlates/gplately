@@ -60,7 +60,7 @@ def print_using_source_code_warning(version: str):
         ) or not os.path.isfile(
             f"{os.path.dirname(os.path.realpath(__file__))}/../../../../bin/gplately"
         ):
-            logger.warn(
+            logger.warning(
                 f"The location of GPlately currently in use is {os.path.dirname(os.path.dirname(os.path.realpath(__file__)))}. "
                 + f"It seems that you are using GPlately source code directly or installed editable package with `pip install -e .`, "
                 + f"the version number(❗{version}❗) 👉may not be accurate👈 in these cases."
