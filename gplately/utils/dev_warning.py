@@ -34,11 +34,11 @@ def print_dev_warning(version: str):
         )
         print(
             f"""
-            WARNING: 
+            WARNING: 👈👈 👀👀 
             You are using a DEV version 👉({version})👈 GPlately.     
             Some functionalities in the DEV version have not been tested thoroughly, 
             and may break your code or produce wrong results due to 
-            its unstable nature(DEV in progress).
+            its unstable nature(DEV in progress). Proceed With Caution!!!
             You might also need to install the DEV version plate_model_manager 
             from https://github.com/michaelchin/plate-model-manager.
 
@@ -61,6 +61,7 @@ def print_using_source_code_warning(version: str):
             f"{os.path.dirname(os.path.realpath(__file__))}/../../../../bin/gplately"
         ):
             logger.warn(
-                f"The location of GPlately currently in use is {os.path.dirname(os.path.realpath(__file__))}. "
-                + f"It seems that you are using GPlately source code directly(without `pip install`), the version number({version}) may not be accurate."
+                f"The location of GPlately currently in use is {os.path.dirname(os.path.dirname(os.path.realpath(__file__)))}. "
+                + f"It seems that you are using GPlately source code directly or installed editable package with `pip install -e .`, "
+                + f"the version number(❗{version}❗) 👉may not be accurate👈 in these cases."
             )

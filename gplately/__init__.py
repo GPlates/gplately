@@ -204,7 +204,7 @@ from .utils.check_pmm import ensure_plate_model_manager_compatible
 from .utils.log_utils import get_debug_level, setup_logging, turn_on_debug_logging
 from .utils.version import get_distribution_version
 
-REQUIRED_PMM_VERSION = "1.2.0"
+REQUIRED_PMM_VERSION = "1.2.0"  # TODO: get this from package meta
 USING_DEV_VERSION = True  ## change this to False before official release
 
 __version__ = get_distribution_version()

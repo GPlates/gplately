@@ -23,14 +23,19 @@ import pygplates
 
 logger = logging.getLogger("gplately")
 
-help_str = "Reset the feature type for the selected features."
+help_str = "Reset the feature type for the selected features. "
 
 __description__ = f"""{help_str}
 
 Example usage: 
-    - gplately reset_feature_type -s gpml:ClosedContinentalBoundary -t gpml:UnclassifiedFeature input_file output_file
-     - gplately reset_feature_type -s "gpml:ContinentalFragment|gpml:Coastline" -t gpml:UnclassifiedFeature input_file output_file
-    - gplately reset_feature_type -s ".*" -t gpml:UnclassifiedFeature input_file output_file 
+    - `gplately reset_feature_type -s gpml:ClosedContinentalBoundary -t gpml:UnclassifiedFeature input_file output_file`
+        (change all gpml:ClosedContinentalBoundary to gpml:UnclassifiedFeature)
+        
+    - `gplately reset_feature_type -s "gpml:ContinentalFragment|gpml:Coastline" -t gpml:UnclassifiedFeature input_file output_file`
+        (change all gpml:ContinentalFragment and gpml:Coastline to gpml:UnclassifiedFeature)
+        
+    - `gplately reset_feature_type -s ".*" -t gpml:UnclassifiedFeature input_file output_file` 
+        (change all feature types to gpml:UnclassifiedFeature)        
 """
 
 
@@ -45,15 +50,19 @@ def add_parser(subparser):
     )
 
     reset_feature_type_cmd.set_defaults(func=reset_feature_type)
-    reset_feature_type_cmd.add_argument("input_file", type=str)
-    reset_feature_type_cmd.add_argument("output_file", type=str)
+    reset_feature_type_cmd.add_argument("input_file", type=str, help="the input file")
+    reset_feature_type_cmd.add_argument(
+        "output_file",
+        type=str,
+        help="the output file into which the new features will be saved",
+    )
 
     reset_feature_type_cmd.add_argument(
         "-s",
         "--select-feature-type",
         type=str,
         dest="select_feature_type_re",
-        metavar="select_feature_type",
+        metavar="feature_type_re",
         help="the regular expression to select features by featuer type",
     )
 
@@ -62,21 +71,21 @@ def add_parser(subparser):
         "--set-feature-type",
         type=str,
         dest="set_feature_type",
-        metavar="set_feature_type",
-        help="the feature type to be set to",
+        metavar="feature_type",
+        help="the feature type to be set to, such as gpml:UnclassifiedFeature, gpml:Coastline, etc. See https://www.gplates.org/docs/gpgim/#FeatureClassList",
     )
 
     reset_feature_type_cmd.add_argument(
         "--keep-feature-id",
         dest="keep_feature_id",
-        help="flag to indicate if keep the feature id after resetting the feature type",
+        help="flag to indicate if we use the same feature IDs after resetting the feature type",
         action="store_true",
     )
 
     reset_feature_type_cmd.add_argument(
         "--verify-information-model",
         dest="verify_information_model",
-        help="flag to indicate if verify information model when changing the feature type",
+        help="flag to indicate if we need to keep GPGIM integrity",
         action="store_true",
     )
 

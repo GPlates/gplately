@@ -21,7 +21,7 @@ if ! test -f "$IN_FILE"; then
 fi
 
 
-# get features whose name conains "Africa" or "North America"
+# get features whose name contains "Africa" or "North America"
 
 gplately filter "$IN_FILE" output/africa_north_america.gpmlz -n Africa "North America"
 

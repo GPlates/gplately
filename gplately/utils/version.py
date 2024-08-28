@@ -19,6 +19,6 @@ def get_distribution_version():
     from importlib.metadata import PackageNotFoundError, version
 
     try:
-        return version(__name__)
+        return version("gplately")
     except PackageNotFoundError:
         return "UNKNOWN VERSION"
