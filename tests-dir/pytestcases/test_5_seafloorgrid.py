@@ -46,7 +46,6 @@ def test_gplately_SeafloorGrid_object(seafloorgrid):
 # Gridding input npz files are ok if they have no NaN entries in the spreading rate column.
 # Spreading rate ultimately builds the seafloor age.
 @pytest.mark.parametrize("time", gridding_times)
-@pytest.mark.skip(reason="find out why the test hangs on Windows")
 def test_reconstruct_by_topologies(time, seafloorgrid):
     _reconstruct_by_topologies(time, seafloorgrid, clean=True)
 

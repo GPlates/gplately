@@ -207,7 +207,8 @@ from .utils.version import get_distribution_version
 REQUIRED_PMM_VERSION = "1.2.0"  # TODO: get this from package meta
 USING_DEV_VERSION = True  ## change this to False before official release
 
-__version__ = get_distribution_version()
+__version__ = "1.3.0"
+# __version__ = get_distribution_version()
 del get_distribution_version
 
 setup_logging()
