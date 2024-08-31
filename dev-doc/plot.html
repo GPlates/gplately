@@ -1627,7 +1627,6 @@ boundaries and passive continental boundaries.</dd>
             quiver = ax.quiver(X, Y, U, V, transform=self.base_projection, **kwargs)
         return quiver
 
-
     def plot_pole(self, ax, lon, lat, a95, **kwargs):
         &#34;&#34;&#34;
         Plot pole onto a matplotlib axes.
@@ -1654,7 +1653,6 @@ boundaries and passive continental boundaries.</dd>
         # Define the projection used to display the circle:
         proj1 = ccrs.Orthographic(central_longitude=lon, central_latitude=lat)
 
-
         def compute_radius(ortho, radius_degrees):
             phi1 = lat + radius_degrees if lat &lt;= 0 else lat - radius_degrees
             _, y1 = ortho.transform_point(lon, phi1, ccrs.PlateCarree())
@@ -1663,7 +1661,9 @@ boundaries and passive continental boundaries.</dd>
         r_ortho = compute_radius(proj1, a95)
 
         # adding a patch
-        patch = ax.add_patch(mpatches.Circle(xy=[lon, lat], radius=r_ortho, transform=proj1, **kwargs))
+        patch = ax.add_patch(
+            mpatches.Circle(xy=[lon, lat], radius=r_ortho, transform=proj1, **kwargs)
+        )
         return patch
 
     @validate_reconstruction_time
@@ -2056,12 +2056,12 @@ boundaries and passive continental boundaries.</dd>
     @append_docstring(PLOT_DOCSTRING.format(&#34;topologies&#34;))
     def plot_all_topologies(self, ax, color=&#34;black&#34;, **kwargs):
         &#34;&#34;&#34;Plot topological polygons and networks on a standard map projection.&#34;&#34;&#34;
+        if &#34;edgecolor&#34; not in kwargs.keys():
+            kwargs[&#34;edgecolor&#34;] = color
 
         return self._plot_feature(
             ax,
             self.get_all_topologies,
-            facecolor=&#34;none&#34;,
-            edgecolor=color,
             **kwargs,
         )
 
