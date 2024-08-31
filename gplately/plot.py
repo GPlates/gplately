@@ -1414,7 +1414,6 @@ class PlotTopologies(object):
             quiver = ax.quiver(X, Y, U, V, transform=self.base_projection, **kwargs)
         return quiver
 
-
     def plot_pole(self, ax, lon, lat, a95, **kwargs):
         """
         Plot pole onto a matplotlib axes.
@@ -1441,7 +1440,6 @@ class PlotTopologies(object):
         # Define the projection used to display the circle:
         proj1 = ccrs.Orthographic(central_longitude=lon, central_latitude=lat)
 
-
         def compute_radius(ortho, radius_degrees):
             phi1 = lat + radius_degrees if lat <= 0 else lat - radius_degrees
             _, y1 = ortho.transform_point(lon, phi1, ccrs.PlateCarree())
@@ -1450,7 +1448,9 @@ class PlotTopologies(object):
         r_ortho = compute_radius(proj1, a95)
 
         # adding a patch
-        patch = ax.add_patch(mpatches.Circle(xy=[lon, lat], radius=r_ortho, transform=proj1, **kwargs))
+        patch = ax.add_patch(
+            mpatches.Circle(xy=[lon, lat], radius=r_ortho, transform=proj1, **kwargs)
+        )
         return patch
 
     @validate_reconstruction_time
@@ -1843,12 +1843,12 @@ class PlotTopologies(object):
     @append_docstring(PLOT_DOCSTRING.format("topologies"))
     def plot_all_topologies(self, ax, color="black", **kwargs):
         """Plot topological polygons and networks on a standard map projection."""
+        if "edgecolor" not in kwargs.keys():
+            kwargs["edgecolor"] = color
 
         return self._plot_feature(
             ax,
             self.get_all_topologies,
-            facecolor="none",
-            edgecolor=color,
             **kwargs,
         )
 
