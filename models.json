@@ -1,0 +1,17 @@
+{
+    "Muller2019": {
+        "BigTime": 250,
+        "SmallTime": 0,
+        "Rotations": "https://www.earthbyte.org/webdav/ftp/gplately/Muller2019/Rotations.zip",
+        "Layers": {
+            "Coastlines": "https://www.earthbyte.org/webdav/ftp/gplately/Muller2019/Coastlines.zip",
+            "StaticPolygons": "https://www.earthbyte.org/webdav/ftp/gplately/Muller2019/StaticPolygons.zip",
+            "ContinentalPolygons": "https://www.earthbyte.org/webdav/ftp/gplately/Muller2019/ContinentalPolygons.zip",
+            "Topologies": "https://www.earthbyte.org/webdav/ftp/gplately/Muller2019/Topologies.zip",
+            "COBs": "https://www.earthbyte.org/webdav/ftp/gplately/Muller2019/COBs.zip"
+        },
+        "TimeDepRasters": {
+            "AgeGrids": "https://www.earthbyte.org/webdav/ftp/Data_Collections/Muller_etal_2019_Tectonics/Muller_etal_2019_Agegrids/Muller_etal_2019_Tectonics_v2.0_netCDF/Muller_etal_2019_Tectonics_v2.0_AgeGrid-{}.nc"
+        }
+    }
+}

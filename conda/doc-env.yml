@@ -1,0 +1,11 @@
+name: doc-env
+channels:
+  - conda-forge
+  - defaults
+dependencies:
+  - gplately
+  - pygmt
+  - pyyaml
+  - jupyter
+  - pdoc3
+  - rioxarray

@@ -1,3 +1,20 @@
+#
+#    Copyright (C) 2024 The University of Sydney, Australia
+#
+#    This program is free software; you can redistribute it and/or modify it under
+#    the terms of the GNU General Public License, version 2, as published by
+#    the Free Software Foundation.
+#
+#    This program is distributed in the hope that it will be useful, but WITHOUT
+#    ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or
+#    FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License
+#    for more details.
+#
+#    You should have received a copy of the GNU General Public License along
+#    with this program; if not, write to Free Software Foundation, Inc.,
+#    51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
+#
+
 """Tools for converting PyGPlates or GPlately geometries to Shapely geometries for mapping (and vice versa). 
 
 Supported PyGPlates geometries inherit from the following classes:
@@ -55,21 +72,18 @@ Input Shapely geometries are converted to the following PyGPlates geometries:
 - `LinearRing` or `Polygon`: `PolygonOnSphere`
 
 """
+
 import numpy as np
 import pygplates
-from shapely.geometry import (
-    LinearRing as _LinearRing,
-    LineString as _LineString,
-    MultiLineString as _MultiLineString,
-    MultiPoint as _MultiPoint,
-    MultiPolygon as _MultiPolygon,
-    Point as _Point,
-    Polygon as _Polygon,
-)
-from shapely.geometry.base import (
-    BaseGeometry as _BaseGeometry,
-    BaseMultipartGeometry as _BaseMultipartGeometry,
-)
+from shapely.geometry import LinearRing as _LinearRing
+from shapely.geometry import LineString as _LineString
+from shapely.geometry import MultiLineString as _MultiLineString
+from shapely.geometry import MultiPoint as _MultiPoint
+from shapely.geometry import MultiPolygon as _MultiPolygon
+from shapely.geometry import Point as _Point
+from shapely.geometry import Polygon as _Polygon
+from shapely.geometry.base import BaseGeometry as _BaseGeometry
+from shapely.geometry.base import BaseMultipartGeometry as _BaseMultipartGeometry
 
 __all__ = [
     "GeometryOnSphere",
@@ -171,7 +185,7 @@ def pygplates_to_shapely(
     tessellate_degrees=None,
     validate=False,
     force_ccw=False,
-    explode=False
+    explode=False,
 ):
     """Convert one or more PyGPlates or GPlately geometries to Shapely format.
 
@@ -183,16 +197,13 @@ def pygplates_to_shapely(
         The central meridian around which to wrap geometries;
         geometries will be split at the antimeridian.
     tessellate_degrees : float, optional
-        If provided, the geometry will be tessellated to this
-        resolution prior to conversion.
+        If provided, the geometry will be tessellated to this resolution prior to conversion.
     validate : bool, default: False
         Attempt to ensure output geometry is valid by applying a buffer of 0.
     force_ccw : bool, default: False
-        Ensure the coordinates of the output geometry are counter-clockwise
-        (only applies to polygons).
+        Ensure the coordinates of the output geometry are counter-clockwise(only applies to polygons).
     explode : bool, default: False
-        Convert multi-part output geometries to multiple single-part
-        geometries.
+        Convert multi-part output geometries to multiple single-part geometries.
 
     Returns
     -------
@@ -206,8 +217,7 @@ def pygplates_to_shapely(
     `output_geometry` will be a list of the same length as the input.
 
     Input geometries that were split while wrapping around
-    `central_meridian` will produce multi-part output geometries, unless
-    `explode=True` is specified.
+    `central_meridian` will produce multi-part output geometries, unless `explode=True` is specified.
 
     Input geometry types are converted as follows:
         - `PointOnSphere` or `LatLonPoint`:
@@ -269,18 +279,14 @@ def pygplates_to_shapely(
             tmp = np.array([j.to_lat_lon()[::-1] for j in i.get_exterior_points()])
             # tmp[:,1] = np.clip(tmp[:,1], -89, 89) # clip polygons near poles
             tmp = _Polygon(tmp)
-            if (
-                force_ccw
-                and tmp.exterior is not None
-                and not tmp.exterior.is_ccw
-            ):
+            if force_ccw and tmp.exterior is not None and not tmp.exterior.is_ccw:
                 tmp = _Polygon(list(tmp.exterior.coords)[::-1])
                 # tmp.exterior.coords = list(tmp.exterior.coords)[::-1]
             if validate:
                 tmp = tmp.buffer(0.0)
             # this is for pole-clipped polygons turned into MultiPolygons
             if isinstance(tmp, _MultiPolygon):
-                #for geom in list(tmp):
+                # for geom in list(tmp):
                 for geom in tmp.geoms:
                     output_geoms.append(geom)
             else:
@@ -333,10 +339,8 @@ def shapely_to_pygplates(geometry):
 
     Notes
     -----
-    If a single input geometry was passed, `output_geometry` will be a
-    subclass of `GeometryOnSphere`. Otherwise, `output_geometry`
-    will be a list of `GeometryOnSphere`, of the same length as
-    the input.
+    If a single input geometry was passed, `output_geometry` will be a subclass of `GeometryOnSphere`.
+    Otherwise, `output_geometry` will be a list of `GeometryOnSphere`, of the same length as the input.
 
     Input geometry types are converted as follows:
         - `Point`: `PointOnSphere`
@@ -415,16 +419,13 @@ def wrap_geometries(
         The central meridian around which to wrap geometries;
         geometries will be split at the antimeridian.
     tessellate_degrees : float, optional
-        If provided, the geometry will be tessellated to this
-        resolution prior to wrapping.
+        If provided, the geometry will be tessellated to this resolution prior to wrapping.
     validate : bool, default: False
         Attempt to ensure output geometry is valid by applying a buffer of 0.
     force_ccw : bool, default: False
-        Ensure the coordinates of the output geometry are counter-clockwise
-        (only applies to polygons).
+        Ensure the coordinates of the output geometry are counter-clockwise(only applies to polygons).
     explode : bool, default: False
-        Convert multi-part output geometries to multiple single-part
-        geometries.
+        Convert multi-part output geometries to multiple single-part geometries.
 
     Returns
     -------
@@ -434,13 +435,11 @@ def wrap_geometries(
     Notes
     -----
     If a single input geometry was passed, `output_geometry` will be a
-    subclass of `shapely.geometry.base.BaseGeometry`. Otherwise,
-    `output_geometry` will be a list of the same length as the input,
-    unless `explode=True` is specified.
+    subclass of `shapely.geometry.base.BaseGeometry`.
+    Otherwise, `output_geometry` will be a list of the same length as the input, unless `explode=True` is specified.
 
     Input geometries that were split while wrapping around
-    `central_meridian` will produce multi-part output geometries, unless
-    `explode=True` is specified.
+    `central_meridian` will produce multi-part output geometries, unless `explode=True` is specified.
     """
     if isinstance(geometries, _BaseGeometry):
         return _wrap_geometry(
@@ -574,3 +573,12 @@ def _contains_pygplates_geometries(i):
     except TypeError:  # i is not iterable
         pass
     return False
+
+
+__pdoc__ = {
+    "PointOnSphere": PointOnSphere.__doc__,
+    "PolygonOnSphere": PolygonOnSphere.__doc__,
+    "LatLonPoint": LatLonPoint.__doc__,
+    "MultiPointOnSphere": MultiPointOnSphere.__doc__,
+    "PolylineOnSphere": PolylineOnSphere.__doc__,
+}

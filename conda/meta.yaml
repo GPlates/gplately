@@ -1,5 +1,5 @@
 {% set name = "gplately" %}
-{% set version = "0.3.3" %}
+{% set version = "1.3.0" %}
 
 package:
   name: {{ name|lower }}
@@ -15,23 +15,24 @@ build:
 
 requirements:
   host:
-    - python >=3.5
+    - python >=3.6
     - pip
   run:
-    - python >=3.5
+    - python >=3.6
     - numpy >=1.16.0
     - scipy >=1.0.0
     - pygplates
     - shapely
     - matplotlib-base
     - cartopy
-    - platetectonictools
     - pooch
     - tqdm
     - netcdf4
     - rasterio
     - geopandas
     - stripy
+    - plate-model-manager
+    - pyyaml
 
 test:
   imports:
@@ -53,3 +54,4 @@ extra:
   recipe-maintainers:
     - brmather
     - jcannon-gplates
+    - michaelchin

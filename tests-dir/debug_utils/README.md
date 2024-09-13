@@ -1,0 +1,1 @@
+This `debug_utils` folder contains scripts which are used by developers during their debug process, such as reproducing bugs, performance tuning, experimenting concepts, etc. Some of the scripts should be refined and added to `pytestcases` folder when the time comes.
