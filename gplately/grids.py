@@ -314,6 +314,7 @@ def write_netcdf_grid(filename, grid, extent="global", significant_digits=None, 
     A netCDF grid will be saved to the path specified in `filename`.
     """
     import netCDF4
+    from gplately import __version__ as _version
 
     if extent == 'global':
         extent = [-180, 180, -90, 90]
@@ -328,7 +329,7 @@ def write_netcdf_grid(filename, grid, extent="global", significant_digits=None, 
     data_kwds = {'compression': 'zlib', 'complevel': 9}
     
     with netCDF4.Dataset(filename, 'w', driver=None) as cdf:
-        cdf.title = "Grid produced by gplately"
+        cdf.title = "Grid produced by gplately " + str(_version)
         cdf.createDimension('lon', lon_grid.size)
         cdf.createDimension('lat', lat_grid.size)
         cdf_lon = cdf.createVariable('lon', lon_grid.dtype, ('lon',), **data_kwds)
@@ -355,7 +356,8 @@ def write_netcdf_grid(filename, grid, extent="global", significant_digits=None, 
 
         # add more keyword arguments for quantizing data
         if significant_digits:
-            data_kwds['significant_digits'] = int(significant_digits)
+            # significant_digits needs to be >= 2 so that NaNs are preserved
+            data_kwds['significant_digits'] = max(2, int(significant_digits))
             data_kwds['quantize_mode'] = 'GranularBitRound'
 
         cdf_data = cdf.createVariable('z', grid.dtype, ('lat','lon'), **data_kwds)
