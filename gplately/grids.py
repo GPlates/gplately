@@ -360,11 +360,18 @@ def write_netcdf_grid(filename, grid, extent="global", significant_digits=None, 
             data_kwds['significant_digits'] = max(2, int(significant_digits))
             data_kwds['quantize_mode'] = 'GranularBitRound'
 
+        # boolean arrays need to be converted to integers
+        # no such thing as a mask on a boolean array
+        if grid.dtype is np.dtype(bool):
+            grid = grid.astype('i1')
+            fill_value = None
+
         cdf_data = cdf.createVariable('z', grid.dtype, ('lat','lon'), **data_kwds)
 
         # netCDF4 uses the missing_value attribute as the default _FillValue
         # without this, _FillValue defaults to 9.969209968386869e+36
-        cdf_data.missing_value = fill_value
+        if fill_value is not None:
+            cdf_data.missing_value = fill_value
 
         cdf_data.standard_name = 'z'
 
