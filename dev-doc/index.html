@@ -12464,8 +12464,9 @@ passed as "/path/to/continent_mask_{}Ma.nc" with curly brackets. Include decimal
 
             grids.write_netcdf_grid(
                 self.continent_mask_filepath.format(time),
-                final_grid,
+                final_grid.astype(&#39;i1&#39;),
                 extent=[-180, 180, -90, 90],
+                fill_value=None,
             )
             logger.info(f&#34;Finished building a continental mask at {time} Ma!&#34;)
 
@@ -12492,8 +12493,9 @@ passed as "/path/to/continent_mask_{}Ma.nc" with curly brackets. Include decimal
 
         grids.write_netcdf_grid(
             self.continent_mask_filepath.format(time),
-            final_grid,
+            final_grid.astype(&#39;i1&#39;),
             extent=[-180, 180, -90, 90],
+            fill_value=None,
         )
         logger.info(f&#34;Finished building a continental mask at {time} Ma!&#34;)
 
