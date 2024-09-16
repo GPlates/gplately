@@ -781,8 +781,9 @@ class SeafloorGrid(object):
 
             grids.write_netcdf_grid(
                 self.continent_mask_filepath.format(time),
-                final_grid,
+                final_grid.astype('i1'),
                 extent=[-180, 180, -90, 90],
+                fill_value=None,
             )
             logger.info(f"Finished building a continental mask at {time} Ma!")
 
@@ -809,8 +810,9 @@ class SeafloorGrid(object):
 
         grids.write_netcdf_grid(
             self.continent_mask_filepath.format(time),
-            final_grid,
+            final_grid.astype('i1'),
             extent=[-180, 180, -90, 90],
+            fill_value=None,
         )
         logger.info(f"Finished building a continental mask at {time} Ma!")
 
@@ -1490,7 +1492,11 @@ def _save_netcdf_file(
     grid_output = os.path.join(output_dir, grid_basename)
 
     if unmasked:
-        grids.write_netcdf_grid(grid_output_unmasked, Z, extent=extent)
+        grids.write_netcdf_grid(
+            grid_output_unmasked, 
+            Z, 
+            extent=extent,
+            significant_digits=2)
 
     # Identify regions in the grid in the continental mask
     cont_mask = grids.Raster(data=continent_mask_filename.format(time))
@@ -1512,6 +1518,7 @@ def _save_netcdf_file(
         grid_output,
         Z,
         extent=extent,
+        significant_digits=2,
     )
     logger.info(f"Save {name} netCDF grid at {time:0.2f} Ma completed!")
 
@@ -1578,7 +1585,10 @@ def _lat_lon_z_to_netCDF_time(
     grid_output = os.path.join(output_dir, grid_basename)
 
     if unmasked:
-        grids.write_netcdf_grid(grid_output_unmasked, Z, extent=extent)
+        grids.write_netcdf_grid(grid_output_unmasked, 
+            Z, 
+            extent=extent,
+            significant_digits=2)
 
     # Identify regions in the grid in the continental mask
     cont_mask = grids.Raster(data=continent_mask_filename.format(time))
@@ -1603,6 +1613,7 @@ def _lat_lon_z_to_netCDF_time(
         grid_output,
         Z,
         extent=extent,
+        significant_digits=2,
     )
     logger.info(f"{zval_name} netCDF grids for {time:0.2f} Ma complete!")
 
@@ -1717,8 +1728,9 @@ def _build_continental_mask_with_contouring(
     )
     grids.write_netcdf_grid(
         continent_mask_filepath.format(time),
-        continent_mask.astype("float"),
+        continent_mask.astype("i1"),
         extent=[-180, 180, -90, 90],
+        fill_value=None,
     )
     logger.info(
         f"Finished building a continental mask at {time} Ma! (continent_contouring)"
