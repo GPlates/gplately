@@ -142,7 +142,7 @@ def realign_grid(array, lons, lats):
     return array, lons, lats
 
 
-def read_netcdf_grid(filename, return_grids=False, realign=False, resample=None):
+def read_netcdf_grid(filename, return_grids=False, realign=False, resample=None, resize=None):
     """Read a `netCDF` (.nc) grid from a given `filename` and return its data as a
     `MaskedArray`.
 
@@ -173,6 +173,10 @@ def read_netcdf_grid(filename, return_grids=False, realign=False, resample=None)
     resample : tuple, optional, default=None
         If passed as `resample = (spacingX, spacingY)`, the given `netCDF` grid is resampled
         with these x and y resolutions.
+
+    resize : tuple, optional, default=None
+        If passed as `resample = (resX, resY)`, the given `netCDF` grid is resized
+        to the number of columns (resX) and rows (resY).
 
     Returns
     -------
@@ -237,9 +241,17 @@ def read_netcdf_grid(filename, return_grids=False, realign=False, resample=None)
         cdf_lon = cdf[key_lon][:]
         cdf_lat = cdf[key_lat][:]
 
-        if hasattr(cdf[key_z], 'missing_value'):
+        # fill missing values
+        if hasattr(cdf[key_z], 'missing_value') and np.issubdtype(cdf_grid.dtype, np.floating):
             fill_value = cdf[key_z].missing_value
             cdf_grid[np.isclose(cdf_grid, fill_value, rtol=0.1)] = np.nan
+
+        # convert to boolean array
+        if np.issubdtype(cdf_grid.dtype, np.integer):
+            unique_grid = np.unique(cdf_grid)
+            if len(unique_grid) == 2:
+                if (unique_grid == [0,1]).all():
+                    cdf_grid = cdf_grid.astype(bool)
 
     if realign:
         # realign longitudes to -180/180 dateline
@@ -250,25 +262,58 @@ def read_netcdf_grid(filename, return_grids=False, realign=False, resample=None)
     # resample
     if resample is not None:
         spacingX, spacingY = resample
-        lon_grid = np.arange(cdf_lon.min(), cdf_lon.max() + spacingX, spacingX)
-        lat_grid = np.arange(cdf_lat.min(), cdf_lat.max() + spacingY, spacingY)
-        lonq, latq = np.meshgrid(lon_grid, lat_grid)
-        original_extent = (
-            cdf_lon[0],
-            cdf_lon[-1],
-            cdf_lat[0],
-            cdf_lat[-1],
-        )
-        cdf_grid_z = sample_grid(
-            lonq,
-            latq,
-            cdf_grid_z,
-            method="nearest",
-            extent=original_extent,
-            return_indices=False,
-        )
-        cdf_lon = lon_grid
-        cdf_lat = lat_grid
+
+        # don't resample if already the same resolution
+        dX = np.diff(cdf_lon).mean()
+        dY = np.diff(cdf_lat).mean()
+
+        if spacingX != dX or spacingY != dY:
+            lon_grid = np.arange(cdf_lon.min(), cdf_lon.max() + spacingX, spacingX)
+            lat_grid = np.arange(cdf_lat.min(), cdf_lat.max() + spacingY, spacingY)
+            lonq, latq = np.meshgrid(lon_grid, lat_grid)
+            original_extent = (
+                cdf_lon[0],
+                cdf_lon[-1],
+                cdf_lat[0],
+                cdf_lat[-1],
+            )
+            cdf_grid_z = sample_grid(
+                lonq,
+                latq,
+                cdf_grid_z,
+                method="nearest",
+                extent=original_extent,
+                return_indices=False,
+            )
+            cdf_lon = lon_grid
+            cdf_lat = lat_grid
+
+    # resize
+    if resize is not None:
+        resX, resY = resize
+
+        # don't resize if already the same shape
+        if resX != cdf_grid_z.shape[1] or resY != cdf_grid_z.shape[0]:
+            original_extent = (
+                cdf_lon[0],
+                cdf_lon[-1],
+                cdf_lat[0],
+                cdf_lat[-1],
+            )
+            lon_grid = np.linspace(original_extent[0], original_extent[1], resX)
+            lat_grid = np.linspace(original_extent[2], original_extent[3], resY)
+            lonq, latq = np.meshgrid(lon_grid, lat_grid)
+
+            cdf_grid_z = sample_grid(
+                lonq,
+                latq,
+                cdf_grid_z,
+                method="nearest",
+                extent=original_extent,
+                return_indices=False,
+            )
+            cdf_lon = lon_grid
+            cdf_lat = lat_grid
 
     # Fix grids with 9e36 as the fill value for nan.
     # cdf_grid_z.fill_value = float('nan')
@@ -1501,6 +1546,7 @@ class Raster(object):
         extent="global",
         realign=False,
         resample=None,
+        resize=None,
         time=0.0,
         origin=None,
         **kwargs,
@@ -1529,6 +1575,10 @@ class Raster(object):
         resample : 2-tuple, optional
             Optionally resample grid, pass spacing in X and Y direction as a
             2-tuple e.g. resample=(spacingX, spacingY).
+
+        resize : 2-tuple, optional
+            Optionally resample grid to X-columns, Y-rows as a
+            2-tuple e.g. resample=(resX, resY).
 
         time : float, default: 0.0
             The time step represented by the raster data. Used for raster
@@ -1600,6 +1650,7 @@ class Raster(object):
                 return_grids=True,
                 realign=realign,
                 resample=resample,
+                resize=resize,
             )
             self._lons = lons
             self._lats = lats
@@ -1620,6 +1671,9 @@ class Raster(object):
 
         if (not isinstance(data, str)) and (resample is not None):
             self.resample(*resample, inplace=True)
+
+        if (not isinstance(data, str)) and (resize is not None):
+            self.resize(*resize, inplace=True)
 
     @property
     def time(self):
@@ -1963,10 +2017,10 @@ class Raster(object):
         else:
             return Raster(data, self.plate_reconstruction, self.extent, self.time)
 
-    def save_to_netcdf4(self, filename):
+    def save_to_netcdf4(self, filename, significant_digits=None, fill_value=np.nan):
         """Saves the grid attributed to the `Raster` object to the given `filename` (including
         the ".nc" extension) in netCDF4 format."""
-        write_netcdf_grid(str(filename), self.data, self.extent)
+        write_netcdf_grid(str(filename), self.data, self.extent, significant_digits, fill_value)
 
     def reconstruct(
         self,
