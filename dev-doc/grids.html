@@ -239,7 +239,7 @@ the area specified in <code>extent</code>, unless <code>resx</code> or <code>res
 static polygons in order to extract their plate IDs.</p></div>
 </dd>
 <dt id="gplately.grids.read_netcdf_grid"><code class="name flex">
-<span>def <span class="ident">read_netcdf_grid</span></span>(<span>filename, return_grids=False, realign=False, resample=None)</span>
+<span>def <span class="ident">read_netcdf_grid</span></span>(<span>filename, return_grids=False, realign=False, resample=None, resize=None)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Read a <code>netCDF</code> (.nc) grid from a given <code>filename</code> and return its data as a
@@ -266,6 +266,9 @@ latitudinal coordinates are decreasing.</dd>
 <dt><strong><code>resample</code></strong> :&ensp;<code>tuple</code>, optional, default=<code>None</code></dt>
 <dd>If passed as <code>resample = (spacingX, spacingY)</code>, the given <code>netCDF</code> grid is resampled
 with these x and y resolutions.</dd>
+<dt><strong><code>resize</code></strong> :&ensp;<code>tuple</code>, optional, default=<code>None</code></dt>
+<dd>If passed as <code>resample = (resX, resY)</code>, the given <code>netCDF</code> grid is resized
+to the number of columns (resX) and rows (resY).</dd>
 </dl>
 <h2 id="returns">Returns</h2>
 <dl>
@@ -439,7 +442,7 @@ is assumed.</dd>
 <dl>
 <dt id="gplately.grids.Raster"><code class="flex name class">
 <span>class <span class="ident">Raster</span></span>
-<span>(</span><span>data=None, plate_reconstruction=None, extent='global', realign=False, resample=None, time=0.0, origin=None, **kwargs)</span>
+<span>(</span><span>data=None, plate_reconstruction=None, extent='global', realign=False, resample=None, resize=None, time=0.0, origin=None, **kwargs)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>A class for working with raster data.</p>
@@ -540,6 +543,9 @@ greater than <code>max_lat</code>, or specify <code>origin</code> parameter.</dd
 <dt><strong><code>resample</code></strong> :&ensp;<code>2-tuple</code>, optional</dt>
 <dd>Optionally resample grid, pass spacing in X and Y direction as a
 2-tuple e.g. resample=(spacingX, spacingY).</dd>
+<dt><strong><code>resize</code></strong> :&ensp;<code>2-tuple</code>, optional</dt>
+<dd>Optionally resample grid to X-columns, Y-rows as a
+2-tuple e.g. resample=(resX, resY).</dd>
 <dt><strong><code>time</code></strong> :&ensp;<code>float</code>, default<code>: 0.0</code></dt>
 <dd>The time step represented by the raster data. Used for raster
 reconstruction.</dd>
@@ -656,6 +662,7 @@ reconstruction.</dd>
         extent=&#34;global&#34;,
         realign=False,
         resample=None,
+        resize=None,
         time=0.0,
         origin=None,
         **kwargs,
@@ -684,6 +691,10 @@ reconstruction.</dd>
         resample : 2-tuple, optional
             Optionally resample grid, pass spacing in X and Y direction as a
             2-tuple e.g. resample=(spacingX, spacingY).
+
+        resize : 2-tuple, optional
+            Optionally resample grid to X-columns, Y-rows as a
+            2-tuple e.g. resample=(resX, resY).
 
         time : float, default: 0.0
             The time step represented by the raster data. Used for raster
@@ -755,6 +766,7 @@ reconstruction.</dd>
                 return_grids=True,
                 realign=realign,
                 resample=resample,
+                resize=resize,
             )
             self._lons = lons
             self._lats = lats
@@ -775,6 +787,9 @@ reconstruction.</dd>
 
         if (not isinstance(data, str)) and (resample is not None):
             self.resample(*resample, inplace=True)
+
+        if (not isinstance(data, str)) and (resize is not None):
+            self.resize(*resize, inplace=True)
 
     @property
     def time(self):
@@ -1118,10 +1133,10 @@ reconstruction.</dd>
         else:
             return Raster(data, self.plate_reconstruction, self.extent, self.time)
 
-    def save_to_netcdf4(self, filename):
+    def save_to_netcdf4(self, filename, significant_digits=None, fill_value=np.nan):
         &#34;&#34;&#34;Saves the grid attributed to the `Raster` object to the given `filename` (including
         the &#34;.nc&#34; extension) in netCDF4 format.&#34;&#34;&#34;
-        write_netcdf_grid(str(filename), self.data, self.extent)
+        write_netcdf_grid(str(filename), self.data, self.extent, significant_digits, fill_value)
 
     def reconstruct(
         self,
@@ -2250,7 +2265,7 @@ to define the "from" and "to" reference frames.</dd>
 </dl></div>
 </dd>
 <dt id="gplately.grids.Raster.save_to_netcdf4"><code class="name flex">
-<span>def <span class="ident">save_to_netcdf4</span></span>(<span>self, filename)</span>
+<span>def <span class="ident">save_to_netcdf4</span></span>(<span>self, filename, significant_digits=None, fill_value=nan)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Saves the grid attributed to the <code><a title="gplately.grids.Raster" href="#gplately.grids.Raster">Raster</a></code> object to the given <code>filename</code> (including
