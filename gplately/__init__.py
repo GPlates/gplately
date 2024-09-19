@@ -232,7 +232,6 @@ from . import (
     pygplates,
     reconstruction,
 )
-from .data import DataCollection
 from .download import DataServer
 from .grids import Raster
 from .oceans import SeafloorGrid
@@ -240,9 +239,6 @@ from .plot import PlotTopologies
 from .reconstruction import (
     PlateReconstruction,
     Points,
-    _ContinentCollision,
-    _DefaultCollision,
-    _ReconstructByTopologies,
 )
 from .tools import EARTH_RADIUS
 from .utils import io_utils
@@ -250,9 +246,6 @@ from .utils.io_utils import get_geometries, get_valid_geometries
 
 __pdoc__ = {
     "data": False,
-    "_DefaultCollision": False,
-    "_ContinentCollision": False,
-    "_ReconstructByTopologies": False,
     "examples": False,
     "notebooks": False,
     "commands": False,
@@ -283,9 +276,6 @@ __all__ = [
     "Points",
     "Raster",
     "SeafloorGrid",
-    "_ContinentCollision",
-    "_DefaultCollision",
-    "_ReconstructByTopologies",
     # Functions
     "get_geometries",
     "get_valid_geometries",

@@ -1147,7 +1147,7 @@ class SeafloorGrid(object):
         point_id = range(len(active_points))
 
         # Specify the default collision detection region as subduction zones
-        default_collision = reconstruction._DefaultCollision(
+        default_collision = seafloor_grid_utils.DefaultCollision(
             feature_specific_collision_parameters=[
                 (
                     pygplates.FeatureType.gpml_subduction_zone,
@@ -1156,7 +1156,7 @@ class SeafloorGrid(object):
             ]
         )
         # In addition to the default subduction detection, also detect continental collisions
-        collision_spec = reconstruction._ContinentCollision(
+        collision_spec = seafloor_grid_utils.ContinentCollision(
             # This filename string should not have a time formatted into it - this is
             # taken care of later.
             self.continent_mask_filepath,
@@ -1165,7 +1165,7 @@ class SeafloorGrid(object):
         )
 
         # Call the reconstruct by topologies object
-        topology_reconstruction = reconstruction._ReconstructByTopologies(
+        topology_reconstruction = seafloor_grid_utils.ReconstructByTopologies(
             self.rotation_model,
             self.topology_features,
             self._max_time,
