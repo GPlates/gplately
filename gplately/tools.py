@@ -183,6 +183,65 @@ def plate_isotherm_depth(
     return out
 
 
+def plate_surface_depth(age, model='Richards2020'):
+    """
+    Computes the depth to the surface of a cooling plate.
+
+    Essentially converts the ocean basin age to basement depth using a specified age/depth model.
+    
+    Parameters
+    ----------
+    age : float
+        The age in Ma.
+    model : str
+        The model to use when converting ocean age to basement depth.
+        - 'Richards2020': Richards et al. (2020), Structure and dynamics of the oceanic lithosphere-asthenosphere system
+        - 'Stein1992': Stein and Stein (1992), Model for the global variation in oceanic depth and heat flow with lithospheric age
+        - 'Parsons1977': Parsons and Sclater (1972), An analysis of the variation of ocean floor bathymetry and heat flow with age
+    
+    Returns
+    -------
+    depth : array
+        Depth (in metres) as a positive number.
+    
+    Raises
+    ------
+    ValueError
+        If `model` is not a recognised model.
+
+    Notes
+    -----
+    The Richards2020 curve is approximate. A polynomial was fitted to the age-depth data
+    """
+    age = np.array(age)
+
+    if model == "Richards2020":
+        opt_params = [4.40989118e+01, 1.16071448e+05, 1.02003657e-06, 2.47658681e+03]
+        temp, plate_thickness, kappa, offset = opt_params
+
+        depth = plate_isotherm_depth(
+            age, 
+            temp=temp, 
+            plate_thickness=plate_thickness, 
+            kappa=kappa
+        ) + offset
+
+    elif model == "Stein1992":
+        mask_age = age < 20
+        depth = np.array(5651.0 - 2473.0 * np.exp(-0.0278*age))
+        depth[mask_age] = 2600.0 + 365.0 * np.sqrt(age[mask_age])
+
+    elif model == "Parsons1977":
+        mask_age = age < 70
+        depth = np.array(6400.0 - 3200.0 * np.exp(-age/62.8))
+        depth[mask_age] = 2500.0 + 350*np.sqrt(age[mask_age])
+
+    else:
+        raise ValueError("model should be one of Richards2020 or Stein1992")
+
+    return depth
+
+
 def points_to_features(lons, lats, plate_ID=None):
     """Creates point features represented on a unit length sphere in 3D cartesian coordinates from a latitude and
     longitude list.
