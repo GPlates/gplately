@@ -1209,8 +1209,8 @@ class Points(object):
         The specific geological time (Ma) at which to reconstruct the point data. By default, it is set to
         the present day (0 Ma).
 
-    plate_id : int, default=None
-        The plate ID of a particular tectonic plate on which point data lies, if known. This is obtained in `init`
+    plate_id : int or 1D array, default=None
+        plate ID(s) of a particular tectonic plate on which point data lies, if known. This is obtained in `init`
         if not provided.
 
     """
