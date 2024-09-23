@@ -8742,8 +8742,8 @@ where X is the attribute.</dd>
 <dt><strong><code>time</code></strong> :&ensp;<code>float</code>, default=<code>0</code></dt>
 <dd>The specific geological time (Ma) at which to reconstruct the point data. By default, it is set to
 the present day (0 Ma).</dd>
-<dt><strong><code>plate_id</code></strong> :&ensp;<code>int</code>, default=<code>None</code></dt>
-<dd>The plate ID of a particular tectonic plate on which point data lies, if known. This is obtained in <code>init</code>
+<dt><strong><code>plate_id</code></strong> :&ensp;<code>int</code> or <code>1D array</code>, default=<code>None</code></dt>
+<dd>plate ID(s) of a particular tectonic plate on which point data lies, if known. This is obtained in <code>init</code>
 if not provided.</dd>
 </dl></div>
 <details class="source">
@@ -8773,8 +8773,8 @@ if not provided.</dd>
         The specific geological time (Ma) at which to reconstruct the point data. By default, it is set to
         the present day (0 Ma).
 
-    plate_id : int, default=None
-        The plate ID of a particular tectonic plate on which point data lies, if known. This is obtained in `init`
+    plate_id : int or 1D array, default=None
+        plate ID(s) of a particular tectonic plate on which point data lies, if known. This is obtained in `init`
         if not provided.
 
     &#34;&#34;&#34;
