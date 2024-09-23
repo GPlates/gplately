@@ -324,7 +324,7 @@ def read_netcdf_grid(filename, return_grids=False, realign=False, resample=None,
     else:
         return cdf_grid_z
     
-def write_netcdf_grid(filename, grid, extent="global", significant_digits=None, fill_value=np.nan, **kwargs):
+def write_netcdf_grid(filename, grid, extent="global", significant_digits=None, fill_value=np.nan):
     """ Write geological data contained in a `grid` to a netCDF4 grid with a specified `filename`.
 
     Notes
@@ -354,6 +354,14 @@ def write_netcdf_grid(filename, grid, extent="global", significant_digits=None, 
         variables of the netCDF grid to. If no extents are supplied, full global extent `[-180, 180, -90, 90]` 
         is assumed. 
 
+    significant_digits : int
+        Applies lossy data compression up to a specified number of significant digits.
+        This significantly reduces file size, but make sure the required precision is preserved in the
+        saved netcdf file.
+
+    fill_value : scalar, NoneType, default: np.nan
+        Value used to fill in missing data. By default this is np.nan.
+
     Returns
     -------
     A netCDF grid will be saved to the path specified in `filename`.
@@ -371,7 +379,7 @@ def write_netcdf_grid(filename, grid, extent="global", significant_digits=None, 
     lon_grid = np.linspace(extent[0], extent[1], ncols)
     lat_grid = np.linspace(extent[2], extent[3], nrows)
 
-    data_kwds = {'compression': 'zlib', 'complevel': 9}
+    data_kwds = {'compression': 'zlib', 'complevel': 6}
     
     with netCDF4.Dataset(filename, 'w', driver=None) as cdf:
         cdf.title = "Grid produced by gplately " + str(_version)
@@ -420,9 +428,9 @@ def write_netcdf_grid(filename, grid, extent="global", significant_digits=None, 
 
         cdf_data.standard_name = 'z'
 
-        cdf_data.add_offset = 0.0
+        # cdf_data.add_offset = 0.0
         cdf_data.grid_mapping = 'crs'
-        cdf_data.set_auto_maskandscale(False)
+        # cdf_data.set_auto_maskandscale(False)
         
         # ensure min and max z values are properly registered
         cdf_data.actual_range = [np.nanmin(grid), np.nanmax(grid)]
