@@ -49,7 +49,7 @@ def add_parser(parser: argparse.ArgumentParser):
     # agegrid command arguments
     agegrid_cmd.set_defaults(func=_run_create_agegrids)
     agegrid_cmd.add_argument(
-        metavar="INPUT_FILE",
+        metavar="INPUT_FILES",
         nargs="*",
         help="input reconstruction files, including rotation files and topology files",
         dest="input_filenames",
