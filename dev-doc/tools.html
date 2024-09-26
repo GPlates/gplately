@@ -84,24 +84,6 @@ as the input feature array.</dd>
 <div class="desc"><p>Calculates the point area of an evenly gridded lat/lon mesh
 Longitude resolution is lon2 - lon1</p></div>
 </dd>
-<dt id="gplately.tools.geocentric_radius"><code class="name flex">
-<span>def <span class="ident">geocentric_radius</span></span>(<span>lat, degrees=True)</span>
-</code></dt>
-<dd>
-<div class="desc"><p>Calculates the latitude-dependent radius of an ellipsoid Earth.</p>
-<h2 id="parameters">Parameters</h2>
-<dl>
-<dt><strong><code>lat</code></strong> :&ensp;<code>float</code></dt>
-<dd>The geodetic latitude at which to calculate the Earth's radius</dd>
-<dt><strong><code>degrees</code></strong> :&ensp;<code>bool</code>, default=<code>True</code></dt>
-<dd>Specify whether the given latitude is in degrees.</dd>
-</dl>
-<h2 id="returns">Returns</h2>
-<dl>
-<dt><strong><code>earth_radius</code></strong> :&ensp;<code>float</code></dt>
-<dd>The Earth's geocentric radius (in metres) at the given geodetic latitude.</dd>
-</dl></div>
-</dd>
 <dt id="gplately.tools.griddata_sphere"><code class="name flex">
 <span>def <span class="ident">griddata_sphere</span></span>(<span>points, values, xi, method='nearest', **kwargs)</span>
 </code></dt>
@@ -136,52 +118,12 @@ A default value of neighors=12 is automatically applied to rbf.</dd>
 <dd>Array of interpolated values.</dd>
 </dl></div>
 </dd>
-<dt id="gplately.tools.haversine_distance"><code class="name flex">
-<span>def <span class="ident">haversine_distance</span></span>(<span>lon1, lon2, lat1, lat2, degrees=True)</span>
-</code></dt>
-<dd>
-<div class="desc"><p>Computes the Haversine distance (the shortest distance on the surface of an ideal spherical Earth) between two
-points given their latitudes and longitudes.</p>
-<h2 id="sources">Sources</h2>
-<p><a href="https://en.wikipedia.org/wiki/Haversine_formula">https://en.wikipedia.org/wiki/Haversine_formula</a>
-<a href="https://stackoverflow.com/questions/639695/how-to-convert-latitude-or-longitude-to-meters">https://stackoverflow.com/questions/639695/how-to-convert-latitude-or-longitude-to-meters</a></p>
-<h2 id="parameters">Parameters</h2>
-<dl>
-<dt><strong><code>lon1</code></strong>, <strong><code>lon2</code></strong> :&ensp;<code>float</code></dt>
-<dd>Longitudes of both points</dd>
-<dt><strong><code>lat1</code></strong>, <strong><code>lat2</code></strong> :&ensp;<code>float</code></dt>
-<dd>Latitudes of both points</dd>
-</dl>
-<h2 id="returns">Returns</h2>
-<dl>
-<dt><strong><code>d</code></strong> :&ensp;<code>float</code></dt>
-<dd>The Haversine distance in metres.</dd>
-</dl>
-<h2 id="notes">Notes</h2>
-<p>Default behaviour assumes values in degrees; for radians specify degrees=False</p></div>
-</dd>
 <dt id="gplately.tools.lat_area_function"><code class="name flex">
 <span>def <span class="ident">lat_area_function</span></span>(<span>latitude_one, latitude_two, longitude_resolution)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Calculates the point area of an evenly gridded lat/lon mesh
 Longitude resolution is lon2 - lon1</p></div>
-</dd>
-<dt id="gplately.tools.lonlat2xyz"><code class="name flex">
-<span>def <span class="ident">lonlat2xyz</span></span>(<span>lon, lat, degrees=True)</span>
-</code></dt>
-<dd>
-<div class="desc"><p>Convert lon / lat (radians) for spherical triangulation into Cartesian (x,y,z) coordinates on the unit sphere.</p>
-<h2 id="parameters">Parameters</h2>
-<dl>
-<dt><strong><code>lon</code></strong>, <strong><code>lat</code></strong> :&ensp;<code>lists</code></dt>
-<dd>Longitudes and latitudes of feature points in radians.</dd>
-</dl>
-<h2 id="returns">Returns</h2>
-<dl>
-<dt><strong><code>xs</code></strong>, <strong><code>ys</code></strong>, <strong><code>zs</code></strong> :&ensp;<code>lists</code></dt>
-<dd>Cartesian coordinates of each feature point in all 3 dimensions.</dd>
-</dl></div>
 </dd>
 <dt id="gplately.tools.plate_isotherm_depth"><code class="name flex">
 <span>def <span class="ident">plate_isotherm_depth</span></span>(<span>age, temp=1150.0, plate_thickness=125000.0, maxiter=50, tol=0.001, require_convergence=False, **kwargs)</span>
@@ -380,26 +322,6 @@ By default, this is set to 4 standard deviations.</dd>
 <dd>
 <div class="desc"></div>
 </dd>
-<dt id="gplately.tools.xyz2lonlat"><code class="name flex">
-<span>def <span class="ident">xyz2lonlat</span></span>(<span>x, y, z, validate=False, degrees=True)</span>
-</code></dt>
-<dd>
-<div class="desc"><p>Converts Cartesian (x,y,z) representation of points (on the unit sphere) for spherical triangulation into
-lon / lat (radians).</p>
-<p>Note: No check is made here that (x,y,z) are unit vectors - it is assumed.</p>
-<h2 id="parameters">Parameters</h2>
-<dl>
-<dt><strong><code>x</code></strong>, <strong><code>y</code></strong>, <strong><code>z</code></strong> :&ensp;<code>lists</code></dt>
-<dd>Cartesian coordinates of each feature point in all 3 dimensions.</dd>
-</dl>
-<h2 id="returns">Returns</h2>
-<dl>
-<dt><strong><code>lon</code></strong>, <strong><code>lat</code></strong> :&ensp;<code>lists</code></dt>
-<dd>Longitudes and latitudes of feature points in radians.</dd>
-</dl>
-<h2 id="notes">Notes</h2>
-<p>No check is made here that (x,y,z) are unit vectors, unless validate=True is specified</p></div>
-</dd>
 </dl>
 </section>
 <section>
@@ -428,11 +350,8 @@ lon / lat (radians).</p>
 <li><code><a title="gplately.tools.extract_feature_lonlat" href="#gplately.tools.extract_feature_lonlat">extract_feature_lonlat</a></code></li>
 <li><code><a title="gplately.tools.find_distance_to_nearest_ridge" href="#gplately.tools.find_distance_to_nearest_ridge">find_distance_to_nearest_ridge</a></code></li>
 <li><code><a title="gplately.tools.geocentric_area" href="#gplately.tools.geocentric_area">geocentric_area</a></code></li>
-<li><code><a title="gplately.tools.geocentric_radius" href="#gplately.tools.geocentric_radius">geocentric_radius</a></code></li>
 <li><code><a title="gplately.tools.griddata_sphere" href="#gplately.tools.griddata_sphere">griddata_sphere</a></code></li>
-<li><code><a title="gplately.tools.haversine_distance" href="#gplately.tools.haversine_distance">haversine_distance</a></code></li>
 <li><code><a title="gplately.tools.lat_area_function" href="#gplately.tools.lat_area_function">lat_area_function</a></code></li>
-<li><code><a title="gplately.tools.lonlat2xyz" href="#gplately.tools.lonlat2xyz">lonlat2xyz</a></code></li>
 <li><code><a title="gplately.tools.plate_isotherm_depth" href="#gplately.tools.plate_isotherm_depth">plate_isotherm_depth</a></code></li>
 <li><code><a title="gplately.tools.plate_partitioner_for_point" href="#gplately.tools.plate_partitioner_for_point">plate_partitioner_for_point</a></code></li>
 <li><code><a title="gplately.tools.plate_surface_depth" href="#gplately.tools.plate_surface_depth">plate_surface_depth</a></code></li>
@@ -444,7 +363,6 @@ lon / lat (radians).</p>
 <li><code><a title="gplately.tools.smooth_1D_gaussian" href="#gplately.tools.smooth_1D_gaussian">smooth_1D_gaussian</a></code></li>
 <li><code><a title="gplately.tools.surface_area_oblate_spheroid" href="#gplately.tools.surface_area_oblate_spheroid">surface_area_oblate_spheroid</a></code></li>
 <li><code><a title="gplately.tools.update_progress" href="#gplately.tools.update_progress">update_progress</a></code></li>
-<li><code><a title="gplately.tools.xyz2lonlat" href="#gplately.tools.xyz2lonlat">xyz2lonlat</a></code></li>
 </ul>
 </li>
 </ul>
