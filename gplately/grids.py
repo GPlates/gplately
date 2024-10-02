@@ -425,15 +425,19 @@ def write_netcdf_grid(filename, grid, extent="global", significant_digits=None, 
         # without this, _FillValue defaults to 9.969209968386869e+36
         if fill_value is not None:
             cdf_data.missing_value = fill_value
+            grid_mask = grid != fill_value
+
+            cdf_data.actual_range = [np.nanmin(grid[grid_mask]), np.nanmax(grid[grid_mask])]
+
+        else:
+            # ensure min and max z values are properly registered
+            cdf_data.actual_range = [np.nanmin(grid), np.nanmax(grid)]
 
         cdf_data.standard_name = 'z'
 
         # cdf_data.add_offset = 0.0
         cdf_data.grid_mapping = 'crs'
         # cdf_data.set_auto_maskandscale(False)
-        
-        # ensure min and max z values are properly registered
-        cdf_data.actual_range = [np.nanmin(grid), np.nanmax(grid)]
 
         # write data
         cdf_data[:,:] = grid
