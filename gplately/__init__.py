@@ -231,6 +231,7 @@ from . import (
     ptt,
     pygplates,
     reconstruction,
+    spatial,
 )
 from .data import DataCollection
 from .download import DataServer
@@ -275,6 +276,7 @@ __all__ = [
     "reconstruction",
     "plate_model_manager",
     "ptt",
+    "spatial",
     # Classes
     "DataCollection",
     "DataServer",

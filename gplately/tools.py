@@ -22,6 +22,13 @@ import pandas as pd
 import pygplates
 import scipy
 
+from .spatial import (
+    haversine_distance,
+    geocentric_radius,
+    lonlat2xyz,
+    xyz2lonlat,
+)
+
 EARTH_RADIUS = pygplates.Earth.mean_radius_in_kms
 
 _DEFAULT_PLATE_THICKNESS = 125.0e3
@@ -319,143 +326,6 @@ def extract_feature_lonlat(features):
         rlat[i], rlon[i] = geometry.to_lat_lon()
 
     return rlon, rlat
-
-
-def lonlat2xyz(lon, lat, degrees=True):
-    """Convert lon / lat (radians) for spherical triangulation into Cartesian (x,y,z) coordinates on the unit sphere.
-
-    Parameters
-    ----------
-    lon, lat : lists
-        Longitudes and latitudes of feature points in radians.
-
-    Returns
-    -------
-    xs, ys, zs : lists
-        Cartesian coordinates of each feature point in all 3 dimensions.
-    """
-    if degrees:
-        lon = np.deg2rad(lon)
-        lat = np.deg2rad(lat)
-    cosphi = np.cos(lat)
-    xs = cosphi * np.cos(lon)
-    ys = cosphi * np.sin(lon)
-    zs = np.sin(lat)
-    return xs, ys, zs
-
-
-def xyz2lonlat(x, y, z, validate=False, degrees=True):
-    """Converts Cartesian (x,y,z) representation of points (on the unit sphere) for spherical triangulation into
-    lon / lat (radians).
-
-    Note: No check is made here that (x,y,z) are unit vectors - it is assumed.
-
-    Parameters
-    ----------
-    x, y, z : lists
-        Cartesian coordinates of each feature point in all 3 dimensions.
-
-    Returns
-    -------
-    lon, lat : lists
-        Longitudes and latitudes of feature points in radians.
-
-    Notes
-    -----
-    No check is made here that (x,y,z) are unit vectors, unless validate=True is specified
-    """
-    x = np.atleast_1d(x)
-    y = np.atleast_1d(y)
-    z = np.atleast_1d(z)
-    if validate:
-        mags = np.sqrt(x**2 + y**2 + z**2)
-        ones = np.full_like(mags, 1)
-        if not np.all(np.equal(mags, ones)):
-            raise ValueError("All (x, y, z) must be unit vectors")
-    lons = np.arctan2(y, x)
-    lats = np.arcsin(z)
-    if degrees:
-        lons = np.rad2deg(lons)
-        lats = np.rad2deg(lats)
-    if lons.size == 1:
-        lons = np.atleast_1d(np.squeeze(lons))[0]
-    if lats.size == 1:
-        lats = np.atleast_1d(np.squeeze(lats))[0]
-    return lons, lats
-
-
-def haversine_distance(lon1, lon2, lat1, lat2, degrees=True):
-    """Computes the Haversine distance (the shortest distance on the surface of an ideal spherical Earth) between two
-    points given their latitudes and longitudes.
-
-    Sources
-    -------
-    https://en.wikipedia.org/wiki/Haversine_formula
-    https://stackoverflow.com/questions/639695/how-to-convert-latitude-or-longitude-to-meters
-
-    Parameters
-    ----------
-    lon1, lon2 : float
-        Longitudes of both points
-
-    lat1, lat2 : float
-        Latitudes of both points
-
-    Returns
-    -------
-    d : float
-        The Haversine distance in metres.
-
-    Notes
-    -----
-    Default behaviour assumes values in degrees; for radians specify degrees=False
-    """
-    if degrees:
-        dLat = np.deg2rad(lat2) - np.deg2rad(lat1)
-        dLon = np.deg2rad(lon2) - np.deg2rad(lon1)
-    else:
-        dLat = lat2 - lat1
-        dLon = lon2 - lon1
-    a = (
-        np.sin(dLat / 2) ** 2
-        + np.cos(lat1 * np.pi / 180)
-        * np.cos(lat2 * np.pi / 180)
-        * np.sin(dLon / 2) ** 2
-    )
-    c = 2.0 * np.arctan2(np.sqrt(a), np.sqrt(1.0 - a))
-    d = EARTH_RADIUS * c
-    return d * 1000
-
-
-def geocentric_radius(lat, degrees=True):
-    """Calculates the latitude-dependent radius of an ellipsoid Earth.
-
-    Parameters
-    ----------
-    lat : float
-        The geodetic latitude at which to calculate the Earth's radius
-    degrees : bool, default=True
-        Specify whether the given latitude is in degrees.
-
-    Returns
-    -------
-    earth_radius : float
-        The Earth's geocentric radius (in metres) at the given geodetic latitude.
-    """
-    if degrees:
-        rlat = np.radians(lat)
-    else:
-        rlat = lat
-
-    coslat = np.cos(rlat)
-    sinlat = np.sin(rlat)
-    r1 = 6384.4e3
-    r2 = 6352.8e3
-    num = (r1**2 * coslat) ** 2 + (r2**2 * sinlat) ** 2
-    den = (r1 * coslat) ** 2 + (r2 * sinlat) ** 2
-    earth_radius = np.sqrt(num / den)
-    return earth_radius
-
 
 def plate_partitioner_for_point(lat_lon_tuple, topology_features, rotation_model):
     """Determine the present-day plate ID of a (lat, lon) coordinate pair if
