@@ -5560,7 +5560,7 @@ boundaries and passive continental boundaries.</dd>
     def plot_feature(self, ax, feature, feature_name=&#34;&#34;, color=&#34;black&#34;, **kwargs):
         &#34;&#34;&#34;Plot pygplates.FeatureCollection or pygplates.Feature onto a map.&#34;&#34;&#34;
         if not feature:
-            logger.warn(
+            logger.warning(
                 f&#34;The given feature({feature_name}:{feature}) in model:{self.plate_reconstruction.plate_model_name} is empty and will not be plotted.&#34;
             )
             return ax
@@ -5591,7 +5591,7 @@ boundaries and passive continental boundaries.</dd>
         )
 
         if len(gdf) == 0:
-            logger.warn(&#34;No feature found for plotting. Do nothing and return.&#34;)
+            logger.warning(&#34;No feature found for plotting. Do nothing and return.&#34;)
             return ax
 
         if hasattr(ax, &#34;projection&#34;):
@@ -6713,6 +6713,8 @@ boundaries and passive continental boundaries.</dd>
         &#34;&#34;&#34;Plot topological polygons and networks on a standard map projection.&#34;&#34;&#34;
         if &#34;edgecolor&#34; not in kwargs.keys():
             kwargs[&#34;edgecolor&#34;] = color
+        if &#34;facecolor&#34; not in kwargs.keys():
+            kwargs[&#34;facecolor&#34;] = &#34;none&#34;
 
         return self._plot_feature(
             ax,
