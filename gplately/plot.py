@@ -692,7 +692,7 @@ class PlotTopologies(object):
     def plot_feature(self, ax, feature, feature_name="", color="black", **kwargs):
         """Plot pygplates.FeatureCollection or pygplates.Feature onto a map."""
         if not feature:
-            logger.warn(
+            logger.warning(
                 f"The given feature({feature_name}:{feature}) in model:{self.plate_reconstruction.plate_model_name} is empty and will not be plotted."
             )
             return ax
@@ -723,7 +723,7 @@ class PlotTopologies(object):
         )
 
         if len(gdf) == 0:
-            logger.warn("No feature found for plotting. Do nothing and return.")
+            logger.warning("No feature found for plotting. Do nothing and return.")
             return ax
 
         if hasattr(ax, "projection"):
@@ -1845,6 +1845,8 @@ class PlotTopologies(object):
         """Plot topological polygons and networks on a standard map projection."""
         if "edgecolor" not in kwargs.keys():
             kwargs["edgecolor"] = color
+        if "facecolor" not in kwargs.keys():
+            kwargs["facecolor"] = "none"
 
         return self._plot_feature(
             ax,
