@@ -110,6 +110,7 @@ if __name__ == "__main__":
         #    ]
         # },
         include_package_data=True,
+        python_requires=">=3.8",
         classifiers=[
             "Programming Language :: Python :: 3",
             "Programming Language :: Python :: 3.8",
