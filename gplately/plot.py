@@ -51,6 +51,8 @@ from .tools import EARTH_RADIUS
 from .utils.feature_utils import shapelify_features as _shapelify_features
 from .utils.plot_utils import _clean_polygons, _meridian_from_ax
 from .utils.plot_utils import plot_subduction_teeth as _plot_subduction_teeth
+from .mapping.plot_engine import PlotEngine
+from .mapping.pygmt_plot import plot_geo_data_frame
 
 logger = logging.getLogger("gplately")
 
@@ -298,6 +300,7 @@ class PlotTopologies(object):
         COBs=None,
         time=None,
         anchor_plate_id=0,
+        plot_engine: PlotEngine = PlotEngine.CARTOPY,
     ):
         self.plate_reconstruction = plate_reconstruction
 
@@ -321,6 +324,7 @@ class PlotTopologies(object):
         self._topologies = None
 
         self._anchor_plate_id = self._check_anchor_plate_id(anchor_plate_id)
+        self._plot_engine = plot_engine
 
         # store topologies for easy access
         # setting time runs the update_time routine
@@ -726,12 +730,16 @@ class PlotTopologies(object):
             logger.warning("No feature found for plotting. Do nothing and return.")
             return ax
 
-        if hasattr(ax, "projection"):
-            gdf = _clean_polygons(data=gdf, projection=ax.projection)
+        if self._plot_engine == PlotEngine.PYGMT:
+            kwargs["ax"] = ax
+            return plot_geo_data_frame(gdf, **kwargs)
         else:
-            kwargs["transform"] = self.base_projection
+            if hasattr(ax, "projection"):
+                gdf = _clean_polygons(data=gdf, projection=ax.projection)
+            else:
+                kwargs["transform"] = self.base_projection
 
-        return gdf.plot(ax=ax, **kwargs)
+            return gdf.plot(ax=ax, **kwargs)
 
     @validate_reconstruction_time
     @append_docstring(GET_DATE_DOCSTRING.format("coastlines"))

@@ -35,6 +35,7 @@ dependencies = [
     "netcdf4",
     "rasterio",
     "geopandas",
+    "gmt",
     "stripy",
     "plate-model-manager>=1.2.0",
     "pyyaml",

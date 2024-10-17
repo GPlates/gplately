@@ -1,7 +1,4 @@
 #!/usr/bin/env python3
-# import matplotlib
-
-# matplotlib.use("QtAgg")
 
 import sys
 
@@ -13,7 +10,7 @@ from plate_model_manager import PlateModel, PlateModelManager
 
 import gplately
 from gplately import PlateReconstruction, PlotTopologies
-
+from gplately.mapping.plot_engine import PlotEngine
 
 print(gplately.__file__)
 
@@ -43,13 +40,13 @@ def main(show=True):
         COBs=model.get_layer("COBs", return_none_if_not_exist=True),
         continents=model.get_layer("ContinentalPolygons"),
         time=age,
+        plot_engine=PlotEngine.PYGMT,
     )
 
     # age = 100
     # gplot.time = age
 
-    fig = plt.figure(figsize=(10, 5), dpi=96)
-    ax = fig.add_subplot(111, projection=ccrs.Robinson(central_longitude=180))
+    ax = None
 
     all_flag = 0
     plot_flag = {
@@ -96,8 +93,6 @@ def main(show=True):
                 ax, color=list(np.random.choice(range(256), size=3) / 256)
             )
 
-    ax.set_global()
-
     ids = set([f.get_reconstruction_plate_id() for f in gplot.topologies])
     for id in ids:
         if all_flag or plot_flag["plate_polygon_by_id"]:
@@ -107,24 +102,6 @@ def main(show=True):
                 facecolor="None",
                 edgecolor=list(np.random.choice(range(256), size=3) / 256),
             )
-    plt.title(f"{age} Ma")
-
-    if show:
-        # LOOK HERE! 👀👀 👇👇
-        # If the figure did not show up, you need to set your matplotlib plotting backend properly.
-        # On Windows, you may install PyQt and do
-        # import matplotlib
-        # matplotlib.use('QtAgg')
-
-        # if you are interested in finding what backends available on your computer and what is your current backend, do the following
-        # import matplotlib.rcsetup as rcsetup
-        # print(rcsetup.all_backends) # get all available backends
-        # import matplotlib
-        # matplotlib.get_backend() # your current backend
-        #
-        plt.show()
-    else:
-        save_fig(__file__)
 
 
 if __name__ == "__main__":
