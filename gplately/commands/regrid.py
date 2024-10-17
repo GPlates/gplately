@@ -30,7 +30,7 @@ from ..grids import read_netcdf_grid, write_netcdf_grid
 logger = logging.getLogger("gplately")
 
 
-def add_parser(parser: argparse.ArgumentParser):
+def add_parser(parser):
     """add command line argument parser"""
 
     grid_cmd = parser.add_parser(
@@ -92,19 +92,18 @@ Example usage:
     - gplately grid inputDirectory --significant-digits 2 outputDirectory
 """
 
+
 def _batch_regrid_netcdf4(
-    input_raster_filename, 
+    input_raster_filename,
     output_raster_filename,
     resample=None,
-    significant_digits=None):
+    significant_digits=None,
+):
 
-    grid = read_netcdf_grid(
-        input_raster_filename, 
-        resample=resample)
+    grid = read_netcdf_grid(input_raster_filename, resample=resample)
     write_netcdf_grid(
-        output_raster_filename, 
-        grid, 
-        significant_digits=significant_digits)
+        output_raster_filename, grid, significant_digits=significant_digits
+    )
 
     print("  {} complete!".format(output_raster_filename))
 
@@ -120,13 +119,12 @@ def _regrid_netcdf4(args):
 
     # determine if directory or filename
     p_input = pathlib.Path(args.input_grid_filename)
-    p_output= pathlib.Path(args.output_grid_filename)
+    p_output = pathlib.Path(args.output_grid_filename)
 
     if args.grid_spacing is None:
         grid_spacing = None
     else:
         grid_spacing = (args.grid_spacing, args.grid_spacing)
-
 
     if p_input.is_file():
         input_filename = p_input
@@ -137,10 +135,11 @@ def _regrid_netcdf4(args):
             output_filename = p_output.joinpath(p_input.name)
 
         _batch_regrid_netcdf4(
-            input_filename, 
-            output_filename, 
-            resample=grid_spacing, 
-            significant_digits=args.significant_digits)
+            input_filename,
+            output_filename,
+            resample=grid_spacing,
+            significant_digits=args.significant_digits,
+        )
 
     elif p_input.is_dir():
         if p_output.suffix:
@@ -150,19 +149,28 @@ def _regrid_netcdf4(args):
         input_raster_filenames = []
         output_raster_filenames = []
         for pathname in p_input.iterdir():
-            if pathname.suffix == '.nc' and pathname.is_file() and not pathname.name.startswith('.'):
+            if (
+                pathname.suffix == ".nc"
+                and pathname.is_file()
+                and not pathname.name.startswith(".")
+            ):
                 input_raster_filenames.append(pathname)
                 output_raster_filenames.append(p_output.joinpath(pathname.name))
 
-        print("Found {} netCDF files. Processing...".format(len(input_raster_filenames)))
+        print(
+            "Found {} netCDF files. Processing...".format(len(input_raster_filenames))
+        )
 
         if n_jobs == 1:
-            for in_name, out_name in zip(input_raster_filenames, output_raster_filenames):
+            for in_name, out_name in zip(
+                input_raster_filenames, output_raster_filenames
+            ):
                 _batch_regrid_netcdf4(
                     in_name,
                     out_name,
                     resample=grid_spacing,
-                    significant_digits=args.significant_digits)
+                    significant_digits=args.significant_digits,
+                )
         else:
 
             with multiprocessing.Pool(n_jobs) as pool:
@@ -171,7 +179,8 @@ def _regrid_netcdf4(args):
                         _batch_regrid_netcdf4,
                         resample=grid_spacing,
                         significant_digits=args.significant_digits,
-                    ), zip(input_raster_filenames, output_raster_filenames)
+                    ),
+                    zip(input_raster_filenames, output_raster_filenames),
                 )
 
     else:

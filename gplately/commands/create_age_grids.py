@@ -176,6 +176,7 @@ def create_agegrids(
     initial_spreadrate: float = 75,
     file_collection: str = "",
     unmasked: bool = False,
+    plate_model_repo: str = "plate-model-repo",
 ) -> None:
     """Create age grids for a plate model."""
 
@@ -191,12 +192,12 @@ def create_agegrids(
         try:
             # TODO: make "plate-model-repo" an optional parameter
             plate_model = PlateModelManager().get_model(
-                model_name, data_dir="plate-model-repo"
+                model_name, data_dir=plate_model_repo
             )
         except:
             # try to use the plate model in the local folder if the network is down.
             plate_model = PlateModel(
-                model_name, data_dir="plate-model-repo", readonly=True
+                model_name, data_dir=plate_model_repo, readonly=True
             )
 
         if not plate_model:
