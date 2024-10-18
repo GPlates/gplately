@@ -33,22 +33,7 @@ label_offset = "j0/-0.5c"
 label_position = "TC"
 
 
-def plot_geo_data_frame(gdf: GeoDataFrame, **kwargs):
-
-    print(gdf)
-    fig = pygmt.Figure()
-    pygmt.config(
-        FONT_ANNOT=8,
-        FONT_LABEL=8,
-        FONT=8,
-        MAP_TICK_PEN="0.75p",
-        MAP_FRAME_PEN="0.75p",
-        MAP_TICK_LENGTH_PRIMARY="4p",
-    )
-
-    # ---- part a - transforms FROM gplot.get_transforms()
-    fig.basemap(region=region, projection="%s%sc" % (projection, width), frame="lrtb")
-    # fig.coast(shorelines=True)
+def plot_geo_data_frame(fig: pygmt.Figure, gdf: GeoDataFrame, **kwargs):
     fig.plot(data=gdf.geometry, pen="0.5p,blue")
     """
     fig.plot(data=gdf_coastlines, fill=coastline_color, frame=["xa0", "ya0"],  transparency=0)
@@ -77,5 +62,3 @@ def plot_geo_data_frame(gdf: GeoDataFrame, **kwargs):
 
     fig.legend(position='jBL+o-2.7/0', box="+gwhite+p0.5p")
     """
-    # fig.show(width=1200)
-    fig.savefig("test-pygmt-plot.pdf")

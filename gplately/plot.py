@@ -731,8 +731,7 @@ class PlotTopologies(object):
             return ax
 
         if self._plot_engine == PlotEngine.PYGMT:
-            kwargs["ax"] = ax
-            return plot_geo_data_frame(gdf, **kwargs)
+            return plot_geo_data_frame(fig=ax, gdf=gdf, **kwargs)
         else:
             if hasattr(ax, "projection"):
                 gdf = _clean_polygons(data=gdf, projection=ax.projection)

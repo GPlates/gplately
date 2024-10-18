@@ -27,6 +27,9 @@ def main(show=True):
     except:
         model = PlateModel(MODEL_NAME, data_dir=MODEL_REPO_DIR, readonly=True)
 
+    if model is None:
+        raise Exception(f"Unable to get model ({MODEL_NAME})")
+
     age = 55
 
     test_model = PlateReconstruction(
@@ -93,15 +96,16 @@ def main(show=True):
                 ax, color=list(np.random.choice(range(256), size=3) / 256)
             )
 
-    ids = set([f.get_reconstruction_plate_id() for f in gplot.topologies])
-    for id in ids:
-        if all_flag or plot_flag["plate_polygon_by_id"]:
-            gplot.plot_plate_polygon_by_id(
-                ax,
-                id,
-                facecolor="None",
-                edgecolor=list(np.random.choice(range(256), size=3) / 256),
-            )
+    if gplot.topologies is not None:
+        ids = set([f.get_reconstruction_plate_id() for f in gplot.topologies])
+        for id in ids:
+            if all_flag or plot_flag["plate_polygon_by_id"]:
+                gplot.plot_plate_polygon_by_id(
+                    ax,
+                    id,
+                    facecolor="None",
+                    edgecolor=list(np.random.choice(range(256), size=3) / 256),
+                )
 
 
 if __name__ == "__main__":
