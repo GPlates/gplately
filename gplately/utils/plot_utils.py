@@ -642,6 +642,7 @@ def plot_subduction_teeth(
 def get_gplot(
     model_name: str, model_repo_dir: str, age: Union[int, float]
 ) -> PlotTopologies:
+    """convenient function to get gplot object"""
     try:
         model = PlateModelManager().get_model(model_name, data_dir=model_repo_dir)
     except:
