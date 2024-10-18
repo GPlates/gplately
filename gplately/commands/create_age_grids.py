@@ -21,20 +21,20 @@ import logging
 import multiprocessing
 import time
 import warnings
-from typing import Optional, Sequence, Union
+from typing import List
 
 from plate_model_manager import PlateModel, PlateModelManager
 
 from gplately import PlateReconstruction, PlotTopologies, SeafloorGrid
 
 from ..pygplates import FeatureCollection as gFeatureCollection
-from ..pygplates import FeaturesFunctionArgument
+from ..pygplates import FeaturesFunctionArgument  # type: ignore
 from ..pygplates import RotationModel as gRotationModel
 
 logger = logging.getLogger("gplately")
 
 
-def add_parser(parser: argparse.ArgumentParser):
+def add_parser(parser):
     """add command line argument parser"""
 
     agegrid_cmd = parser.add_parser(
@@ -74,7 +74,6 @@ def add_parser(parser: argparse.ArgumentParser):
         nargs="*",
         help="input continental polygons files",
         dest="continents_filenames",
-        default=None,
     )
     agegrid_cmd.add_argument(
         "-r",
@@ -158,14 +157,14 @@ __description__ = f"""{help_str}
 
 Example usage: 
     - gplately ag output -m merdith2021 -e 0 -s 10
-    - gplately ag plate-model-repo/muller2019/Rotations/Muller_etal_2019_CombinedRotations.rot plate-model-repo/muller2019/Topologies/Muller_etal_2019_PlateBoundaries_DeformingNetworks.gpmlz output -c plate-model-repo/muller2019/ContinentalPolygons/Global_EarthByte_GPlates_PresentDay_ContinentalPolygons_2019_v1.shp -e 0 -s 10
+    - gplately ag rotations.rot topologies.gpmlz output -c continental_polygons.gpmlz -e 0 -s 10
 """
 
 
 def create_agegrids(
     model_name: str,
-    input_filenames: Union[str, Sequence[str]],
-    continents_filenames: Union[str, Sequence[str]],
+    input_filenames: List[str],
+    continents_filenames: List[str],
     output_dir: str,
     min_time: float,
     max_time: float,
@@ -175,26 +174,47 @@ def create_agegrids(
     grid_spacing: float = 0.1,
     ridge_sampling: float = 0.5,
     initial_spreadrate: float = 75,
-    file_collection: Optional[str] = None,
+    file_collection: str = "",
     unmasked: bool = False,
+    plate_model_repo: str = "plate-model-repo",
 ) -> None:
     """Create age grids for a plate model."""
 
     if model_name:
+        if input_filenames or continents_filenames:
+            raise Exception(
+                f"The model name({model_name}) is provided with -m or --model. \n"
+                + f"But the INPUT_FILES and/or CONTINENTS_FILE are also provided. \n"
+                + f"The MODEL_NAME and (INPUT_FILES, CONTINENTS_FILE) are mutually exclusive. \n"
+                + f"You either use (-m,--model) to specify a model name or use the first positional arguments and (-c,--continents) to specify the file paths. But not both.\n"
+                + f"Fix your command line and try again."
+            )
         try:
+            # TODO: make "plate-model-repo" an optional parameter
             plate_model = PlateModelManager().get_model(
-                model_name, data_dir="plate-model-repo"
+                model_name, data_dir=plate_model_repo
             )
         except:
+            # try to use the plate model in the local folder if the network is down.
             plate_model = PlateModel(
-                model_name, data_dir="plate-model-repo", readonly=True
+                model_name, data_dir=plate_model_repo, readonly=True
+            )
+
+        if not plate_model:
+            raise Exception(
+                f"Unable to create PlateModel object for model {model_name}. "
+                + f"Check your network connection and make sure the model name is correct. Run `pmm ls` to get a list of available model names."
             )
 
         rotation_files = plate_model.get_rotation_model()
-        topology_files = plate_model.get_topologies()
-        continent_files = plate_model.get_layer("ContinentalPolygons")
+        topology_files = plate_model.get_layer(
+            "Topologies", return_none_if_not_exist=True
+        )
+        continent_files = plate_model.get_layer(
+            "ContinentalPolygons", return_none_if_not_exist=True
+        )
         if "Cratons" in plate_model.get_avail_layers():
-            continent_files += plate_model.get_layer("Cratons")
+            continent_files += plate_model.get_layer("Cratons")  # type: ignore
 
     else:
         rotation_files = []
@@ -212,8 +232,28 @@ def create_agegrids(
 
         continent_files = continents_filenames
 
+    if not rotation_files:
+        raise Exception(
+            "No rotation file(s) found. User must either provide rotation file(s) in the first positional arguments or specify a model name with (-m,--model)."
+        )
     rotations = gRotationModel(rotation_files)
+
+    if not topology_files:
+        error_msg = "No topology file(s) found. "
+        if model_name:
+            error_msg += f"Make sure the model ({model_name}) has topology. Run `pmm ls {model_name}` to check the model."
+        else:
+            error_msg += f"You need to specify the topology files in the first positional arguments."
+        raise Exception(error_msg)
     topologies = gFeatureCollection.from_file_list(topology_files)
+
+    if not continent_files:
+        error_msg = "No continental polygon file(s) found. "
+        if model_name:
+            error_msg += f"Make sure the model ({model_name}) has continental polygons. Run `pmm ls {model_name}` to check the model."
+        else:
+            error_msg += f"You need to specify the continental polygon files with (-c,--continents). Run `gplately ag -h` to see help."
+        raise Exception(error_msg)
     continents = gFeatureCollection.from_file_list(continent_files)
 
     with warnings.catch_warnings():

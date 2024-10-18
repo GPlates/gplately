@@ -37,7 +37,7 @@ dependencies = [
     "geopandas",
     "gmt",
     "stripy",
-    "plate-model-manager>=1.2.0",
+    "plate-model-manager>=1.2.1",
     "pyyaml",
     "pygmt",
     "rioxarray",
