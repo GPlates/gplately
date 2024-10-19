@@ -11,6 +11,7 @@ from plate_model_manager.utils import download
 from gplately.utils import crustal_production
 
 data_dir = "./crustal_production_agegrid"
+
 if __name__ == "__main__":
     downloader = download.FileDownloader(
         "https://www.earthbyte.org/webdav/ftp/Data_Collections/Muller_etal_2019_Tectonics/Muller_etal_2019_Agegrids/Muller_etal_2019_Tectonics_v2.0_netCDF/Muller_etal_2019_Tectonics_v2.0_AgeGrid-0.nc",

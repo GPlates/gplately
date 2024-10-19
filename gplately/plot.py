@@ -51,6 +51,8 @@ from .tools import EARTH_RADIUS
 from .utils.feature_utils import shapelify_features as _shapelify_features
 from .utils.plot_utils import _clean_polygons, _meridian_from_ax
 from .utils.plot_utils import plot_subduction_teeth as _plot_subduction_teeth
+from .mapping.plot_engine import PlotEngine
+from .mapping.pygmt_plot import plot_geo_data_frame
 
 logger = logging.getLogger("gplately")
 
@@ -298,6 +300,7 @@ class PlotTopologies(object):
         COBs=None,
         time=None,
         anchor_plate_id=0,
+        plot_engine: PlotEngine = PlotEngine.CARTOPY,
     ):
         self.plate_reconstruction = plate_reconstruction
 
@@ -321,6 +324,7 @@ class PlotTopologies(object):
         self._topologies = None
 
         self._anchor_plate_id = self._check_anchor_plate_id(anchor_plate_id)
+        self._plot_engine = plot_engine
 
         # store topologies for easy access
         # setting time runs the update_time routine
@@ -692,7 +696,7 @@ class PlotTopologies(object):
     def plot_feature(self, ax, feature, feature_name="", color="black", **kwargs):
         """Plot pygplates.FeatureCollection or pygplates.Feature onto a map."""
         if not feature:
-            logger.warn(
+            logger.warning(
                 f"The given feature({feature_name}:{feature}) in model:{self.plate_reconstruction.plate_model_name} is empty and will not be plotted."
             )
             return ax
@@ -723,15 +727,18 @@ class PlotTopologies(object):
         )
 
         if len(gdf) == 0:
-            logger.warn("No feature found for plotting. Do nothing and return.")
+            logger.warning("No feature found for plotting. Do nothing and return.")
             return ax
 
-        if hasattr(ax, "projection"):
-            gdf = _clean_polygons(data=gdf, projection=ax.projection)
+        if self._plot_engine == PlotEngine.PYGMT:
+            return plot_geo_data_frame(fig=ax, gdf=gdf, **kwargs)
         else:
-            kwargs["transform"] = self.base_projection
+            if hasattr(ax, "projection"):
+                gdf = _clean_polygons(data=gdf, projection=ax.projection)
+            else:
+                kwargs["transform"] = self.base_projection
 
-        return gdf.plot(ax=ax, **kwargs)
+            return gdf.plot(ax=ax, **kwargs)
 
     @validate_reconstruction_time
     @append_docstring(GET_DATE_DOCSTRING.format("coastlines"))
@@ -1414,7 +1421,6 @@ class PlotTopologies(object):
             quiver = ax.quiver(X, Y, U, V, transform=self.base_projection, **kwargs)
         return quiver
 
-
     def plot_pole(self, ax, lon, lat, a95, **kwargs):
         """
         Plot pole onto a matplotlib axes.
@@ -1441,7 +1447,6 @@ class PlotTopologies(object):
         # Define the projection used to display the circle:
         proj1 = ccrs.Orthographic(central_longitude=lon, central_latitude=lat)
 
-
         def compute_radius(ortho, radius_degrees):
             phi1 = lat + radius_degrees if lat <= 0 else lat - radius_degrees
             _, y1 = ortho.transform_point(lon, phi1, ccrs.PlateCarree())
@@ -1450,7 +1455,9 @@ class PlotTopologies(object):
         r_ortho = compute_radius(proj1, a95)
 
         # adding a patch
-        patch = ax.add_patch(mpatches.Circle(xy=[lon, lat], radius=r_ortho, transform=proj1, **kwargs))
+        patch = ax.add_patch(
+            mpatches.Circle(xy=[lon, lat], radius=r_ortho, transform=proj1, **kwargs)
+        )
         return patch
 
     @validate_reconstruction_time
@@ -1843,12 +1850,14 @@ class PlotTopologies(object):
     @append_docstring(PLOT_DOCSTRING.format("topologies"))
     def plot_all_topologies(self, ax, color="black", **kwargs):
         """Plot topological polygons and networks on a standard map projection."""
+        if "edgecolor" not in kwargs.keys():
+            kwargs["edgecolor"] = color
+        if "facecolor" not in kwargs.keys():
+            kwargs["facecolor"] = "none"
 
         return self._plot_feature(
             ax,
             self.get_all_topologies,
-            facecolor="none",
-            edgecolor=color,
             **kwargs,
         )
 
