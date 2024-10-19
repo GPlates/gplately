@@ -248,7 +248,6 @@ from .reconstruction import (
 from .tools import EARTH_RADIUS
 from .utils import io_utils
 from .utils.io_utils import get_geometries, get_valid_geometries
-from .utils.plot_utils import get_gplot
 
 __pdoc__ = {
     "data": False,
@@ -268,7 +267,6 @@ __all__ = [
     "data",
     "download",
     "geometry",
-    "get_gplot",
     "gpml",
     "grids",
     "oceans",
