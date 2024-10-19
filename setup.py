@@ -96,7 +96,6 @@ if __name__ == "__main__":
             "netcdf4",
             "rasterio",
             "geopandas",
-            "gmt",
             "stripy",
             "plate-model-manager>=1.2.1",
             "pyyaml",
