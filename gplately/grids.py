@@ -128,7 +128,8 @@ def fill_raster(data, invalid=None):
     return data[tuple(ind)]
 
 
-def realign_grid(array, lons, lats):
+def _realign_grid(array, lons, lats):
+    """realigns grid to -180/180 and flips the array if the latitudinal coordinates are decreasing."""
     mask_lons = lons > 180
 
     # realign to -180/180
@@ -317,7 +318,7 @@ def read_netcdf_grid(
 
     if realign:
         # realign longitudes to -180/180 dateline
-        cdf_grid_z, cdf_lon, cdf_lat = realign_grid(cdf_grid, cdf_lon, cdf_lat)
+        cdf_grid_z, cdf_lon, cdf_lat = _realign_grid(cdf_grid, cdf_lon, cdf_lat)
     else:
         cdf_grid_z = cdf_grid
 
@@ -1784,7 +1785,7 @@ class Raster(object):
             self._lats = np.linspace(extent[2], extent[3], self.data.shape[0])
             if realign:
                 # realign to -180,180 and flip grid
-                self._data, self._lons, self._lats = realign_grid(
+                self._data, self._lons, self._lats = _realign_grid(
                     self._data, self._lons, self._lats
                 )
 
