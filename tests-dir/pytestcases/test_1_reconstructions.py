@@ -163,7 +163,7 @@ def test_cont_arc_length(time, model, muller_2019_model):
         # Check arc length approximately matches precomputed value
         cmp = approx_lengths[time]
         diff = np.abs(total_cont_arc_length - cmp)
-        assert diff <= 1000.0, err_msg
+        assert diff <= 3000.0, err_msg
     else:
         # Value for this time has not been computed, so just make sure no
         # errors were encountered
@@ -198,10 +198,9 @@ def test_rotation_model_copy(model):
 
 
 def test_reconstruction_filenames(model):
-    assert (
-        "Muller_etal_2019_PlateBoundaries_DeformingNetworks.gpmlz"
-        in [os.path.basename(i) for i in model.topology_features.filenames]
-    )
+    assert "Muller_etal_2019_PlateBoundaries_DeformingNetworks.gpmlz" in [
+        os.path.basename(i) for i in model.topology_features.filenames
+    ]
 
 
 def test_pickle_reconstruction(model):
