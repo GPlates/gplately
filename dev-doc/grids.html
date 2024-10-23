@@ -239,7 +239,7 @@ the area specified in <code>extent</code>, unless <code>resx</code> or <code>res
 static polygons in order to extract their plate IDs.</p></div>
 </dd>
 <dt id="gplately.grids.read_netcdf_grid"><code class="name flex">
-<span>def <span class="ident">read_netcdf_grid</span></span>(<span>filename, return_grids=False, realign=False, resample=None, resize=None)</span>
+<span>def <span class="ident">read_netcdf_grid</span></span>(<span>filename, return_grids=False, realign=False, resample=None, resize=None, x_dimension_name: str = '', y_dimension_name: str = '', data_variable_name: str = '')</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Read a <code>netCDF</code> (.nc) grid from a given <code>filename</code> and return its data as a
@@ -269,6 +269,16 @@ with these x and y resolutions.</dd>
 <dt><strong><code>resize</code></strong> :&ensp;<code>tuple</code>, optional, default=<code>None</code></dt>
 <dd>If passed as <code>resample = (resX, resY)</code>, the given <code>netCDF</code> grid is resized
 to the number of columns (resX) and rows (resY).</dd>
+<dt><strong><code>x_dimension_name</code></strong> :&ensp;<code>str</code>, optional, default=<code>""</code></dt>
+<dd>If the grid file uses comman names, such as "x", "lon", "lons" or "longitude", you need not set this parameter.
+Otherwise, you need to tell us what the x dimension name is.</dd>
+<dt><strong><code>y_dimension_name</code></strong> :&ensp;<code>str</code>, optional, default=<code>""</code></dt>
+<dd>If the grid file uses comman names, such as "y", "lat", "lats" or "latitude", you need not set this parameter.
+Otherwise, you need to tell us what the y dimension name is.</dd>
+<dt><strong><code>data_variable_name</code></strong> :&ensp;<code>str</code>, optional, default=<code>""</code></dt>
+<dd>The program will try its best to determine the data variable name.
+However, it would be better if you could tell us what the data variable name is.
+Otherwise, the program will guess. The result may/may not be correct.</dd>
 </dl>
 <h2 id="returns">Returns</h2>
 <dl>
@@ -284,7 +294,7 @@ An example output of <code>cdf_lat</code> is:<pre><code>masked_array(data=[-90. 
 </dl></div>
 </dd>
 <dt id="gplately.grids.reconstruct_grid"><code class="name flex">
-<span>def <span class="ident">reconstruct_grid</span></span>(<span>grid, partitioning_features, rotation_model, to_time, from_time=0.0, extent='global', origin=None, fill_value=None, threads=1, anchor_plate_id=0)</span>
+<span>def <span class="ident">reconstruct_grid</span></span>(<span>grid, partitioning_features, rotation_model, to_time, from_time=0.0, extent='global', origin=None, fill_value=None, threads=1, anchor_plate_id=0, x_dimension_name: str = '', y_dimension_name: str = '', data_variable_name: str = '')</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Reconstruct a gridded dataset to a given reconstruction time.</p>
@@ -326,6 +336,16 @@ determined based on the input.</dd>
 <dd>Number of threads to use for certain computationally heavy routines.</dd>
 <dt><strong><code>anchor_plate_id</code></strong> :&ensp;<code>int</code>, default <code>0</code></dt>
 <dd>ID of the anchored plate.</dd>
+<dt><strong><code>x_dimension_name</code></strong> :&ensp;<code>str</code>, optional, default=<code>""</code></dt>
+<dd>If the grid file uses comman names, such as "x", "lon", "lons" or "longitude", you need not set this parameter.
+Otherwise, you need to tell us what the x dimension name is.</dd>
+<dt><strong><code>y_dimension_name</code></strong> :&ensp;<code>str</code>, optional, default=<code>""</code></dt>
+<dd>If the grid file uses comman names, such as "y", "lat", "lats" or "latitude", you need not set this parameter.
+Otherwise, you need to tell us what the y dimension name is.</dd>
+<dt><strong><code>data_variable_name</code></strong> :&ensp;<code>str</code>, optional, default=<code>""</code></dt>
+<dd>The program will try its best to determine the data variable name.
+However, it would be better if you could tell us what the data variable name is.
+Otherwise, the program will guess. The result may/may not be correct.</dd>
 </dl>
 <h2 id="returns">Returns</h2>
 <dl>
@@ -448,7 +468,7 @@ saved netcdf file.</dd>
 <dl>
 <dt id="gplately.grids.Raster"><code class="flex name class">
 <span>class <span class="ident">Raster</span></span>
-<span>(</span><span>data=None, plate_reconstruction=None, extent='global', realign=False, resample=None, resize=None, time=0.0, origin=None, **kwargs)</span>
+<span>(</span><span>data=None, plate_reconstruction=None, extent='global', realign=False, resample=None, resize=None, time=0.0, origin=None, x_dimension_name: str = '', y_dimension_name: str = '', data_variable_name: str = '', **kwargs)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>A class for working with raster data.</p>
@@ -558,6 +578,16 @@ reconstruction.</dd>
 <dt><strong><code>origin</code></strong> :&ensp;<code>{'lower', 'upper'}</code>, optional</dt>
 <dd>When <code>data</code> is an array, use this parameter to specify the origin
 (upper left or lower left) of the data (overriding <code>extent</code>).</dd>
+<dt><strong><code>x_dimension_name</code></strong> :&ensp;<code>str</code>, optional, default=<code>""</code></dt>
+<dd>If the grid file uses comman names, such as "x", "lon", "lons" or "longitude", you need not set this parameter.
+Otherwise, you need to tell us what the x dimension name is.</dd>
+<dt><strong><code>y_dimension_name</code></strong> :&ensp;<code>str</code>, optional, default=<code>""</code></dt>
+<dd>If the grid file uses comman names, such as "y", "lat", "lats" or "latitude", you need not set this parameter.
+Otherwise, you need to tell us what the y dimension name is.</dd>
+<dt><strong><code>data_variable_name</code></strong> :&ensp;<code>str</code>, optional, default=<code>""</code></dt>
+<dd>The program will try its best to determine the data variable name.
+However, it would be better if you could tell us what the data variable name is.
+Otherwise, the program will guess. The result may/may not be correct.</dd>
 <dt><strong><code>**kwargs</code></strong></dt>
 <dd>Handle deprecated arguments such as <code>PlateReconstruction_object</code>,
 <code>filename</code>, and <code>array</code>.</dd>
@@ -671,6 +701,9 @@ reconstruction.</dd>
         resize=None,
         time=0.0,
         origin=None,
+        x_dimension_name: str = &#34;&#34;,
+        y_dimension_name: str = &#34;&#34;,
+        data_variable_name: str = &#34;&#34;,
         **kwargs,
     ):
         &#34;&#34;&#34;Constructs all necessary attributes for the raster object.
@@ -709,6 +742,19 @@ reconstruction.</dd>
         origin : {&#39;lower&#39;, &#39;upper&#39;}, optional
             When `data` is an array, use this parameter to specify the origin
             (upper left or lower left) of the data (overriding `extent`).
+
+        x_dimension_name : str, optional, default=&#34;&#34;
+            If the grid file uses comman names, such as &#34;x&#34;, &#34;lon&#34;, &#34;lons&#34; or &#34;longitude&#34;, you need not set this parameter.
+            Otherwise, you need to tell us what the x dimension name is.
+
+        y_dimension_name : str, optional, default=&#34;&#34;
+            If the grid file uses comman names, such as &#34;y&#34;, &#34;lat&#34;, &#34;lats&#34; or &#34;latitude&#34;, you need not set this parameter.
+            Otherwise, you need to tell us what the y dimension name is.
+
+        data_variable_name : str, optional, default=&#34;&#34;
+            The program will try its best to determine the data variable name.
+            However, it would be better if you could tell us what the data variable name is.
+            Otherwise, the program will guess. The result may/may not be correct.
 
         **kwargs
             Handle deprecated arguments such as `PlateReconstruction_object`,
@@ -773,6 +819,9 @@ reconstruction.</dd>
                 realign=realign,
                 resample=resample,
                 resize=resize,
+                x_dimension_name=x_dimension_name,
+                y_dimension_name=y_dimension_name,
+                data_variable_name=data_variable_name,
             )
             self._lons = lons
             self._lats = lats
@@ -787,7 +836,7 @@ reconstruction.</dd>
             self._lats = np.linspace(extent[2], extent[3], self.data.shape[0])
             if realign:
                 # realign to -180,180 and flip grid
-                self._data, self._lons, self._lats = realign_grid(
+                self._data, self._lons, self._lats = _realign_grid(
                     self._data, self._lons, self._lats
                 )
 
@@ -1142,7 +1191,9 @@ reconstruction.</dd>
     def save_to_netcdf4(self, filename, significant_digits=None, fill_value=np.nan):
         &#34;&#34;&#34;Saves the grid attributed to the `Raster` object to the given `filename` (including
         the &#34;.nc&#34; extension) in netCDF4 format.&#34;&#34;&#34;
-        write_netcdf_grid(str(filename), self.data, self.extent, significant_digits, fill_value)
+        write_netcdf_grid(
+            str(filename), self.data, self.extent, significant_digits, fill_value
+        )
 
     def reconstruct(
         self,
