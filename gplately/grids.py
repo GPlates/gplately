@@ -844,6 +844,9 @@ def reconstruct_grid(
     fill_value=None,
     threads=1,
     anchor_plate_id=0,
+    x_dimension_name: str = "",
+    y_dimension_name: str = "",
+    data_variable_name: str = "",
 ):
     """Reconstruct a gridded dataset to a given reconstruction time.
 
@@ -885,6 +888,16 @@ def reconstruct_grid(
         Number of threads to use for certain computationally heavy routines.
     anchor_plate_id : int, default 0
         ID of the anchored plate.
+    x_dimension_name : str, optional, default=""
+        If the grid file uses comman names, such as "x", "lon", "lons" or "longitude", you need not set this parameter.
+        Otherwise, you need to tell us what the x dimension name is.
+    y_dimension_name : str, optional, default=""
+        If the grid file uses comman names, such as "y", "lat", "lats" or "latitude", you need not set this parameter.
+        Otherwise, you need to tell us what the y dimension name is.
+    data_variable_name : str, optional, default=""
+        The program will try its best to determine the data variable name.
+        However, it would be better if you could tell us what the data variable name is.
+        Otherwise, the program will guess. The result may/may not be correct.
 
     Returns
     -------
@@ -908,7 +921,14 @@ def reconstruct_grid(
     (0, 0, 0, 0).
     """
     try:
-        grid = np.array(read_netcdf_grid(grid))  # load grid data from file
+        grid = np.array(
+            read_netcdf_grid(
+                grid,
+                x_dimension_name=x_dimension_name,
+                y_dimension_name=y_dimension_name,
+                data_variable_name=data_variable_name,
+            )
+        )  # load grid data from file
     except Exception:
         grid = np.array(grid)  # copy grid data to array
     if to_time == from_time:
@@ -1601,6 +1621,9 @@ class Raster(object):
         resize=None,
         time=0.0,
         origin=None,
+        x_dimension_name: str = "",
+        y_dimension_name: str = "",
+        data_variable_name: str = "",
         **kwargs,
     ):
         """Constructs all necessary attributes for the raster object.
@@ -1639,6 +1662,19 @@ class Raster(object):
         origin : {'lower', 'upper'}, optional
             When `data` is an array, use this parameter to specify the origin
             (upper left or lower left) of the data (overriding `extent`).
+
+        x_dimension_name : str, optional, default=""
+            If the grid file uses comman names, such as "x", "lon", "lons" or "longitude", you need not set this parameter.
+            Otherwise, you need to tell us what the x dimension name is.
+
+        y_dimension_name : str, optional, default=""
+            If the grid file uses comman names, such as "y", "lat", "lats" or "latitude", you need not set this parameter.
+            Otherwise, you need to tell us what the y dimension name is.
+
+        data_variable_name : str, optional, default=""
+            The program will try its best to determine the data variable name.
+            However, it would be better if you could tell us what the data variable name is.
+            Otherwise, the program will guess. The result may/may not be correct.
 
         **kwargs
             Handle deprecated arguments such as `PlateReconstruction_object`,
@@ -1703,6 +1739,9 @@ class Raster(object):
                 realign=realign,
                 resample=resample,
                 resize=resize,
+                x_dimension_name=x_dimension_name,
+                y_dimension_name=y_dimension_name,
+                data_variable_name=data_variable_name,
             )
             self._lons = lons
             self._lats = lats
