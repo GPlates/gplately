@@ -37,10 +37,12 @@ import logging
 import math
 import warnings
 from multiprocessing import cpu_count
+from typing import Union
 
 import matplotlib.colors
 import matplotlib.pyplot as plt
 import numpy as np
+import netCDF4
 import pygplates
 from cartopy.crs import PlateCarree as _PlateCarree
 from cartopy.mpl.geoaxes import GeoAxes as _GeoAxes
@@ -142,6 +144,19 @@ def realign_grid(array, lons, lats):
     return array, lons, lats
 
 
+def _guess_data_variable_name(cdf: netCDF4.Dataset, x_name: str, y_name: str) -> Union[str, None]:  # type: ignore
+    """best effort to find out the data variable name"""
+    vars = cdf.variables.keys()
+    for var in vars:
+        dimensions = cdf.variables[var].dimensions
+        if len(dimensions) != 2:  # only consider two-dimensional data
+            continue
+        else:
+            if dimensions[0] == y_name and dimensions[1] == x_name:
+                return var
+    return None
+
+
 def read_netcdf_grid(
     filename,
     return_grids=False,
@@ -221,8 +236,6 @@ def read_netcdf_grid(
                 return label
         return None
 
-    import netCDF4
-
     # possible permutations of lon/lat/z
     label_lon = ["lon", "lons", "longitude", "x", "east", "easting", "eastings"]
     label_lat = ["lat", "lats", "latitude", "y", "north", "northing", "northings"]
@@ -264,11 +277,26 @@ def read_netcdf_grid(
             key_lat = find_label(keys, label_lat)
 
         if key_lon is None or key_lat is None:
-            raise ValueError("Cannot find x,y or lon/lat coordinates in netcdf")
+            raise ValueError(
+                f"Cannot find x,y or lon/lat coordinates in netcdf. The dimensions in the file are {cdf.dimensions.keys()}"
+            )
+
         if key_z is None:
-            raise ValueError("Cannot find z data in netcdf")
+            key_z = _guess_data_variable_name(cdf, key_lon, key_lat)
+
+        if key_z is None:
+            raise ValueError(
+                f"Cannot find z data in netcdf. The variables in the file are {cdf.variables.keys()}"
+            )
 
         # extract data from cdf variables
+        # TODO: the dimensions of data may not be (lat, lon). It is possible(but unlikely?) that the dimensions are(lon, lat).
+        # just note you may need numpy.swapaxes() here.
+        if len(cdf[key_z].dimensions) != 2:
+            raise Exception(
+                f"The data in the netcdf file is not two-dimensional. This function can only handle two-dimensional data."
+                + f"The dimensions in the file are {cdf[key_z].dimensions.keys()}"
+            )
         cdf_grid = cdf[key_z][:]
         cdf_lon = cdf[key_lon][:]
         cdf_lat = cdf[key_lat][:]
