@@ -30,7 +30,7 @@ The following methods in the object are tested:
 def test_point_reconstruction(time, gpts):
     rlons, rlats = gpts.reconstruct(time, return_array=True, anchor_plate_id=0)
     assert (
-        rlons and rlats
+        rlons.size and rlats.size
     ), "Unable to reconstruct point data to {} Ma with Muller et al. (2019).".format(
         time
     )
