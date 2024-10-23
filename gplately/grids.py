@@ -142,7 +142,16 @@ def realign_grid(array, lons, lats):
     return array, lons, lats
 
 
-def read_netcdf_grid(filename, return_grids=False, realign=False, resample=None, resize=None):
+def read_netcdf_grid(
+    filename,
+    return_grids=False,
+    realign=False,
+    resample=None,
+    resize=None,
+    x_dimension_name: str = "",
+    y_dimension_name: str = "",
+    data_variable_name: str = "",
+):
     """Read a `netCDF` (.nc) grid from a given `filename` and return its data as a
     `MaskedArray`.
 
@@ -177,6 +186,20 @@ def read_netcdf_grid(filename, return_grids=False, realign=False, resample=None,
     resize : tuple, optional, default=None
         If passed as `resample = (resX, resY)`, the given `netCDF` grid is resized
         to the number of columns (resX) and rows (resY).
+
+    x_dimension_name : str, optional, default=""
+        If the grid file uses comman names, such as "x", "lon", "lons" or "longitude", you need not set this parameter.
+        Otherwise, you need to tell us what the x dimension name is.
+
+    y_dimension_name : str, optional, default=""
+        If the grid file uses comman names, such as "y", "lat", "lats" or "latitude", you need not set this parameter.
+        Otherwise, you need to tell us what the y dimension name is.
+
+    data_variable_name : str, optional, default=""
+        The program will try its best to determine the data variable name.
+        However, it would be better if you could tell us what the data variable name is.
+        Otherwise, the program will guess. The result may/may not be correct.
+
 
     Returns
     -------
@@ -227,9 +250,18 @@ def read_netcdf_grid(filename, return_grids=False, realign=False, resample=None,
         keys = cdf.variables.keys()
 
         # find the names of variables
-        key_z = find_label(keys, label_z)
-        key_lon = find_label(keys, label_lon)
-        key_lat = find_label(keys, label_lat)
+        if data_variable_name:
+            key_z = data_variable_name
+        else:
+            key_z = find_label(keys, label_z)
+        if x_dimension_name:
+            key_lon = x_dimension_name
+        else:
+            key_lon = find_label(keys, label_lon)
+        if y_dimension_name:
+            key_lat = y_dimension_name
+        else:
+            key_lat = find_label(keys, label_lat)
 
         if key_lon is None or key_lat is None:
             raise ValueError("Cannot find x,y or lon/lat coordinates in netcdf")
@@ -242,7 +274,9 @@ def read_netcdf_grid(filename, return_grids=False, realign=False, resample=None,
         cdf_lat = cdf[key_lat][:]
 
         # fill missing values
-        if hasattr(cdf[key_z], 'missing_value') and np.issubdtype(cdf_grid.dtype, np.floating):
+        if hasattr(cdf[key_z], "missing_value") and np.issubdtype(
+            cdf_grid.dtype, np.floating
+        ):
             fill_value = cdf[key_z].missing_value
             cdf_grid[np.isclose(cdf_grid, fill_value, rtol=0.1)] = np.nan
 
@@ -250,7 +284,7 @@ def read_netcdf_grid(filename, return_grids=False, realign=False, resample=None,
         if np.issubdtype(cdf_grid.dtype, np.integer):
             unique_grid = np.unique(cdf_grid)
             if len(unique_grid) == 2:
-                if (unique_grid == [0,1]).all():
+                if (unique_grid == [0, 1]).all():
                     cdf_grid = cdf_grid.astype(bool)
 
     if realign:
@@ -323,9 +357,12 @@ def read_netcdf_grid(filename, return_grids=False, realign=False, resample=None,
         return cdf_grid_z, cdf_lon, cdf_lat
     else:
         return cdf_grid_z
-    
-def write_netcdf_grid(filename, grid, extent="global", significant_digits=None, fill_value=np.nan):
-    """ Write geological data contained in a `grid` to a netCDF4 grid with a specified `filename`.
+
+
+def write_netcdf_grid(
+    filename, grid, extent="global", significant_digits=None, fill_value=np.nan
+):
+    """Write geological data contained in a `grid` to a netCDF4 grid with a specified `filename`.
 
     Notes
     -----
@@ -350,9 +387,9 @@ def write_netcdf_grid(filename, grid, extent="global", significant_digits=None, 
         the data's latitudes, while the columns correspond to the data's longitudes.
 
     extent : list, default=[-180,180,-90,90]
-        Four elements that specify the [min lon, max lon, min lat, max lat] to constrain the lat and lon 
-        variables of the netCDF grid to. If no extents are supplied, full global extent `[-180, 180, -90, 90]` 
-        is assumed. 
+        Four elements that specify the [min lon, max lon, min lat, max lat] to constrain the lat and lon
+        variables of the netCDF grid to. If no extents are supplied, full global extent `[-180, 180, -90, 90]`
+        is assumed.
 
     significant_digits : int
         Applies lossy data compression up to a specified number of significant digits.
@@ -369,24 +406,24 @@ def write_netcdf_grid(filename, grid, extent="global", significant_digits=None, 
     import netCDF4
     from gplately import __version__ as _version
 
-    if extent == 'global':
+    if extent == "global":
         extent = [-180, 180, -90, 90]
     else:
         assert len(extent) == 4, "specify the [min lon, max lon, min lat, max lat]"
-    
+
     nrows, ncols = np.shape(grid)
 
     lon_grid = np.linspace(extent[0], extent[1], ncols)
     lat_grid = np.linspace(extent[2], extent[3], nrows)
 
-    data_kwds = {'compression': 'zlib', 'complevel': 6}
-    
-    with netCDF4.Dataset(filename, 'w', driver=None) as cdf:
+    data_kwds = {"compression": "zlib", "complevel": 6}
+
+    with netCDF4.Dataset(filename, "w", driver=None) as cdf:
         cdf.title = "Grid produced by gplately " + str(_version)
-        cdf.createDimension('lon', lon_grid.size)
-        cdf.createDimension('lat', lat_grid.size)
-        cdf_lon = cdf.createVariable('lon', lon_grid.dtype, ('lon',), **data_kwds)
-        cdf_lat = cdf.createVariable('lat', lat_grid.dtype, ('lat',), **data_kwds)
+        cdf.createDimension("lon", lon_grid.size)
+        cdf.createDimension("lat", lat_grid.size)
+        cdf_lon = cdf.createVariable("lon", lon_grid.dtype, ("lon",), **data_kwds)
+        cdf_lat = cdf.createVariable("lat", lat_grid.dtype, ("lat",), **data_kwds)
         cdf_lon[:] = lon_grid
         cdf_lat[:] = lat_grid
 
@@ -399,9 +436,9 @@ def write_netcdf_grid(filename, grid, extent="global", significant_digits=None, 
         cdf_lat.actual_range = [lat_grid[0], lat_grid[-1]]
 
         # create container variable for CRS: lon/lat WGS84 datum
-        crso = cdf.createVariable('crs','i4')
-        crso.long_name = 'Lon/Lat Coords in WGS84'
-        crso.grid_mapping_name='latitude_longitude'
+        crso = cdf.createVariable("crs", "i4")
+        crso.long_name = "Lon/Lat Coords in WGS84"
+        crso.grid_mapping_name = "latitude_longitude"
         crso.longitude_of_prime_meridian = 0.0
         crso.semi_major_axis = 6378137.0
         crso.inverse_flattening = 298.257223563
@@ -410,16 +447,16 @@ def write_netcdf_grid(filename, grid, extent="global", significant_digits=None, 
         # add more keyword arguments for quantizing data
         if significant_digits:
             # significant_digits needs to be >= 2 so that NaNs are preserved
-            data_kwds['significant_digits'] = max(2, int(significant_digits))
-            data_kwds['quantize_mode'] = 'GranularBitRound'
+            data_kwds["significant_digits"] = max(2, int(significant_digits))
+            data_kwds["quantize_mode"] = "GranularBitRound"
 
         # boolean arrays need to be converted to integers
         # no such thing as a mask on a boolean array
         if grid.dtype is np.dtype(bool):
-            grid = grid.astype('i1')
+            grid = grid.astype("i1")
             fill_value = None
 
-        cdf_data = cdf.createVariable('z', grid.dtype, ('lat','lon'), **data_kwds)
+        cdf_data = cdf.createVariable("z", grid.dtype, ("lat", "lon"), **data_kwds)
 
         # netCDF4 uses the missing_value attribute as the default _FillValue
         # without this, _FillValue defaults to 9.969209968386869e+36
@@ -427,20 +464,23 @@ def write_netcdf_grid(filename, grid, extent="global", significant_digits=None, 
             cdf_data.missing_value = fill_value
             grid_mask = grid != fill_value
 
-            cdf_data.actual_range = [np.nanmin(grid[grid_mask]), np.nanmax(grid[grid_mask])]
+            cdf_data.actual_range = [
+                np.nanmin(grid[grid_mask]),
+                np.nanmax(grid[grid_mask]),
+            ]
 
         else:
             # ensure min and max z values are properly registered
             cdf_data.actual_range = [np.nanmin(grid), np.nanmax(grid)]
 
-        cdf_data.standard_name = 'z'
+        cdf_data.standard_name = "z"
 
         # cdf_data.add_offset = 0.0
-        cdf_data.grid_mapping = 'crs'
+        cdf_data.grid_mapping = "crs"
         # cdf_data.set_auto_maskandscale(False)
 
         # write data
-        cdf_data[:,:] = grid
+        cdf_data[:, :] = grid
 
 
 class RegularGridInterpolator(_RGI):
@@ -2032,7 +2072,9 @@ class Raster(object):
     def save_to_netcdf4(self, filename, significant_digits=None, fill_value=np.nan):
         """Saves the grid attributed to the `Raster` object to the given `filename` (including
         the ".nc" extension) in netCDF4 format."""
-        write_netcdf_grid(str(filename), self.data, self.extent, significant_digits, fill_value)
+        write_netcdf_grid(
+            str(filename), self.data, self.extent, significant_digits, fill_value
+        )
 
     def reconstruct(
         self,
