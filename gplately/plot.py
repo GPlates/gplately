@@ -291,6 +291,7 @@ class PlotTopologies(object):
     """
 
     def __init__(
+        self.ridge_transforms = []  # hjt: Initialize ridge_transforms
         self,
         plate_reconstruction,
         coastlines=None,
@@ -430,6 +431,10 @@ class PlotTopologies(object):
         return id
 
     def update_time(self, time):
+        self.ridge_transforms = [
+            feature for feature in self.plate_reconstruction.topology_features
+            if feature.get_feature_type() == pygplates.FeatureType.gpml_transform
+        ]  # hjt: Update ridge_transforms based on current topology features
         """Re-reconstruct features and topologies to the time specified by the `PlotTopologies` `time` attribute
         whenever it or the anchor plate is updated.
 
@@ -1802,6 +1807,15 @@ class PlotTopologies(object):
 
     @validate_reconstruction_time
     @append_docstring(GET_DATE_DOCSTRING.format("topologies"))
+@validate_reconstruction_time
+@append_docstring(GET_DATE_DOCSTRING.format("ridge transforms"))
+def get_ridge_transforms(self, central_meridian=0.0, tessellate_degrees=None):
+    """Create a GeoDataFrame containing geometries of reconstructed ridge transforms."""
+    return self.get_feature(
+        self.ridge_transforms,
+        central_meridian=central_meridian,
+        tessellate_degrees=tessellate_degrees,
+    )  # hjt: Added get_ridge_transforms method
     def get_all_topologies(
         self,
         central_meridian=0.0,
@@ -1841,6 +1855,16 @@ class PlotTopologies(object):
 
     @validate_topology_availability("all topologies")
     @append_docstring(PLOT_DOCSTRING.format("topologies"))
+@append_docstring(PLOT_DOCSTRING.format("ridge transforms"))
+def plot_ridge_transforms(self, ax, color="black", **kwargs):
+    """Plot reconstructed ridge transforms onto a map."""
+    return self.plot_feature(
+        ax,
+        self.ridge_transforms,
+        feature_name="ridge_transforms",
+        color=color,
+        **kwargs,
+    )  # hjt: Added plot_ridge_transforms method
     def plot_all_topologies(self, ax, color="black", **kwargs):
         """Plot topological polygons and networks on a standard map projection."""
         if "edgecolor" not in kwargs.keys():
