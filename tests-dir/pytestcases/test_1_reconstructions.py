@@ -153,7 +153,7 @@ def test_cont_arc_length(time, model, muller_2019_model):
     )
     approx_lengths = {
         0: 52200,
-        100: 44000,
+        100: 46000,
     }
     err_msg = (
         "Could not calculate total continental arc lengths for Muller et "
@@ -163,7 +163,7 @@ def test_cont_arc_length(time, model, muller_2019_model):
         # Check arc length approximately matches precomputed value
         cmp = approx_lengths[time]
         diff = np.abs(total_cont_arc_length - cmp)
-        assert diff <= 3000.0, err_msg
+        assert diff <= 1000.0, err_msg
     else:
         # Value for this time has not been computed, so just make sure no
         # errors were encountered
