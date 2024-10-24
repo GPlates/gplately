@@ -24,25 +24,37 @@ The following methods in the object are tested:
 
 """
 
+
 # TESTING THE POINTS OBJECT
 @pytest.mark.parametrize("time", reconstruction_times)
 def test_point_reconstruction(time, gpts):
     rlons, rlats = gpts.reconstruct(time, return_array=True, anchor_plate_id=0)
-    assert (rlons, rlats), "Unable to reconstruct point data to {} Ma with Muller et al. (2019).".format(time)
+    assert (
+        rlons.size and rlats.size
+    ), "Unable to reconstruct point data to {} Ma with Muller et al. (2019).".format(
+        time
+    )
 
-       
+
 # TESTING PLATE VELOCITY CALCULATIONS
 @pytest.mark.parametrize("time", reconstruction_times)
 def test_plate_velocity(time, gpts):
     plate_vel = gpts.plate_velocity(time, delta_time=1)
-    assert plate_vel, "Unable to calculate plate velocities of point data at {} Ma with Muller et al. (2019).".format(time)
+    assert (
+        plate_vel
+    ), "Unable to calculate plate velocities of point data at {} Ma with Muller et al. (2019).".format(
+        time
+    )
+
 
 def test_point_attributes(gpts):
     attr = np.arange(0, gpts.size)
     gpts.add_attributes(FROMAGE=attr, TOAGE=attr)
 
+
 def test_pickle_Points(gpts):
     import pickle
+
     gpts_dump = pickle.dumps(gpts)
     gpts_load = pickle.loads(gpts_dump)
 
@@ -51,5 +63,8 @@ def test_pickle_Points(gpts):
     gpts_dump = pickle.dumps(gpts)
     gpts_load = pickle.loads(gpts_dump)
 
+
 def test_change_ancbor_plate(gpts):
-    gpts.rotate_reference_frames(50, from_rotation_reference_plate=0, to_rotation_reference_plate=101)
+    gpts.rotate_reference_frames(
+        50, from_rotation_reference_plate=0, to_rotation_reference_plate=101
+    )
