@@ -422,7 +422,6 @@ def subduction_convergence(
                     )
 
                     sub_sub_segment_geometry = sub_sub_segment.get_resolved_geometry()
-                    sub_sub_segment_trench_normal_reversal = trench_normal_reversal
                     # If sub-sub-segment was reversed when it contributed to the topological line shared sub-segment then
                     # we need to use that reversed geometry so that it has the same order of points as the topological line.
                     if sub_sub_segment.was_geometry_reversed_in_topology():
@@ -430,8 +429,6 @@ def subduction_convergence(
                         sub_sub_segment_geometry = pygplates.PolylineOnSphere(
                             sub_sub_segment_geometry[::-1]
                         )
-                        #  The trench normal direction is also reversed.
-                        sub_sub_segment_trench_normal_reversal = -trench_normal_reversal
 
                     _sub_segment_subduction_convergence(
                         output_data,
@@ -439,7 +436,7 @@ def subduction_convergence(
                         sub_sub_segment_geometry,
                         trench_plate_id,
                         subducting_plate_id,
-                        sub_sub_segment_trench_normal_reversal,
+                        trench_normal_reversal,
                         trench_length_radians,
                         distance_along_trench_radians,
                         threshold_sampling_distance_radians,
