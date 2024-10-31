@@ -291,7 +291,6 @@ class PlotTopologies(object):
     """
 
     def __init__(
-        self.ridge_transforms = []  # hjt: Initialize ridge_transforms
         self,
         plate_reconstruction,
         coastlines=None,
@@ -308,26 +307,29 @@ class PlotTopologies(object):
 
         self.base_projection = ccrs.PlateCarree()
 
-        # store these for when time is updated
-        # make sure these are initialised as FeatureCollection objects
-
+        # Initialize FeatureCollection objects for coastlines, continents, and COBs
         self._coastlines = _load_FeatureCollection(coastlines)
         self._continents = _load_FeatureCollection(continents)
         self._COBs = _load_FeatureCollection(COBs)
 
+        # Initialize additional attributes
         self.coastlines = None
         self.continents = None
         self.COBs = None
         self._topological_plate_boundaries = None
         self._topologies = None
 
+        # Set the anchor plate ID
         self._anchor_plate_id = self._check_anchor_plate_id(anchor_plate_id)
 
-        # store topologies for easy access
-        # setting time runs the update_time routine
+        # Initialize ridges and transforms as empty lists
+        self.ridges = []  # Initialize ridges (assuming it’s needed)
+        self.transforms = []  # Initialize transforms (assuming it’s needed)
+
+        # Initialize time-related attributes, running `update_time` if `time` is provided
         self._time = None
         if time is not None:
-            self.time = time
+            self.time = time  # Runs the update_time routine
 
     def __getstate__(self):
         filenames = self.plate_reconstruction.__getstate__()
@@ -1805,17 +1807,6 @@ class PlotTopologies(object):
             **kwargs,
         )
 
-    @validate_reconstruction_time
-    @append_docstring(GET_DATE_DOCSTRING.format("topologies"))
-@validate_reconstruction_time
-@append_docstring(GET_DATE_DOCSTRING.format("ridge transforms"))
-def get_ridge_transforms(self, central_meridian=0.0, tessellate_degrees=None):
-    """Create a GeoDataFrame containing geometries of reconstructed ridge transforms."""
-    return self.get_feature(
-        self.ridge_transforms,
-        central_meridian=central_meridian,
-        tessellate_degrees=tessellate_degrees,
-    )  # hjt: Added get_ridge_transforms method
     def get_all_topologies(
         self,
         central_meridian=0.0,
@@ -1853,18 +1844,6 @@ def get_ridge_transforms(self, central_meridian=0.0, tessellate_degrees=None):
         )
         return gdf
 
-    @validate_topology_availability("all topologies")
-    @append_docstring(PLOT_DOCSTRING.format("topologies"))
-@append_docstring(PLOT_DOCSTRING.format("ridge transforms"))
-def plot_ridge_transforms(self, ax, color="black", **kwargs):
-    """Plot reconstructed ridge transforms onto a map."""
-    return self.plot_feature(
-        ax,
-        self.ridge_transforms,
-        feature_name="ridge_transforms",
-        color=color,
-        **kwargs,
-    )  # hjt: Added plot_ridge_transforms method
     def plot_all_topologies(self, ax, color="black", **kwargs):
         """Plot topological polygons and networks on a standard map projection."""
         if "edgecolor" not in kwargs.keys():
@@ -1984,3 +1963,33 @@ def plot_ridge_transforms(self, ax, color="black", **kwargs):
             color=color,
             **kwargs,
         )
+
+            @validate_reconstruction_time
+    @append_docstring(GET_DATE_DOCSTRING.format("topologies"))
+    @validate_reconstruction_time
+    @append_docstring(GET_DATE_DOCSTRING.format("ridge transforms"))
+    def ridge_transforms(self):
+        """Combine ridges and transforms into one feature set."""
+        return self.ridges + self.transforms
+
+    def get_ridge_transforms(self, central_meridian=0.0, tessellate_degrees=None):
+        """Create a GeoDataFrame containing geometries of reconstructed ridge transforms."""
+        return self.get_feature(
+            self.ridge_transforms,
+            central_meridian=central_meridian,
+            tessellate_degrees=tessellate_degrees
+        )
+        # hjt: Added get_ridge_transforms method
+
+    @validate_topology_availability("all topologies")
+    @append_docstring(PLOT_DOCSTRING.format("topologies"))
+    @append_docstring(PLOT_DOCSTRING.format("ridge transforms"))
+    def plot_ridge_transforms(self, ax, color="black", **kwargs):
+    """Plot reconstructed ridge transforms onto a map."""
+        return self.plot_feature(
+            ax,
+            self.ridge_transforms,
+            feature_name="ridge_transforms",
+            color=color,
+            **kwargs,
+        )  # hjt: Added plot_ridge_transforms method
