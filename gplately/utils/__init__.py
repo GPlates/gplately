@@ -22,6 +22,10 @@ from .seafloor_grid_utils import (
     create_icosahedral_mesh,
     ensure_polygon_geometry,
     point_in_polygon_routine,
+    DefaultCollision,
+    ContinentCollision,
+    reconstruct_points,
+    ReconstructByTopologies,
 )
 
 __all__ = [
@@ -32,6 +36,10 @@ __all__ = [
     "create_icosahedral_mesh",
     "ensure_polygon_geometry",
     "point_in_polygon_routine",
+    "DefaultCollision",
+    "ContinentCollision",
+    "econstruct_points",
+    "ReconstructByTopologies",
 ]
 
 __pdoc__ = {
