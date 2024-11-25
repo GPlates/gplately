@@ -1964,12 +1964,12 @@ class PlotTopologies(object):
         )
 
     @property
-    @append_docstring(GET_DATE_DOCSTRING.format("ridge transforms"))
     def ridge_transforms(self):
         """Combine ridges and transforms into one feature set."""
-        if self._topological_plate_boundaries is None:
-            logger.debug("Accessing ridge transforms - updating topological plate boundaries.")
-            self.update_time(self.time)
+        if self.time is None:
+            raise ValueError(
+                "No topologies have been resolved. Set `PlotTopologies.time` to construct them."
+            )
         logger.debug("Returning ridge_transforms property.")
         return self.ridges + self.transforms
 
