@@ -1963,30 +1963,34 @@ class PlotTopologies(object):
             **kwargs,
         )
 
-    @append_docstring(GET_DATE_DOCSTRING.format("topologies"))
-    @validate_reconstruction_time
+    @property
     @append_docstring(GET_DATE_DOCSTRING.format("ridge transforms"))
     def ridge_transforms(self):
         """Combine ridges and transforms into one feature set."""
+        if self._topological_plate_boundaries is None:
+            logger.debug("Accessing ridge transforms - updating topological plate boundaries.")
+            self.update_time(self.time)
+        logger.debug("Returning ridge_transforms property.")
         return self.ridges + self.transforms
 
     def get_ridge_transforms(self, central_meridian=0.0, tessellate_degrees=None):
         """Create a GeoDataFrame containing geometries of reconstructed ridge transforms."""
+        logger.debug("Getting reconstructed ridge transforms.")
         return self.get_feature(
             self.ridge_transforms,
             central_meridian=central_meridian,
             tessellate_degrees=tessellate_degrees
         )
 
-    @validate_topology_availability("all topologies")
-    @append_docstring(PLOT_DOCSTRING.format("topologies"))
+    @validate_topology_availability("ridge transforms")
     @append_docstring(PLOT_DOCSTRING.format("ridge transforms"))
     def plot_ridge_transforms(self, ax, color="black", **kwargs):
-    """Plot reconstructed ridge transforms onto a map."""
+        """Plot reconstructed ridge transforms onto a map."""
+        logger.debug("Plotting reconstructed ridge transforms.")
         return self.plot_feature(
             ax,
             self.ridge_transforms,
             feature_name="ridge_transforms",
-            color=color,
+            edgecolor=color,
             **kwargs,
         )
