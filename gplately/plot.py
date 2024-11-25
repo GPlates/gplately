@@ -307,29 +307,26 @@ class PlotTopologies(object):
 
         self.base_projection = ccrs.PlateCarree()
 
-        # Initialize FeatureCollection objects for coastlines, continents, and COBs
+        # store these for when time is updated
+        # make sure these are initialised as FeatureCollection objects
+
         self._coastlines = _load_FeatureCollection(coastlines)
         self._continents = _load_FeatureCollection(continents)
         self._COBs = _load_FeatureCollection(COBs)
 
-        # Initialize additional attributes
         self.coastlines = None
         self.continents = None
         self.COBs = None
         self._topological_plate_boundaries = None
         self._topologies = None
 
-        # Set the anchor plate ID
         self._anchor_plate_id = self._check_anchor_plate_id(anchor_plate_id)
 
-        # Initialize ridges and transforms as empty lists
-        self.ridges = []  # Initialize ridges (assuming it’s needed)
-        self.transforms = []  # Initialize transforms (assuming it’s needed)
-
-        # Initialize time-related attributes, running `update_time` if `time` is provided
+        # store topologies for easy access
+        # setting time runs the update_time routine
         self._time = None
         if time is not None:
-            self.time = time  # Runs the update_time routine
+            self.time = time
 
     def __getstate__(self):
         filenames = self.plate_reconstruction.__getstate__()
@@ -433,10 +430,6 @@ class PlotTopologies(object):
         return id
 
     def update_time(self, time):
-        self.ridge_transforms = [
-            feature for feature in self.plate_reconstruction.topology_features
-            if feature.get_feature_type() == pygplates.FeatureType.gpml_transform
-        ]  # hjt: Update ridge_transforms based on current topology features
         """Re-reconstruct features and topologies to the time specified by the `PlotTopologies` `time` attribute
         whenever it or the anchor plate is updated.
 
@@ -699,7 +692,7 @@ class PlotTopologies(object):
     def plot_feature(self, ax, feature, feature_name="", color="black", **kwargs):
         """Plot pygplates.FeatureCollection or pygplates.Feature onto a map."""
         if not feature:
-            logger.warning(
+            logger.warn(
                 f"The given feature({feature_name}:{feature}) in model:{self.plate_reconstruction.plate_model_name} is empty and will not be plotted."
             )
             return ax
@@ -730,7 +723,7 @@ class PlotTopologies(object):
         )
 
         if len(gdf) == 0:
-            logger.warning("No feature found for plotting. Do nothing and return.")
+            logger.warn("No feature found for plotting. Do nothing and return.")
             return ax
 
         if hasattr(ax, "projection"):
@@ -844,6 +837,7 @@ class PlotTopologies(object):
         tessellate_degrees=1,
     ):
         """Create a geopandas.GeoDataFrame object containing geometries of reconstructed mid-ocean ridge lines(gpml:MidOceanRidge)."""
+        logger.debug("Getting reconstructed mid-ocean ridge lines")
         return self.get_feature(
             self.ridges,
             central_meridian=central_meridian,
@@ -871,6 +865,7 @@ class PlotTopologies(object):
         Point features near the poles (-89 & 89 degree latitude) are also clipped to ensure
         compatibility with Cartopy.
         """
+        logger.debug("Plotting reconstructed mid-ocean ridge lines")
         return self.plot_feature(
             ax,
             self.ridges,
@@ -1764,6 +1759,7 @@ class PlotTopologies(object):
         tessellate_degrees=None,
     ):
         """Create a geopandas.GeoDataFrame object containing geometries of reconstructed transform lines(gpml:Transform)."""
+        logger.debug("Getting reconstructed transform boundary lines")
         return self.get_feature(
             self.transforms,
             central_meridian=central_meridian,
@@ -1773,6 +1769,7 @@ class PlotTopologies(object):
     @append_docstring(PLOT_DOCSTRING.format("transforms"))
     def plot_transforms(self, ax, color="black", **kwargs):
         """Plot transform boundaries(gpml:Transform) onto a map."""
+        logger.debug("Plotting transform")
         return self.plot_feature(
             ax,
             self.transforms,
@@ -1807,6 +1804,8 @@ class PlotTopologies(object):
             **kwargs,
         )
 
+    @validate_reconstruction_time
+    @append_docstring(GET_DATE_DOCSTRING.format("topologies"))
     def get_all_topologies(
         self,
         central_meridian=0.0,
@@ -1844,12 +1843,12 @@ class PlotTopologies(object):
         )
         return gdf
 
+    @validate_topology_availability("all topologies")
+    @append_docstring(PLOT_DOCSTRING.format("topologies"))
     def plot_all_topologies(self, ax, color="black", **kwargs):
         """Plot topological polygons and networks on a standard map projection."""
         if "edgecolor" not in kwargs.keys():
             kwargs["edgecolor"] = color
-        if "facecolor" not in kwargs.keys():
-            kwargs["facecolor"] = "none"
 
         return self._plot_feature(
             ax,
@@ -1963,33 +1962,3 @@ class PlotTopologies(object):
             color=color,
             **kwargs,
         )
-
-            @validate_reconstruction_time
-    @append_docstring(GET_DATE_DOCSTRING.format("topologies"))
-    @validate_reconstruction_time
-    @append_docstring(GET_DATE_DOCSTRING.format("ridge transforms"))
-    def ridge_transforms(self):
-        """Combine ridges and transforms into one feature set."""
-        return self.ridges + self.transforms
-
-    def get_ridge_transforms(self, central_meridian=0.0, tessellate_degrees=None):
-        """Create a GeoDataFrame containing geometries of reconstructed ridge transforms."""
-        return self.get_feature(
-            self.ridge_transforms,
-            central_meridian=central_meridian,
-            tessellate_degrees=tessellate_degrees
-        )
-        # hjt: Added get_ridge_transforms method
-
-    @validate_topology_availability("all topologies")
-    @append_docstring(PLOT_DOCSTRING.format("topologies"))
-    @append_docstring(PLOT_DOCSTRING.format("ridge transforms"))
-    def plot_ridge_transforms(self, ax, color="black", **kwargs):
-    """Plot reconstructed ridge transforms onto a map."""
-        return self.plot_feature(
-            ax,
-            self.ridge_transforms,
-            feature_name="ridge_transforms",
-            color=color,
-            **kwargs,
-        )  # hjt: Added plot_ridge_transforms method
