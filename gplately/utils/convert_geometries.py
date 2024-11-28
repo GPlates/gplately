@@ -30,8 +30,9 @@ def convert_polylines_to_polygons(feature_collection: pygplates.FeatureCollectio
     """
     for feature in feature_collection:
         geometry = feature.get_geometry()
-        polygon = pygplates.PolygonOnSphere(geometry)
-        feature.set_geometry(polygon)
+        if geometry is not None:
+            polygon = pygplates.PolygonOnSphere(geometry)
+            feature.set_geometry(polygon)
 
 
 def convert_polygons_to_polylines(feature_collection: pygplates.FeatureCollection):

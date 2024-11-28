@@ -12,8 +12,12 @@ from gplately.utils import convert_geometries
 
 if __name__ == "__main__":
 
-    filename = "replace this with the COB file name in muller2016"
+    filename = "Global_230-0Ma_GK07_AREPS_COB_Terranes.gpml"
     feature_collection = pygplates.FeatureCollection(filename)
+    for feature in feature_collection:
+        geometry = feature.get_geometry()
+        print(geometry)
+
     convert_geometries.convert_polylines_to_polygons(feature_collection)
 
     # now let's see if the geometries have been converted
@@ -22,6 +26,6 @@ if __name__ == "__main__":
         print(geometry)
 
     # Write the modified feature collection to output file.
-    pygplates.FeatureCollection(feature_collection).write(
+    pygplates.FeatureCollection().write(
         "converted-cob-muller2016.gpmlz"
     )
