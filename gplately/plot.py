@@ -1849,6 +1849,8 @@ class PlotTopologies(object):
         """Plot topological polygons and networks on a standard map projection."""
         if "edgecolor" not in kwargs.keys():
             kwargs["edgecolor"] = color
+        if "facecolor" not in kwargs.keys():
+            kwargs["facecolor"] = "none"
 
         return self._plot_feature(
             ax,
@@ -1991,6 +1993,38 @@ class PlotTopologies(object):
             ax,
             self.ridge_transforms,
             feature_name="ridge_transforms",
+            edgecolor=color,
+            **kwargs,
+        )
+
+    @property
+    def misc_transforms(self):
+        """Combine miscellaneous transforms into one feature set."""
+        if self.time is None:
+            raise ValueError(
+                "No topologies have been resolved. Set `PlotTopologies.time` to construct them."
+            )
+        logger.debug("Returning misc_transforms property.")
+        return self.transforms + self.unclassified_features
+
+    def get_misc_transforms(self, central_meridian=0.0, tessellate_degrees=None):
+        """Create a GeoDataFrame containing geometries of reconstructed miscellaneous transforms."""
+        logger.debug("Getting reconstructed miscellaneous transforms.")
+        return self.get_feature(
+            self.misc_transforms,
+            central_meridian=central_meridian,
+            tessellate_degrees=tessellate_degrees
+        )
+
+    @validate_topology_availability("miscellaneous transforms")
+    @append_docstring(PLOT_DOCSTRING.format("miscellaneous transforms"))
+    def plot_misc_transforms(self, ax, color="black", **kwargs):
+        """Plot reconstructed miscellaneous transforms onto a map."""
+        logger.debug("Plotting reconstructed miscellaneous transforms.")
+        return self.plot_feature(
+            ax,
+            self.misc_transforms,
+            feature_name="misc_transforms",
             edgecolor=color,
             **kwargs,
         )
