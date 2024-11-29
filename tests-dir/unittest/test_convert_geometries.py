@@ -24,6 +24,25 @@ if __name__ == "__main__":
 
     print("feature types before conversion: ", geometry_types)
 
+    # Bianca, let's create a .gpml file and put all PolylineOnSphere geometries into the .gpml file
+    # we would like to see what these PolylineOnSphere geometries look like
+    # step 1: create a new FeatureCollection, something like "new_feature_collection = pygplates.FeatureCollection()"
+    # step 2: loop through the original feature collection, something like "for feature in feature_collection:"
+    # step 3: for each feature, get all geometries, something like "geoms = feature.get_all_geometries()"
+    # step 4: loop through all geometries with an inner loop, something like "for geometry in geoms:"
+    # step 5: check if the geometry is a PolylineOnSphere, something like "if isinstance(geometry, pygplates.PolylineOnSphere):"
+    # step 6: for each PolylineOnSphere geometries, create a new feature, something like "new_feature  = pygplates.Feature()"
+    # step 7: put the PolylineOnSphere geometry into the new feature, something like "new_feature.set_geometry(geometry)"
+    # step 8: add the new feature into the new feature collection, something like "new_feature_collection.add(new_feature)"
+    # step 9: save the new feature collection to a .gpml file
+    # step 10: open the .gpml file in GPlates desktop software. https://www.earthbyte.org/download-gplates-2-5/
+
+    #############
+
+    # put your code change here
+
+    #############
+
     convert_geometries.convert_polylines_to_polygons(feature_collection)
 
     # now let's see if the geometries have been converted
@@ -33,8 +52,8 @@ if __name__ == "__main__":
         for geometry in geoms:
             type_name = type(geometry).__name__
             # print(type_name)
-            if type_name == "PolylineOnSphere":
-                print(geoms)
+            # if type_name == "PolylineOnSphere":
+            #    print(geoms)
             if type_name not in geometry_types:
                 geometry_types.append(type_name)
 

@@ -33,7 +33,12 @@ def convert_polylines_to_polygons(feature_collection: pygplates.FeatureCollectio
             pygplates.PolygonOnSphere(geometry)
             for geometry in feature.get_all_geometries()
         ]
+        # geometries_before_set = feature.get_all_geometries()
         feature.set_geometry(polygons)
+        # geometries_after_set = feature.get_all_geometries()
+        # if len(geometries_before_set) != len(geometries_after_set):
+        #    print("geometries_before_set: ", geometries_before_set)
+        #    print("geometries_after_set: ", geometries_after_set)
 
 
 def convert_polygons_to_polylines(feature_collection: pygplates.FeatureCollection):
