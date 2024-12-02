@@ -246,6 +246,8 @@ class SeafloorGrid(object):
         resume_from_checkpoints=False,
         zval_names: List[str] = ["SPREADING_RATE"],
         continent_mask_filename=None,
+        use_continent_contouring: bool = False,  # New parameter to bypass prompt
+
     ):
 
         # Provides a rotation model, topology features and reconstruction time for the SeafloorGrid
@@ -259,12 +261,20 @@ class SeafloorGrid(object):
 
         self.file_collection = file_collection
 
-        if continent_mask_filename:
-            # Filename for continental masks that the user can provide instead of building it here
+        # Notify the user if continent contouring is activated
+        if not continent_mask_filename:
+            if use_continent_contouring:
+                warnings.warn("Using continent contouring to generate COBs.")
+            else:
+                user_response = input(
+                    "No COB masking file provided. Would you like to proceed with continent contouring? (y/N): "
+                ).strip().lower()
+                if user_response != 'y':
+                    raise ValueError("User opted not to proceed without a COB masking file.")
+            self.continent_mask_is_provided = False
+        else:
             self.continent_mask_filepath = continent_mask_filename
             self.continent_mask_is_provided = True
-        else:
-            self.continent_mask_is_provided = False
 
         self._setup_output_paths(save_directory)
 
