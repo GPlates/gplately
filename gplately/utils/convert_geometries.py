@@ -20,6 +20,46 @@ import pygplates
 # work in progress!!
 
 
+def convert_polylines_to_polygons_within_feature(
+    feature: pygplates.Feature,
+    only_convert_closed_polylines=True,
+    verify_information_model=pygplates.VerifyInformationModel.yes,
+):
+    """TODO: describe what this funciton do and explain the parameters"""
+    # First step: gather all geometry property names (ignore other properties).
+    geometry_property_names = []
+    for property in feature:
+        # If it's a geometry property then add the property name to the list.
+        if property.get_value().get_geometry():
+            geometry_property_names.append(property.get_name())
+
+    # Second step: convert polylines to polygons (don't convert other geometry types).
+    for geometry_property_name in geometry_property_names:
+        # Get all geometries with the current property name.
+        #
+        # NOTE: I'm specifying the property name rather than relying on the default.
+        geometries_with_property_name = feature.get_geometries(geometry_property_name)
+
+        # Among the current geometries, convert any polylines to polygons (leave the other types alone).
+        for geometry_index, geometry in enumerate(geometries_with_property_name):
+            if isinstance(geometry, pygplates.PolylineOnSphere):
+                # As a bonus, only convert polyline if it is closed (ie, its first and last vertices are equal).
+                # Otherwise converting to a polygon will be dodgy (as Nicky pointed out).
+                # if only_convert_closed_polylines has been set to False by users, we assume the users know what they are doing and respect the users
+                if not only_convert_closed_polylines or geometry[0] == geometry[-1]:
+                    polygon = pygplates.PolygonOnSphere(geometry)
+                    geometries_with_property_name[geometry_index] = polygon
+
+        # Set all geometries with the current property name.
+        #
+        # NOTE: I'm specifying the property name rather than relying on the default.
+        feature.set_geometry(
+            geometries_with_property_name,
+            geometry_property_name,
+            verify_information_model=verify_information_model,
+        )
+
+
 def convert_polylines_to_polygons(feature_collection: pygplates.FeatureCollection):
     """convert all polylines in a given feature collection to polygons
 
@@ -29,16 +69,11 @@ def convert_polylines_to_polygons(feature_collection: pygplates.FeatureCollectio
         all the polylines in this feature collection will be replaced with polygons
     """
     for feature in feature_collection:
-        polygons = [
-            pygplates.PolygonOnSphere(geometry)
-            for geometry in feature.get_all_geometries()
-        ]
-        # geometries_before_set = feature.get_all_geometries()
-        feature.set_geometry(polygons)
-        # geometries_after_set = feature.get_all_geometries()
-        # if len(geometries_before_set) != len(geometries_after_set):
-        #    print("geometries_before_set: ", geometries_before_set)
-        #    print("geometries_after_set: ", geometries_after_set)
+        convert_polylines_to_polygons_within_feature(
+            feature,
+            only_convert_closed_polylines=False,
+            verify_information_model=pygplates.VerifyInformationModel.no,
+        )
 
 
 def convert_polygons_to_polylines(feature_collection: pygplates.FeatureCollection):
