@@ -72,6 +72,11 @@ class PlateReconstruction(object):
             self.name = None
 
         self._anchor_plate_id = self._check_anchor_plate_id(anchor_plate_id)
+
+        # Add a warning if the rotation_model is empty
+        if not rotation_model:
+            warnings.warn('No rotation features passed to PlateReconstruction')
+
         if isinstance(rotation_model, _RotationModel):
             self.rotation_model = rotation_model
         else:
