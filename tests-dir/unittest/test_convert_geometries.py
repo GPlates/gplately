@@ -38,9 +38,17 @@ if __name__ == "__main__":
     # step 10: open the .gpml file in GPlates desktop software. https://www.earthbyte.org/download-gplates-2-5/
 
     #############
+    new_feature_collection = pygplates.FeatureCollection()
 
-    # put your code change here
+    for feature in feature_collection:
+        geoms = feature.get_all_geometries()
+        for geometry in geoms:
+            if isinstance(geometry, pygplates.PolylineOnSphere):
+                new_feature = pygplates.Feature()
+                new_feature.set_geometry(geometry)
+                new_feature_collection.add(new_feature)
 
+    new_feature_collection.write("polylines-in-muller2016.gpml")
     #############
 
     convert_geometries.convert_polylines_to_polygons(feature_collection)
