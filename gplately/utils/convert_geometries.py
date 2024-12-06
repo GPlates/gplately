@@ -60,7 +60,11 @@ def convert_polylines_to_polygons_within_feature(
         )
 
 
-def convert_polylines_to_polygons(feature_collection: pygplates.FeatureCollection):
+def convert_polylines_to_polygons(
+    feature_collection: pygplates.FeatureCollection,
+    only_convert_closed_polylines=True,
+    verify_information_model=pygplates.VerifyInformationModel.yes,
+):
     """convert all polylines in a given feature collection to polygons
 
     Parameters
@@ -71,8 +75,8 @@ def convert_polylines_to_polygons(feature_collection: pygplates.FeatureCollectio
     for feature in feature_collection:
         convert_polylines_to_polygons_within_feature(
             feature,
-            only_convert_closed_polylines=False,
-            verify_information_model=pygplates.VerifyInformationModel.no,
+            only_convert_closed_polylines=only_convert_closed_polylines,
+            verify_information_model=verify_information_model,
         )
 
 

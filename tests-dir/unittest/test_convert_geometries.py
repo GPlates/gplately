@@ -51,7 +51,11 @@ if __name__ == "__main__":
     new_feature_collection.write("polylines-in-muller2016.gpml")
     #############
 
-    convert_geometries.convert_polylines_to_polygons(feature_collection)
+    convert_geometries.convert_polylines_to_polygons(
+        feature_collection,
+        only_convert_closed_polylines=False,
+        verify_information_model=pygplates.VerifyInformationModel.no,
+    )
 
     # now let's see if the geometries have been converted
     geometry_types = []
