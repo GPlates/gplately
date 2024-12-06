@@ -84,4 +84,20 @@ def convert_polygons_to_polylines(feature_collection: pygplates.FeatureCollectio
     """similar to the function above"""
     # TODO:
     # get the exterior ring of the polygon and convert it to polyline?
+    # Bianca, let's try to do this function
+    # step 1: create a new function "convert_polygons_to_polylines_within_feature"
+    #         the new function should be very similar to "convert_polylines_to_polygons_within_feature"
+    #         You may copy the code from "convert_polylines_to_polygons_within_feature" to the new function and make changes to the copy
+    # step 2: get the exterior ring and interior rings from the polygon and convert them to PolylineOnSphere
+    #         John may have better ideas on this?
+    #         see the links below for relavant pygplates doc
+    # https://www.gplates.org/docs/pygplates/generated/pygplates.polygononsphere#pygplates.PolygonOnSphere.get_exterior_ring_points
+    # https://www.gplates.org/docs/pygplates/generated/pygplates.polygononsphere#pygplates.PolygonOnSphere.get_interior_ring_points
+    # https://www.gplates.org/docs/pygplates/generated/pygplates.polylineonsphere#pygplates.PolylineOnSphere.__init__
+    # step 3: try to call this function in test_convert_geometries.py
+
+    #
+    # Please feel free to ask me or John if you got stuck at some point
+    # mostly, this is a training task. John and I are obliged to provide support.
+    #
     pass
