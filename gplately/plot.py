@@ -692,7 +692,7 @@ class PlotTopologies(object):
     def plot_feature(self, ax, feature, feature_name="", color="black", **kwargs):
         """Plot pygplates.FeatureCollection or pygplates.Feature onto a map."""
         if not feature:
-            logger.warning(
+            logger.warn(
                 f"The given feature({feature_name}:{feature}) in model:{self.plate_reconstruction.plate_model_name} is empty and will not be plotted."
             )
             return ax
@@ -723,7 +723,7 @@ class PlotTopologies(object):
         )
 
         if len(gdf) == 0:
-            logger.warning("No feature found for plotting. Do nothing and return.")
+            logger.warn("No feature found for plotting. Do nothing and return.")
             return ax
 
         if hasattr(ax, "projection"):
@@ -837,6 +837,7 @@ class PlotTopologies(object):
         tessellate_degrees=1,
     ):
         """Create a geopandas.GeoDataFrame object containing geometries of reconstructed mid-ocean ridge lines(gpml:MidOceanRidge)."""
+        logger.debug("Getting reconstructed mid-ocean ridge lines")
         return self.get_feature(
             self.ridges,
             central_meridian=central_meridian,
@@ -864,6 +865,7 @@ class PlotTopologies(object):
         Point features near the poles (-89 & 89 degree latitude) are also clipped to ensure
         compatibility with Cartopy.
         """
+        logger.debug("Plotting reconstructed mid-ocean ridge lines")
         return self.plot_feature(
             ax,
             self.ridges,
@@ -1757,6 +1759,7 @@ class PlotTopologies(object):
         tessellate_degrees=None,
     ):
         """Create a geopandas.GeoDataFrame object containing geometries of reconstructed transform lines(gpml:Transform)."""
+        logger.debug("Getting reconstructed transform boundary lines")
         return self.get_feature(
             self.transforms,
             central_meridian=central_meridian,
@@ -1766,6 +1769,7 @@ class PlotTopologies(object):
     @append_docstring(PLOT_DOCSTRING.format("transforms"))
     def plot_transforms(self, ax, color="black", **kwargs):
         """Plot transform boundaries(gpml:Transform) onto a map."""
+        logger.debug("Plotting transform")
         return self.plot_feature(
             ax,
             self.transforms,
@@ -1958,5 +1962,69 @@ class PlotTopologies(object):
             self._topological_plate_boundaries,
             feature_name="topological plate boundaries",
             color=color,
+            **kwargs,
+        )
+
+    @property
+    def ridge_transforms(self):
+        """Combine ridges and transforms into one feature set."""
+        if self.time is None:
+            raise ValueError(
+                "No topologies have been resolved. Set `PlotTopologies.time` to construct them."
+            )
+        logger.debug("Returning ridge_transforms property.")
+        return self.ridges + self.transforms
+
+    def get_ridge_transforms(self, central_meridian=0.0, tessellate_degrees=None):
+        """Create a GeoDataFrame containing geometries of reconstructed ridge transforms."""
+        logger.debug("Getting reconstructed ridge transforms.")
+        return self.get_feature(
+            self.ridge_transforms,
+            central_meridian=central_meridian,
+            tessellate_degrees=tessellate_degrees
+        )
+
+    @validate_topology_availability("ridge transforms")
+    @append_docstring(PLOT_DOCSTRING.format("ridge transforms"))
+    def plot_ridge_transforms(self, ax, color="black", **kwargs):
+        """Plot reconstructed ridge transforms onto a map."""
+        logger.debug("Plotting reconstructed ridge transforms.")
+        return self.plot_feature(
+            ax,
+            self.ridge_transforms,
+            feature_name="ridge_transforms",
+            edgecolor=color,
+            **kwargs,
+        )
+
+    @property
+    def misc_transforms(self):
+        """Combine miscellaneous transforms into one feature set."""
+        if self.time is None:
+            raise ValueError(
+                "No topologies have been resolved. Set `PlotTopologies.time` to construct them."
+            )
+        logger.debug("Returning misc_transforms property.")
+        return self.transforms + self.unclassified_features
+
+    def get_misc_transforms(self, central_meridian=0.0, tessellate_degrees=None):
+        """Create a GeoDataFrame containing geometries of reconstructed miscellaneous transforms."""
+        logger.debug("Getting reconstructed miscellaneous transforms.")
+        return self.get_feature(
+            self.misc_transforms,
+            central_meridian=central_meridian,
+            tessellate_degrees=tessellate_degrees
+        )
+
+    @validate_topology_availability("miscellaneous transforms")
+    @append_docstring(PLOT_DOCSTRING.format("miscellaneous transforms"))
+    def plot_misc_transforms(self, ax, color="black", **kwargs):
+        """Plot reconstructed miscellaneous transforms onto a map."""
+        logger.debug("Plotting reconstructed miscellaneous transforms.")
+        return self.plot_feature(
+            ax,
+            self.misc_transforms,
+            feature_name="misc_transforms",
+            edgecolor=color,
             **kwargs,
         )
