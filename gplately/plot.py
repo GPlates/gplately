@@ -142,7 +142,26 @@ shapelify_feature_polygons.__doc__ = _shapelify_features.__doc__
 
 
 class PlotTopologies(object):
-    """A class with tools to read, reconstruct and plot topology features at specific
+
+    @property
+    def ridge_transforms(self):
+        """Deprecated property that includes both `gpml:Transform` and `gpml:MidOceanRidge` features."""
+        logger.debug(
+            "Deprecated! The 'ridge_transforms' property will be removed in the next GPlately release. "
+            "You need to update your workflow to use the 'ridges' and 'transforms' properties instead, "
+            "otherwise your workflow will be broken by the next GPlately release.",
+            FutureWarning,
+        )
+        logger.debug(
+            "The 'ridge_transforms' property has been changed since GPlately release 1.3.0. "
+            "Now the 'ridge_transforms' property contains both `gpml:Transform` and `gpml:MidOceanRidge` "
+            "features in the reconstruction model. You need to check your workflow to make sure the new "
+            "'ridge_transforms' property still suits your purpose. In the previous GPlately releases, "
+            "the 'ridge_transforms' property contains only `gpml:MidOceanRidge` features.",
+            UserWarning,
+        )
+        return self.transforms + self.ridges
+            """A class with tools to read, reconstruct and plot topology features at specific
     reconstruction times.
 
     `PlotTopologies` is a shorthand for PyGPlates and Shapely functionalities that:
@@ -847,7 +866,16 @@ class PlotTopologies(object):
     @validate_topology_availability("ridges")
     @append_docstring(PLOT_DOCSTRING.format("ridges"))
     def plot_ridges(self, ax, color="black", **kwargs):
-        """Plot reconstructed mid-ocean ridge lines(gpml:MidOceanRidge) onto a map.
+
+        logger.debug(
+            "The 'plot_ridges' function has been changed since GPlately release 1.3.0. "
+            "Now the 'plot_ridges' function plots all `gpml:MidOceanRidge` features in the reconstruction model. "
+            "You need to check your workflow to make sure the new 'plot_ridges' function still suits your purpose. "
+            "In the previous GPlately releases, the 'plot_ridges' function plots only the ridges in the "
+            "`gpml:MidOceanRidge` features (the transforms in the `gpml:MidOceanRidge` features are not plotted).",
+            UserWarning,
+        )
+                """Plot reconstructed mid-ocean ridge lines(gpml:MidOceanRidge) onto a map.
 
         Notes
         -----
@@ -1234,7 +1262,27 @@ class PlotTopologies(object):
     plot_plate_id.__doc__ = plot_plate_polygon_by_id.__doc__
 
     def plot_grid(self, ax, grid, extent=[-180, 180, -90, 90], **kwargs):
-        """Plot a `MaskedArray` raster or grid onto a standard map Projection.
+
+    def plot_ridges_and_transforms(self, ax, color="black", **kwargs):
+        """Deprecated function to plot both ridges and transforms."""
+        logger.debug(
+            "Deprecated! The 'plot_ridges_and_transforms' function will be removed in the next GPlately release. "
+            "You need to update your workflow to use the 'plot_ridges' and 'plot_transforms' functions instead, "
+            "otherwise your workflow will be broken by the next GPlately release.",
+            FutureWarning,
+        )
+        logger.debug(
+            "The 'plot_ridges_and_transforms' function has been changed since GPlately release 1.3.0. "
+            "Now the 'plot_ridges_and_transforms' function plots both `gpml:Transform` and `gpml:MidOceanRidge` "
+            "features in the reconstruction model. You need to check your workflow to make sure the new "
+            "'plot_ridges_and_transforms' function still suits your purpose. In the previous GPlately releases, "
+            "the 'plot_ridges_and_transforms' function plots only `gpml:MidOceanRidge` features.",
+            UserWarning,
+        )
+        self.plot_ridges(ax, color=color, **kwargs)
+        self.plot_transforms(ax, color=color, **kwargs)
+        return ax
+                """Plot a `MaskedArray` raster or grid onto a standard map Projection.
 
         Notes
         -----
@@ -1768,7 +1816,17 @@ class PlotTopologies(object):
 
     @append_docstring(PLOT_DOCSTRING.format("transforms"))
     def plot_transforms(self, ax, color="black", **kwargs):
-        """Plot transform boundaries(gpml:Transform) onto a map."""
+
+        logger.debug(
+            "The 'plot_transforms' function has been changed since GPlately release 1.3.0. "
+            "Now the 'plot_transforms' function plots all the `gpml:Transform` features in the reconstruction model "
+            "(the transforms in the `gpml:MidOceanRidge` features are not included). "
+            "You need to check your workflow to make sure the new 'plot_transforms' function still suits your purpose. "
+            "In the previous GPlately releases, the 'plot_transforms' function plots only the transforms in the "
+            "`gpml:MidOceanRidge` features (the `gpml:Transform` features are not plotted).",
+            UserWarning,
+        )
+                """Plot transform boundaries(gpml:Transform) onto a map."""
         logger.debug("Plotting transform")
         return self.plot_feature(
             ax,
@@ -1846,7 +1904,27 @@ class PlotTopologies(object):
     @validate_topology_availability("all topologies")
     @append_docstring(PLOT_DOCSTRING.format("topologies"))
     def plot_all_topologies(self, ax, color="black", **kwargs):
-        """Plot topological polygons and networks on a standard map projection."""
+
+    def get_ridges_and_transforms(self, central_meridian=0.0, tessellate_degrees=1):
+        """Deprecated function to get both ridges and transforms."""
+        logger.debug(
+            "Deprecated! The 'get_ridges_and_transforms' function will be removed in the next GPlately release. "
+            "You need to update your workflow to use the 'get_ridges' and 'get_transforms' functions instead, "
+            "otherwise your workflow will be broken by the next GPlately release.",
+            FutureWarning,
+        )
+        logger.debug(
+            "The 'get_ridges_and_transforms' function has been changed since GPlately release 1.3.0. "
+            "Now the 'get_ridges_and_transforms' function returns both `gpml:Transform` and `gpml:MidOceanRidge` "
+            "features in the reconstruction model. You need to check your workflow to make sure the new "
+            "'get_ridges_and_transforms' function still suits your purpose. In the previous GPlately releases, "
+            "the 'get_ridges_and_transforms' function returns only `gpml:MidOceanRidge` features.",
+            UserWarning,
+        )
+        ridges_gdf = self.get_ridges(central_meridian=central_meridian, tessellate_degrees=tessellate_degrees)
+        transforms_gdf = self.get_transforms(central_meridian=central_meridian, tessellate_degrees=tessellate_degrees)
+        return ridges_gdf.append(transforms_gdf, ignore_index=True)
+                """Plot topological polygons and networks on a standard map projection."""
         if "edgecolor" not in kwargs.keys():
             kwargs["edgecolor"] = color
         if "facecolor" not in kwargs.keys():
