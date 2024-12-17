@@ -45,7 +45,7 @@ dependencies = [
 
 [tool.setuptools.packages.find]
 where = ["."]
-exclude = ['*.examples*','*.notebooks*','tests-dir*','Notebooks*', 'scripts*']
+exclude = ['*.examples*','*.notebooks*','tests-dir*','Notebooks*', 'scripts*', 'build*']
 namespaces = true
 
 #[tool.setuptools.dynamic]
