@@ -82,6 +82,12 @@ class PlateReconstruction(object):
         self.static_polygons = _load_FeatureCollection(static_polygons)
         self.plate_model_name = plate_model_name
 
+        # Keep a snapshot of resolved topologies at the last requested snapshot time (and anchor plate).
+        # This avoids having to do unnessary work if the same snapshot time (and anchor plate) is requested again.
+        # But if the requested time (or anchor plate) changes then we'll create a new snapshot.
+        # Note: A pygplates.TopologicalSnapshot can be pickled (as of pyGPlates 0.42).
+        self._topological_snapshot = None
+
     def __getstate__(self):
         filenames = {
             "rotation_model": self.rotation_model.filenames,
@@ -141,6 +147,48 @@ class PlateReconstruction(object):
         if id < 0:
             raise ValueError("Invalid anchor plate ID: {}".format(id))
         return id
+
+    def topological_snapshot(self, time, anchor_plate_id=None):
+        """Create a snapshot of resolved topologies at the specified reconstruction time.
+
+        Parameters
+        ----------
+        time : float, int or pygplates.GeoTimeInstant
+            The geological time at which to create the topological snapshot.
+        anchor_plate_id : int or None
+            The anchored plate id to use when resolving topologies.
+            If not specified then uses the current anchor plate (`anchor_plate_id` attribute).
+
+        Returns
+        -------
+        topological_snapshot : pygplates.TopologicalSnapshot
+            The topological snapshot at the specified `time` (and anchor plate).
+
+        """
+
+        if anchor_plate_id is None:
+            anchor_plate_id = self.anchor_plate_id
+
+        # Only need to create a new snapshot if we don't have one, or the snapshot time (or anchor plate)
+        # has changed since the last snapshot.
+        if (
+            self._topological_snapshot is None
+            # last snapshot time...
+            or self._topological_snapshot.get_reconstruction_time()
+            # use pygplates.GeoTimeInstant to get a numerical tolerance in floating-point time comparison...
+            != pygplates.GeoTimeInstant(time)
+            # last snapshot anchor plate...
+            or self._topological_snapshot.get_rotation_model().get_default_anchor_plate_id()
+            != anchor_plate_id
+        ):
+            self._topological_snapshot = pygplates.TopologicalSnapshot(
+                self.topology_features,
+                self.rotation_model,
+                time,
+                anchor_plate_id,
+            )
+
+        return self._topological_snapshot
 
     def tessellate_subduction_zones(
         self,
