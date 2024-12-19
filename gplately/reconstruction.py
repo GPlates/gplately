@@ -56,6 +56,9 @@ class PlateReconstruction(object):
         an ID) according to their present-day locations. Can be provided as a static polygon feature
         collection, or optional filename, or a single feature, or a sequence of
         features.
+    anchor_plate_id : int or None
+        Default anchor plate ID for reconstruction.
+        If not specified then uses the default anchor plate of *rotation_model* if it's a `pygplates.RotationModel` (otherwise uses zero).
     """
 
     def __init__(
@@ -63,7 +66,7 @@ class PlateReconstruction(object):
         rotation_model,
         topology_features=None,
         static_polygons=None,
-        anchor_plate_id=0,
+        anchor_plate_id=None,
         plate_model_name: str = "Nemo",
     ):
         if hasattr(rotation_model, "reconstruction_identifier"):
@@ -71,13 +74,24 @@ class PlateReconstruction(object):
         else:
             self.name = None
 
-        self._anchor_plate_id = self._check_anchor_plate_id(anchor_plate_id)
-        if isinstance(rotation_model, _RotationModel):
-            self.rotation_model = rotation_model
+        if anchor_plate_id is None:
+            if isinstance(rotation_model, _RotationModel):
+                # Use the default anchor plate of 'rotation_model'.
+                self._anchor_plate_id = rotation_model.get_default_anchor_plate_id()
+                self.rotation_model = rotation_model
+            else:
+                # Using rotation features/files, so default to anchor plate 0.
+                self._anchor_plate_id = 0
+                self.rotation_model = _RotationModel(rotation_model)
         else:
+            # User has explicitly specified an anchor plate ID, so let's check it.
+            self._anchor_plate_id = self._check_anchor_plate_id(anchor_plate_id)
+            # This works when 'rotation_model' is a RotationModel or rotation features/files
+            # (for pygplates >= 0.29)...
             self.rotation_model = _RotationModel(
-                rotation_model, default_anchor_plate_id=anchor_plate_id
+                rotation_model, default_anchor_plate_id=self._anchor_plate_id
             )
+
         self.topology_features = _load_FeatureCollection(topology_features)
         self.static_polygons = _load_FeatureCollection(static_polygons)
         self.plate_model_name = plate_model_name
@@ -136,10 +150,13 @@ class PlateReconstruction(object):
 
     @anchor_plate_id.setter
     def anchor_plate_id(self, anchor_plate):
-        self._anchor_plate_id = self._check_anchor_plate_id(anchor_plate)
-        self.rotation_model = _RotationModel(
-            self.rotation_model, default_anchor_plate_id=self._anchor_plate_id
-        )
+        anchor_plate = self._check_anchor_plate_id(anchor_plate)
+        # Only need to update if the anchor plate changed.
+        if self._anchor_plate_id != anchor_plate:
+            self._anchor_plate_id = anchor_plate
+            self.rotation_model = _RotationModel(
+                self.rotation_model, default_anchor_plate_id=self._anchor_plate_id
+            )
 
     @staticmethod
     def _check_anchor_plate_id(id):
