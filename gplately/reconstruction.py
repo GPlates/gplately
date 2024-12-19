@@ -372,11 +372,6 @@ class PlateReconstruction(object):
             when certain subduction sub-segments are ignored - this happens when the trench segments have unidentifiable subduction
             polarities and/or subducting plates.
 
-        Raises
-        ------
-        ValueError
-            If neither `use_pygplates` or `use_ptt` have been set to `True`.
-
         Returns
         -------
         total_subduction_zone_length_kms : float
@@ -403,15 +398,9 @@ class PlateReconstruction(object):
             return total_subduction_zone_length_kms
 
         else:
-            resolved_topologies = []
-            shared_boundary_sections = []
-            pygplates.resolve_topologies(
-                self.topology_features,
-                self.rotation_model,
-                resolved_topologies,
-                time,
-                shared_boundary_sections,
-            )
+            shared_boundary_sections = self.topological_snapshot(
+                time
+            ).get_resolved_topological_sections()
 
             total_subduction_zone_length_kms = 0.0
             for shared_boundary_section in shared_boundary_sections:
@@ -668,11 +657,6 @@ class PlateReconstruction(object):
         ignore_warnings : bool, default=False
             Choose whether to ignore warning messages from PTT's `ridge_spreading_rate` workflow.
 
-        Raises
-        ------
-        ValueError
-            If neither `use_pygplates` or `use_ptt` have been set to `True`.
-
         Returns
         -------
         total_ridge_length_kms : float
@@ -696,15 +680,9 @@ class PlateReconstruction(object):
             return total_ridge_length_kms
 
         else:
-            resolved_topologies = []
-            shared_boundary_sections = []
-            pygplates.resolve_topologies(
-                self.topology_features,
-                self.rotation_model,
-                resolved_topologies,
-                time,
-                shared_boundary_sections,
-            )
+            shared_boundary_sections = self.topological_snapshot(
+                time
+            ).get_resolved_topological_sections()
 
             total_ridge_length_kms = 0.0
             for shared_boundary_section in shared_boundary_sections:
