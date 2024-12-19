@@ -56,7 +56,7 @@ class PlateReconstruction(object):
         an ID) according to their present-day locations. Can be provided as a static polygon feature
         collection, or optional filename, or a single feature, or a sequence of
         features.
-    anchor_plate_id : int or None
+    anchor_plate_id : int, default=None
         Default anchor plate ID for reconstruction.
         If not specified then uses the default anchor plate of *rotation_model* if it's a `pygplates.RotationModel` (otherwise uses zero).
     """
@@ -77,19 +77,17 @@ class PlateReconstruction(object):
         if anchor_plate_id is None:
             if isinstance(rotation_model, _RotationModel):
                 # Use the default anchor plate of 'rotation_model'.
-                self._anchor_plate_id = rotation_model.get_default_anchor_plate_id()
                 self.rotation_model = rotation_model
             else:
-                # Using rotation features/files, so default to anchor plate 0.
-                self._anchor_plate_id = 0
+                # Using rotation features/files, so default anchor plate is 0.
                 self.rotation_model = _RotationModel(rotation_model)
         else:
             # User has explicitly specified an anchor plate ID, so let's check it.
-            self._anchor_plate_id = self._check_anchor_plate_id(anchor_plate_id)
+            anchor_plate_id = self._check_anchor_plate_id(anchor_plate_id)
             # This works when 'rotation_model' is a RotationModel or rotation features/files
             # (for pygplates >= 0.29)...
             self.rotation_model = _RotationModel(
-                rotation_model, default_anchor_plate_id=self._anchor_plate_id
+                rotation_model, default_anchor_plate_id=anchor_plate_id
             )
 
         self.topology_features = _load_FeatureCollection(topology_features)
@@ -146,16 +144,19 @@ class PlateReconstruction(object):
     @property
     def anchor_plate_id(self):
         """Anchor plate ID for reconstruction. Must be an integer >= 0."""
-        return self._anchor_plate_id
+        # The default anchor plate comes from the RotationModel.
+        return self.rotation_model.get_default_anchor_plate_id()
 
     @anchor_plate_id.setter
     def anchor_plate_id(self, anchor_plate):
+        # Note: Caller cannot specify None when setting the anchor plate.
         anchor_plate = self._check_anchor_plate_id(anchor_plate)
         # Only need to update if the anchor plate changed.
-        if self._anchor_plate_id != anchor_plate:
-            self._anchor_plate_id = anchor_plate
+        if anchor_plate != self.anchor_plate_id:
+            # Update the RotationModel (which is where the anchor plate is stored).
+            # This keeps the same rotation model but just changes the anchor plate.
             self.rotation_model = _RotationModel(
-                self.rotation_model, default_anchor_plate_id=self._anchor_plate_id
+                self.rotation_model, default_anchor_plate_id=anchor_plate
             )
 
     @staticmethod
@@ -172,7 +173,7 @@ class PlateReconstruction(object):
         ----------
         time : float, int or pygplates.GeoTimeInstant
             The geological time at which to create the topological snapshot.
-        anchor_plate_id : int or None
+        anchor_plate_id : int, default=None
             The anchored plate id to use when resolving topologies.
             If not specified then uses the current anchor plate (`anchor_plate_id` attribute).
 
@@ -748,9 +749,8 @@ class PlateReconstruction(object):
             `NotImplementedError` if `from_time` is not set to 0.0 Ma (present day).
 
         anchor_plate_id : int, default=None
-            Reconstruct features with respect to a certain anchor plate. By default, reconstructions are made
-            with respect to the absolute reference frame (anchor_plate_id = 0), like a stationary object in the mantle,
-            unless otherwise specified.
+            Reconstruct features with respect to a certain anchor plate. By default, reconstructions are made with
+            respect to the default anchor plate (specified in `__init__` or set with `anchor_plate_id` attribute).
 
         **reconstruct_type : ReconstructType, default=ReconstructType.feature_geometry
             The specific reconstruction type to generate based on input feature geometry type. Can be provided as
@@ -789,7 +789,7 @@ class PlateReconstruction(object):
 
         reconstructed_features = []
 
-        if not anchor_plate_id:
+        if anchor_plate_id is None:
             anchor_plate_id = self.anchor_plate_id
 
         pygplates.reconstruct(
@@ -940,8 +940,9 @@ class PlateReconstruction(object):
         plate_id : int, default=None
             The ID of the moving plate. If this is not passed, the plate ID of the
             seed points are ascertained using pygplates' `PlatePartitioner`.
-        anchor_plate_id : int, default=0
-            The ID of the anchor plate.
+        anchor_plate_id : int, default=None
+            The ID of the anchor plate. Defaults to the default anchor plate
+            (specified in `__init__` or set with `anchor_plate_id` attribute).
         return_rate_of_motion : bool, default=False
             Choose whether to return the rate of plate motion through time for each
 
@@ -1555,8 +1556,7 @@ class Points(object):
 
         anchor_plate_id : int, default=None
             Reconstruct features with respect to a certain anchor plate. By default, reconstructions are made
-            with respect to the anchor_plate_ID specified in the `gplately.PlateReconstruction` object,
-            which is a default plate ID of 0 unless otherwise specified.
+            with respect to the anchor plate ID specified in the `gplately.PlateReconstruction` object.
 
         return_array : bool, default False
             Return a `numpy.ndarray`, rather than a `Points` object.
@@ -1594,7 +1594,7 @@ class Points(object):
         from_time = self.time
         to_time = time
 
-        if not anchor_plate_id:
+        if anchor_plate_id is None:
             anchor_plate_id = self.plate_reconstruction.anchor_plate_id
 
         reconstructed_features = self.plate_reconstruction.reconstruct(
@@ -1626,8 +1626,7 @@ class Points(object):
             (which holds all point features represented on a unit length sphere in 3D Cartesian coordinates).
         anchor_plate_id : int, default=None
             Reconstruct features with respect to a certain anchor plate. By default, reconstructions are made
-            with respect to the anchor_plate_ID specified in the `gplately.PlateReconstruction` object,
-            which is a default plate ID of 0 unless otherwise specified.
+            with respect to the anchor plate ID specified in the `gplately.PlateReconstruction` object.
         **kwargs
             Additional keyword arguments for the `gplately.PlateReconstruction.reconstruct` method.
 
@@ -1659,7 +1658,7 @@ class Points(object):
 
         """
         from_time = self.time
-        if not anchor_plate_id:
+        if anchor_plate_id is None:
             anchor_plate_id = self.plate_reconstruction.anchor_plate_id
 
         ages = np.array(ages)
