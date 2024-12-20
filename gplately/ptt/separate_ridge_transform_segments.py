@@ -322,7 +322,10 @@ def separate_geometry_into_ridges_and_transforms(
 
 
 def get_stage_rotation_for_reconstructed_geometry(
-    spreading_feature, rotation_model, spreading_time=None
+    spreading_feature,
+    rotation_model,
+    spreading_time=None,
+    return_left_right_plates=False,
 ):
     """
     Find the stage rotation of the spreading feature in the frame of reference of its geometry at the spreading time.
@@ -338,6 +341,9 @@ def get_stage_rotation_for_reconstructed_geometry(
                     For isochrons this should be its time of appearance (ie, when formed at mid-ocean ridge).
                     For mid-ocean ridges this can be any time when the ridge is actively spreading.
                     Defaults to the time of appearance of 'spreading_feature'.
+    
+    return_left_right_plates: Also return the left and right plate IDs (as a 3-tuple of (stage rotation, left plate, right plate)).
+                              Defaults to False.
 
     Returns: The stage rotation that can be applied to the geometry at the spreading time.
              NOTE: It has already had transforms to and from the stage pole reference frame applied.
@@ -441,6 +447,11 @@ def get_stage_rotation_for_reconstructed_geometry(
             * to_stage_pole_reference_frame
         )
 
+        if return_left_right_plates:
+            return stage_rotation, conjugate_plate_id, reconstruction_plate_id
+
+        return stage_rotation
+
     else:  # Reconstruction is by half stage rotation...
         # See if spreading feature has left and right plate ids (it should).
         left_and_right_plate_ids = _get_left_and_right_plate_ids(spreading_feature)
@@ -519,7 +530,10 @@ def get_stage_rotation_for_reconstructed_geometry(
             * to_stage_pole_reference_frame
         )
 
-    return stage_rotation
+        if return_left_right_plates:
+            return stage_rotation, left_plate_id, right_plate_id
+
+        return stage_rotation
 
 
 #
