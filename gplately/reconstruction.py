@@ -41,7 +41,7 @@ class PlateReconstruction(object):
 
     Attributes
     ----------
-    rotation_model : str, or instance of <pygplates.FeatureCollection>, or <pygplates.Feature>, or sequence of <pygplates.Feature>, or instance of <pygplates.RotationModel>, default None
+    rotation_model : str, or instance of <pygplates.FeatureCollection>, or <pygplates.Feature>, or sequence of <pygplates.Feature>, or instance of <pygplates.RotationModel>
         A rotation model to query equivalent and/or relative topological plate rotations
         from a time in the past relative to another time in the past or to present day. Can be
         provided as a rotation filename, or rotation feature collection, or rotation feature, or
@@ -166,6 +166,13 @@ class PlateReconstruction(object):
             raise ValueError("Invalid anchor plate ID: {}".format(id))
         return id
 
+    def _check_topology_features(self):
+        if self.topology_features is None:
+            raise ValueError(
+                "Topology features have not been set in this PlateReconstruction."
+            )
+        return self.topology_features
+
     def topological_snapshot(self, time, anchor_plate_id=None):
         """Create a snapshot of resolved topologies at the specified reconstruction time.
 
@@ -182,8 +189,11 @@ class PlateReconstruction(object):
         topological_snapshot : pygplates.TopologicalSnapshot
             The topological snapshot at the specified `time` (and anchor plate).
 
+        Raises
+        ------
+        ValueError
+            If topoloogy features have not been set in this `PlateReconstruction`.
         """
-
         if anchor_plate_id is None:
             anchor_plate_id = self.anchor_plate_id
 
@@ -200,7 +210,7 @@ class PlateReconstruction(object):
             != anchor_plate_id
         ):
             self._topological_snapshot = pygplates.TopologicalSnapshot(
-                self.topology_features,
+                self._check_topology_features(),
                 self.rotation_model,
                 time,
                 anchor_plate_id,
@@ -296,7 +306,7 @@ class PlateReconstruction(object):
                 warnings.simplefilter("ignore")
                 subduction_data = _ptt.subduction_convergence.subduction_convergence(
                     self.rotation_model,
-                    self.topology_features,
+                    self._check_topology_features(),
                     tessellation_threshold_radians,
                     float(time),
                     anchor_plate_id=anchor_plate_id,
@@ -306,7 +316,7 @@ class PlateReconstruction(object):
         else:
             subduction_data = _ptt.subduction_convergence.subduction_convergence(
                 self.rotation_model,
-                self.topology_features,
+                self._check_topology_features(),
                 tessellation_threshold_radians,
                 float(time),
                 anchor_plate_id=anchor_plate_id,
@@ -813,6 +823,11 @@ class PlateReconstruction(object):
             For each velocity domain feature point, a tuple of (north, east, down) velocity components is generated and
             appended to a list of velocity data. The length of `all_velocities` is equivalent to the number of domain points
             resolved from the lat-lon array parameters.
+
+        Raises
+        ------
+        ValueError
+            If topoloogy features have not been set in this `PlateReconstruction`.
         """
         # Add points to a multipoint geometry
 
@@ -840,7 +855,7 @@ class PlateReconstruction(object):
 
         # Partition our velocity domain features into our topological plate polygons at the current 'time'.
         plate_partitioner = pygplates.PlatePartitioner(
-            self.topology_features, self.rotation_model, time
+            self._check_topology_features(), self.rotation_model, time
         )
 
         for velocity_domain_feature in velocity_domain_features:
@@ -937,6 +952,11 @@ class PlateReconstruction(object):
         StepTimes
         StepRates
 
+        Raises
+        ------
+        ValueError
+            If *plate_id* is `None` and topoloogy features have not been set in this `PlateReconstruction`.
+
         Examples
         --------
         To access the latitudes and longitudes of each seed point's motion path:
@@ -975,7 +995,7 @@ class PlateReconstruction(object):
             # it was not given.
             if query_plate_id:
                 plate_id = _tools.plate_partitioner_for_point(
-                    lat_lon, self.topology_features, self.rotation_model
+                    lat_lon, self._check_topology_features(), self.rotation_model
                 )
             else:
                 plate_id = plate_ids[i]
