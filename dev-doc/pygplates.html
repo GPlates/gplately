@@ -667,7 +667,7 @@ A <em>RotationModel</em> object can be constructed in more than one way&hellip;<
 <p><strong>init</strong>(rotation_features, [reconstruction_tree_cache_size=150], [extend_total_reconstruction_poles_to_distant_past=False], [default_anchor_plate_id=0])
 Create from rotation feature collection(s) and/or rotation filename(s).</p>
 <p>:param rotation_features: A rotation feature collection, or rotation filename, or rotation feature, or sequence of rotation features, or a sequence (eg, <code>list</code> or <code>tuple</code>) of any combination of those four types
-:type rotation_features: :class:<code><a title="gplately.pygplates.FeatureCollection" href="#gplately.pygplates.FeatureCollection">FeatureCollection</a></code>, or string/<code>os.PathLike</code>, or :class:<code><a title="gplately.pygplates.Feature" href="#gplately.pygplates.Feature">Feature</a></code>, or sequence of :class:<code><a title="gplately.pygplates.Feature" href="#gplately.pygplates.Feature">Feature</a></code>, or sequence of any combination of those four types
+:type rotation_features: :class:<code><a title="gplately.pygplates.FeatureCollection" href="#gplately.pygplates.FeatureCollection">FeatureCollection</a></code>, or string, or :class:<code><a title="gplately.pygplates.Feature" href="#gplately.pygplates.Feature">Feature</a></code>, or sequence of :class:<code><a title="gplately.pygplates.Feature" href="#gplately.pygplates.Feature">Feature</a></code>, or sequence of any combination of those four types
 :param reconstruction_tree_cache_size: Number of reconstruction trees to cache internally. Defaults to 150.
 :type reconstruction_tree_cache_size: int
 :param extend_total_reconstruction_poles_to_distant_past: extend each moving plate sequence back infinitely far into the distant past such that reconstructed geometries will not snap back to their present day positions when the reconstruction time is older than the oldest times specified in the rotation features (defaults to <code>False</code>)
@@ -688,8 +688,6 @@ rotation_model = pygplates.RotationModel(['rotations.rot', rotation_adjustments]
 Added <em>extend_total_reconstruction_poles_to_distant_past</em> argument and removed <em>clone_rotation_features</em> argument.</p>
 <p>!!! versionchanged "Changed in version:&ensp;0.26"
 Added <em>default_anchor_plate_id</em> argument.</p>
-<p>!!! versionchanged "Changed in version:&ensp;0.44"
-Filenames can be <code>os.PathLike &lt;https://docs.python.org/3/library/os.html#os.PathLike&gt;</code><em> (such as <code>pathlib.Path &lt;https://docs.python.org/3/library/pathlib.html&gt;</code></em>) in addition to strings.</p>
 <p><strong>init</strong>(rotation_model, [reconstruction_tree_cache_size=2], [default_anchor_plate_id])
 Use an existing rotation model but adapt it with a potentially different cache size and/or default anchor plate ID.</p>
 <p>:param rotation_model: an existing rotation model
