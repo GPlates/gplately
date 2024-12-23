@@ -36,61 +36,72 @@ def spreading_rates(
     topology_features,
     time,
     threshold_sampling_distance_radians,
-    spreading_feature_types=None,
+    spreading_feature_types=[pygplates.FeatureType.gpml_mid_ocean_ridge],
     transform_segment_deviation_in_radians=separate_ridge_transform_segments.DEFAULT_TRANSFORM_SEGMENT_DEVIATION_RADIANS,
     velocity_delta_time=1.0,
-    anchor_plate_id=0,
+    anchor_plate_id=None,
     output_obliquity_and_normal_and_left_right_plates=False,
 ):
-    """
-    Calculates spreading rate and length of ridge segments of spreading features (mid-ocean ridges) of resolved topologies at specified time.
+    """Calculate spreading rate of ridge segments (and other statistics like spreading obqliquity, and ridge length/normals and left/right plates).
 
-    The transform segments of spreading features are ignored.
+    The transform segments of spreading features are ignored (unless *transform_segment_deviation_in_radians* is `None`).
 
-    Resolves topologies at 'time', tessellates all resolved spreading features to within 'threshold_sampling_distance_radians' radians and
-    returns a list of tuples where each tuple represents a tessellated point and contains the following parameters:
+    Resolves topologies at 'time', tessellates all resolved spreading features to within *threshold_sampling_distance_radians* radians and
+    returns a list of tuples where each tuple represents a tessellated point.
 
-    - point longitude
-    - point latitude
-    - spreading velocity magnitude (in cm/yr)
-    - length of arc segment (in degrees) that current point is on
-
-
-    rotation_features_or_model: Rotation model or feature collection(s), or list of features, or filename(s).
-
-    topology_features: Topology feature collection(s), or list of features, or filename(s) or any combination of those.
-
-    time: Reconstruction time to resolved topologies.
-
-    threshold_sampling_distance_radians: Threshold sampling distance along spreading features (in radians).
-
-    spreading_feature_types: Only spreading features with a feature type contained in this list are considered.
-                             If None then all spreading features are considered.
-
-    transform_segment_deviation_in_radians: How much a segment can deviate from the stage pole before
-                                            it's considered a transform segment (in radians).
-
-    velocity_delta_time: Delta time interval used to calculate spreading velocity.
+    Parameters
+    ----------
+    rotation_features_or_model : str/`os.PathLike`, or <pygplates.FeatureCollection>, or <pygplates.Feature>, or sequence of <pygplates.Feature>, or a sequence (eg, a list or tuple) of any combination of those four types, or <pygplates.RotationModel>
+        A rotation model to calculate spreading rate.
+        Can be provided as a rotation filename, or rotation feature collection, or rotation feature, or
+        sequence of rotation features, or a sequence (eg, a list or tuple) of any combination of those four types.
+    topology_features : str/`os.PathLike`, or <pygplates.FeatureCollection>, or <pygplates.Feature>, or a sequence <pygplates.Feature>, or a sequence (eg, a list or tuple) of any combination of those four types
+        Reconstructable topological features representing the spreading features.
+    time : float
+        The reconstruction time (Ma) at which to calculate spreading rate.
+    threshold_sampling_distance_radians : float
+        Threshold sampling distance along spreading features (in radians).
+    spreading_feature_types : <pygplates.FeatureType> or sequence of <pygplates.FeatureType>, default=pygplates.FeatureType.gpml_mid_ocean_ridge
+        Only spreading features with a feature type contained in this list are considered.
+        If `None` then all spreading features are considered.
+    transform_segment_deviation_in_radians : float, default=<implementation-defined>
+        How much a segment can deviate from the stage pole before it's considered a transform segment (in radians).
+        The default value has been empirically determined to give the best results for typical models.
+        If `None` then the full feature geometry is used (ie, it is not split into ridge and transform segments, with the transform segments getting ignored).
+    velocity_delta_time : float, default=1.0
+        Delta time interval used to calculate spreading velocity.
                          Defaults to 1 Myr.
+    anchor_plate_id : int, default=None
+        Anchor plate ID for reconstruction.
+        If not specified then uses the default anchor plate of *rotation_model* if it's a `pygplates.RotationModel` (otherwise uses zero).
+    output_obliquity_and_normal_and_left_right_plates : bool, default=False
+        Whether to also return spreading obliquity, normal azimuth and left/right plates.
 
-    anchor_plate_id: The anchored plate id to use when resolving topologies.
-                     Defaults to zero.
+    Returns
+    -------
+    output_data : a list of tuples
+        The results for all tessellated points sampled along spreading features.
+        The size of the returned list is equal to the number of tessellated points.
+        Each tuple in the list corresponds to a tessellated point and has the following tuple items
+        (depending on *output_obliquity_and_normal_and_left_right_plates*):
 
-    output_obliquity_and_normal_and_left_right_plates: Also return spreading obliquity, normal azimuth and left/right plates.
-                                                       If `True` then the output is:
+        If *output_obliquity_and_normal_and_left_right_plates* is `False` (the default):
 
-                                                       - point longitude
-                                                       - point latitude
-                                                       - spreading velocity magnitude (in cm/yr)
-                                                       - spreading obliquity in degrees
-                                                         (deviation from normal line in range 0 to 90 degrees)
-                                                       - length of arc segment (in degrees) that current point is on
-                                                       - azimuth of vector normal to the arc segment in degrees
-                                                         (clockwise starting at North, ie, 0 to 360 degrees)
-                                                       - left plate ID
-                                                       - right plate ID
+        * longitude of tessellated point
+        * latitude of tessellated point
+        - spreading velocity magnitude (in cm/yr)
+        - length of arc segment (in degrees) that tessellated point is on
 
-    Returns: List of the tuples described above.
+        If *output_obliquity_and_normal_and_left_right_plates* is `True`:
+        
+        * longitude of tessellated point
+        * latitude of tessellated point
+        - spreading velocity magnitude (in cm/yr)
+        - spreading obliquity in degrees (deviation from normal line in range 0 to 90 degrees)
+        - length of arc segment (in degrees) that tessellated point is on
+        - azimuth of vector normal to the arc segment in degrees (clockwise starting at North, ie, 0 to 360 degrees)
+        - left plate ID
+        - right plate ID
     """
     # Turn rotation data into a RotationModel (if not already).
     rotation_model = pygplates.RotationModel(rotation_features_or_model)
@@ -113,6 +124,11 @@ def spreading_rates(
 
     # List of tesselated spreading points and associated spreading parameters for the current 'time'.
     output_data = []
+
+    # If spreading feature types is a single feature type then convert to a list.
+    # Othewise it should already be a list (or None).
+    if isinstance(spreading_feature_types, pygplates.FeatureType):
+        spreading_feature_types = [spreading_feature_types]
 
     # Iterate over the shared boundary sections of all resolved topologies.
     for shared_boundary_section in shared_boundary_sections:
@@ -146,19 +162,25 @@ def spreading_rates(
         # Iterate over the shared sub-segments of the current line.
         # These are the parts of the line that actually contribute to topological boundaries.
         for shared_sub_segment in shared_boundary_section.get_shared_sub_segments():
+            spreading_feature_resolved_geometry = shared_sub_segment.get_resolved_geometry()
 
-            # Split into ridge and transform segments.
-            ridge_and_transform_segment_geometries = separate_ridge_transform_segments.separate_geometry_into_ridges_and_transforms(
-                spreading_stage_rotation,
-                shared_sub_segment.get_resolved_geometry(),
-                transform_segment_deviation_in_radians,
-            )
-            if not ridge_and_transform_segment_geometries:
-                # Skip shared sub segment - it's not a polyline (or polygon).
-                continue
+            if transform_segment_deviation_in_radians is not None:
+                # Split into ridge and transform segments.
+                ridge_and_transform_segment_geometries = separate_ridge_transform_segments.separate_geometry_into_ridges_and_transforms(
+                    spreading_stage_rotation,
+                    spreading_feature_resolved_geometry,
+                    transform_segment_deviation_in_radians,
+                )
+                if not ridge_and_transform_segment_geometries:
+                    # Skip shared sub segment - it's not a polyline (or polygon).
+                    continue
 
-            # Only interested in ridge segments.
-            ridge_sub_segment_geometries, _ = ridge_and_transform_segment_geometries
+                # Only interested in ridge segments.
+                ridge_sub_segment_geometries, _ = ridge_and_transform_segment_geometries
+
+            else:
+                # Not splitting into ridge and transform segments, so just the full unsplit geometry.
+                ridge_sub_segment_geometries = [spreading_feature_resolved_geometry]
 
             # Ensure the ridge sub-segments are tessellated to within the threshold sampling distance.
             tessellated_shared_sub_segment_polylines = [
@@ -262,7 +284,7 @@ def spreading_rates_dense(
     topology_features,
     time,
     threshold_sampling_distance_radians,
-    spreading_feature_types=None,
+    spreading_feature_types=[pygplates.FeatureType.gpml_mid_ocean_ridge],
     transform_segment_deviation_in_radians=separate_ridge_transform_segments.DEFAULT_TRANSFORM_SEGMENT_DEVIATION_RADIANS,
     velocity_delta_time=1.0,
     anchor_plate_id=0,
