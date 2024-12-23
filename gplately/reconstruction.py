@@ -59,7 +59,7 @@ class PlateReconstruction(object):
         features.
     anchor_plate_id : int, default=None
         Default anchor plate ID for reconstruction.
-        If not specified then uses the default anchor plate of *rotation_model* if it's a `pygplates.RotationModel` (otherwise uses zero).
+        If not specified then uses the default anchor plate of `rotation_model` if it's a `pygplates.RotationModel` (otherwise uses zero).
     """
 
     def __init__(
@@ -547,29 +547,31 @@ class PlateReconstruction(object):
         tessellation_threshold_radians=0.001,
         ignore_warnings=False,
         return_geodataframe=False,
+        use_ptt=False,
         spreading_feature_types=[pygplates.FeatureType.gpml_mid_ocean_ridge],
         transform_segment_deviation_in_radians=separate_ridge_transform_segments.DEFAULT_TRANSFORM_SEGMENT_DEVIATION_RADIANS,
+        divergence_threshold_in_cm_per_yr=None,
         output_obliquity_and_normal_and_left_right_plates=False,
         **kwargs,
     ):
         """Samples points along resolved spreading features (e.g. mid-ocean ridges) and calculates spreading rates and
         lengths of ridge segments at a particular geological time.
 
-        Resolves topologies at `time`, tessellates all resolved spreading features to within 'tessellation_threshold_radians' radians.
+        Resolves topologies at `time`, tessellates all resolved spreading features to within `tessellation_threshold_radians` radians.
 
-        The transform segments of spreading features are ignored (unless *transform_segment_deviation_in_radians* is `None`).
+        The transform segments of spreading features are ignored (unless `transform_segment_deviation_in_radians` is `None`).
 
         Returns a 4-column vertically stacked tuple with the following data
-        (depending on *output_obliquity_and_normal_and_left_right_plates*):
+        (depending on `output_obliquity_and_normal_and_left_right_plates`):
 
-        If *output_obliquity_and_normal_and_left_right_plates* is `False` (the default):
+        If `output_obliquity_and_normal_and_left_right_plates` is `False` (the default):
 
         * Col. 0 - longitude of sampled ridge point
         * Col. 1 - latitude of sampled ridge point
         * Col. 2 - spreading velocity magnitude (in cm/yr)
         * Col. 3 - length of arc segment (in degrees) that current point is on
 
-        If *output_obliquity_and_normal_and_left_right_plates* is `True`:
+        If `output_obliquity_and_normal_and_left_right_plates` is `True`:
 
         * Col. 0 - longitude of sampled ridge point
         * Col. 1 - latitude of sampled ridge point
@@ -580,10 +582,6 @@ class PlateReconstruction(object):
         * Col. 6 - left plate ID
         * Col. 7 - right plate ID
 
-        All spreading feature types are considered. The transform segments of spreading features are ignored.
-        Note: by default, the function assumes that a segment can deviate 45 degrees from the stage pole before it is
-        considered a transform segment.
-
         Parameters
         ----------
         time : float
@@ -591,17 +589,33 @@ class PlateReconstruction(object):
         tessellation_threshold_radians : float, default=0.001
             The threshold sampling distance along the plate boundaries (in radians).
         ignore_warnings : bool, default=False
-            Choose to ignore warnings from Plate Tectonic Tools' ridge_spreading_rate workflow (if used).
+            Choose to ignore warnings from Plate Tectonic Tools' ridge_spreading_rate workflow (if `use_ptt` is `True`).
         return_geodataframe : bool, default=False
             Choose to return data in a geopandas.GeoDataFrame.
+        use_ptt : bool, default=False
+            If set to `True` then uses Plate Tectonic Tools' `ridge_spreading_rate` workflow to calculate ridge spreading rates
+            (which uses the spreading stage rotation of the left/right plate IDs calculate spreading velocities).
+            If set to `False` then uses plate divergence to calculate ridge spreading rates
+            (which samples velocities of the two adjacent boundary plates at each sampled point to calculate spreading velocities).
+            Plate divergence is the more general approach that works along all plate boundaries (not just mid-ocean ridges).
         spreading_feature_types : <pygplates.FeatureType> or sequence of <pygplates.FeatureType>, default=pygplates.FeatureType.gpml_mid_ocean_ridge
             Only sample points along plate boundaries of the specified feature types.
             Default is to only sample mid-ocean ridges.
-            However, you can explicitly specify `None` to sample all plate boundaries.
+            However, you can explicitly specify `None` to sample all plate boundaries
+            (although typically you'd also have `use_ptt` be `False` since Plate Tectonic Tools only works on spreading feature types, like mid-ocean ridges).
         transform_segment_deviation_in_radians : float, default=<implementation-defined>
-            How much a segment can deviate from the stage pole before it's considered a transform segment (in radians).
+            How much a spreading direction can deviate from the segment normal before it's considered a transform segment (in radians).
             The default value has been empirically determined to give the best results for typical models.
-            If `None` then the full feature geometry is used (ie, it is not split into ridge and transform segments, with the transform segments getting ignored).
+            If `None` then the full feature geometry is used (ie, it is not split into ridge and transform segments with the transform segments getting ignored).
+        divergence_threshold_in_cm_per_yr : float, default=None
+            Only return sample points with an orthogonal (ie, in spreading geometry normal direction) diverging velocity above this value (in cm/yr).
+            For example, setting this to `0.0` would remove all converging sampe points (leaving only diverging points).
+            This value can be negative which means a small amount of convergence is allowed.
+            If `None` then all (diverging and converging) sample points are returned.
+            This is the default since `spreading_feature_types` is instead used (by default) to include only plate boundaries that are typically diverging (eg, mid-ocean ridges).
+            However, setting `spreading_feature_types` to `None` and explicitly specifying this parameter (eg, to `0.0`) can be used to find points along
+            all plate boundaries that are diverging.
+            However, this parameter can only be specified if `use_ptt` is `False`.
         output_obliquity_and_normal_and_left_right_plates : bool, default=False
             Whether to also return spreading obliquity, normal azimuth and left/right plates.
 
@@ -611,52 +625,156 @@ class PlateReconstruction(object):
             The results for all tessellated points sampled along the mid-ocean ridges.
             The size of the returned list is equal to the number of tessellated points.
             Each tuple in the list corresponds to a tessellated point and has the following tuple items
-            (depending on *output_obliquity_and_normal_and_left_right_plates*):
+            (depending on `output_obliquity_and_normal_and_left_right_plates`):
 
-            If *output_obliquity_and_normal_and_left_right_plates* is `False` (the default):
-
-            * longitude of sampled point
-            * latitude of sampled point
-            - spreading velocity magnitude (in cm/yr)
-            - length of arc segment (in degrees) that sampled point is on
-
-            If *output_obliquity_and_normal_and_left_right_plates* is `True`:
+            If `output_obliquity_and_normal_and_left_right_plates` is `False` (the default):
 
             * longitude of sampled point
             * latitude of sampled point
-            - spreading velocity magnitude (in cm/yr)
-            - spreading obliquity in degrees (deviation from normal line in range 0 to 90 degrees)
-            - length of arc segment (in degrees) that sampled point is on
-            - azimuth of vector normal to the arc segment in degrees (clockwise starting at North, ie, 0 to 360 degrees)
-            - left plate ID
-            - right plate ID
+            * spreading velocity magnitude (in cm/yr)
+            * length of arc segment (in degrees) that sampled point is on
+
+            If `output_obliquity_and_normal_and_left_right_plates` is `True`:
+
+            * longitude of sampled point
+            * latitude of sampled point
+            * spreading velocity magnitude (in cm/yr)
+            * spreading obliquity in degrees (deviation from normal line in range 0 to 90 degrees)
+            * length of arc segment (in degrees) that sampled point is on
+            * azimuth of vector normal to the arc segment in degrees (clockwise starting at North, ie, 0 to 360 degrees)
+            * left plate ID
+            * right plate ID
 
         Raises
         ------
         ValueError
             If topoloogy features have not been set in this `PlateReconstruction`.
+        ValueError
+            If `divergence_threshold_in_cm_per_yr` is not `None` and `use_ptt` is `True`.
         """
 
         anchor_plate_id = kwargs.pop("anchor_plate_id", self.anchor_plate_id)
         velocity_delta_time = kwargs.pop("velocity_delta_time", 1.0)
 
-        from . import ptt as _ptt
+        if use_ptt:
+            from . import ptt as _ptt
 
-        with warnings.catch_warnings():
-            if ignore_warnings:
-                warnings.simplefilter("ignore")
+            if divergence_threshold_in_cm_per_yr is not None:
+                raise ValueError(
+                    "Can only specify 'divergence_threshold_in_cm_per_yr' if 'use_ptt' is False."
+                )
 
-            ridge_data = _ptt.ridge_spreading_rate.spreading_rates(
-                self.rotation_model,
-                self._check_topology_features(),
-                time,
+            with warnings.catch_warnings():
+                if ignore_warnings:
+                    warnings.simplefilter("ignore")
+
+                ridge_data = _ptt.ridge_spreading_rate.spreading_rates(
+                    self.rotation_model,
+                    self._check_topology_features(),
+                    time,
+                    tessellation_threshold_radians,
+                    spreading_feature_types=spreading_feature_types,
+                    transform_segment_deviation_in_radians=transform_segment_deviation_in_radians,
+                    velocity_delta_time=velocity_delta_time,
+                    anchor_plate_id=anchor_plate_id,
+                    output_obliquity_and_normal_and_left_right_plates=output_obliquity_and_normal_and_left_right_plates,
+                )
+
+        else:
+            # Generate statistics at uniformly spaced points along plate boundaries.
+            plate_boundary_statistics = self.topological_snapshot(
+                time, anchor_plate_id
+            ).calculate_plate_boundary_statistics(
                 tessellation_threshold_radians,
-                spreading_feature_types=spreading_feature_types,
-                transform_segment_deviation_in_radians=transform_segment_deviation_in_radians,
+                first_uniform_point_spacing_radians=0,
                 velocity_delta_time=velocity_delta_time,
-                anchor_plate_id=anchor_plate_id,
-                output_obliquity_and_normal_and_left_right_plates=output_obliquity_and_normal_and_left_right_plates,
+                velocity_units=pygplates.VelocityUnits.cms_per_yr,
+                boundary_section_filter=spreading_feature_types,
             )
+
+            # Find those uniform points where the plates are diverging (negative convergence velocity).
+            ridge_data = []
+            for stat in plate_boundary_statistics:
+                # Reject point if there's not a plate (or network) on both the left or right sides.
+                if np.isnan(stat.convergence_velocity_orthogonal):
+                    continue
+
+                # If requested, reject point if it's not diverging within specified threshold.
+                if divergence_threshold_in_cm_per_yr is not None:
+                    if (
+                        -stat.convergence_velocity_orthogonal
+                        < divergence_threshold_in_cm_per_yr
+                    ):
+                        continue
+
+                # Convert obliquity from the range [-pi, pi] to [0, pi/2].
+                # We're only interested in the deviation angle from the normal line (positive or negative normal direction).
+                spreading_obliquity = np.abs(
+                    stat.convergence_velocity_obliquity
+                )  # not interested in clockwise vs anti-clockwise
+                if spreading_obliquity > 0.5 * np.pi:
+                    spreading_obliquity = (
+                        np.pi - spreading_obliquity
+                    )  # angle relative to negative normal direction
+
+                # If a transform segment deviation was specified then we need to reject transform segments.
+                if transform_segment_deviation_in_radians is not None:
+                    # Reject if spreading direction is too oblique compared to the plate boundary normal.
+                    if spreading_obliquity > transform_segment_deviation_in_radians:
+                        continue
+
+                lat, lon = stat.boundary_point.to_lat_lon()
+                spreading_velocity = np.abs(stat.convergence_velocity_orthogonal)
+
+                if output_obliquity_and_normal_and_left_right_plates:
+                    # Get the left plate ID from resolved topological boundary (or network).
+                    if stat.left_plate.located_in_resolved_boundary():
+                        left_plate_id = (
+                            stat.left_plate.located_in_resolved_boundary()
+                            .get_feature()
+                            .get_reconstruction_plate_id()
+                        )
+                    else:
+                        left_plate_id = (
+                            stat.left_plate.located_in_resolved_network()
+                            .get_feature()
+                            .get_reconstruction_plate_id()
+                        )
+                    # Get the right plate ID from resolved topological boundary (or network).
+                    if stat.right_plate.located_in_resolved_boundary():
+                        right_plate_id = (
+                            stat.right_plate.located_in_resolved_boundary()
+                            .get_feature()
+                            .get_reconstruction_plate_id()
+                        )
+                    else:
+                        right_plate_id = (
+                            stat.right_plate.located_in_resolved_network()
+                            .get_feature()
+                            .get_reconstruction_plate_id()
+                        )
+
+                    ridge_data.append(
+                        (
+                            lon,
+                            lat,
+                            spreading_velocity,
+                            np.degrees(spreading_obliquity),
+                            np.degrees(stat.boundary_length),
+                            np.degrees(stat.boundary_normal_azimuth),
+                            left_plate_id,
+                            right_plate_id,
+                        )
+                    )
+                else:
+                    ridge_data.append(
+                        (
+                            lon,
+                            lat,
+                            spreading_velocity,
+                            np.degrees(stat.boundary_length),
+                        )
+                    )
 
         if ridge_data:
             ridge_data = np.vstack(ridge_data)
@@ -699,90 +817,77 @@ class PlateReconstruction(object):
         ignore_warnings=False,
         spreading_feature_types=[pygplates.FeatureType.gpml_mid_ocean_ridge],
         transform_segment_deviation_in_radians=separate_ridge_transform_segments.DEFAULT_TRANSFORM_SEGMENT_DEVIATION_RADIANS,
+        divergence_threshold_in_cm_per_yr=None,
     ):
-        """Calculates the total length of all mid-ocean ridges (km) at the specified geological time (Ma).
+        """Calculates the total length of all resolved spreading features (e.g. mid-ocean ridges) at the specified geological time (Ma).
 
-        if `use_ptt` is True
+        Resolves topologies at `time`, tessellates all resolved spreading features to within `tessellation_threshold_radians` radians.
 
-        Uses Plate Tectonic Tools' `ridge_spreading_rate` workflow to calculate ridge segment lengths. Scales lengths to
-        kilometres using the geocentric radius.
+        The transform segments of spreading features are ignored (unless *transform_segment_deviation_in_radians* is `None`).
 
-        Otherwise
-
-        Resolves topology features of the PlateReconstruction model and extracts their shared boundary sections.
-        The lengths of each GPML mid-ocean ridge shared boundary section are appended to the total ridge length.
-        Scales lengths to kilometres using the geocentric radius.
-
+        Total length is calculated by sampling points along the resolved spreading features (e.g. mid-ocean ridges) and accumulating their lengths
+        (see `tessellate_mid_ocean_ridges`). Scales lengths to kilometres using the geocentric radius (at each sampled point).
 
         Parameters
         ----------
         time : int
             The geological time at which to calculate total mid-ocean ridge lengths.
         use_ptt : bool, default=False
-            If set to `True`, the PTT method is used.
+            If set to `True` then uses Plate Tectonic Tools' `ridge_spreading_rate` workflow to calculate total ridge length
+            (which uses the spreading stage rotation of the left/right plate IDs to calculate spreading directions - see `transform_segment_deviation_in_radians`).
+            If set to `False` then uses plate divergence to calculate total ridge length (which samples velocities of the two adjacent
+            boundary plates at each sampled point to calculate spreading directions - see `transform_segment_deviation_in_radians`).
+            Plate divergence is the more general approach that works along all plate boundaries (not just mid-ocean ridges).
         ignore_warnings : bool, default=False
-            Choose to ignore warnings from Plate Tectonic Tools' ridge_spreading_rate workflow (if used).
+            Choose to ignore warnings from Plate Tectonic Tools' ridge_spreading_rate workflow (if `use_ptt` is `True`).
         spreading_feature_types : <pygplates.FeatureType> or sequence of <pygplates.FeatureType>, default=pygplates.FeatureType.gpml_mid_ocean_ridge
             Only count lengths associated with sample points along plate boundaries of the specified feature types.
             Default is to only sample mid-ocean ridges.
             However, you can explicitly specify `None` to sample all plate boundaries.
         transform_segment_deviation_in_radians : float, default=<implementation-defined>
-            How much a segment can deviate from the stage pole before it's considered a transform segment (in radians).
+            How much a spreading direction can deviate from the segment normal before it's considered a transform segment (in radians).
             The default value has been empirically determined to give the best results for typical models.
-            If `None` then the full feature geometry is used (ie, it is not split into ridge and transform segments, with the transform segments getting ignored).
+            If `None` then the full feature geometry is used (ie, it is not split into ridge and transform segments with the transform segments getting ignored).
+        divergence_threshold_in_cm_per_yr : float, default=None
+            Only count lengths associated with sample points that have an orthogonal (ie, in spreading geometry normal direction) diverging velocity above this value (in cm/yr).
+            For example, setting this to `0.0` would remove all converging sampe points (leaving only diverging points).
+            This value can be negative which means a small amount of convergence is allowed.
+            If `None` then all (diverging and converging) sample points are counted.
+            This is the default since *spreading_feature_types* is instead used (by default) to include only plate boundaries that are typically diverging (eg, mid-ocean ridges).
+            However, setting *spreading_feature_types* to `None` and explicitly specifying this parameter (eg, to `0.0`) can be used to count points along
+            all plate boundaries that are diverging.
+            However, this parameter can only be specified if *use_ptt* is `False`.
 
         Returns
         -------
         total_ridge_length_kms : float
             The total length of global mid-ocean ridges (in kilometres) at the specified time.
+
+        Raises
+        ------
+        ValueError
+            If topoloogy features have not been set in this `PlateReconstruction`.
+        ValueError
+            If *divergence_threshold_in_cm_per_yr* is not `None` and *use_ptt* is `True`.
         """
-        from . import ptt as _ptt
+        ridge_data = self.tessellate_mid_ocean_ridges(
+            time,
+            ignore_warnings=ignore_warnings,
+            use_ptt=use_ptt,
+            spreading_feature_types=spreading_feature_types,
+            transform_segment_deviation_in_radians=transform_segment_deviation_in_radians,
+            divergence_threshold_in_cm_per_yr=divergence_threshold_in_cm_per_yr,
+        )
 
-        if use_ptt:
-            ridge_data = self.tessellate_mid_ocean_ridges(
-                time,
-                ignore_warnings=ignore_warnings,
-                spreading_feature_types=spreading_feature_types,
-                transform_segment_deviation_in_radians=transform_segment_deviation_in_radians,
-            )
+        ridge_arcseg = ridge_data[:, 3]
+        ridge_pt_lat = ridge_data[:, 1]
 
-            ridge_arcseg = ridge_data[:, 3]
-            ridge_pt_lat = ridge_data[:, 1]
+        total_ridge_length_kms = 0
+        for i, segment in enumerate(ridge_arcseg):
+            earth_radius = _tools.geocentric_radius(ridge_pt_lat[i]) / 1e3
+            total_ridge_length_kms += np.deg2rad(segment) * earth_radius
 
-            total_ridge_length_kms = 0
-            for i, segment in enumerate(ridge_arcseg):
-                earth_radius = _tools.geocentric_radius(ridge_pt_lat[i]) / 1e3
-                total_ridge_length_kms += np.deg2rad(segment) * earth_radius
-
-            return total_ridge_length_kms
-
-        else:
-            shared_boundary_sections = self.topological_snapshot(
-                time
-            ).get_resolved_topological_sections()
-
-            total_ridge_length_kms = 0.0
-            for shared_boundary_section in shared_boundary_sections:
-                if (
-                    shared_boundary_section.get_feature().get_feature_type()
-                    != pygplates.FeatureType.gpml_mid_ocean_ridge
-                ):
-                    continue
-                for (
-                    shared_sub_segment
-                ) in shared_boundary_section.get_shared_sub_segments():
-                    clat, clon = (
-                        shared_sub_segment.get_resolved_geometry()
-                        .get_centroid()
-                        .to_lat_lon()
-                    )
-                    earth_radius = _tools.geocentric_radius(clat) / 1e3
-                    total_ridge_length_kms += (
-                        shared_sub_segment.get_resolved_geometry().get_arc_length()
-                        * earth_radius
-                    )
-
-            return total_ridge_length_kms
+        return total_ridge_length_kms
 
     def reconstruct(
         self, feature, to_time, from_time=0, anchor_plate_id=None, **kwargs
