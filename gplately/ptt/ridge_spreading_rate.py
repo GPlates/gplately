@@ -40,13 +40,14 @@ def spreading_rates(
     transform_segment_deviation_in_radians=separate_ridge_transform_segments.DEFAULT_TRANSFORM_SEGMENT_DEVIATION_RADIANS,
     velocity_delta_time=1.0,
     anchor_plate_id=None,
+    include_network_boundaries=False,
     output_obliquity_and_normal_and_left_right_plates=False,
 ):
     """Calculate spreading rate of ridge segments (and other statistics like spreading obqliquity, and ridge length/normals and left/right plates).
 
-    The transform segments of spreading features are ignored (unless *transform_segment_deviation_in_radians* is `None`).
+    The transform segments of spreading features are ignored (unless `transform_segment_deviation_in_radians` is `None`).
 
-    Resolves topologies at 'time', tessellates all resolved spreading features to within *threshold_sampling_distance_radians* radians and
+    Resolves topologies at 'time', tessellates all resolved spreading features to within `threshold_sampling_distance_radians` radians and
     returns a list of tuples where each tuple represents a tessellated point.
 
     Parameters
@@ -70,10 +71,13 @@ def spreading_rates(
         If `None` then the full feature geometry is used (ie, it is not split into ridge and transform segments, with the transform segments getting ignored).
     velocity_delta_time : float, default=1.0
         Delta time interval used to calculate spreading velocity.
-                         Defaults to 1 Myr.
-    anchor_plate_id : int, default=None
+        Defaults to 1 Myr.
+    anchor_plate_id : int, optional
         Anchor plate ID for reconstruction.
-        If not specified then uses the default anchor plate of *rotation_model* if it's a `pygplates.RotationModel` (otherwise uses zero).
+        If not specified then uses the default anchor plate of `rotation_model` if it's a `pygplates.RotationModel` (otherwise uses zero).
+    include_network_boundaries : bool, default=False
+        Whether to calculate spreading rate along network boundaries that are not also plate boundaries (defaults to False).
+        If a deforming network shares a boundary with a plate then it'll get included regardless of this option.
     output_obliquity_and_normal_and_left_right_plates : bool, default=False
         Whether to also return spreading obliquity, normal azimuth and left/right plates.
 
@@ -83,31 +87,39 @@ def spreading_rates(
         The results for all tessellated points sampled along spreading features.
         The size of the returned list is equal to the number of tessellated points.
         Each tuple in the list corresponds to a tessellated point and has the following tuple items
-        (depending on *output_obliquity_and_normal_and_left_right_plates*):
+        (depending on `output_obliquity_and_normal_and_left_right_plates`):
 
-        If *output_obliquity_and_normal_and_left_right_plates* is `False` (the default):
+        If `output_obliquity_and_normal_and_left_right_plates` is `False` (the default):
 
         * longitude of tessellated point
         * latitude of tessellated point
-        - spreading velocity magnitude (in cm/yr)
-        - length of arc segment (in degrees) that tessellated point is on
+        * spreading velocity magnitude (in cm/yr)
+        * length of arc segment (in degrees) that tessellated point is on
 
-        If *output_obliquity_and_normal_and_left_right_plates* is `True`:
-        
+        If `output_obliquity_and_normal_and_left_right_plates` is `True`:
+
         * longitude of tessellated point
         * latitude of tessellated point
-        - spreading velocity magnitude (in cm/yr)
-        - spreading obliquity in degrees (deviation from normal line in range 0 to 90 degrees)
-        - length of arc segment (in degrees) that tessellated point is on
-        - azimuth of vector normal to the arc segment in degrees (clockwise starting at North, ie, 0 to 360 degrees)
-        - left plate ID
-        - right plate ID
+        * spreading velocity magnitude (in cm/yr)
+        * spreading obliquity in degrees (deviation from normal line in range 0 to 90 degrees)
+        * length of arc segment (in degrees) that tessellated point is on
+        * azimuth of vector normal to the arc segment in degrees (clockwise starting at North, ie, 0 to 360 degrees)
+        * left plate ID
+        * right plate ID
     """
     # Turn rotation data into a RotationModel (if not already).
     rotation_model = pygplates.RotationModel(rotation_features_or_model)
 
     # Turn topology data into a list of features (if not already).
     topology_features = pygplates.FeaturesFunctionArgument(topology_features)
+
+    # If requested, exclude resolved topological *networks*.
+    # Caller may only want mid-ocean ridges (and transforms) along *plate* boundaries.
+    resolve_topology_types = pygplates.ResolveTopologyType.boundary
+    if include_network_boundaries:
+        resolve_topology_types = (
+            resolve_topology_types | pygplates.ResolveTopologyType.network
+        )
 
     # Resolve our topological plate polygons (and deforming networks) to the current 'time'.
     # We generate both the resolved topology boundaries and the boundary sections between them.
@@ -120,6 +132,7 @@ def spreading_rates(
         time,
         shared_boundary_sections,
         anchor_plate_id,
+        resolve_topology_types=resolve_topology_types,
     )
 
     # List of tesselated spreading points and associated spreading parameters for the current 'time'.
@@ -162,7 +175,9 @@ def spreading_rates(
         # Iterate over the shared sub-segments of the current line.
         # These are the parts of the line that actually contribute to topological boundaries.
         for shared_sub_segment in shared_boundary_section.get_shared_sub_segments():
-            spreading_feature_resolved_geometry = shared_sub_segment.get_resolved_geometry()
+            spreading_feature_resolved_geometry = (
+                shared_sub_segment.get_resolved_geometry()
+            )
 
             if transform_segment_deviation_in_radians is not None:
                 # Split into ridge and transform segments.
@@ -291,6 +306,10 @@ def spreading_rates_dense(
 ):
     """
     Equivalent to `spreading_rates(..., output_obliquity_and_normal_and_left_right_plates=True)`.
+
+    See Also
+    --------
+    spreading_rates
     """
 
     return spreading_rates(

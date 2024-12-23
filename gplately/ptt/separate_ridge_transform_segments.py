@@ -341,7 +341,7 @@ def get_stage_rotation_for_reconstructed_geometry(
                     For isochrons this should be its time of appearance (ie, when formed at mid-ocean ridge).
                     For mid-ocean ridges this can be any time when the ridge is actively spreading.
                     Defaults to the time of appearance of 'spreading_feature'.
-    
+
     return_left_right_plates: Also return the left and right plate IDs (as a 3-tuple of (stage rotation, left plate, right plate)).
                               Defaults to False.
 
