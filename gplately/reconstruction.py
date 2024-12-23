@@ -31,6 +31,7 @@ from . import tools as _tools
 from .gpml import _load_FeatureCollection
 from .pygplates import FeatureCollection as _FeatureCollection
 from .pygplates import RotationModel as _RotationModel
+from .ptt import separate_ridge_transform_segments
 
 
 class PlateReconstruction(object):
@@ -41,16 +42,16 @@ class PlateReconstruction(object):
 
     Attributes
     ----------
-    rotation_model : str, or instance of <pygplates.FeatureCollection>, or <pygplates.Feature>, or sequence of <pygplates.Feature>, or instance of <pygplates.RotationModel>
+    rotation_model : str/`os.PathLike`, or instance of <pygplates.FeatureCollection>, or <pygplates.Feature>, or sequence of <pygplates.Feature>, or instance of <pygplates.RotationModel>
         A rotation model to query equivalent and/or relative topological plate rotations
         from a time in the past relative to another time in the past or to present day. Can be
         provided as a rotation filename, or rotation feature collection, or rotation feature, or
         sequence of rotation features, or a sequence (eg, a list or tuple) of any combination of
         those four types.
-    topology_features : str, or a sequence (eg, `list` or `tuple`) of instances of <pygplates.Feature>, or a single instance of <pygplates.Feature>, or an instance of <pygplates.FeatureCollection>, default None
+    topology_features : str/`os.PathLike`, or a sequence (eg, `list` or `tuple`) of instances of <pygplates.Feature>, or a single instance of <pygplates.Feature>, or an instance of <pygplates.FeatureCollection>, default None
         Reconstructable topological features like trenches, ridges and transforms. Can be provided
         as an optional topology-feature filename, or sequence of features, or a single feature.
-    static_polygons : str, or instance of <pygplates.Feature>, or sequence of <pygplates.Feature>,or an instance of <pygplates.FeatureCollection>, default None
+    static_polygons : str/`os.PathLike`, or instance of <pygplates.Feature>, or sequence of <pygplates.Feature>,or an instance of <pygplates.FeatureCollection>, default None
         Present-day polygons whose shapes do not change through geological time. They are
         used to cookie-cut dynamic polygons into identifiable topological plates (assigned
         an ID) according to their present-day locations. Can be provided as a static polygon feature
@@ -224,7 +225,7 @@ class PlateReconstruction(object):
         tessellation_threshold_radians=0.001,
         ignore_warnings=False,
         return_geodataframe=False,
-        **kwargs
+        **kwargs,
     ):
         """Samples points along subduction zone trenches and obtains subduction data at a particular
         geological time.
@@ -252,7 +253,7 @@ class PlateReconstruction(object):
             The reconstruction time (Ma) at which to query subduction convergence.
 
         tessellation_threshold_radians : float, default=0.001
-            The threshold sampling distance along the subducting trench (in radians).
+            The threshold sampling distance along the plate boundaries (in radians).
 
         Returns
         -------
@@ -310,7 +311,7 @@ class PlateReconstruction(object):
                     tessellation_threshold_radians,
                     float(time),
                     anchor_plate_id=anchor_plate_id,
-                    **kwargs
+                    **kwargs,
                 )
 
         else:
@@ -320,7 +321,7 @@ class PlateReconstruction(object):
                 tessellation_threshold_radians,
                 float(time),
                 anchor_plate_id=anchor_plate_id,
-                **kwargs
+                **kwargs,
             )
 
         subduction_data = np.vstack(subduction_data)
@@ -546,18 +547,38 @@ class PlateReconstruction(object):
         tessellation_threshold_radians=0.001,
         ignore_warnings=False,
         return_geodataframe=False,
-        **kwargs
+        spreading_feature_types=[pygplates.FeatureType.gpml_mid_ocean_ridge],
+        transform_segment_deviation_in_radians=separate_ridge_transform_segments.DEFAULT_TRANSFORM_SEGMENT_DEVIATION_RADIANS,
+        output_obliquity_and_normal_and_left_right_plates=False,
+        **kwargs,
     ):
         """Samples points along resolved spreading features (e.g. mid-ocean ridges) and calculates spreading rates and
         lengths of ridge segments at a particular geological time.
 
-        Resolves topologies at `time`, tessellates all resolved spreading features to within 'tessellation_threshold_radians'
-        radians. Returns a 4-column vertically stacked tuple with the following data.
+        Resolves topologies at `time`, tessellates all resolved spreading features to within 'tessellation_threshold_radians' radians.
+
+        The transform segments of spreading features are ignored (unless *transform_segment_deviation_in_radians* is `None`).
+
+        Returns a 4-column vertically stacked tuple with the following data
+        (depending on *output_obliquity_and_normal_and_left_right_plates*):
+
+        If *output_obliquity_and_normal_and_left_right_plates* is `False` (the default):
 
         * Col. 0 - longitude of sampled ridge point
         * Col. 1 - latitude of sampled ridge point
         * Col. 2 - spreading velocity magnitude (in cm/yr)
         * Col. 3 - length of arc segment (in degrees) that current point is on
+
+        If *output_obliquity_and_normal_and_left_right_plates* is `True`:
+
+        * Col. 0 - longitude of sampled ridge point
+        * Col. 1 - latitude of sampled ridge point
+        * Col. 2 - spreading velocity magnitude (in cm/yr)
+        * Col. 3 - spreading obliquity in degrees (deviation from normal line in range 0 to 90 degrees)
+        * Col. 4 - length of arc segment (in degrees) that current point is on
+        * Col. 5 - azimuth of vector normal to the arc segment in degrees (clockwise starting at North, ie, 0 to 360 degrees)
+        * Col. 6 - left plate ID
+        * Col. 7 - right plate ID
 
         All spreading feature types are considered. The transform segments of spreading features are ignored.
         Note: by default, the function assumes that a segment can deviate 45 degrees from the stage pole before it is
@@ -567,60 +588,84 @@ class PlateReconstruction(object):
         ----------
         time : float
             The reconstruction time (Ma) at which to query subduction convergence.
-
         tessellation_threshold_radians : float, default=0.001
-            The threshold sampling distance along the subducting trench (in radians).
-
+            The threshold sampling distance along the plate boundaries (in radians).
         ignore_warnings : bool, default=False
-            Choose to ignore warnings from Plate Tectonic Tools' ridge_spreading_rate workflow.
+            Choose to ignore warnings from Plate Tectonic Tools' ridge_spreading_rate workflow (if used).
+        return_geodataframe : bool, default=False
+            Choose to return data in a geopandas.GeoDataFrame.
+        spreading_feature_types : <pygplates.FeatureType> or sequence of <pygplates.FeatureType>, default=pygplates.FeatureType.gpml_mid_ocean_ridge
+            Only sample points along plate boundaries of the specified feature types.
+            Default is to only sample mid-ocean ridges.
+            However, you can explicitly specify `None` to sample all plate boundaries.
+        transform_segment_deviation_in_radians : float, default=<implementation-defined>
+            How much a segment can deviate from the stage pole before it's considered a transform segment (in radians).
+            The default value has been empirically determined to give the best results for typical models.
+            If `None` then the full feature geometry is used (ie, it is not split into ridge and transform segments, with the transform segments getting ignored).
+        output_obliquity_and_normal_and_left_right_plates : bool, default=False
+            Whether to also return spreading obliquity, normal azimuth and left/right plates.
 
         Returns
         -------
         ridge_data : a list of vertically-stacked tuples
-            The results for all tessellated points sampled along the trench.
+            The results for all tessellated points sampled along the mid-ocean ridges.
             The size of the returned list is equal to the number of tessellated points.
-            Each tuple in the list corresponds to a tessellated point and has the following tuple items:
+            Each tuple in the list corresponds to a tessellated point and has the following tuple items
+            (depending on *output_obliquity_and_normal_and_left_right_plates*):
+
+            If *output_obliquity_and_normal_and_left_right_plates* is `False` (the default):
 
             * longitude of sampled point
             * latitude of sampled point
-            * spreading velocity magnitude (in cm/yr)
-            * length of arc segment (in degrees) that current point is on
+            - spreading velocity magnitude (in cm/yr)
+            - length of arc segment (in degrees) that sampled point is on
+
+            If *output_obliquity_and_normal_and_left_right_plates* is `True`:
+
+            * longitude of sampled point
+            * latitude of sampled point
+            - spreading velocity magnitude (in cm/yr)
+            - spreading obliquity in degrees (deviation from normal line in range 0 to 90 degrees)
+            - length of arc segment (in degrees) that sampled point is on
+            - azimuth of vector normal to the arc segment in degrees (clockwise starting at North, ie, 0 to 360 degrees)
+            - left plate ID
+            - right plate ID
+
+        Raises
+        ------
+        ValueError
+            If topoloogy features have not been set in this `PlateReconstruction`.
         """
-        from . import ptt as _ptt
 
         anchor_plate_id = kwargs.pop("anchor_plate_id", self.anchor_plate_id)
+        velocity_delta_time = kwargs.pop("velocity_delta_time", 1.0)
 
-        if ignore_warnings:
-            with warnings.catch_warnings():
+        from . import ptt as _ptt
+
+        with warnings.catch_warnings():
+            if ignore_warnings:
                 warnings.simplefilter("ignore")
-                spreading_feature_types = [pygplates.FeatureType.gpml_mid_ocean_ridge]
-                ridge_data = _ptt.ridge_spreading_rate.spreading_rates(
-                    self.rotation_model,
-                    self.topology_features,
-                    float(time),
-                    tessellation_threshold_radians,
-                    spreading_feature_types,
-                    anchor_plate_id=anchor_plate_id,
-                    **kwargs
-                )
 
-        else:
-            spreading_feature_types = [pygplates.FeatureType.gpml_mid_ocean_ridge]
             ridge_data = _ptt.ridge_spreading_rate.spreading_rates(
                 self.rotation_model,
-                self.topology_features,
-                float(time),
+                self._check_topology_features(),
+                time,
                 tessellation_threshold_radians,
-                spreading_feature_types,
+                spreading_feature_types=spreading_feature_types,
+                transform_segment_deviation_in_radians=transform_segment_deviation_in_radians,
+                velocity_delta_time=velocity_delta_time,
                 anchor_plate_id=anchor_plate_id,
-                **kwargs
+                output_obliquity_and_normal_and_left_right_plates=output_obliquity_and_normal_and_left_right_plates,
             )
 
-        if not ridge_data:
-            # the _ptt.ridge_spreading_rate.spreading_rates might return None
-            return
-
-        ridge_data = np.vstack(ridge_data)
+        if ridge_data:
+            ridge_data = np.vstack(ridge_data)
+        else:
+            # No ridge data.
+            if output_obliquity_and_normal_and_left_right_plates:
+                ridge_data = np.empty((0, 8))
+            else:
+                ridge_data = np.empty((0, 4))
 
         if return_geodataframe:
             import geopandas as gpd
@@ -630,20 +675,31 @@ class PlateReconstruction(object):
                 geometry.Point(lon, lat)
                 for lon, lat in zip(ridge_data[:, 0], ridge_data[:, 1])
             ]
-            gdf = gpd.GeoDataFrame(
-                {
-                    "geometry": points,
-                    "velocity (cm/yr)": ridge_data[:, 2],
-                    "length (degrees)": ridge_data[:, 3],
-                },
-                geometry="geometry",
-            )
-            return gdf
+            gdf_data = {
+                "geometry": points,
+                "velocity (cm/yr)": ridge_data[:, 2],
+            }
+            if output_obliquity_and_normal_and_left_right_plates:
+                gdf_data["obliquity (degrees)"] = ridge_data[:, 3]
+                gdf_data["length (degrees)"] = ridge_data[:, 4]
+                gdf_data["normal azimuth (degrees)"] = ridge_data[:, 5]
+                gdf_data["left plate ID"] = ridge_data[:, 6]
+                gdf_data["right plate ID"] = ridge_data[:, 7]
+            else:
+                gdf_data["length (degrees)"] = ridge_data[:, 3]
+            return gpd.GeoDataFrame(gdf_data, geometry="geometry")
 
         else:
             return ridge_data
 
-    def total_ridge_length(self, time, use_ptt=False, ignore_warnings=False):
+    def total_ridge_length(
+        self,
+        time,
+        use_ptt=False,
+        ignore_warnings=False,
+        spreading_feature_types=[pygplates.FeatureType.gpml_mid_ocean_ridge],
+        transform_segment_deviation_in_radians=separate_ridge_transform_segments.DEFAULT_TRANSFORM_SEGMENT_DEVIATION_RADIANS,
+    ):
         """Calculates the total length of all mid-ocean ridges (km) at the specified geological time (Ma).
 
         if `use_ptt` is True
@@ -665,7 +721,15 @@ class PlateReconstruction(object):
         use_ptt : bool, default=False
             If set to `True`, the PTT method is used.
         ignore_warnings : bool, default=False
-            Choose whether to ignore warning messages from PTT's `ridge_spreading_rate` workflow.
+            Choose to ignore warnings from Plate Tectonic Tools' ridge_spreading_rate workflow (if used).
+        spreading_feature_types : <pygplates.FeatureType> or sequence of <pygplates.FeatureType>, default=pygplates.FeatureType.gpml_mid_ocean_ridge
+            Only count lengths associated with sample points along plate boundaries of the specified feature types.
+            Default is to only sample mid-ocean ridges.
+            However, you can explicitly specify `None` to sample all plate boundaries.
+        transform_segment_deviation_in_radians : float, default=<implementation-defined>
+            How much a segment can deviate from the stage pole before it's considered a transform segment (in radians).
+            The default value has been empirically determined to give the best results for typical models.
+            If `None` then the full feature geometry is used (ie, it is not split into ridge and transform segments, with the transform segments getting ignored).
 
         Returns
         -------
@@ -674,10 +738,13 @@ class PlateReconstruction(object):
         """
         from . import ptt as _ptt
 
-        if use_ptt is True:
-            with warnings.catch_warnings():
-                warnings.simplefilter("ignore")
-                ridge_data = self.tessellate_mid_ocean_ridges(time)
+        if use_ptt:
+            ridge_data = self.tessellate_mid_ocean_ridges(
+                time,
+                ignore_warnings=ignore_warnings,
+                spreading_feature_types=spreading_feature_types,
+                transform_segment_deviation_in_radians=transform_segment_deviation_in_radians,
+            )
 
             ridge_arcseg = ridge_data[:, 3]
             ridge_pt_lat = ridge_data[:, 1]
@@ -724,7 +791,7 @@ class PlateReconstruction(object):
 
         Parameters
         ----------
-        feature : str, or instance of <pygplates.FeatureCollection>, or <pygplates.Feature>, or sequence of <pygplates.Feature>
+        feature : str/`os.PathLike`, or instance of <pygplates.FeatureCollection>, or <pygplates.Feature>, or sequence of <pygplates.Feature>
             The geological features to reconstruct. Can be provided as a feature collection, or filename,
             or feature, or sequence of features, or a sequence (eg, a list or tuple) of any combination of
             those four types.
@@ -786,7 +853,7 @@ class PlateReconstruction(object):
             reconstructed_features,
             to_time,
             anchor_plate_id=anchor_plate_id,
-            **kwargs
+            **kwargs,
         )
         return reconstructed_features
 
@@ -1964,7 +2031,11 @@ class Points(object):
             df = self._get_dataframe()
             df.to_xml(filename, index=False)
 
-        elif filename.endswith(".gpml") or filename.endswith(".gpmlz") or filename.endswith(".shp"):
+        elif (
+            filename.endswith(".gpml")
+            or filename.endswith(".gpmlz")
+            or filename.endswith(".shp")
+        ):
             self.FeatureCollection.write(filename)
 
         else:
@@ -1991,12 +2062,12 @@ class Points(object):
         ----------
         reconstruction_time : float
             The time at which to rotate the reconstructed points.
-        from_rotation_features_or_model : str, list of str, or instance of `pygplates.RotationModel`
+        from_rotation_features_or_model : str/`os.PathLike`, list of str/`os.PathLike`, or instance of `pygplates.RotationModel`
             A filename, or a list of filenames, or a pyGPlates
             RotationModel object that defines the rotation model
             that the input grid is currently associated with.
             `self.plate_reconstruction.rotation_model` is default.
-        to_rotation_features_or_model : str, list of str, or instance of `pygplates.RotationModel`
+        to_rotation_features_or_model : str/`os.PathLike`, list of str/`os.PathLike`, or instance of `pygplates.RotationModel`
             A filename, or a list of filenames, or a pyGPlates
             RotationModel object that defines the rotation model
             that the input grid shall be rotated with.
