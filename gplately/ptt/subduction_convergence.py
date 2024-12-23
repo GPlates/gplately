@@ -179,7 +179,8 @@ def subduction_convergence(
     velocity_delta_time=1.0,
     anchor_plate_id=0,
     include_slab_topologies=False,
-    **kwargs
+    include_network_boundaries=False,
+    **kwargs,
 ):
     # Docstring in numpydoc format...
     """Find the convergence and absolute velocities sampled along trenches (subduction zones) at a particular geological time.
@@ -198,14 +199,14 @@ def subduction_convergence(
     9 - trench plate ID
     * - extra data can be appended by specifying optional keyword arguments (*kwargs* - see list of options below).
 
-    The obliquity angles are in the range (-180 180). The range (0, 180) goes clockwise (when viewed from above the Earth) from the
+    The obliquity angles are in the range (-180, 180). The range (0, 180) goes clockwise (when viewed from above the Earth) from the
     trench normal direction to the velocity vector. The range (0, -180) goes counter-clockwise.
     You can change the range (-180, 180) to the range (0, 360) by adding 360 to negative angles.
     The trench normal is perpendicular to the trench and pointing toward the overriding plate.
 
     Note that the convergence velocity magnitude is negative if the plates are diverging (if convergence obliquity angle
     is greater than 90 or less than -90). And note that the absolute velocity magnitude is negative if the trench (subduction zone)
-    is moving towards the overriding plate (if absolute obliquity angle is less than 90 or greater than -90) - note that this
+    is moving towards the overriding plate (if absolute obliquity angle is less than 90 and greater than -90) - note that this
     ignores the kinematics of the subducting plate.
 
     Parameters
@@ -228,6 +229,9 @@ def subduction_convergence(
         The anchor plate of the rotation model. Defaults to zero.
     include_slab_topologies : bool, default False
         Include slab topologies (`gpml:TopologicalSlabBoundary`) in analysis.
+    include_network_boundaries : bool, default False
+        Whether to calculate subduction convergence along network boundaries that are not also plate boundaries (defaults to False).
+        If a deforming network shares a boundary with a plate then it'll get included regardless of this option.
 
     Returns
     -------
@@ -321,6 +325,14 @@ def subduction_convergence(
             != "gpml:TopologicalSlabBoundary"
         ]
 
+    # If requested, exclude resolved topological *networks*.
+    # Caller may only want subduction zones along *plate* boundaries.
+    resolve_topology_types = pygplates.ResolveTopologyType.boundary
+    if include_network_boundaries:
+        resolve_topology_types = (
+            resolve_topology_types | pygplates.ResolveTopologyType.network
+        )
+
     # Resolve our topological plate polygons (and deforming networks) to the current 'time'.
     # We generate both the resolved topology boundaries and the boundary sections between them.
     resolved_topologies = []
@@ -332,6 +344,7 @@ def subduction_convergence(
         time,
         shared_boundary_sections,
         anchor_plate_id,
+        resolve_topology_types=resolve_topology_types,
     )
 
     # List of tesselated subduction zone (trench) shared subsegment points and associated convergence parameters
@@ -443,7 +456,7 @@ def subduction_convergence(
                         velocity_delta_time,
                         rotation_model,
                         anchor_plate_id,
-                        **kwargs
+                        **kwargs,
                     )
 
                     # Accumulate distance-along-trench.
@@ -469,7 +482,7 @@ def subduction_convergence(
                     velocity_delta_time,
                     rotation_model,
                     anchor_plate_id,
-                    **kwargs
+                    **kwargs,
                 )
 
                 # Accumulate distance-along-trench by length of sub-segment geometry.
@@ -491,7 +504,7 @@ def _sub_segment_subduction_convergence(
     velocity_delta_time,
     rotation_model,
     anchor_plate_id,
-    **kwargs
+    **kwargs,
 ):
     #
     # Process keyword arguments.
@@ -1149,7 +1162,7 @@ def subduction_convergence_over_time(
     anchor_plate_id=0,
     output_gpml_filename=None,
     include_slab_topologies=False,
-    **kwargs
+    **kwargs,
 ):
     if time_increment <= 0:
         raise ValueError(
@@ -1191,7 +1204,7 @@ def subduction_convergence_over_time(
             velocity_delta_time,
             anchor_plate_id,
             include_slab_topologies=include_slab_topologies,
-            **kwargs
+            **kwargs,
         )
 
         if output_data:
@@ -1847,7 +1860,7 @@ def main(args):
         args.velocity_delta_time,
         args.anchor_plate_id,
         args.output_gpml_filename,
-        **kwargs
+        **kwargs,
     )
     if return_code is None:
         sys.exit(1)

@@ -16,7 +16,7 @@
 #
 
 """
-Tools that wrap up pyGplates and Plate Tectonic Tools functionalities for reconstructing features,
+Tools that wrap up pyGPlates and Plate Tectonic Tools functionalities for reconstructing features,
 working with point data, and calculating plate velocities at specific geological times. 
 """
 
@@ -219,30 +219,241 @@ class PlateReconstruction(object):
 
         return self._topological_snapshot
 
+    def _subduction_convergence(
+        self,
+        time,
+        uniform_point_spacing_radians,
+        velocity_delta_time,
+        anchor_plate_id,
+        include_network_boundaries,
+        convergence_threshold_in_cm_per_yr,
+    ):
+        #
+        # This is essentially a replacement for 'ptt.subduction_convergence.subduction_convergence()'.
+        #
+        # Instead of calculating convergence along subduction zones using subducting and overriding plate IDs,
+        # it uses pyGPlates 1.0 functionality that calculates statistics along plate boundaries
+        # (such as plate velocities, from which convergence velocity can be obtained).
+        #
+        # Note that this function does NOT really have any advantage over 'ptt.subduction_convergence.subduction_convergence()'
+        # (unlike '_ridge_spreading_rates()' which DOES have an advantage over 'ptt.ridge_spreading_rate.spreading_rates()').
+        # This is because this function only samples plate boundaries that have a subduction polarity (eg, subduction zones)
+        # since we need to know which plates are subducting and overriding, and hence cannot calculate convergence over all
+        # plate boundaries.
+        #
+
+        # Restrict plate boundaries to those that have a subduction polarity.
+        # This is just an optimisation to avoid unnecessarily sampling all plate boundaries.
+        def _boundary_section_filter_function(resolved_topological_section):
+            return (
+                resolved_topological_section.get_feature().get_enumeration(
+                    pygplates.PropertyName.gpml_subduction_polarity
+                )
+                is not None
+            )
+
+        # Generate statistics at uniformly spaced points along plate boundaries.
+        plate_boundary_statistics_dict = self.topological_snapshot(
+            time, anchor_plate_id
+        ).calculate_plate_boundary_statistics(
+            uniform_point_spacing_radians,
+            first_uniform_point_spacing_radians=0,
+            velocity_delta_time=velocity_delta_time,
+            velocity_units=pygplates.VelocityUnits.cms_per_yr,
+            include_network_boundaries=include_network_boundaries,
+            boundary_section_filter=_boundary_section_filter_function,
+            return_shared_sub_segment_dict=True,
+        )
+
+        subduction_data = []
+
+        # Iterate over the shared boundary sub-segments (each one will have a list of uniform points).
+        for (
+            shared_sub_segment,
+            shared_sub_segment_stats,
+        ) in plate_boundary_statistics_dict.items():
+
+            # Find the subduction plate of the current shared boundary sub-segment.
+            subducting_plate_and_polarity = shared_sub_segment.get_subducting_plate(
+                return_subduction_polarity=True, enforce_single_plate=False
+            )
+            # Skip current shared boundary sub-segment if it doesn't have a valid subduction polarity.
+            if not subducting_plate_and_polarity:
+                continue
+            subducting_plate, subduction_polarity = subducting_plate_and_polarity
+
+            if subduction_polarity == "Left":
+                overriding_plate_is_on_left = True
+            else:
+                overriding_plate_is_on_left = False
+
+            # TODO: Get trench plate ID from sub-segments of shared sub-segment (if it's a topological line).
+            #       This will probably require adding the sub-segment feature (or sub-sub-segment if topological line)
+            #       to pygplates.PlateBoundaryStatistic (so we can obtain the trench plate ID).
+            #       Perhaps can slip that into pygplates 1.0.0 (Jan 2025).
+            #       Until then this will not be accurate for deforming topological lines:
+            #         See https://github.com/GPlates/gplately/issues/270
+            trench_plate_id = (
+                shared_sub_segment.get_feature().get_reconstruction_plate_id()
+            )
+
+            # Iterate over the uniform points of the current shared boundary sub-segment.
+            for stat in shared_sub_segment_stats:
+                # Find subducting plate velocity (opposite to overriding plate).
+                if overriding_plate_is_on_left:
+                    subducting_plate_velocity = stat.right_plate_velocity
+                else:
+                    subducting_plate_velocity = stat.left_plate_velocity
+                # Reject point if there's no subducting plate (or network).
+                if subducting_plate_velocity is None:
+                    continue
+
+                # The convergence velocity is actually that of the subducting plate relative to the trench line.
+                # It's not the right plate relative to the left (or vice versa).
+                convergence_velocity = (
+                    subducting_plate_velocity - stat.boundary_velocity
+                )
+
+                # Get the trench normal in subducting direction (ie, towards overriding plate).
+                if overriding_plate_is_on_left:
+                    trench_normal = stat.boundary_normal
+                else:
+                    trench_normal = -stat.boundary_normal
+
+                # If requested, reject point if it's not converging within specified threshold.
+                if convergence_threshold_in_cm_per_yr is not None:
+                    # Note that we use the 'orthogonal' component of velocity vector.
+                    if (
+                        pygplates.Vector3D.dot(convergence_velocity, trench_normal)
+                        < convergence_threshold_in_cm_per_yr
+                    ):
+                        continue
+
+                # Convergence velocity magnitude and obliquity.
+                if convergence_velocity.is_zero_magnitude():
+                    convergence_velocity_magnitude = 0
+                    convergence_obliquity = 0
+                else:
+                    convergence_velocity_magnitude = (
+                        convergence_velocity.get_magnitude()
+                    )
+                    convergence_obliquity = pygplates.Vector3D.angle_between(
+                        convergence_velocity, trench_normal
+                    )
+
+                    # The direction towards which we rotate from the trench normal in a clockwise fashion.
+                    clockwise_direction = pygplates.Vector3D.cross(
+                        trench_normal, stat.boundary_point.to_xyz()
+                    )
+                    # Anti-clockwise direction has range (0, -pi) instead of (0, pi).
+                    if (
+                        pygplates.Vector3D.dot(
+                            convergence_velocity, clockwise_direction
+                        )
+                        < 0
+                    ):
+                        convergence_obliquity = -convergence_obliquity
+
+                    # See if plates are diverging (moving away from each other).
+                    # If plates are diverging (moving away from each other) then make the
+                    # velocity magnitude negative to indicate this. This could be inferred from
+                    # the obliquity but it seems this is the standard way to output convergence rate.
+                    #
+                    # Note: This is the same as done in 'ptt.subduction_convergence.subduction_convergence()'.
+                    if pygplates.Vector3D.dot(convergence_velocity, trench_normal) < 0:
+                        convergence_velocity_magnitude = -convergence_velocity_magnitude
+
+                # Trench absolute velocity magnitude and obliquity.
+                trench_absolute_velocity_magnitude = stat.boundary_velocity_magnitude
+                trench_absolute_velocity_obliquity = stat.boundary_velocity_obliquity
+
+                # If the trench normal (in direction of overriding plate) is opposite the boundary line normal (which is to the left)
+                # then we need to flip the obliquity of the trench absolute velocity vector. This is because it's currently relative
+                # to the boundary line normal but needs to be relative to the trench normal.
+                if not overriding_plate_is_on_left:
+                    trench_absolute_velocity_obliquity -= np.pi
+                    # Keep obliquity in the range [-pi, pi].
+                    if trench_absolute_velocity_obliquity < -np.pi:
+                        trench_absolute_velocity_obliquity += 2 * np.pi
+
+                # See if the trench absolute motion is heading in the direction of the
+                # overriding plate. If it is then make the velocity magnitude negative to
+                # indicate this. This could be inferred from the obliquity but it seems this
+                # is the standard way to output trench velocity magnitude.
+                #
+                # Note that we are not calculating the motion of the trench
+                # relative to the overriding plate - they are usually attached to each other
+                # and hence wouldn't move relative to each other.
+                #
+                # Note: This is the same as done in 'ptt.subduction_convergence.subduction_convergence()'.
+                if np.abs(trench_absolute_velocity_obliquity) < 0.5 * np.pi:
+                    trench_absolute_velocity_magnitude = (
+                        -trench_absolute_velocity_magnitude
+                    )
+
+                lat, lon = stat.boundary_point.to_lat_lon()
+
+                if overriding_plate_is_on_left:
+                    subducting_plate = stat.right_plate
+                else:
+                    subducting_plate = stat.left_plate
+
+                # Get the subducting plate ID from resolved topological boundary (or network).
+                if subducting_plate.located_in_resolved_boundary():
+                    subducting_plate_id = (
+                        subducting_plate.located_in_resolved_boundary()
+                        .get_feature()
+                        .get_reconstruction_plate_id()
+                    )
+                else:
+                    subducting_plate_id = (
+                        subducting_plate.located_in_resolved_network()
+                        .get_feature()
+                        .get_reconstruction_plate_id()
+                    )
+
+                subduction_data.append(
+                    (
+                        lon,
+                        lat,
+                        convergence_velocity_magnitude,
+                        np.degrees(convergence_obliquity),
+                        trench_absolute_velocity_magnitude,
+                        np.degrees(trench_absolute_velocity_obliquity),
+                        np.degrees(stat.boundary_length),
+                        np.degrees(stat.boundary_normal_azimuth),
+                        subducting_plate_id,
+                        trench_plate_id,
+                    )
+                )
+
+        return subduction_data
+
     def tessellate_subduction_zones(
         self,
         time,
         tessellation_threshold_radians=0.001,
         ignore_warnings=False,
         return_geodataframe=False,
+        use_ptt=False,
+        include_network_boundaries=False,
+        convergence_threshold_in_cm_per_yr=None,
         **kwargs,
     ):
-        """Samples points along subduction zone trenches and obtains subduction data at a particular
-        geological time.
+        """Samples points along subduction zone trenches and obtains subduction data at a particular geological time.
 
-        Resolves topologies at `time`, tessellates all resolved subducting features to within 'tessellation_threshold_radians'
-        radians and obtains the following information for each sampled point along a trench:
+        Resolves topologies at `time` and tessellates all resolved subducting features into points.
 
-        `tessellate_subduction_zones` returns a list of 10 vertically-stacked tuples with the following data per sampled trench point:
+        Returns a 10-column vertically-stacked tuple with the following data per sampled trench point:
 
         * Col. 0 - longitude of sampled trench point
         * Col. 1 - latitude of sampled trench point
         * Col. 2 - subducting convergence (relative to trench) velocity magnitude (in cm/yr)
-        * Col. 3 - subducting convergence velocity obliquity angle (angle between trench normal vector and convergence velocity vector)
+        * Col. 3 - subducting convergence velocity obliquity angle in degrees (angle between trench normal vector and convergence velocity vector)
         * Col. 4 - trench absolute (relative to anchor plate) velocity magnitude (in cm/yr)
-        * Col. 5 - trench absolute velocity obliquity angle (angle between trench normal vector and trench absolute velocity vector)
+        * Col. 5 - trench absolute velocity obliquity angle in degrees (angle between trench normal vector and trench absolute velocity vector)
         * Col. 6 - length of arc segment (in degrees) that current point is on
-        * Col. 7 - trench normal azimuth angle (clockwise starting at North, ie, 0 to 360 degrees) at current point
+        * Col. 7 - trench normal (in subduction direction, ie, towards overriding plate) azimuth angle (clockwise starting at North, ie, 0 to 360 degrees) at current point
         * Col. 8 - subducting plate ID
         * Col. 9 - trench plate ID
 
@@ -251,9 +462,29 @@ class PlateReconstruction(object):
         ----------
         time : float
             The reconstruction time (Ma) at which to query subduction convergence.
-
         tessellation_threshold_radians : float, default=0.001
             The threshold sampling distance along the plate boundaries (in radians).
+        ignore_warnings : bool, default=False
+            Choose to ignore warnings from Plate Tectonic Tools' subduction_convergence workflow (if `use_ptt` is `True`).
+        return_geodataframe : bool, default=False
+            Choose to return data in a geopandas.GeoDataFrame.
+        use_ptt : bool, default=False
+            If set to `True` then uses Plate Tectonic Tools' `subduction_convergence` workflow to calculate subduction convergence
+            (which uses the subducting stage rotation of the subduction/trench plate IDs calculate subducting velocities).
+            If set to `False` then uses plate convergence to calculate subduction convergence
+            (which samples velocities of the two adjacent boundary plates at each sampled point to calculate subducting velocities).
+            Both methods ignore plate boundaries that do not have a subduction polarity (feature property), which essentially means
+            they only sample subduction zones.
+        include_network_boundaries : bool, default=False
+            Whether to calculate subduction convergence along network boundaries that are not also plate boundaries (defaults to False).
+            If a deforming network shares a boundary with a plate then it'll get included regardless of this option.
+            Since subduction zones occur along *plate* boundaries this would only be an issue if an intra-plate network boundary was incorrectly labelled as subducting.
+        convergence_threshold_in_cm_per_yr : float, optional
+            Only return sample points with an orthogonal (ie, in the subducting geometry's normal direction) converging velocity above this value (in cm/yr).
+            For example, setting this to `0.0` would remove all diverging sample points (leaving only converging points).
+            This value can be negative which means a small amount of divergence is allowed.
+            If `None` then all (converging and diverging) sample points are returned. This is the default.
+            Note that this parameter can only be specified if `use_ptt` is `False`.
 
         Returns
         -------
@@ -265,66 +496,93 @@ class PlateReconstruction(object):
             * Col. 0 - longitude of sampled trench point
             * Col. 1 - latitude of sampled trench point
             * Col. 2 - subducting convergence (relative to trench) velocity magnitude (in cm/yr)
-            * Col. 3 - subducting convergence velocity obliquity angle (angle between trench normal vector and convergence velocity vector)
+            * Col. 3 - subducting convergence velocity obliquity angle in degrees (angle between trench normal vector and convergence velocity vector)
             * Col. 4 - trench absolute (relative to anchor plate) velocity magnitude (in cm/yr)
-            * Col. 5 - trench absolute velocity obliquity angle (angle between trench normal vector and trench absolute velocity vector)
+            * Col. 5 - trench absolute velocity obliquity angle in degrees (angle between trench normal vector and trench absolute velocity vector)
             * Col. 6 - length of arc segment (in degrees) that current point is on
-            * Col. 7 - trench normal azimuth angle (clockwise starting at North, ie, 0 to 360 degrees) at current point
+            * Col. 7 - trench normal (in subduction direction, ie, towards overriding plate) azimuth angle (clockwise starting at North, ie, 0 to 360 degrees) at current point
             * Col. 8 - subducting plate ID
             * Col. 9 - trench plate ID
 
+        Raises
+        ------
+        ValueError
+            If topoloogy features have not been set in this `PlateReconstruction`.
+        ValueError
+            If `use_ptt` is `True` and `convergence_threshold_in_cm_per_yr` is not `None`.
+
         Notes
         -----
-        Each sampled point in the output is the midpoint of a great circle arc between two adjacent points in the trench polyline.
-        The trench normal vector used in the obliquity calculations is perpendicular to the great circle arc of each point
-        (arc midpoint) and pointing towards the overriding plate (rather than away from it).
+        If `use_ptt` is False then each trench is sampled at *exactly* uniform intervals along its length such that the sampled points
+        have a uniform spacing (along each trench polyline) that is *equal* to `tessellation_threshold_radians`.
+        If `use_ptt` is True then each trench is sampled at *approximately* uniform intervals along its length such that the sampled points
+        have a uniform spacing (along each trench polyline) that is *less than or equal to* `tessellation_threshold_radians`.
 
-        Each trench is sampled at approximately uniform intervals along its length (specified via a threshold sampling distance).
-        The sampling along the entire length of a trench is not exactly uniform. Each segment along a trench is sampled
-        such that the samples have a uniform spacing that is less than or equal to the threshold sampling distance. However each
-        segment in a trench might have a slightly different spacing distance (since segment lengths are not integer multiples of
-        the threshold sampling distance).
-
-        The trench normal (at each arc segment mid-point) always points *towards* the overriding plate.
-        The obliquity angles are in the range (-180 180). The range (0, 180) goes clockwise (when viewed from above the Earth)
+        The trench normal (at each sampled trench point) always points *towards* the overriding plate.
+        The obliquity angles are in the range (-180, 180). The range (0, 180) goes clockwise (when viewed from above the Earth)
         from the trench normal direction to the velocity vector. The range (0, -180) goes counter-clockwise.
         You can change the range (-180, 180) to the range (0, 360) by adding 360 to negative angles.
         The trench normal is perpendicular to the trench and pointing toward the overriding plate.
 
         Note that the convergence velocity magnitude is negative if the plates are diverging (if convergence obliquity angle
         is greater than 90 or less than -90). And note that the absolute velocity magnitude is negative if the trench
-        (subduction zone) is moving towards the overriding plate (if absolute obliquity angle is less than 90 or greater
+        (subduction zone) is moving towards the overriding plate (if absolute obliquity angle is less than 90 and greater
         than -90) - note that this ignores the kinematics of the subducting plate.
 
         The delta time interval used for velocity calculations is, by default, assumed to be 1Ma.
+
+        Examples
+        --------
+        To sample points along subduction zones at 50Ma:
+
+            subduction_data = plate_reconstruction.tessellate_subduction_zones(50)
+
+        To sample points along subduction zones at 50Ma, but only where there's convergence:
+
+            subduction_data = plate_reconstruction.tessellate_subduction_zones(50,
+                    convergence_threshold_in_cm_per_yr=0.0)
         """
-        from . import ptt as _ptt
-
         anchor_plate_id = kwargs.pop("anchor_plate_id", self.anchor_plate_id)
+        velocity_delta_time = kwargs.pop("velocity_delta_time", 1.0)
 
-        if ignore_warnings:
+        if use_ptt:
+            from . import ptt as _ptt
+
+            if convergence_threshold_in_cm_per_yr is not None:
+                raise ValueError(
+                    "Can only specify 'convergence_threshold_in_cm_per_yr' if 'use_ptt' is False."
+                )
+
             with warnings.catch_warnings():
-                warnings.simplefilter("ignore")
+                if ignore_warnings:
+                    warnings.simplefilter("ignore")
+
                 subduction_data = _ptt.subduction_convergence.subduction_convergence(
                     self.rotation_model,
                     self._check_topology_features(),
                     tessellation_threshold_radians,
-                    float(time),
+                    time,
+                    velocity_delta_time=velocity_delta_time,
                     anchor_plate_id=anchor_plate_id,
+                    include_network_boundaries=include_network_boundaries,
                     **kwargs,
                 )
 
         else:
-            subduction_data = _ptt.subduction_convergence.subduction_convergence(
-                self.rotation_model,
-                self._check_topology_features(),
-                tessellation_threshold_radians,
-                float(time),
+            subduction_data = self._subduction_convergence(
+                time,
+                uniform_point_spacing_radians=tessellation_threshold_radians,
+                velocity_delta_time=velocity_delta_time,
                 anchor_plate_id=anchor_plate_id,
-                **kwargs,
+                include_network_boundaries=include_network_boundaries,
+                convergence_threshold_in_cm_per_yr=convergence_threshold_in_cm_per_yr,
             )
 
-        subduction_data = np.vstack(subduction_data)
+        if subduction_data:
+            subduction_data = np.vstack(subduction_data)
+        else:
+            # No subduction data.
+            subduction_data = np.empty((0, 10))
 
         if return_geodataframe:
             import geopandas as gpd
@@ -357,84 +615,82 @@ class PlateReconstruction(object):
         else:
             return subduction_data
 
-    def total_subduction_zone_length(self, time, use_ptt=False, ignore_warnings=False):
-        """Calculates the total length of all mid-ocean ridges (km) at the specified geological time (Ma).
+    def total_subduction_zone_length(
+        self,
+        time,
+        ignore_warnings=False,
+        use_ptt=False,
+        include_network_boundaries=False,
+        convergence_threshold_in_cm_per_yr=None,
+    ):
+        """Calculates the total length of all subduction zones (km) at the specified geological time (Ma).
 
-        if `use_ptt` is True
+        Resolves topologies at `time` and tessellates all resolved subducting features into points (see `tessellate_subduction_zones`).
 
-        Uses Plate Tectonic Tools' `subduction_convergence` module to calculate trench segment lengths on a unit sphere.
-        The aggregated total subduction zone length is scaled to kilometres using the geocentric radius.
-
-        Otherwise
-
-        Resolves topology features ascribed to the `PlateReconstruction` model and extracts their shared boundary sections.
-        The lengths of each trench boundary section are appended to the total subduction zone length.
-        The total length is scaled to kilometres using a latitude-dependent (geocentric) Earth radius.
-
+        Total length is calculated by sampling points along the resolved subducting features (e.g. subduction zones) and accumulating their lengths
+        (see `tessellate_subduction_zones`). Scales lengths to kilometres using the geocentric radius (at each sampled point).
 
         Parameters
         ----------
         time : int
-            The geological time at which to calculate total mid-ocean ridge lengths.
-        use_ptt : bool, default=False
-            If set to `True`, the PTT method is used.
+            The geological time at which to calculate total subduction zone lengths.
         ignore_warnings : bool, default=False
-            Choose whether to ignore warning messages from PTT's `subduction_convergence` workflow. These warnings alert the user
-            when certain subduction sub-segments are ignored - this happens when the trench segments have unidentifiable subduction
-            polarities and/or subducting plates.
+            Choose to ignore warnings from Plate Tectonic Tools' subduction_convergence workflow (if `use_ptt` is `True`).
+        use_ptt : bool, default=False
+            If set to `True` then uses Plate Tectonic Tools' `subduction_convergence` workflow to calculate total subduction zone length.
+            If set to `False` then uses plate convergence instead.
+            Plate convergence is the more general approach that works along all plate boundaries (not just subduction zones).
+        include_network_boundaries : bool, default=False
+            Whether to count lengths along network boundaries that are not also plate boundaries (defaults to False).
+            If a deforming network shares a boundary with a plate then it'll get included regardless of this option.
+            Since subduction zones occur along *plate* boundaries this would only be an issue if an intra-plate network boundary was incorrectly labelled as subducting.
+        convergence_threshold_in_cm_per_yr : float, optional
+            Only count lengths associated with sample points that have an orthogonal (ie, in the subducting geometry's normal direction) converging velocity above this value (in cm/yr).
+            For example, setting this to `0.0` would remove all diverging sample points (leaving only converging points).
+            This value can be negative which means a small amount of divergence is allowed.
+            If `None` then all (converging and diverging) sample points are counted. This is the default.
+            Note that this parameter can only be specified if `use_ptt` is `False`.
 
         Returns
         -------
         total_subduction_zone_length_kms : float
             The total subduction zone length (in km) at the specified `time`.
 
+        Raises
+        ------
+        ValueError
+            If topoloogy features have not been set in this `PlateReconstruction`.
+        ValueError
+            If `use_ptt` is `True` and `convergence_threshold_in_cm_per_yr` is not `None`.
+
+        Examples
+        --------
+        To calculate the total length of subduction zones at 50Ma:
+
+            total_subduction_zone_length_kms = plate_reconstruction.total_subduction_zone_length(50)
+
+        To calculate the total length of subduction zones at 50Ma, but only where there's actual convergence:
+
+            total_subduction_zone_length_kms = plate_reconstruction.total_subduction_zone_length(50,
+                    convergence_threshold_in_cm_per_yr=0.0)
         """
-        from . import ptt as _ptt
+        subduction_data = self.tessellate_subduction_zones(
+            time,
+            ignore_warnings=ignore_warnings,
+            use_ptt=use_ptt,
+            include_network_boundaries=include_network_boundaries,
+            convergence_threshold_in_cm_per_yr=convergence_threshold_in_cm_per_yr,
+        )
 
-        if use_ptt:
-            with warnings.catch_warnings():
-                warnings.simplefilter("ignore")
-                subduction_data = self.tessellate_subduction_zones(
-                    time, ignore_warnings=ignore_warnings
-                )
+        trench_arcseg = subduction_data[:, 6]
+        trench_pt_lat = subduction_data[:, 1]
 
-            trench_arcseg = subduction_data[:, 6]
-            trench_pt_lat = subduction_data[:, 1]
+        total_subduction_zone_length_kms = 0
+        for i, segment in enumerate(trench_arcseg):
+            earth_radius = _tools.geocentric_radius(trench_pt_lat[i]) / 1e3
+            total_subduction_zone_length_kms += np.deg2rad(segment) * earth_radius
 
-            total_subduction_zone_length_kms = 0
-            for i, segment in enumerate(trench_arcseg):
-                earth_radius = _tools.geocentric_radius(trench_pt_lat[i]) / 1e3
-                total_subduction_zone_length_kms += np.deg2rad(segment) * earth_radius
-
-            return total_subduction_zone_length_kms
-
-        else:
-            shared_boundary_sections = self.topological_snapshot(
-                time
-            ).get_resolved_topological_sections()
-
-            total_subduction_zone_length_kms = 0.0
-            for shared_boundary_section in shared_boundary_sections:
-                if (
-                    shared_boundary_section.get_feature().get_feature_type()
-                    != pygplates.FeatureType.gpml_subduction_zone
-                ):
-                    continue
-                for (
-                    shared_sub_segment
-                ) in shared_boundary_section.get_shared_sub_segments():
-                    clat, clon = (
-                        shared_sub_segment.get_resolved_geometry()
-                        .get_centroid()
-                        .to_lat_lon()
-                    )
-                    earth_radius = _tools.geocentric_radius(clat) / 1e3
-                    total_subduction_zone_length_kms += (
-                        shared_sub_segment.get_resolved_geometry().get_arc_length()
-                        * earth_radius
-                    )
-
-            return total_subduction_zone_length_kms
+        return total_subduction_zone_length_kms
 
     def total_continental_arc_length(
         self,
@@ -442,15 +698,17 @@ class PlateReconstruction(object):
         continental_grid,
         trench_arc_distance,
         ignore_warnings=True,
+        use_ptt=False,
+        include_network_boundaries=False,
+        convergence_threshold_in_cm_per_yr=None,
     ):
         """Calculates the total length of all global continental arcs (km) at the specified geological time (Ma).
 
-        Uses Plate Tectonic Tools' `subduction_convergence` workflow to sample a given plate model's trench features into
-        point features and obtain their subduction polarities. The resolved points are projected out by the `trench_arc_distance`
-        and their new locations are linearly interpolated onto the supplied `continental_grid`. If the projected trench
-        points lie in the grid, they are considered continental arc points, and their arc segment lengths are appended
-        to the total continental arc length for the specified `time`. The total length is scaled to kilometres using the geocentric
-        Earth radius.
+        Resolves topologies at `time` and tessellates all resolved subducting features into points (see `tessellate_subduction_zones`).
+        The resolved points then are projected out by the `trench_arc_distance` (towards overriding plate) and their new locations are
+        linearly interpolated onto the supplied `continental_grid`. If the projected trench points lie in the grid, they are considered
+        continental arc points, and their arc segment lengths are appended to the total continental arc length for the specified `time`.
+        The total length is scaled to kilometres using the geocentric radius (at each sampled point).
 
         Parameters
         ----------
@@ -462,16 +720,47 @@ class PlateReconstruction(object):
             assumed [-180,180,-90,90]. For a filename, the extent is obtained
             from the file.
         trench_arc_distance : float
-            The trench-to-arc distance (in kilometres) to project sampled trench points out by in the direction of their
-            subduction polarities.
+            The trench-to-arc distance (in kilometres) to project sampled trench points out by in the direction of the overriding plate.
         ignore_warnings : bool, default=True
-            Choose whether to ignore warning messages from PTT's subduction_convergence workflow that alerts the user of
-            subduction sub-segments that are ignored due to unidentified polarities and/or subducting plates.
+            Choose whether to ignore warning messages from Plate Tectonic Tools' subduction_convergence workflow (if `use_ptt` is `True`)
+            that alerts the user of subduction sub-segments that are ignored due to unidentified polarities and/or subducting plates.
+        use_ptt : bool, default=False
+            If set to `True` then uses Plate Tectonic Tools' `subduction_convergence` workflow to sample subducting features and their subduction polarities.
+            If set to `False` then uses plate convergence instead.
+            Plate convergence is the more general approach that works along all plate boundaries (not just subduction zones).
+        include_network_boundaries : bool, default=False
+            Whether to sample subducting features along network boundaries that are not also plate boundaries (defaults to False).
+            If a deforming network shares a boundary with a plate then it'll get included regardless of this option.
+            Since subduction zones occur along *plate* boundaries this would only be an issue if an intra-plate network boundary was incorrectly labelled as subducting.
+        convergence_threshold_in_cm_per_yr : float, optional
+            Only sample points with an orthogonal (ie, in the subducting geometry's normal direction) converging velocity above this value (in cm/yr).
+            For example, setting this to `0.0` would remove all diverging sample points (leaving only converging points).
+            This value can be negative which means a small amount of divergence is allowed.
+            If `None` then all (converging and diverging) points are sampled. This is the default.
+            Note that this parameter can only be specified if `use_ptt` is `False`.
 
         Returns
         -------
         total_continental_arc_length_kms : float
             The continental arc length (in km) at the specified time.
+
+        Raises
+        ------
+        ValueError
+            If topoloogy features have not been set in this `PlateReconstruction`.
+        ValueError
+            If `use_ptt` is `True` and `convergence_threshold_in_cm_per_yr` is not `None`.
+
+        Examples
+        --------
+        To calculate the total length of continental arcs at 50Ma:
+
+            total_continental_arc_length_kms = plate_reconstruction.total_continental_arc_length(50)
+
+        To calculate the total length of subduction zones adjacent to continents at 50Ma, but only where there's actual convergence:
+
+            total_continental_arc_length_kms = plate_reconstruction.total_continental_arc_length(50,
+                    convergence_threshold_in_cm_per_yr=0.0)
         """
         from . import grids as _grids
 
@@ -504,9 +793,13 @@ class PlateReconstruction(object):
                 + "does not match `time` ({})".format(time)
             )
 
-        # Obtain trench data with Plate Tectonic Tools
+        # Obtain trench data.
         trench_data = self.tessellate_subduction_zones(
-            time, ignore_warnings=ignore_warnings
+            time,
+            ignore_warnings=ignore_warnings,
+            use_ptt=use_ptt,
+            include_network_boundaries=include_network_boundaries,
+            convergence_threshold_in_cm_per_yr=convergence_threshold_in_cm_per_yr,
         )
 
         # Extract trench data
@@ -541,6 +834,129 @@ class PlateReconstruction(object):
         segment_lengths = point_radii * segment_arclens
         return np.sum(segment_lengths)
 
+    def _ridge_spreading_rates(
+        self,
+        time,
+        uniform_point_spacing_radians,
+        velocity_delta_time,
+        anchor_plate_id,
+        spreading_feature_types,
+        transform_segment_deviation_in_radians,
+        include_network_boundaries,
+        divergence_threshold_in_cm_per_yr,
+        output_obliquity_and_normal_and_left_right_plates,
+    ):
+        #
+        # This is essentially a replacement for 'ptt.ridge_spreading_rate.spreading_rates()'.
+        #
+        # Instead of calculating spreading rates along mid-ocean ridges using left/right plate IDs,
+        # it uses pyGPlates 1.0 functionality that calculates statistics along plate boundaries
+        # (such as plate velocities, from which divergence spreading velocity can be obtained).
+        #
+        # Note that this function has an advantage over 'ptt.ridge_spreading_rate.spreading_rates()'.
+        # It can work on all plate boundaries, not just those that are spreading (eg, have left/right plate IDs).
+        # This is because it uses plate velocities to calculate divergence (and hence spreading rates).
+        #
+
+        # Generate statistics at uniformly spaced points along plate boundaries.
+        plate_boundary_statistics = self.topological_snapshot(
+            time, anchor_plate_id
+        ).calculate_plate_boundary_statistics(
+            uniform_point_spacing_radians,
+            first_uniform_point_spacing_radians=0,
+            velocity_delta_time=velocity_delta_time,
+            velocity_units=pygplates.VelocityUnits.cms_per_yr,
+            include_network_boundaries=include_network_boundaries,
+            boundary_section_filter=spreading_feature_types,
+        )
+
+        ridge_data = []
+
+        for stat in plate_boundary_statistics:
+            # Reject point if there's not a plate (or network) on both the left and right sides.
+            if not stat.convergence_velocity:
+                continue
+
+            # If requested, reject point if it's not diverging within specified threshold.
+            if divergence_threshold_in_cm_per_yr is not None:
+                # Note that we use the 'orthogonal' component of velocity vector.
+                if (
+                    -stat.convergence_velocity_orthogonal
+                    < divergence_threshold_in_cm_per_yr
+                ):
+                    continue
+
+            # Convert obliquity from the range [-pi, pi] to [0, pi/2].
+            # We're only interested in the deviation angle from the normal line (positive or negative normal direction).
+            spreading_obliquity = np.abs(
+                stat.convergence_velocity_obliquity
+            )  # not interested in clockwise vs anti-clockwise
+            if spreading_obliquity > 0.5 * np.pi:
+                spreading_obliquity = (
+                    np.pi - spreading_obliquity
+                )  # angle relative to negative normal direction
+
+            # If a transform segment deviation was specified then we need to reject transform segments.
+            if transform_segment_deviation_in_radians is not None:
+                # Reject if spreading direction is too oblique compared to the plate boundary normal.
+                if spreading_obliquity > transform_segment_deviation_in_radians:
+                    continue
+
+            lat, lon = stat.boundary_point.to_lat_lon()
+            spreading_velocity = stat.convergence_velocity_magnitude
+
+            if output_obliquity_and_normal_and_left_right_plates:
+                # Get the left plate ID from resolved topological boundary (or network).
+                if stat.left_plate.located_in_resolved_boundary():
+                    left_plate_id = (
+                        stat.left_plate.located_in_resolved_boundary()
+                        .get_feature()
+                        .get_reconstruction_plate_id()
+                    )
+                else:
+                    left_plate_id = (
+                        stat.left_plate.located_in_resolved_network()
+                        .get_feature()
+                        .get_reconstruction_plate_id()
+                    )
+                # Get the right plate ID from resolved topological boundary (or network).
+                if stat.right_plate.located_in_resolved_boundary():
+                    right_plate_id = (
+                        stat.right_plate.located_in_resolved_boundary()
+                        .get_feature()
+                        .get_reconstruction_plate_id()
+                    )
+                else:
+                    right_plate_id = (
+                        stat.right_plate.located_in_resolved_network()
+                        .get_feature()
+                        .get_reconstruction_plate_id()
+                    )
+
+                ridge_data.append(
+                    (
+                        lon,
+                        lat,
+                        spreading_velocity,
+                        np.degrees(spreading_obliquity),
+                        np.degrees(stat.boundary_length),
+                        np.degrees(stat.boundary_normal_azimuth),
+                        left_plate_id,
+                        right_plate_id,
+                    )
+                )
+            else:
+                ridge_data.append(
+                    (
+                        lon,
+                        lat,
+                        spreading_velocity,
+                        np.degrees(stat.boundary_length),
+                    )
+                )
+
+        return ridge_data
+
     def tessellate_mid_ocean_ridges(
         self,
         time,
@@ -558,11 +974,11 @@ class PlateReconstruction(object):
         """Samples points along resolved spreading features (e.g. mid-ocean ridges) and calculates spreading rates and
         lengths of ridge segments at a particular geological time.
 
-        Resolves topologies at `time`, tessellates all resolved spreading features to within `tessellation_threshold_radians` radians.
+        Resolves topologies at `time` and tessellates all resolved spreading features into points.
 
         The transform segments of spreading features are ignored (unless `transform_segment_deviation_in_radians` is `None`).
 
-        Returns a 4-column vertically stacked tuple with the following data
+        Returns a 4-column vertically stacked tuple with the following data per sampled ridge point
         (depending on `output_obliquity_and_normal_and_left_right_plates`):
 
         If `output_obliquity_and_normal_and_left_right_plates` is `False` (the default):
@@ -599,11 +1015,12 @@ class PlateReconstruction(object):
             If set to `False` then uses plate divergence to calculate ridge spreading rates
             (which samples velocities of the two adjacent boundary plates at each sampled point to calculate spreading velocities).
             Plate divergence is the more general approach that works along all plate boundaries (not just mid-ocean ridges).
-        spreading_feature_types : <pygplates.FeatureType> or sequence of <pygplates.FeatureType>, default=pygplates.FeatureType.gpml_mid_ocean_ridge
+        spreading_feature_types : <pygplates.FeatureType> or sequence of <pygplates.FeatureType>, default=`pygplates.FeatureType.gpml_mid_ocean_ridge`
             Only sample points along plate boundaries of the specified feature types.
             Default is to only sample mid-ocean ridges.
-            However, you can explicitly specify `None` to sample all plate boundaries
-            (although typically you'd also have `use_ptt` be `False` since Plate Tectonic Tools only works on spreading feature types, like mid-ocean ridges).
+            However, you can explicitly specify `None` to sample all plate boundaries.
+            Note that this paramter can only be set to `None` if `use_ptt` is `False`
+            (since Plate Tectonic Tools only works on *spreading* plate boundaries, ie, mid-ocean ridges).
         transform_segment_deviation_in_radians : float, default=<implementation-defined>
             How much a spreading direction can deviate from the segment normal before it's considered a transform segment (in radians).
             The default value has been empirically determined to give the best results for typical models.
@@ -611,6 +1028,7 @@ class PlateReconstruction(object):
         include_network_boundaries : bool, default=False
             Whether to calculate spreading rate along network boundaries that are not also plate boundaries (defaults to False).
             If a deforming network shares a boundary with a plate then it'll get included regardless of this option.
+            Since spreading features occur along *plate* boundaries this would only be an issue if an intra-plate network boundary was incorrectly labelled as spreading.
         divergence_threshold_in_cm_per_yr : float, optional
             Only return sample points with an orthogonal (ie, in the spreading geometry's normal direction) diverging velocity above this value (in cm/yr).
             For example, setting this to `0.0` would remove all converging sample points (leaving only diverging points).
@@ -654,7 +1072,16 @@ class PlateReconstruction(object):
         ValueError
             If topoloogy features have not been set in this `PlateReconstruction`.
         ValueError
-            If `divergence_threshold_in_cm_per_yr` is not `None` and `use_ptt` is `True`.
+            If `use_ptt` is `True` and `spreading_feature_types` is not `pygplates.FeatureType.gpml_mid_ocean_ridge`.
+        ValueError
+            If `use_ptt` is `True` and `divergence_threshold_in_cm_per_yr` is not `None`.
+
+        Notes
+        -----
+        If `use_ptt` is False then each ridge segment is sampled at *exactly* uniform intervals along its length such that the sampled points
+        have a uniform spacing (along each ridge segment polyline) that is *equal* to `tessellation_threshold_radians`.
+        If `use_ptt` is True then each ridge segment is sampled at *approximately* uniform intervals along its length such that the sampled points
+        have a uniform spacing (along each ridge segment polyline) that is *less than or equal to* `tessellation_threshold_radians`.
 
         Examples
         --------
@@ -685,6 +1112,13 @@ class PlateReconstruction(object):
                     "Can only specify 'divergence_threshold_in_cm_per_yr' if 'use_ptt' is False."
                 )
 
+            if list(spreading_feature_types) != [
+                pygplates.FeatureType.gpml_mid_ocean_ridge
+            ]:
+                raise ValueError(
+                    "'spreading_feature_types' must be 'pygplates.FeatureType.gpml_mid_ocean_ridge' if 'use_ptt' is True."
+                )
+
             with warnings.catch_warnings():
                 if ignore_warnings:
                     warnings.simplefilter("ignore")
@@ -703,102 +1137,17 @@ class PlateReconstruction(object):
                 )
 
         else:
-            # Generate statistics at uniformly spaced points along plate boundaries.
-            plate_boundary_statistics = self.topological_snapshot(
-                time, anchor_plate_id
-            ).calculate_plate_boundary_statistics(
-                tessellation_threshold_radians,
-                first_uniform_point_spacing_radians=0,
+            ridge_data = self._ridge_spreading_rates(
+                time,
+                uniform_point_spacing_radians=tessellation_threshold_radians,
                 velocity_delta_time=velocity_delta_time,
-                velocity_units=pygplates.VelocityUnits.cms_per_yr,
+                anchor_plate_id=anchor_plate_id,
+                spreading_feature_types=spreading_feature_types,
+                transform_segment_deviation_in_radians=transform_segment_deviation_in_radians,
                 include_network_boundaries=include_network_boundaries,
-                boundary_section_filter=spreading_feature_types,
+                divergence_threshold_in_cm_per_yr=divergence_threshold_in_cm_per_yr,
+                output_obliquity_and_normal_and_left_right_plates=output_obliquity_and_normal_and_left_right_plates,
             )
-
-            # Find those uniform points where the plates are diverging (negative convergence velocity).
-            ridge_data = []
-            for stat in plate_boundary_statistics:
-                # Reject point if there's not a plate (or network) on both the left and right sides.
-                if not stat.convergence_velocity:
-                    continue
-
-                # If requested, reject point if it's not diverging within specified threshold.
-                if divergence_threshold_in_cm_per_yr is not None:
-                    # Note that we use the 'orthogonal' component of velocity vector.
-                    if (
-                        -stat.convergence_velocity_orthogonal
-                        < divergence_threshold_in_cm_per_yr
-                    ):
-                        continue
-
-                # Convert obliquity from the range [-pi, pi] to [0, pi/2].
-                # We're only interested in the deviation angle from the normal line (positive or negative normal direction).
-                spreading_obliquity = np.abs(
-                    stat.convergence_velocity_obliquity
-                )  # not interested in clockwise vs anti-clockwise
-                if spreading_obliquity > 0.5 * np.pi:
-                    spreading_obliquity = (
-                        np.pi - spreading_obliquity
-                    )  # angle relative to negative normal direction
-
-                # If a transform segment deviation was specified then we need to reject transform segments.
-                if transform_segment_deviation_in_radians is not None:
-                    # Reject if spreading direction is too oblique compared to the plate boundary normal.
-                    if spreading_obliquity > transform_segment_deviation_in_radians:
-                        continue
-
-                lat, lon = stat.boundary_point.to_lat_lon()
-                spreading_velocity = stat.convergence_velocity_magnitude
-
-                if output_obliquity_and_normal_and_left_right_plates:
-                    # Get the left plate ID from resolved topological boundary (or network).
-                    if stat.left_plate.located_in_resolved_boundary():
-                        left_plate_id = (
-                            stat.left_plate.located_in_resolved_boundary()
-                            .get_feature()
-                            .get_reconstruction_plate_id()
-                        )
-                    else:
-                        left_plate_id = (
-                            stat.left_plate.located_in_resolved_network()
-                            .get_feature()
-                            .get_reconstruction_plate_id()
-                        )
-                    # Get the right plate ID from resolved topological boundary (or network).
-                    if stat.right_plate.located_in_resolved_boundary():
-                        right_plate_id = (
-                            stat.right_plate.located_in_resolved_boundary()
-                            .get_feature()
-                            .get_reconstruction_plate_id()
-                        )
-                    else:
-                        right_plate_id = (
-                            stat.right_plate.located_in_resolved_network()
-                            .get_feature()
-                            .get_reconstruction_plate_id()
-                        )
-
-                    ridge_data.append(
-                        (
-                            lon,
-                            lat,
-                            spreading_velocity,
-                            np.degrees(spreading_obliquity),
-                            np.degrees(stat.boundary_length),
-                            np.degrees(stat.boundary_normal_azimuth),
-                            left_plate_id,
-                            right_plate_id,
-                        )
-                    )
-                else:
-                    ridge_data.append(
-                        (
-                            lon,
-                            lat,
-                            spreading_velocity,
-                            np.degrees(stat.boundary_length),
-                        )
-                    )
 
         if ridge_data:
             ridge_data = np.vstack(ridge_data)
@@ -846,7 +1195,7 @@ class PlateReconstruction(object):
     ):
         """Calculates the total length of all resolved spreading features (e.g. mid-ocean ridges) at the specified geological time (Ma).
 
-        Resolves topologies at `time`, tessellates all resolved spreading features to within `tessellation_threshold_radians` radians.
+        Resolves topologies at `time` and tessellates all resolved spreading features into points (see `tessellate_mid_ocean_ridges`).
 
         The transform segments of spreading features are ignored (unless *transform_segment_deviation_in_radians* is `None`).
 
@@ -865,10 +1214,12 @@ class PlateReconstruction(object):
             Plate divergence is the more general approach that works along all plate boundaries (not just mid-ocean ridges).
         ignore_warnings : bool, default=False
             Choose to ignore warnings from Plate Tectonic Tools' ridge_spreading_rate workflow (if `use_ptt` is `True`).
-        spreading_feature_types : <pygplates.FeatureType> or sequence of <pygplates.FeatureType>, default=pygplates.FeatureType.gpml_mid_ocean_ridge
+        spreading_feature_types : <pygplates.FeatureType> or sequence of <pygplates.FeatureType>, default=`pygplates.FeatureType.gpml_mid_ocean_ridge`
             Only count lengths along plate boundaries of the specified feature types.
             Default is to only sample mid-ocean ridges.
             However, you can explicitly specify `None` to sample all plate boundaries.
+            Note that this paramter can only be set to `None` if `use_ptt` is `False`
+            (since Plate Tectonic Tools only works on *spreading* plate boundaries, ie, mid-ocean ridges).
         transform_segment_deviation_in_radians : float, default=<implementation-defined>
             How much a spreading direction can deviate from the segment normal before it's considered a transform segment (in radians).
             The default value has been empirically determined to give the best results for typical models.
@@ -876,6 +1227,7 @@ class PlateReconstruction(object):
         include_network_boundaries : bool, default=False
             Whether to count lengths along network boundaries that are not also plate boundaries (defaults to False).
             If a deforming network shares a boundary with a plate then it'll get included regardless of this option.
+            Since spreading features occur along *plate* boundaries this would only be an issue if an intra-plate network boundary was incorrectly labelled as spreading.
         divergence_threshold_in_cm_per_yr : float, optional
             Only count lengths associated with sample points that have an orthogonal (ie, in the spreading geometry's normal direction) diverging velocity above this value (in cm/yr).
             For example, setting this to `0.0` would remove all converging sample points (leaving only diverging points).
@@ -896,11 +1248,13 @@ class PlateReconstruction(object):
         ValueError
             If topoloogy features have not been set in this `PlateReconstruction`.
         ValueError
-            If *divergence_threshold_in_cm_per_yr* is not `None` and *use_ptt* is `True`.
+            If `use_ptt` is `True` and `spreading_feature_types` is not `pygplates.FeatureType.gpml_mid_ocean_ridge`.
+        ValueError
+            If `use_ptt` is `True` and `divergence_threshold_in_cm_per_yr` is not `None`.
 
         Examples
         --------
-        To total length of mid-ocean ridges at 50Ma, but ignoring the transform segments (of the ridges):
+        To calculate the total length of mid-ocean ridges at 50Ma, but ignoring the transform segments (of the ridges):
 
             total_ridge_length_kms = plate_reconstruction.total_ridge_length(50)
 
