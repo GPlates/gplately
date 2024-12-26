@@ -612,7 +612,7 @@ class PlateReconstruction(object):
             Whether to calculate spreading rate along network boundaries that are not also plate boundaries (defaults to False).
             If a deforming network shares a boundary with a plate then it'll get included regardless of this option.
         divergence_threshold_in_cm_per_yr : float, optional
-            Only return sample points with an orthogonal (ie, in spreading geometry normal direction) diverging velocity above this value (in cm/yr).
+            Only return sample points with an orthogonal (ie, in the spreading geometry's normal direction) diverging velocity above this value (in cm/yr).
             For example, setting this to `0.0` would remove all converging sample points (leaving only diverging points).
             This value can be negative which means a small amount of convergence is allowed.
             If `None` then all (diverging and converging) sample points are returned.
@@ -672,6 +672,10 @@ class PlateReconstruction(object):
 
         anchor_plate_id = kwargs.pop("anchor_plate_id", self.anchor_plate_id)
         velocity_delta_time = kwargs.pop("velocity_delta_time", 1.0)
+        if kwargs:
+            raise ValueError(
+                "Keyword arguments not recognised:{}".format(list(kwargs.keys()))
+            )
 
         if use_ptt:
             from . import ptt as _ptt
@@ -715,11 +719,12 @@ class PlateReconstruction(object):
             ridge_data = []
             for stat in plate_boundary_statistics:
                 # Reject point if there's not a plate (or network) on both the left and right sides.
-                if np.isnan(stat.convergence_velocity_orthogonal):
+                if not stat.convergence_velocity:
                     continue
 
                 # If requested, reject point if it's not diverging within specified threshold.
                 if divergence_threshold_in_cm_per_yr is not None:
+                    # Note that we use the 'orthogonal' component of velocity vector.
                     if (
                         -stat.convergence_velocity_orthogonal
                         < divergence_threshold_in_cm_per_yr
@@ -743,7 +748,7 @@ class PlateReconstruction(object):
                         continue
 
                 lat, lon = stat.boundary_point.to_lat_lon()
-                spreading_velocity = np.abs(stat.convergence_velocity_orthogonal)
+                spreading_velocity = stat.convergence_velocity_magnitude
 
                 if output_obliquity_and_normal_and_left_right_plates:
                     # Get the left plate ID from resolved topological boundary (or network).
@@ -872,7 +877,7 @@ class PlateReconstruction(object):
             Whether to count lengths along network boundaries that are not also plate boundaries (defaults to False).
             If a deforming network shares a boundary with a plate then it'll get included regardless of this option.
         divergence_threshold_in_cm_per_yr : float, optional
-            Only count lengths associated with sample points that have an orthogonal (ie, in spreading geometry normal direction) diverging velocity above this value (in cm/yr).
+            Only count lengths associated with sample points that have an orthogonal (ie, in the spreading geometry's normal direction) diverging velocity above this value (in cm/yr).
             For example, setting this to `0.0` would remove all converging sample points (leaving only diverging points).
             This value can be negative which means a small amount of convergence is allowed.
             If `None` then all (diverging and converging) sample points are counted.
