@@ -256,16 +256,21 @@ def spreading_rates(
                     arc_normal = arc_normals[arc_index]
                     arc_normal_azimuth = arc_local_normals[arc_index][1]
 
-                    # Angle range [0, 180].
-                    spreading_obliquity_degrees = math.degrees(
-                        pygplates.Vector3D.angle_between(
-                            spreading_velocity_vector, arc_normal
+                    if spreading_velocity_vector.is_zero_magnitude():
+                        spreading_obliquity_degrees = 0
+                    else:
+                        # Angle range [0, 180].
+                        spreading_obliquity_degrees = math.degrees(
+                            pygplates.Vector3D.angle_between(
+                                spreading_velocity_vector, arc_normal
+                            )
                         )
-                    )
-                    # Minimum deviation from 'arc_normal' and '-arc_normal'.
-                    # Angle range [0, 90].
-                    if spreading_obliquity_degrees > 90:
-                        spreading_obliquity_degrees = 180 - spreading_obliquity_degrees
+                        # Minimum deviation from 'arc_normal' and '-arc_normal'.
+                        # Angle range [0, 90].
+                        if spreading_obliquity_degrees > 90:
+                            spreading_obliquity_degrees = (
+                                180 - spreading_obliquity_degrees
+                            )
 
                     # The data will be output in GMT format (ie, lon first, then lat, etc).
                     output_data.append(

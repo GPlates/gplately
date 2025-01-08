@@ -886,21 +886,32 @@ class PlateReconstruction(object):
                 ):
                     continue
 
-            # Convert obliquity from the range [-pi, pi] to [0, pi/2].
-            # We're only interested in the deviation angle from the normal line (positive or negative normal direction).
-            spreading_obliquity = np.abs(
-                stat.convergence_velocity_obliquity
-            )  # not interested in clockwise vs anti-clockwise
-            if spreading_obliquity > 0.5 * np.pi:
-                spreading_obliquity = (
-                    np.pi - spreading_obliquity
-                )  # angle relative to negative normal direction
+            if (
+                output_obliquity_and_normal_and_left_right_plates
+                or transform_segment_deviation_in_radians is not None
+            ):
+                # Convert obliquity from the range [-pi, pi] to [0, pi/2].
+                # We're only interested in the deviation angle from the normal line (positive or negative normal direction).
+                spreading_obliquity = np.abs(
+                    stat.convergence_velocity_obliquity
+                )  # not interested in clockwise vs anti-clockwise
+                if spreading_obliquity > 0.5 * np.pi:
+                    spreading_obliquity = (
+                        np.pi - spreading_obliquity
+                    )  # angle relative to negative normal direction
 
-            # If a transform segment deviation was specified then we need to reject transform segments.
-            if transform_segment_deviation_in_radians is not None:
-                # Reject if spreading direction is too oblique compared to the plate boundary normal.
-                if spreading_obliquity > transform_segment_deviation_in_radians:
-                    continue
+                # If a transform segment deviation was specified then we need to reject transform segments.
+                if transform_segment_deviation_in_radians is not None:
+                    # Reject if spreading direction is too oblique compared to the plate boundary normal.
+                    #
+                    # Note: If there is zero spreading then we don't actually have an obliquity.
+                    #       In which case we reject the current point to match the behaviour of
+                    #       'ptt.ridge_spreading_rate.spreading_rates()' which rejects zero spreading stage rotations.
+                    if (
+                        stat.convergence_velocity.is_zero_magnitude()
+                        or spreading_obliquity > transform_segment_deviation_in_radians
+                    ):
+                        continue
 
             lat, lon = stat.boundary_point.to_lat_lon()
             spreading_velocity = stat.convergence_velocity_magnitude
