@@ -314,11 +314,17 @@ class PlateReconstruction(object):
                     subducting_plate_velocity - stat.boundary_velocity
                 )
 
-                # Get the trench normal in subducting direction (ie, towards overriding plate).
-                if overriding_plate_is_on_left:
-                    trench_normal = stat.boundary_normal
-                else:
-                    trench_normal = -stat.boundary_normal
+                # Get the trench normal (and azimuth).
+                trench_normal = stat.boundary_normal
+                trench_normal_azimuth = stat.boundary_normal_azimuth
+                # If the trench normal (in direction of overriding plate) is opposite the boundary line normal
+                # (which is to the left) then flip it.
+                if not overriding_plate_is_on_left:
+                    trench_normal = -trench_normal
+                    trench_normal_azimuth -= np.pi
+                    # Keep in the range [0, 2*pi].
+                    if trench_normal_azimuth < 0:
+                        trench_normal_azimuth += 2 * np.pi
 
                 # If requested, reject point if it's not converging within specified threshold.
                 if convergence_threshold_in_cm_per_yr is not None:
@@ -421,7 +427,7 @@ class PlateReconstruction(object):
                         trench_absolute_velocity_magnitude,
                         np.degrees(trench_absolute_velocity_obliquity),
                         np.degrees(stat.boundary_length),
-                        np.degrees(stat.boundary_normal_azimuth),
+                        np.degrees(trench_normal_azimuth),
                         subducting_plate_id,
                         trench_plate_id,
                     )
