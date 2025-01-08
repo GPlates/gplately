@@ -1018,9 +1018,9 @@ class PlateReconstruction(object):
         spreading_feature_types : <pygplates.FeatureType> or sequence of <pygplates.FeatureType>, default=`pygplates.FeatureType.gpml_mid_ocean_ridge`
             Only sample points along plate boundaries of the specified feature types.
             Default is to only sample mid-ocean ridges.
-            However, you can explicitly specify `None` to sample all plate boundaries.
-            Note that this paramter can only be set to `None` if `use_ptt` is `False`
-            (since Plate Tectonic Tools only works on *spreading* plate boundaries, ie, mid-ocean ridges).
+            You can explicitly specify `None` to sample all plate boundaries, but note that if `use_ptt` is `True`
+            then only plate boundaries that are spreading feature types are sampled
+            (since Plate Tectonic Tools only works on *spreading* plate boundaries, eg, mid-ocean ridges).
         transform_segment_deviation_in_radians : float, default=<implementation-defined>
             How much a spreading direction can deviate from the segment normal before it's considered a transform segment (in radians).
             The default value has been empirically determined to give the best results for typical models.
@@ -1072,8 +1072,6 @@ class PlateReconstruction(object):
         ValueError
             If topoloogy features have not been set in this `PlateReconstruction`.
         ValueError
-            If `use_ptt` is `True` and `spreading_feature_types` is not `pygplates.FeatureType.gpml_mid_ocean_ridge`.
-        ValueError
             If `use_ptt` is `True` and `divergence_threshold_in_cm_per_yr` is not `None`.
 
         Notes
@@ -1110,13 +1108,6 @@ class PlateReconstruction(object):
             if divergence_threshold_in_cm_per_yr is not None:
                 raise ValueError(
                     "Can only specify 'divergence_threshold_in_cm_per_yr' if 'use_ptt' is False."
-                )
-
-            if list(spreading_feature_types) != [
-                pygplates.FeatureType.gpml_mid_ocean_ridge
-            ]:
-                raise ValueError(
-                    "'spreading_feature_types' must be 'pygplates.FeatureType.gpml_mid_ocean_ridge' if 'use_ptt' is True."
                 )
 
             with warnings.catch_warnings():
@@ -1217,9 +1208,9 @@ class PlateReconstruction(object):
         spreading_feature_types : <pygplates.FeatureType> or sequence of <pygplates.FeatureType>, default=`pygplates.FeatureType.gpml_mid_ocean_ridge`
             Only count lengths along plate boundaries of the specified feature types.
             Default is to only sample mid-ocean ridges.
-            However, you can explicitly specify `None` to sample all plate boundaries.
-            Note that this paramter can only be set to `None` if `use_ptt` is `False`
-            (since Plate Tectonic Tools only works on *spreading* plate boundaries, ie, mid-ocean ridges).
+            You can explicitly specify `None` to sample all plate boundaries, but note that if `use_ptt` is `True`
+            then only plate boundaries that are spreading feature types are sampled
+            (since Plate Tectonic Tools only works on *spreading* plate boundaries, eg, mid-ocean ridges).
         transform_segment_deviation_in_radians : float, default=<implementation-defined>
             How much a spreading direction can deviate from the segment normal before it's considered a transform segment (in radians).
             The default value has been empirically determined to give the best results for typical models.
@@ -1247,8 +1238,6 @@ class PlateReconstruction(object):
         ------
         ValueError
             If topoloogy features have not been set in this `PlateReconstruction`.
-        ValueError
-            If `use_ptt` is `True` and `spreading_feature_types` is not `pygplates.FeatureType.gpml_mid_ocean_ridge`.
         ValueError
             If `use_ptt` is `True` and `divergence_threshold_in_cm_per_yr` is not `None`.
 
