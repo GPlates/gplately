@@ -98,17 +98,31 @@ def test_tessellate_ridges(time, model):
 # TOTAL TRENCH AND RIDGE LENGTHS: PYGPLATES
 @pytest.mark.parametrize("time", reconstruction_times)
 def test_pygplates_trench_length(time, model):
-    total_sz_length = model.total_subduction_zone_length(time)
+    total_sz_length = model.total_subduction_zone_length(time, use_ptt=False)
     assert (
         50000 <= total_sz_length <= 100000
     ), "Could not calculate total SZ lengths for Muller et al. (2019) at {} Ma.".format(
         time
     )
-    total_sz_length = model.total_subduction_zone_length(
+    total_sz_length_using_ptt = model.total_subduction_zone_length(
         time, use_ptt=True, ignore_warnings=True
     )
     assert (
-        50000 <= total_sz_length <= 100000
+        50000 <= total_sz_length_using_ptt <= 100000
+    ), "Could not calculate total SZ lengths for Muller et al. (2019) at {} Ma.".format(
+        time
+    )
+    # There are some differences in subduction zone length with and without using PTT.
+    diffs = {
+        # PTT misses some subduction zones at 0 Ma. Eg, one is duplicated, and mislabelled as a Transform
+        # (the duplicate that's attached to the subducting plate)...
+        0: 4000,
+        100: 200,
+    }
+    assert np.abs(total_sz_length - total_sz_length_using_ptt) < diffs.get(
+        time,
+        # Default diff when value for this time has not been computed...
+        1000.0,
     ), "Could not calculate total SZ lengths for Muller et al. (2019) at {} Ma.".format(
         time
     )
@@ -116,17 +130,19 @@ def test_pygplates_trench_length(time, model):
 
 @pytest.mark.parametrize("time", reconstruction_times)
 def test_pygplates_ridge_length(time, model):
-    total_ridge_length = model.total_ridge_length(time)
+    total_ridge_length = model.total_ridge_length(time, use_ptt=False)
     assert (
         total_ridge_length
     ), "Could not calculate total MOR lengths for Muller et al. (2019) at {} Ma.".format(
         time
     )
-    total_ridge_length = model.total_ridge_length(
+    total_ridge_length_using_ptt = model.total_ridge_length(
         time, use_ptt=True, ignore_warnings=True
     )
+    # There are some differences in ridge length with and without using PTT since
+    # PTT uses stage rotations for spreading whereas not using PTT uses divergence velocities.
     assert (
-        total_ridge_length
+        np.abs(total_ridge_length - total_ridge_length_using_ptt) < 3000.0
     ), "Could not calculate total MOR lengths for Muller et al. (2019) at {} Ma.".format(
         time
     )
