@@ -142,6 +142,9 @@ class PlateReconstruction(object):
             for polygon in state["static_polygons"]:
                 self.static_polygons.add(_FeatureCollection(polygon))
 
+        # This will get rebuilt when/if 'topological_snapshot()' is next called.
+        self._topological_snapshot = None
+
     @property
     def anchor_plate_id(self):
         """Anchor plate ID for reconstruction. Must be an integer >= 0."""
@@ -167,14 +170,26 @@ class PlateReconstruction(object):
             raise ValueError("Invalid anchor plate ID: {}".format(id))
         return id
 
-    def _check_topology_features(self):
+    def _check_topology_features(self, include_topological_slab_boundaries=True):
         if self.topology_features is None:
             raise ValueError(
                 "Topology features have not been set in this PlateReconstruction."
             )
+
+        # If not including topological slab boundaries then remove them.
+        if not include_topological_slab_boundaries:
+            return [
+                feature
+                for feature in self.topology_features
+                if feature.get_feature_type()
+                != pygplates.FeatureType.gpml_topological_slab_boundary
+            ]
+
         return self.topology_features
 
-    def topological_snapshot(self, time, anchor_plate_id=None):
+    def topological_snapshot(
+        self, time, anchor_plate_id=None, include_topological_slab_boundaries=True
+    ):
         """Create a snapshot of resolved topologies at the specified reconstruction time.
 
         Parameters
@@ -184,6 +199,10 @@ class PlateReconstruction(object):
         anchor_plate_id : int, optional
             The anchored plate id to use when resolving topologies.
             If not specified then uses the current anchor plate (`anchor_plate_id` attribute).
+        include_topological_slab_boundaries : bool, default=True
+            Include topological boundary features of type `gpml:TopologicalSlabBoundary`.
+            By default all features passed into constructor (`__init__`) are included in the snapshot.
+            However setting this to False is useful when you're only interested in *plate* boundaries.
 
         Returns
         -------
@@ -198,8 +217,10 @@ class PlateReconstruction(object):
         if anchor_plate_id is None:
             anchor_plate_id = self.anchor_plate_id
 
-        # Only need to create a new snapshot if we don't have one, or the snapshot time (or anchor plate)
-        # has changed since the last snapshot.
+        # Only need to create a new snapshot if we don't have one, or if any of the following have changed since the last snapshot:
+        # - the reconstruction time,
+        # - the anchor plate,
+        # - whether to include topological slab boundaries or not.
         if (
             self._topological_snapshot is None
             # last snapshot time...
@@ -209,12 +230,27 @@ class PlateReconstruction(object):
             # last snapshot anchor plate...
             or self._topological_snapshot.get_rotation_model().get_default_anchor_plate_id()
             != anchor_plate_id
+            # whether last snapshot included topological slab boundaries...
+            or self._topological_snapshot_includes_topological_slab_boundaries
+            != include_topological_slab_boundaries
         ):
+            # Create snapshot for current parameters.
             self._topological_snapshot = pygplates.TopologicalSnapshot(
-                self._check_topology_features(),
+                self._check_topology_features(include_topological_slab_boundaries),
                 self.rotation_model,
                 time,
                 anchor_plate_id,
+            )
+
+            # Parameters used for the last snapshot.
+            #
+            # The snapshot time and anchor plate are stored in the snapshot itself (so not added here).
+            #
+            # Note: These don't need to be initialised in '__init__()' as long as it sets "self._topological_snapshot = None".
+            #
+            # Note: If we add more parameters then perhaps create a single nested private (leading '_') class for them.
+            self._topological_snapshot_includes_topological_slab_boundaries = (
+                include_topological_slab_boundaries
             )
 
         return self._topological_snapshot
@@ -235,12 +271,14 @@ class PlateReconstruction(object):
         # it uses pyGPlates 1.0 functionality that calculates statistics along plate boundaries
         # (such as plate velocities, from which convergence velocity can be obtained).
         #
-        # Note that this function does NOT really have any advantage over 'ptt.subduction_convergence.subduction_convergence()'
-        # (unlike '_ridge_spreading_rates()' which DOES have an advantage over 'ptt.ridge_spreading_rate.spreading_rates()').
-        # This is because this function only samples plate boundaries that have a subduction polarity (eg, subduction zones)
-        # since we need to know which plates are subducting and overriding, and hence cannot calculate convergence over all
-        # plate boundaries.
-        #
+        # Note that this function has an advantage over 'ptt.subduction_convergence.subduction_convergence()':
+        #   It does not reject subducting boundaries that have more than one (or even zero) subducting plates (or subducting networks),
+        #   which can happen if the topological model was built incorrectly (eg, mislabelled plate boundaries).
+        #   As long as there's at least one plate (or network) on the subducting side then it can find it
+        #   (even if the plate is not directly attached to the subduction zone, ie, doesn't specify it as part of its boundary).
+        # However, like 'ptt.subduction_convergence.subduction_convergence()', it only samples plate boundaries that have a
+        # subduction polarity (eg, subduction zones) since we still need to know which plates are subducting and overriding,
+        # and hence cannot calculate convergence over all plate boundaries.
 
         # Restrict plate boundaries to those that have a subduction polarity.
         # This is just an optimisation to avoid unnecessarily sampling all plate boundaries.
@@ -254,7 +292,11 @@ class PlateReconstruction(object):
 
         # Generate statistics at uniformly spaced points along plate boundaries.
         plate_boundary_statistics_dict = self.topological_snapshot(
-            time, anchor_plate_id
+            time,
+            anchor_plate_id,
+            # Ignore topological slab boundaries since they are not *plate* boundaries
+            # (a slab edge could have a subduction polarity, and would otherwise get included)...
+            include_topological_slab_boundaries=False,
         ).calculate_plate_boundary_statistics(
             uniform_point_spacing_radians,
             first_uniform_point_spacing_radians=0,
@@ -275,12 +317,17 @@ class PlateReconstruction(object):
 
             # Find the subduction plate of the current shared boundary sub-segment.
             subducting_plate_and_polarity = shared_sub_segment.get_subducting_plate(
-                return_subduction_polarity=True, enforce_single_plate=False
+                return_subduction_polarity=True,
+                enforce_single_plate=False,
             )
             # Skip current shared boundary sub-segment if it doesn't have a valid subduction polarity.
+            #
+            # Note: There might not even be a subducting plate directly attached, but that's fine because
+            #       we're only interested in the subduction polarity. Later we'll get the subducting plate
+            #       from the plate boundary statistics instead (since that's more reliable).
             if not subducting_plate_and_polarity:
                 continue
-            subducting_plate, subduction_polarity = subducting_plate_and_polarity
+            _, subduction_polarity = subducting_plate_and_polarity
 
             if subduction_polarity == "Left":
                 overriding_plate_is_on_left = True
@@ -565,7 +612,11 @@ class PlateReconstruction(object):
 
                 subduction_data = _ptt.subduction_convergence.subduction_convergence(
                     self.rotation_model,
-                    self._check_topology_features(),
+                    self._check_topology_features(
+                        # Ignore topological slab boundaries since they are not *plate* boundaries
+                        # (actually they get ignored by default in 'ptt.subduction_convergence' anyway)...
+                        include_topological_slab_boundaries=False
+                    ),
                     tessellation_threshold_radians,
                     time,
                     velocity_delta_time=velocity_delta_time,
@@ -866,7 +917,11 @@ class PlateReconstruction(object):
 
         # Generate statistics at uniformly spaced points along plate boundaries.
         plate_boundary_statistics = self.topological_snapshot(
-            time, anchor_plate_id
+            time,
+            anchor_plate_id,
+            # Ignore topological slab boundaries since they are not *plate* boundaries
+            # (useful when 'spreading_feature_types' is None, and hence all plate boundaries are considered)...
+            include_topological_slab_boundaries=False,
         ).calculate_plate_boundary_statistics(
             uniform_point_spacing_radians,
             first_uniform_point_spacing_radians=0,
@@ -1133,7 +1188,12 @@ class PlateReconstruction(object):
 
                 ridge_data = _ptt.ridge_spreading_rate.spreading_rates(
                     self.rotation_model,
-                    self._check_topology_features(),
+                    self._check_topology_features(
+                        # Ignore topological slab boundaries since they are not *plate* boundaries
+                        # (not really needed since only *spreading* feature types are considered, and
+                        # they typically wouldn't get used for a slab's boundary)...
+                        include_topological_slab_boundaries=False
+                    ),
                     time,
                     tessellation_threshold_radians,
                     spreading_feature_types=spreading_feature_types,
