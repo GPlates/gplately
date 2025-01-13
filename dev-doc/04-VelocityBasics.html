@@ -7312,6 +7312,7 @@ a.anchor-link {
                     processEnvironments: true
                 },
                 displayAlign: 'center',
+                messageStyle: 'none',
                 CommonHTML: {
                     linebreaks: {
                     automatic: true
@@ -7529,15 +7530,15 @@ a.anchor-link {
 <div class="jp-InputPrompt jp-InputArea-prompt">In [ ]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="cm-editor cm-s-jupyter">
-<div class="highlight hl-ipython3"><pre><span></span><span class="kn">import</span> <span class="nn">os</span>
-<span class="kn">import</span> <span class="nn">tempfile</span>
+<div class="highlight hl-ipython3"><pre><span></span><span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">tempfile</span>
 
-<span class="kn">import</span> <span class="nn">cartopy.crs</span> <span class="k">as</span> <span class="nn">ccrs</span>
-<span class="kn">import</span> <span class="nn">gplately</span>
-<span class="kn">import</span> <span class="nn">matplotlib.pyplot</span> <span class="k">as</span> <span class="nn">plt</span>
-<span class="kn">import</span> <span class="nn">numpy</span> <span class="k">as</span> <span class="nn">np</span>
-<span class="kn">from</span> <span class="nn">matplotlib.colors</span> <span class="kn">import</span> <span class="n">Normalize</span>
-<span class="kn">from</span> <span class="nn">plate_model_manager</span> <span class="kn">import</span> <span class="n">PlateModelManager</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">cartopy.crs</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">ccrs</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">gplately</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">matplotlib.colors</span><span class="w"> </span><span class="kn">import</span> <span class="n">Normalize</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">plate_model_manager</span><span class="w"> </span><span class="kn">import</span> <span class="n">PlateModelManager</span>
 </pre></div>
 </div>
 </div>
@@ -7906,7 +7907,7 @@ Average velocity = 3.38 cm/yr
 <div class="jp-InputPrompt jp-InputArea-prompt">In [10]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="cm-editor cm-s-jupyter">
-<div class="highlight hl-ipython3"><pre><span></span><span class="k">def</span> <span class="nf">generate_frame</span><span class="p">(</span><span class="n">time</span><span class="p">,</span> <span class="n">output_dir</span><span class="p">):</span>
+<div class="highlight hl-ipython3"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">generate_frame</span><span class="p">(</span><span class="n">time</span><span class="p">,</span> <span class="n">output_dir</span><span class="p">):</span>
     <span class="c1"># Get all point velocities and their magnitudes</span>
     <span class="n">vel_x</span><span class="p">,</span> <span class="n">vel_y</span> <span class="o">=</span> <span class="n">gpts</span><span class="o">.</span><span class="n">plate_velocity</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">time</span><span class="p">))</span>
     <span class="n">vel_mag</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">hypot</span><span class="p">(</span><span class="n">vel_x</span><span class="p">,</span> <span class="n">vel_y</span><span class="p">)</span>
@@ -7955,7 +7956,7 @@ Average velocity = 3.38 cm/yr
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="cm-editor cm-s-jupyter">
 <div class="highlight hl-ipython3"><pre><span></span><span class="k">try</span><span class="p">:</span>
-    <span class="kn">import</span> <span class="nn">moviepy.editor</span> <span class="k">as</span> <span class="nn">mpy</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">moviepy.editor</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">mpy</span>
 
     <span class="n">mpy_available</span> <span class="o">=</span> <span class="kc">True</span>
 <span class="k">except</span> <span class="ne">ImportError</span><span class="p">:</span>
@@ -7989,7 +7990,7 @@ Average velocity = 3.38 cm/yr
             <span class="p">)</span>
         <span class="p">)</span>
 
-        <span class="kn">from</span> <span class="nn">IPython.display</span> <span class="kn">import</span> <span class="n">Image</span>
+        <span class="kn">from</span><span class="w"> </span><span class="nn">IPython.display</span><span class="w"> </span><span class="kn">import</span> <span class="n">Image</span>
         <span class="nb">print</span><span class="p">(</span><span class="s1">'The movie will show up in a few seconds. Please be patient...'</span><span class="p">)</span>
         <span class="k">with</span> <span class="nb">open</span><span class="p">(</span>
             <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
@@ -8215,7 +8216,7 @@ Average velocity = 3.38 cm/yr
 <div class="jp-InputPrompt jp-InputArea-prompt">In [15]:</div>
 <div class="jp-CodeMirrorEditor jp-Editor jp-InputArea-editor" data-type="inline">
 <div class="cm-editor cm-s-jupyter">
-<div class="highlight hl-ipython3"><pre><span></span><span class="k">def</span> <span class="nf">generate_frame</span><span class="p">(</span><span class="n">time</span><span class="p">,</span> <span class="n">output_dir</span><span class="p">):</span>
+<div class="highlight hl-ipython3"><pre><span></span><span class="k">def</span><span class="w"> </span><span class="nf">generate_frame</span><span class="p">(</span><span class="n">time</span><span class="p">,</span> <span class="n">output_dir</span><span class="p">):</span>
     <span class="n">vel_x</span><span class="p">,</span> <span class="n">vel_y</span> <span class="o">=</span> <span class="n">gpts</span><span class="o">.</span><span class="n">plate_velocity</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">time</span><span class="p">))</span>
     <span class="n">vel_x</span> <span class="o">*=</span> <span class="mi">10</span>
     <span class="n">vel_y</span> <span class="o">*=</span> <span class="mi">10</span>
