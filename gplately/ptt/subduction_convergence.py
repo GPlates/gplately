@@ -207,7 +207,8 @@ def subduction_convergence(
     Note that the convergence velocity magnitude is negative if the plates are diverging (if convergence obliquity angle
     is greater than 90 or less than -90). And note that the absolute velocity magnitude is negative if the trench (subduction zone)
     is moving towards the overriding plate (if absolute obliquity angle is less than 90 and greater than -90) - note that this
-    ignores the kinematics of the subducting plate.
+    ignores the kinematics of the subducting plate. Similiarly for the subducting plate absolute velocity magnitude
+    (if keyword argument `output_subducting_absolute_velocity` is True).
 
     Parameters
     ----------
@@ -272,40 +273,15 @@ def subduction_convergence(
 
     The following optional keyword arguments are supported by *kwargs*:
 
-    +------------------------------------------------+-------+---------+---------------------------------------------------------------------------------+
-    | Name                                           | Type  | Default | Description                                                                     |
-    +------------------------------------------------+-------+---------+---------------------------------------------------------------------------------+
-    | output_distance_to_nearest_edge_of_trench      | bool  | False   | Append the distance (in degrees) along the trench line to the nearest           |
-    |                                                |       |         | trench edge to each returned sample point. The trench edge is the location      |
-    |                                                |       |         | on the current trench feature where the subducting or overriding plate changes. |
-    +------------------------------------------------+-------+---------+---------------------------------------------------------------------------------+
-    | output_distance_to_start_edge_of_trench        | bool  | False   | Append the distance (in degrees) along the trench line from the start edge of   |
-    |                                                |       |         | the trench to each returned sample point. The start of the trench is along the  |
-    |                                                |       |         | clockwise direction around the overriding plate.                                |
-    +------------------------------------------------+-------+---------+---------------------------------------------------------------------------------+
-    | output_convergence_velocity_components         | bool  | False   | Append the convergence velocity orthogonal and parallel                         |
-    |                                                |       |         | components (in cm/yr) to each returned sample point.                            |
-    |                                                |       |         | Orthogonal is normal to trench in direction of overriding plate.                |
-    |                                                |       |         | Parallel is along trench and 90 degrees clockwise from orthogonal.              |
-    +------------------------------------------------+-------+---------+---------------------------------------------------------------------------------+
-    | output_trench_absolute_velocity_components     | bool  | False   | Append the trench plate absolute velocity orthogonal and parallel               |
-    |                                                |       |         | components (in cm/yr) to each returned sample point.                            |
-    |                                                |       |         | Orthogonal is normal to trench in direction of overriding plate.                |
-    |                                                |       |         | Parallel is along trench and 90 degrees clockwise from orthogonal.              |
-    +------------------------------------------------+-------+---------+---------------------------------------------------------------------------------+
-    | output_subducting_absolute_velocity            | bool  | False   | Append the subducting plate absolute velocity magnitude (in cm/yr) and          |
-    |                                                |       |         | obliquity angle (in degrees) to each returned sample point.                     |
-    +------------------------------------------------+-------+---------+---------------------------------------------------------------------------------+
-    | output_subducting_absolute_velocity_components | bool  | False   | Append the subducting plate absolute velocity orthogonal and parallel           |
-    |                                                |       |         | components (in cm/yr) to each returned sample point.                            |
-    |                                                |       |         | Orthogonal is normal to trench in direction of overriding plate.                |
-    |                                                |       |         | Parallel is along trench and 90 degrees clockwise from orthogonal.              |
-    +------------------------------------------------+-------+---------+---------------------------------------------------------------------------------+
-    | output_trench_normal                           | bool  | False   | Append the x, y and z components of the trench normal unit-length 3D vectors.   |
-    |                                                |       |         | These vectors are normal to the trench in the direction of subduction           |
-    |                                                |       |         | (towards overriding plate). These are global 3D vectors which differ from       |
-    |                                                |       |         | trench normal azimuth angles (ie, angles relative to North).                    |
-    +------------------------------------------------+-------+---------+---------------------------------------------------------------------------------+
+    | Name                                           | Type  | Default | Description |
+    |------------------------------------------------|-------|---------|---------------------------------------------------------------------------------|
+    | output_distance_to_nearest_edge_of_trench      | bool  | False   | Append the distance (in degrees) along the trench line to the nearest trench edge to each returned sample point. A trench edge is the farthermost location on the current trench feature that contributes to a plate boundary. |
+    | output_distance_to_start_edge_of_trench        | bool  | False   | Append the distance (in degrees) along the trench line from the start edge of the trench to each returned sample point. The start of the trench is along the clockwise direction around the overriding plate. |
+    | output_convergence_velocity_components         | bool  | False   | Append the convergence velocity orthogonal and parallel components (in cm/yr) to each returned sample point. Orthogonal is normal to trench (in direction of overriding plate when positive). Parallel is along trench (90 degrees clockwise from trench normal when positive). |
+    | output_trench_absolute_velocity_components     | bool  | False   | Append the trench absolute velocity orthogonal and parallel components (in cm/yr) to each returned sample point. Orthogonal is normal to trench (in direction of overriding plate when positive). Parallel is along trench (90 degrees clockwise from trench normal when positive). |
+    | output_subducting_absolute_velocity            | bool  | False   | Append the subducting plate absolute velocity magnitude (in cm/yr) and obliquity angle (in degrees) to each returned sample point. |
+    | output_subducting_absolute_velocity_components | bool  | False   | Append the subducting plate absolute velocity orthogonal and parallel components (in cm/yr) to each returned sample point. Orthogonal is normal to trench (in direction of overriding plate when positive). Parallel is along trench (90 degrees clockwise from trench normal when positive). |
+    | output_trench_normal                           | bool  | False   | Append the x, y and z components of the trench normal unit-length 3D vectors. These vectors are normal to the trench in the direction of subduction (towards overriding plate). These are global 3D vectors which differ from trench normal azimuth angles (ie, angles relative to North). |
     """
     time = float(time)
 
@@ -947,40 +923,15 @@ def create_coverage_feature_from_convergence_data(
 
     The following optional keyword arguments are supported by *kwargs*:
 
-    +------------------------------------------------+-------+---------+---------------------------------------------------------------------------------+
-    | Name                                           | Type  | Default | Description                                                                     |
-    +------------------------------------------------+-------+---------+---------------------------------------------------------------------------------+
-    | output_distance_to_nearest_edge_of_trench      | bool  | False   | Append the distance (in degrees) along the trench line to the nearest           |
-    |                                                |       |         | trench edge to each returned sample point. The trench edge is the location      |
-    |                                                |       |         | on the current trench feature where the subducting or overriding plate changes. |
-    +------------------------------------------------+-------+---------+---------------------------------------------------------------------------------+
-    | output_distance_to_start_edge_of_trench        | bool  | False   | Append the distance (in degrees) along the trench line from the start edge of   |
-    |                                                |       |         | the trench to each returned sample point. The start of the trench is along the  |
-    |                                                |       |         | clockwise direction around the overriding plate.                                |
-    +------------------------------------------------+-------+---------+---------------------------------------------------------------------------------+
-    | output_convergence_velocity_components         | bool  | False   | Append the convergence velocity orthogonal and parallel                         |
-    |                                                |       |         | components (in cm/yr) to each returned sample point.                            |
-    |                                                |       |         | Orthogonal is normal to trench in direction of overriding plate.                |
-    |                                                |       |         | Parallel is along trench and 90 degrees clockwise from orthogonal.              |
-    +------------------------------------------------+-------+---------+---------------------------------------------------------------------------------+
-    | output_trench_absolute_velocity_components     | bool  | False   | Append the trench plate absolute velocity orthogonal and parallel               |
-    |                                                |       |         | components (in cm/yr) to each returned sample point.                            |
-    |                                                |       |         | Orthogonal is normal to trench in direction of overriding plate.                |
-    |                                                |       |         | Parallel is along trench and 90 degrees clockwise from orthogonal.              |
-    +------------------------------------------------+-------+---------+---------------------------------------------------------------------------------+
-    | output_subducting_absolute_velocity            | bool  | False   | Append the subducting plate absolute velocity magnitude (in cm/yr) and          |
-    |                                                |       |         | obliquity angle (in degrees) to each returned sample point.                     |
-    +------------------------------------------------+-------+---------+---------------------------------------------------------------------------------+
-    | output_subducting_absolute_velocity_components | bool  | False   | Append the subducting plate absolute velocity orthogonal and parallel           |
-    |                                                |       |         | components (in cm/yr) to each returned sample point.                            |
-    |                                                |       |         | Orthogonal is normal to trench in direction of overriding plate.                |
-    |                                                |       |         | Parallel is along trench and 90 degrees clockwise from orthogonal.              |
-    +------------------------------------------------+-------+---------+---------------------------------------------------------------------------------+
-    | output_trench_normal                           | bool  | False   | Append the x, y and z components of the trench normal unit-length 3D vectors.   |
-    |                                                |       |         | These vectors are normal to the trench in the direction of subduction           |
-    |                                                |       |         | (towards overriding plate). These are global 3D vectors which differ from       |
-    |                                                |       |         | trench normal azimuth angles (ie, angles relative to North).                    |
-    +------------------------------------------------+-------+---------+---------------------------------------------------------------------------------+
+    | Name                                           | Type  | Default | Description |
+    |------------------------------------------------|-------|---------|---------------------------------------------------------------------------------|
+    | output_distance_to_nearest_edge_of_trench      | bool  | False   | Append the distance (in degrees) along the trench line to the nearest trench edge to each returned sample point. A trench edge is the farthermost location on the current trench feature that contributes to a plate boundary. |
+    | output_distance_to_start_edge_of_trench        | bool  | False   | Append the distance (in degrees) along the trench line from the start edge of the trench to each returned sample point. The start of the trench is along the clockwise direction around the overriding plate. |
+    | output_convergence_velocity_components         | bool  | False   | Append the convergence velocity orthogonal and parallel components (in cm/yr) to each returned sample point. Orthogonal is normal to trench (in direction of overriding plate when positive). Parallel is along trench (90 degrees clockwise from trench normal when positive). |
+    | output_trench_absolute_velocity_components     | bool  | False   | Append the trench absolute velocity orthogonal and parallel components (in cm/yr) to each returned sample point. Orthogonal is normal to trench (in direction of overriding plate when positive). Parallel is along trench (90 degrees clockwise from trench normal when positive). |
+    | output_subducting_absolute_velocity            | bool  | False   | Append the subducting plate absolute velocity magnitude (in cm/yr) and obliquity angle (in degrees) to each returned sample point. |
+    | output_subducting_absolute_velocity_components | bool  | False   | Append the subducting plate absolute velocity orthogonal and parallel components (in cm/yr) to each returned sample point. Orthogonal is normal to trench (in direction of overriding plate when positive). Parallel is along trench (90 degrees clockwise from trench normal when positive). |
+    | output_trench_normal                           | bool  | False   | Append the x, y and z components of the trench normal unit-length 3D vectors. These vectors are normal to the trench in the direction of subduction (towards overriding plate). These are global 3D vectors which differ from trench normal azimuth angles (ie, angles relative to North). |
     """
 
     #
@@ -1249,40 +1200,15 @@ def convert_old_convergence_output(old_convergence_data, **kwargs):
 
     The following optional keyword arguments are supported by *kwargs*:
 
-    +------------------------------------------------+-------+---------+---------------------------------------------------------------------------------+
-    | Name                                           | Type  | Default | Description                                                                     |
-    +------------------------------------------------+-------+---------+---------------------------------------------------------------------------------+
-    | output_distance_to_nearest_edge_of_trench      | bool  | False   | Append the distance (in degrees) along the trench line to the nearest           |
-    |                                                |       |         | trench edge to each returned sample point. The trench edge is the location      |
-    |                                                |       |         | on the current trench feature where the subducting or overriding plate changes. |
-    +------------------------------------------------+-------+---------+---------------------------------------------------------------------------------+
-    | output_distance_to_start_edge_of_trench        | bool  | False   | Append the distance (in degrees) along the trench line from the start edge of   |
-    |                                                |       |         | the trench to each returned sample point. The start of the trench is along the  |
-    |                                                |       |         | clockwise direction around the overriding plate.                                |
-    +------------------------------------------------+-------+---------+---------------------------------------------------------------------------------+
-    | output_convergence_velocity_components         | bool  | False   | Append the convergence velocity orthogonal and parallel                         |
-    |                                                |       |         | components (in cm/yr) to each returned sample point.                            |
-    |                                                |       |         | Orthogonal is normal to trench in direction of overriding plate.                |
-    |                                                |       |         | Parallel is along trench and 90 degrees clockwise from orthogonal.              |
-    +------------------------------------------------+-------+---------+---------------------------------------------------------------------------------+
-    | output_trench_absolute_velocity_components     | bool  | False   | Append the trench plate absolute velocity orthogonal and parallel               |
-    |                                                |       |         | components (in cm/yr) to each returned sample point.                            |
-    |                                                |       |         | Orthogonal is normal to trench in direction of overriding plate.                |
-    |                                                |       |         | Parallel is along trench and 90 degrees clockwise from orthogonal.              |
-    +------------------------------------------------+-------+---------+---------------------------------------------------------------------------------+
-    | output_subducting_absolute_velocity            | bool  | False   | Append the subducting plate absolute velocity magnitude (in cm/yr) and          |
-    |                                                |       |         | obliquity angle (in degrees) to each returned sample point.                     |
-    +------------------------------------------------+-------+---------+---------------------------------------------------------------------------------+
-    | output_subducting_absolute_velocity_components | bool  | False   | Append the subducting plate absolute velocity orthogonal and parallel           |
-    |                                                |       |         | components (in cm/yr) to each returned sample point.                            |
-    |                                                |       |         | Orthogonal is normal to trench in direction of overriding plate.                |
-    |                                                |       |         | Parallel is along trench and 90 degrees clockwise from orthogonal.              |
-    +------------------------------------------------+-------+---------+---------------------------------------------------------------------------------+
-    | output_trench_normal                           | bool  | False   | Append the x, y and z components of the trench normal unit-length 3D vectors.   |
-    |                                                |       |         | These vectors are normal to the trench in the direction of subduction           |
-    |                                                |       |         | (towards overriding plate). These are global 3D vectors which differ from       |
-    |                                                |       |         | trench normal azimuth angles (ie, angles relative to North).                    |
-    +------------------------------------------------+-------+---------+---------------------------------------------------------------------------------+
+    | Name                                           | Type  | Default | Description |
+    |------------------------------------------------|-------|---------|---------------------------------------------------------------------------------|
+    | output_distance_to_nearest_edge_of_trench      | bool  | False   | Append the distance (in degrees) along the trench line to the nearest trench edge to each returned sample point. A trench edge is the farthermost location on the current trench feature that contributes to a plate boundary. |
+    | output_distance_to_start_edge_of_trench        | bool  | False   | Append the distance (in degrees) along the trench line from the start edge of the trench to each returned sample point. The start of the trench is along the clockwise direction around the overriding plate. |
+    | output_convergence_velocity_components         | bool  | False   | Append the convergence velocity orthogonal and parallel components (in cm/yr) to each returned sample point. Orthogonal is normal to trench (in direction of overriding plate when positive). Parallel is along trench (90 degrees clockwise from trench normal when positive). |
+    | output_trench_absolute_velocity_components     | bool  | False   | Append the trench absolute velocity orthogonal and parallel components (in cm/yr) to each returned sample point. Orthogonal is normal to trench (in direction of overriding plate when positive). Parallel is along trench (90 degrees clockwise from trench normal when positive). |
+    | output_subducting_absolute_velocity            | bool  | False   | Append the subducting plate absolute velocity magnitude (in cm/yr) and obliquity angle (in degrees) to each returned sample point. |
+    | output_subducting_absolute_velocity_components | bool  | False   | Append the subducting plate absolute velocity orthogonal and parallel components (in cm/yr) to each returned sample point. Orthogonal is normal to trench (in direction of overriding plate when positive). Parallel is along trench (90 degrees clockwise from trench normal when positive). |
+    | output_trench_normal                           | bool  | False   | Append the x, y and z components of the trench normal unit-length 3D vectors. These vectors are normal to the trench in the direction of subduction (towards overriding plate). These are global 3D vectors which differ from trench normal azimuth angles (ie, angles relative to North). |
     """
 
     #
@@ -1604,40 +1530,40 @@ For each time (over a range of times) an output xy file is generated containing 
     The order of any extra data is the same order in which the parameters are listed below.
     But note that all parameters are optional, you only need to specify the ones you want.
     
-    +------------------------------------------------+---------------------------------------------------------------------------------+
-    | Name                                           | Description                                                                     |
-    +------------------------------------------------+---------------------------------------------------------------------------------+
-    | output_distance_to_nearest_edge_of_trench      | Append the distance (in degrees) along the trench line to the nearest           |
-    |                                                | trench edge to each returned sample point. The trench edge is the location      |
-    |                                                | on the current trench feature where the subducting or overriding plate changes. |
-    +------------------------------------------------+---------------------------------------------------------------------------------+
-    | output_distance_to_start_edge_of_trench        | Append the distance (in degrees) along the trench line from the start edge of   |
-    |                                                | the trench to each returned sample point. The start of the trench is along the  |
-    |                                                | clockwise direction around the overriding plate.                                |
-    +------------------------------------------------+---------------------------------------------------------------------------------+
-    | output_convergence_velocity_components         | Append the convergence velocity orthogonal and parallel                         |
-    |                                                | components (in cm/yr) to each returned sample point.                            |
-    |                                                | Orthogonal is normal to trench in direction of overriding plate.                |
-    |                                                | Parallel is along trench and 90 degrees clockwise from orthogonal.              |
-    +------------------------------------------------+---------------------------------------------------------------------------------+
-    | output_trench_absolute_velocity_components     | Append the trench plate absolute velocity orthogonal and parallel               |
-    |                                                | components (in cm/yr) to each returned sample point.                            |
-    |                                                | Orthogonal is normal to trench in direction of overriding plate.                |
-    |                                                | Parallel is along trench and 90 degrees clockwise from orthogonal.              |
-    +------------------------------------------------+---------------------------------------------------------------------------------+
-    | output_subducting_absolute_velocity            | Append the subducting plate absolute velocity magnitude (in cm/yr) and          |
-    |                                                | obliquity angle (in degrees) to each returned sample point.                     |
-    +------------------------------------------------+---------------------------------------------------------------------------------+
-    | output_subducting_absolute_velocity_components | Append the subducting plate absolute velocity orthogonal and parallel           |
-    |                                                | components (in cm/yr) to each returned sample point.                            |
-    |                                                | Orthogonal is normal to trench in direction of overriding plate.                |
-    |                                                | Parallel is along trench and 90 degrees clockwise from orthogonal.              |
-    +------------------------------------------------+---------------------------------------------------------------------------------+
-    | output_trench_normal                           | Append the x, y and z components of the trench normal unit-length 3D vectors.   |
-    |                                                | These vectors are normal to the trench in the direction of subduction           |
-    |                                                | (towards overriding plate). These are global 3D vectors which differ from       |
-    |                                                | trench normal azimuth angles (ie, angles relative to North).                    |
-    +------------------------------------------------+---------------------------------------------------------------------------------+
+    +------------------------------------------------+-----------------------------------------------------------------------------------+
+    | Name                                           | Description                                                                       |
+    +------------------------------------------------+-----------------------------------------------------------------------------------+
+    | output_distance_to_nearest_edge_of_trench      | Append the distance (in degrees) along the trench line to the nearest             |
+    |                                                | trench edge to each returned sample point. A trench edge is the farthermost       |
+    |                                                | location on the current trench feature that contributes to a plate boundary.      |
+    +------------------------------------------------+-----------------------------------------------------------------------------------+
+    | output_distance_to_start_edge_of_trench        | Append the distance (in degrees) along the trench line from the start edge of     |
+    |                                                | the trench to each returned sample point. The start of the trench is along the    |
+    |                                                | clockwise direction around the overriding plate.                                  |
+    +------------------------------------------------+-----------------------------------------------------------------------------------+
+    | output_convergence_velocity_components         | Append the convergence velocity orthogonal and parallel                           |
+    |                                                | components (in cm/yr) to each returned sample point.                              |
+    |                                                | Orthogonal is normal to trench (in direction of overriding plate when positive).  |
+    |                                                | Parallel is along trench (90 degrees clockwise from trench normal when positive). |
+    +------------------------------------------------+-----------------------------------------------------------------------------------+
+    | output_trench_absolute_velocity_components     | Append the trench absolute velocity orthogonal and parallel                       |
+    |                                                | components (in cm/yr) to each returned sample point.                              |
+    |                                                | Orthogonal is normal to trench (in direction of overriding plate when positive).  |
+    |                                                | Parallel is along trench (90 degrees clockwise from trench normal when positive). |
+    +------------------------------------------------+-----------------------------------------------------------------------------------+
+    | output_subducting_absolute_velocity            | Append the subducting plate absolute velocity magnitude (in cm/yr) and            |
+    |                                                | obliquity angle (in degrees) to each returned sample point.                       |
+    +------------------------------------------------+-----------------------------------------------------------------------------------+
+    | output_subducting_absolute_velocity_components | Append the subducting plate absolute velocity orthogonal and parallel             |
+    |                                                | components (in cm/yr) to each returned sample point.                              |
+    |                                                | Orthogonal is normal to trench (in direction of overriding plate when positive).  |
+    |                                                | Parallel is along trench (90 degrees clockwise from trench normal when positive). |
+    +------------------------------------------------+-----------------------------------------------------------------------------------+
+    | output_trench_normal                           | Append the x, y and z components of the trench normal unit-length 3D vectors.     |
+    |                                                | These vectors are normal to the trench in the direction of subduction             |
+    |                                                | (towards overriding plate). These are global 3D vectors which differ from         |
+    |                                                | trench normal azimuth angles (ie, angles relative to North).                      |
+    +------------------------------------------------+-----------------------------------------------------------------------------------+
 
 The obliquity angles are in the range (-180 180). The range (0, 180) goes clockwise (when viewed from above the Earth) from the
 trench normal direction to the velocity vector. The range (0, -180) goes counter-clockwise.
@@ -1646,7 +1572,8 @@ You can change the range (-180, 180) to the range (0, 360) by adding 360 to nega
 Note that the convergence velocity magnitude is negative if the plates are diverging (if convergence obliquity angle
 is greater than 90 or less than -90). And note that the absolute velocity magnitude is negative if the trench
 is moving towards the overriding plate (if absolute obliquity angle is less than 90 or greater than -90) - note that this
-ignores the kinematics of the subducting plate.
+ignores the kinematics of the subducting plate. Similiarly for the subducting plate absolute velocity magnitude
+(if extra output parameter 'output_subducting_absolute_velocity' is specified).
 
 Each point in the output is the midpoint of a great circle arc between two adjacent points in the trench polyline.
 The trench normal vector used in the obliquity calculations is perpendicular to the great circle arc of each point (arc midpoint)

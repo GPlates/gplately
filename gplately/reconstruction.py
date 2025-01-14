@@ -263,6 +263,13 @@ class PlateReconstruction(object):
         anchor_plate_id,
         include_network_boundaries,
         convergence_threshold_in_cm_per_yr,
+        output_distance_to_nearest_edge_of_trench=False,
+        output_distance_to_start_edge_of_trench=False,
+        output_convergence_velocity_components=False,
+        output_trench_absolute_velocity_components=False,
+        output_subducting_absolute_velocity=False,
+        output_subducting_absolute_velocity_components=False,
+        output_trench_normal=False,
     ):
         #
         # This is essentially a replacement for 'ptt.subduction_convergence.subduction_convergence()'.
@@ -465,20 +472,125 @@ class PlateReconstruction(object):
                         .get_reconstruction_plate_id()
                     )
 
-                subduction_data.append(
-                    (
-                        lon,
-                        lat,
-                        convergence_velocity_magnitude,
-                        np.degrees(convergence_obliquity),
-                        trench_absolute_velocity_magnitude,
-                        np.degrees(trench_absolute_velocity_obliquity),
-                        np.degrees(stat.boundary_length),
-                        np.degrees(trench_normal_azimuth),
-                        subducting_plate_id,
-                        trench_plate_id,
-                    )
+                output_tuple = (
+                    lon,
+                    lat,
+                    convergence_velocity_magnitude,
+                    np.degrees(convergence_obliquity),
+                    trench_absolute_velocity_magnitude,
+                    np.degrees(trench_absolute_velocity_obliquity),
+                    np.degrees(stat.boundary_length),
+                    np.degrees(trench_normal_azimuth),
+                    subducting_plate_id,
+                    trench_plate_id,
                 )
+
+                if output_distance_to_nearest_edge_of_trench:
+                    distance_to_nearest_edge_of_trench = min(
+                        stat.distance_from_start_of_topological_section,
+                        stat.distance_from_end_of_topological_section,
+                    )
+                    output_tuple += (np.degrees(distance_to_nearest_edge_of_trench),)
+
+                if output_distance_to_start_edge_of_trench:
+                    # We want the distance to be along the clockwise direction around the overriding plate.
+                    if overriding_plate_is_on_left:
+                        # The overriding plate is on the left of the trench.
+                        # So the clockwise direction starts at the end of the trench.
+                        distance_to_start_edge_of_trench = (
+                            stat.distance_from_end_of_topological_section
+                        )
+                    else:
+                        # The overriding plate is on the right of the trench.
+                        # So the clockwise direction starts at the beginning of the trench.
+                        distance_to_start_edge_of_trench = (
+                            stat.distance_from_start_of_topological_section
+                        )
+                    output_tuple += (np.degrees(distance_to_start_edge_of_trench),)
+
+                if output_convergence_velocity_components:
+                    # The orthogonal and parallel components are just magnitude multiplied by cosine and sine.
+                    convergence_velocity_orthogonal = np.cos(
+                        convergence_obliquity
+                    ) * np.abs(convergence_velocity_magnitude)
+                    convergence_velocity_parallel = np.sin(
+                        convergence_obliquity
+                    ) * np.abs(convergence_velocity_magnitude)
+                    output_tuple += (
+                        convergence_velocity_orthogonal,
+                        convergence_velocity_parallel,
+                    )
+
+                if output_trench_absolute_velocity_components:
+                    # The orthogonal and parallel components are just magnitude multiplied by cosine and sine.
+                    trench_absolute_velocity_orthogonal = np.cos(
+                        trench_absolute_velocity_obliquity
+                    ) * np.abs(trench_absolute_velocity_magnitude)
+                    trench_absolute_velocity_parallel = np.sin(
+                        trench_absolute_velocity_obliquity
+                    ) * np.abs(trench_absolute_velocity_magnitude)
+                    output_tuple += (
+                        trench_absolute_velocity_orthogonal,
+                        trench_absolute_velocity_parallel,
+                    )
+
+                if (
+                    output_subducting_absolute_velocity
+                    or output_subducting_absolute_velocity_components
+                ):
+                    # Subducting absolute velocity magnitude and obliquity.
+                    #
+                    # Note: Subducting plate is opposite the overriding plate.
+                    if overriding_plate_is_on_left:
+                        subducting_absolute_velocity_magnitude = (
+                            stat.right_plate_velocity_magnitude
+                        )
+                        subducting_absolute_velocity_obliquity = (
+                            stat.right_plate_velocity_obliquity
+                        )
+                    else:
+                        subducting_absolute_velocity_magnitude = (
+                            stat.left_plate_velocity_magnitude
+                        )
+                        subducting_absolute_velocity_obliquity = (
+                            stat.left_plate_velocity_obliquity
+                        )
+                        # Flip obliquity since trench normal (towards overidding plate on right)
+                        # is opposite the boundary line normal (towards left).
+                        subducting_absolute_velocity_obliquity -= np.pi
+                        # Keep obliquity in the range [-pi, pi].
+                        if subducting_absolute_velocity_obliquity < -np.pi:
+                            subducting_absolute_velocity_obliquity += 2 * np.pi
+
+                    # Similar to the trench absolute motion, if subducting absolute motion is heading
+                    # in the direction of the overriding plate then make the velocity magnitude negative.
+                    if np.abs(subducting_absolute_velocity_obliquity) < 0.5 * np.pi:
+                        subducting_absolute_velocity_magnitude = (
+                            -subducting_absolute_velocity_magnitude
+                        )
+
+                    if output_subducting_absolute_velocity:
+                        output_tuple += (
+                            subducting_absolute_velocity_magnitude,
+                            np.degrees(subducting_absolute_velocity_obliquity),
+                        )
+                    if output_subducting_absolute_velocity_components:
+                        # The orthogonal and parallel components are just magnitude multiplied by cosine and sine.
+                        subducting_absolute_velocity_orthogonal = np.cos(
+                            subducting_absolute_velocity_obliquity
+                        ) * np.abs(subducting_absolute_velocity_magnitude)
+                        subducting_absolute_velocity_parallel = np.sin(
+                            subducting_absolute_velocity_obliquity
+                        ) * np.abs(subducting_absolute_velocity_magnitude)
+                        output_tuple += (
+                            subducting_absolute_velocity_orthogonal,
+                            subducting_absolute_velocity_parallel,
+                        )
+
+                if output_trench_normal:
+                    output_tuple += trench_normal.to_xyz()
+
+                subduction_data.append(output_tuple)
 
         return subduction_data
 
@@ -578,11 +690,28 @@ class PlateReconstruction(object):
         The trench normal is perpendicular to the trench and pointing toward the overriding plate.
 
         Note that the convergence velocity magnitude is negative if the plates are diverging (if convergence obliquity angle
-        is greater than 90 or less than -90). And note that the absolute velocity magnitude is negative if the trench
-        (subduction zone) is moving towards the overriding plate (if absolute obliquity angle is less than 90 and greater
-        than -90) - note that this ignores the kinematics of the subducting plate.
+        is greater than 90 or less than -90). And note that the trench absolute velocity magnitude is negative if the trench
+        (subduction zone) is moving towards the overriding plate (if trench absolute obliquity angle is less than 90 and greater
+        than -90) - note that this ignores the kinematics of the subducting plate. Similiarly for the subducting plate absolute
+        velocity magnitude (if keyword argument `output_subducting_absolute_velocity` is True).
 
-        The delta time interval used for velocity calculations is, by default, assumed to be 1Ma.
+        The optional *kwargs* parameters can be used to append extra data to the output tuple of each sample point
+        (as well as specify the anchor plate and velocity delta time interval).
+        The order of any extra data is the same order in which the parameters are listed below.
+
+        The following optional keyword arguments are supported by *kwargs*:
+
+        | Name                                           | Type  | Default | Description |
+        |------------------------------------------------|-------|---------|-------------|
+        | anchor_plate_id                                | int   | None    | Anchor plate ID (defaults to the current anchor plate ID). |
+        | velocity_delta_time                            | float | 1.0     | Velocity delta time used in convergence velocity calculations (defaults to 1 Myr). |
+        | output_distance_to_nearest_edge_of_trench      | bool  | False   | Append the distance (in degrees) along the trench line to the nearest trench edge to each returned sample point. A trench edge is the farthermost location on the current trench feature that contributes to a plate boundary. |
+        | output_distance_to_start_edge_of_trench        | bool  | False   | Append the distance (in degrees) along the trench line from the start edge of the trench to each returned sample point. The start of the trench is along the clockwise direction around the overriding plate. |
+        | output_convergence_velocity_components         | bool  | False   | Append the convergence velocity orthogonal and parallel components (in cm/yr) to each returned sample point. Orthogonal is normal to trench (in direction of overriding plate when positive). Parallel is along trench (90 degrees clockwise from trench normal when positive). |
+        | output_trench_absolute_velocity_components     | bool  | False   | Append the trench absolute velocity orthogonal and parallel components (in cm/yr) to each returned sample point. Orthogonal is normal to trench (in direction of overriding plate when positive). Parallel is along trench (90 degrees clockwise from trench normal when positive). |
+        | output_subducting_absolute_velocity            | bool  | False   | Append the subducting plate absolute velocity magnitude (in cm/yr) and obliquity angle (in degrees) to each returned sample point. |
+        | output_subducting_absolute_velocity_components | bool  | False   | Append the subducting plate absolute velocity orthogonal and parallel components (in cm/yr) to each returned sample point. Orthogonal is normal to trench (in direction of overriding plate when positive). Parallel is along trench (90 degrees clockwise from trench normal when positive). |
+        | output_trench_normal                           | bool  | False   | Append the x, y and z components of the trench normal unit-length 3D vectors. These vectors are normal to the trench in the direction of subduction (towards overriding plate). These are global 3D vectors which differ from trench normal azimuth angles (ie, angles relative to North). |
 
         Examples
         --------
@@ -595,8 +724,34 @@ class PlateReconstruction(object):
             subduction_data = plate_reconstruction.tessellate_subduction_zones(50,
                     convergence_threshold_in_cm_per_yr=0.0)
         """
+        #
+        # Process keyword arguments.
+        #
         anchor_plate_id = kwargs.pop("anchor_plate_id", self.anchor_plate_id)
         velocity_delta_time = kwargs.pop("velocity_delta_time", 1.0)
+        output_distance_to_nearest_edge_of_trench = kwargs.pop(
+            "output_distance_to_nearest_edge_of_trench", False
+        )
+        output_distance_to_start_edge_of_trench = kwargs.pop(
+            "output_distance_to_start_edge_of_trench", False
+        )
+        output_convergence_velocity_components = kwargs.pop(
+            "output_convergence_velocity_components", False
+        )
+        output_trench_absolute_velocity_components = kwargs.pop(
+            "output_trench_absolute_velocity_components", False
+        )
+        output_subducting_absolute_velocity = kwargs.pop(
+            "output_subducting_absolute_velocity", False
+        )
+        output_subducting_absolute_velocity_components = kwargs.pop(
+            "output_subducting_absolute_velocity_components", False
+        )
+        output_trench_normal = kwargs.pop("output_trench_normal", False)
+        if kwargs:
+            raise ValueError(
+                "Keyword arguments not recognised:{}".format(list(kwargs.keys()))
+            )
 
         if use_ptt:
             from . import ptt as _ptt
@@ -622,7 +777,13 @@ class PlateReconstruction(object):
                     velocity_delta_time=velocity_delta_time,
                     anchor_plate_id=anchor_plate_id,
                     include_network_boundaries=include_network_boundaries,
-                    **kwargs,
+                    output_distance_to_nearest_edge_of_trench=output_distance_to_nearest_edge_of_trench,
+                    output_distance_to_start_edge_of_trench=output_distance_to_start_edge_of_trench,
+                    output_convergence_velocity_components=output_convergence_velocity_components,
+                    output_trench_absolute_velocity_components=output_trench_absolute_velocity_components,
+                    output_subducting_absolute_velocity=output_subducting_absolute_velocity,
+                    output_subducting_absolute_velocity_components=output_subducting_absolute_velocity_components,
+                    output_trench_normal=output_trench_normal,
                 )
 
         else:
@@ -633,40 +794,116 @@ class PlateReconstruction(object):
                 anchor_plate_id=anchor_plate_id,
                 include_network_boundaries=include_network_boundaries,
                 convergence_threshold_in_cm_per_yr=convergence_threshold_in_cm_per_yr,
+                output_distance_to_nearest_edge_of_trench=output_distance_to_nearest_edge_of_trench,
+                output_distance_to_start_edge_of_trench=output_distance_to_start_edge_of_trench,
+                output_convergence_velocity_components=output_convergence_velocity_components,
+                output_trench_absolute_velocity_components=output_trench_absolute_velocity_components,
+                output_subducting_absolute_velocity=output_subducting_absolute_velocity,
+                output_subducting_absolute_velocity_components=output_subducting_absolute_velocity_components,
+                output_trench_normal=output_trench_normal,
             )
 
         if subduction_data:
             subduction_data = np.vstack(subduction_data)
         else:
             # No subduction data.
-            subduction_data = np.empty((0, 10))
+            num_columns = 10
+            if output_distance_to_nearest_edge_of_trench:
+                num_columns += 1
+            if output_distance_to_start_edge_of_trench:
+                num_columns += 1
+            if output_convergence_velocity_components:
+                num_columns += 2
+            if output_trench_absolute_velocity_components:
+                num_columns += 2
+            if output_subducting_absolute_velocity:
+                num_columns += 2
+            if output_subducting_absolute_velocity_components:
+                num_columns += 2
+            if output_trench_normal:
+                num_columns += 3
+            subduction_data = np.empty((0, num_columns))
 
         if return_geodataframe:
             import geopandas as gpd
             from shapely import geometry
 
-            coords = [
+            points = [
                 geometry.Point(lon, lat)
                 for lon, lat in zip(subduction_data[:, 0], subduction_data[:, 1])
             ]
-            d = {"geometry": coords}
+            # Required data.
+            gdf_data = {
+                "geometry": points,
+                "convergence velocity (cm/yr)": subduction_data[:, 2],
+                "convergence obliquity angle (degrees)": subduction_data[:, 3],
+                "trench velocity (cm/yr)": subduction_data[:, 4],
+                "trench obliquity angle (degrees)": subduction_data[:, 5],
+                "length (degrees)": subduction_data[:, 6],
+                "trench normal angle (degrees)": subduction_data[:, 7],
+                "subducting plate ID": subduction_data[:, 8],
+                "overriding plate ID": subduction_data[:, 9],
+            }
 
-            labels = [
-                "convergence velocity (cm/yr)",
-                "convergence obliquity angle (degrees)",
-                "trench velocity (cm/yr)",
-                "trench obliquity angle (degrees)",
-                "length (degrees)",
-                "trench normal angle (degrees)",
-                "subducting plate ID",
-                "overriding plate ID",
-            ]
+            # Optional data.
+            #
+            # Note: The order must match the output order.
+            optional_gdf_data_index = 10
+            if output_distance_to_nearest_edge_of_trench:
+                gdf_data["distance to nearest trench edge (degrees)"] = subduction_data[
+                    :, optional_gdf_data_index
+                ]
+                optional_gdf_data_index += 1
+            if output_distance_to_start_edge_of_trench:
+                gdf_data["distance to start of trench edge (degrees)"] = (
+                    subduction_data[:, optional_gdf_data_index]
+                )
+                optional_gdf_data_index += 1
+            if output_convergence_velocity_components:
+                gdf_data["convergence velocity orthogonal component (cm/yr)"] = (
+                    subduction_data[:, optional_gdf_data_index]
+                )
+                gdf_data["convergence velocity parallel component (cm/yr)"] = (
+                    subduction_data[:, optional_gdf_data_index + 1]
+                )
+                optional_gdf_data_index += 2
+            if output_trench_absolute_velocity_components:
+                gdf_data["trench absolute velocity orthogonal component (cm/yr)"] = (
+                    subduction_data[:, optional_gdf_data_index]
+                )
+                gdf_data["trench absolute velocity parallel component (cm/yr)"] = (
+                    subduction_data[:, optional_gdf_data_index + 1]
+                )
+                optional_gdf_data_index += 2
+            if output_subducting_absolute_velocity:
+                gdf_data["subducting absolute velocity (cm/yr)"] = subduction_data[
+                    :, optional_gdf_data_index
+                ]
+                gdf_data["subducting absolute obliquity angle (degrees)"] = (
+                    subduction_data[:, optional_gdf_data_index + 1]
+                )
+                optional_gdf_data_index += 2
+            if output_subducting_absolute_velocity_components:
+                gdf_data[
+                    "subducting absolute velocity orthogonal component (cm/yr)"
+                ] = subduction_data[:, optional_gdf_data_index]
+                gdf_data["subducting absolute velocity parallel component (cm/yr)"] = (
+                    subduction_data[:, optional_gdf_data_index + 1]
+                )
+                optional_gdf_data_index += 2
+            if output_trench_normal:
+                gdf_data["trench normal (unit-length 3D vector) x component"] = (
+                    subduction_data[:, optional_gdf_data_index]
+                )
+                gdf_data["trench normal (unit-length 3D vector) y component"] = (
+                    subduction_data[:, optional_gdf_data_index + 1]
+                )
+                gdf_data["trench normal (unit-length 3D vector) z component"] = (
+                    subduction_data[:, optional_gdf_data_index + 2]
+                )
+                optional_gdf_data_index += 3
 
-            for i, label in enumerate(labels):
-                index = 2 + i
-                d[label] = subduction_data[:, index]
-
-            gdf = gpd.GeoDataFrame(d, geometry="geometry")
+            gdf = gpd.GeoDataFrame(gdf_data, geometry="geometry")
             return gdf
 
         else:
@@ -1152,6 +1389,13 @@ class PlateReconstruction(object):
         have a uniform spacing (along each ridge segment polyline) that is *equal* to `tessellation_threshold_radians`.
         If `use_ptt` is True then each ridge segment is sampled at *approximately* uniform intervals along its length such that the sampled points
         have a uniform spacing (along each ridge segment polyline) that is *less than or equal to* `tessellation_threshold_radians`.
+
+        The following optional keyword arguments are supported by *kwargs*:
+
+        | Name                                           | Type  | Default | Description |
+        |------------------------------------------------|-------|---------|-------------|
+        | anchor_plate_id                                | int   | None    | Anchor plate ID (defaults to the current anchor plate ID). |
+        | velocity_delta_time                            | float | 1.0     | Velocity delta time used in spreading velocity calculations (defaults to 1 Myr). |
 
         Examples
         --------
