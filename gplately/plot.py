@@ -726,6 +726,11 @@ class PlotTopologies(object):
             tessellate_degrees=tessellate_degrees,
         )
 
+        if not isinstance(gdf, gpd.GeoDataFrame):
+            raise Exception(
+                f"Expecting a GeoDataFrame object, but the gdf is {type(gdf)}"
+            )
+
         if len(gdf) == 0:
             logger.warning("No feature found for plotting. Do nothing and return.")
             return ax

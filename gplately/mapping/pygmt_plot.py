@@ -17,6 +17,16 @@
 from geopandas.geodataframe import GeoDataFrame
 import pygmt
 
+pygmt.config(
+    FONT_ANNOT=8,
+    FONT_LABEL=8,
+    FONT=8,
+    MAP_TICK_PEN="0.75p",
+    MAP_FRAME_PEN="0.75p",
+    MAP_TICK_LENGTH_PRIMARY="4p",
+)
+
+
 # ----- parameters for plot
 region = "d"
 width = 10
@@ -33,8 +43,49 @@ label_offset = "j0/-0.5c"
 label_position = "TC"
 
 
+def get_pygmt_basemap_figure(projection="N180/10c", region="d"):
+    fig = pygmt.Figure()
+    fig.basemap(region=region, projection=projection, frame="lrtb")
+    return fig
+
+
 def plot_geo_data_frame(fig: pygmt.Figure, gdf: GeoDataFrame, **kwargs):
-    fig.plot(data=gdf.geometry, pen="0.5p,blue")
+    line_width = "0.1p"
+    line_color = "blue"
+
+    if "edgecolor" in kwargs.keys():
+        if isinstance(kwargs["edgecolor"], str):
+            line_color = kwargs["edgecolor"]
+        else:
+            raise Exception(
+                "The edgecolor parameter is not string. Currently, the pygmt plot engine only supports colour name."
+            )
+
+    if "linewidth" in kwargs.keys():
+        line_width = f"{kwargs['linewidth']}p"
+
+    fill = None
+    if "facecolor" in kwargs.keys() and kwargs["facecolor"].lower() != "none":
+        fill = f"{kwargs['facecolor']}"
+
+    if line_color.lower() == "none":
+        line_width = "0"
+        line_color = fill
+
+    if "fill" in kwargs.keys():
+        fill = kwargs["fill"]
+
+    if "pen" in kwargs.keys():
+        pen = kwargs["pen"]
+    else:
+        pen = f"{line_width},{line_color}"
+
+    style = None
+    if "style" in kwargs.keys():
+        style = kwargs["style"]
+
+    fig.plot(data=gdf.geometry, pen=pen, fill=fill, style=style)
+
     """
     fig.plot(data=gdf_coastlines, fill=coastline_color, frame=["xa0", "ya0"],  transparency=0)
 
