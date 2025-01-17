@@ -10,7 +10,7 @@ from plate_model_manager import PlateModel, PlateModelManager
 
 import gplately
 from gplately import PlateReconstruction, PlotTopologies
-from gplately.mapping.plot_engine import PlotEngine
+from gplately.mapping.plot_engine import PlotEngineType
 
 print(gplately.__file__)
 
@@ -43,7 +43,7 @@ def main(show=True):
         COBs=model.get_layer("COBs", return_none_if_not_exist=True),
         continents=model.get_layer("ContinentalPolygons"),
         time=age,
-        plot_engine=PlotEngine.PYGMT,
+        plot_engine=PlotEngineType.PYGMT,
     )
 
     # age = 100

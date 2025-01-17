@@ -45,8 +45,11 @@ from .decorators import (
     validate_topology_availability,
 )
 from .gpml import _load_FeatureCollection
-from .mapping.plot_engine import PlotEngine
-from .mapping.pygmt_plot import plot_geo_data_frame
+from .mapping.plot_engine import PlotEngineType
+from .mapping.pygmt_plot import (
+    plot_geo_data_frame,
+    plot_subduction_zones as pygmt_plot_subduction_zones,
+)
 from .pygplates import FeatureCollection as _FeatureCollection
 from .reconstruction import PlateReconstruction as _PlateReconstruction
 from .tools import EARTH_RADIUS
@@ -300,7 +303,7 @@ class PlotTopologies(object):
         COBs=None,
         time=None,
         anchor_plate_id=0,
-        plot_engine: PlotEngine = PlotEngine.CARTOPY,
+        plot_engine: PlotEngineType = PlotEngineType.CARTOPY,
     ):
         self.plate_reconstruction = plate_reconstruction
 
@@ -735,7 +738,7 @@ class PlotTopologies(object):
             logger.warning("No feature found for plotting. Do nothing and return.")
             return ax
 
-        if self._plot_engine == PlotEngine.PYGMT:
+        if self._plot_engine == PlotEngineType.PYGMT:
             return plot_geo_data_frame(fig=ax, gdf=gdf, **kwargs)
         else:
             if hasattr(ax, "projection"):
@@ -1083,10 +1086,10 @@ class PlotTopologies(object):
         trench_right_features = shapelify_feature_lines(self.trench_right)
 
         gdf_left = gpd.GeoDataFrame(
-            {"geometry": trench_left_features}, geometry="geometry"
+            {"geometry": trench_left_features}, geometry="geometry", crs="EPSG:4326"
         )
         gdf_right = gpd.GeoDataFrame(
-            {"geometry": trench_right_features}, geometry="geometry"
+            {"geometry": trench_right_features}, geometry="geometry", crs="EPSG:4326"
         )
 
         return gdf_left, gdf_right
@@ -1128,6 +1131,13 @@ class PlotTopologies(object):
             See `Matplotlib` keyword arguments
             [here](https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html).
         """
+        if self._plot_engine == PlotEngineType.PYGMT:
+            gdf_subduction_left, gdf_subduction_right = self.get_subduction_direction()
+            pygmt_plot_subduction_zones(
+                ax, gdf_subduction_left, gdf_subduction_right, color=color, **kwargs
+            )
+            return
+
         if not self.plate_reconstruction.topology_features:
             logger.warn(
                 "Plate model does not have topology features. Unable to plot_subduction_teeth."

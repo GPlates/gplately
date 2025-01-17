@@ -18,6 +18,6 @@
 from enum import Enum
 
 
-class PlotEngine(Enum):
+class PlotEngineType(Enum):
     CARTOPY = 1
     PYGMT = 2

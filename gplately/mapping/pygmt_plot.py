@@ -26,7 +26,6 @@ pygmt.config(
     MAP_TICK_LENGTH_PRIMARY="4p",
 )
 
-
 # ----- parameters for plot
 region = "d"
 width = 10
@@ -35,9 +34,7 @@ x_offset = width + 2
 
 # plate boundary stuff
 plateboundary_width = "0.5p"
-
 age_font = "12p,Helvetica,black"
-
 label_font = "12p,Helvetica,black"
 label_offset = "j0/-0.5c"
 label_position = "TC"
@@ -47,6 +44,24 @@ def get_pygmt_basemap_figure(projection="N180/10c", region="d"):
     fig = pygmt.Figure()
     fig.basemap(region=region, projection=projection, frame="lrtb")
     return fig
+
+
+def plot_subduction_zones(
+    fig: pygmt.Figure,
+    gdf_subduction_left: GeoDataFrame,
+    gdf_subduction_right: GeoDataFrame,
+    color="blue",
+    **kwargs,
+):
+    fig.plot(
+        data=gdf_subduction_left, pen=f"0.5p,{color}", fill=color, style="f0.2/0.08+l+t"
+    )
+    fig.plot(
+        data=gdf_subduction_right,
+        pen=f"0.5p,{color}",
+        fill=color,
+        style="f0.2/0.08+r+t",
+    )
 
 
 def plot_geo_data_frame(fig: pygmt.Figure, gdf: GeoDataFrame, **kwargs):
@@ -84,7 +99,13 @@ def plot_geo_data_frame(fig: pygmt.Figure, gdf: GeoDataFrame, **kwargs):
     if "style" in kwargs.keys():
         style = kwargs["style"]
 
-    fig.plot(data=gdf.geometry, pen=pen, fill=fill, style=style)
+    label = None
+    if "gmtlabel" in kwargs.keys():
+        label = kwargs["gmtlabel"]
+
+    fig.plot(
+        data=gdf.geometry, pen=pen, fill=fill, style=style, transparency=0, label=label
+    )
 
     """
     fig.plot(data=gdf_coastlines, fill=coastline_color, frame=["xa0", "ya0"],  transparency=0)
