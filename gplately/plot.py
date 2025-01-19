@@ -699,7 +699,7 @@ class PlotTopologies(object):
             tessellate_degrees=tessellate_degrees,
         )
 
-        return gpd.GeoDataFrame({"geometry": shp}, geometry="geometry")  # type: ignore
+        return gpd.GeoDataFrame({"geometry": shp}, geometry="geometry", crs="EPSG:4326")  # type: ignore
 
     @append_docstring(PLOT_DOCSTRING.format("feature"))
     def plot_feature(self, ax, feature, feature_name="", color="black", **kwargs):

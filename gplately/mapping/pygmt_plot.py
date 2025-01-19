@@ -27,18 +27,7 @@ pygmt.config(
     MAP_TICK_LENGTH_PRIMARY="4p",
 )
 
-# ----- parameters for plot
-region = "d"
-width = 10
-projection = "N180/"
-x_offset = width + 2
-
-# plate boundary stuff
-plateboundary_width = "0.5p"
-age_font = "12p,Helvetica,black"
-label_font = "12p,Helvetica,black"
-label_offset = "j0/-0.5c"
-label_position = "TC"
+# NW's example is at https://gist.github.com/nickywright/f53018a8eda29223cca6f39ab2cfa25d
 
 
 class PygmtPlotEngine(PlotEngine):
@@ -77,8 +66,14 @@ def plot_subduction_zones(
     color="blue",
     **kwargs,
 ):
+    label = kwargs.pop("gmtlabel", None)
+
     fig.plot(
-        data=gdf_subduction_left, pen=f"0.5p,{color}", fill=color, style="f0.2/0.08+l+t"
+        data=gdf_subduction_left,
+        pen=f"0.5p,{color}",
+        fill=color,
+        style="f0.2/0.08+l+t",
+        label=label,
     )
     fig.plot(
         data=gdf_subduction_right,
@@ -89,72 +84,24 @@ def plot_subduction_zones(
 
 
 def plot_geo_data_frame(fig: pygmt.Figure, gdf: GeoDataFrame, **kwargs):
-    line_width = "0.1p"
-    line_color = "blue"
 
-    if "edgecolor" in kwargs.keys():
-        if isinstance(kwargs["edgecolor"], str):
-            line_color = kwargs["edgecolor"]
-        else:
-            raise Exception(
-                "The edgecolor parameter is not string. Currently, the pygmt plot engine only supports colour name."
-            )
+    line_color = kwargs.pop("edgecolor", "blue")
+    line_width = f"{kwargs.pop('linewidth',0.1)}p"
 
-    if "linewidth" in kwargs.keys():
-        line_width = f"{kwargs['linewidth']}p"
-
-    fill = None
-    if "facecolor" in kwargs.keys() and kwargs["facecolor"].lower() != "none":
-        fill = f"{kwargs['facecolor']}"
+    fill = kwargs.pop("facecolor", None)
+    if fill and fill.lower() == "none":
+        fill = None
+    fill = kwargs.pop("fill", fill)  # the "fill" parameter override the "facecolor"
 
     if line_color.lower() == "none":
-        line_width = "0"
-        line_color = fill
-
-    if "fill" in kwargs.keys():
-        fill = kwargs["fill"]
-
-    if "pen" in kwargs.keys():
-        pen = kwargs["pen"]
+        # line_width = "0"
+        # line_color = fill
+        pen = None
     else:
-        pen = f"{line_width},{line_color}"
-
-    style = None
-    if "style" in kwargs.keys():
-        style = kwargs["style"]
-
-    label = None
-    if "gmtlabel" in kwargs.keys():
-        label = kwargs["gmtlabel"]
+        pen = kwargs.pop("pen", f"{line_width},{line_color}")
+    style = kwargs.pop("style", None)
+    label = kwargs.pop("gmtlabel", None)
 
     fig.plot(
         data=gdf.geometry, pen=pen, fill=fill, style=style, transparency=0, label=label
     )
-
-    """
-    fig.plot(data=gdf_coastlines, fill=coastline_color, frame=["xa0", "ya0"],  transparency=0)
-
-    fig.plot(data=gdf_topo_plates.geometry, pen='%s,%s' % (plateboundary_width, plate_colour), frame="lrtb")
-    fig.plot(data=gdf_subduction_left, pen='%s,%s' % (plateboundary_width, subduction_zone_colour), fill=subduction_zone_colour, style='f0.2/0.08+l+t')
-    fig.plot(data=gdf_subduction_right, pen='%s,%s' % (plateboundary_width, subduction_zone_colour), fill=subduction_zone_colour, style='f0.2/0.08+r+t')
-    fig.plot(data=gdf_ridges_transforms, pen='%s,%s' % (plateboundary_width, ridge_colour))
-    fig.plot(data=gplot.get_transforms(), pen='%s,%s' % (plateboundary_width, transform_color))
-
-    fig.text(text='gplot.get_transforms(): %s Ma' % age, position=label_position, no_clip=True, font=label_font, offset=label_offset)
-
-    fig.shift_origin(xshift=x_offset)
-    fig.basemap(region=region, projection="%s%sc" % (projection, width), frame="lrtb")
-    fig.plot(data=gdf_cobs, fill=COB_color, transparency=0, )
-    fig.plot(data=gdf_coastlines, fill=coastline_color, frame=["xa0", "ya0"],  transparency=0)
-
-    fig.plot(data=gdf_topo_plates.geometry, pen='%s,%s' % (plateboundary_width, plate_colour), frame="lrtb", label='other plate boundary types')
-    fig.plot(data=gdf_subduction_left, pen='%s,%s' % (plateboundary_width, subduction_zone_colour), fill=subduction_zone_colour, style='f0.2/0.08+l+t', label='subduction zones')
-    fig.plot(data=gdf_subduction_right, pen='%s,%s' % (plateboundary_width, subduction_zone_colour), fill=subduction_zone_colour, style='f0.2/0.08+r+t')
-    fig.plot(data=gdf_ridges_transforms, pen='%s,%s' % (plateboundary_width, ridge_colour), label='ridges and transforms')
-
-    # from gpml: transforms
-    fig.plot(data=gdf_topo_transforms, pen='%s,%s' % (plateboundary_width, transform_color), label = 'transforms')
-    fig.text(text='FeatureType.gpml_transform: %s Ma' % age, position=label_position, no_clip=True, font=label_font, offset=label_offset)
-
-    fig.legend(position='jBL+o-2.7/0', box="+gwhite+p0.5p")
-    """
