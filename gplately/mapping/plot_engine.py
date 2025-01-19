@@ -28,19 +28,23 @@ class PlotEngineType(Enum):
 
 class PlotEngine(ABC):
     @abstractmethod
-    def plot_geo_data_frame(self, gdf: GeoDataFrame, **kwargs):
+    def plot_geo_data_frame(self, ax_or_fig, gdf: GeoDataFrame, **kwargs):
+        """Plot GeoPandas GeoDataFrame object"""
         pass  # This is an abstract method, no implementation here.
 
     @abstractmethod
-    def plot_pygplates_features(self, features, **kwargs):
+    def plot_pygplates_features(self, ax_or_fig, features, **kwargs):
+        """Plot one or more pygplates feature(s)"""
         pass  # This is an abstract method, no implementation here.
 
     @abstractmethod
     def plot_subduction_zones(
         self,
+        ax_or_fig,
         gdf_subduction_left: GeoDataFrame,
         gdf_subduction_right: GeoDataFrame,
         color="blue",
         **kwargs,
     ):
+        """Plot subduction zones with teeth"""
         pass  # This is an abstract method, no implementation here.

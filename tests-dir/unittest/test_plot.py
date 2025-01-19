@@ -30,12 +30,16 @@ def main(show=True):
     except:
         model = PlateModel(MODEL_NAME, data_dir=MODEL_REPO_DIR, readonly=True)
 
+    if not model:
+        return
+
     age = 55
 
     test_model = PlateReconstruction(
         model.get_rotation_model(),
         topology_features=model.get_layer("Topologies"),
         static_polygons=model.get_layer("StaticPolygons"),
+        plate_model_name=MODEL_NAME,
     )
     gplot = PlotTopologies(
         test_model,
@@ -51,7 +55,7 @@ def main(show=True):
     fig = plt.figure(figsize=(10, 5), dpi=96)
     ax = fig.add_subplot(111, projection=ccrs.Robinson(central_longitude=180))
 
-    all_flag = 0
+    all_flag = 1
     plot_flag = {
         "continent_ocean_boundaries": 0,
         "coastlines": 0,
@@ -96,17 +100,18 @@ def main(show=True):
                 ax, color=list(np.random.choice(range(256), size=3) / 256)
             )
 
-    ax.set_global()
+    ax.set_global()  # type: ignore
 
-    ids = set([f.get_reconstruction_plate_id() for f in gplot.topologies])
-    for id in ids:
-        if all_flag or plot_flag["plate_polygon_by_id"]:
-            gplot.plot_plate_polygon_by_id(
-                ax,
-                id,
-                facecolor="None",
-                edgecolor=list(np.random.choice(range(256), size=3) / 256),
-            )
+    if gplot.topologies:
+        ids = set([f.get_reconstruction_plate_id() for f in gplot.topologies])
+        for id in ids:
+            if all_flag or plot_flag["plate_polygon_by_id"]:
+                gplot.plot_plate_polygon_by_id(
+                    ax,
+                    id,
+                    facecolor="None",
+                    edgecolor=list(np.random.choice(range(256), size=3) / 256),
+                )
     plt.title(f"{age} Ma")
 
     if show:

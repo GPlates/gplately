@@ -45,17 +45,22 @@ from .decorators import (
     validate_topology_availability,
 )
 from .gpml import _load_FeatureCollection
-from .mapping.plot_engine import PlotEngineType
+from .mapping.plot_engine import PlotEngine
 from .mapping.pygmt_plot import (
-    plot_geo_data_frame,
+    PygmtPlotEngine,
     plot_subduction_zones as pygmt_plot_subduction_zones,
 )
+from .mapping.cartopy_plot import CartopyPlotEngine, DEFAULT_CARTOPY_PROJECTION
 from .pygplates import FeatureCollection as _FeatureCollection
 from .reconstruction import PlateReconstruction as _PlateReconstruction
 from .tools import EARTH_RADIUS
 from .utils.feature_utils import shapelify_features as _shapelify_features
-from .utils.plot_utils import _clean_polygons, _meridian_from_ax
-from .utils.plot_utils import plot_subduction_teeth as _plot_subduction_teeth
+from .utils.plot_utils import (
+    _clean_polygons,
+    _meridian_from_ax,
+    plot_subduction_teeth as _plot_subduction_teeth,
+)
+
 
 logger = logging.getLogger("gplately")
 
@@ -303,15 +308,16 @@ class PlotTopologies(object):
         COBs=None,
         time=None,
         anchor_plate_id=0,
-        plot_engine: PlotEngineType = PlotEngineType.CARTOPY,
+        plot_engine: PlotEngine = CartopyPlotEngine(),
     ):
+        self._plot_engine = plot_engine
         self.plate_reconstruction = plate_reconstruction
 
         if self.plate_reconstruction.topology_features is None:
             self.plate_reconstruction.topology_features = []
             logger.warning("Plate model does not have topology features.")
 
-        self.base_projection = ccrs.PlateCarree()
+        self.base_projection = DEFAULT_CARTOPY_PROJECTION
 
         # store these for when time is updated
         # make sure these are initialised as FeatureCollection objects
@@ -383,7 +389,7 @@ class PlotTopologies(object):
                 self._COBs.add(_FeatureCollection(feature))
 
         self._anchor_plate_id = state["plate_id"]
-        self.base_projection = ccrs.PlateCarree()
+        self.base_projection = DEFAULT_CARTOPY_PROJECTION
         self._time = None
 
     @property
@@ -693,7 +699,7 @@ class PlotTopologies(object):
             tessellate_degrees=tessellate_degrees,
         )
 
-        return gpd.GeoDataFrame({"geometry": shp}, geometry="geometry")
+        return gpd.GeoDataFrame({"geometry": shp}, geometry="geometry")  # type: ignore
 
     @append_docstring(PLOT_DOCSTRING.format("feature"))
     def plot_feature(self, ax, feature, feature_name="", color="black", **kwargs):
@@ -710,7 +716,7 @@ class PlotTopologies(object):
                 kwargs["facecolor"] = "none"
             return self._plot_feature(ax, partial(self.get_feature, feature), **kwargs)
 
-    def _plot_feature(self, ax, get_feature_func, **kwargs):
+    def _plot_feature(self, ax, get_feature_func, **kwargs) -> None:
         if "transform" in kwargs.keys():
             warnings.warn(
                 "'transform' keyword argument is ignored by PlotTopologies",
@@ -738,15 +744,7 @@ class PlotTopologies(object):
             logger.warning("No feature found for plotting. Do nothing and return.")
             return ax
 
-        if self._plot_engine == PlotEngineType.PYGMT:
-            return plot_geo_data_frame(fig=ax, gdf=gdf, **kwargs)
-        else:
-            if hasattr(ax, "projection"):
-                gdf = _clean_polygons(data=gdf, projection=ax.projection)
-            else:
-                kwargs["transform"] = self.base_projection
-
-            return gdf.plot(ax=ax, **kwargs)
+        self._plot_engine.plot_geo_data_frame(ax, gdf, **kwargs)
 
     @validate_reconstruction_time
     @append_docstring(GET_DATE_DOCSTRING.format("coastlines"))
@@ -1040,7 +1038,8 @@ class PlotTopologies(object):
 
         return ax.add_geometries(teeth, crs=self.base_projection, color=color, **kwargs)
 
-    def get_subduction_direction(self):
+    @validate_reconstruction_time
+    def get_subduction_direction(self, central_meridian=0.0, tessellate_degrees=None):
         """Create a geopandas.GeoDataFrame object containing geometries of trench directions.
 
         Notes
@@ -1072,31 +1071,36 @@ class PlotTopologies(object):
             If the optional `time` parameter has not been passed to `PlotTopologies`. This is needed to construct
             `trench_left` or `trench_right` geometries to the requested `time` and thus populate the GeoDataFrame.
         """
-        if self._time is None:
-            raise ValueError(
-                "No miscellaneous topologies have been resolved. Set `PlotTopologies.time` to construct them."
-            )
-
         if self.trench_left is None or self.trench_right is None:
-            raise ValueError(
-                "No trench_left or trench_right topologies passed to PlotTopologies."
+            raise Exception(
+                "No subduction zone/trench data is found. Make sure the plate model has topology feature."
             )
 
-        trench_left_features = shapelify_feature_lines(self.trench_left)
-        trench_right_features = shapelify_feature_lines(self.trench_right)
+        trench_left_features = shapelify_feature_lines(
+            self.trench_left,
+            tessellate_degrees=tessellate_degrees,
+            central_meridian=central_meridian,
+        )
+        trench_right_features = shapelify_feature_lines(
+            self.trench_right,
+            tessellate_degrees=tessellate_degrees,
+            central_meridian=central_meridian,
+        )
 
         gdf_left = gpd.GeoDataFrame(
             {"geometry": trench_left_features}, geometry="geometry", crs="EPSG:4326"
-        )
+        )  # type: ignore
         gdf_right = gpd.GeoDataFrame(
             {"geometry": trench_right_features}, geometry="geometry", crs="EPSG:4326"
-        )
+        )  # type: ignore
 
         return gdf_left, gdf_right
 
+    @validate_reconstruction_time
+    @validate_topology_availability("Subduction Zones")
     def plot_subduction_teeth(
         self, ax, spacing=0.07, size=None, aspect=None, color="black", **kwargs
-    ):
+    ) -> None:
         """Plot subduction teeth onto a standard map Projection.
 
         Notes
@@ -1131,84 +1135,18 @@ class PlotTopologies(object):
             See `Matplotlib` keyword arguments
             [here](https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html).
         """
-        if self._plot_engine == PlotEngineType.PYGMT:
-            gdf_subduction_left, gdf_subduction_right = self.get_subduction_direction()
-            pygmt_plot_subduction_zones(
-                ax, gdf_subduction_left, gdf_subduction_right, color=color, **kwargs
-            )
-            return
-
-        if not self.plate_reconstruction.topology_features:
-            logger.warn(
-                "Plate model does not have topology features. Unable to plot_subduction_teeth."
-            )
-            return ax
-        if self._time is None:
-            raise ValueError(
-                "No topologies have been resolved. Set `PlotTopologies.time` to construct them."
-            )
-        if "transform" in kwargs.keys():
-            warnings.warn(
-                "'transform' keyword argument is ignored by PlotTopologies",
-                UserWarning,
-            )
-            kwargs.pop("transform")
+        kwargs["spacing"] = spacing
+        kwargs["size"] = size
+        kwargs["aspect"] = aspect
 
         central_meridian = _meridian_from_ax(ax)
         tessellate_degrees = np.rad2deg(spacing)
-
-        try:
-            projection = ax.projection
-        except AttributeError:
-            print(
-                "The ax.projection does not exist. You must set projection to plot Cartopy maps, such as ax = plt.subplot(211, projection=cartopy.crs.PlateCarree())"
-            )
-            projection = None
-
-        if isinstance(projection, ccrs.PlateCarree):
-            spacing = math.degrees(spacing)
-        else:
-            spacing = spacing * EARTH_RADIUS * 1e3
-
-        if aspect is None:
-            aspect = 2.0 / 3.0
-        if size is None:
-            size = spacing * 0.5
-
-        height = size * aspect
-
-        trench_left_features = shapelify_feature_lines(
-            self.trench_left,
-            tessellate_degrees=tessellate_degrees,
-            central_meridian=central_meridian,
-        )
-        trench_right_features = shapelify_feature_lines(
-            self.trench_right,
-            tessellate_degrees=tessellate_degrees,
-            central_meridian=central_meridian,
+        gdf_subduction_left, gdf_subduction_right = self.get_subduction_direction(
+            tessellate_degrees=tessellate_degrees, central_meridian=central_meridian
         )
 
-        plot_subduction_teeth(
-            trench_left_features,
-            size,
-            "l",
-            height,
-            spacing,
-            projection=projection,
-            ax=ax,
-            color=color,
-            **kwargs,
-        )
-        plot_subduction_teeth(
-            trench_right_features,
-            size,
-            "r",
-            height,
-            spacing,
-            projection=projection,
-            ax=ax,
-            color=color,
-            **kwargs,
+        self._plot_engine.plot_subduction_zones(
+            ax, gdf_subduction_left, gdf_subduction_right, color=color, **kwargs
         )
 
     def plot_plate_polygon_by_id(self, ax, plate_id, color="black", **kwargs):
@@ -1471,7 +1409,7 @@ class PlotTopologies(object):
 
         # adding a patch
         patch = ax.add_patch(
-            mpatches.Circle(xy=[lon, lat], radius=r_ortho, transform=proj1, **kwargs)
+            mpatches.Circle(xy=(lon, lat), radius=r_ortho, transform=proj1, **kwargs)
         )
         return patch
 
@@ -1858,7 +1796,7 @@ class PlotTopologies(object):
                 "feature_name": feature_names,
             },
             geometry="geometry",
-        )
+        )  # type: ignore
         return gdf
 
     @validate_topology_availability("all topologies")

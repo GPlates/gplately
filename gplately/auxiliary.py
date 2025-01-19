@@ -2,7 +2,8 @@ from typing import Union
 
 from plate_model_manager import PlateModel, PlateModelManager
 
-from .mapping.plot_engine import PlotEngineType
+from .mapping.plot_engine import PlotEngine
+from .mapping.cartopy_plot import CartopyPlotEngine
 from .plot import PlotTopologies
 from .reconstruction import PlateReconstruction
 
@@ -11,7 +12,7 @@ def get_gplot(
     model_name: str,
     model_repo_dir: str,
     age: Union[int, float],
-    plot_engine: PlotEngineType = PlotEngineType.CARTOPY,
+    plot_engine: PlotEngine = CartopyPlotEngine(),
 ) -> PlotTopologies:
     """auxiliary function to get gplot object"""
     try:

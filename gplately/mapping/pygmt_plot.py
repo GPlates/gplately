@@ -16,7 +16,7 @@
 #
 from geopandas.geodataframe import GeoDataFrame
 import pygmt
-from plot_engine import PlotEngine
+from .plot_engine import PlotEngine
 
 pygmt.config(
     FONT_ANNOT=8,
@@ -42,25 +42,25 @@ label_position = "TC"
 
 
 class PygmtPlotEngine(PlotEngine):
-    def __init__(self, projection="N180/10c", region="d"):
-        self.fig = pygmt.Figure()
-        self.fig.basemap(region=region, projection=projection, frame="lrtb")
+    def __init__(self):
+        pass
 
-    def plot_geo_data_frame(self, gdf: GeoDataFrame, **kwargs):
-        plot_geo_data_frame(self.fig, gdf, **kwargs)
+    def plot_geo_data_frame(self, ax_or_fig, gdf: GeoDataFrame, **kwargs):
+        plot_geo_data_frame(ax_or_fig, gdf, **kwargs)
 
-    def plot_pygplates_features(self, features, **kwargs):
+    def plot_pygplates_features(self, ax_or_fig, features, **kwargs):
         pass
 
     def plot_subduction_zones(
         self,
+        ax_or_fig,
         gdf_subduction_left: GeoDataFrame,
         gdf_subduction_right: GeoDataFrame,
         color="blue",
         **kwargs,
     ):
         plot_subduction_zones(
-            self.fig, gdf_subduction_left, gdf_subduction_right, color=color, **kwargs
+            ax_or_fig, gdf_subduction_left, gdf_subduction_right, color=color, **kwargs
         )
 
 
