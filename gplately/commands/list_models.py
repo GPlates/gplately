@@ -84,8 +84,7 @@ def get_model_names():
             response = requests.get(url, timeout=(5, 5))
             if response.status_code == 200:
                 models = response.json()
-                pm_mgr = PlateModelManager()
-                mnames = pm_mgr.get_available_model_names()
+                mnames = PlateModelManager().get_available_model_names()
                 for model in models:
                     if model in mnames:
                         names.append(model)
@@ -101,16 +100,22 @@ def get_model_names():
     raise UnableToGetModelList
 
 
-def get_layer_names(model):
-    pm_mgr = PlateModelManager()
-    m = pm_mgr.get_model(model)
-    return m.get_avail_layers()
+def get_layer_names(model: str):
+    """Given model name, return the layer names in the model."""
+    m = PlateModelManager().get_model(model)
+    if m:
+        return m.get_avail_layers()
+    else:
+        return []
 
 
-def get_model_url(model):
-    pm_mgr = PlateModelManager()
-    m = pm_mgr.get_model(model)
-    cfg = m.get_cfg()
+def get_model_url(model: str):
+    """Given model name, return the URL to the model files."""
+    m = PlateModelManager().get_model(model)
+    if m:
+        cfg = m.get_cfg()
+    else:
+        cfg = {}
     if "URL" in cfg:
         return cfg["URL"]
     else:
