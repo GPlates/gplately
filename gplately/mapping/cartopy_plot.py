@@ -15,6 +15,16 @@ class CartopyPlotEngine(PlotEngine):
         pass
 
     def plot_geo_data_frame(self, ax_or_fig, gdf: GeoDataFrame, **kwargs):
+        """Plot GeoDataFrame object with Cartopy
+
+        Parameters
+        ----------
+        ax_or_fig : cartopy.mpl.geoaxes.GeoAxes
+            Cartopy GeoAxes instance
+        gdf : GeoDataFrame
+            GeoPandas GeoDataFrame object
+
+        """
         if hasattr(ax_or_fig, "projection"):
             gdf = _clean_polygons(data=gdf, projection=ax_or_fig.projection)
         else:
@@ -23,6 +33,7 @@ class CartopyPlotEngine(PlotEngine):
         return gdf.plot(ax=ax_or_fig, **kwargs)
 
     def plot_pygplates_features(self, ax_or_fig, features, **kwargs):
+        """TODO"""
         pass
 
     def plot_subduction_zones(
@@ -33,6 +44,20 @@ class CartopyPlotEngine(PlotEngine):
         color="blue",
         **kwargs,
     ):
+        """Plot subduction zones with "teeth" using pygmt
+
+        Parameters
+        ----------
+        ax_or_fig : cartopy.mpl.geoaxes.GeoAxes
+            Cartopy GeoAxes instance
+        gdf_subduction_left : GeoDataFrame
+            subduction zone with "left" polarity
+        gdf_subduction_right : GeoDataFrame
+            subduction zone with "right" polarity
+        color : str
+            The colour used to fill the "teeth".
+
+        """
         if "transform" in kwargs.keys():
             logger.warning(
                 "'transform' keyword argument is ignored by CartopyPlotEngine."

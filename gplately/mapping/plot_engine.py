@@ -46,5 +46,5 @@ class PlotEngine(ABC):
         color="blue",
         **kwargs,
     ):
-        """Plot subduction zones with teeth"""
+        """Plot subduction zones with "teeth" """
         pass  # This is an abstract method, no implementation here.

@@ -167,7 +167,7 @@ def read_netcdf_grid(
     x_dimension_name: str = "",
     y_dimension_name: str = "",
     data_variable_name: str = "",
-):
+) -> tuple[np.ma.MaskedArray, np.ma.MaskedArray, np.ma.MaskedArray] | np.ma.MaskedArray:
     """Read a `netCDF` (.nc) grid from a given `filename` and return its data as a
     `MaskedArray`.
 

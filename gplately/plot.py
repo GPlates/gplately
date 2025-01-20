@@ -46,17 +46,13 @@ from .decorators import (
 )
 from .gpml import _load_FeatureCollection
 from .mapping.plot_engine import PlotEngine
-from .mapping.pygmt_plot import (
-    PygmtPlotEngine,
-    plot_subduction_zones as pygmt_plot_subduction_zones,
-)
+
 from .mapping.cartopy_plot import CartopyPlotEngine, DEFAULT_CARTOPY_PROJECTION
 from .pygplates import FeatureCollection as _FeatureCollection
 from .reconstruction import PlateReconstruction as _PlateReconstruction
 from .tools import EARTH_RADIUS
 from .utils.feature_utils import shapelify_features as _shapelify_features
 from .utils.plot_utils import (
-    _clean_polygons,
     _meridian_from_ax,
     plot_subduction_teeth as _plot_subduction_teeth,
 )
@@ -481,7 +477,7 @@ class PlotTopologies(object):
             anchor_plate_id=self.anchor_plate_id,
             # use ResolveTopologyType.boundary parameter to resolve rigid plate boundary only
             # because the Mid-ocean ridges(and transforms) should not contain lines from topological networks
-            resolve_topology_types=pygplates.ResolveTopologyType.boundary,
+            resolve_topology_types=pygplates.ResolveTopologyType.boundary,  # type: ignore
         )
         self._topologies = None
 
@@ -502,64 +498,64 @@ class PlotTopologies(object):
         self.unclassified_features = []
 
         for topol in self.other:
-            if topol.get_feature_type() == pygplates.FeatureType.gpml_continental_rift:
+            if topol.get_feature_type() == pygplates.FeatureType.gpml_continental_rift:  # type: ignore
                 self.continental_rifts.append(topol)
 
-            elif topol.get_feature_type() == pygplates.FeatureType.gpml_fault:
+            elif topol.get_feature_type() == pygplates.FeatureType.gpml_fault:  # type: ignore
                 self.faults.append(topol)
 
-            elif topol.get_feature_type() == pygplates.FeatureType.gpml_fracture_zone:
+            elif topol.get_feature_type() == pygplates.FeatureType.gpml_fracture_zone:  # type: ignore
                 self.fracture_zones.append(topol)
 
             elif (
                 topol.get_feature_type()
-                == pygplates.FeatureType.gpml_inferred_paleo_boundary
+                == pygplates.FeatureType.gpml_inferred_paleo_boundary  # type: ignore
             ):
                 self.inferred_paleo_boundaries.append(topol)
 
             elif (
-                topol.get_feature_type() == pygplates.FeatureType.gpml_terrane_boundary
+                topol.get_feature_type() == pygplates.FeatureType.gpml_terrane_boundary  # type: ignore
             ):
                 self.terrane_boundaries.append(topol)
 
             elif (
                 topol.get_feature_type()
-                == pygplates.FeatureType.gpml_transitional_crust
+                == pygplates.FeatureType.gpml_transitional_crust  # type: ignore
             ):
                 self.transitional_crusts.append(topol)
 
-            elif topol.get_feature_type() == pygplates.FeatureType.gpml_orogenic_belt:
+            elif topol.get_feature_type() == pygplates.FeatureType.gpml_orogenic_belt:  # type: ignore
                 self.orogenic_belts.append(topol)
 
-            elif topol.get_feature_type() == pygplates.FeatureType.gpml_suture:
+            elif topol.get_feature_type() == pygplates.FeatureType.gpml_suture:  # type: ignore
                 self.sutures.append(topol)
 
             elif (
-                topol.get_feature_type() == pygplates.FeatureType.gpml_continental_crust
+                topol.get_feature_type() == pygplates.FeatureType.gpml_continental_crust  # type: ignore
             ):
                 self.continental_crusts.append(topol)
 
             elif (
                 topol.get_feature_type()
-                == pygplates.FeatureType.gpml_extended_continental_crust
+                == pygplates.FeatureType.gpml_extended_continental_crust  # type: ignore
             ):
                 self.extended_continental_crusts.append(topol)
 
             elif (
                 topol.get_feature_type()
-                == pygplates.FeatureType.gpml_passive_continental_boundary
+                == pygplates.FeatureType.gpml_passive_continental_boundary  # type: ignore
             ):
                 self.passive_continental_boundaries.append(topol)
 
-            elif topol.get_feature_type() == pygplates.FeatureType.gpml_slab_edge:
+            elif topol.get_feature_type() == pygplates.FeatureType.gpml_slab_edge:  # type: ignore
                 self.slab_edges.append(topol)
 
-            elif topol.get_feature_type() == pygplates.FeatureType.gpml_transform:
+            elif topol.get_feature_type() == pygplates.FeatureType.gpml_transform:  # type: ignore
                 self.transforms.append(topol)
 
             elif (
                 topol.get_feature_type()
-                == pygplates.FeatureType.gpml_unclassified_feature
+                == pygplates.FeatureType.gpml_unclassified_feature  # type: ignore
             ):
                 self.unclassified_features.append(topol)
 
@@ -618,7 +614,7 @@ class PlotTopologies(object):
         triangle_pointsX = []
         triangle_pointsY = []
 
-        date_line_wrapper = pygplates.DateLineWrapper()
+        date_line_wrapper = pygplates.DateLineWrapper()  # type: ignore
 
         for feature in features:
             cum_distance = 0.0
@@ -1170,26 +1166,35 @@ class PlotTopologies(object):
             [here](https://matplotlib.org/3.5.1/api/_as_gen/matplotlib.axes.Axes.imshow.html).
 
         """
-        return self.plot_feature(
+        features = []
+        if self.topologies:
+            features = (
+                [
+                    feature
+                    for feature in self.topologies
+                    if feature.get_reconstruction_plate_id() == plate_id
+                ],
+            )
+        self.plot_feature(
             ax,
-            [
-                feature
-                for feature in self.topologies
-                if feature.get_reconstruction_plate_id() == plate_id
-            ],
+            features,
             color=color,
             **kwargs,
         )
 
-    # the old function name(plot_plate_id) is bad. we should change the name
-    # for backward compatibility, we have to allow users to use the old name
     def plot_plate_id(self, *args, **kwargs):
-        logger.warn(
-            "The class method plot_plate_id will be deprecated in the future soon. Use plot_plate_polygon_by_id instead."
+        """TODO: remove this function
+
+        The function name plot_plate_id() is bad and should be changed.
+        The new name is plot_plate_polygon_by_id().
+        For backward compatibility, we allow users to use the old name in their legcy code for now.
+        No new code should call this function.
+
+        """
+        logger.warning(
+            "The class method plot_plate_id is deprecated and will be removed in the future soon. Use plot_plate_polygon_by_id instead."
         )
         return self.plot_plate_polygon_by_id(*args, **kwargs)
-
-    plot_plate_id.__doc__ = plot_plate_polygon_by_id.__doc__
 
     def plot_grid(self, ax, grid, extent=[-180, 180, -90, 90], **kwargs):
         """Plot a `MaskedArray` raster or grid onto a standard map Projection.
@@ -1796,6 +1801,7 @@ class PlotTopologies(object):
                 "feature_name": feature_names,
             },
             geometry="geometry",
+            crs="EPSG:4326",
         )  # type: ignore
         return gdf
 
@@ -1868,7 +1874,8 @@ class PlotTopologies(object):
                 "feature_name": feature_names,
             },
             geometry="geometry",
-        )
+            crs="EPSG:4326",
+        )  # type: ignore
         return gdf
 
     @validate_topology_availability("all topological sections")
@@ -1888,7 +1895,7 @@ class PlotTopologies(object):
         if self._topologies is None:
             resolved_topologies = []
             shared_boundary_sections = []
-            pygplates.resolve_topologies(
+            pygplates.resolve_topologies(  # type: ignore
                 self.plate_reconstruction.topology_features,
                 self.plate_reconstruction.rotation_model,
                 resolved_topologies,
