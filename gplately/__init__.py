@@ -255,6 +255,7 @@ from .utils.io_utils import get_geometries, get_valid_geometries
 
 __pdoc__ = {
     "data": False,
+    "download": False,
     "_DefaultCollision": False,
     "_ContinentCollision": False,
     "_ReconstructByTopologies": False,
