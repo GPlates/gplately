@@ -37,7 +37,7 @@ import logging
 import math
 import warnings
 from multiprocessing import cpu_count
-from typing import Union
+from typing import Union, Tuple
 
 import matplotlib.colors
 import matplotlib.pyplot as plt
@@ -167,7 +167,9 @@ def read_netcdf_grid(
     x_dimension_name: str = "",
     y_dimension_name: str = "",
     data_variable_name: str = "",
-) -> tuple[np.ma.MaskedArray, np.ma.MaskedArray, np.ma.MaskedArray] | np.ma.MaskedArray:
+) -> Union[
+    Tuple[np.ma.MaskedArray, np.ma.MaskedArray, np.ma.MaskedArray], np.ma.MaskedArray
+]:
     """Read a `netCDF` (.nc) grid from a given `filename` and return its data as a
     `MaskedArray`.
 
