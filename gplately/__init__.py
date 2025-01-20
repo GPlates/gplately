@@ -45,27 +45,31 @@ etopo = gdownload.get_raster("ETOPO1_tif")
 
 ------------------
 
-| **Model name string Identifier** | **Rot. files** | **Topology features** | **Static polygons** | **Coast-lines** | **Cont-inents** | **COB** | **Age grids** | **SR grids** |
-|:--------------------------------:|:--------------:|:---------------------:|:-------------------:|:---------------:|:---------------:|:--------:|:-------------:|:------------:|
-|            Muller2019            |        ✅       |           ✅           |          ✅          |        ✅        |        ✅        |     ✅    |       ✅       |       ❌      |
-|            Muller2016            |        ✅       |           ✅           |          ✅          |        ✅        |        ❌        |     ❌    |       ✅       |       ❌      |
-|            Merdith2021           |        ✅       |           ✅           |          ✅          |        ✅        |        ✅        |     ❌    |       ❌       |       ❌      |
-|              Cao2020             |        ✅       |           ✅           |          ✅          |        ✅        |        ✅        |     ❌    |       ❌       |       ❌      |
-|           Clennett2020           |        ✅       |           ✅           |          ✅          |        ✅        |        ✅        |     ❌    |       ✅       |       ✅      |
-|             Seton2012            |        ✅       |           ✅           |          ❌          |        ✅        |        ❌        |     ✅    |       ✅       |       ❌      |
-|           Matthews2016           |        ✅       |           ✅           |          ✅          |        ✅        |        ✅        |     ❌    |       ❌       |       ❌      |
-|            Merdith2017           |        ✅       |           ✅           |          ❌          |        ❌        |        ❌        |     ❌    |       ❌       |       ❌      |
-|              Li2008              |        ✅       |           ✅           |          ❌          |        ❌        |        ❌        |     ❌    |       ❌       |       ❌      |
-|           Pehrsson2015           |        ✅       |           ✅           |          ❌          |        ❌        |        ❌        |     ❌    |       ❌       |       ❌      |
-|         TorsvikCocks2017         |        ✅       |           ❌           |          ❌          |        ✅        |        ❌        |     ❌    |       ❌       |       ❌      |
-|             Young2019            |        ✅       |           ✅           |          ✅          |        ✅        |        ✅        |     ❌    |       ❌       |       ❌      |
-|            Scotese2008           |        ✅       |           ✅           |          ❌          |        ❌        |        ✅        |     ❌    |       ❌       |       ❌      |
-|         Clennett2020_M19         |        ✅       |           ✅           |          ❌          |        ✅        |        ✅        |     ❌    |       ❌       |       ❌      |
-|         Clennett2020_S13         |        ✅       |           ✅           |          ❌          |        ✅        |        ✅        |     ❌    |       ❌       |       ❌      |
-|            Muller2008            |        ✅       |           ❌           |          ✅          |        ❌        |        ❌        |     ❌    |       ❌       |       ❌      |
-|            Muller2022            |        ✅       |           ✅           |          ✅          |        ✅        |        ✅        |     ✅    |       ❌       |       ❌      |
-|            Scotese2016           |        ✅       |           ❌           |          ✅          |        ✅        |        ❌        |     ❌    |       ❌       |       ❌      |
-|           Shephard2013           |        ✅       |           ✅           |          ✅          |        ✅        |        ❌        |     ❌    |       ❌       |       ❌      |
+| **Model name string Identifier** | **Zenodo** |**Topology features**   | **Static polygons**   | **Coast-lines**  | **Cont-inents** | **COB**    | **Age grids**   | **SR grids**  |
+|  Alfonso2024                     |     ✅     |          ✅           |          ✅          |        ✅        |        ❌       |     ❌    |       ❌       |       ❌      |
+|  Cao2024                         |     ✅     |          ✅           |          ✅          |        ✅        |        ✅       |     ✅    |       ❌       |       ❌      |
+|  Muller2022                      |     ✅     |          ✅           |          ✅          |        ✅        |        ✅       |     ✅    |       ❌       |       ❌      |
+|  Zahirovic2022                   |     ✅     |          ✅           |          ✅          |        ✅        |        ✅       |     ❌    |       ✅       |       ✅      |
+|  Merdith2021                     |     ✅     |          ✅           |          ✅          |        ✅        |        ✅       |     ❌    |       ❌       |       ❌      |
+|  Clennett2020                    |     ✅     |          ✅           |          ✅          |        ✅        |        ❌       |     ❌    |       ✅       |       ✅      |
+|  Clennett2020_M2019              |     ✅     |          ✅           |          ✅          |        ✅        |        ❌       |     ❌    |       ✅       |       ✅      |
+|  Clennett2020_S2013              |     ✅     |          ✅           |          ✅          |        ✅        |        ❌       |     ❌    |       ❌       |       ❌      |
+|  Muller2019                      |     ✅     |          ✅           |          ✅          |        ✅        |        ✅       |     ✅    |       ✅       |       ❌      |
+|  Young2018                       |     ✅     |          ✅           |          ✅          |        ✅        |        ✅       |     ❌    |       ❌       |       ❌      |
+|  TorsvikCocks2017                |     ❌     |          ❌           |          ✅          |        ✅        |        ❌       |     ❌    |       ❌       |       ❌      |
+|  Matthews2016                    |     ✅     |          ✅           |          ✅          |        ✅        |        ✅       |     ❌    |       ❌       |       ❌      |
+|  Matthews2016_pmag_ref           |     ❌     |          ❌           |          ✅          |        ✅        |        ✅       |     ❌    |       ❌       |       ❌      |
+|  Muller2016                      |     ✅     |          ✅           |          ✅          |        ✅        |        ❌       |     ✅    |       ✅       |       ❌      |
+|  Scotese2016                     |     ✅     |          ❌           |          ✅          |        ✅        |        ❌       |     ❌    |       ❌       |       ❌      |
+|  Zahirovic2016                   |     ✅     |          ✅           |          ✅          |        ✅        |        ✅       |     ❌    |       ❌       |       ❌      |
+|  Gibbons2015                     |     ✅     |          ✅           |          ✅          |        ✅        |        ❌       |     ❌    |       ❌       |       ❌      |
+|  Zahirovic2014                   |     ✅     |          ❌           |          ✅          |        ✅        |        ❌       |     ❌    |       ❌       |       ❌      |
+|  Shephard2013                    |     ✅     |          ✅           |          ✅          |        ✅        |        ❌       |     ❌    |       ❌       |       ❌      |
+|  Gurnis2012                      |     ✅     |          ✅           |          ✅          |        ✅        |        ❌       |     ❌    |       ❌       |       ❌      |
+|  Seton2012                       |     ✅     |          ✅           |          ✅          |        ✅        |        ✅       |     ✅    |       ✅       |       ❌      |
+|  Muller2008                      |     ❌     |          ❌           |          ✅          |        ❌        |        ❌       |     ❌    |       ❌       |       ❌      |
+
+**Note: All models have rotation files.**
 
 ------------------
 
@@ -75,7 +79,7 @@ The `PlateModelManager` object was introduced as an alternative/substitute to th
 ```python
 pm_manager = PlateModelManager()
 model = pm_manager.get_model("Muller2019")
-model.set_data_dir("plate-model-repo")
+model.set_data_dir("plate-model-repo") # the local folder where you would like to save the model files
 
 recon_model = PlateReconstruction(
     model.get_rotation_model(),
@@ -201,7 +205,7 @@ seafloorgrid.reconstruct_by_topologies()
 """
 from .utils import dev_warning
 from .utils.check_pmm import ensure_plate_model_manager_compatible
-from .utils.log_utils import get_debug_level, setup_logging, turn_on_debug_logging
+from .utils.log_utils import setup_logging
 from .utils.version import get_distribution_version
 
 REQUIRED_PMM_VERSION = "1.2.1"  # TODO: get this from package meta
