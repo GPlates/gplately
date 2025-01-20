@@ -612,7 +612,11 @@ class RegularGridInterpolator(_RGI):
             return output_tuple[0]
 
     def _prepare_xi(self, xi):
-        from scipy.interpolate.interpnd import _ndim_coords_from_arrays
+        try:
+            from scipy.interpolate.interpnd import _ndim_coords_from_arrays
+        except ImportError:
+            # SciPy 1.15 renamed interpnd to _interpnd (see https://github.com/scipy/scipy/pull/21754).
+            from scipy.interpolate._interpnd import _ndim_coords_from_arrays
 
         ndim = len(self.grid)
         xi = _ndim_coords_from_arrays(xi, ndim=ndim)

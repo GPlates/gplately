@@ -20,8 +20,8 @@ print(gplately.__file__)
 # test the plot function with the new PlateModel class
 
 # MODEL_NAME = "Clennett2020"
-# MODEL_NAME = "Muller2019"
-MODEL_NAME = "merdith2021"
+MODEL_NAME = "Muller2019"
+# MODEL_NAME = "merdith2021"
 
 
 def main(show=True):
@@ -64,7 +64,7 @@ def main(show=True):
         "ridges": 0,
         "all_topologies": 0,
         "all_topological_sections": 0,
-        "plate_polygon_by_id": 0,
+        "plate_polygon_by_id": 1,
         "unclassified_features": 0,
         "slab_edges": 0,
         "passive_continental_boundaries": 0,
@@ -79,7 +79,7 @@ def main(show=True):
         "faults": 0,
         "continental_rifts": 0,
         "misc_boundaries": 0,
-        "transforms": 1,
+        "transforms": 0,
         "continents": 0,
         "topological_plate_boundaries": 0,
     }
@@ -106,12 +106,14 @@ def main(show=True):
         ids = set([f.get_reconstruction_plate_id() for f in gplot.topologies])
         for id in ids:
             if all_flag or plot_flag["plate_polygon_by_id"]:
-                gplot.plot_plate_polygon_by_id(
-                    ax,
-                    id,
-                    facecolor="None",
-                    edgecolor=list(np.random.choice(range(256), size=3) / 256),
-                )
+               color = list(np.random.choice(range(256), size=3) / 256)
+               gplot.plot_plate_polygon_by_id(
+                   ax,
+                   id,
+                   facecolor=color + [0.5],
+                   edgecolor=color,
+               )
+
     plt.title(f"{age} Ma")
 
     if show:
