@@ -239,7 +239,7 @@ the area specified in <code>extent</code>, unless <code>resx</code> or <code>res
 static polygons in order to extract their plate IDs.</p></div>
 </dd>
 <dt id="gplately.grids.read_netcdf_grid"><code class="name flex">
-<span>def <span class="ident">read_netcdf_grid</span></span>(<span>filename, return_grids=False, realign=False, resample=None, resize=None, x_dimension_name: str = '', y_dimension_name: str = '', data_variable_name: str = '')</span>
+<span>def <span class="ident">read_netcdf_grid</span></span>(<span>filename, return_grids=False, realign=False, resample=None, resize=None, x_dimension_name: str = '', y_dimension_name: str = '', data_variable_name: str = '') ‑> tuple[numpy.ma.core.MaskedArray, numpy.ma.core.MaskedArray, numpy.ma.core.MaskedArray] | numpy.ma.core.MaskedArray</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Read a <code>netCDF</code> (.nc) grid from a given <code>filename</code> and return its data as a
