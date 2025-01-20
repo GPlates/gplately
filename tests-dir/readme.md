@@ -1,4 +1,4 @@
-There are four sub-folders.
+There are four sub-folders in this "tests-dir". This folder is called "tests-dir" instead of "tests" to avoid potential conflicts with assorted things, such as Python packaging. 
 
 - data
 
