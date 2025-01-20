@@ -51,7 +51,9 @@ from gplately.data import DataCollection
 from .pygplates import FeatureCollection as _FeatureCollection
 from .pygplates import RotationModel as _RotationModel
 
-from plate_model_manager import PlateModelManager
+from plate_model_manager import PlateModelManager, PresentDayRasterManager
+import numpy as np
+
 
 class DownloadWarning(RuntimeWarning):
     pass
@@ -1473,13 +1475,22 @@ class DataServer(object):
             Toggle print messages regarding server/internet connection status, file availability etc.
 
     """
+
     def __init__(self, file_collection, data_dir=None, verbose=True):
 
         if not data_dir:
-            data_dir = path_to_cache()
+            _data_dir = path_to_cache()
+        else:
+            _data_dir = data_dir
 
         self.file_collection = file_collection.capitalize()
-        self.pmm = PlateModelManager().get_model(self.file_collection, data_dir=data_dir)
+        self.pmm = PlateModelManager().get_model(
+            self.file_collection, data_dir=str(_data_dir)
+        )
+        if not self.pmm:
+            raise Exception(
+                f"Unable to get plate model {self.file_collection}. Check if the model name is correct."
+            )
         self._available_layers = self.pmm.get_avail_layers()
         self.verbose = verbose
 
@@ -1494,74 +1505,78 @@ class DataServer(object):
     def _create_feature_collection(self, file_list):
         feature_collection = _FeatureCollection()
         for feature in file_list:
-            feature_collection.add( _FeatureCollection(feature) )
+            feature_collection.add(_FeatureCollection(feature))
         return feature_collection
 
     @property
     def rotation_model(self):
-        if self._rotation_model is None:
+        if self._rotation_model is None and self.pmm:
             self._rotation_model = _RotationModel(self.pmm.get_rotation_model())
             self._rotation_model.reconstruction_identifier = self.file_collection
         return self._rotation_model
 
     @property
     def topology_features(self):
-        if self._topology_features is None:
-            if 'Topologies' in self._available_layers:
-                self._topology_features = self._create_feature_collection(self.pmm.get_topologies())
+        if self._topology_features is None and self.pmm:
+            if "Topologies" in self._available_layers:
+                self._topology_features = self._create_feature_collection(
+                    self.pmm.get_topologies()
+                )
             else:
-                warnings.warn("No topology features in {}. No FeatureCollection created - unable to plot trenches, ridges and transforms.".format(self.file_collection),
-                    DownloadWarning)
                 self._topology_features = []
         return self._topology_features
-    
+
     @property
     def static_polygons(self):
-        if self._static_polygons is None:
-            if 'StaticPolygons' in self._available_layers:
-                self._static_polygons = self._create_feature_collection(self.pmm.get_static_polygons())
+        if self._static_polygons is None and self.pmm:
+            if "StaticPolygons" in self._available_layers:
+                self._static_polygons = self._create_feature_collection(
+                    self.pmm.get_static_polygons()
+                )
             else:
-                warnings.warn("No static polygons in {}.".format(self.file_collection), DownloadWarning)
                 self._static_polygons = []
         return self._static_polygons
-    
+
     @property
     def coastlines(self):
-        if self._coastlines is None:
-            if 'Coastlines' in self._available_layers:
-                self._coastlines = self._create_feature_collection(self.pmm.get_coastlines())
+        if self._coastlines is None and self.pmm:
+            if "Coastlines" in self._available_layers:
+                self._coastlines = self._create_feature_collection(
+                    self.pmm.get_coastlines()
+                )
             else:
-                warnings.warn("No Coastlines in {}.".format(self.file_collection), DownloadWarning)
                 self._coastlines = []
         return self._coastlines
-    
+
     @property
     def continents(self):
-        if self._continents is None:
+        if self._continents is None and self.pmm:
             if "ContinentalPolygons" in self._available_layers:
-                self._continents = self._create_feature_collection(self.pmm.get_continental_polygons())
+                self._continents = self._create_feature_collection(
+                    self.pmm.get_continental_polygons()
+                )
             else:
-                warnings.warn("No Continental Polygons in {}.".format(self.file_collection), DownloadWarning)
                 self._continents = []
         return self._continents
-    
+
     @property
     def COBs(self):
-        if self._COBs is None:
+        if self._COBs is None and self.pmm:
             if "COBs" in self._available_layers:
                 self._COBs = self._create_feature_collection(self.pmm.get_COBs())
             else:
-                warnings.warn("No continent-ocean boundaries in {}.".format(self.file_collection), DownloadWarning)
                 self._COBs = []
         return self._COBs
 
     @property
     def from_age(self):
-        return self.pmm.get_big_time()
+        if self.pmm:
+            return self.pmm.get_big_time()
 
     @property
     def to_age(self):
-        return self.pmm.get_small_time()
+        if self.pmm:
+            return self.pmm.get_small_time()
 
     @property
     def time_range(self):
@@ -1744,10 +1759,15 @@ class DataServer(object):
             age_grids = gDownload.get_age_grid([0, 1, 100])
 
         """
-        import numpy as np
+        if not self.pmm:
+            raise Exception("The plate model object is None. Unable to get agegrid.")
 
-        if "AgeGrids" not in self.pmm.get_cfg()['TimeDepRasters']:
-            raise ValueError("AgeGrids are not currently available for {}".format(self.file_collection))
+        if "AgeGrids" not in self.pmm.get_cfg()["TimeDepRasters"]:
+            raise ValueError(
+                "AgeGrids are not currently available for {}".format(
+                    self.file_collection
+                )
+            )
 
         age_grids = []
 
@@ -1766,10 +1786,9 @@ class DataServer(object):
         else:
             return age_grids
 
-
     def get_spreading_rate_grid(self, times):
-        """Downloads seafloor spreading rate grids from the plate reconstruction 
-        model (`file_collection`) passed into the `DataServer` object. Stores 
+        """Downloads seafloor spreading rate grids from the plate reconstruction
+        model (`file_collection`) passed into the `DataServer` object. Stores
         grids in the "gplately" cache.
 
         Currently, `DataServer` supports spreading rate grids from the following plate
@@ -1836,10 +1855,18 @@ class DataServer(object):
             spreading_rate_grids = gDownload.get_spreading_rate_grid([0, 1, 100])
 
         """
-        import numpy as np
 
-        if "SpreadingRateGrids" not in self.pmm.get_cfg()['TimeDepRasters']:
-            raise ValueError("SpreadingRateGrids are not currently available for {}".format(self.file_collection))
+        if not self.pmm:
+            raise Exception(
+                "The plate model object is None. Unable to get spreading rate grids."
+            )
+
+        if "SpreadingRateGrids" not in self.pmm.get_cfg()["TimeDepRasters"]:
+            raise ValueError(
+                "SpreadingRateGrids are not currently available for {}".format(
+                    self.file_collection
+                )
+            )
 
         spread_grids = []
 
@@ -1855,13 +1882,11 @@ class DataServer(object):
 
         if len(spread_grids) == 1:
             return spread_grids[0]
-        else: 
+        else:
             return spread_grids
 
-
     def get_valid_times(self):
-        """Returns a tuple of the valid plate model time range, (max_time, min_time).
-        """
+        """Returns a tuple of the valid plate model time range, (max_time, min_time)."""
         return self.from_age, self.to_age
 
     def get_raster(self, raster_id_string=None):
@@ -1926,7 +1951,22 @@ class DataServer(object):
             ax2.imshow(etopo1, extent=[-180,180,-90,90], transform=ccrs.PlateCarree())
 
         """
-        return get_raster(raster_id_string, self.verbose)
+        if raster_id_string:
+            raster_path = PresentDayRasterManager().get_raster(raster_id_string)
+            if raster_path.endswith(".grd") or raster_path.endswith(".nc"):
+                raster = _gplately.grids.Raster(data=raster_path)
+            # Otherwise, the raster is an image; use imread to process
+            else:
+                from matplotlib import image
+
+                raster_matrix = image.imread(raster_path)
+                raster = _gplately.grids.Raster(data=raster_matrix)
+
+            if raster_id_string.lower() == "etopo1_tif":
+                raster.lats = raster.lats[::-1]
+            if raster_id_string.lower() == "etopo1_grd":
+                raster._data = raster._data.astype(float)  # type: ignore
+            return raster
 
     def get_feature_data(self, feature_data_id_string=None):
         """Downloads assorted geological feature data from web servers (i.e.
