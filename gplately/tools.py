@@ -22,6 +22,13 @@ import pandas as pd
 import pygplates
 import scipy
 
+from .spatial import (
+    haversine_distance,
+    geocentric_radius,
+    lonlat2xyz,
+    xyz2lonlat,
+)
+
 EARTH_RADIUS = pygplates.Earth.mean_radius_in_kms
 
 _DEFAULT_PLATE_THICKNESS = 125.0e3
@@ -183,6 +190,65 @@ def plate_isotherm_depth(
     return out
 
 
+def plate_surface_depth(age, model='Richards2020'):
+    """
+    Computes the depth to the surface of a cooling plate.
+
+    Essentially converts the ocean basin age to basement depth using a specified age/depth model.
+    
+    Parameters
+    ----------
+    age : float
+        The age in Ma.
+    model : str
+        The model to use when converting ocean age to basement depth.
+        - 'Richards2020': Richards et al. (2020), Structure and dynamics of the oceanic lithosphere-asthenosphere system
+        - 'Stein1992': Stein and Stein (1992), Model for the global variation in oceanic depth and heat flow with lithospheric age
+        - 'Parsons1977': Parsons and Sclater (1972), An analysis of the variation of ocean floor bathymetry and heat flow with age
+    
+    Returns
+    -------
+    depth : array
+        Depth (in metres) as a positive number.
+    
+    Raises
+    ------
+    ValueError
+        If `model` is not a recognised model.
+
+    Notes
+    -----
+    The Richards2020 curve is approximate. A polynomial was fitted to the age-depth data
+    """
+    age = np.array(age)
+
+    if model == "Richards2020":
+        opt_params = [4.40989118e+01, 1.16071448e+05, 1.02003657e-06, 2.47658681e+03]
+        temp, plate_thickness, kappa, offset = opt_params
+
+        depth = plate_isotherm_depth(
+            age, 
+            temp=temp, 
+            plate_thickness=plate_thickness, 
+            kappa=kappa
+        ) + offset
+
+    elif model == "Stein1992":
+        mask_age = age < 20
+        depth = np.array(5651.0 - 2473.0 * np.exp(-0.0278*age))
+        depth[mask_age] = 2600.0 + 365.0 * np.sqrt(age[mask_age])
+
+    elif model == "Parsons1977":
+        mask_age = age < 70
+        depth = np.array(6400.0 - 3200.0 * np.exp(-age/62.8))
+        depth[mask_age] = 2500.0 + 350*np.sqrt(age[mask_age])
+
+    else:
+        raise ValueError("model should be one of Richards2020 or Stein1992")
+
+    return depth
+
+
 def points_to_features(lons, lats, plate_ID=None):
     """Creates point features represented on a unit length sphere in 3D cartesian coordinates from a latitude and
     longitude list.
@@ -260,143 +326,6 @@ def extract_feature_lonlat(features):
         rlat[i], rlon[i] = geometry.to_lat_lon()
 
     return rlon, rlat
-
-
-def lonlat2xyz(lon, lat, degrees=True):
-    """Convert lon / lat (radians) for spherical triangulation into Cartesian (x,y,z) coordinates on the unit sphere.
-
-    Parameters
-    ----------
-    lon, lat : lists
-        Longitudes and latitudes of feature points in radians.
-
-    Returns
-    -------
-    xs, ys, zs : lists
-        Cartesian coordinates of each feature point in all 3 dimensions.
-    """
-    if degrees:
-        lon = np.deg2rad(lon)
-        lat = np.deg2rad(lat)
-    cosphi = np.cos(lat)
-    xs = cosphi * np.cos(lon)
-    ys = cosphi * np.sin(lon)
-    zs = np.sin(lat)
-    return xs, ys, zs
-
-
-def xyz2lonlat(x, y, z, validate=False, degrees=True):
-    """Converts Cartesian (x,y,z) representation of points (on the unit sphere) for spherical triangulation into
-    lon / lat (radians).
-
-    Note: No check is made here that (x,y,z) are unit vectors - it is assumed.
-
-    Parameters
-    ----------
-    x, y, z : lists
-        Cartesian coordinates of each feature point in all 3 dimensions.
-
-    Returns
-    -------
-    lon, lat : lists
-        Longitudes and latitudes of feature points in radians.
-
-    Notes
-    -----
-    No check is made here that (x,y,z) are unit vectors, unless validate=True is specified
-    """
-    x = np.atleast_1d(x)
-    y = np.atleast_1d(y)
-    z = np.atleast_1d(z)
-    if validate:
-        mags = np.sqrt(x**2 + y**2 + z**2)
-        ones = np.full_like(mags, 1)
-        if not np.all(np.equal(mags, ones)):
-            raise ValueError("All (x, y, z) must be unit vectors")
-    lons = np.arctan2(y, x)
-    lats = np.arcsin(z)
-    if degrees:
-        lons = np.rad2deg(lons)
-        lats = np.rad2deg(lats)
-    if lons.size == 1:
-        lons = np.atleast_1d(np.squeeze(lons))[0]
-    if lats.size == 1:
-        lats = np.atleast_1d(np.squeeze(lats))[0]
-    return lons, lats
-
-
-def haversine_distance(lon1, lon2, lat1, lat2, degrees=True):
-    """Computes the Haversine distance (the shortest distance on the surface of an ideal spherical Earth) between two
-    points given their latitudes and longitudes.
-
-    Sources
-    -------
-    https://en.wikipedia.org/wiki/Haversine_formula
-    https://stackoverflow.com/questions/639695/how-to-convert-latitude-or-longitude-to-meters
-
-    Parameters
-    ----------
-    lon1, lon2 : float
-        Longitudes of both points
-
-    lat1, lat2 : float
-        Latitudes of both points
-
-    Returns
-    -------
-    d : float
-        The Haversine distance in metres.
-
-    Notes
-    -----
-    Default behaviour assumes values in degrees; for radians specify degrees=False
-    """
-    if degrees:
-        dLat = np.deg2rad(lat2) - np.deg2rad(lat1)
-        dLon = np.deg2rad(lon2) - np.deg2rad(lon1)
-    else:
-        dLat = lat2 - lat1
-        dLon = lon2 - lon1
-    a = (
-        np.sin(dLat / 2) ** 2
-        + np.cos(lat1 * np.pi / 180)
-        * np.cos(lat2 * np.pi / 180)
-        * np.sin(dLon / 2) ** 2
-    )
-    c = 2.0 * np.arctan2(np.sqrt(a), np.sqrt(1.0 - a))
-    d = EARTH_RADIUS * c
-    return d * 1000
-
-
-def geocentric_radius(lat, degrees=True):
-    """Calculates the latitude-dependent radius of an ellipsoid Earth.
-
-    Parameters
-    ----------
-    lat : float
-        The geodetic latitude at which to calculate the Earth's radius
-    degrees : bool, default=True
-        Specify whether the given latitude is in degrees.
-
-    Returns
-    -------
-    earth_radius : float
-        The Earth's geocentric radius (in metres) at the given geodetic latitude.
-    """
-    if degrees:
-        rlat = np.radians(lat)
-    else:
-        rlat = lat
-
-    coslat = np.cos(rlat)
-    sinlat = np.sin(rlat)
-    r1 = 6384.4e3
-    r2 = 6352.8e3
-    num = (r1**2 * coslat) ** 2 + (r2**2 * sinlat) ** 2
-    den = (r1 * coslat) ** 2 + (r2 * sinlat) ** 2
-    earth_radius = np.sqrt(num / den)
-    return earth_radius
-
 
 def plate_partitioner_for_point(lat_lon_tuple, topology_features, rotation_model):
     """Determine the present-day plate ID of a (lat, lon) coordinate pair if
@@ -625,7 +554,11 @@ def griddata_sphere(points, values, xi, method="nearest", **kwargs):
 
     assert xi[0].shape == xi[1].shape, "ensure coordinates in xi are the same shape"
 
-    from scipy.interpolate.interpnd import _ndim_coords_from_arrays
+    try:
+        from scipy.interpolate.interpnd import _ndim_coords_from_arrays
+    except ImportError:
+        # SciPy 1.15 renamed interpnd to _interpnd (see https://github.com/scipy/scipy/pull/21754).
+        from scipy.interpolate._interpnd import _ndim_coords_from_arrays
 
     points = _ndim_coords_from_arrays(points)
 

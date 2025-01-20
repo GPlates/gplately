@@ -97,10 +97,11 @@ if __name__ == "__main__":
             "rasterio",
             "geopandas",
             "stripy",
-            "plate-model-manager",
+            "plate-model-manager>=1.2.1",
             "pyyaml",
             "pygmt",
             "rioxarray",
+            "pygplates>=1.0.0rc1",
         ],
         packages=["gplately"],
         # package_data={
@@ -110,11 +111,13 @@ if __name__ == "__main__":
         #    ]
         # },
         include_package_data=True,
+        python_requires=">=3.8",
         classifiers=[
             "Programming Language :: Python :: 3",
             "Programming Language :: Python :: 3.8",
             "Programming Language :: Python :: 3.9",
             "Programming Language :: Python :: 3.10",
             "Programming Language :: Python :: 3.11",
+            "Programming Language :: Python :: 3.12",
         ],
     )

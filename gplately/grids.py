@@ -37,10 +37,12 @@ import logging
 import math
 import warnings
 from multiprocessing import cpu_count
+from typing import Union, Tuple
 
 import matplotlib.colors
 import matplotlib.pyplot as plt
 import numpy as np
+import netCDF4
 import pygplates
 from cartopy.crs import PlateCarree as _PlateCarree
 from cartopy.mpl.geoaxes import GeoAxes as _GeoAxes
@@ -126,7 +128,8 @@ def fill_raster(data, invalid=None):
     return data[tuple(ind)]
 
 
-def realign_grid(array, lons, lats):
+def _realign_grid(array, lons, lats):
+    """realigns grid to -180/180 and flips the array if the latitudinal coordinates are decreasing."""
     mask_lons = lons > 180
 
     # realign to -180/180
@@ -142,7 +145,31 @@ def realign_grid(array, lons, lats):
     return array, lons, lats
 
 
-def read_netcdf_grid(filename, return_grids=False, realign=False, resample=None):
+def _guess_data_variable_name(cdf: netCDF4.Dataset, x_name: str, y_name: str) -> Union[str, None]:  # type: ignore
+    """best effort to find out the data variable name"""
+    vars = cdf.variables.keys()
+    for var in vars:
+        dimensions = cdf.variables[var].dimensions
+        if len(dimensions) != 2:  # only consider two-dimensional data
+            continue
+        else:
+            if dimensions[0] == y_name and dimensions[1] == x_name:
+                return var
+    return None
+
+
+def read_netcdf_grid(
+    filename,
+    return_grids=False,
+    realign=False,
+    resample=None,
+    resize=None,
+    x_dimension_name: str = "",
+    y_dimension_name: str = "",
+    data_variable_name: str = "",
+) -> Union[
+    Tuple[np.ma.MaskedArray, np.ma.MaskedArray, np.ma.MaskedArray], np.ma.MaskedArray
+]:
     """Read a `netCDF` (.nc) grid from a given `filename` and return its data as a
     `MaskedArray`.
 
@@ -174,6 +201,24 @@ def read_netcdf_grid(filename, return_grids=False, realign=False, resample=None)
         If passed as `resample = (spacingX, spacingY)`, the given `netCDF` grid is resampled
         with these x and y resolutions.
 
+    resize : tuple, optional, default=None
+        If passed as `resample = (resX, resY)`, the given `netCDF` grid is resized
+        to the number of columns (resX) and rows (resY).
+
+    x_dimension_name : str, optional, default=""
+        If the grid file uses comman names, such as "x", "lon", "lons" or "longitude", you need not set this parameter.
+        Otherwise, you need to tell us what the x dimension name is.
+
+    y_dimension_name : str, optional, default=""
+        If the grid file uses comman names, such as "y", "lat", "lats" or "latitude", you need not set this parameter.
+        Otherwise, you need to tell us what the y dimension name is.
+
+    data_variable_name : str, optional, default=""
+        The program will try its best to determine the data variable name.
+        However, it would be better if you could tell us what the data variable name is.
+        Otherwise, the program will guess. The result may/may not be correct.
+
+
     Returns
     -------
     grid_z : MaskedArray
@@ -193,8 +238,6 @@ def read_netcdf_grid(filename, return_grids=False, realign=False, resample=None)
             if label in keys:
                 return label
         return None
-
-    import netCDF4
 
     # possible permutations of lon/lat/z
     label_lon = ["lon", "lons", "longitude", "x", "east", "easting", "eastings"]
@@ -223,48 +266,119 @@ def read_netcdf_grid(filename, return_grids=False, realign=False, resample=None)
         keys = cdf.variables.keys()
 
         # find the names of variables
-        key_z = find_label(keys, label_z)
-        key_lon = find_label(keys, label_lon)
-        key_lat = find_label(keys, label_lat)
+        if data_variable_name:
+            key_z = data_variable_name
+        else:
+            key_z = find_label(keys, label_z)
+        if x_dimension_name:
+            key_lon = x_dimension_name
+        else:
+            key_lon = find_label(keys, label_lon)
+        if y_dimension_name:
+            key_lat = y_dimension_name
+        else:
+            key_lat = find_label(keys, label_lat)
 
         if key_lon is None or key_lat is None:
-            raise ValueError("Cannot find x,y or lon/lat coordinates in netcdf")
+            raise ValueError(
+                f"Cannot find x,y or lon/lat coordinates in netcdf. The dimensions in the file are {cdf.dimensions.keys()}"
+            )
+
         if key_z is None:
-            raise ValueError("Cannot find z data in netcdf")
+            key_z = _guess_data_variable_name(cdf, key_lon, key_lat)
+
+        if key_z is None:
+            raise ValueError(
+                f"Cannot find z data in netcdf. The variables in the file are {cdf.variables.keys()}"
+            )
 
         # extract data from cdf variables
+        # TODO: the dimensions of data may not be (lat, lon). It is possible(but unlikely?) that the dimensions are(lon, lat).
+        # just note you may need numpy.swapaxes() here.
+        if len(cdf[key_z].dimensions) != 2:
+            raise Exception(
+                f"The data in the netcdf file is not two-dimensional. This function can only handle two-dimensional data."
+                + f"The dimensions in the file are {cdf[key_z].dimensions.keys()}"
+            )
         cdf_grid = cdf[key_z][:]
         cdf_lon = cdf[key_lon][:]
         cdf_lat = cdf[key_lat][:]
 
+        # fill missing values
+        if hasattr(cdf[key_z], "missing_value") and np.issubdtype(
+            cdf_grid.dtype, np.floating
+        ):
+            fill_value = cdf[key_z].missing_value
+            cdf_grid[np.isclose(cdf_grid, fill_value, rtol=0.1)] = np.nan
+
+        # convert to boolean array
+        if np.issubdtype(cdf_grid.dtype, np.integer):
+            unique_grid = np.unique(cdf_grid)
+            if len(unique_grid) == 2:
+                if (unique_grid == [0, 1]).all():
+                    cdf_grid = cdf_grid.astype(bool)
+
     if realign:
         # realign longitudes to -180/180 dateline
-        cdf_grid_z, cdf_lon, cdf_lat = realign_grid(cdf_grid, cdf_lon, cdf_lat)
+        cdf_grid_z, cdf_lon, cdf_lat = _realign_grid(cdf_grid, cdf_lon, cdf_lat)
     else:
         cdf_grid_z = cdf_grid
 
     # resample
     if resample is not None:
         spacingX, spacingY = resample
-        lon_grid = np.arange(cdf_lon.min(), cdf_lon.max() + spacingX, spacingX)
-        lat_grid = np.arange(cdf_lat.min(), cdf_lat.max() + spacingY, spacingY)
-        lonq, latq = np.meshgrid(lon_grid, lat_grid)
-        original_extent = (
-            cdf_lon[0],
-            cdf_lon[-1],
-            cdf_lat[0],
-            cdf_lat[-1],
-        )
-        cdf_grid_z = sample_grid(
-            lonq,
-            latq,
-            cdf_grid_z,
-            method="nearest",
-            extent=original_extent,
-            return_indices=False,
-        )
-        cdf_lon = lon_grid
-        cdf_lat = lat_grid
+
+        # don't resample if already the same resolution
+        dX = np.diff(cdf_lon).mean()
+        dY = np.diff(cdf_lat).mean()
+
+        if spacingX != dX or spacingY != dY:
+            lon_grid = np.arange(cdf_lon.min(), cdf_lon.max() + spacingX, spacingX)
+            lat_grid = np.arange(cdf_lat.min(), cdf_lat.max() + spacingY, spacingY)
+            lonq, latq = np.meshgrid(lon_grid, lat_grid)
+            original_extent = (
+                cdf_lon[0],
+                cdf_lon[-1],
+                cdf_lat[0],
+                cdf_lat[-1],
+            )
+            cdf_grid_z = sample_grid(
+                lonq,
+                latq,
+                cdf_grid_z,
+                method="nearest",
+                extent=original_extent,
+                return_indices=False,
+            )
+            cdf_lon = lon_grid
+            cdf_lat = lat_grid
+
+    # resize
+    if resize is not None:
+        resX, resY = resize
+
+        # don't resize if already the same shape
+        if resX != cdf_grid_z.shape[1] or resY != cdf_grid_z.shape[0]:
+            original_extent = (
+                cdf_lon[0],
+                cdf_lon[-1],
+                cdf_lat[0],
+                cdf_lat[-1],
+            )
+            lon_grid = np.linspace(original_extent[0], original_extent[1], resX)
+            lat_grid = np.linspace(original_extent[2], original_extent[3], resY)
+            lonq, latq = np.meshgrid(lon_grid, lat_grid)
+
+            cdf_grid_z = sample_grid(
+                lonq,
+                latq,
+                cdf_grid_z,
+                method="nearest",
+                extent=original_extent,
+                return_indices=False,
+            )
+            cdf_lon = lon_grid
+            cdf_lat = lat_grid
 
     # Fix grids with 9e36 as the fill value for nan.
     # cdf_grid_z.fill_value = float('nan')
@@ -276,58 +390,9 @@ def read_netcdf_grid(filename, return_grids=False, realign=False, resample=None)
         return cdf_grid_z
 
 
-def write_netcdf(filename, lons, lats, data):
-    """Write geospatial data to a netCDF4 grid with a specified `filename`.
-    The latitude, longitude, and data variabels must be of the same size.
-
-    Parameters
-    ----------
-    filename : str
-        The full path (including a filename and the ".nc" extension) to save the created netCDF4 file.
-
-    lons : 1D array
-        List of longitudinal coordinates to be written into a netCDF4 (.nc) file.
-
-    lats : 1D array
-        List of latitudinal coordinates to be written into a netCDF4 (.nc) file.
-
-    data : 1D array
-        List of data values at lon / lat coordinates to be written into a netCDF4 (.nc) file.
-    """
-    import netCDF4
-
-    lons = np.asarray(lons)
-    lats = np.asarray(lats)
-    data = np.asarray(data)
-
-    with netCDF4.Dataset(filename, "w", driver=None) as cdf:
-        cdf.title = "Grid produced by gplately"
-        cdf.createDimension("lon", lons.size)
-        cdf_lon = cdf.createVariable("lon", lons.dtype, ("lon",), zlib=True)
-        cdf_lat = cdf.createVariable("lat", lats.dtype, ("lon",), zlib=True)
-        cdf_lon[:] = lons
-        cdf_lat[:] = lats
-
-        # Units for Geographic Grid type
-        cdf_lon.units = "degrees_east"
-        cdf_lon.standard_name = "lon"
-        cdf_lon.actual_range = [np.min(lons), np.max(lons)]
-        cdf_lat.units = "degrees_north"
-        cdf_lat.standard_name = "lat"
-        cdf_lat.actual_range = [np.min(lats), np.max(lats)]
-
-        cdf_data = cdf.createVariable("z", data.dtype, ("lon",), zlib=True)
-        # netCDF4 uses the missing_value attribute as the default _FillValue
-        # without this, _FillValue defaults to 9.969209968386869e+36
-        cdf_data.missing_value = np.nan
-        cdf_data.standard_name = "z"
-        # Ensure pygmt registers min and max z values properly
-        cdf_data.actual_range = [np.nanmin(data), np.nanmax(data)]
-
-        cdf_data[:] = data
-
-
-def write_netcdf_grid(filename, grid, extent=[-180, 180, -90, 90]):
+def write_netcdf_grid(
+    filename, grid, extent="global", significant_digits=None, fill_value=np.nan
+):
     """Write geological data contained in a `grid` to a netCDF4 grid with a specified `filename`.
 
     Notes
@@ -352,28 +417,44 @@ def write_netcdf_grid(filename, grid, extent=[-180, 180, -90, 90]):
         An ndarray grid containing data to be written into a `netCDF` (.nc) file. Note: Rows correspond to
         the data's latitudes, while the columns correspond to the data's longitudes.
 
-    extent : 1D numpy array, default=[-180,180,-90,90]
+    extent : list, default=[-180,180,-90,90]
         Four elements that specify the [min lon, max lon, min lat, max lat] to constrain the lat and lon
         variables of the netCDF grid to. If no extents are supplied, full global extent `[-180, 180, -90, 90]`
         is assumed.
+
+    significant_digits : int
+        Applies lossy data compression up to a specified number of significant digits.
+        This significantly reduces file size, but make sure the required precision is preserved in the
+        saved netcdf file.
+
+    fill_value : scalar, NoneType, default: np.nan
+        Value used to fill in missing data. By default this is np.nan.
 
     Returns
     -------
     A netCDF grid will be saved to the path specified in `filename`.
     """
     import netCDF4
+    from gplately import __version__ as _version
+
+    if extent == "global":
+        extent = [-180, 180, -90, 90]
+    else:
+        assert len(extent) == 4, "specify the [min lon, max lon, min lat, max lat]"
 
     nrows, ncols = np.shape(grid)
 
     lon_grid = np.linspace(extent[0], extent[1], ncols)
     lat_grid = np.linspace(extent[2], extent[3], nrows)
 
+    data_kwds = {"compression": "zlib", "complevel": 6}
+
     with netCDF4.Dataset(filename, "w", driver=None) as cdf:
-        cdf.title = "Grid produced by gplately"
+        cdf.title = "Grid produced by gplately " + str(_version)
         cdf.createDimension("lon", lon_grid.size)
         cdf.createDimension("lat", lat_grid.size)
-        cdf_lon = cdf.createVariable("lon", lon_grid.dtype, ("lon",), zlib=True)
-        cdf_lat = cdf.createVariable("lat", lat_grid.dtype, ("lat",), zlib=True)
+        cdf_lon = cdf.createVariable("lon", lon_grid.dtype, ("lon",), **data_kwds)
+        cdf_lat = cdf.createVariable("lat", lat_grid.dtype, ("lat",), **data_kwds)
         cdf_lon[:] = lon_grid
         cdf_lat[:] = lat_grid
 
@@ -385,14 +466,51 @@ def write_netcdf_grid(filename, grid, extent=[-180, 180, -90, 90]):
         cdf_lat.standard_name = "lat"
         cdf_lat.actual_range = [lat_grid[0], lat_grid[-1]]
 
-        cdf_data = cdf.createVariable("z", grid.dtype, ("lat", "lon"), zlib=True)
+        # create container variable for CRS: lon/lat WGS84 datum
+        crso = cdf.createVariable("crs", "i4")
+        crso.long_name = "Lon/Lat Coords in WGS84"
+        crso.grid_mapping_name = "latitude_longitude"
+        crso.longitude_of_prime_meridian = 0.0
+        crso.semi_major_axis = 6378137.0
+        crso.inverse_flattening = 298.257223563
+        crso.spatial_ref = """GEOGCS["WGS 84",DATUM["WGS_1984",SPHEROID["WGS 84",6378137,298.257223563,AUTHORITY["EPSG","7030"]],AUTHORITY["EPSG","6326"]],PRIMEM["Greenwich",0,AUTHORITY["EPSG","8901"]],UNIT["degree",0.01745329251994328,AUTHORITY["EPSG","9122"]],AUTHORITY["EPSG","4326"]]"""
+
+        # add more keyword arguments for quantizing data
+        if significant_digits:
+            # significant_digits needs to be >= 2 so that NaNs are preserved
+            data_kwds["significant_digits"] = max(2, int(significant_digits))
+            data_kwds["quantize_mode"] = "GranularBitRound"
+
+        # boolean arrays need to be converted to integers
+        # no such thing as a mask on a boolean array
+        if grid.dtype is np.dtype(bool):
+            grid = grid.astype("i1")
+            fill_value = None
+
+        cdf_data = cdf.createVariable("z", grid.dtype, ("lat", "lon"), **data_kwds)
+
         # netCDF4 uses the missing_value attribute as the default _FillValue
         # without this, _FillValue defaults to 9.969209968386869e+36
-        cdf_data.missing_value = np.nan
-        cdf_data.standard_name = "z"
-        # Ensure pygmt registers min and max z values properly
-        cdf_data.actual_range = [np.nanmin(grid), np.nanmax(grid)]
+        if fill_value is not None:
+            cdf_data.missing_value = fill_value
+            grid_mask = grid != fill_value
 
+            cdf_data.actual_range = [
+                np.nanmin(grid[grid_mask]),
+                np.nanmax(grid[grid_mask]),
+            ]
+
+        else:
+            # ensure min and max z values are properly registered
+            cdf_data.actual_range = [np.nanmin(grid), np.nanmax(grid)]
+
+        cdf_data.standard_name = "z"
+
+        # cdf_data.add_offset = 0.0
+        cdf_data.grid_mapping = "crs"
+        # cdf_data.set_auto_maskandscale(False)
+
+        # write data
         cdf_data[:, :] = grid
 
 
@@ -496,7 +614,11 @@ class RegularGridInterpolator(_RGI):
             return output_tuple[0]
 
     def _prepare_xi(self, xi):
-        from scipy.interpolate.interpnd import _ndim_coords_from_arrays
+        try:
+            from scipy.interpolate.interpnd import _ndim_coords_from_arrays
+        except ImportError:
+            # SciPy 1.15 renamed interpnd to _interpnd (see https://github.com/scipy/scipy/pull/21754).
+            from scipy.interpolate._interpnd import _ndim_coords_from_arrays
 
         ndim = len(self.grid)
         xi = _ndim_coords_from_arrays(xi, ndim=ndim)
@@ -757,6 +879,9 @@ def reconstruct_grid(
     fill_value=None,
     threads=1,
     anchor_plate_id=0,
+    x_dimension_name: str = "",
+    y_dimension_name: str = "",
+    data_variable_name: str = "",
 ):
     """Reconstruct a gridded dataset to a given reconstruction time.
 
@@ -798,6 +923,16 @@ def reconstruct_grid(
         Number of threads to use for certain computationally heavy routines.
     anchor_plate_id : int, default 0
         ID of the anchored plate.
+    x_dimension_name : str, optional, default=""
+        If the grid file uses comman names, such as "x", "lon", "lons" or "longitude", you need not set this parameter.
+        Otherwise, you need to tell us what the x dimension name is.
+    y_dimension_name : str, optional, default=""
+        If the grid file uses comman names, such as "y", "lat", "lats" or "latitude", you need not set this parameter.
+        Otherwise, you need to tell us what the y dimension name is.
+    data_variable_name : str, optional, default=""
+        The program will try its best to determine the data variable name.
+        However, it would be better if you could tell us what the data variable name is.
+        Otherwise, the program will guess. The result may/may not be correct.
 
     Returns
     -------
@@ -821,7 +956,14 @@ def reconstruct_grid(
     (0, 0, 0, 0).
     """
     try:
-        grid = np.array(read_netcdf_grid(grid))  # load grid data from file
+        grid = np.array(
+            read_netcdf_grid(
+                grid,
+                x_dimension_name=x_dimension_name,
+                y_dimension_name=y_dimension_name,
+                data_variable_name=data_variable_name,
+            )
+        )  # load grid data from file
     except Exception:
         grid = np.array(grid)  # copy grid data to array
     if to_time == from_time:
@@ -1511,8 +1653,12 @@ class Raster(object):
         extent="global",
         realign=False,
         resample=None,
+        resize=None,
         time=0.0,
         origin=None,
+        x_dimension_name: str = "",
+        y_dimension_name: str = "",
+        data_variable_name: str = "",
         **kwargs,
     ):
         """Constructs all necessary attributes for the raster object.
@@ -1540,6 +1686,10 @@ class Raster(object):
             Optionally resample grid, pass spacing in X and Y direction as a
             2-tuple e.g. resample=(spacingX, spacingY).
 
+        resize : 2-tuple, optional
+            Optionally resample grid to X-columns, Y-rows as a
+            2-tuple e.g. resample=(resX, resY).
+
         time : float, default: 0.0
             The time step represented by the raster data. Used for raster
             reconstruction.
@@ -1547,6 +1697,19 @@ class Raster(object):
         origin : {'lower', 'upper'}, optional
             When `data` is an array, use this parameter to specify the origin
             (upper left or lower left) of the data (overriding `extent`).
+
+        x_dimension_name : str, optional, default=""
+            If the grid file uses comman names, such as "x", "lon", "lons" or "longitude", you need not set this parameter.
+            Otherwise, you need to tell us what the x dimension name is.
+
+        y_dimension_name : str, optional, default=""
+            If the grid file uses comman names, such as "y", "lat", "lats" or "latitude", you need not set this parameter.
+            Otherwise, you need to tell us what the y dimension name is.
+
+        data_variable_name : str, optional, default=""
+            The program will try its best to determine the data variable name.
+            However, it would be better if you could tell us what the data variable name is.
+            Otherwise, the program will guess. The result may/may not be correct.
 
         **kwargs
             Handle deprecated arguments such as `PlateReconstruction_object`,
@@ -1610,6 +1773,10 @@ class Raster(object):
                 return_grids=True,
                 realign=realign,
                 resample=resample,
+                resize=resize,
+                x_dimension_name=x_dimension_name,
+                y_dimension_name=y_dimension_name,
+                data_variable_name=data_variable_name,
             )
             self._lons = lons
             self._lats = lats
@@ -1624,12 +1791,15 @@ class Raster(object):
             self._lats = np.linspace(extent[2], extent[3], self.data.shape[0])
             if realign:
                 # realign to -180,180 and flip grid
-                self._data, self._lons, self._lats = realign_grid(
+                self._data, self._lons, self._lats = _realign_grid(
                     self._data, self._lons, self._lats
                 )
 
         if (not isinstance(data, str)) and (resample is not None):
             self.resample(*resample, inplace=True)
+
+        if (not isinstance(data, str)) and (resize is not None):
+            self.resize(*resize, inplace=True)
 
     @property
     def time(self):
@@ -1973,10 +2143,12 @@ class Raster(object):
         else:
             return Raster(data, self.plate_reconstruction, self.extent, self.time)
 
-    def save_to_netcdf4(self, filename):
+    def save_to_netcdf4(self, filename, significant_digits=None, fill_value=np.nan):
         """Saves the grid attributed to the `Raster` object to the given `filename` (including
         the ".nc" extension) in netCDF4 format."""
-        write_netcdf_grid(str(filename), self.data, self.extent)
+        write_netcdf_grid(
+            str(filename), self.data, self.extent, significant_digits, fill_value
+        )
 
     def reconstruct(
         self,

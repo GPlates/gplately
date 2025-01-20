@@ -45,12 +45,18 @@ from .decorators import (
     validate_topology_availability,
 )
 from .gpml import _load_FeatureCollection
+from .mapping.plot_engine import PlotEngine
+
+from .mapping.cartopy_plot import CartopyPlotEngine, DEFAULT_CARTOPY_PROJECTION
 from .pygplates import FeatureCollection as _FeatureCollection
 from .reconstruction import PlateReconstruction as _PlateReconstruction
 from .tools import EARTH_RADIUS
 from .utils.feature_utils import shapelify_features as _shapelify_features
-from .utils.plot_utils import _clean_polygons, _meridian_from_ax
-from .utils.plot_utils import plot_subduction_teeth as _plot_subduction_teeth
+from .utils.plot_utils import (
+    _meridian_from_ax,
+    plot_subduction_teeth as _plot_subduction_teeth,
+)
+
 
 logger = logging.getLogger("gplately")
 
@@ -298,14 +304,16 @@ class PlotTopologies(object):
         COBs=None,
         time=None,
         anchor_plate_id=0,
+        plot_engine: PlotEngine = CartopyPlotEngine(),
     ):
+        self._plot_engine = plot_engine
         self.plate_reconstruction = plate_reconstruction
 
         if self.plate_reconstruction.topology_features is None:
             self.plate_reconstruction.topology_features = []
-            logger.warn("Plate model does not have topology features.")
+            logger.warning("Plate model does not have topology features.")
 
-        self.base_projection = ccrs.PlateCarree()
+        self.base_projection = DEFAULT_CARTOPY_PROJECTION
 
         # store these for when time is updated
         # make sure these are initialised as FeatureCollection objects
@@ -321,6 +329,7 @@ class PlotTopologies(object):
         self._topologies = None
 
         self._anchor_plate_id = self._check_anchor_plate_id(anchor_plate_id)
+        self._plot_engine = plot_engine
 
         # store topologies for easy access
         # setting time runs the update_time routine
@@ -376,7 +385,7 @@ class PlotTopologies(object):
                 self._COBs.add(_FeatureCollection(feature))
 
         self._anchor_plate_id = state["plate_id"]
-        self.base_projection = ccrs.PlateCarree()
+        self.base_projection = DEFAULT_CARTOPY_PROJECTION
         self._time = None
 
     @property
@@ -468,7 +477,7 @@ class PlotTopologies(object):
             anchor_plate_id=self.anchor_plate_id,
             # use ResolveTopologyType.boundary parameter to resolve rigid plate boundary only
             # because the Mid-ocean ridges(and transforms) should not contain lines from topological networks
-            resolve_topology_types=pygplates.ResolveTopologyType.boundary,
+            resolve_topology_types=pygplates.ResolveTopologyType.boundary,  # type: ignore
         )
         self._topologies = None
 
@@ -489,64 +498,64 @@ class PlotTopologies(object):
         self.unclassified_features = []
 
         for topol in self.other:
-            if topol.get_feature_type() == pygplates.FeatureType.gpml_continental_rift:
+            if topol.get_feature_type() == pygplates.FeatureType.gpml_continental_rift:  # type: ignore
                 self.continental_rifts.append(topol)
 
-            elif topol.get_feature_type() == pygplates.FeatureType.gpml_fault:
+            elif topol.get_feature_type() == pygplates.FeatureType.gpml_fault:  # type: ignore
                 self.faults.append(topol)
 
-            elif topol.get_feature_type() == pygplates.FeatureType.gpml_fracture_zone:
+            elif topol.get_feature_type() == pygplates.FeatureType.gpml_fracture_zone:  # type: ignore
                 self.fracture_zones.append(topol)
 
             elif (
                 topol.get_feature_type()
-                == pygplates.FeatureType.gpml_inferred_paleo_boundary
+                == pygplates.FeatureType.gpml_inferred_paleo_boundary  # type: ignore
             ):
                 self.inferred_paleo_boundaries.append(topol)
 
             elif (
-                topol.get_feature_type() == pygplates.FeatureType.gpml_terrane_boundary
+                topol.get_feature_type() == pygplates.FeatureType.gpml_terrane_boundary  # type: ignore
             ):
                 self.terrane_boundaries.append(topol)
 
             elif (
                 topol.get_feature_type()
-                == pygplates.FeatureType.gpml_transitional_crust
+                == pygplates.FeatureType.gpml_transitional_crust  # type: ignore
             ):
                 self.transitional_crusts.append(topol)
 
-            elif topol.get_feature_type() == pygplates.FeatureType.gpml_orogenic_belt:
+            elif topol.get_feature_type() == pygplates.FeatureType.gpml_orogenic_belt:  # type: ignore
                 self.orogenic_belts.append(topol)
 
-            elif topol.get_feature_type() == pygplates.FeatureType.gpml_suture:
+            elif topol.get_feature_type() == pygplates.FeatureType.gpml_suture:  # type: ignore
                 self.sutures.append(topol)
 
             elif (
-                topol.get_feature_type() == pygplates.FeatureType.gpml_continental_crust
+                topol.get_feature_type() == pygplates.FeatureType.gpml_continental_crust  # type: ignore
             ):
                 self.continental_crusts.append(topol)
 
             elif (
                 topol.get_feature_type()
-                == pygplates.FeatureType.gpml_extended_continental_crust
+                == pygplates.FeatureType.gpml_extended_continental_crust  # type: ignore
             ):
                 self.extended_continental_crusts.append(topol)
 
             elif (
                 topol.get_feature_type()
-                == pygplates.FeatureType.gpml_passive_continental_boundary
+                == pygplates.FeatureType.gpml_passive_continental_boundary  # type: ignore
             ):
                 self.passive_continental_boundaries.append(topol)
 
-            elif topol.get_feature_type() == pygplates.FeatureType.gpml_slab_edge:
+            elif topol.get_feature_type() == pygplates.FeatureType.gpml_slab_edge:  # type: ignore
                 self.slab_edges.append(topol)
 
-            elif topol.get_feature_type() == pygplates.FeatureType.gpml_transform:
+            elif topol.get_feature_type() == pygplates.FeatureType.gpml_transform:  # type: ignore
                 self.transforms.append(topol)
 
             elif (
                 topol.get_feature_type()
-                == pygplates.FeatureType.gpml_unclassified_feature
+                == pygplates.FeatureType.gpml_unclassified_feature  # type: ignore
             ):
                 self.unclassified_features.append(topol)
 
@@ -605,7 +614,7 @@ class PlotTopologies(object):
         triangle_pointsX = []
         triangle_pointsY = []
 
-        date_line_wrapper = pygplates.DateLineWrapper()
+        date_line_wrapper = pygplates.DateLineWrapper()  # type: ignore
 
         for feature in features:
             cum_distance = 0.0
@@ -686,13 +695,13 @@ class PlotTopologies(object):
             tessellate_degrees=tessellate_degrees,
         )
 
-        return gpd.GeoDataFrame({"geometry": shp}, geometry="geometry")
+        return gpd.GeoDataFrame({"geometry": shp}, geometry="geometry", crs="EPSG:4326")  # type: ignore
 
     @append_docstring(PLOT_DOCSTRING.format("feature"))
     def plot_feature(self, ax, feature, feature_name="", color="black", **kwargs):
         """Plot pygplates.FeatureCollection or pygplates.Feature onto a map."""
         if not feature:
-            logger.warn(
+            logger.warning(
                 f"The given feature({feature_name}:{feature}) in model:{self.plate_reconstruction.plate_model_name} is empty and will not be plotted."
             )
             return ax
@@ -703,7 +712,7 @@ class PlotTopologies(object):
                 kwargs["facecolor"] = "none"
             return self._plot_feature(ax, partial(self.get_feature, feature), **kwargs)
 
-    def _plot_feature(self, ax, get_feature_func, **kwargs):
+    def _plot_feature(self, ax, get_feature_func, **kwargs) -> None:
         if "transform" in kwargs.keys():
             warnings.warn(
                 "'transform' keyword argument is ignored by PlotTopologies",
@@ -722,16 +731,16 @@ class PlotTopologies(object):
             tessellate_degrees=tessellate_degrees,
         )
 
+        if not isinstance(gdf, gpd.GeoDataFrame):
+            raise Exception(
+                f"Expecting a GeoDataFrame object, but the gdf is {type(gdf)}"
+            )
+
         if len(gdf) == 0:
-            logger.warn("No feature found for plotting. Do nothing and return.")
+            logger.warning("No feature found for plotting. Do nothing and return.")
             return ax
 
-        if hasattr(ax, "projection"):
-            gdf = _clean_polygons(data=gdf, projection=ax.projection)
-        else:
-            kwargs["transform"] = self.base_projection
-
-        return gdf.plot(ax=ax, **kwargs)
+        self._plot_engine.plot_geo_data_frame(ax, gdf, **kwargs)
 
     @validate_reconstruction_time
     @append_docstring(GET_DATE_DOCSTRING.format("coastlines"))
@@ -1025,7 +1034,8 @@ class PlotTopologies(object):
 
         return ax.add_geometries(teeth, crs=self.base_projection, color=color, **kwargs)
 
-    def get_subduction_direction(self):
+    @validate_reconstruction_time
+    def get_subduction_direction(self, central_meridian=0.0, tessellate_degrees=None):
         """Create a geopandas.GeoDataFrame object containing geometries of trench directions.
 
         Notes
@@ -1057,31 +1067,36 @@ class PlotTopologies(object):
             If the optional `time` parameter has not been passed to `PlotTopologies`. This is needed to construct
             `trench_left` or `trench_right` geometries to the requested `time` and thus populate the GeoDataFrame.
         """
-        if self._time is None:
-            raise ValueError(
-                "No miscellaneous topologies have been resolved. Set `PlotTopologies.time` to construct them."
-            )
-
         if self.trench_left is None or self.trench_right is None:
-            raise ValueError(
-                "No trench_left or trench_right topologies passed to PlotTopologies."
+            raise Exception(
+                "No subduction zone/trench data is found. Make sure the plate model has topology feature."
             )
 
-        trench_left_features = shapelify_feature_lines(self.trench_left)
-        trench_right_features = shapelify_feature_lines(self.trench_right)
+        trench_left_features = shapelify_feature_lines(
+            self.trench_left,
+            tessellate_degrees=tessellate_degrees,
+            central_meridian=central_meridian,
+        )
+        trench_right_features = shapelify_feature_lines(
+            self.trench_right,
+            tessellate_degrees=tessellate_degrees,
+            central_meridian=central_meridian,
+        )
 
         gdf_left = gpd.GeoDataFrame(
-            {"geometry": trench_left_features}, geometry="geometry"
-        )
+            {"geometry": trench_left_features}, geometry="geometry", crs="EPSG:4326"
+        )  # type: ignore
         gdf_right = gpd.GeoDataFrame(
-            {"geometry": trench_right_features}, geometry="geometry"
-        )
+            {"geometry": trench_right_features}, geometry="geometry", crs="EPSG:4326"
+        )  # type: ignore
 
         return gdf_left, gdf_right
 
+    @validate_reconstruction_time
+    @validate_topology_availability("Subduction Zones")
     def plot_subduction_teeth(
         self, ax, spacing=0.07, size=None, aspect=None, color="black", **kwargs
-    ):
+    ) -> None:
         """Plot subduction teeth onto a standard map Projection.
 
         Notes
@@ -1116,77 +1131,18 @@ class PlotTopologies(object):
             See `Matplotlib` keyword arguments
             [here](https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html).
         """
-        if not self.plate_reconstruction.topology_features:
-            logger.warn(
-                "Plate model does not have topology features. Unable to plot_subduction_teeth."
-            )
-            return ax
-        if self._time is None:
-            raise ValueError(
-                "No topologies have been resolved. Set `PlotTopologies.time` to construct them."
-            )
-        if "transform" in kwargs.keys():
-            warnings.warn(
-                "'transform' keyword argument is ignored by PlotTopologies",
-                UserWarning,
-            )
-            kwargs.pop("transform")
+        kwargs["spacing"] = spacing
+        kwargs["size"] = size
+        kwargs["aspect"] = aspect
 
         central_meridian = _meridian_from_ax(ax)
         tessellate_degrees = np.rad2deg(spacing)
-
-        try:
-            projection = ax.projection
-        except AttributeError:
-            print(
-                "The ax.projection does not exist. You must set projection to plot Cartopy maps, such as ax = plt.subplot(211, projection=cartopy.crs.PlateCarree())"
-            )
-            projection = None
-
-        if isinstance(projection, ccrs.PlateCarree):
-            spacing = math.degrees(spacing)
-        else:
-            spacing = spacing * EARTH_RADIUS * 1e3
-
-        if aspect is None:
-            aspect = 2.0 / 3.0
-        if size is None:
-            size = spacing * 0.5
-
-        height = size * aspect
-
-        trench_left_features = shapelify_feature_lines(
-            self.trench_left,
-            tessellate_degrees=tessellate_degrees,
-            central_meridian=central_meridian,
-        )
-        trench_right_features = shapelify_feature_lines(
-            self.trench_right,
-            tessellate_degrees=tessellate_degrees,
-            central_meridian=central_meridian,
+        gdf_subduction_left, gdf_subduction_right = self.get_subduction_direction(
+            tessellate_degrees=tessellate_degrees, central_meridian=central_meridian
         )
 
-        plot_subduction_teeth(
-            trench_left_features,
-            size,
-            "l",
-            height,
-            spacing,
-            projection=projection,
-            ax=ax,
-            color=color,
-            **kwargs,
-        )
-        plot_subduction_teeth(
-            trench_right_features,
-            size,
-            "r",
-            height,
-            spacing,
-            projection=projection,
-            ax=ax,
-            color=color,
-            **kwargs,
+        self._plot_engine.plot_subduction_zones(
+            ax, gdf_subduction_left, gdf_subduction_right, color=color, **kwargs
         )
 
     def plot_plate_polygon_by_id(self, ax, plate_id, color="black", **kwargs):
@@ -1210,26 +1166,35 @@ class PlotTopologies(object):
             [here](https://matplotlib.org/3.5.1/api/_as_gen/matplotlib.axes.Axes.imshow.html).
 
         """
-        return self.plot_feature(
+        features = []
+        if self.topologies:
+            features = (
+                [
+                    feature
+                    for feature in self.topologies
+                    if feature.get_reconstruction_plate_id() == plate_id
+                ],
+            )
+        self.plot_feature(
             ax,
-            [
-                feature
-                for feature in self.topologies
-                if feature.get_reconstruction_plate_id() == plate_id
-            ],
+            features,
             color=color,
             **kwargs,
         )
 
-    # the old function name(plot_plate_id) is bad. we should change the name
-    # for backward compatibility, we have to allow users to use the old name
     def plot_plate_id(self, *args, **kwargs):
-        logger.warn(
-            "The class method plot_plate_id will be deprecated in the future soon. Use plot_plate_polygon_by_id instead."
+        """TODO: remove this function
+
+        The function name plot_plate_id() is bad and should be changed.
+        The new name is plot_plate_polygon_by_id().
+        For backward compatibility, we allow users to use the old name in their legcy code for now.
+        No new code should call this function.
+
+        """
+        logger.warning(
+            "The class method plot_plate_id is deprecated and will be removed in the future soon. Use plot_plate_polygon_by_id instead."
         )
         return self.plot_plate_polygon_by_id(*args, **kwargs)
-
-    plot_plate_id.__doc__ = plot_plate_polygon_by_id.__doc__
 
     def plot_grid(self, ax, grid, extent=[-180, 180, -90, 90], **kwargs):
         """Plot a `MaskedArray` raster or grid onto a standard map Projection.
@@ -1413,6 +1378,45 @@ class PlotTopologies(object):
             warnings.simplefilter("ignore", UserWarning)
             quiver = ax.quiver(X, Y, U, V, transform=self.base_projection, **kwargs)
         return quiver
+
+    def plot_pole(self, ax, lon, lat, a95, **kwargs):
+        """
+        Plot pole onto a matplotlib axes.
+
+        Parameters
+        ----------
+        ax : instance of <cartopy.mpl.geoaxes.GeoAxes> or <cartopy.mpl.geoaxes.GeoAxesSubplot>
+            A subclass of `matplotlib.axes.Axes` which represents a map Projection.
+            The map should be set at a particular Cartopy projection.
+
+        lon : float
+            Longitudinal coordinate to place pole
+        lat : float
+            Latitudinal coordinate to place pole
+        a95 : float
+            The size of the pole (in degrees)
+
+        Returns
+        -------
+        matplotlib.patches.Circle handle
+        """
+        from matplotlib import patches as mpatches
+
+        # Define the projection used to display the circle:
+        proj1 = ccrs.Orthographic(central_longitude=lon, central_latitude=lat)
+
+        def compute_radius(ortho, radius_degrees):
+            phi1 = lat + radius_degrees if lat <= 0 else lat - radius_degrees
+            _, y1 = ortho.transform_point(lon, phi1, ccrs.PlateCarree())
+            return abs(y1)
+
+        r_ortho = compute_radius(proj1, a95)
+
+        # adding a patch
+        patch = ax.add_patch(
+            mpatches.Circle(xy=(lon, lat), radius=r_ortho, transform=proj1, **kwargs)
+        )
+        return patch
 
     @validate_reconstruction_time
     @append_docstring(GET_DATE_DOCSTRING.format("continental rifts"))
@@ -1797,19 +1801,22 @@ class PlotTopologies(object):
                 "feature_name": feature_names,
             },
             geometry="geometry",
-        )
+            crs="EPSG:4326",
+        )  # type: ignore
         return gdf
 
     @validate_topology_availability("all topologies")
     @append_docstring(PLOT_DOCSTRING.format("topologies"))
     def plot_all_topologies(self, ax, color="black", **kwargs):
         """Plot topological polygons and networks on a standard map projection."""
+        if "edgecolor" not in kwargs.keys():
+            kwargs["edgecolor"] = color
+        if "facecolor" not in kwargs.keys():
+            kwargs["facecolor"] = "none"
 
         return self._plot_feature(
             ax,
             self.get_all_topologies,
-            facecolor="none",
-            edgecolor=color,
             **kwargs,
         )
 
@@ -1867,7 +1874,8 @@ class PlotTopologies(object):
                 "feature_name": feature_names,
             },
             geometry="geometry",
-        )
+            crs="EPSG:4326",
+        )  # type: ignore
         return gdf
 
     @validate_topology_availability("all topological sections")
@@ -1887,7 +1895,7 @@ class PlotTopologies(object):
         if self._topologies is None:
             resolved_topologies = []
             shared_boundary_sections = []
-            pygplates.resolve_topologies(
+            pygplates.resolve_topologies(  # type: ignore
                 self.plate_reconstruction.topology_features,
                 self.plate_reconstruction.rotation_model,
                 resolved_topologies,

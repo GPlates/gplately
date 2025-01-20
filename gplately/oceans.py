@@ -781,8 +781,9 @@ class SeafloorGrid(object):
 
             grids.write_netcdf_grid(
                 self.continent_mask_filepath.format(time),
-                final_grid,
+                final_grid.astype('i1'),
                 extent=[-180, 180, -90, 90],
+                fill_value=None,
             )
             logger.info(f"Finished building a continental mask at {time} Ma!")
 
@@ -809,8 +810,9 @@ class SeafloorGrid(object):
 
         grids.write_netcdf_grid(
             self.continent_mask_filepath.format(time),
-            final_grid,
+            final_grid.astype('i1'),
             extent=[-180, 180, -90, 90],
+            fill_value=None,
         )
         logger.info(f"Finished building a continental mask at {time} Ma!")
 
@@ -1478,6 +1480,7 @@ def _save_netcdf_file(
 
     # Interpolate lons, lats and zvals over a regular grid using nearest neighbour interpolation
     Z = tools.griddata_sphere((lons, lats), zdata, (X, Y), method="nearest")
+    Z = Z.astype('f4')
 
     unmasked_basename = f"{name}_grid_unmasked_{time:0.2f}_Ma.nc"
     grid_basename = f"{name}_grid_{time:0.2f}_Ma.nc"
@@ -1490,28 +1493,28 @@ def _save_netcdf_file(
     grid_output = os.path.join(output_dir, grid_basename)
 
     if unmasked:
-        grids.write_netcdf_grid(grid_output_unmasked, Z, extent=extent)
+        grids.write_netcdf_grid(
+            grid_output_unmasked, 
+            Z, 
+            extent=extent,
+            significant_digits=2,
+            fill_value=None)
 
     # Identify regions in the grid in the continental mask
-    cont_mask = grids.Raster(data=continent_mask_filename.format(time))
-
     # We need the continental mask to match the number of nodes
     # in the uniform grid defined above. This is important if we
     # pass our own continental mask to SeafloorGrid
-    if cont_mask.shape[1] != resX:
-        cont_mask.resize(resX, resY, inplace=True)
+    cont_mask = grids.read_netcdf_grid(continent_mask_filename.format(time), resize=(resX,resY))
 
     # Use the continental mask
-    Z = np.ma.array(
-        grids.Raster(data=Z.astype("float")).data.data,
-        mask=cont_mask.data.data,
-        fill_value=np.nan,
-    )
+    Z[cont_mask] = np.nan
 
     grids.write_netcdf_grid(
         grid_output,
         Z,
         extent=extent,
+        significant_digits=2,
+        fill_value=np.nan,
     )
     logger.info(f"Save {name} netCDF grid at {time:0.2f} Ma completed!")
 
@@ -1566,6 +1569,7 @@ def _lat_lon_z_to_netCDF_time(
 
     # Interpolate lons, lats and zvals over a regular grid using nearest neighbour interpolation
     Z = tools.griddata_sphere((lons, lats), zdata, (X, Y), method="nearest")
+    Z = Z.astype('f4') # float32 precision
 
     unmasked_basename = f"{zval_name}_grid_unmasked_{time:0.2f}Ma.nc"
     grid_basename = f"{zval_name}_grid_{time:0.2f}Ma.nc"
@@ -1578,31 +1582,28 @@ def _lat_lon_z_to_netCDF_time(
     grid_output = os.path.join(output_dir, grid_basename)
 
     if unmasked:
-        grids.write_netcdf_grid(grid_output_unmasked, Z, extent=extent)
+        grids.write_netcdf_grid(
+            grid_output_unmasked, 
+            Z, 
+            extent=extent,
+            significant_digits=2,
+            fill_value=None)
 
     # Identify regions in the grid in the continental mask
-    cont_mask = grids.Raster(data=continent_mask_filename.format(time))
-
     # We need the continental mask to match the number of nodes
     # in the uniform grid defined above. This is important if we
     # pass our own continental mask to SeafloorGrid
-    if cont_mask.shape[1] != resX:
-        cont_mask.resize(resX, resY, inplace=True)
+    cont_mask = grids.read_netcdf_grid(continent_mask_filename.format(time), resize=(resX,resY))
 
     # Use the continental mask
-    Z = np.ma.array(
-        grids.Raster(data=Z.astype("float")).data.data,
-        mask=cont_mask.data.data,
-        fill_value=np.nan,
-    )
-
-    # grd = cont_mask.interpolate(X, Y) > 0.5
-    # Z[grd] = np.nan
+    Z[cont_mask] = np.nan
 
     grids.write_netcdf_grid(
         grid_output,
         Z,
         extent=extent,
+        significant_digits=2,
+        fill_value=np.nan,
     )
     logger.info(f"{zval_name} netCDF grids for {time:0.2f} Ma complete!")
 
@@ -1717,8 +1718,9 @@ def _build_continental_mask_with_contouring(
     )
     grids.write_netcdf_grid(
         continent_mask_filepath.format(time),
-        continent_mask.astype("float"),
+        continent_mask.astype("i1"),
         extent=[-180, 180, -90, 90],
+        fill_value=None,
     )
     logger.info(
         f"Finished building a continental mask at {time} Ma! (continent_contouring)"

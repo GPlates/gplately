@@ -153,7 +153,7 @@ def test_cont_arc_length(time, model, muller_2019_model):
     )
     approx_lengths = {
         0: 52200,
-        100: 44000,
+        100: 46000,
     }
     err_msg = (
         "Could not calculate total continental arc lengths for Muller et "
@@ -198,10 +198,9 @@ def test_rotation_model_copy(model):
 
 
 def test_reconstruction_filenames(model):
-    assert (
-        "Muller_etal_2019_PlateBoundaries_DeformingNetworks.gpmlz"
-        in [os.path.basename(i) for i in model.topology_features.filenames]
-    )
+    assert "Muller_etal_2019_PlateBoundaries_DeformingNetworks.gpmlz" in [
+        os.path.basename(i) for i in model.topology_features.filenames
+    ]
 
 
 def test_pickle_reconstruction(model):
