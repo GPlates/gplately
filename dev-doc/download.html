@@ -355,232 +355,432 @@ object and method(s) are re-run, the files will be re-accessed from the cache pr
 moved or deleted.</p>
 <p>Currently, <code><a title="gplately.download.DataServer" href="#gplately.download.DataServer">DataServer</a></code> supports a number of plate reconstruction models.</p>
 <hr>
-<table>
-<thead>
-<tr>
-<th style="text-align: center;"><strong>Model name string Identifier</strong></th>
-<th style="text-align: center;"><strong>Rot. files</strong></th>
-<th style="text-align: center;"><strong>Topology features</strong></th>
-<th style="text-align: center;"><strong>Static polygons</strong></th>
-<th style="text-align: center;"><strong>Coast-lines</strong></th>
-<th style="text-align: center;"><strong>Cont-inents</strong></th>
-<th style="text-align: center;"><strong>COB-</strong></th>
-<th style="text-align: center;"><strong>Age grids</strong></th>
-<th style="text-align: center;"><strong>SR grids</strong></th>
-</tr>
-</thead>
-<tbody>
-<tr>
-<td style="text-align: center;">Muller2019</td>
-<td style="text-align: center;">✅</td>
-<td style="text-align: center;">✅</td>
-<td style="text-align: center;">✅</td>
-<td style="text-align: center;">✅</td>
-<td style="text-align: center;">✅</td>
-<td style="text-align: center;">✅</td>
-<td style="text-align: center;">✅</td>
-<td style="text-align: center;">❌</td>
-</tr>
-<tr>
-<td style="text-align: center;">Muller2016</td>
-<td style="text-align: center;">✅</td>
-<td style="text-align: center;">✅</td>
-<td style="text-align: center;">✅</td>
-<td style="text-align: center;">✅</td>
-<td style="text-align: center;">❌</td>
-<td style="text-align: center;">❌</td>
-<td style="text-align: center;">✅</td>
-<td style="text-align: center;">❌</td>
-</tr>
-<tr>
-<td style="text-align: center;">Merdith2021</td>
-<td style="text-align: center;">✅</td>
-<td style="text-align: center;">✅</td>
-<td style="text-align: center;">✅</td>
-<td style="text-align: center;">✅</td>
-<td style="text-align: center;">✅</td>
-<td style="text-align: center;">❌</td>
-<td style="text-align: center;">❌</td>
-<td style="text-align: center;">❌</td>
-</tr>
-<tr>
-<td style="text-align: center;">Cao2020</td>
-<td style="text-align: center;">✅</td>
-<td style="text-align: center;">✅</td>
-<td style="text-align: center;">✅</td>
-<td style="text-align: center;">✅</td>
-<td style="text-align: center;">✅</td>
-<td style="text-align: center;">❌</td>
-<td style="text-align: center;">❌</td>
-<td style="text-align: center;">❌</td>
-</tr>
-<tr>
-<td style="text-align: center;">Clennett2020</td>
-<td style="text-align: center;">✅</td>
-<td style="text-align: center;">✅</td>
-<td style="text-align: center;">✅</td>
-<td style="text-align: center;">✅</td>
-<td style="text-align: center;">✅</td>
-<td style="text-align: center;">❌</td>
-<td style="text-align: center;">✅</td>
-<td style="text-align: center;">✅</td>
-</tr>
-<tr>
-<td style="text-align: center;">Seton2012</td>
-<td style="text-align: center;">✅</td>
-<td style="text-align: center;">✅</td>
-<td style="text-align: center;">❌</td>
-<td style="text-align: center;">✅</td>
-<td style="text-align: center;">❌</td>
-<td style="text-align: center;">✅</td>
-<td style="text-align: center;">✅</td>
-<td style="text-align: center;">❌</td>
-</tr>
-<tr>
-<td style="text-align: center;">Matthews2016</td>
-<td style="text-align: center;">✅</td>
-<td style="text-align: center;">✅</td>
-<td style="text-align: center;">✅</td>
-<td style="text-align: center;">✅</td>
-<td style="text-align: center;">✅</td>
-<td style="text-align: center;">❌</td>
-<td style="text-align: center;">❌</td>
-<td style="text-align: center;">❌</td>
-</tr>
-<tr>
-<td style="text-align: center;">Merdith2017</td>
-<td style="text-align: center;">✅</td>
-<td style="text-align: center;">✅</td>
-<td style="text-align: center;">❌</td>
-<td style="text-align: center;">❌</td>
-<td style="text-align: center;">❌</td>
-<td style="text-align: center;">❌</td>
-<td style="text-align: center;">❌</td>
-<td style="text-align: center;">❌</td>
-</tr>
-<tr>
-<td style="text-align: center;">Li2008</td>
-<td style="text-align: center;">✅</td>
-<td style="text-align: center;">✅</td>
-<td style="text-align: center;">❌</td>
-<td style="text-align: center;">❌</td>
-<td style="text-align: center;">❌</td>
-<td style="text-align: center;">❌</td>
-<td style="text-align: center;">❌</td>
-<td style="text-align: center;">❌</td>
-</tr>
-<tr>
-<td style="text-align: center;">Pehrsson2015</td>
-<td style="text-align: center;">✅</td>
-<td style="text-align: center;">✅</td>
-<td style="text-align: center;">❌</td>
-<td style="text-align: center;">❌</td>
-<td style="text-align: center;">❌</td>
-<td style="text-align: center;">❌</td>
-<td style="text-align: center;">❌</td>
-<td style="text-align: center;">❌</td>
-</tr>
-<tr>
-<td style="text-align: center;">TorsvikCocks2017</td>
-<td style="text-align: center;">✅</td>
-<td style="text-align: center;">❌</td>
-<td style="text-align: center;">❌</td>
-<td style="text-align: center;">✅</td>
-<td style="text-align: center;">❌</td>
-<td style="text-align: center;">❌</td>
-<td style="text-align: center;">❌</td>
-<td style="text-align: center;">❌</td>
-</tr>
-<tr>
-<td style="text-align: center;">Young2019</td>
-<td style="text-align: center;">✅</td>
-<td style="text-align: center;">✅</td>
-<td style="text-align: center;">✅</td>
-<td style="text-align: center;">✅</td>
-<td style="text-align: center;">✅</td>
-<td style="text-align: center;">❌</td>
-<td style="text-align: center;">❌</td>
-<td style="text-align: center;">❌</td>
-</tr>
-<tr>
-<td style="text-align: center;">Scotese2008</td>
-<td style="text-align: center;">✅</td>
-<td style="text-align: center;">✅</td>
-<td style="text-align: center;">❌</td>
-<td style="text-align: center;">❌</td>
-<td style="text-align: center;">✅</td>
-<td style="text-align: center;">❌</td>
-<td style="text-align: center;">❌</td>
-<td style="text-align: center;">❌</td>
-</tr>
-<tr>
-<td style="text-align: center;">Clennett2020_M19</td>
-<td style="text-align: center;">✅</td>
-<td style="text-align: center;">✅</td>
-<td style="text-align: center;">❌</td>
-<td style="text-align: center;">✅</td>
-<td style="text-align: center;">✅</td>
-<td style="text-align: center;">❌</td>
-<td style="text-align: center;">❌</td>
-<td style="text-align: center;">❌</td>
-</tr>
-<tr>
-<td style="text-align: center;">Clennett2020_S13</td>
-<td style="text-align: center;">✅</td>
-<td style="text-align: center;">✅</td>
-<td style="text-align: center;">❌</td>
-<td style="text-align: center;">✅</td>
-<td style="text-align: center;">✅</td>
-<td style="text-align: center;">❌</td>
-<td style="text-align: center;">❌</td>
-<td style="text-align: center;">❌</td>
-</tr>
-<tr>
-<td style="text-align: center;">Muller2008</td>
-<td style="text-align: center;">✅</td>
-<td style="text-align: center;">❌</td>
-<td style="text-align: center;">✅</td>
-<td style="text-align: center;">❌</td>
-<td style="text-align: center;">❌</td>
-<td style="text-align: center;">❌</td>
-<td style="text-align: center;">❌</td>
-<td style="text-align: center;">❌</td>
-</tr>
-<tr>
-<td style="text-align: center;">Muller2022</td>
-<td style="text-align: center;">✅</td>
-<td style="text-align: center;">✅</td>
-<td style="text-align: center;">✅</td>
-<td style="text-align: center;">✅</td>
-<td style="text-align: center;">✅</td>
-<td style="text-align: center;">✅</td>
-<td style="text-align: center;">❌</td>
-<td style="text-align: center;">❌</td>
-</tr>
-<tr>
-<td style="text-align: center;">Scotese2016</td>
-<td style="text-align: center;">✅</td>
-<td style="text-align: center;">❌</td>
-<td style="text-align: center;">✅</td>
-<td style="text-align: center;">✅</td>
-<td style="text-align: center;">❌</td>
-<td style="text-align: center;">❌</td>
-<td style="text-align: center;">❌</td>
-<td style="text-align: center;">❌</td>
-</tr>
-<tr>
-<td style="text-align: center;">Shephard2013</td>
-<td style="text-align: center;">✅</td>
-<td style="text-align: center;">✅</td>
-<td style="text-align: center;">✅</td>
-<td style="text-align: center;">✅</td>
-<td style="text-align: center;">❌</td>
-<td style="text-align: center;">❌</td>
-<td style="text-align: center;">❌</td>
-<td style="text-align: center;">❌</td>
-</tr>
-</tbody>
-</table>
+<p>| <strong>Model name string Identifier</strong> | <strong>Zenodo</strong> |<strong>Topology features</strong>
+| <strong>Static polygons</strong>
+| <strong>Coast-lines</strong>
+| <strong>Cont-inents</strong> | <strong>COB</strong>
+| <strong>Age grids</strong>
+| <strong>SR grids</strong>
+|
+|
+Alfonso2024
+|
+✅
+|
+✅
+|
+✅
+|
+✅
+|
+❌
+|
+❌
+|
+❌
+|
+❌
+|
+|
+Cao2024
+|
+✅
+|
+✅
+|
+✅
+|
+✅
+|
+✅
+|
+✅
+|
+❌
+|
+❌
+|
+|
+Muller2022
+|
+✅
+|
+✅
+|
+✅
+|
+✅
+|
+✅
+|
+✅
+|
+❌
+|
+❌
+|
+|
+Zahirovic2022
+|
+✅
+|
+✅
+|
+✅
+|
+✅
+|
+✅
+|
+❌
+|
+✅
+|
+✅
+|
+|
+Merdith2021
+|
+✅
+|
+✅
+|
+✅
+|
+✅
+|
+✅
+|
+❌
+|
+❌
+|
+❌
+|
+|
+Clennett2020
+|
+✅
+|
+✅
+|
+✅
+|
+✅
+|
+❌
+|
+❌
+|
+✅
+|
+✅
+|
+|
+Clennett2020_M2019
+|
+✅
+|
+✅
+|
+✅
+|
+✅
+|
+❌
+|
+❌
+|
+✅
+|
+✅
+|
+|
+Clennett2020_S2013
+|
+✅
+|
+✅
+|
+✅
+|
+✅
+|
+❌
+|
+❌
+|
+❌
+|
+❌
+|
+|
+Muller2019
+|
+✅
+|
+✅
+|
+✅
+|
+✅
+|
+✅
+|
+✅
+|
+✅
+|
+❌
+|
+|
+Young2018
+|
+✅
+|
+✅
+|
+✅
+|
+✅
+|
+✅
+|
+❌
+|
+❌
+|
+❌
+|
+|
+TorsvikCocks2017
+|
+❌
+|
+❌
+|
+✅
+|
+✅
+|
+❌
+|
+❌
+|
+❌
+|
+❌
+|
+|
+Matthews2016
+|
+✅
+|
+✅
+|
+✅
+|
+✅
+|
+✅
+|
+❌
+|
+❌
+|
+❌
+|
+|
+Matthews2016_pmag_ref
+|
+❌
+|
+❌
+|
+✅
+|
+✅
+|
+✅
+|
+❌
+|
+❌
+|
+❌
+|
+|
+Muller2016
+|
+✅
+|
+✅
+|
+✅
+|
+✅
+|
+❌
+|
+✅
+|
+✅
+|
+❌
+|
+|
+Scotese2016
+|
+✅
+|
+❌
+|
+✅
+|
+✅
+|
+❌
+|
+❌
+|
+❌
+|
+❌
+|
+|
+Zahirovic2016
+|
+✅
+|
+✅
+|
+✅
+|
+✅
+|
+✅
+|
+❌
+|
+❌
+|
+❌
+|
+|
+Gibbons2015
+|
+✅
+|
+✅
+|
+✅
+|
+✅
+|
+❌
+|
+❌
+|
+❌
+|
+❌
+|
+|
+Zahirovic2014
+|
+✅
+|
+❌
+|
+✅
+|
+✅
+|
+❌
+|
+❌
+|
+❌
+|
+❌
+|
+|
+Shephard2013
+|
+✅
+|
+✅
+|
+✅
+|
+✅
+|
+❌
+|
+❌
+|
+❌
+|
+❌
+|
+|
+Gurnis2012
+|
+✅
+|
+✅
+|
+✅
+|
+✅
+|
+❌
+|
+❌
+|
+❌
+|
+❌
+|
+|
+Seton2012
+|
+✅
+|
+✅
+|
+✅
+|
+✅
+|
+✅
+|
+✅
+|
+✅
+|
+❌
+|
+|
+Muller2008
+|
+❌
+|
+❌
+|
+✅
+|
+❌
+|
+❌
+|
+❌
+|
+❌
+|
+❌
+|</p>
+<p><strong>Note: All models have rotation files.</strong></p>
 <hr>
 <p>To call the object, supply a model name string Identifier, <code>file_collection</code>, from one of the following models:</p>
 <ul>
@@ -938,27 +1138,31 @@ Toggle print messages regarding server/internet connection status, file availabi
 
     ------------------
 
-    | **Model name string Identifier** | **Rot. files** | **Topology features** | **Static polygons** | **Coast-lines** | **Cont-inents** | **COB-** | **Age grids** | **SR grids** |
-    |:--------------------------------:|:--------------:|:---------------------:|:-------------------:|:---------------:|:---------------:|:--------:|:-------------:|:------------:|
-    |            Muller2019            |        ✅       |           ✅           |          ✅          |        ✅        |        ✅        |     ✅    |       ✅       |       ❌      |
-    |            Muller2016            |        ✅       |           ✅           |          ✅          |        ✅        |        ❌        |     ❌    |       ✅       |       ❌      |
-    |            Merdith2021           |        ✅       |           ✅           |          ✅          |        ✅        |        ✅        |     ❌    |       ❌       |       ❌      |
-    |              Cao2020             |        ✅       |           ✅           |          ✅          |        ✅        |        ✅        |     ❌    |       ❌       |       ❌      |
-    |           Clennett2020           |        ✅       |           ✅           |          ✅          |        ✅        |        ✅        |     ❌    |       ✅       |       ✅      |
-    |             Seton2012            |        ✅       |           ✅           |          ❌          |        ✅        |        ❌        |     ✅    |       ✅       |       ❌      |
-    |           Matthews2016           |        ✅       |           ✅           |          ✅          |        ✅        |        ✅        |     ❌    |       ❌       |       ❌      |
-    |            Merdith2017           |        ✅       |           ✅           |          ❌          |        ❌        |        ❌        |     ❌    |       ❌       |       ❌      |
-    |              Li2008              |        ✅       |           ✅           |          ❌          |        ❌        |        ❌        |     ❌    |       ❌       |       ❌      |
-    |           Pehrsson2015           |        ✅       |           ✅           |          ❌          |        ❌        |        ❌        |     ❌    |       ❌       |       ❌      |
-    |         TorsvikCocks2017         |        ✅       |           ❌           |          ❌          |        ✅        |        ❌        |     ❌    |       ❌       |       ❌      |
-    |             Young2019            |        ✅       |           ✅           |          ✅          |        ✅        |        ✅        |     ❌    |       ❌       |       ❌      |
-    |            Scotese2008           |        ✅       |           ✅           |          ❌          |        ❌        |        ✅        |     ❌    |       ❌       |       ❌      |
-    |         Clennett2020_M19         |        ✅       |           ✅           |          ❌          |        ✅        |        ✅        |     ❌    |       ❌       |       ❌      |
-    |         Clennett2020_S13         |        ✅       |           ✅           |          ❌          |        ✅        |        ✅        |     ❌    |       ❌       |       ❌      |
-    |            Muller2008            |        ✅       |           ❌           |          ✅          |        ❌        |        ❌        |     ❌    |       ❌       |       ❌      |
-    |            Muller2022            |        ✅       |           ✅           |          ✅          |        ✅        |        ✅        |     ✅    |       ❌       |       ❌      |
-    |            Scotese2016           |        ✅       |           ❌           |          ✅          |        ✅        |        ❌        |     ❌    |       ❌       |       ❌      |
-    |           Shephard2013           |        ✅       |           ✅           |          ✅          |        ✅        |        ❌        |     ❌    |       ❌       |       ❌      |
+    | **Model name string Identifier** | **Zenodo** |**Topology features**   | **Static polygons**   | **Coast-lines**  | **Cont-inents** | **COB**    | **Age grids**   | **SR grids**  |
+    |  Alfonso2024                     |     ✅     |          ✅           |          ✅          |        ✅        |        ❌       |     ❌    |       ❌       |       ❌      |
+    |  Cao2024                         |     ✅     |          ✅           |          ✅          |        ✅        |        ✅       |     ✅    |       ❌       |       ❌      |
+    |  Muller2022                      |     ✅     |          ✅           |          ✅          |        ✅        |        ✅       |     ✅    |       ❌       |       ❌      |
+    |  Zahirovic2022                   |     ✅     |          ✅           |          ✅          |        ✅        |        ✅       |     ❌    |       ✅       |       ✅      |
+    |  Merdith2021                     |     ✅     |          ✅           |          ✅          |        ✅        |        ✅       |     ❌    |       ❌       |       ❌      |
+    |  Clennett2020                    |     ✅     |          ✅           |          ✅          |        ✅        |        ❌       |     ❌    |       ✅       |       ✅      |
+    |  Clennett2020_M2019              |     ✅     |          ✅           |          ✅          |        ✅        |        ❌       |     ❌    |       ✅       |       ✅      |
+    |  Clennett2020_S2013              |     ✅     |          ✅           |          ✅          |        ✅        |        ❌       |     ❌    |       ❌       |       ❌      |
+    |  Muller2019                      |     ✅     |          ✅           |          ✅          |        ✅        |        ✅       |     ✅    |       ✅       |       ❌      |
+    |  Young2018                       |     ✅     |          ✅           |          ✅          |        ✅        |        ✅       |     ❌    |       ❌       |       ❌      |
+    |  TorsvikCocks2017                |     ❌     |          ❌           |          ✅          |        ✅        |        ❌       |     ❌    |       ❌       |       ❌      |
+    |  Matthews2016                    |     ✅     |          ✅           |          ✅          |        ✅        |        ✅       |     ❌    |       ❌       |       ❌      |
+    |  Matthews2016_pmag_ref           |     ❌     |          ❌           |          ✅          |        ✅        |        ✅       |     ❌    |       ❌       |       ❌      |
+    |  Muller2016                      |     ✅     |          ✅           |          ✅          |        ✅        |        ❌       |     ✅    |       ✅       |       ❌      |
+    |  Scotese2016                     |     ✅     |          ❌           |          ✅          |        ✅        |        ❌       |     ❌    |       ❌       |       ❌      |
+    |  Zahirovic2016                   |     ✅     |          ✅           |          ✅          |        ✅        |        ✅       |     ❌    |       ❌       |       ❌      |
+    |  Gibbons2015                     |     ✅     |          ✅           |          ✅          |        ✅        |        ❌       |     ❌    |       ❌       |       ❌      |
+    |  Zahirovic2014                   |     ✅     |          ❌           |          ✅          |        ✅        |        ❌       |     ❌    |       ❌       |       ❌      |
+    |  Shephard2013                    |     ✅     |          ✅           |          ✅          |        ✅        |        ❌       |     ❌    |       ❌       |       ❌      |
+    |  Gurnis2012                      |     ✅     |          ✅           |          ✅          |        ✅        |        ❌       |     ❌    |       ❌       |       ❌      |
+    |  Seton2012                       |     ✅     |          ✅           |          ✅          |        ✅        |        ✅       |     ✅    |       ✅       |       ❌      |
+    |  Muller2008                      |     ❌     |          ❌           |          ✅          |        ❌        |        ❌       |     ❌    |       ❌       |       ❌      |
+
+    **Note: All models have rotation files.**
 
     ------------------
 
