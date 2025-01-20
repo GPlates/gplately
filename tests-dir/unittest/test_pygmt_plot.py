@@ -1,7 +1,4 @@
 #!/usr/bin/env python3
-# import matplotlib
-
-# matplotlib.use("QtAgg")
 
 import sys
 
@@ -13,15 +10,15 @@ from plate_model_manager import PlateModel, PlateModelManager
 
 import gplately
 from gplately import PlateReconstruction, PlotTopologies
-
+from gplately.mapping.plot_engine import PlotEngineType
 
 print(gplately.__file__)
 
 # test the plot function with the new PlateModel class
 
 # MODEL_NAME = "Clennett2020"
-MODEL_NAME = "Muller2019"
-# MODEL_NAME = "merdith2021"
+# MODEL_NAME = "Muller2019"
+MODEL_NAME = "merdith2021"
 
 
 def main(show=True):
@@ -30,8 +27,8 @@ def main(show=True):
     except:
         model = PlateModel(MODEL_NAME, data_dir=MODEL_REPO_DIR, readonly=True)
 
-    if not model:
-        return
+    if model is None:
+        raise Exception(f"Unable to get model ({MODEL_NAME})")
 
     age = 55
 
@@ -39,7 +36,6 @@ def main(show=True):
         model.get_rotation_model(),
         topology_features=model.get_layer("Topologies"),
         static_polygons=model.get_layer("StaticPolygons"),
-        plate_model_name=MODEL_NAME,
     )
     gplot = PlotTopologies(
         test_model,
@@ -47,15 +43,15 @@ def main(show=True):
         COBs=model.get_layer("COBs", return_none_if_not_exist=True),
         continents=model.get_layer("ContinentalPolygons"),
         time=age,
+        plot_engine=PlotEngineType.PYGMT,
     )
 
     # age = 100
     # gplot.time = age
 
-    fig = plt.figure(figsize=(10, 5), dpi=96)
-    ax = fig.add_subplot(111, projection=ccrs.Robinson(central_longitude=180))
+    ax = None
 
-    all_flag = 1
+    all_flag = 0
     plot_flag = {
         "continent_ocean_boundaries": 0,
         "coastlines": 0,
@@ -64,7 +60,7 @@ def main(show=True):
         "ridges": 0,
         "all_topologies": 0,
         "all_topological_sections": 0,
-        "plate_polygon_by_id": 1,
+        "plate_polygon_by_id": 0,
         "unclassified_features": 0,
         "slab_edges": 0,
         "passive_continental_boundaries": 0,
@@ -79,7 +75,7 @@ def main(show=True):
         "faults": 0,
         "continental_rifts": 0,
         "misc_boundaries": 0,
-        "transforms": 0,
+        "transforms": 1,
         "continents": 0,
         "topological_plate_boundaries": 0,
     }
@@ -100,38 +96,16 @@ def main(show=True):
                 ax, color=list(np.random.choice(range(256), size=3) / 256)
             )
 
-    ax.set_global()  # type: ignore
-
-    if gplot.topologies:
+    if gplot.topologies is not None:
         ids = set([f.get_reconstruction_plate_id() for f in gplot.topologies])
         for id in ids:
             if all_flag or plot_flag["plate_polygon_by_id"]:
-               color = list(np.random.choice(range(256), size=3) / 256)
-               gplot.plot_plate_polygon_by_id(
-                   ax,
-                   id,
-                   facecolor=color + [0.5],
-                   edgecolor=color,
-               )
-
-    plt.title(f"{age} Ma")
-
-    if show:
-        # LOOK HERE! 👀👀 👇👇
-        # If the figure did not show up, you need to set your matplotlib plotting backend properly.
-        # On Windows, you may install PyQt and do
-        # import matplotlib
-        # matplotlib.use('QtAgg')
-
-        # if you are interested in finding what backends available on your computer and what is your current backend, do the following
-        # import matplotlib.rcsetup as rcsetup
-        # print(rcsetup.all_backends) # get all available backends
-        # import matplotlib
-        # matplotlib.get_backend() # your current backend
-        #
-        plt.show()
-    else:
-        save_fig(__file__)
+                gplot.plot_plate_polygon_by_id(
+                    ax,
+                    id,
+                    facecolor="None",
+                    edgecolor=list(np.random.choice(range(256), size=3) / 256),
+                )
 
 
 if __name__ == "__main__":
