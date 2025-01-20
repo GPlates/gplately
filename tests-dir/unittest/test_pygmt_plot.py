@@ -1,115 +1,37 @@
 #!/usr/bin/env python3
 
-import sys
-
-import cartopy.crs as ccrs
-import matplotlib.pyplot as plt
-import numpy as np
-from common import MODEL_REPO_DIR, save_fig
-from plate_model_manager import PlateModel, PlateModelManager
-
-import gplately
-from gplately import PlateReconstruction, PlotTopologies
-from gplately.mapping.plot_engine import PlotEngineType
-
-print(gplately.__file__)
-
-# test the plot function with the new PlateModel class
-
-# MODEL_NAME = "Clennett2020"
-# MODEL_NAME = "Muller2019"
-MODEL_NAME = "merdith2021"
-
-
-def main(show=True):
-    try:
-        model = PlateModelManager().get_model(MODEL_NAME, data_dir=MODEL_REPO_DIR)
-    except:
-        model = PlateModel(MODEL_NAME, data_dir=MODEL_REPO_DIR, readonly=True)
-
-    if model is None:
-        raise Exception(f"Unable to get model ({MODEL_NAME})")
-
-    age = 55
-
-    test_model = PlateReconstruction(
-        model.get_rotation_model(),
-        topology_features=model.get_layer("Topologies"),
-        static_polygons=model.get_layer("StaticPolygons"),
-    )
-    gplot = PlotTopologies(
-        test_model,
-        coastlines=model.get_layer("Coastlines"),
-        COBs=model.get_layer("COBs", return_none_if_not_exist=True),
-        continents=model.get_layer("ContinentalPolygons"),
-        time=age,
-        plot_engine=PlotEngineType.PYGMT,
-    )
-
-    # age = 100
-    # gplot.time = age
-
-    ax = None
-
-    all_flag = 0
-    plot_flag = {
-        "continent_ocean_boundaries": 0,
-        "coastlines": 0,
-        "trenches": 0,
-        "subduction_teeth": 0,
-        "ridges": 0,
-        "all_topologies": 0,
-        "all_topological_sections": 0,
-        "plate_polygon_by_id": 0,
-        "unclassified_features": 0,
-        "slab_edges": 0,
-        "passive_continental_boundaries": 0,
-        "extended_continental_crusts": 0,
-        "continental_crusts": 0,
-        "sutures": 0,
-        "orogenic_belts": 0,
-        "transitional_crusts": 0,
-        "terrane_boundaries": 0,
-        "inferred_paleo_boundaries": 0,
-        "fracture_zones": 0,
-        "faults": 0,
-        "continental_rifts": 0,
-        "misc_boundaries": 0,
-        "transforms": 1,
-        "continents": 0,
-        "topological_plate_boundaries": 0,
-    }
-
-    for key in plot_flag:
-        if key == "plate_polygon_by_id":
-            continue
-        if key == "continents":
-            if plot_flag["continents"]:
-                gplot.plot_continents(ax, color="grey", facecolor="0.8")
-            continue
-        if key == "coastlines":
-            if plot_flag["coastlines"]:
-                gplot.plot_coastlines(ax, edgecolor="blue", facecolor="0.5")
-            continue
-        if all_flag or plot_flag[key]:
-            getattr(gplot, f"plot_{key}")(
-                ax, color=list(np.random.choice(range(256), size=3) / 256)
-            )
-
-    if gplot.topologies is not None:
-        ids = set([f.get_reconstruction_plate_id() for f in gplot.topologies])
-        for id in ids:
-            if all_flag or plot_flag["plate_polygon_by_id"]:
-                gplot.plot_plate_polygon_by_id(
-                    ax,
-                    id,
-                    facecolor="None",
-                    edgecolor=list(np.random.choice(range(256), size=3) / 256),
-                )
-
+from gplately.mapping.pygmt_plot import PygmtPlotEngine, get_pygmt_basemap_figure
+from gplately.auxiliary import get_gplot
 
 if __name__ == "__main__":
-    if len(sys.argv) == 2 and sys.argv[1] == "save":
-        main(show=False)
-    else:
-        main(show=True)
+    gplot = get_gplot(
+        "merdith2021", "plate-model-repo", age=55, plot_engine=PygmtPlotEngine()
+    )
+    fig = get_pygmt_basemap_figure(projection="N180/10c", region="d")
+    # fig.coast(shorelines=True)
+
+    gplot.plot_topological_plate_boundaries(
+        fig,
+        edgecolor="black",
+        linewidth=0.25,
+        central_meridian=180,
+        gmtlabel="plate boundaries",
+    )
+    gplot.plot_coastlines(
+        fig, edgecolor="none", facecolor="gray", linewidth=0.1, central_meridian=180
+    )
+    gplot.plot_ridges(fig, pen="0.5p,red", gmtlabel="ridges")
+    gplot.plot_transforms(fig, pen="0.5p,red", gmtlabel="transforms")
+    gplot.plot_subduction_teeth(fig, color="blue", gmtlabel="subduction zones")
+
+    fig.text(
+        text="55Ma (Merdith2021)",
+        position="TC",
+        no_clip=True,
+        font="12p,Helvetica,black",
+        offset="j0/-0.5c",
+    )
+    fig.legend(position="jBL+o-2.7/0", box="+gwhite+p0.5p")
+
+    # fig.show(width=1200)
+    fig.savefig("test-pygmt-plot.pdf")
