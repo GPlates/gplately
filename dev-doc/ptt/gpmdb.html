@@ -5,7 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1">
 <meta name="generator" content="pdoc3 0.11.1">
 <title>gplately.ptt.gpmdb API documentation</title>
-<meta name="description" content="Retrieve paleomagnetic data from http://www.gpmdb.net and create and save GPlates VGP features in a .gpmlz file.">
+<meta name="description" content="This sub-module retrieves paleomagnetic data from http://www.gpmdb.net,
+then create and save GPlates VGP features in a .gpmlz file.">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/13.0.0/sanitize.min.css" integrity="sha512-y1dtMcuvtTMJc1yPgEqF0ZjQbhnc/bFhyvIyVNb9Zk5mIGtqVaAB1Ttl28su8AvFMOY0EwRbAe+HCLqj6W7/KA==" crossorigin>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/13.0.0/typography.min.css" integrity="sha512-Y1DYSb995BAfxobCkKepB1BqJJTPrOp3zPL74AWFugHHmmdcvO+C48WLrUOlhGMc0QG7AE3f7gmvvcrmX2fDoA==" crossorigin>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/default.min.css" crossorigin>
@@ -27,7 +28,8 @@ hljs.highlightAll();
 <h1 class="title">Module <code>gplately.ptt.gpmdb</code></h1>
 </header>
 <section id="section-intro">
-<p>Retrieve paleomagnetic data from <a href="http://www.gpmdb.net">http://www.gpmdb.net</a> and create and save GPlates VGP features in a .gpmlz file.</p>
+<p>This sub-module retrieves paleomagnetic data from <a href="http://www.gpmdb.net,">http://www.gpmdb.net,</a>
+then create and save GPlates VGP features in a .gpmlz file.</p>
 </section>
 <section>
 </section>
@@ -36,12 +38,6 @@ hljs.highlightAll();
 <section>
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
-<dt id="gplately.ptt.gpmdb.add_arguments"><code class="name flex">
-<span>def <span class="ident">add_arguments</span></span>(<span>parser: argparse.ArgumentParser)</span>
-</code></dt>
-<dd>
-<div class="desc"><p>add command line argument parser</p></div>
-</dd>
 <dt id="gplately.ptt.gpmdb.assign_plate_id"><code class="name flex">
 <span>def <span class="ident">assign_plate_id</span></span>(<span>df, static_polygon_file, rotation_file)</span>
 </code></dt>
@@ -54,71 +50,9 @@ hljs.highlightAll();
 <dd>
 <div class="desc"><p>function to create VGP feature</p></div>
 </dd>
-<dt id="gplately.ptt.gpmdb.main"><code class="name flex">
-<span>def <span class="ident">main</span></span>(<span>args)</span>
-</code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
 </dl>
 </section>
 <section>
-<h2 class="section-title" id="header-classes">Classes</h2>
-<dl>
-<dt id="gplately.ptt.gpmdb.ArgParser"><code class="flex name class">
-<span>class <span class="ident">ArgParser</span></span>
-<span>(</span><span>prog=None, usage=None, description=None, epilog=None, parents=[], formatter_class=argparse.HelpFormatter, prefix_chars='-', fromfile_prefix_chars=None, argument_default=None, conflict_handler='error', add_help=True, allow_abbrev=True, exit_on_error=True)</span>
-</code></dt>
-<dd>
-<div class="desc"><p>Object for parsing command line strings into Python objects.</p>
-<p>Keyword Arguments:
-- prog &ndash; The name of the program (default:
-<code>os.path.basename(sys.argv[0])</code>)
-- usage &ndash; A usage message (default: auto-generated from arguments)
-- description &ndash; A description of what the program does
-- epilog &ndash; Text following the argument descriptions
-- parents &ndash; Parsers whose arguments should be copied into this one
-- formatter_class &ndash; HelpFormatter class for printing help messages
-- prefix_chars &ndash; Characters that prefix optional arguments
-- fromfile_prefix_chars &ndash; Characters that prefix files containing
-additional arguments
-- argument_default &ndash; The default value for all arguments
-- conflict_handler &ndash; String indicating how to handle conflicts
-- add_help &ndash; Add a -h/-help option
-- allow_abbrev &ndash; Allow long options to be abbreviated unambiguously
-- exit_on_error &ndash; Determines whether or not ArgumentParser exits with
-error info when an error occurs</p></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">class ArgParser(argparse.ArgumentParser):
-    def error(self, message):
-        sys.stderr.write(f&#34;error: {message}\n&#34;)
-        self.print_help()
-        sys.exit(1)</code></pre>
-</details>
-<h3>Ancestors</h3>
-<ul class="hlist">
-<li>argparse.ArgumentParser</li>
-<li>argparse._AttributeHolder</li>
-<li>argparse._ActionsContainer</li>
-</ul>
-<h3>Methods</h3>
-<dl>
-<dt id="gplately.ptt.gpmdb.ArgParser.error"><code class="name flex">
-<span>def <span class="ident">error</span></span>(<span>self, message)</span>
-</code></dt>
-<dd>
-<div class="desc"><p>error(message: string)</p>
-<p>Prints a usage message incorporating the message to stderr and
-exits.</p>
-<p>If you override this in a subclass, it should not return &ndash; it
-should either exit or raise an exception.</p></div>
-</dd>
-</dl>
-</dd>
-</dl>
 </section>
 </article>
 <nav id="sidebar">
@@ -138,20 +72,8 @@ should either exit or raise an exception.</p></div>
 </li>
 <li><h3><a href="#header-functions">Functions</a></h3>
 <ul class="">
-<li><code><a title="gplately.ptt.gpmdb.add_arguments" href="#gplately.ptt.gpmdb.add_arguments">add_arguments</a></code></li>
 <li><code><a title="gplately.ptt.gpmdb.assign_plate_id" href="#gplately.ptt.gpmdb.assign_plate_id">assign_plate_id</a></code></li>
 <li><code><a title="gplately.ptt.gpmdb.create_vgp_feature" href="#gplately.ptt.gpmdb.create_vgp_feature">create_vgp_feature</a></code></li>
-<li><code><a title="gplately.ptt.gpmdb.main" href="#gplately.ptt.gpmdb.main">main</a></code></li>
-</ul>
-</li>
-<li><h3><a href="#header-classes">Classes</a></h3>
-<ul>
-<li>
-<h4><code><a title="gplately.ptt.gpmdb.ArgParser" href="#gplately.ptt.gpmdb.ArgParser">ArgParser</a></code></h4>
-<ul class="">
-<li><code><a title="gplately.ptt.gpmdb.ArgParser.error" href="#gplately.ptt.gpmdb.ArgParser.error">error</a></code></li>
-</ul>
-</li>
 </ul>
 </li>
 </ul>

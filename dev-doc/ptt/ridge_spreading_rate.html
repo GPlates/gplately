@@ -50,16 +50,27 @@ returns a list of tuples where each tuple represents a tessellated point and con
 <li>spreading velocity magnitude (in cm/yr)</li>
 <li>length of arc segment (in degrees) that current point is on</li>
 </ul>
-<p>rotation_features_or_model: Rotation model or feature collection(s), or list of features, or filename(s).</p>
-<p>topology_features: Topology feature collection(s), or list of features, or filename(s) or any combination of those.</p>
-<p>time: Reconstruction time to resolved topologies.</p>
-<p>threshold_sampling_distance_radians: Threshold sampling distance along spreading features (in radians).</p>
-<p>spreading_feature_types: Only spreading features with a feature type contained in this list are considered.
-If None then all spreading features are considered.</p>
-<p>transform_segment_deviation_in_radians: How much a segment can deviate from the stage pole before
-it's considered a transform segment (in radians).</p>
-<p>velocity_delta_time: Delta time interval used to calculate spreading velocity.</p>
-<p>Returns: List of the tuples described above.</p></div>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>rotation_features_or_model</code></strong></dt>
+<dd>Rotation model or feature collection(s), or list of features, or filename(s).</dd>
+<dt><strong><code>topology_features</code></strong></dt>
+<dd>Topology feature collection(s), or list of features, or filename(s) or any combination of those.</dd>
+<dt><strong><code>time</code></strong> :&ensp;<code>number</code></dt>
+<dd>Reconstruction time to resolved topologies.</dd>
+<dt><strong><code>threshold_sampling_distance_radians</code></strong> :&ensp;<code>number</code></dt>
+<dd>Threshold sampling distance along spreading features (in radians).</dd>
+<dt><strong><code>spreading_feature_types</code></strong></dt>
+<dd>Only spreading features with a feature type contained in this list are considered.
+If None then all spreading features are considered.</dd>
+<dt><strong><code>transform_segment_deviation_in_radians</code></strong> :&ensp;<code>number</code></dt>
+<dd>How much a segment can deviate from the stage pole before
+it's considered a transform segment (in radians).</dd>
+<dt><strong><code>velocity_delta_time</code></strong> :&ensp;<code>number</code></dt>
+<dd>Delta time interval used to calculate spreading velocity.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<p>A list of the tuples described above.</p></div>
 </dd>
 <dt id="gplately.ptt.ridge_spreading_rate.spreading_rates_dense"><code class="name flex">
 <span>def <span class="ident">spreading_rates_dense</span></span>(<span>rotation_features_or_model, topology_features, time, threshold_sampling_distance_radians, spreading_feature_types=None, transform_segment_deviation_in_radians=1.2217304763960306, velocity_delta_time=1.0, anchor_plate_id=0)</span>
@@ -79,16 +90,27 @@ returns a list of tuples where each tuple represents a tessellated point and con
 <li>left plate ID</li>
 <li>right plate ID</li>
 </ul>
-<p>rotation_features_or_model: Rotation model or feature collection(s), or list of features, or filename(s).</p>
-<p>topology_features: Topology feature collection(s), or list of features, or filename(s) or any combination of those.</p>
-<p>time: Reconstruction time to resolved topologies.</p>
-<p>threshold_sampling_distance_radians: Threshold sampling distance along spreading features (in radians).</p>
-<p>spreading_feature_types: Only spreading features with a feature type contained in this list are considered.
-If None then all spreading features are considered.</p>
-<p>transform_segment_deviation_in_radians: How much a segment can deviate from the stage pole before
-it's considered a transform segment (in radians).</p>
-<p>velocity_delta_time: Delta time interval used to calculate spreading velocity.</p>
-<p>Returns: List of the tuples described above.</p></div>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>rotation_features_or_model</code></strong></dt>
+<dd>Rotation model or feature collection(s), or list of features, or filename(s).</dd>
+<dt><strong><code>topology_features</code></strong></dt>
+<dd>Topology feature collection(s), or list of features, or filename(s) or any combination of those.</dd>
+<dt><strong><code>time</code></strong> :&ensp;<code>number</code></dt>
+<dd>Reconstruction time to resolved topologies.</dd>
+<dt><strong><code>threshold_sampling_distance_radians</code></strong> :&ensp;<code>number</code></dt>
+<dd>Threshold sampling distance along spreading features (in radians).</dd>
+<dt><strong><code>spreading_feature_types</code></strong></dt>
+<dd>Only spreading features with a feature type contained in this list are considered.
+If None then all spreading features are considered.</dd>
+<dt><strong><code>transform_segment_deviation_in_radians</code></strong> :&ensp;<code>number</code></dt>
+<dd>How much a segment can deviate from the stage pole before
+it's considered a transform segment (in radians).</dd>
+<dt><strong><code>velocity_delta_time</code></strong> :&ensp;<code>number</code></dt>
+<dd>Delta time interval used to calculate spreading velocity.</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<p>A list of the tuples described above.</p></div>
 </dd>
 </dl>
 </section>

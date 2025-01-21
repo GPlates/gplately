@@ -46,435 +46,6 @@ age_grid = gdownload.get_age_grid(time=100)
 # Download the ETOPO1 geotiff raster
 etopo = gdownload.get_raster(&quot;ETOPO1_tif&quot;)
 </code></pre>
-<p><code><a title="gplately.DataServer" href="#gplately.DataServer">DataServer</a></code> supports the following plate reconstruction file collections which are bundled with the following data:</p>
-<hr>
-<p>| <strong>Model name string Identifier</strong> | <strong>Zenodo</strong> |<strong>Topology features</strong>
-| <strong>Static polygons</strong>
-| <strong>Coast-lines</strong>
-| <strong>Cont-inents</strong> | <strong>COB</strong>
-| <strong>Age grids</strong>
-| <strong>SR grids</strong>
-|
-|
-Alfonso2024
-|
-✅
-|
-✅
-|
-✅
-|
-✅
-|
-❌
-|
-❌
-|
-❌
-|
-❌
-|
-|
-Cao2024
-|
-✅
-|
-✅
-|
-✅
-|
-✅
-|
-✅
-|
-✅
-|
-❌
-|
-❌
-|
-|
-Muller2022
-|
-✅
-|
-✅
-|
-✅
-|
-✅
-|
-✅
-|
-✅
-|
-❌
-|
-❌
-|
-|
-Zahirovic2022
-|
-✅
-|
-✅
-|
-✅
-|
-✅
-|
-✅
-|
-❌
-|
-✅
-|
-✅
-|
-|
-Merdith2021
-|
-✅
-|
-✅
-|
-✅
-|
-✅
-|
-✅
-|
-❌
-|
-❌
-|
-❌
-|
-|
-Clennett2020
-|
-✅
-|
-✅
-|
-✅
-|
-✅
-|
-❌
-|
-❌
-|
-✅
-|
-✅
-|
-|
-Clennett2020_M2019
-|
-✅
-|
-✅
-|
-✅
-|
-✅
-|
-❌
-|
-❌
-|
-✅
-|
-✅
-|
-|
-Clennett2020_S2013
-|
-✅
-|
-✅
-|
-✅
-|
-✅
-|
-❌
-|
-❌
-|
-❌
-|
-❌
-|
-|
-Muller2019
-|
-✅
-|
-✅
-|
-✅
-|
-✅
-|
-✅
-|
-✅
-|
-✅
-|
-❌
-|
-|
-Young2018
-|
-✅
-|
-✅
-|
-✅
-|
-✅
-|
-✅
-|
-❌
-|
-❌
-|
-❌
-|
-|
-TorsvikCocks2017
-|
-❌
-|
-❌
-|
-✅
-|
-✅
-|
-❌
-|
-❌
-|
-❌
-|
-❌
-|
-|
-Matthews2016
-|
-✅
-|
-✅
-|
-✅
-|
-✅
-|
-✅
-|
-❌
-|
-❌
-|
-❌
-|
-|
-Matthews2016_pmag_ref
-|
-❌
-|
-❌
-|
-✅
-|
-✅
-|
-✅
-|
-❌
-|
-❌
-|
-❌
-|
-|
-Muller2016
-|
-✅
-|
-✅
-|
-✅
-|
-✅
-|
-❌
-|
-✅
-|
-✅
-|
-❌
-|
-|
-Scotese2016
-|
-✅
-|
-❌
-|
-✅
-|
-✅
-|
-❌
-|
-❌
-|
-❌
-|
-❌
-|
-|
-Zahirovic2016
-|
-✅
-|
-✅
-|
-✅
-|
-✅
-|
-✅
-|
-❌
-|
-❌
-|
-❌
-|
-|
-Gibbons2015
-|
-✅
-|
-✅
-|
-✅
-|
-✅
-|
-❌
-|
-❌
-|
-❌
-|
-❌
-|
-|
-Zahirovic2014
-|
-✅
-|
-❌
-|
-✅
-|
-✅
-|
-❌
-|
-❌
-|
-❌
-|
-❌
-|
-|
-Shephard2013
-|
-✅
-|
-✅
-|
-✅
-|
-✅
-|
-❌
-|
-❌
-|
-❌
-|
-❌
-|
-|
-Gurnis2012
-|
-✅
-|
-✅
-|
-✅
-|
-✅
-|
-❌
-|
-❌
-|
-❌
-|
-❌
-|
-|
-Seton2012
-|
-✅
-|
-✅
-|
-✅
-|
-✅
-|
-✅
-|
-✅
-|
-✅
-|
-❌
-|
-|
-Muller2008
-|
-❌
-|
-❌
-|
-✅
-|
-❌
-|
-❌
-|
-❌
-|
-❌
-|
-❌
-|</p>
-<p><strong>Note: All models have rotation files.</strong></p>
-<hr>
 <h3 id="platemodelmanager"><a href="https://pypi.org/project/plate-model-manager/">PlateModelManager</a></h3>
 <p>The <code>PlateModelManager</code> object was introduced as an alternative/substitute to the <code><a title="gplately.DataServer" href="#gplately.DataServer">DataServer</a></code> object. It can be used to download and manage plate reconstruction models.</p>
 <pre><code class="language-python">pm_manager = PlateModelManager()
@@ -493,6 +64,269 @@ gplot = PlotTopologies(
     time=55,
 )
 </code></pre>
+<p><code><a title="gplately.DataServer" href="#gplately.DataServer">DataServer</a></code> and <code>PlateModelManager</code> support the following plate reconstruction file collections which are bundled with the following data:</p>
+<hr>
+<table>
+<thead>
+<tr>
+<th style="text-align: center;"><strong>Model name string Identifier</strong></th>
+<th style="text-align: center;"><strong>Zenodo</strong></th>
+<th style="text-align: center;"><strong>Topology features</strong></th>
+<th style="text-align: center;"><strong>Static polygons</strong></th>
+<th style="text-align: center;"><strong>Coast-lines</strong></th>
+<th style="text-align: center;"><strong>Cont-inents</strong></th>
+<th style="text-align: center;"><strong>COB</strong></th>
+<th style="text-align: center;"><strong>Age grids</strong></th>
+<th style="text-align: center;"><strong>SR grids</strong></th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td style="text-align: center;">Alfonso2024</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">❌</td>
+<td style="text-align: center;">❌</td>
+<td style="text-align: center;">❌</td>
+<td style="text-align: center;">❌</td>
+</tr>
+<tr>
+<td style="text-align: center;">Cao2024</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">❌</td>
+<td style="text-align: center;">❌</td>
+</tr>
+<tr>
+<td style="text-align: center;">Muller2022</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">❌</td>
+<td style="text-align: center;">❌</td>
+</tr>
+<tr>
+<td style="text-align: center;">Zahirovic2022</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">❌</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">✅</td>
+</tr>
+<tr>
+<td style="text-align: center;">Merdith2021</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">❌</td>
+<td style="text-align: center;">❌</td>
+<td style="text-align: center;">❌</td>
+</tr>
+<tr>
+<td style="text-align: center;">Clennett2020</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">❌</td>
+<td style="text-align: center;">❌</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">✅</td>
+</tr>
+<tr>
+<td style="text-align: center;">Clennett2020_M2019</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">❌</td>
+<td style="text-align: center;">❌</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">✅</td>
+</tr>
+<tr>
+<td style="text-align: center;">Clennett2020_S2013</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">❌</td>
+<td style="text-align: center;">❌</td>
+<td style="text-align: center;">❌</td>
+<td style="text-align: center;">❌</td>
+</tr>
+<tr>
+<td style="text-align: center;">Muller2019</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">❌</td>
+</tr>
+<tr>
+<td style="text-align: center;">Young2018</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">❌</td>
+<td style="text-align: center;">❌</td>
+<td style="text-align: center;">❌</td>
+</tr>
+<tr>
+<td style="text-align: center;">TorsvikCocks2017</td>
+<td style="text-align: center;">❌</td>
+<td style="text-align: center;">❌</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">❌</td>
+<td style="text-align: center;">❌</td>
+<td style="text-align: center;">❌</td>
+<td style="text-align: center;">❌</td>
+</tr>
+<tr>
+<td style="text-align: center;">Matthews2016</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">❌</td>
+<td style="text-align: center;">❌</td>
+<td style="text-align: center;">❌</td>
+</tr>
+<tr>
+<td style="text-align: center;">Matthews2016_pmag_ref</td>
+<td style="text-align: center;">❌</td>
+<td style="text-align: center;">❌</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">❌</td>
+<td style="text-align: center;">❌</td>
+<td style="text-align: center;">❌</td>
+</tr>
+<tr>
+<td style="text-align: center;">Muller2016</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">❌</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">❌</td>
+</tr>
+<tr>
+<td style="text-align: center;">Scotese2016</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">❌</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">❌</td>
+<td style="text-align: center;">❌</td>
+<td style="text-align: center;">❌</td>
+<td style="text-align: center;">❌</td>
+</tr>
+<tr>
+<td style="text-align: center;">Zahirovic2016</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">❌</td>
+<td style="text-align: center;">❌</td>
+<td style="text-align: center;">❌</td>
+</tr>
+<tr>
+<td style="text-align: center;">Gibbons2015</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">❌</td>
+<td style="text-align: center;">❌</td>
+<td style="text-align: center;">❌</td>
+<td style="text-align: center;">❌</td>
+</tr>
+<tr>
+<td style="text-align: center;">Zahirovic2014</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">❌</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">❌</td>
+<td style="text-align: center;">❌</td>
+<td style="text-align: center;">❌</td>
+<td style="text-align: center;">❌</td>
+</tr>
+<tr>
+<td style="text-align: center;">Shephard2013</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">❌</td>
+<td style="text-align: center;">❌</td>
+<td style="text-align: center;">❌</td>
+<td style="text-align: center;">❌</td>
+</tr>
+<tr>
+<td style="text-align: center;">Gurnis2012</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">❌</td>
+<td style="text-align: center;">❌</td>
+<td style="text-align: center;">❌</td>
+<td style="text-align: center;">❌</td>
+</tr>
+<tr>
+<td style="text-align: center;">Seton2012</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">❌</td>
+</tr>
+<tr>
+<td style="text-align: center;">Muller2008</td>
+<td style="text-align: center;">❌</td>
+<td style="text-align: center;">❌</td>
+<td style="text-align: center;">✅</td>
+<td style="text-align: center;">❌</td>
+<td style="text-align: center;">❌</td>
+<td style="text-align: center;">❌</td>
+<td style="text-align: center;">❌</td>
+<td style="text-align: center;">❌</td>
+</tr>
+</tbody>
+</table>
+<p><strong>Note: All models have rotation files.</strong></p>
+<hr>
 <h3 id="platereconstruction"><a href="https://gplates.github.io/gplately/reconstruction.html#gplately.reconstruction.PlateReconstruction">PlateReconstruction</a></h3>
 <p>The <code><a title="gplately.PlateReconstruction" href="#gplately.PlateReconstruction">PlateReconstruction</a></code> object contains tools to reconstruct geological features like tectonic plates and plate boundaries,
 and to interrogate plate kinematic data like plate motion velocities, and rates of subduction and seafloor spreading.</p>
@@ -595,7 +429,7 @@ seafloorgrid.reconstruct_by_topologies()
 <dt><code class="name"><a title="gplately.gpml" href="gpml.html">gplately.gpml</a></code></dt>
 <dd>
 <div class="desc"><p>Tools for manipulating GPML (<code>.<a title="gplately.gpml" href="gpml.html">gplately.gpml</a></code>, <code>.gpmlz</code>) files and
-<code><a title="gplately.pygplates.Feature" href="pygplates.html#gplately.pygplates.Feature">Feature</a></code> and <code><a title="gplately.pygplates.FeatureCollection" href="pygplates.html#gplately.pygplates.FeatureCollection">FeatureCollection</a></code> objects …</p></div>
+<code>pygplates.Feature</code> and <code>pygplates.FeatureCollection</code> objects …</p></div>
 </dd>
 <dt><code class="name"><a title="gplately.grids" href="grids.html">gplately.grids</a></code></dt>
 <dd>
@@ -623,12 +457,7 @@ them over several threads. This uses multiple processing units.</p></div>
 </dd>
 <dt><code class="name"><a title="gplately.ptt" href="ptt/index.html">gplately.ptt</a></code></dt>
 <dd>
-<div class="desc"><p>Plate Tectonic Tools</p></div>
-</dd>
-<dt><code class="name"><a title="gplately.pygplates" href="pygplates.html">gplately.pygplates</a></code></dt>
-<dd>
-<div class="desc"><p>A light wrapping of some <a href="https://www.gplates.org/docs/pygplates/index.html"><code>pyGPlates</code></a>
-classes to keep track of filenames. Each object listed here …</p></div>
+<div class="desc"><p>Plate Tectonic Tools …</p></div>
 </dd>
 <dt><code class="name"><a title="gplately.reconstruction" href="reconstruction.html">gplately.reconstruction</a></code></dt>
 <dd>
@@ -1224,7 +1053,8 @@ object and method(s) are re-run, the files will be re-accessed from the cache pr
 moved or deleted.</p>
 <p>Currently, <code><a title="gplately.DataServer" href="#gplately.DataServer">DataServer</a></code> supports a number of plate reconstruction models.</p>
 <hr>
-<p>| <strong>Model name string Identifier</strong> | <strong>Zenodo</strong> |<strong>Topology features</strong>
+<p>|:--------------------------------:|:----------:|:----------------------:|:--------------------:|:-----------------:|:---------------:|:----------:|:--------------:|:--------------:|
+| <strong>Model name string Identifier</strong> | <strong>Zenodo</strong> |<strong>Topology features</strong>
 | <strong>Static polygons</strong>
 | <strong>Coast-lines</strong>
 | <strong>Cont-inents</strong> | <strong>COB</strong>
@@ -2007,6 +1837,7 @@ Toggle print messages regarding server/internet connection status, file availabi
 
     ------------------
 
+    |:--------------------------------:|:----------:|:----------------------:|:--------------------:|:-----------------:|:---------------:|:----------:|:--------------:|:--------------:|
     | **Model name string Identifier** | **Zenodo** |**Topology features**   | **Static polygons**   | **Coast-lines**  | **Cont-inents** | **COB**    | **Age grids**   | **SR grids**  |
     |  Alfonso2024                     |     ✅     |          ✅           |          ✅          |        ✅        |        ❌       |     ❌    |       ❌       |       ❌      |
     |  Cao2024                         |     ✅     |          ✅           |          ✅          |        ✅        |        ✅       |     ✅    |       ❌       |       ❌      |
@@ -5218,9 +5049,9 @@ gplot = gplately.plot.PlotTopologies(plate_reconstruction,
 gplot.time = 20 # Ma
 </code></pre>
 <p>The <code>coastline_filename</code>, <code>continent_filename</code> and <code>COB_filename</code> can be single
-strings to GPML and/or shapefiles, as well as instances of <code><a title="gplately.pygplates.FeatureCollection" href="pygplates.html#gplately.pygplates.FeatureCollection">FeatureCollection</a></code>.
+strings to GPML and/or shapefiles, as well as instances of <code>pygplates.FeatureCollection</code>.
 If using GPlately's <code><a title="gplately.DataServer" href="#gplately.DataServer">DataServer</a></code> object to source these files, they will be passed as
-<code><a title="gplately.pygplates.FeatureCollection" href="pygplates.html#gplately.pygplates.FeatureCollection">FeatureCollection</a></code> items.</p>
+<code>pygplates.FeatureCollection</code> items.</p>
 <p>Some features for plotting (like plate boundaries) are taken from the <code><a title="gplately.PlateReconstruction" href="#gplately.PlateReconstruction">PlateReconstruction</a></code>
 object's<code>topology_features</code> attribute. They have already been reconstructed to the given
 <code>time</code> using <a href="https://github.com/EarthByte/PlateTectonicTools">Plate Tectonic Tools</a>.
@@ -5268,15 +5099,15 @@ By default, the base projection is set to cartopy.crs.PlateCarree. See the
 for all supported Projection types.</dd>
 <dt><strong><code>coastlines</code></strong> :&ensp;<code>str,</code> or <code>instance</code> of <code>&lt;pygplates.FeatureCollection&gt;</code></dt>
 <dd>The full string path to a coastline feature file. Coastline features can also
-be passed as instances of the <code><a title="gplately.pygplates.FeatureCollection" href="pygplates.html#gplately.pygplates.FeatureCollection">FeatureCollection</a></code> object (this is
+be passed as instances of the <code>pygplates.FeatureCollection</code> object (this is
 the case if these features are sourced from the <code><a title="gplately.DataServer" href="#gplately.DataServer">DataServer</a></code> object).</dd>
 <dt><strong><code>continents</code></strong> :&ensp;<code>str,</code> or <code>instance</code> of <code>&lt;pygplates.FeatureCollection&gt;</code></dt>
 <dd>The full string path to a continent feature file. Continent features can also
-be passed as instances of the <code><a title="gplately.pygplates.FeatureCollection" href="pygplates.html#gplately.pygplates.FeatureCollection">FeatureCollection</a></code> object (this is
+be passed as instances of the <code>pygplates.FeatureCollection</code> object (this is
 the case if these features are sourced from the <code><a title="gplately.DataServer" href="#gplately.DataServer">DataServer</a></code> object).</dd>
 <dt><strong><code>COBs</code></strong> :&ensp;<code>str,</code> or <code>instance</code> of <code>&lt;pygplates.FeatureCollection&gt;</code></dt>
 <dd>The full string path to a COB feature file. COB features can also be passed
-as instances of the <code><a title="gplately.pygplates.FeatureCollection" href="pygplates.html#gplately.pygplates.FeatureCollection">FeatureCollection</a></code> object (this is the case
+as instances of the <code>pygplates.FeatureCollection</code> object (this is the case
 if these features are sourced from the <code><a title="gplately.DataServer" href="#gplately.DataServer">DataServer</a></code> object).</dd>
 <dt><strong><code>coastlines</code></strong> :&ensp;<code>iterable/list</code> of <code>&lt;pygplates.ReconstructedFeatureGeometry&gt;</code></dt>
 <dd>A list containing coastline features reconstructed to the specified <code>time</code> attribute.</dd>
@@ -10187,12 +10018,12 @@ reconstruction model reference frame.</p>
 <dl>
 <dt><strong><code>reconstruction_time</code></strong> :&ensp;<code>float</code></dt>
 <dd>The time at which to rotate the reconstructed points.</dd>
-<dt><strong><code>from_rotation_features_or_model</code></strong> :&ensp;<code>str, list</code> of <code>str,</code> or <code>instance</code> of <code><a title="gplately.pygplates.RotationModel" href="pygplates.html#gplately.pygplates.RotationModel">RotationModel</a></code></dt>
+<dt><strong><code>from_rotation_features_or_model</code></strong> :&ensp;<code>str, list</code> of <code>str,</code> or <code>instance</code> of <code>pygplates.RotationModel</code></dt>
 <dd>A filename, or a list of filenames, or a pyGPlates
 RotationModel object that defines the rotation model
 that the input grid is currently associated with.
 <code>self.plate_reconstruction.rotation_model</code> is default.</dd>
-<dt><strong><code>to_rotation_features_or_model</code></strong> :&ensp;<code>str, list</code> of <code>str,</code> or <code>instance</code> of <code><a title="gplately.pygplates.RotationModel" href="pygplates.html#gplately.pygplates.RotationModel">RotationModel</a></code></dt>
+<dt><strong><code>to_rotation_features_or_model</code></strong> :&ensp;<code>str, list</code> of <code>str,</code> or <code>instance</code> of <code>pygplates.RotationModel</code></dt>
 <dd>A filename, or a list of filenames, or a pyGPlates
 RotationModel object that defines the rotation model
 that the input grid shall be rotated with.
@@ -12060,11 +11891,11 @@ reconstruction model reference frame.</p>
 <dd>The spacing (in degrees) for the output rotated grid.</dd>
 <dt><strong><code>reconstruction_time</code></strong> :&ensp;<code>float</code></dt>
 <dd>The time at which to rotate the input grid.</dd>
-<dt><strong><code>from_rotation_features_or_model</code></strong> :&ensp;<code>str, list</code> of <code>str,</code> or <code>instance</code> of <code><a title="gplately.pygplates.RotationModel" href="pygplates.html#gplately.pygplates.RotationModel">RotationModel</a></code></dt>
+<dt><strong><code>from_rotation_features_or_model</code></strong> :&ensp;<code>str, list</code> of <code>str,</code> or <code>instance</code> of <code>pygplates.RotationModel</code></dt>
 <dd>A filename, or a list of filenames, or a pyGPlates
 RotationModel object that defines the rotation model
 that the input grid is currently associated with.</dd>
-<dt><strong><code>to_rotation_features_or_model</code></strong> :&ensp;<code>str, list</code> of <code>str,</code> or <code>instance</code> of <code><a title="gplately.pygplates.RotationModel" href="pygplates.html#gplately.pygplates.RotationModel">RotationModel</a></code></dt>
+<dt><strong><code>to_rotation_features_or_model</code></strong> :&ensp;<code>str, list</code> of <code>str,</code> or <code>instance</code> of <code>pygplates.RotationModel</code></dt>
 <dd>A filename, or a list of filenames, or a pyGPlates
 RotationModel object that defines the rotation model
 that the input grid shall be rotated with.</dd>
@@ -13529,7 +13360,7 @@ deep-time plate models (e.g. 1 Ga) will have these artefacts - removing them wou
 require more detail to be added to the reconstruction model.</p>
 <h2 id="returns">Returns</h2>
 <dl>
-<dt><strong><code>ocean_basin_point_mesh</code></strong> :&ensp;<code><a title="gplately.pygplates.FeatureCollection" href="pygplates.html#gplately.pygplates.FeatureCollection">FeatureCollection</a></code></dt>
+<dt><strong><code>ocean_basin_point_mesh</code></strong> :&ensp;<code>pygplates.FeatureCollection</code></dt>
 <dd>A feature collection of pygplates.PointOnSphere objects on the ocean basin.</dd>
 </dl></div>
 </dd>
@@ -13635,7 +13466,6 @@ other general z-values are saved to a gridding input file (.npz).</p></div>
 <li><code><a title="gplately.parallel" href="parallel.html">gplately.parallel</a></code></li>
 <li><code><a title="gplately.plot" href="plot.html">gplately.plot</a></code></li>
 <li><code><a title="gplately.ptt" href="ptt/index.html">gplately.ptt</a></code></li>
-<li><code><a title="gplately.pygplates" href="pygplates.html">gplately.pygplates</a></code></li>
 <li><code><a title="gplately.reconstruction" href="reconstruction.html">gplately.reconstruction</a></code></li>
 <li><code><a title="gplately.spatial" href="spatial.html">gplately.spatial</a></code></li>
 <li><code><a title="gplately.tools" href="tools.html">gplately.tools</a></code></li>

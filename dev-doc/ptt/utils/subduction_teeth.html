@@ -41,16 +41,23 @@ hljs.highlightAll();
 <dd>
 <div class="desc"><p>Place subduction teeth along line segments within a MultiLineString shapefile</p>
 <h2 id="parameters">Parameters</h2>
-<pre><code>shapefilename  : str  path to shapefile
-tesselation_radians : float
-triangle_base_length : float  length of base
-triangle_aspect : float  aspect ratio
-    Setting triangle_aspect to -1 reverses the tooth direction
-</code></pre>
+<dl>
+<dt><strong><code>shapefilename</code></strong> :&ensp;<code>str</code></dt>
+<dd>path to shapefile</dd>
+<dt><strong><code>tesselation_radians</code></strong> :&ensp;<code>float</code></dt>
+<dd>tesselation radians</dd>
+<dt><strong><code>triangle_base_length</code></strong> :&ensp;<code>float</code></dt>
+<dd>length of base</dd>
+<dt><strong><code>triangle_aspect</code></strong> :&ensp;<code>float</code></dt>
+<dd>aspect ratio, setting triangle_aspect to -1 reverses the tooth direction</dd>
+</dl>
 <h2 id="returns">Returns</h2>
-<pre><code>X_points : (n,3) array of triangle x points
-Y_points : (n,3) array of triangle y points
-</code></pre></div>
+<dl>
+<dt><strong><code>X_points</code></strong> :&ensp;<code>(n,3)</code></dt>
+<dd>array of triangle x points</dd>
+<dt><strong><code>Y_points</code></strong> :&ensp;<code>(n,3)</code></dt>
+<dd>array of triangle y points</dd>
+</dl></div>
 </dd>
 </dl>
 </section>

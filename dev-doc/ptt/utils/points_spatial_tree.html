@@ -47,15 +47,20 @@ from points to arbitrary geometries.</p>
 </code></dt>
 <dd>
 <div class="desc"><p>Construct a spatial tree from a sequence of points up to a maximum tree depth.</p>
-<p>points: a sequence of 'pygplates.PointOnSphere'.</p>
-<p>subdivision_depth: The depth of the internal lat/lon quad tree.
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>points</code></strong> :&ensp;<code>a sequence</code> of <code>'pygplates.PointOnSphere'</code></dt>
+<dd>a sequence of points</dd>
+<dt><strong><code>subdivision_depth</code></strong> :&ensp;<code>number</code></dt>
+<dd>The depth of the internal lat/lon quad tree.
 The lat/lon width of a leaf quad tree node is (90 / (2^subdivision_depth)) degrees.
 Generally the denser the 'points' the larger the depth should be.
 Setting this value too high causes unnecessary time to be spent generating a deep quad tree.
 Setting this value too low reduces the culling/querying efficiency of the quad tree.
 However a value of 4 seems to work quite well for a uniform lat/lon spacing of 'points' of 1 degree
 and below without the cost of generating a deep quad tree.
-So most of the time the subdivision depth can be left at its default value.</p>
+So most of the time the subdivision depth can be left at its default value.</dd>
+</dl>
 <p>Raises ValueError if 'subdivision_depth' is not in the range [0, 100].</p></div>
 <details class="source">
 <summary>
@@ -67,16 +72,20 @@ So most of the time the subdivision depth can be left at its default value.</p>
         &#34;&#34;&#34;
         Construct a spatial tree from a sequence of points up to a maximum tree depth.
 
-        points: a sequence of &#39;pygplates.PointOnSphere&#39;.
+        Parameters
+        ----------
+        points: a sequence of &#39;pygplates.PointOnSphere&#39;
+            a sequence of points
 
-        subdivision_depth: The depth of the internal lat/lon quad tree.
-                           The lat/lon width of a leaf quad tree node is (90 / (2^subdivision_depth)) degrees.
-                           Generally the denser the &#39;points&#39; the larger the depth should be.
-                           Setting this value too high causes unnecessary time to be spent generating a deep quad tree.
-                           Setting this value too low reduces the culling/querying efficiency of the quad tree.
-                           However a value of 4 seems to work quite well for a uniform lat/lon spacing of &#39;points&#39; of 1 degree
-                           and below without the cost of generating a deep quad tree.
-                           So most of the time the subdivision depth can be left at its default value.
+        subdivision_depth: number
+            The depth of the internal lat/lon quad tree.
+            The lat/lon width of a leaf quad tree node is (90 / (2^subdivision_depth)) degrees.
+            Generally the denser the &#39;points&#39; the larger the depth should be.
+            Setting this value too high causes unnecessary time to be spent generating a deep quad tree.
+            Setting this value too low reduces the culling/querying efficiency of the quad tree.
+            However a value of 4 seems to work quite well for a uniform lat/lon spacing of &#39;points&#39; of 1 degree
+            and below without the cost of generating a deep quad tree.
+            So most of the time the subdivision depth can be left at its default value.
 
         Raises ValueError if &#39;subdivision_depth&#39; is not in the range [0, 100].
         &#34;&#34;&#34;
@@ -198,12 +207,11 @@ So most of the time the subdivision depth can be left at its default value.</p>
             node._point_indices.append(point_index)
 
     def get_root_nodes(self):
-        &#34;&#34;&#34;
-        Return any root nodes that have points in their subtree.
+        &#34;&#34;&#34;Return any root nodes that have points in their subtree.There are a maximum of 8 root nodes.
 
-        There are a maximum of 8 root nodes.
-
-        Returns: A list of Node.
+        Returns
+        -------
+        A list of Node.
         &#34;&#34;&#34;
 
         return [root_node for root_node in self._root_nodes if root_node is not None]</code></pre>
@@ -214,9 +222,9 @@ So most of the time the subdivision depth can be left at its default value.</p>
 <span>def <span class="ident">get_root_nodes</span></span>(<span>self)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Return any root nodes that have points in their subtree.</p>
-<p>There are a maximum of 8 root nodes.</p>
-<p>Returns: A list of Node.</p></div>
+<div class="desc"><p>Return any root nodes that have points in their subtree.There are a maximum of 8 root nodes.</p>
+<h2 id="returns">Returns</h2>
+<p>A list of Node.</p></div>
 </dd>
 </dl>
 </dd>
@@ -250,13 +258,13 @@ So most of the time the subdivision depth can be left at its default value.</p>
         self._point_indices = None
 
     def get_bounding_polygon(self):
-        &#34;&#34;&#34;
-        Returns a polygon that bounds the current node.
-
+        &#34;&#34;&#34;Returns a polygon that bounds the current node.
         The returned polygon is guaranteed to contain all points in this node (and any child nodes, etc).
         However it is not guaranteed to contain the bounding circle.
 
-        Returns: pygplates.PolygonOnSphere
+        Returns
+        -------
+        pygplates.PolygonOnSphere
         &#34;&#34;&#34;
 
         if self._bounding_polygon is None:
@@ -265,13 +273,13 @@ So most of the time the subdivision depth can be left at its default value.</p>
         return self._bounding_polygon
 
     def get_bounding_circle(self):
-        &#34;&#34;&#34;
-        Returns a small circle that bounds the current node.
-
+        &#34;&#34;&#34;Returns a small circle that bounds the current node.
         The returned small circle is guaranteed to contain all points in this node (and any child nodes, etc).
         However it is not guaranteed to contain the bounding polygon.
 
-        Returns: The centre of small circle and its radius (in radians) as the 2-tuple of type (pygplates.PointOnSphere, float).
+        Returns
+        -------
+        The centre of small circle and its radius (in radians) as the 2-tuple of type (pygplates.PointOnSphere, float).
         &#34;&#34;&#34;
 
         if self._bounding_circle is None:
@@ -280,9 +288,7 @@ So most of the time the subdivision depth can be left at its default value.</p>
         return self._bounding_circle
 
     def is_leaf_node(self):
-        &#34;&#34;&#34;
-        Returns True if this node is a leaf node.
-
+        &#34;&#34;&#34;Returns True if this node is a leaf node.
         A leaf node has indices into the sequence of points passed into
         spatial tree constructor - see &#39;get_point_indices()&#39;.
         But it does not have any child nodes.
@@ -291,9 +297,7 @@ So most of the time the subdivision depth can be left at its default value.</p>
         return self._point_indices is not None
 
     def is_internal_node(self):
-        &#34;&#34;&#34;
-        Returns True if this node is an internal node.
-
+        &#34;&#34;&#34;Returns True if this node is an internal node.
         An internal node has child nodes - see &#39;get_child_nodes()&#39;.
         But it does not have any point indices.
         &#34;&#34;&#34;
@@ -301,14 +305,13 @@ So most of the time the subdivision depth can be left at its default value.</p>
         return self._child_nodes is not None
 
     def get_child_nodes(self):
-        &#34;&#34;&#34;
-        Return any child nodes that have points in their subtree.
-
+        &#34;&#34;&#34;Return any child nodes that have points in their subtree.
         There are a maximum of 4 child nodes.
-
         Should only be called if &#39;is_internal_node()&#39; returns True.
 
-        Returns: A list of Node.
+        Returns
+        -------
+        A list of Node.
         &#34;&#34;&#34;
 
         return [
@@ -316,14 +319,13 @@ So most of the time the subdivision depth can be left at its default value.</p>
         ]
 
     def get_point_indices(self):
-        &#34;&#34;&#34;
-        Return indices of points that exist in this leaf node.
-
+        &#34;&#34;&#34;Return indices of points that exist in this leaf node.
         The indices refer to the sequence of points passed into spatial tree constructor.
-
         Should only be called if &#39;is_leaf_node()&#39; returns True.
 
-        Returns: A list of int.
+        Returns
+        -------
+        A list of int.
         &#34;&#34;&#34;
 
         return self._point_indices
@@ -479,52 +481,59 @@ So most of the time the subdivision depth can be left at its default value.</p>
 <span>def <span class="ident">get_bounding_circle</span></span>(<span>self)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Returns a small circle that bounds the current node.</p>
-<p>The returned small circle is guaranteed to contain all points in this node (and any child nodes, etc).
+<div class="desc"><p>Returns a small circle that bounds the current node.
+The returned small circle is guaranteed to contain all points in this node (and any child nodes, etc).
 However it is not guaranteed to contain the bounding polygon.</p>
-<p>Returns: The centre of small circle and its radius (in radians) as the 2-tuple of type (pygplates.PointOnSphere, float).</p></div>
+<h2 id="returns">Returns</h2>
+<p>The centre of small circle and its radius (in radians) as the 2-tuple of type (pygplates.PointOnSphere, float).</p></div>
 </dd>
 <dt id="gplately.ptt.utils.points_spatial_tree.PointsSpatialTreeNode.get_bounding_polygon"><code class="name flex">
 <span>def <span class="ident">get_bounding_polygon</span></span>(<span>self)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Returns a polygon that bounds the current node.</p>
-<p>The returned polygon is guaranteed to contain all points in this node (and any child nodes, etc).
+<div class="desc"><p>Returns a polygon that bounds the current node.
+The returned polygon is guaranteed to contain all points in this node (and any child nodes, etc).
 However it is not guaranteed to contain the bounding circle.</p>
-<p>Returns: pygplates.PolygonOnSphere</p></div>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>pygplates.PolygonOnSphere</code></dt>
+<dd>&nbsp;</dd>
+</dl></div>
 </dd>
 <dt id="gplately.ptt.utils.points_spatial_tree.PointsSpatialTreeNode.get_child_nodes"><code class="name flex">
 <span>def <span class="ident">get_child_nodes</span></span>(<span>self)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Return any child nodes that have points in their subtree.</p>
-<p>There are a maximum of 4 child nodes.</p>
-<p>Should only be called if 'is_internal_node()' returns True.</p>
-<p>Returns: A list of Node.</p></div>
+<div class="desc"><p>Return any child nodes that have points in their subtree.
+There are a maximum of 4 child nodes.
+Should only be called if 'is_internal_node()' returns True.</p>
+<h2 id="returns">Returns</h2>
+<p>A list of Node.</p></div>
 </dd>
 <dt id="gplately.ptt.utils.points_spatial_tree.PointsSpatialTreeNode.get_point_indices"><code class="name flex">
 <span>def <span class="ident">get_point_indices</span></span>(<span>self)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Return indices of points that exist in this leaf node.</p>
-<p>The indices refer to the sequence of points passed into spatial tree constructor.</p>
-<p>Should only be called if 'is_leaf_node()' returns True.</p>
-<p>Returns: A list of int.</p></div>
+<div class="desc"><p>Return indices of points that exist in this leaf node.
+The indices refer to the sequence of points passed into spatial tree constructor.
+Should only be called if 'is_leaf_node()' returns True.</p>
+<h2 id="returns">Returns</h2>
+<p>A list of int.</p></div>
 </dd>
 <dt id="gplately.ptt.utils.points_spatial_tree.PointsSpatialTreeNode.is_internal_node"><code class="name flex">
 <span>def <span class="ident">is_internal_node</span></span>(<span>self)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Returns True if this node is an internal node.</p>
-<p>An internal node has child nodes - see 'get_child_nodes()'.
+<div class="desc"><p>Returns True if this node is an internal node.
+An internal node has child nodes - see 'get_child_nodes()'.
 But it does not have any point indices.</p></div>
 </dd>
 <dt id="gplately.ptt.utils.points_spatial_tree.PointsSpatialTreeNode.is_leaf_node"><code class="name flex">
 <span>def <span class="ident">is_leaf_node</span></span>(<span>self)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Returns True if this node is a leaf node.</p>
-<p>A leaf node has indices into the sequence of points passed into
+<div class="desc"><p>Returns True if this node is a leaf node.
+A leaf node has indices into the sequence of points passed into
 spatial tree constructor - see 'get_point_indices()'.
 But it does not have any child nodes.</p></div>
 </dd>

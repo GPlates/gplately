@@ -39,7 +39,7 @@ hljs.highlightAll();
 <span>def <span class="ident">get_plate_velocities</span></span>(<span>velocity_domain_features, topology_features, rotation_model, time, delta_time, rep='vector_comp')</span>
 </code></dt>
 <dd>
-<div class="desc"></div>
+<div class="desc"><p>function to get velocites via pygplates</p></div>
 </dd>
 <dt id="gplately.ptt.velocity_tools.get_velocities"><code class="name flex">
 <span>def <span class="ident">get_velocities</span></span>(<span>time, rotation_model, topology_filenames, delta_time=5.0, Xnodes=[], Ynodes=[])</span>
@@ -48,14 +48,14 @@ hljs.highlightAll();
 <div class="desc"><p>get velocity data</p>
 <h2 id="parameters">Parameters</h2>
 <dl>
-<dt><strong><code>time</code></strong> :&ensp;<code>the reconstruction time</code></dt>
-<dd>&nbsp;</dd>
-<dt><strong><code>rotation_model</code></strong> :&ensp;<code>the rotation model</code></dt>
-<dd>&nbsp;</dd>
-<dt><strong><code>topology_filenames</code></strong> :&ensp;<code>the topology files</code></dt>
-<dd>&nbsp;</dd>
-<dt><strong><code>delta_time</code></strong> :&ensp;<code>the time increment</code></dt>
-<dd>&nbsp;</dd>
+<dt><strong><code>time</code></strong> :&ensp;<code>number</code></dt>
+<dd>the reconstruction time</dd>
+<dt><strong><code>rotation_model</code></strong></dt>
+<dd>the rotation model</dd>
+<dt><strong><code>topology_filenames</code></strong></dt>
+<dd>the topology files</dd>
+<dt><strong><code>delta_time</code></strong> :&ensp;<code>number</code></dt>
+<dd>the time increment</dd>
 <dt><strong><code>Xnodes</code></strong>, <strong><code>Ynodes</code></strong> :&ensp;<code>the coordinates</code> of <code>domain points</code></dt>
 <dd>&nbsp;</dd>
 </dl>
@@ -72,14 +72,14 @@ hljs.highlightAll();
 <div class="desc"><p>get velocity data in x ,y, u, v form</p>
 <h2 id="parameters">Parameters</h2>
 <dl>
-<dt><strong><code>time</code></strong> :&ensp;<code>the reconstruction time</code></dt>
-<dd>&nbsp;</dd>
-<dt><strong><code>rotation_model</code></strong> :&ensp;<code>the rotation model</code></dt>
-<dd>&nbsp;</dd>
-<dt><strong><code>topology_filenames</code></strong> :&ensp;<code>the topology files</code></dt>
-<dd>&nbsp;</dd>
-<dt><strong><code>delta_time</code></strong> :&ensp;<code>the time increment</code></dt>
-<dd>&nbsp;</dd>
+<dt><strong><code>time</code></strong> :&ensp;<code>number</code></dt>
+<dd>the reconstruction time</dd>
+<dt><strong><code>rotation_model</code></strong></dt>
+<dd>the rotation model</dd>
+<dt><strong><code>topology_filenames</code></strong></dt>
+<dd>the topology files</dd>
+<dt><strong><code>delta_time</code></strong> :&ensp;<code>number</code></dt>
+<dd>the time increment</dd>
 <dt><strong><code>Xnodes</code></strong>, <strong><code>Ynodes</code></strong> :&ensp;<code>the coordinates</code> of <code>domain points</code></dt>
 <dd>&nbsp;</dd>
 </dl>
@@ -122,7 +122,8 @@ Some arrows are long and some are very short.
 To make the plot clearer, we nomalize the velocity magnitude and use color to denote the different speed.</p>
 <h2 id="parameters">Parameters</h2>
 <dl>
-<dt>x,y: the domain points coordinates</dt>
+<dt><strong><code>x</code></strong>, <strong><code>y</code></strong> :&ensp;<code>the domain points coordinates</code></dt>
+<dd>&nbsp;</dd>
 <dt><strong><code>velocities</code></strong> :&ensp;<code>the velocity data</code></dt>
 <dd>&nbsp;</dd>
 <dt><strong><code>ax</code></strong> :&ensp;<code>the matplotlib axes object</code></dt>
@@ -143,8 +144,10 @@ Some arrows are long and some are very short.
 To make the plot clearer, we nomalize the velocity magnitude and use color to denote the different speed.</p>
 <h2 id="parameters">Parameters</h2>
 <dl>
-<dt>x,y: the domain points coordinates</dt>
-<dt>u,v: the u and v component of the velocities</dt>
+<dt><strong><code>x</code></strong>, <strong><code>y</code></strong> :&ensp;<code>the domain points coordinates</code></dt>
+<dd>&nbsp;</dd>
+<dt><strong><code>u</code></strong>, <strong><code>v</code></strong> :&ensp;<code>the u and v component</code> of <code>the velocities</code></dt>
+<dd>&nbsp;</dd>
 <dt><strong><code>ax</code></strong> :&ensp;<code>the matplotlib axes object</code></dt>
 <dd>&nbsp;</dd>
 </dl>

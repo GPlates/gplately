@@ -36,18 +36,6 @@ hljs.highlightAll();
 <section>
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
-<dt id="gplately.ptt.remove_plate_rotations.add_arguments"><code class="name flex">
-<span>def <span class="ident">add_arguments</span></span>(<span>parser)</span>
-</code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-<dt id="gplately.ptt.remove_plate_rotations.main"><code class="name flex">
-<span>def <span class="ident">main</span></span>(<span>args)</span>
-</code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
 <dt id="gplately.ptt.remove_plate_rotations.remove_plates"><code class="name flex">
 <span>def <span class="ident">remove_plates</span></span>(<span>rotation_feature_collections, plate_ids, accuracy_parameters=None)</span>
 </code></dt>
@@ -87,101 +75,6 @@ Returned list is same length as <code>rotation_feature_collections</code>.</dd>
 </dl>
 </section>
 <section>
-<h2 class="section-title" id="header-classes">Classes</h2>
-<dl>
-<dt id="gplately.ptt.remove_plate_rotations.ArgParseAccuracyAction"><code class="flex name class">
-<span>class <span class="ident">ArgParseAccuracyAction</span></span>
-<span>(</span><span>option_strings, dest, nargs=None, const=None, default=None, type=None, choices=None, required=False, help=None, metavar=None)</span>
-</code></dt>
-<dd>
-<div class="desc"><p>Information about how to convert command line strings to Python objects.</p>
-<p>Action objects are used by an ArgumentParser to represent the information
-needed to parse a single argument from one or more strings from the
-command line. The keyword arguments to the Action constructor are also
-all attributes of Action instances.</p>
-<p>Keyword Arguments:</p>
-<pre><code>- option_strings -- A list of command-line option strings which
-    should be associated with this action.
-
-- dest -- The name of the attribute to hold the created object(s)
-
-- nargs -- The number of command-line arguments that should be
-    consumed. By default, one argument will be consumed and a single
-    value will be produced.  Other values include:
-        - N (an integer) consumes N arguments (and produces a list)
-        - '?' consumes zero or one arguments
-        - '*' consumes zero or more arguments (and produces a list)
-        - '+' consumes one or more arguments (and produces a list)
-    Note that the difference between the default and nargs=1 is that
-    with the default, a single value will be produced, while with
-    nargs=1, a list containing a single value will be produced.
-
-- const -- The value to be produced if the option is specified and the
-    option uses an action that takes no values.
-
-- default -- The value to be produced if the option is not specified.
-
-- type -- A callable that accepts a single string argument, and
-    returns the converted value.  The standard Python types str, int,
-    float, and complex are useful examples of such callables.  If None,
-    str is used.
-
-- choices -- A container of values that should be allowed. If not None,
-    after a command-line argument has been converted to the appropriate
-    type, an exception will be raised if it is not a member of this
-    collection.
-
-- required -- True if the action must always be specified at the
-    command line. This is only meaningful for optional command-line
-    arguments.
-
-- help -- The help string describing the argument.
-
-- metavar -- The name to be used for the option's argument with the
-    help string. If None, the 'dest' value will be used as the name.
-</code></pre></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">class ArgParseAccuracyAction(argparse.Action):
-    def __call__(self, parser, namespace, values, option_string=None):
-        # Need two numbers (rotation threshold and threshold time interval).
-        if len(values) != 2:
-            parser.error(
-                &#34;accuracy must be specified as two numbers (rotation threshold and threshold time interval)&#34;
-            )
-
-        try:
-            # Convert strings to float.
-            threshold_rotation_accuracy_degrees = float(values[0])
-            threshold_time_interval = float(values[1])
-        except ValueError:
-            raise argparse.ArgumentTypeError(
-                &#34;encountered a rotation threshold and threshold time interval that is not a number&#34;
-            )
-
-        if (
-            threshold_rotation_accuracy_degrees &lt; 0
-            or threshold_rotation_accuracy_degrees &gt; 90
-        ):
-            parser.error(&#34;rotation threshold must be in the range [0, 90]&#34;)
-        if threshold_time_interval &lt;= 0:
-            parser.error(&#34;threshold time interval must be positive&#34;)
-
-        setattr(
-            namespace,
-            self.dest,
-            (threshold_rotation_accuracy_degrees, threshold_time_interval),
-        )</code></pre>
-</details>
-<h3>Ancestors</h3>
-<ul class="hlist">
-<li>argparse.Action</li>
-<li>argparse._AttributeHolder</li>
-</ul>
-</dd>
-</dl>
 </section>
 </article>
 <nav id="sidebar">
@@ -201,16 +94,7 @@ all attributes of Action instances.</p>
 </li>
 <li><h3><a href="#header-functions">Functions</a></h3>
 <ul class="">
-<li><code><a title="gplately.ptt.remove_plate_rotations.add_arguments" href="#gplately.ptt.remove_plate_rotations.add_arguments">add_arguments</a></code></li>
-<li><code><a title="gplately.ptt.remove_plate_rotations.main" href="#gplately.ptt.remove_plate_rotations.main">main</a></code></li>
 <li><code><a title="gplately.ptt.remove_plate_rotations.remove_plates" href="#gplately.ptt.remove_plate_rotations.remove_plates">remove_plates</a></code></li>
-</ul>
-</li>
-<li><h3><a href="#header-classes">Classes</a></h3>
-<ul>
-<li>
-<h4><code><a title="gplately.ptt.remove_plate_rotations.ArgParseAccuracyAction" href="#gplately.ptt.remove_plate_rotations.ArgParseAccuracyAction">ArgParseAccuracyAction</a></code></h4>
-</li>
 </ul>
 </li>
 </ul>

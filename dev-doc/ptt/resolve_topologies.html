@@ -35,23 +35,11 @@ hljs.highlightAll();
 <section>
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
-<dt id="gplately.ptt.resolve_topologies.add_arguments"><code class="name flex">
-<span>def <span class="ident">add_arguments</span></span>(<span>parser: argparse.ArgumentParser)</span>
-</code></dt>
-<dd>
-<div class="desc"><p>add command line argument parser</p></div>
-</dd>
 <dt id="gplately.ptt.resolve_topologies.find_total_boundary_length_in_kms"><code class="name flex">
 <span>def <span class="ident">find_total_boundary_length_in_kms</span></span>(<span>ridge_transform_boundary_section_features, ridge_boundary_section_features, transform_boundary_section_features, subduction_boundary_section_features, left_subduction_boundary_section_features, right_subduction_boundary_section_features, other_boundary_section_features)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Find the total length (in kms) of resolved topology boundary sections (in the various categories).</p></div>
-</dd>
-<dt id="gplately.ptt.resolve_topologies.main"><code class="name flex">
-<span>def <span class="ident">main</span></span>(<span>args)</span>
-</code></dt>
-<dd>
-<div class="desc"></div>
 </dd>
 <dt id="gplately.ptt.resolve_topologies.resolve_topologies"><code class="name flex">
 <span>def <span class="ident">resolve_topologies</span></span>(<span>rotation_features_or_model, topology_features, time, output_filename_prefix, output_filename_extension, transform_segment_deviation_in_radians=1.2217304763960306, anchor_plate_id=None)</span>
@@ -59,21 +47,32 @@ hljs.highlightAll();
 <dd>
 <div class="desc"><p>Resolves topologies at specified time and saves (to separate files) the resolved topologies, and their boundary sections as subduction zones,
 mid-ocean ridges (ridge/transform) and others (not subduction zones or mid-ocean ridges).</p>
-<p>rotation_features_or_model: Rotation model or feature collection(s), or list of features, or filename(s).</p>
-<p>topology_features: Topology feature collection(s), or list of features, or filename(s) or any combination of those.</p>
-<p>time: Reconstruction time to resolved topologies.</p>
-<p>transform_segment_deviation_in_radians: How much a mid-ocean ridge segment can deviate from the stage pole before
-it's considered a transform segment (in radians).</p>
-<p>anchor_plate_id: Anchor plate ID (optional, int).</p>
-<p>Writes output files containing the following features&hellip;
-- resolved topology features (topological plates and networks)
-- ridge and transform boundary sections (resolved features)
-- ridge boundary sections (resolved features)
-- transform boundary sections (resolved features)
-- subduction boundary sections (resolved features)
-- left subduction boundary sections (resolved features)
-- right subduction boundary sections (resolved features)
-- other boundary sections (resolved features) that are not subduction zones or mid-ocean ridges (ridge/transform)</p></div>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>rotation_features_or_model</code></strong></dt>
+<dd>Rotation model or feature collection(s), or list of features, or filename(s).
+rotation features or model</dd>
+<dt><strong><code>topology_features</code></strong></dt>
+<dd>Topology feature collection(s), or list of features, or filename(s) or any combination of those.</dd>
+<dt><strong><code>time</code></strong> :&ensp;<code>number</code></dt>
+<dd>Reconstruction time to resolved topologies.</dd>
+<dt><strong><code>transform_segment_deviation_in_radians</code></strong> :&ensp;<code>number</code></dt>
+<dd>How much a mid-ocean ridge segment can deviate from the stage pole before
+it's considered a transform segment (in radians).</dd>
+<dt><strong><code>anchor_plate_id</code></strong> :&ensp;<code>int</code>, optional</dt>
+<dd>Anchor plate ID.</dd>
+</dl>
+<p>Writes output files containing the following features&hellip;</p>
+<ul>
+<li>resolved topology features (topological plates and networks)</li>
+<li>ridge and transform boundary sections (resolved features)</li>
+<li>ridge boundary sections (resolved features)</li>
+<li>transform boundary sections (resolved features)</li>
+<li>subduction boundary sections (resolved features)</li>
+<li>left subduction boundary sections (resolved features)</li>
+<li>right subduction boundary sections (resolved features)</li>
+<li>other boundary sections (resolved features) that are not subduction zones or mid-ocean ridges (ridge/transform)</li>
+</ul></div>
 </dd>
 <dt id="gplately.ptt.resolve_topologies.resolve_topologies_into_features"><code class="name flex">
 <span>def <span class="ident">resolve_topologies_into_features</span></span>(<span>rotation_features_or_model, topology_features, time, transform_segment_deviation_in_radians=1.2217304763960306, anchor_plate_id=None, resolve_topology_types: int = 6)</span>
@@ -81,21 +80,31 @@ it's considered a transform segment (in radians).</p>
 <dd>
 <div class="desc"><p>Resolves topologies at specified time and returns resolved topologies and their boundary sections as subduction zones,
 mid-ocean ridges (ridge/transform) and others (not subduction zones or mid-ocean ridges).</p>
-<p>rotation_features_or_model: Rotation model or feature collection(s), or list of features, or filename(s).</p>
-<p>topology_features: Topology feature collection(s), or list of features, or filename(s) or any combination of those.</p>
-<p>time: Reconstruction time to resolved topologies.</p>
-<p>transform_segment_deviation_in_radians: How much a mid-ocean ridge segment can deviate from the stage pole before
-it's considered a transform segment (in radians).</p>
-<p>anchor_plate_id: Anchor plate ID (optional, int).</p>
-<p>Returns: A tuple containing the following lists&hellip;
-- resolved topology features (topological plates and networks)
-- ridge and transform boundary sections (resolved features)
-- ridge boundary sections (resolved features)
-- transform boundary sections (resolved features)
-- subduction boundary sections (resolved features)
-- left subduction boundary sections (resolved features)
-- right subduction boundary sections (resolved features)
-- other boundary sections (resolved features) that are not subduction zones or mid-ocean ridges (ridge/transform)</p></div>
+<h2 id="parameters">Parameters</h2>
+<dl>
+<dt><strong><code>rotation_features_or_model</code></strong></dt>
+<dd>Rotation model or feature collection(s), or list of features, or filename(s).</dd>
+<dt><strong><code>topology_features</code></strong></dt>
+<dd>Topology feature collection(s), or list of features, or filename(s) or any combination of those.</dd>
+<dt><strong><code>time</code></strong> :&ensp;<code>number</code></dt>
+<dd>Reconstruction time to resolved topologies.</dd>
+<dt><strong><code>transform_segment_deviation_in_radians</code></strong> :&ensp;<code>number</code></dt>
+<dd>How much a mid-ocean ridge segment can deviate from the stage pole before
+it's considered a transform segment (in radians).</dd>
+<dt><strong><code>anchor_plate_id</code></strong> :&ensp;<code>int</code>, optional</dt>
+<dd>Anchor plate ID.</dd>
+</dl>
+<p>Returns a tuple containing the following lists&hellip;</p>
+<ul>
+<li>resolved topology features (topological plates and networks)</li>
+<li>ridge and transform boundary sections (resolved features)</li>
+<li>ridge boundary sections (resolved features)</li>
+<li>transform boundary sections (resolved features)</li>
+<li>subduction boundary sections (resolved features)</li>
+<li>left subduction boundary sections (resolved features)</li>
+<li>right subduction boundary sections (resolved features)</li>
+<li>other boundary sections (resolved features) that are not subduction zones or mid-ocean ridges (ridge/transform)</li>
+</ul></div>
 </dd>
 </dl>
 </section>
@@ -119,9 +128,7 @@ it's considered a transform segment (in radians).</p>
 </li>
 <li><h3><a href="#header-functions">Functions</a></h3>
 <ul class="">
-<li><code><a title="gplately.ptt.resolve_topologies.add_arguments" href="#gplately.ptt.resolve_topologies.add_arguments">add_arguments</a></code></li>
 <li><code><a title="gplately.ptt.resolve_topologies.find_total_boundary_length_in_kms" href="#gplately.ptt.resolve_topologies.find_total_boundary_length_in_kms">find_total_boundary_length_in_kms</a></code></li>
-<li><code><a title="gplately.ptt.resolve_topologies.main" href="#gplately.ptt.resolve_topologies.main">main</a></code></li>
 <li><code><a title="gplately.ptt.resolve_topologies.resolve_topologies" href="#gplately.ptt.resolve_topologies.resolve_topologies">resolve_topologies</a></code></li>
 <li><code><a title="gplately.ptt.resolve_topologies.resolve_topologies_into_features" href="#gplately.ptt.resolve_topologies.resolve_topologies_into_features">resolve_topologies_into_features</a></code></li>
 </ul>
