@@ -16,7 +16,10 @@
 #
 
 """
-Retrieve paleomagnetic data from http://www.gpmdb.net and create and save GPlates VGP features in a .gpmlz file.
+
+This sub-module retrieves paleomagnetic data from http://www.gpmdb.net, 
+then create and save GPlates VGP features in a .gpmlz file.
+
 """
 
 import argparse

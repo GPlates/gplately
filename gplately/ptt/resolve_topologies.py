@@ -53,26 +53,37 @@ def resolve_topologies(
     Resolves topologies at specified time and saves (to separate files) the resolved topologies, and their boundary sections as subduction zones,
     mid-ocean ridges (ridge/transform) and others (not subduction zones or mid-ocean ridges).
 
-    rotation_features_or_model: Rotation model or feature collection(s), or list of features, or filename(s).
+    Parameters
+    ----------
 
-    topology_features: Topology feature collection(s), or list of features, or filename(s) or any combination of those.
+    rotation_features_or_model
+        Rotation model or feature collection(s), or list of features, or filename(s).
+        rotation features or model
 
-    time: Reconstruction time to resolved topologies.
+    topology_features
+        Topology feature collection(s), or list of features, or filename(s) or any combination of those.
 
-    transform_segment_deviation_in_radians: How much a mid-ocean ridge segment can deviate from the stage pole before
-                                            it's considered a transform segment (in radians).
+    time: number
+        Reconstruction time to resolved topologies.
 
-    anchor_plate_id: Anchor plate ID (optional, int).
+    transform_segment_deviation_in_radians: number
+        How much a mid-ocean ridge segment can deviate from the stage pole before
+        it's considered a transform segment (in radians).
+
+    anchor_plate_id: int, optional
+        Anchor plate ID.
 
     Writes output files containing the following features...
-            - resolved topology features (topological plates and networks)
-            - ridge and transform boundary sections (resolved features)
-            - ridge boundary sections (resolved features)
-            - transform boundary sections (resolved features)
-            - subduction boundary sections (resolved features)
-            - left subduction boundary sections (resolved features)
-            - right subduction boundary sections (resolved features)
-            - other boundary sections (resolved features) that are not subduction zones or mid-ocean ridges (ridge/transform)
+
+    - resolved topology features (topological plates and networks)
+    - ridge and transform boundary sections (resolved features)
+    - ridge boundary sections (resolved features)
+    - transform boundary sections (resolved features)
+    - subduction boundary sections (resolved features)
+    - left subduction boundary sections (resolved features)
+    - right subduction boundary sections (resolved features)
+    - other boundary sections (resolved features) that are not subduction zones or mid-ocean ridges (ridge/transform)
+
     """
     # Turn rotation data into a RotationModel (if not already).
     rotation_model = _parse_rotation_args(
@@ -134,26 +145,36 @@ def resolve_topologies_into_features(
     Resolves topologies at specified time and returns resolved topologies and their boundary sections as subduction zones,
     mid-ocean ridges (ridge/transform) and others (not subduction zones or mid-ocean ridges).
 
-    rotation_features_or_model: Rotation model or feature collection(s), or list of features, or filename(s).
+    Parameters
+    ----------
 
-    topology_features: Topology feature collection(s), or list of features, or filename(s) or any combination of those.
+    rotation_features_or_model
+        Rotation model or feature collection(s), or list of features, or filename(s).
 
-    time: Reconstruction time to resolved topologies.
+    topology_features
+        Topology feature collection(s), or list of features, or filename(s) or any combination of those.
 
-    transform_segment_deviation_in_radians: How much a mid-ocean ridge segment can deviate from the stage pole before
-                                            it's considered a transform segment (in radians).
+    time: number
+        Reconstruction time to resolved topologies.
 
-    anchor_plate_id: Anchor plate ID (optional, int).
+    transform_segment_deviation_in_radians: number
+        How much a mid-ocean ridge segment can deviate from the stage pole before
+        it's considered a transform segment (in radians).
 
-    Returns: A tuple containing the following lists...
-            - resolved topology features (topological plates and networks)
-            - ridge and transform boundary sections (resolved features)
-            - ridge boundary sections (resolved features)
-            - transform boundary sections (resolved features)
-            - subduction boundary sections (resolved features)
-            - left subduction boundary sections (resolved features)
-            - right subduction boundary sections (resolved features)
-            - other boundary sections (resolved features) that are not subduction zones or mid-ocean ridges (ridge/transform)
+    anchor_plate_id: int, optional
+        Anchor plate ID.
+
+    Returns a tuple containing the following lists...
+
+    - resolved topology features (topological plates and networks)
+    - ridge and transform boundary sections (resolved features)
+    - ridge boundary sections (resolved features)
+    - transform boundary sections (resolved features)
+    - subduction boundary sections (resolved features)
+    - left subduction boundary sections (resolved features)
+    - right subduction boundary sections (resolved features)
+    - other boundary sections (resolved features) that are not subduction zones or mid-ocean ridges (ridge/transform)
+
     """
     # Turn rotation data into a RotationModel (if not already).
     rotation_model = _parse_rotation_args(

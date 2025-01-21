@@ -47,16 +47,20 @@ class PointsSpatialTree(object):
         """
         Construct a spatial tree from a sequence of points up to a maximum tree depth.
 
-        points: a sequence of 'pygplates.PointOnSphere'.
+        Parameters
+        ----------
+        points: a sequence of 'pygplates.PointOnSphere'
+            a sequence of points
 
-        subdivision_depth: The depth of the internal lat/lon quad tree.
-                           The lat/lon width of a leaf quad tree node is (90 / (2^subdivision_depth)) degrees.
-                           Generally the denser the 'points' the larger the depth should be.
-                           Setting this value too high causes unnecessary time to be spent generating a deep quad tree.
-                           Setting this value too low reduces the culling/querying efficiency of the quad tree.
-                           However a value of 4 seems to work quite well for a uniform lat/lon spacing of 'points' of 1 degree
-                           and below without the cost of generating a deep quad tree.
-                           So most of the time the subdivision depth can be left at its default value.
+        subdivision_depth: number
+            The depth of the internal lat/lon quad tree.
+            The lat/lon width of a leaf quad tree node is (90 / (2^subdivision_depth)) degrees.
+            Generally the denser the 'points' the larger the depth should be.
+            Setting this value too high causes unnecessary time to be spent generating a deep quad tree.
+            Setting this value too low reduces the culling/querying efficiency of the quad tree.
+            However a value of 4 seems to work quite well for a uniform lat/lon spacing of 'points' of 1 degree
+            and below without the cost of generating a deep quad tree.
+            So most of the time the subdivision depth can be left at its default value.
 
         Raises ValueError if 'subdivision_depth' is not in the range [0, 100].
         """
@@ -178,12 +182,11 @@ class PointsSpatialTree(object):
             node._point_indices.append(point_index)
 
     def get_root_nodes(self):
-        """
-        Return any root nodes that have points in their subtree.
+        """Return any root nodes that have points in their subtree.There are a maximum of 8 root nodes.
 
-        There are a maximum of 8 root nodes.
-
-        Returns: A list of Node.
+        Returns
+        -------
+        A list of Node.
         """
 
         return [root_node for root_node in self._root_nodes if root_node is not None]
@@ -209,13 +212,13 @@ class PointsSpatialTreeNode(object):
         self._point_indices = None
 
     def get_bounding_polygon(self):
-        """
-        Returns a polygon that bounds the current node.
-
+        """Returns a polygon that bounds the current node.
         The returned polygon is guaranteed to contain all points in this node (and any child nodes, etc).
         However it is not guaranteed to contain the bounding circle.
 
-        Returns: pygplates.PolygonOnSphere
+        Returns
+        -------
+        pygplates.PolygonOnSphere
         """
 
         if self._bounding_polygon is None:
@@ -224,13 +227,13 @@ class PointsSpatialTreeNode(object):
         return self._bounding_polygon
 
     def get_bounding_circle(self):
-        """
-        Returns a small circle that bounds the current node.
-
+        """Returns a small circle that bounds the current node.
         The returned small circle is guaranteed to contain all points in this node (and any child nodes, etc).
         However it is not guaranteed to contain the bounding polygon.
 
-        Returns: The centre of small circle and its radius (in radians) as the 2-tuple of type (pygplates.PointOnSphere, float).
+        Returns
+        -------
+        The centre of small circle and its radius (in radians) as the 2-tuple of type (pygplates.PointOnSphere, float).
         """
 
         if self._bounding_circle is None:
@@ -239,9 +242,7 @@ class PointsSpatialTreeNode(object):
         return self._bounding_circle
 
     def is_leaf_node(self):
-        """
-        Returns True if this node is a leaf node.
-
+        """Returns True if this node is a leaf node.
         A leaf node has indices into the sequence of points passed into
         spatial tree constructor - see 'get_point_indices()'.
         But it does not have any child nodes.
@@ -250,9 +251,7 @@ class PointsSpatialTreeNode(object):
         return self._point_indices is not None
 
     def is_internal_node(self):
-        """
-        Returns True if this node is an internal node.
-
+        """Returns True if this node is an internal node.
         An internal node has child nodes - see 'get_child_nodes()'.
         But it does not have any point indices.
         """
@@ -260,14 +259,13 @@ class PointsSpatialTreeNode(object):
         return self._child_nodes is not None
 
     def get_child_nodes(self):
-        """
-        Return any child nodes that have points in their subtree.
-
+        """Return any child nodes that have points in their subtree.
         There are a maximum of 4 child nodes.
-
         Should only be called if 'is_internal_node()' returns True.
 
-        Returns: A list of Node.
+        Returns
+        -------
+        A list of Node.
         """
 
         return [
@@ -275,14 +273,13 @@ class PointsSpatialTreeNode(object):
         ]
 
     def get_point_indices(self):
-        """
-        Return indices of points that exist in this leaf node.
-
+        """Return indices of points that exist in this leaf node.
         The indices refer to the sequence of points passed into spatial tree constructor.
-
         Should only be called if 'is_leaf_node()' returns True.
 
-        Returns: A list of int.
+        Returns
+        -------
+        A list of int.
         """
 
         return self._point_indices

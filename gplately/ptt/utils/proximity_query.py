@@ -176,60 +176,73 @@ def find_closest_geometries_to_points(
     """
     Efficient point-to-geometry distance queries when there are many relatively uniformly spaced points to be tested against geometries.
 
-    points: a sequence of 'pygplates.PointOnSphere'.
+    Parameters
+    ----------
+    points: a sequence of 'pygplates.PointOnSphere'
+        a sequence of points
 
-    geometries: a sequence of 'pygplates.GeometryOnSphere'.
+    geometries: a sequence of 'pygplates.GeometryOnSphere'
+        a sequence of geometries
 
-    geometry_proxies: Optional sequence of objects associated with 'geometries'.
-                     If not specified then the proxies default to the geometries themselves.
-                     These can be any object (such as the 'pygplates.Feature' that the geometry came from).
+    geometry_proxies: sequence of objects associated with 'geometries', optional
+        If not specified then the proxies default to the geometries themselves.
+        These can be any object (such as the 'pygplates.Feature' that the geometry came from).
 
-    distance_threshold_radians: Optional distance threshold in radians - threshold should be in the range [0,PI] if specified.
+    distance_threshold_radians: number, optional
+        Optional distance threshold in radians - threshold should be in the range [0,PI] if specified.
 
-    return_closest_position: Whether to also return the closest point on each geometry - default is False.
+    return_closest_position: bool, default=False
+        Whether to also return the closest point on each geometry - default is False.
 
-    return_closest_index: Whether to also return the index of the closest point (for multi-points) or
-                          the index of the closest segment (for polylines and polygons) - default is False.
+    return_closest_index: bool, default=False
+        Whether to also return the index of the closest point (for multi-points) or
+        the index of the closest segment (for polylines and polygons) - default is False.
 
-    geometries_are_solid: Whether the interiors of the geometries are solid or not - only applies to polygon geometries - default is False.
+    geometries_are_solid: bool, default=False
+        Whether the interiors of the geometries are solid or not - only applies to polygon geometries - default is False.
 
-    all_geometries: Whether to find all geometries near each point (within threshold distance) or just the closest.
-                    Defaults to False (only returns closest geometry to each point).
+    all_geometries: bool, default=False
+        Whether to find all geometries near each point (within threshold distance) or just the closest.
+        Defaults to False (only returns closest geometry to each point).
 
-    subdivision_depth: The depth of the lat/lon quad tree used to speed up point-to-geometry distance queries.
-                       The lat/lon width of a leaf quad tree node is (90 / (2^subdivision_depth)) degrees.
-                       Generally the denser the 'points' the larger the depth should be.
-                       Setting this value too high causes unnecessary time to be spent generating a deep quad tree.
-                       Setting this value too low reduces the culling efficiency of the quad tree.
-                       However a value of 4 seems to work quite well for a uniform lat/lon spacing of 'points' of 1 degree and below
-                       without the cost of generating a deep quad tree.
-                       So most of the time the subdivision depth can be left at its default value.
+    subdivision_depth: number
+        The depth of the lat/lon quad tree used to speed up point-to-geometry distance queries.
+        The lat/lon width of a leaf quad tree node is (90 / (2^subdivision_depth)) degrees.
+        Generally the denser the 'points' the larger the depth should be.
+        Setting this value too high causes unnecessary time to be spent generating a deep quad tree.
+        Setting this value too low reduces the culling efficiency of the quad tree.
+        However a value of 4 seems to work quite well for a uniform lat/lon spacing of 'points' of 1 degree and below
+        without the cost of generating a deep quad tree.
+        So most of the time the subdivision depth can be left at its default value.
 
-    Returns: A list of geometry proxies associated with 'points'.
-             The length of the returned list matches the length of 'points'.
-             For each point in 'points', if the point is close to a geometry then that geometry's proxy (and its distance information)
-             is stored (otherwise None is stored) at the same index (as the point) in the returned list.
-             If 'all_geometries' is False then each item in returned list is a single geometry proxy (and its distance information)
-             representing the closest geometry within threshold distance (or a single None).
-             If 'all_geometries' is True then each item in returned list is a *list* of geometry proxies (and their distance informations)
-             representing all geometries within threshold distance (or a single None).
-             Above we mentioned "geometry proxy (and its distance information)". This is a tuple whose size depends on
-             the values of 'return_closest_position' and 'return_closest_index' according to...
+    Returns
+    -------
+    A list of geometry proxies associated with 'points'
+        The length of the returned list matches the length of 'points'.
+        For each point in 'points', if the point is close to a geometry then that geometry's proxy (and its distance information)
+        is stored (otherwise None is stored) at the same index (as the point) in the returned list.
+        If 'all_geometries' is False then each item in returned list is a single geometry proxy (and its distance information)
+        representing the closest geometry within threshold distance (or a single None).
+        If 'all_geometries' is True then each item in returned list is a *list* of geometry proxies (and their distance informations)
+        representing all geometries within threshold distance (or a single None).
+        Above we mentioned "geometry proxy (and its distance information)". This is a tuple whose size depends on
+        the values of 'return_closest_position' and 'return_closest_index' according to...
 
-                if return_closest_position and return_closest_index:
-                    geometry_proxy_to_point = (distance, closest_position, closest_index, geometry_proxy)
-                elif return_closest_position:
-                    geometry_proxy_to_point = (distance, closest_position, geometry_proxy)
-                elif return_closest_index:
-                    geometry_proxy_to_point = (distance, closest_index, geometry_proxy)
-                else:
-                    geometry_proxy_to_point = (distance, geometry_proxy)
+            if return_closest_position and return_closest_index:
+                geometry_proxy_to_point = (distance, closest_position, closest_index, geometry_proxy)
+            elif return_closest_position:
+                geometry_proxy_to_point = (distance, closest_position, geometry_proxy)
+            elif return_closest_index:
+                geometry_proxy_to_point = (distance, closest_index, geometry_proxy)
+            else:
+                geometry_proxy_to_point = (distance, geometry_proxy)
 
-    The arguments 'distance_threshold_radians', 'return_closest_position', 'return_closest_index' and 'geometries_are_solid' are
-    similar to those in pygplates.GeometryOnSphere.distance()...
-    See http://www.gplates.org/docs/pygplates/generated/pygplates.GeometryOnSphere.html#pygplates.GeometryOnSphere.distance
 
-    Raises ValueError if the lengths of 'geometries' and 'geometry_proxies' (if specified) do not match.
+        The arguments 'distance_threshold_radians', 'return_closest_position', 'return_closest_index' and 'geometries_are_solid' are
+        similar to those in pygplates.GeometryOnSphere.distance().
+        See http://www.gplates.org/docs/pygplates/generated/pygplates.GeometryOnSphere.html#pygplates.GeometryOnSphere.distance.
+
+        Raises ValueError if the lengths of 'geometries' and 'geometry_proxies' (if specified) do not match.
     """
 
     spatial_tree_of_points = points_spatial_tree.PointsSpatialTree(
@@ -260,8 +273,7 @@ def find_closest_geometries_to_points_using_points_spatial_tree(
     geometries_are_solid=False,
     all_geometries=False,
 ):
-    """
-    Same as 'find_closest_geometries_to_points()' except 'spatial_tree_of_points' is a 'points_spatial_tree.PointsSpatialTree' of 'points'.
+    """Same as 'find_closest_geometries_to_points()' except 'spatial_tree_of_points' is a 'points_spatial_tree.PointsSpatialTree' of 'points'.
 
     This is useful when re-using a single 'points_spatial_tree.PointsSpatialTree'.
     For example, when using it both for point-in-polygon queries and minimum distance queries.
@@ -310,63 +322,75 @@ def find_closest_points_to_geometries(
     all_points=False,
     subdivision_depth=points_spatial_tree.DEFAULT_SUBDIVISION_DEPTH,
 ):
-    """
-    Efficient geometry-to-point distance queries when geometries are tested against many relatively uniformly spaced points.
+    """Efficient geometry-to-point distance queries when geometries are tested against many relatively uniformly spaced points.
 
-    geometries: a sequence of 'pygplates.GeometryOnSphere'.
+    Parameters
+    ----------
+    geometries: a sequence of 'pygplates.GeometryOnSphere'
+        a sequence of geometries
 
-    points: a sequence of 'pygplates.PointOnSphere'.
+    points: a sequence of 'pygplates.PointOnSphere'
+        a sequence of points
 
-    point_proxies: Optional sequence of objects associated with 'points'.
-                   If not specified then the proxies default to the points themselves.
-                   These can be any object (such as a scalar value associated with the point).
+    point_proxies: sequence of objects associated with 'points', optional
+        If not specified then the proxies default to the points themselves.
+        These can be any object (such as a scalar value associated with the point).
 
-    distance_threshold_radians: Optional distance threshold in radians - threshold should be in the range [0,PI] if specified.
+    distance_threshold_radians: number, optional
+        Optional distance threshold in radians - threshold should be in the range [0,PI] if specified.
 
-    return_closest_position: Whether to also return the closest point on each geometry - default is False.
+    return_closest_position: bool, default=False
+        Whether to also return the closest point on each geometry - default is False.
 
-    return_closest_index: Whether to also return the index of the closest point (for multi-points) or
-                          the index of the closest segment (for polylines and polygons) - default is False.
+    return_closest_index:  bool, default=False
+        Whether to also return the index of the closest point (for multi-points) or
+        the index of the closest segment (for polylines and polygons) - default is False.
 
-    geometries_are_solid: Whether the interiors of the geometries are solid or not - only applies to polygon geometries - default is False.
+    geometries_are_solid:  bool, default=False
+        Whether the interiors of the geometries are solid or not - only applies to polygon geometries - default is False.
 
-    all_points: Whether to find all points near each geometry (within threshold distance) or just the closest.
-                Defaults to False (only returns closest point to each geometry).
+    all_points: bool, default=False
+        Whether to find all points near each geometry (within threshold distance) or just the closest.
+        Defaults to False (only returns closest point to each geometry).
 
-    subdivision_depth: The depth of the lat/lon quad tree used to speed up point-to-geometry distance queries.
-                       The lat/lon width of a leaf quad tree node is (90 / (2^subdivision_depth)) degrees.
-                       Generally the denser the 'points' the larger the depth should be.
-                       Setting this value too high causes unnecessary time to be spent generating a deep quad tree.
-                       Setting this value too low reduces the culling efficiency of the quad tree.
-                       However a value of 4 seems to work quite well for a uniform lat/lon spacing of 'points' of 1 degree and below
-                       without the cost of generating a deep quad tree.
-                       So most of the time the subdivision depth can be left at its default value.
+    subdivision_depth: number
+        The depth of the lat/lon quad tree used to speed up point-to-geometry distance queries.
+        The lat/lon width of a leaf quad tree node is (90 / (2^subdivision_depth)) degrees.
+        Generally the denser the 'points' the larger the depth should be.
+        Setting this value too high causes unnecessary time to be spent generating a deep quad tree.
+        Setting this value too low reduces the culling efficiency of the quad tree.
+        However a value of 4 seems to work quite well for a uniform lat/lon spacing of 'points' of 1 degree and below
+        without the cost of generating a deep quad tree.
+        So most of the time the subdivision depth can be left at its default value.
 
-    Returns: A list of point proxies associated with 'geometries'.
-             The length of the returned list matches the length of 'geometries'.
-             For each geometry in 'geometries', if the geometry is close to a point then that point's proxy (and its distance information)
-             is stored (otherwise None is stored) at the same index (as the geometry) in the returned list.
-             If 'all_points' is False then each item in returned list is a single point proxy (and its distance information)
-             representing the closest point within threshold distance (or a single None).
-             If 'all_points' is True then each item in returned list is a *list* of point proxies (and their distance informations)
-             representing all points within threshold distance (or a single None).
-             Above we mentioned "point proxy (and its distance information)". This is a tuple whose size depends on
-             the values of 'return_closest_position' and 'return_closest_index' according to...
+    Returns
+    -------
+    A list of point proxies associated with 'geometries'
+        The length of the returned list matches the length of 'geometries'.
+        For each geometry in 'geometries', if the geometry is close to a point then that point's proxy (and its distance information)
+        is stored (otherwise None is stored) at the same index (as the geometry) in the returned list.
+        If 'all_points' is False then each item in returned list is a single point proxy (and its distance information)
+        representing the closest point within threshold distance (or a single None).
+        If 'all_points' is True then each item in returned list is a *list* of point proxies (and their distance informations)
+        representing all points within threshold distance (or a single None).
+        Above we mentioned "point proxy (and its distance information)". This is a tuple whose size depends on
+        the values of 'return_closest_position' and 'return_closest_index' according to...
 
-                if return_closest_position and return_closest_index:
-                    point_proxy_to_point = (distance, closest_position, closest_index, point_proxy)
-                elif return_closest_position:
-                    point_proxy_to_point = (distance, closest_position, point_proxy)
-                elif return_closest_index:
-                    point_proxy_to_point = (distance, closest_index, point_proxy)
-                else:
-                    point_proxy_to_point = (distance, point_proxy)
+            if return_closest_position and return_closest_index:
+                point_proxy_to_point = (distance, closest_position, closest_index, point_proxy)
+            elif return_closest_position:
+                point_proxy_to_point = (distance, closest_position, point_proxy)
+            elif return_closest_index:
+                point_proxy_to_point = (distance, closest_index, point_proxy)
+            else:
+                point_proxy_to_point = (distance, point_proxy)
 
-    The arguments 'distance_threshold_radians', 'return_closest_position', 'return_closest_index' and 'geometries_are_solid' are
-    similar to those in pygplates.GeometryOnSphere.distance()...
-    See http://www.gplates.org/docs/pygplates/generated/pygplates.GeometryOnSphere.html#pygplates.GeometryOnSphere.distance
 
-    Raises ValueError if the lengths of 'points' and 'point_proxies' (if specified) do not match.
+        The arguments 'distance_threshold_radians', 'return_closest_position', 'return_closest_index' and 'geometries_are_solid' are
+        similar to those in pygplates.GeometryOnSphere.distance().
+        See http://www.gplates.org/docs/pygplates/generated/pygplates.GeometryOnSphere.html#pygplates.GeometryOnSphere.distance.
+
+        Raises ValueError if the lengths of 'points' and 'point_proxies' (if specified) do not match.
     """
 
     spatial_tree_of_points = points_spatial_tree.PointsSpatialTree(
@@ -397,8 +421,7 @@ def find_closest_points_to_geometries_using_points_spatial_tree(
     geometries_are_solid=False,
     all_points=False,
 ):
-    """
-    Same as 'find_closest_points_to_geometries()' except 'spatial_tree_of_points' is a 'points_spatial_tree.PointsSpatialTree' of 'points'.
+    """Same as 'find_closest_points_to_geometries()' except 'spatial_tree_of_points' is a 'points_spatial_tree.PointsSpatialTree' of 'points'.
 
     This is useful when re-using a single 'points_spatial_tree.PointsSpatialTree'.
     For example, when using it both for point-in-polygon queries and minimum distance queries.
@@ -465,8 +488,7 @@ def find_closest_points_to_geometry(
     all_points=False,
     subdivision_depth=points_spatial_tree.DEFAULT_SUBDIVISION_DEPTH,
 ):
-    """
-    Same as 'find_closest_points_to_geometries()' except with a single geometry instead of a list of geometries.
+    """Same as 'find_closest_points_to_geometries()' except with a single geometry instead of a list of geometries.
 
     Returns a single "point proxy (and its distance information)" instead of a list
     (see 'find_closest_points_to_geometries()' for more information).
@@ -499,8 +521,7 @@ def find_closest_points_to_geometry_using_points_spatial_tree(
     geometry_is_solid=False,
     all_points=False,
 ):
-    """
-    Same as 'find_closest_points_to_geometries_using_points_spatial_tree()' except with a single geometry instead of a list of geometries.
+    """Same as 'find_closest_points_to_geometries_using_points_spatial_tree()' except with a single geometry instead of a list of geometries.
 
     Returns a single "point proxy (and its distance information)" instead of a list.
     """

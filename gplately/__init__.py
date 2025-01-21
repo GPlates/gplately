@@ -41,11 +41,33 @@ age_grid = gdownload.get_age_grid(time=100)
 etopo = gdownload.get_raster("ETOPO1_tif")
 ```
 
-`DataServer` supports the following plate reconstruction file collections which are bundled with the following data:
+### [PlateModelManager](https://pypi.org/project/plate-model-manager/)
+The `PlateModelManager` object was introduced as an alternative/substitute to the `DataServer` object. It can be used to download and manage plate reconstruction models.
+
+```python
+pm_manager = PlateModelManager()
+model = pm_manager.get_model("Muller2019")
+model.set_data_dir("plate-model-repo") # the local folder where you would like to save the model files
+
+recon_model = PlateReconstruction(
+    model.get_rotation_model(),
+    topology_features=model.get_layer("Topologies"),
+    static_polygons=model.get_layer("StaticPolygons"),
+)
+gplot = PlotTopologies(
+    recon_model,
+    coastlines=model.get_layer("Coastlines"),
+    COBs=model.get_layer("COBs"),
+    time=55,
+)
+```
+
+`DataServer` and `PlateModelManager` support the following plate reconstruction file collections which are bundled with the following data:
 
 ------------------
 
 | **Model name string Identifier** | **Zenodo** |**Topology features**   | **Static polygons**   | **Coast-lines**  | **Cont-inents** | **COB**    | **Age grids**   | **SR grids**  |
+|:--------------------------------:|:----------:|:----------------------:|:--------------------:|:-----------------:|:---------------:|:----------:|:--------------:|:--------------:|
 |  Alfonso2024                     |     ✅     |          ✅           |          ✅          |        ✅        |        ❌       |     ❌    |       ❌       |       ❌      |
 |  Cao2024                         |     ✅     |          ✅           |          ✅          |        ✅        |        ✅       |     ✅    |       ❌       |       ❌      |
 |  Muller2022                      |     ✅     |          ✅           |          ✅          |        ✅        |        ✅       |     ✅    |       ❌       |       ❌      |
@@ -72,27 +94,6 @@ etopo = gdownload.get_raster("ETOPO1_tif")
 **Note: All models have rotation files.**
 
 ------------------
-
-### [PlateModelManager](https://pypi.org/project/plate-model-manager/)
-The `PlateModelManager` object was introduced as an alternative/substitute to the `DataServer` object. It can be used to download and manage plate reconstruction models.
-
-```python
-pm_manager = PlateModelManager()
-model = pm_manager.get_model("Muller2019")
-model.set_data_dir("plate-model-repo") # the local folder where you would like to save the model files
-
-recon_model = PlateReconstruction(
-    model.get_rotation_model(),
-    topology_features=model.get_layer("Topologies"),
-    static_polygons=model.get_layer("StaticPolygons"),
-)
-gplot = PlotTopologies(
-    recon_model,
-    coastlines=model.get_layer("Coastlines"),
-    COBs=model.get_layer("COBs"),
-    time=55,
-)
-```
 
 ### [PlateReconstruction](https://gplates.github.io/gplately/reconstruction.html#gplately.reconstruction.PlateReconstruction)
 The `PlateReconstruction` object contains tools to reconstruct geological features like tectonic plates and plate boundaries,
@@ -265,6 +266,7 @@ __pdoc__ = {
     "decorators": False,
     "exceptions": False,
     "lib": False,
+    "pygplates": False,
 }
 
 __all__ = [
