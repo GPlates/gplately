@@ -57,18 +57,27 @@ def separate_features_into_ridges_and_transforms(
     Split the geometries of isochrons and mid-ocean ridges into ridge and transform segments based
     on each segment’s alignment with the geometry’s stage pole at its time of appearance.
 
-    rotation_features_or_model: Rotation model or feature collection(s), or list of features, or filename(s).
+    Parameters
+    ----------
+    rotation_features_or_model : rotation model or feature collection(s), or list of features, or filename(s)
+        rotation features or model
 
-    spreading_features: Spreading feature collection(s), or list of features, or filename(s) or any combination of those.
+    spreading_features : spreading feature collection(s), or list of features, or filename(s) or any combination of those
+        spreading features
 
-    spreading_feature_types: Only spreading features with a feature type contained in this list are considered.
-                             If None then all spreading features are considered.
+    spreading_feature_types
+        Only spreading features with a feature type contained in this list are considered.
+        If None then all spreading features are considered.
 
-    transform_segment_deviation_in_radians: How much a segment can deviate from the stage pole before
-                                            it's considered a transform segment (in radians).
+    transform_segment_deviation_in_radians: number
+        How much a segment can deviate from the stage pole before
+        it's considered a transform segment (in radians).
 
-    Returns: The separated ridge and transform features respectively, of type
-             2-tuple (list of pygplates.Feature, list of pygplates.Feature).
+    Returns
+    -------
+    2-tuple (list of pygplates.Feature, list of pygplates.Feature)
+        The separated ridge and transform features respectively
+             .
     """
 
     # Turn rotation data into a RotationModel (if not already).
@@ -212,19 +221,26 @@ def separate_geometry_into_ridges_and_transforms(
     For isochrons the geometry should be at its time of appearance (ie, when formed at mid-ocean ridge).
     For mid-ocean ridges the geometry can be any time when the ridge is actively spreading.
 
-    stage_rotation: The stage rotation that can be applied to the geometry at the spreading time.
-                    NOTE: It must have already had transforms to and from the stage pole reference frame applied.
-                    In other words, if you get the stage pole from it, using 'get_euler_pole_and_angle()', then it
-                    should be the stage pole in the frame of reference of the geometry at the spreading time.
+    Parameters
+    ----------
+    stage_rotation
+        The stage rotation that can be applied to the geometry at the spreading time.
+        NOTE: It must have already had transforms to and from the stage pole reference frame applied.
+        In other words, if you get the stage pole from it, using 'get_euler_pole_and_angle()', then it
+        should be the stage pole in the frame of reference of the geometry at the spreading time.
 
-    geometry_at_spreading_time: The polyline (or polygon) at the spreading time.
+    geometry_at_spreading_time: number
+        The polyline (or polygon) at the spreading time.
 
-    transform_segment_deviation_in_radians: How much a segment can deviate from the stage pole before
-                                            it's considered a transform segment (in radians).
+    transform_segment_deviation_in_radians: number
+        How much a segment can deviate from the stage pole before
+        it's considered a transform segment (in radians).
 
-    Returns: The separated ridge and transform geometries respectively, of type
-             2-tuple (list of pygplates.Polyline, list of pygplates.Polyline).
-             Returns None if 'geometry_at_spreading_time' is not a polyline (or polygon).
+    Returns
+    -------
+    2-tuple (list of pygplates.Polyline, list of pygplates.Polyline), None if 'geometry_at_spreading_time' is not a polyline (or polygon)
+        The separated ridge and transform geometries respectively
+
     """
 
     # Iterate over the segments of the geometry.
@@ -328,26 +344,33 @@ def get_stage_rotation_for_reconstructed_geometry(
     Find the stage rotation of the spreading feature in the frame of reference of its geometry at the spreading time.
     The stage pole can then be directly geometrically compared to the reconstructed spreading geometry.
 
-    spreading_feature: Can be a feature with half-stage rotation reconstruction (using left/right plate IDs)
-                       or a regular feature with a conjugate plate ID.
-                       An example of the former is a mid-ocean ridge, and of the latter an isochron.
+    Parameters
+    ----------
+    spreading_feature
+        Can be a feature with half-stage rotation reconstruction (using left/right plate IDs)
+        or a regular feature with a conjugate plate ID.
+        An example of the former is a mid-ocean ridge, and of the latter an isochron.
 
-    rotation_model: Rotation model of type pygplates.RotationModel.
+    rotation_model: pygplates.RotationModel
+        Rotation model
 
-    spreading_time: A time at which spreading is happening.
-                    For isochrons this should be its time of appearance (ie, when formed at mid-ocean ridge).
-                    For mid-ocean ridges this can be any time when the ridge is actively spreading.
-                    Defaults to the time of appearance of 'spreading_feature'.
+    spreading_time: number
+        A time at which spreading is happening.
+        For isochrons this should be its time of appearance (ie, when formed at mid-ocean ridge).
+        For mid-ocean ridges this can be any time when the ridge is actively spreading.
+        Defaults to the time of appearance of 'spreading_feature'.
 
-    Returns: The stage rotation that can be applied to the geometry at the spreading time.
-             NOTE: It has already had transforms to and from the stage pole reference frame applied.
-             So if you get the stage pole from it, using 'get_euler_pole_and_angle()', then it
-             will be the stage pole in the frame of reference of the geometry at the spreading time.
+    Returns
+    -------
+    the stage rotation that can be applied to the geometry at the spreading time
+        NOTE: It has already had transforms to and from the stage pole reference frame applied.
+        So if you get the stage pole from it, using 'get_euler_pole_and_angle()', then it
+        will be the stage pole in the frame of reference of the geometry at the spreading time.
 
-             Returns None if 'spreading_feature' does not satisfy requirements of a spreading feature.
-             (ie, have left/right plate IDs or reconstruction/conjugate plate IDs, and
-             have spreading time not in distant past or future, and
-             have non-zero stage rotation from 'spreading_time + 1' to 'spreading_time').
+        Returns None if 'spreading_feature' does not satisfy requirements of a spreading feature.
+        (ie, have left/right plate IDs or reconstruction/conjugate plate IDs, and
+        have spreading time not in distant past or future, and
+        have non-zero stage rotation from 'spreading_time + 1' to 'spreading_time').
     """
 
     # If the spreading time is not specified then default to the feature's time of appearance.

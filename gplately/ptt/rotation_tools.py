@@ -17,9 +17,11 @@
 
 
 """
-Various rotation utilities, including:                                                                    
+Various rotation utilities
 
+including:                                                                    
 - Calculating stage rotations between consecutive finite rotations in a plate pair.          
+
 """
 
 

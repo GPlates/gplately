@@ -26,13 +26,17 @@ import pygplates
 DEFAULT_OUTPUT_FILENAME_SUFFIX = "_fixed_crossovers"
 
 
-def _fix_crossovers(
+def fix_crossovers(
     rotation_feature_collections,
     crossover_threshold_degrees,
     crossover_type_function,
     ignore_moving_plates,
     debug,
 ):
+    """
+    Fix crossovers.
+    If any errors occurred we will still write to the output files.
+    """
     crossover_filter = None
     # Ignore a subset of moving plates if requested.
     if ignore_moving_plates:
@@ -269,8 +273,8 @@ def main(args):
         )
 
     # Fix crossovers.
-    # If any errors occurred we will still write to the output files.
-    if not _fix_crossovers(
+    # If anfix_crossoversed we will still write to the output files.
+    if not fix_crossovers(
         rotation_feature_collections,
         args.crossover_threshold_degrees,
         crossover_type_function,

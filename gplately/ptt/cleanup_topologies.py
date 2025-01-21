@@ -15,8 +15,9 @@
 #    51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
 """
-Clean up topologies, including:   
+Clean up topologies
 
+including:   
 - Removing any regular features not referenced by topologies.                                
 - Restricting the time periods of referenced features to match the referencing topologies.   
 

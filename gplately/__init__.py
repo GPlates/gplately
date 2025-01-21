@@ -266,6 +266,7 @@ __pdoc__ = {
     "decorators": False,
     "exceptions": False,
     "lib": False,
+    "pygplates": False,
 }
 
 __all__ = [

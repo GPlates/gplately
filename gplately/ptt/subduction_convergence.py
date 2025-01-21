@@ -186,17 +186,17 @@ def subduction_convergence(
 
     Each sampled point along trench returns the following information:
 
-    0 - longitude of sample point
-    1 - latitude of sample point
-    2 - subducting convergence (relative to trench) velocity magnitude (in cm/yr)
-    3 - subducting convergence velocity obliquity angle (angle between trench normal vector and convergence velocity vector)
-    4 - trench absolute (relative to anchor plate) velocity magnitude (in cm/yr)
-    5 - trench absolute velocity obliquity angle (angle between trench normal vector and trench absolute velocity vector)
-    6 - length of arc segment (in degrees) that current point is on
-    7 - trench normal azimuth angle (clockwise starting at North, ie, 0 to 360 degrees) at current point
-    8 - subducting plate ID
-    9 - trench plate ID
-    * - extra data can be appended by specifying optional keyword arguments (*kwargs* - see list of options below).
+    - 0 longitude of sample point
+    - 1 latitude of sample point
+    - 2 subducting convergence (relative to trench) velocity magnitude (in cm/yr)
+    - 3 subducting convergence velocity obliquity angle (angle between trench normal vector and convergence velocity vector)
+    - 4  trench absolute (relative to anchor plate) velocity magnitude (in cm/yr)
+    - 5 trench absolute velocity obliquity angle (angle between trench normal vector and trench absolute velocity vector)
+    - 6 length of arc segment (in degrees) that current point is on
+    - 7 trench normal azimuth angle (clockwise starting at North, ie, 0 to 360 degrees) at current point
+    - 8 subducting plate ID
+    - 9 trench plate ID
+    - 10 extra data can be appended by specifying optional keyword arguments (*kwargs* - see list of options below).
 
     The obliquity angles are in the range (-180 180). The range (0, 180) goes clockwise (when viewed from above the Earth) from the
     trench normal direction to the velocity vector. The range (0, -180) goes counter-clockwise.
@@ -1162,6 +1162,7 @@ def subduction_convergence_over_time(
     include_slab_topologies=False,
     **kwargs,
 ):
+    """calculate subduction convergence over time"""
     if time_increment <= 0:
         raise ValueError(
             'The time increment "{0}" is not positive and non-zero.'.format(
