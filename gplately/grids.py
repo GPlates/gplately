@@ -391,7 +391,11 @@ def read_netcdf_grid(
 
 
 def write_netcdf_grid(
-    filename, grid, extent="global", significant_digits=None, fill_value=np.nan
+    filename,
+    grid,
+    extent: Union[list[int], str] = "global",
+    significant_digits=None,
+    fill_value=np.nan,
 ):
     """Write geological data contained in a `grid` to a netCDF4 grid with a specified `filename`.
 
