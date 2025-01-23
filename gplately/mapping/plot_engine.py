@@ -14,27 +14,20 @@
 #    with this program; if not, write to Free Software Foundation, Inc.,
 #    51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
-
-from enum import Enum
 from abc import ABC, abstractmethod
 
 from geopandas.geodataframe import GeoDataFrame
 
 
-class PlotEngineType(Enum):
-    CARTOPY = 1
-    PYGMT = 2
-
-
 class PlotEngine(ABC):
     @abstractmethod
     def plot_geo_data_frame(self, ax_or_fig, gdf: GeoDataFrame, **kwargs):
-        """Plot GeoPandas GeoDataFrame object"""
+        """Plot GeoPandas GeoDataFrame object(abstract method)"""
         pass  # This is an abstract method, no implementation here.
 
     @abstractmethod
     def plot_pygplates_features(self, ax_or_fig, features, **kwargs):
-        """Plot one or more pygplates feature(s)"""
+        """Plot one or more pygplates feature(s)(abstract method)"""
         pass  # This is an abstract method, no implementation here.
 
     @abstractmethod
@@ -46,5 +39,5 @@ class PlotEngine(ABC):
         color="blue",
         **kwargs,
     ):
-        """Plot subduction zones with "teeth" """
+        """Plot subduction zones with "teeth"(abstract method)"""
         pass  # This is an abstract method, no implementation here.

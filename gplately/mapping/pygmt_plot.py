@@ -129,7 +129,16 @@ class PygmtPlotEngine(PlotEngine):
 
 
 def get_pygmt_basemap_figure(projection="N180/10c", region="d"):
-    """return a pygmt.Figure() object"""
+    """A helper function to return a pygmt.Figure() object
+
+    Parameters
+    ----------
+    projection: str, default="N180/10c"
+        string to define the map projection in GMT style
+    region: str, default="d"
+        string to define the map extent in GMT style
+
+    """
     fig = pygmt.Figure()
     fig.basemap(region=region, projection=projection, frame="lrtb")
     return fig
