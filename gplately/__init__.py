@@ -329,6 +329,9 @@ __pdoc__ = {
     "exceptions": False,
     "lib": False,
     "pygplates": False,
+    "DataCollection": False,
+    "get_geometries": False,
+    "get_valid_geometries": False,
 }
 
 __all__ = [

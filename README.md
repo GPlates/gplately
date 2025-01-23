@@ -47,7 +47,7 @@ eprint = {https://rmets.onlinelibrary.wiley.com/doi/pdf/10.1002/gdj3.185},
 ## Dependencies
 
 - [pyGPlates](https://www.gplates.org/docs/pygplates/pygplates_getting_started.html#installation)
-- [plate-model-manager](https://pypi.org/project/plate-model-manager/) >= 1.2.0
+- [plate-model-manager](https://pypi.org/project/plate-model-manager/) >= 1.2.2
 - [Shapely](https://shapely.readthedocs.io/en/stable/project.html#installing-shapely)
 - [NumPy](https://numpy.org/install/) > 1.16
 - [SciPy](https://scipy.org/install/) > 1.0
@@ -140,8 +140,6 @@ See details [docker/README.md](docker/README.md).
 
 ## Usage
 
-GPlately uses objects to accomplish a variety of common tasks. The common objects include:
-
 - [`DataServer`](#the-dataserver-object) - download rotation files and topology features from plate models on EarthByte's webDAV server
 - [`PlateModelManager`](#the-platemodelmanager-object) - download and manage the plate reconstruction model files
 - [`PlateReconstruction`](#the-platereconstruction-object) - reconstruct features, tesselate mid ocean ridges, subduction zones
@@ -149,40 +147,21 @@ GPlately uses objects to accomplish a variety of common tasks. The common object
 - [`Raster`](#the-raster-object) - read in NetCDF grids, interpolation, resampling
 - [`PlotTopologies`](#the-plottopologies-object) - one stop shop for plotting ridges, trenches, subduction teeth
 
-### The `DataServer` object
+### The `PlateModelManager` class
 
-`GPlately`'s `DataServer` object can be used to download:
+The **PlateModelManager** class was introduced as a more efficient alternative to the **DataServer** class, 
+designed specifically for downloading and managing plate reconstruction model files.
 
-- rotation models
-- topology features
-- static polygons
-- coastlines
-- continents
-- continent-ocean boundaries
-- age grids and rasters
-- geological feature data
-
-from assorted plate reconstruction models. These files are needed to construct most of `GPlately`'s objects. For example,
-we can download a `rotation model`, a set of `topology features` and some `static polygons` from the [Müller et al. 2019](https://www.earthbyte.org/muller-et-al-2019-deforming-plate-reconstruction-and-seafloor-age-grids-tectonics/)
-global Mesozoic–Cenozoic deforming plate motion model.
+A complete example of using the PlateModelManager class is available at https://github.com/GPlates/gplately/blob/master/Notebooks/Examples/introducing-plate-model-manager.py .
 
 ```python
-import gplately
-gDownload = gplately.DataServer("Muller2019")
-rotation_model, topology_features, static_polygons = gDownload.get_plate_reconstruction_files()
-```
+from plate_model_manager import PlateModelManager, PresentDayRasterManager
+from gplately import PlateReconstruction, PlotTopologies, Raster
 
-### The `PlateModelManager` object 🚀
-
-... was introduced as an alternative/substitute to the `DataServer` object. The `PlateModelManager` object can be used to download and manage plate reconstruction models.
-
-```
-from gplately import PlateReconstruction, PlotTopologies
-from plate_model_manager import PlateModelManager
-
-pm_manager = PlateModelManager()
-model = pm_manager.get_model("Muller2019")
-model.set_data_dir("plate-model-repo")
+model = PlateModelManager().get_model(
+    "Muller2019", # model name
+    data_dir="plate-model-repo" # the local folder where you would like to save the model files
+    )
 
 recon_model = PlateReconstruction(
     model.get_rotation_model(),
@@ -195,72 +174,145 @@ gplot = PlotTopologies(
     COBs=model.get_layer("COBs"),
     time=55,
 )
+# get present-day topography raster
+raster = Raster(PresentDayRasterManager().get_raster("topography"))
+# get paleo-agegrid raster at 100Ma from Muller2019 model
+agegrid = Raster(model.get_raster("AgeGrids", time=100))   
 ```
 
-### The `PlateReconstruction` object
+### The `DataServer` class
 
-... contains methods to reconstruct the positions of present-day feature data back through geological time. You can also use
-it to calculate plate model data like topological plate velocities, or total trench and ridge lengths per Ma! You can create
-the object by passing a `rotation model`, a set of `topology features` and some `static polygons`:
+The **DataServer** class can be used to download:
+
+- rotation models
+- topology features
+- static polygons
+- coastlines
+- continents
+- continent-ocean boundaries
+- age grids and rasters
+- geological feature data
+
+from assorted plate reconstruction models. These files are needed to construct most of `GPlately`'s objects. For example,
+we can download a `rotation model`, a set of `topology features` and some `static polygons` from the [Müller et al. 2019](https://www.earthbyte.org/muller-et-al-2019-deforming-plate-reconstruction-and-seafloor-age-grids-tectonics/)
+global Mesozoic–Cenozoic deforming plate motion model. (Use the newer **PlateModelManager** class when it is possible.)
 
 ```python
-model = gplately.PlateReconstruction(rotation_model, topology_features, static_polygons)
+import gplately 
+
+gdownload = gplately.download.DataServer("Muller2019")
+
+# Download plate reconstruction files and geometries from the Müller et al. 2019 model
+rotation_model, topology_features, static_polygons = gdownload.get_plate_reconstruction_files()
+coastlines, continents, COBs = gdownload.get_topology_geometries()
+
+# Download the Müller et al. 2019 100 Ma age grid
+age_grid = gdownload.get_age_grid(times=100)
+
+# Download the ETOPO1 geotiff raster
+etopo = gdownload.get_raster("ETOPO1_tif")
 ```
 
-Launch the [Plate Reconstruction](https://github.com/GPlates/gplately/blob/master/Notebooks/02-PlateReconstructions.ipynb) notebook to see more.
+### The `PlateReconstruction` class
 
-### The `Points` object
+The **PlateReconstruction** class contains tools to reconstruct geological features like tectonic plates and plate boundaries, and to interrogate plate kinematic data like plate motion velocities, and rates of subduction and seafloor spreading.
 
-... can be used to reconstruct the positions of geological point features and calculate their underlying plate velocities
-through geological time.
+A complete Jupyter notebook example is available at https://github.com/GPlates/gplately/blob/master/Notebooks/02-PlateReconstructions.ipynb .
 
 ```python
-pt_lon = np.array([-107.662152, -58.082792, 17.483189, 133.674590, 80.412876])
-pt_lat = np.array([48.797807, -12.654857, 11.884395, -26.415630, 31.368509])
+from plate_model_manager import PlateModelManager
+from gplately import PlateReconstruction
 
-# Call the Points object: pass the PlateReconstruction object, and the latitudes and longitudes of the seed points!
-gpts = gplately.Points(model, pt_lon, pt_lat)
+model =  PlateModelManager().get_model("Muller2019")
+
+# Build a plate reconstruction model using a rotation model, a set of topology features and static polygons
+recon_model = PlateReconstruction(
+    model.get_rotation_model(),
+    topology_features=model.get_layer("Topologies"),
+    static_polygons=model.get_layer("StaticPolygons"),
+)
+```
+
+### The `Points` class
+
+The methods in the **Points** class track the motion of a point (or group of points) represented by a latitude and longitude through geologic time. This motion can be visualised using flowlines or motion paths and quantified with point motion velocities.
+
+A complete Jupyter notebook example is available at https://github.com/GPlates/gplately/blob/master/Notebooks/03-WorkingWithPoints.ipynb .
+
+```python
+import numpy as np
+import gplately
+from plate_model_manager import PlateModelManager
+
+model =  PlateModelManager().get_model("Muller2019")
+
+# Create a plate reconstruction model using a rotation model, a set of topology features and static polygons
+recon_model = gplately.auxiliary.get_plate_reconstruction(model)
+
+# Define some points using their latitude and longitude coordinates so we can track them though time!
+pt_lons = np.array([140., 150., 160.])
+pt_lats = np.array([-30., -40., -50.])
+
+# Create a Points instance from these points
+gpts = gplately.Points(recon_model, pt_lons, pt_lats)
 ```
 
 ![PointData](https://raw.githubusercontent.com/GPlates/gplately/master/Notebooks/NotebookFiles/ReadMe_Files/surface_hotspot_plumes.png)
 
-### The `Raster` object
+### The `Raster` class
 
-...can be used to read, resample and resize assorted raster data like `netCDF4` seafloor age grids, continental grids and ETOPO
-relief rasters. You can also reconstruct raster data back through geological time!
+The **Raster** class contains methods to work with netCDF4 or MaskedArray gridded data. Grids may be filled, resized, resampled, and reconstructed back and forwards through geologic time. Other array data can also be interpolated onto Raster grids.
+
+A complete Jupyter notebook example is available at https://github.com/GPlates/gplately/blob/master/Notebooks/06-Rasters.ipynb .
 
 ```python
-etopo = gDownload.get_raster("ETOPO1_tif")
+import gplately
+from plate_model_manager import PlateModelManager, PresentDayRasterManager
 
+model =  PlateModelManager().get_model("Muller2019")
+
+# Create a plate reconstruction model using a rotation model, a set of topology features and static polygons
+recon_model = gplately.auxiliary.get_plate_reconstruction(model)
+
+# Any numpy array can be turned into a Raster object!
 raster = gplately.Raster(
-    model,
-    data=etopo,
-    time=0,
-    origin="upper",
+    plate_reconstruction=recon_model,
+    data=PresentDayRasterManager().get_raster("topography"),
+    extent="global",  # equivalent to (-180, 180, -90, 90)
+    origin="lower",  # or set extent to (-180, 180, -90, 90)
 )
-white_rgb = (255, 255, 255)  # RGB code for white, to fill gaps in output
 
-reconstructed = raster.reconstruct(
-    time=50,
-    fill_value=white_rgb,
-    threads=4,
-)
+# Reconstruct the raster data to 50 million years ago! 
+reconstructed_raster = raster.reconstruct(
+    time=50, 
+    partitioning_features=model.get_layer("ContinentalPolygons")
+    )
 ```
 
 Below is a plot of the [ETOPO1 global relief raster](https://www.ncei.noaa.gov/products/etopo-global-relief-model) at present day, and reconstructed to 50Ma:
 
 ![RasterImg](https://raw.githubusercontent.com/GPlates/gplately/master/Notebooks/NotebookFiles/ReadMe_Files/etopo_reconstruction.png)
 
-### The `PlotTopologies` object
+### The `PlotTopologies` class
 
-... can be used to visualise reconstructed feature geometries through time. To call the object, pass a set of `continents`,
-`coastlines` and `COBs` (either as file paths or as `<pyGPlates.FeatureCollection>` objects), as well as a `PlateReconstruction`
-object, and a reconstruction `time`.
+The PlotTopologies class works with the aforementioned PlateReconstruction class to plot geologic features of different types listed here, as well as coastline, continent and continent-ocean boundary geometries reconstructed through time using pyGPlates.
+
+A complete Jupyter notebook example is available at https://github.com/GPlates/gplately/blob/master/Notebooks/02-PlateReconstructions.ipynb .
 
 ```python
-coastlines, continents, COBs = gDownload.get_topology_geometries()
-time = 50 #Ma
-gPlot = gplately.plot.PlotTopologies(model, time, coastlines, continents, COBs)
+import gplately
+from plate_model_manager import PlateModelManager
+from gplately import PlotTopologies
+
+model =  PlateModelManager().get_model("Muller2019")
+recon_model = gplately.auxiliary.get_plate_reconstruction(model)
+
+gplot = PlotTopologies(
+        recon_model,
+        coastlines=model.get_layer("Coastlines"),
+        COBs=model.get_layer("COBs"),
+        continents= model.get_layer("ContinentalPolygons"),
+        time=55)
 ```
 
 Below are some continents, coastlines, COBs, ridges and transforms, trenches, subduction teeth and
@@ -286,11 +338,11 @@ To see GPlately in action, launch a Jupyter Notebook environment and check out t
 
 ## API Documentation
 
-Documentation of GPlately's objects and methods can be found [here](https://gplates.github.io/gplately/)(**latest official release**)!
+Documentation of GPlately's classes and methods can be found [here](https://gplates.github.io/gplately/) (**latest official release**)!
 
 Other documentation versions:
-- [Documentation in development](https://gplates.github.io/gplately/dev-doc)
-- [Documentation v1.3.0](https://gplates.github.io/gplately/v1.3.0/)
+- [Documentation dev (latest unstable)](https://gplates.github.io/gplately/dev-doc)
+- [Documentation v1.3.0 (**latest stable**)](https://gplates.github.io/gplately/v1.3.0/)
 - [Documentation v1.2.0](https://gplates.github.io/gplately/v1.2.0/)
 - [Documentation v1.1.0](https://gplates.github.io/gplately/v1.1.0/)
 - [Documentation v1.0.0](https://gplates.github.io/gplately/v1.0.0/)
