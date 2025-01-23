@@ -19,35 +19,22 @@
 
 ![Intro GIF](https://raw.githubusercontent.com/GPlates/gplately/master/Notebooks/NotebookFiles/pdoc_Files/docs_muller19_seed_points.gif)
 
-## Main objects
-GPlately's common objects include:
+## Version - latest dev
 
-### [DataServer](https://gplates.github.io/gplately/download.html#gplately.download.DataServer)
-The `DataServer` object automatically downloads and caches files needed for plate reconstructions to a folder in your system.
-These plate reconstruction files include rotation models, topology features and static polygons and geometries such as 
-coastlines, continents and continent-ocean boundaries. Additional data like rasters, grids and feature data can also be installed. 
-
-```python
-gdownload = gplately.download.DataServer("Muller2019")
-
-# Download plate reconstruction files and geometries from the Müller et al. 2019 model
-rotation_model, topology_features, static_polygons = gdownload.get_plate_reconstruction_files()
-coastlines, continents, COBs = gdownload.get_topology_geometries()
-
-# Download the Müller et al. 2019 100 Ma age grid
-age_grid = gdownload.get_age_grid(time=100)
-
-# Download the ETOPO1 geotiff raster
-etopo = gdownload.get_raster("ETOPO1_tif")
-```
+## Quick start🚀
 
 ### [PlateModelManager](https://pypi.org/project/plate-model-manager/)
-The `PlateModelManager` object was introduced as an alternative/substitute to the `DataServer` object. It can be used to download and manage plate reconstruction models.
+The **PlateModelManager** module was introduced as a more efficient alternative to the DataServer class, 
+designed specifically for downloading and managing plate reconstruction model files.
 
 ```python
-pm_manager = PlateModelManager()
-model = pm_manager.get_model("Muller2019")
-model.set_data_dir("plate-model-repo") # the local folder where you would like to save the model files
+from plate_model_manager import PlateModelManager, PresentDayRasterManager
+from gplately import PlateReconstruction, PlotTopologies, Raster
+
+model = PlateModelManager().get_model(
+    "Muller2019", # model name
+    data_dir="plate-model-repo" # the local folder where you would like to save the model files
+    )
 
 recon_model = PlateReconstruction(
     model.get_rotation_model(),
@@ -60,9 +47,35 @@ gplot = PlotTopologies(
     COBs=model.get_layer("COBs"),
     time=55,
 )
+# get present-day topography raster
+raster = Raster(PresentDayRasterManager().get_raster("topography"))
+# get paleo-agegrid raster at 100Ma from Muller2019 model
+agegrid = Raster(model.get_raster("AgeGrids", time=100))   
+)
 ```
 
-`DataServer` and `PlateModelManager` support the following plate reconstruction file collections which are bundled with the following data:
+### [DataServer](https://gplates.github.io/gplately/download.html#gplately.download.DataServer)
+The `DataServer` class allows users to automatically download and cache the necessary files for plate reconstructions to a designated folder on your system. 
+These files include rotation models, topology features, and static geometries such as coastlines, continents, and continent-ocean boundaries. 
+Additionally, it supports the retrieval of other data types, including rasters, grids, and feature data. (Use the newer **PlateModelManager** when it is possible.)
+
+```python
+import gplately 
+
+gdownload = gplately.download.DataServer("Muller2019")
+
+# Download plate reconstruction files and geometries from the Müller et al. 2019 model
+rotation_model, topology_features, static_polygons = gdownload.get_plate_reconstruction_files()
+coastlines, continents, COBs = gdownload.get_topology_geometries()
+
+# Download the Müller et al. 2019 100 Ma age grid
+age_grid = gdownload.get_age_grid(times=100)
+
+# Download the ETOPO1 geotiff raster
+etopo = gdownload.get_raster("ETOPO1_tif")
+```
+
+Both `PlateModelManager` and `DataServer` support the following plate reconstruction models:
 
 ------------------
 
@@ -91,95 +104,133 @@ gplot = PlotTopologies(
 |  Seton2012                       |     ✅     |          ✅           |          ✅          |        ✅        |        ✅       |     ✅    |       ✅       |       ❌      |
 |  Muller2008                      |     ❌     |          ❌           |          ✅          |        ❌        |        ❌       |     ❌    |       ❌       |       ❌      |
 
-**Note: All models have rotation files.**
+**Please note that all models have rotation files. The "Zenodo" column indicates whether the model files are available on [Zenodo](https://zenodo.org/).**
 
 ------------------
 
 ### [PlateReconstruction](https://gplates.github.io/gplately/reconstruction.html#gplately.reconstruction.PlateReconstruction)
-The `PlateReconstruction` object contains tools to reconstruct geological features like tectonic plates and plate boundaries,
+The `PlateReconstruction` class contains tools to reconstruct geological features like tectonic plates and plate boundaries,
 and to interrogate plate kinematic data like plate motion velocities, and rates of subduction and seafloor spreading.
 
 ```python
+from plate_model_manager import PlateModelManager
+from gplately import PlateReconstruction
+
+model =  PlateModelManager().get_model("Muller2019")
+
 # Build a plate reconstruction model using a rotation model, a set of topology features and static polygons
-model = gplately.PlateReconstruction(rotation_model, topology_features, static_polygons)
+recon_model = PlateReconstruction(
+    model.get_rotation_model(),
+    topology_features=model.get_layer("Topologies"),
+    static_polygons=model.get_layer("StaticPolygons"),
+)
 ```
 
 ### [Points](https://gplates.github.io/gplately/reconstruction.html#gplately.reconstruction.Points)
-Tools in the `Points` object track the motion of a point (or group of points) represented by a latitude and longitude 
+The methods in the `Points` class track the motion of a point (or group of points) represented by a latitude and longitude 
 through geologic time. This motion can be visualised using flowlines or motion paths and quantified with point 
 motion velocities.
 
 ```python
+import numpy as np
+import gplately
+from plate_model_manager import PlateModelManager
+
+model =  PlateModelManager().get_model("Muller2019")
+
+# Create a plate reconstruction model using a rotation model, a set of topology features and static polygons
+recon_model = gplately.auxiliary.get_plate_reconstruction(model)
+
 # Define some points using their latitude and longitude coordinates so we can track them though time!
 pt_lons = np.array([140., 150., 160.])
 pt_lats = np.array([-30., -40., -50.])
 
-# Build a Points object from these points
-gpts = gplately.Points(model, pt_lons, pt_lats)
+# Create a Points instance from these points
+gpts = gplately.Points(recon_model, pt_lons, pt_lats)
 ```
+
 ![PointsDemo](https://raw.githubusercontent.com/GPlates/gplately/master/Notebooks/NotebookFiles/pdoc_Files/Hawaii_Emperor_motion_path.png)
 
 
 ### [Raster](https://gplates.github.io/gplately/grids.html#gplately.grids.Raster)
-The `Raster` object contains tools to work with netCDF4 or MaskedArray gridded data. Grids may be filled, 
+The `Raster` class contains methods to work with netCDF4 or MaskedArray gridded data. Grids may be filled, 
 resized, resampled, and reconstructed back and forwards through geologic time. Other array data can also be 
 interpolated onto `Raster` grids.  
 
 ```python
+import gplately
+from plate_model_manager import PlateModelManager, PresentDayRasterManager
+
+model =  PlateModelManager().get_model("Muller2019")
+
+# Create a plate reconstruction model using a rotation model, a set of topology features and static polygons
+recon_model = gplately.auxiliary.get_plate_reconstruction(model)
+
 # Any numpy array can be turned into a Raster object!
 raster = gplately.Raster(
-    plate_reconstruction=model,
-    data=array,
+    plate_reconstruction=recon_model,
+    data=PresentDayRasterManager().get_raster("topography"),
     extent="global",  # equivalent to (-180, 180, -90, 90)
     origin="lower",  # or set extent to (-180, 180, -90, 90)
 )
 
 # Reconstruct the raster data to 50 million years ago! 
-reconstructed_raster = raster.reconstruct(time=50, partitioning_features=continents)
+reconstructed_raster = raster.reconstruct(
+    time=50, 
+    partitioning_features=model.get_layer("ContinentalPolygons"))
 ```
 
 ![RasterDemo](https://raw.githubusercontent.com/GPlates/gplately/master/Notebooks/NotebookFiles/pdoc_Files/etopo_reconstruction.png)
 
 
 ### [PlotTopologies](https://gplates.github.io/gplately/plot.html#gplately.plot.PlotTopologies)
-`PlotTopologies` works with the aforementioned `PlateReconstruction` object to plot
+The `PlotTopologies` class works with the aforementioned `PlateReconstruction` class to plot
 geologic features of different types listed 
 [here](https://gplates.github.io/gplately/plot.html#gplately.plot.PlotTopologies), as well as 
 coastline, continent and continent-ocean boundary geometries reconstructed through time using pyGPlates. 
 
 ```python
-gdownload = gplately.download.DataServer("Muller2019")
+import gplately
+from plate_model_manager import PlateModelManager
+from gplately import PlotTopologies
 
-# Obtain features for the PlotTopologies object with DataServer
-coastlines, continents, COBs = gdownload.get_topology_geometries()
+model =  PlateModelManager().get_model("Muller2019")
+recon_model = gplately.auxiliary.get_plate_reconstruction(model)
 
-# Call the PlotTopologies object
-gplot = gplately.plot.PlotTopologies(
-    model, # The PlateReconstruction object - it is an input parameter!
-    time, 
-    coastlines, continents, COBs
-)
+gplot = PlotTopologies(
+        recon_model,
+        coastlines=model.get_layer("Coastlines"),
+        COBs=model.get_layer("COBs"),
+        continents= model.get_layer("ContinentalPolygons"),
+        time=55)
 ```
 
 ![PlotTopologiesDemo](https://raw.githubusercontent.com/GPlates/gplately/master/Notebooks/NotebookFiles/pdoc_Files/plottopologies.png)
 
 ### [SeafloorGrid](https://gplates.github.io/gplately/oceans.html#gplately.oceans.SeafloorGrid)
-The `SeafloorGrid` object wraps an automatic workflow to grid seafloor ages and seafloor spreading rates
+The `SeafloorGrid` class wraps an automatic workflow to grid seafloor ages and seafloor spreading rates
 as encoded by a plate reconstruction model. 
 
 [10-SeafloorGrids.ipynb](../gplately/Notebooks/10-SeafloorGrids.ipynb) is a tutorial notebook that demonstrates
 how to set up and use the `SeafloorGrid` object, and shows a sample set of output grids. 
 
 ```python
+import gplately
+from plate_model_manager import PlateModelManager
+
+model =  PlateModelManager().get_model("Muller2019")
+gplot = gplately.auxiliary.get_gplot(model)
+
 # Set up automatic gridding from 1000Ma to present day
 seafloorgrid = gplately.SeafloorGrid(
 
-    PlateReconstruction_object = model, #The PlateReconstruction object
+    PlateReconstruction_object = gplot.plate_reconstruction, #The PlateReconstruction object
     PlotTopologies_object = gplot, #The PlotTopologies object
     
     # Time parameters
-    max_time = 1000, #Ma
+    max_time = 1, #Ma
     min_time = 0, #Ma
+    ridge_time_step=1, #Myr
 )
 
 # Begin automatic gridding!
@@ -226,6 +277,7 @@ ensure_plate_model_manager_compatible(REQUIRED_PMM_VERSION)
 del ensure_plate_model_manager_compatible
 
 from . import (
+    auxiliary,
     data,
     download,
     geometry,
@@ -271,6 +323,7 @@ __pdoc__ = {
 
 __all__ = [
     # Modules
+    "auxiliary",
     "data",
     "download",
     "geometry",
