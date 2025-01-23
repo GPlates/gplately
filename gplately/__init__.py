@@ -120,7 +120,7 @@ A complete Jupyter notebook example is available at https://github.com/GPlates/g
 from plate_model_manager import PlateModelManager
 from gplately import PlateReconstruction
 
-model =  PlateModelManager().get_model("Muller2019")
+model = PlateModelManager().get_model("Muller2019")
 
 # Build a plate reconstruction model using a rotation model, a set of topology features and static polygons
 recon_model = PlateReconstruction(
@@ -142,7 +142,7 @@ import numpy as np
 import gplately
 from plate_model_manager import PlateModelManager
 
-model =  PlateModelManager().get_model("Muller2019")
+model = PlateModelManager().get_model("Muller2019")
 
 # Create a plate reconstruction model using a rotation model, a set of topology features and static polygons
 recon_model = gplately.auxiliary.get_plate_reconstruction(model)
@@ -169,7 +169,7 @@ A complete Jupyter notebook example is available at https://github.com/GPlates/g
 import gplately
 from plate_model_manager import PlateModelManager, PresentDayRasterManager
 
-model =  PlateModelManager().get_model("Muller2019")
+model = PlateModelManager().get_model("Muller2019")
 
 # Create a plate reconstruction model using a rotation model, a set of topology features and static polygons
 recon_model = gplately.auxiliary.get_plate_reconstruction(model)
@@ -204,7 +204,7 @@ import gplately
 from plate_model_manager import PlateModelManager
 from gplately import PlotTopologies
 
-model =  PlateModelManager().get_model("Muller2019")
+model = PlateModelManager().get_model("Muller2019")
 recon_model = gplately.auxiliary.get_plate_reconstruction(model)
 
 gplot = PlotTopologies(
@@ -262,7 +262,7 @@ seafloorgrid.reconstruct_by_topologies()
 - [__08 - Predicting Slab Flux__](08-PredictingSlabFlux.html): Predicting the average slab dip angle of subducting oceanic lithosphere.
 - [__09 - Motion Paths and Flowlines__](09-CreatingMotionPathsAndFlowlines.html): Using pyGPlates to create motion paths and flowines of points on a tectonic plate to illustrate the plate's trajectory through geological time.
 - [__10 - SeafloorGrid__](10-SeafloorGrids.html): Defines the parameters needed to set up a `SeafloorGrid` object, and demonstrates how to produce age and spreading rate grids from a set of plate reconstruction model files.
-- [__11 - AndesFluxes__](11-AndesFluxes.html): Demonstrates how the reconstructed subduction history along the Andean margin can be potentially used in the plate kinematics anylysis and data mining.
+- [__11 - AndesFluxes__](11-AndesFluxes.html): Demonstrates how the reconstructed subduction history along the Andean margin can be potentially used in the plate kinematics analysis and data mining.
 
 """
 from .utils import dev_warning

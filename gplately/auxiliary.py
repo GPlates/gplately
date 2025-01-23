@@ -9,7 +9,21 @@ from .reconstruction import PlateReconstruction
 
 
 def get_plate_reconstruction(model: Union[str, PlateModel], model_repo_dir: str = "./"):
-    """return a PlateReconstruction object"""
+    """Convenient function to return a PlateReconstruction object
+
+    Parameters
+    ----------
+    model : str or PlateModel
+        model name or a PlateModel object
+    model_repo_dir: str, default="./"
+        the folder in which you would like to keep the model files
+
+    Returns
+    -------
+    PlateReconstruction
+        a PlateReconstruction object
+
+    """
     if isinstance(model, str):
         model_name: str = model
         try:
@@ -47,7 +61,24 @@ def get_gplot(
     age: Union[int, float] = 0,
     plot_engine: PlotEngine = CartopyPlotEngine(),
 ) -> PlotTopologies:
-    """auxiliary function to get gplot object"""
+    """Convenient function to return a PlotTopologies object
+
+    Parameters
+    ----------
+    model : str or PlateModel
+        model name or a PlateModel object
+    model_repo_dir: str, default="./"
+        the folder in which you would like to keep the model files
+    age: int or float, default=0
+        the reconstruction age/time
+    plot_engine: PlotEngine, default=CartopyPlotEngine()
+        two choices - CartopyPlotEngine() or PygmtPlotEngine()
+
+    Returns
+    -------
+    PlotTopologies
+        a PlotTopologies object
+    """
     if isinstance(model, str):
         model_name: str = model
         try:

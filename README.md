@@ -223,7 +223,7 @@ A complete Jupyter notebook example is available at https://github.com/GPlates/g
 from plate_model_manager import PlateModelManager
 from gplately import PlateReconstruction
 
-model =  PlateModelManager().get_model("Muller2019")
+model = PlateModelManager().get_model("Muller2019")
 
 # Build a plate reconstruction model using a rotation model, a set of topology features and static polygons
 recon_model = PlateReconstruction(
@@ -244,7 +244,7 @@ import numpy as np
 import gplately
 from plate_model_manager import PlateModelManager
 
-model =  PlateModelManager().get_model("Muller2019")
+model = PlateModelManager().get_model("Muller2019")
 
 # Create a plate reconstruction model using a rotation model, a set of topology features and static polygons
 recon_model = gplately.auxiliary.get_plate_reconstruction(model)
@@ -304,7 +304,7 @@ import gplately
 from plate_model_manager import PlateModelManager
 from gplately import PlotTopologies
 
-model =  PlateModelManager().get_model("Muller2019")
+model = PlateModelManager().get_model("Muller2019")
 recon_model = gplately.auxiliary.get_plate_reconstruction(model)
 
 gplot = PlotTopologies(
