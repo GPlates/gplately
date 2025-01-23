@@ -15,16 +15,16 @@
 ![PyPI - Python Version](https://img.shields.io/pypi/pyversions/gplately?style=for-the-badge)
 
 
-GPlately was created to accelerate spatio-temporal data analysis leveraging [pyGPlates](https://www.gplates.org/docs/pygplates/index.html) and [PlateTectonicTools](https://github.com/EarthByte/PlateTectonicTools) within a simplified Python interface. This object-oriented package enables the reconstruction of data through deep geologic time (points, lines, polygons, and rasters), the interrogation of plate kinematic information (plate velocities, rates of subduction and seafloor spreading), the rapid comparison between multiple plate motion models, and the plotting of reconstructed output data on maps. All tools are designed to be parallel-safe to accelerate spatio-temporal analysis over multiple CPU processors.
+GPlately was created to accelerate spatio-temporal data analysis by leveraging [pyGPlates](https://www.gplates.org/docs/pygplates/index.html) and [PlateTectonicTools](https://github.com/EarthByte/PlateTectonicTools) within a simplified Python interface. This object-oriented package enables the reconstruction of data through deep geologic time (such as points, lines, polygons, and rasters), the interrogation of plate kinematic information (plate velocities, rates of subduction and seafloor spreading), the rapid comparison of multiple plate motion models, and the plotting of reconstructed output data on maps. All tools are designed to be parallel-safe, accelerating spatio-temporal analysis over multiple CPU processors.
 
 ![SeedPointGIF](https://raw.githubusercontent.com/GPlates/gplately/master/Notebooks/NotebookFiles/ReadMe_Files/muller19_seedpoints.gif)
 
 GPlately requires a working installation of pyGPlates, which is freely
 available at https://www.gplates.org/download.
-All major system architectures (e.g. Linux, MacOS, Windows) are supported and installation instructions
+All major system architectures (e.g., Linux, macOS, Windows) are supported, and installation instructions
 are [well documented](https://www.gplates.org/docs/pygplates/pygplates_getting_started.html#installation).
 Sample data is also available from [EarthByte servers](https://www.earthbyte.org/category/resources/), which
-includes rasters, seafloor age grids, rotation files, and more to get started with plate reconstructions.
+include rasters, seafloor age grids, rotation files, and more to help you get started with plate reconstructions.
 
 #### Citation
 
@@ -64,8 +64,8 @@ eprint = {https://rmets.onlinelibrary.wiley.com/doi/pdf/10.1002/gdj3.185},
 
 ### 1. Using conda (recommended)
 
-You can install the latest stable public release of `GPlately` and all of its dependencies using conda.
-This is the preferred method to install `GPlately` which downloads binaries from the conda-forge channel.
+You can install the latest stable public release of `GPlately` and all its dependencies using conda.
+This is the preferred method for installing `GPlately`, as it downloads binaries from the "conda-forge" channel.
 
 ```sh
 conda install -c conda-forge gplately
@@ -73,7 +73,7 @@ conda install -c conda-forge gplately
 
 #### Creating a new conda environment
 
-We recommend creating a new conda environment inside which to install `GPlately`. This avoids any potential conflicts in your base Python environment. In the example below we create a new environment called "`my-env`":
+We recommend creating a new conda environment in which to install `GPlately`. This avoids any potential conflicts within your base Python environment. In the example below, we create a new environment called `my-env`.
 
 ```sh
 conda create -n my-env
@@ -81,7 +81,7 @@ conda activate my-env
 conda install -c conda-forge gplately
 ```
 
-`my-env` needs to be activated whenever you use `GPlately`: i.e. `conda activate my-env`.
+The `my-env` environment needs to be activated before using `GPlately`, i.e., `conda activate my-env`.
 
 ### 2. Using pip
 
@@ -99,29 +99,29 @@ pip install git+https://github.com/GPlates/gplately.git
 
 #### Pull from repository
 
-**First-time installation:** To install the latest version of GPlately from a specific repository branch (e.g. `master`), copy the following commands into your terminal:
+**First-time installation:** To install the latest version of GPlately from a specific repository branch (e.g., `master`), run the following commands in your terminal:
 
 ```sh
-cd /path/to/desired/directory #Change your command directory to where you'd like to clone GPlately
-git clone https://github.com/GPlates/gplately.git
-cd gplately # navigate within the gplately folder
-git checkout master # or the name of whichever branch you need
-git pull # fetch all recent changes from this branch
-pip install .
+cd /directory-to-keep-gplately-files # go into the directory in which you'd like to keep the GPlately repository
+git clone https://github.com/GPlates/gplately.git gplately.git
+cd gplately.git # go into the root directory of your cloned gplately repository
+git checkout master # check out the "master" branch or the name of branch you want
+git pull # fetch all recent code changes from the GitHub remote repository to your computer
+pip install . # alternatively, you can use "pip install -e ." to install gplately in editable mode
 ```
 
-**Update installation from cloned repo:** To update your installation of GPlately by fetching the latest pushes from a specific repository branch (e.g. `master`), copy the following commands into your terminal:
+**Update installation:** To update your installation of GPlately by fetching the latest code from a specific repository branch (e.g., `master`), run the following commands in your terminal:
 
 ```sh
-cd /path/to/gplately/directory #Should be where gplately is cloned - must end in /.../gplately
-git checkout master # or the name of whichever branch you need
-git pull # fetch all recent changes from this branch
-pip install .
+cd /path-to-gplately-repository # go into the root directory of your cloned gplately repository, such as ./gplately.git
+git checkout master # check out the "master" branch or the name of branch you want
+git pull # fetch all recent code changes from the GitHub remote repository to your computer
+pip install . # alternatively, you can use "pip install -e ." to install gplately in editable mode
 ```
 
 ### 3. Using Docker 🐳
 
-👉 Run GPlately example notebooks
+👉 Run GPlately example notebooks with Docker
 
 - `docker pull gplates/gplately`
 - `docker run --rm -ti -p 8888:8888  gplates/gplately`
@@ -134,7 +134,7 @@ pip install .
 
 👉 Run your Python script with Docker
 
-- `docker run -it --rm -v "$PWD":/ws -w /ws gplates/gplately python my_script_to_run.py` (assume my_script_to_run.py is in current working directory)
+- `docker run -it --rm -v "$PWD":/ws -w /ws gplates/gplately python my_script_to_run.py` (assume my_script_to_run.py is in the current working directory)
 
 See details [docker/README.md](docker/README.md).
 
@@ -269,7 +269,7 @@ A complete Jupyter notebook example is available at https://github.com/GPlates/g
 import gplately
 from plate_model_manager import PlateModelManager, PresentDayRasterManager
 
-model =  PlateModelManager().get_model("Muller2019")
+model = PlateModelManager().get_model("Muller2019")
 
 # Create a plate reconstruction model using a rotation model, a set of topology features and static polygons
 recon_model = gplately.auxiliary.get_plate_reconstruction(model)
@@ -295,7 +295,7 @@ Below is a plot of the [ETOPO1 global relief raster](https://www.ncei.noaa.gov/p
 
 ### The `PlotTopologies` class
 
-The PlotTopologies class works with the aforementioned PlateReconstruction class to plot geologic features of different types listed here, as well as coastline, continent and continent-ocean boundary geometries reconstructed through time using pyGPlates.
+The **PlotTopologies** class works with the PlateReconstruction class to plot geologic features of different types listed here, as well as coastline, continent and continent-ocean boundary geometries reconstructed through time using pyGPlates.
 
 A complete Jupyter notebook example is available at https://github.com/GPlates/gplately/blob/master/Notebooks/02-PlateReconstructions.ipynb .
 
@@ -316,7 +316,7 @@ gplot = PlotTopologies(
 ```
 
 Below are some continents, coastlines, COBs, ridges and transforms, trenches, subduction teeth and
-seafloor age grids plotted using `PlotTopologies`!
+seafloor age grids plotted using `PlotTopologies`.
 
 ![ReconstructionImage](https://raw.githubusercontent.com/GPlates/gplately/master/Notebooks/NotebookFiles/ReadMe_Files/plot_topologies_img.png)
 
@@ -332,9 +332,9 @@ To see GPlately in action, launch a Jupyter Notebook environment and check out t
 - [**06 - Rasters**](https://github.com/GPlates/gplately/blob/master/Notebooks/06-Rasters.ipynb): Reading, resizing, resampling raster data, and linearly interpolating point data onto raster data
 - [**07 - Plate Tectonic Stats**](https://github.com/GPlates/gplately/blob/master/Notebooks/07-WorkingWithPlateTectonicStats.ipynb): Using [PlateTectonicTools](https://github.com/EarthByte/PlateTectonicTools) to calculate and plot subduction zone and ridge data (convergence/spreading velocities, subduction angles, subduction zone and ridge lengths, crustal surface areas produced and subducted etc.)
 - [**08 - Predicting Slab Flux**](https://github.com/GPlates/gplately/blob/master/Notebooks/08-PredictingSlabFlux.ipynb): Predicting the average slab dip angle of subducting oceanic lithosphere.
-- [**09 - Motion Paths and Flowlines**](https://github.com/GPlates/gplately/blob/master/Notebooks/09-CreatingMotionPathsAndFlowlines.ipynb): Using pyGPlates to create motion paths and flowines of points on a tectonic plate to illustrate the plate's trajectory through geological time.
+- [**09 - Motion Paths and Flowlines**](https://github.com/GPlates/gplately/blob/master/Notebooks/09-CreatingMotionPathsAndFlowlines.ipynb): Using pyGPlates to create motion paths and flowlines of points on a tectonic plate to illustrate the plate's trajectory through geological time.
 - [**10 - SeafloorGrid**](https://github.com/GPlates/gplately/blob/master/Notebooks/10-SeafloorGrids.ipynb): Defines the parameters needed to set up a `SeafloorGrid` object, and demonstrates how to produce age and spreading rate grids from a set of plate reconstruction model files.
-- [**11 - AndesFluxes**](https://github.com/GPlates/gplately/blob/master/Notebooks/11-AndesFluxes.ipynb): Demonstrates how the reconstructed subduction history along the Andean margin can be potentially used in the plate kinematics anylysis and data mining.
+- [**11 - AndesFluxes**](https://github.com/GPlates/gplately/blob/master/Notebooks/11-AndesFluxes.ipynb): Demonstrates how the reconstructed subduction history along the Andean margin can be potentially used in the plate kinematics analysis and data mining.
 
 ## API Documentation
 
@@ -353,7 +353,7 @@ GPlately comes with a suite of useful command line tools. These tools are design
 
 ### **list**
 
-  Display a list of available plate models from GPlates server. These model names can then be used by the Plate Model Manager to download model files over Internet. Run `gplately list -h` for details.
+  Display a list of available plate models from GPlates server. These model names can then be used by the Plate Model Manager to download model files over the Internet. Run `gplately list -h` for details.
 
   Examples:
 
@@ -391,7 +391,7 @@ GPlately comes with a suite of useful command line tools. These tools are design
         (get features whose birth age is younger than 500Myr)
     
     - `gplately filter input_file output_file -n Africa "North America" -p 701 714 715 101 --min-birth-age 500`
-        (get features whose name conains "Africa" or "North America" and plate ID is one of 701 714 715 101 and birth age is older than 500Myr)
+        (get features whose name contains "Africa" or "North America" and plate ID is one of 701 714 715 101 and birth age is older than 500Myr)
     
     - `gplately filter input_file output_file -t gpml:Basin`
         (get all gpml:Basin features)
