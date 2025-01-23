@@ -36,10 +36,16 @@ hljs.highlightAll();
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
 <dt id="gplately.auxiliary.get_gplot"><code class="name flex">
-<span>def <span class="ident">get_gplot</span></span>(<span>model_name: str, model_repo_dir: str, age: Union[float, int], plot_engine: <a title="gplately.mapping.plot_engine.PlotEngine" href="mapping/plot_engine.html#gplately.mapping.plot_engine.PlotEngine">PlotEngine</a> = &lt;gplately.mapping.cartopy_plot.CartopyPlotEngine object&gt;) ‑> <a title="gplately.plot.PlotTopologies" href="plot.html#gplately.plot.PlotTopologies">PlotTopologies</a></span>
+<span>def <span class="ident">get_gplot</span></span>(<span>model: Union[str, plate_model_manager.plate_model.PlateModel], model_repo_dir: str = './', age: Union[float, int] = 0, plot_engine: <a title="gplately.mapping.plot_engine.PlotEngine" href="mapping/plot_engine.html#gplately.mapping.plot_engine.PlotEngine">PlotEngine</a> = &lt;gplately.mapping.cartopy_plot.CartopyPlotEngine object&gt;) ‑> <a title="gplately.plot.PlotTopologies" href="plot.html#gplately.plot.PlotTopologies">PlotTopologies</a></span>
 </code></dt>
 <dd>
 <div class="desc"><p>auxiliary function to get gplot object</p></div>
+</dd>
+<dt id="gplately.auxiliary.get_plate_reconstruction"><code class="name flex">
+<span>def <span class="ident">get_plate_reconstruction</span></span>(<span>model: Union[str, plate_model_manager.plate_model.PlateModel], model_repo_dir: str = './')</span>
+</code></dt>
+<dd>
+<div class="desc"><p>return a PlateReconstruction object</p></div>
 </dd>
 </dl>
 </section>
@@ -64,6 +70,7 @@ hljs.highlightAll();
 <li><h3><a href="#header-functions">Functions</a></h3>
 <ul class="">
 <li><code><a title="gplately.auxiliary.get_gplot" href="#gplately.auxiliary.get_gplot">get_gplot</a></code></li>
+<li><code><a title="gplately.auxiliary.get_plate_reconstruction" href="#gplately.auxiliary.get_plate_reconstruction">get_plate_reconstruction</a></code></li>
 </ul>
 </li>
 </ul>

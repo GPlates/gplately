@@ -103,48 +103,6 @@ list of instance <pygplates.ReconstructedFeatureGeometry> for
 compatibility with the point-in-polygon routine.</dd>
 </dl></div>
 </dd>
-<dt id="gplately.utils.get_geometries"><code class="name flex">
-<span>def <span class="ident">get_geometries</span></span>(<span>filename, buffer=None)</span>
-</code></dt>
-<dd>
-<div class="desc"><p>Read a file and return feature geometries.</p>
-<p>If <code>geopandas</code> is available, it will be used to read the file,
-returning a <code>geopandas.GeoSeries</code>. If <code>geopandas</code> is not found,
-only shapefiles can be read, and a list of <code>shapely</code> geometries
-will be returned instead of a <code>geopandas.GeoSeries</code>.</p>
-<h2 id="parameters">Parameters</h2>
-<dl>
-<dt><strong><code>filename</code></strong> :&ensp;<code>str</code></dt>
-<dd>Path to the file to be read.</dd>
-</dl>
-<h2 id="returns">Returns</h2>
-<dl>
-<dt><strong><code>geometries</code></strong> :&ensp;<code>list</code> or <code>geopandas.GeoSeries</code></dt>
-<dd><code>shapely</code> geometries that define the feature geometry held in the
-shapefile.</dd>
-</dl></div>
-</dd>
-<dt id="gplately.utils.get_valid_geometries"><code class="name flex">
-<span>def <span class="ident">get_valid_geometries</span></span>(<span>filename)</span>
-</code></dt>
-<dd>
-<div class="desc"><p>Read a file and return valid feature geometries.</p>
-<p>If <code>geopandas</code> is available, it will be used to read the file,
-returning a <code>geopandas.GeoSeries</code>. If <code>geopandas</code> is not found,
-only shapefiles can be read, and a list of <code>shapely</code> geometries
-will be returned instead of a <code>geopandas.GeoSeries</code>.</p>
-<h2 id="parameters">Parameters</h2>
-<dl>
-<dt><strong><code>filename</code></strong> :&ensp;<code>str</code></dt>
-<dd>Path to the file to be read.</dd>
-</dl>
-<h2 id="returns">Returns</h2>
-<dl>
-<dt><strong><code>geometries</code></strong> :&ensp;<code>list</code> or <code>geopandas.GeoSeries</code></dt>
-<dd>Valid <code>shapely</code> geometries that define the feature geometry held in the
-shapefile.</dd>
-</dl></div>
-</dd>
 <dt id="gplately.utils.plot_subduction_teeth"><code class="name flex">
 <span>def <span class="ident">plot_subduction_teeth</span></span>(<span>geometries, width, polarity=None, height=None, spacing=None, projection='auto', transform=None, ax=None, **kwargs)</span>
 </code></dt>
@@ -304,8 +262,6 @@ geometries at the dateline are split.</dd>
 <ul class="">
 <li><code><a title="gplately.utils.create_icosahedral_mesh" href="#gplately.utils.create_icosahedral_mesh">create_icosahedral_mesh</a></code></li>
 <li><code><a title="gplately.utils.ensure_polygon_geometry" href="#gplately.utils.ensure_polygon_geometry">ensure_polygon_geometry</a></code></li>
-<li><code><a title="gplately.utils.get_geometries" href="#gplately.utils.get_geometries">get_geometries</a></code></li>
-<li><code><a title="gplately.utils.get_valid_geometries" href="#gplately.utils.get_valid_geometries">get_valid_geometries</a></code></li>
 <li><code><a title="gplately.utils.plot_subduction_teeth" href="#gplately.utils.plot_subduction_teeth">plot_subduction_teeth</a></code></li>
 <li><code><a title="gplately.utils.point_in_polygon_routine" href="#gplately.utils.point_in_polygon_routine">point_in_polygon_routine</a></code></li>
 <li><code><a title="gplately.utils.shapelify_features" href="#gplately.utils.shapelify_features">shapelify_features</a></code></li>
