@@ -27,6 +27,8 @@
 The **PlateModelManager** module was introduced as a more efficient alternative to the DataServer class, 
 designed specifically for downloading and managing plate reconstruction model files.
 
+A complete example of using the PlateModelManager class is available at https://github.com/GPlates/gplately/blob/master/Notebooks/Examples/introducing-plate-model-manager.py .
+
 ```python
 from plate_model_manager import PlateModelManager, PresentDayRasterManager
 from gplately import PlateReconstruction, PlotTopologies, Raster
@@ -112,6 +114,8 @@ Both `PlateModelManager` and `DataServer` support the following plate reconstruc
 The `PlateReconstruction` class contains tools to reconstruct geological features like tectonic plates and plate boundaries,
 and to interrogate plate kinematic data like plate motion velocities, and rates of subduction and seafloor spreading.
 
+A complete Jupyter notebook example is available at https://github.com/GPlates/gplately/blob/master/Notebooks/02-PlateReconstructions.ipynb .
+
 ```python
 from plate_model_manager import PlateModelManager
 from gplately import PlateReconstruction
@@ -130,6 +134,8 @@ recon_model = PlateReconstruction(
 The methods in the `Points` class track the motion of a point (or group of points) represented by a latitude and longitude 
 through geologic time. This motion can be visualised using flowlines or motion paths and quantified with point 
 motion velocities.
+
+A complete Jupyter notebook example is available at https://github.com/GPlates/gplately/blob/master/Notebooks/03-WorkingWithPoints.ipynb .
 
 ```python
 import numpy as np
@@ -156,6 +162,8 @@ gpts = gplately.Points(recon_model, pt_lons, pt_lats)
 The `Raster` class contains methods to work with netCDF4 or MaskedArray gridded data. Grids may be filled, 
 resized, resampled, and reconstructed back and forwards through geologic time. Other array data can also be 
 interpolated onto `Raster` grids.  
+
+A complete Jupyter notebook example is available at https://github.com/GPlates/gplately/blob/master/Notebooks/06-Rasters.ipynb .
 
 ```python
 import gplately
@@ -189,6 +197,8 @@ geologic features of different types listed
 [here](https://gplates.github.io/gplately/plot.html#gplately.plot.PlotTopologies), as well as 
 coastline, continent and continent-ocean boundary geometries reconstructed through time using pyGPlates. 
 
+A complete Jupyter notebook example is available at https://github.com/GPlates/gplately/blob/master/Notebooks/02-PlateReconstructions.ipynb .
+
 ```python
 import gplately
 from plate_model_manager import PlateModelManager
@@ -211,7 +221,7 @@ gplot = PlotTopologies(
 The `SeafloorGrid` class wraps an automatic workflow to grid seafloor ages and seafloor spreading rates
 as encoded by a plate reconstruction model. 
 
-[10-SeafloorGrids.ipynb](../gplately/Notebooks/10-SeafloorGrids.ipynb) is a tutorial notebook that demonstrates
+[10-SeafloorGrids.ipynb](https://github.com/GPlates/gplately/blob/master/Notebooks/10-SeafloorGrids.ipynb) is a tutorial notebook that demonstrates
 how to set up and use the `SeafloorGrid` object, and shows a sample set of output grids. 
 
 ```python
