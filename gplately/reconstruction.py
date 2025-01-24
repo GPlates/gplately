@@ -82,7 +82,7 @@ class PlateReconstruction(object):
                 "No rotation features were passed to the constructor of PlateReconstruction. The reconstruction will not work. Check your rotation file(s)."
             )
 
-        self.rotation_model = pygplates.RotationModel(  # type: ignore
+        self.rotation_model = _RotationModel(
             rotation_model, default_anchor_plate_id=anchor_plate_id
         )
         self.topology_features = _load_FeatureCollection(topology_features)
@@ -2442,7 +2442,7 @@ class _ReconstructByTopologies(object):
         detect_collisions: Collision detection function, or None. Defaults to _DEFAULT_COLLISION.
         """
 
-        self.rotation_model = pygplates.RotationModel(rotation_features_or_model)  # type: ignore
+        self.rotation_model = _RotationModel(rotation_features_or_model)
 
         # Turn topology data into a list of features (if not already).
         self.topology_features = pygplates.FeaturesFunctionArgument(
