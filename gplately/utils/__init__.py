@@ -43,5 +43,7 @@ __pdoc__ = {
     "plot_utils": False,
     "seafloor_grid_utils": False,
     "version": False,
+    "get_geometries": False,
+    "get_valid_geometries": False,
     # "crustal_production": False,
 }
