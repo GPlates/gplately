@@ -212,7 +212,7 @@ class PlateReconstruction(object):
         Raises
         ------
         ValueError
-            If topoloogy features have not been set in this `PlateReconstruction`.
+            If topology features have not been set in this `PlateReconstruction`.
         """
         if anchor_plate_id is None:
             anchor_plate_id = self.anchor_plate_id
@@ -488,7 +488,7 @@ class PlateReconstruction(object):
                 if output_distance_to_nearest_edge_of_trench:
                     distance_to_nearest_edge_of_trench = min(
                         stat.distance_from_start_of_topological_section,
-                        stat.distance_from_end_of_topological_section,
+                        stat.distance_to_end_of_topological_section,
                     )
                     output_tuple += (np.degrees(distance_to_nearest_edge_of_trench),)
 
@@ -498,7 +498,7 @@ class PlateReconstruction(object):
                         # The overriding plate is on the left of the trench.
                         # So the clockwise direction starts at the end of the trench.
                         distance_to_start_edge_of_trench = (
-                            stat.distance_from_end_of_topological_section
+                            stat.distance_to_end_of_topological_section
                         )
                     else:
                         # The overriding plate is on the right of the trench.
@@ -672,7 +672,7 @@ class PlateReconstruction(object):
         Raises
         ------
         ValueError
-            If topoloogy features have not been set in this `PlateReconstruction`.
+            If topology features have not been set in this `PlateReconstruction`.
         ValueError
             If `use_ptt` is `True` and `convergence_threshold_in_cm_per_yr` is not `None`.
 
@@ -953,7 +953,7 @@ class PlateReconstruction(object):
         Raises
         ------
         ValueError
-            If topoloogy features have not been set in this `PlateReconstruction`.
+            If topology features have not been set in this `PlateReconstruction`.
         ValueError
             If `use_ptt` is `True` and `convergence_threshold_in_cm_per_yr` is not `None`.
 
@@ -1041,7 +1041,7 @@ class PlateReconstruction(object):
         Raises
         ------
         ValueError
-            If topoloogy features have not been set in this `PlateReconstruction`.
+            If topology features have not been set in this `PlateReconstruction`.
         ValueError
             If `use_ptt` is `True` and `convergence_threshold_in_cm_per_yr` is not `None`.
 
@@ -1379,7 +1379,7 @@ class PlateReconstruction(object):
         Raises
         ------
         ValueError
-            If topoloogy features have not been set in this `PlateReconstruction`.
+            If topology features have not been set in this `PlateReconstruction`.
         ValueError
             If `use_ptt` is `True` and `divergence_threshold_in_cm_per_yr` is not `None`.
 
@@ -1558,7 +1558,7 @@ class PlateReconstruction(object):
         Raises
         ------
         ValueError
-            If topoloogy features have not been set in this `PlateReconstruction`.
+            If topology features have not been set in this `PlateReconstruction`.
         ValueError
             If `use_ptt` is `True` and `divergence_threshold_in_cm_per_yr` is not `None`.
 
@@ -1705,7 +1705,7 @@ class PlateReconstruction(object):
         Raises
         ------
         ValueError
-            If topoloogy features have not been set in this `PlateReconstruction`.
+            If topology features have not been set in this `PlateReconstruction`.
         """
         # Add points to a multipoint geometry
 
@@ -1833,7 +1833,7 @@ class PlateReconstruction(object):
         Raises
         ------
         ValueError
-            If *plate_id* is `None` and topoloogy features have not been set in this `PlateReconstruction`.
+            If *plate_id* is `None` and topology features have not been set in this `PlateReconstruction`.
 
         Examples
         --------
