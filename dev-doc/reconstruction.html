@@ -120,12 +120,16 @@ features.</dd>
             self.name = None
 
         self._anchor_plate_id = self._check_anchor_plate_id(anchor_plate_id)
-        if isinstance(rotation_model, _RotationModel):
-            self.rotation_model = rotation_model
-        else:
-            self.rotation_model = _RotationModel(
-                rotation_model, default_anchor_plate_id=anchor_plate_id
+
+        # Add a warning if the rotation_model is empty
+        if not rotation_model:
+            logger.warning(
+                &#34;No rotation features were passed to the constructor of PlateReconstruction. The reconstruction will not work. Check your rotation file(s).&#34;
             )
+
+        self.rotation_model = pygplates.RotationModel(  # type: ignore
+            rotation_model, default_anchor_plate_id=anchor_plate_id
+        )
         self.topology_features = _load_FeatureCollection(topology_features)
         self.static_polygons = _load_FeatureCollection(static_polygons)
         self.plate_model_name = plate_model_name
@@ -196,7 +200,7 @@ features.</dd>
         tessellation_threshold_radians=0.001,
         ignore_warnings=False,
         return_geodataframe=False,
-        **kwargs
+        **kwargs,
     ):
         &#34;&#34;&#34;Samples points along subduction zone trenches and obtains subduction data at a particular
         geological time.
@@ -282,7 +286,7 @@ features.</dd>
                     tessellation_threshold_radians,
                     float(time),
                     anchor_plate_id=anchor_plate_id,
-                    **kwargs
+                    **kwargs,
                 )
 
         else:
@@ -292,7 +296,7 @@ features.</dd>
                 tessellation_threshold_radians,
                 float(time),
                 anchor_plate_id=anchor_plate_id,
-                **kwargs
+                **kwargs,
             )
 
         subduction_data = np.vstack(subduction_data)
@@ -529,7 +533,7 @@ features.</dd>
         tessellation_threshold_radians=0.001,
         ignore_warnings=False,
         return_geodataframe=False,
-        **kwargs
+        **kwargs,
     ):
         &#34;&#34;&#34;Samples points along resolved spreading features (e.g. mid-ocean ridges) and calculates spreading rates and
         lengths of ridge segments at a particular geological time.
@@ -584,7 +588,7 @@ features.</dd>
                     tessellation_threshold_radians,
                     spreading_feature_types,
                     anchor_plate_id=anchor_plate_id,
-                    **kwargs
+                    **kwargs,
                 )
 
         else:
@@ -596,7 +600,7 @@ features.</dd>
                 tessellation_threshold_radians,
                 spreading_feature_types,
                 anchor_plate_id=anchor_plate_id,
-                **kwargs
+                **kwargs,
             )
 
         if not ridge_data:
@@ -781,7 +785,7 @@ features.</dd>
             reconstructed_features,
             to_time,
             anchor_plate_id=anchor_plate_id,
-            **kwargs
+            **kwargs,
         )
         return reconstructed_features
 
@@ -2398,7 +2402,11 @@ if not provided.</dd>
             df = self._get_dataframe()
             df.to_xml(filename, index=False)
 
-        elif filename.endswith(&#34;.gpml&#34;) or filename.endswith(&#34;.gpmlz&#34;) or filename.endswith(&#34;.shp&#34;):
+        elif (
+            filename.endswith(&#34;.gpml&#34;)
+            or filename.endswith(&#34;.gpmlz&#34;)
+            or filename.endswith(&#34;.shp&#34;)
+        ):
             self.FeatureCollection.write(filename)
 
         else:
