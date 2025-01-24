@@ -47,6 +47,7 @@ def main(show=True):
         "output_trench_normal": True,
     }
 
+    # Subduction zones.
     subduction_data = model.tessellate_subduction_zones(
         time,
         tessellation_threshold_radians=tessellation_threshold_radians,
@@ -66,6 +67,7 @@ def main(show=True):
     )
     print("total subduction zone length (kms):", total_subduction_zone_length_in_kms)
 
+    # Ridges.
     ridge_data = model.tessellate_mid_ocean_ridges(
         time,
         tessellation_threshold_radians=tessellation_threshold_radians,
@@ -89,6 +91,14 @@ def main(show=True):
     )
     print("total ridge length (kms):", total_ridge_length_in_kms)
 
+    # Plate velocity stats.
+    converging_data, diverging_data = model.plate_boundary_convergence_divergence(
+        time,
+        uniform_point_spacing_radians=0.001,
+        convergence_velocity_threshold=0.2,  # cm/yr
+        divergence_velocity_threshold=0.2,  # cm/yr
+    )
+
     # Non-geometry columns of subduction data.
     subduction_data_columns = [
         column
@@ -101,12 +111,13 @@ def main(show=True):
         column for column in ridge_data.columns if column != ridge_data.geometry.name
     ]
 
-    num_subplots = len(subduction_data_columns) + len(ridge_data_columns)
+    # Subduction and ridge subplots followed by a single plate boundary statistics subplot.
+    num_subplots = len(subduction_data_columns) + len(ridge_data_columns) + 1
 
     nun_subplot_columns = 4
     num_subplot_rows = num_subplots // nun_subplot_columns + 1
 
-    # First plots are subduction data followed by ridge data.
+    # First plots are subduction data followed by ridge data followed by boundary statistics.
     #
     # Note: You'll need to zoom to 100% if viewing figure saved to a file.
     fig = plt.figure(
@@ -121,7 +132,7 @@ def main(show=True):
 
     subplot_index = 0
 
-    # Subduction data plots.
+    # Subduction data subplots.
     for subduction_data_column in subduction_data_columns:
         ax = axes.flatten()[subplot_index]
         ax.set_global()
@@ -137,7 +148,7 @@ def main(show=True):
 
         subplot_index += 1
 
-    # Ridge data plots.
+    # Ridge data subplots.
     for ridge_data_column in ridge_data_columns:
         ax = axes.flatten()[subplot_index]
         ax.set_global()
@@ -152,6 +163,35 @@ def main(show=True):
         fig.colorbar(im_ridge, ax=ax)
 
         subplot_index += 1
+
+    # Plate boundary statistics subplot.
+    converging_lat_lon_locations = np.fromiter(
+        (data.boundary_point.to_lat_lon() for data in converging_data),
+        dtype=np.dtype((float, 2)),
+    )
+    diverging_lat_lon_locations = np.fromiter(
+        (data.boundary_point.to_lat_lon() for data in diverging_data),
+        dtype=np.dtype((float, 2)),
+    )
+    ax = axes.flatten()[subplot_index]
+    ax.set_global()
+    ax.scatter(
+        converging_lat_lon_locations[:, 1],  # longitude
+        converging_lat_lon_locations[:, 0],  # latitude
+        color="blue",
+        s=2,
+        transform=ccrs.PlateCarree(),
+    )
+    ax.scatter(
+        diverging_lat_lon_locations[:, 1],  # longitude
+        diverging_lat_lon_locations[:, 0],  # latitude
+        color="red",
+        s=2,
+        transform=ccrs.PlateCarree(),
+    )
+    ax.set_title("Plate Boundary Stats: converging(blue)/diverging(red)")
+
+    subplot_index += 1
 
     # Remove unused subplots.
     while subplot_index < len(axes.flatten()):
