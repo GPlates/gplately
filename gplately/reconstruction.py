@@ -23,6 +23,7 @@ working with point data, and calculating plate velocities at specific geological
 import math
 import os
 import warnings
+import logging
 
 import numpy as np
 import pygplates
@@ -31,6 +32,8 @@ from . import tools as _tools
 from .gpml import _load_FeatureCollection
 from .pygplates import FeatureCollection as _FeatureCollection
 from .pygplates import RotationModel as _RotationModel
+
+logger = logging.getLogger("gplately")
 
 
 class PlateReconstruction(object):
@@ -72,12 +75,16 @@ class PlateReconstruction(object):
             self.name = None
 
         self._anchor_plate_id = self._check_anchor_plate_id(anchor_plate_id)
-        if isinstance(rotation_model, _RotationModel):
-            self.rotation_model = rotation_model
-        else:
-            self.rotation_model = _RotationModel(
-                rotation_model, default_anchor_plate_id=anchor_plate_id
+
+        # Add a warning if the rotation_model is empty
+        if not rotation_model:
+            logger.warning(
+                "No rotation features were passed to the constructor of PlateReconstruction. The reconstruction will not work. Check your rotation file(s)."
             )
+
+        self.rotation_model = _RotationModel(
+            rotation_model, default_anchor_plate_id=anchor_plate_id
+        )
         self.topology_features = _load_FeatureCollection(topology_features)
         self.static_polygons = _load_FeatureCollection(static_polygons)
         self.plate_model_name = plate_model_name
@@ -148,7 +155,7 @@ class PlateReconstruction(object):
         tessellation_threshold_radians=0.001,
         ignore_warnings=False,
         return_geodataframe=False,
-        **kwargs
+        **kwargs,
     ):
         """Samples points along subduction zone trenches and obtains subduction data at a particular
         geological time.
@@ -234,7 +241,7 @@ class PlateReconstruction(object):
                     tessellation_threshold_radians,
                     float(time),
                     anchor_plate_id=anchor_plate_id,
-                    **kwargs
+                    **kwargs,
                 )
 
         else:
@@ -244,7 +251,7 @@ class PlateReconstruction(object):
                 tessellation_threshold_radians,
                 float(time),
                 anchor_plate_id=anchor_plate_id,
-                **kwargs
+                **kwargs,
             )
 
         subduction_data = np.vstack(subduction_data)
@@ -481,7 +488,7 @@ class PlateReconstruction(object):
         tessellation_threshold_radians=0.001,
         ignore_warnings=False,
         return_geodataframe=False,
-        **kwargs
+        **kwargs,
     ):
         """Samples points along resolved spreading features (e.g. mid-ocean ridges) and calculates spreading rates and
         lengths of ridge segments at a particular geological time.
@@ -536,7 +543,7 @@ class PlateReconstruction(object):
                     tessellation_threshold_radians,
                     spreading_feature_types,
                     anchor_plate_id=anchor_plate_id,
-                    **kwargs
+                    **kwargs,
                 )
 
         else:
@@ -548,7 +555,7 @@ class PlateReconstruction(object):
                 tessellation_threshold_radians,
                 spreading_feature_types,
                 anchor_plate_id=anchor_plate_id,
-                **kwargs
+                **kwargs,
             )
 
         if not ridge_data:
@@ -733,7 +740,7 @@ class PlateReconstruction(object):
             reconstructed_features,
             to_time,
             anchor_plate_id=anchor_plate_id,
-            **kwargs
+            **kwargs,
         )
         return reconstructed_features
 
@@ -1902,7 +1909,11 @@ class Points(object):
             df = self._get_dataframe()
             df.to_xml(filename, index=False)
 
-        elif filename.endswith(".gpml") or filename.endswith(".gpmlz") or filename.endswith(".shp"):
+        elif (
+            filename.endswith(".gpml")
+            or filename.endswith(".gpmlz")
+            or filename.endswith(".shp")
+        ):
             self.FeatureCollection.write(filename)
 
         else:
@@ -2404,12 +2415,11 @@ class _ReconstructByTopologies(object):
     Class to reconstruct geometries using topologies.
 
     Currently only points are supported.
-
-    use_plate_partitioner: If True then use pygplates.PlatePartitioner to partition points,
-                           otherwise use faster points_in_polygons.find_polygons().
     """
 
     use_plate_partitioner = False
+    """If the use_plate_partitioner is True then use pygplates.PlatePartitioner to partition points,
+        otherwise use faster points_in_polygons.find_polygons()."""
 
     def __init__(
         self,
@@ -2432,12 +2442,7 @@ class _ReconstructByTopologies(object):
         detect_collisions: Collision detection function, or None. Defaults to _DEFAULT_COLLISION.
         """
 
-        # Turn rotation data into a RotationModel (if not already).
-        if not isinstance(rotation_features_or_model, pygplates.RotationModel):
-            rotation_model = pygplates.RotationModel(rotation_features_or_model)
-        else:
-            rotation_model = rotation_features_or_model
-        self.rotation_model = rotation_model
+        self.rotation_model = _RotationModel(rotation_features_or_model)
 
         # Turn topology data into a list of features (if not already).
         self.topology_features = pygplates.FeaturesFunctionArgument(
