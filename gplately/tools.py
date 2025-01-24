@@ -554,7 +554,11 @@ def griddata_sphere(points, values, xi, method="nearest", **kwargs):
 
     assert xi[0].shape == xi[1].shape, "ensure coordinates in xi are the same shape"
 
-    from scipy.interpolate.interpnd import _ndim_coords_from_arrays
+    try:
+        from scipy.interpolate.interpnd import _ndim_coords_from_arrays
+    except ImportError:
+        # SciPy 1.15 renamed interpnd to _interpnd (see https://github.com/scipy/scipy/pull/21754).
+        from scipy.interpolate._interpnd import _ndim_coords_from_arrays
 
     points = _ndim_coords_from_arrays(points)
 

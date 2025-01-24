@@ -60,7 +60,7 @@ def validate_topology_availability(feature_name):
         @wraps(func_pointer)
         def wrapper(self, ax, **kwargs):
             if not self.plate_reconstruction.topology_features:
-                logger.warn(
+                logger.warning(
                     f"Plate model does not have topology features. Unable to plot {feature_name}."
                 )
                 return ax

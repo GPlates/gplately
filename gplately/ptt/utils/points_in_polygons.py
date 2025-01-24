@@ -94,33 +94,41 @@ def find_polygons(
     """
     Efficient point-in-polygon testing when there are many relatively uniformly spaced points to be tested against polygons.
 
-    points: a sequence of 'pygplates.PointOnSphere'.
+    Parameters
+    ----------
+    points: a sequence of 'pygplates.PointOnSphere'
+        a sequence of points
 
-    polygons: a sequence of 'pygplates.PolygonOnSphere'.
+    polygons: a sequence of 'pygplates.PolygonOnSphere'
+        a sequence of polygons
 
-    polygon_proxies: Optional sequence of objects associated with 'polygons'.
-                     If not specified then the proxies default to the polygons themselves.
-                     These can be any object (such as the 'pygplates.Feature' that the polygon came from).
+    polygon_proxies : Optional sequence of objects associated with 'polygons'
+        If not specified then the proxies default to the polygons themselves.
+        These can be any object (such as the 'pygplates.Feature' that the polygon came from).
 
-    all_polygons: Whether to find all polygons containing each point or just the first one encountered.
-                  Set to True if polygons overlap each other, otherwise set to False (for non-overlapping polygons).
-                  Defaults to False (non-overlapping polygons).
+    all_polygons: bool
+        Whether to find all polygons containing each point or just the first one encountered.
+        Set to True if polygons overlap each other, otherwise set to False (for non-overlapping polygons).
+        Defaults to False (non-overlapping polygons).
 
-    subdivision_depth: The depth of the lat/lon quad tree used to speed up point-in-polygon queries.
-                       The lat/lon width of a leaf quad tree node is (90 / (2^subdivision_depth)) degrees.
-                       Generally the denser the 'points' the larger the depth should be.
-                       Setting this value too high causes unnecessary time to be spent generating a deep quad tree.
-                       Setting this value too low reduces the culling efficiency of the quad tree.
-                       However a value of 4 seems to work quite well for a uniform lat/lon spacing of 'points' of 1 degree and below
-                       without the cost of generating a deep quad tree.
-                       So most of the time the subdivision depth can be left at its default value.
+    subdivision_depth: number
+        The depth of the lat/lon quad tree used to speed up point-in-polygon queries.
+        The lat/lon width of a leaf quad tree node is (90 / (2^subdivision_depth)) degrees.
+        Generally the denser the 'points' the larger the depth should be.
+        Setting this value too high causes unnecessary time to be spent generating a deep quad tree.
+        Setting this value too low reduces the culling efficiency of the quad tree.
+        However a value of 4 seems to work quite well for a uniform lat/lon spacing of 'points' of 1 degree and below
+        without the cost of generating a deep quad tree.
+        So most of the time the subdivision depth can be left at its default value.
 
-    Returns: A list of polygon proxies associated with 'points'.
-             The length of the returned list matches the length of 'points'.
-             For each point in 'points', if the point is contained by a polygon then that polygon's proxy
-             is stored (otherwise None is stored) at the same index (as the point) in the returned list.
-             If 'all_polygons' is False then each item in returned list is a single polygon proxy (or a single None).
-             If 'all_polygons' is True then each item in returned list is a *list* of polygon proxies (or a single None).
+    Returns
+    -------
+    A list of polygon proxies associated with 'points'
+        The length of the returned list matches the length of 'points'.
+        For each point in 'points', if the point is contained by a polygon then that polygon's proxy
+        is stored (otherwise None is stored) at the same index (as the point) in the returned list.
+        If 'all_polygons' is False then each item in returned list is a single polygon proxy (or a single None).
+        If 'all_polygons' is True then each item in returned list is a *list* of polygon proxies (or a single None).
 
     Raises ValueError if the lengths of 'polygons' and 'polygon_proxies' (if specified) do not match.
     """

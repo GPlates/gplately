@@ -40,11 +40,12 @@ dependencies = [
     "pyyaml",
     "pygmt",
     "rioxarray",
+    "pygplates>=1.0.0rc1",
 ]
 
 [tool.setuptools.packages.find]
 where = ["."]
-exclude = ['*.examples*','*.notebooks*','tests-dir*','Notebooks*', 'scripts*']
+exclude = ['*.examples*','*.notebooks*','tests-dir*','Notebooks*', 'scripts*', 'build*']
 namespaces = true
 
 #[tool.setuptools.dynamic]

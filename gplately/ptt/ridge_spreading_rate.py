@@ -54,24 +54,35 @@ def spreading_rates(
     - spreading velocity magnitude (in cm/yr)
     - length of arc segment (in degrees) that current point is on
 
+    Parameters
+    ----------
 
-    rotation_features_or_model: Rotation model or feature collection(s), or list of features, or filename(s).
+    rotation_features_or_model
+        Rotation model or feature collection(s), or list of features, or filename(s).
 
-    topology_features: Topology feature collection(s), or list of features, or filename(s) or any combination of those.
+    topology_features
+        Topology feature collection(s), or list of features, or filename(s) or any combination of those.
 
-    time: Reconstruction time to resolved topologies.
+    time: number
+        Reconstruction time to resolved topologies.
 
-    threshold_sampling_distance_radians: Threshold sampling distance along spreading features (in radians).
+    threshold_sampling_distance_radians: number
+        Threshold sampling distance along spreading features (in radians).
 
-    spreading_feature_types: Only spreading features with a feature type contained in this list are considered.
-                             If None then all spreading features are considered.
+    spreading_feature_types
+        Only spreading features with a feature type contained in this list are considered.
+        If None then all spreading features are considered.
 
-    transform_segment_deviation_in_radians: How much a segment can deviate from the stage pole before
-                                            it's considered a transform segment (in radians).
+    transform_segment_deviation_in_radians: number
+        How much a segment can deviate from the stage pole before
+        it's considered a transform segment (in radians).
 
-    velocity_delta_time: Delta time interval used to calculate spreading velocity.
+    velocity_delta_time: number
+        Delta time interval used to calculate spreading velocity.
 
-    Returns: List of the tuples described above.
+    Returns
+    -------
+    A list of the tuples described above.
     """
     time = float(time)
 
@@ -215,23 +226,35 @@ def spreading_rates_dense(
     - left plate ID
     - right plate ID
 
-    rotation_features_or_model: Rotation model or feature collection(s), or list of features, or filename(s).
+    Parameters
+    ----------
 
-    topology_features: Topology feature collection(s), or list of features, or filename(s) or any combination of those.
+    rotation_features_or_model
+        Rotation model or feature collection(s), or list of features, or filename(s).
 
-    time: Reconstruction time to resolved topologies.
+    topology_features
+        Topology feature collection(s), or list of features, or filename(s) or any combination of those.
 
-    threshold_sampling_distance_radians: Threshold sampling distance along spreading features (in radians).
+    time: number
+        Reconstruction time to resolved topologies.
 
-    spreading_feature_types: Only spreading features with a feature type contained in this list are considered.
-                             If None then all spreading features are considered.
+    threshold_sampling_distance_radians: number
+        Threshold sampling distance along spreading features (in radians).
 
-    transform_segment_deviation_in_radians: How much a segment can deviate from the stage pole before
-                                            it's considered a transform segment (in radians).
+    spreading_feature_types
+        Only spreading features with a feature type contained in this list are considered.
+        If None then all spreading features are considered.
 
-    velocity_delta_time: Delta time interval used to calculate spreading velocity.
+    transform_segment_deviation_in_radians: number
+        How much a segment can deviate from the stage pole before
+        it's considered a transform segment (in radians).
 
-    Returns: List of the tuples described above.
+    velocity_delta_time: number
+        Delta time interval used to calculate spreading velocity.
+
+    Returns
+    -------
+    A list of the tuples described above.
     """
 
     # Turn rotation data into a RotationModel (if not already).
