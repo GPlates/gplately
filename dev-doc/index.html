@@ -347,7 +347,7 @@ and to interrogate plate kinematic data like plate motion velocities, and rates 
 <pre><code class="language-python">from plate_model_manager import PlateModelManager
 from gplately import PlateReconstruction
 
-model =  PlateModelManager().get_model(&quot;Muller2019&quot;)
+model = PlateModelManager().get_model(&quot;Muller2019&quot;)
 
 # Build a plate reconstruction model using a rotation model, a set of topology features and static polygons
 recon_model = PlateReconstruction(
@@ -365,7 +365,7 @@ motion velocities.</p>
 import gplately
 from plate_model_manager import PlateModelManager
 
-model =  PlateModelManager().get_model(&quot;Muller2019&quot;)
+model = PlateModelManager().get_model(&quot;Muller2019&quot;)
 
 # Create a plate reconstruction model using a rotation model, a set of topology features and static polygons
 recon_model = gplately.auxiliary.get_plate_reconstruction(model)
@@ -387,7 +387,7 @@ interpolated onto <code><a title="gplately.Raster" href="#gplately.Raster">Raste
 <pre><code class="language-python">import gplately
 from plate_model_manager import PlateModelManager, PresentDayRasterManager
 
-model =  PlateModelManager().get_model(&quot;Muller2019&quot;)
+model = PlateModelManager().get_model(&quot;Muller2019&quot;)
 
 # Create a plate reconstruction model using a rotation model, a set of topology features and static polygons
 recon_model = gplately.auxiliary.get_plate_reconstruction(model)
@@ -416,7 +416,7 @@ coastline, continent and continent-ocean boundary geometries reconstructed throu
 from plate_model_manager import PlateModelManager
 from gplately import PlotTopologies
 
-model =  PlateModelManager().get_model(&quot;Muller2019&quot;)
+model = PlateModelManager().get_model(&quot;Muller2019&quot;)
 recon_model = gplately.auxiliary.get_plate_reconstruction(model)
 
 gplot = PlotTopologies(
@@ -466,7 +466,7 @@ seafloorgrid.reconstruct_by_topologies()
 <li><a href="08-PredictingSlabFlux.html"><strong>08 - Predicting Slab Flux</strong></a>: Predicting the average slab dip angle of subducting oceanic lithosphere.</li>
 <li><a href="09-CreatingMotionPathsAndFlowlines.html"><strong>09 - Motion Paths and Flowlines</strong></a>: Using pyGPlates to create motion paths and flowines of points on a tectonic plate to illustrate the plate's trajectory through geological time.</li>
 <li><a href="10-SeafloorGrids.html"><strong>10 - SeafloorGrid</strong></a>: Defines the parameters needed to set up a <code><a title="gplately.SeafloorGrid" href="#gplately.SeafloorGrid">SeafloorGrid</a></code> object, and demonstrates how to produce age and spreading rate grids from a set of plate reconstruction model files.</li>
-<li><a href="11-AndesFluxes.html"><strong>11 - AndesFluxes</strong></a>: Demonstrates how the reconstructed subduction history along the Andean margin can be potentially used in the plate kinematics anylysis and data mining.</li>
+<li><a href="11-AndesFluxes.html"><strong>11 - AndesFluxes</strong></a>: Demonstrates how the reconstructed subduction history along the Andean margin can be potentially used in the plate kinematics analysis and data mining.</li>
 </ul>
 </section>
 <section>
@@ -544,9 +544,9 @@ working with point data, and calculating plate …</p></div>
 <span>(</span><span>file_collection, data_dir=None, verbose=True)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Uses <a href="https://www.fatiando.org/pooch/latest/">Pooch</a> to download plate reconstruction
+<div class="desc"><p>Uses the <a href="https://pypi.org/project/plate-model-manager/">plate-model-manager</a> to download plate reconstruction
 feature data from plate models and other studies that are stored on web servers
-(e.g. EarthByte's <a href="https://www.earthbyte.org/webdav/ftp/Data_Collections/">webDAV server</a>).</p>
+(e.g. EarthByte's <a href="https://repo.gplates.org/webdav/pmm/">webDAV server</a>).</p>
 <p>If the <code><a title="gplately.DataServer" href="#gplately.DataServer">DataServer</a></code> object and its methods are called for the first time, i.e. by:</p>
 <pre><code># string identifier to access the Muller et al. 2019 model
 gDownload = gplately.download.DataServer("Muller2019")
@@ -817,348 +817,24 @@ moved or deleted.</p>
 </table>
 <p><strong>Note: All models have rotation files.</strong></p>
 <hr>
-<p>To call the object, supply a model name string Identifier, <code>file_collection</code>, from one of the following models:</p>
-<ul>
-<li>
-<p><strong><a href="https://www.earthbyte.org/muller-et-al-2019-deforming-plate-reconstruction-and-seafloor-age-grids-tectonics/">Müller et al. 2019</a>:</strong></p>
-<p>file_collection = <code>Muller2019</code></p>
-<h2 id="information">Information</h2>
-<ul>
-<li>Downloadable files: a <code>rotation_model</code>, <code>topology_features</code>, <code>static_polygons</code>, <code>coastlines</code>, <code>continents</code>, <code>COBs</code>, and
-seafloor <code>age_grids</code> from 0 to 250 Ma.</li>
-<li>Maximum reconstruction time: 250 Ma</li>
-</ul>
-<h2 id="citations">Citations</h2>
-<p>Müller, R. D., Zahirovic, S., Williams, S. E., Cannon, J., Seton, M.,
-Bower, D. J., Tetley, M. G., Heine, C., Le Breton, E., Liu, S., Russell, S. H. J.,
-Yang, T., Leonard, J., and Gurnis, M. (2019), A global plate model including
-lithospheric deformation along major rifts and orogens since the Triassic.
-Tectonics, vol. 38, <a href="https://doi.org/10.1029/2018TC005462.">https://doi.org/10.1029/2018TC005462.</a></p>
-</li>
-<li>
-<p><strong>Müller et al. 2016</strong>:</p>
-<p>file_collection = <code>Muller2016</code></p>
-<h2 id="information_1">Information</h2>
-<ul>
-<li>Downloadable files: a <code>rotation_model</code>, <code>topology_features</code>, <code>static_polygons</code>, <code>coastlines</code>, and
-seafloor <code>age_grids</code> from 0-230 Ma.</li>
-<li>Maximum reconstruction time: 230 Ma</li>
-</ul>
-<h2 id="citations_1">Citations</h2>
-<ul>
-<li>Müller R.D., Seton, M., Zahirovic, S., Williams, S.E., Matthews, K.J.,
-Wright, N.M., Shephard, G.E., Maloney, K.T., Barnett-Moore, N., Hosseinpour, M.,
-Bower, D.J., Cannon, J., InPress. Ocean basin evolution and global-scale plate
-reorganization events since Pangea breakup, Annual Review of Earth and Planetary
-Sciences, Vol 44, 107-138. DOI: 10.1146/annurev-earth-060115-012211.</li>
-</ul>
-</li>
-<li>
-<p><strong><a href="https://zenodo.org/record/4485738#.Yhrm8hNBzA0">Merdith et al. 2021</a></strong>:</p>
-<p>file_collection = <code>Merdith2021</code></p>
-<h2 id="information_2">Information</h2>
-<ul>
-<li>Downloadable files: a <code>rotation_model</code>, <code>topology_features</code>, <code>static_polygons</code>, <code>coastlines</code>
-and <code>continents</code>.</li>
-<li>Maximum reconstruction time: 1 Ga (however, <code><a title="gplately.PlotTopologies" href="#gplately.PlotTopologies">PlotTopologies</a></code> correctly visualises up to 410 Ma)</li>
-</ul>
-<h2 id="citations_2">Citations:</h2>
-<ul>
-<li>Merdith et al. (in review), 'A continuous, kinematic full-plate motion model
-from 1 Ga to present'.</li>
-<li>Andrew Merdith. (2020). Plate model for 'Extending Full-Plate Tectonic Models
-into Deep Time: Linking the Neoproterozoic and the Phanerozoic ' (1.1b) [Data set].
-Zenodo. <a href="https://doi.org/10.5281/zenodo.4485738">https://doi.org/10.5281/zenodo.4485738</a></li>
-</ul>
-</li>
-<li>
-<p><strong>Cao et al. 2020</strong>:</p>
-<p>file_collection = <code>Cao2020</code></p>
-<h2 id="information_3">Information</h2>
-<ul>
-<li>Downloadable files: <code>rotation_model</code>, <code>topology_features</code>, <code>static_polygons</code>, <code>coastlines</code>
-and <code>continents</code>.</li>
-<li>Maximum reconstruction time: 1 Ga</li>
-</ul>
-<h2 id="citations_3">Citations</h2>
-<ul>
-<li>Toy Billion-year reconstructions from Cao et al (2020).
-Coupled Evolution of Plate Tectonics and Basal Mantle Structure Tectonics,
-doi: 10.1029/2020GC009244</li>
-</ul>
-</li>
-<li>
-<p><strong>Clennett et al. 2020</strong> :</p>
-<p>file_collection = <code>Clennett2020</code></p>
-<h2 id="information_4">Information</h2>
-<ul>
-<li>Downloadable files: <code>rotation_model</code>, <code>topology_features</code>, <code>static_polygons</code>, <code>coastlines</code>
-and <code>continents</code></li>
-<li>Maximum reconstruction time: 170 Ma</li>
-</ul>
-<h2 id="citations_4">Citations</h2>
-<ul>
-<li>Mather, B., Müller, R.D.,; Alfonso, C.P., Seton, M., 2021, Kimberlite eruption
-driven by slab flux and subduction angle. DOI: 10.5281/zenodo.5769002</li>
-</ul>
-</li>
-<li>
-<p><strong>Seton et al. 2012</strong>:</p>
-<p>file_collection = <code>Seton2012</code></p>
-<h2 id="information_5">Information</h2>
-<ul>
-<li>Downloadable files: <code>rotation_model</code>, <code>topology_features</code>, <code>coastlines</code>,
-<code>COBs</code>, and paleo-age grids (0-200 Ma)</li>
-<li>Maximum reconstruction time: 200 Ma</li>
-</ul>
-<h2 id="citations_5">Citations</h2>
-<ul>
-<li>M. Seton, R.D. Müller, S. Zahirovic, C. Gaina, T.H. Torsvik, G. Shephard, A. Talsma,
-M. Gurnis, M. Turner, S. Maus, M. Chandler, Global continental and ocean basin reconstructions
-since 200 Ma, Earth-Science Reviews, Volume 113, Issues 3-4, July 2012, Pages 212-270,
-ISSN 0012-8252, 10.1016/j.earscirev.2012.03.002.</li>
-</ul>
-</li>
-<li>
-<p><strong>Matthews et al. 2016</strong>:</p>
-<p>file_collection = <code>Matthews2016</code></p>
-<h2 id="information_6">Information</h2>
-<ul>
-<li>Downloadable files: <code>rotation_model</code>, <code>topology_features</code>, <code>static_polygons</code>, <code>coastlines</code>,
-and <code>continents</code></li>
-<li>Maximum reconstruction time(s): 410-250 Ma, 250-0 Ma</li>
-</ul>
-<h2 id="citations_6">Citations</h2>
-<ul>
-<li>Matthews, K.J., Maloney, K.T., Zahirovic, S., Williams, S.E., Seton, M.,
-and Müller, R.D. (2016). Global plate boundary evolution and kinematics since the
-late Paleozoic, Global and Planetary Change, 146, 226-250.
-DOI: 10.1016/j.gloplacha.2016.10.002</li>
-</ul>
-</li>
-<li>
-<p><strong>Merdith et al. 2017</strong>:</p>
-<p>file_collection = <code>Merdith2017</code></p>
-<h2 id="information_7">Information</h2>
-<ul>
-<li>Downloadable files: <code>rotation_files</code> and <code>topology_features</code></li>
-<li>Maximum reconstruction time: 410 Ma</li>
-</ul>
-<h2 id="citations_7">Citations</h2>
-<ul>
-<li>Merdith, A., Collins, A., Williams, S., Pisarevskiy, S., Foden, J., Archibald, D.
-and Blades, M. et al. 2016. A full-plate global reconstruction of the Neoproterozoic.
-Gondwana Research. 50: pp. 84-134. DOI: 10.1016/j.gr.2017.04.001</li>
-</ul>
-</li>
-<li>
-<p><strong>Li et al. 2008</strong>:</p>
-<p>file_collection = <code>Li2008</code></p>
-<h2 id="information_8">Information</h2>
-<ul>
-<li>Downloadable files: <code>rotation_model</code> and <code>static_polygons</code></li>
-<li>Maximum reconstruction time: 410 Ma</li>
-</ul>
-<h2 id="citations_8">Citations</h2>
-<ul>
-<li>Rodinia reconstruction from Li et al (2008), Assembly, configuration, and break-up
-history of Rodinia: A synthesis. Precambrian Research. 160. 179-210.
-DOI: 10.1016/j.precamres.2007.04.021.</li>
-</ul>
-</li>
-<li>
-<p><strong>Pehrsson et al. 2015</strong>:</p>
-<p>file_collection = <code>Pehrsson2015</code></p>
-<h2 id="information_9">Information</h2>
-<ul>
-<li>Downloadable files: <code>rotation_model</code> and <code>static_polygons</code></li>
-<li>Maximum reconstruction time: N/A</li>
-</ul>
-<h2 id="citations_9">Citations</h2>
-<ul>
-<li>Pehrsson, S.J., Eglington, B.M., Evans, D.A.D., Huston, D., and Reddy, S.M., (2015),
-Metallogeny and its link to orogenic style during the Nuna supercontinent cycle. Geological
-Society, London, Special Publications, 424, 83-94. DOI: <a href="https://doi.org/10.1144/SP424.5">https://doi.org/10.1144/SP424.5</a></li>
-</ul>
-</li>
-<li>
-<p><strong>Torsvik and Cocks et al. 2017</strong>:</p>
-<p>file_collection = <code>TorsvikCocks2017</code></p>
-<h2 id="information_10">Information</h2>
-<ul>
-<li>Downloadable files: <code>rotation_model</code>, and <code>coastlines</code></li>
-<li>Maximum reconstruction time: 410 Ma</li>
-</ul>
-<h2 id="citations_10">Citations</h2>
-<ul>
-<li>Torsvik, T., &amp; Cocks, L. (2016). Earth History and Palaeogeography. Cambridge:
-Cambridge University Press. doi:10.1017/9781316225523</li>
-</ul>
-</li>
-<li>
-<p><strong>Young et al. 2019</strong>:</p>
-<p>file_collection = <code>Young2019</code></p>
-<h2 id="information_11">Information</h2>
-<ul>
-<li>Downloadable files: <code>rotation_model</code>, <code>topology_features</code>, <code>static_polygons</code>, <code>coastlines</code>
-and <code>continents</code>.</li>
-<li>Maximum reconstruction time: 410-250 Ma, 250-0 Ma</li>
-</ul>
-<h2 id="citations_11">Citations</h2>
-<ul>
-<li>Young, A., Flament, N., Maloney, K., Williams, S., Matthews, K., Zahirovic, S.,
-Müller, R.D., (2019), Global kinematics of tectonic plates and subduction zones since the late
-Paleozoic Era, Geoscience Frontiers, Volume 10, Issue 3, pp. 989-1013, ISSN 1674-9871,
-DOI: <a href="https://doi.org/10.1016/j.gsf.2018.05.011.">https://doi.org/10.1016/j.gsf.2018.05.011.</a></li>
-</ul>
-</li>
-<li>
-<p><strong>Scotese et al. 2008</strong>:</p>
-<p>file_collection = <code>Scotese2008</code></p>
-<h2 id="information_12">Information</h2>
-<ul>
-<li>Downloadable files: <code>rotation_model</code>, <code>static_polygons</code>, and <code>continents</code></li>
-<li>Maximum reconstruction time:</li>
-</ul>
-<h2 id="citations_12">Citations</h2>
-<ul>
-<li>Scotese, C.R. 2008. The PALEOMAP Project PaleoAtlas for ArcGIS, Volume 2, Cretaceous
-paleogeographic and plate tectonic reconstructions. PALEOMAP Project, Arlington, Texas.</li>
-</ul>
-</li>
-<li>
-<p><strong>Golonka et al. 2007</strong>:</p>
-<p>file_collection = <code>Golonka2007</code></p>
-<h2 id="information_13">Information</h2>
-<ul>
-<li>Downloadable files: <code>rotation_model</code>, <code>static_polygons</code>, and <code>continents</code></li>
-<li>Maximum reconstruction time: 410 Ma</li>
-</ul>
-<h2 id="citations_13">Citations</h2>
-<ul>
-<li>Golonka, J. 2007. Late Triassic and Early Jurassic palaeogeography of the world.
-Palaeogeography, Palaeoclimatology, Palaeoecology 244(1–4), 297–307.</li>
-</ul>
-</li>
-<li>
-<p><strong>Clennett et al. 2020 (based on Müller et al. 2019)</strong>:</p>
-<p>file_collection = <code>Clennett2020_M2019</code></p>
-<h2 id="information_14">Information</h2>
-<ul>
-<li>Downloadable files: <code>rotation_model</code>, <code>topology_features</code>, <code>continents</code> and <code>coastlines</code></li>
-<li>Maximum reconstruction time: 170 Ma</li>
-</ul>
-<h2 id="citations_14">Citations</h2>
-<ul>
-<li>Clennett, E.J., Sigloch, K., Mihalynuk, M.G., Seton, M., Henderson, M.A., Hosseini, K.,
-Mohammadzaheri, A., Johnston, S.T., Müller, R.D., (2020), A Quantitative Tomotectonic Plate
-Reconstruction of Western North America and the Eastern Pacific Basin. Geochemistry, Geophysics,
-Geosystems, 21, e2020GC009117. DOI: <a href="https://doi.org/10.1029/2020GC009117">https://doi.org/10.1029/2020GC009117</a></li>
-</ul>
-</li>
-<li>
-<p><strong>Clennett et al. 2020 (rigid topological model based on Shephard et al, 2013)</strong>:</p>
-<p>file_collection = <code>Clennett2020_S2013</code></p>
-<h2 id="information_15">Information</h2>
-<ul>
-<li>Downloadable files: <code>rotation_model</code>, <code>topology_features</code>, <code>continents</code> and <code>coastlines</code></li>
-<li>Maximum reconstruction time: 170</li>
-</ul>
-<h2 id="citations_15">Citations</h2>
-<ul>
-<li>Clennett, E.J., Sigloch, K., Mihalynuk, M.G., Seton, M., Henderson, M.A., Hosseini, K.,
-Mohammadzaheri, A., Johnston, S.T., Müller, R.D., (2020), A Quantitative Tomotectonic Plate
-Reconstruction of Western North America and the Eastern Pacific Basin. Geochemistry, Geophysics,
-Geosystems, 21, e2020GC009117. DOI: <a href="https://doi.org/10.1029/2020GC009117">https://doi.org/10.1029/2020GC009117</a></li>
-</ul>
-</li>
-<li>
-<p><strong>Müller et al. 2008</strong>:</p>
-<p>file_collection = <code>Muller2008</code></p>
-<h2 id="information_16">Information</h2>
-<ul>
-<li>Downloadable files:
-<code>rotation_model</code>, <code>static_polygons</code></li>
-<li>Maximum reconstruction time: 141 Ma</li>
-</ul>
-<h2 id="citations_16">Citations</h2>
-<ul>
-<li>Müller, R. D., Sdrolias, M., Gaina, C., &amp; Roest, W. R. (2008). Age, spreading rates, and
-spreading asymmetry of the world's ocean crust. Geochemistry, Geophysics, Geosystems, 9(4).</li>
-</ul>
-</li>
-<li>
-<p><strong>Müller et al. 2022</strong>:</p>
-<p>file_collection = <code>Muller2022</code></p>
-<h2 id="information_17">Information</h2>
-<ul>
-<li>Downloadable files:
-<code>rotation_model</code>, <code>topology_features</code>, <code>static_polygons</code>, <code>continents</code>, <code>coastlines</code> and <code>COBs</code></li>
-<li>Maximum reconstruction time: 1000 Ma</li>
-</ul>
-<h2 id="citations_17">Citations</h2>
-<ul>
-<li>Müller, R. D., Flament, N., Cannon, J., Tetley, M. G., Williams, S. E., Cao, X., Bodur, Ö. F., Zahirovic, S.,
-and Merdith, A.: A tectonic-rules-based mantle reference frame since 1 billion years ago – implications for
-supercontinent cycles and plate–mantle system evolution, Solid Earth, 13, 1127–1159,
-<a href="https://doi.org/10.5194/se-13-1127-2022,">https://doi.org/10.5194/se-13-1127-2022,</a> 2022.</li>
-</ul>
-</li>
-<li>
-<p><strong>Scotese 2016</strong>:</p>
-<p>file_collection = <code>Scotese2016</code></p>
-<h2 id="information_18">Information</h2>
-<ul>
-<li>Downloadable files:
-<code>rotation_model</code>, <code>static_polygons</code>, <code>coastlines</code></li>
-<li>Maximum reconstruction time: 410 Ma</li>
-</ul>
-<h2 id="citations_18">Citations</h2>
-<ul>
-<li>Scotese, C.R., 2016. PALEOMAP PaleoAtlas for GPlates and the PaleoData
-Plotter Program, PALEOMAP Project,
-<a href="http://www.earthbyte.org/paleomappaleoatlas-for-gplates/">http://www.earthbyte.org/paleomappaleoatlas-for-gplates/</a></li>
-</ul>
-</li>
-<li>
-<p><strong>Shephard et al. 2013</strong>:</p>
-<p>file_collection = <code>Shephard2013</code></p>
-<h2 id="information_19">Information</h2>
-<ul>
-<li>Downloadable files:
-<code>rotation_model</code>, <code>topology_features</code>, <code>static_polygons</code>, <code>coastlines</code></li>
-<li>Maximum reconstruction time: 200 Ma</li>
-</ul>
-<h2 id="citations_19">Citations</h2>
-<ul>
-<li>
-<p>Shephard, G.E., Müller, R.D., and Seton, M., 2013. The tectonic evolution of the Arctic since
-Pangea breakup: Integrating constraints from surface geology and geophysics with mantle structure.
-Earth-Science Reviews, Volume 124 p.148-183. doi:10.1016/j.earscirev.2013.05.012
-(<a href="http://www.sciencedirect.com/science/article/pii/S0012825213001104">http://www.sciencedirect.com/science/article/pii/S0012825213001104</a>)</p>
-</li>
-<li>
-<p>M. Seton, R.D. Müller, S. Zahirovic, C. Gaina, T.H. Torsvik, G. Shephard, A. Talsma, M. Gurnis,
-M. Turner, S. Maus, M. Chandler, Global continental and ocean basin reconstructions since 200 Ma,
-Earth-Science Reviews, Volume 113, p.212-270 doi:10.1016/j.earscirev.2012.03.002.
-(<a href="http://www.sciencedirect.com/science/article/pii/S0012825212000311">http://www.sciencedirect.com/science/article/pii/S0012825212000311</a>)</p>
-</li>
-</ul>
+<p>More information about these plate models can be found at <a href="https://www.earthbyte.org/category/resources/data-models/global-regional-plate-motion-models/.">https://www.earthbyte.org/category/resources/data-models/global-regional-plate-motion-models/.</a></p>
+<p>You may also use <code>pmm ls</code> command to get more information about a model, for example <code>pmm ls cao2024</code>
+(you need <code>pip install plate-model-manager</code> before running this command).</p>
 <h2 id="parameters">Parameters</h2>
-<p>file_collection : str
-name of file collection to use</p>
-<p>verbose : bool, default True
-Toggle print messages regarding server/internet connection status, file availability etc.</p>
-</li>
-</ul></div>
+<dl>
+<dt><strong><code>file_collection</code></strong> :&ensp;<code>str</code></dt>
+<dd>model name</dd>
+<dt><strong><code>verbose</code></strong> :&ensp;<code>bool</code>, default=<code>True</code></dt>
+<dd>Toggle print messages regarding server/internet connection status, file availability etc.</dd>
+</dl></div>
 <details class="source">
 <summary>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class DataServer(object):
-    &#34;&#34;&#34;Uses [Pooch](https://www.fatiando.org/pooch/latest/) to download plate reconstruction
+    &#34;&#34;&#34;Uses the [plate-model-manager](https://pypi.org/project/plate-model-manager/) to download plate reconstruction
     feature data from plate models and other studies that are stored on web servers
-    (e.g. EarthByte&#39;s [webDAV server](https://www.earthbyte.org/webdav/ftp/Data_Collections/)).
+    (e.g. EarthByte&#39;s [webDAV server](https://repo.gplates.org/webdav/pmm/)).
 
     If the `DataServer` object and its methods are called for the first time, i.e. by:
 
@@ -1202,363 +878,23 @@ Toggle print messages regarding server/internet connection status, file availabi
 
     ------------------
 
-    To call the object, supply a model name string Identifier, `file_collection`, from one of the following models:
+    More information about these plate models can be found at https://www.earthbyte.org/category/resources/data-models/global-regional-plate-motion-models/.
 
-    * __[Müller et al. 2019](https://www.earthbyte.org/muller-et-al-2019-deforming-plate-reconstruction-and-seafloor-age-grids-tectonics/):__
-
-        file_collection = `Muller2019`
-
-        Information
-        -----------
-        * Downloadable files: a `rotation_model`, `topology_features`, `static_polygons`, `coastlines`, `continents`, `COBs`, and
-        seafloor `age_grids` from 0 to 250 Ma.
-        * Maximum reconstruction time: 250 Ma
-
-        Citations
-        ---------
-        Müller, R. D., Zahirovic, S., Williams, S. E., Cannon, J., Seton, M.,
-        Bower, D. J., Tetley, M. G., Heine, C., Le Breton, E., Liu, S., Russell, S. H. J.,
-        Yang, T., Leonard, J., and Gurnis, M. (2019), A global plate model including
-        lithospheric deformation along major rifts and orogens since the Triassic.
-        Tectonics, vol. 38, https://doi.org/10.1029/2018TC005462.
-
-
-    * __Müller et al. 2016__:
-
-        file_collection = `Muller2016`
-
-        Information
-        -----------
-        * Downloadable files: a `rotation_model`, `topology_features`, `static_polygons`, `coastlines`, and
-        seafloor `age_grids` from 0-230 Ma.
-        * Maximum reconstruction time: 230 Ma
-
-        Citations
-        ---------
-        * Müller R.D., Seton, M., Zahirovic, S., Williams, S.E., Matthews, K.J.,
-        Wright, N.M., Shephard, G.E., Maloney, K.T., Barnett-Moore, N., Hosseinpour, M.,
-        Bower, D.J., Cannon, J., InPress. Ocean basin evolution and global-scale plate
-        reorganization events since Pangea breakup, Annual Review of Earth and Planetary
-        Sciences, Vol 44, 107-138. DOI: 10.1146/annurev-earth-060115-012211.
-
-
-    * __[Merdith et al. 2021](https://zenodo.org/record/4485738#.Yhrm8hNBzA0)__:
-
-        file_collection = `Merdith2021`
-
-        Information
-        -----------
-        * Downloadable files: a `rotation_model`, `topology_features`, `static_polygons`, `coastlines`
-        and `continents`.
-        * Maximum reconstruction time: 1 Ga (however, `PlotTopologies` correctly visualises up to 410 Ma)
-
-        Citations:
-        ----------
-        * Merdith et al. (in review), &#39;A continuous, kinematic full-plate motion model
-        from 1 Ga to present&#39;.
-        * Andrew Merdith. (2020). Plate model for &#39;Extending Full-Plate Tectonic Models
-        into Deep Time: Linking the Neoproterozoic and the Phanerozoic &#39; (1.1b) [Data set].
-        Zenodo. https://doi.org/10.5281/zenodo.4485738
-
-
-    * __Cao et al. 2020__:
-
-        file_collection = `Cao2020`
-
-        Information
-        -----------
-        * Downloadable files: `rotation_model`, `topology_features`, `static_polygons`, `coastlines`
-        and `continents`.
-        * Maximum reconstruction time: 1 Ga
-
-        Citations
-        ---------
-        * Toy Billion-year reconstructions from Cao et al (2020).
-        Coupled Evolution of Plate Tectonics and Basal Mantle Structure Tectonics,
-        doi: 10.1029/2020GC009244
-
-
-    - __Clennett et al. 2020__ :
-
-        file_collection = `Clennett2020`
-
-        Information
-        -----------
-        * Downloadable files: `rotation_model`, `topology_features`, `static_polygons`, `coastlines`
-        and `continents`
-        * Maximum reconstruction time: 170 Ma
-
-        Citations
-        ---------
-        * Mather, B., Müller, R.D.,; Alfonso, C.P., Seton, M., 2021, Kimberlite eruption
-        driven by slab flux and subduction angle. DOI: 10.5281/zenodo.5769002
-
-
-    - __Seton et al. 2012__:
-
-        file_collection = `Seton2012`
-
-        Information
-        -----------
-        * Downloadable files: `rotation_model`, `topology_features`, `coastlines`,
-        `COBs`, and paleo-age grids (0-200 Ma)
-        * Maximum reconstruction time: 200 Ma
-
-        Citations
-        ---------
-        * M. Seton, R.D. Müller, S. Zahirovic, C. Gaina, T.H. Torsvik, G. Shephard, A. Talsma,
-        M. Gurnis, M. Turner, S. Maus, M. Chandler, Global continental and ocean basin reconstructions
-        since 200 Ma, Earth-Science Reviews, Volume 113, Issues 3-4, July 2012, Pages 212-270,
-        ISSN 0012-8252, 10.1016/j.earscirev.2012.03.002.
-
-
-    - __Matthews et al. 2016__:
-
-        file_collection = `Matthews2016`
-
-        Information
-        -----------
-        * Downloadable files: `rotation_model`, `topology_features`, `static_polygons`, `coastlines`,
-        and `continents`
-        * Maximum reconstruction time(s): 410-250 Ma, 250-0 Ma
-
-        Citations
-        ---------
-        * Matthews, K.J., Maloney, K.T., Zahirovic, S., Williams, S.E., Seton, M.,
-        and Müller, R.D. (2016). Global plate boundary evolution and kinematics since the
-        late Paleozoic, Global and Planetary Change, 146, 226-250.
-        DOI: 10.1016/j.gloplacha.2016.10.002
-
-
-    - __Merdith et al. 2017__:
-
-        file_collection = `Merdith2017`
-
-        Information
-        -----------
-        * Downloadable files: `rotation_files` and `topology_features`
-        * Maximum reconstruction time: 410 Ma
-
-        Citations
-        ---------
-        * Merdith, A., Collins, A., Williams, S., Pisarevskiy, S., Foden, J., Archibald, D.
-        and Blades, M. et al. 2016. A full-plate global reconstruction of the Neoproterozoic.
-        Gondwana Research. 50: pp. 84-134. DOI: 10.1016/j.gr.2017.04.001
-
-
-    - __Li et al. 2008__:
-
-        file_collection = `Li2008`
-
-        Information
-        -----------
-        * Downloadable files: `rotation_model` and `static_polygons`
-        * Maximum reconstruction time: 410 Ma
-
-        Citations
-        ---------
-        * Rodinia reconstruction from Li et al (2008), Assembly, configuration, and break-up
-        history of Rodinia: A synthesis. Precambrian Research. 160. 179-210.
-        DOI: 10.1016/j.precamres.2007.04.021.
-
-
-    - __Pehrsson et al. 2015__:
-
-        file_collection = `Pehrsson2015`
-
-        Information
-        -----------
-        * Downloadable files: `rotation_model` and `static_polygons`
-        * Maximum reconstruction time: N/A
-
-        Citations
-        ---------
-        * Pehrsson, S.J., Eglington, B.M., Evans, D.A.D., Huston, D., and Reddy, S.M., (2015),
-        Metallogeny and its link to orogenic style during the Nuna supercontinent cycle. Geological
-        Society, London, Special Publications, 424, 83-94. DOI: https://doi.org/10.1144/SP424.5
-
-
-    - __Torsvik and Cocks et al. 2017__:
-
-        file_collection = `TorsvikCocks2017`
-
-        Information
-        -----------
-        * Downloadable files: `rotation_model`, and `coastlines`
-        * Maximum reconstruction time: 410 Ma
-
-        Citations
-        ---------
-        * Torsvik, T., &amp; Cocks, L. (2016). Earth History and Palaeogeography. Cambridge:
-        Cambridge University Press. doi:10.1017/9781316225523
-
-
-    - __Young et al. 2019__:
-
-        file_collection = `Young2019`
-
-        Information
-        -----------
-        * Downloadable files: `rotation_model`, `topology_features`, `static_polygons`, `coastlines`
-        and `continents`.
-        * Maximum reconstruction time: 410-250 Ma, 250-0 Ma
-
-        Citations
-        ---------
-        * Young, A., Flament, N., Maloney, K., Williams, S., Matthews, K., Zahirovic, S.,
-        Müller, R.D., (2019), Global kinematics of tectonic plates and subduction zones since the late
-        Paleozoic Era, Geoscience Frontiers, Volume 10, Issue 3, pp. 989-1013, ISSN 1674-9871,
-        DOI: https://doi.org/10.1016/j.gsf.2018.05.011.
-
-
-    - __Scotese et al. 2008__:
-
-        file_collection = `Scotese2008`
-
-        Information
-        -----------
-        * Downloadable files: `rotation_model`, `static_polygons`, and `continents`
-        * Maximum reconstruction time:
-
-        Citations
-        ---------
-        * Scotese, C.R. 2008. The PALEOMAP Project PaleoAtlas for ArcGIS, Volume 2, Cretaceous
-        paleogeographic and plate tectonic reconstructions. PALEOMAP Project, Arlington, Texas.
-
-
-    - __Golonka et al. 2007__:
-
-        file_collection = `Golonka2007`
-
-        Information
-        -----------
-        * Downloadable files: `rotation_model`, `static_polygons`, and `continents`
-        * Maximum reconstruction time: 410 Ma
-
-        Citations
-        ---------
-        * Golonka, J. 2007. Late Triassic and Early Jurassic palaeogeography of the world.
-        Palaeogeography, Palaeoclimatology, Palaeoecology 244(1–4), 297–307.
-
-
-    - __Clennett et al. 2020 (based on Müller et al. 2019)__:
-
-        file_collection = `Clennett2020_M2019`
-
-        Information
-        -----------
-        * Downloadable files: `rotation_model`, `topology_features`, `continents` and `coastlines`
-        * Maximum reconstruction time: 170 Ma
-
-        Citations
-        ---------
-        * Clennett, E.J., Sigloch, K., Mihalynuk, M.G., Seton, M., Henderson, M.A., Hosseini, K.,
-        Mohammadzaheri, A., Johnston, S.T., Müller, R.D., (2020), A Quantitative Tomotectonic Plate
-        Reconstruction of Western North America and the Eastern Pacific Basin. Geochemistry, Geophysics,
-        Geosystems, 21, e2020GC009117. DOI: https://doi.org/10.1029/2020GC009117
-
-
-    - __Clennett et al. 2020 (rigid topological model based on Shephard et al, 2013)__:
-
-        file_collection = `Clennett2020_S2013`
-
-        Information
-        -----------
-        * Downloadable files: `rotation_model`, `topology_features`, `continents` and `coastlines`
-        * Maximum reconstruction time: 170
-
-        Citations
-        ---------
-        * Clennett, E.J., Sigloch, K., Mihalynuk, M.G., Seton, M., Henderson, M.A., Hosseini, K.,
-        Mohammadzaheri, A., Johnston, S.T., Müller, R.D., (2020), A Quantitative Tomotectonic Plate
-        Reconstruction of Western North America and the Eastern Pacific Basin. Geochemistry, Geophysics,
-        Geosystems, 21, e2020GC009117. DOI: https://doi.org/10.1029/2020GC009117
-
-
-    - __Müller et al. 2008__:
-
-        file_collection = `Muller2008`
-
-        Information
-        -----------
-        * Downloadable files:  `rotation_model`, `static_polygons`
-        * Maximum reconstruction time: 141 Ma
-
-        Citations
-        ---------
-        * Müller, R. D., Sdrolias, M., Gaina, C., &amp; Roest, W. R. (2008). Age, spreading rates, and
-        spreading asymmetry of the world&#39;s ocean crust. Geochemistry, Geophysics, Geosystems, 9(4).
-
-
-
-    - __Müller et al. 2022__:
-
-        file_collection = `Muller2022`
-
-        Information
-        -----------
-        * Downloadable files:  `rotation_model`, `topology_features`, `static_polygons`, `continents`, `coastlines` and `COBs`
-        * Maximum reconstruction time: 1000 Ma
-
-        Citations
-        ---------
-        *  Müller, R. D., Flament, N., Cannon, J., Tetley, M. G., Williams, S. E., Cao, X., Bodur, Ö. F., Zahirovic, S.,
-        and Merdith, A.: A tectonic-rules-based mantle reference frame since 1 billion years ago – implications for
-        supercontinent cycles and plate–mantle system evolution, Solid Earth, 13, 1127–1159,
-        https://doi.org/10.5194/se-13-1127-2022, 2022.
-
-
-
-    - __Scotese 2016__:
-
-        file_collection = `Scotese2016`
-
-        Information
-        -----------
-        * Downloadable files:  `rotation_model`, `static_polygons`, `coastlines`
-        * Maximum reconstruction time: 410 Ma
-
-        Citations
-        ---------
-        * Scotese, C.R., 2016. PALEOMAP PaleoAtlas for GPlates and the PaleoData
-        Plotter Program, PALEOMAP Project,
-        http://www.earthbyte.org/paleomappaleoatlas-for-gplates/
-
-
-    - __Shephard et al. 2013__:
-
-        file_collection = `Shephard2013`
-
-        Information
-        -----------
-        * Downloadable files:  `rotation_model`, `topology_features`, `static_polygons`, `coastlines`
-        * Maximum reconstruction time: 200 Ma
-
-        Citations
-        ---------
-        * Shephard, G.E., Müller, R.D., and Seton, M., 2013. The tectonic evolution of the Arctic since
-        Pangea breakup: Integrating constraints from surface geology and geophysics with mantle structure.
-        Earth-Science Reviews, Volume 124 p.148-183. doi:10.1016/j.earscirev.2013.05.012
-        (http://www.sciencedirect.com/science/article/pii/S0012825213001104)
-
-        * M. Seton, R.D. Müller, S. Zahirovic, C. Gaina, T.H. Torsvik, G. Shephard, A. Talsma, M. Gurnis,
-        M. Turner, S. Maus, M. Chandler, Global continental and ocean basin reconstructions since 200 Ma,
-        Earth-Science Reviews, Volume 113, p.212-270 doi:10.1016/j.earscirev.2012.03.002.
-        (http://www.sciencedirect.com/science/article/pii/S0012825212000311)
-
-
-
-        Parameters
-        ----------
-        file_collection : str
-            name of file collection to use
-
-        verbose : bool, default True
-            Toggle print messages regarding server/internet connection status, file availability etc.
+    You may also use `pmm ls` command to get more information about a model, for example `pmm ls cao2024`
+    (you need `pip install plate-model-manager` before running this command).
 
     &#34;&#34;&#34;
 
     def __init__(self, file_collection, data_dir=None, verbose=True):
+        &#34;&#34;&#34;
+        Parameters
+        ----------
+        file_collection: str
+            model name
+
+        verbose: bool, default=True
+            Toggle print messages regarding server/internet connection status, file availability etc.
+        &#34;&#34;&#34;
 
         if not data_dir:
             _data_dir = path_to_cache()
@@ -1711,7 +1047,7 @@ Toggle print messages regarding server/internet connection status, file availabi
         return self.rotation_model, self.topology_features, self.static_polygons
 
     def get_topology_geometries(self):
-        &#34;&#34;&#34;Uses Pooch to download coastline, continent and COB (continent-ocean boundary)
+        &#34;&#34;&#34;Uses the [plate-model-manager](https://pypi.org/project/plate-model-manager/) to download coastline, continent and COB (continent-ocean boundary)
         Shapely geometries from the requested plate model. These are needed to call the `PlotTopologies`
         object and visualise topological plates through time.
 
@@ -2686,7 +2022,7 @@ returned as masked arrays.</p>
 <span>def <span class="ident">get_topology_geometries</span></span>(<span>self)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Uses Pooch to download coastline, continent and COB (continent-ocean boundary)
+<div class="desc"><p>Uses the <a href="https://pypi.org/project/plate-model-manager/">plate-model-manager</a> to download coastline, continent and COB (continent-ocean boundary)
 Shapely geometries from the requested plate model. These are needed to call the <code><a title="gplately.PlotTopologies" href="#gplately.PlotTopologies">PlotTopologies</a></code>
 object and visualise topological plates through time.</p>
 <h2 id="parameters">Parameters</h2>
@@ -11937,7 +11273,7 @@ passed as "/path/to/continent_mask_{}Ma.nc" with curly brackets. Include decimal
 
             grids.write_netcdf_grid(
                 self.continent_mask_filepath.format(time),
-                final_grid.astype(&#39;i1&#39;),
+                final_grid.astype(&#34;i1&#34;),
                 extent=[-180, 180, -90, 90],
                 fill_value=None,
             )
@@ -11966,7 +11302,7 @@ passed as "/path/to/continent_mask_{}Ma.nc" with curly brackets. Include decimal
 
         grids.write_netcdf_grid(
             self.continent_mask_filepath.format(time),
-            final_grid.astype(&#39;i1&#39;),
+            final_grid.astype(&#34;i1&#34;),
             extent=[-180, 180, -90, 90],
             fill_value=None,
         )

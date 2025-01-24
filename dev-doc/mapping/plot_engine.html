@@ -50,12 +50,12 @@ inheritance.</p></div>
 <pre><code class="python">class PlotEngine(ABC):
     @abstractmethod
     def plot_geo_data_frame(self, ax_or_fig, gdf: GeoDataFrame, **kwargs):
-        &#34;&#34;&#34;Plot GeoPandas GeoDataFrame object&#34;&#34;&#34;
+        &#34;&#34;&#34;Plot GeoPandas GeoDataFrame object(abstract method)&#34;&#34;&#34;
         pass  # This is an abstract method, no implementation here.
 
     @abstractmethod
     def plot_pygplates_features(self, ax_or_fig, features, **kwargs):
-        &#34;&#34;&#34;Plot one or more pygplates feature(s)&#34;&#34;&#34;
+        &#34;&#34;&#34;Plot one or more pygplates feature(s)(abstract method)&#34;&#34;&#34;
         pass  # This is an abstract method, no implementation here.
 
     @abstractmethod
@@ -67,7 +67,7 @@ inheritance.</p></div>
         color=&#34;blue&#34;,
         **kwargs,
     ):
-        &#34;&#34;&#34;Plot subduction zones with &#34;teeth&#34; &#34;&#34;&#34;
+        &#34;&#34;&#34;Plot subduction zones with &#34;teeth&#34;(abstract method)&#34;&#34;&#34;
         pass  # This is an abstract method, no implementation here.</code></pre>
 </details>
 <h3>Ancestors</h3>
@@ -85,98 +85,19 @@ inheritance.</p></div>
 <span>def <span class="ident">plot_geo_data_frame</span></span>(<span>self, ax_or_fig, gdf: geopandas.geodataframe.GeoDataFrame, **kwargs)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Plot GeoPandas GeoDataFrame object</p></div>
+<div class="desc"><p>Plot GeoPandas GeoDataFrame object(abstract method)</p></div>
 </dd>
 <dt id="gplately.mapping.plot_engine.PlotEngine.plot_pygplates_features"><code class="name flex">
 <span>def <span class="ident">plot_pygplates_features</span></span>(<span>self, ax_or_fig, features, **kwargs)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Plot one or more pygplates feature(s)</p></div>
+<div class="desc"><p>Plot one or more pygplates feature(s)(abstract method)</p></div>
 </dd>
 <dt id="gplately.mapping.plot_engine.PlotEngine.plot_subduction_zones"><code class="name flex">
 <span>def <span class="ident">plot_subduction_zones</span></span>(<span>self, ax_or_fig, gdf_subduction_left: geopandas.geodataframe.GeoDataFrame, gdf_subduction_right: geopandas.geodataframe.GeoDataFrame, color='blue', **kwargs)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Plot subduction zones with "teeth"</p></div>
-</dd>
-</dl>
-</dd>
-<dt id="gplately.mapping.plot_engine.PlotEngineType"><code class="flex name class">
-<span>class <span class="ident">PlotEngineType</span></span>
-<span>(</span><span>*args, **kwds)</span>
-</code></dt>
-<dd>
-<div class="desc"><p>Create a collection of name/value pairs.</p>
-<p>Example enumeration:</p>
-<pre><code class="language-python-repl">&gt;&gt;&gt; class Color(Enum):
-...     RED = 1
-...     BLUE = 2
-...     GREEN = 3
-</code></pre>
-<p>Access them by:</p>
-<ul>
-<li>attribute access:</li>
-</ul>
-<blockquote>
-<blockquote>
-<blockquote>
-<p>Color.RED
-<Color.RED: 1></p>
-</blockquote>
-</blockquote>
-</blockquote>
-<ul>
-<li>value lookup:</li>
-</ul>
-<blockquote>
-<blockquote>
-<blockquote>
-<p>Color(1)
-<Color.RED: 1></p>
-</blockquote>
-</blockquote>
-</blockquote>
-<ul>
-<li>name lookup:</li>
-</ul>
-<blockquote>
-<blockquote>
-<blockquote>
-<p>Color['RED']
-<Color.RED: 1></p>
-</blockquote>
-</blockquote>
-</blockquote>
-<p>Enumerations can be iterated over, and know how many members they have:</p>
-<pre><code class="language-python-repl">&gt;&gt;&gt; len(Color)
-3
-</code></pre>
-<pre><code class="language-python-repl">&gt;&gt;&gt; list(Color)
-[&lt;Color.RED: 1&gt;, &lt;Color.BLUE: 2&gt;, &lt;Color.GREEN: 3&gt;]
-</code></pre>
-<p>Methods can be added to enumerations, and members can have their own
-attributes &ndash; see the documentation for details.</p></div>
-<details class="source">
-<summary>
-<span>Expand source code</span>
-</summary>
-<pre><code class="python">class PlotEngineType(Enum):
-    CARTOPY = 1
-    PYGMT = 2</code></pre>
-</details>
-<h3>Ancestors</h3>
-<ul class="hlist">
-<li>enum.Enum</li>
-</ul>
-<h3>Class variables</h3>
-<dl>
-<dt id="gplately.mapping.plot_engine.PlotEngineType.CARTOPY"><code class="name">var <span class="ident">CARTOPY</span></code></dt>
-<dd>
-<div class="desc"></div>
-</dd>
-<dt id="gplately.mapping.plot_engine.PlotEngineType.PYGMT"><code class="name">var <span class="ident">PYGMT</span></code></dt>
-<dd>
-<div class="desc"></div>
+<div class="desc"><p>Plot subduction zones with "teeth"(abstract method)</p></div>
 </dd>
 </dl>
 </dd>
@@ -206,13 +127,6 @@ attributes &ndash; see the documentation for details.</p></div>
 <li><code><a title="gplately.mapping.plot_engine.PlotEngine.plot_geo_data_frame" href="#gplately.mapping.plot_engine.PlotEngine.plot_geo_data_frame">plot_geo_data_frame</a></code></li>
 <li><code><a title="gplately.mapping.plot_engine.PlotEngine.plot_pygplates_features" href="#gplately.mapping.plot_engine.PlotEngine.plot_pygplates_features">plot_pygplates_features</a></code></li>
 <li><code><a title="gplately.mapping.plot_engine.PlotEngine.plot_subduction_zones" href="#gplately.mapping.plot_engine.PlotEngine.plot_subduction_zones">plot_subduction_zones</a></code></li>
-</ul>
-</li>
-<li>
-<h4><code><a title="gplately.mapping.plot_engine.PlotEngineType" href="#gplately.mapping.plot_engine.PlotEngineType">PlotEngineType</a></code></h4>
-<ul class="">
-<li><code><a title="gplately.mapping.plot_engine.PlotEngineType.CARTOPY" href="#gplately.mapping.plot_engine.PlotEngineType.CARTOPY">CARTOPY</a></code></li>
-<li><code><a title="gplately.mapping.plot_engine.PlotEngineType.PYGMT" href="#gplately.mapping.plot_engine.PlotEngineType.PYGMT">PYGMT</a></code></li>
 </ul>
 </li>
 </ul>
