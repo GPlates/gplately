@@ -260,57 +260,53 @@ class PlateReconstruction(object):
 
         return self._topological_snapshot
 
-    def plate_boundary_convergence_divergence(
+    def divergent_convergent_plate_boundaries(
         self,
         time,
         uniform_point_spacing_radians=0.001,
-        convergence_velocity_threshold=0.0,
         divergence_velocity_threshold=0.0,
+        convergence_velocity_threshold=0.0,
         *,
         first_uniform_point_spacing_radians=None,
-        include_network_boundaries=False,
-        boundary_section_filter=None,
+        anchor_plate_id=None,
         velocity_delta_time=1.0,
         velocity_delta_time_type=pygplates.VelocityDeltaTimeType.t_plus_delta_t_to_t,
         velocity_units=pygplates.VelocityUnits.cms_per_yr,
         earth_radius_in_kms=pygplates.Earth.mean_radius_in_kms,
-        anchor_plate_id=None,
+        include_network_boundaries=False,
+        include_topological_slab_boundaries=False,
+        boundary_section_filter=None,
     ):
-        """Samples points uniformly along plate boundaries and calculates statistics at converging/diverging locations at a particular geological time.
+        """Samples points uniformly along plate boundaries and calculates statistics at diverging/converging locations at a particular geological time.
 
         Resolves topologies at `time`, uniformly samples all plate boundaries into points and returns two lists of
         [pygplates.PlateBoundaryStatistic](https://www.gplates.org/docs/pygplates/generated/pygplates.PlateBoundaryStatistic).
-        The first list represents sample points where the plates are converging, and the second where plates are diverging.
+        The first list represents sample points where the plates are diverging, and the second where plates are converging.
 
         Parameters
         ----------
         time : float
-            The reconstruction time (Ma) at which to query subduction convergence.
+            The reconstruction time (Ma) at which to query divergent/convergent plate boundaries.
         uniform_point_spacing_radians : float, default=0.001
             The spacing between uniform points along plate boundaries (in radians).
-        convergence_velocity_threshold : float, default=0.0
-            Orthogonal (ie, in the direction of boundary normal) velocity threshold for *converging* sample points.
-            Points with an orthogonal *converging* velocity above this value will be returned in `converging_data`.
-            The default is `0.0` which removes all diverging sample points (leaving only converging points).
-            This value can be negative which means a small amount of divergence is allowed for the converging points.
-            The units should match the units of `velocity_units` (eg, if that's cm/yr then this threshold should also be in cm/yr).
         divergence_velocity_threshold : float, default=0.0
             Orthogonal (ie, in the direction of boundary normal) velocity threshold for *diverging* sample points.
             Points with an orthogonal *diverging* velocity above this value will be returned in `diverging_data`.
             The default is `0.0` which removes all converging sample points (leaving only diverging points).
             This value can be negative which means a small amount of convergence is allowed for the diverging points.
             The units should match the units of `velocity_units` (eg, if that's cm/yr then this threshold should also be in cm/yr).
+        convergence_velocity_threshold : float, default=0.0
+            Orthogonal (ie, in the direction of boundary normal) velocity threshold for *converging* sample points.
+            Points with an orthogonal *converging* velocity above this value will be returned in `converging_data`.
+            The default is `0.0` which removes all diverging sample points (leaving only converging points).
+            This value can be negative which means a small amount of divergence is allowed for the converging points.
+            The units should match the units of `velocity_units` (eg, if that's cm/yr then this threshold should also be in cm/yr).
         first_uniform_point_spacing_radians : float, optional
             Spacing of first uniform point in each resolved topological section (in radians) - see
             [pygplates.TopologicalSnapshot.calculate_plate_boundary_statistics()](https://www.gplates.org/docs/pygplates/generated/pygplates.topologicalsnapshot#pygplates.TopologicalSnapshot.calculate_plate_boundary_statistics)
             for more details. Defaults to half of `uniform_point_spacing_radians`.
-        include_network_boundaries : bool, default=False
-            Whether to sample along network boundaries that are not also plate boundaries (defaults to False).
-            If a deforming network shares a boundary with a plate then it'll get included regardless of this option.
-        boundary_section_filter
-            Same as the ``boundary_section_filter`` argument in
-            [pygplates.TopologicalSnapshot.calculate_plate_boundary_statistics()](https://www.gplates.org/docs/pygplates/generated/pygplates.topologicalsnapshot#pygplates.TopologicalSnapshot.calculate_plate_boundary_statistics).
-            Defaults to ``None`` (meaning all plate boundaries are included by default).
+        anchor_plate_id : int, optional
+            Anchor plate ID (defaults to the current anchor plate ID).
         velocity_delta_time : float, default=1.0
             The time delta used to calculate velocities (defaults to 1 Myr).
         velocity_delta_time_type : {pygplates.VelocityDeltaTimeType.t_plus_delta_t_to_t, pygplates.VelocityDeltaTimeType.t_to_t_minus_delta_t, pygplates.VelocityDeltaTimeType.t_plus_minus_half_delta_t}, default=pygplates.VelocityDeltaTimeType.t_plus_delta_t_to_t
@@ -319,17 +315,30 @@ class PlateReconstruction(object):
             Whether to return velocities in centimetres per year or kilometres per million years (defaults to centimetres per year).
         earth_radius_in_kms : float, default=pygplates.Earth.mean_radius_in_kms
             Radius of the Earth in kilometres.
-        anchor_plate_id : int, optional
-            Anchor plate ID (defaults to the current anchor plate ID).
+            This is only used to calculate velocities (strain rates always use ``pygplates.Earth.equatorial_radius_in_kms``).
+        include_network_boundaries : bool, default=False
+            Whether to sample along network boundaries that are not also plate boundaries (defaults to False).
+            If a deforming network shares a boundary with a plate then it'll get included regardless of this option.
+        include_topological_slab_boundaries : bool, default=False
+            Whether to sample along slab boundaries (features of type `gpml:TopologicalSlabBoundary`).
+            By default they are *not* sampled since they are *not* plate boundaries.
+        boundary_section_filter
+            Same as the ``boundary_section_filter`` argument in
+            [pygplates.TopologicalSnapshot.calculate_plate_boundary_statistics()](https://www.gplates.org/docs/pygplates/generated/pygplates.topologicalsnapshot#pygplates.TopologicalSnapshot.calculate_plate_boundary_statistics).
+            Defaults to ``None`` (meaning all plate boundaries are included by default).
 
         Returns
         -------
-        converging_data : a list of [pygplates.PlateBoundaryStatistic](https://www.gplates.org/docs/pygplates/generated/pygplates.PlateBoundaryStatistic)
-            The results for all uniformly sampled points along plate boundaries that are *converging* relative to `convergence_threshold`.
-            The size of the returned list is equal to the number of sampled points that are *converging*.
         diverging_data : a list of [pygplates.PlateBoundaryStatistic](https://www.gplates.org/docs/pygplates/generated/pygplates.PlateBoundaryStatistic)
             The results for all uniformly sampled points along plate boundaries that are *diverging* relative to `divergence_threshold`.
             The size of the returned list is equal to the number of sampled points that are *diverging*.
+            Each ``pygplates.PlateBoundaryStatistic`` is guaranteed to have a valid (ie, not ``None``)
+            [convergence velocity](https://www.gplates.org/docs/pygplates/generated/pygplates.PlateBoundaryStatistic.html#pygplates.PlateBoundaryStatistic.convergence_velocity).
+        converging_data : a list of [pygplates.PlateBoundaryStatistic](https://www.gplates.org/docs/pygplates/generated/pygplates.PlateBoundaryStatistic)
+            The results for all uniformly sampled points along plate boundaries that are *converging* relative to `convergence_threshold`.
+            The size of the returned list is equal to the number of sampled points that are *converging*.
+            Each ``pygplates.PlateBoundaryStatistic`` is guaranteed to have a valid (ie, not ``None``)
+            [convergence velocity](https://www.gplates.org/docs/pygplates/generated/pygplates.PlateBoundaryStatistic.html#pygplates.PlateBoundaryStatistic.convergence_velocity).
 
         Raises
         ------
@@ -338,14 +347,14 @@ class PlateReconstruction(object):
 
         Examples
         --------
-        To sample converging/diverging points along plate boundaries at 50Ma:
+        To sample diverging/converging points along plate boundaries at 50Ma:
 
-            converging_data, diverging_data = plate_reconstruction.plate_boundary_convergence_divergence(50)
+            diverging_data, converging_data = plate_reconstruction.divergent_convergent_plate_boundaries(50)
 
         To do the same, but restrict converging data to points where orthogonal converging velocities are greater than 0.2 cm/yr
         (with diverging data remaining unchanged with the default 0.0 threshold):
 
-            converging_data, diverging_data = plate_reconstruction.plate_boundary_convergence_divergence(50,
+            diverging_data, converging_data = plate_reconstruction.divergent_convergent_plate_boundaries(50,
                     convergence_velocity_threshold=0.2)
 
         Notes
@@ -354,8 +363,13 @@ class PlateReconstruction(object):
         [pygplates.TopologicalSnapshot.calculate_plate_boundary_statistics()](https://www.gplates.org/docs/pygplates/generated/pygplates.topologicalsnapshot#pygplates.TopologicalSnapshot.calculate_plate_boundary_statistics).
         Then you can do your own analysis on the returned data:
 
-            plate_boundary_statistics = plate_reconstruction.topological_snapshot(time).calculate_plate_boundary_statistics(
-                    uniform_point_spacing_radians=0.001)
+            plate_boundary_statistics = plate_reconstruction.topological_snapshot(
+                time,
+                include_topological_slab_boundaries=False
+            ).calculate_plate_boundary_statistics(
+                uniform_point_spacing_radians=0.001
+            )
+
             for stat in plate_boundary_statistics:
                 if np.isnan(stat.convergence_velocity_orthogonal)
                     continue  # missing left or right plate
@@ -369,8 +383,7 @@ class PlateReconstruction(object):
         plate_boundary_statistics = self.topological_snapshot(
             time,
             anchor_plate_id=anchor_plate_id,
-            # Ignore topological slab boundaries since they are not *plate* boundaries...
-            include_topological_slab_boundaries=False,
+            include_topological_slab_boundaries=include_topological_slab_boundaries,
         ).calculate_plate_boundary_statistics(
             uniform_point_spacing_radians,
             first_uniform_point_spacing_radians=first_uniform_point_spacing_radians,
@@ -382,8 +395,8 @@ class PlateReconstruction(object):
             boundary_section_filter=boundary_section_filter,
         )
 
-        converging_point_stats = []
         diverging_point_stats = []
+        converging_point_stats = []
 
         for stat in plate_boundary_statistics:
 
@@ -395,15 +408,164 @@ class PlateReconstruction(object):
             if np.isnan(convergence_velocity_orthogonal):
                 continue
 
-            # Add to converging points if within the specified convergence velocity threshold.
-            if convergence_velocity_orthogonal >= convergence_velocity_threshold:
-                converging_point_stats.append(stat)
-
             # Add to diverging points if within the specified divergence velocity threshold.
             if -convergence_velocity_orthogonal >= divergence_velocity_threshold:
                 diverging_point_stats.append(stat)
 
-        return converging_point_stats, diverging_point_stats
+            # Add to converging points if within the specified convergence velocity threshold.
+            if convergence_velocity_orthogonal >= convergence_velocity_threshold:
+                converging_point_stats.append(stat)
+
+        return diverging_point_stats, converging_point_stats
+
+    def crustal_production_destruction_rate(
+        self,
+        time,
+        uniform_point_spacing_radians=0.001,
+        divergence_velocity_threshold_in_cms_per_yr=0.0,
+        convergence_velocity_threshold_in_cms_per_yr=0.0,
+        *,
+        first_uniform_point_spacing_radians=None,
+        velocity_delta_time=1.0,
+        velocity_delta_time_type=pygplates.VelocityDeltaTimeType.t_plus_delta_t_to_t,
+        include_network_boundaries=False,
+        include_topological_slab_boundaries=False,
+        boundary_section_filter=None,
+    ):
+        """Calculates the total crustal production and destruction rates (in km^2/yr) of divergent and convergent plate boundaries at the specified geological time (Ma).
+
+        Resolves topologies at `time` and uniformly samples all plate boundaries into divergent and convergent boundary points.
+
+        Total crustal production (and destruction) rate is then calculated by accumulating divergent (and convergent) orthogonal velocities multiplied by their local boundary lengths.
+        Velocities and lengths are scaled using the geocentric radius (at each divergent and convergent sampled point).
+
+        Parameters
+        ----------
+        time : float
+            The reconstruction time (Ma) at which to query divergent/convergent plate boundaries.
+        uniform_point_spacing_radians : float, default=0.001
+            The spacing between uniform points along plate boundaries (in radians).
+        divergence_velocity_threshold_in_cms_per_yr : float, default=0.0
+            Orthogonal (ie, in the direction of boundary normal) velocity threshold for *diverging* sample points.
+            Points with an orthogonal *diverging* velocity above this value will accumulate crustal *production*.
+            The default is `0.0` which removes all converging sample points (leaving only diverging points).
+            This value can be negative which means a small amount of convergence is allowed for the diverging points.
+            The units should be in cm/yr.
+        convergence_velocity_threshold_in_cms_per_yr : float, default=0.0
+            Orthogonal (ie, in the direction of boundary normal) velocity threshold for *converging* sample points.
+            Points with an orthogonal *converging* velocity above this value will accumulate crustal *destruction*.
+            The default is `0.0` which removes all diverging sample points (leaving only converging points).
+            This value can be negative which means a small amount of divergence is allowed for the converging points.
+            The units should be in cm/yr.
+        first_uniform_point_spacing_radians : float, optional
+            Spacing of first uniform point in each resolved topological section (in radians) - see
+            `divergent_convergent_plate_boundaries()` for more details. Defaults to half of `uniform_point_spacing_radians`.
+        velocity_delta_time : float, default=1.0
+            The time delta used to calculate velocities (defaults to 1 Myr).
+        velocity_delta_time_type : {pygplates.VelocityDeltaTimeType.t_plus_delta_t_to_t, pygplates.VelocityDeltaTimeType.t_to_t_minus_delta_t, pygplates.VelocityDeltaTimeType.t_plus_minus_half_delta_t}, default=pygplates.VelocityDeltaTimeType.t_plus_delta_t_to_t
+            How the two velocity times are calculated relative to `time` (defaults to ``[time + velocity_delta_time, time]``).
+        include_network_boundaries : bool, default=False
+            Whether to sample along network boundaries that are not also plate boundaries (defaults to False).
+            If a deforming network shares a boundary with a plate then it'll get included regardless of this option.
+        include_topological_slab_boundaries : bool, default=False
+            Whether to sample along slab boundaries (features of type `gpml:TopologicalSlabBoundary`).
+            By default they are *not* sampled since they are *not* plate boundaries.
+        boundary_section_filter
+            Same as the ``boundary_section_filter`` argument in `divergent_convergent_plate_boundaries()`.
+            Defaults to ``None`` (meaning all plate boundaries are included by default).
+
+        Returns
+        -------
+        total_crustal_production_rate_in_km_2_per_yr : float
+            The total rate of crustal *production* at divergent plate boundaries (in km^2/yr) at the specified `time`.
+        total_crustal_destruction_rate_in_km_2_per_yr : float
+            The total rate of crustal *destruction* at convergent plate boundaries (in km^2/yr) at the specified `time`.
+
+        Raises
+        ------
+        ValueError
+            If topology features have not been set in this `PlateReconstruction`.
+
+        Examples
+        --------
+        To calculate total crustal production/destruction along plate boundaries at 50Ma:
+
+            total_crustal_production_rate_in_km_2_per_yr, total_crustal_destruction_rate_in_km_2_per_yr = plate_reconstruction.crustal_production_destruction_rate(50)
+
+        To do the same, but restrict convergence to points where orthogonal converging velocities are greater than 0.2 cm/yr
+        (with divergence remaining unchanged with the default 0.0 threshold):
+
+            total_crustal_production_rate_in_km_2_per_yr, total_crustal_destruction_rate_in_km_2_per_yr = plate_reconstruction.crustal_production_destruction_rate(50,
+                    convergence_velocity_threshold_in_cms_per_yr=0.2)
+        """
+
+        # Generate statistics at uniformly spaced points along plate boundaries.
+        diverging_data, converging_data = self.divergent_convergent_plate_boundaries(
+            time,
+            uniform_point_spacing_radians=uniform_point_spacing_radians,
+            divergence_velocity_threshold=divergence_velocity_threshold_in_cms_per_yr,
+            convergence_velocity_threshold=convergence_velocity_threshold_in_cms_per_yr,
+            first_uniform_point_spacing_radians=first_uniform_point_spacing_radians,
+            velocity_delta_time=velocity_delta_time,
+            velocity_delta_time_type=velocity_delta_time_type,
+            velocity_units=pygplates.VelocityUnits.cms_per_yr,
+            earth_radius_in_kms=pygplates.Earth.mean_radius_in_kms,
+            include_network_boundaries=include_network_boundaries,
+            include_topological_slab_boundaries=include_topological_slab_boundaries,
+            boundary_section_filter=boundary_section_filter,
+        )
+
+        # Total crustal production rate at divergent plate boundaries.
+        total_crustal_production_rate = 0.0
+        for stat in diverging_data:
+            # Get actual Earth radius at current latitude.
+            boundary_lat, _ = stat.boundary_point.to_lat_lon()
+            earth_radius_kms = _tools.geocentric_radius(boundary_lat) / 1e3
+
+            # Convergence velocity was calculated using pygplates.Earth.mean_radius_in_kms,
+            # so adjust for actual Earth radius 'earth_radius_kms' at current latitude.
+            convergence_velocity_orthogonal = stat.convergence_velocity_orthogonal * (
+                earth_radius_kms / pygplates.Earth.mean_radius_in_kms
+            )
+
+            # Calculate crustal production rate at current location (in km^2/yr).
+            #
+            # Note: Orthogonal convergence velocity is guaranteed to be non-NaN.
+            crustal_production_rate = (
+                -convergence_velocity_orthogonal  # negate for divergence
+                * 1e-5  # convert cm/yr to km/yr
+                * stat.boundary_length  # radians
+                * earth_radius_kms  # km
+            )
+
+            total_crustal_production_rate += crustal_production_rate
+
+        # Total crustal destruction rate at convergent plate boundaries.
+        total_crustal_destruction_rate = 0.0
+        for stat in converging_data:
+            # Get actual Earth radius at current latitude.
+            boundary_lat, _ = stat.boundary_point.to_lat_lon()
+            earth_radius_kms = _tools.geocentric_radius(boundary_lat) / 1e3
+
+            # Convergence velocity was calculated using pygplates.Earth.mean_radius_in_kms,
+            # so adjust for actual Earth radius 'earth_radius_kms' at current latitude.
+            convergence_velocity_orthogonal = stat.convergence_velocity_orthogonal * (
+                earth_radius_kms / pygplates.Earth.mean_radius_in_kms
+            )
+
+            # Calculate crustal destruction rate at current location (in km^2/yr).
+            #
+            # Note: Orthogonal convergence velocity is guaranteed to be non-NaN.
+            crustal_destruction_rate = (
+                convergence_velocity_orthogonal
+                * 1e-5  # convert cm/yr to km/yr
+                * stat.boundary_length  # radians
+                * earth_radius_kms  # km
+            )
+
+            total_crustal_destruction_rate += crustal_destruction_rate
+
+        return total_crustal_production_rate, total_crustal_destruction_rate
 
     def _subduction_convergence(
         self,
@@ -1461,7 +1623,7 @@ class PlateReconstruction(object):
         Parameters
         ----------
         time : float
-            The reconstruction time (Ma) at which to query subduction convergence.
+            The reconstruction time (Ma) at which to query spreading rates.
         tessellation_threshold_radians : float, default=0.001
             The threshold sampling distance along the plate boundaries (in radians).
         ignore_warnings : bool, default=False

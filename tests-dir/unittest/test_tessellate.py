@@ -92,11 +92,25 @@ def main(show=True):
     print("total ridge length (kms):", total_ridge_length_in_kms)
 
     # Plate velocity stats.
-    converging_data, diverging_data = model.plate_boundary_convergence_divergence(
+    diverging_data, converging_data = model.divergent_convergent_plate_boundaries(
         time,
         uniform_point_spacing_radians=0.001,
-        convergence_velocity_threshold=0.2,  # cm/yr
         divergence_velocity_threshold=0.2,  # cm/yr
+        convergence_velocity_threshold=0.2,  # cm/yr
+        velocity_units=pygplates.VelocityUnits.cms_per_yr,
+    )
+    total_crustal_production_rate, total_crustal_desctruction_rate = (
+        model.crustal_production_destruction_rate(
+            time,
+            uniform_point_spacing_radians=0.001,
+            divergence_velocity_threshold_in_cms_per_yr=0.2,  # cm/yr
+            convergence_velocity_threshold_in_cms_per_yr=0.2,  # cm/yr
+        )
+    )
+    print(
+        "total crustal production/destruction rate (km^2/yr):",
+        total_crustal_production_rate,
+        total_crustal_desctruction_rate,
     )
 
     # Non-geometry columns of subduction data.
