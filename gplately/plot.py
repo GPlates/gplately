@@ -142,26 +142,7 @@ shapelify_feature_polygons.__doc__ = _shapelify_features.__doc__
 
 
 class PlotTopologies(object):
-
-    @property
-    def ridge_transforms(self):
-        """Deprecated property that includes both `gpml:Transform` and `gpml:MidOceanRidge` features."""
-        logger.debug(
-            "Deprecated! The 'ridge_transforms' property will be removed in the next GPlately release. "
-            "You need to update your workflow to use the 'ridges' and 'transforms' properties instead, "
-            "otherwise your workflow will be broken by the next GPlately release.",
-            FutureWarning,
-        )
-        logger.debug(
-            "The 'ridge_transforms' property has been changed since GPlately release 1.3.0. "
-            "Now the 'ridge_transforms' property contains both `gpml:Transform` and `gpml:MidOceanRidge` "
-            "features in the reconstruction model. You need to check your workflow to make sure the new "
-            "'ridge_transforms' property still suits your purpose. In the previous GPlately releases, "
-            "the 'ridge_transforms' property contains only `gpml:MidOceanRidge` features.",
-            UserWarning,
-        )
-        return self.transforms + self.ridges
-            """A class with tools to read, reconstruct and plot topology features at specific
+    """A class with tools to read, reconstruct and plot topology features at specific
     reconstruction times.
 
     `PlotTopologies` is a shorthand for PyGPlates and Shapely functionalities that:
@@ -856,7 +837,6 @@ class PlotTopologies(object):
         tessellate_degrees=1,
     ):
         """Create a geopandas.GeoDataFrame object containing geometries of reconstructed mid-ocean ridge lines(gpml:MidOceanRidge)."""
-        logger.debug("Getting reconstructed mid-ocean ridge lines")
         return self.get_feature(
             self.ridges,
             central_meridian=central_meridian,
@@ -866,16 +846,7 @@ class PlotTopologies(object):
     @validate_topology_availability("ridges")
     @append_docstring(PLOT_DOCSTRING.format("ridges"))
     def plot_ridges(self, ax, color="black", **kwargs):
-
-        logger.debug(
-            "The 'plot_ridges' function has been changed since GPlately release 1.3.0. "
-            "Now the 'plot_ridges' function plots all `gpml:MidOceanRidge` features in the reconstruction model. "
-            "You need to check your workflow to make sure the new 'plot_ridges' function still suits your purpose. "
-            "In the previous GPlately releases, the 'plot_ridges' function plots only the ridges in the "
-            "`gpml:MidOceanRidge` features (the transforms in the `gpml:MidOceanRidge` features are not plotted).",
-            UserWarning,
-        )
-                """Plot reconstructed mid-ocean ridge lines(gpml:MidOceanRidge) onto a map.
+        """Plot reconstructed mid-ocean ridge lines(gpml:MidOceanRidge) onto a map.
 
         Notes
         -----
@@ -893,7 +864,6 @@ class PlotTopologies(object):
         Point features near the poles (-89 & 89 degree latitude) are also clipped to ensure
         compatibility with Cartopy.
         """
-        logger.debug("Plotting reconstructed mid-ocean ridge lines")
         return self.plot_feature(
             ax,
             self.ridges,
@@ -1262,27 +1232,7 @@ class PlotTopologies(object):
     plot_plate_id.__doc__ = plot_plate_polygon_by_id.__doc__
 
     def plot_grid(self, ax, grid, extent=[-180, 180, -90, 90], **kwargs):
-
-    def plot_ridges_and_transforms(self, ax, color="black", **kwargs):
-        """Deprecated function to plot both ridges and transforms."""
-        logger.debug(
-            "Deprecated! The 'plot_ridges_and_transforms' function will be removed in the next GPlately release. "
-            "You need to update your workflow to use the 'plot_ridges' and 'plot_transforms' functions instead, "
-            "otherwise your workflow will be broken by the next GPlately release.",
-            FutureWarning,
-        )
-        logger.debug(
-            "The 'plot_ridges_and_transforms' function has been changed since GPlately release 1.3.0. "
-            "Now the 'plot_ridges_and_transforms' function plots both `gpml:Transform` and `gpml:MidOceanRidge` "
-            "features in the reconstruction model. You need to check your workflow to make sure the new "
-            "'plot_ridges_and_transforms' function still suits your purpose. In the previous GPlately releases, "
-            "the 'plot_ridges_and_transforms' function plots only `gpml:MidOceanRidge` features.",
-            UserWarning,
-        )
-        self.plot_ridges(ax, color=color, **kwargs)
-        self.plot_transforms(ax, color=color, **kwargs)
-        return ax
-                """Plot a `MaskedArray` raster or grid onto a standard map Projection.
+        """Plot a `MaskedArray` raster or grid onto a standard map Projection.
 
         Notes
         -----
@@ -1807,7 +1757,6 @@ class PlotTopologies(object):
         tessellate_degrees=None,
     ):
         """Create a geopandas.GeoDataFrame object containing geometries of reconstructed transform lines(gpml:Transform)."""
-        logger.debug("Getting reconstructed transform boundary lines")
         return self.get_feature(
             self.transforms,
             central_meridian=central_meridian,
@@ -1816,18 +1765,7 @@ class PlotTopologies(object):
 
     @append_docstring(PLOT_DOCSTRING.format("transforms"))
     def plot_transforms(self, ax, color="black", **kwargs):
-
-        logger.debug(
-            "The 'plot_transforms' function has been changed since GPlately release 1.3.0. "
-            "Now the 'plot_transforms' function plots all the `gpml:Transform` features in the reconstruction model "
-            "(the transforms in the `gpml:MidOceanRidge` features are not included). "
-            "You need to check your workflow to make sure the new 'plot_transforms' function still suits your purpose. "
-            "In the previous GPlately releases, the 'plot_transforms' function plots only the transforms in the "
-            "`gpml:MidOceanRidge` features (the `gpml:Transform` features are not plotted).",
-            UserWarning,
-        )
-                """Plot transform boundaries(gpml:Transform) onto a map."""
-        logger.debug("Plotting transform")
+        """Plot transform boundaries(gpml:Transform) onto a map."""
         return self.plot_feature(
             ax,
             self.transforms,
@@ -1904,31 +1842,9 @@ class PlotTopologies(object):
     @validate_topology_availability("all topologies")
     @append_docstring(PLOT_DOCSTRING.format("topologies"))
     def plot_all_topologies(self, ax, color="black", **kwargs):
-
-    def get_ridges_and_transforms(self, central_meridian=0.0, tessellate_degrees=1):
-        """Deprecated function to get both ridges and transforms."""
-        logger.debug(
-            "Deprecated! The 'get_ridges_and_transforms' function will be removed in the next GPlately release. "
-            "You need to update your workflow to use the 'get_ridges' and 'get_transforms' functions instead, "
-            "otherwise your workflow will be broken by the next GPlately release.",
-            FutureWarning,
-        )
-        logger.debug(
-            "The 'get_ridges_and_transforms' function has been changed since GPlately release 1.3.0. "
-            "Now the 'get_ridges_and_transforms' function returns both `gpml:Transform` and `gpml:MidOceanRidge` "
-            "features in the reconstruction model. You need to check your workflow to make sure the new "
-            "'get_ridges_and_transforms' function still suits your purpose. In the previous GPlately releases, "
-            "the 'get_ridges_and_transforms' function returns only `gpml:MidOceanRidge` features.",
-            UserWarning,
-        )
-        ridges_gdf = self.get_ridges(central_meridian=central_meridian, tessellate_degrees=tessellate_degrees)
-        transforms_gdf = self.get_transforms(central_meridian=central_meridian, tessellate_degrees=tessellate_degrees)
-        return ridges_gdf.append(transforms_gdf, ignore_index=True)
-                """Plot topological polygons and networks on a standard map projection."""
+        """Plot topological polygons and networks on a standard map projection."""
         if "edgecolor" not in kwargs.keys():
             kwargs["edgecolor"] = color
-        if "facecolor" not in kwargs.keys():
-            kwargs["facecolor"] = "none"
 
         return self._plot_feature(
             ax,
@@ -2040,69 +1956,5 @@ class PlotTopologies(object):
             self._topological_plate_boundaries,
             feature_name="topological plate boundaries",
             color=color,
-            **kwargs,
-        )
-
-    @property
-    def ridge_transforms(self):
-        """Combine ridges and transforms into one feature set."""
-        if self.time is None:
-            raise ValueError(
-                "No topologies have been resolved. Set `PlotTopologies.time` to construct them."
-            )
-        logger.debug("Returning ridge_transforms property.")
-        return self.ridges + self.transforms
-
-    def get_ridge_transforms(self, central_meridian=0.0, tessellate_degrees=None):
-        """Create a GeoDataFrame containing geometries of reconstructed ridge transforms."""
-        logger.debug("Getting reconstructed ridge transforms.")
-        return self.get_feature(
-            self.ridge_transforms,
-            central_meridian=central_meridian,
-            tessellate_degrees=tessellate_degrees
-        )
-
-    @validate_topology_availability("ridge transforms")
-    @append_docstring(PLOT_DOCSTRING.format("ridge transforms"))
-    def plot_ridge_transforms(self, ax, color="black", **kwargs):
-        """Plot reconstructed ridge transforms onto a map."""
-        logger.debug("Plotting reconstructed ridge transforms.")
-        return self.plot_feature(
-            ax,
-            self.ridge_transforms,
-            feature_name="ridge_transforms",
-            edgecolor=color,
-            **kwargs,
-        )
-
-    @property
-    def misc_transforms(self):
-        """Combine miscellaneous transforms into one feature set."""
-        if self.time is None:
-            raise ValueError(
-                "No topologies have been resolved. Set `PlotTopologies.time` to construct them."
-            )
-        logger.debug("Returning misc_transforms property.")
-        return self.transforms + self.unclassified_features
-
-    def get_misc_transforms(self, central_meridian=0.0, tessellate_degrees=None):
-        """Create a GeoDataFrame containing geometries of reconstructed miscellaneous transforms."""
-        logger.debug("Getting reconstructed miscellaneous transforms.")
-        return self.get_feature(
-            self.misc_transforms,
-            central_meridian=central_meridian,
-            tessellate_degrees=tessellate_degrees
-        )
-
-    @validate_topology_availability("miscellaneous transforms")
-    @append_docstring(PLOT_DOCSTRING.format("miscellaneous transforms"))
-    def plot_misc_transforms(self, ax, color="black", **kwargs):
-        """Plot reconstructed miscellaneous transforms onto a map."""
-        logger.debug("Plotting reconstructed miscellaneous transforms.")
-        return self.plot_feature(
-            ax,
-            self.misc_transforms,
-            feature_name="misc_transforms",
-            edgecolor=color,
             **kwargs,
         )
