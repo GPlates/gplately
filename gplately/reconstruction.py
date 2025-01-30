@@ -912,10 +912,19 @@ class PlateReconstruction(object):
         tessellation_threshold_radians=0.001,
         ignore_warnings=False,
         return_geodataframe=False,
+        *,
         use_ptt=False,
         include_network_boundaries=False,
         convergence_threshold_in_cm_per_yr=None,
-        **kwargs,
+        anchor_plate_id=None,
+        velocity_delta_time=1.0,
+        output_distance_to_nearest_edge_of_trench=False,
+        output_distance_to_start_edge_of_trench=False,
+        output_convergence_velocity_components=False,
+        output_trench_absolute_velocity_components=False,
+        output_subducting_absolute_velocity=False,
+        output_subducting_absolute_velocity_components=False,
+        output_trench_normal=False,
     ):
         """Samples points along subduction zone trenches and obtains subduction data at a particular geological time.
 
@@ -934,6 +943,8 @@ class PlateReconstruction(object):
         * Col. 8 - subducting plate ID
         * Col. 9 - trench plate ID
 
+        The optional 'output_*' parameters can be used to append extra data to the output tuple of each sampled trench point.
+        The order of any extra data is the same order in which the parameters are listed below.
 
         Parameters
         ----------
@@ -962,6 +973,34 @@ class PlateReconstruction(object):
             This value can be negative which means a small amount of divergence is allowed.
             If `None` then all (converging and diverging) sample points are returned. This is the default.
             Note that this parameter can only be specified if `use_ptt` is `False`.
+        anchor_plate_id : int, optional
+            Anchor plate ID (defaults to the current anchor plate ID).
+        velocity_delta_time : float, default=1.0
+            Velocity delta time used in convergence velocity calculations (defaults to 1 Myr).
+        output_distance_to_nearest_edge_of_trench : bool, default=False
+            Append the distance (in degrees) along the trench line to the nearest trench edge to each returned sample point.
+            A trench edge is the farthermost location on the current trench feature that contributes to a plate boundary.
+        output_distance_to_start_edge_of_trench : bool, default=False
+            Append the distance (in degrees) along the trench line from the start edge of the trench to each returned sample point.
+            The start of the trench is along the clockwise direction around the overriding plate.
+        output_convergence_velocity_components : bool, default=False
+            Append the convergence velocity orthogonal and parallel components (in cm/yr) to each returned sample point.
+            Orthogonal is normal to trench (in direction of overriding plate when positive).
+            Parallel is along trench (90 degrees clockwise from trench normal when positive).
+        output_trench_absolute_velocity_components : bool, default=False
+            Append the trench absolute velocity orthogonal and parallel components (in cm/yr) to each returned sample point.
+            Orthogonal is normal to trench (in direction of overriding plate when positive).
+            Parallel is along trench (90 degrees clockwise from trench normal when positive).
+        output_subducting_absolute_velocity : bool, default=False
+            Append the subducting plate absolute velocity magnitude (in cm/yr) and obliquity angle (in degrees) to each returned sample point.
+        output_subducting_absolute_velocity_components : bool, default=False
+            Append the subducting plate absolute velocity orthogonal and parallel components (in cm/yr) to each returned sample point.
+            Orthogonal is normal to trench (in direction of overriding plate when positive).
+            Parallel is along trench (90 degrees clockwise from trench normal when positive).
+        output_trench_normal : bool, default=False
+            Append the x, y and z components of the trench normal unit-length 3D vectors.
+            These vectors are normal to the trench in the direction of subduction (towards overriding plate).
+            These are global 3D vectors which differ from trench normal azimuth angles (ie, angles relative to North).
 
         Returns
         -------
@@ -980,6 +1019,9 @@ class PlateReconstruction(object):
             * Col. 7 - trench normal (in subduction direction, ie, towards overriding plate) azimuth angle (clockwise starting at North, ie, 0 to 360 degrees) at current point
             * Col. 8 - subducting plate ID
             * Col. 9 - trench plate ID
+
+            The optional 'output_*' parameters can be used to append extra data to the tuple of each sampled trench point.
+            The order of any extra data is the same order in which the parameters are listed in this function.
 
         Raises
         ------
@@ -1007,24 +1049,6 @@ class PlateReconstruction(object):
         than -90) - note that this ignores the kinematics of the subducting plate. Similiarly for the subducting plate absolute
         velocity magnitude (if keyword argument `output_subducting_absolute_velocity` is True).
 
-        The optional *kwargs* parameters can be used to append extra data to the output tuple of each sample point
-        (as well as specify the anchor plate and velocity delta time interval).
-        The order of any extra data is the same order in which the parameters are listed below.
-
-        The following optional keyword arguments are supported by *kwargs*:
-
-        | Name                                           | Type  | Default | Description |
-        |------------------------------------------------|-------|---------|-------------|
-        | anchor_plate_id                                | int   | None    | Anchor plate ID (defaults to the current anchor plate ID). |
-        | velocity_delta_time                            | float | 1.0     | Velocity delta time used in convergence velocity calculations (defaults to 1 Myr). |
-        | output_distance_to_nearest_edge_of_trench      | bool  | False   | Append the distance (in degrees) along the trench line to the nearest trench edge to each returned sample point. A trench edge is the farthermost location on the current trench feature that contributes to a plate boundary. |
-        | output_distance_to_start_edge_of_trench        | bool  | False   | Append the distance (in degrees) along the trench line from the start edge of the trench to each returned sample point. The start of the trench is along the clockwise direction around the overriding plate. |
-        | output_convergence_velocity_components         | bool  | False   | Append the convergence velocity orthogonal and parallel components (in cm/yr) to each returned sample point. Orthogonal is normal to trench (in direction of overriding plate when positive). Parallel is along trench (90 degrees clockwise from trench normal when positive). |
-        | output_trench_absolute_velocity_components     | bool  | False   | Append the trench absolute velocity orthogonal and parallel components (in cm/yr) to each returned sample point. Orthogonal is normal to trench (in direction of overriding plate when positive). Parallel is along trench (90 degrees clockwise from trench normal when positive). |
-        | output_subducting_absolute_velocity            | bool  | False   | Append the subducting plate absolute velocity magnitude (in cm/yr) and obliquity angle (in degrees) to each returned sample point. |
-        | output_subducting_absolute_velocity_components | bool  | False   | Append the subducting plate absolute velocity orthogonal and parallel components (in cm/yr) to each returned sample point. Orthogonal is normal to trench (in direction of overriding plate when positive). Parallel is along trench (90 degrees clockwise from trench normal when positive). |
-        | output_trench_normal                           | bool  | False   | Append the x, y and z components of the trench normal unit-length 3D vectors. These vectors are normal to the trench in the direction of subduction (towards overriding plate). These are global 3D vectors which differ from trench normal azimuth angles (ie, angles relative to North). |
-
         Examples
         --------
         To sample points along subduction zones at 50Ma:
@@ -1036,34 +1060,9 @@ class PlateReconstruction(object):
             subduction_data = plate_reconstruction.tessellate_subduction_zones(50,
                     convergence_threshold_in_cm_per_yr=0.0)
         """
-        #
-        # Process keyword arguments.
-        #
-        anchor_plate_id = kwargs.pop("anchor_plate_id", self.anchor_plate_id)
-        velocity_delta_time = kwargs.pop("velocity_delta_time", 1.0)
-        output_distance_to_nearest_edge_of_trench = kwargs.pop(
-            "output_distance_to_nearest_edge_of_trench", False
-        )
-        output_distance_to_start_edge_of_trench = kwargs.pop(
-            "output_distance_to_start_edge_of_trench", False
-        )
-        output_convergence_velocity_components = kwargs.pop(
-            "output_convergence_velocity_components", False
-        )
-        output_trench_absolute_velocity_components = kwargs.pop(
-            "output_trench_absolute_velocity_components", False
-        )
-        output_subducting_absolute_velocity = kwargs.pop(
-            "output_subducting_absolute_velocity", False
-        )
-        output_subducting_absolute_velocity_components = kwargs.pop(
-            "output_subducting_absolute_velocity_components", False
-        )
-        output_trench_normal = kwargs.pop("output_trench_normal", False)
-        if kwargs:
-            raise ValueError(
-                "Keyword arguments not recognised:{}".format(list(kwargs.keys()))
-            )
+
+        if anchor_plate_id is None:
+            anchor_plate_id = self.anchor_plate_id
 
         if use_ptt:
             from . import ptt as _ptt
@@ -1224,8 +1223,9 @@ class PlateReconstruction(object):
     def total_subduction_zone_length(
         self,
         time,
-        ignore_warnings=False,
         use_ptt=False,
+        ignore_warnings=False,
+        *,
         include_network_boundaries=False,
         convergence_threshold_in_cm_per_yr=None,
     ):
@@ -1240,12 +1240,12 @@ class PlateReconstruction(object):
         ----------
         time : int
             The geological time at which to calculate total subduction zone lengths.
-        ignore_warnings : bool, default=False
-            Choose to ignore warnings from Plate Tectonic Tools' subduction_convergence workflow (if `use_ptt` is `True`).
         use_ptt : bool, default=False
             If set to `True` then uses Plate Tectonic Tools' `subduction_convergence` workflow to calculate total subduction zone length.
             If set to `False` then uses plate convergence instead.
             Plate convergence is the more general approach that works along all plate boundaries (not just subduction zones).
+        ignore_warnings : bool, default=False
+            Choose to ignore warnings from Plate Tectonic Tools' subduction_convergence workflow (if `use_ptt` is `True`).
         include_network_boundaries : bool, default=False
             Whether to count lengths along network boundaries that are not also plate boundaries (defaults to False).
             If a deforming network shares a boundary with a plate then it'll get included regardless of this option.
@@ -1304,6 +1304,7 @@ class PlateReconstruction(object):
         continental_grid,
         trench_arc_distance,
         ignore_warnings=True,
+        *,
         use_ptt=False,
         include_network_boundaries=False,
         convergence_threshold_in_cm_per_yr=None,
@@ -1584,13 +1585,15 @@ class PlateReconstruction(object):
         tessellation_threshold_radians=0.001,
         ignore_warnings=False,
         return_geodataframe=False,
+        *,
         use_ptt=False,
         spreading_feature_types=[pygplates.FeatureType.gpml_mid_ocean_ridge],
         transform_segment_deviation_in_radians=separate_ridge_transform_segments.DEFAULT_TRANSFORM_SEGMENT_DEVIATION_RADIANS,
         include_network_boundaries=False,
         divergence_threshold_in_cm_per_yr=None,
         output_obliquity_and_normal_and_left_right_plates=False,
-        **kwargs,
+        anchor_plate_id=None,
+        velocity_delta_time=1.0,
     ):
         """Samples points along resolved spreading features (e.g. mid-ocean ridges) and calculates spreading rates and
         lengths of ridge segments at a particular geological time.
@@ -1661,6 +1664,10 @@ class PlateReconstruction(object):
             However, this parameter can only be specified if `use_ptt` is `False`.
         output_obliquity_and_normal_and_left_right_plates : bool, default=False
             Whether to also return spreading obliquity, normal azimuth and left/right plates.
+        anchor_plate_id : int, optional
+            Anchor plate ID (defaults to the current anchor plate ID).
+        velocity_delta_time : float, default=1.0
+            Velocity delta time used in spreading velocity calculations (defaults to 1 Myr).
 
         Returns
         -------
@@ -1702,13 +1709,6 @@ class PlateReconstruction(object):
         If `use_ptt` is True then each ridge segment is sampled at *approximately* uniform intervals along its length such that the sampled points
         have a uniform spacing (along each ridge segment polyline) that is *less than or equal to* `tessellation_threshold_radians`.
 
-        The following optional keyword arguments are supported by *kwargs*:
-
-        | Name                                           | Type  | Default | Description |
-        |------------------------------------------------|-------|---------|-------------|
-        | anchor_plate_id                                | int   | None    | Anchor plate ID (defaults to the current anchor plate ID). |
-        | velocity_delta_time                            | float | 1.0     | Velocity delta time used in spreading velocity calculations (defaults to 1 Myr). |
-
         Examples
         --------
         To sample points along mid-ocean ridges at 50Ma, but ignoring the transform segments (of the ridges):
@@ -1723,12 +1723,8 @@ class PlateReconstruction(object):
                     divergence_threshold_in_cm_per_yr=0.2)
         """
 
-        anchor_plate_id = kwargs.pop("anchor_plate_id", self.anchor_plate_id)
-        velocity_delta_time = kwargs.pop("velocity_delta_time", 1.0)
-        if kwargs:
-            raise ValueError(
-                "Keyword arguments not recognised:{}".format(list(kwargs.keys()))
-            )
+        if anchor_plate_id is None:
+            anchor_plate_id = self.anchor_plate_id
 
         if use_ptt:
             from . import ptt as _ptt
@@ -1812,6 +1808,7 @@ class PlateReconstruction(object):
         time,
         use_ptt=False,
         ignore_warnings=False,
+        *,
         spreading_feature_types=[pygplates.FeatureType.gpml_mid_ocean_ridge],
         transform_segment_deviation_in_radians=separate_ridge_transform_segments.DEFAULT_TRANSFORM_SEGMENT_DEVIATION_RADIANS,
         include_network_boundaries=False,

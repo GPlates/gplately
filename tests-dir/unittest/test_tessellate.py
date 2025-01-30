@@ -37,15 +37,13 @@ def main(show=True):
     convergence_threshold_in_cm_per_yr = None
     divergence_threshold_in_cm_per_yr = None
     output_obliquity_and_normal_and_left_right_plates = True
-    subduction_kwargs = {
-        "output_distance_to_nearest_edge_of_trench": True,
-        "output_distance_to_start_edge_of_trench": True,
-        "output_convergence_velocity_components": True,
-        "output_trench_absolute_velocity_components": True,
-        "output_subducting_absolute_velocity": True,
-        "output_subducting_absolute_velocity_components": True,
-        "output_trench_normal": True,
-    }
+    subduction_output_distance_to_nearest_edge_of_trench = True
+    subduction_output_distance_to_start_edge_of_trench = True
+    subduction_output_convergence_velocity_components = True
+    subduction_output_trench_absolute_velocity_components = True
+    subduction_output_subducting_absolute_velocity = True
+    subduction_output_subducting_absolute_velocity_components = True
+    subduction_output_trench_normal = True
 
     # Subduction zones.
     subduction_data = model.tessellate_subduction_zones(
@@ -56,12 +54,18 @@ def main(show=True):
         include_network_boundaries=include_network_boundaries,
         convergence_threshold_in_cm_per_yr=convergence_threshold_in_cm_per_yr,
         return_geodataframe=True,
-        **subduction_kwargs,
+        output_distance_to_nearest_edge_of_trench=subduction_output_distance_to_nearest_edge_of_trench,
+        output_distance_to_start_edge_of_trench=subduction_output_distance_to_start_edge_of_trench,
+        output_convergence_velocity_components=subduction_output_convergence_velocity_components,
+        output_trench_absolute_velocity_components=subduction_output_trench_absolute_velocity_components,
+        output_subducting_absolute_velocity=subduction_output_subducting_absolute_velocity,
+        output_subducting_absolute_velocity_components=subduction_output_subducting_absolute_velocity_components,
+        output_trench_normal=subduction_output_trench_normal,
     )
     total_subduction_zone_length_in_kms = model.total_subduction_zone_length(
         time,
-        ignore_warnings=True,
         use_ptt=use_ptt,
+        ignore_warnings=True,
         include_network_boundaries=include_network_boundaries,
         convergence_threshold_in_cm_per_yr=convergence_threshold_in_cm_per_yr,
     )
@@ -99,7 +103,7 @@ def main(show=True):
         convergence_velocity_threshold=0.2,  # cm/yr
         velocity_units=pygplates.VelocityUnits.cms_per_yr,
     )
-    total_crustal_production_rate, total_crustal_desctruction_rate = (
+    total_crustal_production_rate, total_crustal_destruction_rate = (
         model.crustal_production_destruction_rate(
             time,
             uniform_point_spacing_radians=0.001,
@@ -110,7 +114,7 @@ def main(show=True):
     print(
         "total crustal production/destruction rate (km^2/yr):",
         total_crustal_production_rate,
-        total_crustal_desctruction_rate,
+        total_crustal_destruction_rate,
     )
 
     # Non-geometry columns of subduction data.
