@@ -1139,6 +1139,7 @@ def subduction_convergence_over_time(
     include_slab_topologies=False,
     **kwargs,
 ):
+    """calculate subduction convergence over time"""
     if time_increment <= 0:
         raise ValueError(
             'The time increment "{0}" is not positive and non-zero.'.format(

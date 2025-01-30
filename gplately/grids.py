@@ -37,7 +37,7 @@ import logging
 import math
 import warnings
 from multiprocessing import cpu_count
-from typing import Union
+from typing import Union, Tuple
 
 import matplotlib.colors
 import matplotlib.pyplot as plt
@@ -167,7 +167,9 @@ def read_netcdf_grid(
     x_dimension_name: str = "",
     y_dimension_name: str = "",
     data_variable_name: str = "",
-):
+) -> Union[
+    Tuple[np.ma.MaskedArray, np.ma.MaskedArray, np.ma.MaskedArray], np.ma.MaskedArray
+]:
     """Read a `netCDF` (.nc) grid from a given `filename` and return its data as a
     `MaskedArray`.
 
@@ -389,7 +391,11 @@ def read_netcdf_grid(
 
 
 def write_netcdf_grid(
-    filename, grid, extent="global", significant_digits=None, fill_value=np.nan
+    filename,
+    grid,
+    extent: Union[list[int], str] = "global",
+    significant_digits=None,
+    fill_value=np.nan,
 ):
     """Write geological data contained in a `grid` to a netCDF4 grid with a specified `filename`.
 
@@ -612,7 +618,11 @@ class RegularGridInterpolator(_RGI):
             return output_tuple[0]
 
     def _prepare_xi(self, xi):
-        from scipy.interpolate.interpnd import _ndim_coords_from_arrays
+        try:
+            from scipy.interpolate.interpnd import _ndim_coords_from_arrays
+        except ImportError:
+            # SciPy 1.15 renamed interpnd to _interpnd (see https://github.com/scipy/scipy/pull/21754).
+            from scipy.interpolate._interpnd import _ndim_coords_from_arrays
 
         ndim = len(self.grid)
         xi = _ndim_coords_from_arrays(xi, ndim=ndim)

@@ -23,6 +23,7 @@ working with point data, and calculating plate velocities at specific geological
 import math
 import os
 import warnings
+import logging
 
 import numpy as np
 import pygplates
@@ -32,6 +33,8 @@ from .gpml import _load_FeatureCollection
 from .pygplates import FeatureCollection as _FeatureCollection
 from .pygplates import RotationModel as _RotationModel
 from .ptt import separate_ridge_transform_segments
+
+logger = logging.getLogger("gplately")
 
 
 class PlateReconstruction(object):
@@ -70,6 +73,12 @@ class PlateReconstruction(object):
         anchor_plate_id=None,
         plate_model_name: str = "Nemo",
     ):
+        # Add a warning if the rotation_model is empty
+        if not rotation_model:
+            logger.warning(
+                "No rotation features were passed to the constructor of PlateReconstruction. The reconstruction will not work. Check your rotation file(s)."
+            )
+
         if hasattr(rotation_model, "reconstruction_identifier"):
             self.name = rotation_model.reconstruction_identifier
         else:
@@ -3657,12 +3666,11 @@ class _ReconstructByTopologies(object):
     Class to reconstruct geometries using topologies.
 
     Currently only points are supported.
-
-    use_plate_partitioner: If True then use pygplates.PlatePartitioner to partition points,
-                           otherwise use faster points_in_polygons.find_polygons().
     """
 
     use_plate_partitioner = False
+    """If the use_plate_partitioner is True then use pygplates.PlatePartitioner to partition points,
+        otherwise use faster points_in_polygons.find_polygons()."""
 
     def __init__(
         self,
@@ -3685,12 +3693,7 @@ class _ReconstructByTopologies(object):
         detect_collisions: Collision detection function, or None. Defaults to _DEFAULT_COLLISION.
         """
 
-        # Turn rotation data into a RotationModel (if not already).
-        if not isinstance(rotation_features_or_model, pygplates.RotationModel):
-            rotation_model = pygplates.RotationModel(rotation_features_or_model)
-        else:
-            rotation_model = rotation_features_or_model
-        self.rotation_model = rotation_model
+        self.rotation_model = _RotationModel(rotation_features_or_model)
 
         # Turn topology data into a list of features (if not already).
         self.topology_features = pygplates.FeaturesFunctionArgument(

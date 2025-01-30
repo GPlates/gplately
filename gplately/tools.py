@@ -98,7 +98,7 @@ def plate_isotherm_depth(
     maxiter=50,
     tol=0.001,
     require_convergence=False,
-    **kwargs
+    **kwargs,
 ):
     """Computes the depth to the temp - isotherm in a cooling plate mode. Solution by iteration.
 
@@ -190,12 +190,12 @@ def plate_isotherm_depth(
     return out
 
 
-def plate_surface_depth(age, model='Richards2020'):
+def plate_surface_depth(age, model="Richards2020"):
     """
     Computes the depth to the surface of a cooling plate.
 
     Essentially converts the ocean basin age to basement depth using a specified age/depth model.
-    
+
     Parameters
     ----------
     age : float
@@ -205,12 +205,12 @@ def plate_surface_depth(age, model='Richards2020'):
         - 'Richards2020': Richards et al. (2020), Structure and dynamics of the oceanic lithosphere-asthenosphere system
         - 'Stein1992': Stein and Stein (1992), Model for the global variation in oceanic depth and heat flow with lithospheric age
         - 'Parsons1977': Parsons and Sclater (1972), An analysis of the variation of ocean floor bathymetry and heat flow with age
-    
+
     Returns
     -------
     depth : array
         Depth (in metres) as a positive number.
-    
+
     Raises
     ------
     ValueError
@@ -223,25 +223,25 @@ def plate_surface_depth(age, model='Richards2020'):
     age = np.array(age)
 
     if model == "Richards2020":
-        opt_params = [4.40989118e+01, 1.16071448e+05, 1.02003657e-06, 2.47658681e+03]
+        opt_params = [4.40989118e01, 1.16071448e05, 1.02003657e-06, 2.47658681e03]
         temp, plate_thickness, kappa, offset = opt_params
 
-        depth = plate_isotherm_depth(
-            age, 
-            temp=temp, 
-            plate_thickness=plate_thickness, 
-            kappa=kappa
-        ) + offset
+        depth = (
+            plate_isotherm_depth(
+                age, temp=temp, plate_thickness=plate_thickness, kappa=kappa
+            )
+            + offset
+        )
 
     elif model == "Stein1992":
         mask_age = age < 20
-        depth = np.array(5651.0 - 2473.0 * np.exp(-0.0278*age))
+        depth = np.array(5651.0 - 2473.0 * np.exp(-0.0278 * age))
         depth[mask_age] = 2600.0 + 365.0 * np.sqrt(age[mask_age])
 
     elif model == "Parsons1977":
         mask_age = age < 70
-        depth = np.array(6400.0 - 3200.0 * np.exp(-age/62.8))
-        depth[mask_age] = 2500.0 + 350*np.sqrt(age[mask_age])
+        depth = np.array(6400.0 - 3200.0 * np.exp(-age / 62.8))
+        depth[mask_age] = 2500.0 + 350 * np.sqrt(age[mask_age])
 
     else:
         raise ValueError("model should be one of Richards2020 or Stein1992")
@@ -327,6 +327,7 @@ def extract_feature_lonlat(features):
 
     return rlon, rlat
 
+
 def plate_partitioner_for_point(lat_lon_tuple, topology_features, rotation_model):
     """Determine the present-day plate ID of a (lat, lon) coordinate pair if
     it is not specified.
@@ -409,8 +410,9 @@ def smooth_1D(array, sigma=3.0, axis=0):
     return scipy.ndimage.gaussian_filter1d(array, sigma, axis=axis)
 
 
-def My2s(Ma):
-    return Ma * 3.1536e13
+def My2s(my):
+    """convert million year(my) to seconds. Roughly, 1 Million Years =  31,536,000,000,000 Seconds"""
+    return my * 3.1536e13
 
 
 def update_progress(progress):
@@ -554,7 +556,11 @@ def griddata_sphere(points, values, xi, method="nearest", **kwargs):
 
     assert xi[0].shape == xi[1].shape, "ensure coordinates in xi are the same shape"
 
-    from scipy.interpolate.interpnd import _ndim_coords_from_arrays
+    try:
+        from scipy.interpolate.interpnd import _ndim_coords_from_arrays
+    except ImportError:
+        # SciPy 1.15 renamed interpnd to _interpnd (see https://github.com/scipy/scipy/pull/21754).
+        from scipy.interpolate._interpnd import _ndim_coords_from_arrays
 
     points = _ndim_coords_from_arrays(points)
 
@@ -789,7 +795,7 @@ def _get_rotation(plate_pair, rotation_model, time, delta_time=1.0, **kwargs):
         from_time=from_time,
         moving_plate_id=plate_pair[0],
         anchor_plate_id=plate_pair[1],
-        **kwargs
+        **kwargs,
     )
 
     return rotation

@@ -31,6 +31,7 @@ import pathlib as _pathlib
 import re as _re
 import shutil as _shutil
 import urllib.request as _request
+import warnings
 
 import numpy as _np
 import pooch as _pooch
@@ -49,6 +50,13 @@ from gplately.data import DataCollection
 
 from .pygplates import FeatureCollection as _FeatureCollection
 from .pygplates import RotationModel as _RotationModel
+
+from plate_model_manager import PlateModelManager, PresentDayRasterManager
+import numpy as np
+
+
+class DownloadWarning(RuntimeWarning):
+    pass
 
 
 def _test_internet_connection(url):
@@ -1071,9 +1079,9 @@ def get_feature_data(feature_data_id_string=None, verbose=True):
 
 
 class DataServer(object):
-    """Uses [Pooch](https://www.fatiando.org/pooch/latest/) to download plate reconstruction
+    """Uses the [plate-model-manager](https://pypi.org/project/plate-model-manager/) to download plate reconstruction
     feature data from plate models and other studies that are stored on web servers
-    (e.g. EarthByte's [webDAV server](https://www.earthbyte.org/webdav/ftp/Data_Collections/)).
+    (e.g. EarthByte's [webDAV server](https://repo.gplates.org/webdav/pmm/)).
 
     If the `DataServer` object and its methods are called for the first time, i.e. by:
 
@@ -1088,399 +1096,160 @@ class DataServer(object):
 
     ------------------
 
-    | **Model name string Identifier** | **Rot. files** | **Topology features** | **Static polygons** | **Coast-lines** | **Cont-inents** | **COB-** | **Age grids** | **SR grids** |
-    |:--------------------------------:|:--------------:|:---------------------:|:-------------------:|:---------------:|:---------------:|:--------:|:-------------:|:------------:|
-    |            Muller2019            |        ✅       |           ✅           |          ✅          |        ✅        |        ✅        |     ✅    |       ✅       |       ❌      |
-    |            Muller2016            |        ✅       |           ✅           |          ✅          |        ✅        |        ❌        |     ❌    |       ✅       |       ❌      |
-    |            Merdith2021           |        ✅       |           ✅           |          ✅          |        ✅        |        ✅        |     ❌    |       ❌       |       ❌      |
-    |              Cao2020             |        ✅       |           ✅           |          ✅          |        ✅        |        ✅        |     ❌    |       ❌       |       ❌      |
-    |           Clennett2020           |        ✅       |           ✅           |          ✅          |        ✅        |        ✅        |     ❌    |       ✅       |       ✅      |
-    |             Seton2012            |        ✅       |           ✅           |          ❌          |        ✅        |        ❌        |     ✅    |       ✅       |       ❌      |
-    |           Matthews2016           |        ✅       |           ✅           |          ✅          |        ✅        |        ✅        |     ❌    |       ❌       |       ❌      |
-    |            Merdith2017           |        ✅       |           ✅           |          ❌          |        ❌        |        ❌        |     ❌    |       ❌       |       ❌      |
-    |              Li2008              |        ✅       |           ✅           |          ❌          |        ❌        |        ❌        |     ❌    |       ❌       |       ❌      |
-    |           Pehrsson2015           |        ✅       |           ✅           |          ❌          |        ❌        |        ❌        |     ❌    |       ❌       |       ❌      |
-    |         TorsvikCocks2017         |        ✅       |           ❌           |          ❌          |        ✅        |        ❌        |     ❌    |       ❌       |       ❌      |
-    |             Young2019            |        ✅       |           ✅           |          ✅          |        ✅        |        ✅        |     ❌    |       ❌       |       ❌      |
-    |            Scotese2008           |        ✅       |           ✅           |          ❌          |        ❌        |        ✅        |     ❌    |       ❌       |       ❌      |
-    |         Clennett2020_M19         |        ✅       |           ✅           |          ❌          |        ✅        |        ✅        |     ❌    |       ❌       |       ❌      |
-    |         Clennett2020_S13         |        ✅       |           ✅           |          ❌          |        ✅        |        ✅        |     ❌    |       ❌       |       ❌      |
-    |            Muller2008            |        ✅       |           ❌           |          ✅          |        ❌        |        ❌        |     ❌    |       ❌       |       ❌      |
-    |            Muller2022            |        ✅       |           ✅           |          ✅          |        ✅        |        ✅        |     ✅    |       ❌       |       ❌      |
-    |            Scotese2016           |        ✅       |           ❌           |          ✅          |        ✅        |        ❌        |     ❌    |       ❌       |       ❌      |
-    |           Shephard2013           |        ✅       |           ✅           |          ✅          |        ✅        |        ❌        |     ❌    |       ❌       |       ❌      |
+    | **Model name string Identifier** | **Zenodo** |**Topology features**   | **Static polygons**   | **Coast-lines**  | **Cont-inents** | **COB**    | **Age grids**   | **SR grids**  |
+    |:--------------------------------:|:----------:|:----------------------:|:--------------------:|:-----------------:|:---------------:|:----------:|:--------------:|:--------------:|
+    |  Alfonso2024                     |     ✅     |          ✅           |          ✅          |        ✅        |        ❌       |     ❌    |       ❌       |       ❌      |
+    |  Cao2024                         |     ✅     |          ✅           |          ✅          |        ✅        |        ✅       |     ✅    |       ❌       |       ❌      |
+    |  Muller2022                      |     ✅     |          ✅           |          ✅          |        ✅        |        ✅       |     ✅    |       ❌       |       ❌      |
+    |  Zahirovic2022                   |     ✅     |          ✅           |          ✅          |        ✅        |        ✅       |     ❌    |       ✅       |       ✅      |
+    |  Merdith2021                     |     ✅     |          ✅           |          ✅          |        ✅        |        ✅       |     ❌    |       ❌       |       ❌      |
+    |  Clennett2020                    |     ✅     |          ✅           |          ✅          |        ✅        |        ❌       |     ❌    |       ✅       |       ✅      |
+    |  Clennett2020_M2019              |     ✅     |          ✅           |          ✅          |        ✅        |        ❌       |     ❌    |       ✅       |       ✅      |
+    |  Clennett2020_S2013              |     ✅     |          ✅           |          ✅          |        ✅        |        ❌       |     ❌    |       ❌       |       ❌      |
+    |  Muller2019                      |     ✅     |          ✅           |          ✅          |        ✅        |        ✅       |     ✅    |       ✅       |       ❌      |
+    |  Young2018                       |     ✅     |          ✅           |          ✅          |        ✅        |        ✅       |     ❌    |       ❌       |       ❌      |
+    |  TorsvikCocks2017                |     ❌     |          ❌           |          ✅          |        ✅        |        ❌       |     ❌    |       ❌       |       ❌      |
+    |  Matthews2016                    |     ✅     |          ✅           |          ✅          |        ✅        |        ✅       |     ❌    |       ❌       |       ❌      |
+    |  Matthews2016_pmag_ref           |     ❌     |          ❌           |          ✅          |        ✅        |        ✅       |     ❌    |       ❌       |       ❌      |
+    |  Muller2016                      |     ✅     |          ✅           |          ✅          |        ✅        |        ❌       |     ✅    |       ✅       |       ❌      |
+    |  Scotese2016                     |     ✅     |          ❌           |          ✅          |        ✅        |        ❌       |     ❌    |       ❌       |       ❌      |
+    |  Zahirovic2016                   |     ✅     |          ✅           |          ✅          |        ✅        |        ✅       |     ❌    |       ❌       |       ❌      |
+    |  Gibbons2015                     |     ✅     |          ✅           |          ✅          |        ✅        |        ❌       |     ❌    |       ❌       |       ❌      |
+    |  Zahirovic2014                   |     ✅     |          ❌           |          ✅          |        ✅        |        ❌       |     ❌    |       ❌       |       ❌      |
+    |  Shephard2013                    |     ✅     |          ✅           |          ✅          |        ✅        |        ❌       |     ❌    |       ❌       |       ❌      |
+    |  Gurnis2012                      |     ✅     |          ✅           |          ✅          |        ✅        |        ❌       |     ❌    |       ❌       |       ❌      |
+    |  Seton2012                       |     ✅     |          ✅           |          ✅          |        ✅        |        ✅       |     ✅    |       ✅       |       ❌      |
+    |  Muller2008                      |     ❌     |          ❌           |          ✅          |        ❌        |        ❌       |     ❌    |       ❌       |       ❌      |
+
+    **Note: All models have rotation files.**
 
     ------------------
 
-    To call the object, supply a model name string Identifier, `file_collection`, from one of the following models:
+    More information about these plate models can be found at https://www.earthbyte.org/category/resources/data-models/global-regional-plate-motion-models/.
 
-    * __[Müller et al. 2019](https://www.earthbyte.org/muller-et-al-2019-deforming-plate-reconstruction-and-seafloor-age-grids-tectonics/):__
-
-        file_collection = `Muller2019`
-
-        Information
-        -----------
-        * Downloadable files: a `rotation_model`, `topology_features`, `static_polygons`, `coastlines`, `continents`, `COBs`, and
-        seafloor `age_grids` from 0 to 250 Ma.
-        * Maximum reconstruction time: 250 Ma
-
-        Citations
-        ---------
-        Müller, R. D., Zahirovic, S., Williams, S. E., Cannon, J., Seton, M.,
-        Bower, D. J., Tetley, M. G., Heine, C., Le Breton, E., Liu, S., Russell, S. H. J.,
-        Yang, T., Leonard, J., and Gurnis, M. (2019), A global plate model including
-        lithospheric deformation along major rifts and orogens since the Triassic.
-        Tectonics, vol. 38, https://doi.org/10.1029/2018TC005462.
-
-
-    * __Müller et al. 2016__:
-
-        file_collection = `Muller2016`
-
-        Information
-        -----------
-        * Downloadable files: a `rotation_model`, `topology_features`, `static_polygons`, `coastlines`, and
-        seafloor `age_grids` from 0-230 Ma.
-        * Maximum reconstruction time: 230 Ma
-
-        Citations
-        ---------
-        * Müller R.D., Seton, M., Zahirovic, S., Williams, S.E., Matthews, K.J.,
-        Wright, N.M., Shephard, G.E., Maloney, K.T., Barnett-Moore, N., Hosseinpour, M.,
-        Bower, D.J., Cannon, J., InPress. Ocean basin evolution and global-scale plate
-        reorganization events since Pangea breakup, Annual Review of Earth and Planetary
-        Sciences, Vol 44, 107-138. DOI: 10.1146/annurev-earth-060115-012211.
-
-
-    * __[Merdith et al. 2021](https://zenodo.org/record/4485738#.Yhrm8hNBzA0)__:
-
-        file_collection = `Merdith2021`
-
-        Information
-        -----------
-        * Downloadable files: a `rotation_model`, `topology_features`, `static_polygons`, `coastlines`
-        and `continents`.
-        * Maximum reconstruction time: 1 Ga (however, `PlotTopologies` correctly visualises up to 410 Ma)
-
-        Citations:
-        ----------
-        * Merdith et al. (in review), 'A continuous, kinematic full-plate motion model
-        from 1 Ga to present'.
-        * Andrew Merdith. (2020). Plate model for 'Extending Full-Plate Tectonic Models
-        into Deep Time: Linking the Neoproterozoic and the Phanerozoic ' (1.1b) [Data set].
-        Zenodo. https://doi.org/10.5281/zenodo.4485738
-
-
-    * __Cao et al. 2020__:
-
-        file_collection = `Cao2020`
-
-        Information
-        -----------
-        * Downloadable files: `rotation_model`, `topology_features`, `static_polygons`, `coastlines`
-        and `continents`.
-        * Maximum reconstruction time: 1 Ga
-
-        Citations
-        ---------
-        * Toy Billion-year reconstructions from Cao et al (2020).
-        Coupled Evolution of Plate Tectonics and Basal Mantle Structure Tectonics,
-        doi: 10.1029/2020GC009244
-
-
-    - __Clennett et al. 2020__ :
-
-        file_collection = `Clennett2020`
-
-        Information
-        -----------
-        * Downloadable files: `rotation_model`, `topology_features`, `static_polygons`, `coastlines`
-        and `continents`
-        * Maximum reconstruction time: 170 Ma
-
-        Citations
-        ---------
-        * Mather, B., Müller, R.D.,; Alfonso, C.P., Seton, M., 2021, Kimberlite eruption
-        driven by slab flux and subduction angle. DOI: 10.5281/zenodo.5769002
-
-
-    - __Seton et al. 2012__:
-
-        file_collection = `Seton2012`
-
-        Information
-        -----------
-        * Downloadable files: `rotation_model`, `topology_features`, `coastlines`,
-        `COBs`, and paleo-age grids (0-200 Ma)
-        * Maximum reconstruction time: 200 Ma
-
-        Citations
-        ---------
-        * M. Seton, R.D. Müller, S. Zahirovic, C. Gaina, T.H. Torsvik, G. Shephard, A. Talsma,
-        M. Gurnis, M. Turner, S. Maus, M. Chandler, Global continental and ocean basin reconstructions
-        since 200 Ma, Earth-Science Reviews, Volume 113, Issues 3-4, July 2012, Pages 212-270,
-        ISSN 0012-8252, 10.1016/j.earscirev.2012.03.002.
-
-
-    - __Matthews et al. 2016__:
-
-        file_collection = `Matthews2016`
-
-        Information
-        -----------
-        * Downloadable files: `rotation_model`, `topology_features`, `static_polygons`, `coastlines`,
-        and `continents`
-        * Maximum reconstruction time(s): 410-250 Ma, 250-0 Ma
-
-        Citations
-        ---------
-        * Matthews, K.J., Maloney, K.T., Zahirovic, S., Williams, S.E., Seton, M.,
-        and Müller, R.D. (2016). Global plate boundary evolution and kinematics since the
-        late Paleozoic, Global and Planetary Change, 146, 226-250.
-        DOI: 10.1016/j.gloplacha.2016.10.002
-
-
-    - __Merdith et al. 2017__:
-
-        file_collection = `Merdith2017`
-
-        Information
-        -----------
-        * Downloadable files: `rotation_files` and `topology_features`
-        * Maximum reconstruction time: 410 Ma
-
-        Citations
-        ---------
-        * Merdith, A., Collins, A., Williams, S., Pisarevskiy, S., Foden, J., Archibald, D.
-        and Blades, M. et al. 2016. A full-plate global reconstruction of the Neoproterozoic.
-        Gondwana Research. 50: pp. 84-134. DOI: 10.1016/j.gr.2017.04.001
-
-
-    - __Li et al. 2008__:
-
-        file_collection = `Li2008`
-
-        Information
-        -----------
-        * Downloadable files: `rotation_model` and `static_polygons`
-        * Maximum reconstruction time: 410 Ma
-
-        Citations
-        ---------
-        * Rodinia reconstruction from Li et al (2008), Assembly, configuration, and break-up
-        history of Rodinia: A synthesis. Precambrian Research. 160. 179-210.
-        DOI: 10.1016/j.precamres.2007.04.021.
-
-
-    - __Pehrsson et al. 2015__:
-
-        file_collection = `Pehrsson2015`
-
-        Information
-        -----------
-        * Downloadable files: `rotation_model` and `static_polygons`
-        * Maximum reconstruction time: N/A
-
-        Citations
-        ---------
-        * Pehrsson, S.J., Eglington, B.M., Evans, D.A.D., Huston, D., and Reddy, S.M., (2015),
-        Metallogeny and its link to orogenic style during the Nuna supercontinent cycle. Geological
-        Society, London, Special Publications, 424, 83-94. DOI: https://doi.org/10.1144/SP424.5
-
-
-    - __Torsvik and Cocks et al. 2017__:
-
-        file_collection = `TorsvikCocks2017`
-
-        Information
-        -----------
-        * Downloadable files: `rotation_model`, and `coastlines`
-        * Maximum reconstruction time: 410 Ma
-
-        Citations
-        ---------
-        * Torsvik, T., & Cocks, L. (2016). Earth History and Palaeogeography. Cambridge:
-        Cambridge University Press. doi:10.1017/9781316225523
-
-
-    - __Young et al. 2019__:
-
-        file_collection = `Young2019`
-
-        Information
-        -----------
-        * Downloadable files: `rotation_model`, `topology_features`, `static_polygons`, `coastlines`
-        and `continents`.
-        * Maximum reconstruction time: 410-250 Ma, 250-0 Ma
-
-        Citations
-        ---------
-        * Young, A., Flament, N., Maloney, K., Williams, S., Matthews, K., Zahirovic, S.,
-        Müller, R.D., (2019), Global kinematics of tectonic plates and subduction zones since the late
-        Paleozoic Era, Geoscience Frontiers, Volume 10, Issue 3, pp. 989-1013, ISSN 1674-9871,
-        DOI: https://doi.org/10.1016/j.gsf.2018.05.011.
-
-
-    - __Scotese et al. 2008__:
-
-        file_collection = `Scotese2008`
-
-        Information
-        -----------
-        * Downloadable files: `rotation_model`, `static_polygons`, and `continents`
-        * Maximum reconstruction time:
-
-        Citations
-        ---------
-        * Scotese, C.R. 2008. The PALEOMAP Project PaleoAtlas for ArcGIS, Volume 2, Cretaceous
-        paleogeographic and plate tectonic reconstructions. PALEOMAP Project, Arlington, Texas.
-
-
-    - __Golonka et al. 2007__:
-
-        file_collection = `Golonka2007`
-
-        Information
-        -----------
-        * Downloadable files: `rotation_model`, `static_polygons`, and `continents`
-        * Maximum reconstruction time: 410 Ma
-
-        Citations
-        ---------
-        * Golonka, J. 2007. Late Triassic and Early Jurassic palaeogeography of the world.
-        Palaeogeography, Palaeoclimatology, Palaeoecology 244(1–4), 297–307.
-
-
-    - __Clennett et al. 2020 (based on Müller et al. 2019)__:
-
-        file_collection = `Clennett2020_M2019`
-
-        Information
-        -----------
-        * Downloadable files: `rotation_model`, `topology_features`, `continents` and `coastlines`
-        * Maximum reconstruction time: 170 Ma
-
-        Citations
-        ---------
-        * Clennett, E.J., Sigloch, K., Mihalynuk, M.G., Seton, M., Henderson, M.A., Hosseini, K.,
-        Mohammadzaheri, A., Johnston, S.T., Müller, R.D., (2020), A Quantitative Tomotectonic Plate
-        Reconstruction of Western North America and the Eastern Pacific Basin. Geochemistry, Geophysics,
-        Geosystems, 21, e2020GC009117. DOI: https://doi.org/10.1029/2020GC009117
-
-
-    - __Clennett et al. 2020 (rigid topological model based on Shephard et al, 2013)__:
-
-        file_collection = `Clennett2020_S2013`
-
-        Information
-        -----------
-        * Downloadable files: `rotation_model`, `topology_features`, `continents` and `coastlines`
-        * Maximum reconstruction time: 170
-
-        Citations
-        ---------
-        * Clennett, E.J., Sigloch, K., Mihalynuk, M.G., Seton, M., Henderson, M.A., Hosseini, K.,
-        Mohammadzaheri, A., Johnston, S.T., Müller, R.D., (2020), A Quantitative Tomotectonic Plate
-        Reconstruction of Western North America and the Eastern Pacific Basin. Geochemistry, Geophysics,
-        Geosystems, 21, e2020GC009117. DOI: https://doi.org/10.1029/2020GC009117
-
-
-    - __Müller et al. 2008__:
-
-        file_collection = `Muller2008`
-
-        Information
-        -----------
-        * Downloadable files:  `rotation_model`, `static_polygons`
-        * Maximum reconstruction time: 141 Ma
-
-        Citations
-        ---------
-        * Müller, R. D., Sdrolias, M., Gaina, C., & Roest, W. R. (2008). Age, spreading rates, and
-        spreading asymmetry of the world's ocean crust. Geochemistry, Geophysics, Geosystems, 9(4).
-
-
-
-    - __Müller et al. 2022__:
-
-        file_collection = `Muller2022`
-
-        Information
-        -----------
-        * Downloadable files:  `rotation_model`, `topology_features`, `static_polygons`, `continents`, `coastlines` and `COBs`
-        * Maximum reconstruction time: 1000 Ma
-
-        Citations
-        ---------
-        *  Müller, R. D., Flament, N., Cannon, J., Tetley, M. G., Williams, S. E., Cao, X., Bodur, Ö. F., Zahirovic, S.,
-        and Merdith, A.: A tectonic-rules-based mantle reference frame since 1 billion years ago – implications for
-        supercontinent cycles and plate–mantle system evolution, Solid Earth, 13, 1127–1159,
-        https://doi.org/10.5194/se-13-1127-2022, 2022.
-
-
-
-    - __Scotese 2016__:
-
-        file_collection = `Scotese2016`
-
-        Information
-        -----------
-        * Downloadable files:  `rotation_model`, `static_polygons`, `coastlines`
-        * Maximum reconstruction time: 410 Ma
-
-        Citations
-        ---------
-        * Scotese, C.R., 2016. PALEOMAP PaleoAtlas for GPlates and the PaleoData
-        Plotter Program, PALEOMAP Project,
-        http://www.earthbyte.org/paleomappaleoatlas-for-gplates/
-
-
-    - __Shephard et al. 2013__:
-
-        file_collection = `Shephard2013`
-
-        Information
-        -----------
-        * Downloadable files:  `rotation_model`, `topology_features`, `static_polygons`, `coastlines`
-        * Maximum reconstruction time: 200 Ma
-
-        Citations
-        ---------
-        * Shephard, G.E., Müller, R.D., and Seton, M., 2013. The tectonic evolution of the Arctic since
-        Pangea breakup: Integrating constraints from surface geology and geophysics with mantle structure.
-        Earth-Science Reviews, Volume 124 p.148-183. doi:10.1016/j.earscirev.2013.05.012
-        (http://www.sciencedirect.com/science/article/pii/S0012825213001104)
-
-        * M. Seton, R.D. Müller, S. Zahirovic, C. Gaina, T.H. Torsvik, G. Shephard, A. Talsma, M. Gurnis,
-        M. Turner, S. Maus, M. Chandler, Global continental and ocean basin reconstructions since 200 Ma,
-        Earth-Science Reviews, Volume 113, p.212-270 doi:10.1016/j.earscirev.2012.03.002.
-        (http://www.sciencedirect.com/science/article/pii/S0012825212000311)
-
-
-
-        Parameters
-        ----------
-        file_collection : str
-            name of file collection to use
-
-        verbose : bool, default True
-            Toggle print messages regarding server/internet connection status, file availability etc.
+    You may also use `pmm ls` command to get more information about a model, for example `pmm ls cao2024`
+    (you need `pip install plate-model-manager` before running this command).
 
     """
 
-    def __init__(self, file_collection, verbose=True):
+    def __init__(self, file_collection, data_dir=None, verbose=True):
+        """
+        Parameters
+        ----------
+        file_collection: str
+            model name
+
+        verbose: bool, default=True
+            Toggle print messages regarding server/internet connection status, file availability etc.
+        """
+
+        if not data_dir:
+            _data_dir = path_to_cache()
+        else:
+            _data_dir = data_dir
 
         self.file_collection = file_collection.capitalize()
-        self.data_collection = DataCollection(self.file_collection)
-
-        if str(type(verbose)) == "<class 'bool'>":
-            self.verbose = verbose
-        else:
-            raise ValueError(
-                "The verbose toggle must be of Boolean type, not {}".format(
-                    type(verbose)
-                )
+        self.pmm = PlateModelManager().get_model(
+            self.file_collection, data_dir=str(_data_dir)
+        )
+        if not self.pmm:
+            raise Exception(
+                f"Unable to get plate model {self.file_collection}. Check if the model name is correct."
             )
+        self._available_layers = self.pmm.get_avail_layers()
+        self.verbose = verbose
+
+        # initialise empty attributes
+        self._rotation_model = None
+        self._topology_features = None
+        self._static_polygons = None
+        self._coastlines = None
+        self._continents = None
+        self._COBs = None
+
+    def _create_feature_collection(self, file_list):
+        feature_collection = _FeatureCollection()
+        for feature in file_list:
+            feature_collection.add(_FeatureCollection(feature))
+        return feature_collection
+
+    @property
+    def rotation_model(self):
+        if self._rotation_model is None and self.pmm:
+            self._rotation_model = _RotationModel(self.pmm.get_rotation_model())
+            self._rotation_model.reconstruction_identifier = self.file_collection
+        return self._rotation_model
+
+    @property
+    def topology_features(self):
+        if self._topology_features is None and self.pmm:
+            if "Topologies" in self._available_layers:
+                self._topology_features = self._create_feature_collection(
+                    self.pmm.get_topologies()
+                )
+            else:
+                self._topology_features = []
+        return self._topology_features
+
+    @property
+    def static_polygons(self):
+        if self._static_polygons is None and self.pmm:
+            if "StaticPolygons" in self._available_layers:
+                self._static_polygons = self._create_feature_collection(
+                    self.pmm.get_static_polygons()
+                )
+            else:
+                self._static_polygons = []
+        return self._static_polygons
+
+    @property
+    def coastlines(self):
+        if self._coastlines is None and self.pmm:
+            if "Coastlines" in self._available_layers:
+                self._coastlines = self._create_feature_collection(
+                    self.pmm.get_coastlines()
+                )
+            else:
+                self._coastlines = []
+        return self._coastlines
+
+    @property
+    def continents(self):
+        if self._continents is None and self.pmm:
+            if "ContinentalPolygons" in self._available_layers:
+                self._continents = self._create_feature_collection(
+                    self.pmm.get_continental_polygons()
+                )
+            else:
+                self._continents = []
+        return self._continents
+
+    @property
+    def COBs(self):
+        if self._COBs is None and self.pmm:
+            if "COBs" in self._available_layers:
+                self._COBs = self._create_feature_collection(self.pmm.get_COBs())
+            else:
+                self._COBs = []
+        return self._COBs
+
+    @property
+    def from_age(self):
+        if self.pmm:
+            return self.pmm.get_big_time()
+
+    @property
+    def to_age(self):
+        if self.pmm:
+            return self.pmm.get_small_time()
+
+    @property
+    def time_range(self):
+        return self.from_age, self.to_age
+
+    @property
+    def valid_times(self):
+        return self.from_age, self.to_age
 
     def get_plate_reconstruction_files(self):
         """Downloads and constructs a `rotation model`, a set of `topology_features` and
@@ -1522,178 +1291,10 @@ class DataServer(object):
                 No continent-ocean boundaries in TorsvikCocks2017.
 
         """
-
-        verbose = self.verbose
-
-        rotation_filenames = []
-        rotation_model = []
-        topology_filenames = []
-        topology_features = _FeatureCollection()
-        static_polygons = _FeatureCollection()
-        static_polygon_filenames = []
-
-        # Locate all plate reconstruction files from GPlately's DataCollection
-        database = DataCollection.plate_reconstruction_files(self)
-
-        # Set to true if we find the given collection in our database
-        found_collection = False
-        for collection, url in database.items():
-
-            # Only continue if the user's chosen collection exists in our database
-            if self.file_collection.lower() == collection.lower():
-                found_collection = True
-                if len(url) == 1:
-                    fnames = _collection_sorter(
-                        download_from_web(
-                            url[0], verbose, model_name=self.file_collection
-                        ),
-                        self.file_collection,
-                    )
-                    rotation_filenames = _collect_file_extension(
-                        _str_in_folder(
-                            _str_in_filename(
-                                fnames,
-                                strings_to_include=DataCollection.rotation_strings_to_include(
-                                    self
-                                ),
-                                strings_to_ignore=DataCollection.rotation_strings_to_ignore(
-                                    self
-                                ),
-                                file_collection=self.file_collection,
-                                file_collection_sensitive=True,
-                            ),
-                            strings_to_ignore=DataCollection.rotation_strings_to_ignore(
-                                self
-                            ),
-                        ),
-                        [".rot"],
-                    )
-                    # print(rotation_filenames)
-                    rotation_model = _RotationModel(rotation_filenames)
-
-                    topology_filenames = _collect_file_extension(
-                        _str_in_folder(
-                            _str_in_filename(
-                                fnames,
-                                strings_to_include=DataCollection.dynamic_polygon_strings_to_include(
-                                    self
-                                ),
-                                strings_to_ignore=DataCollection.dynamic_polygon_strings_to_ignore(
-                                    self
-                                ),
-                                file_collection=self.file_collection,
-                                file_collection_sensitive=False,
-                            ),
-                            strings_to_ignore=DataCollection.dynamic_polygon_strings_to_ignore(
-                                self
-                            ),
-                        ),
-                        [".gpml", ".gpmlz"],
-                    )
-                    # print(topology_filenames)
-                    for file in topology_filenames:
-                        topology_features.add(_FeatureCollection(file))
-
-                    static_polygon_filenames = _check_gpml_or_shp(
-                        _str_in_folder(
-                            _str_in_filename(
-                                fnames,
-                                strings_to_include=DataCollection.static_polygon_strings_to_include(
-                                    self
-                                ),
-                                strings_to_ignore=DataCollection.static_polygon_strings_to_ignore(
-                                    self
-                                ),
-                                file_collection=self.file_collection,
-                                file_collection_sensitive=False,
-                            ),
-                            strings_to_ignore=DataCollection.static_polygon_strings_to_ignore(
-                                self
-                            ),
-                        )
-                    )
-                    # print(static_polygon_filenames)
-                    for stat in static_polygon_filenames:
-                        static_polygons.add(_FeatureCollection(stat))
-
-                else:
-                    for file in url[0]:
-                        rotation_filenames.append(
-                            _collect_file_extension(
-                                download_from_web(
-                                    file, verbose, model_name=self.file_collection
-                                ),
-                                [".rot"],
-                            )
-                        )
-                        rotation_model = _RotationModel(rotation_filenames)
-
-                    for file in url[1]:
-                        topology_filenames.append(
-                            _collect_file_extension(
-                                download_from_web(
-                                    file, verbose, model_name=self.file_collection
-                                ),
-                                [".gpml"],
-                            )
-                        )
-                        for file in topology_filenames:
-                            topology_features.add(_FeatureCollection(file))
-
-                    for file in url[2]:
-                        static_polygon_filenames.append(
-                            _check_gpml_or_shp(
-                                _str_in_folder(
-                                    _str_in_filename(
-                                        download_from_web(
-                                            url[0],
-                                            verbose,
-                                            model_name=self.file_collection,
-                                        ),
-                                        strings_to_include=DataCollection.static_polygon_strings_to_include(
-                                            self
-                                        ),
-                                    ),
-                                    strings_to_ignore=DataCollection.static_polygon_strings_to_ignore(
-                                        self
-                                    ),
-                                )
-                            )
-                        )
-                        for stat in static_polygon_filenames:
-                            static_polygons.add(_FeatureCollection(stat))
-                break
-
-        if found_collection is False:
-            raise ValueError(
-                "{} is not in GPlately's DataServer.".format(self.file_collection)
-            )
-
-        if not rotation_filenames:
-            print(
-                "No .rot files in {}. No rotation model created.".format(
-                    self.file_collection
-                )
-            )
-            rotation_model = []
-        if not topology_filenames:
-            print(
-                "No topology features in {}. No FeatureCollection created - unable to plot trenches, ridges and transforms.".format(
-                    self.file_collection
-                )
-            )
-            topology_features = []
-        if not static_polygons:
-            print("No static polygons in {}.".format(self.file_collection))
-            static_polygons = []
-
-        # add identifier for setting up DownloadServer independently
-        rotation_model.reconstruction_identifier = self.file_collection
-
-        return rotation_model, topology_features, static_polygons
+        return self.rotation_model, self.topology_features, self.static_polygons
 
     def get_topology_geometries(self):
-        """Uses Pooch to download coastline, continent and COB (continent-ocean boundary)
+        """Uses the [plate-model-manager](https://pypi.org/project/plate-model-manager/) to download coastline, continent and COB (continent-ocean boundary)
         Shapely geometries from the requested plate model. These are needed to call the `PlotTopologies`
         object and visualise topological plates through time.
 
@@ -1744,172 +1345,9 @@ class DataServer(object):
 
                 No continent-ocean boundaries in Matthews2016.
         """
+        return self.coastlines, self.continents, self.COBs
 
-        verbose = self.verbose
-
-        # Locate all topology geometries from GPlately's DataCollection
-        database = DataCollection.topology_geometries(self)
-
-        coastlines = []
-        continents = []
-        COBs = []
-
-        # Find the requested plate model data collection
-        found_collection = False
-        for collection, url in database.items():
-
-            if self.file_collection.lower() == collection.lower():
-                found_collection = True
-
-                if len(url) == 1:
-                    # Some plate models do not have reconstructable geometries i.e. Li et al. 2008
-                    if url[0] is None:
-                        break
-                    else:
-                        fnames = _collection_sorter(
-                            download_from_web(
-                                url[0], verbose, model_name=self.file_collection
-                            ),
-                            self.file_collection,
-                        )
-                        coastlines = _check_gpml_or_shp(
-                            _str_in_folder(
-                                _str_in_filename(
-                                    fnames,
-                                    strings_to_include=DataCollection.coastline_strings_to_include(
-                                        self
-                                    ),
-                                    strings_to_ignore=DataCollection.coastline_strings_to_ignore(
-                                        self
-                                    ),
-                                    file_collection=self.file_collection,
-                                    file_collection_sensitive=False,
-                                ),
-                                strings_to_ignore=DataCollection.coastline_strings_to_ignore(
-                                    self
-                                ),
-                            )
-                        )
-                        continents = _check_gpml_or_shp(
-                            _str_in_folder(
-                                _str_in_filename(
-                                    fnames,
-                                    strings_to_include=DataCollection.continent_strings_to_include(
-                                        self
-                                    ),
-                                    strings_to_ignore=DataCollection.continent_strings_to_ignore(
-                                        self
-                                    ),
-                                    file_collection=self.file_collection,
-                                    file_collection_sensitive=False,
-                                ),
-                                strings_to_ignore=DataCollection.continent_strings_to_ignore(
-                                    self
-                                ),
-                            )
-                        )
-                        COBs = _check_gpml_or_shp(
-                            _str_in_folder(
-                                _str_in_filename(
-                                    fnames,
-                                    strings_to_include=DataCollection.COB_strings_to_include(
-                                        self
-                                    ),
-                                    strings_to_ignore=DataCollection.COB_strings_to_ignore(
-                                        self
-                                    ),
-                                    file_collection=self.file_collection,
-                                    file_collection_sensitive=False,
-                                ),
-                                strings_to_ignore=DataCollection.COB_strings_to_ignore(
-                                    self
-                                ),
-                            )
-                        )
-                else:
-                    for file in url[0]:
-                        if url[0] is not None:
-                            coastlines.append(
-                                _str_in_filename(
-                                    download_from_web(
-                                        file, verbose, model_name=self.file_collection
-                                    ),
-                                    strings_to_include=["coastline"],
-                                )
-                            )
-                            coastlines = _check_gpml_or_shp(coastlines)
-                        else:
-                            coastlines = []
-
-                    for file in url[1]:
-                        if url[1] is not None:
-                            continents.append(
-                                _str_in_filename(
-                                    download_from_web(
-                                        file, verbose, model_name=self.file_collection
-                                    ),
-                                    strings_to_include=["continent"],
-                                )
-                            )
-                            continents = _check_gpml_or_shp(continents)
-                        else:
-                            continents = []
-
-                    for file in url[2]:
-                        if url[2] is not None:
-                            COBs.append(
-                                _str_in_filename(
-                                    download_from_web(
-                                        file, verbose, model_name=self.file_collection
-                                    ),
-                                    strings_to_include=["cob"],
-                                )
-                            )
-                            COBs = _check_gpml_or_shp(COBs)
-                        else:
-                            COBs = []
-                break
-
-        if found_collection is False:
-            raise ValueError(
-                "{} is not in GPlately's DataServer.".format(self.file_collection)
-            )
-
-        if not coastlines:
-            print("No coastlines in {}.".format(self.file_collection))
-            coastlines_featurecollection = []
-        else:
-            # print(coastlines)
-            coastlines_featurecollection = _FeatureCollection()
-            for coastline in coastlines:
-                coastlines_featurecollection.add(_FeatureCollection(coastline))
-
-        if not continents:
-            print("No continents in {}.".format(self.file_collection))
-            continents_featurecollection = []
-        else:
-            # print(continents)
-            continents_featurecollection = _FeatureCollection()
-            for continent in continents:
-                continents_featurecollection.add(_FeatureCollection(continent))
-
-        if not COBs:
-            print("No continent-ocean boundaries in {}.".format(self.file_collection))
-            COBs_featurecollection = []
-        else:
-            # print(COBs)
-            COBs_featurecollection = _FeatureCollection()
-            for COB in COBs:
-                COBs_featurecollection.add(_FeatureCollection(COB))
-
-        geometries = (
-            coastlines_featurecollection,
-            continents_featurecollection,
-            COBs_featurecollection,
-        )
-        return geometries
-
-    def get_age_grid(self, time):
+    def get_age_grid(self, times):
         """Downloads seafloor and paleo-age grids from the plate reconstruction model (`file_collection`)
         passed into the `DataServer` object. Stores grids in the "gplately" cache.
 
@@ -1936,7 +1374,7 @@ class DataServer(object):
 
         Parameters
         ----------
-        time : int, or list of int, default=None
+        times : int, or list of int, default=None
             Request an age grid from one (an integer) or multiple reconstruction times (a
             list of integers).
 
@@ -1986,46 +1424,34 @@ class DataServer(object):
             age_grids = gDownload.get_age_grid([0, 1, 100])
 
         """
+        if not self.pmm:
+            raise Exception("The plate model object is None. Unable to get agegrid.")
+
+        if "AgeGrids" not in self.pmm.get_cfg()["TimeDepRasters"]:
+            raise ValueError(
+                "AgeGrids are not currently available for {}".format(
+                    self.file_collection
+                )
+            )
+
         age_grids = []
-        age_grid_links = DataCollection.netcdf4_age_grids(self, time)
 
-        if not isinstance(time, list):
-            time = [time]
+        time_array = np.atleast_1d(times)
 
-        # For a single time passed that isn't in the valid time range,
-        if not age_grid_links:
-            raise ValueError(
-                "{} {}Ma age grids are not on GPlately's DataServer.".format(
-                    self.file_collection, time[0]
-                )
-            )
+        if time_array.min() < self.to_age or time_array.max() > self.from_age:
+            raise ValueError("Specify a time range between {}".format(self.time_range))
 
-        # For a list of times passed...
-        for i, link in enumerate(age_grid_links):
-            if not link:
-                raise ValueError(
-                    "{} {}Ma age grids are not on GPlately's DataServer.".format(
-                        self.file_collection, time[i]
-                    )
-                )
-            age_grid_file = download_from_web(
-                link, verbose=self.verbose, model_name=self.file_collection
-            )
-            age_grid = _gplately.grids.Raster(data=age_grid_file)
-            age_grids.append(age_grid)
-
-        # One last check to alert user if the masked array grids were not processed properly
-        if not age_grids:
-            raise ValueError(
-                "{} netCDF4 age grids not found.".format(self.file_collection)
-            )
+        for ti in time_array:
+            agegrid_filename = self.pmm.get_raster("AgeGrids", ti)
+            agegrid = _gplately.grids.Raster(data=agegrid_filename)
+            age_grids.append(agegrid)
 
         if len(age_grids) == 1:
             return age_grids[0]
         else:
             return age_grids
 
-    def get_spreading_rate_grid(self, time):
+    def get_spreading_rate_grid(self, times):
         """Downloads seafloor spreading rate grids from the plate reconstruction
         model (`file_collection`) passed into the `DataServer` object. Stores
         grids in the "gplately" cache.
@@ -2094,68 +1520,39 @@ class DataServer(object):
             spreading_rate_grids = gDownload.get_spreading_rate_grid([0, 1, 100])
 
         """
-        spreading_rate_grids = []
-        spreading_rate_grid_links = DataCollection.netcdf4_spreading_rate_grids(
-            self, time
-        )
 
-        if not isinstance(time, list):
-            time = [time]
-
-        # For a single time passed that isn't in the valid time range,
-        if not spreading_rate_grid_links:
-            raise ValueError(
-                "{} {}Ma spreading rate grids are not on GPlately's DataServer.".format(
-                    self.file_collection, time[0]
-                )
+        if not self.pmm:
+            raise Exception(
+                "The plate model object is None. Unable to get spreading rate grids."
             )
-        # For a list of times passed...
-        for i, link in enumerate(spreading_rate_grid_links):
-            if not link:
-                raise ValueError(
-                    "{} {}Ma spreading rate grids are not on GPlately's DataServer.".format(
-                        self.file_collection, time[i]
-                    )
-                )
-            spreading_rate_grid_file = download_from_web(
-                link, verbose=self.verbose, model_name=self.file_collection
-            )
-            spreading_rate_grid = _gplately.grids.Raster(data=spreading_rate_grid_file)
-            spreading_rate_grids.append(spreading_rate_grid)
 
-        # One last check to alert user if the masked array grids were not processed properly
-        if not spreading_rate_grids:
+        if "SpreadingRateGrids" not in self.pmm.get_cfg()["TimeDepRasters"]:
             raise ValueError(
-                "{} netCDF4 seafloor spreading rate grids not found.".format(
+                "SpreadingRateGrids are not currently available for {}".format(
                     self.file_collection
                 )
             )
 
-        if len(spreading_rate_grids) == 1:
-            return spreading_rate_grids[0]
+        spread_grids = []
+
+        time_array = np.atleast_1d(times)
+
+        if time_array.min() < self.to_age or time_array.max() > self.from_age:
+            raise ValueError("Specify a time range between {}".format(self.time_range))
+
+        for ti in time_array:
+            spreadgrid_filename = self.pmm.get_raster("SpreadingRateGrids", ti)
+            spreadgrid = _gplately.grids.Raster(data=spreadgrid_filename)
+            spread_grids.append(spreadgrid)
+
+        if len(spread_grids) == 1:
+            return spread_grids[0]
         else:
-            return spreading_rate_grids
+            return spread_grids
 
     def get_valid_times(self):
-        """Returns a tuple of the valid plate model time range, (min_time, max_time)."""
-        all_model_valid_times = DataCollection.plate_model_valid_reconstruction_times(
-            self
-        )
-
-        min_time = None
-        max_time = None
-        for plate_model_name, valid_times in list(all_model_valid_times.items()):
-            if plate_model_name.lower() == self.file_collection.lower():
-                min_time = valid_times[0]
-                max_time = valid_times[1]
-        if not min_time and not max_time:
-            raise ValueError(
-                "Could not find the valid reconstruction time of {}".format(
-                    self.file_collection
-                )
-            )
-
-        return (min_time, max_time)
+        """Returns a tuple of the valid plate model time range, (max_time, min_time)."""
+        return self.from_age, self.to_age
 
     def get_raster(self, raster_id_string=None):
         """Downloads assorted raster data that are not associated with the plate
@@ -2219,7 +1616,22 @@ class DataServer(object):
             ax2.imshow(etopo1, extent=[-180,180,-90,90], transform=ccrs.PlateCarree())
 
         """
-        return get_raster(raster_id_string, self.verbose)
+        if raster_id_string:
+            raster_path = PresentDayRasterManager().get_raster(raster_id_string)
+            if raster_path.endswith(".grd") or raster_path.endswith(".nc"):
+                raster = _gplately.grids.Raster(data=raster_path)
+            # Otherwise, the raster is an image; use imread to process
+            else:
+                from matplotlib import image
+
+                raster_matrix = image.imread(raster_path)
+                raster = _gplately.grids.Raster(data=raster_matrix)
+
+            if raster_id_string.lower() == "etopo1_tif":
+                raster.lats = raster.lats[::-1]
+            if raster_id_string.lower() == "etopo1_grd":
+                raster._data = raster._data.astype(float)  # type: ignore
+            return raster
 
     def get_feature_data(self, feature_data_id_string=None):
         """Downloads assorted geological feature data from web servers (i.e.

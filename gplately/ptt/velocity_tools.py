@@ -26,8 +26,10 @@ def plot_velocities_uv(x, y, u, v, ax):
 
     Parameters
     ----------
-    x,y: the domain points coordinates
-    u,v: the u and v component of the velocities
+    x, y: the domain points coordinates
+
+    u, v: the u and v component of the velocities
+
     ax: the matplotlib axes object
 
     Returns
@@ -55,8 +57,10 @@ def plot_velocities(x, y, velocities, ax):
 
     Parameters
     ----------
-    x,y: the domain points coordinates
+    x, y: the domain points coordinates
+
     velocities: the velocity data
+
     ax: the matplotlib axes object
 
     Returns
@@ -91,7 +95,6 @@ def make_GPML_velocity_feature(Long, Lat):
     return output_feature_collection
 
 
-# function to get velocites via pygplates
 def get_plate_velocities(
     velocity_domain_features,
     topology_features,
@@ -100,6 +103,7 @@ def get_plate_velocities(
     delta_time,
     rep="vector_comp",
 ):
+    """function to get velocites via pygplates"""
     # All domain points and associated (magnitude, azimuth, inclination) velocities for the current time.
     all_domain_points = []
     all_velocities = []
@@ -158,15 +162,24 @@ def get_velocities(
 
     Parameters
     ----------
-    time: the reconstruction time
-    rotation_model: the rotation model
-    topology_filenames: the topology files
-    delta_time: the time increment
+    time: number
+        the reconstruction time
+
+    rotation_model
+        the rotation model
+
+    topology_filenames
+        the topology files
+
+    delta_time: number
+        the time increment
+
     Xnodes, Ynodes: the coordinates of domain points
 
     Returns
     -------
     the coordinates of domain points and velocity data
+
     """
     if len(Xnodes) == 0 or len(Ynodes) == 0:
         Xnodes = np.arange(-180, 180, 10)
@@ -231,10 +244,18 @@ def get_velocity_x_y_u_v(
 
     Parameters
     ----------
-    time: the reconstruction time
-    rotation_model: the rotation model
-    topology_filenames: the topology files
-    delta_time: the time increment
+    time: number
+        the reconstruction time
+
+    rotation_model
+        the rotation model
+
+    topology_filenames
+        the topology files
+
+    delta_time: number
+        the time increment
+
     Xnodes, Ynodes: the coordinates of domain points
 
     Returns
