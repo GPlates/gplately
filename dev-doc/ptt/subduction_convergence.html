@@ -40,46 +40,66 @@ hljs.highlightAll();
 <span>def <span class="ident">convert_old_convergence_output</span></span>(<span>old_convergence_data, **kwargs)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Converts the output of the old "convergence.py" script to the current output format of the <em>subduction_convergence</em> function.</p>
+<div class="desc"><p>Converts the output of the old "convergence.py" script to the current output format of the <code><a title="gplately.ptt.subduction_convergence.subduction_convergence" href="#gplately.ptt.subduction_convergence.subduction_convergence">subduction_convergence()</a></code> function.</p>
 <p>This function's purpose is to help transition workflows that use "convergence.py" to use this script instead.
 At the time this function was implemented, both scripts have essentially the same output with just minor format differences (as seen below).
 However in the future this script will generate additional outputs (such as deformation strain rates) that the old script will not.</p>
-<p>The <em>kwargs</em> is the same as that of the <em>subduction_convergence</em> function, which is used to append extra data to the output of each sample point.</p>
-<p>The following optional keyword arguments are supported by <em>kwargs</em>:</p>
 <h2 id="parameters">Parameters</h2>
 <dl>
-<dt><strong><code>output_distance_to_nearest_edge_of_trench</code></strong> :&ensp;<code>bool default=False</code></dt>
-<dd>Append the distance (in degrees) along the trench line to the nearest
-trench edge to each returned sample point. The trench edge is the location
-on the current trench feature where the subducting or overriding plate changes.</dd>
-<dt><strong><code>output_distance_to_start_edge_of_trench</code></strong> :&ensp;<code>bool default=False</code></dt>
-<dd>Append the distance (in degrees) along the trench line from the start edge of
-the trench to each returned sample point. The start of the trench is along the
-clockwise direction around the overriding plate.</dd>
-<dt><strong><code>output_convergence_velocity_components</code></strong> :&ensp;<code>bool default=False</code></dt>
-<dd>Append the convergence velocity orthogonal and parallel
-components (in cm/yr) to each returned sample point.
-Orthogonal is normal to trench in direction of overriding plate.
-Parallel is along trench and 90 degrees clockwise from orthogonal.</dd>
-<dt><strong><code>output_trench_absolute_velocity_components</code></strong> :&ensp;<code>bool default=False</code></dt>
-<dd>Append the trench plate absolute velocity orthogonal and parallel
-components (in cm/yr) to each returned sample point.
-Orthogonal is normal to trench in direction of overriding plate.
-Parallel is along trench and 90 degrees clockwise from orthogonal.</dd>
-<dt><strong><code>output_subducting_absolute_velocity</code></strong> :&ensp;<code>bool default=False</code></dt>
-<dd>Append the subducting plate absolute velocity magnitude (in cm/yr) and
-obliquity angle (in degrees) to each returned sample point.</dd>
-<dt><strong><code>output_subducting_absolute_velocity_components</code></strong> :&ensp;<code>bool default=False</code></dt>
-<dd>Append the subducting plate absolute velocity orthogonal and parallel
-components (in cm/yr) to each returned sample point.
-Orthogonal is normal to trench in direction of overriding plate.
-Parallel is along trench and 90 degrees clockwise from orthogonal.</dd>
-<dt><strong><code>output_trench_normal</code></strong> :&ensp;<code>bool default=False</code></dt>
+<dt><strong><code>old_convergence_data</code></strong> :&ensp;<code>list</code> of <code>tuples</code></dt>
+<dd>The subduction convergence data output from the old "convergence.py" script.
+Each tuple in the list contains the data for a single sample point on a trench line.</dd>
+<dt><strong><code>output_distance_to_nearest_edge_of_trench</code></strong> :&ensp;<code>bool</code>, default=<code>False</code></dt>
+<dd>Append the distance (in degrees) along the trench line to the nearest trench edge to each returned sample point.
+A trench edge is the farthermost location on the current trench feature that contributes to a plate boundary.</dd>
+<dt><strong><code>output_distance_to_start_edge_of_trench</code></strong> :&ensp;<code>bool</code>, default=<code>False</code></dt>
+<dd>Append the distance (in degrees) along the trench line from the start edge of the trench to each returned sample point.
+The start of the trench is along the clockwise direction around the overriding plate.</dd>
+<dt><strong><code>output_convergence_velocity_components</code></strong> :&ensp;<code>bool</code>, default=<code>False</code></dt>
+<dd>Append the convergence velocity orthogonal and parallel components (in cm/yr) to each returned sample point.
+Orthogonal is normal to trench (in direction of overriding plate when positive).
+Parallel is along trench (90 degrees clockwise from trench normal when positive).</dd>
+<dt><strong><code>output_trench_absolute_velocity_components</code></strong> :&ensp;<code>bool</code>, default=<code>False</code></dt>
+<dd>Append the trench absolute velocity orthogonal and parallel components (in cm/yr) to each returned sample point.
+Orthogonal is normal to trench (in direction of overriding plate when positive).
+Parallel is along trench (90 degrees clockwise from trench normal when positive).</dd>
+<dt><strong><code>output_subducting_absolute_velocity</code></strong> :&ensp;<code>bool</code>, default=<code>False</code></dt>
+<dd>Append the subducting plate absolute velocity magnitude (in cm/yr) and obliquity angle (in degrees) to each returned sample point.</dd>
+<dt><strong><code>output_subducting_absolute_velocity_components</code></strong> :&ensp;<code>bool</code>, default=<code>False</code></dt>
+<dd>Append the subducting plate absolute velocity orthogonal and parallel components (in cm/yr) to each returned sample point.
+Orthogonal is normal to trench (in direction of overriding plate when positive).
+Parallel is along trench (90 degrees clockwise from trench normal when positive).</dd>
+<dt><strong><code>output_trench_normal</code></strong> :&ensp;<code>bool</code>, default=<code>False</code></dt>
 <dd>Append the x, y and z components of the trench normal unit-length 3D vectors.
-These vectors are normal to the trench in the direction of subduction
-(towards overriding plate). These are global 3D vectors which differ from
-trench normal azimuth angles (ie, angles relative to North).</dd>
-</dl></div>
+These vectors are normal to the trench in the direction of subduction (towards overriding plate).
+These are global 3D vectors which differ from trench normal azimuth angles (ie, angles relative to North).</dd>
+</dl>
+<h2 id="returns">Returns</h2>
+<dl>
+<dt><code>list</code> of <code>tuples</code></dt>
+<dd>
+<p>The converted results for all input points from the old "convergence.py" script.
+The size of the returned list is equal to the number of input points.
+Each tuple in the list corresponds to a point and has the following tuple items:</p>
+<ul>
+<li>longitude of sample point</li>
+<li>latitude of sample point</li>
+<li>subducting convergence (relative to trench) velocity magnitude (in cm/yr)</li>
+<li>subducting convergence velocity obliquity angle (angle between trench normal vector and convergence velocity vector)</li>
+<li>trench absolute (relative to anchor plate) velocity magnitude (in cm/yr)</li>
+<li>trench absolute velocity obliquity angle (angle between trench normal vector and trench absolute velocity vector)</li>
+<li>length of arc segment (in degrees) that current point is on</li>
+<li>trench normal azimuth angle (clockwise starting at North, ie, 0 to 360 degrees) at current point</li>
+<li>subducting plate ID</li>
+<li>trench plate ID</li>
+</ul>
+<p>The optional 'output_*' parameters can be used to append extra data to the tuple of each sampled trench point.
+The order of any extra data is the same order in which the parameters are listed in this function.</p>
+</dd>
+</dl>
+<h2 id="notes">Notes</h2>
+<p>The optional 'output_*' parameters are the same as that of the <code><a title="gplately.ptt.subduction_convergence.subduction_convergence" href="#gplately.ptt.subduction_convergence.subduction_convergence">subduction_convergence()</a></code> function , which is used to append extra data
+to the output of each sample point.</p></div>
 </dd>
 <dt id="gplately.ptt.subduction_convergence.create_coverage_feature_from_convergence_data"><code class="name flex">
 <span>def <span class="ident">create_coverage_feature_from_convergence_data</span></span>(<span>subduction_convergence_data, time, **kwargs)</span>
@@ -93,6 +113,30 @@ trench normal azimuth angles (ie, angles relative to North).</dd>
 Each tuple in the list contains the calculated data for a single sample point on a trench line.</dd>
 <dt><strong><code>time</code></strong> :&ensp;<code>float</code></dt>
 <dd>The reconstruction time associated with the subduction convergence data.</dd>
+<dt><strong><code>output_distance_to_nearest_edge_of_trench</code></strong> :&ensp;<code>bool</code>, default=<code>False</code></dt>
+<dd>Append the distance (in degrees) along the trench line to the nearest trench edge to each returned sample point.
+A trench edge is the farthermost location on the current trench feature that contributes to a plate boundary.</dd>
+<dt><strong><code>output_distance_to_start_edge_of_trench</code></strong> :&ensp;<code>bool</code>, default=<code>False</code></dt>
+<dd>Append the distance (in degrees) along the trench line from the start edge of the trench to each returned sample point.
+The start of the trench is along the clockwise direction around the overriding plate.</dd>
+<dt><strong><code>output_convergence_velocity_components</code></strong> :&ensp;<code>bool</code>, default=<code>False</code></dt>
+<dd>Append the convergence velocity orthogonal and parallel components (in cm/yr) to each returned sample point.
+Orthogonal is normal to trench (in direction of overriding plate when positive).
+Parallel is along trench (90 degrees clockwise from trench normal when positive).</dd>
+<dt><strong><code>output_trench_absolute_velocity_components</code></strong> :&ensp;<code>bool</code>, default=<code>False</code></dt>
+<dd>Append the trench absolute velocity orthogonal and parallel components (in cm/yr) to each returned sample point.
+Orthogonal is normal to trench (in direction of overriding plate when positive).
+Parallel is along trench (90 degrees clockwise from trench normal when positive).</dd>
+<dt><strong><code>output_subducting_absolute_velocity</code></strong> :&ensp;<code>bool</code>, default=<code>False</code></dt>
+<dd>Append the subducting plate absolute velocity magnitude (in cm/yr) and obliquity angle (in degrees) to each returned sample point.</dd>
+<dt><strong><code>output_subducting_absolute_velocity_components</code></strong> :&ensp;<code>bool</code>, default=<code>False</code></dt>
+<dd>Append the subducting plate absolute velocity orthogonal and parallel components (in cm/yr) to each returned sample point.
+Orthogonal is normal to trench (in direction of overriding plate when positive).
+Parallel is along trench (90 degrees clockwise from trench normal when positive).</dd>
+<dt><strong><code>output_trench_normal</code></strong> :&ensp;<code>bool</code>, default=<code>False</code></dt>
+<dd>Append the x, y and z components of the trench normal unit-length 3D vectors.
+These vectors are normal to the trench in the direction of subduction (towards overriding plate).
+These are global 3D vectors which differ from trench normal azimuth angles (ie, angles relative to North).</dd>
 </dl>
 <h2 id="returns">Returns</h2>
 <dl>
@@ -100,43 +144,8 @@ Each tuple in the list contains the calculated data for a single sample point on
 <dd>The feature with a coverage geometry containing the calculated convergence and absolute velocity data.</dd>
 </dl>
 <h2 id="notes">Notes</h2>
-<p>The <em>kwargs</em> is the same as that of the <em>subduction_convergence</em> function , which is used to append extra data
-to the output of each sample point. Here it is used to interpret the same output data and create scalar coverages.</p>
-<p>The following optional keyword arguments are supported by <em>kwargs</em>:</p>
-<h2 id="parameters_1">Parameters</h2>
-<dl>
-<dt><strong><code>output_distance_to_nearest_edge_of_trench</code></strong> :&ensp;<code>bool default=False</code></dt>
-<dd>Append the distance (in degrees) along the trench line to the nearest
-trench edge to each returned sample point. The trench edge is the location
-on the current trench feature where the subducting or overriding plate changes.</dd>
-<dt><strong><code>output_distance_to_start_edge_of_trench</code></strong> :&ensp;<code>bool default=False</code></dt>
-<dd>Append the distance (in degrees) along the trench line from the start edge of
-the trench to each returned sample point. The start of the trench is along the
-clockwise direction around the overriding plate.</dd>
-<dt><strong><code>output_convergence_velocity_components</code></strong> :&ensp;<code>bool default=False</code></dt>
-<dd>Append the convergence velocity orthogonal and parallel
-components (in cm/yr) to each returned sample point.
-Orthogonal is normal to trench in direction of overriding plate.
-Parallel is along trench and 90 degrees clockwise from orthogonal.</dd>
-<dt><strong><code>output_trench_absolute_velocity_components</code></strong> :&ensp;<code>bool default=False</code></dt>
-<dd>Append the trench plate absolute velocity orthogonal and parallel
-components (in cm/yr) to each returned sample point.
-Orthogonal is normal to trench in direction of overriding plate.
-Parallel is along trench and 90 degrees clockwise from orthogonal.</dd>
-<dt><strong><code>output_subducting_absolute_velocity</code></strong> :&ensp;<code>bool default=False</code></dt>
-<dd>Append the subducting plate absolute velocity magnitude (in cm/yr) and
-obliquity angle (in degrees) to each returned sample point.</dd>
-<dt><strong><code>output_subducting_absolute_velocity_components</code></strong> :&ensp;<code>bool default=False</code></dt>
-<dd>Append the subducting plate absolute velocity orthogonal and parallel
-components (in cm/yr) to each returned sample point.
-Orthogonal is normal to trench in direction of overriding plate.
-Parallel is along trench and 90 degrees clockwise from orthogonal.</dd>
-<dt><strong><code>output_trench_normal</code></strong> :&ensp;<code>bool default=False</code></dt>
-<dd>Append the x, y and z components of the trench normal unit-length 3D vectors.
-These vectors are normal to the trench in the direction of subduction
-(towards overriding plate). These are global 3D vectors which differ from
-trench normal azimuth angles (ie, angles relative to North).</dd>
-</dl></div>
+<p>The optional 'output_*' parameters are the same as that of the <code><a title="gplately.ptt.subduction_convergence.subduction_convergence" href="#gplately.ptt.subduction_convergence.subduction_convergence">subduction_convergence()</a></code> function , which is used to append extra data
+to the output of each sample point. Here it is used to interpret the same output data and create scalar coverages.</p></div>
 </dd>
 <dt id="gplately.ptt.subduction_convergence.find_subducting_plate"><code class="name flex">
 <span>def <span class="ident">find_subducting_plate</span></span>(<span>subduction_shared_sub_segment, include_slab_topologies=False)</span>
@@ -145,7 +154,7 @@ trench normal azimuth angles (ie, angles relative to North).</dd>
 <div class="desc"><p>Determine the subducting plate of the subduction shared sub-segment.</p></div>
 </dd>
 <dt id="gplately.ptt.subduction_convergence.subduction_convergence"><code class="name flex">
-<span>def <span class="ident">subduction_convergence</span></span>(<span>rotation_features_or_model, topology_features, threshold_sampling_distance_radians, time, velocity_delta_time=1.0, anchor_plate_id=0, include_slab_topologies=False, **kwargs)</span>
+<span>def <span class="ident">subduction_convergence</span></span>(<span>rotation_features_or_model, topology_features, threshold_sampling_distance_radians, time, velocity_delta_time=1.0, anchor_plate_id=0, include_slab_topologies=False, include_network_boundaries=False, **kwargs)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Find the convergence and absolute velocities sampled along trenches (subduction zones) at a particular geological time.</p>
@@ -155,23 +164,24 @@ trench normal azimuth angles (ie, angles relative to North).</dd>
 <li>1 latitude of sample point</li>
 <li>2 subducting convergence (relative to trench) velocity magnitude (in cm/yr)</li>
 <li>3 subducting convergence velocity obliquity angle (angle between trench normal vector and convergence velocity vector)</li>
-<li>4
-trench absolute (relative to anchor plate) velocity magnitude (in cm/yr)</li>
+<li>4 trench absolute (relative to anchor plate) velocity magnitude (in cm/yr)</li>
 <li>5 trench absolute velocity obliquity angle (angle between trench normal vector and trench absolute velocity vector)</li>
 <li>6 length of arc segment (in degrees) that current point is on</li>
 <li>7 trench normal azimuth angle (clockwise starting at North, ie, 0 to 360 degrees) at current point</li>
 <li>8 subducting plate ID</li>
 <li>9 trench plate ID</li>
-<li>10 extra data can be appended by specifying optional keyword arguments (<em>kwargs</em> - see list of options below).</li>
 </ul>
-<p>The obliquity angles are in the range (-180 180). The range (0, 180) goes clockwise (when viewed from above the Earth) from the
+<p>The optional 'output_*' parameters can be used to append extra data to the above output for each sampled trench point.
+The order of any extra data is the same order in which the parameters are listed below.</p>
+<p>The obliquity angles are in the range (-180, 180). The range (0, 180) goes clockwise (when viewed from above the Earth) from the
 trench normal direction to the velocity vector. The range (0, -180) goes counter-clockwise.
 You can change the range (-180, 180) to the range (0, 360) by adding 360 to negative angles.
 The trench normal is perpendicular to the trench and pointing toward the overriding plate.</p>
 <p>Note that the convergence velocity magnitude is negative if the plates are diverging (if convergence obliquity angle
 is greater than 90 or less than -90). And note that the absolute velocity magnitude is negative if the trench (subduction zone)
-is moving towards the overriding plate (if absolute obliquity angle is less than 90 or greater than -90) - note that this
-ignores the kinematics of the subducting plate.</p>
+is moving towards the overriding plate (if absolute obliquity angle is less than 90 and greater than -90) - note that this
+ignores the kinematics of the subducting plate. Similiarly for the subducting plate absolute velocity magnitude
+(if keyword argument <code>output_subducting_absolute_velocity</code> is True).</p>
 <h2 id="parameters">Parameters</h2>
 <dl>
 <dt><strong><code>rotation_features_or_model</code></strong> :&ensp;<code>pygplates.RotationModel,</code> or <code>any combination</code> of <code>str, pygplates.FeatureCollection, pygplates.Feature</code></dt>
@@ -192,6 +202,33 @@ of any combination of those four types.</dd>
 <dd>The anchor plate of the rotation model. Defaults to zero.</dd>
 <dt><strong><code>include_slab_topologies</code></strong> :&ensp;<code>bool</code>, default <code>False</code></dt>
 <dd>Include slab topologies (<code>gpml:TopologicalSlabBoundary</code>) in analysis.</dd>
+<dt><strong><code>include_network_boundaries</code></strong> :&ensp;<code>bool</code>, default <code>False</code></dt>
+<dd>Whether to calculate subduction convergence along network boundaries that are not also plate boundaries (defaults to False).
+If a deforming network shares a boundary with a plate then it'll get included regardless of this option.</dd>
+<dt><strong><code>output_distance_to_nearest_edge_of_trench</code></strong> :&ensp;<code>bool</code>, default=<code>False</code></dt>
+<dd>Append the distance (in degrees) along the trench line to the nearest trench edge to each returned sample point.
+A trench edge is the farthermost location on the current trench feature that contributes to a plate boundary.</dd>
+<dt><strong><code>output_distance_to_start_edge_of_trench</code></strong> :&ensp;<code>bool</code>, default=<code>False</code></dt>
+<dd>Append the distance (in degrees) along the trench line from the start edge of the trench to each returned sample point.
+The start of the trench is along the clockwise direction around the overriding plate.</dd>
+<dt><strong><code>output_convergence_velocity_components</code></strong> :&ensp;<code>bool</code>, default=<code>False</code></dt>
+<dd>Append the convergence velocity orthogonal and parallel components (in cm/yr) to each returned sample point.
+Orthogonal is normal to trench (in direction of overriding plate when positive).
+Parallel is along trench (90 degrees clockwise from trench normal when positive).</dd>
+<dt><strong><code>output_trench_absolute_velocity_components</code></strong> :&ensp;<code>bool</code>, default=<code>False</code></dt>
+<dd>Append the trench absolute velocity orthogonal and parallel components (in cm/yr) to each returned sample point.
+Orthogonal is normal to trench (in direction of overriding plate when positive).
+Parallel is along trench (90 degrees clockwise from trench normal when positive).</dd>
+<dt><strong><code>output_subducting_absolute_velocity</code></strong> :&ensp;<code>bool</code>, default=<code>False</code></dt>
+<dd>Append the subducting plate absolute velocity magnitude (in cm/yr) and obliquity angle (in degrees) to each returned sample point.</dd>
+<dt><strong><code>output_subducting_absolute_velocity_components</code></strong> :&ensp;<code>bool</code>, default=<code>False</code></dt>
+<dd>Append the subducting plate absolute velocity orthogonal and parallel components (in cm/yr) to each returned sample point.
+Orthogonal is normal to trench (in direction of overriding plate when positive).
+Parallel is along trench (90 degrees clockwise from trench normal when positive).</dd>
+<dt><strong><code>output_trench_normal</code></strong> :&ensp;<code>bool</code>, default=<code>False</code></dt>
+<dd>Append the x, y and z components of the trench normal unit-length 3D vectors.
+These vectors are normal to the trench in the direction of subduction (towards overriding plate).
+These are global 3D vectors which differ from trench normal azimuth angles (ie, angles relative to North).</dd>
 </dl>
 <h2 id="returns">Returns</h2>
 <dl>
@@ -210,13 +247,10 @@ Each tuple in the list corresponds to a point and has the following tuple items:
 <li>length of arc segment (in degrees) that current point is on</li>
 <li>trench normal azimuth angle (clockwise starting at North, ie, 0 to 360 degrees) at current point</li>
 <li>subducting plate ID</li>
-<li>
-<p>trench plate ID</p>
-</li>
-<li>
-<p>extra data can be appended by specifying optional keyword arguments (<em>kwargs</em> - see list of options below).</p>
-</li>
+<li>trench plate ID</li>
 </ul>
+<p>The optional 'output_*' parameters can be used to append extra data to the tuple of each sampled trench point.
+The order of any extra data is the same order in which the parameters are listed in this function.</p>
 </dd>
 </dl>
 <h2 id="notes">Notes</h2>
@@ -228,44 +262,7 @@ The sampling along the entire length of a trench is not exactly uniform. Each se
 such that the samples have a uniform spacing that is less than or equal to the threshold sampling distance. However each segment
 in a trench might have a slightly different spacing distance (since segment lengths are not integer multiples of
 the threshold sampling distance).</p>
-<p>The trench normal (at each arc segment mid-point) always points <em>towards</em> the overriding plate.</p>
-<p>The optional <em>kwargs</em> parameters can be used to append extra data to the output tuple of each sample point.
-The order of any extra data is the same order in which the parameters are listed below.</p>
-<p>The following optional keyword arguments are supported by <em>kwargs</em>:</p>
-<h2 id="parameters_1">Parameters</h2>
-<dl>
-<dt><strong><code>output_distance_to_nearest_edge_of_trench</code></strong> :&ensp;<code>bool default=False</code></dt>
-<dd>Append the distance (in degrees) along the trench line to the nearest
-trench edge to each returned sample point. The trench edge is the location
-on the current trench feature where the subducting or overriding plate changes.</dd>
-<dt><strong><code>output_distance_to_start_edge_of_trench</code></strong> :&ensp;<code>bool default=False</code></dt>
-<dd>Append the distance (in degrees) along the trench line from the start edge of
-the trench to each returned sample point. The start of the trench is along the
-clockwise direction around the overriding plate.</dd>
-<dt><strong><code>output_convergence_velocity_components</code></strong> :&ensp;<code>bool default=False</code></dt>
-<dd>Append the convergence velocity orthogonal and parallel
-components (in cm/yr) to each returned sample point.
-Orthogonal is normal to trench in direction of overriding plate.
-Parallel is along trench and 90 degrees clockwise from orthogonal.</dd>
-<dt><strong><code>output_trench_absolute_velocity_components</code></strong> :&ensp;<code>bool default=False</code></dt>
-<dd>Append the trench plate absolute velocity orthogonal and parallel
-components (in cm/yr) to each returned sample point.
-Orthogonal is normal to trench in direction of overriding plate.
-Parallel is along trench and 90 degrees clockwise from orthogonal.</dd>
-<dt><strong><code>output_subducting_absolute_velocity</code></strong> :&ensp;<code>bool default=False</code></dt>
-<dd>Append the subducting plate absolute velocity magnitude (in cm/yr) and
-obliquity angle (in degrees) to each returned sample point.</dd>
-<dt><strong><code>output_subducting_absolute_velocity_components</code></strong> :&ensp;<code>bool default=False</code></dt>
-<dd>Append the subducting plate absolute velocity orthogonal and parallel
-components (in cm/yr) to each returned sample point.
-Orthogonal is normal to trench in direction of overriding plate.
-Parallel is along trench and 90 degrees clockwise from orthogonal.</dd>
-<dt><strong><code>output_trench_normal</code></strong> :&ensp;<code>bool default=False</code></dt>
-<dd>Append the x, y and z components of the trench normal unit-length 3D vectors.
-These vectors are normal to the trench in the direction of subduction
-(towards overriding plate). These are global 3D vectors which differ from
-trench normal azimuth angles (ie, angles relative to North).</dd>
-</dl></div>
+<p>The trench normal (at each arc segment mid-point) always points <em>towards</em> the overriding plate.</p></div>
 </dd>
 <dt id="gplately.ptt.subduction_convergence.subduction_convergence_over_time"><code class="name flex">
 <span>def <span class="ident">subduction_convergence_over_time</span></span>(<span>output_filename_prefix, output_filename_extension, rotation_filenames, topology_filenames, threshold_sampling_distance_radians, time_young, time_old, time_increment, velocity_delta_time=1.0, anchor_plate_id=0, output_gpml_filename=None, include_slab_topologies=False, **kwargs)</span>

@@ -37,80 +37,80 @@ hljs.highlightAll();
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
 <dt id="gplately.ptt.ridge_spreading_rate.spreading_rates"><code class="name flex">
-<span>def <span class="ident">spreading_rates</span></span>(<span>rotation_features_or_model, topology_features, time, threshold_sampling_distance_radians, spreading_feature_types=None, transform_segment_deviation_in_radians=1.2217304763960306, velocity_delta_time=1.0, anchor_plate_id=0)</span>
+<span>def <span class="ident">spreading_rates</span></span>(<span>rotation_features_or_model, topology_features, time, threshold_sampling_distance_radians, spreading_feature_types=[&lt;pygplates.pygplates.FeatureType object&gt;], transform_segment_deviation_in_radians=1.2217304763960306, velocity_delta_time=1.0, anchor_plate_id=None, include_network_boundaries=False, output_obliquity_and_normal_and_left_right_plates=False)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Calculates spreading rate and length of ridge segments of spreading features (mid-ocean ridges) of resolved topologies at specified time.</p>
-<p>The transform segments of spreading features are ignored.</p>
-<p>Resolves topologies at 'time', tessellates all resolved spreading features to within 'threshold_sampling_distance_radians' radians and
-returns a list of tuples where each tuple represents a tessellated point and contains the following parameters:</p>
-<ul>
-<li>point longitude</li>
-<li>point latitude</li>
-<li>spreading velocity magnitude (in cm/yr)</li>
-<li>length of arc segment (in degrees) that current point is on</li>
-</ul>
+<div class="desc"><p>Calculate spreading rate of ridge segments (and other statistics like spreading obqliquity, and ridge length/normals and left/right plates).</p>
+<p>The transform segments of spreading features are ignored (unless <code>transform_segment_deviation_in_radians</code> is <code>None</code>).</p>
+<p>Resolves topologies at 'time', tessellates all resolved spreading features to within <code>threshold_sampling_distance_radians</code> radians and
+returns a list of tuples where each tuple represents a tessellated point.</p>
 <h2 id="parameters">Parameters</h2>
 <dl>
-<dt><strong><code>rotation_features_or_model</code></strong></dt>
-<dd>Rotation model or feature collection(s), or list of features, or filename(s).</dd>
-<dt><strong><code>topology_features</code></strong></dt>
-<dd>Topology feature collection(s), or list of features, or filename(s) or any combination of those.</dd>
-<dt><strong><code>time</code></strong> :&ensp;<code>number</code></dt>
-<dd>Reconstruction time to resolved topologies.</dd>
-<dt><strong><code>threshold_sampling_distance_radians</code></strong> :&ensp;<code>number</code></dt>
+<dt><strong><code>rotation_features_or_model</code></strong> :&ensp;<code>str/</code>os.PathLike<code>,</code> or <code>&lt;pygplates.FeatureCollection&gt;,</code> or <code>&lt;pygplates.Feature&gt;,</code> or <code>sequence</code> of <code>&lt;pygplates.Feature&gt;,</code> or <code>a sequence (eg, a list</code> or <code>tuple)</code> of <code>any combination</code> of <code>those four types,</code> or <code>&lt;pygplates.RotationModel&gt;</code></dt>
+<dd>A rotation model to calculate spreading rate.
+Can be provided as a rotation filename, or rotation feature collection, or rotation feature, or
+sequence of rotation features, or a sequence (eg, a list or tuple) of any combination of those four types.</dd>
+<dt><strong><code>topology_features</code></strong> :&ensp;<code>str/</code>os.PathLike<code>,</code> or <code>&lt;pygplates.FeatureCollection&gt;,</code> or <code>&lt;pygplates.Feature&gt;,</code> or <code>a sequence &lt;pygplates.Feature&gt;,</code> or <code>a sequence (eg, a list</code> or <code>tuple)</code> of <code>any combination</code> of <code>those four types</code></dt>
+<dd>Reconstructable topological features representing the spreading features.</dd>
+<dt><strong><code>time</code></strong> :&ensp;<code>float</code></dt>
+<dd>The reconstruction time (Ma) at which to calculate spreading rate.</dd>
+<dt><strong><code>threshold_sampling_distance_radians</code></strong> :&ensp;<code>float</code></dt>
 <dd>Threshold sampling distance along spreading features (in radians).</dd>
-<dt><strong><code>spreading_feature_types</code></strong></dt>
+<dt><strong><code>spreading_feature_types</code></strong> :&ensp;<code>&lt;pygplates.FeatureType&gt;</code> or <code>sequence</code> of <code>&lt;pygplates.FeatureType&gt;</code>, default=<code>pygplates.FeatureType.gpml_mid_ocean_ridge</code></dt>
 <dd>Only spreading features with a feature type contained in this list are considered.
-If None then all spreading features are considered.</dd>
-<dt><strong><code>transform_segment_deviation_in_radians</code></strong> :&ensp;<code>number</code></dt>
-<dd>How much a segment can deviate from the stage pole before
-it's considered a transform segment (in radians).</dd>
-<dt><strong><code>velocity_delta_time</code></strong> :&ensp;<code>number</code></dt>
-<dd>Delta time interval used to calculate spreading velocity.</dd>
+If <code>None</code> then all spreading features are considered.</dd>
+<dt><strong><code>transform_segment_deviation_in_radians</code></strong> :&ensp;<code>float</code>, default=<code>&lt;implementation-defined&gt;</code></dt>
+<dd>How much a segment can deviate from the stage pole before it's considered a transform segment (in radians).
+The default value has been empirically determined to give the best results for typical models.
+If <code>None</code> then the full feature geometry is used (ie, it is not split into ridge and transform segments, with the transform segments getting ignored).</dd>
+<dt><strong><code>velocity_delta_time</code></strong> :&ensp;<code>float</code>, default=<code>1.0</code></dt>
+<dd>Delta time interval used to calculate spreading velocity.
+Defaults to 1 Myr.</dd>
+<dt><strong><code>anchor_plate_id</code></strong> :&ensp;<code>int</code>, optional</dt>
+<dd>Anchor plate ID for reconstruction.
+If not specified then uses the default anchor plate of <code>rotation_model</code> if it's a <code>pygplates.RotationModel</code> (otherwise uses zero).</dd>
+<dt><strong><code>include_network_boundaries</code></strong> :&ensp;<code>bool</code>, default=<code>False</code></dt>
+<dd>Whether to calculate spreading rate along network boundaries that are not also plate boundaries (defaults to False).
+If a deforming network shares a boundary with a plate then it'll get included regardless of this option.</dd>
+<dt><strong><code>output_obliquity_and_normal_and_left_right_plates</code></strong> :&ensp;<code>bool</code>, default=<code>False</code></dt>
+<dd>Whether to also return spreading obliquity, normal azimuth and left/right plates.</dd>
 </dl>
 <h2 id="returns">Returns</h2>
-<p>A list of the tuples described above.</p></div>
-</dd>
-<dt id="gplately.ptt.ridge_spreading_rate.spreading_rates_dense"><code class="name flex">
-<span>def <span class="ident">spreading_rates_dense</span></span>(<span>rotation_features_or_model, topology_features, time, threshold_sampling_distance_radians, spreading_feature_types=None, transform_segment_deviation_in_radians=1.2217304763960306, velocity_delta_time=1.0, anchor_plate_id=0)</span>
-</code></dt>
+<dl>
+<dt><strong><code>output_data</code></strong> :&ensp;<code>a list</code> of <code>tuples</code></dt>
 <dd>
-<div class="desc"><p>Calculates spreading rate and length of ridge segments of spreading features (mid-ocean ridges) of resolved topologies at specified time.</p>
-<p>The transform segments of spreading features are ignored.</p>
-<p>Resolves topologies at 'time', tessellates all resolved spreading features to within 'threshold_sampling_distance_radians' radians and
-returns a list of tuples where each tuple represents a tessellated point and contains the following parameters:</p>
+<p>The results for all tessellated points sampled along spreading features.
+The size of the returned list is equal to the number of tessellated points.
+Each tuple in the list corresponds to a tessellated point and has the following tuple items
+(depending on <code>output_obliquity_and_normal_and_left_right_plates</code>):</p>
+<p>If <code>output_obliquity_and_normal_and_left_right_plates</code> is <code>False</code> (the default):</p>
 <ul>
-<li>point longitude</li>
-<li>point latitude</li>
+<li>longitude of tessellated point</li>
+<li>latitude of tessellated point</li>
 <li>spreading velocity magnitude (in cm/yr)</li>
-<li>spreading obliquity in degrees</li>
-<li>length of arc segment (in degrees) that current point is on</li>
-<li>azimuth of vector normal to the arc segment in degrees</li>
+<li>length of arc segment (in degrees) that tessellated point is on</li>
+</ul>
+<p>If <code>output_obliquity_and_normal_and_left_right_plates</code> is <code>True</code>:</p>
+<ul>
+<li>longitude of tessellated point</li>
+<li>latitude of tessellated point</li>
+<li>spreading velocity magnitude (in cm/yr)</li>
+<li>spreading obliquity in degrees (deviation from normal line in range 0 to 90 degrees)</li>
+<li>length of arc segment (in degrees) that tessellated point is on</li>
+<li>azimuth of vector normal to the arc segment in degrees (clockwise starting at North, ie, 0 to 360 degrees)</li>
 <li>left plate ID</li>
 <li>right plate ID</li>
 </ul>
-<h2 id="parameters">Parameters</h2>
-<dl>
-<dt><strong><code>rotation_features_or_model</code></strong></dt>
-<dd>Rotation model or feature collection(s), or list of features, or filename(s).</dd>
-<dt><strong><code>topology_features</code></strong></dt>
-<dd>Topology feature collection(s), or list of features, or filename(s) or any combination of those.</dd>
-<dt><strong><code>time</code></strong> :&ensp;<code>number</code></dt>
-<dd>Reconstruction time to resolved topologies.</dd>
-<dt><strong><code>threshold_sampling_distance_radians</code></strong> :&ensp;<code>number</code></dt>
-<dd>Threshold sampling distance along spreading features (in radians).</dd>
-<dt><strong><code>spreading_feature_types</code></strong></dt>
-<dd>Only spreading features with a feature type contained in this list are considered.
-If None then all spreading features are considered.</dd>
-<dt><strong><code>transform_segment_deviation_in_radians</code></strong> :&ensp;<code>number</code></dt>
-<dd>How much a segment can deviate from the stage pole before
-it's considered a transform segment (in radians).</dd>
-<dt><strong><code>velocity_delta_time</code></strong> :&ensp;<code>number</code></dt>
-<dd>Delta time interval used to calculate spreading velocity.</dd>
-</dl>
-<h2 id="returns">Returns</h2>
-<p>A list of the tuples described above.</p></div>
+</dd>
+</dl></div>
+</dd>
+<dt id="gplately.ptt.ridge_spreading_rate.spreading_rates_dense"><code class="name flex">
+<span>def <span class="ident">spreading_rates_dense</span></span>(<span>rotation_features_or_model, topology_features, time, threshold_sampling_distance_radians, spreading_feature_types=[&lt;pygplates.pygplates.FeatureType object&gt;], transform_segment_deviation_in_radians=1.2217304763960306, velocity_delta_time=1.0, anchor_plate_id=0)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Equivalent to <code>spreading_rates(..., output_obliquity_and_normal_and_left_right_plates=True)</code>.</p>
+<h2 id="see-also">See Also</h2>
+<p><code><a title="gplately.ptt.ridge_spreading_rate.spreading_rates" href="#gplately.ptt.ridge_spreading_rate.spreading_rates">spreading_rates()</a></code></p></div>
 </dd>
 </dl>
 </section>

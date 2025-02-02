@@ -41,7 +41,7 @@ based on each segment’s alignment with the geometry’s stage pole at its time
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
 <dt id="gplately.ptt.separate_ridge_transform_segments.get_stage_rotation_for_reconstructed_geometry"><code class="name flex">
-<span>def <span class="ident">get_stage_rotation_for_reconstructed_geometry</span></span>(<span>spreading_feature, rotation_model, spreading_time=None)</span>
+<span>def <span class="ident">get_stage_rotation_for_reconstructed_geometry</span></span>(<span>spreading_feature, rotation_model, spreading_time=None, return_left_right_plates=False)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Find the stage rotation of the spreading feature in the frame of reference of its geometry at the spreading time.
@@ -54,11 +54,14 @@ or a regular feature with a conjugate plate ID.
 An example of the former is a mid-ocean ridge, and of the latter an isochron.</dd>
 <dt><strong><code>rotation_model</code></strong> :&ensp;<code>pygplates.RotationModel</code></dt>
 <dd>Rotation model</dd>
-<dt><strong><code>spreading_time</code></strong> :&ensp;<code>number</code></dt>
+<dt><strong><code>spreading_time</code></strong> :&ensp;<code>number</code>, optional</dt>
 <dd>A time at which spreading is happening.
 For isochrons this should be its time of appearance (ie, when formed at mid-ocean ridge).
 For mid-ocean ridges this can be any time when the ridge is actively spreading.
 Defaults to the time of appearance of 'spreading_feature'.</dd>
+<dt><strong><code>return_left_right_plates</code></strong> :&ensp;<code>bool</code>, default=<code>False</code></dt>
+<dd>Also return the left and right plate IDs (as a 3-tuple of (stage rotation, left plate, right plate)).
+Defaults to False.</dd>
 </dl>
 <h2 id="returns">Returns</h2>
 <dl>
@@ -96,8 +99,7 @@ it's considered a transform segment (in radians).</dd>
 <h2 id="returns">Returns</h2>
 <dl>
 <dt><code>2-tuple (list</code> of <code>pygplates.Feature, list</code> of <code>pygplates.Feature)</code></dt>
-<dd>The separated ridge and transform features respectively
-.</dd>
+<dd>The separated ridge and transform features respectively.</dd>
 </dl></div>
 </dd>
 <dt id="gplately.ptt.separate_ridge_transform_segments.separate_geometry_into_ridges_and_transforms"><code class="name flex">
@@ -124,7 +126,7 @@ it's considered a transform segment (in radians).</dd>
 <h2 id="returns">Returns</h2>
 <dl>
 <dt><code>2-tuple (list</code> of <code>pygplates.Polyline, list</code> of <code>pygplates.Polyline), None if 'geometry_at_spreading_time' is not a polyline (or polygon)</code></dt>
-<dd>The separated ridge and transform geometries respectively</dd>
+<dd>The separated ridge and transform geometries respectively.</dd>
 </dl></div>
 </dd>
 </dl>
