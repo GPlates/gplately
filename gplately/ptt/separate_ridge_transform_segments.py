@@ -76,8 +76,7 @@ def separate_features_into_ridges_and_transforms(
     Returns
     -------
     2-tuple (list of pygplates.Feature, list of pygplates.Feature)
-        The separated ridge and transform features respectively
-             .
+        The separated ridge and transform features respectively.
     """
 
     # Turn rotation data into a RotationModel (if not already).
@@ -239,7 +238,7 @@ def separate_geometry_into_ridges_and_transforms(
     Returns
     -------
     2-tuple (list of pygplates.Polyline, list of pygplates.Polyline), None if 'geometry_at_spreading_time' is not a polyline (or polygon)
-        The separated ridge and transform geometries respectively
+        The separated ridge and transform geometries respectively.
 
     """
 
@@ -338,7 +337,10 @@ def separate_geometry_into_ridges_and_transforms(
 
 
 def get_stage_rotation_for_reconstructed_geometry(
-    spreading_feature, rotation_model, spreading_time=None
+    spreading_feature,
+    rotation_model,
+    spreading_time=None,
+    return_left_right_plates=False,
 ):
     """
     Find the stage rotation of the spreading feature in the frame of reference of its geometry at the spreading time.
@@ -354,11 +356,15 @@ def get_stage_rotation_for_reconstructed_geometry(
     rotation_model: pygplates.RotationModel
         Rotation model
 
-    spreading_time: number
+    spreading_time: number, optional
         A time at which spreading is happening.
         For isochrons this should be its time of appearance (ie, when formed at mid-ocean ridge).
         For mid-ocean ridges this can be any time when the ridge is actively spreading.
         Defaults to the time of appearance of 'spreading_feature'.
+
+    return_left_right_plates: bool, default=False
+        Also return the left and right plate IDs (as a 3-tuple of (stage rotation, left plate, right plate)).
+        Defaults to False.
 
     Returns
     -------
@@ -464,6 +470,11 @@ def get_stage_rotation_for_reconstructed_geometry(
             * to_stage_pole_reference_frame
         )
 
+        if return_left_right_plates:
+            return stage_rotation, conjugate_plate_id, reconstruction_plate_id
+
+        return stage_rotation
+
     else:  # Reconstruction is by half stage rotation...
         # See if spreading feature has left and right plate ids (it should).
         left_and_right_plate_ids = _get_left_and_right_plate_ids(spreading_feature)
@@ -542,7 +553,10 @@ def get_stage_rotation_for_reconstructed_geometry(
             * to_stage_pole_reference_frame
         )
 
-    return stage_rotation
+        if return_left_right_plates:
+            return stage_rotation, left_plate_id, right_plate_id
+
+        return stage_rotation
 
 
 #
