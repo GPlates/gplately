@@ -327,6 +327,7 @@ class PlotTopologies(object):
         self.COBs = None
         self._topological_plate_boundaries = None
         self._topologies = None
+        self._ridges = []
 
         self._anchor_plate_id = self._check_anchor_plate_id(anchor_plate_id)
         self._plot_engine = plot_engine
@@ -399,51 +400,32 @@ class PlotTopologies(object):
         self._resolve_both_boundaries_and_networks()
         return self._topologies
 
-    import warnings
-
     @property
     def ridges(self):
         """
-        Property that returns the mid-ocean ridge features (gpml:MidOceanRidge).
-        
-        Notes
-        -----
-        Since GPlately release 1.3.0, this property contains all gpml:MidOceanRidge 
-        features in the reconstruction model. Previously, it only included ridges in 
-        the gpml:MidOceanRidge features (excluding transforms).
+        Mid-ocean ridge features (all the features which are labelled as gpml:MidOceanRidge in the model).
         """
-        warnings.warn(
-            "The 'ridges' property has been changed since GPlately release 1.3.0. "
-            "Now the 'ridges' property contains all the gpml:MidOceanRidge features in the reconstruction model. "
+        logger.debug(
+            "The 'ridges' property has been changed since GPlately 1.3.0. "
             "You need to check your workflow to make sure the new 'ridges' property still suits your purpose. "
-            "In the previous GPlately releases, the 'ridges' property contained only the ridges in the gpml:MidOceanRidge features "
-            "(the transforms in the gpml:MidOceanRidge features were not included).",
-            UserWarning,
-            stacklevel=2,
-        )
+            "In earlier releases of GPlately, we used an algorithm to identify the 'ridges' and 'transforms' within the gpml:MidOceanRidge features. "
+            "Unfortunately, the algorithm did not work very well. So we have removed the algorithm and now the 'ridges' property contains all the features "
+            "which are labelled as gpml:MidOceanRidge in the reconstruction model."
+        )  # use logger.debug to make the message less aggressive
         return self._ridges
 
     @property
     def transforms(self):
         """
-        Property that returns the transform boundary features (gpml:Transform).
-
-        Notes
-        -----
-        Since GPlately release 1.3.0, this property contains all gpml:Transform 
-        features in the reconstruction model. Previously, it only included the transforms 
-        in the gpml:MidOceanRidge features (excluding other gpml:Transform features).
+        Transform boundary features (all the features which are labelled as gpml:Transform in the model).
         """
-        warnings.warn(
-            "The 'transforms' property has been changed since GPlately release 1.3.0. "
-            "Now the 'transforms' property contains all the gpml:Transform features in the reconstruction model "
-            "(the transforms in the gpml:MidOceanRidge features are not included). "
+        logger.debug(
+            "The 'transforms' property has been changed since GPlately 1.3.0. "
             "You need to check your workflow to make sure the new 'transforms' property still suits your purpose. "
-            "In the previous GPlately releases, the 'transforms' property contained only the transforms in the gpml:MidOceanRidge features "
-            "(the gpml:Transform features were not included).",
-            UserWarning,
-            stacklevel=2,
-        )
+            "In earlier releases of GPlately, we used an algorithm to identify the 'ridges' and 'transforms' within the gpml:MidOceanRidge features. "
+            "Unfortunately, the algorithm did not work very well. So we have removed the algorithm and now the 'transforms' property contains all the features "
+            "which are labelled as gpml:Transform in the reconstruction model."
+        )  # use logger.debug to make the message less aggressive
         return self._transforms
 
     @property
@@ -484,36 +466,29 @@ class PlotTopologies(object):
         if id < 0:
             raise ValueError("Invalid anchor plate ID: {}".format(id))
         return id
-    
+
     @property
     def ridge_transforms(self):
         """
-        Deprecated property that combines gpml:Transform and gpml:MidOceanRidge features.
-
-        Returns
-        -------
-        list of pygplates.Feature
-            Combined list of 'ridges' and 'transforms'.
+        Deprecated. DO NOT USE!
         """
-        import warnings
 
         warnings.warn(
-            "Deprecated! The 'ridge_transforms' property will be removed in the next GPlately release. "
-            "You need to update your workflow to use the 'ridges' and 'transforms' properties instead, "
-            "otherwise your workflow will be broken by the next GPlately release.",
+            "Deprecated! DO NOT USE!"
+            "The 'ridge_transforms' property will be removed in the future GPlately releases. "
+            "Update your workflow to use the 'ridges' and 'transforms' properties instead, "
+            "otherwise your workflow will not work with the future GPlately releases.",
             DeprecationWarning,
             stacklevel=2,
         )
-        warnings.warn(
-            "The 'ridge_transforms' property has been changed since GPlately release 1.3.0. "
-            "Now the 'ridge_transforms' property contains both gpml:Transform and gpml:MidOceanRidge features in the "
-            "reconstruction model. You need to check your workflow to make sure the new 'ridge_transforms' property still "
-            "suits your purpose. In the previous GPlately releases, the 'ridge_transforms' property contained only "
-            "gpml:MidOceanRidge features.",
-            UserWarning,
-            stacklevel=2,
+        logger.debug(
+            "The 'ridge_transforms' property has been changed since GPlately 1.3.0. "
+            "You need to check your workflow to make sure the new 'ridge_transforms' property still suits your purpose. "
+            "In earlier releases of GPlately, the 'ridge_transforms' property contains only the features "
+            "which are labelled as gpml:MidOceanRidge in the reconstruction model. "
+            "Now, the 'ridge_transforms' property contains both gpml:Transform and gpml:MidOceanRidge features."
         )
-        return self.ridges + self.transforms
+        return self._ridges + self._transforms
 
     def update_time(self, time):
         """Re-reconstruct features and topologies to the time specified by the `PlotTopologies` `time` attribute
@@ -540,10 +515,9 @@ class PlotTopologies(object):
         self._time = float(time)
         (
             self._topological_plate_boundaries,
-            self.ridges,
             self._ridges,
-            self.transforms,
-            self._transforms,
+            self._ridges_do_not_use_for_now,  # the algorithm to separate ridges and transforms has not been ready yet
+            self._transforms_do_not_use_for_now,
             self.trenches,
             self.trench_left,
             self.trench_right,
@@ -572,7 +546,7 @@ class PlotTopologies(object):
         self.extended_continental_crusts = []
         self.passive_continental_boundaries = []
         self.slab_edges = []
-        self.transforms = []
+        self._transforms = []
         self.unclassified_features = []
 
         for topol in self.other:
@@ -629,7 +603,7 @@ class PlotTopologies(object):
                 self.slab_edges.append(topol)
 
             elif topol.get_feature_type() == pygplates.FeatureType.gpml_transform:  # type: ignore
-                self.transforms.append(topol)
+                self._transforms.append(topol)
 
             elif (
                 topol.get_feature_type()
@@ -779,7 +753,7 @@ class PlotTopologies(object):
     def plot_feature(self, ax, feature, feature_name="", color="black", **kwargs):
         """Plot pygplates.FeatureCollection or pygplates.Feature onto a map."""
         if not feature:
-            logger.warn(
+            logger.warning(
                 f"The given feature({feature_name}:{feature}) in model:{self.plate_reconstruction.plate_model_name} is empty and will not be plotted."
             )
             return ax
@@ -815,7 +789,7 @@ class PlotTopologies(object):
             )
 
         if len(gdf) == 0:
-            logger.warn("No feature found for plotting. Do nothing and return.")
+            logger.warning("No feature found for plotting. Do nothing and return.")
             return ax
 
         self._plot_engine.plot_geo_data_frame(ax, gdf, **kwargs)
@@ -923,18 +897,15 @@ class PlotTopologies(object):
         central_meridian=0.0,
         tessellate_degrees=1,
     ):
-
-        warnings.warn(
-            "The 'get_ridges' function has been changed since GPlately release 1.3.0. "
-            "Now the 'get_ridges' function returns all gpml:MidOceanRidge features in the reconstruction model. "
+        """Create a geopandas.GeoDataFrame object containing the geometries of reconstructed mid-ocean ridge lines (gpml:MidOceanRidge)."""
+        logger.debug(
+            "The 'get_ridges' function has been changed since GPlately 1.3.0. "
             "You need to check your workflow to make sure the new 'get_ridges' function still suits your purpose. "
-            "In the previous GPlately releases, the 'get_ridges' function returned only the ridges in the gpml:MidOceanRidge features "
-            "(the transforms in the gpml:MidOceanRidge features were not included).",
-            UserWarning,
-            stacklevel=2,
-        )
+            "In earlier releases of GPlately, we used an algorithm to identify the 'ridges' and 'transforms' within the gpml:MidOceanRidge features. "
+            "Unfortunately, the algorithm did not work very well. So we have removed the algorithm and now the 'get_ridges' function returns all the features "
+            "which are labelled as gpml:MidOceanRidge in the reconstruction model."
+        )  # use logger.debug to make the message less aggressive
 
-        """Create a geopandas.GeoDataFrame object containing geometries of reconstructed mid-ocean ridge lines(gpml:MidOceanRidge)."""
         return self.get_feature(
             self.ridges,
             central_meridian=central_meridian,
@@ -963,19 +934,17 @@ class PlotTopologies(object):
         compatibility with Cartopy.
         """
 
-        warnings.warn(
-        "The 'plot_ridges' function has been changed since GPlately release 1.3.0. "
-        "Now the 'plot_ridges' function plots all gpml:MidOceanRidge features in the reconstruction model. "
-        "You need to check your workflow to make sure the new 'plot_ridges' function still suits your purpose. "
-        "In the previous GPlately releases, the 'plot_ridges' function plots only the ridges in the gpml:MidOceanRidge features "
-        "(the transforms in the gpml:MidOceanRidge features are not plotted).",
-        UserWarning,
-        stacklevel=2,
-        )
-        
+        logger.debug(
+            "The 'plot_ridges' function has been changed since GPlately 1.3.0. "
+            "You need to check your workflow to make sure the new 'plot_ridges' function still suits your purpose. "
+            "In earlier releases of GPlately, we used an algorithm to identify the 'ridges' and 'transforms' within the gpml:MidOceanRidge features. "
+            "Unfortunately, the algorithm did not work very well. So we have removed the algorithm and now the 'plot_ridges' function plots all the features "
+            "which are labelled as gpml:MidOceanRidge in the reconstruction model."
+        )  # use logger.debug to make the message less aggressive
+
         return self.plot_feature(
             ax,
-            self.ridges,
+            self._ridges,
             feature_name="ridges",
             facecolor="none",
             edgecolor=color,
@@ -993,31 +962,30 @@ class PlotTopologies(object):
         )
 
     @validate_reconstruction_time
-    def get_ridges_and_transforms(self, central_meridian=0.0, tessellate_degrees=1):  # <-- Add the function here
+    def get_ridges_and_transforms(self, central_meridian=0.0, tessellate_degrees=1):
         """
-        Deprecated function that returns both gpml:Transform and gpml:MidOceanRidge features.
+        Deprecated! DO NOT USE.
         """
         warnings.warn(
-            "Deprecated! The 'get_ridges_and_transforms' function will be removed in the next GPlately release. "
-            "You need to update your workflow to use the 'get_ridges' and 'get_transforms' functions instead, "
-            "otherwise your workflow will be broken by the next GPlately release.",
+            "Deprecated! The 'get_ridges_and_transforms' function will be removed in the future GPlately releases. "
+            "Update your workflow to use the 'get_ridges' and 'get_transforms' functions instead, "
+            "otherwise your workflow will not work with the future GPlately releases.",
             DeprecationWarning,
             stacklevel=2,
         )
-        warnings.warn(
-            "The 'get_ridges_and_transforms' function has been changed since GPlately release 1.3.0. "
-            "Now the 'get_ridges_and_transforms' function returns both gpml:Transform and gpml:MidOceanRidge features in the "
-            "reconstruction model. You need to check your workflow to make sure the new 'get_ridges_and_transforms' function still "
-            "suits your purpose. In the previous GPlately releases, the 'get_ridges_and_transforms' function returned only "
-            "gpml:MidOceanRidge features.",
-            UserWarning,
-            stacklevel=2,
+        logger.debug(
+            "The 'get_ridges_and_transforms' function has been changed since GPlately 1.3.0. "
+            "You need to check your workflow to make sure the new 'get_ridges_and_transforms' function still suits your purpose. "
+            "In earlier releases of GPlately, we used an algorithm to identify the 'ridges' and 'transforms' within the gpml:MidOceanRidge features. "
+            "Unfortunately, the algorithm did not work very well. So we have removed the algorithm and now the 'get_ridges_and_transforms' function returns all the features "
+            "which are labelled as gpml:MidOceanRidge or gpml:Transform in the reconstruction model."
+        )  # use logger.debug to make the message less aggressive
+
+        return self.get_feature(
+            self._ridges + self._transforms,
+            central_meridian=central_meridian,
+            tessellate_degrees=tessellate_degrees,
         )
-
-        ridges_gdf = self.get_ridges(central_meridian, tessellate_degrees)
-        transforms_gdf = self.get_transforms(central_meridian, tessellate_degrees)
-
-        return gpd.GeoDataFrame(pd.concat([ridges_gdf, transforms_gdf], ignore_index=True))
 
     @validate_topology_availability("trenches")
     @append_docstring(PLOT_DOCSTRING.format("trenches"))
@@ -1849,19 +1817,16 @@ class PlotTopologies(object):
         tessellate_degrees=None,
     ):
         """Create a geopandas.GeoDataFrame object containing geometries of reconstructed transform lines(gpml:Transform)."""
-        warnings.warn(
-            "The 'get_transforms' function has been changed since GPlately release 1.3.0. "
-            "Now the 'get_transforms' function returns all the gpml:Transform features in the reconstruction model "
-            "(the transforms in the gpml:MidOceanRidge features are not included). "
+        logger.debug(
+            "The 'get_transforms' function has been changed since GPlately 1.3.0. "
             "You need to check your workflow to make sure the new 'get_transforms' function still suits your purpose. "
-            "In the previous GPlately releases, the 'get_transforms' function returned only the transforms in the gpml:MidOceanRidge features "
-            "(the gpml:Transform features were not included).",
-            UserWarning,
-            stacklevel=2,
-        )
+            "In earlier releases of GPlately, we used an algorithm to identify the 'ridges' and 'transforms' within the gpml:MidOceanRidge features. "
+            "Unfortunately, the algorithm did not work very well. So we have removed the algorithm and now the 'get_transforms' function returns all the features "
+            "which are labelled as gpml:Transform in the reconstruction model."
+        )  # use logger.debug to make the message less aggressive
 
         return self.get_feature(
-            self.transforms,
+            self._transforms,
             central_meridian=central_meridian,
             tessellate_degrees=tessellate_degrees,
         )
@@ -1870,49 +1835,43 @@ class PlotTopologies(object):
     def plot_transforms(self, ax, color="black", **kwargs):
         """Plot transform boundaries(gpml:Transform) onto a map."""
 
-        warnings.warn(
-        "The 'plot_transforms' function has been changed since GPlately release 1.3.0. "
-        "Now the 'plot_transforms' function plots all the gpml:Transform features in the reconstruction model. "
-        "You need to check your workflow to make sure the new 'plot_transforms' function still suits your purpose. "
-        "In the previous GPlately releases, the 'plot_transforms' function plots only the transforms in the gpml:MidOceanRidge features "
-        "(all the gpml:Transform features are not plotted).",
-        UserWarning,
-        stacklevel=2,
-        )
+        logger.debug(
+            "The 'plot_transforms' function has been changed since GPlately 1.3.0. "
+            "You need to check your workflow to make sure the new 'plot_transforms' function still suits your purpose. "
+            "In earlier releases of GPlately, we used an algorithm to identify the 'ridges' and 'transforms' within the gpml:MidOceanRidge features. "
+            "Unfortunately, the algorithm did not work very well. So we have removed the algorithm and now the 'plot_transforms' function plots all the features "
+            "which are labelled as gpml:Transform in the reconstruction model."
+        )  # use logger.debug to make the message less aggressive
 
         return self.plot_feature(
             ax,
-            self.transforms,
+            self._transforms,
             feature_name="transforms",
             edgecolor=color,
             **kwargs,
         )
 
-    def plot_ridges_and_transforms(self, ax, color="black", **kwargs):  # <-- Added the function here
+    def plot_ridges_and_transforms(self, ax, color="black", **kwargs):
         """
-        Deprecated function that plots both gpml:Transform and gpml:MidOceanRidge features.
+        Deprecated! DO NOT USE!
         """
         warnings.warn(
-            "Deprecated! The 'plot_ridges_and_transforms' function will be removed in the next GPlately release. "
-            "You need to update your workflow to use the 'plot_ridges' and 'plot_transforms' functions instead, "
-            "otherwise your workflow will be broken by the next GPlately release.",
+            "Deprecated! The 'plot_ridges_and_transforms' function will be removed in the future GPlately releases. "
+            "Update your workflow to use the 'plot_ridges' and 'plot_transforms' functions instead, "
+            "otherwise your workflow will not work with the future GPlately releases.",
             DeprecationWarning,
             stacklevel=2,
         )
-        warnings.warn(
-            "The 'plot_ridges_and_transforms' function has been changed since GPlately release 1.3.0. "
-            "Now the 'plot_ridges_and_transforms' function plots both gpml:Transform and gpml:MidOceanRidge features in the "
-            "reconstruction model. You need to check your workflow to make sure the new 'plot_ridges_and_transforms' function still "
-            "suits your purpose. In the previous GPlately releases, the 'plot_ridges_and_transforms' function plotted only "
-            "gpml:MidOceanRidge features.",
-            UserWarning,
-            stacklevel=2,
-        )
+        logger.debug(
+            "The 'plot_ridges_and_transforms' function has been changed since GPlately 1.3.0. "
+            "You need to check your workflow to make sure the new 'plot_ridges_and_transforms' function still suits your purpose. "
+            "In earlier releases of GPlately, we used an algorithm to identify the 'ridges' and 'transforms' within the gpml:MidOceanRidge features. "
+            "Unfortunately, the algorithm did not work very well. So we have removed the algorithm and now the 'plot_ridges_and_transforms' function plots all the features "
+            "which are labelled as gpml:Transform or gpml:MidOceanRidge in the reconstruction model."
+        )  # use logger.debug to make the message less aggressive
 
         self.plot_ridges(ax, color=color, **kwargs)
         self.plot_transforms(ax, color=color, **kwargs)
-
-        return ax
 
     @validate_reconstruction_time
     @append_docstring(GET_DATE_DOCSTRING.format("unclassified features"))
@@ -1986,6 +1945,8 @@ class PlotTopologies(object):
         """Plot topological polygons and networks on a standard map projection."""
         if "edgecolor" not in kwargs.keys():
             kwargs["edgecolor"] = color
+        if "facecolor" not in kwargs.keys():
+            kwargs["facecolor"] = "none"
 
         return self._plot_feature(
             ax,
