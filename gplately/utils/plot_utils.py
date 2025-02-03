@@ -387,8 +387,9 @@ def _clean_polygons(data, projection):
         rects = gpd.GeoDataFrame(
             {"geometry": rects},
             geometry="geometry",
-            crs=ccrs.PlateCarree(),
-        )
+            # crs=ccrs.PlateCarree(),
+            crs="EPSG:4326",  # Michael Chin changed this to avoid "CRS mismatch" warning. More investigation is needed. what's the difference between EPSG:4326 and ccrs.PlateCarree()?
+        )  # type: ignore
         data = data.overlay(rects, how="difference")
 
     projected = data.to_crs(projection)

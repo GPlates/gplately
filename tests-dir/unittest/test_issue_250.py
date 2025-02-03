@@ -1,5 +1,8 @@
 #!/usr/bin/env python3
-import sys
+import sys, os
+
+os.environ["GPLATELY_DEBUG"] = "1"
+
 
 import cartopy.crs as ccrs
 import matplotlib.pyplot as plt
@@ -9,6 +12,8 @@ from plate_model_manager import PlateModelManager
 import gplately
 
 print(gplately.__file__)
+
+# https://github.com/GPlates/gplately/issues/250
 
 
 def main(show=True):
@@ -35,27 +40,23 @@ def main(show=True):
         model, coastlines=coastlines, continents=continents, COBs=COBs
     )
 
-    gplot.time = 10  # Ma
-
-    # Download all Muller et al. 2019 netCDF age grids with PlateModelManager. This is returned as a Raster object.
-    agegrid = gplately.Raster(
-        data=muller2019_model.get_raster("AgeGrids", int(gplot.time))
-    )
+    gplot.time = 100  # Ma
 
     fig = plt.figure(figsize=(8, 4))
-    ax1 = fig.add_subplot(111, projection=ccrs.Mollweide(190))
+    ax = fig.add_subplot(111, projection=ccrs.Mollweide(190))
+    ax.set_global()  # type: ignore
+    gplot.plot_ridges_and_transforms(ax, color="red")
+    gplot.plot_ridges(ax, color="black")
+    gplot.plot_transforms(ax, color="black")
+    gplot.plot_misc_transforms(ax, color="black")
 
-    gplot.plot_continents(ax1, facecolor="0.8")
-    gplot.plot_coastlines(ax1, color="0.5")
-    gplot.plot_ridges(ax1, color="red")
-    gplot.plot_trenches(ax1, color="k")
-    gplot.plot_subduction_teeth(ax1, color="k")
-    im = gplot.plot_grid(ax1, agegrid.data, cmap="YlGnBu", vmin=0, vmax=200)
-    gplot.plot_plate_motion_vectors(
-        ax1, spacingX=10, spacingY=10, normalise=True, zorder=10, alpha=0.5
-    )
+    print(gplot.ridges)
+    print(gplot.transforms)
+    print(gplot.get_ridges_and_transforms())
+    print(gplot.get_misc_transforms())
+    print(gplot.get_ridges())
+    print(gplot.get_transforms())
 
-    fig.colorbar(im, orientation="horizontal", shrink=0.4, pad=0.05, label="Age (Ma)")
     plt.title(f"{gplot.time} Ma")
 
     if show:
