@@ -48,7 +48,6 @@ from .gpml import _load_FeatureCollection
 from .mapping.plot_engine import PlotEngine
 
 from .mapping.cartopy_plot import CartopyPlotEngine, DEFAULT_CARTOPY_PROJECTION
-from .pygplates import FeatureCollection as _FeatureCollection
 from .reconstruction import PlateReconstruction as _PlateReconstruction
 from .tools import EARTH_RADIUS
 from .utils.feature_utils import shapelify_features as _shapelify_features
@@ -340,55 +339,21 @@ class PlotTopologies(object):
             self.time = time
 
     def __getstate__(self):
-        filenames = self.plate_reconstruction.__getstate__()
-
-        # add important variables from Points object
-        if self._coastlines:
-            filenames["coastlines"] = self._coastlines.filenames
-        if self._continents:
-            filenames["continents"] = self._continents.filenames
-        if self._COBs:
-            filenames["COBs"] = self._COBs.filenames
-        filenames["time"] = self.time
-        filenames["plate_id"] = self._anchor_plate_id
-
-        return filenames
+        state = self.__dict__.copy()
+        # Remove the unpicklable entries.
+        #
+        # Not sure if a 'cartopy.crs' can be pickled?
+        #
+        # TODO: If it can be pickled then remove __getstate__() and __setstate__() altogether.
+        del state["base_projection"]
+        return state
 
     def __setstate__(self, state):
-        plate_reconstruction_args = [state["rotation_model"], None, None]
-        if "topology_features" in state:
-            plate_reconstruction_args[1] = state["topology_features"]
-        if "static_polygons" in state:
-            plate_reconstruction_args[2] = state["static_polygons"]
-
-        self.plate_reconstruction = _PlateReconstruction(*plate_reconstruction_args)
-
-        self._coastlines = None
-        self._continents = None
-        self._COBs = None
-        self.coastlines = None
-        self.continents = None
-        self.COBs = None
-
-        # reinstate unpicklable items
-        if "coastlines" in state:
-            self._coastlines = _FeatureCollection()
-            for feature in state["coastlines"]:
-                self._coastlines.add(_FeatureCollection(feature))
-
-        if "continents" in state:
-            self._continents = _FeatureCollection()
-            for feature in state["continents"]:
-                self._continents.add(_FeatureCollection(feature))
-
-        if "COBs" in state:
-            self._COBs = _FeatureCollection()
-            for feature in state["COBs"]:
-                self._COBs.add(_FeatureCollection(feature))
-
-        self._anchor_plate_id = state["plate_id"]
+        self.__dict__.update(state)
+        # Not sure if a 'cartopy.crs' can be pickled?
+        #
+        # TODO: If it can be pickled then remove __getstate__() and __setstate__() altogether.
         self.base_projection = DEFAULT_CARTOPY_PROJECTION
-        self._time = None
 
     @property
     def topological_plate_boundaries(self):
