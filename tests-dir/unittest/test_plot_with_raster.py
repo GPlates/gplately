@@ -15,6 +15,8 @@ def main(show=True):
     # Call GPlately's PlateModelManager object and request data from the Müller et al. 2019 study
     pm_manager = PlateModelManager()
     muller2019_model = pm_manager.get_model("Muller2019", data_dir=MODEL_REPO_DIR)
+    if not muller2019_model:
+        raise Exception("Failed to get reconstruction model!")
     rotation_model = muller2019_model.get_rotation_model()
     topology_features = muller2019_model.get_topologies()
     static_polygons = muller2019_model.get_static_polygons()

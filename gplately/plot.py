@@ -789,7 +789,7 @@ class PlotTopologies(object):
             )
 
         if len(gdf) == 0:
-            logger.warning("No feature found for plotting. Do nothing and return.")
+            logger.debug("No feature found for plotting. Do nothing and return.")
             return ax
 
         self._plot_engine.plot_geo_data_frame(ax, gdf, **kwargs)
