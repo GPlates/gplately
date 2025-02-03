@@ -5684,6 +5684,8 @@ boundaries and passive continental boundaries.</dd>
         self.COBs = None
         self._topological_plate_boundaries = None
         self._topologies = None
+        self._ridges = []
+        self._transforms = []
 
         self._anchor_plate_id = self._check_anchor_plate_id(anchor_plate_id)
         self._plot_engine = plot_engine
@@ -5757,6 +5759,34 @@ boundaries and passive continental boundaries.</dd>
         return self._topologies
 
     @property
+    def ridges(self):
+        &#34;&#34;&#34;
+        Mid-ocean ridge features (all the features which are labelled as gpml:MidOceanRidge in the model).
+        &#34;&#34;&#34;
+        logger.debug(
+            &#34;The &#39;ridges&#39; property has been changed since GPlately 1.3.0. &#34;
+            &#34;You need to check your workflow to make sure the new &#39;ridges&#39; property still suits your purpose. &#34;
+            &#34;In earlier releases of GPlately, we used an algorithm to identify the &#39;ridges&#39; and &#39;transforms&#39; within the gpml:MidOceanRidge features. &#34;
+            &#34;Unfortunately, the algorithm did not work very well. So we have removed the algorithm and now the &#39;ridges&#39; property contains all the features &#34;
+            &#34;which are labelled as gpml:MidOceanRidge in the reconstruction model.&#34;
+        )  # use logger.debug to make the message less aggressive
+        return self._ridges
+
+    @property
+    def transforms(self):
+        &#34;&#34;&#34;
+        Transform boundary features (all the features which are labelled as gpml:Transform in the model).
+        &#34;&#34;&#34;
+        logger.debug(
+            &#34;The &#39;transforms&#39; property has been changed since GPlately 1.3.0. &#34;
+            &#34;You need to check your workflow to make sure the new &#39;transforms&#39; property still suits your purpose. &#34;
+            &#34;In earlier releases of GPlately, we used an algorithm to identify the &#39;ridges&#39; and &#39;transforms&#39; within the gpml:MidOceanRidge features. &#34;
+            &#34;Unfortunately, the algorithm did not work very well. So we have removed the algorithm and now the &#39;transforms&#39; property contains all the features &#34;
+            &#34;which are labelled as gpml:Transform in the reconstruction model.&#34;
+        )  # use logger.debug to make the message less aggressive
+        return self._transforms
+
+    @property
     def time(self):
         &#34;&#34;&#34;The reconstruction time.&#34;&#34;&#34;
         return self._time
@@ -5795,6 +5825,29 @@ boundaries and passive continental boundaries.</dd>
             raise ValueError(&#34;Invalid anchor plate ID: {}&#34;.format(id))
         return id
 
+    @property
+    def ridge_transforms(self):
+        &#34;&#34;&#34;
+        Deprecated! DO NOT USE!
+        &#34;&#34;&#34;
+
+        warnings.warn(
+            &#34;Deprecated! DO NOT USE!&#34;
+            &#34;The &#39;ridge_transforms&#39; property will be removed in the future GPlately releases. &#34;
+            &#34;Update your workflow to use the &#39;ridges&#39; and &#39;transforms&#39; properties instead, &#34;
+            &#34;otherwise your workflow will not work with the future GPlately releases.&#34;,
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        logger.debug(
+            &#34;The &#39;ridge_transforms&#39; property has been changed since GPlately 1.3.0. &#34;
+            &#34;You need to check your workflow to make sure the new &#39;ridge_transforms&#39; property still suits your purpose. &#34;
+            &#34;In earlier releases of GPlately, the &#39;ridge_transforms&#39; property contains only the features &#34;
+            &#34;which are labelled as gpml:MidOceanRidge in the reconstruction model. &#34;
+            &#34;Now, the &#39;ridge_transforms&#39; property contains both gpml:Transform and gpml:MidOceanRidge features.&#34;
+        )
+        return self._ridges + self._transforms
+
     def update_time(self, time):
         &#34;&#34;&#34;Re-reconstruct features and topologies to the time specified by the `PlotTopologies` `time` attribute
         whenever it or the anchor plate is updated.
@@ -5820,8 +5873,8 @@ boundaries and passive continental boundaries.</dd>
         self._time = float(time)
         (
             self._topological_plate_boundaries,
-            self.ridges,
-            self._ridges_do_not_use_for_now,
+            self._ridges,
+            self._ridges_do_not_use_for_now,  # the algorithm to separate ridges and transforms has not been ready yet
             self._transforms_do_not_use_for_now,
             self.trenches,
             self.trench_left,
@@ -5851,7 +5904,6 @@ boundaries and passive continental boundaries.</dd>
         self.extended_continental_crusts = []
         self.passive_continental_boundaries = []
         self.slab_edges = []
-        self.transforms = []
         self.unclassified_features = []
 
         for topol in self.other:
@@ -5908,7 +5960,7 @@ boundaries and passive continental boundaries.</dd>
                 self.slab_edges.append(topol)
 
             elif topol.get_feature_type() == pygplates.FeatureType.gpml_transform:  # type: ignore
-                self.transforms.append(topol)
+                self._transforms.append(topol)
 
             elif (
                 topol.get_feature_type()
@@ -6094,7 +6146,7 @@ boundaries and passive continental boundaries.</dd>
             )
 
         if len(gdf) == 0:
-            logger.warning(&#34;No feature found for plotting. Do nothing and return.&#34;)
+            logger.debug(&#34;No feature found for plotting. Do nothing and return.&#34;)
             return ax
 
         self._plot_engine.plot_geo_data_frame(ax, gdf, **kwargs)
@@ -6202,7 +6254,15 @@ boundaries and passive continental boundaries.</dd>
         central_meridian=0.0,
         tessellate_degrees=1,
     ):
-        &#34;&#34;&#34;Create a geopandas.GeoDataFrame object containing geometries of reconstructed mid-ocean ridge lines(gpml:MidOceanRidge).&#34;&#34;&#34;
+        &#34;&#34;&#34;Create a geopandas.GeoDataFrame object containing the geometries of reconstructed mid-ocean ridge lines (gpml:MidOceanRidge).&#34;&#34;&#34;
+        logger.debug(
+            &#34;The &#39;get_ridges&#39; function has been changed since GPlately 1.3.0. &#34;
+            &#34;You need to check your workflow to make sure the new &#39;get_ridges&#39; function still suits your purpose. &#34;
+            &#34;In earlier releases of GPlately, we used an algorithm to identify the &#39;ridges&#39; and &#39;transforms&#39; within the gpml:MidOceanRidge features. &#34;
+            &#34;Unfortunately, the algorithm did not work very well. So we have removed the algorithm and now the &#39;get_ridges&#39; function returns all the features &#34;
+            &#34;which are labelled as gpml:MidOceanRidge in the reconstruction model.&#34;
+        )  # use logger.debug to make the message less aggressive
+
         return self.get_feature(
             self.ridges,
             central_meridian=central_meridian,
@@ -6230,9 +6290,18 @@ boundaries and passive continental boundaries.</dd>
         Point features near the poles (-89 &amp; 89 degree latitude) are also clipped to ensure
         compatibility with Cartopy.
         &#34;&#34;&#34;
+
+        logger.debug(
+            &#34;The &#39;plot_ridges&#39; function has been changed since GPlately 1.3.0. &#34;
+            &#34;You need to check your workflow to make sure the new &#39;plot_ridges&#39; function still suits your purpose. &#34;
+            &#34;In earlier releases of GPlately, we used an algorithm to identify the &#39;ridges&#39; and &#39;transforms&#39; within the gpml:MidOceanRidge features. &#34;
+            &#34;Unfortunately, the algorithm did not work very well. So we have removed the algorithm and now the &#39;plot_ridges&#39; function plots all the features &#34;
+            &#34;which are labelled as gpml:MidOceanRidge in the reconstruction model.&#34;
+        )  # use logger.debug to make the message less aggressive
+
         return self.plot_feature(
             ax,
-            self.ridges,
+            self._ridges,
             feature_name=&#34;ridges&#34;,
             facecolor=&#34;none&#34;,
             edgecolor=color,
@@ -6245,6 +6314,32 @@ boundaries and passive continental boundaries.</dd>
         &#34;&#34;&#34;Create a geopandas.GeoDataFrame object containing geometries of reconstructed trench lines.&#34;&#34;&#34;
         return self.get_feature(
             self.trenches,
+            central_meridian=central_meridian,
+            tessellate_degrees=tessellate_degrees,
+        )
+
+    @validate_reconstruction_time
+    def get_ridges_and_transforms(self, central_meridian=0.0, tessellate_degrees=1):
+        &#34;&#34;&#34;
+        Deprecated! DO NOT USE.
+        &#34;&#34;&#34;
+        warnings.warn(
+            &#34;Deprecated! The &#39;get_ridges_and_transforms&#39; function will be removed in the future GPlately releases. &#34;
+            &#34;Update your workflow to use the &#39;get_ridges&#39; and &#39;get_transforms&#39; functions instead, &#34;
+            &#34;otherwise your workflow will not work with the future GPlately releases.&#34;,
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        logger.debug(
+            &#34;The &#39;get_ridges_and_transforms&#39; function has been changed since GPlately 1.3.0. &#34;
+            &#34;You need to check your workflow to make sure the new &#39;get_ridges_and_transforms&#39; function still suits your purpose. &#34;
+            &#34;In earlier releases of GPlately, we used an algorithm to identify the &#39;ridges&#39; and &#39;transforms&#39; within the gpml:MidOceanRidge features. &#34;
+            &#34;Unfortunately, the algorithm did not work very well. So we have removed the algorithm and now the &#39;get_ridges_and_transforms&#39; function returns all the features &#34;
+            &#34;which are labelled as gpml:MidOceanRidge or gpml:Transform in the reconstruction model.&#34;
+        )  # use logger.debug to make the message less aggressive
+
+        return self.get_feature(
+            self._ridges + self._transforms,
             central_meridian=central_meridian,
             tessellate_degrees=tessellate_degrees,
         )
@@ -7079,8 +7174,16 @@ boundaries and passive continental boundaries.</dd>
         tessellate_degrees=None,
     ):
         &#34;&#34;&#34;Create a geopandas.GeoDataFrame object containing geometries of reconstructed transform lines(gpml:Transform).&#34;&#34;&#34;
+        logger.debug(
+            &#34;The &#39;get_transforms&#39; function has been changed since GPlately 1.3.0. &#34;
+            &#34;You need to check your workflow to make sure the new &#39;get_transforms&#39; function still suits your purpose. &#34;
+            &#34;In earlier releases of GPlately, we used an algorithm to identify the &#39;ridges&#39; and &#39;transforms&#39; within the gpml:MidOceanRidge features. &#34;
+            &#34;Unfortunately, the algorithm did not work very well. So we have removed the algorithm and now the &#39;get_transforms&#39; function returns all the features &#34;
+            &#34;which are labelled as gpml:Transform in the reconstruction model.&#34;
+        )  # use logger.debug to make the message less aggressive
+
         return self.get_feature(
-            self.transforms,
+            self._transforms,
             central_meridian=central_meridian,
             tessellate_degrees=tessellate_degrees,
         )
@@ -7088,13 +7191,44 @@ boundaries and passive continental boundaries.</dd>
     @append_docstring(PLOT_DOCSTRING.format(&#34;transforms&#34;))
     def plot_transforms(self, ax, color=&#34;black&#34;, **kwargs):
         &#34;&#34;&#34;Plot transform boundaries(gpml:Transform) onto a map.&#34;&#34;&#34;
+
+        logger.debug(
+            &#34;The &#39;plot_transforms&#39; function has been changed since GPlately 1.3.0. &#34;
+            &#34;You need to check your workflow to make sure the new &#39;plot_transforms&#39; function still suits your purpose. &#34;
+            &#34;In earlier releases of GPlately, we used an algorithm to identify the &#39;ridges&#39; and &#39;transforms&#39; within the gpml:MidOceanRidge features. &#34;
+            &#34;Unfortunately, the algorithm did not work very well. So we have removed the algorithm and now the &#39;plot_transforms&#39; function plots all the features &#34;
+            &#34;which are labelled as gpml:Transform in the reconstruction model.&#34;
+        )  # use logger.debug to make the message less aggressive
+
         return self.plot_feature(
             ax,
-            self.transforms,
+            self._transforms,
             feature_name=&#34;transforms&#34;,
             edgecolor=color,
             **kwargs,
         )
+
+    def plot_ridges_and_transforms(self, ax, color=&#34;black&#34;, **kwargs):
+        &#34;&#34;&#34;
+        Deprecated! DO NOT USE!
+        &#34;&#34;&#34;
+        warnings.warn(
+            &#34;Deprecated! The &#39;plot_ridges_and_transforms&#39; function will be removed in the future GPlately releases. &#34;
+            &#34;Update your workflow to use the &#39;plot_ridges&#39; and &#39;plot_transforms&#39; functions instead, &#34;
+            &#34;otherwise your workflow will not work with the future GPlately releases.&#34;,
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        logger.debug(
+            &#34;The &#39;plot_ridges_and_transforms&#39; function has been changed since GPlately 1.3.0. &#34;
+            &#34;You need to check your workflow to make sure the new &#39;plot_ridges_and_transforms&#39; function still suits your purpose. &#34;
+            &#34;In earlier releases of GPlately, we used an algorithm to identify the &#39;ridges&#39; and &#39;transforms&#39; within the gpml:MidOceanRidge features. &#34;
+            &#34;Unfortunately, the algorithm did not work very well. So we have removed the algorithm and now the &#39;plot_ridges_and_transforms&#39; function plots all the features &#34;
+            &#34;which are labelled as gpml:Transform or gpml:MidOceanRidge in the reconstruction model.&#34;
+        )  # use logger.debug to make the message less aggressive
+
+        self.plot_ridges(ax, color=color, **kwargs)
+        self.plot_transforms(ax, color=color, **kwargs)
 
     @validate_reconstruction_time
     @append_docstring(GET_DATE_DOCSTRING.format(&#34;unclassified features&#34;))
@@ -7283,6 +7417,52 @@ boundaries and passive continental boundaries.</dd>
             feature_name=&#34;topological plate boundaries&#34;,
             color=color,
             **kwargs,
+        )
+
+    @property
+    def misc_transforms(self):
+        &#34;&#34;&#34;
+        Deprecated! DO NOT USE.
+        &#34;&#34;&#34;
+        warnings.warn(
+            &#34;Deprecated! The &#39;misc_transforms&#39; property will be removed in the future GPlately releases. &#34;
+            &#34;Update your workflow to use the &#39;transforms&#39; property instead, &#34;
+            &#34;otherwise your workflow will not work with the future GPlately releases.&#34;,
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        return self._transforms
+
+    def plot_misc_transforms(self, ax, color=&#34;black&#34;, **kwargs):
+        &#34;&#34;&#34;
+        Deprecated! DO NOT USE.
+        &#34;&#34;&#34;
+        warnings.warn(
+            &#34;Deprecated! The &#39;plot_misc_transforms&#39; function will be removed in the future GPlately releases. &#34;
+            &#34;Update your workflow to use the &#39;plot_transforms&#39; function instead, &#34;
+            &#34;otherwise your workflow will not work with the future GPlately releases.&#34;,
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        self.plot_transforms(ax=ax, color=color, **kwargs)
+
+    def get_misc_transforms(
+        self,
+        central_meridian=0.0,
+        tessellate_degrees=None,
+    ):
+        &#34;&#34;&#34;
+        Deprecated! DO NOT USE.
+        &#34;&#34;&#34;
+        warnings.warn(
+            &#34;Deprecated! The &#39;get_misc_transforms&#39; function will be removed in the future GPlately releases. &#34;
+            &#34;Update your workflow to use the &#39;get_transforms&#39; function instead, &#34;
+            &#34;otherwise your workflow will not work with the future GPlately releases.&#34;,
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        return self.get_transforms(
+            central_meridian=central_meridian, tessellate_degrees=tessellate_degrees
         )</code></pre>
 </details>
 <h3>Instance variables</h3>
@@ -7298,6 +7478,81 @@ boundaries and passive continental boundaries.</dd>
 def anchor_plate_id(self):
     &#34;&#34;&#34;Anchor plate ID for reconstruction. Must be an integer &gt;= 0.&#34;&#34;&#34;
     return self._anchor_plate_id</code></pre>
+</details>
+</dd>
+<dt id="gplately.PlotTopologies.misc_transforms"><code class="name">prop <span class="ident">misc_transforms</span></code></dt>
+<dd>
+<div class="desc"><p>Deprecated! DO NOT USE.</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def misc_transforms(self):
+    &#34;&#34;&#34;
+    Deprecated! DO NOT USE.
+    &#34;&#34;&#34;
+    warnings.warn(
+        &#34;Deprecated! The &#39;misc_transforms&#39; property will be removed in the future GPlately releases. &#34;
+        &#34;Update your workflow to use the &#39;transforms&#39; property instead, &#34;
+        &#34;otherwise your workflow will not work with the future GPlately releases.&#34;,
+        DeprecationWarning,
+        stacklevel=2,
+    )
+    return self._transforms</code></pre>
+</details>
+</dd>
+<dt id="gplately.PlotTopologies.ridge_transforms"><code class="name">prop <span class="ident">ridge_transforms</span></code></dt>
+<dd>
+<div class="desc"><p>Deprecated! DO NOT USE!</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def ridge_transforms(self):
+    &#34;&#34;&#34;
+    Deprecated! DO NOT USE!
+    &#34;&#34;&#34;
+
+    warnings.warn(
+        &#34;Deprecated! DO NOT USE!&#34;
+        &#34;The &#39;ridge_transforms&#39; property will be removed in the future GPlately releases. &#34;
+        &#34;Update your workflow to use the &#39;ridges&#39; and &#39;transforms&#39; properties instead, &#34;
+        &#34;otherwise your workflow will not work with the future GPlately releases.&#34;,
+        DeprecationWarning,
+        stacklevel=2,
+    )
+    logger.debug(
+        &#34;The &#39;ridge_transforms&#39; property has been changed since GPlately 1.3.0. &#34;
+        &#34;You need to check your workflow to make sure the new &#39;ridge_transforms&#39; property still suits your purpose. &#34;
+        &#34;In earlier releases of GPlately, the &#39;ridge_transforms&#39; property contains only the features &#34;
+        &#34;which are labelled as gpml:MidOceanRidge in the reconstruction model. &#34;
+        &#34;Now, the &#39;ridge_transforms&#39; property contains both gpml:Transform and gpml:MidOceanRidge features.&#34;
+    )
+    return self._ridges + self._transforms</code></pre>
+</details>
+</dd>
+<dt id="gplately.PlotTopologies.ridges"><code class="name">prop <span class="ident">ridges</span></code></dt>
+<dd>
+<div class="desc"><p>Mid-ocean ridge features (all the features which are labelled as gpml:MidOceanRidge in the model).</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def ridges(self):
+    &#34;&#34;&#34;
+    Mid-ocean ridge features (all the features which are labelled as gpml:MidOceanRidge in the model).
+    &#34;&#34;&#34;
+    logger.debug(
+        &#34;The &#39;ridges&#39; property has been changed since GPlately 1.3.0. &#34;
+        &#34;You need to check your workflow to make sure the new &#39;ridges&#39; property still suits your purpose. &#34;
+        &#34;In earlier releases of GPlately, we used an algorithm to identify the &#39;ridges&#39; and &#39;transforms&#39; within the gpml:MidOceanRidge features. &#34;
+        &#34;Unfortunately, the algorithm did not work very well. So we have removed the algorithm and now the &#39;ridges&#39; property contains all the features &#34;
+        &#34;which are labelled as gpml:MidOceanRidge in the reconstruction model.&#34;
+    )  # use logger.debug to make the message less aggressive
+    return self._ridges</code></pre>
 </details>
 </dd>
 <dt id="gplately.PlotTopologies.time"><code class="name">prop <span class="ident">time</span></code></dt>
@@ -7338,6 +7593,28 @@ def topological_plate_boundaries(self):
 def topologies(self):
     self._resolve_both_boundaries_and_networks()
     return self._topologies</code></pre>
+</details>
+</dd>
+<dt id="gplately.PlotTopologies.transforms"><code class="name">prop <span class="ident">transforms</span></code></dt>
+<dd>
+<div class="desc"><p>Transform boundary features (all the features which are labelled as gpml:Transform in the model).</p></div>
+<details class="source">
+<summary>
+<span>Expand source code</span>
+</summary>
+<pre><code class="python">@property
+def transforms(self):
+    &#34;&#34;&#34;
+    Transform boundary features (all the features which are labelled as gpml:Transform in the model).
+    &#34;&#34;&#34;
+    logger.debug(
+        &#34;The &#39;transforms&#39; property has been changed since GPlately 1.3.0. &#34;
+        &#34;You need to check your workflow to make sure the new &#39;transforms&#39; property still suits your purpose. &#34;
+        &#34;In earlier releases of GPlately, we used an algorithm to identify the &#39;ridges&#39; and &#39;transforms&#39; within the gpml:MidOceanRidge features. &#34;
+        &#34;Unfortunately, the algorithm did not work very well. So we have removed the algorithm and now the &#39;transforms&#39; property contains all the features &#34;
+        &#34;which are labelled as gpml:Transform in the reconstruction model.&#34;
+    )  # use logger.debug to make the message less aggressive
+    return self._transforms</code></pre>
 </details>
 </dd>
 </dl>
@@ -7843,6 +8120,12 @@ gplot.time = time
 are reconstructed, they are converted into Shapely lines whose
 coordinates are passed to a geopandas GeoDataFrame.</p></div>
 </dd>
+<dt id="gplately.PlotTopologies.get_misc_transforms"><code class="name flex">
+<span>def <span class="ident">get_misc_transforms</span></span>(<span>self, central_meridian=0.0, tessellate_degrees=None)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Deprecated! DO NOT USE.</p></div>
+</dd>
 <dt id="gplately.PlotTopologies.get_orogenic_belts"><code class="name flex">
 <span>def <span class="ident">get_orogenic_belts</span></span>(<span>self, central_meridian=0.0, tessellate_degrees=None)</span>
 </code></dt>
@@ -7927,7 +8210,7 @@ coordinates are passed to a geopandas GeoDataFrame.</p></div>
 <span>def <span class="ident">get_ridges</span></span>(<span>self, central_meridian=0.0, tessellate_degrees=1)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Create a geopandas.GeoDataFrame object containing geometries of reconstructed mid-ocean ridge lines(gpml:MidOceanRidge).</p>
+<div class="desc"><p>Create a geopandas.GeoDataFrame object containing the geometries of reconstructed mid-ocean ridge lines (gpml:MidOceanRidge).</p>
 <h2 id="parameters">Parameters</h2>
 <dl>
 <dt><strong><code>central_meridian</code></strong> :&ensp;<code>float</code></dt>
@@ -7962,6 +8245,12 @@ gplot.time = time
 <p>&hellip;after which this function can be re-run. Once the <code>ridges</code>
 are reconstructed, they are converted into Shapely lines whose
 coordinates are passed to a geopandas GeoDataFrame.</p></div>
+</dd>
+<dt id="gplately.PlotTopologies.get_ridges_and_transforms"><code class="name flex">
+<span>def <span class="ident">get_ridges_and_transforms</span></span>(<span>self, central_meridian=0.0, tessellate_degrees=1)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Deprecated! DO NOT USE.</p></div>
 </dd>
 <dt id="gplately.PlotTopologies.get_slab_edges"><code class="name flex">
 <span>def <span class="ident">get_slab_edges</span></span>(<span>self, central_meridian=0.0, tessellate_degrees=None)</span>
@@ -8708,6 +8997,12 @@ See <code>Matplotlib</code> keyword arguments <a href="https://matplotlib.org/st
 with <code>other</code> features plotted onto the chosen map projection.</dd>
 </dl></div>
 </dd>
+<dt id="gplately.PlotTopologies.plot_misc_transforms"><code class="name flex">
+<span>def <span class="ident">plot_misc_transforms</span></span>(<span>self, ax, color='black', **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Deprecated! DO NOT USE.</p></div>
+</dd>
 <dt id="gplately.PlotTopologies.plot_orogenic_belts"><code class="name flex">
 <span>def <span class="ident">plot_orogenic_belts</span></span>(<span>self, ax, color='black', **kwargs)</span>
 </code></dt>
@@ -8883,6 +9178,12 @@ See <code>Matplotlib</code> keyword arguments <a href="https://matplotlib.org/st
 <dd>A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map
 with <code>ridges</code> features plotted onto the chosen map projection.</dd>
 </dl></div>
+</dd>
+<dt id="gplately.PlotTopologies.plot_ridges_and_transforms"><code class="name flex">
+<span>def <span class="ident">plot_ridges_and_transforms</span></span>(<span>self, ax, color='black', **kwargs)</span>
+</code></dt>
+<dd>
+<div class="desc"><p>Deprecated! DO NOT USE!</p></div>
 </dd>
 <dt id="gplately.PlotTopologies.plot_slab_edges"><code class="name flex">
 <span>def <span class="ident">plot_slab_edges</span></span>(<span>self, ax, color='black', **kwargs)</span>
@@ -13889,9 +14190,11 @@ other general z-values are saved to a gridding input file (.npz).</p></div>
 <li><code><a title="gplately.PlotTopologies.get_fracture_zones" href="#gplately.PlotTopologies.get_fracture_zones">get_fracture_zones</a></code></li>
 <li><code><a title="gplately.PlotTopologies.get_inferred_paleo_boundaries" href="#gplately.PlotTopologies.get_inferred_paleo_boundaries">get_inferred_paleo_boundaries</a></code></li>
 <li><code><a title="gplately.PlotTopologies.get_misc_boundaries" href="#gplately.PlotTopologies.get_misc_boundaries">get_misc_boundaries</a></code></li>
+<li><code><a title="gplately.PlotTopologies.get_misc_transforms" href="#gplately.PlotTopologies.get_misc_transforms">get_misc_transforms</a></code></li>
 <li><code><a title="gplately.PlotTopologies.get_orogenic_belts" href="#gplately.PlotTopologies.get_orogenic_belts">get_orogenic_belts</a></code></li>
 <li><code><a title="gplately.PlotTopologies.get_passive_continental_boundaries" href="#gplately.PlotTopologies.get_passive_continental_boundaries">get_passive_continental_boundaries</a></code></li>
 <li><code><a title="gplately.PlotTopologies.get_ridges" href="#gplately.PlotTopologies.get_ridges">get_ridges</a></code></li>
+<li><code><a title="gplately.PlotTopologies.get_ridges_and_transforms" href="#gplately.PlotTopologies.get_ridges_and_transforms">get_ridges_and_transforms</a></code></li>
 <li><code><a title="gplately.PlotTopologies.get_slab_edges" href="#gplately.PlotTopologies.get_slab_edges">get_slab_edges</a></code></li>
 <li><code><a title="gplately.PlotTopologies.get_subduction_direction" href="#gplately.PlotTopologies.get_subduction_direction">get_subduction_direction</a></code></li>
 <li><code><a title="gplately.PlotTopologies.get_sutures" href="#gplately.PlotTopologies.get_sutures">get_sutures</a></code></li>
@@ -13901,6 +14204,7 @@ other general z-values are saved to a gridding input file (.npz).</p></div>
 <li><code><a title="gplately.PlotTopologies.get_transitional_crusts" href="#gplately.PlotTopologies.get_transitional_crusts">get_transitional_crusts</a></code></li>
 <li><code><a title="gplately.PlotTopologies.get_trenches" href="#gplately.PlotTopologies.get_trenches">get_trenches</a></code></li>
 <li><code><a title="gplately.PlotTopologies.get_unclassified_features" href="#gplately.PlotTopologies.get_unclassified_features">get_unclassified_features</a></code></li>
+<li><code><a title="gplately.PlotTopologies.misc_transforms" href="#gplately.PlotTopologies.misc_transforms">misc_transforms</a></code></li>
 <li><code><a title="gplately.PlotTopologies.plot_all_topological_sections" href="#gplately.PlotTopologies.plot_all_topological_sections">plot_all_topological_sections</a></code></li>
 <li><code><a title="gplately.PlotTopologies.plot_all_topologies" href="#gplately.PlotTopologies.plot_all_topologies">plot_all_topologies</a></code></li>
 <li><code><a title="gplately.PlotTopologies.plot_coastlines" href="#gplately.PlotTopologies.plot_coastlines">plot_coastlines</a></code></li>
@@ -13916,6 +14220,7 @@ other general z-values are saved to a gridding input file (.npz).</p></div>
 <li><code><a title="gplately.PlotTopologies.plot_grid_from_netCDF" href="#gplately.PlotTopologies.plot_grid_from_netCDF">plot_grid_from_netCDF</a></code></li>
 <li><code><a title="gplately.PlotTopologies.plot_inferred_paleo_boundaries" href="#gplately.PlotTopologies.plot_inferred_paleo_boundaries">plot_inferred_paleo_boundaries</a></code></li>
 <li><code><a title="gplately.PlotTopologies.plot_misc_boundaries" href="#gplately.PlotTopologies.plot_misc_boundaries">plot_misc_boundaries</a></code></li>
+<li><code><a title="gplately.PlotTopologies.plot_misc_transforms" href="#gplately.PlotTopologies.plot_misc_transforms">plot_misc_transforms</a></code></li>
 <li><code><a title="gplately.PlotTopologies.plot_orogenic_belts" href="#gplately.PlotTopologies.plot_orogenic_belts">plot_orogenic_belts</a></code></li>
 <li><code><a title="gplately.PlotTopologies.plot_passive_continental_boundaries" href="#gplately.PlotTopologies.plot_passive_continental_boundaries">plot_passive_continental_boundaries</a></code></li>
 <li><code><a title="gplately.PlotTopologies.plot_plate_id" href="#gplately.PlotTopologies.plot_plate_id">plot_plate_id</a></code></li>
@@ -13923,6 +14228,7 @@ other general z-values are saved to a gridding input file (.npz).</p></div>
 <li><code><a title="gplately.PlotTopologies.plot_plate_polygon_by_id" href="#gplately.PlotTopologies.plot_plate_polygon_by_id">plot_plate_polygon_by_id</a></code></li>
 <li><code><a title="gplately.PlotTopologies.plot_pole" href="#gplately.PlotTopologies.plot_pole">plot_pole</a></code></li>
 <li><code><a title="gplately.PlotTopologies.plot_ridges" href="#gplately.PlotTopologies.plot_ridges">plot_ridges</a></code></li>
+<li><code><a title="gplately.PlotTopologies.plot_ridges_and_transforms" href="#gplately.PlotTopologies.plot_ridges_and_transforms">plot_ridges_and_transforms</a></code></li>
 <li><code><a title="gplately.PlotTopologies.plot_slab_edges" href="#gplately.PlotTopologies.plot_slab_edges">plot_slab_edges</a></code></li>
 <li><code><a title="gplately.PlotTopologies.plot_subduction_teeth" href="#gplately.PlotTopologies.plot_subduction_teeth">plot_subduction_teeth</a></code></li>
 <li><code><a title="gplately.PlotTopologies.plot_subduction_teeth_deprecated" href="#gplately.PlotTopologies.plot_subduction_teeth_deprecated">plot_subduction_teeth_deprecated</a></code></li>
@@ -13933,9 +14239,12 @@ other general z-values are saved to a gridding input file (.npz).</p></div>
 <li><code><a title="gplately.PlotTopologies.plot_transitional_crusts" href="#gplately.PlotTopologies.plot_transitional_crusts">plot_transitional_crusts</a></code></li>
 <li><code><a title="gplately.PlotTopologies.plot_trenches" href="#gplately.PlotTopologies.plot_trenches">plot_trenches</a></code></li>
 <li><code><a title="gplately.PlotTopologies.plot_unclassified_features" href="#gplately.PlotTopologies.plot_unclassified_features">plot_unclassified_features</a></code></li>
+<li><code><a title="gplately.PlotTopologies.ridge_transforms" href="#gplately.PlotTopologies.ridge_transforms">ridge_transforms</a></code></li>
+<li><code><a title="gplately.PlotTopologies.ridges" href="#gplately.PlotTopologies.ridges">ridges</a></code></li>
 <li><code><a title="gplately.PlotTopologies.time" href="#gplately.PlotTopologies.time">time</a></code></li>
 <li><code><a title="gplately.PlotTopologies.topological_plate_boundaries" href="#gplately.PlotTopologies.topological_plate_boundaries">topological_plate_boundaries</a></code></li>
 <li><code><a title="gplately.PlotTopologies.topologies" href="#gplately.PlotTopologies.topologies">topologies</a></code></li>
+<li><code><a title="gplately.PlotTopologies.transforms" href="#gplately.PlotTopologies.transforms">transforms</a></code></li>
 <li><code><a title="gplately.PlotTopologies.update_time" href="#gplately.PlotTopologies.update_time">update_time</a></code></li>
 </ul>
 </li>
