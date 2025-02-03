@@ -48,9 +48,6 @@ from pooch import utils as _utils
 import gplately as _gplately
 from gplately.data import DataCollection
 
-from .pygplates import FeatureCollection as _FeatureCollection
-from .pygplates import RotationModel as _RotationModel
-
 from plate_model_manager import PlateModelManager, PresentDayRasterManager
 import numpy as np
 
@@ -1067,14 +1064,14 @@ def get_feature_data(feature_data_id_string=None, verbose=True):
             "{} are not in GPlately's DataServer.".format(feature_data_id_string)
         )
 
-    feat_data = _FeatureCollection()
+    feat_data = _pygplates.FeatureCollection()
     if len(feature_data_filenames) == 1:
-        feat_data.add(_FeatureCollection(feature_data_filenames[0]))
+        feat_data.add(_pygplates.FeatureCollection(feature_data_filenames[0]))
         return feat_data
     else:
         feat_data = []
         for file in feature_data_filenames:
-            feat_data.append(_FeatureCollection(file))
+            feat_data.append(_pygplates.FeatureCollection(file))
         return feat_data
 
 
@@ -1168,15 +1165,17 @@ class DataServer(object):
         self._COBs = None
 
     def _create_feature_collection(self, file_list):
-        feature_collection = _FeatureCollection()
+        feature_collection = _pygplates.FeatureCollection()
         for feature in file_list:
-            feature_collection.add(_FeatureCollection(feature))
+            feature_collection.add(_pygplates.FeatureCollection(feature))
         return feature_collection
 
     @property
     def rotation_model(self):
         if self._rotation_model is None and self.pmm:
-            self._rotation_model = _RotationModel(self.pmm.get_rotation_model())
+            self._rotation_model = _pygplates.RotationModel(
+                self.pmm.get_rotation_model()
+            )
             self._rotation_model.reconstruction_identifier = self.file_collection
         return self._rotation_model
 
@@ -1747,12 +1746,12 @@ class DataServer(object):
                 "{} are not in GPlately's DataServer.".format(feature_data_id_string)
             )
 
-        feat_data = _FeatureCollection()
+        feat_data = _pygplates.FeatureCollection()
         if len(feature_data_filenames) == 1:
-            feat_data.add(_FeatureCollection(feature_data_filenames[0]))
+            feat_data.add(_pygplates.FeatureCollection(feature_data_filenames[0]))
             return feat_data
         else:
             feat_data = []
             for file in feature_data_filenames:
-                feat_data.append(_FeatureCollection(file))
+                feat_data.append(_pygplates.FeatureCollection(file))
             return feat_data
