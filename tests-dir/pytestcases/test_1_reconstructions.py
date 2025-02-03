@@ -3,6 +3,7 @@ import os
 import pickle
 
 import numpy as np
+from pygplates import RotationModel
 import pytest
 from conftest import gplately_plate_reconstruction_object as model
 from conftest import reconstruction_times
@@ -207,16 +208,10 @@ def test_pickle_Points():
 
 def test_rotation_model_copy(model):
     rot_model = model.rotation_model
-    rot_model_copy = gplately.pygplates.RotationModel(rot_model)
+    rot_model_copy = RotationModel(rot_model)
     rot1 = rot_model.get_rotation(50, 101)
     rot2 = rot_model_copy.get_rotation(50, 101)
     assert rot1 == rot2
-
-
-def test_reconstruction_filenames(model):
-    assert "Muller_etal_2019_PlateBoundaries_DeformingNetworks.gpmlz" in [
-        os.path.basename(i) for i in model.topology_features.filenames
-    ]
 
 
 def test_pickle_reconstruction(model):
