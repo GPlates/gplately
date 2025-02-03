@@ -26,16 +26,24 @@ def tesselate_triangles(
 
     Parameters
     ----------
-        shapefilename  : str  path to shapefile
-        tesselation_radians : float
-        triangle_base_length : float  length of base
-        triangle_aspect : float  aspect ratio
-            Setting triangle_aspect to -1 reverses the tooth direction
+    shapefilename: str
+        path to shapefile
+
+    tesselation_radians: float
+        tesselation radians
+
+    triangle_base_length: float
+        length of base
+
+    triangle_aspect: float
+        aspect ratio, setting triangle_aspect to -1 reverses the tooth direction
 
     Returns
     -------
-        X_points : (n,3) array of triangle x points
-        Y_points : (n,3) array of triangle y points
+    X_points : (n,3)
+        array of triangle x points
+    Y_points : (n,3)
+        array of triangle y points
     """
 
     import shapefile

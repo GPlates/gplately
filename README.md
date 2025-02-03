@@ -7,7 +7,9 @@
 </p>
 
 ![PyPI](https://img.shields.io/pypi/v/gplately?style=for-the-badge)
+![PyPI - Downloads](https://img.shields.io/pypi/dm/gplately?style=for-the-badge)
 ![Conda (channel only)](https://img.shields.io/conda/vn/conda-forge/gplately?style=for-the-badge)
+![downloads](https://img.shields.io/conda/d/conda-forge/gplately?style=for-the-badge)
 ![GitHub Unitttest Workflow Status (with branch)](https://img.shields.io/github/actions/workflow/status/GPlates/gplately/build_and_test.yml?branch=master&style=for-the-badge&label=test)
 ![GitHub Build Doc Workflow Status (with branch)](https://img.shields.io/github/actions/workflow/status/GPlates/gplately/deploy_documentation.yaml?branch=master&style=for-the-badge&label=doc)
 ![PyPI - Python Version](https://img.shields.io/pypi/pyversions/gplately?style=for-the-badge)

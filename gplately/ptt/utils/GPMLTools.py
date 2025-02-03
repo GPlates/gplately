@@ -20,7 +20,7 @@
 
 
 """ 
-GPML Tools 
+Tools to handle GPML files. 
 """
 
 from __future__ import print_function

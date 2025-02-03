@@ -77,11 +77,11 @@ class ReconstructByTopologies(object):
 
     Currently only points are supported.
 
-    use_plate_partitioner: If True then use pygplates.PlatePartitioner to partition points,
-                           otherwise use faster points_in_polygons.find_polygons().
     """
 
     use_plate_partitioner = False
+    """If True then use pygplates.PlatePartitioner to partition points,
+                           otherwise use faster points_in_polygons.find_polygons()."""
 
     def __init__(
         self,
@@ -99,29 +99,38 @@ class ReconstructByTopologies(object):
         feature_specific_collision_parameters=None,
     ):
         """
-        rotation_features_or_model: Rotation model or feature collection(s), or list of features, or filename(s).
+        Parameters
+        ----------
+        rotation_features_or_model : Rotation model or feature collection(s), or list of features, or filename(s)
+            rotation model or feature collection(s)
 
-        topology_features: Topology feature collection(s), or list of features, or filename(s) or any combination of those.
+        topology_features: Topology feature collection(s), or list of features, or filename(s) or any combination of those
+            topology feature collection(s)
 
-        detect_collisions: Whether to test for collisions or not. Defaults to True.
+        detect_collisions: bool, default=True
+            Whether to test for collisions or not. Defaults to True.
 
-        global_collision_parameters: The collision parameters to use for any feature type not specified in 'feature_specific_collision_parameters'.
-                                     Should be a 2-tuple of (threshold velocity delta in kms/my, threshold distance to boundary per My in kms/my).
-                                     The first threshold parameter means:
-                                        A point that transitions from one plate to another can disappear if the change in velocity exceeds this threshold.
-                                     The second threshold parameter means:
-                                        Only those transitioning points exceeding the threshold velocity delta and that are close enough to a plate boundary can disappear.
-                                        The distance is proportional to the relative velocity (change in velocity), plus a constant offset based on the threshold distance to boundary
-                                        to account for plate boundaries that change shape significantly from one time step to the next
-                                        (note that some boundaries are meant to do this and others are a result of digitisation).
-                                        The actual distance threshold used is (threshold_distance_to_boundary + relative_velocity) * time_interval
-                                     Defaults to parameters used in GPlates 2.0, if not specified.
+        global_collision_parameters
+            The collision parameters to use for any feature type not specified in 'feature_specific_collision_parameters'.
+            Should be a 2-tuple of (threshold velocity delta in kms/my, threshold distance to boundary per My in kms/my).
 
-        feature_specific_collision_parameters: Optional sequence of collision parameters specific to feature types.
-                                               If specified then should be a sequence of 2-tuples, with each 2-tuple specifying (feature_type, collision_parameters).
-                                               And where each 'collision_parameters' is a 2-tuple of (threshold velocity delta in kms/my, threshold distance to boundary per My in kms/my).
-                                                   See 'global_collision_parameters' for details on these thresholds.
-                                               Any feature type not specified here defaults to using 'global_collision_parameters'.
+            The first threshold parameter means:
+                A point that transitions from one plate to another can disappear if the change in velocity exceeds this threshold.
+
+            The second threshold parameter means:
+                Only those transitioning points exceeding the threshold velocity delta and that are close enough to a plate boundary can disappear.
+
+            The distance is proportional to the relative velocity (change in velocity), plus a constant offset based on the threshold distance to boundary
+            to account for plate boundaries that change shape significantly from one time step to the next
+            (note that some boundaries are meant to do this and others are a result of digitisation).
+            The actual distance threshold used is (threshold_distance_to_boundary + relative_velocity) * time_interval
+            Defaults to parameters used in GPlates 2.0, if not specified.
+
+        feature_specific_collision_parameters: sequence of collision parameters specific to feature types, optional
+            If specified then should be a sequence of 2-tuples, with each 2-tuple specifying (feature_type, collision_parameters).
+            And where each 'collision_parameters' is a 2-tuple of (threshold velocity delta in kms/my, threshold distance to boundary per My in kms/my).
+                See 'global_collision_parameters' for details on these thresholds.
+            Any feature type not specified here defaults to using 'global_collision_parameters'.
         """
 
         # Turn rotation data into a RotationModel (if not already).
