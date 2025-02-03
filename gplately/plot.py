@@ -328,6 +328,7 @@ class PlotTopologies(object):
         self._topological_plate_boundaries = None
         self._topologies = None
         self._ridges = []
+        self._transforms = []
 
         self._anchor_plate_id = self._check_anchor_plate_id(anchor_plate_id)
         self._plot_engine = plot_engine
@@ -470,7 +471,7 @@ class PlotTopologies(object):
     @property
     def ridge_transforms(self):
         """
-        Deprecated. DO NOT USE!
+        Deprecated! DO NOT USE!
         """
 
         warnings.warn(
@@ -546,7 +547,6 @@ class PlotTopologies(object):
         self.extended_continental_crusts = []
         self.passive_continental_boundaries = []
         self.slab_edges = []
-        self._transforms = []
         self.unclassified_features = []
 
         for topol in self.other:
@@ -2060,4 +2060,50 @@ class PlotTopologies(object):
             feature_name="topological plate boundaries",
             color=color,
             **kwargs,
+        )
+
+    @property
+    def misc_transforms(self):
+        """
+        Deprecated! DO NOT USE.
+        """
+        warnings.warn(
+            "Deprecated! The 'misc_transforms' property will be removed in the future GPlately releases. "
+            "Update your workflow to use the 'transforms' property instead, "
+            "otherwise your workflow will not work with the future GPlately releases.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        return self._transforms
+
+    def plot_misc_transforms(self, ax, color="black", **kwargs):
+        """
+        Deprecated! DO NOT USE.
+        """
+        warnings.warn(
+            "Deprecated! The 'plot_misc_transforms' function will be removed in the future GPlately releases. "
+            "Update your workflow to use the 'plot_transforms' function instead, "
+            "otherwise your workflow will not work with the future GPlately releases.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        self.plot_transforms(ax=ax, color=color, **kwargs)
+
+    def get_misc_transforms(
+        self,
+        central_meridian=0.0,
+        tessellate_degrees=None,
+    ):
+        """
+        Deprecated! DO NOT USE.
+        """
+        warnings.warn(
+            "Deprecated! The 'get_misc_transforms' function will be removed in the future GPlately releases. "
+            "Update your workflow to use the 'get_transforms' function instead, "
+            "otherwise your workflow will not work with the future GPlately releases.",
+            DeprecationWarning,
+            stacklevel=2,
+        )
+        return self.get_transforms(
+            central_meridian=central_meridian, tessellate_degrees=tessellate_degrees
         )
