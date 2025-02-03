@@ -254,7 +254,7 @@ class SeafloorGrid(object):
         self.topology_features = self.PlateReconstruction_object.topology_features
         self._PlotTopologies_object = PlotTopologies_object
         self.topological_model = pygplates.TopologicalModel(
-            self.topology_features.filenames, self.rotation_model.filenames
+            self.topology_features, self.rotation_model
         )
 
         self.file_collection = file_collection
@@ -730,8 +730,8 @@ class SeafloorGrid(object):
                         _generate_mid_ocean_ridge_points,
                         delta_time=self._ridge_time_step,
                         mid_ocean_ridges_file_path=self.mid_ocean_ridges_file_path,
-                        rotation_files=self.rotation_model.filenames,
-                        topology_files=self.topology_features.filenames,
+                        rotation_model=self.rotation_model,
+                        topology_features=self.topology_features,
                         zvalues_file_basepath=self.zvalues_file_basepath,
                         zval_names=self.zval_names,
                         ridge_sampling=self.ridge_sampling,
@@ -744,8 +744,8 @@ class SeafloorGrid(object):
                 _generate_mid_ocean_ridge_points(
                     time,
                     self.mid_ocean_ridges_file_path,
-                    self.rotation_model.filenames,
-                    self.topology_features.filenames,
+                    self.rotation_model,
+                    self.topology_features,
                     self.zvalues_file_basepath,
                     self.zval_names,
                     overwrite=overwrite,
@@ -842,8 +842,8 @@ class SeafloorGrid(object):
                             partial(
                                 _build_continental_mask_with_contouring,
                                 continent_mask_filepath=self.continent_mask_filepath,
-                                rotation_files=self.rotation_model.filenames,
-                                continent_files=self._PlotTopologies_object._continents.filenames,
+                                rotation_model=self.rotation_model,
+                                continent_features=self._PlotTopologies_object._continents,
                                 overwrite=overwrite,
                             ),
                             self._times,
@@ -1652,8 +1652,8 @@ def _save_seed_points_as_multipoint_coverage(
 def _build_continental_mask_with_contouring(
     time: float,
     continent_mask_filepath,
-    rotation_files,
-    continent_files,
+    rotation_model,
+    continent_features,
     overwrite=False,
 ):
     """build the continent mask for a given time with continent contouring method"""
@@ -1709,9 +1709,8 @@ def _build_continental_mask_with_contouring(
 
         return buffer_and_gap_distance_radians
 
-    continent_features = [pygplates.FeatureCollection(f) for f in continent_files]
     continent_contouring = continent_contours.ContinentContouring(
-        pygplates.RotationModel(rotation_files),
+        rotation_model,
         continent_features,
         continent_contouring_point_spacing_degrees,
         continent_contouring_area_threshold_steradians,
@@ -1737,8 +1736,8 @@ def _generate_mid_ocean_ridge_points(
     time: float,
     delta_time: float,
     mid_ocean_ridges_file_path: str,
-    rotation_files: List[str],
-    topology_files: List[str],
+    rotation_model,
+    topology_features,
     zvalues_file_basepath,
     zval_names,
     ridge_sampling,
@@ -1752,9 +1751,6 @@ def _generate_mid_ocean_ridge_points(
         )
         return
 
-    topology_features_extracted = pygplates.FeaturesFunctionArgument(topology_files)
-    rotation_model = pygplates.RotationModel(rotation_files)
-
     # Points and their z values that emerge from MORs at this time.
     shifted_mor_points = []
     point_spreading_rates = []
@@ -1763,7 +1759,7 @@ def _generate_mid_ocean_ridge_points(
     resolved_topologies = []
     shared_boundary_sections = []
     pygplates.resolve_topologies(
-        topology_features_extracted.get_features(),
+        topology_features,
         rotation_model,
         resolved_topologies,
         time,
