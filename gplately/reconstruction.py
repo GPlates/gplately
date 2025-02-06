@@ -108,6 +108,26 @@ class PlateReconstruction(object):
         # Note: A pygplates.TopologicalSnapshot can be pickled (as of pyGPlates 0.42).
         self._topological_snapshot = None
 
+    def __getstate__(self):
+        state = self.__dict__.copy()
+
+        # Remove the unpicklable entries.
+        #
+        # This includes pygplates reconstructed feature geometries and resolved topological geometries.
+        # Note: PyGPlates features and features collections (and rotation models) can be pickled though.
+        #
+
+        return state
+
+    def __setstate__(self, state):
+        self.__dict__.update(state)
+
+        # Restore the unpicklable entries.
+        #
+        # This includes pygplates reconstructed feature geometries and resolved topological geometries.
+        # Note: PyGPlates features and features collections (and rotation models) can be pickled though.
+        #
+
     @property
     def anchor_plate_id(self):
         """Anchor plate ID for reconstruction. Must be an integer >= 0."""
@@ -2471,6 +2491,26 @@ class Points(object):
 
         self.plate_id = plate_id
         self.feature_collection = pygplates.FeatureCollection(self.features)
+
+    def __getstate__(self):
+        state = self.__dict__.copy()
+
+        # Remove the unpicklable entries.
+        #
+        # This includes pygplates reconstructed feature geometries and resolved topological geometries.
+        # Note: PyGPlates features and features collections (and rotation models) can be pickled though.
+        #
+
+        return state
+
+    def __setstate__(self, state):
+        self.__dict__.update(state)
+
+        # Restore the unpicklable entries.
+        #
+        # This includes pygplates reconstructed feature geometries and resolved topological geometries.
+        # Note: PyGPlates features and features collections (and rotation models) can be pickled though.
+        #
 
     @property
     def size(self):

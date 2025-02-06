@@ -332,33 +332,88 @@ class PlotTopologies(object):
         self._anchor_plate_id = self._check_anchor_plate_id(anchor_plate_id)
         self._plot_engine = plot_engine
 
-        # store topologies for easy access
-        # setting time runs the update_time routine
         self._time = None
         if time is not None:
+            # setting time runs the update_time routine
             self.time = time
 
-    def __getstate__(self):
+    def __reduce__(self):
+        # Arguments for __init__.
+        #
+        # Only one argument is required by __init__, and that's a PlateReconstruction object (which'll get pickled).
+        init_args = (self.plate_reconstruction,)
+
+        # State for __setstate__.
         state = self.__dict__.copy()
+
+        # Remove 'plate_reconstruction' since that will get passed to __init__.
+        del state["plate_reconstruction"]
+
         # Remove the unpicklable entries.
         #
-        # Not sure if a 'cartopy.crs' can be pickled?
+        # This includes pygplates reconstructed feature geometries and resolved topological geometries.
+        # Note: PyGPlates features and features collections (and rotation models) can be pickled though.
         #
-        # TODO: If it can be pickled then remove __getstate__() and __setstate__() altogether.
-        del state["base_projection"]
-        return state
+        # __setstate__ will call 'update_time()' to generate these reconstructed/resolved geometries/features.
+        # So we don't need to pickle them.
+        # Note: Some of them we can pickle (eg, "resolved features", which are of type pygplates.Feature) and
+        #       some we cannot (like 'coastlines' which are of type pygplates.ReconstructedFeatureGeometry).
+        #       However, as mentioned, we won't pickle any of them (since taken care of by 'update_time()').
+        for key in (
+            "coastlines",  # we're keeping "_coastlines" though (we need the original 'pygplates.Feature's to reconstruct with)
+            "continents",  # we're keeping "_continents" though (we need the original 'pygplates.Feature's to reconstruct with)
+            "COBs",  # we're keeping "_COBs" though (we need the original 'pygplates.Feature's to reconstruct with)
+            "_topological_plate_boundaries",
+            "_ridges",
+            "_ridges_do_not_use_for_now",
+            "_transforms",
+            "_transforms_do_not_use_for_now",
+            "trenches",
+            "trench_left",
+            "trench_right",
+            "other",
+            "_topologies",
+            "continental_rifts",
+            "faults",
+            "fracture_zones",
+            "inferred_paleo_boundaries",
+            "terrane_boundaries",
+            "transitional_crusts",
+            "orogenic_belts",
+            "sutures",
+            "continental_crusts",
+            "extended_continental_crusts",
+            "passive_continental_boundaries",
+            "slab_edges",
+            "unclassified_features",
+        ):
+            if key in state:  # in case some state has not been initialised yet
+                del state[key]
+
+        # Call __init__ so that we default initialise everything in a consistent state before __setstate__ gets called.
+        # Note that this is the reason we implement __reduce__, instead of __getstate__ (where __init__ doesn't get called).
+        #
+        # If we don't do this then __setstate__ would need to stay in sync with __init__ (whenever it gets updated).
+        return PlotTopologies, init_args, state
 
     def __setstate__(self, state):
         self.__dict__.update(state)
-        # Not sure if a 'cartopy.crs' can be pickled?
+
+        # Restore the unpicklable entries.
         #
-        # TODO: If it can be pickled then remove __getstate__() and __setstate__() altogether.
-        self.base_projection = DEFAULT_CARTOPY_PROJECTION
+        # This includes pygplates reconstructed feature geometries and resolved topological geometries.
+        # Note: PyGPlates features and features collections (and rotation models) can be pickled though.
+        #
+        # Re-generate the pygplates reconstructed feature geometries and resolved topological geometries
+        # deleted from the state returned by __reduce__.
+        if self.time is not None:
+            self.update_time(self.time)
 
     @property
     def topological_plate_boundaries(self):
         if self._topological_plate_boundaries is None:
-            self.update_time(self.time)
+            if self.time is not None:
+                self.update_time(self.time)
         return self._topological_plate_boundaries
 
     @property
@@ -479,6 +534,12 @@ class PlotTopologies(object):
         """
         assert time is not None, "time must be set to a valid reconstruction time"
 
+        #
+        # NOTE: If you add a new data member here that's a pygplates reconstructable feature geometry or resolved topological geometry,
+        #       then be sure to also include it in __getstate__/()__setstate__()
+        #       (basically anything reconstructed or resolved by pygplates since those cannot be pickled).
+        #
+
         self._time = float(time)
         (
             self._topological_plate_boundaries,
@@ -514,6 +575,8 @@ class PlotTopologies(object):
         self.passive_continental_boundaries = []
         self.slab_edges = []
         self.unclassified_features = []
+
+        self._transforms = []
 
         for topol in self.other:
             if topol.get_feature_type() == pygplates.FeatureType.gpml_continental_rift:  # type: ignore

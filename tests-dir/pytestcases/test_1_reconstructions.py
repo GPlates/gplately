@@ -216,4 +216,6 @@ def test_rotation_model_copy(model):
 
 def test_pickle_reconstruction(model):
     pickled = pickle.loads(pickle.dumps(model))
-    assert len(model.topology_features) == len(pickled.topology_features)
+    assert pickled.topology_features and len(model.topology_features) == len(
+        pickled.topology_features
+    )
