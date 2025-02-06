@@ -921,15 +921,17 @@ moved or deleted.</p>
         self._COBs = None
 
     def _create_feature_collection(self, file_list):
-        feature_collection = _FeatureCollection()
+        feature_collection = _pygplates.FeatureCollection()
         for feature in file_list:
-            feature_collection.add(_FeatureCollection(feature))
+            feature_collection.add(_pygplates.FeatureCollection(feature))
         return feature_collection
 
     @property
     def rotation_model(self):
         if self._rotation_model is None and self.pmm:
-            self._rotation_model = _RotationModel(self.pmm.get_rotation_model())
+            self._rotation_model = _pygplates.RotationModel(
+                self.pmm.get_rotation_model()
+            )
             self._rotation_model.reconstruction_identifier = self.file_collection
         return self._rotation_model
 
@@ -1500,14 +1502,14 @@ moved or deleted.</p>
                 &#34;{} are not in GPlately&#39;s DataServer.&#34;.format(feature_data_id_string)
             )
 
-        feat_data = _FeatureCollection()
+        feat_data = _pygplates.FeatureCollection()
         if len(feature_data_filenames) == 1:
-            feat_data.add(_FeatureCollection(feature_data_filenames[0]))
+            feat_data.add(_pygplates.FeatureCollection(feature_data_filenames[0]))
             return feat_data
         else:
             feat_data = []
             for file in feature_data_filenames:
-                feat_data.append(_FeatureCollection(file))
+                feat_data.append(_pygplates.FeatureCollection(file))
             return feat_data</code></pre>
 </details>
 <h3>Instance variables</h3>
@@ -1590,7 +1592,9 @@ def from_age(self):
 <pre><code class="python">@property
 def rotation_model(self):
     if self._rotation_model is None and self.pmm:
-        self._rotation_model = _RotationModel(self.pmm.get_rotation_model())
+        self._rotation_model = _pygplates.RotationModel(
+            self.pmm.get_rotation_model()
+        )
         self._rotation_model.reconstruction_identifier = self.file_collection
     return self._rotation_model</code></pre>
 </details>
@@ -2158,18 +2162,18 @@ If not specified then uses the default anchor plate of <code>rotation_model</cod
             self.name = None
 
         if anchor_plate_id is None:
-            if isinstance(rotation_model, _RotationModel):
+            if isinstance(rotation_model, pygplates.RotationModel):
                 # Use the default anchor plate of &#39;rotation_model&#39;.
                 self.rotation_model = rotation_model
             else:
                 # Using rotation features/files, so default anchor plate is 0.
-                self.rotation_model = _RotationModel(rotation_model)
+                self.rotation_model = pygplates.RotationModel(rotation_model)
         else:
             # User has explicitly specified an anchor plate ID, so let&#39;s check it.
             anchor_plate_id = self._check_anchor_plate_id(anchor_plate_id)
             # This works when &#39;rotation_model&#39; is a RotationModel or rotation features/files
             # (for pygplates &gt;= 0.29)...
-            self.rotation_model = _RotationModel(
+            self.rotation_model = pygplates.RotationModel(
                 rotation_model, default_anchor_plate_id=anchor_plate_id
             )
 
@@ -2184,48 +2188,24 @@ If not specified then uses the default anchor plate of <code>rotation_model</cod
         self._topological_snapshot = None
 
     def __getstate__(self):
-        filenames = {
-            &#34;rotation_model&#34;: self.rotation_model.filenames,
-            &#34;anchor_plate_id&#34;: self.anchor_plate_id,
-        }
+        state = self.__dict__.copy()
 
-        if self.topology_features:
-            filenames[&#34;topology_features&#34;] = self.topology_features.filenames
-        if self.static_polygons:
-            filenames[&#34;static_polygons&#34;] = self.static_polygons.filenames
+        # Remove the unpicklable entries.
+        #
+        # This includes pygplates reconstructed feature geometries and resolved topological geometries.
+        # Note: PyGPlates features and features collections (and rotation models) can be pickled though.
+        #
 
-        # # remove unpicklable items
-        # del self.rotation_model, self.topology_features, self.static_polygons
-
-        # # really make sure they&#39;re gone
-        # self.rotation_model = None
-        # self.topology_features = None
-        # self.static_polygons = None
-
-        return filenames
+        return state
 
     def __setstate__(self, state):
-        # reinstate unpicklable items
-        self.rotation_model = _RotationModel(
-            state[&#34;rotation_model&#34;], default_anchor_plate_id=state[&#34;anchor_plate_id&#34;]
-        )
+        self.__dict__.update(state)
 
-        self.anchor_plate_id = state[&#34;anchor_plate_id&#34;]
-        self.topology_features = None
-        self.static_polygons = None
-
-        if &#34;topology_features&#34; in state:
-            self.topology_features = _FeatureCollection()
-            for topology in state[&#34;topology_features&#34;]:
-                self.topology_features.add(_FeatureCollection(topology))
-
-        if &#34;static_polygons&#34; in state:
-            self.static_polygons = _FeatureCollection()
-            for polygon in state[&#34;static_polygons&#34;]:
-                self.static_polygons.add(_FeatureCollection(polygon))
-
-        # This will get rebuilt when/if &#39;topological_snapshot()&#39; is next called.
-        self._topological_snapshot = None
+        # Restore the unpicklable entries.
+        #
+        # This includes pygplates reconstructed feature geometries and resolved topological geometries.
+        # Note: PyGPlates features and features collections (and rotation models) can be pickled though.
+        #
 
     @property
     def anchor_plate_id(self):
@@ -2241,7 +2221,7 @@ If not specified then uses the default anchor plate of <code>rotation_model</cod
         if anchor_plate != self.anchor_plate_id:
             # Update the RotationModel (which is where the anchor plate is stored).
             # This keeps the same rotation model but just changes the anchor plate.
-            self.rotation_model = _RotationModel(
+            self.rotation_model = pygplates.RotationModel(
                 self.rotation_model, default_anchor_plate_id=anchor_plate
             )
 
@@ -5690,67 +5670,88 @@ boundaries and passive continental boundaries.</dd>
         self._anchor_plate_id = self._check_anchor_plate_id(anchor_plate_id)
         self._plot_engine = plot_engine
 
-        # store topologies for easy access
-        # setting time runs the update_time routine
         self._time = None
         if time is not None:
+            # setting time runs the update_time routine
             self.time = time
 
-    def __getstate__(self):
-        filenames = self.plate_reconstruction.__getstate__()
+    def __reduce__(self):
+        # Arguments for __init__.
+        #
+        # Only one argument is required by __init__, and that&#39;s a PlateReconstruction object (which&#39;ll get pickled).
+        init_args = (self.plate_reconstruction,)
 
-        # add important variables from Points object
-        if self._coastlines:
-            filenames[&#34;coastlines&#34;] = self._coastlines.filenames
-        if self._continents:
-            filenames[&#34;continents&#34;] = self._continents.filenames
-        if self._COBs:
-            filenames[&#34;COBs&#34;] = self._COBs.filenames
-        filenames[&#34;time&#34;] = self.time
-        filenames[&#34;plate_id&#34;] = self._anchor_plate_id
+        # State for __setstate__.
+        state = self.__dict__.copy()
 
-        return filenames
+        # Remove &#39;plate_reconstruction&#39; since that will get passed to __init__.
+        del state[&#34;plate_reconstruction&#34;]
+
+        # Remove the unpicklable entries.
+        #
+        # This includes pygplates reconstructed feature geometries and resolved topological geometries.
+        # Note: PyGPlates features and features collections (and rotation models) can be pickled though.
+        #
+        # __setstate__ will call &#39;update_time()&#39; to generate these reconstructed/resolved geometries/features.
+        # So we don&#39;t need to pickle them.
+        # Note: Some of them we can pickle (eg, &#34;resolved features&#34;, which are of type pygplates.Feature) and
+        #       some we cannot (like &#39;coastlines&#39; which are of type pygplates.ReconstructedFeatureGeometry).
+        #       However, as mentioned, we won&#39;t pickle any of them (since taken care of by &#39;update_time()&#39;).
+        for key in (
+            &#34;coastlines&#34;,  # we&#39;re keeping &#34;_coastlines&#34; though (we need the original &#39;pygplates.Feature&#39;s to reconstruct with)
+            &#34;continents&#34;,  # we&#39;re keeping &#34;_continents&#34; though (we need the original &#39;pygplates.Feature&#39;s to reconstruct with)
+            &#34;COBs&#34;,  # we&#39;re keeping &#34;_COBs&#34; though (we need the original &#39;pygplates.Feature&#39;s to reconstruct with)
+            &#34;_topological_plate_boundaries&#34;,
+            &#34;_ridges&#34;,
+            &#34;_ridges_do_not_use_for_now&#34;,
+            &#34;_transforms&#34;,
+            &#34;_transforms_do_not_use_for_now&#34;,
+            &#34;trenches&#34;,
+            &#34;trench_left&#34;,
+            &#34;trench_right&#34;,
+            &#34;other&#34;,
+            &#34;_topologies&#34;,
+            &#34;continental_rifts&#34;,
+            &#34;faults&#34;,
+            &#34;fracture_zones&#34;,
+            &#34;inferred_paleo_boundaries&#34;,
+            &#34;terrane_boundaries&#34;,
+            &#34;transitional_crusts&#34;,
+            &#34;orogenic_belts&#34;,
+            &#34;sutures&#34;,
+            &#34;continental_crusts&#34;,
+            &#34;extended_continental_crusts&#34;,
+            &#34;passive_continental_boundaries&#34;,
+            &#34;slab_edges&#34;,
+            &#34;unclassified_features&#34;,
+        ):
+            if key in state:  # in case some state has not been initialised yet
+                del state[key]
+
+        # Call __init__ so that we default initialise everything in a consistent state before __setstate__ gets called.
+        # Note that this is the reason we implement __reduce__, instead of __getstate__ (where __init__ doesn&#39;t get called).
+        #
+        # If we don&#39;t do this then __setstate__ would need to stay in sync with __init__ (whenever it gets updated).
+        return PlotTopologies, init_args, state
 
     def __setstate__(self, state):
-        plate_reconstruction_args = [state[&#34;rotation_model&#34;], None, None]
-        if &#34;topology_features&#34; in state:
-            plate_reconstruction_args[1] = state[&#34;topology_features&#34;]
-        if &#34;static_polygons&#34; in state:
-            plate_reconstruction_args[2] = state[&#34;static_polygons&#34;]
+        self.__dict__.update(state)
 
-        self.plate_reconstruction = _PlateReconstruction(*plate_reconstruction_args)
-
-        self._coastlines = None
-        self._continents = None
-        self._COBs = None
-        self.coastlines = None
-        self.continents = None
-        self.COBs = None
-
-        # reinstate unpicklable items
-        if &#34;coastlines&#34; in state:
-            self._coastlines = _FeatureCollection()
-            for feature in state[&#34;coastlines&#34;]:
-                self._coastlines.add(_FeatureCollection(feature))
-
-        if &#34;continents&#34; in state:
-            self._continents = _FeatureCollection()
-            for feature in state[&#34;continents&#34;]:
-                self._continents.add(_FeatureCollection(feature))
-
-        if &#34;COBs&#34; in state:
-            self._COBs = _FeatureCollection()
-            for feature in state[&#34;COBs&#34;]:
-                self._COBs.add(_FeatureCollection(feature))
-
-        self._anchor_plate_id = state[&#34;plate_id&#34;]
-        self.base_projection = DEFAULT_CARTOPY_PROJECTION
-        self._time = None
+        # Restore the unpicklable entries.
+        #
+        # This includes pygplates reconstructed feature geometries and resolved topological geometries.
+        # Note: PyGPlates features and features collections (and rotation models) can be pickled though.
+        #
+        # Re-generate the pygplates reconstructed feature geometries and resolved topological geometries
+        # deleted from the state returned by __reduce__.
+        if self.time is not None:
+            self.update_time(self.time)
 
     @property
     def topological_plate_boundaries(self):
         if self._topological_plate_boundaries is None:
-            self.update_time(self.time)
+            if self.time is not None:
+                self.update_time(self.time)
         return self._topological_plate_boundaries
 
     @property
@@ -5825,6 +5826,7 @@ boundaries and passive continental boundaries.</dd>
             raise ValueError(&#34;Invalid anchor plate ID: {}&#34;.format(id))
         return id
 
+    @validate_reconstruction_time
     @property
     def ridge_transforms(self):
         &#34;&#34;&#34;
@@ -5870,6 +5872,12 @@ boundaries and passive continental boundaries.</dd>
         &#34;&#34;&#34;
         assert time is not None, &#34;time must be set to a valid reconstruction time&#34;
 
+        #
+        # NOTE: If you add a new data member here that&#39;s a pygplates reconstructable feature geometry or resolved topological geometry,
+        #       then be sure to also include it in __getstate__/()__setstate__()
+        #       (basically anything reconstructed or resolved by pygplates since those cannot be pickled).
+        #
+
         self._time = float(time)
         (
             self._topological_plate_boundaries,
@@ -5905,6 +5913,8 @@ boundaries and passive continental boundaries.</dd>
         self.passive_continental_boundaries = []
         self.slab_edges = []
         self.unclassified_features = []
+
+        self._transforms = []
 
         for topol in self.other:
             if topol.get_feature_type() == pygplates.FeatureType.gpml_continental_rift:  # type: ignore
@@ -6161,6 +6171,7 @@ boundaries and passive continental boundaries.</dd>
             tessellate_degrees=tessellate_degrees,
         )
 
+    @validate_reconstruction_time
     @append_docstring(PLOT_DOCSTRING.format(&#34;coastlines&#34;))
     def plot_coastlines(self, ax, color=&#34;black&#34;, **kwargs):
         &#34;&#34;&#34;Plot reconstructed coastline polygons onto a standard map Projection.
@@ -6190,6 +6201,7 @@ boundaries and passive continental boundaries.</dd>
             tessellate_degrees=tessellate_degrees,
         )
 
+    @validate_reconstruction_time
     @append_docstring(PLOT_DOCSTRING.format(&#34;continents&#34;))
     def plot_continents(self, ax, color=&#34;black&#34;, **kwargs):
         &#34;&#34;&#34;Plot reconstructed continental polygons onto a standard map Projection.
@@ -6223,6 +6235,7 @@ boundaries and passive continental boundaries.</dd>
             tessellate_degrees=tessellate_degrees,
         )
 
+    @validate_reconstruction_time
     @append_docstring(PLOT_DOCSTRING.format(&#34;continent ocean boundaries&#34;))
     def plot_continent_ocean_boundaries(self, ax, color=&#34;black&#34;, **kwargs):
         &#34;&#34;&#34;Plot reconstructed continent-ocean boundary (COB) polygons onto a standard map Projection.
@@ -6269,6 +6282,7 @@ boundaries and passive continental boundaries.</dd>
             tessellate_degrees=tessellate_degrees,
         )
 
+    @validate_reconstruction_time
     @validate_topology_availability(&#34;ridges&#34;)
     @append_docstring(PLOT_DOCSTRING.format(&#34;ridges&#34;))
     def plot_ridges(self, ax, color=&#34;black&#34;, **kwargs):
@@ -6385,6 +6399,7 @@ boundaries and passive continental boundaries.</dd>
             tessellate_degrees=tessellate_degrees,
         )
 
+    @validate_reconstruction_time
     @append_docstring(PLOT_DOCSTRING.format(&#34;other&#34;))
     def plot_misc_boundaries(self, ax, color=&#34;black&#34;, **kwargs):
         &#34;&#34;&#34;Plot reconstructed miscellaneous plate boundary polylines onto a standard
@@ -6884,6 +6899,7 @@ boundaries and passive continental boundaries.</dd>
             tessellate_degrees=tessellate_degrees,
         )
 
+    @validate_reconstruction_time
     @append_docstring(PLOT_DOCSTRING.format(&#34;continental rifts&#34;))
     def plot_continental_rifts(self, ax, color=&#34;black&#34;, **kwargs):
         &#34;&#34;&#34;Plot continental rifts on a standard map projection.&#34;&#34;&#34;
@@ -6906,6 +6922,7 @@ boundaries and passive continental boundaries.</dd>
             tessellate_degrees=tessellate_degrees,
         )
 
+    @validate_reconstruction_time
     @append_docstring(PLOT_DOCSTRING.format(&#34;faults&#34;))
     def plot_faults(self, ax, color=&#34;black&#34;, **kwargs):
         &#34;&#34;&#34;Plot faults on a standard map projection.&#34;&#34;&#34;
@@ -6928,6 +6945,7 @@ boundaries and passive continental boundaries.</dd>
             tessellate_degrees=tessellate_degrees,
         )
 
+    @validate_reconstruction_time
     @append_docstring(PLOT_DOCSTRING.format(&#34;fracturezones&#34;))
     def plot_fracture_zones(self, ax, color=&#34;black&#34;, **kwargs):
         &#34;&#34;&#34;Plot fracture zones on a standard map projection.&#34;&#34;&#34;
@@ -6954,6 +6972,7 @@ boundaries and passive continental boundaries.</dd>
             tessellate_degrees=tessellate_degrees,
         )
 
+    @validate_reconstruction_time
     @append_docstring(PLOT_DOCSTRING.format(&#34;inferred paleo-boundaries&#34;))
     def plot_inferred_paleo_boundaries(self, ax, color=&#34;black&#34;, **kwargs):
         &#34;&#34;&#34;Plot inferred paleo boundaries on a standard map projection.&#34;&#34;&#34;
@@ -6980,6 +6999,7 @@ boundaries and passive continental boundaries.</dd>
             tessellate_degrees=tessellate_degrees,
         )
 
+    @validate_reconstruction_time
     @append_docstring(PLOT_DOCSTRING.format(&#34;terrane boundaries&#34;))
     def plot_terrane_boundaries(self, ax, color=&#34;black&#34;, **kwargs):
         &#34;&#34;&#34;Plot terrane boundaries on a standard map projection.&#34;&#34;&#34;
@@ -7006,6 +7026,7 @@ boundaries and passive continental boundaries.</dd>
             tessellate_degrees=tessellate_degrees,
         )
 
+    @validate_reconstruction_time
     @append_docstring(PLOT_DOCSTRING.format(&#34;transitional crusts&#34;))
     def plot_transitional_crusts(self, ax, color=&#34;black&#34;, **kwargs):
         &#34;&#34;&#34;Plot transitional crust on a standard map projection.&#34;&#34;&#34;
@@ -7032,6 +7053,7 @@ boundaries and passive continental boundaries.</dd>
             tessellate_degrees=tessellate_degrees,
         )
 
+    @validate_reconstruction_time
     @append_docstring(PLOT_DOCSTRING.format(&#34;orogenic belts&#34;))
     def plot_orogenic_belts(self, ax, color=&#34;black&#34;, **kwargs):
         &#34;&#34;&#34;Plot orogenic belts on a standard map projection.&#34;&#34;&#34;
@@ -7054,6 +7076,7 @@ boundaries and passive continental boundaries.</dd>
             tessellate_degrees=tessellate_degrees,
         )
 
+    @validate_reconstruction_time
     @append_docstring(PLOT_DOCSTRING.format(&#34;sutures&#34;))
     def plot_sutures(self, ax, color=&#34;black&#34;, **kwargs):
         &#34;&#34;&#34;Plot sutures on a standard map projection.&#34;&#34;&#34;
@@ -7080,6 +7103,7 @@ boundaries and passive continental boundaries.</dd>
             tessellate_degrees=tessellate_degrees,
         )
 
+    @validate_reconstruction_time
     @append_docstring(PLOT_DOCSTRING.format(&#34;continental crusts&#34;))
     def plot_continental_crusts(self, ax, color=&#34;black&#34;, **kwargs):
         &#34;&#34;&#34;Plot continental crust lines on a standard map projection.&#34;&#34;&#34;
@@ -7106,6 +7130,7 @@ boundaries and passive continental boundaries.</dd>
             tessellate_degrees=tessellate_degrees,
         )
 
+    @validate_reconstruction_time
     @append_docstring(PLOT_DOCSTRING.format(&#34;extended continental crusts&#34;))
     def plot_extended_continental_crusts(self, ax, color=&#34;black&#34;, **kwargs):
         &#34;&#34;&#34;Plot extended continental crust lines on a standard map projection.&#34;&#34;&#34;
@@ -7132,6 +7157,7 @@ boundaries and passive continental boundaries.</dd>
             tessellate_degrees=tessellate_degrees,
         )
 
+    @validate_reconstruction_time
     @append_docstring(PLOT_DOCSTRING.format(&#34;passive continental boundaries&#34;))
     def plot_passive_continental_boundaries(self, ax, color=&#34;black&#34;, **kwargs):
         &#34;&#34;&#34;Plot passive continental boundaries on a standard map projection.&#34;&#34;&#34;
@@ -7154,6 +7180,7 @@ boundaries and passive continental boundaries.</dd>
             tessellate_degrees=tessellate_degrees,
         )
 
+    @validate_reconstruction_time
     @append_docstring(PLOT_DOCSTRING.format(&#34;slab edges&#34;))
     def plot_slab_edges(self, ax, color=&#34;black&#34;, **kwargs):
         &#34;&#34;&#34;Plot slab edges on a standard map projection.&#34;&#34;&#34;
@@ -7188,6 +7215,7 @@ boundaries and passive continental boundaries.</dd>
             tessellate_degrees=tessellate_degrees,
         )
 
+    @validate_reconstruction_time
     @append_docstring(PLOT_DOCSTRING.format(&#34;transforms&#34;))
     def plot_transforms(self, ax, color=&#34;black&#34;, **kwargs):
         &#34;&#34;&#34;Plot transform boundaries(gpml:Transform) onto a map.&#34;&#34;&#34;
@@ -7244,6 +7272,7 @@ boundaries and passive continental boundaries.</dd>
             tessellate_degrees=tessellate_degrees,
         )
 
+    @validate_reconstruction_time
     @append_docstring(PLOT_DOCSTRING.format(&#34;unclassified features&#34;))
     def plot_unclassified_features(self, ax, color=&#34;black&#34;, **kwargs):
         &#34;&#34;&#34;Plot GPML unclassified features on a standard map projection.&#34;&#34;&#34;
@@ -7381,6 +7410,7 @@ boundaries and passive continental boundaries.</dd>
             **kwargs,
         )
 
+    @validate_reconstruction_time
     def _resolve_both_boundaries_and_networks(self):
         &#34;&#34;&#34;need to resolve_topologies for both rigid boundaries and networks if not done yet&#34;&#34;&#34;
         if self._topologies is None:
@@ -7419,6 +7449,7 @@ boundaries and passive continental boundaries.</dd>
             **kwargs,
         )
 
+    @validate_reconstruction_time
     @property
     def misc_transforms(self):
         &#34;&#34;&#34;
@@ -7487,7 +7518,8 @@ def anchor_plate_id(self):
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">@property
+<pre><code class="python">@validate_reconstruction_time
+@property
 def misc_transforms(self):
     &#34;&#34;&#34;
     Deprecated! DO NOT USE.
@@ -7509,7 +7541,8 @@ def misc_transforms(self):
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">@property
+<pre><code class="python">@validate_reconstruction_time
+@property
 def ridge_transforms(self):
     &#34;&#34;&#34;
     Deprecated! DO NOT USE!
@@ -7578,7 +7611,8 @@ def time(self):
 <pre><code class="python">@property
 def topological_plate_boundaries(self):
     if self._topological_plate_boundaries is None:
-        self.update_time(self.time)
+        if self.time is not None:
+            self.update_time(self.time)
     return self._topological_plate_boundaries</code></pre>
 </details>
 </dd>
@@ -9539,9 +9573,6 @@ if not provided.</dd>
 
         self.plate_reconstruction = plate_reconstruction
 
-        self._update(lons, lats, time, plate_id)
-
-    def _update(self, lons, lats, time=0, plate_id=None):
         # get Cartesian coordinates
         self.x, self.y, self.z = _tools.lonlat2xyz(lons, lats, degrees=False)
 
@@ -9575,45 +9606,32 @@ if not provided.</dd>
                 plate_id[i] = feature.get_reconstruction_plate_id()
 
         self.plate_id = plate_id
-        self.FeatureCollection = pygplates.FeatureCollection(self.features)
+        self.feature_collection = pygplates.FeatureCollection(self.features)
+
+    def __getstate__(self):
+        state = self.__dict__.copy()
+
+        # Remove the unpicklable entries.
+        #
+        # This includes pygplates reconstructed feature geometries and resolved topological geometries.
+        # Note: PyGPlates features and features collections (and rotation models) can be pickled though.
+        #
+
+        return state
+
+    def __setstate__(self, state):
+        self.__dict__.update(state)
+
+        # Restore the unpicklable entries.
+        #
+        # This includes pygplates reconstructed feature geometries and resolved topological geometries.
+        # Note: PyGPlates features and features collections (and rotation models) can be pickled though.
+        #
 
     @property
     def size(self):
         &#34;&#34;&#34;Number of points&#34;&#34;&#34;
         return len(self.lons)
-
-    def __getstate__(self):
-        filenames = self.plate_reconstruction.__getstate__()
-
-        # add important variables from Points object
-        filenames[&#34;lons&#34;] = self.lons
-        filenames[&#34;lats&#34;] = self.lats
-        filenames[&#34;time&#34;] = self.time
-        filenames[&#34;plate_id&#34;] = self.plate_id
-        for key in self.attributes:
-            filenames[key] = self.attributes[key]
-
-        return filenames
-
-    def __setstate__(self, state):
-        self.plate_reconstruction = PlateReconstruction(
-            state[&#34;rotation_model&#34;],
-            state[&#34;topology_features&#34;],
-            state[&#34;static_polygons&#34;],
-        )
-
-        # reinstate unpicklable items
-        self.lons = state[&#34;lons&#34;]
-        self.lats = state[&#34;lats&#34;]
-        self.time = state[&#34;time&#34;]
-        self.plate_id = state[&#34;plate_id&#34;]
-        self.attributes = dict()
-
-        self._update(self.lons, self.lats, self.time, self.plate_id)
-
-        for key in state:
-            if key not in [&#34;lons&#34;, &#34;lats&#34;, &#34;time&#34;, &#34;plate_id&#34;]:
-                self.attributes[key] = state[key]
 
     def copy(self):
         &#34;&#34;&#34;Returns a copy of the Points object
@@ -9693,7 +9711,7 @@ if not provided.</dd>
 
         if any(kwargs):
             # add these to the FeatureCollection
-            for f, feature in enumerate(self.FeatureCollection):
+            for f, feature in enumerate(self.feature_collection):
                 for key in keys:
                     # extract value for each row in attribute
                     val = self.attributes[key][f]
@@ -10027,7 +10045,7 @@ if not provided.</dd>
         rlons = np.empty((len(time_array), len(self.lons)))
         rlats = np.empty((len(time_array), len(self.lons)))
 
-        for i, point_feature in enumerate(self.FeatureCollection):
+        for i, point_feature in enumerate(self.feature_collection):
             # Create the motion path feature
             motion_path_feature = pygplates.Feature.create_motion_path(
                 point_feature.get_geometry(),
@@ -10221,7 +10239,7 @@ if not provided.</dd>
             or filename.endswith(&#34;.gpmlz&#34;)
             or filename.endswith(&#34;.shp&#34;)
         ):
-            self.FeatureCollection.write(filename)
+            self.feature_collection.write(filename)
 
         else:
             raise ValueError(
@@ -12732,7 +12750,7 @@ passed as "/path/to/continent_mask_{}Ma.nc" with curly brackets. Include decimal
         self.topology_features = self.PlateReconstruction_object.topology_features
         self._PlotTopologies_object = PlotTopologies_object
         self.topological_model = pygplates.TopologicalModel(
-            self.topology_features.filenames, self.rotation_model.filenames
+            self.topology_features, self.rotation_model
         )
 
         self.file_collection = file_collection
@@ -13208,8 +13226,8 @@ passed as "/path/to/continent_mask_{}Ma.nc" with curly brackets. Include decimal
                         _generate_mid_ocean_ridge_points,
                         delta_time=self._ridge_time_step,
                         mid_ocean_ridges_file_path=self.mid_ocean_ridges_file_path,
-                        rotation_files=self.rotation_model.filenames,
-                        topology_files=self.topology_features.filenames,
+                        rotation_model=self.rotation_model,
+                        topology_features=self.topology_features,
                         zvalues_file_basepath=self.zvalues_file_basepath,
                         zval_names=self.zval_names,
                         ridge_sampling=self.ridge_sampling,
@@ -13222,8 +13240,8 @@ passed as "/path/to/continent_mask_{}Ma.nc" with curly brackets. Include decimal
                 _generate_mid_ocean_ridge_points(
                     time,
                     self.mid_ocean_ridges_file_path,
-                    self.rotation_model.filenames,
-                    self.topology_features.filenames,
+                    self.rotation_model,
+                    self.topology_features,
                     self.zvalues_file_basepath,
                     self.zval_names,
                     overwrite=overwrite,
@@ -13320,8 +13338,8 @@ passed as "/path/to/continent_mask_{}Ma.nc" with curly brackets. Include decimal
                             partial(
                                 _build_continental_mask_with_contouring,
                                 continent_mask_filepath=self.continent_mask_filepath,
-                                rotation_files=self.rotation_model.filenames,
-                                continent_files=self._PlotTopologies_object._continents.filenames,
+                                rotation_model=self.rotation_model,
+                                continent_features=self._PlotTopologies_object._continents,
                                 overwrite=overwrite,
                             ),
                             self._times,

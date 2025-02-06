@@ -377,7 +377,7 @@ passed as "/path/to/continent_mask_{}Ma.nc" with curly brackets. Include decimal
         self.topology_features = self.PlateReconstruction_object.topology_features
         self._PlotTopologies_object = PlotTopologies_object
         self.topological_model = pygplates.TopologicalModel(
-            self.topology_features.filenames, self.rotation_model.filenames
+            self.topology_features, self.rotation_model
         )
 
         self.file_collection = file_collection
@@ -853,8 +853,8 @@ passed as "/path/to/continent_mask_{}Ma.nc" with curly brackets. Include decimal
                         _generate_mid_ocean_ridge_points,
                         delta_time=self._ridge_time_step,
                         mid_ocean_ridges_file_path=self.mid_ocean_ridges_file_path,
-                        rotation_files=self.rotation_model.filenames,
-                        topology_files=self.topology_features.filenames,
+                        rotation_model=self.rotation_model,
+                        topology_features=self.topology_features,
                         zvalues_file_basepath=self.zvalues_file_basepath,
                         zval_names=self.zval_names,
                         ridge_sampling=self.ridge_sampling,
@@ -867,8 +867,8 @@ passed as "/path/to/continent_mask_{}Ma.nc" with curly brackets. Include decimal
                 _generate_mid_ocean_ridge_points(
                     time,
                     self.mid_ocean_ridges_file_path,
-                    self.rotation_model.filenames,
-                    self.topology_features.filenames,
+                    self.rotation_model,
+                    self.topology_features,
                     self.zvalues_file_basepath,
                     self.zval_names,
                     overwrite=overwrite,
@@ -965,8 +965,8 @@ passed as "/path/to/continent_mask_{}Ma.nc" with curly brackets. Include decimal
                             partial(
                                 _build_continental_mask_with_contouring,
                                 continent_mask_filepath=self.continent_mask_filepath,
-                                rotation_files=self.rotation_model.filenames,
-                                continent_files=self._PlotTopologies_object._continents.filenames,
+                                rotation_model=self.rotation_model,
+                                continent_features=self._PlotTopologies_object._continents,
                                 overwrite=overwrite,
                             ),
                             self._times,
