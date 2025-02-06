@@ -270,7 +270,7 @@ def _parse_features_function_arguments(features):
 
 
 def _load_FeatureCollection(features_or_files):
-    """Return a list of pygplates.Feature loaded from file(s) or pygplates.FeatureCollection(s)."""
+    """Return a pygplates.FeatureCollection containing features loaded from one or more files or pygplates.FeatureCollection(s)."""
     if features_or_files is None:
         return None
 
@@ -280,4 +280,6 @@ def _load_FeatureCollection(features_or_files):
             "or a sequence (eg, list or tuple) of any combination of those four types."
         )
 
-    return pygplates.FeaturesFunctionArgument(features_or_files).get_features()
+    return pygplates.FeatureCollection(
+        pygplates.FeaturesFunctionArgument(features_or_files).get_features()
+    )
