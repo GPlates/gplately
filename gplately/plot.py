@@ -433,6 +433,7 @@ class PlotTopologies(object):
             raise ValueError("Invalid anchor plate ID: {}".format(id))
         return id
 
+    @validate_reconstruction_time
     @property
     def ridge_transforms(self):
         """
@@ -769,6 +770,7 @@ class PlotTopologies(object):
             tessellate_degrees=tessellate_degrees,
         )
 
+    @validate_reconstruction_time
     @append_docstring(PLOT_DOCSTRING.format("coastlines"))
     def plot_coastlines(self, ax, color="black", **kwargs):
         """Plot reconstructed coastline polygons onto a standard map Projection.
@@ -798,6 +800,7 @@ class PlotTopologies(object):
             tessellate_degrees=tessellate_degrees,
         )
 
+    @validate_reconstruction_time
     @append_docstring(PLOT_DOCSTRING.format("continents"))
     def plot_continents(self, ax, color="black", **kwargs):
         """Plot reconstructed continental polygons onto a standard map Projection.
@@ -831,6 +834,7 @@ class PlotTopologies(object):
             tessellate_degrees=tessellate_degrees,
         )
 
+    @validate_reconstruction_time
     @append_docstring(PLOT_DOCSTRING.format("continent ocean boundaries"))
     def plot_continent_ocean_boundaries(self, ax, color="black", **kwargs):
         """Plot reconstructed continent-ocean boundary (COB) polygons onto a standard map Projection.
@@ -877,6 +881,7 @@ class PlotTopologies(object):
             tessellate_degrees=tessellate_degrees,
         )
 
+    @validate_reconstruction_time
     @validate_topology_availability("ridges")
     @append_docstring(PLOT_DOCSTRING.format("ridges"))
     def plot_ridges(self, ax, color="black", **kwargs):
@@ -993,6 +998,7 @@ class PlotTopologies(object):
             tessellate_degrees=tessellate_degrees,
         )
 
+    @validate_reconstruction_time
     @append_docstring(PLOT_DOCSTRING.format("other"))
     def plot_misc_boundaries(self, ax, color="black", **kwargs):
         """Plot reconstructed miscellaneous plate boundary polylines onto a standard
@@ -1492,6 +1498,7 @@ class PlotTopologies(object):
             tessellate_degrees=tessellate_degrees,
         )
 
+    @validate_reconstruction_time
     @append_docstring(PLOT_DOCSTRING.format("continental rifts"))
     def plot_continental_rifts(self, ax, color="black", **kwargs):
         """Plot continental rifts on a standard map projection."""
@@ -1514,6 +1521,7 @@ class PlotTopologies(object):
             tessellate_degrees=tessellate_degrees,
         )
 
+    @validate_reconstruction_time
     @append_docstring(PLOT_DOCSTRING.format("faults"))
     def plot_faults(self, ax, color="black", **kwargs):
         """Plot faults on a standard map projection."""
@@ -1536,6 +1544,7 @@ class PlotTopologies(object):
             tessellate_degrees=tessellate_degrees,
         )
 
+    @validate_reconstruction_time
     @append_docstring(PLOT_DOCSTRING.format("fracturezones"))
     def plot_fracture_zones(self, ax, color="black", **kwargs):
         """Plot fracture zones on a standard map projection."""
@@ -1562,6 +1571,7 @@ class PlotTopologies(object):
             tessellate_degrees=tessellate_degrees,
         )
 
+    @validate_reconstruction_time
     @append_docstring(PLOT_DOCSTRING.format("inferred paleo-boundaries"))
     def plot_inferred_paleo_boundaries(self, ax, color="black", **kwargs):
         """Plot inferred paleo boundaries on a standard map projection."""
@@ -1588,6 +1598,7 @@ class PlotTopologies(object):
             tessellate_degrees=tessellate_degrees,
         )
 
+    @validate_reconstruction_time
     @append_docstring(PLOT_DOCSTRING.format("terrane boundaries"))
     def plot_terrane_boundaries(self, ax, color="black", **kwargs):
         """Plot terrane boundaries on a standard map projection."""
@@ -1614,6 +1625,7 @@ class PlotTopologies(object):
             tessellate_degrees=tessellate_degrees,
         )
 
+    @validate_reconstruction_time
     @append_docstring(PLOT_DOCSTRING.format("transitional crusts"))
     def plot_transitional_crusts(self, ax, color="black", **kwargs):
         """Plot transitional crust on a standard map projection."""
@@ -1640,6 +1652,7 @@ class PlotTopologies(object):
             tessellate_degrees=tessellate_degrees,
         )
 
+    @validate_reconstruction_time
     @append_docstring(PLOT_DOCSTRING.format("orogenic belts"))
     def plot_orogenic_belts(self, ax, color="black", **kwargs):
         """Plot orogenic belts on a standard map projection."""
@@ -1662,6 +1675,7 @@ class PlotTopologies(object):
             tessellate_degrees=tessellate_degrees,
         )
 
+    @validate_reconstruction_time
     @append_docstring(PLOT_DOCSTRING.format("sutures"))
     def plot_sutures(self, ax, color="black", **kwargs):
         """Plot sutures on a standard map projection."""
@@ -1688,6 +1702,7 @@ class PlotTopologies(object):
             tessellate_degrees=tessellate_degrees,
         )
 
+    @validate_reconstruction_time
     @append_docstring(PLOT_DOCSTRING.format("continental crusts"))
     def plot_continental_crusts(self, ax, color="black", **kwargs):
         """Plot continental crust lines on a standard map projection."""
@@ -1714,6 +1729,7 @@ class PlotTopologies(object):
             tessellate_degrees=tessellate_degrees,
         )
 
+    @validate_reconstruction_time
     @append_docstring(PLOT_DOCSTRING.format("extended continental crusts"))
     def plot_extended_continental_crusts(self, ax, color="black", **kwargs):
         """Plot extended continental crust lines on a standard map projection."""
@@ -1740,6 +1756,7 @@ class PlotTopologies(object):
             tessellate_degrees=tessellate_degrees,
         )
 
+    @validate_reconstruction_time
     @append_docstring(PLOT_DOCSTRING.format("passive continental boundaries"))
     def plot_passive_continental_boundaries(self, ax, color="black", **kwargs):
         """Plot passive continental boundaries on a standard map projection."""
@@ -1762,6 +1779,7 @@ class PlotTopologies(object):
             tessellate_degrees=tessellate_degrees,
         )
 
+    @validate_reconstruction_time
     @append_docstring(PLOT_DOCSTRING.format("slab edges"))
     def plot_slab_edges(self, ax, color="black", **kwargs):
         """Plot slab edges on a standard map projection."""
@@ -1796,6 +1814,7 @@ class PlotTopologies(object):
             tessellate_degrees=tessellate_degrees,
         )
 
+    @validate_reconstruction_time
     @append_docstring(PLOT_DOCSTRING.format("transforms"))
     def plot_transforms(self, ax, color="black", **kwargs):
         """Plot transform boundaries(gpml:Transform) onto a map."""
@@ -1852,6 +1871,7 @@ class PlotTopologies(object):
             tessellate_degrees=tessellate_degrees,
         )
 
+    @validate_reconstruction_time
     @append_docstring(PLOT_DOCSTRING.format("unclassified features"))
     def plot_unclassified_features(self, ax, color="black", **kwargs):
         """Plot GPML unclassified features on a standard map projection."""
@@ -1989,6 +2009,7 @@ class PlotTopologies(object):
             **kwargs,
         )
 
+    @validate_reconstruction_time
     def _resolve_both_boundaries_and_networks(self):
         """need to resolve_topologies for both rigid boundaries and networks if not done yet"""
         if self._topologies is None:
@@ -2027,6 +2048,7 @@ class PlotTopologies(object):
             **kwargs,
         )
 
+    @validate_reconstruction_time
     @property
     def misc_transforms(self):
         """
