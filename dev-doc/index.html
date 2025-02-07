@@ -5826,7 +5826,6 @@ boundaries and passive continental boundaries.</dd>
             raise ValueError(&#34;Invalid anchor plate ID: {}&#34;.format(id))
         return id
 
-    @validate_reconstruction_time
     @property
     def ridge_transforms(self):
         &#34;&#34;&#34;
@@ -7449,7 +7448,6 @@ boundaries and passive continental boundaries.</dd>
             **kwargs,
         )
 
-    @validate_reconstruction_time
     @property
     def misc_transforms(self):
         &#34;&#34;&#34;
@@ -7518,8 +7516,7 @@ def anchor_plate_id(self):
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">@validate_reconstruction_time
-@property
+<pre><code class="python">@property
 def misc_transforms(self):
     &#34;&#34;&#34;
     Deprecated! DO NOT USE.
@@ -7541,8 +7538,7 @@ def misc_transforms(self):
 <summary>
 <span>Expand source code</span>
 </summary>
-<pre><code class="python">@validate_reconstruction_time
-@property
+<pre><code class="python">@property
 def ridge_transforms(self):
     &#34;&#34;&#34;
     Deprecated! DO NOT USE!
