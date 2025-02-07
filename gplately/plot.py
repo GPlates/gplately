@@ -228,8 +228,9 @@ class PlotTopologies(object):
         `rotation_model` and a set of `topology_features` which contains plate boundary
         features like trenches, ridges and transforms.
 
-    anchor_plate_id : int, default 0
+    anchor_plate_id : int
         The anchor plate ID used for reconstruction.
+        Defaults to the anchor plate of `plate_reconstruction`.
 
     base_projection : instance of <cartopy.crs.{transform}>, default <cartopy.crs.PlateCarree> object
         where {transform} is the map Projection to use on the Cartopy GeoAxes.
@@ -302,7 +303,7 @@ class PlotTopologies(object):
         continents=None,
         COBs=None,
         time=None,
-        anchor_plate_id=0,
+        anchor_plate_id=None,
         plot_engine: PlotEngine = CartopyPlotEngine(),
     ):
         self._plot_engine = plot_engine
@@ -316,7 +317,6 @@ class PlotTopologies(object):
 
         # store these for when time is updated
         # make sure these are initialised as FeatureCollection objects
-
         self._coastlines = _load_FeatureCollection(coastlines)
         self._continents = _load_FeatureCollection(continents)
         self._COBs = _load_FeatureCollection(COBs)
@@ -329,8 +329,13 @@ class PlotTopologies(object):
         self._ridges = []
         self._transforms = []
 
-        self._anchor_plate_id = self._check_anchor_plate_id(anchor_plate_id)
         self._plot_engine = plot_engine
+
+        if anchor_plate_id is None:
+            # Default to the anchor plate of 'self.plate_reconstruction'.
+            self._anchor_plate_id = None
+        else:
+            self._anchor_plate_id = self._check_anchor_plate_id(anchor_plate_id)
 
         self._time = None
         if time is not None:
@@ -475,11 +480,21 @@ class PlotTopologies(object):
     @property
     def anchor_plate_id(self):
         """Anchor plate ID for reconstruction. Must be an integer >= 0."""
+        if self._anchor_plate_id is None:
+            # Default to anchor plate of 'self.plate_reconstruction'.
+            return self.plate_reconstruction.anchor_plate_id
+
         return self._anchor_plate_id
 
     @anchor_plate_id.setter
     def anchor_plate_id(self, anchor_plate):
-        self._anchor_plate_id = self._check_anchor_plate_id(anchor_plate)
+        if anchor_plate is None:
+            # We'll use the anchor plate of 'self.plate_reconstruction'.
+            self._anchor_plate_id = None
+        else:
+            self._anchor_plate_id = self._check_anchor_plate_id(anchor_plate)
+
+        # Reconstructed/resolved geometries depend on the anchor plate.
         if self.time is not None:
             self.update_time(self.time)
 
@@ -538,7 +553,9 @@ class PlotTopologies(object):
 
         # Get the topological snapshot (of resolved topologies) for the current time (and our anchor plate ID).
         topological_snapshot = self.plate_reconstruction.topological_snapshot(
-            self.time, anchor_plate_id=self.anchor_plate_id
+            self.time,
+            # If our anchor plate is None then this will use the anchor plate of 'self.plate_reconstruction'...
+            anchor_plate_id=self._anchor_plate_id,
         )
 
         #
@@ -657,7 +674,8 @@ class PlotTopologies(object):
                 self._coastlines,
                 self.time,
                 from_time=0,
-                anchor_plate_id=self.anchor_plate_id,
+                # If our anchor plate is None then this will use the anchor plate of 'self.plate_reconstruction'...
+                anchor_plate_id=self._anchor_plate_id,
             )
 
         if self._continents:
@@ -665,12 +683,17 @@ class PlotTopologies(object):
                 self._continents,
                 self.time,
                 from_time=0,
-                anchor_plate_id=self.anchor_plate_id,
+                # If our anchor plate is None then this will use the anchor plate of 'self.plate_reconstruction'...
+                anchor_plate_id=self._anchor_plate_id,
             )
 
         if self._COBs:
             self.COBs = self.plate_reconstruction.reconstruct(
-                self._COBs, self.time, from_time=0, anchor_plate_id=self.anchor_plate_id
+                self._COBs,
+                self.time,
+                from_time=0,
+                # If our anchor plate is None then this will use the anchor plate of 'self.plate_reconstruction'...
+                anchor_plate_id=self._anchor_plate_id,
             )
 
     # subduction teeth
