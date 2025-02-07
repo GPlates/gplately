@@ -488,7 +488,6 @@ class PlotTopologies(object):
             raise ValueError("Invalid anchor plate ID: {}".format(id))
         return id
 
-    @validate_reconstruction_time
     @property
     def ridge_transforms(self):
         """
@@ -2111,7 +2110,6 @@ class PlotTopologies(object):
             **kwargs,
         )
 
-    @validate_reconstruction_time
     @property
     def misc_transforms(self):
         """
