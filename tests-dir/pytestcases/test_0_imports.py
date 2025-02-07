@@ -33,7 +33,10 @@ def test_pooch_import():
 
 def test_gplately_modules():
     import gplately
-    from gplately import download, grids, plot, ptt, tools
+    from gplately import download, grids, plot, ptt, pygplates, tools
+
+    print("\t\t You have gplately version {}".format(gplately.__version__))
+    print("\t\t GPlately is using pygplates version {}".format(pygplates.__version__))
 
 
 def test_jupyter_available():

@@ -26,3 +26,8 @@ So now this module is no longer necessary, but retained for backward compatibili
 """
 
 from pygplates import *
+
+# Also import some useful private symbols (with leading underscore).
+# This is similar to pygplates.__init__.
+from pygplates import __version__
+from pygplates import __doc__
