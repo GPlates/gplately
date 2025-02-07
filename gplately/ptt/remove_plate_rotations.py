@@ -31,11 +31,6 @@ import traceback
 
 import pygplates
 
-# Required pygplates version.
-# Need pygplates.RotationModel to clone rotation features by default (revision 12).
-# Note that since revision 25 cloning is no longer necessary.
-PYGPLATES_VERSION_REQUIRED = pygplates.Version(12)
-
 
 def remove_plates(rotation_feature_collections, plate_ids, accuracy_parameters=None):
     # Docstring in numpydoc format...
@@ -100,7 +95,7 @@ def remove_plates(rotation_feature_collections, plate_ids, accuracy_parameters=N
         # Note that RotationModel clones the current rotation features (by default), so any subsequent
         # feature modifications (in this loop iteration) should not affect it.
         # However the RotationModel in the next loop iteration will be affected of course.
-        # UPDATE: Since pygplates revision 25 cloning is no longer necessary (and has been deprecated).
+        # UPDATE: Since pygplates 0.25 cloning is no longer necessary (and has been deprecated).
         rotation_model = pygplates.RotationModel(rotation_feature_collections)
 
         # Rotation sequences with the current remove plate ID as the *moving* plate ID.
@@ -603,20 +598,6 @@ __description__ = """Remove one or more plate IDs from a rotation model (consist
 
 
 def main(args):
-    # Check the imported pygplates version.
-    if (
-        not hasattr(pygplates, "Version")
-        or pygplates.Version.get_imported_version() < PYGPLATES_VERSION_REQUIRED
-    ):
-        print(
-            "{0}: Error - imported pygplates version {1} but version {2} or greater is required".format(
-                os.path.basename(__file__),
-                pygplates.Version.get_imported_version(),
-                PYGPLATES_VERSION_REQUIRED,
-            ),
-            file=sys.stderr,
-        )
-        sys.exit(1)
 
     # Initialise accuracy parameters (if used).
     accuracy_parameters = None

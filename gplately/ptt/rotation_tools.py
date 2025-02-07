@@ -67,11 +67,6 @@ else:
         return d.items()
 
 
-# Required pygplates version.
-# Let's not go back too far - require at least the 2nd public pygplates release.
-PYGPLATES_VERSION_REQUIRED = pygplates.Version(18)
-
-
 def extract_plate_pair_stage_rotations(
     rotation_feature_collections, plate_pair_filter=None
 ):
@@ -344,20 +339,6 @@ def main(args):
 
 
 if __name__ == "__main__":
-    # Check the imported pygplates version.
-    if (
-        not hasattr(pygplates, "Version")
-        or pygplates.Version.get_imported_version() < PYGPLATES_VERSION_REQUIRED
-    ):
-        print(
-            "{0}: Error - imported pygplates version {1} but version {2} or greater is required".format(
-                os.path.basename(__file__),
-                pygplates.Version.get_imported_version(),
-                PYGPLATES_VERSION_REQUIRED,
-            ),
-            file=sys.stderr,
-        )
-        sys.exit(1)
 
     # The command-line parser.
     parser = argparse.ArgumentParser(

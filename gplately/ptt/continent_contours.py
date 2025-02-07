@@ -317,14 +317,6 @@ class ContinentContouring(object):
         continent_polygon_buffer_and_gap_distance_radians=None,
     ):
 
-        # Make sure pygplates has support for interior rings in polygons.
-        if pygplates.Version.get_imported_version() < pygplates.Version(0, 36):
-            raise RuntimeError(
-                "Using pygplates version {} but ContinentContouring requires version 0.36 or greater to support interior rings in polygons".format(
-                    pygplates.Version.get_imported_version()
-                )
-            )
-
         self.rotation_model = pygplates.RotationModel(rotaton_model_or_features)
         self.continent_features = continent_features
 

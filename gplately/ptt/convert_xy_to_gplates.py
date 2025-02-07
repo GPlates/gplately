@@ -49,7 +49,7 @@ def _read_feature_metadata(feature_data, line):
     value = line_data[1].strip()
 
     # Convert 'unicode' back to UTF8-encoded 'str' since
-    # pyGPlates revision 12 (and below) cannot accept 'unicode'.
+    # pyGPlates 0.12 (and below) cannot accept 'unicode'.
     value = value.encode("utf-8")
 
     # See if specifying feature type or a single feature property.
@@ -595,7 +595,7 @@ def main(args):
         output_filename = "".join((filename_root, ".", args.output_filename_extension))
 
         # Convert output filename from 'unicode' to UTF8-encoded 'str' since pyGPlates versions
-        # prior to revision 13 cannot accept 'unicode' strings.
+        # prior to 0.13 cannot accept 'unicode' strings.
         output_filename = output_filename.encode("utf-8")
 
         # Write the output file.
@@ -605,21 +605,6 @@ def main(args):
 
 
 if __name__ == "__main__":
-    # Check the imported pygplates version.
-    required_version = pygplates.Version(7)
-    if (
-        not hasattr(pygplates, "Version")
-        or pygplates.Version.get_imported_version() < required_version
-    ):
-        print(
-            "{0}: Error - imported pygplates version {1} but version {2} or greater is required".format(
-                os.path.basename(__file__),
-                pygplates.Version.get_imported_version(),
-                required_version,
-            ),
-            file=sys.stderr,
-        )
-        sys.exit(1)
 
     # The command-line parser.
     parser = argparse.ArgumentParser(

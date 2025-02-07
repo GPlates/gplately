@@ -312,21 +312,6 @@ def main(args):
 
 
 if __name__ == "__main__":
-    # Check the imported pygplates version.
-    required_version = pygplates.Version(4)
-    if (
-        not hasattr(pygplates, "Version")
-        or pygplates.Version.get_imported_version() < required_version
-    ):
-        print(
-            "{0}: Error - imported pygplates version {1} but version {2} or greater is required".format(
-                os.path.basename(__file__),
-                pygplates.Version.get_imported_version(),
-                required_version,
-            ),
-            file=sys.stderr,
-        )
-        sys.exit(1)
 
     # The command-line parser.
     parser = argparse.ArgumentParser(
