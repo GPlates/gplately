@@ -364,6 +364,7 @@ class PlotTopologies(object):
             "continents",  # we're keeping "_continents" though (we need the original 'pygplates.Feature's to reconstruct with)
             "COBs",  # we're keeping "_COBs" though (we need the original 'pygplates.Feature's to reconstruct with)
             "_topological_plate_boundaries",
+            "_topologies",
             "_ridges",
             "_ridges_do_not_use_for_now",
             "_transforms",
@@ -372,7 +373,6 @@ class PlotTopologies(object):
             "trench_left",
             "trench_right",
             "other",
-            "_topologies",
             "continental_rifts",
             "faults",
             "fracture_zones",
@@ -411,14 +411,16 @@ class PlotTopologies(object):
 
     @property
     def topological_plate_boundaries(self):
-        if self._topological_plate_boundaries is None:
-            if self.time is not None:
-                self.update_time(self.time)
+        """
+        Resolved topologies for rigid boundaries ONLY.
+        """
         return self._topological_plate_boundaries
 
     @property
     def topologies(self):
-        self._resolve_both_boundaries_and_networks()
+        """
+        Resolved topologies for BOTH rigid boundaries and networks.
+        """
         return self._topologies
 
     @property
@@ -532,6 +534,12 @@ class PlotTopologies(object):
         Moreover, coastlines, continents and COBs are reconstructed to the new specified `time`.
         """
         assert time is not None, "time must be set to a valid reconstruction time"
+        self._time = float(time)
+
+        # Get the topological snapshot (of resolved topologies) for the current time (and our anchor plate ID).
+        topological_snapshot = self.plate_reconstruction.topological_snapshot(
+            self.time, anchor_plate_id=self.anchor_plate_id
+        )
 
         #
         # NOTE: If you add a new data member here that's a pygplates reconstructable feature geometry or resolved topological geometry,
@@ -539,7 +547,15 @@ class PlotTopologies(object):
         #       (basically anything reconstructed or resolved by pygplates since those cannot be pickled).
         #
 
-        self._time = float(time)
+        # Extract (from the topological snapshot) resolved topologies for BOTH rigid boundaries and networks.
+        self._topologies = [
+            t.get_resolved_feature()
+            for t in topological_snapshot.get_resolved_topologies(
+                resolve_topology_types=pygplates.ResolveTopologyType.boundary
+                | pygplates.ResolveTopologyType.network
+            )
+        ]
+
         (
             self._topological_plate_boundaries,
             self._ridges,
@@ -550,14 +566,11 @@ class PlotTopologies(object):
             self.trench_right,
             self.other,
         ) = ptt.resolve_topologies.resolve_topological_snapshot_into_features(
-            self.plate_reconstruction.topological_snapshot(
-                self.time, anchor_plate_id=self.anchor_plate_id
-            ),
+            topological_snapshot,
             # use ResolveTopologyType.boundary parameter to resolve rigid plate boundary only
             # because the Mid-ocean ridges(and transforms) should not contain lines from topological networks
             resolve_topology_types=pygplates.ResolveTopologyType.boundary,  # type: ignore
         )
-        self._topologies = None
 
         # miscellaneous boundaries
         self.continental_rifts = []
@@ -2007,7 +2020,7 @@ class PlotTopologies(object):
         central_meridian=0.0,
         tessellate_degrees=1,
     ):
-        """Create a geopandas.GeoDataFrame object containing geometries ofresolved topological sections."""
+        """Create a geopandas.GeoDataFrame object containing geometries of resolved topological sections."""
 
         # get plate IDs and feature types to add to geodataframe
         geometries = []
@@ -2069,22 +2082,6 @@ class PlotTopologies(object):
             color=color,
             **kwargs,
         )
-
-    @validate_reconstruction_time
-    def _resolve_both_boundaries_and_networks(self):
-        """need to resolve_topologies for both rigid boundaries and networks if not done yet"""
-        if self._topologies is None:
-            resolved_topologies = []
-            shared_boundary_sections = []
-            pygplates.resolve_topologies(  # type: ignore
-                self.plate_reconstruction.topology_features,
-                self.plate_reconstruction.rotation_model,
-                resolved_topologies,
-                self.time,
-                shared_boundary_sections,
-                anchor_plate_id=self.anchor_plate_id,
-            )
-            self._topologies = [t.get_resolved_feature() for t in resolved_topologies]
 
     @validate_reconstruction_time
     @append_docstring(GET_DATE_DOCSTRING.format("topological plate boundaries"))
