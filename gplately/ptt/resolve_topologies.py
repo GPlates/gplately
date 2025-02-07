@@ -39,6 +39,9 @@ def resolve_topologies(
     output_filename_extension,
     transform_segment_deviation_in_radians=separate_ridge_transform_segments.DEFAULT_TRANSFORM_SEGMENT_DEVIATION_RADIANS,
     anchor_plate_id=None,
+    resolve_topology_types: int = (
+        pygplates.ResolveTopologyType.boundary | pygplates.ResolveTopologyType.network
+    ),
 ):
     """
     Resolves topologies at specified time and saves (to separate files) the resolved topologies, and their boundary sections as subduction zones,
@@ -55,7 +58,7 @@ def resolve_topologies(
         Topology feature collection(s), or list of features, or filename(s) or any combination of those.
 
     time: number
-        Reconstruction time to resolved topologies.
+        Reconstruction time to resolve topologies.
 
     transform_segment_deviation_in_radians: number
         How much a mid-ocean ridge segment can deviate from the stage pole before
@@ -63,6 +66,11 @@ def resolve_topologies(
 
     anchor_plate_id: int, optional
         Anchor plate ID.
+        If not specified then defaults to `0` if using rotation *features*, or the default anchor plate of the rotation *model* if using one.
+
+    resolve_topology_types:
+        A bitwise combination of any of `pygplates.ResolveTopologyType.boundary` or `pygplates.ResolveTopologyType.network`.
+        Defaults to both boundaries and networks.
 
     Writes output files containing the following features...
 
@@ -75,17 +83,76 @@ def resolve_topologies(
     - right subduction boundary sections (resolved features)
     - other boundary sections (resolved features) that are not subduction zones or mid-ocean ridges (ridge/transform)
 
+    See Also
+    --------
+    resolve_topological_snapshot
     """
-    # Turn rotation data into a RotationModel (if not already).
-    rotation_model = pygplates.RotationModel(
+
+    # Resolve our topological plate polygons (and deforming networks) to the current 'time'.
+    # We generate both the resolved topology boundaries and the boundary sections between them.
+    topological_snapshot = pygplates.TopologicalSnapshot(
+        topology_features,
         rotation_features_or_model,
-        default_anchor_plate_id=anchor_plate_id,
+        time,
+        anchor_plate_id=anchor_plate_id,
     )
 
-    # Get topology features (could include filenames).
-    topology_features = pygplates.FeaturesFunctionArgument(
-        topology_features
-    ).get_features()
+    return resolve_topological_snapshot(
+        topological_snapshot,
+        output_filename_prefix,
+        output_filename_extension,
+        transform_segment_deviation_in_radians,
+        resolve_topology_types,
+    )
+
+
+def resolve_topological_snapshot(
+    topological_snapshot: pygplates.TopologicalSnapshot,
+    output_filename_prefix,
+    output_filename_extension,
+    transform_segment_deviation_in_radians=separate_ridge_transform_segments.DEFAULT_TRANSFORM_SEGMENT_DEVIATION_RADIANS,
+    resolve_topology_types: int = (
+        pygplates.ResolveTopologyType.boundary | pygplates.ResolveTopologyType.network
+    ),
+):
+    """
+    From the specified topological snapshot, saves (to separate files) the resolved topologies, and their boundary sections as subduction zones,
+    mid-ocean ridges (ridge/transform) and others (not subduction zones or mid-ocean ridges).
+
+    Parameters
+    ----------
+
+    topological_snapshot: `pygplates.TopologicalSnapshot`
+        Topology snapshot containing the resolved topologies at a particular reconstruction time.
+
+    transform_segment_deviation_in_radians: number
+        How much a mid-ocean ridge segment can deviate from the stage pole before
+        it's considered a transform segment (in radians).
+
+    resolve_topology_types:
+        A bitwise combination of any of `pygplates.ResolveTopologyType.boundary` or `pygplates.ResolveTopologyType.network`.
+        Defaults to both boundaries and networks.
+
+    Writes output files containing the following features...
+
+    - resolved topology features (topological plates and networks)
+    - ridge and transform boundary sections (resolved features)
+    - ridge boundary sections (resolved features)
+    - transform boundary sections (resolved features)
+    - subduction boundary sections (resolved features)
+    - left subduction boundary sections (resolved features)
+    - right subduction boundary sections (resolved features)
+    - other boundary sections (resolved features) that are not subduction zones or mid-ocean ridges (ridge/transform)
+
+    Notes
+    -----
+    This is similar to `resolve_topologies_into_features` but is more efficient if you already have a topological snapshot because it
+    avoids resolving topologies again (the topological snapshot already contains resolved topologies for a particular reconstruction time).
+
+    See Also
+    --------
+    resolve_topologies
+    """
 
     # Resolve our topological plate polygons (and deforming networks) to the current 'time'.
     # We generate both the resolved topology boundaries and the boundary sections between them.
@@ -98,13 +165,13 @@ def resolve_topologies(
         left_subduction_boundary_section_features,
         right_subduction_boundary_section_features,
         other_boundary_section_features,
-    ) = resolve_topologies_into_features(
-        rotation_model,
-        topology_features,
-        time,
+    ) = resolve_topological_snapshot_into_features(
+        topological_snapshot,
         transform_segment_deviation_in_radians,
-        anchor_plate_id=anchor_plate_id,
+        resolve_topology_types,
     )
+
+    time = topological_snapshot.get_reconstruction_time()
 
     # Write each list of features to a separate file.
     _write_resolved_topologies(
@@ -146,7 +213,7 @@ def resolve_topologies_into_features(
         Topology feature collection(s), or list of features, or filename(s) or any combination of those.
 
     time: number
-        Reconstruction time to resolved topologies.
+        Reconstruction time to resolve topologies.
 
     transform_segment_deviation_in_radians: number
         How much a mid-ocean ridge segment can deviate from the stage pole before
@@ -154,6 +221,11 @@ def resolve_topologies_into_features(
 
     anchor_plate_id: int, optional
         Anchor plate ID.
+        If not specified then defaults to `0` if using rotation *features*, or the default anchor plate of the rotation *model* if using one.
+
+    resolve_topology_types:
+        A bitwise combination of any of `pygplates.ResolveTopologyType.boundary` or `pygplates.ResolveTopologyType.network`.
+        Defaults to both boundaries and networks.
 
     Returns a tuple containing the following lists...
 
@@ -166,30 +238,82 @@ def resolve_topologies_into_features(
     - right subduction boundary sections (resolved features)
     - other boundary sections (resolved features) that are not subduction zones or mid-ocean ridges (ridge/transform)
 
+    See Also
+    --------
+    resolve_topological_snapshot_into_features
     """
-    # Turn rotation data into a RotationModel (if not already).
-    rotation_model = pygplates.RotationModel(
-        rotation_features_or_model,
-        default_anchor_plate_id=anchor_plate_id,
-    )
-    time = float(time)
-
-    # Turn topology data into a list of features (if not already).
-    topology_features = pygplates.FeaturesFunctionArgument(topology_features)
 
     # Resolve our topological plate polygons (and deforming networks) to the current 'time'.
     # We generate both the resolved topology boundaries and the boundary sections between them.
-    resolved_topologies = []
-    shared_boundary_sections = []
-    pygplates.resolve_topologies(
-        topology_features.get_features(),
-        rotation_model,
-        resolved_topologies,
+    topological_snapshot = pygplates.TopologicalSnapshot(
+        topology_features,
+        rotation_features_or_model,
         time,
-        shared_boundary_sections,
         anchor_plate_id=anchor_plate_id,
-        resolve_topology_types=resolve_topology_types,
     )
+
+    return resolve_topological_snapshot_into_features(
+        topological_snapshot,
+        transform_segment_deviation_in_radians,
+        resolve_topology_types,
+    )
+
+
+def resolve_topological_snapshot_into_features(
+    topological_snapshot: pygplates.TopologicalSnapshot,
+    transform_segment_deviation_in_radians=separate_ridge_transform_segments.DEFAULT_TRANSFORM_SEGMENT_DEVIATION_RADIANS,
+    resolve_topology_types: int = (
+        pygplates.ResolveTopologyType.boundary | pygplates.ResolveTopologyType.network
+    ),
+):
+    """
+    From the specified topological snapshot, returns resolved topologies and their boundary sections as subduction zones,
+    mid-ocean ridges (ridge/transform) and others (not subduction zones or mid-ocean ridges).
+
+    Parameters
+    ----------
+
+    topological_snapshot: `pygplates.TopologicalSnapshot`
+        Topology snapshot containing the resolved topologies at a particular reconstruction time.
+
+    transform_segment_deviation_in_radians: number
+        How much a mid-ocean ridge segment can deviate from the stage pole before
+        it's considered a transform segment (in radians).
+
+    resolve_topology_types:
+        A bitwise combination of any of `pygplates.ResolveTopologyType.boundary` or `pygplates.ResolveTopologyType.network`.
+        Defaults to both boundaries and networks.
+
+    Returns a tuple containing the following lists...
+
+    - resolved topology features (topological plates and networks)
+    - ridge and transform boundary sections (resolved features)
+    - ridge boundary sections (resolved features)
+    - transform boundary sections (resolved features)
+    - subduction boundary sections (resolved features)
+    - left subduction boundary sections (resolved features)
+    - right subduction boundary sections (resolved features)
+    - other boundary sections (resolved features) that are not subduction zones or mid-ocean ridges (ridge/transform)
+
+    Notes
+    -----
+    This is similar to `resolve_topologies_into_features` but is more efficient if you already have a topological snapshot because it
+    avoids resolving topologies again (the topological snapshot already contains resolved topologies for a particular reconstruction time).
+
+    See Also
+    --------
+    resolve_topologies_into_features
+    """
+
+    # Extract the resolved topologies, shared boundary sections, rotation model and reconstruction time from the topological snapshot.
+    resolved_topologies = topological_snapshot.get_resolved_topologies(
+        resolve_topology_types
+    )
+    shared_boundary_sections = topological_snapshot.get_resolved_topological_sections(
+        resolve_topology_types
+    )
+    rotation_model = topological_snapshot.get_rotation_model()
+    time = topological_snapshot.get_reconstruction_time()
 
     # We'll create a feature for each boundary polygon feature and each type of
     # resolved topological section feature we find.

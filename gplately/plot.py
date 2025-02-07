@@ -549,11 +549,10 @@ class PlotTopologies(object):
             self.trench_left,
             self.trench_right,
             self.other,
-        ) = ptt.resolve_topologies.resolve_topologies_into_features(
-            self.plate_reconstruction.rotation_model,
-            self.plate_reconstruction.topology_features,
-            self.time,
-            anchor_plate_id=self.anchor_plate_id,
+        ) = ptt.resolve_topologies.resolve_topological_snapshot_into_features(
+            self.plate_reconstruction.topological_snapshot(
+                self.time, anchor_plate_id=self.anchor_plate_id
+            ),
             # use ResolveTopologyType.boundary parameter to resolve rigid plate boundary only
             # because the Mid-ocean ridges(and transforms) should not contain lines from topological networks
             resolve_topology_types=pygplates.ResolveTopologyType.boundary,  # type: ignore
