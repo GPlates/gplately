@@ -48,7 +48,6 @@ from .gpml import _load_FeatureCollection
 from .mapping.plot_engine import PlotEngine
 
 from .mapping.cartopy_plot import CartopyPlotEngine, DEFAULT_CARTOPY_PROJECTION
-from .pygplates import FeatureCollection as _FeatureCollection
 from .reconstruction import PlateReconstruction as _PlateReconstruction
 from .tools import EARTH_RADIUS
 from .utils.feature_utils import shapelify_features as _shapelify_features
@@ -333,67 +332,88 @@ class PlotTopologies(object):
         self._anchor_plate_id = self._check_anchor_plate_id(anchor_plate_id)
         self._plot_engine = plot_engine
 
-        # store topologies for easy access
-        # setting time runs the update_time routine
         self._time = None
         if time is not None:
+            # setting time runs the update_time routine
             self.time = time
 
-    def __getstate__(self):
-        filenames = self.plate_reconstruction.__getstate__()
+    def __reduce__(self):
+        # Arguments for __init__.
+        #
+        # Only one argument is required by __init__, and that's a PlateReconstruction object (which'll get pickled).
+        init_args = (self.plate_reconstruction,)
 
-        # add important variables from Points object
-        if self._coastlines:
-            filenames["coastlines"] = self._coastlines.filenames
-        if self._continents:
-            filenames["continents"] = self._continents.filenames
-        if self._COBs:
-            filenames["COBs"] = self._COBs.filenames
-        filenames["time"] = self.time
-        filenames["plate_id"] = self._anchor_plate_id
+        # State for __setstate__.
+        state = self.__dict__.copy()
 
-        return filenames
+        # Remove 'plate_reconstruction' since that will get passed to __init__.
+        del state["plate_reconstruction"]
+
+        # Remove the unpicklable entries.
+        #
+        # This includes pygplates reconstructed feature geometries and resolved topological geometries.
+        # Note: PyGPlates features and features collections (and rotation models) can be pickled though.
+        #
+        # __setstate__ will call 'update_time()' to generate these reconstructed/resolved geometries/features.
+        # So we don't need to pickle them.
+        # Note: Some of them we can pickle (eg, "resolved features", which are of type pygplates.Feature) and
+        #       some we cannot (like 'coastlines' which are of type pygplates.ReconstructedFeatureGeometry).
+        #       However, as mentioned, we won't pickle any of them (since taken care of by 'update_time()').
+        for key in (
+            "coastlines",  # we're keeping "_coastlines" though (we need the original 'pygplates.Feature's to reconstruct with)
+            "continents",  # we're keeping "_continents" though (we need the original 'pygplates.Feature's to reconstruct with)
+            "COBs",  # we're keeping "_COBs" though (we need the original 'pygplates.Feature's to reconstruct with)
+            "_topological_plate_boundaries",
+            "_ridges",
+            "_ridges_do_not_use_for_now",
+            "_transforms",
+            "_transforms_do_not_use_for_now",
+            "trenches",
+            "trench_left",
+            "trench_right",
+            "other",
+            "_topologies",
+            "continental_rifts",
+            "faults",
+            "fracture_zones",
+            "inferred_paleo_boundaries",
+            "terrane_boundaries",
+            "transitional_crusts",
+            "orogenic_belts",
+            "sutures",
+            "continental_crusts",
+            "extended_continental_crusts",
+            "passive_continental_boundaries",
+            "slab_edges",
+            "unclassified_features",
+        ):
+            if key in state:  # in case some state has not been initialised yet
+                del state[key]
+
+        # Call __init__ so that we default initialise everything in a consistent state before __setstate__ gets called.
+        # Note that this is the reason we implement __reduce__, instead of __getstate__ (where __init__ doesn't get called).
+        #
+        # If we don't do this then __setstate__ would need to stay in sync with __init__ (whenever it gets updated).
+        return PlotTopologies, init_args, state
 
     def __setstate__(self, state):
-        plate_reconstruction_args = [state["rotation_model"], None, None]
-        if "topology_features" in state:
-            plate_reconstruction_args[1] = state["topology_features"]
-        if "static_polygons" in state:
-            plate_reconstruction_args[2] = state["static_polygons"]
+        self.__dict__.update(state)
 
-        self.plate_reconstruction = _PlateReconstruction(*plate_reconstruction_args)
-
-        self._coastlines = None
-        self._continents = None
-        self._COBs = None
-        self.coastlines = None
-        self.continents = None
-        self.COBs = None
-
-        # reinstate unpicklable items
-        if "coastlines" in state:
-            self._coastlines = _FeatureCollection()
-            for feature in state["coastlines"]:
-                self._coastlines.add(_FeatureCollection(feature))
-
-        if "continents" in state:
-            self._continents = _FeatureCollection()
-            for feature in state["continents"]:
-                self._continents.add(_FeatureCollection(feature))
-
-        if "COBs" in state:
-            self._COBs = _FeatureCollection()
-            for feature in state["COBs"]:
-                self._COBs.add(_FeatureCollection(feature))
-
-        self._anchor_plate_id = state["plate_id"]
-        self.base_projection = DEFAULT_CARTOPY_PROJECTION
-        self._time = None
+        # Restore the unpicklable entries.
+        #
+        # This includes pygplates reconstructed feature geometries and resolved topological geometries.
+        # Note: PyGPlates features and features collections (and rotation models) can be pickled though.
+        #
+        # Re-generate the pygplates reconstructed feature geometries and resolved topological geometries
+        # deleted from the state returned by __reduce__.
+        if self.time is not None:
+            self.update_time(self.time)
 
     @property
     def topological_plate_boundaries(self):
         if self._topological_plate_boundaries is None:
-            self.update_time(self.time)
+            if self.time is not None:
+                self.update_time(self.time)
         return self._topological_plate_boundaries
 
     @property
@@ -513,6 +533,12 @@ class PlotTopologies(object):
         """
         assert time is not None, "time must be set to a valid reconstruction time"
 
+        #
+        # NOTE: If you add a new data member here that's a pygplates reconstructable feature geometry or resolved topological geometry,
+        #       then be sure to also include it in __getstate__/()__setstate__()
+        #       (basically anything reconstructed or resolved by pygplates since those cannot be pickled).
+        #
+
         self._time = float(time)
         (
             self._topological_plate_boundaries,
@@ -548,6 +574,8 @@ class PlotTopologies(object):
         self.passive_continental_boundaries = []
         self.slab_edges = []
         self.unclassified_features = []
+
+        self._transforms = []
 
         for topol in self.other:
             if topol.get_feature_type() == pygplates.FeatureType.gpml_continental_rift:  # type: ignore
@@ -804,6 +832,7 @@ class PlotTopologies(object):
             tessellate_degrees=tessellate_degrees,
         )
 
+    @validate_reconstruction_time
     @append_docstring(PLOT_DOCSTRING.format("coastlines"))
     def plot_coastlines(self, ax, color="black", **kwargs):
         """Plot reconstructed coastline polygons onto a standard map Projection.
@@ -833,6 +862,7 @@ class PlotTopologies(object):
             tessellate_degrees=tessellate_degrees,
         )
 
+    @validate_reconstruction_time
     @append_docstring(PLOT_DOCSTRING.format("continents"))
     def plot_continents(self, ax, color="black", **kwargs):
         """Plot reconstructed continental polygons onto a standard map Projection.
@@ -866,6 +896,7 @@ class PlotTopologies(object):
             tessellate_degrees=tessellate_degrees,
         )
 
+    @validate_reconstruction_time
     @append_docstring(PLOT_DOCSTRING.format("continent ocean boundaries"))
     def plot_continent_ocean_boundaries(self, ax, color="black", **kwargs):
         """Plot reconstructed continent-ocean boundary (COB) polygons onto a standard map Projection.
@@ -912,6 +943,7 @@ class PlotTopologies(object):
             tessellate_degrees=tessellate_degrees,
         )
 
+    @validate_reconstruction_time
     @validate_topology_availability("ridges")
     @append_docstring(PLOT_DOCSTRING.format("ridges"))
     def plot_ridges(self, ax, color="black", **kwargs):
@@ -1028,6 +1060,7 @@ class PlotTopologies(object):
             tessellate_degrees=tessellate_degrees,
         )
 
+    @validate_reconstruction_time
     @append_docstring(PLOT_DOCSTRING.format("other"))
     def plot_misc_boundaries(self, ax, color="black", **kwargs):
         """Plot reconstructed miscellaneous plate boundary polylines onto a standard
@@ -1527,6 +1560,7 @@ class PlotTopologies(object):
             tessellate_degrees=tessellate_degrees,
         )
 
+    @validate_reconstruction_time
     @append_docstring(PLOT_DOCSTRING.format("continental rifts"))
     def plot_continental_rifts(self, ax, color="black", **kwargs):
         """Plot continental rifts on a standard map projection."""
@@ -1549,6 +1583,7 @@ class PlotTopologies(object):
             tessellate_degrees=tessellate_degrees,
         )
 
+    @validate_reconstruction_time
     @append_docstring(PLOT_DOCSTRING.format("faults"))
     def plot_faults(self, ax, color="black", **kwargs):
         """Plot faults on a standard map projection."""
@@ -1571,6 +1606,7 @@ class PlotTopologies(object):
             tessellate_degrees=tessellate_degrees,
         )
 
+    @validate_reconstruction_time
     @append_docstring(PLOT_DOCSTRING.format("fracturezones"))
     def plot_fracture_zones(self, ax, color="black", **kwargs):
         """Plot fracture zones on a standard map projection."""
@@ -1597,6 +1633,7 @@ class PlotTopologies(object):
             tessellate_degrees=tessellate_degrees,
         )
 
+    @validate_reconstruction_time
     @append_docstring(PLOT_DOCSTRING.format("inferred paleo-boundaries"))
     def plot_inferred_paleo_boundaries(self, ax, color="black", **kwargs):
         """Plot inferred paleo boundaries on a standard map projection."""
@@ -1623,6 +1660,7 @@ class PlotTopologies(object):
             tessellate_degrees=tessellate_degrees,
         )
 
+    @validate_reconstruction_time
     @append_docstring(PLOT_DOCSTRING.format("terrane boundaries"))
     def plot_terrane_boundaries(self, ax, color="black", **kwargs):
         """Plot terrane boundaries on a standard map projection."""
@@ -1649,6 +1687,7 @@ class PlotTopologies(object):
             tessellate_degrees=tessellate_degrees,
         )
 
+    @validate_reconstruction_time
     @append_docstring(PLOT_DOCSTRING.format("transitional crusts"))
     def plot_transitional_crusts(self, ax, color="black", **kwargs):
         """Plot transitional crust on a standard map projection."""
@@ -1675,6 +1714,7 @@ class PlotTopologies(object):
             tessellate_degrees=tessellate_degrees,
         )
 
+    @validate_reconstruction_time
     @append_docstring(PLOT_DOCSTRING.format("orogenic belts"))
     def plot_orogenic_belts(self, ax, color="black", **kwargs):
         """Plot orogenic belts on a standard map projection."""
@@ -1697,6 +1737,7 @@ class PlotTopologies(object):
             tessellate_degrees=tessellate_degrees,
         )
 
+    @validate_reconstruction_time
     @append_docstring(PLOT_DOCSTRING.format("sutures"))
     def plot_sutures(self, ax, color="black", **kwargs):
         """Plot sutures on a standard map projection."""
@@ -1723,6 +1764,7 @@ class PlotTopologies(object):
             tessellate_degrees=tessellate_degrees,
         )
 
+    @validate_reconstruction_time
     @append_docstring(PLOT_DOCSTRING.format("continental crusts"))
     def plot_continental_crusts(self, ax, color="black", **kwargs):
         """Plot continental crust lines on a standard map projection."""
@@ -1749,6 +1791,7 @@ class PlotTopologies(object):
             tessellate_degrees=tessellate_degrees,
         )
 
+    @validate_reconstruction_time
     @append_docstring(PLOT_DOCSTRING.format("extended continental crusts"))
     def plot_extended_continental_crusts(self, ax, color="black", **kwargs):
         """Plot extended continental crust lines on a standard map projection."""
@@ -1775,6 +1818,7 @@ class PlotTopologies(object):
             tessellate_degrees=tessellate_degrees,
         )
 
+    @validate_reconstruction_time
     @append_docstring(PLOT_DOCSTRING.format("passive continental boundaries"))
     def plot_passive_continental_boundaries(self, ax, color="black", **kwargs):
         """Plot passive continental boundaries on a standard map projection."""
@@ -1797,6 +1841,7 @@ class PlotTopologies(object):
             tessellate_degrees=tessellate_degrees,
         )
 
+    @validate_reconstruction_time
     @append_docstring(PLOT_DOCSTRING.format("slab edges"))
     def plot_slab_edges(self, ax, color="black", **kwargs):
         """Plot slab edges on a standard map projection."""
@@ -1831,6 +1876,7 @@ class PlotTopologies(object):
             tessellate_degrees=tessellate_degrees,
         )
 
+    @validate_reconstruction_time
     @append_docstring(PLOT_DOCSTRING.format("transforms"))
     def plot_transforms(self, ax, color="black", **kwargs):
         """Plot transform boundaries(gpml:Transform) onto a map."""
@@ -1887,6 +1933,7 @@ class PlotTopologies(object):
             tessellate_degrees=tessellate_degrees,
         )
 
+    @validate_reconstruction_time
     @append_docstring(PLOT_DOCSTRING.format("unclassified features"))
     def plot_unclassified_features(self, ax, color="black", **kwargs):
         """Plot GPML unclassified features on a standard map projection."""
@@ -2024,6 +2071,7 @@ class PlotTopologies(object):
             **kwargs,
         )
 
+    @validate_reconstruction_time
     def _resolve_both_boundaries_and_networks(self):
         """need to resolve_topologies for both rigid boundaries and networks if not done yet"""
         if self._topologies is None:

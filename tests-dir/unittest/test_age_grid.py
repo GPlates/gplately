@@ -11,8 +11,6 @@ print(gplately.__file__)
 from plate_model_manager import PlateModel, PlateModelManager
 
 from gplately import PlateReconstruction, PlotTopologies, SeafloorGrid
-from gplately.pygplates import FeatureCollection as gFeatureCollection
-from gplately.pygplates import RotationModel as gRotationModel
 
 
 def main():
@@ -30,17 +28,13 @@ def main():
     if "Cratons" in plate_model.get_avail_layers():
         continent_files += plate_model.get_layer("Cratons")
 
-    rotations = gRotationModel(rotation_files)
-    topologies = gFeatureCollection.from_file_list(topology_files)
-    continents = gFeatureCollection.from_file_list(continent_files)
-
     reconstruction = PlateReconstruction(
-        rotation_model=rotations,
-        topology_features=topologies,
+        rotation_model=rotation_files,
+        topology_features=topology_files,
     )
     gplot = PlotTopologies(
         reconstruction,
-        continents=continents,
+        continents=continent_files,
     )
 
     grid = SeafloorGrid(

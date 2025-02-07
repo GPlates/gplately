@@ -1,5 +1,6 @@
 import matplotlib.pyplot as plt
 import numpy as np
+import pickle
 import pytest
 from conftest import gplately_plot_topologies_object as gplot
 from conftest import reconstruction_times
@@ -176,7 +177,13 @@ def test_PlotTopologies_subduction_teeth(gplot):
 
 
 def test_pickle_Points():
-    import pickle
-
     gplot_dump = pickle.dumps(gplot)
     gplot_load = pickle.loads(gplot_dump)
+
+
+def test_pickle_plotTopologies_object(gplot):
+    gplot_dump = pickle.dumps(gplot)
+    gplot_load = pickle.loads(gplot_dump)
+    assert gplot_load.coastlines and len(gplot_load.coastlines) == len(gplot.coastlines)
+    assert gplot_load.continents and len(gplot_load.continents) == len(gplot.continents)
+    assert gplot_load.COBs and len(gplot_load.COBs) == len(gplot.COBs)

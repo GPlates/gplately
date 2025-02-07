@@ -30,8 +30,6 @@ import pygplates
 
 from . import tools as _tools
 from .gpml import _load_FeatureCollection
-from .pygplates import FeatureCollection as _FeatureCollection
-from .pygplates import RotationModel as _RotationModel
 from .ptt import separate_ridge_transform_segments
 
 logger = logging.getLogger("gplately")
@@ -85,18 +83,18 @@ class PlateReconstruction(object):
             self.name = None
 
         if anchor_plate_id is None:
-            if isinstance(rotation_model, _RotationModel):
+            if isinstance(rotation_model, pygplates.RotationModel):
                 # Use the default anchor plate of 'rotation_model'.
                 self.rotation_model = rotation_model
             else:
                 # Using rotation features/files, so default anchor plate is 0.
-                self.rotation_model = _RotationModel(rotation_model)
+                self.rotation_model = pygplates.RotationModel(rotation_model)
         else:
             # User has explicitly specified an anchor plate ID, so let's check it.
             anchor_plate_id = self._check_anchor_plate_id(anchor_plate_id)
             # This works when 'rotation_model' is a RotationModel or rotation features/files
             # (for pygplates >= 0.29)...
-            self.rotation_model = _RotationModel(
+            self.rotation_model = pygplates.RotationModel(
                 rotation_model, default_anchor_plate_id=anchor_plate_id
             )
 
@@ -111,48 +109,24 @@ class PlateReconstruction(object):
         self._topological_snapshot = None
 
     def __getstate__(self):
-        filenames = {
-            "rotation_model": self.rotation_model.filenames,
-            "anchor_plate_id": self.anchor_plate_id,
-        }
+        state = self.__dict__.copy()
 
-        if self.topology_features:
-            filenames["topology_features"] = self.topology_features.filenames
-        if self.static_polygons:
-            filenames["static_polygons"] = self.static_polygons.filenames
+        # Remove the unpicklable entries.
+        #
+        # This includes pygplates reconstructed feature geometries and resolved topological geometries.
+        # Note: PyGPlates features and features collections (and rotation models) can be pickled though.
+        #
 
-        # # remove unpicklable items
-        # del self.rotation_model, self.topology_features, self.static_polygons
-
-        # # really make sure they're gone
-        # self.rotation_model = None
-        # self.topology_features = None
-        # self.static_polygons = None
-
-        return filenames
+        return state
 
     def __setstate__(self, state):
-        # reinstate unpicklable items
-        self.rotation_model = _RotationModel(
-            state["rotation_model"], default_anchor_plate_id=state["anchor_plate_id"]
-        )
+        self.__dict__.update(state)
 
-        self.anchor_plate_id = state["anchor_plate_id"]
-        self.topology_features = None
-        self.static_polygons = None
-
-        if "topology_features" in state:
-            self.topology_features = _FeatureCollection()
-            for topology in state["topology_features"]:
-                self.topology_features.add(_FeatureCollection(topology))
-
-        if "static_polygons" in state:
-            self.static_polygons = _FeatureCollection()
-            for polygon in state["static_polygons"]:
-                self.static_polygons.add(_FeatureCollection(polygon))
-
-        # This will get rebuilt when/if 'topological_snapshot()' is next called.
-        self._topological_snapshot = None
+        # Restore the unpicklable entries.
+        #
+        # This includes pygplates reconstructed feature geometries and resolved topological geometries.
+        # Note: PyGPlates features and features collections (and rotation models) can be pickled though.
+        #
 
     @property
     def anchor_plate_id(self):
@@ -168,7 +142,7 @@ class PlateReconstruction(object):
         if anchor_plate != self.anchor_plate_id:
             # Update the RotationModel (which is where the anchor plate is stored).
             # This keeps the same rotation model but just changes the anchor plate.
-            self.rotation_model = _RotationModel(
+            self.rotation_model = pygplates.RotationModel(
                 self.rotation_model, default_anchor_plate_id=anchor_plate
             )
 
@@ -2483,9 +2457,6 @@ class Points(object):
 
         self.plate_reconstruction = plate_reconstruction
 
-        self._update(lons, lats, time, plate_id)
-
-    def _update(self, lons, lats, time=0, plate_id=None):
         # get Cartesian coordinates
         self.x, self.y, self.z = _tools.lonlat2xyz(lons, lats, degrees=False)
 
@@ -2519,45 +2490,32 @@ class Points(object):
                 plate_id[i] = feature.get_reconstruction_plate_id()
 
         self.plate_id = plate_id
-        self.FeatureCollection = pygplates.FeatureCollection(self.features)
+        self.feature_collection = pygplates.FeatureCollection(self.features)
+
+    def __getstate__(self):
+        state = self.__dict__.copy()
+
+        # Remove the unpicklable entries.
+        #
+        # This includes pygplates reconstructed feature geometries and resolved topological geometries.
+        # Note: PyGPlates features and features collections (and rotation models) can be pickled though.
+        #
+
+        return state
+
+    def __setstate__(self, state):
+        self.__dict__.update(state)
+
+        # Restore the unpicklable entries.
+        #
+        # This includes pygplates reconstructed feature geometries and resolved topological geometries.
+        # Note: PyGPlates features and features collections (and rotation models) can be pickled though.
+        #
 
     @property
     def size(self):
         """Number of points"""
         return len(self.lons)
-
-    def __getstate__(self):
-        filenames = self.plate_reconstruction.__getstate__()
-
-        # add important variables from Points object
-        filenames["lons"] = self.lons
-        filenames["lats"] = self.lats
-        filenames["time"] = self.time
-        filenames["plate_id"] = self.plate_id
-        for key in self.attributes:
-            filenames[key] = self.attributes[key]
-
-        return filenames
-
-    def __setstate__(self, state):
-        self.plate_reconstruction = PlateReconstruction(
-            state["rotation_model"],
-            state["topology_features"],
-            state["static_polygons"],
-        )
-
-        # reinstate unpicklable items
-        self.lons = state["lons"]
-        self.lats = state["lats"]
-        self.time = state["time"]
-        self.plate_id = state["plate_id"]
-        self.attributes = dict()
-
-        self._update(self.lons, self.lats, self.time, self.plate_id)
-
-        for key in state:
-            if key not in ["lons", "lats", "time", "plate_id"]:
-                self.attributes[key] = state[key]
 
     def copy(self):
         """Returns a copy of the Points object
@@ -2637,7 +2595,7 @@ class Points(object):
 
         if any(kwargs):
             # add these to the FeatureCollection
-            for f, feature in enumerate(self.FeatureCollection):
+            for f, feature in enumerate(self.feature_collection):
                 for key in keys:
                     # extract value for each row in attribute
                     val = self.attributes[key][f]
@@ -2971,7 +2929,7 @@ class Points(object):
         rlons = np.empty((len(time_array), len(self.lons)))
         rlats = np.empty((len(time_array), len(self.lons)))
 
-        for i, point_feature in enumerate(self.FeatureCollection):
+        for i, point_feature in enumerate(self.feature_collection):
             # Create the motion path feature
             motion_path_feature = pygplates.Feature.create_motion_path(
                 point_feature.get_geometry(),
@@ -3165,7 +3123,7 @@ class Points(object):
             or filename.endswith(".gpmlz")
             or filename.endswith(".shp")
         ):
-            self.FeatureCollection.write(filename)
+            self.feature_collection.write(filename)
 
         else:
             raise ValueError(
@@ -3693,7 +3651,7 @@ class _ReconstructByTopologies(object):
         detect_collisions: Collision detection function, or None. Defaults to _DEFAULT_COLLISION.
         """
 
-        self.rotation_model = _RotationModel(rotation_features_or_model)
+        self.rotation_model = pygplates.RotationModel(rotation_features_or_model)
 
         # Turn topology data into a list of features (if not already).
         self.topology_features = pygplates.FeaturesFunctionArgument(

@@ -27,9 +27,7 @@ from plate_model_manager import PlateModel, PlateModelManager
 
 from gplately import PlateReconstruction, PlotTopologies, SeafloorGrid
 
-from ..pygplates import FeatureCollection as gFeatureCollection
-from ..pygplates import FeaturesFunctionArgument  # type: ignore
-from ..pygplates import RotationModel as gRotationModel
+from pygplates import FeaturesFunctionArgument  # type: ignore
 
 logger = logging.getLogger("gplately")
 
@@ -236,7 +234,6 @@ def create_agegrids(
         raise Exception(
             "No rotation file(s) found. User must either provide rotation file(s) in the first positional arguments or specify a model name with (-m,--model)."
         )
-    rotations = gRotationModel(rotation_files)
 
     if not topology_files:
         error_msg = "No topology file(s) found. "
@@ -245,7 +242,6 @@ def create_agegrids(
         else:
             error_msg += f"You need to specify the topology files in the first positional arguments."
         raise Exception(error_msg)
-    topologies = gFeatureCollection.from_file_list(topology_files)
 
     if not continent_files:
         error_msg = "No continental polygon file(s) found. "
@@ -254,17 +250,16 @@ def create_agegrids(
         else:
             error_msg += f"You need to specify the continental polygon files with (-c,--continents). Run `gplately ag -h` to see help."
         raise Exception(error_msg)
-    continents = gFeatureCollection.from_file_list(continent_files)
 
     with warnings.catch_warnings():
         warnings.simplefilter("ignore", ImportWarning)
         reconstruction = PlateReconstruction(
-            rotation_model=rotations,
-            topology_features=topologies,
+            rotation_model=rotation_files,
+            topology_features=topology_files,
         )
         gplot = PlotTopologies(
             reconstruction,
-            continents=continents,
+            continents=continent_files,
         )
 
         grid = SeafloorGrid(

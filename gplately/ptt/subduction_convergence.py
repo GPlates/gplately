@@ -30,20 +30,6 @@ import warnings
 
 import pygplates
 
-# Required pygplates version.
-# PyGPlates 0.28 is a public release from 2020 (so everyone should be using that by now).
-# Note: Specifying 'Version(28)' instead of 'Version(0, 28)' since the latter only works for version >= 0.34.
-PYGPLATES_VERSION_REQUIRED = pygplates.Version(28)
-PYGPLATES_VERSION = pygplates.Version.get_imported_version()
-if PYGPLATES_VERSION < PYGPLATES_VERSION_REQUIRED:
-    raise RuntimeError(
-        "This version of pyGPlates is not supported"
-        + " ({} installed, {} required)".format(
-            PYGPLATES_VERSION,
-            PYGPLATES_VERSION_REQUIRED,
-        )
-    )
-
 # The default threshold sampling distance along trenches (subduction zones).
 DEFAULT_THRESHOLD_SAMPLING_DISTANCE_DEGREES = 0.5
 DEFAULT_THRESHOLD_SAMPLING_DISTANCE_KMS = (
@@ -365,7 +351,7 @@ def subduction_convergence(
             # Find the subducting plate of the shared sub-segment.
             #
             # Note that prior to pyGPlates 0.22 we also looked for the overriding plate since it couldn't extract the individual trench plate IDs
-            # from a "resolved topological line" trench (now we use the trench plate IDs since our minimum requirement is version 0.28).
+            # from a "resolved topological line" trench (now we use the trench plate IDs since our minimum requirement is above version 0.28).
             # Not having to find the overriding plate means we actually get a more accurate total subduction zone length in this script.
             # This is because we are not forced to ignore trench sections where there's not exactly one overriding plate
             # (and optionally a deforming network overlapping it). And also we're not counting duplicate subduction lines

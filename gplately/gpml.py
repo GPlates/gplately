@@ -30,9 +30,6 @@ import os
 
 import pygplates
 
-from .pygplates import FeatureCollection as _FeatureCollection
-from .pygplates import _is_string
-
 __all__ = [
     "create_feature_dict",
     "extract_feature",
@@ -272,21 +269,17 @@ def _parse_features_function_arguments(features):
     return features
 
 
-def _load_FeatureCollection(geometry):
-    if isinstance(geometry, _FeatureCollection):
-        return geometry
-    elif isinstance(geometry, pygplates.FeatureCollection):
-        geometry.filenames = []
-        return geometry
-    elif _is_string(geometry) and type(geometry) is list:
-        fc = _FeatureCollection()
-        for geom in geometry:
-            fc.add(_FeatureCollection(geom))
-        fc.filenames = list(geometry)
-        return fc
-    elif _is_string(geometry):
-        return _FeatureCollection(geometry)
-    elif geometry is None:
+def _load_FeatureCollection(features_or_files):
+    """Return a pygplates.FeatureCollection containing features loaded from one or more files or pygplates.FeatureCollection(s)."""
+    if features_or_files is None:
         return None
-    else:
-        raise ValueError("geometry is an invalid type", type(geometry))
+
+    if not pygplates.FeaturesFunctionArgument.contains_features(features_or_files):
+        raise TypeError(
+            "Expected a feature collection, or filename, or feature, or sequence of features, "
+            "or a sequence (eg, list or tuple) of any combination of those four types."
+        )
+
+    return pygplates.FeatureCollection(
+        pygplates.FeaturesFunctionArgument(features_or_files).get_features()
+    )

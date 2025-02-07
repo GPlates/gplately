@@ -67,11 +67,6 @@ else:
         return d.items()
 
 
-# Required pygplates version.
-# Need ability to query topological sections.
-PYGPLATES_VERSION_REQUIRED = pygplates.Version(21)
-
-
 def remove_features_not_referenced_by_topologies(
     feature_collections,
     restrict_referenced_feature_time_periods=False,
@@ -565,20 +560,6 @@ def main(args):
 
 
 if __name__ == "__main__":
-    # Check the imported pygplates version.
-    if (
-        not hasattr(pygplates, "Version")
-        or pygplates.Version.get_imported_version() < PYGPLATES_VERSION_REQUIRED
-    ):
-        print(
-            "{0}: Error - imported pygplates version {1} but version {2} or greater is required".format(
-                os.path.basename(__file__),
-                pygplates.Version.get_imported_version(),
-                PYGPLATES_VERSION_REQUIRED,
-            ),
-            file=sys.stderr,
-        )
-        sys.exit(1)
 
     # The command-line parser.
     parser = argparse.ArgumentParser(

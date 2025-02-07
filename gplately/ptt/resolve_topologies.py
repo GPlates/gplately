@@ -26,15 +26,6 @@ import pygplates
 
 from . import separate_ridge_transform_segments
 
-# PyGPlates version 26 supports default anchor plate ID in pygplates.RotationModel.__init__().
-USING_PYGPLATES_VERSION_GREATER_EQUAL_26 = hasattr(
-    pygplates, "Version"
-) and pygplates.Version.get_imported_version() >= pygplates.Version(26)
-# PyGPlates version 29 supports passing a RotationModel to RotationModel.__init__
-USING_PYGPLATES_VERSION_GREATER_EQUAL_29 = hasattr(
-    pygplates, "Version"
-) and pygplates.Version.get_imported_version() >= pygplates.Version(29)
-
 
 DEFAULT_OUTPUT_FILENAME_PREFIX = "topology_"
 DEFAULT_OUTPUT_FILENAME_EXTENSION = "shp"
@@ -86,9 +77,9 @@ def resolve_topologies(
 
     """
     # Turn rotation data into a RotationModel (if not already).
-    rotation_model = _parse_rotation_args(
+    rotation_model = pygplates.RotationModel(
         rotation_features_or_model,
-        anchor_plate_id=anchor_plate_id,
+        default_anchor_plate_id=anchor_plate_id,
     )
 
     # Get topology features (could include filenames).
@@ -177,9 +168,9 @@ def resolve_topologies_into_features(
 
     """
     # Turn rotation data into a RotationModel (if not already).
-    rotation_model = _parse_rotation_args(
+    rotation_model = pygplates.RotationModel(
         rotation_features_or_model,
-        anchor_plate_id=anchor_plate_id,
+        default_anchor_plate_id=anchor_plate_id,
     )
     time = float(time)
 
@@ -476,48 +467,6 @@ def _write_resolved_topologies(
         )
 
 
-def _parse_rotation_args(rotation_features_or_model, anchor_plate_id=None):
-    if isinstance(rotation_features_or_model, pygplates.RotationModel):
-        if anchor_plate_id is None:
-            # Keep the original anchor plate
-            return rotation_features_or_model
-        if not USING_PYGPLATES_VERSION_GREATER_EQUAL_29:
-            # Cannot change anchor plate
-            raise RuntimeError(
-                "Using pygplates version {} ".format(
-                    pygplates.Version.get_imported_version()
-                )
-                + "but version 0.29 or greater is required "
-                + "to specify a new anchor plate ID"
-            )
-        # Return RotationModel with new anchor plate
-        return pygplates.RotationModel(
-            rotation_features_or_model,
-            default_anchor_plate_id=anchor_plate_id,
-        )
-
-    # Input is not a RotationModel
-    if anchor_plate_id is not None:
-        if anchor_plate_id == 0:
-            # Zero is the default for RotationModel, which means it works
-            # even in versions older than 0.26
-            return pygplates.RotationModel(rotation_features_or_model)
-        if not USING_PYGPLATES_VERSION_GREATER_EQUAL_26:
-            raise RuntimeError(
-                "Using pygplates version {} ".format(
-                    pygplates.Version.get_imported_version()
-                )
-                + "but version 0.26 or greater is required "
-                + "to specify a default anchor plate ID"
-            )
-        return pygplates.RotationModel(
-            rotation_features_or_model,
-            default_anchor_plate_id=anchor_plate_id,
-        )
-    # Use default anchor plate ID
-    return pygplates.RotationModel(rotation_features_or_model)
-
-
 def add_arguments(parser: argparse.ArgumentParser):
     """add command line argument parser"""
 
@@ -649,22 +598,9 @@ def main(args):
         )
 
     # Create a rotation model from rotation files.
-    #
-    # Note: We only special case 'anchor_plate_id != 0' since that is the uncommon and the 'default_anchor_plate_id'
-    #       argument of 'pygplates.RotationModel.__init__()' was only added in pyGPlates revision 26.
-    #       If 'anchor_plate_id == 0' then any pyGPlates revision will work.
-    if args.anchor_plate_id != 0:
-        if not USING_PYGPLATES_VERSION_GREATER_EQUAL_26:
-            raise RuntimeError(
-                "Using pygplates version {0} but version 0.26 or greater is required for non-zero anchor plate IDs".format(
-                    pygplates.Version.get_imported_version()
-                )
-            )
-        rotation_model = pygplates.RotationModel(
-            args.rotation_filenames, default_anchor_plate_id=args.anchor_plate_id
-        )
-    else:
-        rotation_model = pygplates.RotationModel(args.rotation_filenames)
+    rotation_model = pygplates.RotationModel(
+        args.rotation_filenames, default_anchor_plate_id=args.anchor_plate_id
+    )
 
     # Read topology features from topology files.
     topology_features = []
@@ -766,21 +702,6 @@ def main(args):
 
 
 if __name__ == "__main__":
-    # Check the imported pygplates version.
-    required_version = pygplates.Version(9)
-    if (
-        not hasattr(pygplates, "Version")
-        or pygplates.Version.get_imported_version() < required_version
-    ):
-        print(
-            "{0}: Error - imported pygplates version {1} but version {2} or greater is required".format(
-                os.path.basename(__file__),
-                pygplates.Version.get_imported_version(),
-                required_version,
-            ),
-            file=sys.stderr,
-        )
-        sys.exit(1)
 
     # The command-line parser.
     parser = argparse.ArgumentParser(
