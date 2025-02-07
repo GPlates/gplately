@@ -344,11 +344,13 @@ class ContinentContouring(object):
                 continent_contouring_area_threshold_steradians_function
             )
 
-        if (continent_contouring_buffer_and_gap_distance_radians is not None and
-            continent_polygon_buffer_and_gap_distance_radians is not None):
+        if (
+            continent_contouring_buffer_and_gap_distance_radians is not None
+            and continent_polygon_buffer_and_gap_distance_radians is not None
+        ):
             raise RuntimeError(
-                    "You cannot specify both 'continent_contouring_buffer_and_gap_distance_radians' and "
-                    "'continent_polygon_buffer_and_gap_distance_radians'. You can only specify one or the other (or neither)."
+                "You cannot specify both 'continent_contouring_buffer_and_gap_distance_radians' and "
+                "'continent_polygon_buffer_and_gap_distance_radians'. You can only specify one or the other (or neither)."
             )
 
         if continent_contouring_buffer_and_gap_distance_radians is not None:
@@ -358,7 +360,11 @@ class ContinentContouring(object):
                     continent_contouring_buffer_and_gap_distance_radians
                 )
                 callable_num_args = len(callable_signature.parameters)
-                if not (callable_num_args == 1 or callable_num_args == 2 or callable_num_args == 3):
+                if not (
+                    callable_num_args == 1
+                    or callable_num_args == 2
+                    or callable_num_args == 3
+                ):
                     raise TypeError(
                         "Continent contouring buffer/gap distance is a callable but does not have 1 or 2 or 3 arguments"
                     )
@@ -373,7 +379,9 @@ class ContinentContouring(object):
                     def continent_contouring_buffer_and_gap_distance_radians_function(
                         age, contoured_continent, continent_feature_polygons
                     ):
-                        return continent_contouring_buffer_and_gap_distance_radians(age, contoured_continent)
+                        return continent_contouring_buffer_and_gap_distance_radians(
+                            age, contoured_continent
+                        )
 
                     self.continent_contouring_buffer_and_gap_distance_radians_function = (
                         continent_contouring_buffer_and_gap_distance_radians_function
@@ -591,9 +599,13 @@ class ContinentContouring(object):
         Returns a list of 'ContouredContinent'.
         """
 
-        reconstructed_continent_polygons = self.get_reconstructed_continent_polygons(age)
+        reconstructed_continent_polygons = self.get_reconstructed_continent_polygons(
+            age
+        )
 
-        return self.calculate_contoured_continents(reconstructed_continent_polygons, age)
+        return self.calculate_contoured_continents(
+            reconstructed_continent_polygons, age
+        )
 
     def get_continent_mask_and_contoured_continents(self, age):
         """
@@ -639,7 +651,7 @@ class ContinentContouring(object):
                 pygplates.PolygonOnSphere(
                     reconstructed_feature_geometry.get_reconstructed_geometry()
                 ),
-                reconstructed_feature_geometry
+                reconstructed_feature_geometry,
             )
             for reconstructed_feature_geometry in reconstructed_feature_geometries
         ]
@@ -672,7 +684,9 @@ class ContinentContouring(object):
 
         # time1 = time.time()
 
-        continent_separation_distance_threshold_radians = self.continent_separation_distance_threshold_radians_function(age)
+        continent_separation_distance_threshold_radians = (
+            self.continent_separation_distance_threshold_radians_function(age)
+        )
 
         if self.continent_polygon_buffer_and_gap_distance_radians_function:
 
@@ -681,14 +695,18 @@ class ContinentContouring(object):
                 (
                     polygon,
                     # Buffer distance for the current continent polygon...
-                    self.continent_polygon_buffer_and_gap_distance_radians_function(age, continent_feature_polygon),
-                    continent_feature_polygon
+                    self.continent_polygon_buffer_and_gap_distance_radians_function(
+                        age, continent_feature_polygon
+                    ),
+                    continent_feature_polygon,
                 )
                 for polygon, continent_feature_polygon in continent_polygons
             ]
 
             # Find groups of continent polygons where each polygon in a group is within the specified distance of at least one other polygon in the group.
-            continent_polygon_groups = self._find_continent_polygon_groups(continent_polygons, continent_separation_distance_threshold_radians)
+            continent_polygon_groups = self._find_continent_polygon_groups(
+                continent_polygons, continent_separation_distance_threshold_radians
+            )
 
             contoured_continents = []
 
@@ -698,20 +716,30 @@ class ContinentContouring(object):
                 # Find the grid points inside or near the current continent's polygons.
                 #
                 # Note: Each continental polygon may have a different buffer/gap distance (affecting which points are near each polygon).
-                grid_points_inside_continent = self._find_grid_points_inside_or_near_continent_polygons(continent_polygons_in_group)
+                grid_points_inside_continent = (
+                    self._find_grid_points_inside_or_near_continent_polygons(
+                        continent_polygons_in_group
+                    )
+                )
 
                 # Skip the current continent if its polygons (with buffer expansion) are too small such that they miss all the grid points.
                 if not np.any(grid_points_inside_continent):
                     continue
 
                 # Contour the grid points that are inside the current continent's polygons.
-                contoured_continent = self._create_contoured_continent(grid_points_inside_continent)
+                contoured_continent = self._create_contoured_continent(
+                    grid_points_inside_continent
+                )
 
                 # If the area threshold is non-zero then exclude the current contoured continents if its area is below the threshold.
-                continent_contouring_area_threshold_steradians = self.continent_contouring_area_threshold_steradians_function(age)
+                continent_contouring_area_threshold_steradians = (
+                    self.continent_contouring_area_threshold_steradians_function(age)
+                )
                 if (
-                    continent_contouring_area_threshold_steradians > 0 and
-                    contoured_continent.get_area() < continent_contouring_area_threshold_steradians):
+                    continent_contouring_area_threshold_steradians > 0
+                    and contoured_continent.get_area()
+                    < continent_contouring_area_threshold_steradians
+                ):
                     continue
 
                 contoured_continents.append(contoured_continent)
@@ -719,11 +747,15 @@ class ContinentContouring(object):
         else:  # not self.continent_polygon_buffer_and_gap_distance_radians_function ...
 
             # Convert 2-tuple of continent polygons to a 3-tuple where 2nd element is the polygon buffer distance of zero.
-            continent_polygons = [(polygon, 0.0, continent_feature_polygon)
-                                  for polygon, continent_feature_polygon in continent_polygons]
+            continent_polygons = [
+                (polygon, 0.0, continent_feature_polygon)
+                for polygon, continent_feature_polygon in continent_polygons
+            ]
 
             # Find groups of continent polygons where each polygon in a group is within the specified distance of at least one other polygon in the group.
-            continent_polygon_groups = self._find_continent_polygon_groups(continent_polygons, continent_separation_distance_threshold_radians)
+            continent_polygon_groups = self._find_continent_polygon_groups(
+                continent_polygons, continent_separation_distance_threshold_radians
+            )
 
             continents = []
 
@@ -733,22 +765,30 @@ class ContinentContouring(object):
                 #
                 # Note: Each continental polygon has a zero buffer/gap distance
                 #       (and so we don't need to consider points *near* each polygon).
-                grid_points_inside_continent = self._find_grid_points_inside_continent_polygons(continent_polygons_in_group)
+                grid_points_inside_continent = (
+                    self._find_grid_points_inside_continent_polygons(
+                        continent_polygons_in_group
+                    )
+                )
 
                 # Skip the current continent if its polygons are too small such that they miss all the grid points.
                 if not np.any(grid_points_inside_continent):
                     continue
 
                 # Contour the grid points that are inside the current continent's polygons.
-                contoured_continent = self._create_contoured_continent(grid_points_inside_continent)
+                contoured_continent = self._create_contoured_continent(
+                    grid_points_inside_continent
+                )
 
                 # If the area threshold is non-zero then exclude the current contoured continents if its area is below the threshold.
                 continent_contouring_area_threshold_steradians = (
                     self.continent_contouring_area_threshold_steradians_function(age)
                 )
                 if (
-                    continent_contouring_area_threshold_steradians > 0 and
-                    contoured_continent.get_area() < continent_contouring_area_threshold_steradians):
+                    continent_contouring_area_threshold_steradians > 0
+                    and contoured_continent.get_area()
+                    < continent_contouring_area_threshold_steradians
+                ):
                     continue
 
                 if self.continent_contouring_buffer_and_gap_distance_radians_function:
@@ -759,10 +799,12 @@ class ContinentContouring(object):
                     #       buffer/gap for the contoured continent (that contours the associated polygons). For example, the function can look
                     #       at the plate IDs of the polygons (via their pygplates.Feature obtained from 'continent_feature_polygon.get_feature()').
                     continent_feature_polygons = [
-                        continent_polygon[2] for continent_polygon in continent_polygons_in_group
+                        continent_polygon[2]
+                        for continent_polygon in continent_polygons_in_group
                     ]
                     contouring_buffer_and_gap_distance_radians = self.continent_contouring_buffer_and_gap_distance_radians_function(
-                        age, contoured_continent, continent_feature_polygons)
+                        age, contoured_continent, continent_feature_polygons
+                    )
 
                 else:
                     contouring_buffer_and_gap_distance_radians = 0
@@ -781,7 +823,9 @@ class ContinentContouring(object):
             # print(' contour continents({}): {:.2f}'.format(len(continents), time2 - time1))
 
             # If any continent has a non-zero buffer/gap distance expansion then this could cause it to join with nearby continents forming a single merged continent.
-            merged_continents = self._find_merged_continents(continents, continent_separation_distance_threshold_radians)
+            merged_continents = self._find_merged_continents(
+                continents, continent_separation_distance_threshold_radians
+            )
 
             contoured_continents = []
 
@@ -804,23 +848,35 @@ class ContinentContouring(object):
                         )
                     )
                     for continent in merged_continent.continents:
-                        grid_points_inside_merged_continent[continent.grid_points_inside_continent] = True
+                        grid_points_inside_merged_continent[
+                            continent.grid_points_inside_continent
+                        ] = True
 
                     # Find the grid points near the current merged continent's polygons.
                     #
                     # Note: Each continent (in the merged continent) may have a different buffer/gap distance.
-                    grid_points_near_merged_continent = self._find_grid_points_near_merged_continent(merged_continent)
+                    grid_points_near_merged_continent = (
+                        self._find_grid_points_near_merged_continent(merged_continent)
+                    )
                     # Add these nearby grid points to those inside the merged continent.
-                    grid_points_inside_merged_continent[grid_points_near_merged_continent] = True
+                    grid_points_inside_merged_continent[
+                        grid_points_near_merged_continent
+                    ] = True
 
                     # Contour the grid points that are inside the merged continent's polygons.
-                    contoured_continent = self._create_contoured_continent(grid_points_inside_merged_continent)
+                    contoured_continent = self._create_contoured_continent(
+                        grid_points_inside_merged_continent
+                    )
 
                 elif len(merged_continent.continents) == 1:
                     # There's only one continent and it has no buffer/gap distance, so its contour will also be the merged continent's contour.
-                    contoured_continent = merged_continent.continents[0].contoured_continent
+                    contoured_continent = merged_continent.continents[
+                        0
+                    ].contoured_continent
                 else:
-                    raise AssertionError("Shouldn't have multiple merged continents all with zero buffer/gap distances")
+                    raise AssertionError(
+                        "Shouldn't have multiple merged continents all with zero buffer/gap distances"
+                    )
 
                 contoured_continents.append(contoured_continent)
 
@@ -828,9 +884,13 @@ class ContinentContouring(object):
             # print(' contour merged continents({}): {:.2f}'.format(len(merged_continents), time3 - time2))
 
         # Remove any ocean areas (regions which exclude continental crust) that are below the exclusion area threshold.
-        continent_exclusion_area_threshold_steradians = self.continent_exclusion_area_threshold_steradians_function(age)
+        continent_exclusion_area_threshold_steradians = (
+            self.continent_exclusion_area_threshold_steradians_function(age)
+        )
         if continent_exclusion_area_threshold_steradians > 0:
-            self._remove_ocean_areas_below_exclusion_threshold(contoured_continents, continent_exclusion_area_threshold_steradians)
+            self._remove_ocean_areas_below_exclusion_threshold(
+                contoured_continents, continent_exclusion_area_threshold_steradians
+            )
 
         # time_end = time.time()
         # print('calculate_contoured_continents({}): {:.2f}'.format(len(contoured_continents), time_end - time1))
@@ -850,7 +910,9 @@ class ContinentContouring(object):
             self.contoured_continent = contoured_continent
             self.continent_polygons = continent_polygons
             self.grid_points_inside_continent = grid_points_inside_continent
-            self.contouring_buffer_and_gap_distance_radians = contouring_buffer_and_gap_distance_radians
+            self.contouring_buffer_and_gap_distance_radians = (
+                contouring_buffer_and_gap_distance_radians
+            )
 
     class _MergedContinent(object):
         """Private inner class containing information about a merged continent (referencing several continents merged due to non-zero buffer/gap distances)."""
@@ -1146,12 +1208,19 @@ class ContinentContouring(object):
             group_index = 0
             while group_index < len(continent_polygon_groups):
                 # Iterate over polygons in the current group.
-                for polygon_in_group, polygon_in_group_buffer_distance_radians, *_ in continent_polygon_groups[group_index]:
+                for (
+                    polygon_in_group,
+                    polygon_in_group_buffer_distance_radians,
+                    *_,
+                ) in continent_polygon_groups[group_index]:
 
                     # The distance threshold is the continent separation distance plus the sum of each polygon's buffer distance, clamped to a maximum of PI.
                     distance_threshold_radians = min(
                         math.pi,
-                        continent_separation_distance_threshold_radians + polygon_buffer_distance_radians + polygon_in_group_buffer_distance_radians)
+                        continent_separation_distance_threshold_radians
+                        + polygon_buffer_distance_radians
+                        + polygon_in_group_buffer_distance_radians,
+                    )
 
                     # See if the current continent polygon is near the current polygon in the current group.
                     if (
@@ -1168,14 +1237,20 @@ class ContinentContouring(object):
                         # If the current continent polygon hasn't been added to a group yet then add it now.
                         if continent_polygon_group_index is None:
                             continent_polygon_group_index = group_index
-                            continent_polygon_groups[continent_polygon_group_index].append(continent_polygon)
+                            continent_polygon_groups[
+                                continent_polygon_group_index
+                            ].append(continent_polygon)
                         # Otherwise it is near another group, so merge that group into the current continent polygon's group.
                         else:
                             # Merge the current group into group that the current continent polygon belongs to.
-                            continent_polygon_groups[continent_polygon_group_index] += continent_polygon_groups[group_index]
+                            continent_polygon_groups[
+                                continent_polygon_group_index
+                            ] += continent_polygon_groups[group_index]
                             # And then delete the current group.
                             del continent_polygon_groups[group_index]
-                            group_index -= 1  # undo the subsequent increment to next group
+                            group_index -= (
+                                1  # undo the subsequent increment to next group
+                            )
 
                         # Finished visiting polygons in the current group, so skip to the next group.
                         break
@@ -1207,9 +1282,7 @@ class ContinentContouring(object):
         # time1 = time.time()
 
         # Find the polygon (if any) containing each grid point.
-        polygons = [
-            continent_polygon[0] for continent_polygon in continent_polygons
-        ]
+        polygons = [continent_polygon[0] for continent_polygon in continent_polygons]
         polygons_containing_points = (
             points_in_polygons.find_polygons_using_points_spatial_tree(
                 self.contouring_points, self.contouring_points_spatial_tree, polygons
@@ -1251,22 +1324,23 @@ class ContinentContouring(object):
 
         points_inside_or_near_polygons = np.full(len(self.contouring_points), False)
 
-        #time1 = time.time()
+        # time1 = time.time()
 
         # Find the polygon (if any) containing each grid point.
-        polygons = [
-            continent_polygon[0] for continent_polygon in continent_polygons
-        ]
-        polygons_containing_points = points_in_polygons.find_polygons_using_points_spatial_tree(
-                self.contouring_points, self.contouring_points_spatial_tree, polygons)
+        polygons = [continent_polygon[0] for continent_polygon in continent_polygons]
+        polygons_containing_points = (
+            points_in_polygons.find_polygons_using_points_spatial_tree(
+                self.contouring_points, self.contouring_points_spatial_tree, polygons
+            )
+        )
 
         # Determine which grid points are inside the polygons.
         for contouring_point_index in range(len(self.contouring_points)):
             # If the current point is inside any polygon then mark it as such.
             if polygons_containing_points[contouring_point_index] is not None:
                 points_inside_or_near_polygons[contouring_point_index] = True
-        
-        #time2 = time.time()
+
+        # time2 = time.time()
 
         # Group together polygons with the same polygon buffer distance.
         polygon_groups = {}
@@ -1279,7 +1353,10 @@ class ContinentContouring(object):
 
         # Find nearest points to each group of polygons
         # (with all polygons in a group having the same polygon buffer distance).
-        for polygon_buffer_distance_radians, polygons_in_group in polygon_groups.items():
+        for (
+            polygon_buffer_distance_radians,
+            polygons_in_group,
+        ) in polygon_groups.items():
 
             # The distance threshold is the polygon buffer distance clamped to a maximum of PI.
             distance_threshold_radians = min(math.pi, polygon_buffer_distance_radians)
@@ -1289,14 +1366,15 @@ class ContinentContouring(object):
                 self.contouring_points,
                 self.contouring_points_spatial_tree,
                 polygons_in_group,
-                distance_threshold_radians=distance_threshold_radians)
+                distance_threshold_radians=distance_threshold_radians,
+            )
 
             for contouring_point_index in range(len(self.contouring_points)):
                 if points_near_polygons_in_group[contouring_point_index] is not None:
                     points_inside_or_near_polygons[contouring_point_index] = True
 
-        #time3 = time.time()
-        #print('  _find_grid_points_inside_or_near_continent_polygons({}, {}): {:.2f} {:.2f}'.format(
+        # time3 = time.time()
+        # print('  _find_grid_points_inside_or_near_continent_polygons({}, {}): {:.2f} {:.2f}'.format(
         #    len(self.contouring_points), len(continent_polygons), time2 - time1, time3 - time2))
 
         # Reshape 1D array as 2D array indexed by (latitude, longitude) - same order as the points.
@@ -1369,7 +1447,10 @@ class ContinentContouring(object):
                 # Note: The second element of tuple is the buffer distance of each continent polygon.
                 #       But since we're in this function then that should be zero
                 #       (ie, we're only using buffer distances for *contoured* continents, not individual polygons).
-                polygons = [continent_polygon[0] for continent_polygon in continent.continent_polygons]
+                polygons = [
+                    continent_polygon[0]
+                    for continent_polygon in continent.continent_polygons
+                ]
 
                 # Find the polygons (if any) near each point.
                 points_near_continent = proximity_query.find_closest_geometries_to_points_using_points_spatial_tree(
