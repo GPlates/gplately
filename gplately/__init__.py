@@ -24,19 +24,22 @@
 ## Quick start🚀
 
 ### [PlateModelManager](https://pypi.org/project/plate-model-manager/)
-The **PlateModelManager** module was introduced as a more efficient alternative to the DataServer class, 
+The **PlateModelManager** module was introduced as a more efficient alternative to the **DataServer** class, 
 designed specifically for downloading and managing plate reconstruction model files.
 
-A complete example of using the PlateModelManager class is available at https://github.com/GPlates/gplately/blob/master/Notebooks/Examples/introducing-plate-model-manager.py .
-
 ```python
-from plate_model_manager import PlateModelManager, PresentDayRasterManager
-from gplately import PlateReconstruction, PlotTopologies, Raster
+from gplately import (
+    PlateModelManager,
+    PlateReconstruction,
+    PlotTopologies,
+    PresentDayRasterManager,
+    Raster,
+)
 
 model = PlateModelManager().get_model(
-    "Muller2019", # model name
-    data_dir="plate-model-repo" # the local folder where you would like to save the model files
-    )
+    "Muller2019",  # model name
+    data_dir="plate-model-repo",  # the local folder where you would like to save the model files
+)
 
 recon_model = PlateReconstruction(
     model.get_rotation_model(),
@@ -52,9 +55,12 @@ gplot = PlotTopologies(
 # get present-day topography raster
 raster = Raster(PresentDayRasterManager().get_raster("topography"))
 # get paleo-agegrid raster at 100Ma from Muller2019 model
-agegrid = Raster(model.get_raster("AgeGrids", time=100))   
-)
+agegrid = Raster(model.get_raster("AgeGrids", time=100))
 ```
+
+For more example code, a [comprehensive example](https://github.com/GPlates/gplately/blob/master/Notebooks/Examples/introducing-plate-model-manager.py) 
+on GitHub demonstrates how to use the PlateModelManager module in details. [Another example](https://github.com/GPlates/gplately/blob/master/Notebooks/Examples/working-with-plate-model-manager.py) 
+shows how to use the PlateModelManager module with GPlately.
 
 ### [DataServer](https://gplates.github.io/gplately/download.html#gplately.download.DataServer)
 The `DataServer` class allows users to automatically download and cache the necessary files for plate reconstructions to a designated folder on your system. 
@@ -62,12 +68,14 @@ These files include rotation models, topology features, and static geometries su
 Additionally, it supports the retrieval of other data types, including rasters, grids, and feature data. (Use the newer **PlateModelManager** when it is possible.)
 
 ```python
-import gplately 
+from gplately.download import DataServer
 
-gdownload = gplately.download.DataServer("Muller2019")
+gdownload = DataServer("Muller2019")
 
 # Download plate reconstruction files and geometries from the Müller et al. 2019 model
-rotation_model, topology_features, static_polygons = gdownload.get_plate_reconstruction_files()
+rotation_model, topology_features, static_polygons = (
+    gdownload.get_plate_reconstruction_files()
+)
 coastlines, continents, COBs = gdownload.get_topology_geometries()
 
 # Download the Müller et al. 2019 100 Ma age grid
@@ -286,6 +294,8 @@ del dev_warning
 ensure_plate_model_manager_compatible(REQUIRED_PMM_VERSION)
 del ensure_plate_model_manager_compatible
 
+from plate_model_manager import PlateModelManager, PresentDayRasterManager
+
 from . import (
     auxiliary,
     data,
@@ -316,24 +326,6 @@ from .tools import EARTH_RADIUS
 from .utils import io_utils
 from .utils.io_utils import get_geometries, get_valid_geometries
 
-__pdoc__ = {
-    "data": False,
-    "download": False,
-    "_DefaultCollision": False,
-    "_ContinentCollision": False,
-    "_ReconstructByTopologies": False,
-    "examples": False,
-    "notebooks": False,
-    "commands": False,
-    "decorators": False,
-    "exceptions": False,
-    "lib": False,
-    "pygplates": False,
-    "DataCollection": False,
-    "get_geometries": False,
-    "get_valid_geometries": False,
-}
-
 __all__ = [
     # Modules
     "auxiliary",
@@ -351,6 +343,8 @@ __all__ = [
     "spatial",
     # Classes
     "DataCollection",
+    "PlateModelManager",
+    "PresentDayRasterManager",
     "DataServer",
     "PlateReconstruction",
     "PlotTopologies",
@@ -366,3 +360,23 @@ __all__ = [
     # Constants
     "EARTH_RADIUS",
 ]
+
+__pdoc__ = {
+    "data": False,
+    "download": False,
+    "_DefaultCollision": False,
+    "_ContinentCollision": False,
+    "_ReconstructByTopologies": False,
+    "examples": False,
+    "notebooks": False,
+    "commands": False,
+    "decorators": False,
+    "exceptions": False,
+    "lib": False,
+    "pygplates": False,
+    "DataCollection": False,
+    "get_geometries": False,
+    "get_valid_geometries": False,
+    "PlateModelManager": False,
+    "PresentDayRasterManager": False,
+}
