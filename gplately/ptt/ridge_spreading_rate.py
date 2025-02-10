@@ -307,7 +307,8 @@ def spreading_rates_dense(
     spreading_feature_types=[pygplates.FeatureType.gpml_mid_ocean_ridge],
     transform_segment_deviation_in_radians=separate_ridge_transform_segments.DEFAULT_TRANSFORM_SEGMENT_DEVIATION_RADIANS,
     velocity_delta_time=1.0,
-    anchor_plate_id=0,
+    anchor_plate_id=None,
+    include_network_boundaries=False,
 ):
     """
     Equivalent to `spreading_rates(..., output_obliquity_and_normal_and_left_right_plates=True)`.
@@ -322,9 +323,10 @@ def spreading_rates_dense(
         topology_features,
         time,
         threshold_sampling_distance_radians,
-        spreading_feature_types,
-        transform_segment_deviation_in_radians,
-        velocity_delta_time,
-        anchor_plate_id,
+        spreading_feature_types=spreading_feature_types,
+        transform_segment_deviation_in_radians=transform_segment_deviation_in_radians,
+        velocity_delta_time=velocity_delta_time,
+        anchor_plate_id=anchor_plate_id,
+        include_network_boundaries=include_network_boundaries,
         output_obliquity_and_normal_and_left_right_plates=True,
     )
