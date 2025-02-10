@@ -31,16 +31,20 @@ hljs.highlightAll();
 <h2 id="version-latest-dev">Version - latest dev</h2>
 <h2 id="quick-start">Quick start🚀</h2>
 <h3 id="platemodelmanager"><a href="https://pypi.org/project/plate-model-manager/">PlateModelManager</a></h3>
-<p>The <strong>PlateModelManager</strong> module was introduced as a more efficient alternative to the DataServer class,
+<p>The <strong>PlateModelManager</strong> module was introduced as a more efficient alternative to the <strong>DataServer</strong> class,
 designed specifically for downloading and managing plate reconstruction model files.</p>
-<p>A complete example of using the PlateModelManager class is available at <a href="https://github.com/GPlates/gplately/blob/master/Notebooks/Examples/introducing-plate-model-manager.py">https://github.com/GPlates/gplately/blob/master/Notebooks/Examples/introducing-plate-model-manager.py</a> .</p>
-<pre><code class="language-python">from plate_model_manager import PlateModelManager, PresentDayRasterManager
-from gplately import PlateReconstruction, PlotTopologies, Raster
+<pre><code class="language-python">from gplately import (
+    PlateModelManager,
+    PlateReconstruction,
+    PlotTopologies,
+    PresentDayRasterManager,
+    Raster,
+)
 
 model = PlateModelManager().get_model(
-    &quot;Muller2019&quot;, # model name
-    data_dir=&quot;plate-model-repo&quot; # the local folder where you would like to save the model files
-    )
+    &quot;Muller2019&quot;,  # model name
+    data_dir=&quot;plate-model-repo&quot;,  # the local folder where you would like to save the model files
+)
 
 recon_model = PlateReconstruction(
     model.get_rotation_model(),
@@ -56,19 +60,23 @@ gplot = PlotTopologies(
 # get present-day topography raster
 raster = Raster(PresentDayRasterManager().get_raster(&quot;topography&quot;))
 # get paleo-agegrid raster at 100Ma from Muller2019 model
-agegrid = Raster(model.get_raster(&quot;AgeGrids&quot;, time=100))   
-)
+agegrid = Raster(model.get_raster(&quot;AgeGrids&quot;, time=100))
 </code></pre>
+<p>For more example code, a <a href="https://github.com/GPlates/gplately/blob/master/Notebooks/Examples/introducing-plate-model-manager.py">comprehensive example</a>
+on GitHub demonstrates how to use the PlateModelManager module in details. <a href="https://github.com/GPlates/gplately/blob/master/Notebooks/Examples/working-with-plate-model-manager.py">Another example</a>
+shows how to use the PlateModelManager module with GPlately.</p>
 <h3 id="dataserver"><a href="https://gplates.github.io/gplately/download.html#gplately.download.DataServer">DataServer</a></h3>
 <p>The <code><a title="gplately.DataServer" href="#gplately.DataServer">DataServer</a></code> class allows users to automatically download and cache the necessary files for plate reconstructions to a designated folder on your system.
 These files include rotation models, topology features, and static geometries such as coastlines, continents, and continent-ocean boundaries.
 Additionally, it supports the retrieval of other data types, including rasters, grids, and feature data. (Use the newer <strong>PlateModelManager</strong> when it is possible.)</p>
-<pre><code class="language-python">import gplately 
+<pre><code class="language-python">from gplately.download import DataServer
 
-gdownload = gplately.download.DataServer(&quot;Muller2019&quot;)
+gdownload = DataServer(&quot;Muller2019&quot;)
 
 # Download plate reconstruction files and geometries from the Müller et al. 2019 model
-rotation_model, topology_features, static_polygons = gdownload.get_plate_reconstruction_files()
+rotation_model, topology_features, static_polygons = (
+    gdownload.get_plate_reconstruction_files()
+)
 coastlines, continents, COBs = gdownload.get_topology_geometries()
 
 # Download the Müller et al. 2019 100 Ma age grid
@@ -1007,8 +1015,8 @@ moved or deleted.</p>
         return self.from_age, self.to_age
 
     def get_plate_reconstruction_files(self):
-        &#34;&#34;&#34;Downloads and constructs a `rotation model`, a set of `topology_features` and
-        and a set of `static_polygons` needed to call the `PlateReconstruction` object.
+        &#34;&#34;&#34;Downloads and constructs a `rotation model`, a set of `topology features` and
+        and a set of `static polygons`. These objects can then be used to create `PlateReconstruction` object.
 
         Returns
         -------
@@ -1025,26 +1033,18 @@ moved or deleted.</p>
 
         Notes
         -----
-        This method accesses the plate reconstruction model ascribed to the `file_collection` string passed
-        into the `DataServer` object. For example, if the object was called with `&#34;Muller2019&#34;`:
+        The get_plate_reconstruction_files() method downloads reconstruction files from a given plate model.
+        For example,
 
             gDownload = gplately.download.DataServer(&#34;Muller2019&#34;)
             rotation_model, topology_features, static_polygons = gDownload.get_plate_reconstruction_files()
 
-        the method will download a `rotation_model`, `topology_features` and `static_polygons` from the
-        Müller et al. (2019) plate reconstruction model. Once the reconstruction objects are returned,
-        they can be passed into:
+        The code above downloads `rotation model`, `topology features` and `static polygons` files from the
+        Müller et al. (2019) plate reconstruction model. These files can then be used to create `PlateReconstruction` object.
 
             model = gplately.reconstruction.PlateReconstruction(rotation_model, topology_features, static_polygons)
 
-        * Note: If the requested plate model does not have a certain file(s), a message will be printed
-        to alert the user. For example, using `get_plate_reconstruction_files()`
-        for the Torsvik and Cocks (2017) plate reconstruction model yields the printed message:
-
-                No topology features in TorsvikCocks2017. No FeatureCollection created - unable to
-                plot trenches, ridges and transforms.
-                No continent-ocean boundaries in TorsvikCocks2017.
-
+        If the requested plate model does not have certain file(s), a warning message will alert user of the missing file(s).
         &#34;&#34;&#34;
         return self.rotation_model, self.topology_features, self.static_polygons
 
@@ -1854,8 +1854,8 @@ notebook 05 - Working With Feature Geometries <a href="https://github.com/GPlate
 <span>def <span class="ident">get_plate_reconstruction_files</span></span>(<span>self)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Downloads and constructs a <code>rotation model</code>, a set of <code>topology_features</code> and
-and a set of <code>static_polygons</code> needed to call the <code><a title="gplately.PlateReconstruction" href="#gplately.PlateReconstruction">PlateReconstruction</a></code> object.</p>
+<div class="desc"><p>Downloads and constructs a <code>rotation model</code>, a set of <code>topology features</code> and
+and a set of <code>static polygons</code>. These objects can then be used to create <code><a title="gplately.PlateReconstruction" href="#gplately.PlateReconstruction">PlateReconstruction</a></code> object.</p>
 <h2 id="returns">Returns</h2>
 <dl>
 <dt><strong><code>rotation_model</code></strong> :&ensp;<code>instance</code> of <code>&lt;pygplates.RotationModel&gt;</code></dt>
@@ -1870,25 +1870,16 @@ used to cookie-cut dynamic polygons into identifiable topological plates (assign
 an ID) according to their present-day locations.</dd>
 </dl>
 <h2 id="notes">Notes</h2>
-<p>This method accesses the plate reconstruction model ascribed to the <code>file_collection</code> string passed
-into the <code><a title="gplately.DataServer" href="#gplately.DataServer">DataServer</a></code> object. For example, if the object was called with <code>"Muller2019"</code>:</p>
+<p>The get_plate_reconstruction_files() method downloads reconstruction files from a given plate model.
+For example,</p>
 <pre><code>gDownload = gplately.download.DataServer("Muller2019")
 rotation_model, topology_features, static_polygons = gDownload.get_plate_reconstruction_files()
 </code></pre>
-<p>the method will download a <code>rotation_model</code>, <code>topology_features</code> and <code>static_polygons</code> from the
-Müller et al. (2019) plate reconstruction model. Once the reconstruction objects are returned,
-they can be passed into:</p>
+<p>The code above downloads <code>rotation model</code>, <code>topology features</code> and <code>static polygons</code> files from the
+Müller et al. (2019) plate reconstruction model. These files can then be used to create <code><a title="gplately.PlateReconstruction" href="#gplately.PlateReconstruction">PlateReconstruction</a></code> object.</p>
 <pre><code>model = gplately.reconstruction.PlateReconstruction(rotation_model, topology_features, static_polygons)
 </code></pre>
-<ul>
-<li>Note: If the requested plate model does not have a certain file(s), a message will be printed
-to alert the user. For example, using <code>get_plate_reconstruction_files()</code>
-for the Torsvik and Cocks (2017) plate reconstruction model yields the printed message:<pre><code>No topology features in TorsvikCocks2017. No FeatureCollection created - unable to
-plot trenches, ridges and transforms.
-No continent-ocean boundaries in TorsvikCocks2017.
-</code></pre>
-</li>
-</ul></div>
+<p>If the requested plate model does not have certain file(s), a warning message will alert user of the missing file(s).</p></div>
 </dd>
 <dt id="gplately.DataServer.get_raster"><code class="name flex">
 <span>def <span class="ident">get_raster</span></span>(<span>self, raster_id_string=None)</span>
