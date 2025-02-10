@@ -2171,8 +2171,7 @@ If not specified then uses the default anchor plate of <code>rotation_model</cod
         else:
             # User has explicitly specified an anchor plate ID, so let&#39;s check it.
             anchor_plate_id = self._check_anchor_plate_id(anchor_plate_id)
-            # This works when &#39;rotation_model&#39; is a RotationModel or rotation features/files
-            # (for pygplates &gt;= 0.29)...
+            # This works when &#39;rotation_model&#39; is a RotationModel or rotation features/files.
             self.rotation_model = pygplates.RotationModel(
                 rotation_model, default_anchor_plate_id=anchor_plate_id
             )
@@ -2306,7 +2305,7 @@ If not specified then uses the default anchor plate of <code>rotation_model</cod
                 ),
                 self.rotation_model,
                 time,
-                anchor_plate_id,
+                anchor_plate_id=anchor_plate_id,
             )
 
             # Parameters used for the last snapshot.
@@ -2368,7 +2367,7 @@ If not specified then uses the default anchor plate of <code>rotation_model</cod
             [pygplates.TopologicalSnapshot.calculate_plate_boundary_statistics()](https://www.gplates.org/docs/pygplates/generated/pygplates.topologicalsnapshot#pygplates.TopologicalSnapshot.calculate_plate_boundary_statistics)
             for more details. Defaults to half of `uniform_point_spacing_radians`.
         anchor_plate_id : int, optional
-            Anchor plate ID (defaults to the current anchor plate ID).
+            Anchor plate ID. Defaults to the current anchor plate ID (`anchor_plate_id` attribute).
         velocity_delta_time : float, default=1.0
             The time delta used to calculate velocities (defaults to 1 Myr).
         velocity_delta_time_type : {pygplates.VelocityDeltaTimeType.t_plus_delta_t_to_t, pygplates.VelocityDeltaTimeType.t_to_t_minus_delta_t, pygplates.VelocityDeltaTimeType.t_plus_minus_half_delta_t}, default=pygplates.VelocityDeltaTimeType.t_plus_delta_t_to_t
@@ -2438,13 +2437,10 @@ If not specified then uses the default anchor plate of <code>rotation_model</cod
                 latitude, longitude = stat.boundary_point.to_lat_lon()
         &#34;&#34;&#34;
 
-        if anchor_plate_id is None:
-            anchor_plate_id = self.anchor_plate_id
-
         # Generate statistics at uniformly spaced points along plate boundaries.
         plate_boundary_statistics = self.topological_snapshot(
             time,
-            anchor_plate_id=anchor_plate_id,
+            anchor_plate_id=anchor_plate_id,  # if None then uses &#39;self.anchor_plate_id&#39;
             include_topological_slab_boundaries=include_topological_slab_boundaries,
         ).calculate_plate_boundary_statistics(
             uniform_point_spacing_radians,
@@ -2674,7 +2670,7 @@ If not specified then uses the default anchor plate of <code>rotation_model</cod
         # Generate statistics at uniformly spaced points along plate boundaries.
         plate_boundary_statistics_dict = self.topological_snapshot(
             time,
-            anchor_plate_id=anchor_plate_id,
+            anchor_plate_id=anchor_plate_id,  # if None then uses &#39;self.anchor_plate_id&#39; (default anchor plate of &#39;self.rotation_model&#39;)
             # Ignore topological slab boundaries since they are not *plate* boundaries
             # (a slab edge could have a subduction polarity, and would otherwise get included)...
             include_topological_slab_boundaries=False,
@@ -3036,7 +3032,7 @@ If not specified then uses the default anchor plate of <code>rotation_model</cod
             If `None` then all (converging and diverging) sample points are returned. This is the default.
             Note that this parameter can only be specified if `use_ptt` is `False`.
         anchor_plate_id : int, optional
-            Anchor plate ID (defaults to the current anchor plate ID).
+            Anchor plate ID. Defaults to the current anchor plate ID (`anchor_plate_id` attribute)..
         velocity_delta_time : float, default=1.0
             Velocity delta time used in convergence velocity calculations (defaults to 1 Myr).
         output_distance_to_nearest_edge_of_trench : bool, default=False
@@ -3123,9 +3119,6 @@ If not specified then uses the default anchor plate of <code>rotation_model</cod
                     convergence_threshold_in_cm_per_yr=0.0)
         &#34;&#34;&#34;
 
-        if anchor_plate_id is None:
-            anchor_plate_id = self.anchor_plate_id
-
         if use_ptt:
             from . import ptt as _ptt
 
@@ -3148,7 +3141,7 @@ If not specified then uses the default anchor plate of <code>rotation_model</cod
                     tessellation_threshold_radians,
                     time,
                     velocity_delta_time=velocity_delta_time,
-                    anchor_plate_id=anchor_plate_id,
+                    anchor_plate_id=anchor_plate_id,  # if None then uses &#39;self.anchor_plate_id&#39; (default anchor plate of &#39;self.rotation_model&#39;)
                     include_network_boundaries=include_network_boundaries,
                     output_distance_to_nearest_edge_of_trench=output_distance_to_nearest_edge_of_trench,
                     output_distance_to_start_edge_of_trench=output_distance_to_start_edge_of_trench,
@@ -3164,7 +3157,7 @@ If not specified then uses the default anchor plate of <code>rotation_model</cod
                 time,
                 uniform_point_spacing_radians=tessellation_threshold_radians,
                 velocity_delta_time=velocity_delta_time,
-                anchor_plate_id=anchor_plate_id,
+                anchor_plate_id=anchor_plate_id,  # if None then uses &#39;self.anchor_plate_id&#39; (default anchor plate of &#39;self.rotation_model&#39;)
                 include_network_boundaries=include_network_boundaries,
                 convergence_threshold_in_cm_per_yr=convergence_threshold_in_cm_per_yr,
                 output_distance_to_nearest_edge_of_trench=output_distance_to_nearest_edge_of_trench,
@@ -3530,7 +3523,7 @@ If not specified then uses the default anchor plate of <code>rotation_model</cod
         # Generate statistics at uniformly spaced points along plate boundaries.
         plate_boundary_statistics = self.topological_snapshot(
             time,
-            anchor_plate_id=anchor_plate_id,
+            anchor_plate_id=anchor_plate_id,  # if None then uses &#39;self.anchor_plate_id&#39; (default anchor plate of &#39;self.rotation_model&#39;)
             # Ignore topological slab boundaries since they are not *plate* boundaries
             # (useful when &#39;spreading_feature_types&#39; is None, and hence all plate boundaries are considered)...
             include_topological_slab_boundaries=False,
@@ -3727,7 +3720,7 @@ If not specified then uses the default anchor plate of <code>rotation_model</cod
         output_obliquity_and_normal_and_left_right_plates : bool, default=False
             Whether to also return spreading obliquity, normal azimuth and left/right plates.
         anchor_plate_id : int, optional
-            Anchor plate ID (defaults to the current anchor plate ID).
+            Anchor plate ID. Defaults to the current anchor plate ID (`anchor_plate_id` attribute)..
         velocity_delta_time : float, default=1.0
             Velocity delta time used in spreading velocity calculations (defaults to 1 Myr).
 
@@ -3785,9 +3778,6 @@ If not specified then uses the default anchor plate of <code>rotation_model</cod
                     divergence_threshold_in_cm_per_yr=0.2)
         &#34;&#34;&#34;
 
-        if anchor_plate_id is None:
-            anchor_plate_id = self.anchor_plate_id
-
         if use_ptt:
             from . import ptt as _ptt
 
@@ -3813,7 +3803,7 @@ If not specified then uses the default anchor plate of <code>rotation_model</cod
                     spreading_feature_types=spreading_feature_types,
                     transform_segment_deviation_in_radians=transform_segment_deviation_in_radians,
                     velocity_delta_time=velocity_delta_time,
-                    anchor_plate_id=anchor_plate_id,
+                    anchor_plate_id=anchor_plate_id,  # if None then uses &#39;self.anchor_plate_id&#39; (default anchor plate of &#39;self.rotation_model&#39;)
                     include_network_boundaries=include_network_boundaries,
                     output_obliquity_and_normal_and_left_right_plates=output_obliquity_and_normal_and_left_right_plates,
                 )
@@ -3823,7 +3813,7 @@ If not specified then uses the default anchor plate of <code>rotation_model</cod
                 time,
                 uniform_point_spacing_radians=tessellation_threshold_radians,
                 velocity_delta_time=velocity_delta_time,
-                anchor_plate_id=anchor_plate_id,
+                anchor_plate_id=anchor_plate_id,  # if None then uses &#39;self.anchor_plate_id&#39; (default anchor plate of &#39;self.rotation_model&#39;)
                 spreading_feature_types=spreading_feature_types,
                 transform_segment_deviation_in_radians=transform_segment_deviation_in_radians,
                 include_network_boundaries=include_network_boundaries,
@@ -4026,15 +4016,12 @@ If not specified then uses the default anchor plate of <code>rotation_model</cod
 
         reconstructed_features = []
 
-        if anchor_plate_id is None:
-            anchor_plate_id = self.anchor_plate_id
-
         pygplates.reconstruct(
             feature,
             self.rotation_model,
             reconstructed_features,
             to_time,
-            anchor_plate_id=anchor_plate_id,
+            anchor_plate_id=anchor_plate_id,  # if None then uses &#39;self.anchor_plate_id&#39; (default anchor plate of &#39;self.rotation_model&#39;)
             **kwargs,
         )
         return reconstructed_features
@@ -4229,9 +4216,6 @@ If not specified then uses the default anchor plate of <code>rotation_model</cod
             query_plate_id = False
             plate_ids = np.ones(len(lons), dtype=int) * plate_id
 
-        if anchor_plate_id is None:
-            anchor_plate_id = self.anchor_plate_id
-
         seed_points = zip(lats, lons)
         if return_rate_of_motion is True:
             StepTimes = np.empty(((len(time_array) - 1) * 2, len(lons)))
@@ -4254,7 +4238,11 @@ If not specified then uses the default anchor plate of <code>rotation_model</cod
                 seed_points_at_digitisation_time,
                 time_array,
                 valid_time=(time_array.max(), time_array.min()),
-                relative_plate=int(anchor_plate_id),
+                relative_plate=(  # if None then uses &#39;self.anchor_plate_id&#39; (default anchor plate of &#39;self.rotation_model&#39;)
+                    anchor_plate_id
+                    if anchor_plate_id is not None
+                    else self.anchor_plate_id
+                ),
                 reconstruction_plate_id=int(plate_id),
             )
 
@@ -4262,7 +4250,7 @@ If not specified then uses the default anchor plate of <code>rotation_model</cod
                 motion_path_feature,
                 to_time=0,
                 reconstruct_type=pygplates.ReconstructType.motion_path,
-                anchor_plate_id=int(anchor_plate_id),
+                anchor_plate_id=anchor_plate_id,  # if None then uses &#39;self.anchor_plate_id&#39; (default anchor plate of &#39;self.rotation_model&#39;)
             )
             # Turn motion paths in to lat-lon coordinates
             for reconstructed_motion_path in reconstructed_motion_paths:
@@ -4723,7 +4711,7 @@ The units should match the units of <code>velocity_units</code> (eg, if that's c
 <a href="https://www.gplates.org/docs/pygplates/generated/pygplates.topologicalsnapshot#pygplates.TopologicalSnapshot.calculate_plate_boundary_statistics">pygplates.TopologicalSnapshot.calculate_plate_boundary_statistics()</a>
 for more details. Defaults to half of <code>uniform_point_spacing_radians</code>.</dd>
 <dt><strong><code>anchor_plate_id</code></strong> :&ensp;<code>int</code>, optional</dt>
-<dd>Anchor plate ID (defaults to the current anchor plate ID).</dd>
+<dd>Anchor plate ID. Defaults to the current anchor plate ID (<code>anchor_plate_id</code> attribute).</dd>
 <dt><strong><code>velocity_delta_time</code></strong> :&ensp;<code>float</code>, default=<code>1.0</code></dt>
 <dd>The time delta used to calculate velocities (defaults to 1 Myr).</dd>
 <dt><strong><code>velocity_delta_time_type</code></strong> :&ensp;<code>{pygplates.VelocityDeltaTimeType.t_plus_delta_t_to_t, pygplates.VelocityDeltaTimeType.t_to_t_minus_delta_t, pygplates.VelocityDeltaTimeType.t_plus_minus_half_delta_t}</code>, default=<code>pygplates.VelocityDeltaTimeType.t_plus_delta_t_to_t</code></dt>
@@ -4947,7 +4935,7 @@ However, this parameter can only be specified if <code>use_ptt</code> is <code>F
 <dt><strong><code>output_obliquity_and_normal_and_left_right_plates</code></strong> :&ensp;<code>bool</code>, default=<code>False</code></dt>
 <dd>Whether to also return spreading obliquity, normal azimuth and left/right plates.</dd>
 <dt><strong><code>anchor_plate_id</code></strong> :&ensp;<code>int</code>, optional</dt>
-<dd>Anchor plate ID (defaults to the current anchor plate ID).</dd>
+<dd>Anchor plate ID. Defaults to the current anchor plate ID (<code>anchor_plate_id</code> attribute)..</dd>
 <dt><strong><code>velocity_delta_time</code></strong> :&ensp;<code>float</code>, default=<code>1.0</code></dt>
 <dd>Velocity delta time used in spreading velocity calculations (defaults to 1 Myr).</dd>
 </dl>
@@ -5051,7 +5039,7 @@ This value can be negative which means a small amount of divergence is allowed.
 If <code>None</code> then all (converging and diverging) sample points are returned. This is the default.
 Note that this parameter can only be specified if <code>use_ptt</code> is <code>False</code>.</dd>
 <dt><strong><code>anchor_plate_id</code></strong> :&ensp;<code>int</code>, optional</dt>
-<dd>Anchor plate ID (defaults to the current anchor plate ID).</dd>
+<dd>Anchor plate ID. Defaults to the current anchor plate ID (<code>anchor_plate_id</code> attribute)..</dd>
 <dt><strong><code>velocity_delta_time</code></strong> :&ensp;<code>float</code>, default=<code>1.0</code></dt>
 <dd>Velocity delta time used in convergence velocity calculations (defaults to 1 Myr).</dd>
 <dt><strong><code>output_distance_to_nearest_edge_of_trench</code></strong> :&ensp;<code>bool</code>, default=<code>False</code></dt>
@@ -5379,7 +5367,7 @@ gplot = gplately.plot.PlotTopologies(plate_reconstruction,
                                     continent_filename=None,
                                     COB_filename=None,
                                     time=None,
-                                    anchor_plate_id=0,
+                                    anchor_plate_id=None,
         )
 
 # Setting a new reconstruction time
@@ -5519,7 +5507,7 @@ boundaries and passive continental boundaries.</dd>
                                             continent_filename=None,
                                             COB_filename=None,
                                             time=None,
-                                            anchor_plate_id=0,
+                                            anchor_plate_id=None,
                 )
 
         # Setting a new reconstruction time
@@ -9535,8 +9523,8 @@ whenever it or the anchor plate is updated.</p>
 <dd>
 <div class="desc"><p><code><a title="gplately.Points" href="#gplately.Points">Points</a></code> contains methods to reconstruct and work with with geological point data. For example, the
 locations and plate velocities of point data can be calculated at a specific geological <code>time</code>. The <code><a title="gplately.Points" href="#gplately.Points">Points</a></code>
-object requires the <code><a title="gplately.PlateReconstruction" href="#gplately.PlateReconstruction">PlateReconstruction</a></code> object to work because it holds the <code>rotation_model</code> and <code>static_polygons</code>
-needed to classify topological plates and quantify feature rotations through time.</p>
+object requires the <code><a title="gplately.PlateReconstruction" href="#gplately.PlateReconstruction">PlateReconstruction</a></code> object to work because it holds the <code>rotation_model</code> needed to
+quantify point rotations through time and <code>static_polygons</code> needed to partition points into plates.</p>
 <h2 id="attributes">Attributes</h2>
 <dl>
 <dt><strong><code>plate_reconstruction</code></strong> :&ensp;<code>object pointer</code></dt>
@@ -9561,8 +9549,8 @@ if not provided.</dd>
 <pre><code class="python">class Points(object):
     &#34;&#34;&#34;`Points` contains methods to reconstruct and work with with geological point data. For example, the
     locations and plate velocities of point data can be calculated at a specific geological `time`. The `Points`
-    object requires the `PlateReconstruction` object to work because it holds the `rotation_model` and `static_polygons`
-    needed to classify topological plates and quantify feature rotations through time.
+    object requires the `PlateReconstruction` object to work because it holds the `rotation_model` needed to
+    quantify point rotations through time and `static_polygons` needed to partition points into plates.
 
     Attributes
     ----------
@@ -9884,11 +9872,12 @@ if not provided.</dd>
         from_time = self.time
         to_time = time
 
-        if anchor_plate_id is None:
-            anchor_plate_id = self.plate_reconstruction.anchor_plate_id
-
         reconstructed_features = self.plate_reconstruction.reconstruct(
-            self.features, to_time, from_time, anchor_plate_id=anchor_plate_id, **kwargs
+            self.features,
+            to_time,
+            from_time,
+            anchor_plate_id=anchor_plate_id,  # if None then uses default anchor plate of &#39;self.plate_reconstruction&#39;
+            **kwargs,
         )
 
         rlons, rlats = _tools.extract_feature_lonlat(reconstructed_features)
@@ -9948,8 +9937,6 @@ if not provided.</dd>
 
         &#34;&#34;&#34;
         from_time = self.time
-        if anchor_plate_id is None:
-            anchor_plate_id = self.plate_reconstruction.anchor_plate_id
 
         ages = np.array(ages)
 
@@ -9964,7 +9951,11 @@ if not provided.</dd>
             mask_age = ages == age
 
             reconstructed_features = self.plate_reconstruction.reconstruct(
-                self.features, age, from_time, anchor_plate_id=anchor_plate_id, **kwargs
+                self.features,
+                age,
+                from_time,
+                anchor_plate_id=anchor_plate_id,  # if None then uses default anchor plate of &#39;self.plate_reconstruction&#39;
+                **kwargs,
             )
 
             lons, lats = _tools.extract_feature_lonlat(reconstructed_features)
@@ -10028,7 +10019,9 @@ if not provided.</dd>
 
         return list(all_velocities.T)
 
-    def motion_path(self, time_array, anchor_plate_id=0, return_rate_of_motion=False):
+    def motion_path(
+        self, time_array, anchor_plate_id=None, return_rate_of_motion=False
+    ):
         &#34;&#34;&#34;Create a path of points to mark the trajectory of a plate&#39;s motion
         through geological time.
 
@@ -10044,8 +10037,9 @@ if not provided.</dd>
                 time_step = 2.5
                 time_array = np.arange(min_time, max_time + time_step, time_step)
 
-        anchor_plate_id : int, default=0
-            The ID of the anchor plate.
+        anchor_plate_id : int, optional
+            Reconstruct features with respect to a certain anchor plate. By default, reconstructions are made
+            with respect to the anchor plate ID specified in the `gplately.PlateReconstruction` object.
         return_rate_of_motion : bool, default=False
             Choose whether to return the rate of plate motion through time for each
 
@@ -10073,10 +10067,12 @@ if not provided.</dd>
                 point_feature.get_geometry(),
                 time_array.tolist(),
                 valid_time=(time_array.max(), time_array.min()),
-                # relative_plate=int(self.plate_id[i]),
-                # reconstruction_plate_id=int(anchor_plate_id))
                 relative_plate=int(self.plate_id[i]),
-                reconstruction_plate_id=int(anchor_plate_id),
+                reconstruction_plate_id=(  # if None then uses default anchor plate of &#39;self.plate_reconstruction&#39;
+                    anchor_plate_id
+                    if anchor_plate_id is not None
+                    else self.plate_reconstruction.anchor_plate_id
+                ),
             )
 
             reconstructed_motion_paths = self.plate_reconstruction.reconstruct(
@@ -10084,7 +10080,7 @@ if not provided.</dd>
                 to_time=0,
                 # from_time=0,
                 reconstruct_type=pygplates.ReconstructType.motion_path,
-                anchor_plate_id=int(anchor_plate_id),
+                anchor_plate_id=anchor_plate_id,  # if None then uses default anchor plate of &#39;self.plate_reconstruction&#39;
             )
 
             # Turn motion paths in to lat-lon coordinates
@@ -10560,7 +10556,7 @@ gpts.get_geopandas_dataframe()
 </code></pre></div>
 </dd>
 <dt id="gplately.Points.motion_path"><code class="name flex">
-<span>def <span class="ident">motion_path</span></span>(<span>self, time_array, anchor_plate_id=0, return_rate_of_motion=False)</span>
+<span>def <span class="ident">motion_path</span></span>(<span>self, time_array, anchor_plate_id=None, return_rate_of_motion=False)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Create a path of points to mark the trajectory of a plate's motion
@@ -10576,8 +10572,9 @@ time_step = 2.5
 time_array = np.arange(min_time, max_time + time_step, time_step)
 </code></pre>
 </dd>
-<dt><strong><code>anchor_plate_id</code></strong> :&ensp;<code>int</code>, default=<code>0</code></dt>
-<dd>The ID of the anchor plate.</dd>
+<dt><strong><code>anchor_plate_id</code></strong> :&ensp;<code>int</code>, optional</dt>
+<dd>Reconstruct features with respect to a certain anchor plate. By default, reconstructions are made
+with respect to the anchor plate ID specified in the <code><a title="gplately.PlateReconstruction" href="#gplately.PlateReconstruction">PlateReconstruction</a></code> object.</dd>
 <dt><strong><code>return_rate_of_motion</code></strong> :&ensp;<code>bool</code>, default=<code>False</code></dt>
 <dd>Choose whether to return the rate of plate motion through time for each</dd>
 </dl>
@@ -10841,7 +10838,7 @@ using linear interpolation.</p>
 Searches for invalid 'data' cells containing NaN-type entries and
 replaces NaNs with the value of the nearest valid data cell.</p>
 <p>reconstruct(time, fill_value=None, partitioning_features=None,
-threads=1, anchor_plate_id=0, inplace=False)
+threads=1, anchor_plate_id=None, inplace=False)
 Reconstruct the raster from its initial time (<code>self.time</code>) to a new
 time.</p>
 <p>Constructs all necessary attributes for the raster object.</p>
@@ -10980,7 +10977,7 @@ Otherwise, the program will guess. The result may/may not be correct.</dd>
         replaces NaNs with the value of the nearest valid data cell.
 
     reconstruct(time, fill_value=None, partitioning_features=None,
-                threads=1, anchor_plate_id=0, inplace=False)
+                threads=1, anchor_plate_id=None, inplace=False)
         Reconstruct the raster from its initial time (`self.time`) to a new
         time.
     &#34;&#34;&#34;
@@ -11495,7 +11492,7 @@ Otherwise, the program will guess. The result may/may not be correct.</dd>
         fill_value=None,
         partitioning_features=None,
         threads=1,
-        anchor_plate_id=0,
+        anchor_plate_id=None,
         inplace=False,
         return_array=False,
     ):
@@ -11517,8 +11514,9 @@ Otherwise, the program will guess. The result may/may not be correct.</dd>
         threads : int, default 1
             Number of threads to use for certain computationally heavy
             routines.
-        anchor_plate_id : int, default 0
-            ID of the anchored plate.
+        anchor_plate_id : int, optional
+            ID of the anchored plate. By default, reconstructions are made with respect to
+            the anchor plate ID specified in the `gplately.PlateReconstruction` object.
         inplace : bool, default False
             Perform the reconstruction in-place (replace the raster&#39;s data
             with the reconstructed data).
@@ -12450,7 +12448,7 @@ this is the arch length. we need to calculate the straight distance between the 
 </dl></div>
 </dd>
 <dt id="gplately.Raster.reconstruct"><code class="name flex">
-<span>def <span class="ident">reconstruct</span></span>(<span>self, time, fill_value=None, partitioning_features=None, threads=1, anchor_plate_id=0, inplace=False, return_array=False)</span>
+<span>def <span class="ident">reconstruct</span></span>(<span>self, time, fill_value=None, partitioning_features=None, threads=1, anchor_plate_id=None, inplace=False, return_array=False)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Reconstruct raster data to a given time.</p>
@@ -12470,8 +12468,9 @@ will be used, but alternatively any valid argument to
 <dt><strong><code>threads</code></strong> :&ensp;<code>int</code>, default <code>1</code></dt>
 <dd>Number of threads to use for certain computationally heavy
 routines.</dd>
-<dt><strong><code>anchor_plate_id</code></strong> :&ensp;<code>int</code>, default <code>0</code></dt>
-<dd>ID of the anchored plate.</dd>
+<dt><strong><code>anchor_plate_id</code></strong> :&ensp;<code>int</code>, optional</dt>
+<dd>ID of the anchored plate. By default, reconstructions are made with respect to
+the anchor plate ID specified in the <code><a title="gplately.PlateReconstruction" href="#gplately.PlateReconstruction">PlateReconstruction</a></code> object.</dd>
 <dt><strong><code>inplace</code></strong> :&ensp;<code>bool</code>, default <code>False</code></dt>
 <dd>Perform the reconstruction in-place (replace the raster's data
 with the reconstructed data).</dd>

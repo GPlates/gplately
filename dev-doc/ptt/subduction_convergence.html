@@ -154,7 +154,7 @@ to the output of each sample point. Here it is used to interpret the same output
 <div class="desc"><p>Determine the subducting plate of the subduction shared sub-segment.</p></div>
 </dd>
 <dt id="gplately.ptt.subduction_convergence.subduction_convergence"><code class="name flex">
-<span>def <span class="ident">subduction_convergence</span></span>(<span>rotation_features_or_model, topology_features, threshold_sampling_distance_radians, time, velocity_delta_time=1.0, anchor_plate_id=0, include_slab_topologies=False, include_network_boundaries=False, **kwargs)</span>
+<span>def <span class="ident">subduction_convergence</span></span>(<span>rotation_features_or_model, topology_features, threshold_sampling_distance_radians, time, velocity_delta_time=1.0, anchor_plate_id=None, include_slab_topologies=False, include_network_boundaries=False, **kwargs)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Find the convergence and absolute velocities sampled along trenches (subduction zones) at a particular geological time.</p>
@@ -199,7 +199,8 @@ of any combination of those four types.</dd>
 <dt><strong><code>velocity_delta_time</code></strong> :&ensp;<code>float</code>, optional</dt>
 <dd>The delta time interval used for velocity calculations. Defaults to 1My.</dd>
 <dt><strong><code>anchor_plate_id</code></strong> :&ensp;<code>int</code>, optional</dt>
-<dd>The anchor plate of the rotation model. Defaults to zero.</dd>
+<dd>Anchor plate ID for reconstruction.
+If not specified then uses the default anchor plate of <code>rotation_model</code> if it's a <code>pygplates.RotationModel</code> (otherwise uses zero).</dd>
 <dt><strong><code>include_slab_topologies</code></strong> :&ensp;<code>bool</code>, default <code>False</code></dt>
 <dd>Include slab topologies (<code>gpml:TopologicalSlabBoundary</code>) in analysis.</dd>
 <dt><strong><code>include_network_boundaries</code></strong> :&ensp;<code>bool</code>, default <code>False</code></dt>
@@ -265,7 +266,7 @@ the threshold sampling distance).</p>
 <p>The trench normal (at each arc segment mid-point) always points <em>towards</em> the overriding plate.</p></div>
 </dd>
 <dt id="gplately.ptt.subduction_convergence.subduction_convergence_over_time"><code class="name flex">
-<span>def <span class="ident">subduction_convergence_over_time</span></span>(<span>output_filename_prefix, output_filename_extension, rotation_filenames, topology_filenames, threshold_sampling_distance_radians, time_young, time_old, time_increment, velocity_delta_time=1.0, anchor_plate_id=0, output_gpml_filename=None, include_slab_topologies=False, **kwargs)</span>
+<span>def <span class="ident">subduction_convergence_over_time</span></span>(<span>output_filename_prefix, output_filename_extension, rotation_filenames, topology_filenames, threshold_sampling_distance_radians, time_young, time_old, time_increment, velocity_delta_time=1.0, anchor_plate_id=None, output_gpml_filename=None, include_slab_topologies=False, **kwargs)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>calculate subduction convergence over time</p></div>

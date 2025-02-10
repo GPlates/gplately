@@ -294,7 +294,7 @@ An example output of <code>cdf_lat</code> is:<pre><code>masked_array(data=[-90. 
 </dl></div>
 </dd>
 <dt id="gplately.grids.reconstruct_grid"><code class="name flex">
-<span>def <span class="ident">reconstruct_grid</span></span>(<span>grid, partitioning_features, rotation_model, to_time, from_time=0.0, extent='global', origin=None, fill_value=None, threads=1, anchor_plate_id=0, x_dimension_name: str = '', y_dimension_name: str = '', data_variable_name: str = '')</span>
+<span>def <span class="ident">reconstruct_grid</span></span>(<span>grid, partitioning_features, rotation_model, to_time, from_time=0.0, extent='global', origin=None, fill_value=None, threads=1, anchor_plate_id=None, x_dimension_name: str = '', y_dimension_name: str = '', data_variable_name: str = '')</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Reconstruct a gridded dataset to a given reconstruction time.</p>
@@ -334,8 +334,9 @@ at <code>to_time</code>. By default (<code>fill_value=None</code>), this value w
 determined based on the input.</dd>
 <dt><strong><code>threads</code></strong> :&ensp;<code>int</code>, default <code>1</code></dt>
 <dd>Number of threads to use for certain computationally heavy routines.</dd>
-<dt><strong><code>anchor_plate_id</code></strong> :&ensp;<code>int</code>, default <code>0</code></dt>
-<dd>ID of the anchored plate.</dd>
+<dt><strong><code>anchor_plate_id</code></strong> :&ensp;<code>int</code>, optional</dt>
+<dd>ID of the anchored plate. By default, reconstructions are made with respect to the
+default anchor plate ID of <code>rotation_model</code> if it's a <code>pygplates.RotationModel</code> (otherwise zero).</dd>
 <dt><strong><code>x_dimension_name</code></strong> :&ensp;<code>str</code>, optional, default=<code>""</code></dt>
 <dd>If the grid file uses comman names, such as "x", "lon", "lons" or "longitude", you need not set this parameter.
 Otherwise, you need to tell us what the x dimension name is.</dd>
@@ -547,7 +548,7 @@ using linear interpolation.</p>
 Searches for invalid 'data' cells containing NaN-type entries and
 replaces NaNs with the value of the nearest valid data cell.</p>
 <p>reconstruct(time, fill_value=None, partitioning_features=None,
-threads=1, anchor_plate_id=0, inplace=False)
+threads=1, anchor_plate_id=None, inplace=False)
 Reconstruct the raster from its initial time (<code>self.time</code>) to a new
 time.</p>
 <p>Constructs all necessary attributes for the raster object.</p>
@@ -686,7 +687,7 @@ Otherwise, the program will guess. The result may/may not be correct.</dd>
         replaces NaNs with the value of the nearest valid data cell.
 
     reconstruct(time, fill_value=None, partitioning_features=None,
-                threads=1, anchor_plate_id=0, inplace=False)
+                threads=1, anchor_plate_id=None, inplace=False)
         Reconstruct the raster from its initial time (`self.time`) to a new
         time.
     &#34;&#34;&#34;
@@ -1201,7 +1202,7 @@ Otherwise, the program will guess. The result may/may not be correct.</dd>
         fill_value=None,
         partitioning_features=None,
         threads=1,
-        anchor_plate_id=0,
+        anchor_plate_id=None,
         inplace=False,
         return_array=False,
     ):
@@ -1223,8 +1224,9 @@ Otherwise, the program will guess. The result may/may not be correct.</dd>
         threads : int, default 1
             Number of threads to use for certain computationally heavy
             routines.
-        anchor_plate_id : int, default 0
-            ID of the anchored plate.
+        anchor_plate_id : int, optional
+            ID of the anchored plate. By default, reconstructions are made with respect to
+            the anchor plate ID specified in the `gplately.PlateReconstruction` object.
         inplace : bool, default False
             Perform the reconstruction in-place (replace the raster&#39;s data
             with the reconstructed data).
@@ -2156,7 +2158,7 @@ this is the arch length. we need to calculate the straight distance between the 
 </dl></div>
 </dd>
 <dt id="gplately.grids.Raster.reconstruct"><code class="name flex">
-<span>def <span class="ident">reconstruct</span></span>(<span>self, time, fill_value=None, partitioning_features=None, threads=1, anchor_plate_id=0, inplace=False, return_array=False)</span>
+<span>def <span class="ident">reconstruct</span></span>(<span>self, time, fill_value=None, partitioning_features=None, threads=1, anchor_plate_id=None, inplace=False, return_array=False)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Reconstruct raster data to a given time.</p>
@@ -2176,8 +2178,9 @@ will be used, but alternatively any valid argument to
 <dt><strong><code>threads</code></strong> :&ensp;<code>int</code>, default <code>1</code></dt>
 <dd>Number of threads to use for certain computationally heavy
 routines.</dd>
-<dt><strong><code>anchor_plate_id</code></strong> :&ensp;<code>int</code>, default <code>0</code></dt>
-<dd>ID of the anchored plate.</dd>
+<dt><strong><code>anchor_plate_id</code></strong> :&ensp;<code>int</code>, optional</dt>
+<dd>ID of the anchored plate. By default, reconstructions are made with respect to
+the anchor plate ID specified in the <code><a title="gplately.PlateReconstruction" href="index.html#gplately.PlateReconstruction">PlateReconstruction</a></code> object.</dd>
 <dt><strong><code>inplace</code></strong> :&ensp;<code>bool</code>, default <code>False</code></dt>
 <dd>Perform the reconstruction in-place (replace the raster's data
 with the reconstructed data).</dd>
