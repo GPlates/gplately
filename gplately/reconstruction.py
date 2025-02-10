@@ -2881,7 +2881,9 @@ class Points(object):
 
         return list(all_velocities.T)
 
-    def motion_path(self, time_array, anchor_plate_id=0, return_rate_of_motion=False):
+    def motion_path(
+        self, time_array, anchor_plate_id=None, return_rate_of_motion=False
+    ):
         """Create a path of points to mark the trajectory of a plate's motion
         through geological time.
 
@@ -2897,8 +2899,9 @@ class Points(object):
                 time_step = 2.5
                 time_array = np.arange(min_time, max_time + time_step, time_step)
 
-        anchor_plate_id : int, default=0
-            The ID of the anchor plate.
+        anchor_plate_id : int, optional
+            Reconstruct features with respect to a certain anchor plate. By default, reconstructions are made
+            with respect to the anchor plate ID specified in the `gplately.PlateReconstruction` object.
         return_rate_of_motion : bool, default=False
             Choose whether to return the rate of plate motion through time for each
 
@@ -2926,10 +2929,12 @@ class Points(object):
                 point_feature.get_geometry(),
                 time_array.tolist(),
                 valid_time=(time_array.max(), time_array.min()),
-                # relative_plate=int(self.plate_id[i]),
-                # reconstruction_plate_id=int(anchor_plate_id))
                 relative_plate=int(self.plate_id[i]),
-                reconstruction_plate_id=int(anchor_plate_id),
+                reconstruction_plate_id=(  # if None then uses default anchor plate of 'self.plate_reconstruction'
+                    anchor_plate_id
+                    if anchor_plate_id is not None
+                    else self.plate_reconstruction.anchor_plate_id
+                ),
             )
 
             reconstructed_motion_paths = self.plate_reconstruction.reconstruct(
@@ -2937,7 +2942,7 @@ class Points(object):
                 to_time=0,
                 # from_time=0,
                 reconstruct_type=pygplates.ReconstructType.motion_path,
-                anchor_plate_id=int(anchor_plate_id),
+                anchor_plate_id=anchor_plate_id,  # if None then uses default anchor plate of 'self.plate_reconstruction'
             )
 
             # Turn motion paths in to lat-lon coordinates

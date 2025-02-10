@@ -163,7 +163,7 @@ def subduction_convergence(
     threshold_sampling_distance_radians,
     time,
     velocity_delta_time=1.0,
-    anchor_plate_id=0,
+    anchor_plate_id=None,
     include_slab_topologies=False,
     include_network_boundaries=False,
     **kwargs,
@@ -215,7 +215,8 @@ def subduction_convergence(
     velocity_delta_time: float, optional
         The delta time interval used for velocity calculations. Defaults to 1My.
     anchor_plate_id: int, optional
-        The anchor plate of the rotation model. Defaults to zero.
+        Anchor plate ID for reconstruction.
+        If not specified then uses the default anchor plate of `rotation_model` if it's a `pygplates.RotationModel` (otherwise uses zero).
     include_slab_topologies : bool, default False
         Include slab topologies (`gpml:TopologicalSlabBoundary`) in analysis.
     include_network_boundaries : bool, default False
@@ -1120,7 +1121,7 @@ def subduction_convergence_over_time(
     time_old,
     time_increment,
     velocity_delta_time=1.0,
-    anchor_plate_id=0,
+    anchor_plate_id=None,
     output_gpml_filename=None,
     include_slab_topologies=False,
     **kwargs,
