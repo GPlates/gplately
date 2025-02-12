@@ -149,19 +149,23 @@ See details [docker/README.md](docker/README.md).
 
 ### The `PlateModelManager` class
 
-The **PlateModelManager** class was introduced as a more efficient alternative to the **DataServer** class, 
+The **PlateModelManager** module was introduced as a more efficient alternative to the **DataServer** class, 
 designed specifically for downloading and managing plate reconstruction model files.
-
-A complete example of using the PlateModelManager class is available at https://github.com/GPlates/gplately/blob/master/Notebooks/Examples/introducing-plate-model-manager.py .
+More information about the PlateModelManager module can be found in [its GitHub repository](https://github.com/GPlates/plate-model-manager).
 
 ```python
-from plate_model_manager import PlateModelManager, PresentDayRasterManager
-from gplately import PlateReconstruction, PlotTopologies, Raster
+from gplately import (
+    PlateModelManager,
+    PlateReconstruction,
+    PlotTopologies,
+    PresentDayRasterManager,
+    Raster,
+)
 
 model = PlateModelManager().get_model(
-    "Muller2019", # model name
-    data_dir="plate-model-repo" # the local folder where you would like to save the model files
-    )
+    "Muller2019",  # model name
+    data_dir="plate-model-repo",  # the local folder where you would like to save the model files
+)
 
 recon_model = PlateReconstruction(
     model.get_rotation_model(),
@@ -177,7 +181,28 @@ gplot = PlotTopologies(
 # get present-day topography raster
 raster = Raster(PresentDayRasterManager().get_raster("topography"))
 # get paleo-agegrid raster at 100Ma from Muller2019 model
-agegrid = Raster(model.get_raster("AgeGrids", time=100))   
+agegrid = Raster(model.get_raster("AgeGrids", time=100))
+```
+
+For more example code, a [comprehensive example](https://github.com/GPlates/gplately/blob/master/Notebooks/Examples/introducing-plate-model-manager.py) 
+on GitHub demonstrates how to use the PlateModelManager module in details. [Another example](https://github.com/GPlates/gplately/blob/master/Notebooks/Examples/working-with-plate-model-manager.py) 
+shows how to use the PlateModelManager module with GPlately.
+
+You may use the auxiliary functions to create the PlateReconstruction and PlotTopologies instances.
+
+```python
+from gplately.auxiliary import get_gplot, get_plate_reconstruction
+
+# use the auxiliary function to create a PlateReconstruction instance
+plate_reconstruction_instance = get_plate_reconstruction("Muller2019")
+
+# use the auxiliary function to create a PlotTopologies instance
+plot_topologies_instance = get_gplot("Muller2019", age=140)
+
+# there is a PlateReconstruction instance inside a PlotTopologies instance.
+# so, in most cases a single get_gplot() call is enough.
+# You can get the PlateReconstruction instance from a PlotTopologies instance using the one-line code below.
+another_plate_reconstruction_instance = plot_topologies_instance.plate_reconstruction
 ```
 
 ### The `DataServer` class
@@ -198,12 +223,14 @@ we can download a `rotation model`, a set of `topology features` and some `stati
 global Mesozoic–Cenozoic deforming plate motion model. (Use the newer **PlateModelManager** class when it is possible.)
 
 ```python
-import gplately 
+from gplately.download import DataServer
 
-gdownload = gplately.download.DataServer("Muller2019")
+gdownload = DataServer("Muller2019")
 
 # Download plate reconstruction files and geometries from the Müller et al. 2019 model
-rotation_model, topology_features, static_polygons = gdownload.get_plate_reconstruction_files()
+rotation_model, topology_features, static_polygons = (
+    gdownload.get_plate_reconstruction_files()
+)
 coastlines, continents, COBs = gdownload.get_topology_geometries()
 
 # Download the Müller et al. 2019 100 Ma age grid

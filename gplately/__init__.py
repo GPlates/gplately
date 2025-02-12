@@ -25,7 +25,8 @@
 
 ### [PlateModelManager](https://pypi.org/project/plate-model-manager/)
 The **PlateModelManager** module was introduced as a more efficient alternative to the **DataServer** class, 
-designed specifically for downloading and managing plate reconstruction model files.
+designed specifically for downloading and managing plate reconstruction model files. 
+More information about the PlateModelManager module can be found in [its GitHub repository](https://github.com/GPlates/plate-model-manager).
 
 ```python
 from gplately import (
@@ -61,6 +62,23 @@ agegrid = Raster(model.get_raster("AgeGrids", time=100))
 For more example code, a [comprehensive example](https://github.com/GPlates/gplately/blob/master/Notebooks/Examples/introducing-plate-model-manager.py) 
 on GitHub demonstrates how to use the PlateModelManager module in details. [Another example](https://github.com/GPlates/gplately/blob/master/Notebooks/Examples/working-with-plate-model-manager.py) 
 shows how to use the PlateModelManager module with GPlately.
+
+You may use the auxiliary functions to create the `PlateReconstruction` and `PlotTopologies` instances.
+
+```python
+from gplately.auxiliary import get_gplot, get_plate_reconstruction
+
+# use the auxiliary function to create a PlateReconstruction instance
+plate_reconstruction_instance = get_plate_reconstruction("Muller2019")
+
+# use the auxiliary function to create a PlotTopologies instance
+plot_topologies_instance = get_gplot("Muller2019", age=140)
+
+# there is a PlateReconstruction instance inside a PlotTopologies instance.
+# so, in most cases a single get_gplot() call is enough.
+# You can get the PlateReconstruction instance from a PlotTopologies instance using the one-line code below.
+another_plate_reconstruction_instance = plot_topologies_instance.plate_reconstruction
+```
 
 ### [DataServer](https://gplates.github.io/gplately/download.html#gplately.download.DataServer)
 The `DataServer` class allows users to automatically download and cache the necessary files for plate reconstructions to a designated folder on your system. 
