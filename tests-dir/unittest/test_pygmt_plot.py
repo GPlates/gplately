@@ -1,11 +1,11 @@
 #!/usr/bin/env python3
 
-from gplately.mapping.pygmt_plot import PygmtPlotEngine, get_pygmt_basemap_figure
 from gplately.auxiliary import get_gplot
+from gplately.mapping.pygmt_plot import PygmtPlotEngine, get_pygmt_basemap_figure
 
 if __name__ == "__main__":
     gplot = get_gplot(
-        "merdith2021", "plate-model-repo", age=55, plot_engine=PygmtPlotEngine()
+        "merdith2021", "plate-model-repo", time=55, plot_engine=PygmtPlotEngine()
     )
     fig = get_pygmt_basemap_figure(projection="N180/10c", region="d")
     # fig.coast(shorelines=True)

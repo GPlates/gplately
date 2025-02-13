@@ -140,7 +140,7 @@ See details [docker/README.md](docker/README.md).
 
 ## Usage
 
-- [`DataServer`](#the-dataserver-object) - download rotation files and topology features from plate models on EarthByte's webDAV server
+- [`DataServer`](#the-dataserver-object) - download rotation files and topology features (use the newer **PlateModelManager** when possible)
 - [`PlateModelManager`](#the-platemodelmanager-object) - download and manage the plate reconstruction model files
 - [`PlateReconstruction`](#the-platereconstruction-object) - reconstruct features, tesselate mid ocean ridges, subduction zones
 - [`Points`](#the-points-object) - partition points onto plates, rotate back through time
