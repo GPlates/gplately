@@ -296,7 +296,7 @@ how to set up and use the `SeafloorGrid` object, and shows a sample set of outpu
 ![SeafloorGridDemo](https://raw.githubusercontent.com/GPlates/gplately/master/Notebooks/NotebookFiles/pdoc_Files/seafloorgrid.gif)
 
 
-## Notebooks
+## Sample workflows
 
 - [__01 - Getting Started__](01-GettingStarted.html): A brief overview of how to initialise GPlately's main objects
 - [__02 - Plate Reconstructions__](02-PlateReconstructions.html): Setting up a `PlateReconstruction` object, reconstructing geological data through time 
@@ -312,7 +312,12 @@ how to set up and use the `SeafloorGrid` object, and shows a sample set of outpu
 
 ## Examples
 
-- [__PlateModelManager__](https://github.com/GPlates/gplately/tree/master/Notebooks/Examples/PlateModelManager.md): Examples demonstrate how to use the PlateModelManager module in some circumstances
+- [__PlateModelManager__](https://github.com/GPlates/gplately/tree/master/Notebooks/Examples/readme.md#plate-model-manager): Examples demonstrate how to use the PlateModelManager module
+
+## Command-line interface
+
+- list
+- combine
 
 """
 from .utils import dev_warning
