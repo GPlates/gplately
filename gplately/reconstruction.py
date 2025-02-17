@@ -1947,18 +1947,21 @@ class PlateReconstruction(object):
         )
         return reconstructed_features
 
-    def get_point_velocities(self, lons, lats, time, delta_time=1.0):
-        """Generates a velocity domain feature collection, resolves them into points, and calculates the north and east
-        components of the velocity vector for each point in the domain at a particular geological `time`.
-
-        Notes
-        -----
-        Velocity domain feature collections are MeshNode-type features. These are produced from `lons` and `lats` pairs
-        represented as multi-point geometries (projections onto the surface of the unit length sphere). These features are
-        resolved into  domain points and assigned plate IDs which are used to obtain the equivalent stage rotations of
-        identified tectonic plates over a time interval (`delta_time`). Each velocity domain point and its stage rotation
-        are used to calculate the point's plate velocity at a particular `time`. Obtained velocities for each domain point
-        are represented in the north-east-down coordinate system.
+    def get_point_velocities(
+        self,
+        lons,
+        lats,
+        time,
+        delta_time=1.0,
+        *,
+        velocity_delta_time_type=pygplates.VelocityDeltaTimeType.t_plus_delta_t_to_t,
+        velocity_units=pygplates.VelocityUnits.kms_per_my,
+        earth_radius_in_kms=pygplates.Earth.mean_radius_in_kms,
+        include_networks=True,
+        include_topological_slab_boundaries=False,
+        anchor_plate_id=None,
+    ):
+        """Calculates the north and east components of the velocity vector (in kms/myr) for each specified point (from `lons` and `lats`) at a particular geological `time`.
 
         Parameters
         ----------
@@ -1972,92 +1975,100 @@ class PlateReconstruction(object):
             The specific geological time (Ma) at which to calculate plate velocities.
 
         delta_time : float, default=1.0
-            The time increment used for generating partitioning plate stage rotations. 1.0Ma by default.
+            The time interval used for velocity calculations. 1.0Ma by default.
+
+        velocity_delta_time_type : {pygplates.VelocityDeltaTimeType.t_plus_delta_t_to_t, pygplates.VelocityDeltaTimeType.t_to_t_minus_delta_t, pygplates.VelocityDeltaTimeType.t_plus_minus_half_delta_t}, default=pygplates.VelocityDeltaTimeType.t_plus_delta_t_to_t
+            How the two velocity times are calculated relative to `time` (defaults to ``[time + velocity_delta_time, time]``).
+
+        velocity_units : {pygplates.VelocityUnits.cms_per_yr, pygplates.VelocityUnits.kms_per_my}, default=pygplates.VelocityUnits.kms_per_my
+            Whether to return velocities in centimetres per year or kilometres per million years (defaults to kilometres per million years).
+
+        earth_radius_in_kms : float, default=pygplates.Earth.mean_radius_in_kms
+            Radius of the Earth in kilometres.
+            This is only used to calculate velocities (strain rates always use ``pygplates.Earth.equatorial_radius_in_kms``).
+
+        include_networks : bool, default=True
+            Whether to include deforming networks when calculating velocities.
+            By default they are included (and also given precedence since they typically overlay a rigid plate).
+
+        include_topological_slab_boundaries : bool, default=False
+            Whether to include features of type `gpml:TopologicalSlabBoundary` when calculating velocities.
+            By default they are **not** included (they tend to overlay a rigid plate which should instead be used to calculate plate velocity).
+
+        anchor_plate_id : int, optional
+            Anchor plate ID. Defaults to the current anchor plate ID (`anchor_plate_id` attribute).
 
         Returns
         -------
-        all_velocities : 1D list of tuples
-            For each velocity domain feature point, a tuple of (north, east, down) velocity components is generated and
-            appended to a list of velocity data. The length of `all_velocities` is equivalent to the number of domain points
-            resolved from the lat-lon array parameters.
+        point_velocities : array of 2-tuples
+            For each point, a tuple of (north, east) velocity components is generated and appended to a list of velocity data.
+            The length of `point_velocities` is equivalent to the number of points in the lat-lon array parameters.
 
         Raises
         ------
         ValueError
             If topology features have not been set in this `PlateReconstruction`.
+
+        Notes
+        -----
+        The velocities are in *kilometres per million years* by default (not *centimetres per year*, the default in `Point.plate_velocity`).
+        This difference is maintained for backward compatibility.
+
+        For each velocity, the *north* component is first followed by the *east* component.
+        This is different to `Point.plate_velocity` where the *east* component is first.
+        This difference is maintained for backward compatibility.
         """
         # Add points to a multipoint geometry
 
-        time = float(time)
+        points = [pygplates.PointOnSphere(lat, lon) for lat, lon in zip(lats, lons)]
 
-        multi_point = pygplates.MultiPointOnSphere(
-            [(float(lat), float(lon)) for lat, lon in zip(lats, lons)]
+        topological_snapshot = self.topological_snapshot(
+            time,
+            anchor_plate_id=anchor_plate_id,  # if None then uses 'self.anchor_plate_id' (default anchor plate of 'self.rotation_model')
+            include_topological_slab_boundaries=include_topological_slab_boundaries,
         )
 
-        # Create a feature containing the multipoint feature, and defined as MeshNode type
-        meshnode_feature = pygplates.Feature(
-            pygplates.FeatureType.create_from_qualified_string("gpml:MeshNode")
-        )
-        meshnode_feature.set_geometry(multi_point)
-        meshnode_feature.set_name("Velocity Mesh Nodes from pygplates")
+        # If requested, exclude resolved topological *networks*.
+        resolve_topology_types = pygplates.ResolveTopologyType.boundary
+        if include_networks:
+            resolve_topology_types = (
+                resolve_topology_types | pygplates.ResolveTopologyType.network
+            )
 
-        velocity_domain_features = pygplates.FeatureCollection(meshnode_feature)
-
-        # NB: at this point, the feature could be written to a file using
-        # output_feature_collection.write('myfilename.gpmlz')
-
-        # All domain points and associated (magnitude, azimuth, inclination) velocities for the current time.
-        all_domain_points = []
-        all_velocities = []
-
-        # Partition our velocity domain features into our topological plate polygons at the current 'time'.
-        plate_partitioner = pygplates.PlatePartitioner(
-            self._check_topology_features(), self.rotation_model, time
+        point_velocities = topological_snapshot.get_point_velocities(
+            points,
+            resolve_topology_types=resolve_topology_types,
+            velocity_delta_time=delta_time,
+            velocity_delta_time_type=velocity_delta_time_type,
+            velocity_units=velocity_units,
+            earth_radius_in_kms=earth_radius_in_kms,
         )
 
-        for velocity_domain_feature in velocity_domain_features:
-            # A velocity domain feature usually has a single geometry but we'll assume it can be any number.
-            # Iterate over them all.
-            for velocity_domain_geometry in velocity_domain_feature.get_geometries():
-                for velocity_domain_point in velocity_domain_geometry.get_points():
-                    all_domain_points.append(velocity_domain_point)
+        # Replace any missing velocities with zero velocity.
+        #
+        # If a point does not intersect a topological plate (or network) then its velocity is None.
+        for point_index in range(len(points)):
+            if point_velocities[point_index] is None:
+                point_velocities[point_index] = pygplates.Vector3D.zero
 
-                    partitioning_plate = plate_partitioner.partition_point(
-                        velocity_domain_point
-                    )
-                    if partitioning_plate:
-                        # We need the newly assigned plate ID
-                        # to get the equivalent stage rotation of that tectonic plate.
-                        partitioning_plate_id = (
-                            partitioning_plate.get_feature().get_reconstruction_plate_id()
-                        )
+        # Convert global 3D velocity vectors to local (North, East, Down) vectors (one per point).
+        point_velocities_north_east_down = (
+            pygplates.LocalCartesian.convert_from_geocentric_to_north_east_down(
+                points, point_velocities
+            )
+        )
 
-                        # Get the stage rotation of partitioning plate from 'time + delta_time' to 'time'.
-                        equivalent_stage_rotation = self.rotation_model.get_rotation(
-                            time, partitioning_plate_id, time + delta_time
-                        )
+        # Extract just the North and East velocity components.
+        point_velocities_north_east = []
+        for point_velocity_north_east_down in point_velocities_north_east_down:
+            point_velocities_north_east.append(
+                (
+                    point_velocity_north_east_down.get_x(),  # North
+                    point_velocity_north_east_down.get_y(),  # East
+                )
+            )
 
-                        # Calculate velocity at the velocity domain point.
-                        # This is from 'time + delta_time' to 'time' on the partitioning plate.
-                        velocity_vectors = pygplates.calculate_velocities(
-                            [velocity_domain_point],
-                            equivalent_stage_rotation,
-                            delta_time,
-                        )
-
-                        # Convert global 3D velocity vectors to local (magnitude, azimuth, inclination) tuples
-                        # (one tuple per point).
-                        velocities = pygplates.LocalCartesian.convert_from_geocentric_to_north_east_down(
-                            [velocity_domain_point], velocity_vectors
-                        )
-                        all_velocities.append(
-                            (velocities[0].get_x(), velocities[0].get_y())
-                        )
-
-                    else:
-                        all_velocities.append((0, 0))
-
-        return np.array(all_velocities)
+        return np.array(point_velocities_north_east)
 
     def create_motion_path(
         self,
