@@ -140,7 +140,22 @@ See details [docker/README.md](docker/README.md).
 
 ## Usage
 
-- [`DataServer`](#the-dataserver-object) - download rotation files and topology features from plate models on EarthByte's webDAV server
+- [Quick start](https://gplates.github.io/gplately/dev-doc/#quick-start) - a brief tutorial to help users get up to speed  
+- [Sample workflows](#sample-workflows) - demonstrations of how GPlately can be used in various workflows
+- [Examples](Notebooks/Examples/readme.md) - code snippets that demonstrate the usage of GPlately's classes and methods
+- [command-line interface (CLI)](gplately/commands/readme.md) - use GPlately in a command-line environment
+
+## Documentation
+
+- [Documentation dev (latest unstable)](https://gplates.github.io/gplately/dev-doc)
+- [Documentation v1.3.0 (**latest stable**)](https://gplates.github.io/gplately/v1.3.0/)
+- [Documentation v1.2.0](https://gplates.github.io/gplately/v1.2.0/)
+- [Documentation v1.1.0](https://gplates.github.io/gplately/v1.1.0/)
+- [Documentation v1.0.0](https://gplates.github.io/gplately/v1.0.0/)
+
+## Classes
+
+- [`DataServer`](#the-dataserver-object) - download rotation files and topology features (use the newer **PlateModelManager** when possible)
 - [`PlateModelManager`](#the-platemodelmanager-object) - download and manage the plate reconstruction model files
 - [`PlateReconstruction`](#the-platereconstruction-object) - reconstruct features, tesselate mid ocean ridges, subduction zones
 - [`Points`](#the-points-object) - partition points onto plates, rotate back through time
@@ -149,19 +164,23 @@ See details [docker/README.md](docker/README.md).
 
 ### The `PlateModelManager` class
 
-The **PlateModelManager** class was introduced as a more efficient alternative to the **DataServer** class, 
+The **PlateModelManager** module was introduced as a more efficient alternative to the **DataServer** class, 
 designed specifically for downloading and managing plate reconstruction model files.
-
-A complete example of using the PlateModelManager class is available at https://github.com/GPlates/gplately/blob/master/Notebooks/Examples/introducing-plate-model-manager.py .
+More information about the PlateModelManager module can be found in [its GitHub repository](https://github.com/GPlates/plate-model-manager).
 
 ```python
-from plate_model_manager import PlateModelManager, PresentDayRasterManager
-from gplately import PlateReconstruction, PlotTopologies, Raster
+from gplately import (
+    PlateModelManager,
+    PlateReconstruction,
+    PlotTopologies,
+    PresentDayRasterManager,
+    Raster,
+)
 
 model = PlateModelManager().get_model(
-    "Muller2019", # model name
-    data_dir="plate-model-repo" # the local folder where you would like to save the model files
-    )
+    "Muller2019",  # model name
+    data_dir="plate-model-repo",  # the local folder where you would like to save the model files
+)
 
 recon_model = PlateReconstruction(
     model.get_rotation_model(),
@@ -177,7 +196,28 @@ gplot = PlotTopologies(
 # get present-day topography raster
 raster = Raster(PresentDayRasterManager().get_raster("topography"))
 # get paleo-agegrid raster at 100Ma from Muller2019 model
-agegrid = Raster(model.get_raster("AgeGrids", time=100))   
+agegrid = Raster(model.get_raster("AgeGrids", time=100))
+```
+
+For more example code, a [comprehensive example](https://github.com/GPlates/gplately/blob/master/Notebooks/Examples/introducing-plate-model-manager.py) 
+on GitHub demonstrates how to use the PlateModelManager module in details. [Another example](https://github.com/GPlates/gplately/blob/master/Notebooks/Examples/working-with-plate-model-manager.py) 
+shows how to use the PlateModelManager module with GPlately.
+
+You may use the auxiliary functions to create the PlateReconstruction and PlotTopologies instances.
+
+```python
+from gplately.auxiliary import get_gplot, get_plate_reconstruction
+
+# use the auxiliary function to create a PlateReconstruction instance
+plate_reconstruction_instance = get_plate_reconstruction("Muller2019")
+
+# use the auxiliary function to create a PlotTopologies instance
+plot_topologies_instance = get_gplot("Muller2019", age=140)
+
+# there is a PlateReconstruction instance inside a PlotTopologies instance.
+# so, in most cases a single get_gplot() call is enough.
+# You can get the PlateReconstruction instance from a PlotTopologies instance using the one-line code below.
+another_plate_reconstruction_instance = plot_topologies_instance.plate_reconstruction
 ```
 
 ### The `DataServer` class
@@ -198,12 +238,14 @@ we can download a `rotation model`, a set of `topology features` and some `stati
 global Mesozoic–Cenozoic deforming plate motion model. (Use the newer **PlateModelManager** class when it is possible.)
 
 ```python
-import gplately 
+from gplately.download import DataServer
 
-gdownload = gplately.download.DataServer("Muller2019")
+gdownload = DataServer("Muller2019")
 
 # Download plate reconstruction files and geometries from the Müller et al. 2019 model
-rotation_model, topology_features, static_polygons = gdownload.get_plate_reconstruction_files()
+rotation_model, topology_features, static_polygons = (
+    gdownload.get_plate_reconstruction_files()
+)
 coastlines, continents, COBs = gdownload.get_topology_geometries()
 
 # Download the Müller et al. 2019 100 Ma age grid
@@ -336,132 +378,3 @@ To see GPlately in action, launch a Jupyter Notebook environment and check out t
 - [**10 - SeafloorGrid**](https://github.com/GPlates/gplately/blob/master/Notebooks/10-SeafloorGrids.ipynb): Defines the parameters needed to set up a `SeafloorGrid` object, and demonstrates how to produce age and spreading rate grids from a set of plate reconstruction model files.
 - [**11 - AndesFluxes**](https://github.com/GPlates/gplately/blob/master/Notebooks/11-AndesFluxes.ipynb): Demonstrates how the reconstructed subduction history along the Andean margin can be potentially used in the plate kinematics analysis and data mining.
 
-## API Documentation
-
-Documentation of GPlately's classes and methods can be found [here](https://gplates.github.io/gplately/) (**latest official release**)!
-
-Other documentation versions:
-- [Documentation dev (latest unstable)](https://gplates.github.io/gplately/dev-doc)
-- [Documentation v1.3.0 (**latest stable**)](https://gplates.github.io/gplately/v1.3.0/)
-- [Documentation v1.2.0](https://gplates.github.io/gplately/v1.2.0/)
-- [Documentation v1.1.0](https://gplates.github.io/gplately/v1.1.0/)
-- [Documentation v1.0.0](https://gplates.github.io/gplately/v1.0.0/)
-
-## Command Line Tools
-
-GPlately comes with a suite of useful command line tools. These tools are designed as GPlately subcommands. Run `gplately -h` to show the list of tools.
-
-### **list**
-
-  Display a list of available plate models from GPlates server. These model names can then be used by the Plate Model Manager to download model files over the Internet. Run `gplately list -h` for details.
-
-  Examples:
-
-    - `gplately list`
-      (list all available plate models from GPlates server)
-
-    - `gplately list -m merdith2021`
-      (show details about model merdith2021)
-
-    If you are using GPlately Docker image
-
-    - `docker run gplates/gplately gplately list`
-    - `docker run gplates/gplately gplately list -m merdith2021`
-
-### **combine**
-
-  Combine multiple feature collections into one. Run `gplately combine -h` for details.
-
-### **filter**
-
-  Filter feature collection by various criteria. Run `gplately filter -h` for details.
-
-  Examples: 
-
-    - `gplately filter input_file output_file -n Africa "North America"`
-        (get features whose name contains "Africa" or "North America")
-
-    - `gplately filter input_file output_file -p 701 714 715 101`
-        (get features whose plate ID is one of 701 714 715 101)
-    
-    - `gplately filter input_file output_file --min-birth-age 500`
-        (get features whose birth age is older than 500Myr)
-    
-    - `gplately filter input_file output_file --max-birth-age 500`
-        (get features whose birth age is younger than 500Myr)
-    
-    - `gplately filter input_file output_file -n Africa "North America" -p 701 714 715 101 --min-birth-age 500`
-        (get features whose name contains "Africa" or "North America" and plate ID is one of 701 714 715 101 and birth age is older than 500Myr)
-    
-    - `gplately filter input_file output_file -t gpml:Basin`
-        (get all gpml:Basin features)
-    
-    - `gplately filter input_file output_file -t "gpml:IslandArc|gpml:Basin"`
-        (get all gpml:Basin and gpml:IslandArc features)
-
-    If you are using Docker, prefix `docker run gplates/gplately ` to the command, such as `docker run gplates/gplately gplately filter input_file output_file -t gpml:Basin`.
-
-    See https://github.com/GPlates/gplately/blob/master/tests-dir/unittest/test_feature_filter.sh for more examples. 
-
-### **reset_feature_type**
-
-  Reset the feature type for the selected features. Run `gplately reset_feature_type -h` for details.
-
-  Examples: 
-
-    - `gplately reset_feature_type -s gpml:ClosedContinentalBoundary -t gpml:UnclassifiedFeature input_file output_file`
-        (change all gpml:ClosedContinentalBoundary to gpml:UnclassifiedFeature)
-        
-    - `gplately reset_feature_type -s "gpml:ContinentalFragment|gpml:Coastline" -t gpml:UnclassifiedFeature input_file output_file`
-        (change all gpml:ContinentalFragment and gpml:Coastline to gpml:UnclassifiedFeature)
-        
-    - `gplately reset_feature_type -s ".*" -t gpml:UnclassifiedFeature input_file output_file` 
-        (change all feature types to gpml:UnclassifiedFeature)     
-
-    If you are using Docker, prefix `docker run gplates/gplately ` to the command, such as `docker run gplates/gplately gplately reset_feature_type -s ".*" -t gpml:UnclassifiedFeature input_file output_file`.
-
-  See https://github.com/GPlates/gplately/blob/master/tests-dir/unittest/test_reset_feature_type.sh for more examples. 
-
-### **agegrid (ag)**
-
-  Create age grids for a plate model. Run `gplately agegrid -h` for details.
-
-### **fix_crossovers**
-
-  Loads one or more input rotation files, fixes any crossovers and saves the rotations to output rotation files. Run `gplately fix_crossovers -h` for details.
-
-### **remove_rotations**
-
-  Remove one or more plate IDs from a rotation model (consisting of one or more rotation files). Run `gplately remove_rotations -h` for details.
-
-### **cleanup_topologies**
-
-  Remove any regular features not referenced by topological features. Run `gplately cleanup_topologies -h` for details.
-
-### **convert_xy_to_gplates**
-
-  Converts geometry in one or more input ascii files (such as '.xy' files) to output files suitable for loading into GPlates. Run `gplately convert_xy_to_gplates -h` for details.
-
-### **diagnose_rotations**
-
-  Diagnose one or more rotation files to check for inconsistencies. Run `gplately diagnose_rotations -h` for details.
-
-### **resolve_topologies**
-
-  Resolve topological plate polygons (and deforming networks) and saves (to separate files) the resolved topologies, and their boundary sections as subduction zones, mid-ocean ridges (ridge/transform) and others (not subduction zones or mid-ocean ridges). Run `gplately resolve_topologies -h` for details.
-
-### **rotation_tools**
-
-  Calculate stage rotations between consecutive finite rotations in plate pairs. Run `gplately rotation_tools -h` for details.
-
-### **separate_ridge_transform_segments**
-
-  Split the geometries of isochrons and mid-ocean ridges into ridge and transform segments. Run `gplately separate_ridge_transform_segments -h` for details.
-
-### **subduction_convergence**
-
-  Find the convergence rates along trenches (subduction zones) over time. Run `gplately subduction_convergence -h` for details.
-
-### **gpmdb**
-
-  Retrieve paleomagnetic data from https://www.gpmdb.net, create GPlates-compatible VGP features and save the VGP features in a .gpmlz file. Run `gplately gpmdb -h` for details.
