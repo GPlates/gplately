@@ -36,7 +36,7 @@ hljs.highlightAll();
 <h2 class="section-title" id="header-functions">Functions</h2>
 <dl>
 <dt id="gplately.auxiliary.get_gplot"><code class="name flex">
-<span>def <span class="ident">get_gplot</span></span>(<span>model: Union[str, plate_model_manager.plate_model.PlateModel], model_repo_dir: str = './', age: Union[float, int] = 0, plot_engine: <a title="gplately.mapping.plot_engine.PlotEngine" href="mapping/plot_engine.html#gplately.mapping.plot_engine.PlotEngine">PlotEngine</a> = &lt;gplately.mapping.cartopy_plot.CartopyPlotEngine object&gt;) ‑> <a title="gplately.plot.PlotTopologies" href="plot.html#gplately.plot.PlotTopologies">PlotTopologies</a></span>
+<span>def <span class="ident">get_gplot</span></span>(<span>model: Union[str, plate_model_manager.plate_model.PlateModel], model_repo_dir: str = './', time: Union[float, int] = 0, plot_engine: <a title="gplately.mapping.plot_engine.PlotEngine" href="mapping/plot_engine.html#gplately.mapping.plot_engine.PlotEngine">PlotEngine</a> = &lt;gplately.mapping.cartopy_plot.CartopyPlotEngine object&gt;) ‑> <a title="gplately.plot.PlotTopologies" href="plot.html#gplately.plot.PlotTopologies">PlotTopologies</a></span>
 </code></dt>
 <dd>
 <div class="desc"><p>Convenient function to return a PlotTopologies object</p>
@@ -46,7 +46,7 @@ hljs.highlightAll();
 <dd>model name or a PlateModel object</dd>
 <dt><strong><code>model_repo_dir</code></strong> :&ensp;<code>str</code>, default=<code>"./"</code></dt>
 <dd>the folder in which you would like to keep the model files</dd>
-<dt><strong><code>age</code></strong> :&ensp;<code>int</code> or <code>float</code>, default=<code>0</code></dt>
+<dt><strong><code>time</code></strong> :&ensp;<code>int</code> or <code>float</code>, default=<code>0</code></dt>
 <dd>the reconstruction age/time</dd>
 <dt><strong><code>plot_engine</code></strong> :&ensp;<code>PlotEngine</code>, default=<code>CartopyPlotEngine()</code></dt>
 <dd>two choices - CartopyPlotEngine() or PygmtPlotEngine()</dd>

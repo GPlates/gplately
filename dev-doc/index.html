@@ -32,7 +32,8 @@ hljs.highlightAll();
 <h2 id="quick-start">Quick start🚀</h2>
 <h3 id="platemodelmanager"><a href="https://pypi.org/project/plate-model-manager/">PlateModelManager</a></h3>
 <p>The <strong>PlateModelManager</strong> module was introduced as a more efficient alternative to the <strong>DataServer</strong> class,
-designed specifically for downloading and managing plate reconstruction model files.</p>
+designed specifically for downloading and managing plate reconstruction model files.
+More information about the PlateModelManager module can be found in <a href="https://github.com/GPlates/plate-model-manager">its GitHub repository</a>.</p>
 <pre><code class="language-python">from gplately import (
     PlateModelManager,
     PlateReconstruction,
@@ -43,7 +44,7 @@ designed specifically for downloading and managing plate reconstruction model fi
 
 model = PlateModelManager().get_model(
     &quot;Muller2019&quot;,  # model name
-    data_dir=&quot;plate-model-repo&quot;,  # the local folder where you would like to save the model files
+    data_dir=&quot;plate-model-repo&quot;,  # the folder to save the model files
 )
 
 recon_model = PlateReconstruction(
@@ -65,10 +66,25 @@ agegrid = Raster(model.get_raster(&quot;AgeGrids&quot;, time=100))
 <p>For more example code, a <a href="https://github.com/GPlates/gplately/blob/master/Notebooks/Examples/introducing-plate-model-manager.py">comprehensive example</a>
 on GitHub demonstrates how to use the PlateModelManager module in details. <a href="https://github.com/GPlates/gplately/blob/master/Notebooks/Examples/working-with-plate-model-manager.py">Another example</a>
 shows how to use the PlateModelManager module with GPlately.</p>
+<p>You may use the auxiliary functions to create the <code><a title="gplately.PlateReconstruction" href="#gplately.PlateReconstruction">PlateReconstruction</a></code> and <code><a title="gplately.PlotTopologies" href="#gplately.PlotTopologies">PlotTopologies</a></code> instances.</p>
+<pre><code class="language-python">from gplately.auxiliary import get_gplot, get_plate_reconstruction
+
+# use the auxiliary function to create a PlateReconstruction instance
+plate_reconstruction_instance = get_plate_reconstruction(&quot;Muller2019&quot;)
+
+# use the auxiliary function to create a PlotTopologies instance
+plot_topologies_instance = get_gplot(&quot;Muller2019&quot;, time=140)
+
+# there is a PlateReconstruction instance inside a PlotTopologies instance.
+# so, in most cases a single get_gplot() call is enough.
+# you can get the PlateReconstruction instance from the PlotTopologies instance later.
+another_plate_reconstruction_instance = plot_topologies_instance.plate_reconstruction
+</code></pre>
 <h3 id="dataserver"><a href="https://gplates.github.io/gplately/download.html#gplately.download.DataServer">DataServer</a></h3>
 <p>The <code><a title="gplately.DataServer" href="#gplately.DataServer">DataServer</a></code> class allows users to automatically download and cache the necessary files for plate reconstructions to a designated folder on your system.
 These files include rotation models, topology features, and static geometries such as coastlines, continents, and continent-ocean boundaries.
-Additionally, it supports the retrieval of other data types, including rasters, grids, and feature data. (Use the newer <strong>PlateModelManager</strong> when it is possible.)</p>
+Additionally, it supports the retrieval of other data types, including rasters, grids, and feature data.
+(Use the newer <strong>PlateModelManager</strong> whenever possible.)</p>
 <pre><code class="language-python">from gplately.download import DataServer
 
 gdownload = DataServer(&quot;Muller2019&quot;)
@@ -351,9 +367,7 @@ etopo = gdownload.get_raster(&quot;ETOPO1_tif&quot;)
 <h3 id="platereconstruction"><a href="https://gplates.github.io/gplately/reconstruction.html#gplately.reconstruction.PlateReconstruction">PlateReconstruction</a></h3>
 <p>The <code><a title="gplately.PlateReconstruction" href="#gplately.PlateReconstruction">PlateReconstruction</a></code> class contains tools to reconstruct geological features like tectonic plates and plate boundaries,
 and to interrogate plate kinematic data like plate motion velocities, and rates of subduction and seafloor spreading.</p>
-<p>A complete Jupyter notebook example is available at <a href="https://github.com/GPlates/gplately/blob/master/Notebooks/02-PlateReconstructions.ipynb">https://github.com/GPlates/gplately/blob/master/Notebooks/02-PlateReconstructions.ipynb</a> .</p>
-<pre><code class="language-python">from plate_model_manager import PlateModelManager
-from gplately import PlateReconstruction
+<pre><code class="language-python">from gplately import PlateReconstruction, PlateModelManager
 
 model = PlateModelManager().get_model(&quot;Muller2019&quot;)
 
@@ -364,105 +378,122 @@ recon_model = PlateReconstruction(
     static_polygons=model.get_layer(&quot;StaticPolygons&quot;),
 )
 </code></pre>
+<p>Alternatively, you may use the auxiliary functions to create a <code><a title="gplately.PlateReconstruction" href="#gplately.PlateReconstruction">PlateReconstruction</a></code> instance.</p>
+<pre><code class="language-python">from gplately.auxiliary import get_plate_reconstruction
+
+# use the auxiliary function to create a PlateReconstruction instance
+plate_reconstruction_instance = get_plate_reconstruction(&quot;Muller2019&quot;)
+</code></pre>
+<p>This <a href="https://github.com/GPlates/gplately/blob/master/Notebooks/02-PlateReconstructions.ipynb">02-PlateReconstructions.ipynb</a> demonstrates in details
+how to use the <code><a title="gplately.PlateReconstruction" href="#gplately.PlateReconstruction">PlateReconstruction</a></code> class.</p>
 <h3 id="points"><a href="https://gplates.github.io/gplately/reconstruction.html#gplately.reconstruction.Points">Points</a></h3>
 <p>The methods in the <code><a title="gplately.Points" href="#gplately.Points">Points</a></code> class track the motion of a point (or group of points) represented by a latitude and longitude
 through geologic time. This motion can be visualised using flowlines or motion paths and quantified with point
 motion velocities.</p>
-<p>A complete Jupyter notebook example is available at <a href="https://github.com/GPlates/gplately/blob/master/Notebooks/03-WorkingWithPoints.ipynb">https://github.com/GPlates/gplately/blob/master/Notebooks/03-WorkingWithPoints.ipynb</a> .</p>
 <pre><code class="language-python">import numpy as np
-import gplately
-from plate_model_manager import PlateModelManager
+
+from gplately import PlateModelManager, Points, auxiliary
 
 model = PlateModelManager().get_model(&quot;Muller2019&quot;)
 
 # Create a plate reconstruction model using a rotation model, a set of topology features and static polygons
-recon_model = gplately.auxiliary.get_plate_reconstruction(model)
+recon_model = auxiliary.get_plate_reconstruction(model)
 
 # Define some points using their latitude and longitude coordinates so we can track them though time!
-pt_lons = np.array([140., 150., 160.])
-pt_lats = np.array([-30., -40., -50.])
+pt_lons = np.array([140.0, 150.0, 160.0])
+pt_lats = np.array([-30.0, -40.0, -50.0])
 
 # Create a Points instance from these points
-gpts = gplately.Points(recon_model, pt_lons, pt_lats)
+gpts = Points(recon_model, pt_lons, pt_lats)
 </code></pre>
+<p>The <a href="https://github.com/GPlates/gplately/blob/master/Notebooks/03-WorkingWithPoints.ipynb">03-WorkingWithPoints.ipynb</a> demonstrates in details
+how to use the <code><a title="gplately.Points" href="#gplately.Points">Points</a></code> class.</p>
 <p><img alt="PointsDemo" src="https://raw.githubusercontent.com/GPlates/gplately/master/Notebooks/NotebookFiles/pdoc_Files/Hawaii_Emperor_motion_path.png"></p>
 <h3 id="raster"><a href="https://gplates.github.io/gplately/grids.html#gplately.grids.Raster">Raster</a></h3>
 <p>The <code><a title="gplately.Raster" href="#gplately.Raster">Raster</a></code> class contains methods to work with netCDF4 or MaskedArray gridded data. Grids may be filled,
 resized, resampled, and reconstructed back and forwards through geologic time. Other array data can also be
 interpolated onto <code><a title="gplately.Raster" href="#gplately.Raster">Raster</a></code> grids.
 </p>
-<p>A complete Jupyter notebook example is available at <a href="https://github.com/GPlates/gplately/blob/master/Notebooks/06-Rasters.ipynb">https://github.com/GPlates/gplately/blob/master/Notebooks/06-Rasters.ipynb</a> .</p>
-<pre><code class="language-python">import gplately
-from plate_model_manager import PlateModelManager, PresentDayRasterManager
+<pre><code class="language-python">from gplately import PlateModelManager, PresentDayRasterManager, Raster, auxiliary
 
-model = PlateModelManager().get_model(&quot;Muller2019&quot;)
-
+model_name = &quot;Muller2019&quot;
 # Create a plate reconstruction model using a rotation model, a set of topology features and static polygons
-recon_model = gplately.auxiliary.get_plate_reconstruction(model)
+recon_model = auxiliary.get_plate_reconstruction(model_name)
 
 # Any numpy array can be turned into a Raster object!
-raster = gplately.Raster(
+raster = Raster(
     plate_reconstruction=recon_model,
     data=PresentDayRasterManager().get_raster(&quot;topography&quot;),
     extent=&quot;global&quot;,  # equivalent to (-180, 180, -90, 90)
     origin=&quot;lower&quot;,  # or set extent to (-180, 180, -90, 90)
 )
 
-# Reconstruct the raster data to 50 million years ago! 
+# Reconstruct the raster data to 50 million years ago!
 reconstructed_raster = raster.reconstruct(
-    time=50, 
-    partitioning_features=model.get_layer(&quot;ContinentalPolygons&quot;))
+    time=50,
+    partitioning_features=PlateModelManager()
+    .get_model(model_name)
+    .get_layer(&quot;ContinentalPolygons&quot;),
+)
 </code></pre>
+<p>The <a href="https://github.com/GPlates/gplately/blob/master/Notebooks/06-Rasters.ipynb">06-Rasters.ipynb</a> demonstrates in details
+how to use the <code><a title="gplately.Raster" href="#gplately.Raster">Raster</a></code> class.</p>
 <p><img alt="RasterDemo" src="https://raw.githubusercontent.com/GPlates/gplately/master/Notebooks/NotebookFiles/pdoc_Files/etopo_reconstruction.png"></p>
 <h3 id="plottopologies"><a href="https://gplates.github.io/gplately/plot.html#gplately.plot.PlotTopologies">PlotTopologies</a></h3>
 <p>The <code><a title="gplately.PlotTopologies" href="#gplately.PlotTopologies">PlotTopologies</a></code> class works with the aforementioned <code><a title="gplately.PlateReconstruction" href="#gplately.PlateReconstruction">PlateReconstruction</a></code> class to plot
 geologic features of different types listed
 <a href="https://gplates.github.io/gplately/plot.html#gplately.plot.PlotTopologies">here</a>, as well as
 coastline, continent and continent-ocean boundary geometries reconstructed through time using pyGPlates. </p>
-<p>A complete Jupyter notebook example is available at <a href="https://github.com/GPlates/gplately/blob/master/Notebooks/02-PlateReconstructions.ipynb">https://github.com/GPlates/gplately/blob/master/Notebooks/02-PlateReconstructions.ipynb</a> .</p>
-<pre><code class="language-python">import gplately
-from plate_model_manager import PlateModelManager
-from gplately import PlotTopologies
+<pre><code class="language-python">from gplately import PlateModelManager, PlotTopologies, auxiliary
 
 model = PlateModelManager().get_model(&quot;Muller2019&quot;)
-recon_model = gplately.auxiliary.get_plate_reconstruction(model)
+recon_model = auxiliary.get_plate_reconstruction(model)
 
 gplot = PlotTopologies(
-        recon_model,
-        coastlines=model.get_layer(&quot;Coastlines&quot;),
-        COBs=model.get_layer(&quot;COBs&quot;),
-        continents= model.get_layer(&quot;ContinentalPolygons&quot;),
-        time=55)
+    recon_model,
+    coastlines=model.get_layer(&quot;Coastlines&quot;),
+    COBs=model.get_layer(&quot;COBs&quot;),
+    continents=model.get_layer(&quot;ContinentalPolygons&quot;),
+    time=55,
+)
 </code></pre>
+<p>You may use the auxiliary functions to create a <code><a title="gplately.PlotTopologies" href="#gplately.PlotTopologies">PlotTopologies</a></code> instance.</p>
+<pre><code class="language-python">from gplately.auxiliary import get_gplot
+
+# use the auxiliary function to create a PlotTopologies instance
+plot_topologies_instance = get_gplot(&quot;Muller2019&quot;, time=55)
+</code></pre>
+<p>The <a href="https://github.com/GPlates/gplately/blob/master/Notebooks/02-PlateReconstructions.ipynb">02-PlateReconstructions.ipynb</a> demonstrates in details
+how to use the <code><a title="gplately.PlotTopologies" href="#gplately.PlotTopologies">PlotTopologies</a></code> class.</p>
 <p><img alt="PlotTopologiesDemo" src="https://raw.githubusercontent.com/GPlates/gplately/master/Notebooks/NotebookFiles/pdoc_Files/plottopologies.png"></p>
 <h3 id="seafloorgrid"><a href="https://gplates.github.io/gplately/oceans.html#gplately.oceans.SeafloorGrid">SeafloorGrid</a></h3>
 <p>The <code><a title="gplately.SeafloorGrid" href="#gplately.SeafloorGrid">SeafloorGrid</a></code> class wraps an automatic workflow to grid seafloor ages and seafloor spreading rates
 as encoded by a plate reconstruction model. </p>
-<p><a href="https://github.com/GPlates/gplately/blob/master/Notebooks/10-SeafloorGrids.ipynb">10-SeafloorGrids.ipynb</a> is a tutorial notebook that demonstrates
-how to set up and use the <code><a title="gplately.SeafloorGrid" href="#gplately.SeafloorGrid">SeafloorGrid</a></code> object, and shows a sample set of output grids. </p>
-<pre><code class="language-python">import gplately
-from plate_model_manager import PlateModelManager
+<pre><code class="language-python">import os
 
-model =  PlateModelManager().get_model(&quot;Muller2019&quot;)
-gplot = gplately.auxiliary.get_gplot(model)
+os.environ[&quot;DISABLE_GPLATELY_DEV_WARNING&quot;] = &quot;true&quot;
 
-# Set up automatic gridding from 1000Ma to present day
-seafloorgrid = gplately.SeafloorGrid(
+from gplately import SeafloorGrid, auxiliary
 
-    PlateReconstruction_object = gplot.plate_reconstruction, #The PlateReconstruction object
-    PlotTopologies_object = gplot, #The PlotTopologies object
+if __name__ == &quot;__main__&quot;:
+    gplot = auxiliary.get_gplot(&quot;Muller2019&quot;)
 
-    # Time parameters
-    max_time = 1, #Ma
-    min_time = 0, #Ma
-    ridge_time_step=1, #Myr
-)
+    # Set up automatic gridding from 5Ma to present day
+    seafloorgrid = SeafloorGrid(
+        PlateReconstruction_object=gplot.plate_reconstruction,  # The PlateReconstruction object
+        PlotTopologies_object=gplot,  # The PlotTopologies object
+        max_time=5,  # start time (Ma)
+        min_time=0,  # end time (Ma)
+        ridge_time_step=1,  # time increment (Myr)
+    )
 
-# Begin automatic gridding!
-seafloorgrid.reconstruct_by_topologies()
+    # Begin automatic gridding!
+    seafloorgrid.reconstruct_by_topologies()
 </code></pre>
+<p>The <a href="https://github.com/GPlates/gplately/blob/master/Notebooks/10-SeafloorGrids.ipynb">10-SeafloorGrids.ipynb</a> is a tutorial notebook that demonstrates
+how to set up and use the <code><a title="gplately.SeafloorGrid" href="#gplately.SeafloorGrid">SeafloorGrid</a></code> object, and shows a sample set of output grids. </p>
 <p><img alt="SeafloorGridDemo" src="https://raw.githubusercontent.com/GPlates/gplately/master/Notebooks/NotebookFiles/pdoc_Files/seafloorgrid.gif"></p>
-<h2 id="notebooks-examples">Notebooks / Examples</h2>
+<h2 id="sample-workflows">Sample workflows</h2>
 <ul>
 <li><a href="01-GettingStarted.html"><strong>01 - Getting Started</strong></a>: A brief overview of how to initialise GPlately's main objects</li>
 <li><a href="02-PlateReconstructions.html"><strong>02 - Plate Reconstructions</strong></a>: Setting up a <code><a title="gplately.PlateReconstruction" href="#gplately.PlateReconstruction">PlateReconstruction</a></code> object, reconstructing geological data through time </li>
@@ -476,6 +507,10 @@ seafloorgrid.reconstruct_by_topologies()
 <li><a href="10-SeafloorGrids.html"><strong>10 - SeafloorGrid</strong></a>: Defines the parameters needed to set up a <code><a title="gplately.SeafloorGrid" href="#gplately.SeafloorGrid">SeafloorGrid</a></code> object, and demonstrates how to produce age and spreading rate grids from a set of plate reconstruction model files.</li>
 <li><a href="11-AndesFluxes.html"><strong>11 - AndesFluxes</strong></a>: Demonstrates how the reconstructed subduction history along the Andean margin can be potentially used in the plate kinematics analysis and data mining.</li>
 </ul>
+<h2 id="examples">Examples</h2>
+<p>A variety of examples are available to help you get started with GPlately. Visit <a href="https://github.com/GPlates/gplately/blob/master/Notebooks/Examples/readme.md">this page</a> for more details.</p>
+<h2 id="command-line-interface">Command-line interface</h2>
+<p>GPlately comes with a collection of useful command-line tools, each designed as a subcommand of GPlately. For example, the command <code><a title="gplately" href="#gplately">gplately</a> list</code> shows a list of available reconstruction models. To view all the available tools, simply run <code>gplately -h</code>. For a detailed list of tools along with usage examples, visit <a href="https://github.com/GPlates/gplately/blob/master/gplately/commands/readme.md">this page</a>.</p>
 </section>
 <section>
 <h2 class="section-title" id="header-submodules">Sub-modules</h2>
@@ -14140,7 +14175,9 @@ other general z-values are saved to a gridding input file (.npz).</p></div>
 <li><a href="#seafloorgrid">SeafloorGrid</a></li>
 </ul>
 </li>
-<li><a href="#notebooks-examples">Notebooks / Examples</a></li>
+<li><a href="#sample-workflows">Sample workflows</a></li>
+<li><a href="#examples">Examples</a></li>
+<li><a href="#command-line-interface">Command-line interface</a></li>
 </ul>
 </div>
 <ul id="index">
