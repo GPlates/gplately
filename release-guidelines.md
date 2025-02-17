@@ -6,7 +6,7 @@
 - resolving all defects and issues identified during testing
 - documentation is complete and up-to-date
 
-### Do the following things before announce the new release:
+### Do the following things before announcing the new release
 
 - create a "x.x.x" branch, for example "2.0.0". the new release will be created from this "release branch".
 - change "USING_DEV_VERSION" variable to False in __init__.py in the release branch.
@@ -25,3 +25,4 @@
 - check conda installation on Windows, macOS and Ubuntu.
 - check all gplately commands work as expected.
 - check the list of plate models is documented correctly.
+- check the pipy page https://pypi.org/project/gplately/, especially the images and links 

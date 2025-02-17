@@ -1088,43 +1088,10 @@ class DataServer(object):
     object and method(s) are re-run, the files will be re-accessed from the cache provided they have not been
     moved or deleted.
 
-    Currently, `DataServer` supports a number of plate reconstruction models.
+    [This page](https://gplates.github.io/gplately/dev-doc/#dataserver) contains a list of available plate reconstruction models. For more information about these plate models, visit [this EarthByte page](https://www.earthbyte.org/category/resources/data-models/global-regional-plate-motion-models/).
 
-    ------------------
-
-    | **Model name string Identifier** | **Zenodo** |**Topology features**   | **Static polygons**   | **Coast-lines**  | **Cont-inents** | **COB**    | **Age grids**   | **SR grids**  |
-    |:--------------------------------:|:----------:|:----------------------:|:--------------------:|:-----------------:|:---------------:|:----------:|:--------------:|:--------------:|
-    |  Alfonso2024                     |     ✅     |          ✅           |          ✅          |        ✅        |        ❌       |     ❌    |       ❌       |       ❌      |
-    |  Cao2024                         |     ✅     |          ✅           |          ✅          |        ✅        |        ✅       |     ✅    |       ❌       |       ❌      |
-    |  Muller2022                      |     ✅     |          ✅           |          ✅          |        ✅        |        ✅       |     ✅    |       ❌       |       ❌      |
-    |  Zahirovic2022                   |     ✅     |          ✅           |          ✅          |        ✅        |        ✅       |     ❌    |       ✅       |       ✅      |
-    |  Merdith2021                     |     ✅     |          ✅           |          ✅          |        ✅        |        ✅       |     ❌    |       ❌       |       ❌      |
-    |  Clennett2020                    |     ✅     |          ✅           |          ✅          |        ✅        |        ❌       |     ❌    |       ✅       |       ✅      |
-    |  Clennett2020_M2019              |     ✅     |          ✅           |          ✅          |        ✅        |        ❌       |     ❌    |       ✅       |       ✅      |
-    |  Clennett2020_S2013              |     ✅     |          ✅           |          ✅          |        ✅        |        ❌       |     ❌    |       ❌       |       ❌      |
-    |  Muller2019                      |     ✅     |          ✅           |          ✅          |        ✅        |        ✅       |     ✅    |       ✅       |       ❌      |
-    |  Young2018                       |     ✅     |          ✅           |          ✅          |        ✅        |        ✅       |     ❌    |       ❌       |       ❌      |
-    |  TorsvikCocks2017                |     ❌     |          ❌           |          ✅          |        ✅        |        ❌       |     ❌    |       ❌       |       ❌      |
-    |  Matthews2016                    |     ✅     |          ✅           |          ✅          |        ✅        |        ✅       |     ❌    |       ❌       |       ❌      |
-    |  Matthews2016_pmag_ref           |     ❌     |          ❌           |          ✅          |        ✅        |        ✅       |     ❌    |       ❌       |       ❌      |
-    |  Muller2016                      |     ✅     |          ✅           |          ✅          |        ✅        |        ❌       |     ✅    |       ✅       |       ❌      |
-    |  Scotese2016                     |     ✅     |          ❌           |          ✅          |        ✅        |        ❌       |     ❌    |       ❌       |       ❌      |
-    |  Zahirovic2016                   |     ✅     |          ✅           |          ✅          |        ✅        |        ✅       |     ❌    |       ❌       |       ❌      |
-    |  Gibbons2015                     |     ✅     |          ✅           |          ✅          |        ✅        |        ❌       |     ❌    |       ❌       |       ❌      |
-    |  Zahirovic2014                   |     ✅     |          ❌           |          ✅          |        ✅        |        ❌       |     ❌    |       ❌       |       ❌      |
-    |  Shephard2013                    |     ✅     |          ✅           |          ✅          |        ✅        |        ❌       |     ❌    |       ❌       |       ❌      |
-    |  Gurnis2012                      |     ✅     |          ✅           |          ✅          |        ✅        |        ❌       |     ❌    |       ❌       |       ❌      |
-    |  Seton2012                       |     ✅     |          ✅           |          ✅          |        ✅        |        ✅       |     ✅    |       ✅       |       ❌      |
-    |  Muller2008                      |     ❌     |          ❌           |          ✅          |        ❌        |        ❌       |     ❌    |       ❌       |       ❌      |
-
-    **Note: All models have rotation files.**
-
-    ------------------
-
-    More information about these plate models can be found at https://www.earthbyte.org/category/resources/data-models/global-regional-plate-motion-models/.
-
-    You may also use `pmm ls` command to get more information about a model, for example `pmm ls cao2024`
-    (you need `pip install plate-model-manager` before running this command).
+    You may also use `pmm ls` command to get more information about a model. For example, the command `pmm ls cao2024` shows details about model Cao2024.
+    You need `pip install plate-model-manager` before running this command.
 
     """
 

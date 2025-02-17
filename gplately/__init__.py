@@ -192,7 +192,11 @@ gpts = Points(recon_model, pt_lons, pt_lats)
 The [03-WorkingWithPoints.ipynb](https://github.com/GPlates/gplately/blob/master/Notebooks/03-WorkingWithPoints.ipynb) demonstrates in details 
 how to use the `Points` class.
 
-![PointsDemo](https://raw.githubusercontent.com/GPlates/gplately/master/Notebooks/NotebookFiles/pdoc_Files/Hawaii_Emperor_motion_path.png)
+![PointsDemo](https://raw.githubusercontent.com/GPlates/gplately/master/Notebooks/NotebookFiles/pdoc_Files/Reconstructed-Jurassic-Foraminifera-locations-min)
+
+The [09-CreatingMotionPathsAndFlowlines.ipynb](https://github.com/GPlates/gplately/blob/master/Notebooks/09-CreatingMotionPathsAndFlowlines.ipynb) demonstrates how to create motion paths and flowlines.
+
+![motion paths and flowlines](https://raw.githubusercontent.com/GPlates/gplately/master/Notebooks/NotebookFiles/pdoc_Files/Hawaii_Emperor_motion_path.png)
 
 ### [Raster](https://gplates.github.io/gplately/grids.html#gplately.grids.Raster)
 The `Raster` class contains methods to work with netCDF4 or MaskedArray gridded data. Grids may be filled, 

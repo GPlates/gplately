@@ -2,6 +2,22 @@
 
 GPlately comes with a suite of useful command line tools. These tools are designed as GPlately subcommands. Run `gplately -h` to show the list of tools.
 
+- [__list__](#list)
+- [__combine__](https://github.com/GPlates/gplately/tree/master/gplately/commands#combine)
+- [__filter__](https://github.com/GPlates/gplately/tree/master/gplately/commands#filter)
+- [__reset_feature_type__](https://github.com/GPlates/gplately/tree/master/gplately/commands#reset_feature_type)
+- [__agegrid (ag)__](https://github.com/GPlates/gplately/tree/master/gplately/commands#agegrid-(ag))
+- [__fix_crossovers__](https://github.com/GPlates/gplately/tree/master/gplately/commands#fix_crossovers)
+- [__remove_rotations__](https://github.com/GPlates/gplately/tree/master/gplately/commands#remove_rotations)
+- [__cleanup_topologies__](https://github.com/GPlates/gplately/tree/master/gplately/commands#cleanup_topologies)
+- [__convert_xy_to_gplates__](https://github.com/GPlates/gplately/tree/master/gplately/commands#convert_xy_to_gplates)
+- [__diagnose_rotations__](https://github.com/GPlates/gplately/tree/master/gplately/commands#diagnose_rotations)
+- [__resolve_topologies__](https://github.com/GPlates/gplately/tree/master/gplately/commands#resolve_topologies)
+- [__rotation_tools__](https://github.com/GPlates/gplately/tree/master/gplately/commands#rotation_tools)
+- [__separate_ridge_transform_segments__](https://github.com/GPlates/gplately/tree/master/gplately/commands#separate_ridge_transform_segments)
+- [__ubduction_convergence__](https://github.com/GPlates/gplately/tree/master/gplately/commands#list)
+- [__gpmdb__](https://github.com/GPlates/gplately/tree/master/gplately/commands#gpmdb)
+
 ### **list**
 
   Display a list of available plate models from GPlates server. These model names can then be used by the Plate Model Manager to download model files over the Internet. Run `gplately list -h` for details.
