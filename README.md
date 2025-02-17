@@ -136,7 +136,7 @@ pip install . # alternatively, you can use "pip install -e ." to install gplatel
 
 - `docker run -it --rm -v "$PWD":/ws -w /ws gplates/gplately python my_script_to_run.py` (assume my_script_to_run.py is in the current working directory)
 
-See details [https://github.com/GPlates/gplately/tree/master/docker/README.md](docker/README.md).
+Visit [this page](https://github.com/GPlates/gplately/tree/master/docker/README.md) for more details about using Docker with GPlately.
 
 ## Usage
 

@@ -192,7 +192,7 @@ gpts = Points(recon_model, pt_lons, pt_lats)
 The [03-WorkingWithPoints.ipynb](https://github.com/GPlates/gplately/blob/master/Notebooks/03-WorkingWithPoints.ipynb) demonstrates in details 
 how to use the `Points` class.
 
-![PointsDemo](https://raw.githubusercontent.com/GPlates/gplately/master/Notebooks/NotebookFiles/pdoc_Files/Reconstructed-Jurassic-Foraminifera-locations-min)
+![PointsDemo](https://raw.githubusercontent.com/GPlates/gplately/master/Notebooks/NotebookFiles/pdoc_Files/Reconstructed-Jurassic-Foraminifera-locations-min.png)
 
 The [09-CreatingMotionPathsAndFlowlines.ipynb](https://github.com/GPlates/gplately/blob/master/Notebooks/09-CreatingMotionPathsAndFlowlines.ipynb) demonstrates how to create motion paths and flowlines.
 
