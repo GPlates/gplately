@@ -143,7 +143,7 @@ See details [docker/README.md](docker/README.md).
 - [Quick start](https://gplates.github.io/gplately/dev-doc/#quick-start) - a brief tutorial to help users get up to speed  
 - [Sample workflows](#sample-workflows) - demonstrations of how GPlately can be used in various workflows
 - [Examples](Notebooks/Examples/readme.md) - code snippets that demonstrate the usage of GPlately's classes and methods
-- [command-line interface (CLI)](#command-line-interface-(CLI)) - use GPlately in a command-line environment
+- [command-line interface (CLI)](gplately/commands/readme.md) - use GPlately in a command-line environment
 
 ## Documentation
 

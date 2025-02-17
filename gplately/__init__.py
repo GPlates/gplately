@@ -312,12 +312,11 @@ how to set up and use the `SeafloorGrid` object, and shows a sample set of outpu
 
 ## Examples
 
-- [__PlateModelManager__](https://github.com/GPlates/gplately/tree/master/Notebooks/Examples/readme.md#plate-model-manager): Examples demonstrate how to use the PlateModelManager module
+A variety of examples are available to help you get started with GPlately. Visit [this page](https://github.com/GPlates/gplately/blob/master/Notebooks/Examples/readme.md) for more details.
 
 ## Command-line interface
 
-- list
-- combine
+GPlately comes with a collection of useful command-line tools, each designed as a subcommand of GPlately. For example, the command `gplately list` shows a list of available reconstruction models. To view all the available tools, simply run `gplately -h`. For a detailed list of tools along with usage examples, visit [this page](https://github.com/GPlates/gplately/blob/master/gplately/commands/readme.md).
 
 """
 from .utils import dev_warning
@@ -325,7 +324,7 @@ from .utils.check_pmm import ensure_plate_model_manager_compatible
 from .utils.log_utils import setup_logging
 from .utils.version import get_distribution_version
 
-REQUIRED_PMM_VERSION = "1.2.1"  # TODO: get this from package meta
+REQUIRED_PMM_VERSION = "1.2.2"  # TODO: get this from package meta
 USING_DEV_VERSION = True  ## change this to False before official release
 
 __version__ = get_distribution_version()
