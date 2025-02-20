@@ -246,15 +246,18 @@ class SeafloorGrid(object):
         resume_from_checkpoints=False,
         zval_names: List[str] = ["SPREADING_RATE"],
         continent_mask_filename=None,
+        continent_contouring=False  # ✅ New Flag
     ):
+
 
         # Provides a rotation model, topology features and reconstruction time for the SeafloorGrid
         self.PlateReconstruction_object = PlateReconstruction_object
+        self.continent_contouring = continent_contouring  # ✅ Store the flag here
         self.rotation_model = self.PlateReconstruction_object.rotation_model
         self.topology_features = self.PlateReconstruction_object.topology_features
         self._PlotTopologies_object = PlotTopologies_object
         self.topological_model = pygplates.TopologicalModel(
-            self.topology_features, self.rotation_model
+            self.topology_features.filenames, self.rotation_model.filenames
         )
 
         self.file_collection = file_collection
@@ -614,11 +617,30 @@ class SeafloorGrid(object):
             os.path.isfile(self.continent_mask_filepath.format(self._max_time))
             and self.continent_mask_is_provided
         ):
-            # If a set of continent masks was passed, we can use max_time's continental
-            # mask to build the initial profile of seafloor age.
-            ocean_points = self._get_ocean_points_from_continent_mask()
+            if not self.continent_contouring and not hasattr(self, 'continent_contouring_prompted'):
+                self.continent_contouring_prompted = True
+                user_input = input(
+                    "No COB masking file supplied. Do you want to proceed with continent contouring? (y/N): "
+                ).strip().lower()
+                if user_input != 'y':
+                    raise RuntimeError(
+                        "Continent contouring was not approved. Please supply a COB masking file to proceed."
+                    )
+                else:
+                    print("Proceeding with continent contouring as requested.")
+                # If a set of continent masks was passed, we can use max_time's continental
+                # mask to build the initial profile of seafloor age.
+                ocean_points = self._get_ocean_points_from_continent_mask()
         else:
-            ocean_points = self._generate_ocean_points()
+            if not self.continent_contouring:
+                raise RuntimeError(
+                    "No COB file provided and continent contouring not approved. "
+                    "Please provide a COB masking file or set continent_contouring=True."
+                )
+            else:
+                print("Proceeding with continent contouring as requested.")
+                ocean_points = self._generate_ocean_points()
+
 
         # Now that we have ocean points...
         # Determine age of ocean basin points using their proximity to MOR features
@@ -730,8 +752,8 @@ class SeafloorGrid(object):
                         _generate_mid_ocean_ridge_points,
                         delta_time=self._ridge_time_step,
                         mid_ocean_ridges_file_path=self.mid_ocean_ridges_file_path,
-                        rotation_model=self.rotation_model,
-                        topology_features=self.topology_features,
+                        rotation_files=self.rotation_model.filenames,
+                        topology_files=self.topology_features.filenames,
                         zvalues_file_basepath=self.zvalues_file_basepath,
                         zval_names=self.zval_names,
                         ridge_sampling=self.ridge_sampling,
@@ -744,8 +766,8 @@ class SeafloorGrid(object):
                 _generate_mid_ocean_ridge_points(
                     time,
                     self.mid_ocean_ridges_file_path,
-                    self.rotation_model,
-                    self.topology_features,
+                    self.rotation_model.filenames,
+                    self.topology_features.filenames,
                     self.zvalues_file_basepath,
                     self.zval_names,
                     overwrite=overwrite,
@@ -781,7 +803,7 @@ class SeafloorGrid(object):
 
             grids.write_netcdf_grid(
                 self.continent_mask_filepath.format(time),
-                final_grid.astype("i1"),
+                final_grid.astype('i1'),
                 extent=[-180, 180, -90, 90],
                 fill_value=None,
             )
@@ -810,7 +832,7 @@ class SeafloorGrid(object):
 
         grids.write_netcdf_grid(
             self.continent_mask_filepath.format(time),
-            final_grid.astype("i1"),
+            final_grid.astype('i1'),
             extent=[-180, 180, -90, 90],
             fill_value=None,
         )
@@ -842,8 +864,8 @@ class SeafloorGrid(object):
                             partial(
                                 _build_continental_mask_with_contouring,
                                 continent_mask_filepath=self.continent_mask_filepath,
-                                rotation_model=self.rotation_model,
-                                continent_features=self._PlotTopologies_object._continents,
+                                rotation_files=self.rotation_model.filenames,
+                                continent_files=self._PlotTopologies_object._continents.filenames,
                                 overwrite=overwrite,
                             ),
                             self._times,
@@ -1480,7 +1502,7 @@ def _save_netcdf_file(
 
     # Interpolate lons, lats and zvals over a regular grid using nearest neighbour interpolation
     Z = tools.griddata_sphere((lons, lats), zdata, (X, Y), method="nearest")
-    Z = Z.astype("f4")
+    Z = Z.astype('f4')
 
     unmasked_basename = f"{name}_grid_unmasked_{time:0.2f}_Ma.nc"
     grid_basename = f"{name}_grid_{time:0.2f}_Ma.nc"
@@ -1494,20 +1516,17 @@ def _save_netcdf_file(
 
     if unmasked:
         grids.write_netcdf_grid(
-            grid_output_unmasked,
-            Z,
+            grid_output_unmasked, 
+            Z, 
             extent=extent,
             significant_digits=2,
-            fill_value=None,
-        )
+            fill_value=None)
 
     # Identify regions in the grid in the continental mask
     # We need the continental mask to match the number of nodes
     # in the uniform grid defined above. This is important if we
     # pass our own continental mask to SeafloorGrid
-    cont_mask = grids.read_netcdf_grid(
-        continent_mask_filename.format(time), resize=(resX, resY)
-    )
+    cont_mask = grids.read_netcdf_grid(continent_mask_filename.format(time), resize=(resX,resY))
 
     # Use the continental mask
     Z[cont_mask] = np.nan
@@ -1572,7 +1591,7 @@ def _lat_lon_z_to_netCDF_time(
 
     # Interpolate lons, lats and zvals over a regular grid using nearest neighbour interpolation
     Z = tools.griddata_sphere((lons, lats), zdata, (X, Y), method="nearest")
-    Z = Z.astype("f4")  # float32 precision
+    Z = Z.astype('f4') # float32 precision
 
     unmasked_basename = f"{zval_name}_grid_unmasked_{time:0.2f}Ma.nc"
     grid_basename = f"{zval_name}_grid_{time:0.2f}Ma.nc"
@@ -1586,20 +1605,17 @@ def _lat_lon_z_to_netCDF_time(
 
     if unmasked:
         grids.write_netcdf_grid(
-            grid_output_unmasked,
-            Z,
+            grid_output_unmasked, 
+            Z, 
             extent=extent,
             significant_digits=2,
-            fill_value=None,
-        )
+            fill_value=None)
 
     # Identify regions in the grid in the continental mask
     # We need the continental mask to match the number of nodes
     # in the uniform grid defined above. This is important if we
     # pass our own continental mask to SeafloorGrid
-    cont_mask = grids.read_netcdf_grid(
-        continent_mask_filename.format(time), resize=(resX, resY)
-    )
+    cont_mask = grids.read_netcdf_grid(continent_mask_filename.format(time), resize=(resX,resY))
 
     # Use the continental mask
     Z[cont_mask] = np.nan
@@ -1652,8 +1668,8 @@ def _save_seed_points_as_multipoint_coverage(
 def _build_continental_mask_with_contouring(
     time: float,
     continent_mask_filepath,
-    rotation_model,
-    continent_features,
+    rotation_files,
+    continent_files,
     overwrite=False,
 ):
     """build the continent mask for a given time with continent contouring method"""
@@ -1709,8 +1725,9 @@ def _build_continental_mask_with_contouring(
 
         return buffer_and_gap_distance_radians
 
+    continent_features = [pygplates.FeatureCollection(f) for f in continent_files]
     continent_contouring = continent_contours.ContinentContouring(
-        rotation_model,
+        pygplates.RotationModel(rotation_files),
         continent_features,
         continent_contouring_point_spacing_degrees,
         continent_contouring_area_threshold_steradians,
@@ -1736,8 +1753,8 @@ def _generate_mid_ocean_ridge_points(
     time: float,
     delta_time: float,
     mid_ocean_ridges_file_path: str,
-    rotation_model,
-    topology_features,
+    rotation_files: List[str],
+    topology_files: List[str],
     zvalues_file_basepath,
     zval_names,
     ridge_sampling,
@@ -1751,6 +1768,9 @@ def _generate_mid_ocean_ridge_points(
         )
         return
 
+    topology_features_extracted = pygplates.FeaturesFunctionArgument(topology_files)
+    rotation_model = pygplates.RotationModel(rotation_files)
+
     # Points and their z values that emerge from MORs at this time.
     shifted_mor_points = []
     point_spreading_rates = []
@@ -1759,7 +1779,7 @@ def _generate_mid_ocean_ridge_points(
     resolved_topologies = []
     shared_boundary_sections = []
     pygplates.resolve_topologies(
-        topology_features,
+        topology_features_extracted.get_features(),
         rotation_model,
         resolved_topologies,
         time,
