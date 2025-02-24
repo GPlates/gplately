@@ -2104,6 +2104,7 @@ class PlateReconstruction(object):
         include_networks=True,
         include_topological_slab_boundaries=False,
         anchor_plate_id=None,
+        return_east_north_arrays=False,
     ):
         """Calculates the north and east components of the velocity vector (in kms/myr) for each specified point (from `lons` and `lats`) at a particular geological `time`.
 
@@ -2142,11 +2143,19 @@ class PlateReconstruction(object):
         anchor_plate_id : int, optional
             Anchor plate ID. Defaults to the current anchor plate ID (`anchor_plate_id` attribute).
 
+        return_east_north_arrays : bool, default=False
+            Return the velocities as arrays separately containing the east and north components of the velocities.
+            Noet that setting this to True matches the output of `points.plate_velocity`.
+
         Returns
         -------
-        point_velocities : array of 2-tuples
-            For each point, a tuple of (north, east) velocity components is generated and appended to a list of velocity data.
-            The length of `point_velocities` is equivalent to the number of points in the lat-lon array parameters.
+        north_east_velocities : ndarray of 2-tuples
+            Only provided if `return_east_north_arrays` is False.
+            Each array element contains the (north, east) velocity components of a single point.
+        east_velocities, north_velocities : ndarray
+            Only provided if `return_east_north_arrays` is True.
+            The east and north components of velocities as separate arrays.
+            These are also ordered (east, north) instead of (north, east).
 
         Raises
         ------
@@ -2202,17 +2211,18 @@ class PlateReconstruction(object):
             )
         )
 
-        # Extract just the North and East velocity components.
-        point_velocities_north_east = []
-        for point_velocity_north_east_down in point_velocities_north_east_down:
-            point_velocities_north_east.append(
-                (
-                    point_velocity_north_east_down.get_x(),  # North
-                    point_velocity_north_east_down.get_y(),  # East
-                )
-            )
-
-        return np.array(point_velocities_north_east)
+        if return_east_north_arrays:
+            # Extract the East and North velocity components into separate arrays.
+            east_velocities = [ned.get_y() for ned in point_velocities_north_east_down]
+            north_velocities = [ned.get_x() for ned in point_velocities_north_east_down]
+            # Note: This is the opposite order (ie, (east,north) instead of (north,east)).
+            return np.array(east_velocities), np.array(north_velocities)
+        else:
+            # Extract the North and East velocity components into a single array.
+            north_east_velocities = [
+                (ned.get_x(), ned.get_y()) for ned in point_velocities_north_east_down
+            ]
+            return np.array(north_east_velocities)
 
     def create_motion_path(
         self,
@@ -2956,11 +2966,12 @@ class Points(object):
 
         Returns
         -------
-        rlons : list of float
-            A 1D numpy array enclosing all reconstructed point features' longitudes.
-
-        rlats : list of float
-            A 1D numpy array enclosing all reconstructed point features' latitudes.
+        reconstructed_points : Points
+            Only provided if `return_array` is False.
+            The reconstructed points in a `Points` object.
+        rlons, rlats : ndarray
+            Only provided if `return_array` is True.
+            The longitude and latitude coordinate arrays of the reconstructed points.
         """
         if anchor_plate_id is None:
             anchor_plate_id = self.anchor_plate_id
@@ -2978,15 +2989,15 @@ class Points(object):
         if return_array:
             return rlons, rlats
         else:
-            gpts = Points(
+            reconstructed_points = Points(
                 self.plate_reconstruction,
                 rlons,
                 rlats,
                 time=time,
                 plate_id=self.plate_id,
             )
-            gpts.add_attributes(**self.attributes.copy())
-            return gpts
+            reconstructed_points.add_attributes(**self.attributes.copy())
+            return reconstructed_points
 
     def reconstruct_to_birth_age(self, ages, anchor_plate_id=None):
         """Reconstructs point features supplied to the `Points` object from the supplied initial time (`self.time`)
@@ -3010,8 +3021,8 @@ class Points(object):
 
         Returns
         -------
-        rlons, rlats : float
-            The longitude and latitude coordinate lists of all point features reconstructed to all specified ages.
+        rlons, rlats : ndarray
+            The longitude and latitude coordinate arrays of all point features reconstructed to all specified ages.
 
         Examples
         --------
@@ -3074,13 +3085,13 @@ class Points(object):
         velocity_delta_time_type=pygplates.VelocityDeltaTimeType.t_plus_delta_t_to_t,
         velocity_units=pygplates.VelocityUnits.cms_per_yr,
         earth_radius_in_kms=pygplates.Earth.mean_radius_in_kms,
-        include_networks=True,
-        include_topological_slab_boundaries=False,
         anchor_plate_id=None,
+        return_reconstructed_points=False,
     ):
         """Calculates the east and north components of the tectonic plate velocities of the internal points at a particular geological time.
 
-        The plate velocities are calculated using the internal `PlateReconstruction` object.
+        The point velocities are calculated using the plate IDs of the internal points and the rotation model of the internal `PlateReconstruction` object.
+        If the requested `time` differs from the initial time (`self.time`) then the internal points are first reconstructed to `time` before calculating velocities.
 
         Parameters
         ----------
@@ -3100,28 +3111,19 @@ class Points(object):
             Radius of the Earth in kilometres.
             This is only used to calculate velocities (strain rates always use ``pygplates.Earth.equatorial_radius_in_kms``).
 
-        include_networks : bool, default=True
-            Whether to include deforming networks when calculating velocities.
-            By default they are included (and also given precedence since they typically overlay a rigid plate).
-
-        include_topological_slab_boundaries : bool, default=False
-            Whether to include features of type `gpml:TopologicalSlabBoundary` when calculating velocities.
-            By default they are **not** included (they tend to overlay a rigid plate which should instead be used to calculate plate velocity).
-
         anchor_plate_id : int, optional
             Anchor plate ID. Defaults to the current anchor plate ID of the internal `PlateReconstruction` object (its `anchor_plate_id` attribute).
 
+        return_reconstructed_points : bool, default=False
+            Return the reconstructed points (as longitude and latitude arrays) in addition to the velocities.
+
         Returns
         -------
-        velocities : list of 1D numpy arrays
-            A list containing two numpy arrays.
-            The first array contains the *east* component of each internal point's velocity.
-            The second array contains the *north* component of each internal point's velocity.
-
-        Raises
-        ------
-        ValueError
-            If topology features have not been set in the internal `PlateReconstruction` object.
+        velocity_lons, velocity_lats : ndarray
+            The velocity arrays containing the *east* (longitude) and *north* (latitude) components of each internal point's velocity.
+        rlons, rlats : ndarray
+            Only provided if `return_reconstructed_points` is True.
+            The longitude and latitude coordinate arrays of the reconstructed points (at which velocities are calculated).
 
         Notes
         -----
@@ -3131,21 +3133,110 @@ class Points(object):
         For each velocity, the *east* component is first followed by the *north* component.
         This is different to `PlateReconstruction.get_point_velocities` where the *north* component is first.
         This difference is maintained for backward compatibility.
-        """
-        velocities = self.plate_reconstruction.get_point_velocities(
-            self.lons,
-            self.lats,
-            time,
-            delta_time=delta_time,
-            velocity_delta_time_type=velocity_delta_time_type,
-            velocity_units=velocity_units,
-            earth_radius_in_kms=earth_radius_in_kms,
-            include_networks=include_networks,
-            include_topological_slab_boundaries=include_topological_slab_boundaries,
-            anchor_plate_id=anchor_plate_id,
-        )
 
-        return [velocities[:, 1], velocities[:, 0]]  # east, north
+        See Also
+        --------
+        PlateReconstruction.get_point_velocities : Velocities of points calculated using topologies instead of plate IDs (assigned from static polygons).
+        """
+        north_east_velocities = np.empty((len(self.points), 2))
+        if return_reconstructed_points:
+            lat_lon_points = np.empty((len(self.points), 2))
+
+        # Determine time interval for velocity calculation.
+        if (
+            velocity_delta_time_type
+            == pygplates.VelocityDeltaTimeType.t_plus_delta_t_to_t
+        ):
+            from_time = time + delta_time
+            to_time = time
+        elif (
+            velocity_delta_time_type
+            == pygplates.VelocityDeltaTimeType.t_to_t_minus_delta_t
+        ):
+            from_time = time
+            to_time = time - delta_time
+        elif (
+            velocity_delta_time_type
+            == pygplates.VelocityDeltaTimeType.t_plus_minus_half_delta_t
+        ):
+            from_time = time + delta_time / 2
+            to_time = time - delta_time / 2
+        else:
+            raise ValueError(
+                "'velocity_delta_time_type' value not one of pygplates.VelocityDeltaTimeType enumerated values"
+            )
+        # Make sure time interval is non-negative.
+        if to_time < 0:
+            from_time -= to_time
+            to_time = 0
+
+        unique_plate_ids = np.unique(self.plate_id)
+        for plate_id in unique_plate_ids:
+
+            # Stage rotation for the current unique plate ID.
+            velocity_equivalent_stage_rotation = (
+                self.plate_reconstruction.rotation_model.get_rotation(
+                    to_time, plate_id, from_time, anchor_plate_id=anchor_plate_id
+                )
+            )
+
+            # Determine which points have the current unique plate ID.
+            mask_plate_id = self.plate_id == plate_id
+            #
+            reconstructed_points_with_plate_id = [
+                self.points[i] for i, mask in enumerate(mask_plate_id) if mask
+            ]
+            # Reconstruct the points if the requested time ('time') is not the initial time ('self.time').
+            #
+            # Note 'self.points' (and hence 'reconstructed_points_with_plate_id') are the locations at 'self.time'
+            #      (just like 'self.lons' and 'self.lats'). So if 'self.time != time' then we need to reconstruct
+            #      the points from 'self.time' to 'time' before calculating velocities at those locations.
+            if pygplates.GeoTimeInstant(self.time) != time:  # epsilon comparison
+                reconstruct_equivalent_stage_rotation = (
+                    self.plate_reconstruction.rotation_model.get_rotation(
+                        time, plate_id, self.time, anchor_plate_id=anchor_plate_id
+                    )
+                )
+                reconstructed_points_with_plate_id = [
+                    reconstruct_equivalent_stage_rotation * point
+                    for point in reconstructed_points_with_plate_id
+                ]
+
+            velocity_vectors_with_plate_id = pygplates.calculate_velocities(
+                reconstructed_points_with_plate_id,
+                velocity_equivalent_stage_rotation,
+                delta_time,
+                velocity_units=velocity_units,
+                earth_radius_in_kms=earth_radius_in_kms,
+            )
+
+            velocity_neds_with_plate_id = (
+                pygplates.LocalCartesian.convert_from_geocentric_to_north_east_down(
+                    reconstructed_points_with_plate_id, velocity_vectors_with_plate_id
+                )
+            )
+
+            # Write velocities of points with the current unique plate ID as (north, east) components.
+            north_east_velocities[mask_plate_id] = [
+                (ned.get_x(), ned.get_y())  # north, east
+                for ned in velocity_neds_with_plate_id
+            ]
+
+            # Also write the reconstructed points (if requested).
+            if return_reconstructed_points:
+                lat_lon_points[mask_plate_id] = [
+                    rpoint.to_lat_lon() for rpoint in reconstructed_points_with_plate_id
+                ]
+
+        velocity_lons = north_east_velocities[:, 1]  # east
+        velocity_lats = north_east_velocities[:, 0]  # north
+
+        if return_reconstructed_points:
+            rlons = lat_lon_points[:, 1]
+            rlats = lat_lon_points[:, 0]
+            return velocity_lons, velocity_lats, rlons, rlats
+        else:
+            return velocity_lons, velocity_lats
 
     def motion_path(
         self, time_array, anchor_plate_id=None, return_rate_of_motion=False
