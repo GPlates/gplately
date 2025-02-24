@@ -16,9 +16,7 @@
 #
 
 """
-Imports [`pyGPlates`](https://www.gplates.org/docs/pygplates/index.html).
-
-Note that an alternative to `import gplates.pygplates` is just `import pygplates`.
+You should use `import pygplates` to directly import [pyGPlates](https://www.gplates.org/docs/pygplates/index.html) rather than rely on this module.
 
 This module was initially provided to support pickling of some pygplates classes.
 But as of pygplates version 1.0, pickling is natively supported (within pygplates).

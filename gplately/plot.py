@@ -180,7 +180,7 @@ class PlotTopologies(object):
                                             continent_filename=None,
                                             COB_filename=None,
                                             time=None,
-                                            anchor_plate_id=0,
+                                            anchor_plate_id=None,
                 )
 
         # Setting a new reconstruction time

@@ -28,7 +28,7 @@ The following methods in the object are tested:
 # TESTING THE POINTS OBJECT
 @pytest.mark.parametrize("time", reconstruction_times)
 def test_point_reconstruction(time, gpts):
-    rlons, rlats = gpts.reconstruct(time, return_array=True, anchor_plate_id=0)
+    rlons, rlats = gpts.reconstruct(time, return_array=True)
     assert (
         rlons.size and rlats.size
     ), "Unable to reconstruct point data to {} Ma with Muller et al. (2019).".format(

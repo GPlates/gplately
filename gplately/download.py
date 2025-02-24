@@ -34,10 +34,12 @@ import urllib.request as _request
 import warnings
 
 import numpy as _np
+import numpy as np
 import pooch as _pooch
 import pygplates as _pygplates
 import requests as _requests
 from matplotlib import image as _image
+from plate_model_manager import PlateModelManager, PresentDayRasterManager
 from pooch import Decompress as _Decompress
 from pooch import HTTPDownloader as _HTTPDownloader
 from pooch import Unzip as _Unzip
@@ -47,9 +49,6 @@ from pooch import utils as _utils
 
 import gplately as _gplately
 from gplately.data import DataCollection
-
-from plate_model_manager import PlateModelManager, PresentDayRasterManager
-import numpy as np
 
 
 class DownloadWarning(RuntimeWarning):
@@ -1089,43 +1088,10 @@ class DataServer(object):
     object and method(s) are re-run, the files will be re-accessed from the cache provided they have not been
     moved or deleted.
 
-    Currently, `DataServer` supports a number of plate reconstruction models.
+    [This page](https://gplates.github.io/gplately/dev-doc/#dataserver) contains a list of available plate reconstruction models. For more information about these plate models, visit [this EarthByte page](https://www.earthbyte.org/category/resources/data-models/global-regional-plate-motion-models/).
 
-    ------------------
-
-    | **Model name string Identifier** | **Zenodo** |**Topology features**   | **Static polygons**   | **Coast-lines**  | **Cont-inents** | **COB**    | **Age grids**   | **SR grids**  |
-    |:--------------------------------:|:----------:|:----------------------:|:--------------------:|:-----------------:|:---------------:|:----------:|:--------------:|:--------------:|
-    |  Alfonso2024                     |     ✅     |          ✅           |          ✅          |        ✅        |        ❌       |     ❌    |       ❌       |       ❌      |
-    |  Cao2024                         |     ✅     |          ✅           |          ✅          |        ✅        |        ✅       |     ✅    |       ❌       |       ❌      |
-    |  Muller2022                      |     ✅     |          ✅           |          ✅          |        ✅        |        ✅       |     ✅    |       ❌       |       ❌      |
-    |  Zahirovic2022                   |     ✅     |          ✅           |          ✅          |        ✅        |        ✅       |     ❌    |       ✅       |       ✅      |
-    |  Merdith2021                     |     ✅     |          ✅           |          ✅          |        ✅        |        ✅       |     ❌    |       ❌       |       ❌      |
-    |  Clennett2020                    |     ✅     |          ✅           |          ✅          |        ✅        |        ❌       |     ❌    |       ✅       |       ✅      |
-    |  Clennett2020_M2019              |     ✅     |          ✅           |          ✅          |        ✅        |        ❌       |     ❌    |       ✅       |       ✅      |
-    |  Clennett2020_S2013              |     ✅     |          ✅           |          ✅          |        ✅        |        ❌       |     ❌    |       ❌       |       ❌      |
-    |  Muller2019                      |     ✅     |          ✅           |          ✅          |        ✅        |        ✅       |     ✅    |       ✅       |       ❌      |
-    |  Young2018                       |     ✅     |          ✅           |          ✅          |        ✅        |        ✅       |     ❌    |       ❌       |       ❌      |
-    |  TorsvikCocks2017                |     ❌     |          ❌           |          ✅          |        ✅        |        ❌       |     ❌    |       ❌       |       ❌      |
-    |  Matthews2016                    |     ✅     |          ✅           |          ✅          |        ✅        |        ✅       |     ❌    |       ❌       |       ❌      |
-    |  Matthews2016_pmag_ref           |     ❌     |          ❌           |          ✅          |        ✅        |        ✅       |     ❌    |       ❌       |       ❌      |
-    |  Muller2016                      |     ✅     |          ✅           |          ✅          |        ✅        |        ❌       |     ✅    |       ✅       |       ❌      |
-    |  Scotese2016                     |     ✅     |          ❌           |          ✅          |        ✅        |        ❌       |     ❌    |       ❌       |       ❌      |
-    |  Zahirovic2016                   |     ✅     |          ✅           |          ✅          |        ✅        |        ✅       |     ❌    |       ❌       |       ❌      |
-    |  Gibbons2015                     |     ✅     |          ✅           |          ✅          |        ✅        |        ❌       |     ❌    |       ❌       |       ❌      |
-    |  Zahirovic2014                   |     ✅     |          ❌           |          ✅          |        ✅        |        ❌       |     ❌    |       ❌       |       ❌      |
-    |  Shephard2013                    |     ✅     |          ✅           |          ✅          |        ✅        |        ❌       |     ❌    |       ❌       |       ❌      |
-    |  Gurnis2012                      |     ✅     |          ✅           |          ✅          |        ✅        |        ❌       |     ❌    |       ❌       |       ❌      |
-    |  Seton2012                       |     ✅     |          ✅           |          ✅          |        ✅        |        ✅       |     ✅    |       ✅       |       ❌      |
-    |  Muller2008                      |     ❌     |          ❌           |          ✅          |        ❌        |        ❌       |     ❌    |       ❌       |       ❌      |
-
-    **Note: All models have rotation files.**
-
-    ------------------
-
-    More information about these plate models can be found at https://www.earthbyte.org/category/resources/data-models/global-regional-plate-motion-models/.
-
-    You may also use `pmm ls` command to get more information about a model, for example `pmm ls cao2024`
-    (you need `pip install plate-model-manager` before running this command).
+    You may also use `pmm ls` command to get more information about a model. For example, the command `pmm ls cao2024` shows details about model Cao2024.
+    You need `pip install plate-model-manager` before running this command.
 
     """
 
@@ -1251,8 +1217,8 @@ class DataServer(object):
         return self.from_age, self.to_age
 
     def get_plate_reconstruction_files(self):
-        """Downloads and constructs a `rotation model`, a set of `topology_features` and
-        and a set of `static_polygons` needed to call the `PlateReconstruction` object.
+        """Downloads and constructs a `rotation model`, a set of `topology features` and
+        and a set of `static polygons`. These objects can then be used to create `PlateReconstruction` object.
 
         Returns
         -------
@@ -1269,26 +1235,18 @@ class DataServer(object):
 
         Notes
         -----
-        This method accesses the plate reconstruction model ascribed to the `file_collection` string passed
-        into the `DataServer` object. For example, if the object was called with `"Muller2019"`:
+        The get_plate_reconstruction_files() method downloads reconstruction files from a given plate model.
+        For example,
 
             gDownload = gplately.download.DataServer("Muller2019")
             rotation_model, topology_features, static_polygons = gDownload.get_plate_reconstruction_files()
 
-        the method will download a `rotation_model`, `topology_features` and `static_polygons` from the
-        Müller et al. (2019) plate reconstruction model. Once the reconstruction objects are returned,
-        they can be passed into:
+        The code above downloads `rotation model`, `topology features` and `static polygons` files from the
+        Müller et al. (2019) plate reconstruction model. These files can then be used to create `PlateReconstruction` object.
 
             model = gplately.reconstruction.PlateReconstruction(rotation_model, topology_features, static_polygons)
 
-        * Note: If the requested plate model does not have a certain file(s), a message will be printed
-        to alert the user. For example, using `get_plate_reconstruction_files()`
-        for the Torsvik and Cocks (2017) plate reconstruction model yields the printed message:
-
-                No topology features in TorsvikCocks2017. No FeatureCollection created - unable to
-                plot trenches, ridges and transforms.
-                No continent-ocean boundaries in TorsvikCocks2017.
-
+        If the requested plate model does not have certain file(s), a warning message will alert user of the missing file(s).
         """
         return self.rotation_model, self.topology_features, self.static_polygons
 

@@ -882,7 +882,7 @@ def reconstruct_grid(
     origin=None,
     fill_value=None,
     threads=1,
-    anchor_plate_id=0,
+    anchor_plate_id=None,
     x_dimension_name: str = "",
     y_dimension_name: str = "",
     data_variable_name: str = "",
@@ -925,8 +925,9 @@ def reconstruct_grid(
         determined based on the input.
     threads : int, default 1
         Number of threads to use for certain computationally heavy routines.
-    anchor_plate_id : int, default 0
-        ID of the anchored plate.
+    anchor_plate_id : int, optional
+        ID of the anchored plate. By default, reconstructions are made with respect to the
+        default anchor plate ID of `rotation_model` if it's a `pygplates.RotationModel` (otherwise zero).
     x_dimension_name : str, optional, default=""
         If the grid file uses comman names, such as "x", "lon", "lons" or "longitude", you need not set this parameter.
         Otherwise, you need to tell us what the x dimension name is.
@@ -1103,7 +1104,7 @@ def reconstruct_grid(
             to_time=float(to_time),
             from_time=float(from_time),
             moving_plate_id=int(plate),
-            anchor_plate_id=int(anchor_plate_id),
+            anchor_plate_id=anchor_plate_id,  # if None then uses default anchor plate of 'rotation_model'
         )
         if not isinstance(rot, pygplates.FiniteRotation):
             raise ValueError("No rotation found for plate ID: {}".format(plate))
@@ -1645,7 +1646,7 @@ class Raster(object):
         replaces NaNs with the value of the nearest valid data cell.
 
     reconstruct(time, fill_value=None, partitioning_features=None,
-                threads=1, anchor_plate_id=0, inplace=False)
+                threads=1, anchor_plate_id=None, inplace=False)
         Reconstruct the raster from its initial time (`self.time`) to a new
         time.
     """
@@ -2160,7 +2161,7 @@ class Raster(object):
         fill_value=None,
         partitioning_features=None,
         threads=1,
-        anchor_plate_id=0,
+        anchor_plate_id=None,
         inplace=False,
         return_array=False,
     ):
@@ -2182,8 +2183,9 @@ class Raster(object):
         threads : int, default 1
             Number of threads to use for certain computationally heavy
             routines.
-        anchor_plate_id : int, default 0
-            ID of the anchored plate.
+        anchor_plate_id : int, optional
+            ID of the anchored plate. By default, reconstructions are made with respect to
+            the anchor plate ID specified in the `gplately.PlateReconstruction` object.
         inplace : bool, default False
             Perform the reconstruction in-place (replace the raster's data
             with the reconstructed data).
