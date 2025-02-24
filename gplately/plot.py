@@ -1507,32 +1507,41 @@ class PlotTopologies(object):
             with the velocity vector field plotted onto the chosen map projection.
         """
 
-        lons = np.arange(-180, 180 + spacingX, spacingX)
-        lats = np.arange(-90, 90 + spacingY, spacingY)
-        lonq, latq = np.meshgrid(lons, lats)
+        lonq, latq = np.meshgrid(
+            np.arange(-180, 180 + spacingX, spacingX),
+            np.arange(-90, 90 + spacingY, spacingY),
+        )
+        lons = lonq.ravel()
+        lats = latq.ravel()
 
         delta_time = 5.0
 
-        point_velocities = self.plate_reconstruction.get_point_velocities(
-            lonq.ravel(),
-            latq.ravel(),
+        velocity_lons, velocity_lats = self.plate_reconstruction.get_point_velocities(
+            lons,
+            lats,
             self.time,
             delta_time=delta_time,
             # Match previous implementation that used ptt.velocity_tools.get_plate_velocities()...
             velocity_units=pygplates.VelocityUnits.kms_per_my,
+            return_east_north_arrays=True,
         )
 
-        X, Y, U, V = ptt.velocity_tools.get_x_y_u_v(lons, lats, point_velocities)
-
         if normalise:
-            mag = np.hypot(U, V)
+            mag = np.hypot(velocity_lons, velocity_lats)
             mag[mag == 0] = 1
-            U /= mag
-            V /= mag
+            velocity_lons /= mag
+            velocity_lats /= mag
 
         with warnings.catch_warnings():
             warnings.simplefilter("ignore", UserWarning)
-            quiver = ax.quiver(X, Y, U, V, transform=self.base_projection, **kwargs)
+            quiver = ax.quiver(
+                lons,
+                lats,
+                velocity_lons,
+                velocity_lats,
+                transform=self.base_projection,
+                **kwargs,
+            )
         return quiver
 
     def plot_pole(self, ax, lon, lat, a95, **kwargs):
