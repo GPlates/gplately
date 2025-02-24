@@ -1,6 +1,25 @@
-### Plate Model Manager
-
-Examples demonstrate how to use the PlateModelManager module.
+This folder contains a collection of examples to help you get started with GPlately. These examples are designed to be short and focus on specific tasks. You can copy and modify the example code to fit your needs.
 
 - [introducing_plate_model_manager.py](introducing_plate_model_manager.py)
+
+    demonstrate how to use the PlateModelManager module in general
+
 - [working_with_plate_model_manager.py](working_with_plate_model_manager.py)
+
+    demonstrate how to use the PlateModelManager module with GPlately
+
+- [plot_map_with_cartopy.py](plot_map_with_cartopy.py)
+
+    demonstrate how GPlately plots maps using Cartopy
+
+- [plot_map_with_pygmt.py](plot_map_with_pygmt.py)
+
+    demonstrate how GPlately plots maps using pygmt
+
+- [save_reconstructed_data.py](save_reconstructed_data.py)
+
+    demonstrate how to save the reconstructed data to files
+
+- [data_server.py](data_server.py)
+
+    demonstrate how to use the DataServer class

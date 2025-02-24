@@ -320,7 +320,7 @@ A variety of examples are available to help you get started with GPlately. Visit
 
 ## Command-line interface
 
-GPlately comes with a collection of useful command-line tools, each designed as a subcommand of GPlately. For example, the command `gplately list` shows a list of available reconstruction models. To view all the available tools, simply run `gplately -h`. For a detailed list of tools along with usage examples, visit [this page](https://github.com/GPlates/gplately/blob/master/gplately/commands/readme.md).
+GPlately comes with a collection of useful command-line tools, each designed as a subcommand of GPlately. For example, the command `gplately list` shows a list of available reconstruction models. To view all the available tools, simply run `gplately -h`. For a detailed list of the tools along with usage examples, visit [this page](https://github.com/GPlates/gplately/blob/master/gplately/commands/readme.md).
 
 """
 from .utils import dev_warning
