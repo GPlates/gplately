@@ -495,11 +495,19 @@ passed as "/path/to/continent_mask_{}Ma.nc" with curly brackets. Include decimal
                 self.save_directory, &#34;continent_mask&#34;
             )
             Path(self.continent_mask_directory).mkdir(parents=True, exist_ok=True)
-            continent_mask_file_basename = &#34;continent_mask_{:0.2f}Ma.nc&#34;
+
+            if self.use_continent_contouring:
+                continent_mask_file_basename = (
+                    &#34;continent_mask_ptt_continent_contouring_{:0.2f}Ma.nc&#34;
+                )
+            else:
+                continent_mask_file_basename = &#34;continent_mask_{:0.2f}Ma.nc&#34;
+
             if self.file_collection:
                 continent_mask_file_basename = (
                     self.file_collection + &#34;_&#34; + continent_mask_file_basename
                 )
+
             self.continent_mask_filepath = os.path.join(
                 self.continent_mask_directory, continent_mask_file_basename
             )
@@ -976,7 +984,13 @@ passed as "/path/to/continent_mask_{}Ma.nc" with curly brackets. Include decimal
                         )
                 else:
                     for time in self._times:
-                        self._build_continental_mask_with_contouring(time, overwrite)
+                        _build_continental_mask_with_contouring(
+                            time,
+                            continent_mask_filepath=self.continent_mask_filepath,
+                            rotation_model=self.rotation_model,
+                            continent_features=self._PlotTopologies_object._continents,
+                            overwrite=overwrite,
+                        )
             else:
                 for time in self._times:
                     self._build_continental_mask(time, overwrite)
@@ -1185,7 +1199,9 @@ passed as "/path/to/continent_mask_{}Ma.nc" with curly brackets. Include decimal
         )
 
     def reconstruct_by_topological_model(self):
-        &#34;&#34;&#34;Use pygplates TopologicalModel to reconstruct seed points&#34;&#34;&#34;
+        &#34;&#34;&#34;Use pygplates&#39; TopologicalModel class to reconstruct seed points.
+        This method is an alternative to reconstruct_by_topological() which uses Python code to do the reconstruction.
+        &#34;&#34;&#34;
         self.create_initial_ocean_seed_points()
         logger.info(&#34;Finished building initial_ocean_seed_points!&#34;)
 
@@ -1710,7 +1726,8 @@ all ridge points for all times in the reconstruction time array.</p></div>
 <span>def <span class="ident">reconstruct_by_topological_model</span></span>(<span>self)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Use pygplates TopologicalModel to reconstruct seed points</p></div>
+<div class="desc"><p>Use pygplates' TopologicalModel class to reconstruct seed points.
+This method is an alternative to reconstruct_by_topological() which uses Python code to do the reconstruction.</p></div>
 </dd>
 <dt id="gplately.oceans.SeafloorGrid.reconstruct_by_topologies"><code class="name flex">
 <span>def <span class="ident">reconstruct_by_topologies</span></span>(<span>self)</span>

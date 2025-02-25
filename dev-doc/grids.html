@@ -426,7 +426,7 @@ sampled_indices = (array([1019, 1019, 1019, ..., 1086, 1086, 1087]), array([2237
 </code></pre></div>
 </dd>
 <dt id="gplately.grids.write_netcdf_grid"><code class="name flex">
-<span>def <span class="ident">write_netcdf_grid</span></span>(<span>filename, grid, extent: Union[list[int], str] = 'global', significant_digits=None, fill_value=nan)</span>
+<span>def <span class="ident">write_netcdf_grid</span></span>(<span>filename, grid, extent: Union[list[int], str] = 'global', significant_digits=None, fill_value: Optional[float] = nan)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Write geological data contained in a <code>grid</code> to a netCDF4 grid with a specified <code>filename</code>.</p>
