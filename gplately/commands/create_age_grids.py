@@ -24,10 +24,9 @@ import warnings
 from typing import List
 
 from plate_model_manager import PlateModel, PlateModelManager
+from pygplates import FeaturesFunctionArgument  # type: ignore
 
 from gplately import PlateReconstruction, PlotTopologies, SeafloorGrid
-
-from pygplates import FeaturesFunctionArgument  # type: ignore
 
 logger = logging.getLogger("gplately")
 
@@ -147,6 +146,12 @@ def add_parser(parser):
         action="store_true",
         dest="unmasked",
     )
+    agegrid_cmd.add_argument(
+        "--use-continent-contouring",
+        help="flag to indicate using ptt's 'continent contouring' to generate continent masks",
+        action="store_true",
+        dest="use_continent_contouring",
+    )
 
 
 help_str = "Create age grids for a plate model."
@@ -175,6 +180,7 @@ def create_agegrids(
     file_collection: str = "",
     unmasked: bool = False,
     plate_model_repo: str = "plate-model-repo",
+    use_continent_contouring: bool = False,
 ) -> None:
     """Create age grids for a plate model."""
 
@@ -274,6 +280,8 @@ def create_agegrids(
             ridge_sampling=ridge_sampling,
             initial_ocean_mean_spreading_rate=initial_spreadrate,
             file_collection=file_collection,
+            resume_from_checkpoints=True,
+            use_continent_contouring=use_continent_contouring,
         )
 
         # grid.reconstruct_by_topologies()
@@ -291,6 +299,8 @@ def _run_create_agegrids(args):
             n_jobs = 1
     start = time.time()
 
+    file_collection = args.model_name if args.model_name else args.file_collection
+
     create_agegrids(
         model_name=args.model_name,
         input_filenames=args.input_filenames,
@@ -303,8 +313,9 @@ def _run_create_agegrids(args):
         grid_spacing=args.grid_spacing,
         ridge_sampling=args.ridge_sampling,
         initial_spreadrate=args.initial_spreadrate,
-        file_collection=args.file_collection,
+        file_collection=file_collection,
         unmasked=args.unmasked,
+        use_continent_contouring=args.use_continent_contouring,
     )
 
     end = time.time()
