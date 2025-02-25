@@ -34,14 +34,14 @@ def main():
         continents=continent_files,
     )
 
-    use_continent_contouring_flag = True
+    use_continent_contouring_flag = False
 
     grid = SeafloorGrid(
         reconstruction,
         gplot,
         min_time=400,
         max_time=410,
-        save_directory="test-age-grid-output-0627",
+        save_directory="test-age-grid-output-folder",
         ridge_time_step=1,
         refinement_levels=5,
         grid_spacing=0.1,

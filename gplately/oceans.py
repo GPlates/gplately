@@ -774,7 +774,7 @@ class SeafloorGrid(object):
             mask_fn = self.continent_mask_filepath.format(time)
             if os.path.isfile(mask_fn):
                 logger.info(
-                    f"Continent mask file exists and will not create again.\n{mask_fn}"
+                    f"Continent mask file exists and will not create again -- {mask_fn}"
                 )
                 continue
 
@@ -804,7 +804,7 @@ class SeafloorGrid(object):
         mask_fn = self.continent_mask_filepath.format(time)
         if os.path.isfile(mask_fn) and not overwrite:
             logger.info(
-                f"Continent mask file exists and will not create again.\n{mask_fn}"
+                f"Continent mask file exists and will not create again -- {mask_fn}"
             )
             return
 
@@ -1679,7 +1679,9 @@ def _build_continental_mask_with_contouring(
     """
     mask_fn = continent_mask_filepath.format(time)
     if os.path.isfile(mask_fn) and not overwrite:
-        logger.info(f"Continent mask file exists and will not create again.\n{mask_fn}")
+        logger.info(
+            f"Continent mask file exists and will not create again -- {mask_fn}"
+        )
         return
 
     continent_contouring_point_spacing_degrees = 0.25
@@ -1749,9 +1751,7 @@ def _build_continental_mask_with_contouring(
     )
     logger.warning(
         f"Finished building a continental mask at {time} Ma using ptt's 'Continent Contouring'!"
-    )
-    logger.info(
-        "For more information about 'Continent Contouring', visit https://gplates.github.io/gplately/dev-doc/ptt/continent_contours.html."
+        + " For more information about 'Continent Contouring', visit https://gplates.github.io/gplately/dev-doc/ptt/continent_contours.html."
     )
 
 

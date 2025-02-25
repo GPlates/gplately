@@ -24,10 +24,9 @@ import warnings
 from typing import List
 
 from plate_model_manager import PlateModel, PlateModelManager
+from pygplates import FeaturesFunctionArgument  # type: ignore
 
 from gplately import PlateReconstruction, PlotTopologies, SeafloorGrid
-
-from pygplates import FeaturesFunctionArgument  # type: ignore
 
 logger = logging.getLogger("gplately")
 
@@ -281,6 +280,7 @@ def create_agegrids(
             ridge_sampling=ridge_sampling,
             initial_ocean_mean_spreading_rate=initial_spreadrate,
             file_collection=file_collection,
+            resume_from_checkpoints=True,
             use_continent_contouring=use_continent_contouring,
         )
 
