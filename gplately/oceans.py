@@ -134,7 +134,6 @@ from typing import List, Tuple, Union
 import numpy as np
 import pandas as pd
 import pygplates
-from plate_model_manager import PlateModel, PlateModelManager
 
 from . import grids, reconstruction, tools
 from .ptt import continent_contours, separate_ridge_transform_segments
@@ -246,6 +245,7 @@ class SeafloorGrid(object):
         resume_from_checkpoints=False,
         zval_names: List[str] = ["SPREADING_RATE"],
         continent_mask_filename=None,
+        use_continent_contouring=False,
     ):
 
         # Provides a rotation model, topology features and reconstruction time for the SeafloorGrid
@@ -265,6 +265,8 @@ class SeafloorGrid(object):
             self.continent_mask_is_provided = True
         else:
             self.continent_mask_is_provided = False
+
+        self.use_continent_contouring = use_continent_contouring
 
         self._setup_output_paths(save_directory)
 
@@ -369,11 +371,19 @@ class SeafloorGrid(object):
                 self.save_directory, "continent_mask"
             )
             Path(self.continent_mask_directory).mkdir(parents=True, exist_ok=True)
-            continent_mask_file_basename = "continent_mask_{:0.2f}Ma.nc"
+
+            if self.use_continent_contouring:
+                continent_mask_file_basename = (
+                    "continent_mask_ptt_continent_contouring_{:0.2f}Ma.nc"
+                )
+            else:
+                continent_mask_file_basename = "continent_mask_{:0.2f}Ma.nc"
+
             if self.file_collection:
                 continent_mask_file_basename = (
                     self.file_collection + "_" + continent_mask_file_basename
                 )
+
             self.continent_mask_filepath = os.path.join(
                 self.continent_mask_directory, continent_mask_file_basename
             )
@@ -764,7 +774,7 @@ class SeafloorGrid(object):
             mask_fn = self.continent_mask_filepath.format(time)
             if os.path.isfile(mask_fn):
                 logger.info(
-                    f"Continent mask file exists and will not create again.\n{mask_fn}"
+                    f"Continent mask file exists and will not create again -- {mask_fn}"
                 )
                 continue
 
@@ -794,7 +804,7 @@ class SeafloorGrid(object):
         mask_fn = self.continent_mask_filepath.format(time)
         if os.path.isfile(mask_fn) and not overwrite:
             logger.info(
-                f"Continent mask file exists and will not create again.\n{mask_fn}"
+                f"Continent mask file exists and will not create again -- {mask_fn}"
             )
             return
 
@@ -816,7 +826,7 @@ class SeafloorGrid(object):
         )
         logger.info(f"Finished building a continental mask at {time} Ma!")
 
-    def build_all_continental_masks(self, use_continent_contouring=True):
+    def build_all_continental_masks(self):
         """Create a continental mask to define the ocean basin for all times between `min_time` and `max_time`.
 
         Notes
@@ -830,7 +840,7 @@ class SeafloorGrid(object):
             overwrite = True
             if self.resume_from_checkpoints:
                 overwrite = False
-            if use_continent_contouring:
+            if self.use_continent_contouring:
                 try:
                     num_cpus = multiprocessing.cpu_count() - 1
                 except NotImplementedError:
@@ -850,7 +860,13 @@ class SeafloorGrid(object):
                         )
                 else:
                     for time in self._times:
-                        self._build_continental_mask_with_contouring(time, overwrite)
+                        _build_continental_mask_with_contouring(
+                            time,
+                            continent_mask_filepath=self.continent_mask_filepath,
+                            rotation_model=self.rotation_model,
+                            continent_features=self._PlotTopologies_object._continents,
+                            overwrite=overwrite,
+                        )
             else:
                 for time in self._times:
                     self._build_continental_mask(time, overwrite)
@@ -1059,7 +1075,9 @@ class SeafloorGrid(object):
         )
 
     def reconstruct_by_topological_model(self):
-        """Use pygplates TopologicalModel to reconstruct seed points"""
+        """Use pygplates' TopologicalModel class to reconstruct seed points.
+        This method is an alternative to reconstruct_by_topological() which uses Python code to do the reconstruction.
+        """
         self.create_initial_ocean_seed_points()
         logger.info("Finished building initial_ocean_seed_points!")
 
@@ -1656,10 +1674,14 @@ def _build_continental_mask_with_contouring(
     continent_features,
     overwrite=False,
 ):
-    """build the continent mask for a given time with continent contouring method"""
+    """Build the continent mask for a given time using ptt's 'continent contouring' method.
+    For more information about 'Continent Contouring', visit https://gplates.github.io/gplately/dev-doc/ptt/continent_contours.html.
+    """
     mask_fn = continent_mask_filepath.format(time)
     if os.path.isfile(mask_fn) and not overwrite:
-        logger.info(f"Continent mask file exists and will not create again.\n{mask_fn}")
+        logger.info(
+            f"Continent mask file exists and will not create again -- {mask_fn}"
+        )
         return
 
     continent_contouring_point_spacing_degrees = 0.25
@@ -1727,8 +1749,9 @@ def _build_continental_mask_with_contouring(
         extent=[-180, 180, -90, 90],
         fill_value=None,
     )
-    logger.info(
-        f"Finished building a continental mask at {time} Ma! (continent_contouring)"
+    logger.warning(
+        f"Finished building a continental mask at {time} Ma using ptt's 'Continent Contouring'!"
+        + " For more information about 'Continent Contouring', visit https://gplates.github.io/gplately/dev-doc/ptt/continent_contours.html."
     )
 
 

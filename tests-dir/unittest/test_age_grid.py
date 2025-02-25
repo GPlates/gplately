@@ -2,15 +2,12 @@
 
 import os
 
-import pygplates as _pygplates
 from common import *
-
-import gplately
-
-print(gplately.__file__)
 from plate_model_manager import PlateModel, PlateModelManager
 
 from gplately import PlateReconstruction, PlotTopologies, SeafloorGrid
+
+os.environ["DISABLE_GPLATELY_DEV_WARNING"] = "true"
 
 
 def main():
@@ -37,12 +34,14 @@ def main():
         continents=continent_files,
     )
 
+    use_continent_contouring_flag = False
+
     grid = SeafloorGrid(
         reconstruction,
         gplot,
         min_time=400,
         max_time=410,
-        save_directory="test-age-grid-output-0627",
+        save_directory="test-age-grid-output-folder",
         ridge_time_step=1,
         refinement_levels=5,
         grid_spacing=0.1,
@@ -50,8 +49,11 @@ def main():
         initial_ocean_mean_spreading_rate=75,
         file_collection=model_name,
         resume_from_checkpoints=True,
+        use_continent_contouring=use_continent_contouring_flag,
     )
+
     test_new = 1
+
     if test_new:
         grid.reconstruct_by_topological_model()
         for val in ("SEAFLOOR_AGE", "SPREADING_RATE"):
