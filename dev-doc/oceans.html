@@ -898,7 +898,7 @@ passed as "/path/to/continent_mask_{}Ma.nc" with curly brackets. Include decimal
             mask_fn = self.continent_mask_filepath.format(time)
             if os.path.isfile(mask_fn):
                 logger.info(
-                    f&#34;Continent mask file exists and will not create again.\n{mask_fn}&#34;
+                    f&#34;Continent mask file exists and will not create again -- {mask_fn}&#34;
                 )
                 continue
 
@@ -928,7 +928,7 @@ passed as "/path/to/continent_mask_{}Ma.nc" with curly brackets. Include decimal
         mask_fn = self.continent_mask_filepath.format(time)
         if os.path.isfile(mask_fn) and not overwrite:
             logger.info(
-                f&#34;Continent mask file exists and will not create again.\n{mask_fn}&#34;
+                f&#34;Continent mask file exists and will not create again -- {mask_fn}&#34;
             )
             return
 
