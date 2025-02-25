@@ -45,9 +45,11 @@ def print_dev_warning(version: str):
             To disable this warning, set USING_DEV_VERSION to False in __init__.py or
             set DISABLE_GPLATELY_DEV_WARNING environment variable to true, such as
 
-            `os.environ["DISABLE_GPLATELY_DEV_WARNING"] = "true"`(in Python)
+                os.environ["DISABLE_GPLATELY_DEV_WARNING"] = "true" (in Python)
             or
-            `export DISABLE_GPLATELY_DEV_WARNING=true`(in Shell)
+                export DISABLE_GPLATELY_DEV_WARNING=true (in Shell)
+            or 
+                $env:DISABLE_GPLATELY_DEV_WARNING = "true" (in PowerShell)
             
             If you prefer not seeing this warning always, you may set the environment variable 
             in your boot scripts, such as .bashrc, .profile, autoexec.bat, etc.

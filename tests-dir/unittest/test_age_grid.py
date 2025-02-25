@@ -33,7 +33,9 @@ def main():
         reconstruction,
         continents=continent_files,
     )
+
     use_continent_contouring_flag = True
+
     grid = SeafloorGrid(
         reconstruction,
         gplot,
@@ -49,7 +51,9 @@ def main():
         resume_from_checkpoints=True,
         use_continent_contouring=use_continent_contouring_flag,
     )
-    test_new = 0
+
+    test_new = 1
+
     if test_new:
         grid.reconstruct_by_topological_model()
         for val in ("SEAFLOOR_AGE", "SPREADING_RATE"):
