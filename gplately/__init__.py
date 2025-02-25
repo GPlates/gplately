@@ -59,8 +59,8 @@ raster = Raster(PresentDayRasterManager().get_raster("topography"))
 agegrid = Raster(model.get_raster("AgeGrids", time=100))
 ```
 
-For more example code, a [comprehensive example](https://github.com/GPlates/gplately/blob/master/Notebooks/Examples/introducing-plate-model-manager.py) 
-on GitHub demonstrates how to use the PlateModelManager module in details. [Another example](https://github.com/GPlates/gplately/blob/master/Notebooks/Examples/working-with-plate-model-manager.py) 
+For more example code, a [comprehensive example](https://github.com/GPlates/gplately/blob/master/Notebooks/Examples/introducing_plate_model_manager.py) 
+on GitHub demonstrates how to use the PlateModelManager module in details. [Another example](https://github.com/GPlates/gplately/blob/master/Notebooks/Examples/working_with_plate_model_manager.py) 
 shows how to use the PlateModelManager module with GPlately.
 
 You may use the auxiliary functions to create the `PlateReconstruction` and `PlotTopologies` instances.
@@ -320,7 +320,7 @@ A variety of examples are available to help you get started with GPlately. Visit
 
 ## Command-line interface
 
-GPlately comes with a collection of useful command-line tools, each designed as a subcommand of GPlately. For example, the command `gplately list` shows a list of available reconstruction models. To view all the available tools, simply run `gplately -h`. For a detailed list of tools along with usage examples, visit [this page](https://github.com/GPlates/gplately/blob/master/gplately/commands/readme.md).
+GPlately comes with a collection of useful command-line tools, each designed as a subcommand of GPlately. For example, the command `gplately list` shows a list of available reconstruction models. To view all the available tools, simply run `gplately -h`. For a detailed list of the tools along with usage examples, visit [this page](https://github.com/GPlates/gplately/blob/master/gplately/commands/readme.md).
 
 """
 from .utils import dev_warning

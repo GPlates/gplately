@@ -6,7 +6,7 @@ GPlately comes with a suite of useful command line tools. These tools are design
 - [__combine__](#combine) -- combine feature collection files
 - [__filter__](#filter) -- filter feature collection by various criteria 
 - [__reset_feature_type__](#reset_feature_type) -- change feature type
-- [__agegrid (ag)__](#agegrid-(ag)) -- generate age grids
+- [__agegrid (ag)__](#agegrid-ag) -- generate age grids
 - [__fix_crossovers__](#fix_crossovers) -- fix crossovers
 - [__remove_rotations__](#remove_rotations) -- remove rotations by plate ID
 - [__cleanup_topologies__](#cleanup_topologies) -- remove unreferenced features

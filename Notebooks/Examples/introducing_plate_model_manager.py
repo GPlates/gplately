@@ -24,13 +24,15 @@ def main():
     #
     # download model "Muller2019" and put the files in folder "plate-model-repo"
     #
-    print("Files from model Muller2019: ")
-    print("****************************")
+    print("Folders/files in 'Muller2019' folder: ")
+    print("**************************************")
     model = pm_manager.get_model("Muller2019")
     model.set_data_dir("plate-model-repo")
     for layer in model.get_avail_layers():
         model.get_layer(layer)
-    os.system("ls -l plate-model-repo/muller2019")
+
+    # now let's see what are inside the "plate-model-repo/muller2019" folder
+    print(os.listdir("plate-model-repo/muller2019"))
     print()
 
     #
