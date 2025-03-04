@@ -18,7 +18,7 @@ GPlately comes with a suite of useful command line tools. These tools are design
 - [__subduction_convergence__](#subduction_convergence) -- calculate the convergence rates along subduction zones
 - [__gpmdb__](#gpmdb) -- download the paleomagnetic data and create GPlates-compatible VGP features 
 
-### **list**
+### 🟢 **list**
 
   Show a list of available plate reconstruction models. Run `gplately list -h` to see the details of this subcommand.
 
@@ -35,7 +35,7 @@ GPlately comes with a suite of useful command line tools. These tools are design
   - `docker run gplates/gplately gplately list`
   - `docker run gplates/gplately gplately list -m merdith2021`
 
-### **combine**
+### 🟢 **combine**
 
   Combine multiple feature collections into one. Run `gplately combine -h` to see the details of this subcommand.
 
@@ -44,7 +44,7 @@ GPlately comes with a suite of useful command line tools. These tools are design
   - `gplately combine input_file_1.shp input_file_2.gpmlz input_file_3.gpml output_file.gpmlz`
     (combine three feature collection files and save to the "output_file.gpmlz")
 
-### **filter**
+### 🟢 **filter**
 
   Filter feature collection by various criteria. Run `gplately filter -h` to see the details of this subcommand.
 
@@ -75,7 +75,7 @@ GPlately comes with a suite of useful command line tools. These tools are design
 
   Check out [this shell script](https://github.com/GPlates/gplately/blob/master/tests-dir/unittest/test_feature_filter.sh) for more `gplately filter` examples. 
 
-### **reset_feature_type**
+### 🟢 **reset_feature_type**
 
   Reset the feature type for the selected features. Run `gplately reset_feature_type -h` to see the details of this subcommand.
 
@@ -94,7 +94,7 @@ GPlately comes with a suite of useful command line tools. These tools are design
 
   Check out [this shell script](https://github.com/GPlates/gplately/blob/master/tests-dir/unittest/test_reset_feature_type.sh) for more `gplately reset_feature_type` examples. 
 
-### **agegrid (ag)**
+### 🟢 **agegrid (ag)**
 
   Generate age grids for a plate reconstruction model. Run `gplately agegrid -h` to see the details of this subcommand.
 
@@ -106,7 +106,7 @@ GPlately comes with a suite of useful command line tools. These tools are design
   - `gplately ag rotations.rot topologies.gpmlz output -c continental_polygons.gpmlz -e 0 -s 10`
     (create age grids from 10Ma to 0Ma with 1Myr increment using the specified reconstruction files)
 
-### **fix_crossovers**
+### 🟢 **fix_crossovers**
 
   Fixes crossovers in rotation file(s). Run `gplately fix_crossovers -h` to see the details of this subcommand.
 
@@ -115,7 +115,7 @@ GPlately comes with a suite of useful command line tools. These tools are design
   - `gplately fix_crossovers -d -c 0.01 -i 201 701 -- input_rotations1.rot input_rotations2.rot`
     (fix crossovers in two rotation files with a threshold 0.01 degree and ignore plate ID 201 and 701)
 
-### **remove_rotations**
+### 🟢 **remove_rotations**
 
   Remove one or more plate IDs from a rotation model (consisting of one or more rotation files). Run `gplately remove_rotations -h` to see the details of this subcommand.
 
@@ -124,7 +124,7 @@ GPlately comes with a suite of useful command line tools. These tools are design
   - `gplately remove_rotations -p 70 4 3 1 -o removed_ref_frames_ -- rotations.rot`
     (remove plate IDs 70,4,3 and 1 from a rotation file)
 
-### **cleanup_topologies**
+### 🟢 **cleanup_topologies**
 
   Remove any regular features not referenced by topological features. Run `gplately cleanup_topologies -h` to see the details of this subcommand.
 
@@ -133,7 +133,7 @@ GPlately comes with a suite of useful command line tools. These tools are design
   - `gplately cleanup_topologies -o cleanup_topologies_ -- topologies.gpml`
     (remove all features which are not referenced by any topological feature from topologies.gpml)
 
-### **convert_xy_to_gplates**
+### 🟢 **convert_xy_to_gplates**
 
   Converts geometry in one or more input ascii files (such as '.xy' files) to output files suitable for loading into GPlates. Run `gplately convert_xy_to_gplates -h` to see the details of this subcommand.
 
@@ -142,7 +142,7 @@ GPlately comes with a suite of useful command line tools. These tools are design
   - `gplately convert_xy_to_gplates -e shp -- input1.xy input2.xy`
     (convert two .xy file into a shapefile)
 
-### **diagnose_rotations**
+### 🟢 **diagnose_rotations**
 
   Diagnose one or more rotation files to check for inconsistencies. Run `gplately diagnose_rotations -h` to see the details of this subcommand.
 
@@ -151,7 +151,7 @@ GPlately comes with a suite of useful command line tools. These tools are design
   - `gplately diagnose_rotations input_rotations1.rot input_rotations2.rot`
     (check two rotation files and print the diagnostic results on screen)
 
-### **resolve_topologies**
+### 🟢 **resolve_topologies**
 
   Resolve topological plate polygons (and deforming networks) and saves (to separate files) the resolved topologies, and their boundary sections as subduction zones, mid-ocean ridges (ridge/transform) and others (not subduction zones or mid-ocean ridges). Run `gplately resolve_topologies -h` to see the details of this subcommand.
 
@@ -161,7 +161,7 @@ GPlately comes with a suite of useful command line tools. These tools are design
     (resolve topologies at 10Ma)
 
 
-### **rotation_tools**
+### 🟢 **rotation_tools**
 
   Calculate stage rotations between consecutive finite rotations in plate pairs. Run `gplately rotation_tools -h` to see the details of this subcommand.
 
@@ -170,7 +170,7 @@ GPlately comes with a suite of useful command line tools. These tools are design
   - `gplately rotation_tools -p 701 0 -o stage_ -- rotations.rot`
     (calculate stage rotations for moving plate 701 relative to the fixed plate 0)
 
-### **separate_ridge_transform_segments**
+### 🟢 **separate_ridge_transform_segments**
 
   Split the geometries of isochrons and mid-ocean ridges into ridge and transform segments. Run `gplately separate_ridge_transform_segments -h` to see the details of this subcommand.
 
@@ -179,7 +179,7 @@ GPlately comes with a suite of useful command line tools. These tools are design
   - `gplately separate_ridge_transform_segments -r rotations.rot -d 45 -s _ridges -t _transforms -- spreading_features.gpml`
     (pick out ridge and transform features from the file spreading_features.gpml)
 
-### **subduction_convergence**
+### 🟢 **subduction_convergence**
 
   Find the convergence rates along trenches (subduction zones) over time. Run `gplately subduction_convergence -h` to see the details of this subcommand.
 
@@ -188,7 +188,7 @@ GPlately comes with a suite of useful command line tools. These tools are design
   - `gplately subduction_convergence -r rotations.rot -m topologies.gpml -t 0 200 -i 1 -v 1 -d 0.5 -e xy -- convergence`
     (calculate the convergence rates along subduction zones from 200Ma to 0Ma)
 
-### **gpmdb**
+### 🟢 **gpmdb**
 
   Retrieve the paleomagnetic data from https://www.gpmdb.net, create GPlates-compatible VGP features and save the VGP features in a .gpmlz file. Run `gplately gpmdb -h` to see the details of this subcommand.
 

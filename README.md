@@ -18,12 +18,10 @@
 GPlately was created to accelerate spatio-temporal data analysis by leveraging [pyGPlates](https://www.gplates.org/docs/pygplates/index.html) and [PlateTectonicTools](https://github.com/EarthByte/PlateTectonicTools) within a simplified Python interface. This object-oriented package enables the reconstruction of data through deep geologic time (such as points, lines, polygons, and rasters), the interrogation of plate kinematic information (plate velocities, rates of subduction and seafloor spreading), the rapid comparison of multiple plate motion models, and the plotting of reconstructed output data on maps. All tools are designed to be parallel-safe, accelerating spatio-temporal analysis over multiple CPU processors.
 
 ![SeedPointGIF](https://raw.githubusercontent.com/GPlates/gplately/master/Notebooks/NotebookFiles/ReadMe_Files/muller19_seedpoints.gif)
+ 
+GPlately can be installed using either `pip` or `conda` (via the conda-forge channel). For detailed installation instructions, please refer to the [Installation](https://github.com/GPlates/gplately/tree/update-doc-examples-tests?tab=readme-ov-file#installation) section. Additionally, [Docker images](https://github.com/GPlates/gplately/tree/update-doc-examples-tests?tab=readme-ov-file#3-using-docker-) are available for your convenience.
 
-GPlately requires a working installation of pyGPlates, which is freely
-available at https://www.gplates.org/download.
-All major system architectures (e.g., Linux, macOS, Windows) are supported, and installation instructions
-are [well documented](https://www.gplates.org/docs/pygplates/pygplates_getting_started.html#installation).
-Sample data is also available from [EarthByte servers](https://www.earthbyte.org/category/resources/), which
+Sample data is available from [EarthByte servers](https://www.earthbyte.org/category/resources/), which
 include rasters, seafloor age grids, rotation files, and more to help you get started with plate reconstructions.
 
 #### Citation
@@ -46,7 +44,7 @@ eprint = {https://rmets.onlinelibrary.wiley.com/doi/pdf/10.1002/gdj3.185},
 
 ## Dependencies
 
-- [pyGPlates](https://www.gplates.org/docs/pygplates/pygplates_getting_started.html#installation)
+- [pyGPlates](https://www.gplates.org/docs/pygplates/pygplates_getting_started.html#installation) >= 1.0.0rc1
 - [plate-model-manager](https://pypi.org/project/plate-model-manager/) >= 1.2.2
 - [Shapely](https://shapely.readthedocs.io/en/stable/project.html#installing-shapely)
 - [NumPy](https://numpy.org/install/) > 1.16
@@ -64,64 +62,46 @@ eprint = {https://rmets.onlinelibrary.wiley.com/doi/pdf/10.1002/gdj3.185},
 
 ### 1. Using conda (recommended)
 
-You can install the latest stable public release of `GPlately` and all its dependencies using conda.
-This is the preferred method for installing `GPlately`, as it downloads binaries from the "conda-forge" channel.
+The latest stable public release of `GPlately` can be installed using conda from the "conda-forge" channel. The following commands will create a new conda environment called "my-gplately-conda-env" and install GPlately within that environment.
 
 ```sh
+conda create -n my-gplately-conda-env
+conda activate my-gplately-conda-env
 conda install -c conda-forge gplately
 ```
 
-#### Creating a new conda environment
-
-We recommend creating a new conda environment in which to install `GPlately`. This avoids any potential conflicts within your base Python environment. In the example below, we create a new environment called `my-env`.
-
-```sh
-conda create -n my-env
-conda activate my-env
-conda install -c conda-forge gplately
-```
-
-The `my-env` environment needs to be activated before using `GPlately`, i.e., `conda activate my-env`.
+✏️ If `conda` gets __stuck while solving the environment__ during the installation of `GPlately`, you can try using [micromamba](https://mamba.readthedocs.io/en/latest/user_guide/micromamba.html) instead.
 
 ### 2. Using pip
 
-Alternatively, you can install the latest stable public release of `GPlately` using the pip package manager.
+`GPlately` can also be installed using `pip`.
+
+🟢 Install the latest stable public release from [PyPI](https://pypi.org/project/gplately/)
 
 ```sh
 pip install gplately
 ```
 
-or from this GitHub repository:
+🟢 Install from [GitHub repository](https://github.com/GPlates/gplately.git) (if you need the latest code changes on GitHub)
 
 ```sh
 pip install git+https://github.com/GPlates/gplately.git
 ```
 
-#### Pull from repository
-
-**First-time installation:** To install the latest version of GPlately from a specific repository branch (e.g., `master`), run the following commands in your terminal:
+🟢 Install from a local folder (if you need local code changes)
 
 ```sh
-cd /directory-to-keep-gplately-files # go into the directory in which you'd like to keep the GPlately repository
 git clone https://github.com/GPlates/gplately.git gplately.git
-cd gplately.git # go into the root directory of your cloned gplately repository
+cd gplately.git # go into the folder created by "git clone" command
 git checkout master # check out the "master" branch or the name of branch you want
-git pull # fetch all recent code changes from the GitHub remote repository to your computer
-pip install . # alternatively, you can use "pip install -e ." to install gplately in editable mode
-```
-
-**Update installation:** To update your installation of GPlately by fetching the latest code from a specific repository branch (e.g., `master`), run the following commands in your terminal:
-
-```sh
-cd /path-to-gplately-repository # go into the root directory of your cloned gplately repository, such as ./gplately.git
-git checkout master # check out the "master" branch or the name of branch you want
-git pull # fetch all recent code changes from the GitHub remote repository to your computer
+git pull # fetch all recent code changes from the GitHub remote repository
+# make your local code changes 
 pip install . # alternatively, you can use "pip install -e ." to install gplately in editable mode
 ```
 
 ### 3. Using Docker 🐳
 
-👉 Run GPlately example notebooks with Docker
+👉 Run GPlately notebooks with Docker
 
 - `docker pull gplates/gplately`
 - `docker run --rm -ti -p 8888:8888  gplates/gplately`
@@ -134,7 +114,9 @@ pip install . # alternatively, you can use "pip install -e ." to install gplatel
 
 👉 Run your Python script with Docker
 
-- `docker run -it --rm -v "$PWD":/ws -w /ws gplates/gplately python my_script_to_run.py` (assume my_script_to_run.py is in the current working directory)
+- `docker run -it --rm -v THE_FULL_PATH_TO_YOUR_SCRIPT:/ws -w /ws gplates/gplately python my_script_to_run.py` 
+
+✏️ Replace __THE_FULL_PATH_TO_YOUR_SCRIPT__ with the full path to the folder containing your script file. In PowerShell, you can use "$PWD"  if your script is in the current working directory. On Linux or macOS, you can use \`pwd\` instead.
 
 Visit [this page](https://github.com/GPlates/gplately/tree/master/docker/README.md) for more details about using Docker with GPlately.
 
@@ -155,7 +137,7 @@ Visit [this page](https://github.com/GPlates/gplately/tree/master/docker/README.
 
 ## Sample workflows
 
-To see GPlately in action, launch a Jupyter Notebook environment and check out the [sample notebooks](./Notebooks):
+To see GPlately in action, launch a Jupyter Notebook environment and check out the [sample notebooks](https://github.com/GPlates/gplately/tree/master/Notebooks):
 
 - [**01 - Getting Started**](https://github.com/GPlates/gplately/blob/master/Notebooks/01-GettingStarted.ipynb): A brief overview of how to initialise GPlately's main objects
 - [**02 - Plate Reconstructions**](https://github.com/GPlates/gplately/blob/master/Notebooks/02-PlateReconstructions.ipynb): Setting up a `PlateReconstruction` object, reconstructing geological data through time
