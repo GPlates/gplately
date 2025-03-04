@@ -2835,7 +2835,11 @@ class Points(object):
         unique_plate_ids = np.unique(point_plate_ids)
         for unique_plate_id in unique_plate_ids:
             # Determine which points have the current unique plate ID.
-            unique_plate_id_point_indices = np.where(point_plate_ids == unique_plate_id)
+            unique_plate_id_point_indices = np.where(
+                point_plate_ids == unique_plate_id
+            )[
+                0
+            ]  # convert 1-tuple of 1D array to 1D array
             unique_plate_id_groups[unique_plate_id] = unique_plate_id_point_indices
         self._unique_plate_id_groups = unique_plate_id_groups
 
@@ -3265,12 +3269,10 @@ class Points(object):
         --------
         PlateReconstruction.get_point_velocities : Velocities of points calculated using topologies instead of plate IDs (assigned from static polygons).
         """
-        # Start with empty 2D arrays.
-        north_east_velocities = np.empty((0, 2))
+        # Start with empty arrays.
+        north_east_velocities = np.empty((self.size, 2))
         if return_reconstructed_points:
-            lat_lon_points = np.empty((0, 2))
-        if return_point_indices:
-            point_indices = np.empty(0, dtype=int)
+            lat_lon_points = np.empty((self.size, 2))
 
         # Determine time interval for velocity calculation.
         if (
@@ -3300,20 +3302,23 @@ class Points(object):
             from_time -= to_time
             to_time = 0
 
-        # Determine which points (indices) have appeared before (or at) 'time'.
-        valid_age_point_indices = np.where(self.age >= time)
+        # Determine which points are valid.
+        #
+        # These are those points that have appeared before (or at) 'time'
+        # (ie, have a time-of-appearance that's greater than or equal to 'time').
+        valid_mask = self.age >= time
 
+        # Iterate over groups of points with the same plate ID.
         for (
             plate_id,
             point_indices_with_plate_id,
         ) in self._unique_plate_id_groups.items():
 
-            # Determine which points (indices) with the current unique plate ID have appeared before (or at) 'time'
-            # (ie, have a time-of-appearance that's older or equal to 'time').
-            point_indices_with_plate_id = np.intersect1d(
-                point_indices_with_plate_id, valid_age_point_indices, assume_unique=True
-            )
-            # If none of the points (with the current unique plate ID) have appeared yet then skip to next unique plate ID.
+            # Determine which points (indices) with the current unique plate ID are valid.
+            point_indices_with_plate_id = point_indices_with_plate_id[
+                valid_mask[point_indices_with_plate_id]
+            ]
+            # If none of the points (with the current unique plate ID) are valid then skip to next unique plate ID.
             if point_indices_with_plate_id.size == 0:
                 continue
 
@@ -3359,44 +3364,33 @@ class Points(object):
                 )
             )
 
-            # Append velocities of points with the current unique plate ID as (north, east) components.
-            north_east_velocities_with_plate_id = [
+            # Write velocities of points with the current unique plate ID as (north, east) components.
+            north_east_velocities[point_indices_with_plate_id] = [
                 (ned.get_x(), ned.get_y())  # north, east
                 for ned in north_east_down_velocities_with_plate_id
             ]
-            north_east_velocities = np.concatenate(
-                (
-                    north_east_velocities,
-                    north_east_velocities_with_plate_id,
-                )
-            )
 
-            # Also Append the reconstructed points (if requested).
+            # Also write the reconstructed points (if requested).
             if return_reconstructed_points:
-                lat_lon_points_with_plate_id = [
+                lat_lon_points[point_indices_with_plate_id] = [
                     rpoint.to_lat_lon() for rpoint in reconstructed_points_with_plate_id
                 ]
-                lat_lon_points = np.concatenate(
-                    (lat_lon_points, lat_lon_points_with_plate_id)
-                )
 
-            # Also Append the point indices (if requested).
-            if return_point_indices:
-                point_indices = np.concatenate(
-                    (point_indices, point_indices_with_plate_id)
-                )
-
-        velocity_lons = north_east_velocities[:, 1]  # east
-        velocity_lats = north_east_velocities[:, 0]  # north
+        velocities = north_east_velocities[valid_mask]  # remove invalid points
+        velocity_lons = velocities[:, 1]  # east
+        velocity_lats = velocities[:, 0]  # north
 
         return_tuple = velocity_lons, velocity_lats
 
         if return_reconstructed_points:
-            rlons = lat_lon_points[:, 1]
-            rlats = lat_lon_points[:, 0]
+            rlonslats = lat_lon_points[valid_mask]  # remove invalid points
+            rlons = rlonslats[:, 1]
+            rlats = rlonslats[:, 0]
             return_tuple += (rlons, rlats)
 
         if return_point_indices:
+            all_point_indices = np.arange(self.size, dtype=int)
+            point_indices = all_point_indices[valid_mask]  # remove invalid points
             return_tuple += (point_indices,)
 
         return return_tuple
