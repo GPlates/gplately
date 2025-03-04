@@ -66,19 +66,19 @@ agegrid = Raster(model.get_raster(&quot;AgeGrids&quot;, time=100))
 <p>For more example code, a <a href="https://github.com/GPlates/gplately/blob/master/Notebooks/Examples/introducing_plate_model_manager.py">comprehensive example</a>
 on GitHub demonstrates how to use the PlateModelManager module in details. <a href="https://github.com/GPlates/gplately/blob/master/Notebooks/Examples/working_with_plate_model_manager.py">Another example</a>
 shows how to use the PlateModelManager module with GPlately.</p>
-<p>You may use the auxiliary functions to create the <code><a title="gplately.PlateReconstruction" href="#gplately.PlateReconstruction">PlateReconstruction</a></code> and <code><a title="gplately.PlotTopologies" href="#gplately.PlotTopologies">PlotTopologies</a></code> instances.</p>
+<p>You may use the auxiliary functions to create the <code><a title="gplately.PlateReconstruction" href="#gplately.PlateReconstruction">PlateReconstruction</a></code> and <code><a title="gplately.PlotTopologies" href="#gplately.PlotTopologies">PlotTopologies</a></code> objects.</p>
 <pre><code class="language-python">from gplately.auxiliary import get_gplot, get_plate_reconstruction
 
-# use the auxiliary function to create a PlateReconstruction instance
-plate_reconstruction_instance = get_plate_reconstruction(&quot;Muller2019&quot;)
+# use the auxiliary function to create a PlateReconstruction object
+plate_reconstruction_obj = get_plate_reconstruction(&quot;Muller2019&quot;)
 
-# use the auxiliary function to create a PlotTopologies instance
-plot_topologies_instance = get_gplot(&quot;Muller2019&quot;, time=140)
+# use the auxiliary function to create a PlotTopologies object
+plot_topologies_obj = get_gplot(&quot;Muller2019&quot;, time=140)
 
-# there is a PlateReconstruction instance inside a PlotTopologies instance.
-# so, in most cases a single get_gplot() call is enough.
-# you can get the PlateReconstruction instance from the PlotTopologies instance later.
-another_plate_reconstruction_instance = plot_topologies_instance.plate_reconstruction
+# there is a PlateReconstruction object inside the PlotTopologies object.
+# so, in most cases, a single get_gplot() call is enough.
+# you can get the PlateReconstruction object from a PlotTopologies object later, for example
+another_plate_reconstruction_obj = plot_topologies_instance.plate_reconstruction
 </code></pre>
 <h3 id="dataserver"><a href="https://gplates.github.io/gplately/download.html#gplately.download.DataServer">DataServer</a></h3>
 <p>The <code><a title="gplately.DataServer" href="#gplately.DataServer">DataServer</a></code> class allows users to automatically download and cache the necessary files for plate reconstructions to a designated folder on your system.
@@ -459,11 +459,11 @@ gplot = PlotTopologies(
     time=55,
 )
 </code></pre>
-<p>You may use the auxiliary functions to create a <code><a title="gplately.PlotTopologies" href="#gplately.PlotTopologies">PlotTopologies</a></code> instance.</p>
+<p>You may use the auxiliary functions to create a <code><a title="gplately.PlotTopologies" href="#gplately.PlotTopologies">PlotTopologies</a></code> object.</p>
 <pre><code class="language-python">from gplately.auxiliary import get_gplot
 
-# use the auxiliary function to create a PlotTopologies instance
-plot_topologies_instance = get_gplot(&quot;Muller2019&quot;, time=55)
+# use the auxiliary function to create a PlotTopologies object
+plot_topologies_obj = get_gplot(&quot;Muller2019&quot;, time=55)
 </code></pre>
 <p>The <a href="https://github.com/GPlates/gplately/blob/master/Notebooks/02-PlateReconstructions.ipynb">02-PlateReconstructions.ipynb</a> demonstrates in details
 how to use the <code><a title="gplately.PlotTopologies" href="#gplately.PlotTopologies">PlotTopologies</a></code> class.</p>
