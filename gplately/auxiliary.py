@@ -9,7 +9,7 @@ from .reconstruction import PlateReconstruction
 
 
 def get_plate_reconstruction(model: Union[str, PlateModel], model_repo_dir: str = "./"):
-    """Convenient function to return a PlateReconstruction object
+    """Convenient function to return a PlateReconstruction object. Check out the [usage example](https://gplates.github.io/gplately/dev-doc/#platemodelmanager).
 
     Parameters
     ----------
@@ -61,7 +61,7 @@ def get_gplot(
     time: Union[int, float] = 0,
     plot_engine: PlotEngine = CartopyPlotEngine(),
 ) -> PlotTopologies:
-    """Convenient function to return a PlotTopologies object
+    """Convenient function to return a PlotTopologies object. Check out the [usage example](https://gplates.github.io/gplately/dev-doc/#platemodelmanager).
 
     Parameters
     ----------
