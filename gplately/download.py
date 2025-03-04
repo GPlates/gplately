@@ -1075,9 +1075,11 @@ def get_feature_data(feature_data_id_string=None, verbose=True):
 
 
 class DataServer(object):
-    """Uses the [plate-model-manager](https://pypi.org/project/plate-model-manager/) to download plate reconstruction
-    feature data from plate models and other studies that are stored on web servers
-    (e.g. EarthByte's [webDAV server](https://repo.gplates.org/webdav/pmm/)).
+    """The DataServer class may be deprecated in the future.
+    We recommend using the newer [plate-model-manager](https://pypi.org/project/plate-model-manager/) module whenever possible.
+
+    The methods in this DataServer class download plate reconstruction models to the cache folder on your computer from
+    EarthByte's [WebDAV server](https://repo.gplates.org/webdav/pmm/).
 
     If the `DataServer` object and its methods are called for the first time, i.e. by:
 
@@ -1088,10 +1090,12 @@ class DataServer(object):
     object and method(s) are re-run, the files will be re-accessed from the cache provided they have not been
     moved or deleted.
 
-    [This page](https://gplates.github.io/gplately/dev-doc/#dataserver) contains a list of available plate reconstruction models. For more information about these plate models, visit [this EarthByte page](https://www.earthbyte.org/category/resources/data-models/global-regional-plate-motion-models/).
+    [This page](https://gplates.github.io/gplately/dev-doc/#dataserver) contains a list of available plate reconstruction models.
+    For more information about these plate models, visit this [EarthByte web page](https://www.earthbyte.org/category/resources/data-models/global-regional-plate-motion-models/).
 
-    You may also use `pmm ls` command to get more information about a model. For example, the command `pmm ls cao2024` shows details about model Cao2024.
-    You need `pip install plate-model-manager` before running this command.
+    You can also use the `pmm ls` command to retrieve more information about a model.
+    For instance, running `pmm ls cao2024` will display details about the "Cao2024" model.
+    Make sure to install the `plate-model-manager` module first by running `pip install plate-model-manager` before executing this command.
 
     """
 

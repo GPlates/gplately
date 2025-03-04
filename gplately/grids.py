@@ -15,7 +15,7 @@
 #    51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
 
-"""Tools for working with MaskedArray, ndarray and netCDF4 rasters, as well as
+"""This sub-module contains tools for working with MaskedArray, ndarray and netCDF4 rasters, as well as
 gridded-data.
 
 Some methods available in `grids`:
@@ -1557,9 +1557,9 @@ def _parse_extent_origin(extent, origin):
 
 
 class Raster(object):
-    """A class for working with raster data.
+    """The Raster class handles raster data.
 
-    `Raster`'s functionalities inclue sampling data at points using spline
+    `Raster`'s functionalities include sampling data at points using spline
     interpolation, resampling rasters with new X and Y-direction spacings and
     resizing rasters using new X and Y grid pixel resolutions. NaN-type data
     in rasters can be replaced with the values of their nearest valid

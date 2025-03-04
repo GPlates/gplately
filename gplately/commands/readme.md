@@ -2,21 +2,21 @@
 
 GPlately comes with a suite of useful command line tools. These tools are designed as GPlately subcommands. Run `gplately -h` to show the list of tools in a terminal window.
 
-- [__list__](#list) -- show all available reconstruction models
-- [__combine__](#combine) -- combine feature collection files
-- [__filter__](#filter) -- filter feature collection by various criteria 
-- [__reset_feature_type__](#reset_feature_type) -- change feature type
-- [__agegrid (ag)__](#agegrid-ag) -- generate age grids
-- [__fix_crossovers__](#fix_crossovers) -- fix crossovers
-- [__remove_rotations__](#remove_rotations) -- remove rotations by plate ID
-- [__cleanup_topologies__](#cleanup_topologies) -- remove unreferenced features
-- [__convert_xy_to_gplates__](#convert_xy_to_gplates) -- convert .xy files to a GPlates-compatible file
-- [__diagnose_rotations__](#diagnose_rotations) -- check rotation files for inconsistencies
-- [__resolve_topologies__](#resolve_topologies) -- resolve topologies at given times
-- [__rotation_tools__](#rotation_tools) -- calculate stage rotations  
-- [__separate_ridge_transform_segments__](#separate_ridge_transform_segments) -- pick out ridge and transform features
-- [__subduction_convergence__](#subduction_convergence) -- calculate the convergence rates along subduction zones
-- [__gpmdb__](#gpmdb) -- download the paleomagnetic data and create GPlates-compatible VGP features 
+- [__list__](#-list) -- show all available reconstruction models
+- [__combine__](#-combine) -- combine feature collection files
+- [__filter__](#-filter) -- filter feature collection by various criteria 
+- [__reset_feature_type__](#-reset_feature_type) -- change feature type
+- [__agegrid (ag)__](#-agegrid-ag) -- generate age grids
+- [__fix_crossovers__](#-fix_crossovers) -- fix crossovers
+- [__remove_rotations__](#-remove_rotations) -- remove rotations by plate ID
+- [__cleanup_topologies__](#-cleanup_topologies) -- remove unreferenced features
+- [__convert_xy_to_gplates__](#-convert_xy_to_gplates) -- convert .xy files to a GPlates-compatible file
+- [__diagnose_rotations__](#-diagnose_rotations) -- check rotation files for inconsistencies
+- [__resolve_topologies__](#-resolve_topologies) -- resolve topologies at given times
+- [__rotation_tools__](#-rotation_tools) -- calculate stage rotations  
+- [__separate_ridge_transform_segments__](#-separate_ridge_transform_segments) -- pick out ridge and transform features
+- [__subduction_convergence__](#-subduction_convergence) -- calculate the convergence rates along subduction zones
+- [__gpmdb__](#-gpmdb) -- download the paleomagnetic data and create GPlates-compatible VGP features 
 
 ### 🟢 **list**
 

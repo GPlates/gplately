@@ -15,16 +15,8 @@
 #    51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
 
-r"""Tools for manipulating GPML (`.gpml`, `.gpmlz`) files and
-`pygplates.Feature` and `pygplates.FeatureCollection` objects.
-
-The following functions are defined here:
-
-    - create_feature_dict
-    - extract_feature
-    - get_topological_references
-    - is_topological
-
+"""This sub-module contains functions for manipulating GPML (`.gpml`, `.gpmlz`) files, 
+as well as `pygplates.Feature` and `pygplates.FeatureCollection` objects.
 """
 import os
 

@@ -15,7 +15,7 @@
 #    51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
 
-"""Tools for reconstructing and plotting geological features and feature data through time.
+"""This sub-module contains tools for reconstructing and plotting geological features and feature data through time.
 
 Methods in `plot.py` reconstruct geological features using 
 [pyGPlates' `reconstruct` function](https://www.gplates.org/docs/pygplates/generated/pygplates.reconstruct.html),

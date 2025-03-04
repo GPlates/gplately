@@ -15,8 +15,8 @@
 #    51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
 
-"""Tools to execute routines efficiently by parallelising 
-them over several threads. This uses multiple processing units.
+"""This sub-module contains tools for efficiently executing routines by parallelizing them across multiple threads, 
+utilizing multiple processing units."
 """
 from multiprocessing import Pool, Process, Queue, cpu_count
 

@@ -15,7 +15,7 @@
 #    51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
 
-"""Tools for converting PyGPlates or GPlately geometries to Shapely geometries for mapping (and vice versa). 
+"""This sub-module contains tools for converting PyGPlates or GPlately geometries to Shapely geometries for mapping (and vice versa). 
 
 Supported PyGPlates geometries inherit from the following classes:
 

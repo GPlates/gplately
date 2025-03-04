@@ -114,9 +114,9 @@ pip install . # alternatively, you can use "pip install -e ." to install gplatel
 
 👉 Run your Python script with Docker
 
-- `docker run -it --rm -v THE_FULL_PATH_TO_YOUR_SCRIPT:/ws -w /ws gplates/gplately python my_script_to_run.py` 
+- `docker run -it --rm -v THE_FULL_PATH_TO_YOUR_SCRIPT_FOLDER:/ws -w /ws gplates/gplately python my_script_to_run.py` 
 
-✏️ Replace __THE_FULL_PATH_TO_YOUR_SCRIPT__ with the full path to the folder containing your script file. In PowerShell, you can use "$PWD"  if your script is in the current working directory. On Linux or macOS, you can use \`pwd\` instead.
+✏️ Replace __THE_FULL_PATH_TO_YOUR_SCRIPT_FOLDER__ with the full path to the folder containing your script file. In PowerShell, you can use "$PWD"  if your script is in the current working directory. On Linux or macOS, you can use \`pwd\` instead.
 
 Visit [this page](https://github.com/GPlates/gplately/tree/master/docker/README.md) for more details about using Docker with GPlately.
 
