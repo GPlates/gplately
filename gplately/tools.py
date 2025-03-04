@@ -249,25 +249,31 @@ def plate_surface_depth(age, model="Richards2020"):
     return depth
 
 
-def points_to_features(lons, lats, plate_ID=None):
+def points_to_features(lons, lats, plate_ID=None, *, return_points=False):
     """Creates point features represented on a unit length sphere in 3D cartesian coordinates from a latitude and
     longitude list.
 
     Parameters
     ----------
-    lons : list
+    lons : int or list
         The longitudes of needed point features.
 
-    lats : list
+    lats : int or list
         The latitudes of needed point features.
 
-    plate_ID : int, default=None
-        The reconstruction plate ID to assign to the needed point features.
+    plate_ID : int or list, default=None
+        The reconstruction plate ID(s) to assign to the needed point features.
+
+    return_points : bool, default=False
+        Whether to also return the points (converted from latitude/longitude to `pygplates.PointOnSphere`).
 
     Returns
     -------
-    point_features : list
-        Topological point features resolved from the given lists of lat-lon point coordinates.
+    point_features : pygplates.Feature, or list of pygplates.Feature
+        Point features (of type `pygplates.Feature`) created from the given lists of lat-lon point coordinates.
+    points : pygplates.PointOnSphere, or list of pygplates.PointOnSphere
+        Points (of type `pygplates.PointOnSphere`) created from the given lists of lat-lon point coordinates.
+        Points are only returned if `return_points` is True.
     """
     try:
         len(lons)
@@ -290,18 +296,37 @@ def points_to_features(lons, lats, plate_ID=None):
     except TypeError:
         plate_ID = [plate_ID] * len(lons)
 
+    if len(plate_ID) != len(lats):
+        raise ValueError(
+            "'plate_ID' must be same length as 'lons' and 'lats'"
+            + " ({} != {})".format(len(plate_ID), len(lats))
+        )
+
     # create point features
     point_features = []
+    if return_points:
+        points = []
     for lon, lat, pid in zip(lons, lats, plate_ID):
+        point = pygplates.PointOnSphere(float(lat), float(lon))
+        if return_points:
+            points.append(point)
+
         point_feature = pygplates.Feature()
-        point_feature.set_geometry(pygplates.PointOnSphere(float(lat), float(lon)))
+        point_feature.set_geometry(point)
         if pid is not None:
             point_feature.set_reconstruction_plate_id(pid)
         point_features.append(point_feature)
 
     if len(point_features) == 1:
-        return point_features[0]
-    return point_features
+        if return_points:
+            return point_features[0], points[0]
+        else:
+            return point_features[0]
+
+    if return_points:
+        return point_features, points
+    else:
+        return point_features
 
 
 def extract_feature_lonlat(features):

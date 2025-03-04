@@ -19,6 +19,7 @@ logger.info("TEST LOG")
 # We will test GPlately functionalities on the Müller et al. (2019) plate reconstruction
 # model at 0 and 100 Ma.
 reconstruction_times = [0, 100]
+anchor_plate_ids = [0, 701]
 gridding_times = [249.0, 250.0]
 pt_lon = np.array([-155.4696, 164.3])
 pt_lat = np.array([19.8202, 53.5])
