@@ -5,7 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1">
 <meta name="generator" content="pdoc3 0.11.1">
 <title>gplately.grids API documentation</title>
-<meta name="description" content="Tools for working with MaskedArray, ndarray and netCDF4 rasters, as well as
+<meta name="description" content="This sub-module contains tools for working with MaskedArray, ndarray and netCDF4 rasters, as well as
 gridded-data …">
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/13.0.0/sanitize.min.css" integrity="sha512-y1dtMcuvtTMJc1yPgEqF0ZjQbhnc/bFhyvIyVNb9Zk5mIGtqVaAB1Ttl28su8AvFMOY0EwRbAe+HCLqj6W7/KA==" crossorigin>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/13.0.0/typography.min.css" integrity="sha512-Y1DYSb995BAfxobCkKepB1BqJJTPrOp3zPL74AWFugHHmmdcvO+C48WLrUOlhGMc0QG7AE3f7gmvvcrmX2fDoA==" crossorigin>
@@ -28,7 +28,7 @@ hljs.highlightAll();
 <h1 class="title">Module <code>gplately.grids</code></h1>
 </header>
 <section id="section-intro">
-<p>Tools for working with MaskedArray, ndarray and netCDF4 rasters, as well as
+<p>This sub-module contains tools for working with MaskedArray, ndarray and netCDF4 rasters, as well as
 gridded-data.</p>
 <p>Some methods available in <code>grids</code>:</p>
 <ul>
@@ -472,8 +472,8 @@ saved netcdf file.</dd>
 <span>(</span><span>data=None, plate_reconstruction=None, extent='global', realign=False, resample=None, resize=None, time=0.0, origin=None, x_dimension_name: str = '', y_dimension_name: str = '', data_variable_name: str = '', **kwargs)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>A class for working with raster data.</p>
-<p><code><a title="gplately.grids.Raster" href="#gplately.grids.Raster">Raster</a></code>'s functionalities inclue sampling data at points using spline
+<div class="desc"><p>The Raster class handles raster data.</p>
+<p><code><a title="gplately.grids.Raster" href="#gplately.grids.Raster">Raster</a></code>'s functionalities include sampling data at points using spline
 interpolation, resampling rasters with new X and Y-direction spacings and
 resizing rasters using new X and Y grid pixel resolutions. NaN-type data
 in rasters can be replaced with the values of their nearest valid
@@ -598,9 +598,9 @@ Otherwise, the program will guess. The result may/may not be correct.</dd>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class Raster(object):
-    &#34;&#34;&#34;A class for working with raster data.
+    &#34;&#34;&#34;The Raster class handles raster data.
 
-    `Raster`&#39;s functionalities inclue sampling data at points using spline
+    `Raster`&#39;s functionalities include sampling data at points using spline
     interpolation, resampling rasters with new X and Y-direction spacings and
     resizing rasters using new X and Y grid pixel resolutions. NaN-type data
     in rasters can be replaced with the values of their nearest valid

@@ -523,21 +523,17 @@ how to set up and use the <code><a title="gplately.SeafloorGrid" href="#gplately
 </dd>
 <dt><code class="name"><a title="gplately.geometry" href="geometry.html">gplately.geometry</a></code></dt>
 <dd>
-<div class="desc"><p>Tools for converting PyGPlates or GPlately geometries to Shapely geometries for mapping (and vice versa) …</p></div>
+<div class="desc"><p>This sub-module contains tools for converting PyGPlates or GPlately geometries to Shapely geometries for mapping (and vice versa) …</p></div>
 </dd>
 <dt><code class="name"><a title="gplately.gpml" href="gpml.html">gplately.gpml</a></code></dt>
 <dd>
-<div class="desc"><p>Tools for manipulating GPML (<code>.<a title="gplately.gpml" href="gpml.html">gplately.gpml</a></code>, <code>.gpmlz</code>) files and
-<code>pygplates.Feature</code> and <code>pygplates.FeatureCollection</code> objects …</p></div>
+<div class="desc"><p>This sub-module contains functions for manipulating GPML (<code>.<a title="gplately.gpml" href="gpml.html">gplately.gpml</a></code>, <code>.gpmlz</code>) files,
+as well as <code>pygplates.Feature</code> and <code>pygplates.FeatureCollection</code> …</p></div>
 </dd>
 <dt><code class="name"><a title="gplately.grids" href="grids.html">gplately.grids</a></code></dt>
 <dd>
-<div class="desc"><p>Tools for working with MaskedArray, ndarray and netCDF4 rasters, as well as
+<div class="desc"><p>This sub-module contains tools for working with MaskedArray, ndarray and netCDF4 rasters, as well as
 gridded-data …</p></div>
-</dd>
-<dt><code class="name"><a title="gplately.mapping" href="mapping/index.html">gplately.mapping</a></code></dt>
-<dd>
-<div class="desc"></div>
 </dd>
 <dt><code class="name"><a title="gplately.oceans" href="oceans.html">gplately.oceans</a></code></dt>
 <dd>
@@ -547,25 +543,25 @@ and other oceanic data from the <code><a title="gplately.PlateReconstruction" hr
 </dd>
 <dt><code class="name"><a title="gplately.parallel" href="parallel.html">gplately.parallel</a></code></dt>
 <dd>
-<div class="desc"><p>Tools to execute routines efficiently by parallelising
-them over several threads. This uses multiple processing units.</p></div>
+<div class="desc"><p>This sub-module contains tools for efficiently executing routines by parallelizing them across multiple threads,
+utilizing multiple processing units."</p></div>
 </dd>
 <dt><code class="name"><a title="gplately.plot" href="plot.html">gplately.plot</a></code></dt>
 <dd>
-<div class="desc"><p>Tools for reconstructing and plotting geological features and feature data through time …</p></div>
+<div class="desc"><p>This sub-module contains tools for reconstructing and plotting geological features and feature data through time …</p></div>
 </dd>
 <dt><code class="name"><a title="gplately.ptt" href="ptt/index.html">gplately.ptt</a></code></dt>
 <dd>
-<div class="desc"><p>Plate Tectonic Tools …</p></div>
+<div class="desc"><p>"ptt" stands for Plate Tectonics Tools …</p></div>
 </dd>
 <dt><code class="name"><a title="gplately.reconstruction" href="reconstruction.html">gplately.reconstruction</a></code></dt>
 <dd>
-<div class="desc"><p>Tools that wrap up pyGPlates and Plate Tectonic Tools functionalities for reconstructing features,
-working with point data, and calculating plate …</p></div>
+<div class="desc"><p>This sub-module contains tools that wrap up pyGPlates and Plate Tectonic Tools functionalities for reconstructing features,
+working with point data, …</p></div>
 </dd>
 <dt><code class="name"><a title="gplately.spatial" href="spatial.html">gplately.spatial</a></code></dt>
 <dd>
-<div class="desc"><p>Spatial tools for calculating distances on the Earth …</p></div>
+<div class="desc"><p>This sub-module contains spatial tools for calculating distances on the Earth.</p></div>
 </dd>
 <dt><code class="name"><a title="gplately.tools" href="tools.html">gplately.tools</a></code></dt>
 <dd>
@@ -589,9 +585,10 @@ working with point data, and calculating plate …</p></div>
 <span>(</span><span>file_collection, data_dir=None, verbose=True)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>Uses the <a href="https://pypi.org/project/plate-model-manager/">plate-model-manager</a> to download plate reconstruction
-feature data from plate models and other studies that are stored on web servers
-(e.g. EarthByte's <a href="https://repo.gplates.org/webdav/pmm/">webDAV server</a>).</p>
+<div class="desc"><p>The DataServer class may be deprecated in the future.
+We recommend using the newer <a href="https://pypi.org/project/plate-model-manager/">plate-model-manager</a> module whenever possible.</p>
+<p>The methods in this DataServer class download plate reconstruction models to the cache folder on your computer from
+EarthByte's <a href="https://repo.gplates.org/webdav/pmm/">WebDAV server</a>.</p>
 <p>If the <code><a title="gplately.DataServer" href="#gplately.DataServer">DataServer</a></code> object and its methods are called for the first time, i.e. by:</p>
 <pre><code># string identifier to access the Muller et al. 2019 model
 gDownload = gplately.download.DataServer("Muller2019")
@@ -599,9 +596,11 @@ gDownload = gplately.download.DataServer("Muller2019")
 <p>all requested files are downloaded into the user's 'gplately' cache folder only <em>once</em>. If the same
 object and method(s) are re-run, the files will be re-accessed from the cache provided they have not been
 moved or deleted.</p>
-<p><a href="https://gplates.github.io/gplately/dev-doc/#dataserver">This page</a> contains a list of available plate reconstruction models. For more information about these plate models, visit <a href="https://www.earthbyte.org/category/resources/data-models/global-regional-plate-motion-models/">this EarthByte page</a>.</p>
-<p>You may also use <code>pmm ls</code> command to get more information about a model. For example, the command <code>pmm ls cao2024</code> shows details about model Cao2024.
-You need <code>pip install plate-model-manager</code> before running this command.</p>
+<p><a href="https://gplates.github.io/gplately/dev-doc/#dataserver">This page</a> contains a list of available plate reconstruction models.
+For more information about these plate models, visit this <a href="https://www.earthbyte.org/category/resources/data-models/global-regional-plate-motion-models/">EarthByte web page</a>.</p>
+<p>You can also use the <code>pmm ls</code> command to retrieve more information about a model.
+For instance, running <code>pmm ls cao2024</code> will display details about the "Cao2024" model.
+Make sure to install the <code>plate-model-manager</code> module first by running <code>pip install plate-model-manager</code> before executing this command.</p>
 <h2 id="parameters">Parameters</h2>
 <dl>
 <dt><strong><code>file_collection</code></strong> :&ensp;<code>str</code></dt>
@@ -614,9 +613,11 @@ You need <code>pip install plate-model-manager</code> before running this comman
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class DataServer(object):
-    &#34;&#34;&#34;Uses the [plate-model-manager](https://pypi.org/project/plate-model-manager/) to download plate reconstruction
-    feature data from plate models and other studies that are stored on web servers
-    (e.g. EarthByte&#39;s [webDAV server](https://repo.gplates.org/webdav/pmm/)).
+    &#34;&#34;&#34;The DataServer class may be deprecated in the future.
+    We recommend using the newer [plate-model-manager](https://pypi.org/project/plate-model-manager/) module whenever possible.
+
+    The methods in this DataServer class download plate reconstruction models to the cache folder on your computer from
+    EarthByte&#39;s [WebDAV server](https://repo.gplates.org/webdav/pmm/).
 
     If the `DataServer` object and its methods are called for the first time, i.e. by:
 
@@ -627,10 +628,12 @@ You need <code>pip install plate-model-manager</code> before running this comman
     object and method(s) are re-run, the files will be re-accessed from the cache provided they have not been
     moved or deleted.
 
-    [This page](https://gplates.github.io/gplately/dev-doc/#dataserver) contains a list of available plate reconstruction models. For more information about these plate models, visit [this EarthByte page](https://www.earthbyte.org/category/resources/data-models/global-regional-plate-motion-models/).
+    [This page](https://gplates.github.io/gplately/dev-doc/#dataserver) contains a list of available plate reconstruction models.
+    For more information about these plate models, visit this [EarthByte web page](https://www.earthbyte.org/category/resources/data-models/global-regional-plate-motion-models/).
 
-    You may also use `pmm ls` command to get more information about a model. For example, the command `pmm ls cao2024` shows details about model Cao2024.
-    You need `pip install plate-model-manager` before running this command.
+    You can also use the `pmm ls` command to retrieve more information about a model.
+    For instance, running `pmm ls cao2024` will display details about the &#34;Cao2024&#34; model.
+    Make sure to install the `plate-model-manager` module first by running `pip install plate-model-manager` before executing this command.
 
     &#34;&#34;&#34;
 
@@ -5065,7 +5068,7 @@ Note that this parameter can only be specified if <code>use_ptt</code> is <code>
 </dd>
 <dt id="gplately.PlotTopologies"><code class="flex name class">
 <span>class <span class="ident">PlotTopologies</span></span>
-<span>(</span><span>plate_reconstruction, coastlines=None, continents=None, COBs=None, time=None, anchor_plate_id=None, plot_engine: <a title="gplately.mapping.plot_engine.PlotEngine" href="mapping/plot_engine.html#gplately.mapping.plot_engine.PlotEngine">PlotEngine</a> = &lt;gplately.mapping.cartopy_plot.CartopyPlotEngine object&gt;)</span>
+<span>(</span><span>plate_reconstruction, coastlines=None, continents=None, COBs=None, time=None, anchor_plate_id=None, plot_engine: gplately.mapping.plot_engine.PlotEngine = &lt;gplately.mapping.cartopy_plot.CartopyPlotEngine object&gt;)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>A class with tools to read, reconstruct and plot topology features at specific
@@ -10502,8 +10505,8 @@ to define the "from" and "to" reference frames.</dd>
 <span>(</span><span>data=None, plate_reconstruction=None, extent='global', realign=False, resample=None, resize=None, time=0.0, origin=None, x_dimension_name: str = '', y_dimension_name: str = '', data_variable_name: str = '', **kwargs)</span>
 </code></dt>
 <dd>
-<div class="desc"><p>A class for working with raster data.</p>
-<p><code><a title="gplately.Raster" href="#gplately.Raster">Raster</a></code>'s functionalities inclue sampling data at points using spline
+<div class="desc"><p>The Raster class handles raster data.</p>
+<p><code><a title="gplately.Raster" href="#gplately.Raster">Raster</a></code>'s functionalities include sampling data at points using spline
 interpolation, resampling rasters with new X and Y-direction spacings and
 resizing rasters using new X and Y grid pixel resolutions. NaN-type data
 in rasters can be replaced with the values of their nearest valid
@@ -10628,9 +10631,9 @@ Otherwise, the program will guess. The result may/may not be correct.</dd>
 <span>Expand source code</span>
 </summary>
 <pre><code class="python">class Raster(object):
-    &#34;&#34;&#34;A class for working with raster data.
+    &#34;&#34;&#34;The Raster class handles raster data.
 
-    `Raster`&#39;s functionalities inclue sampling data at points using spline
+    `Raster`&#39;s functionalities include sampling data at points using spline
     interpolation, resampling rasters with new X and Y-direction spacings and
     resizing rasters using new X and Y grid pixel resolutions. NaN-type data
     in rasters can be replaced with the values of their nearest valid
@@ -13921,7 +13924,6 @@ other general z-values are saved to a gridding input file (.npz).</p></div>
 <li><code><a title="gplately.geometry" href="geometry.html">gplately.geometry</a></code></li>
 <li><code><a title="gplately.gpml" href="gpml.html">gplately.gpml</a></code></li>
 <li><code><a title="gplately.grids" href="grids.html">gplately.grids</a></code></li>
-<li><code><a title="gplately.mapping" href="mapping/index.html">gplately.mapping</a></code></li>
 <li><code><a title="gplately.oceans" href="oceans.html">gplately.oceans</a></code></li>
 <li><code><a title="gplately.parallel" href="parallel.html">gplately.parallel</a></code></li>
 <li><code><a title="gplately.plot" href="plot.html">gplately.plot</a></code></li>
