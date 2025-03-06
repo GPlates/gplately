@@ -3321,7 +3321,9 @@ class Points(object):
             This is only used to calculate velocities (strain rates always use ``pygplates.Earth.equatorial_radius_in_kms``).
 
         anchor_plate_id : int, optional
-            Anchor plate ID. Defaults to the current anchor plate ID of the internal `PlateReconstruction` object (its `anchor_plate_id` attribute).
+            Anchor plate used to reconstruct the points and calculate velocities at their locations.
+            By default, reconstructions are made with respect to `self.anchor_plate_id`
+            (which is the anchor plate that the initial points at the initial time are relative to).
 
         return_reconstructed_points : bool, default=False
             Return the reconstructed points (as longitude and latitude arrays) in addition to the velocities.
@@ -3343,6 +3345,7 @@ class Points(object):
         point_indices : ndarray
             Only provided if `return_point_indices` is True.
             The indices of the returned points (at which velocities are calculated).
+            These are indices into `self.lons`, `self.lats`, `self.plate_id` and `self.age`.
             This array is the same size as `velocity_lons` and `velocity_lats`.
 
         Notes
@@ -3358,6 +3361,9 @@ class Points(object):
         --------
         PlateReconstruction.get_point_velocities : Velocities of points calculated using topologies instead of plate IDs (assigned from static polygons).
         """
+        if anchor_plate_id is None:
+            anchor_plate_id = self.anchor_plate_id
+
         # Start with empty arrays.
         north_east_velocities = np.empty((self.size, 2))
         if return_reconstructed_points:
@@ -3423,21 +3429,29 @@ class Points(object):
                 )
             )
 
-            # Reconstruct the points if the requested time ('time') is not the initial time ('self.time').
+            # First reconstruct the internal points from the initial time ('self.time') to present day using
+            # our internal anchor plate ID (the same anchor plate used in '__init__').
+            # Then reconstruct from present day to 'time' using the *requested* anchor plate ID.
             #
             # Note 'self.points' (and hence 'reconstructed_points_with_plate_id') are the locations at 'self.time'
-            #      (just like 'self.lons' and 'self.lats'). So if 'self.time != time' then we need to reconstruct
-            #      the points from 'self.time' to 'time' before calculating velocities at those locations.
-            if pygplates.GeoTimeInstant(self.time) != time:  # epsilon comparison
-                reconstruct_equivalent_stage_rotation = (
-                    self.plate_reconstruction.rotation_model.get_rotation(
-                        time, plate_id, self.time, anchor_plate_id=anchor_plate_id
-                    )
+            #      (just like 'self.lons' and 'self.lats').
+            reconstruct_rotation = (
+                self.plate_reconstruction.rotation_model.get_rotation(
+                    to_time=time,
+                    moving_plate_id=plate_id,
+                    from_time=0,
+                    anchor_plate_id=anchor_plate_id,
                 )
-                reconstructed_points_with_plate_id = (
-                    reconstruct_equivalent_stage_rotation
-                    * reconstructed_points_with_plate_id
+                * self.plate_reconstruction.rotation_model.get_rotation(
+                    to_time=0,
+                    moving_plate_id=plate_id,
+                    from_time=self.time,
+                    anchor_plate_id=self.anchor_plate_id,
                 )
+            )
+            reconstructed_points_with_plate_id = (
+                reconstruct_rotation * reconstructed_points_with_plate_id
+            )
 
             velocity_vectors_with_plate_id = pygplates.calculate_velocities(
                 reconstructed_points_with_plate_id,
