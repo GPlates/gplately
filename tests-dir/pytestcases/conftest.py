@@ -21,6 +21,7 @@ logger.info("TEST LOG")
 reconstruction_times = [0, 100]
 anchor_plate_ids = [0, 701]
 gridding_times = [249.0, 250.0]
+# Longitude and latitude of the Hawaiian-Emperor Seamount chain seed points.
 pt_lon = np.array([-155.4696, 164.3])
 pt_lat = np.array([19.8202, 53.5])
 test_geometry_n_points = 1000
@@ -119,16 +120,21 @@ def gplately_plot_topologies_object(
 
 
 @pytest.fixture(scope="module")
-def gplately_points_object(gplately_plate_reconstruction_object):
+def gplately_points_lonlat():
+    # Longitudes and latitudes of the Hawaiian-Emperor Seamount chain seed points.
+    return pt_lon, pt_lat
+
+
+@pytest.fixture(scope="module")
+def gplately_points_object(
+    gplately_plate_reconstruction_object, gplately_points_lonlat
+):
     model = gplately_plate_reconstruction_object
+    lons, lats = gplately_points_lonlat
     time = 0  # Ma, will change to 100 Ma in test 2.
 
-    # For example: Longitude and latitude of the Hawaiian-Emperor Seamount chain seed points
-    pt_lon = np.array([-155.4696, 164.3])
-    pt_lat = np.array([19.8202, 53.5])
-
     # Call the Points object: pass the PlateReconstruction object, and the latitudes and longitudes of the seed points.
-    gpts = gplately.Points(model, pt_lon, pt_lat)
+    gpts = gplately.Points(model, lons, lats, time)
     return gpts
 
 

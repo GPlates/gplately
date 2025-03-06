@@ -2,11 +2,13 @@ import pytest
 import pygplates
 import gplately
 import numpy as np
-from conftest import reconstruction_times, anchor_plate_ids
 from conftest import (
-    gplately_points_object,
+    anchor_plate_ids,
     gplately_plate_reconstruction_object,
+    gplately_points_lonlat,
+    gplately_points_object,
     muller_2019_model,
+    reconstruction_times,
 )
 
 
@@ -93,30 +95,41 @@ def test_point_creation(muller_2019_model):
         with pytest.raises(AttributeError):
             gpts.anchor_plate_id = 801
 
-        # Reconstruct to 100 Ma.
-        #
-        # Note: If we don't specify the anchor plate then it will default to 701.
-        rlons_100, rlats_100 = gpts.reconstruct(100, return_array=True)
-        # Note: This data was verified using GPlates.
-        assert rlons_100 == pytest.approx([-99.22843546, -136.30698742])
-        assert rlats_100 == pytest.approx([-28.44815591, 0.20291823])
-        #
-        # Test anchor plate zero (ie, a non-default anchor plate for 'gpts').
-        rlons_100, rlats_100 = gpts.reconstruct(
-            100, anchor_plate_id=0, return_array=True
-        )
-        # Note: This data was verified using GPlates.
-        assert rlons_100 == pytest.approx([-117.22543964, -150.55606233])
-        assert rlats_100 == pytest.approx([-3.62350339, 28.85941415])
+        for return_array in (False, True):
+            # Reconstruct to 100 Ma.
+            #
+            # Note: If we don't specify the anchor plate then it will default to 701.
+            rlonslats = gpts.reconstruct(100, return_array=return_array)
+            if return_array:
+                rlons_100, rlats_100 = rlonslats
+            else:
+                rlons_100, rlats_100 = rlonslats.lons, rlonslats.lats
+            # Note: This data was verified using GPlates.
+            assert rlons_100 == pytest.approx([-99.22843546, -136.30698742])
+            assert rlats_100 == pytest.approx([-28.44815591, 0.20291823])
+            #
+            # Test anchor plate zero (ie, a non-default anchor plate for 'gpts').
+            rlonslats = gpts.reconstruct(
+                100, anchor_plate_id=0, return_array=return_array
+            )
+            if return_array:
+                rlons_100, rlats_100 = rlonslats
+            else:
+                rlons_100, rlats_100 = rlonslats.lons, rlonslats.lats
+            # Note: This data was verified using GPlates.
+            assert rlons_100 == pytest.approx([-117.22543964, -150.55606233])
+            assert rlats_100 == pytest.approx([-3.62350339, 28.85941415])
 
 
 # POINTS RECONSTRUCTION
 @pytest.mark.parametrize("time", reconstruction_times)
 @pytest.mark.parametrize("anchor_plate_id", anchor_plate_ids)
-def test_point_reconstruction(time, anchor_plate_id, gplately_points_object):
-    rlons, rlats = gplately_points_object.reconstruct(
-        time, anchor_plate_id=anchor_plate_id, return_array=True
-    )
+def test_point_reconstruction(
+    time,
+    anchor_plate_id,
+    gplately_plate_reconstruction_object,
+    gplately_points_lonlat,
+):
     # Dict of (time, anchor plate ID) to (rlons, rlats).
     #
     # Note: This data was verified using GPlates.
@@ -126,9 +139,86 @@ def test_point_reconstruction(time, anchor_plate_id, gplately_points_object):
         (100, 0): ([-117.22543964, -150.55606233], [-3.62350339, 28.85941415]),
         (100, 701): ([-99.22843546, -136.30698742], [-28.44815591, 0.20291823]),
     }
-    approx_rlons, approx_rlats = approx_rlons_rlats_dict[time, anchor_plate_id]
-    assert rlons == pytest.approx(approx_rlons)
-    assert rlats == pytest.approx(approx_rlats)
+
+    # Create points that:
+    # 1. exist for all time,
+    # 2. exist back to 50 Ma,
+    # 3. have ages assigned using the model's static polygons.
+    for age in (np.inf, 50, None):
+
+        lons, lats = gplately_points_lonlat
+        gpts = gplately.Points(
+            gplately_plate_reconstruction_object,
+            lons=lons,
+            lats=lats,
+            age=age,
+        )
+
+        approx_rlons, approx_rlats = approx_rlons_rlats_dict[time, anchor_plate_id]
+        approx_point_indices = (0, 1)
+
+        if age is None:
+            # Ages were assigned. The first point assigned 83 Ma. The second assigned 100 Ma.
+            # So, at 100 Ma, only the second point will be in the output.
+            if time == 100:
+                # Remove first point.
+                approx_rlons = np.delete(approx_rlons, 0)
+                approx_rlats = np.delete(approx_rlats, 0)
+                approx_point_indices = approx_point_indices[1:]
+        elif age == 50:
+            # Both points appeared at 50 Ma.
+            # So, at 100 Ma, neither point will be in the output.
+            if time == 100:
+                approx_rlons = np.delete(approx_rlons, (0, 1))
+                approx_rlats = np.delete(approx_rlats, (0, 1))
+                approx_point_indices = ()
+
+        for return_array in (False, True):
+            for return_point_indices in (False, True):
+                returned_object = gpts.reconstruct(
+                    time,
+                    anchor_plate_id=anchor_plate_id,
+                    return_array=return_array,
+                    return_point_indices=return_point_indices,
+                )
+                if return_array:
+                    if return_point_indices:
+                        rlons, rlats, point_indices = returned_object
+                    else:
+                        rlons, rlats = returned_object
+                else:
+                    if return_point_indices:
+                        rpoints, point_indices = returned_object
+                        rlons, rlats = rpoints.lons, rpoints.lats
+                    else:
+                        rpoints = returned_object
+                        rlons, rlats = rpoints.lons, rpoints.lats
+                assert rlons == pytest.approx(approx_rlons)
+                assert rlats == pytest.approx(approx_rlats)
+                if return_point_indices:
+                    assert (point_indices == approx_point_indices).all()
+                # If 'return_array' is False then we have a Points object.
+                # Try reconstructing that, in turn, to 'time'.
+                # We should get the same reconstructed results.
+                if not return_array:
+                    rlons, rlats = rpoints.reconstruct(
+                        time, anchor_plate_id=anchor_plate_id, return_array=True
+                    )
+                    assert rlons == pytest.approx(approx_rlons)
+                    assert rlats == pytest.approx(approx_rlats)
+                    rpoints_recon, rpoint_indices = rpoints.reconstruct(
+                        time,
+                        anchor_plate_id=anchor_plate_id,
+                        return_array=False,
+                        return_point_indices=True,
+                    )
+                    # Note: When 'age=50' and 'time=100' we have no reconstructed points.
+                    if age == 50 and time == 100:
+                        assert rpoints.size == 0
+                    assert rpoints_recon.lons == pytest.approx(approx_rlons)
+                    assert rpoints_recon.lats == pytest.approx(approx_rlats)
+                    # All points in 'rpoints' should get reconstructed to 'time' (because 'rpoints.time=time').
+                    assert (rpoint_indices == np.arange(rpoints.size, dtype=int)).all()
 
 
 # POINTS RECONSTRUCTION TO BIRTH AGE
@@ -151,11 +241,9 @@ def test_point_reconstruction_to_birth_age(anchor_plate_id, gplately_points_obje
 
 # TESTING PLATE VELOCITY CALCULATIONS
 @pytest.mark.parametrize("time", reconstruction_times)
-def test_plate_velocity(time, gplately_plate_reconstruction_object):
-    # Longitude and latitude of the Hawaiian-Emperor Seamount chain seed points at present day.
-    pt_lon = np.array([-155.4696, 164.3])
-    pt_lat = np.array([19.8202, 53.5])
-
+def test_plate_velocity(
+    time, gplately_plate_reconstruction_object, gplately_points_lonlat
+):
     # Dict of time to (vlons, vlats, rlons, rlats).
     #
     # Note: This data was verified using GPlates.
@@ -180,10 +268,11 @@ def test_plate_velocity(time, gplately_plate_reconstruction_object):
     # 3. have ages assigned using the model's static polygons.
     for age in (np.inf, 50, None):
 
+        lons, lats = gplately_points_lonlat
         gpts = gplately.Points(
             gplately_plate_reconstruction_object,
-            lons=pt_lon,
-            lats=pt_lat,
+            lons=lons,
+            lats=lats,
             age=age,
         )
 

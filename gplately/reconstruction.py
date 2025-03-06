@@ -3075,8 +3075,12 @@ class Points(object):
         """
         return self.get_geopandas_dataframe()
 
-    def reconstruct(self, time, anchor_plate_id=None, return_array=False):
-        """Reconstructs point features supplied to the `Points` object from the supplied initial time (`self.time`) to the specified time (`time`).
+    def reconstruct(
+        self, time, anchor_plate_id=None, return_array=False, return_point_indices=False
+    ):
+        """Reconstructs points supplied to this `Points` object from the supplied initial time (`self.time`) to the specified time (`time`).
+
+        Only those points with ages greater than or equal to `time` (ie, at points that exist at `time`) are reconstructed.
 
         Parameters
         ----------
@@ -3091,6 +3095,11 @@ class Points(object):
         return_array : bool, default=False
             Return a 2-tuple of `numpy.ndarray`, rather than a `Points` object.
 
+        return_point_indices : bool, default=False
+            Return the indices of the points that are reconstructed.
+            Those points with an age less than `time` have not yet appeared at `time`, and therefore are not reconstructed.
+            These are indices into `self.lons`, `self.lats`, `self.plate_id` and `self.age`.
+
         Returns
         -------
         reconstructed_points : Points
@@ -3099,34 +3108,103 @@ class Points(object):
         rlons, rlats : ndarray
             Only provided if `return_array` is True.
             The longitude and latitude coordinate arrays of the reconstructed points.
+        point_indices : ndarray
+            Only provided if `return_point_indices` is True.
+            The indices of the returned points (that are reconstructed).
+            This array is the same size as `rlons` and `rlats` (or size of `reconstructed_points`).
+            These are indices into `self.lons`, `self.lats`, `self.plate_id` and `self.age`.
         """
         if anchor_plate_id is None:
             anchor_plate_id = self.anchor_plate_id
 
-        reconstruct_snapshot = self.plate_reconstruction.reconstruct_snapshot(
-            self.features,  # contain geometry in *present-day* coordinates
-            time,
-            anchor_plate_id=anchor_plate_id,
-        )
-        reconstructed_feature_geometries = (
-            reconstruct_snapshot.get_reconstructed_geometries()
-        )
+        # Start with an empty array.
+        lat_lon_points = np.empty((self.size, 2))
 
-        rlons, rlats = _tools.extract_feature_lonlat(reconstructed_feature_geometries)
+        # Determine which points are valid.
+        #
+        # These are those points that have appeared before (or at) 'time'
+        # (ie, have a time-of-appearance that's greater than or equal to 'time').
+        valid_mask = self.age >= time
+
+        # Iterate over groups of points with the same plate ID.
+        for (
+            plate_id,
+            point_indices_with_plate_id,
+        ) in self._unique_plate_id_groups.items():
+
+            # Determine which points (indices) with the current unique plate ID are valid.
+            point_indices_with_plate_id = point_indices_with_plate_id[
+                valid_mask[point_indices_with_plate_id]
+            ]
+            # If none of the points (with the current unique plate ID) are valid then skip to next unique plate ID.
+            if point_indices_with_plate_id.size == 0:
+                continue
+
+            # Get the reconstructed points with the current unique plate ID that have appeared before (or at) 'time'.
+            reconstructed_points_with_plate_id = pygplates.MultiPointOnSphere(
+                self.points[point_index] for point_index in point_indices_with_plate_id
+            )
+
+            # First reconstruct the internal points from the initial time ('self.time') to present day using
+            # our internal anchor plate ID (the same anchor plate used in '__init__').
+            # Then reconstruct from present day to 'time' using the *requested* anchor plate ID.
+            #
+            # Note 'self.points' (and hence 'reconstructed_points_with_plate_id') are the locations at 'self.time'
+            #      (just like 'self.lons' and 'self.lats').
+            reconstruct_rotation = (
+                self.plate_reconstruction.rotation_model.get_rotation(
+                    to_time=time,
+                    moving_plate_id=plate_id,
+                    from_time=0,
+                    anchor_plate_id=anchor_plate_id,
+                )
+                * self.plate_reconstruction.rotation_model.get_rotation(
+                    to_time=0,
+                    moving_plate_id=plate_id,
+                    from_time=self.time,
+                    anchor_plate_id=self.anchor_plate_id,
+                )
+            )
+            reconstructed_points_with_plate_id = (
+                reconstruct_rotation * reconstructed_points_with_plate_id
+            )
+
+            # Write the reconstructed points.
+            lat_lon_points[point_indices_with_plate_id] = [
+                rpoint.to_lat_lon() for rpoint in reconstructed_points_with_plate_id
+            ]
+
+        rlonslats = lat_lon_points[valid_mask]  # remove invalid points
+        rlons = rlonslats[:, 1]
+        rlats = rlonslats[:, 0]
+
+        return_tuple = ()
+
         if return_array:
-            return rlons, rlats
+            return_tuple += rlons, rlats
         else:
             reconstructed_points = Points(
                 self.plate_reconstruction,
                 rlons,
                 rlats,
                 time=time,
-                plate_id=self.plate_id.copy(),
-                age=self.age.copy(),
-                anchor_plate_id=self.anchor_plate_id,
+                plate_id=self.plate_id[valid_mask],  # remove invalid points
+                age=self.age[valid_mask],  # remove invalid points
+                anchor_plate_id=anchor_plate_id,
             )
             reconstructed_points.add_attributes(**self.attributes.copy())
-            return reconstructed_points
+            return_tuple += (reconstructed_points,)
+
+        if return_point_indices:
+            all_point_indices = np.arange(self.size, dtype=int)
+            point_indices = all_point_indices[valid_mask]  # remove invalid points
+            return_tuple += (point_indices,)
+
+        # Return tuple of objects (unless only a single object, eg, just a 'Points' object).
+        if len(return_tuple) == 1:
+            return return_tuple[0]
+        else:
+            return return_tuple
 
     def reconstruct_to_birth_age(self, ages, anchor_plate_id=None):
         """Reconstructs point features supplied to the `Points` object from the supplied initial time (`self.time`)
