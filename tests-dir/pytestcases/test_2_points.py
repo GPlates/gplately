@@ -223,10 +223,9 @@ def test_point_reconstruction(
 
 # POINTS RECONSTRUCTION TO BIRTH AGE
 @pytest.mark.parametrize("anchor_plate_id", anchor_plate_ids)
-def test_point_reconstruction_to_birth_age(anchor_plate_id, gplately_points_object):
-    rlons, rlats = gplately_points_object.reconstruct_to_birth_age(
-        ages=[50, 100], anchor_plate_id=anchor_plate_id
-    )
+def test_point_reconstruction_to_birth_age(
+    anchor_plate_id, gplately_plate_reconstruction_object, gplately_points_lonlat
+):
     # Dict of anchor plate ID to (rlons, rlats).
     #
     # Note: This data was verified using GPlates.
@@ -235,8 +234,74 @@ def test_point_reconstruction_to_birth_age(anchor_plate_id, gplately_points_obje
         701: ([-121.41333619, -136.30698742], [0.46020662, 0.20291823]),
     }
     approx_rlons, approx_rlats = approx_rlons_rlats_dict[anchor_plate_id]
+
+    lons, lats = gplately_points_lonlat
+
+    # Points exist for all time.
+    gpts = gplately.Points(
+        gplately_plate_reconstruction_object,
+        lons=lons,
+        lats=lats,
+        age=np.inf,
+    )
+
+    rlons, rlats = gpts.reconstruct_to_birth_age(
+        ages=[50, 100], anchor_plate_id=anchor_plate_id
+    )
     assert rlons == pytest.approx(approx_rlons)
     assert rlats == pytest.approx(approx_rlats)
+
+    # Points assigned ages using static polygons.
+    # First point age should be 83 Ma.
+    # Second point age should be 100 Ma.
+    gpts = gplately.Points(
+        gplately_plate_reconstruction_object,
+        lons=lons,
+        lats=lats,
+        age=None,
+    )
+
+    # First point exists at 50 Ma.
+    # Second point exists at 100 Ma.
+    rlons, rlats, point_indices = gpts.reconstruct_to_birth_age(
+        ages=[50, 100], anchor_plate_id=anchor_plate_id, return_point_indices=True
+    )
+    assert rlons == pytest.approx(approx_rlons)
+    assert rlats == pytest.approx(approx_rlats)
+    assert (point_indices == [0, 1]).all()
+
+    # Change reconstruct age of first point to 100 Ma (from 50).
+    # Now it should not get reconstructed (it's appearance age is 83 Ma).
+    rlons, rlats, point_indices = gpts.reconstruct_to_birth_age(
+        ages=[100, 100], anchor_plate_id=anchor_plate_id, return_point_indices=True
+    )
+    assert rlons == pytest.approx(approx_rlons[1:])
+    assert rlats == pytest.approx(approx_rlats[1:])
+    assert (point_indices == [1]).all()
+
+    # Points appear at 90 Ma.
+    gpts = gplately.Points(
+        gplately_plate_reconstruction_object,
+        lons=lons,
+        lats=lats,
+        age=90,
+    )
+
+    # Second point should not get reconstructed (90 < 100).
+    rlons, rlats, point_indices = gpts.reconstruct_to_birth_age(
+        ages=[50, 100], anchor_plate_id=anchor_plate_id, return_point_indices=True
+    )
+    assert rlons == pytest.approx(approx_rlons[:1])
+    assert rlats == pytest.approx(approx_rlats[:1])
+    assert (point_indices == [0]).all()
+
+    # Neither point should get reconstructed (90 < 100).
+    rlons, rlats, point_indices = gpts.reconstruct_to_birth_age(
+        ages=[100, 100], anchor_plate_id=anchor_plate_id, return_point_indices=True
+    )
+    assert rlons.size == 0
+    assert rlats.size == 0
+    assert point_indices.size == 0
 
 
 # TESTING PLATE VELOCITY CALCULATIONS
