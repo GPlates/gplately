@@ -2684,9 +2684,10 @@ class Points(object):
         #
         # Note: This cannot be changed later ('self.anchor_plate_id' property has no setter).
         if anchor_plate_id is None:
-            self._anchor_plate_id = plate_reconstruction.anchor_plate_id
+            anchor_plate_id = plate_reconstruction.anchor_plate_id
         else:
-            self._anchor_plate_id = self._check_anchor_plate_id(anchor_plate_id)
+            anchor_plate_id = self._check_anchor_plate_id(anchor_plate_id)
+        self._anchor_plate_id = anchor_plate_id
 
         # Most common case first: both are sequences.
         if not np.isscalar(lons) and not np.isscalar(lats):
@@ -2729,9 +2730,19 @@ class Points(object):
         self.lonlat = np.c_[self.lons, self.lats]
         self.xyz = np.c_[self.x, self.y, self.z]
 
-        point_features, points = _tools.points_to_features(
-            lons, lats, plate_id, return_points=True
-        )
+        # Create point features.
+        #
+        # Note: We only set the geometries here.
+        #       We'll set the plate IDs and ages later.
+        point_features = []
+        points = []
+        for lon, lat in zip(lons, lats):
+            point_feature = pygplates.Feature()
+            point = pygplates.PointOnSphere(lat, lon)
+            point_feature.set_geometry(point)
+
+            point_features.append(point_feature)
+            points.append(point)
         self.features = point_features
         self.feature_collection = pygplates.FeatureCollection(point_features)
         self.points = points
@@ -2773,11 +2784,9 @@ class Points(object):
                 point_ages = np.empty(num_points)
 
             # Assign a plate ID to each point based on which reconstructed static polygon it's inside.
-            static_polygons_snapshot = (
-                self.plate_reconstruction.static_polygons_snapshot(
-                    time,
-                    anchor_plate_id=self.anchor_plate_id,
-                )
+            static_polygons_snapshot = plate_reconstruction.static_polygons_snapshot(
+                time,
+                anchor_plate_id=anchor_plate_id,
             )
             reconstructed_static_polygons_containing_points = (
                 static_polygons_snapshot.get_point_locations(points)
@@ -2804,27 +2813,29 @@ class Points(object):
                         )
                 else:  # current point did NOT intersect a reconstructed static polygon ...
                     if plate_id is None:
-                        point_plate_ids[point_index] = self.anchor_plate_id
+                        point_plate_ids[point_index] = anchor_plate_id
                     if age is None:
                         point_ages[point_index] = np.inf  # distant past
 
-                # Set the plate ID and begin/end time in the point feature.
-                point_features[point_index].set_reconstruction_plate_id(
-                    point_plate_ids[point_index]
-                )
-                point_features[point_index].set_valid_time(
-                    point_ages[point_index],  # begin (age)
-                    -np.inf,  # end (distant future)
-                )
+        # Set the plate ID and age on each point feature.
+        for point_index in range(num_points):
+            # Set the plate ID and begin/end time in the point feature.
+            point_features[point_index].set_reconstruction_plate_id(
+                point_plate_ids[point_index]
+            )
+            point_features[point_index].set_valid_time(
+                point_ages[point_index],  # begin (age)
+                -np.inf,  # end (distant future)
+            )
 
         # If the points represent a snapshot at a *past* geological time then we need to reverse reconstruct them
         # such that their features contain present-day points.
         if time != 0:
             pygplates.reverse_reconstruct(
                 point_features,
-                self.plate_reconstruction.rotation_model,
+                plate_reconstruction.rotation_model,
                 time,
-                anchor_plate_id=self.anchor_plate_id,
+                anchor_plate_id=anchor_plate_id,
             )
 
         self.plate_id = point_plate_ids
