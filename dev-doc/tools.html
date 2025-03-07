@@ -231,29 +231,24 @@ if <code>z</code> is a scalar.</dd>
 </dl></div>
 </dd>
 <dt id="gplately.tools.points_to_features"><code class="name flex">
-<span>def <span class="ident">points_to_features</span></span>(<span>lons, lats, plate_ID=None, *, return_points=False)</span>
+<span>def <span class="ident">points_to_features</span></span>(<span>lons, lats, plate_ID=None)</span>
 </code></dt>
 <dd>
 <div class="desc"><p>Creates point features represented on a unit length sphere in 3D cartesian coordinates from a latitude and
 longitude list.</p>
 <h2 id="parameters">Parameters</h2>
 <dl>
-<dt><strong><code>lons</code></strong> :&ensp;<code>int</code> or <code>list</code></dt>
+<dt><strong><code>lons</code></strong> :&ensp;<code>list</code></dt>
 <dd>The longitudes of needed point features.</dd>
-<dt><strong><code>lats</code></strong> :&ensp;<code>int</code> or <code>list</code></dt>
+<dt><strong><code>lats</code></strong> :&ensp;<code>list</code></dt>
 <dd>The latitudes of needed point features.</dd>
-<dt><strong><code>plate_ID</code></strong> :&ensp;<code>int</code> or <code>list</code>, default=<code>None</code></dt>
-<dd>The reconstruction plate ID(s) to assign to the needed point features.</dd>
-<dt><strong><code>return_points</code></strong> :&ensp;<code>bool</code>, default=<code>False</code></dt>
-<dd>Whether to also return the points (converted from latitude/longitude to <code>pygplates.PointOnSphere</code>).</dd>
+<dt><strong><code>plate_ID</code></strong> :&ensp;<code>int</code>, default=<code>None</code></dt>
+<dd>The reconstruction plate ID to assign to the needed point features.</dd>
 </dl>
 <h2 id="returns">Returns</h2>
 <dl>
-<dt><strong><code>point_features</code></strong> :&ensp;<code>pygplates.Feature,</code> or <code>list</code> of <code>pygplates.Feature</code></dt>
-<dd>Point features (of type <code>pygplates.Feature</code>) created from the given lists of lat-lon point coordinates.</dd>
-<dt><strong><code>points</code></strong> :&ensp;<code>pygplates.PointOnSphere,</code> or <code>list</code> of <code>pygplates.PointOnSphere</code></dt>
-<dd>Points (of type <code>pygplates.PointOnSphere</code>) created from the given lists of lat-lon point coordinates.
-Points are only returned if <code>return_points</code> is True.</dd>
+<dt><strong><code>point_features</code></strong> :&ensp;<code>list</code></dt>
+<dd>Topological point features resolved from the given lists of lat-lon point coordinates.</dd>
 </dl></div>
 </dd>
 <dt id="gplately.tools.read_csv"><code class="name flex">
