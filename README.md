@@ -50,7 +50,7 @@ eprint = {https://rmets.onlinelibrary.wiley.com/doi/pdf/10.1002/gdj3.185},
 - [NumPy](https://numpy.org/install/) > 1.16
 - [SciPy](https://scipy.org/install/) > 1.0
 - [Matplotlib](https://matplotlib.org/stable/users/installing/index.html)
-- [Cartopy](https://scitools.org.uk/cartopy/docs/latest/index.html#getting-started) (for mapping)
+- [Cartopy](https://scitools.org.uk/cartopy/docs/latest/index.html#getting-started)
 - [Shapely](https://shapely.readthedocs.io/en/stable/installation.html)
 - [Pooch](https://github.com/fatiando/pooch)
 - [GeoPandas](https://geopandas.org/en/stable/getting_started.html)
@@ -125,7 +125,7 @@ Visit [this page](https://github.com/GPlates/gplately/tree/master/docker/README.
 - [Quick start](https://gplates.github.io/gplately/dev-doc/#quick-start) - a brief tutorial to help users get up to speed  
 - [Sample workflows](https://github.com/GPlates/gplately/tree/master/Notebooks) - demonstrations of how GPlately can be used in various workflows
 - [Examples](https://github.com/GPlates/gplately/blob/master/Notebooks/Examples/readme.md) - code snippets that demonstrate the usage of GPlately's classes and methods
-- [command-line interface (CLI)](gplately/commands/readme.md) - use GPlately in a command-line environment
+- [command-line interface (CLI)](https://github.com/GPlates/gplately/blob/master/gplately/commands/readme.md) - use GPlately in a command-line environment
 
 ## API Reference
 
