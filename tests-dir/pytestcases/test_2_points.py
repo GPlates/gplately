@@ -34,7 +34,7 @@ The following methods in the object are tested:
 
 
 # POINTS CREATION AT NON-ZERO TIME AND NON-ZERO ANCHOR PLATE
-def test_point_creation(muller_2019_model):
+def test_point_creation_non_zero_time_and_anchor_plate(muller_2019_model):
     # Longitude and latitude of the Hawaiian-Emperor Seamount chain seed points
     # at 50 Ma relative to anchor plate 701 (via 'model_anchored_701').
     rlons = np.array([-121.41333619, -151.95768647])
@@ -119,6 +119,99 @@ def test_point_creation(muller_2019_model):
             # Note: This data was verified using GPlates.
             assert rlons_100 == pytest.approx([-117.22543964, -150.55606233])
             assert rlats_100 == pytest.approx([-3.62350339, 28.85941415])
+
+
+# POINTS CREATION WITH REMOVAL OF UNRECONSTRUCTABLE POINTS
+def test_point_creation_remove_unreconstructable_points(
+    gplately_plate_reconstruction_object,
+):
+    # Longitude and latitude of the Hawaiian-Emperor Seamount chain seed points
+    # at 50 Ma relative to anchor plate 701 (via 'model_anchored_701').
+    rlons = np.array([-121.41333619, -151.95768647])
+    rlats = np.array([0.46020662, 36.19123148])
+
+    gpts = gplately.Points(
+        gplately_plate_reconstruction_object,
+        lons=rlons,
+        lats=rlats,
+        time=50,
+        plate_id=901,
+        age=40,
+    )
+    # No points removed by default.
+    assert gpts.size == 2
+
+    gpts = gplately.Points(
+        gplately_plate_reconstruction_object,
+        lons=rlons,
+        lats=rlats,
+        time=50,
+        plate_id=901,
+        age=40,
+        remove_unreconstructable_points=True,
+    )
+    # Both points removed (since their age is less than 'time').
+    assert gpts.size == 0
+
+    gpts = gplately.Points(
+        gplately_plate_reconstruction_object,
+        lons=rlons,
+        lats=rlats,
+        time=50,
+        plate_id=901,
+        age=[40, 100],
+        remove_unreconstructable_points=True,
+    )
+    # First point removed (since its age is less than 'time').
+    assert gpts.size == 1
+
+    unreconstructable_point_indices = []
+    gpts = gplately.Points(
+        gplately_plate_reconstruction_object,
+        lons=rlons,
+        lats=rlats,
+        time=50,
+        plate_id=901,
+        age=[40, 100],
+        remove_unreconstructable_points=unreconstructable_point_indices,
+    )
+    # First point removed (since its age is less than 'time').
+    assert gpts.size == 1
+    # And index of first point returned in our list.
+    assert unreconstructable_point_indices == [0]
+
+    unreconstructable_point_indices = []
+    gpts = gplately.Points(
+        gplately_plate_reconstruction_object,
+        lons=rlons,
+        lats=rlats,
+        time=50,
+        plate_id=None,  # assign plate IDs
+        age=None,  # assign ages
+        remove_unreconstructable_points=unreconstructable_point_indices,
+    )
+    # No points removed since both auto-assigned ages (83 and 100 Ma) were greater than (or equal to) 'time' (50 Ma).
+    #
+    # The fact itself, that both points were auto-assigned, means the associated reconstructed static polygons
+    # themselves existed at 'time', which means the polygon ages must have been greater than (or equal to) 'time'.
+    assert gpts.size == 2
+    assert not unreconstructable_point_indices
+
+    unreconstructable_point_indices = []
+    gpts = gplately.Points(
+        gplately_plate_reconstruction_object,
+        lons=rlons,
+        lats=rlats,
+        time=50,
+        plate_id=None,  # assign plate IDs
+        age=[100, 40],
+        remove_unreconstructable_points=unreconstructable_point_indices,
+    )
+    # Second point removed.
+    # Although its plate ID is successfully assigned, its age is explicitly provided but is less than 'time'.
+    assert gpts.size == 1
+    # And index of second point returned in our list.
+    assert unreconstructable_point_indices == [1]
 
 
 # POINTS RECONSTRUCTION

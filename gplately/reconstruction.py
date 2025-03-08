@@ -17,7 +17,7 @@
 
 """
 Tools that wrap up pyGPlates and Plate Tectonic Tools functionalities for reconstructing features,
-working with point data, and calculating plate velocities at specific geological times. 
+working with point data, and calculating plate velocities at specific geological times.
 """
 
 import math
@@ -2628,6 +2628,7 @@ class Points(object):
         age=np.inf,
         *,
         anchor_plate_id=None,
+        remove_unreconstructable_points=False,
     ):
         """
         Parameters
@@ -2670,6 +2671,16 @@ class Points(object):
             Anchor plate that the specified `lons` and `lats` are relative to.
             Defaults to the current anchor plate ID of `plate_reconstruction` (its `anchor_plate_id` attribute).
 
+        remove_unreconstructable_points : bool or list, default=False
+            Whether to remove points (in `lons` and `lats`) that cannot be reconstructed.
+            By default, any unreconstructable points are retained.
+            A point cannot be reconstructed if it cannot be assigned a plate ID, or cannot be assigned an age, because it did not
+            intersect any reconstructed static polygons (note that this can only happen when `plate_id` and/or `age` is None).
+            Also, a point cannot be reconstructed if point ages were *explicitly* provided (ie, `age` was *not* None) and
+            a point's age was less than (younger than) `time`, meaning it did not exist as far back as `time`.
+            Additionally, if this variable is a regular Python `list` then the indices (into the supplied `lons` and `lats` arguments)
+            of any removed points (ie, that are unreconstructable) are appended to that list.
+
         Notes
         -----
         If `time` is non-zero (ie, not present day) then `lons` and `lats` are assumed to be the *reconstructed* point locations at `time`.
@@ -2677,17 +2688,31 @@ class Points(object):
         (which is `plate_reconstruction.anchor_plate_id` if `anchor_plate_id` is None).
 
         If `plate_id` and/or `age` is `None` then the plate ID and/or age of each point is determined by reconstructing the static polygons
-        of `plate_reconstruction` to `time` and relative to the anchor plate (regardless of whether `time` is present day or not).
+        of `plate_reconstruction` to `time` and reconstructing relative to the anchor plate (regardless of whether `time` is present day or not).
         And then, for each point, assigning the plate ID and/or time-of-appearance (begin time) of the static polygon containing the point.
+
+        A point is considered unreconstructable if it does not exist at `time`. This can happen if its age was explicitly provided (ie, `age` is *not* None)
+        but is younger than `time`. It can also happen if the point is automatically assigned a plate ID (ie, `plate_id` is None) or an age (ie, `age` is None)
+        but does not intersect any reconstructed static polygons (at `time`). In either of these cases it is marked as unreconstructable and will not be available
+        for any method outputing a reconstruction, such as `reconstruct`, or any method depending on a reconstruction, such as `plate_velocity`.
+        However, all the initial locations and their associated plate IDs and ages will still be accessible as attributes, regardless of whether all the points
+        are reconstructable or not. That is, unless `remove_unreconstructable_points` is True (or a `list`), in which case only the reconstructable points are retained.
         """
         # If anchor plate is None then use default anchor plate of 'plate_reconstruction'.
-        #
-        # Note: This cannot be changed later ('self.anchor_plate_id' property has no setter).
         if anchor_plate_id is None:
             anchor_plate_id = plate_reconstruction.anchor_plate_id
         else:
             anchor_plate_id = self._check_anchor_plate_id(anchor_plate_id)
-        self._anchor_plate_id = anchor_plate_id
+
+        # The caller can specify a 'list' for the 'remove_unreconstructable_points' argument if they want us to
+        # return the indices of any points that are NOT reconstructable.
+        #
+        # Otherwise 'remove_unreconstructable_points' must be true or false.
+        if isinstance(remove_unreconstructable_points, list):
+            unreconstructable_point_indices_list = remove_unreconstructable_points
+            remove_unreconstructable_points = True
+        else:
+            unreconstructable_point_indices_list = None
 
         # Most common case first: both are sequences.
         if not np.isscalar(lons) and not np.isscalar(lats):
@@ -2708,44 +2733,8 @@ class Points(object):
             raise ValueError(
                 "Both 'lats' and 'lons' must both be a sequence or both a scalar"
             )
-        self.lons = lons
-        self.lats = lats
 
         num_points = len(lons)
-
-        self._time = time
-        self.attributes = dict()
-
-        self.plate_reconstruction = plate_reconstruction
-
-        # get Cartesian coordinates
-        self.x, self.y, self.z = _tools.lonlat2xyz(lons, lats, degrees=False)
-
-        # scale by average radius of the Earth
-        self.x *= _tools.EARTH_RADIUS
-        self.y *= _tools.EARTH_RADIUS
-        self.z *= _tools.EARTH_RADIUS
-
-        # store concatenated arrays
-        self.lonlat = np.c_[self.lons, self.lats]
-        self.xyz = np.c_[self.x, self.y, self.z]
-
-        # Create point features.
-        #
-        # Note: We only set the geometries here.
-        #       We'll set the plate IDs and ages later.
-        point_features = []
-        points = []
-        for lon, lat in zip(lons, lats):
-            point_feature = pygplates.Feature()
-            point = pygplates.PointOnSphere(lat, lon)
-            point_feature.set_geometry(point)
-
-            point_features.append(point_feature)
-            points.append(point)
-        self.features = point_features
-        self.feature_collection = pygplates.FeatureCollection(point_features)
-        self.points = points
 
         # If caller provided plate IDs.
         if plate_id is not None:
@@ -2775,9 +2764,19 @@ class Points(object):
                         )
                     )
 
+        # Create pygplates points.
+        points = [pygplates.PointOnSphere(lat, lon) for lon, lat in zip(lons, lats)]
+
+        # If plate IDs and/or ages are automatically assigned using reconstructed static polygons then
+        # some points might be outside all reconstructed static polygons, and hence not reconstructable.
+        #
+        # However, if the user provided both plate IDs and ages then all points will be reconstructable.
+        points_are_reconstructable = np.full(num_points, True)
+
         # If caller did not provide plate IDs or begin ages then
         # we need to determine them using the static polygons.
         if plate_id is None or age is None:
+
             if plate_id is None:
                 point_plate_ids = np.empty(num_points, dtype=int)
             if age is None:
@@ -2811,22 +2810,65 @@ class Points(object):
                         point_ages[point_index], _ = (
                             reconstructed_static_polygon_feature.get_valid_time()
                         )
+
                 else:  # current point did NOT intersect a reconstructed static polygon ...
+
+                    # We're trying to assign a plate ID or assign an age (or both), neither of which we can assign.
+                    # That essentially makes the current point unreconstructable.
+                    #
+                    # Mark the current point as unreconstructable.
+                    points_are_reconstructable[point_index] = False
+
                     if plate_id is None:
+                        # Assign the anchor plate ID to indicate we could NOT assign a proper plate ID.
                         point_plate_ids[point_index] = anchor_plate_id
                     if age is None:
-                        point_ages[point_index] = np.inf  # distant past
+                        # Assign the distant future (not distant past) to indicate we could NOT assign a proper age.
+                        point_ages[point_index] = -np.inf  # distant future
 
-        # Set the plate ID and age on each point feature.
+        # If point ages were explicitly provided by the caller then we need to check if points existed at 'time'.
+        if age is not None:
+            # Any point with an age younger than 'time' did not exist at 'time' and hence is not reconstructable.
+            points_are_reconstructable[point_ages < time] = False
+
+        # If requested, remove any unreconstructable points.
+        if remove_unreconstructable_points and not points_are_reconstructable.all():
+            if unreconstructable_point_indices_list is not None:
+                # Caller requested the indices of points that are NOT reconstructable.
+                unreconstructable_point_indices_list.extend(
+                    np.where(points_are_reconstructable == False)[0]
+                )
+            lons = lons[points_are_reconstructable]
+            lats = lats[points_are_reconstructable]
+            point_plate_ids = point_plate_ids[points_are_reconstructable]
+            point_ages = point_ages[points_are_reconstructable]
+            points = [
+                points[point_index]
+                for point_index in range(num_points)
+                if points_are_reconstructable[point_index]
+            ]
+            num_points = len(points)
+            # All points are now reconstructable.
+            points_are_reconstructable = np.full(num_points, True)
+
+        # Create a feature for each point.
+        #
+        # Each feature has a point, a plate ID and a valid time range.
+        #
+        # Note: The valid time range always includes present day.
+        point_features = []
         for point_index in range(num_points):
-            # Set the plate ID and begin/end time in the point feature.
-            point_features[point_index].set_reconstruction_plate_id(
-                point_plate_ids[point_index]
-            )
-            point_features[point_index].set_valid_time(
+            point_feature = pygplates.Feature()
+            # Set the geometry.
+            point_feature.set_geometry(points[point_index])
+            # Set the plate ID.
+            point_feature.set_reconstruction_plate_id(point_plate_ids[point_index])
+            # Set the begin/end time.
+            point_feature.set_valid_time(
                 point_ages[point_index],  # begin (age)
-                -np.inf,  # end (distant future)
+                -np.inf,  # end (distant future; could also be zero for present day)
             )
+            point_features.append(point_feature)
 
         # If the points represent a snapshot at a *past* geological time then we need to reverse reconstruct them
         # such that their features contain present-day points.
@@ -2837,9 +2879,6 @@ class Points(object):
                 time,
                 anchor_plate_id=anchor_plate_id,
             )
-
-        self.plate_id = point_plate_ids
-        self.age = point_ages
 
         # Map each unique plate ID to indices of points assigned that plate ID.
         unique_plate_id_groups = {}
@@ -2852,7 +2891,41 @@ class Points(object):
                 0
             ]  # convert 1-tuple of 1D array to 1D array
             unique_plate_id_groups[unique_plate_id] = unique_plate_id_point_indices
+
+        #
+        # Assign data members.
+        #
+
+        # Note: These are documented attributes (in class docstring).
+        #       And they cannot be changed later (they are properties with no setter).
+        #       The other attributes probably should be readonly too (but at least they're not documented).
+        self._plate_reconstruction = plate_reconstruction
+        self._lons = lons
+        self._lats = lats
+        self._time = time
+        self._plate_id = point_plate_ids
+        self._age = point_ages
+        self._anchor_plate_id = anchor_plate_id
+
+        # get Cartesian coordinates
+        self.x, self.y, self.z = _tools.lonlat2xyz(lons, lats, degrees=False)
+        # scale by average radius of the Earth
+        self.x *= _tools.EARTH_RADIUS
+        self.y *= _tools.EARTH_RADIUS
+        self.z *= _tools.EARTH_RADIUS
+        # store concatenated arrays
+        self.lonlat = np.c_[lons, lats]
+        self.xyz = np.c_[self.x, self.y, self.z]
+
+        self.points = points
+
+        self.attributes = dict()
+
+        self._reconstructable = points_are_reconstructable
         self._unique_plate_id_groups = unique_plate_id_groups
+
+        self.features = point_features
+        self.feature_collection = pygplates.FeatureCollection(point_features)
 
     def __getstate__(self):
         state = self.__dict__.copy()
@@ -2875,13 +2948,43 @@ class Points(object):
         #
 
     @property
+    def plate_reconstruction(self):
+        # Note: This is documented as an attribute in the class docstring.
+        return self._plate_reconstruction
+
+    @property
+    def lons(self):
+        # Note: This is documented as an attribute in the class docstring.
+        return self._lons
+
+    @property
+    def lats(self):
+        # Note: This is documented as an attribute in the class docstring.
+        return self._lats
+
+    @property
+    def plate_id(self):
+        # Note: This is documented as an attribute in the class docstring.
+        return self._plate_id
+
+    @property
+    def age(self):
+        # Note: This is documented as an attribute in the class docstring.
+        return self._age
+
+    @property
+    def size(self):
+        # Note: This is documented as an attribute in the class docstring.
+        return len(self.points)
+
+    @property
     def time(self):
-        # Note: This is documented in the class docstring.
+        # Note: This is documented as an attribute in the class docstring.
         return self._time
 
     @property
     def anchor_plate_id(self):
-        # Note: This is documented in the class docstring.
+        # Note: This is documented as an attribute in the class docstring.
         return self._anchor_plate_id
 
     @staticmethod
@@ -2890,11 +2993,6 @@ class Points(object):
         if id < 0:
             raise ValueError("Invalid anchor plate ID: {}".format(id))
         return id
-
-    @property
-    def size(self):
-        # Note: This is documented in the class docstring.
-        return len(self.lons)
 
     def copy(self):
         """Returns a copy of the Points object
@@ -3080,7 +3178,7 @@ class Points(object):
     ):
         """Reconstructs points supplied to this `Points` object from the supplied initial time (`self.time`) to the specified time (`time`).
 
-        Only those points with ages greater than or equal to `time` (ie, at points that exist at `time`) are reconstructed.
+        Only those points that are reconstructable (see `Points`) and that have ages greater than or equal to `time` (ie, at points that exist at `time`) are reconstructed.
 
         Parameters
         ----------
@@ -3122,9 +3220,9 @@ class Points(object):
 
         # Determine which points are valid.
         #
-        # These are those points that have appeared before (or at) 'time'
+        # These are those points that are reconstructable and have appeared before (or at) 'time'
         # (ie, have a time-of-appearance that's greater than or equal to 'time').
-        valid_mask = self.age >= time
+        valid_mask = self._reconstructable & (self.age >= time)
 
         # Iterate over groups of points with the same plate ID.
         for (
@@ -3212,7 +3310,8 @@ class Points(object):
         """Reconstructs points supplied to this `Points` object from the supplied initial time (`self.time`) to a range of times.
 
         The number of supplied times must equal the number of points supplied to this `Points` object (ie, 'self.size' attribute).
-        Only those points with ages greater than or equal to the respective supplied ages (ie, at points that exist at the supplied ages) are reconstructed.
+        Only those points that are reconstructable (see `Points`) and that have ages greater than or equal to the respective supplied ages
+        (ie, at points that exist at the supplied ages) are reconstructed.
 
         Parameters
         ----------
@@ -3279,9 +3378,9 @@ class Points(object):
 
         # Determine which points are valid.
         #
-        # These are those points that have appeared before (or at) their respective reconstruct ages
+        # These are those points that are reconstructable and have appeared before (or at) their respective reconstruct ages
         # (ie, have a time-of-appearance that's greater than or equal to the respective reconstruct age).
-        valid_mask = self.age >= reconstruct_ages
+        valid_mask = self._reconstructable & (self.age >= reconstruct_ages)
 
         # Iterate over groups of points with the same plate ID.
         for (
@@ -3379,7 +3478,7 @@ class Points(object):
 
         The point velocities are calculated using the plate IDs of the internal points and the rotation model of the internal `PlateReconstruction` object.
         If the requested `time` differs from the initial time (`self.time`) then the internal points are first reconstructed to `time` before calculating velocities.
-        Velocities are only calculated at points with ages greater than or equal to `time` (ie, at points that exist at `time`).
+        Velocities are only calculated at points that are reconstructable (see `Points`) and that have ages greater than or equal to `time` (ie, at points that exist at `time`).
 
         Parameters
         ----------
@@ -3478,9 +3577,9 @@ class Points(object):
 
         # Determine which points are valid.
         #
-        # These are those points that have appeared before (or at) 'time'
+        # These are those points that are reconstructable and have appeared before (or at) 'time'
         # (ie, have a time-of-appearance that's greater than or equal to 'time').
-        valid_mask = self.age >= time
+        valid_mask = self._reconstructable & (self.age >= time)
 
         # Iterate over groups of points with the same plate ID.
         for (
