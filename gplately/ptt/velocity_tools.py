@@ -104,55 +104,49 @@ def get_plate_velocities(
     rep="vector_comp",
 ):
     """function to get velocites via pygplates"""
-    # All domain points and associated (magnitude, azimuth, inclination) velocities for the current time.
-    all_domain_points = []
-    all_velocities = []
 
-    # Partition our velocity domain features into our topological plate polygons at the current 'time'.
-    plate_partitioner = pygplates.PlatePartitioner(
-        topology_features, rotation_model, time
-    )
+    # Extract points from velocity domain features.
+    points = []
     for velocity_domain_feature in velocity_domain_features:
         # A velocity domain feature usually has a single geometry but we'll assume it can be any number.
         # Iterate over them all.
         for velocity_domain_geometry in velocity_domain_feature.get_geometries():
             for velocity_domain_point in velocity_domain_geometry.get_points():
-                all_domain_points.append(velocity_domain_point)
-                partitioning_plate = plate_partitioner.partition_point(
-                    velocity_domain_point
-                )
-                if partitioning_plate:
-                    # We need the newly assigned plate ID to get the equivalent stage rotation of that tectonic plate.
-                    partitioning_plate_id = (
-                        partitioning_plate.get_feature().get_reconstruction_plate_id()
-                    )
-                    # Get the stage rotation of partitioning plate from 'time + delta_time' to 'time'.
-                    equivalent_stage_rotation = rotation_model.get_rotation(
-                        time, partitioning_plate_id, time + delta_time
-                    )
+                points.append(velocity_domain_point)
 
-                    # Calculate velocity at the velocity domain point.
-                    # This is from 'time + delta_time' to 'time' on the partitioning plate.
-                    velocity_vectors = pygplates.calculate_velocities(
-                        [velocity_domain_point], equivalent_stage_rotation, delta_time
-                    )
+    # Topological snapshot containing resolved topologies.
+    topological_snapshot = pygplates.TopologicalSnapshot(
+        topology_features,
+        rotation_model,
+        time,
+    )
 
-                    if rep == "mag_azim":
-                        # Convert global 3D velocity vectors to local (magnitude, azimuth, inclination) tuples (one tuple per point).
-                        velocities = pygplates.LocalCartesian.convert_from_geocentric_to_magnitude_azimuth_inclination(
-                            [velocity_domain_point], velocity_vectors
-                        )
-                        all_velocities.append(velocities[0])
+    # Calculate point velocities using topological snapshot.
+    point_velocities = topological_snapshot.get_point_velocities(
+        points,
+        velocity_delta_time=delta_time,
+        velocity_units=pygplates.VelocityUnits.kms_per_my,
+        earth_radius_in_kms=pygplates.Earth.mean_radius_in_kms,
+    )
 
-                    elif rep == "vector_comp":
-                        # Convert global 3D velocity vectors to local (magnitude, azimuth, inclination) tuples (one tuple per point).
-                        velocities = pygplates.LocalCartesian.convert_from_geocentric_to_north_east_down(
-                            [velocity_domain_point], velocity_vectors
-                        )
-                        all_velocities.append(velocities[0])
-                else:
-                    all_velocities.append((0, 0, 0))
-    return all_velocities
+    # Replace any missing velocities with zero velocity.
+    #
+    # If a point does not intersect a topological plate (or network) then its velocity is None.
+    for point_index in range(len(points)):
+        if point_velocities[point_index] is None:
+            point_velocities[point_index] = pygplates.Vector3D.zero
+
+    if rep == "mag_azim":
+        # Convert global 3D velocity vectors to local (magnitude, azimuth, inclination) tuples (one tuple per point).
+        return pygplates.LocalCartesian.convert_from_geocentric_to_magnitude_azimuth_inclination(
+            points, point_velocities
+        )
+
+    elif rep == "vector_comp":
+        # Convert global 3D velocity vectors to local (North, East, Down) vectors (one per point).
+        return pygplates.LocalCartesian.convert_from_geocentric_to_north_east_down(
+            points, point_velocities
+        )
 
 
 def get_velocities(
