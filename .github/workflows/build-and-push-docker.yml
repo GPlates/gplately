@@ -21,7 +21,10 @@ jobs:
               echo "DOCKER_IMAGE_TAG=$( tail -n 1 ./docker/build-docker-image-version.txt )" >> $GITHUB_ENV
             else
               echo "DOCKER_IMAGE_TAG=${{ github.ref_name }}" >> $GITHUB_ENV
-            fi
+            fi     
+      -
+        name: Check the docker image tag
+        run: |
             echo "The docker image tag is ${{ env.DOCKER_IMAGE_TAG }}."
       -
         name: Set up QEMU
