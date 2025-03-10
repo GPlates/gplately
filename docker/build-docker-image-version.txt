@@ -1,4 +1,0 @@
-# this file is used to control the docker image version tag.
-# only the last line has effect.
-
-v2.0.0rc0
