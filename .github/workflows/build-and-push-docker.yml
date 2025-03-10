@@ -22,7 +22,7 @@ jobs:
             else
               echo "DOCKER_IMAGE_TAG=${{ github.ref_name }}" >> $GITHUB_ENV
             fi
-            echo ${{ env.DOCKER_IMAGE_TAG }}
+            echo "The docker image tag is ${{ env.DOCKER_IMAGE_TAG }}."
       -
         name: Set up QEMU
         uses: docker/setup-qemu-action@v3
