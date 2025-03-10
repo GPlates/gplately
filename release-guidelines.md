@@ -26,3 +26,10 @@
 - check all gplately commands work as expected.
 - check the list of plate models is documented correctly.
 - check the pipy page https://pypi.org/project/gplately/, especially the images and links 
+
+### Steps
+
+- create a new branch release-2.0.0
+- remove docker/build-docker-image-version.txt
+- `git tag v2.0.0rc0`
+- `git push origin v2.0.0rc0` (this will trigger docker build and push)
