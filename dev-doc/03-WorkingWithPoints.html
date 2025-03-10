@@ -7523,7 +7523,8 @@ a.anchor-link {
     <span class="n">lons</span><span class="p">,</span> <span class="c1"># list or numpy array of longitudinal coordinates</span>
     <span class="n">lats</span><span class="p">,</span> <span class="c1"># list or numpy array of latitudinal coordinates</span>
     <span class="n">time</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span> <span class="c1"># time is set to the present day by default</span>
-    <span class="n">plate_id</span><span class="o">=</span><span class="kc">None</span> <span class="c1"># optionally pass an array of pre-determined plate IDs</span>
+    <span class="n">plate_id</span><span class="o">=</span><span class="kc">None</span> <span class="c1"># optionally pass an array (or single integer) of pre-determined plate IDs</span>
+    <span class="n">age</span><span class="o">=</span><span class="n">numpy</span><span class="o">.</span><span class="n">inf</span> <span class="c1"># optionally pass an array (or single float) of pre-determined appearance ages (defaults to: appearing for all time)</span>
 <span class="p">)</span>
 </pre></div>
 <p>In this example, we will reconstruct data from the <a href="https://paleobiodb.org/#/">Paleobiology Database (PBDB)</a>. This data is in csv format.</p>
