@@ -2,14 +2,14 @@ from typing import Union
 
 from plate_model_manager import PlateModel, PlateModelManager
 
-from .mapping.plot_engine import PlotEngine
 from .mapping.cartopy_plot import CartopyPlotEngine
+from .mapping.plot_engine import PlotEngine
 from .plot import PlotTopologies
 from .reconstruction import PlateReconstruction
 
 
 def get_plate_reconstruction(model: Union[str, PlateModel], model_repo_dir: str = "./"):
-    """Convenient function to return a PlateReconstruction object
+    """Convenient function to return a PlateReconstruction object. Check out the [usage example](https://gplates.github.io/gplately/dev-doc/#platemodelmanager).
 
     Parameters
     ----------
@@ -58,10 +58,10 @@ def get_plate_reconstruction(model: Union[str, PlateModel], model_repo_dir: str 
 def get_gplot(
     model: Union[str, PlateModel],
     model_repo_dir: str = "./",
-    age: Union[int, float] = 0,
+    time: Union[int, float] = 0,
     plot_engine: PlotEngine = CartopyPlotEngine(),
 ) -> PlotTopologies:
-    """Convenient function to return a PlotTopologies object
+    """Convenient function to return a PlotTopologies object. Check out the [usage example](https://gplates.github.io/gplately/dev-doc/#platemodelmanager).
 
     Parameters
     ----------
@@ -69,7 +69,7 @@ def get_gplot(
         model name or a PlateModel object
     model_repo_dir: str, default="./"
         the folder in which you would like to keep the model files
-    age: int or float, default=0
+    time: int or float, default=0
         the reconstruction age/time
     plot_engine: PlotEngine, default=CartopyPlotEngine()
         two choices - CartopyPlotEngine() or PygmtPlotEngine()
@@ -113,6 +113,6 @@ def get_gplot(
         coastlines=coastlines,
         COBs=COBs,
         continents=continents,
-        time=age,
+        time=time,
         plot_engine=plot_engine,
     )

@@ -15,7 +15,7 @@
 #    51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
 
-"""Tools for reconstructing and plotting geological features and feature data through time.
+"""This sub-module contains tools for reconstructing and plotting geological features and feature data through time.
 
 Methods in `plot.py` reconstruct geological features using 
 [pyGPlates' `reconstruct` function](https://www.gplates.org/docs/pygplates/generated/pygplates.reconstruct.html),
@@ -45,17 +45,13 @@ from .decorators import (
     validate_topology_availability,
 )
 from .gpml import _load_FeatureCollection
+from .mapping.cartopy_plot import DEFAULT_CARTOPY_PROJECTION, CartopyPlotEngine
 from .mapping.plot_engine import PlotEngine
-
-from .mapping.cartopy_plot import CartopyPlotEngine, DEFAULT_CARTOPY_PROJECTION
 from .reconstruction import PlateReconstruction as _PlateReconstruction
 from .tools import EARTH_RADIUS
 from .utils.feature_utils import shapelify_features as _shapelify_features
-from .utils.plot_utils import (
-    _meridian_from_ax,
-    plot_subduction_teeth as _plot_subduction_teeth,
-)
-
+from .utils.plot_utils import _meridian_from_ax
+from .utils.plot_utils import plot_subduction_teeth as _plot_subduction_teeth
 
 logger = logging.getLogger("gplately")
 
@@ -1395,6 +1391,10 @@ class PlotTopologies(object):
             A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map
             with the grid plotted onto the chosen map projection.
         """
+        if not isinstance(self._plot_engine, CartopyPlotEngine):
+            raise NotImplementedError(
+                f"Plotting grid has not been implemented for {self._plot_engine.__class__} yet."
+            )
         # Override matplotlib default origin ('upper')
         origin = kwargs.pop("origin", "lower")
 
@@ -1506,6 +1506,10 @@ class PlotTopologies(object):
             A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map
             with the velocity vector field plotted onto the chosen map projection.
         """
+        if not isinstance(self._plot_engine, CartopyPlotEngine):
+            raise NotImplementedError(
+                f"Plotting velocities has not been implemented for {self._plot_engine.__class__} yet."
+            )
 
         lonq, latq = np.meshgrid(
             np.arange(-180, 180 + spacingX, spacingX),

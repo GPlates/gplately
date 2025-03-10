@@ -15,16 +15,7 @@
 #    51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
 
-"""Spatial tools for calculating distances on the Earth.
-
-Some functions available in `spatial`:
-
-* haversine_distance
-* cartesian_distance
-* great_circle_distance
-* lonlat2xyz
-* xyz2lonlat
-
+"""This sub-module contains spatial tools for calculating distances on the Earth.
 """
 
 import numpy as np
@@ -139,7 +130,10 @@ def haversine_distance(lon1, lon2, lat1, lat2, degrees=True):
     d = EARTH_RADIUS * c
     return d * 1000
 
-def cartesian_distance(lon1, lon2, lat1, lat2, degrees=True, k=1, return_neighbours=False):
+
+def cartesian_distance(
+    lon1, lon2, lat1, lat2, degrees=True, k=1, return_neighbours=False
+):
 
     from .tools import lonlat2xyz, EARTH_RADIUS
 
@@ -158,7 +152,9 @@ def cartesian_distance(lon1, lon2, lat1, lat2, degrees=True, k=1, return_neighbo
         return dist
 
 
-def great_circle_distance(lon1, lon2, lat1, lat2, degrees=True, k=1, return_neighbours=False):
+def great_circle_distance(
+    lon1, lon2, lat1, lat2, degrees=True, k=1, return_neighbours=False
+):
 
     from .tools import lonlat2xyz, EARTH_RADIUS
 
@@ -171,14 +167,14 @@ def great_circle_distance(lon1, lon2, lat1, lat2, degrees=True, k=1, return_neig
     tree = _KDTree(xyz1)
     dist, neighbours = tree.query(xyz2, k=k)
 
-    if k==1:
-        neighbours_ = neighbours.reshape(-1,1)
+    if k == 1:
+        neighbours_ = neighbours.reshape(-1, 1)
     else:
         neighbours_ = neighbours
 
     ## Now find the angular separation / great circle distance: dlatlon
-    xyz1_neighbours = xyz1[neighbours_].transpose(0,2,1)
-    xyz2_ext  = np.repeat(xyz2, k, axis=1).reshape(xyz1_neighbours.shape)
+    xyz1_neighbours = xyz1[neighbours_].transpose(0, 2, 1)
+    xyz2_ext = np.repeat(xyz2, k, axis=1).reshape(xyz1_neighbours.shape)
 
     angles = np.arccos((xyz2_ext * xyz1_neighbours).sum(axis=1))
     angles *= EARTH_RADIUS

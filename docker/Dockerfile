@@ -13,7 +13,7 @@
 FROM mambaorg/micromamba:1.5.8
 
 LABEL org.opencontainers.image.authors="michael.chin@sydney.edu.au"
-LABEL version="v1.3.0"
+LABEL version="v2.0.0"
 
 USER root
 RUN apt-get update && apt-get install ffmpeg libsm6 libxext6  -y

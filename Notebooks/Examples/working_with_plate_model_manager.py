@@ -7,13 +7,12 @@ from plate_model_manager import PlateModelManager
 
 from gplately import PlateReconstruction, PlotTopologies
 
-# This is a simple example of how to use the Plate Model Manager with GPlately
+# this example demonstrates how to use the plate_model_manager with GPlately.
 
 
 def main():
-    # Here is how to use PlateModelManager to create PlateReconstruction and PlotTopologies objects
-    pm_manager = PlateModelManager()
-    model = pm_manager.get_model("Muller2019")
+    # use PlateModelManager to create PlateReconstruction and PlotTopologies objects
+    model = PlateModelManager().get_model("Muller2019")
     model.set_data_dir("plate-model-repo")
 
     age = 55
@@ -29,22 +28,24 @@ def main():
         time=age,
     )
 
-    # Now do some plotting
     fig = plt.figure(figsize=(12, 6), dpi=72)
     ax = fig.add_subplot(111, projection=ccrs.Robinson(central_longitude=180))
+    ax.set_global()
 
+    # now use PlotTopologies object to plot some model data
     gplot.plot_continent_ocean_boundaries(ax, color="cornflowerblue")
     gplot.plot_coastlines(ax, color="black")
     gplot.plot_ridges(ax, color="red")
     gplot.plot_trenches(ax, color="orange")
     gplot.plot_subduction_teeth(ax, color="orange")
-    ax.set_global()
 
-    ids = set([f.get_reconstruction_plate_id() for f in gplot.topologies])
-    for id in ids:
-        gplot.plot_plate_id(ax, id, facecolor="None", edgecolor="lightgreen")
     plt.title(f"{age} Ma")
-    plt.show()
+
+    # save the map as a .png file
+    output_file = f"working_with_pmm.png"
+    plt.gcf().savefig(output_file, dpi=120, bbox_inches="tight")  # transparent=True)
+    print(f"Done! The {output_file} has been saved.")
+    plt.close(plt.gcf())
 
 
 if __name__ == "__main__":
