@@ -1529,8 +1529,8 @@ def _save_netcdf_file(
         continent_mask_filename.format(time), resize=(resX, resY)
     )
 
-    # Use the continental mask
-    Z[cont_mask] = np.nan
+    # Use the continental mask to mask out continents
+    Z[cont_mask.astype(bool)] = np.nan
 
     grids.write_netcdf_grid(
         grid_output,
@@ -1621,8 +1621,8 @@ def _lat_lon_z_to_netCDF_time(
         continent_mask_filename.format(time), resize=(resX, resY)
     )
 
-    # Use the continental mask
-    Z[cont_mask] = np.nan
+    # Use the continental mask to mask out continents
+    Z[cont_mask.astype(bool)] = np.nan
 
     grids.write_netcdf_grid(
         grid_output,
