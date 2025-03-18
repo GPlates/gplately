@@ -44,15 +44,16 @@ eprint = {https://rmets.onlinelibrary.wiley.com/doi/pdf/10.1002/gdj3.185},
 
 ## Usage
 
-- [Quick start](https://gplates.github.io/gplately/dev-doc/#quick-start) - a brief tutorial to help users get up to speed  
+- [Quick start](https://gplates.github.io/gplately/dev/#quick-start) - a brief tutorial to help users get up to speed  
 - [Sample workflows](https://github.com/GPlates/gplately/tree/master/Notebooks) - demonstrations of how GPlately can be used in various workflows
 - [Examples](https://github.com/GPlates/gplately/blob/master/Notebooks/Examples/readme.md) - reusable code snippets demonstrating how to use GPlately for specific tasks
 - [command-line interface (CLI)](https://github.com/GPlates/gplately/blob/master/gplately/commands/readme.md) - use GPlately in a command-line environment
 
 ## API Reference
 
+- [latest stable)](https://gplates.github.io/gplately/stable/)
+- [latest in dev](https://gplates.github.io/gplately/dev)
 - [v1.3.0 (**latest stable**)](https://gplates.github.io/gplately/v1.3.0/)
-- [latest in dev](https://gplates.github.io/gplately/dev-doc)
 - [v1.2.0](https://gplates.github.io/gplately/v1.2.0/)
 - [v1.1.0](https://gplates.github.io/gplately/v1.1.0/)
 - [v1.0.0](https://gplates.github.io/gplately/v1.0.0/)
