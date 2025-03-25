@@ -9,7 +9,7 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/13.0.0/sanitize.min.css" integrity="sha512-y1dtMcuvtTMJc1yPgEqF0ZjQbhnc/bFhyvIyVNb9Zk5mIGtqVaAB1Ttl28su8AvFMOY0EwRbAe+HCLqj6W7/KA==" crossorigin>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/10up-sanitize.css/13.0.0/typography.min.css" integrity="sha512-Y1DYSb995BAfxobCkKepB1BqJJTPrOp3zPL74AWFugHHmmdcvO+C48WLrUOlhGMc0QG7AE3f7gmvvcrmX2fDoA==" crossorigin>
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.9.0/styles/default.min.css" crossorigin>
-<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:1.5em;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:2em 0 .50em 0}h3{font-size:1.4em;margin:1.6em 0 .7em 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .2s ease-in-out}a:visited{color:#503}a:hover{color:#b62}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900;font-weight:bold}pre code{font-size:.8em;line-height:1.4em;padding:1em;display:block}code{background:#f3f3f3;font-family:"DejaVu Sans Mono",monospace;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em 1em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
+<style>:root{--highlight-color:#fe9}.flex{display:flex !important}body{line-height:1.5em}#content{padding:20px}#sidebar{padding:1.5em;overflow:hidden}#sidebar > *:last-child{margin-bottom:2cm}#lunr-search{width:100%;font-size:1em;padding:6px 9px 5px 9px;border:1px solid silver}.http-server-breadcrumbs{font-size:130%;margin:0 0 15px 0}#footer{font-size:.75em;padding:5px 30px;border-top:1px solid #ddd;text-align:right}#footer p{margin:0 0 0 1em;display:inline-block}#footer p:last-child{margin-right:30px}h1,h2,h3,h4,h5{font-weight:300}h1{font-size:2.5em;line-height:1.1em}h2{font-size:1.75em;margin:2em 0 .50em 0}h3{font-size:1.4em;margin:1.6em 0 .7em 0}h4{margin:0;font-size:105%}h1:target,h2:target,h3:target,h4:target,h5:target,h6:target{background:var(--highlight-color);padding:.2em 0}a{color:#058;text-decoration:none;transition:color .2s ease-in-out}a:visited{color:#503}a:hover{color:#b62}.title code{font-weight:bold}h2[id^="header-"]{margin-top:2em}.ident{color:#900;font-weight:bold}pre code{font-size:.8em;line-height:1.4em;padding:1em;display:block}code{background:#f3f3f3;font-family:"DejaVu Sans Mono",monospace;padding:1px 4px;overflow-wrap:break-word}h1 code{background:transparent}pre{border-top:1px solid #ccc;border-bottom:1px solid #ccc;margin:1em 0}#http-server-module-list{display:flex;flex-flow:column}#http-server-module-list div{display:flex}#http-server-module-list dt{min-width:10%}#http-server-module-list p{margin-top:0}.toc ul,#index{list-style-type:none;margin:0;padding:0}#index code{background:transparent}#index h3{border-bottom:1px solid #ddd}#index ul{padding:0}#index h4{margin-top:.6em;font-weight:bold}@media (min-width:200ex){#index .two-column{column-count:2}}@media (min-width:300ex){#index .two-column{column-count:3}}dl{margin-bottom:2em}dl dl:last-child{margin-bottom:4em}dd{margin:0 0 1em 3em}#header-classes + dl > dd{margin-bottom:3em}dd dd{margin-left:2em}dd p{margin:10px 0}.name{background:#eee;font-size:.85em;padding:5px 10px;display:inline-block;min-width:40%}.name:hover{background:#e0e0e0}dt:target .name{background:var(--highlight-color)}.name > span:first-child{white-space:nowrap}.name.class > span:nth-child(2){margin-left:.4em}.inherited{color:#999;border-left:5px solid #eee;padding-left:1em}.inheritance em{font-style:normal;font-weight:bold}.desc h2{font-weight:400;font-size:1.25em}.desc h3{font-size:1em}.desc dt code{background:inherit}.source summary,.git-link-div{color:#666;text-align:right;font-weight:400;font-size:.8em;text-transform:uppercase}.source summary > *{white-space:nowrap;cursor:pointer}.git-link{color:inherit;margin-left:1em}.source pre{max-height:500px;overflow:auto;margin:0}.source pre code{font-size:12px;overflow:visible}.hlist{list-style:none}.hlist li{display:inline}.hlist li:after{content:',\2002'}.hlist li:last-child:after{content:none}.hlist .hlist{display:inline;padding-left:1em}img{max-width:100%}td{padding:0 .5em}.admonition{padding:.1em 1em;margin-bottom:1em}.admonition-title{font-weight:bold}.admonition.note,.admonition.info,.admonition.important{background:#aef}.admonition.todo,.admonition.versionadded,.admonition.tip,.admonition.hint{background:#dfd}.admonition.warning,.admonition.versionchanged,.admonition.deprecated{background:#fd4}.admonition.error,.admonition.danger,.admonition.caution{background:lightpink}</style>
 <style media="screen and (min-width: 700px)">@media screen and (min-width:700px){#sidebar{width:30%;height:100vh;overflow:auto;position:sticky;top:0}#content{width:70%;max-width:100ch;padding:3em 4em;border-left:1px solid #ddd}pre code{font-size:1em}.name{font-size:1em}main{display:flex;flex-direction:row-reverse;justify-content:flex-end}.toc ul ul,#index ul ul{padding-left:1em}.toc > ul > li{margin-top:.5em}}</style>
 <style media="print">@media print{#sidebar h1{page-break-before:always}.source{display:none}}@media print{*{background:transparent !important;color:#000 !important;box-shadow:none !important;text-shadow:none !important}a[href]:after{content:" (" attr(href) ")";font-size:90%}a[href][title]:after{content:none}abbr[title]:after{content:" (" attr(title) ")"}.ir a:after,a[href^="javascript:"]:after,a[href^="#"]:after{content:""}pre,blockquote{border:1px solid #999;page-break-inside:avoid}thead{display:table-header-group}tr,img{page-break-inside:avoid}img{max-width:100% !important}@page{margin:0.5cm}p,h2,h3{orphans:3;widows:3}h1,h2,h3,h4,h5,h6{page-break-after:avoid}}</style>
 <script type="text/x-mathjax-config">MathJax.Hub.Config({ tex2jax: { inlineMath: [ ['$','$'], ["\\(","\\)"] ], processEscapes: true } });</script>
@@ -28,8 +28,66 @@ hljs.highlightAll();
 </header>
 <section id="section-intro">
 <p><img alt="Intro GIF" src="https://raw.githubusercontent.com/GPlates/gplately/master/Notebooks/NotebookFiles/pdoc_Files/docs_muller19_seed_points.gif"></p>
-<h2 id="version-latest-dev">Version - latest dev</h2>
-<h2 id="quick-start">Quick start🚀</h2>
+<p><strong>Version - latest in dev</strong></p>
+<h2 id="introduction">Introduction</h2>
+<p>TODO</p>
+<h2 id="installation">Installation</h2>
+<h3 id="1-using-conda-recommended">1. Using conda (recommended)</h3>
+<p>The latest stable public release of <code>GPlately</code> can be installed using conda from the "conda-forge" channel. The following commands will create a new conda environment called "my-gplately-conda-env" and install GPlately within that environment.</p>
+<pre><code class="language-sh">conda create -n my-gplately-conda-env
+conda activate my-gplately-conda-env
+conda install -c conda-forge gplately
+</code></pre>
+<p>✏️ If <code>conda</code> gets <strong>stuck while solving the environment</strong> during the installation of <code>GPlately</code>, you can try using <a href="https://mamba.readthedocs.io/en/latest/user_guide/micromamba.html">micromamba</a> instead.</p>
+<h3 id="2-using-pip">2. Using pip</h3>
+<p><code>GPlately</code> can also be installed using <code>pip</code>.</p>
+<p>🟢 Install the latest stable public release from <a href="https://pypi.org/project/gplately/">PyPI</a></p>
+<pre><code class="language-sh">pip install gplately
+</code></pre>
+<p>🟢 Install from <a href="https://github.com/GPlates/gplately.git">GitHub repository</a> (if you need the latest code changes on GitHub)</p>
+<pre><code class="language-sh">pip install git+https://github.com/GPlates/gplately.git
+</code></pre>
+<p>🟢 Install from a local folder (if you need local code changes)</p>
+<pre><code class="language-sh">git clone https://github.com/GPlates/gplately.git gplately.git
+cd gplately.git # go into the folder created by &quot;git clone&quot; command
+git checkout master # check out the &quot;master&quot; branch or the name of branch you want
+git pull # fetch all recent code changes from the GitHub remote repository
+# make your local code changes 
+pip install . # alternatively, you can use &quot;pip install -e .&quot; to install gplately in editable mode
+</code></pre>
+<h3 id="3-using-docker">3. Using Docker 🐳</h3>
+<p>👉 Run GPlately notebooks with Docker</p>
+<ul>
+<li><code>docker pull gplates/gplately</code></li>
+<li><code>docker run --rm -ti -p 8888:8888
+gplates/gplately</code></li>
+<li><a href="http://localhost:8888">http://localhost:8888</a></li>
+</ul>
+<p>👉 Run GPlately command with Docker</p>
+<ul>
+<li><code>docker run gplates/gplately gplately --version</code></li>
+<li><code>docker run gplates/gplately gplately --help</code></li>
+</ul>
+<p>👉 Run your Python script with Docker</p>
+<ul>
+<li><code>docker run -it --rm -v THE_FULL_PATH_TO_YOUR_SCRIPT_FOLDER:/ws -w /ws gplates/gplately python my_script_to_run.py</code> </li>
+</ul>
+<p>✏️ Replace <strong>THE_FULL_PATH_TO_YOUR_SCRIPT_FOLDER</strong> with the full path to the folder containing your script file. In PowerShell, you can use "$PWD"
+if your script is in the current working directory. On Linux or macOS, you can use `pwd` instead.</p>
+<p>Visit <a href="https://github.com/GPlates/gplately/tree/master/docker/README.md">this page</a> for more details about using Docker with GPlately.</p>
+<h2 id="minimal-working-example">Minimal working example</h2>
+<ul>
+<li>TODO</li>
+<li>Show a basic, functional example with minimal dependencies.</li>
+<li>Keep it simple and easy to understand.</li>
+<li>&hellip;should satisfy getting a first user up and running quickly. Where the Quick Start in the GitHub Readme links to the 2nd and 3rd chapters (a quick start does not need to link to the Introduction, the first user is already sufficiently motivated by now).</li>
+</ul>
+<p>Can then add more chapters from Dietmar's Quick Start:</p>
+<h2 id="common-use-cases">Common Use Cases</h2>
+<ul>
+<li>This can cover what is currently in our Quick Start.</li>
+<li>Ie, a brief description and code example of each of the main classes (5 or so classes).</li>
+</ul>
 <h3 id="platemodelmanager"><a href="https://pypi.org/project/plate-model-manager/">PlateModelManager</a></h3>
 <p>The <strong>PlateModelManager</strong> module was introduced as a more efficient alternative to the <strong>DataServer</strong> class,
 designed specifically for downloading and managing plate reconstruction model files.
@@ -80,7 +138,7 @@ plot_topologies_obj = get_gplot(&quot;Muller2019&quot;, time=140)
 # you can get the PlateReconstruction object from a PlotTopologies object later, for example
 another_plate_reconstruction_obj = plot_topologies_instance.plate_reconstruction
 </code></pre>
-<h3 id="dataserver"><a href="https://gplates.github.io/gplately/download.html#gplately.download.DataServer">DataServer</a></h3>
+<h3 id="dataserver"><a href="https://gplates.github.io/gplately/gplately/index.html#gplately.DataServer">DataServer</a></h3>
 <p>The <code><a title="gplately.DataServer" href="#gplately.DataServer">DataServer</a></code> class allows users to automatically download and cache the necessary files for plate reconstructions to a designated folder on your system.
 These files include rotation models, topology features, and static geometries such as coastlines, continents, and continent-ocean boundaries.
 Additionally, it supports the retrieval of other data types, including rasters, grids, and feature data.
@@ -495,9 +553,18 @@ if __name__ == &quot;__main__&quot;:
 <p>The <a href="https://github.com/GPlates/gplately/blob/master/Notebooks/10-SeafloorGrids.ipynb">10-SeafloorGrids.ipynb</a> is a tutorial notebook that demonstrates
 how to set up and use the <code><a title="gplately.SeafloorGrid" href="#gplately.SeafloorGrid">SeafloorGrid</a></code> object, and shows a sample set of output grids. </p>
 <p><img alt="SeafloorGridDemo" src="https://raw.githubusercontent.com/GPlates/gplately/master/Notebooks/NotebookFiles/pdoc_Files/seafloorgrid.gif"></p>
-<h2 id="sample-workflows">Sample workflows</h2>
+<h2 id="trouble-shooting-and-faq">Trouble-shooting and FAQ</h2>
+<p>And then instead of Next Steps &amp; Links we just continue with regular detailed documentation chapters:</p>
+<h2 id="examples">Examples</h2>
 <ul>
-<li><a href="01-GettingStarted.html"><strong>01 - Getting Started</strong></a>: A brief overview of how to initialise GPlately's main objects</li>
+<li>TODO</li>
+<li>Notebooks</li>
+<li>
+<p>Other examples (not notebooks).</p>
+</li>
+<li>
+<p><a href="01-GettingStarted.html"><strong>01 - Getting Started</strong></a>: A brief overview of how to initialise GPlately's main objects</p>
+</li>
 <li><a href="02-PlateReconstructions.html"><strong>02 - Plate Reconstructions</strong></a>: Setting up a <code><a title="gplately.PlateReconstruction" href="#gplately.PlateReconstruction">PlateReconstruction</a></code> object, reconstructing geological data through time </li>
 <li><a href="03-WorkingWithPoints.html"><strong>03 - Working with Points</strong></a>: Setting up a <code><a title="gplately.Points" href="#gplately.Points">Points</a></code> object, reconstructing seed point locations through time with. This notebook uses point data from the Paleobiology Database (PBDB).</li>
 <li><a href="04-VelocityBasics.html"><strong>04 - Velocity Basics</strong></a>: Calculating plate velocities, plotting velocity vector fields</li>
@@ -509,10 +576,29 @@ how to set up and use the <code><a title="gplately.SeafloorGrid" href="#gplately
 <li><a href="10-SeafloorGrids.html"><strong>10 - SeafloorGrid</strong></a>: Defines the parameters needed to set up a <code><a title="gplately.SeafloorGrid" href="#gplately.SeafloorGrid">SeafloorGrid</a></code> object, and demonstrates how to produce age and spreading rate grids from a set of plate reconstruction model files.</li>
 <li><a href="11-AndesFluxes.html"><strong>11 - AndesFluxes</strong></a>: Demonstrates how the reconstructed subduction history along the Andean margin can be potentially used in the plate kinematics analysis and data mining.</li>
 </ul>
-<h2 id="examples">Examples</h2>
-<p>A variety of examples are available to help you get started with GPlately. Visit <a href="https://github.com/GPlates/gplately/blob/master/Notebooks/Examples/readme.md">this page</a> for more details.</p>
+<p>In addition to the notebooks above, a variety of examples are available to help you get started with GPlately.
+Visit <a href="https://github.com/GPlates/gplately/blob/master/Notebooks/Examples/readme.md">this page</a> for more details.</p>
 <h2 id="command-line-interface">Command-line interface</h2>
-<p>GPlately comes with a collection of useful command-line tools, each designed as a subcommand of GPlately. For example, the command <code><a title="gplately" href="#gplately">gplately</a> list</code> shows a list of available reconstruction models. To view all the available tools, simply run <code>gplately -h</code>. For a detailed list of the tools along with usage examples, visit <a href="https://github.com/GPlates/gplately/blob/master/gplately/commands/readme.md">this page</a>.</p>
+<ul>
+<li>TODO</li>
+<li>Maybe goes through each command with an example.</li>
+<li>Could possibly be merged into another chapter.</li>
+</ul>
+<p>GPlately comes with a collection of useful command-line tools, each designed as a subcommand of GPlately.
+For example, the command <code><a title="gplately" href="#gplately">gplately</a> list</code> shows a list of available reconstruction models.
+To view all the available tools, simply run <code>gplately -h</code>. For a detailed list of the tools along with usage examples,
+visit <a href="https://github.com/GPlates/gplately/blob/master/gplately/commands/readme.md">this page</a>.</p>
+<h2 id="primer">Primer</h2>
+<ul>
+<li>TODO</li>
+<li>This is like the Reference Manual mentioned below.</li>
+</ul>
+<h2 id="api-reference">API Reference</h2>
+<ul>
+<li>TODO</li>
+<li>This is the main part of GPlately.</li>
+<li>It's covered very well.</li>
+</ul>
 </section>
 <section>
 <h2 class="section-title" id="header-submodules">Sub-modules</h2>
@@ -14976,10 +15062,63 @@ other general z-values are saved to a gridding input file (.npz).</p></div>
 <img src="https://raw.githubusercontent.com/GPlates/gplately/master/Notebooks/NotebookFiles/ReadMe_Files/GPlately_Main_logo.png" alt="GPlately logo" height="172" width="205">
 </a>
 </header>
+<form>
+<input id="lunr-search" name="q" placeholder="🔎 Search ..." aria-label="Search"
+disabled minlength="2">
+</form>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/tingle/0.16.0/tingle.min.css" integrity="sha512-b+T2i3P45i1LZM7I00Ci5QquB9szqaxu+uuk5TUSGjZQ4w4n+qujQiIuvTv2BxE7WCGQCifNMksyKILDiHzsOg==" crossorigin>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/tingle/0.16.0/tingle.min.js" integrity="sha512-2B9/byNV1KKRm5nQ2RLViPFD6U4dUjDGwuW1GU+ImJh8YinPU9Zlq1GzdTMO+G2ROrB5o1qasJBy1ttYz0wCug==" crossorigin></script>
+<style>
+.modal-dialog iframe {
+width: 100vw;
+height: calc(100vh - 80px);
+}
+@media screen and (min-width: 700px) {
+.modal-dialog iframe {
+width: 70vw;
+height: 80vh;
+}
+}
+.modal-dialog .tingle-modal-box {width: auto;}
+.modal-dialog .tingle-modal-box__content {padding: 0;}
+</style>
+<script>
+const input = document.getElementById('lunr-search');
+input.disabled = false;
+input.form.addEventListener('submit', (ev) => {
+ev.preventDefault();
+const url = new URL(window.location);
+url.searchParams.set('q', input.value);
+history.replaceState({}, null, url.toString());
+search(input.value);
+});
+const query = new URL(window.location).searchParams.get('q');
+if (query)
+search(query);
+function search(query) {
+const url = '../doc-search.html#' + encodeURIComponent(query);
+new tingle.modal({
+cssClass: ['modal-dialog'],
+onClose: () => {
+const url = new URL(window.location);
+url.searchParams.delete('q');
+history.replaceState({}, null, url.toString());
+setTimeout(() => input.focus(), 100);
+}
+}).setContent('<iframe src="' + url + '"></iframe>').open();
+}
+</script>
 <div class="toc">
 <ul>
-<li><a href="#version-latest-dev">Version - latest dev</a></li>
-<li><a href="#quick-start">Quick start🚀</a><ul>
+<li><a href="#introduction">Introduction</a></li>
+<li><a href="#installation">Installation</a><ul>
+<li><a href="#1-using-conda-recommended">1. Using conda (recommended)</a></li>
+<li><a href="#2-using-pip">2. Using pip</a></li>
+<li><a href="#3-using-docker">3. Using Docker 🐳</a></li>
+</ul>
+</li>
+<li><a href="#minimal-working-example">Minimal working example</a></li>
+<li><a href="#common-use-cases">Common Use Cases</a><ul>
 <li><a href="#platemodelmanager">PlateModelManager</a></li>
 <li><a href="#dataserver">DataServer</a></li>
 <li><a href="#platereconstruction">PlateReconstruction</a></li>
@@ -14989,9 +15128,11 @@ other general z-values are saved to a gridding input file (.npz).</p></div>
 <li><a href="#seafloorgrid">SeafloorGrid</a></li>
 </ul>
 </li>
-<li><a href="#sample-workflows">Sample workflows</a></li>
+<li><a href="#trouble-shooting-and-faq">Trouble-shooting and FAQ</a></li>
 <li><a href="#examples">Examples</a></li>
 <li><a href="#command-line-interface">Command-line interface</a></li>
+<li><a href="#primer">Primer</a></li>
+<li><a href="#api-reference">API Reference</a></li>
 </ul>
 </div>
 <ul id="index">
