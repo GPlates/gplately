@@ -28,7 +28,7 @@ hljs.highlightAll();
 </header>
 <section id="section-intro">
 <p><img alt="Intro GIF" src="https://raw.githubusercontent.com/GPlates/gplately/master/Notebooks/NotebookFiles/pdoc_Files/docs_muller19_seed_points.gif"></p>
-<p><strong>Version - latest in dev</strong></p>
+<p><strong>Version - latest indev</strong></p>
 <h2 id="introduction">Introduction</h2>
 <p>TODO</p>
 <h2 id="installation">Installation</h2>
@@ -52,7 +52,7 @@ conda install -c conda-forge gplately
 cd gplately.git # go into the folder created by &quot;git clone&quot; command
 git checkout master # check out the &quot;master&quot; branch or the name of branch you want
 git pull # fetch all recent code changes from the GitHub remote repository
-# make your local code changes 
+# make your local code changes
 pip install . # alternatively, you can use &quot;pip install -e .&quot; to install gplately in editable mode
 </code></pre>
 <h3 id="3-using-docker">3. Using Docker 🐳</h3>
@@ -70,7 +70,7 @@ gplates/gplately</code></li>
 </ul>
 <p>👉 Run your Python script with Docker</p>
 <ul>
-<li><code>docker run -it --rm -v THE_FULL_PATH_TO_YOUR_SCRIPT_FOLDER:/ws -w /ws gplates/gplately python my_script_to_run.py</code> </li>
+<li><code>docker run -it --rm -v THE_FULL_PATH_TO_YOUR_SCRIPT_FOLDER:/ws -w /ws gplates/gplately python my_script_to_run.py</code></li>
 </ul>
 <p>✏️ Replace <strong>THE_FULL_PATH_TO_YOUR_SCRIPT_FOLDER</strong> with the full path to the folder containing your script file. In PowerShell, you can use "$PWD"
 if your script is in the current working directory. On Linux or macOS, you can use `pwd` instead.</p>
@@ -83,6 +83,10 @@ if your script is in the current working directory. On Linux or macOS, you can u
 <li>&hellip;should satisfy getting a first user up and running quickly. Where the Quick Start in the GitHub Readme links to the 2nd and 3rd chapters (a quick start does not need to link to the Introduction, the first user is already sufficiently motivated by now).</li>
 </ul>
 <p>Can then add more chapters from Dietmar's Quick Start:</p>
+<ul>
+<li>If you prefer using Jupyter Notebook, click here.</li>
+<li>If you prefer using Python script, click here.</li>
+</ul>
 <h2 id="common-use-cases">Common Use Cases</h2>
 <ul>
 <li>This can cover what is currently in our Quick Start.</li>
@@ -472,8 +476,7 @@ how to use the <code><a title="gplately.Points" href="#gplately.Points">Points</
 <h3 id="raster"><a href="https://gplates.github.io/gplately/grids.html#gplately.grids.Raster">Raster</a></h3>
 <p>The <code><a title="gplately.Raster" href="#gplately.Raster">Raster</a></code> class contains methods to work with netCDF4 or MaskedArray gridded data. Grids may be filled,
 resized, resampled, and reconstructed back and forwards through geologic time. Other array data can also be
-interpolated onto <code><a title="gplately.Raster" href="#gplately.Raster">Raster</a></code> grids.
-</p>
+interpolated onto <code><a title="gplately.Raster" href="#gplately.Raster">Raster</a></code> grids.</p>
 <pre><code class="language-python">from gplately import PlateModelManager, PresentDayRasterManager, Raster, auxiliary
 
 model_name = &quot;Muller2019&quot;
@@ -503,7 +506,7 @@ how to use the <code><a title="gplately.Raster" href="#gplately.Raster">Raster</
 <p>The <code><a title="gplately.PlotTopologies" href="#gplately.PlotTopologies">PlotTopologies</a></code> class works with the aforementioned <code><a title="gplately.PlateReconstruction" href="#gplately.PlateReconstruction">PlateReconstruction</a></code> class to plot
 geologic features of different types listed
 <a href="https://gplates.github.io/gplately/plot.html#gplately.plot.PlotTopologies">here</a>, as well as
-coastline, continent and continent-ocean boundary geometries reconstructed through time using pyGPlates. </p>
+coastline, continent and continent-ocean boundary geometries reconstructed through time using pyGPlates.</p>
 <pre><code class="language-python">from gplately import PlateModelManager, PlotTopologies, auxiliary
 
 model = PlateModelManager().get_model(&quot;Muller2019&quot;)
@@ -528,7 +531,7 @@ how to use the <code><a title="gplately.PlotTopologies" href="#gplately.PlotTopo
 <p><img alt="PlotTopologiesDemo" src="https://raw.githubusercontent.com/GPlates/gplately/master/Notebooks/NotebookFiles/pdoc_Files/plottopologies.png"></p>
 <h3 id="seafloorgrid"><a href="https://gplates.github.io/gplately/oceans.html#gplately.oceans.SeafloorGrid">SeafloorGrid</a></h3>
 <p>The <code><a title="gplately.SeafloorGrid" href="#gplately.SeafloorGrid">SeafloorGrid</a></code> class wraps an automatic workflow to grid seafloor ages and seafloor spreading rates
-as encoded by a plate reconstruction model. </p>
+as encoded by a plate reconstruction model.</p>
 <pre><code class="language-python">import os
 
 os.environ[&quot;DISABLE_GPLATELY_DEV_WARNING&quot;] = &quot;true&quot;
@@ -551,7 +554,7 @@ if __name__ == &quot;__main__&quot;:
     seafloorgrid.reconstruct_by_topologies()
 </code></pre>
 <p>The <a href="https://github.com/GPlates/gplately/blob/master/Notebooks/10-SeafloorGrids.ipynb">10-SeafloorGrids.ipynb</a> is a tutorial notebook that demonstrates
-how to set up and use the <code><a title="gplately.SeafloorGrid" href="#gplately.SeafloorGrid">SeafloorGrid</a></code> object, and shows a sample set of output grids. </p>
+how to set up and use the <code><a title="gplately.SeafloorGrid" href="#gplately.SeafloorGrid">SeafloorGrid</a></code> object, and shows a sample set of output grids.</p>
 <p><img alt="SeafloorGridDemo" src="https://raw.githubusercontent.com/GPlates/gplately/master/Notebooks/NotebookFiles/pdoc_Files/seafloorgrid.gif"></p>
 <h2 id="trouble-shooting-and-faq">Trouble-shooting and FAQ</h2>
 <p>And then instead of Next Steps &amp; Links we just continue with regular detailed documentation chapters:</p>
@@ -565,12 +568,12 @@ how to set up and use the <code><a title="gplately.SeafloorGrid" href="#gplately
 <li>
 <p><a href="01-GettingStarted.html"><strong>01 - Getting Started</strong></a>: A brief overview of how to initialise GPlately's main objects</p>
 </li>
-<li><a href="02-PlateReconstructions.html"><strong>02 - Plate Reconstructions</strong></a>: Setting up a <code><a title="gplately.PlateReconstruction" href="#gplately.PlateReconstruction">PlateReconstruction</a></code> object, reconstructing geological data through time </li>
+<li><a href="02-PlateReconstructions.html"><strong>02 - Plate Reconstructions</strong></a>: Setting up a <code><a title="gplately.PlateReconstruction" href="#gplately.PlateReconstruction">PlateReconstruction</a></code> object, reconstructing geological data through time</li>
 <li><a href="03-WorkingWithPoints.html"><strong>03 - Working with Points</strong></a>: Setting up a <code><a title="gplately.Points" href="#gplately.Points">Points</a></code> object, reconstructing seed point locations through time with. This notebook uses point data from the Paleobiology Database (PBDB).</li>
 <li><a href="04-VelocityBasics.html"><strong>04 - Velocity Basics</strong></a>: Calculating plate velocities, plotting velocity vector fields</li>
 <li><a href="05-WorkingWithFeatureGeometries.html"><strong>05 - Working with Feature Geometries</strong></a>: Processing and plotting assorted polyline, polygon and point data from <a href="https://www.earthbyte.org/gplates-2-3-software-and-data-sets/">GPlates 2.3's sample data sets</a></li>
 <li><a href="06-Rasters.html"><strong>06 - Rasters</strong></a>: Reading, resizing, resampling raster data, and linearly interpolating point data onto raster data</li>
-<li><a href="07-WorkingWithPlateTectonicStats.html"><strong>07 - Plate Tectonic Stats</strong></a>: Using <a href="https://github.com/EarthByte/PlateTectonicTools">PlateTectonicTools</a> to calculate and plot subduction zone and ridge data (convergence/spreading velocities, subduction angles, subduction zone and ridge lengths, crustal surface areas produced and subducted etc.) </li>
+<li><a href="07-WorkingWithPlateTectonicStats.html"><strong>07 - Plate Tectonic Stats</strong></a>: Using <a href="https://github.com/EarthByte/PlateTectonicTools">PlateTectonicTools</a> to calculate and plot subduction zone and ridge data (convergence/spreading velocities, subduction angles, subduction zone and ridge lengths, crustal surface areas produced and subducted etc.)</li>
 <li><a href="08-PredictingSlabFlux.html"><strong>08 - Predicting Slab Flux</strong></a>: Predicting the average slab dip angle of subducting oceanic lithosphere.</li>
 <li><a href="09-CreatingMotionPathsAndFlowlines.html"><strong>09 - Motion Paths and Flowlines</strong></a>: Using pyGPlates to create motion paths and flowines of points on a tectonic plate to illustrate the plate's trajectory through geological time.</li>
 <li><a href="10-SeafloorGrids.html"><strong>10 - SeafloorGrid</strong></a>: Defines the parameters needed to set up a <code><a title="gplately.SeafloorGrid" href="#gplately.SeafloorGrid">SeafloorGrid</a></code> object, and demonstrates how to produce age and spreading rate grids from a set of plate reconstruction model files.</li>
