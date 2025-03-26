@@ -19,7 +19,7 @@
 
 ![Intro GIF](https://raw.githubusercontent.com/GPlates/gplately/master/Notebooks/NotebookFiles/pdoc_Files/docs_muller19_seed_points.gif)
 
-**Version - latest in dev**
+**Version - latest indev**
 
 ## Introduction
 TODO
@@ -61,7 +61,7 @@ git clone https://github.com/GPlates/gplately.git gplately.git
 cd gplately.git # go into the folder created by "git clone" command
 git checkout master # check out the "master" branch or the name of branch you want
 git pull # fetch all recent code changes from the GitHub remote repository
-# make your local code changes 
+# make your local code changes
 pip install . # alternatively, you can use "pip install -e ." to install gplately in editable mode
 ```
 
@@ -80,7 +80,7 @@ pip install . # alternatively, you can use "pip install -e ." to install gplatel
 
 👉 Run your Python script with Docker
 
-- `docker run -it --rm -v THE_FULL_PATH_TO_YOUR_SCRIPT_FOLDER:/ws -w /ws gplates/gplately python my_script_to_run.py` 
+- `docker run -it --rm -v THE_FULL_PATH_TO_YOUR_SCRIPT_FOLDER:/ws -w /ws gplates/gplately python my_script_to_run.py`
 
 ✏️ Replace __THE_FULL_PATH_TO_YOUR_SCRIPT_FOLDER__ with the full path to the folder containing your script file. In PowerShell, you can use "$PWD"  if your script is in the current working directory. On Linux or macOS, you can use \`pwd\` instead.
 
@@ -94,13 +94,16 @@ Visit [this page](https://github.com/GPlates/gplately/tree/master/docker/README.
 
 Can then add more chapters from Dietmar's Quick Start:
 
+- If you prefer using Jupyter Notebook, click here.
+- If you prefer using Python script, click here.
+
 ## Common Use Cases
 - This can cover what is currently in our Quick Start.
 - Ie, a brief description and code example of each of the main classes (5 or so classes).
 
 ### [PlateModelManager](https://pypi.org/project/plate-model-manager/)
-The **PlateModelManager** module was introduced as a more efficient alternative to the **DataServer** class, 
-designed specifically for downloading and managing plate reconstruction model files. 
+The **PlateModelManager** module was introduced as a more efficient alternative to the **DataServer** class,
+designed specifically for downloading and managing plate reconstruction model files.
 More information about the PlateModelManager module can be found in [its GitHub repository](https://github.com/GPlates/plate-model-manager).
 
 ```python
@@ -134,8 +137,8 @@ raster = Raster(PresentDayRasterManager().get_raster("topography"))
 agegrid = Raster(model.get_raster("AgeGrids", time=100))
 ```
 
-For more example code, a [comprehensive example](https://github.com/GPlates/gplately/blob/master/Notebooks/Examples/introducing_plate_model_manager.py) 
-on GitHub demonstrates how to use the PlateModelManager module in details. [Another example](https://github.com/GPlates/gplately/blob/master/Notebooks/Examples/working_with_plate_model_manager.py) 
+For more example code, a [comprehensive example](https://github.com/GPlates/gplately/blob/master/Notebooks/Examples/introducing_plate_model_manager.py)
+on GitHub demonstrates how to use the PlateModelManager module in details. [Another example](https://github.com/GPlates/gplately/blob/master/Notebooks/Examples/working_with_plate_model_manager.py)
 shows how to use the PlateModelManager module with GPlately.
 
 You may use the auxiliary functions to create the `PlateReconstruction` and `PlotTopologies` objects.
@@ -156,9 +159,9 @@ another_plate_reconstruction_obj = plot_topologies_instance.plate_reconstruction
 ```
 
 ### [DataServer](https://gplates.github.io/gplately/gplately/index.html#gplately.DataServer)
-The `DataServer` class allows users to automatically download and cache the necessary files for plate reconstructions to a designated folder on your system. 
-These files include rotation models, topology features, and static geometries such as coastlines, continents, and continent-ocean boundaries. 
-Additionally, it supports the retrieval of other data types, including rasters, grids, and feature data. 
+The `DataServer` class allows users to automatically download and cache the necessary files for plate reconstructions to a designated folder on your system.
+These files include rotation models, topology features, and static geometries such as coastlines, continents, and continent-ocean boundaries.
+Additionally, it supports the retrieval of other data types, including rasters, grids, and feature data.
 (Use the newer **PlateModelManager** whenever possible.)
 
 ```python
@@ -238,12 +241,12 @@ from gplately.auxiliary import get_plate_reconstruction
 plate_reconstruction_instance = get_plate_reconstruction("Muller2019")
 ```
 
-This [02-PlateReconstructions.ipynb](https://github.com/GPlates/gplately/blob/master/Notebooks/02-PlateReconstructions.ipynb) demonstrates in details 
+This [02-PlateReconstructions.ipynb](https://github.com/GPlates/gplately/blob/master/Notebooks/02-PlateReconstructions.ipynb) demonstrates in details
 how to use the `PlateReconstruction` class.
 
 ### [Points](https://gplates.github.io/gplately/reconstruction.html#gplately.reconstruction.Points)
-The methods in the `Points` class track the motion of a point (or group of points) represented by a latitude and longitude 
-through geologic time. This motion can be visualised using flowlines or motion paths and quantified with point 
+The methods in the `Points` class track the motion of a point (or group of points) represented by a latitude and longitude
+through geologic time. This motion can be visualised using flowlines or motion paths and quantified with point
 motion velocities.
 
 ```python
@@ -264,7 +267,7 @@ pt_lats = np.array([-30.0, -40.0, -50.0])
 gpts = Points(recon_model, pt_lons, pt_lats)
 ```
 
-The [03-WorkingWithPoints.ipynb](https://github.com/GPlates/gplately/blob/master/Notebooks/03-WorkingWithPoints.ipynb) demonstrates in details 
+The [03-WorkingWithPoints.ipynb](https://github.com/GPlates/gplately/blob/master/Notebooks/03-WorkingWithPoints.ipynb) demonstrates in details
 how to use the `Points` class.
 
 ![PointsDemo](https://raw.githubusercontent.com/GPlates/gplately/master/Notebooks/NotebookFiles/pdoc_Files/Reconstructed-Jurassic-Foraminifera-locations-min.png)
@@ -274,9 +277,9 @@ The [09-CreatingMotionPathsAndFlowlines.ipynb](https://github.com/GPlates/gplate
 ![motion paths and flowlines](https://raw.githubusercontent.com/GPlates/gplately/master/Notebooks/NotebookFiles/pdoc_Files/Hawaii_Emperor_motion_path.png)
 
 ### [Raster](https://gplates.github.io/gplately/grids.html#gplately.grids.Raster)
-The `Raster` class contains methods to work with netCDF4 or MaskedArray gridded data. Grids may be filled, 
-resized, resampled, and reconstructed back and forwards through geologic time. Other array data can also be 
-interpolated onto `Raster` grids.  
+The `Raster` class contains methods to work with netCDF4 or MaskedArray gridded data. Grids may be filled,
+resized, resampled, and reconstructed back and forwards through geologic time. Other array data can also be
+interpolated onto `Raster` grids.
 
 ```python
 from gplately import PlateModelManager, PresentDayRasterManager, Raster, auxiliary
@@ -302,16 +305,16 @@ reconstructed_raster = raster.reconstruct(
 )
 ```
 
-The [06-Rasters.ipynb](https://github.com/GPlates/gplately/blob/master/Notebooks/06-Rasters.ipynb) demonstrates in details 
+The [06-Rasters.ipynb](https://github.com/GPlates/gplately/blob/master/Notebooks/06-Rasters.ipynb) demonstrates in details
 how to use the `Raster` class.
 
 ![RasterDemo](https://raw.githubusercontent.com/GPlates/gplately/master/Notebooks/NotebookFiles/pdoc_Files/etopo_reconstruction.png)
 
 ### [PlotTopologies](https://gplates.github.io/gplately/plot.html#gplately.plot.PlotTopologies)
 The `PlotTopologies` class works with the aforementioned `PlateReconstruction` class to plot
-geologic features of different types listed 
-[here](https://gplates.github.io/gplately/plot.html#gplately.plot.PlotTopologies), as well as 
-coastline, continent and continent-ocean boundary geometries reconstructed through time using pyGPlates. 
+geologic features of different types listed
+[here](https://gplates.github.io/gplately/plot.html#gplately.plot.PlotTopologies), as well as
+coastline, continent and continent-ocean boundary geometries reconstructed through time using pyGPlates.
 
 ```python
 from gplately import PlateModelManager, PlotTopologies, auxiliary
@@ -337,14 +340,14 @@ from gplately.auxiliary import get_gplot
 plot_topologies_obj = get_gplot("Muller2019", time=55)
 ```
 
-The [02-PlateReconstructions.ipynb](https://github.com/GPlates/gplately/blob/master/Notebooks/02-PlateReconstructions.ipynb) demonstrates in details 
+The [02-PlateReconstructions.ipynb](https://github.com/GPlates/gplately/blob/master/Notebooks/02-PlateReconstructions.ipynb) demonstrates in details
 how to use the `PlotTopologies` class.
 
 ![PlotTopologiesDemo](https://raw.githubusercontent.com/GPlates/gplately/master/Notebooks/NotebookFiles/pdoc_Files/plottopologies.png)
 
 ### [SeafloorGrid](https://gplates.github.io/gplately/oceans.html#gplately.oceans.SeafloorGrid)
 The `SeafloorGrid` class wraps an automatic workflow to grid seafloor ages and seafloor spreading rates
-as encoded by a plate reconstruction model. 
+as encoded by a plate reconstruction model.
 
 ```python
 import os
@@ -370,7 +373,7 @@ if __name__ == "__main__":
 ```
 
 The [10-SeafloorGrids.ipynb](https://github.com/GPlates/gplately/blob/master/Notebooks/10-SeafloorGrids.ipynb) is a tutorial notebook that demonstrates
-how to set up and use the `SeafloorGrid` object, and shows a sample set of output grids. 
+how to set up and use the `SeafloorGrid` object, and shows a sample set of output grids.
 
 ![SeafloorGridDemo](https://raw.githubusercontent.com/GPlates/gplately/master/Notebooks/NotebookFiles/pdoc_Files/seafloorgrid.gif)
 
@@ -383,18 +386,18 @@ And then instead of Next Steps & Links we just continue with regular detailed do
 - Other examples (not notebooks).
 
 - [__01 - Getting Started__](01-GettingStarted.html): A brief overview of how to initialise GPlately's main objects
-- [__02 - Plate Reconstructions__](02-PlateReconstructions.html): Setting up a `PlateReconstruction` object, reconstructing geological data through time 
+- [__02 - Plate Reconstructions__](02-PlateReconstructions.html): Setting up a `PlateReconstruction` object, reconstructing geological data through time
 - [__03 - Working with Points__](03-WorkingWithPoints.html): Setting up a `Points` object, reconstructing seed point locations through time with. This notebook uses point data from the Paleobiology Database (PBDB).
 - [__04 - Velocity Basics__](04-VelocityBasics.html): Calculating plate velocities, plotting velocity vector fields
 - [__05 - Working with Feature Geometries__](05-WorkingWithFeatureGeometries.html): Processing and plotting assorted polyline, polygon and point data from [GPlates 2.3's sample data sets](https://www.earthbyte.org/gplates-2-3-software-and-data-sets/)
 - [__06 - Rasters__](06-Rasters.html): Reading, resizing, resampling raster data, and linearly interpolating point data onto raster data
-- [__07 - Plate Tectonic Stats__](07-WorkingWithPlateTectonicStats.html): Using [PlateTectonicTools](https://github.com/EarthByte/PlateTectonicTools) to calculate and plot subduction zone and ridge data (convergence/spreading velocities, subduction angles, subduction zone and ridge lengths, crustal surface areas produced and subducted etc.) 
+- [__07 - Plate Tectonic Stats__](07-WorkingWithPlateTectonicStats.html): Using [PlateTectonicTools](https://github.com/EarthByte/PlateTectonicTools) to calculate and plot subduction zone and ridge data (convergence/spreading velocities, subduction angles, subduction zone and ridge lengths, crustal surface areas produced and subducted etc.)
 - [__08 - Predicting Slab Flux__](08-PredictingSlabFlux.html): Predicting the average slab dip angle of subducting oceanic lithosphere.
 - [__09 - Motion Paths and Flowlines__](09-CreatingMotionPathsAndFlowlines.html): Using pyGPlates to create motion paths and flowines of points on a tectonic plate to illustrate the plate's trajectory through geological time.
 - [__10 - SeafloorGrid__](10-SeafloorGrids.html): Defines the parameters needed to set up a `SeafloorGrid` object, and demonstrates how to produce age and spreading rate grids from a set of plate reconstruction model files.
 - [__11 - AndesFluxes__](11-AndesFluxes.html): Demonstrates how the reconstructed subduction history along the Andean margin can be potentially used in the plate kinematics analysis and data mining.
 
-In addition to the notebooks above, a variety of examples are available to help you get started with GPlately. 
+In addition to the notebooks above, a variety of examples are available to help you get started with GPlately.
 Visit [this page](https://github.com/GPlates/gplately/blob/master/Notebooks/Examples/readme.md) for more details.
 
 ## Command-line interface
@@ -402,9 +405,9 @@ Visit [this page](https://github.com/GPlates/gplately/blob/master/Notebooks/Exam
 - Maybe goes through each command with an example.
 - Could possibly be merged into another chapter.
 
-GPlately comes with a collection of useful command-line tools, each designed as a subcommand of GPlately. 
-For example, the command `gplately list` shows a list of available reconstruction models. 
-To view all the available tools, simply run `gplately -h`. For a detailed list of the tools along with usage examples, 
+GPlately comes with a collection of useful command-line tools, each designed as a subcommand of GPlately.
+For example, the command `gplately list` shows a list of available reconstruction models.
+To view all the available tools, simply run `gplately -h`. For a detailed list of the tools along with usage examples,
 visit [this page](https://github.com/GPlates/gplately/blob/master/gplately/commands/readme.md).
 
 
