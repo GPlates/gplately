@@ -41,7 +41,7 @@ dependencies = [
     "pyyaml",
     "pygmt",
     "rioxarray",
-    "pygplates>=1.0.0rc1",
+    "pygplates>=1.0.0",
 ]
 
 [tool.setuptools.packages.find]

@@ -101,7 +101,7 @@ if __name__ == "__main__":
             "pyyaml",
             "pygmt",
             "rioxarray",
-            "pygplates>=1.0.0rc1",
+            "pygplates>=1.0.0",
         ],
         packages=["gplately"],
         # package_data={
