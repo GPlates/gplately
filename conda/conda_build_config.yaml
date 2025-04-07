@@ -1,4 +1,8 @@
 # Can source pyGPlates from its 'rc' channel or main channel.
+# Note: The min. pygplates requirement (in meta.yaml) should find
+#       the right channel (eg, >=1.0.0 should use main channel when
+#       1.0.0rc1 is in 'rc' channel and 1.0.0 is in main channel).
+#
 # Other dependencies are sourced from main channel.
 channel_sources:
   - conda-forge/label/pygplates_rc,conda-forge

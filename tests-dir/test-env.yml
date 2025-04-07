@@ -1,6 +1,5 @@
 name: test-env
 channels:
-  - conda-forge/label/pygplates_rc
   - conda-forge
   - defaults
 dependencies:
