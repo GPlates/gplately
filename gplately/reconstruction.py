@@ -712,16 +712,6 @@ class PlateReconstruction(object):
             else:
                 overriding_plate_is_on_left = False
 
-            # TODO: Get trench plate ID from sub-segments of shared sub-segment (if it's a topological line).
-            #       This will probably require adding the sub-segment feature (or sub-sub-segment if topological line)
-            #       to pygplates.PlateBoundaryStatistic (so we can obtain the trench plate ID).
-            #       Perhaps can slip that into pygplates 1.0.0 (Jan 2025).
-            #       Until then this will not be accurate for deforming topological lines:
-            #         See https://github.com/GPlates/gplately/issues/270
-            trench_plate_id = (
-                shared_sub_segment.get_feature().get_reconstruction_plate_id()
-            )
-
             # Iterate over the uniform points of the current shared boundary sub-segment.
             for stat in shared_sub_segment_stats:
                 # Find subducting plate velocity (opposite to overriding plate).
@@ -823,6 +813,22 @@ class PlateReconstruction(object):
                     )
 
                 lat, lon = stat.boundary_point.to_lat_lon()
+
+                # The plate ID along the trench line.
+                #
+                # Note: The plate IDs along the trench line and overriding plate ID can differ even in a non-deforming model
+                #       due to smaller plates, not modelled by topologies, moving differently than the larger topological
+                #       plate being modelled - and the trench line having plate IDs of the smaller plates near them.
+                #       For that reason we use the plate IDs of the trench line (rather than the overriding plate ID).
+                #
+                # Note: Using 'pygplates.PlateBoundaryStatistic.boundary_feature' means that if the current shared sub-segment
+                #       is part of a topological line then this will obtain a plate ID from whichever sub-segment, of the current
+                #       shared sub-segment, the current boundary point lies on (rather than obtaining a plate ID from the
+                #       shared sub-segment itself). This is because a trench line that is a topological line might actually be
+                #       deforming (or intended to be deforming) and hence its plate ID is not meaningful, or at least we can't
+                #       be sure whether it will be zero or the overriding plate (or something else).
+                #
+                trench_plate_id = stat.boundary_feature.get_reconstruction_plate_id()
 
                 if overriding_plate_is_on_left:
                     subducting_plate = stat.right_plate
@@ -1108,6 +1114,10 @@ class PlateReconstruction(object):
         than -90) - note that this ignores the kinematics of the subducting plate. Similiarly for the subducting plate absolute
         velocity magnitude (if keyword argument `output_subducting_absolute_velocity` is True).
 
+        The trench plate ID at each sample point can differ from the overriding plate ID.
+        This is because, even in a non-deforming model, the smaller plates (not modelled by topologies) can move differently
+        than the larger topological plate. So the trench line has the plate IDs of the smaller plates.
+
         Examples
         --------
         To sample points along subduction zones at 50Ma:
@@ -1209,7 +1219,7 @@ class PlateReconstruction(object):
                 "length (degrees)": subduction_data[:, 6],
                 "trench normal angle (degrees)": subduction_data[:, 7],
                 "subducting plate ID": subduction_data[:, 8],
-                "overriding plate ID": subduction_data[:, 9],
+                "trench plate ID": subduction_data[:, 9],
             }
 
             # Optional data.
