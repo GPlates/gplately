@@ -86,7 +86,7 @@ if __name__ == "__main__":
         long_description=long_description,
         long_description_content_type="text/markdown",
         install_requires=[
-            "numpy>=1.16.0",
+            "numpy>=1.16.0,<2.0a0",  # Temporary until stripy is compiled to support NumPy 2.x (see https://github.com/GPlates/gplately/issues/305)
             "scipy>=1.0.0",
             "shapely",
             "matplotlib",
@@ -101,7 +101,7 @@ if __name__ == "__main__":
             "pyyaml",
             "pygmt",
             "rioxarray",
-            "pygplates>=1.0.0rc1",
+            "pygplates>=1.0.0",
         ],
         packages=["gplately"],
         # package_data={

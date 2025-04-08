@@ -21,7 +21,7 @@ requirements:
     - python
     - numpy >=1.16.0
     - scipy >=1.0.0
-    - pygplates >= 1.0.0rc1
+    - pygplates >= 1.0.0
     - shapely
     - matplotlib-base
     - cartopy
