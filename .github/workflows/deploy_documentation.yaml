@@ -4,6 +4,7 @@ on:
   push:
     branches: 
       - master
+      - update-doc-readme-examples
   pull_request:
     branches: 
       - master
