@@ -29,12 +29,14 @@ Indices and tables
 
    installation
    basic_usages
+   use_cases
+   faq
    examples
    command_line_interface
-   api
+   primer
 
 .. toctree::
-   :caption: everything under the hood 
+   :caption: API Reference
    :maxdepth: 2
    :hidden:
 
