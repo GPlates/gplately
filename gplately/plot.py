@@ -17,7 +17,7 @@
 
 """This sub-module contains tools for reconstructing and plotting geological features and feature data through time.
 
-Methods in `plot.py` reconstruct geological features using 
+Methods in `plot.py` reconstruct geological features using
 [pyGPlates' `reconstruct` function](https://www.gplates.org/docs/pygplates/generated/pygplates.reconstruct.html),
 turns them into plottable Shapely geometries, and plots them onto Cartopy GeoAxes using Shapely and GeoPandas.
 
@@ -188,8 +188,7 @@ class PlotTopologies(object):
     `pygplates.FeatureCollection` items.
 
     Some features for plotting (like plate boundaries) are taken from the `PlateReconstruction`
-    object's`topology_features` attribute. They have already been reconstructed to the given
-    `time` using [Plate Tectonic Tools](https://github.com/EarthByte/PlateTectonicTools).
+    object's`topology_features` attribute. They have already been reconstructed to the given `time`.
     Simply provide a new reconstruction time by changing the `time` attribute, e.g.
 
         gplot.time = 20 # Ma
