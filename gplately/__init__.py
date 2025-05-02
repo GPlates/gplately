@@ -158,7 +158,7 @@ plot_topologies_obj = get_gplot("Muller2019", time=140)
 another_plate_reconstruction_obj = plot_topologies_instance.plate_reconstruction
 ```
 
-### [DataServer](https://gplates.github.io/gplately/gplately/index.html#gplately.DataServer)
+### [DataServer](https://gplates.github.io/gplately/download.html#gplately.download.DataServer)
 The `DataServer` class allows users to automatically download and cache the necessary files for plate reconstructions to a designated folder on your system.
 These files include rotation models, topology features, and static geometries such as coastlines, continents, and continent-ocean boundaries.
 Additionally, it supports the retrieval of other data types, including rasters, grids, and feature data.
@@ -391,7 +391,7 @@ And then instead of Next Steps & Links we just continue with regular detailed do
 - [__04 - Velocity Basics__](04-VelocityBasics.html): Calculating plate velocities, plotting velocity vector fields
 - [__05 - Working with Feature Geometries__](05-WorkingWithFeatureGeometries.html): Processing and plotting assorted polyline, polygon and point data from [GPlates 2.3's sample data sets](https://www.earthbyte.org/gplates-2-3-software-and-data-sets/)
 - [__06 - Rasters__](06-Rasters.html): Reading, resizing, resampling raster data, and linearly interpolating point data onto raster data
-- [__07 - Plate Tectonic Stats__](07-WorkingWithPlateTectonicStats.html): Using [PlateTectonicTools](https://github.com/EarthByte/PlateTectonicTools) to calculate and plot subduction zone and ridge data (convergence/spreading velocities, subduction angles, subduction zone and ridge lengths, crustal surface areas produced and subducted etc.)
+- [__07 - Plate Tectonic Stats__](07-WorkingWithPlateTectonicStats.html): Calculating and plotting subduction zone and ridge data (convergence/spreading velocities, subduction angles, subduction zone and ridge lengths, crustal surface areas produced and subducted etc.)
 - [__08 - Predicting Slab Flux__](08-PredictingSlabFlux.html): Predicting the average slab dip angle of subducting oceanic lithosphere.
 - [__09 - Motion Paths and Flowlines__](09-CreatingMotionPathsAndFlowlines.html): Using pyGPlates to create motion paths and flowines of points on a tectonic plate to illustrate the plate's trajectory through geological time.
 - [__10 - SeafloorGrid__](10-SeafloorGrids.html): Defines the parameters needed to set up a `SeafloorGrid` object, and demonstrates how to produce age and spreading rate grids from a set of plate reconstruction model files.
