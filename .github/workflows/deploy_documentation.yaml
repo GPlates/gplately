@@ -40,21 +40,34 @@ jobs:
         run: jupyter-nbconvert --version
         shell: bash -el {0}
 
-      - name: test pdoc
-        run: pdoc --version
-        shell: bash -el {0}
+      #- name: test pdoc
+      #  run: pdoc --version
+      #  shell: bash -el {0}
 
-      - name: Generate documentation with pdoc3
-        run: pdoc --config latex_math=True --template-dir .pdoc_template --html -o api --force gplately
-        shell: bash -el {0}
+      #- name: Generate documentation with pdoc3
+      #  run: pdoc --config latex_math=True --template-dir .pdoc_template --html -o api --force gplately
+      #  shell: bash -el {0}
       
       - name: Convert jupyter notebooks to html
         run: jupyter-nbconvert --to=html --output-dir=api/gplately/ Notebooks/*.ipynb
         shell: bash -el {0}
 
+      - name: Build doc with sphinx
+        run : |
+          sphinx-apidoc -f -o sphinx-doc/source gplately/
+          cd sphinx-doc
+          make html
+
       - name: Deploy to gh-pages
         uses: JamesIves/github-pages-deploy-action@v4.2.2
         with:
           branch: gh-pages
-          folder: api/gplately/
-          target-folder: dev-doc/
+          folder: sphinx-doc/build/
+          target-folder: sphinx-latest/
+
+      #- name: Deploy to gh-pages
+      #  uses: JamesIves/github-pages-deploy-action@v4.2.2
+      #  with:
+      #    branch: gh-pages
+      #    folder: api/gplately/
+      #    target-folder: dev-doc/
