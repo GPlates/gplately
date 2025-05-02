@@ -1,0 +1,669 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>gplately.data &mdash; gplately 2.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=51b770b3"></script>
+      <script src="../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            gplately
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">GPlately v2.0.0</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../basic_usages.html">Minimal working example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../use_cases.html">Common Use Cases</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../faq.html">Trouble-shooting and FAQ</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../command_line_interface.html">Command Line Interface (CLI)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../primer.html">Primer</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../modules.html">gplately</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">gplately</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">gplately.data</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for gplately.data</h1><div class="highlight"><pre>
+<span></span><span class="c1">#</span>
+<span class="c1">#    Copyright (C) 2024 The University of Sydney, Australia</span>
+<span class="c1">#</span>
+<span class="c1">#    This program is free software; you can redistribute it and/or modify it under</span>
+<span class="c1">#    the terms of the GNU General Public License, version 2, as published by</span>
+<span class="c1">#    the Free Software Foundation.</span>
+<span class="c1">#</span>
+<span class="c1">#    This program is distributed in the hope that it will be useful, but WITHOUT</span>
+<span class="c1">#    ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or</span>
+<span class="c1">#    FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License</span>
+<span class="c1">#    for more details.</span>
+<span class="c1">#</span>
+<span class="c1">#    You should have received a copy of the GNU General Public License along</span>
+<span class="c1">#    with this program; if not, write to Free Software Foundation, Inc.,</span>
+<span class="c1">#    51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.</span>
+<span class="c1">#</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">re</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">_re</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">_np</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="kn">import</span> <span class="n">size</span> <span class="k">as</span> <span class="n">_size</span>
+
+<span class="c1"># ============ LINKS FOR DOWNLOADING PLATE RECONSTRUCTION FILES ON-THE-FLY ==============</span>
+<span class="sd">&quot;&quot;&quot; This auxiliary script contains links to download plate model data from web servers</span>
+<span class="sd">such as EarthByte&#39;s webDAV server. These links are accessed by GPlately&#39;s DataServer object</span>
+<span class="sd">and downloaded into the &quot;gplately&quot; folder in your machine&#39;s cache via Pooch.</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+
+<div class="viewcode-block" id="_find_needed_collection">
+<a class="viewcode-back" href="../../gplately.html#gplately.data._find_needed_collection">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">_find_needed_collection</span><span class="p">(</span><span class="n">collection_identifier</span><span class="p">,</span> <span class="n">data_dictionary</span><span class="p">,</span> <span class="n">time</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Search through link databases and time arrays (or single integer</span>
+<span class="sd">    time) for requested download links.&quot;&quot;&quot;</span>
+
+    <span class="n">all_urls</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">collection</span><span class="p">,</span> <span class="n">url</span> <span class="ow">in</span> <span class="n">data_dictionary</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="k">if</span> <span class="n">collection_identifier</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="n">collection</span><span class="o">.</span><span class="n">lower</span><span class="p">():</span>
+
+            <span class="k">if</span> <span class="n">time</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+
+                <span class="n">valid_times_dict</span> <span class="o">=</span> <span class="n">DataCollection</span><span class="p">(</span>
+                    <span class="n">collection_identifier</span>
+                <span class="p">)</span><span class="o">.</span><span class="n">plate_model_valid_reconstruction_times</span><span class="p">()</span>
+
+                <span class="k">for</span> <span class="n">collection</span><span class="p">,</span> <span class="n">valid_times</span> <span class="ow">in</span> <span class="nb">list</span><span class="p">(</span><span class="n">valid_times_dict</span><span class="o">.</span><span class="n">items</span><span class="p">()):</span>
+                    <span class="k">if</span> <span class="n">collection_identifier</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="n">collection</span><span class="o">.</span><span class="n">lower</span><span class="p">():</span>
+                        <span class="n">min_time</span> <span class="o">=</span> <span class="n">valid_times</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                        <span class="n">max_time</span> <span class="o">=</span> <span class="n">valid_times</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+
+                <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">time</span><span class="p">,</span> <span class="nb">list</span><span class="p">)</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">time</span><span class="p">,</span> <span class="n">_np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">):</span>
+
+                    <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">time</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="n">t</span> <span class="o">&lt;</span> <span class="n">min_time</span> <span class="ow">or</span> <span class="n">t</span> <span class="o">&gt;</span> <span class="n">max_time</span><span class="p">:</span>
+                            <span class="n">all_urls</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
+                        <span class="k">else</span><span class="p">:</span>
+                            <span class="n">url_current_time</span> <span class="o">=</span> <span class="n">url</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">t</span><span class="p">)))</span>
+                            <span class="n">all_urls</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">url_current_time</span><span class="p">)</span>
+                    <span class="k">return</span> <span class="n">all_urls</span>
+
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">time</span> <span class="o">&lt;</span> <span class="n">min_time</span> <span class="ow">or</span> <span class="n">time</span> <span class="o">&gt;</span> <span class="n">max_time</span><span class="p">:</span>
+                        <span class="n">all_urls</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">all_urls</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">url</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">time</span><span class="p">))))</span>
+                        <span class="k">return</span> <span class="n">all_urls</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">return</span> <span class="n">url</span></div>
+
+
+
+<div class="viewcode-block" id="_studyname">
+<a class="viewcode-back" href="../../gplately.html#gplately.data._studyname">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">_studyname</span><span class="p">(</span><span class="n">study_name</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Locate the citation surname for a particular identifier string</span>
+<span class="sd">    (i.e. &quot;Muller&quot; for &quot;Muller2019&quot;).&quot;&quot;&quot;</span>
+    <span class="n">name</span> <span class="o">=</span> <span class="n">_re</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;[A-Za-z]+|\d+&quot;</span><span class="p">,</span> <span class="n">study_name</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">return</span> <span class="n">name</span></div>
+
+
+
+<div class="viewcode-block" id="_rasters">
+<a class="viewcode-back" href="../../gplately.html#gplately.data._rasters">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">_rasters</span><span class="p">():</span>
+
+    <span class="n">database</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;ETOPO1_grd&quot;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="s2">&quot;https://www.ngdc.noaa.gov/mgg/global/relief/ETOPO1/data/ice_surface/grid_registered/netcdf/ETOPO1_Ice_g_gmt4.grd.gz&quot;</span>
+        <span class="p">],</span>
+        <span class="s2">&quot;ETOPO1_tif&quot;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="s2">&quot;https://www.ngdc.noaa.gov/mgg/global/relief/ETOPO1/image/color_etopo1_ice_low.tif.gz&quot;</span>
+        <span class="p">],</span>
+    <span class="p">}</span>
+    <span class="k">return</span> <span class="n">database</span></div>
+
+
+
+<div class="viewcode-block" id="_feature_data">
+<a class="viewcode-back" href="../../gplately.html#gplately.data._feature_data">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">_feature_data</span><span class="p">():</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Assorted feature data from EarthByte&#39;s GPlates 2.3 sample data repository.&quot;&quot;&quot;</span>
+
+    <span class="n">database</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="s2">&quot;SeafloorFabric&quot;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="s2">&quot;https://www.earthbyte.org/webdav/ftp/earthbyte/GPlates/GPlates2.3_GeoData/Individual/SeafloorFabric.zip&quot;</span>
+        <span class="p">],</span>
+        <span class="s2">&quot;Johansson2018&quot;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="s2">&quot;https://www.earthbyte.org/webdav/ftp/earthbyte/GPlates/GPlates2.3_GeoData/Individual/IgneousProvinces.zip&quot;</span>
+        <span class="p">],</span>
+        <span class="s2">&quot;Whittaker2015&quot;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="s2">&quot;https://www.earthbyte.org/webdav/ftp/earthbyte/GPlates/GPlates2.3_GeoData/Individual/IgneousProvinces.zip&quot;</span>
+        <span class="p">],</span>
+        <span class="s2">&quot;Hotspots&quot;</span><span class="p">:</span> <span class="p">[</span>
+            <span class="s2">&quot;https://www.earthbyte.org/webdav/ftp/earthbyte/GPlates/GPlates2.3_GeoData/Individual/Hotspots.zip&quot;</span>
+        <span class="p">],</span>
+    <span class="p">}</span>
+    <span class="k">return</span> <span class="n">database</span></div>
+
+
+
+<div class="viewcode-block" id="DataCollection">
+<a class="viewcode-back" href="../../gplately.html#gplately.data.DataCollection">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">DataCollection</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;GPlately&#39;s collection of plate model data is a dictionary where</span>
+<span class="sd">    the plate model&#39;s identifier string is the key, and values are</span>
+<span class="sd">    lists containing any relevant file download links.&quot;&quot;&quot;</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">file_collection</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Uses a string to identify the needed plate model, taken from</span>
+<span class="sd">        &lt;gplately.data.DataServer&gt;.&quot;&quot;&quot;</span>
+        <span class="c1"># Allow strings with capitalisation anywhere.</span>
+        <span class="n">database</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="n">model_name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="k">for</span> <span class="n">model_name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">plate_reconstruction_files</span><span class="p">()</span>
+        <span class="p">]</span>
+        <span class="k">if</span> <span class="n">file_collection</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">database</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">&quot;Enter a valid plate model identifier, e.g. Muller2019, Seton2012, etc.&quot;</span>
+            <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">file_collection</span> <span class="o">=</span> <span class="n">file_collection</span><span class="o">.</span><span class="n">capitalize</span><span class="p">()</span>
+
+<div class="viewcode-block" id="DataCollection.netcdf4_age_grids">
+<a class="viewcode-back" href="../../gplately.html#gplately.data.DataCollection.netcdf4_age_grids">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">netcdf4_age_grids</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">time</span><span class="p">):</span>
+
+        <span class="n">age_grid_links</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;Muller2019&quot;</span><span class="p">:</span> <span class="p">[</span>
+                <span class="s2">&quot;https://www.earthbyte.org/webdav/ftp/Data_Collections/Muller_etal_2019_Tectonics/Muller_etal_2019_Agegrids/Muller_etal_2019_Tectonics_v2.0_netCDF/Muller_etal_2019_Tectonics_v2.0_AgeGrid-</span><span class="si">{}</span><span class="s2">.nc&quot;</span>
+            <span class="p">],</span>
+            <span class="s2">&quot;Muller2016&quot;</span><span class="p">:</span> <span class="p">[</span>
+                <span class="s2">&quot;https://www.earthbyte.org/webdav/ftp/Data_Collections/Muller_etal_2016_AREPS/Muller_etal_2016_AREPS_Agegrids/Muller_etal_2016_AREPS_Agegrids_v1.17/Muller_etal_2016_AREPS_v1.17_netCDF/Muller_etal_2016_AREPS_v1.17_AgeGrid-</span><span class="si">{}</span><span class="s2">.nc&quot;</span>
+            <span class="p">],</span>
+            <span class="s2">&quot;Seton2012&quot;</span><span class="p">:</span> <span class="p">[</span>
+                <span class="s2">&quot;https://www.earthbyte.org/webdav/ftp/Data_Collections/Seton_etal_2012_ESR/Seton_etal_2012_ESR_Agegrids/netCDF_0-200Ma/agegrid_</span><span class="si">{}</span><span class="s2">.nc&quot;</span>
+            <span class="p">],</span>
+            <span class="s2">&quot;Clennett2020&quot;</span><span class="p">:</span> <span class="p">[</span>
+                <span class="s2">&quot;https://www.earthbyte.org/webdav/ftp/Data_Collections/Clennett_etal_2020_G3/Clennet_AgeGrids_0.1d_masked/seafloor_age_mask_</span><span class="si">{}</span><span class="s2">.0Ma.nc&quot;</span>
+            <span class="p">],</span>
+        <span class="p">}</span>
+
+        <span class="n">links_to_download</span> <span class="o">=</span> <span class="n">_find_needed_collection</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">file_collection</span><span class="p">,</span> <span class="n">age_grid_links</span><span class="p">,</span> <span class="n">time</span>
+        <span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">links_to_download</span></div>
+
+
+<div class="viewcode-block" id="DataCollection.netcdf4_spreading_rate_grids">
+<a class="viewcode-back" href="../../gplately.html#gplately.data.DataCollection.netcdf4_spreading_rate_grids">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">netcdf4_spreading_rate_grids</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">time</span><span class="p">):</span>
+
+        <span class="n">spread_grid_links</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;Clennett2020&quot;</span><span class="p">:</span> <span class="p">[</span>
+                <span class="s2">&quot;https://www.earthbyte.org/webdav/ftp/Data_Collections/Clennett_etal_2020_G3/Clennett_etal_2020_SpreadRate_Grids/rategrid_final_mask_</span><span class="si">{}</span><span class="s2">.nc&quot;</span>
+            <span class="p">]</span>
+        <span class="p">}</span>
+
+        <span class="n">links_to_download</span> <span class="o">=</span> <span class="n">_find_needed_collection</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">file_collection</span><span class="p">,</span> <span class="n">spread_grid_links</span><span class="p">,</span> <span class="n">time</span>
+        <span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">links_to_download</span></div>
+
+
+<div class="viewcode-block" id="DataCollection.plate_reconstruction_files">
+<a class="viewcode-back" href="../../gplately.html#gplately.data.DataCollection.plate_reconstruction_files">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">plate_reconstruction_files</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+
+        <span class="n">database</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;Cao2020&quot;</span><span class="p">:</span> <span class="p">[</span>
+                <span class="s2">&quot;https://zenodo.org/record/3854549/files/1000Myr_synthetic_tectonic_reconstructions.zip&quot;</span>
+            <span class="p">],</span>
+            <span class="s2">&quot;Muller2019&quot;</span><span class="p">:</span> <span class="p">[</span>
+                <span class="s2">&quot;https://www.earthbyte.org/webdav/ftp/Data_Collections/Muller_etal_2019_Tectonics/Muller_etal_2019_PlateMotionModel/Muller_etal_2019_PlateMotionModel_v2.0_Tectonics_Updated.zip&quot;</span>
+            <span class="p">],</span>
+            <span class="s2">&quot;Muller2016&quot;</span><span class="p">:</span> <span class="p">[</span>
+                <span class="s2">&quot;https://www.earthbyte.org/webdav/ftp/Data_Collections/Muller_etal_2016_AREPS/Muller_etal_2016_AREPS_Supplement/Muller_etal_2016_AREPS_Supplement_v1.17.zip&quot;</span>
+            <span class="p">],</span>
+            <span class="s2">&quot;Clennett2020&quot;</span><span class="p">:</span> <span class="p">[</span>
+                <span class="s2">&quot;https://www.earthbyte.org/webdav/ftp/Data_Collections/Clennett_etal_2020_G3/Global_Model_WD_Internal_Release_2019_v2_Clennett_NE_Pacific.zip&quot;</span>
+            <span class="p">],</span>
+            <span class="s2">&quot;Seton2012&quot;</span><span class="p">:</span> <span class="p">[</span>
+                <span class="s2">&quot;https://www.earthbyte.org/webdav/ftp/Data_Collections/Seton_etal_2012_ESR.zip&quot;</span>
+            <span class="p">],</span>
+            <span class="c1"># &quot;Merdith2021&quot; : [&quot;https://zenodo.org/record/4485738/files/SM2_4485738_V2.zip&quot;],</span>
+            <span class="s2">&quot;Merdith2021&quot;</span><span class="p">:</span> <span class="p">[</span>
+                <span class="s2">&quot;https://earthbyte.org/webdav/ftp/Data_Collections/Merdith_etal_2021_ESR/SM2-Merdith_et_al_1_Ga_reconstruction_v1.1.zip&quot;</span>
+            <span class="p">],</span>
+            <span class="s2">&quot;Matthews2016&quot;</span><span class="p">:</span> <span class="p">[</span>
+                <span class="s2">&quot;https://www.earthbyte.org/webdav/ftp/Data_Collections/Matthews_etal_2016_Global_Plate_Model_GPC.zip&quot;</span>
+            <span class="p">],</span>
+            <span class="s2">&quot;Merdith2017&quot;</span><span class="p">:</span> <span class="p">[</span>
+                <span class="s2">&quot;https://www.earthbyte.org/webdav/ftp/Data_Collections/Merdith_etal_2017_GR.zip&quot;</span>
+            <span class="p">],</span>
+            <span class="s2">&quot;Li2008&quot;</span><span class="p">:</span> <span class="p">[</span>
+                <span class="s2">&quot;https://www.earthbyte.org/webdav/ftp/Data_Collections/Li_etal_2008_RodiniaModel.zip&quot;</span>
+            <span class="p">],</span>
+            <span class="s2">&quot;Pehrsson2015&quot;</span><span class="p">:</span> <span class="p">[</span>
+                <span class="s2">&quot;https://www.geolsoc.org.uk/~/media/Files/GSL/shared/Sup_pubs/2015/18822_7.zip&quot;</span>
+            <span class="p">],</span>
+            <span class="s2">&quot;TorsvikCocks2017&quot;</span><span class="p">:</span> <span class="p">[</span>
+                <span class="s2">&quot;http://www.earthdynamics.org/earthhistory/bookdata/CEED6.zip&quot;</span>
+            <span class="p">],</span>
+            <span class="s2">&quot;Young2019&quot;</span><span class="p">:</span> <span class="p">[</span>
+                <span class="s2">&quot;https://www.earthbyte.org/webdav/ftp/Data_Collections/Young_etal_2018_GeoscienceFrontiers/Young_etal_2018_GeoscienceFrontiers_GPlatesPlateMotionModel.zip&quot;</span>
+            <span class="p">],</span>
+            <span class="s2">&quot;Scotese2008&quot;</span><span class="p">:</span> <span class="p">[</span>
+                <span class="s2">&quot;https://static.cambridge.org/content/id/urn:cambridge.org:id:article:S0016756818000110/resource/name/S0016756818000110sup001.zip&quot;</span>
+            <span class="p">],</span>
+            <span class="s2">&quot;Golonka2007&quot;</span><span class="p">:</span> <span class="p">[</span>
+                <span class="s2">&quot;https://static.cambridge.org/content/id/urn:cambridge.org:id:article:S0016756818000110/resource/name/S0016756818000110sup001.zip&quot;</span>
+            <span class="p">],</span>
+            <span class="s2">&quot;Clennett2020_M2019&quot;</span><span class="p">:</span> <span class="p">[</span>
+                <span class="s2">&quot;https://www.earthbyte.org/webdav/ftp/Data_Collections/Clennett_etal_2020_G3/Clennett_etal_2020_M2019.zip&quot;</span>
+            <span class="p">],</span>
+            <span class="s2">&quot;Clennett2020_S2013&quot;</span><span class="p">:</span> <span class="p">[</span>
+                <span class="s2">&quot;https://www.earthbyte.org/webdav/ftp/Data_Collections/Clennett_etal_2020_G3/Clennett_etal_2020_S2013.zip&quot;</span>
+            <span class="p">],</span>
+            <span class="s2">&quot;Muller2008&quot;</span><span class="p">:</span> <span class="p">[</span>
+                <span class="s2">&quot;https://www.earthbyte.org/webdav/ftp/Data_Collections/Muller2008/Global_Model_Rigid_Internal_Release_2010.zip&quot;</span>
+            <span class="p">],</span>
+            <span class="s2">&quot;Scotese2016&quot;</span><span class="p">:</span> <span class="p">[</span>
+                <span class="s2">&quot;https://www.earthbyte.org/webdav/ftp/Data_Collections/Scotese2016/PALEOMAP_GlobalPlateModel.zip&quot;</span>
+            <span class="p">],</span>
+            <span class="s2">&quot;Shephard2013&quot;</span><span class="p">:</span> <span class="p">[</span>
+                <span class="s2">&quot;https://www.earthbyte.org/webdav/ftp/Data_Collections/Shephard_etal_2013_ESR.zip&quot;</span>
+            <span class="p">],</span>
+            <span class="s2">&quot;Muller2022&quot;</span><span class="p">:</span> <span class="p">[</span>
+                <span class="s2">&quot;https://www.earthbyte.org/webdav/ftp/Data_Collections/Muller_etal_2022_SE/Muller_etal_2022_SE_1Ga_Opt_PlateMotionModel_v1.1.zip&quot;</span>
+            <span class="p">],</span>
+            <span class="s2">&quot;Cao2023&quot;</span><span class="p">:</span> <span class="p">[</span>
+                <span class="s2">&quot;https://www.earthbyte.org/webdav/ftp/Data_Collections/Cao_etal_2023/1.8Ga_model_submit.zip&quot;</span>
+            <span class="p">],</span>
+            <span class="s2">&quot;Cao2023_Opt&quot;</span><span class="p">:</span> <span class="p">[</span>
+                <span class="s2">&quot;https://www.earthbyte.org/webdav/ftp/Data_Collections/Cao_etal_2023_Opt/Cao1800Opt.zip&quot;</span>
+            <span class="p">],</span>
+        <span class="p">}</span>
+
+        <span class="k">return</span> <span class="n">database</span></div>
+
+
+<div class="viewcode-block" id="DataCollection.plate_model_valid_reconstruction_times">
+<a class="viewcode-back" href="../../gplately.html#gplately.data.DataCollection.plate_model_valid_reconstruction_times">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">plate_model_valid_reconstruction_times</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+
+        <span class="n">database</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;Cao2020&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1000</span><span class="p">],</span>
+            <span class="s2">&quot;Muller2019&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">250</span><span class="p">],</span>
+            <span class="s2">&quot;Muller2016&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">230</span><span class="p">],</span>
+            <span class="s2">&quot;Clennett2020&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">170</span><span class="p">],</span>
+            <span class="s2">&quot;Seton2012&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">200</span><span class="p">],</span>
+            <span class="s2">&quot;Merdith2021&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1000</span><span class="p">],</span>
+            <span class="s2">&quot;Matthews2016&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">410</span><span class="p">],</span>
+            <span class="s2">&quot;Merdith2017&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">410</span><span class="p">],</span>
+            <span class="s2">&quot;Li2008&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">410</span><span class="p">],</span>
+            <span class="c1"># &quot;Pehrsson2015&quot; : [25], (First implement continuous rotation)</span>
+            <span class="s2">&quot;TorsvikCocks2017&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">410</span><span class="p">],</span>
+            <span class="s2">&quot;Young2019&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">410</span><span class="p">],</span>
+            <span class="s2">&quot;Scotese2008&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">410</span><span class="p">],</span>
+            <span class="s2">&quot;Golonka2007&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">410</span><span class="p">],</span>
+            <span class="s2">&quot;Clennett2020_M2019&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">170</span><span class="p">],</span>
+            <span class="s2">&quot;Clennett2020_S2013&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">170</span><span class="p">],</span>
+            <span class="s2">&quot;Scotese2016&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">410</span><span class="p">],</span>
+            <span class="s2">&quot;Shephard2013&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">200</span><span class="p">],</span>
+            <span class="s2">&quot;Muller2008&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">141</span><span class="p">],</span>  <span class="c1"># GPlates static polygons reconstruct to this time</span>
+            <span class="s2">&quot;Muller2022&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1000</span><span class="p">],</span>
+            <span class="s2">&quot;Cao2023&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1800</span><span class="p">],</span>
+            <span class="s2">&quot;Cao2023_Opt&quot;</span><span class="p">:</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1800</span><span class="p">],</span>
+        <span class="p">}</span>
+        <span class="k">return</span> <span class="n">database</span></div>
+
+
+<div class="viewcode-block" id="DataCollection.rotation_strings_to_include">
+<a class="viewcode-back" href="../../gplately.html#gplately.data.DataCollection.rotation_strings_to_include">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">rotation_strings_to_include</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+
+        <span class="n">strings</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="s2">&quot;Muller2022 1000_0_rotfile_Merdith_et_al_optimised.rot&quot;</span><span class="p">,</span>  <span class="c1"># For Muller et al. 2022</span>
+        <span class="p">]</span>
+        <span class="k">return</span> <span class="n">strings</span></div>
+
+
+<div class="viewcode-block" id="DataCollection.rotation_strings_to_ignore">
+<a class="viewcode-back" href="../../gplately.html#gplately.data.DataCollection.rotation_strings_to_ignore">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">rotation_strings_to_ignore</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+
+        <span class="n">strings</span> <span class="o">=</span> <span class="p">[</span><span class="s2">&quot;OLD&quot;</span><span class="p">,</span> <span class="s2">&quot;__MACOSX&quot;</span><span class="p">,</span> <span class="s2">&quot;DO_NOT&quot;</span><span class="p">,</span> <span class="s2">&quot;Blocks_crossing_Poles&quot;</span><span class="p">]</span>
+        <span class="k">return</span> <span class="n">strings</span></div>
+
+
+<div class="viewcode-block" id="DataCollection.dynamic_polygon_strings_to_include">
+<a class="viewcode-back" href="../../gplately.html#gplately.data.DataCollection.dynamic_polygon_strings_to_include">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">dynamic_polygon_strings_to_include</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+
+        <span class="n">strings</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="s2">&quot;plate_boundaries&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;PlateBoundaries&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;Transform&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;Divergence&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;Convergence&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;Topologies&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;Topology&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;_PP_&quot;</span><span class="p">,</span>  <span class="c1"># for Seton 2012</span>
+            <span class="c1"># &quot;ContinentOceanBoundaries&quot;,</span>
+            <span class="c1"># &quot;Seton_etal_ESR2012_Coastline_2012&quot;,</span>
+            <span class="s2">&quot;Deforming_Mesh&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;Deforming&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;Flat_Slabs&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;Feature_Geometries&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;boundaries&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;Clennett_etal_2020_Plates&quot;</span><span class="p">,</span>  <span class="c1"># For Clennett 2020 (M2019)</span>
+            <span class="s2">&quot;Clennett_2020_Plates&quot;</span><span class="p">,</span>  <span class="c1"># For topologies in Clennett et al 2020 (Pacific)</span>
+            <span class="s2">&quot;Clennett_2020_Terranes&quot;</span><span class="p">,</span>  <span class="c1"># For topologies in Clennett et al 2020 (Pacific)</span>
+            <span class="s2">&quot;Angayucham&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;Farallon&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;Guerrero&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;Insular&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;Intermontane&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;Kula&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;North_America&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;South_America&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;Western_Jurassic&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;Clennett_2020_Isochrons&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;Clennett_2020_Coastlines&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;Clennett_2020_NAm_boundaries&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;Shephard_etal_ESR2013_Global_EarthByte_2013&quot;</span><span class="p">,</span>  <span class="c1"># For Shephard et al. 2013</span>
+            <span class="s2">&quot;1800-1000Ma-plate-boundary_new_valid_time_and_subduction_polarity.gpml&quot;</span><span class="p">,</span>  <span class="c1"># for Cao2023</span>
+        <span class="p">]</span>
+        <span class="k">return</span> <span class="n">strings</span></div>
+
+
+<div class="viewcode-block" id="DataCollection.dynamic_polygon_strings_to_ignore">
+<a class="viewcode-back" href="../../gplately.html#gplately.data.DataCollection.dynamic_polygon_strings_to_ignore">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">dynamic_polygon_strings_to_ignore</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+
+        <span class="n">strings</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="s2">&quot;OLD&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;__MACOSX&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;DO_NOT&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;9_Point&quot;</span><span class="p">,</span>  <span class="c1"># Muller et al 2019</span>
+            <span class="s2">&quot;9_Point_Density&quot;</span><span class="p">,</span>  <span class="c1"># Clennett et al 2020</span>
+            <span class="s2">&quot;Density&quot;</span><span class="p">,</span>  <span class="c1"># Clennett et al 2020</span>
+            <span class="s2">&quot;Inactive_Meshes_and_Topologies&quot;</span><span class="p">,</span>  <span class="c1"># Clennett et al 2020</span>
+            <span class="s2">&quot;ContinentOceanBoundaries&quot;</span><span class="p">,</span>  <span class="c1"># Seton 2012</span>
+            <span class="s2">&quot;Seton_etal_ESR2012_Coastline_2012&quot;</span><span class="p">,</span>  <span class="c1"># Seton 2012</span>
+            <span class="s2">&quot;PALEOMAP_PoliticalBoundaries&quot;</span><span class="p">,</span>  <span class="c1"># Scotese 2016</span>
+            <span class="s2">&quot;SimplifiedFiles&quot;</span><span class="p">,</span>  <span class="c1"># Muller et al. 2019 (updated)</span>
+            <span class="s2">&quot;1000-410_poles&quot;</span><span class="p">,</span>  <span class="c1"># Merdith</span>
+        <span class="p">]</span>
+        <span class="k">return</span> <span class="n">strings</span></div>
+
+
+<div class="viewcode-block" id="DataCollection.static_polygon_strings_to_include">
+<a class="viewcode-back" href="../../gplately.html#gplately.data.DataCollection.static_polygon_strings_to_include">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">static_polygon_strings_to_include</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+
+        <span class="n">strings</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="s2">&quot;StaticPolygon&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;StaticPolygons&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;Static_Polygon&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;StaticPlatePolygons_&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;RodiniaBlocks_WithPlateIDColumnAndIDs&quot;</span><span class="p">,</span>
+            <span class="c1"># &quot;PlatePolygons.shp&quot;,</span>
+            <span class="s2">&quot;CEED6_TERRANES.shp&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;CEED6_MICROCONTINENTS.shp&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;CEED6_LAND.gpml&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;Scotese_2008_PresentDay_ContinentalPolygons&quot;</span><span class="p">,</span>  <span class="c1"># Scotese 2008</span>
+            <span class="s2">&quot;Golonka_2007_PresentDay_ContinentalPolygons.shp&quot;</span><span class="p">,</span>  <span class="c1"># Golonka 2007</span>
+            <span class="s2">&quot;PALEOMAP_PlatePolygons.gpml&quot;</span><span class="p">,</span>  <span class="c1"># For Scotese 2016</span>
+        <span class="p">]</span>
+        <span class="k">return</span> <span class="n">strings</span></div>
+
+
+<div class="viewcode-block" id="DataCollection.static_polygon_strings_to_ignore">
+<a class="viewcode-back" href="../../gplately.html#gplately.data.DataCollection.static_polygon_strings_to_ignore">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">static_polygon_strings_to_ignore</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+
+        <span class="n">strings</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="s2">&quot;DO_NOT&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;OLD&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;__MACOSX&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;Global_Model_WD_Internal_Release_2019_v2_Clennett_NE_Pacific/StaticGeometries/StaticPolygons/Global_EarthByte_GPlates_PresentDay_StaticPlatePolygons.shp&quot;</span><span class="p">,</span>  <span class="c1"># Clennett 2020</span>
+        <span class="p">]</span>
+        <span class="k">return</span> <span class="n">strings</span></div>
+
+
+<div class="viewcode-block" id="DataCollection.topology_geometries">
+<a class="viewcode-back" href="../../gplately.html#gplately.data.DataCollection.topology_geometries">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">topology_geometries</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+
+        <span class="n">database</span> <span class="o">=</span> <span class="p">{</span>
+            <span class="s2">&quot;Cao2020&quot;</span><span class="p">:</span> <span class="p">[</span>
+                <span class="s2">&quot;https://zenodo.org/record/3854549/files/1000Myr_synthetic_tectonic_reconstructions.zip&quot;</span>
+            <span class="p">],</span>
+            <span class="s2">&quot;Muller2019&quot;</span><span class="p">:</span> <span class="p">[</span>
+                <span class="s2">&quot;https://www.earthbyte.org/webdav/ftp/Data_Collections/Muller_etal_2019_Tectonics/Muller_etal_2019_PlateMotionModel/Muller_etal_2019_PlateMotionModel_v2.0_Tectonics_Updated.zip&quot;</span>
+            <span class="p">],</span>
+            <span class="s2">&quot;Muller2016&quot;</span><span class="p">:</span> <span class="p">[</span>
+                <span class="s2">&quot;https://www.earthbyte.org/webdav/ftp/Data_Collections/Muller_etal_2016_AREPS/Muller_etal_2016_AREPS_Supplement/Muller_etal_2016_AREPS_Supplement_v1.17.zip&quot;</span>
+            <span class="p">],</span>
+            <span class="s2">&quot;Clennett2020&quot;</span><span class="p">:</span> <span class="p">[</span>
+                <span class="s2">&quot;https://www.earthbyte.org/webdav/ftp/Data_Collections/Clennett_etal_2020_G3/Global_Model_WD_Internal_Release_2019_v2_Clennett_NE_Pacific.zip&quot;</span>
+            <span class="p">],</span>
+            <span class="s2">&quot;Seton2012&quot;</span><span class="p">:</span> <span class="p">[</span>
+                <span class="s2">&quot;https://www.earthbyte.org/webdav/ftp/Data_Collections/Seton_etal_2012_ESR.zip&quot;</span>
+            <span class="p">],</span>
+            <span class="c1"># &quot;Merdith2021&quot; : [&quot;https://zenodo.org/record/4485738/files/SM2_4485738_V2.zip&quot;],</span>
+            <span class="s2">&quot;Merdith2021&quot;</span><span class="p">:</span> <span class="p">[</span>
+                <span class="s2">&quot;https://earthbyte.org/webdav/ftp/Data_Collections/Merdith_etal_2021_ESR/SM2-Merdith_et_al_1_Ga_reconstruction_v1.1.zip&quot;</span>
+            <span class="p">],</span>
+            <span class="s2">&quot;Matthews2016&quot;</span><span class="p">:</span> <span class="p">[</span>
+                <span class="s2">&quot;https://www.earthbyte.org/webdav/ftp/Data_Collections/Matthews_etal_2016_Global_Plate_Model_GPC.zip&quot;</span>
+            <span class="p">],</span>
+            <span class="s2">&quot;Merdith2017&quot;</span><span class="p">:</span> <span class="p">[</span>
+                <span class="s2">&quot;https://www.earthbyte.org/webdav/ftp/Data_Collections/Merdith_etal_2017_GR.zip&quot;</span>
+            <span class="p">],</span>
+            <span class="s2">&quot;Li2008&quot;</span><span class="p">:</span> <span class="p">[</span><span class="kc">None</span><span class="p">],</span>
+            <span class="s2">&quot;Pehrsson2015&quot;</span><span class="p">:</span> <span class="p">[</span>
+                <span class="s2">&quot;https://www.geolsoc.org.uk/~/media/Files/GSL/shared/Sup_pubs/2015/18822_7.zip&quot;</span>
+            <span class="p">],</span>
+            <span class="s2">&quot;TorsvikCocks2017&quot;</span><span class="p">:</span> <span class="p">[</span>
+                <span class="s2">&quot;http://www.earthdynamics.org/earthhistory/bookdata/CEED6.zip&quot;</span>
+            <span class="p">],</span>
+            <span class="s2">&quot;Young2019&quot;</span><span class="p">:</span> <span class="p">[</span>
+                <span class="s2">&quot;https://www.earthbyte.org/webdav/ftp/Data_Collections/Young_etal_2018_GeoscienceFrontiers/Young_etal_2018_GeoscienceFrontiers_GPlatesPlateMotionModel.zip&quot;</span>
+            <span class="p">],</span>
+            <span class="s2">&quot;Scotese2008&quot;</span><span class="p">:</span> <span class="p">[</span>
+                <span class="s2">&quot;https://static.cambridge.org/content/id/urn:cambridge.org:id:article:S0016756818000110/resource/name/S0016756818000110sup001.zip&quot;</span>
+            <span class="p">],</span>
+            <span class="s2">&quot;Golonka2007&quot;</span><span class="p">:</span> <span class="p">[</span>
+                <span class="s2">&quot;https://static.cambridge.org/content/id/urn:cambridge.org:id:article:S0016756818000110/resource/name/S0016756818000110sup001.zip&quot;</span>
+            <span class="p">],</span>
+            <span class="s2">&quot;Clennett2020_M2019&quot;</span><span class="p">:</span> <span class="p">[</span>
+                <span class="s2">&quot;https://www.earthbyte.org/webdav/ftp/Data_Collections/Clennett_etal_2020_G3/Clennett_etal_2020_M2019.zip&quot;</span>
+            <span class="p">],</span>
+            <span class="s2">&quot;Clennett2020_S2013&quot;</span><span class="p">:</span> <span class="p">[</span>
+                <span class="s2">&quot;https://www.earthbyte.org/webdav/ftp/Data_Collections/Clennett_etal_2020_G3/Clennett_etal_2020_S2013.zip&quot;</span>
+            <span class="p">],</span>
+            <span class="s2">&quot;Muller2008&quot;</span><span class="p">:</span> <span class="p">[</span>
+                <span class="s2">&quot;https://www.earthbyte.org/webdav/ftp/Data_Collections/Muller2008/Global_Model_Rigid_Internal_Release_2010.zip&quot;</span>
+            <span class="p">],</span>
+            <span class="s2">&quot;Scotese2016&quot;</span><span class="p">:</span> <span class="p">[</span>
+                <span class="s2">&quot;https://www.earthbyte.org/webdav/ftp/Data_Collections/Scotese2016/PALEOMAP_GlobalPlateModel.zip&quot;</span>
+            <span class="p">],</span>
+            <span class="s2">&quot;Shephard2013&quot;</span><span class="p">:</span> <span class="p">[</span>
+                <span class="s2">&quot;https://www.earthbyte.org/webdav/ftp/Data_Collections/Shephard_etal_2013_ESR.zip&quot;</span>
+            <span class="p">],</span>
+            <span class="s2">&quot;Muller2022&quot;</span><span class="p">:</span> <span class="p">[</span>
+                <span class="s2">&quot;https://www.earthbyte.org/webdav/ftp/Data_Collections/Muller_etal_2022_SE/Muller_etal_2022_SE_1Ga_Opt_PlateMotionModel_v1.1.zip&quot;</span>
+            <span class="p">],</span>
+            <span class="s2">&quot;Cao2023&quot;</span><span class="p">:</span> <span class="p">[</span>
+                <span class="s2">&quot;https://www.earthbyte.org/webdav/ftp/Data_Collections/Cao_etal_2023/1.8Ga_model_submit.zip&quot;</span>
+            <span class="p">],</span>
+            <span class="s2">&quot;Cao2023_Opt&quot;</span><span class="p">:</span> <span class="p">[</span>
+                <span class="s2">&quot;https://www.earthbyte.org/webdav/ftp/Data_Collections/Cao_etal_2023_Opt/Cao1800Opt.zip&quot;</span>
+            <span class="p">],</span>
+        <span class="p">}</span>
+        <span class="k">return</span> <span class="n">database</span></div>
+
+
+<div class="viewcode-block" id="DataCollection.coastline_strings_to_include">
+<a class="viewcode-back" href="../../gplately.html#gplately.data.DataCollection.coastline_strings_to_include">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">coastline_strings_to_include</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+
+        <span class="n">strings</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="s2">&quot;coastline&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;CEED6_LAND.gpml&quot;</span><span class="p">,</span>  <span class="c1"># for TorsvikCocks2017</span>
+            <span class="s2">&quot;PALEOMAP_PoliticalBoundaries&quot;</span><span class="p">,</span>  <span class="c1"># For Scotese 2016</span>
+            <span class="s2">&quot;coast&quot;</span><span class="p">,</span>  <span class="c1"># for Cao2023</span>
+        <span class="p">]</span>
+        <span class="k">return</span> <span class="n">strings</span></div>
+
+
+<div class="viewcode-block" id="DataCollection.coastline_strings_to_ignore">
+<a class="viewcode-back" href="../../gplately.html#gplately.data.DataCollection.coastline_strings_to_ignore">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">coastline_strings_to_ignore</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+
+        <span class="n">strings</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="s2">&quot;DO_NOT&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;OLD&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;__MACOSX&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;Clennett_2020_Coastlines&quot;</span><span class="p">,</span>  <span class="c1"># Clennett et al. 2020</span>
+            <span class="s2">&quot;COB_polygons_and_coastlines_combined_1000_0_Merdith_etal&quot;</span><span class="p">,</span>  <span class="c1"># Muller et al. 2022</span>
+        <span class="p">]</span>
+        <span class="k">return</span> <span class="n">strings</span></div>
+
+
+<div class="viewcode-block" id="DataCollection.continent_strings_to_include">
+<a class="viewcode-back" href="../../gplately.html#gplately.data.DataCollection.continent_strings_to_include">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">continent_strings_to_include</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+
+        <span class="n">strings</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="s2">&quot;continent&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;COBfile_1000_0_Toy_introversion&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;continental&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;Scotese_2008_PresentDay_ContinentalPolygons.shp&quot;</span><span class="p">,</span>  <span class="c1"># Scotese 2008</span>
+            <span class="c1"># &quot;Terrane&quot;,</span>
+        <span class="p">]</span>
+        <span class="k">return</span> <span class="n">strings</span></div>
+
+
+<div class="viewcode-block" id="DataCollection.continent_strings_to_ignore">
+<a class="viewcode-back" href="../../gplately.html#gplately.data.DataCollection.continent_strings_to_ignore">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">continent_strings_to_ignore</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+
+        <span class="n">strings</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="s2">&quot;DO_NOT&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;OLD&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;__MACOSX&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;Continent-ocean_boundaries&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;COB&quot;</span><span class="p">,</span>
+        <span class="p">]</span>
+        <span class="k">return</span> <span class="n">strings</span></div>
+
+
+<div class="viewcode-block" id="DataCollection.COB_strings_to_include">
+<a class="viewcode-back" href="../../gplately.html#gplately.data.DataCollection.COB_strings_to_include">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">COB_strings_to_include</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+
+        <span class="n">strings</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="s2">&quot;cob&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;ContinentOceanBoundaries&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;COBLineSegments&quot;</span><span class="p">,</span>
+        <span class="p">]</span>
+        <span class="k">return</span> <span class="n">strings</span></div>
+
+
+<div class="viewcode-block" id="DataCollection.COB_strings_to_ignore">
+<a class="viewcode-back" href="../../gplately.html#gplately.data.DataCollection.COB_strings_to_ignore">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">COB_strings_to_ignore</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+
+        <span class="n">strings</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="s2">&quot;DO_NOT&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;OLD&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;__MACOSX&quot;</span><span class="p">,</span>
+        <span class="p">]</span>
+        <span class="k">return</span> <span class="n">strings</span></div>
+</div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023-2025, The University of Sydney.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

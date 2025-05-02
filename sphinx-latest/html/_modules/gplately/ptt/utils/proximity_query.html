@@ -1,0 +1,1163 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>gplately.ptt.utils.proximity_query &mdash; gplately 2.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../../_static/documentation_options.js?v=51b770b3"></script>
+      <script src="../../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../../index.html" class="icon icon-home">
+            gplately
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">GPlately v2.0.0</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../basic_usages.html">Minimal working example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../use_cases.html">Common Use Cases</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../faq.html">Trouble-shooting and FAQ</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../command_line_interface.html">Command Line Interface (CLI)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../primer.html">Primer</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../modules.html">gplately</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">gplately</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">gplately.ptt.utils.proximity_query</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for gplately.ptt.utils.proximity_query</h1><div class="highlight"><pre>
+<span></span><span class="c1">#</span>
+<span class="c1">#    Copyright (C) 2017 The University of Sydney, Australia</span>
+<span class="c1">#</span>
+<span class="c1">#    This program is free software; you can redistribute it and/or modify it under</span>
+<span class="c1">#    the terms of the GNU General Public License, version 2, as published by</span>
+<span class="c1">#    the Free Software Foundation.</span>
+<span class="c1">#</span>
+<span class="c1">#    This program is distributed in the hope that it will be useful, but WITHOUT</span>
+<span class="c1">#    ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or</span>
+<span class="c1">#    FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License</span>
+<span class="c1">#    for more details.</span>
+<span class="c1">#</span>
+<span class="c1">#    You should have received a copy of the GNU General Public License along</span>
+<span class="c1">#    with this program; if not, write to Free Software Foundation, Inc.,</span>
+<span class="c1">#    51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.</span>
+<span class="c1">#</span>
+
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Efficient distance queries involving many points tested against geometries.         </span>
+<span class="sd">                                                                                     </span>
+<span class="sd">Uses a point spatial tree to improve efficiency over single point/geometry queries. </span>
+<span class="sd">Most efficient when points are relatively uniformly spaced points.                  </span>
+
+<span class="sd">EXAMPLE 1: Find the closest geometry(s) to each point in a sequence of points. </span>
+
+<span class="sd">```python</span>
+<span class="sd">    import proximity_query</span>
+<span class="sd">    import math</span>
+<span class="sd">    </span>
+<span class="sd">    # A list of &#39;pygplates.PointOnSphere&#39; points.</span>
+<span class="sd">    points = [...]</span>
+
+<span class="sd">    # Some geometry features (eg, coastlines).</span>
+<span class="sd">    geometry_feature_collection = pygplates.FeatureCollection(&#39;geometries.gpml&#39;)</span>
+
+<span class="sd">    # Look for features within 90 degrees of each point.</span>
+<span class="sd">    distance_threshold_radians = math.radians(90.0)</span>
+
+<span class="sd">    # Extract the geometries from the features.</span>
+<span class="sd">    geometries = []</span>
+<span class="sd">    geometry_features = []</span>
+<span class="sd">    for geometry_feature in geometry_feature_collection:</span>
+<span class="sd">        geometries.append(geometry_feature.get_geometry())</span>
+<span class="sd">        geometry_features.append(geometry_feature)</span>
+
+
+<span class="sd">    # Find the closest geometry (feature) to each point (within threshold distance).</span>
+<span class="sd">    </span>
+<span class="sd">    geometry_features_closest_to_points = proximity_query.find_closest_geometries_to_points(</span>
+<span class="sd">            points,</span>
+<span class="sd">            geometries,</span>
+<span class="sd">            geometry_features,</span>
+<span class="sd">            distance_threshold_radians = distance_threshold_radians)</span>
+
+<span class="sd">    # Print name of closest feature to each point (if any).</span>
+<span class="sd">    for point_index, closest_geometry_feature in enumerate(geometry_features_closest_to_points):</span>
+<span class="sd">        if closest_geometry_feature is not None:</span>
+<span class="sd">            distance, geometry_feature = closest_geometry_feature</span>
+<span class="sd">            print(&#39;Closest feature to&#39;, points[point_index].to_lat_lon(), &#39;is&#39;, geometry_feature.get_name(),</span>
+<span class="sd">                    &#39;with distance&#39;, distance * pygplates.Earth.mean_radius_in_kms, &#39;kms&#39;)</span>
+<span class="sd">        else:</span>
+<span class="sd">            print(&#39;No features close to&#39;, points[point_index].to_lat_lon())</span>
+
+<span class="sd">    #</span>
+<span class="sd">    # Find all geometries (features) near each point (within threshold distance).</span>
+<span class="sd">    #</span>
+<span class="sd">    geometry_features_closest_to_points = proximity_query.find_closest_geometries_to_points(</span>
+<span class="sd">            points,</span>
+<span class="sd">            geometries,</span>
+<span class="sd">            geometry_features,</span>
+<span class="sd">            distance_threshold_radians = distance_threshold_radians,</span>
+<span class="sd">            all_geometries=True)</span>
+
+<span class="sd">    # Print names of the closest features to each point (if any).</span>
+<span class="sd">    for point_index, geometry_feature_list in enumerate(geometry_features_closest_to_points):</span>
+<span class="sd">        if geometry_feature_list:</span>
+<span class="sd">            print(&#39;Closest features to&#39;, points[point_index].to_lat_lon(), &#39;are...&#39;)</span>
+<span class="sd">            for distance, geometry_feature in geometry_feature_list:</span>
+<span class="sd">                print(&#39;    &#39;, geometry_feature.get_name(), &#39;with distance&#39;,</span>
+<span class="sd">                        distance * pygplates.Earth.mean_radius_in_kms, &#39;kms&#39;)</span>
+<span class="sd">        else:</span>
+<span class="sd">            print(&#39;No features close to&#39;, points[point_index].to_lat_lon())</span>
+
+<span class="sd">```</span>
+
+<span class="sd">EXAMPLE 2: Find the closest point(s) to each geometry in a sequence of geometries. </span>
+
+
+<span class="sd">```python</span>
+<span class="sd">    import proximity_query</span>
+<span class="sd">    import math</span>
+<span class="sd">    </span>
+<span class="sd">    # Some geometry features (eg, coastlines).</span>
+<span class="sd">    geometry_feature_collection = pygplates.FeatureCollection(&#39;geometries.gpml&#39;)</span>
+
+<span class="sd">    # Extract the geometries from the features.</span>
+<span class="sd">    geometries = []</span>
+<span class="sd">    geometry_features = []</span>
+<span class="sd">    for geometry_feature in geometry_feature_collection:</span>
+<span class="sd">        geometries.append(geometry_feature.get_geometry())</span>
+<span class="sd">        geometry_features.append(geometry_feature)</span>
+
+<span class="sd">    # Some uniformly spaced lat/lon points.</span>
+<span class="sd">    points = []</span>
+<span class="sd">    lon_lat_points = []</span>
+<span class="sd">    for lat in range(-90, 91):</span>
+<span class="sd">        for lon in range(-180, 181):</span>
+<span class="sd">            points.append(pygplates.PointOnSphere(lat, lon))</span>
+<span class="sd">            lon_lat_points.append((lon, lat))</span>
+
+<span class="sd">    # Look for points within 5 degrees of each geometry.</span>
+<span class="sd">    distance_threshold_radians = math.radians(5.0)</span>
+
+<span class="sd">    #</span>
+<span class="sd">    # Find the closest point (lon, lat) to each geometry (within threshold distance).</span>
+<span class="sd">    #</span>
+<span class="sd">    lon_lat_points_closest_to_geometries = proximity_query.find_closest_points_to_geometries(</span>
+<span class="sd">            geometries,</span>
+<span class="sd">            points,</span>
+<span class="sd">            lon_lat_points,</span>
+<span class="sd">            distance_threshold_radians = distance_threshold_radians)</span>
+
+<span class="sd">    # Print longitude/latitude of closest point to each geometry (if any).</span>
+<span class="sd">    for geometry_index, closest_lon_lat_point in enumerate(lon_lat_points_closest_to_geometries):</span>
+<span class="sd">        if closest_lon_lat_point is not None:</span>
+<span class="sd">            distance, lon_lat_point = closest_lon_lat_point</span>
+<span class="sd">            print(&#39;Closest point to geometry&#39;, geometry_features[geometry_index].get_name(), &#39;is&#39;,</span>
+<span class="sd">                     lon_lat_point, &#39;with distance&#39;, distance * pygplates.Earth.mean_radius_in_kms, &#39;kms&#39;)</span>
+<span class="sd">        else:</span>
+<span class="sd">            print(&#39;No points close to geometry&#39;, geometry_features[geometry_index].get_name())</span>
+
+<span class="sd">    #</span>
+<span class="sd">    # Find all points (lon, lat) near each geometry (within threshold distance).</span>
+<span class="sd">    #</span>
+<span class="sd">    lon_lat_points_closest_to_geometries = proximity_query.find_closest_points_to_geometries(</span>
+<span class="sd">            geometries,</span>
+<span class="sd">            points,</span>
+<span class="sd">            lon_lat_points,</span>
+<span class="sd">            distance_threshold_radians = distance_threshold_radians,</span>
+<span class="sd">            all_points=True)</span>
+
+<span class="sd">    # Print longitude/latitude of the closest points to each geometry (if any).</span>
+<span class="sd">    for geometry_index, lon_lat_point_list in enumerate(lon_lat_points_closest_to_geometries):</span>
+<span class="sd">        if lon_lat_point_list:</span>
+<span class="sd">            print(&#39;Closest points to geometry&#39;, geometry_features[geometry_index].get_name(), &#39;are...&#39;)</span>
+<span class="sd">            for distance, lon_lat_point in lon_lat_point_list:</span>
+<span class="sd">                print(&#39;    &#39;, lon_lat_point, &#39;with distance&#39;, distance * pygplates.Earth.mean_radius_in_kms, &#39;kms&#39;)</span>
+<span class="sd">        else:</span>
+<span class="sd">            print(&#39;No points close to geometry&#39;, geometry_features[geometry_index].get_name())</span>
+<span class="sd">```</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">print_function</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">math</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">pygplates</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">.</span><span class="w"> </span><span class="kn">import</span> <span class="n">points_spatial_tree</span>
+
+
+<div class="viewcode-block" id="find_closest_geometries_to_points">
+<a class="viewcode-back" href="../../../../gplately.ptt.utils.html#gplately.ptt.utils.proximity_query.find_closest_geometries_to_points">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">find_closest_geometries_to_points</span><span class="p">(</span>
+    <span class="n">points</span><span class="p">,</span>
+    <span class="n">geometries</span><span class="p">,</span>
+    <span class="n">geometry_proxies</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">distance_threshold_radians</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">return_closest_position</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">return_closest_index</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">geometries_are_solid</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">all_geometries</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">subdivision_depth</span><span class="o">=</span><span class="n">points_spatial_tree</span><span class="o">.</span><span class="n">DEFAULT_SUBDIVISION_DEPTH</span><span class="p">,</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Efficient point-to-geometry distance queries when there are many relatively uniformly spaced points to be tested against geometries.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    points: a sequence of &#39;pygplates.PointOnSphere&#39;</span>
+<span class="sd">        a sequence of points</span>
+
+<span class="sd">    geometries: a sequence of &#39;pygplates.GeometryOnSphere&#39;</span>
+<span class="sd">        a sequence of geometries</span>
+
+<span class="sd">    geometry_proxies: sequence of objects associated with &#39;geometries&#39;, optional</span>
+<span class="sd">        If not specified then the proxies default to the geometries themselves.</span>
+<span class="sd">        These can be any object (such as the &#39;pygplates.Feature&#39; that the geometry came from).</span>
+
+<span class="sd">    distance_threshold_radians: number, optional</span>
+<span class="sd">        Optional distance threshold in radians - threshold should be in the range [0,PI] if specified.</span>
+
+<span class="sd">    return_closest_position: bool, default=False</span>
+<span class="sd">        Whether to also return the closest point on each geometry - default is False.</span>
+
+<span class="sd">    return_closest_index: bool, default=False</span>
+<span class="sd">        Whether to also return the index of the closest point (for multi-points) or</span>
+<span class="sd">        the index of the closest segment (for polylines and polygons) - default is False.</span>
+
+<span class="sd">    geometries_are_solid: bool, default=False</span>
+<span class="sd">        Whether the interiors of the geometries are solid or not - only applies to polygon geometries - default is False.</span>
+
+<span class="sd">    all_geometries: bool, default=False</span>
+<span class="sd">        Whether to find all geometries near each point (within threshold distance) or just the closest.</span>
+<span class="sd">        Defaults to False (only returns closest geometry to each point).</span>
+
+<span class="sd">    subdivision_depth: number</span>
+<span class="sd">        The depth of the lat/lon quad tree used to speed up point-to-geometry distance queries.</span>
+<span class="sd">        The lat/lon width of a leaf quad tree node is (90 / (2^subdivision_depth)) degrees.</span>
+<span class="sd">        Generally the denser the &#39;points&#39; the larger the depth should be.</span>
+<span class="sd">        Setting this value too high causes unnecessary time to be spent generating a deep quad tree.</span>
+<span class="sd">        Setting this value too low reduces the culling efficiency of the quad tree.</span>
+<span class="sd">        However a value of 4 seems to work quite well for a uniform lat/lon spacing of &#39;points&#39; of 1 degree and below</span>
+<span class="sd">        without the cost of generating a deep quad tree.</span>
+<span class="sd">        So most of the time the subdivision depth can be left at its default value.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    A list of geometry proxies associated with &#39;points&#39;</span>
+<span class="sd">        The length of the returned list matches the length of &#39;points&#39;.</span>
+<span class="sd">        For each point in &#39;points&#39;, if the point is close to a geometry then that geometry&#39;s proxy (and its distance information)</span>
+<span class="sd">        is stored (otherwise None is stored) at the same index (as the point) in the returned list.</span>
+<span class="sd">        If &#39;all_geometries&#39; is False then each item in returned list is a single geometry proxy (and its distance information)</span>
+<span class="sd">        representing the closest geometry within threshold distance (or a single None).</span>
+<span class="sd">        If &#39;all_geometries&#39; is True then each item in returned list is a *list* of geometry proxies (and their distance informations)</span>
+<span class="sd">        representing all geometries within threshold distance (or a single None).</span>
+<span class="sd">        Above we mentioned &quot;geometry proxy (and its distance information)&quot;. This is a tuple whose size depends on</span>
+<span class="sd">        the values of &#39;return_closest_position&#39; and &#39;return_closest_index&#39; according to...</span>
+
+<span class="sd">            if return_closest_position and return_closest_index:</span>
+<span class="sd">                geometry_proxy_to_point = (distance, closest_position, closest_index, geometry_proxy)</span>
+<span class="sd">            elif return_closest_position:</span>
+<span class="sd">                geometry_proxy_to_point = (distance, closest_position, geometry_proxy)</span>
+<span class="sd">            elif return_closest_index:</span>
+<span class="sd">                geometry_proxy_to_point = (distance, closest_index, geometry_proxy)</span>
+<span class="sd">            else:</span>
+<span class="sd">                geometry_proxy_to_point = (distance, geometry_proxy)</span>
+
+
+<span class="sd">        The arguments &#39;distance_threshold_radians&#39;, &#39;return_closest_position&#39;, &#39;return_closest_index&#39; and &#39;geometries_are_solid&#39; are</span>
+<span class="sd">        similar to those in pygplates.GeometryOnSphere.distance().</span>
+<span class="sd">        See http://www.gplates.org/docs/pygplates/generated/pygplates.GeometryOnSphere.html#pygplates.GeometryOnSphere.distance.</span>
+
+<span class="sd">        Raises ValueError if the lengths of &#39;geometries&#39; and &#39;geometry_proxies&#39; (if specified) do not match.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">spatial_tree_of_points</span> <span class="o">=</span> <span class="n">points_spatial_tree</span><span class="o">.</span><span class="n">PointsSpatialTree</span><span class="p">(</span>
+        <span class="n">points</span><span class="p">,</span> <span class="n">subdivision_depth</span>
+    <span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">find_closest_geometries_to_points_using_points_spatial_tree</span><span class="p">(</span>
+        <span class="n">points</span><span class="p">,</span>
+        <span class="n">spatial_tree_of_points</span><span class="p">,</span>
+        <span class="n">geometries</span><span class="p">,</span>
+        <span class="n">geometry_proxies</span><span class="p">,</span>
+        <span class="n">distance_threshold_radians</span><span class="p">,</span>
+        <span class="n">return_closest_position</span><span class="p">,</span>
+        <span class="n">return_closest_index</span><span class="p">,</span>
+        <span class="n">geometries_are_solid</span><span class="p">,</span>
+        <span class="n">all_geometries</span><span class="p">,</span>
+    <span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="find_closest_geometries_to_points_using_points_spatial_tree">
+<a class="viewcode-back" href="../../../../gplately.ptt.utils.html#gplately.ptt.utils.proximity_query.find_closest_geometries_to_points_using_points_spatial_tree">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">find_closest_geometries_to_points_using_points_spatial_tree</span><span class="p">(</span>
+    <span class="n">points</span><span class="p">,</span>
+    <span class="n">spatial_tree_of_points</span><span class="p">,</span>
+    <span class="n">geometries</span><span class="p">,</span>
+    <span class="n">geometry_proxies</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">distance_threshold_radians</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">return_closest_position</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">return_closest_index</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">geometries_are_solid</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">all_geometries</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Same as &#39;find_closest_geometries_to_points()&#39; except &#39;spatial_tree_of_points&#39; is a &#39;points_spatial_tree.PointsSpatialTree&#39; of &#39;points&#39;.</span>
+
+<span class="sd">    This is useful when re-using a single &#39;points_spatial_tree.PointsSpatialTree&#39;.</span>
+<span class="sd">    For example, when using it both for point-in-polygon queries and minimum distance queries.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># Use the geometries as proxies if no proxies have been specified.</span>
+    <span class="k">if</span> <span class="n">geometry_proxies</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">geometry_proxies</span> <span class="o">=</span> <span class="n">geometries</span>
+
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">geometries</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">geometries</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Number of geometries must match number of geometry proxies.&quot;</span><span class="p">)</span>
+
+    <span class="c1"># Indices of the geometries to visit as we descend into the points spatial tree - initially all geometries.</span>
+    <span class="n">geometry_indices_to_visit</span> <span class="o">=</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">geometries</span><span class="p">))</span>
+
+    <span class="c1"># By default no points are within threshold distance to any geometry.</span>
+    <span class="c1"># If any are found to be within threshold distance then we&#39;ll set the proxy of the closest geometry.</span>
+    <span class="n">geometry_proxies_closest_to_points</span> <span class="o">=</span> <span class="p">[</span><span class="kc">None</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">points</span><span class="p">)</span>
+
+    <span class="k">for</span> <span class="n">root_node</span> <span class="ow">in</span> <span class="n">spatial_tree_of_points</span><span class="o">.</span><span class="n">get_root_nodes</span><span class="p">():</span>
+        <span class="n">_visit_closest_geometries_to_points</span><span class="p">(</span>
+            <span class="n">root_node</span><span class="p">,</span>
+            <span class="n">points</span><span class="p">,</span>
+            <span class="n">geometries</span><span class="p">,</span>
+            <span class="n">geometry_proxies</span><span class="p">,</span>
+            <span class="n">geometry_indices_to_visit</span><span class="p">,</span>
+            <span class="n">geometry_proxies_closest_to_points</span><span class="p">,</span>
+            <span class="n">distance_threshold_radians</span><span class="p">,</span>
+            <span class="n">return_closest_position</span><span class="p">,</span>
+            <span class="n">return_closest_index</span><span class="p">,</span>
+            <span class="n">geometries_are_solid</span><span class="p">,</span>
+            <span class="n">all_geometries</span><span class="p">,</span>
+        <span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">geometry_proxies_closest_to_points</span></div>
+
+
+
+<div class="viewcode-block" id="find_closest_points_to_geometries">
+<a class="viewcode-back" href="../../../../gplately.ptt.utils.html#gplately.ptt.utils.proximity_query.find_closest_points_to_geometries">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">find_closest_points_to_geometries</span><span class="p">(</span>
+    <span class="n">geometries</span><span class="p">,</span>
+    <span class="n">points</span><span class="p">,</span>
+    <span class="n">point_proxies</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">distance_threshold_radians</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">return_closest_position</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">return_closest_index</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">geometries_are_solid</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">all_points</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">subdivision_depth</span><span class="o">=</span><span class="n">points_spatial_tree</span><span class="o">.</span><span class="n">DEFAULT_SUBDIVISION_DEPTH</span><span class="p">,</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Efficient geometry-to-point distance queries when geometries are tested against many relatively uniformly spaced points.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    geometries: a sequence of &#39;pygplates.GeometryOnSphere&#39;</span>
+<span class="sd">        a sequence of geometries</span>
+
+<span class="sd">    points: a sequence of &#39;pygplates.PointOnSphere&#39;</span>
+<span class="sd">        a sequence of points</span>
+
+<span class="sd">    point_proxies: sequence of objects associated with &#39;points&#39;, optional</span>
+<span class="sd">        If not specified then the proxies default to the points themselves.</span>
+<span class="sd">        These can be any object (such as a scalar value associated with the point).</span>
+
+<span class="sd">    distance_threshold_radians: number, optional</span>
+<span class="sd">        Optional distance threshold in radians - threshold should be in the range [0,PI] if specified.</span>
+
+<span class="sd">    return_closest_position: bool, default=False</span>
+<span class="sd">        Whether to also return the closest point on each geometry - default is False.</span>
+
+<span class="sd">    return_closest_index:  bool, default=False</span>
+<span class="sd">        Whether to also return the index of the closest point (for multi-points) or</span>
+<span class="sd">        the index of the closest segment (for polylines and polygons) - default is False.</span>
+
+<span class="sd">    geometries_are_solid:  bool, default=False</span>
+<span class="sd">        Whether the interiors of the geometries are solid or not - only applies to polygon geometries - default is False.</span>
+
+<span class="sd">    all_points: bool, default=False</span>
+<span class="sd">        Whether to find all points near each geometry (within threshold distance) or just the closest.</span>
+<span class="sd">        Defaults to False (only returns closest point to each geometry).</span>
+
+<span class="sd">    subdivision_depth: number</span>
+<span class="sd">        The depth of the lat/lon quad tree used to speed up point-to-geometry distance queries.</span>
+<span class="sd">        The lat/lon width of a leaf quad tree node is (90 / (2^subdivision_depth)) degrees.</span>
+<span class="sd">        Generally the denser the &#39;points&#39; the larger the depth should be.</span>
+<span class="sd">        Setting this value too high causes unnecessary time to be spent generating a deep quad tree.</span>
+<span class="sd">        Setting this value too low reduces the culling efficiency of the quad tree.</span>
+<span class="sd">        However a value of 4 seems to work quite well for a uniform lat/lon spacing of &#39;points&#39; of 1 degree and below</span>
+<span class="sd">        without the cost of generating a deep quad tree.</span>
+<span class="sd">        So most of the time the subdivision depth can be left at its default value.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    A list of point proxies associated with &#39;geometries&#39;</span>
+<span class="sd">        The length of the returned list matches the length of &#39;geometries&#39;.</span>
+<span class="sd">        For each geometry in &#39;geometries&#39;, if the geometry is close to a point then that point&#39;s proxy (and its distance information)</span>
+<span class="sd">        is stored (otherwise None is stored) at the same index (as the geometry) in the returned list.</span>
+<span class="sd">        If &#39;all_points&#39; is False then each item in returned list is a single point proxy (and its distance information)</span>
+<span class="sd">        representing the closest point within threshold distance (or a single None).</span>
+<span class="sd">        If &#39;all_points&#39; is True then each item in returned list is a *list* of point proxies (and their distance informations)</span>
+<span class="sd">        representing all points within threshold distance (or a single None).</span>
+<span class="sd">        Above we mentioned &quot;point proxy (and its distance information)&quot;. This is a tuple whose size depends on</span>
+<span class="sd">        the values of &#39;return_closest_position&#39; and &#39;return_closest_index&#39; according to...</span>
+
+<span class="sd">            if return_closest_position and return_closest_index:</span>
+<span class="sd">                point_proxy_to_point = (distance, closest_position, closest_index, point_proxy)</span>
+<span class="sd">            elif return_closest_position:</span>
+<span class="sd">                point_proxy_to_point = (distance, closest_position, point_proxy)</span>
+<span class="sd">            elif return_closest_index:</span>
+<span class="sd">                point_proxy_to_point = (distance, closest_index, point_proxy)</span>
+<span class="sd">            else:</span>
+<span class="sd">                point_proxy_to_point = (distance, point_proxy)</span>
+
+
+<span class="sd">        The arguments &#39;distance_threshold_radians&#39;, &#39;return_closest_position&#39;, &#39;return_closest_index&#39; and &#39;geometries_are_solid&#39; are</span>
+<span class="sd">        similar to those in pygplates.GeometryOnSphere.distance().</span>
+<span class="sd">        See http://www.gplates.org/docs/pygplates/generated/pygplates.GeometryOnSphere.html#pygplates.GeometryOnSphere.distance.</span>
+
+<span class="sd">        Raises ValueError if the lengths of &#39;points&#39; and &#39;point_proxies&#39; (if specified) do not match.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">spatial_tree_of_points</span> <span class="o">=</span> <span class="n">points_spatial_tree</span><span class="o">.</span><span class="n">PointsSpatialTree</span><span class="p">(</span>
+        <span class="n">points</span><span class="p">,</span> <span class="n">subdivision_depth</span>
+    <span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">find_closest_points_to_geometries_using_points_spatial_tree</span><span class="p">(</span>
+        <span class="n">geometries</span><span class="p">,</span>
+        <span class="n">points</span><span class="p">,</span>
+        <span class="n">spatial_tree_of_points</span><span class="p">,</span>
+        <span class="n">point_proxies</span><span class="p">,</span>
+        <span class="n">distance_threshold_radians</span><span class="p">,</span>
+        <span class="n">return_closest_position</span><span class="p">,</span>
+        <span class="n">return_closest_index</span><span class="p">,</span>
+        <span class="n">geometries_are_solid</span><span class="p">,</span>
+        <span class="n">all_points</span><span class="p">,</span>
+    <span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="find_closest_points_to_geometries_using_points_spatial_tree">
+<a class="viewcode-back" href="../../../../gplately.ptt.utils.html#gplately.ptt.utils.proximity_query.find_closest_points_to_geometries_using_points_spatial_tree">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">find_closest_points_to_geometries_using_points_spatial_tree</span><span class="p">(</span>
+    <span class="n">geometries</span><span class="p">,</span>
+    <span class="n">points</span><span class="p">,</span>
+    <span class="n">spatial_tree_of_points</span><span class="p">,</span>
+    <span class="n">point_proxies</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">distance_threshold_radians</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">return_closest_position</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">return_closest_index</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">geometries_are_solid</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">all_points</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Same as &#39;find_closest_points_to_geometries()&#39; except &#39;spatial_tree_of_points&#39; is a &#39;points_spatial_tree.PointsSpatialTree&#39; of &#39;points&#39;.</span>
+
+<span class="sd">    This is useful when re-using a single &#39;points_spatial_tree.PointsSpatialTree&#39;.</span>
+<span class="sd">    For example, when using it both for point-in-polygon queries and minimum distance queries.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># Use the points as proxies if no proxies have been specified.</span>
+    <span class="k">if</span> <span class="n">point_proxies</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">point_proxies</span> <span class="o">=</span> <span class="n">points</span>
+
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">points</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">points</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Number of points must match number of point proxies.&quot;</span><span class="p">)</span>
+
+    <span class="c1"># The point proxies closest to each geometry.</span>
+    <span class="n">point_proxies_closest_to_geometries</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="k">for</span> <span class="n">geometry</span> <span class="ow">in</span> <span class="n">geometries</span><span class="p">:</span>
+        <span class="c1"># By default geometry is not within threshold distance to any point.</span>
+        <span class="n">point_proxies_closest_to_geometry</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="c1"># Keep track of distance threshold per geometry (since it might get reduced when &#39;all_points&#39; is False).</span>
+        <span class="n">geometry_distance_threshold_radians</span> <span class="o">=</span> <span class="n">distance_threshold_radians</span>
+
+        <span class="c1"># Determine the centroid of the geometry.</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="c1"># Try getting centroid of multipoint or polyline.</span>
+            <span class="n">geometry_centroid</span> <span class="o">=</span> <span class="n">geometry</span><span class="o">.</span><span class="n">get_centroid</span><span class="p">()</span>
+        <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="c1"># Try getting boundary centroid of polygon.</span>
+                <span class="n">geometry_centroid</span> <span class="o">=</span> <span class="n">geometry</span><span class="o">.</span><span class="n">get_boundary_centroid</span><span class="p">()</span>
+            <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
+                <span class="c1"># Must be a point.</span>
+                <span class="n">geometry_centroid</span> <span class="o">=</span> <span class="n">geometry</span>
+
+        <span class="k">for</span> <span class="n">root_node</span> <span class="ow">in</span> <span class="n">spatial_tree_of_points</span><span class="o">.</span><span class="n">get_root_nodes</span><span class="p">():</span>
+            <span class="n">point_proxies_closest_to_geometry</span><span class="p">,</span> <span class="n">geometry_distance_threshold_radians</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">_visit_closest_points_to_geometry</span><span class="p">(</span>
+                    <span class="n">root_node</span><span class="p">,</span>
+                    <span class="n">geometry</span><span class="p">,</span>
+                    <span class="n">geometry_centroid</span><span class="p">,</span>
+                    <span class="n">points</span><span class="p">,</span>
+                    <span class="n">point_proxies</span><span class="p">,</span>
+                    <span class="n">point_proxies_closest_to_geometry</span><span class="p">,</span>
+                    <span class="n">geometry_distance_threshold_radians</span><span class="p">,</span>
+                    <span class="n">return_closest_position</span><span class="p">,</span>
+                    <span class="n">return_closest_index</span><span class="p">,</span>
+                    <span class="n">geometries_are_solid</span><span class="p">,</span>
+                    <span class="n">all_points</span><span class="p">,</span>
+                <span class="p">)</span>
+            <span class="p">)</span>
+
+        <span class="n">point_proxies_closest_to_geometries</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">point_proxies_closest_to_geometry</span><span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">point_proxies_closest_to_geometries</span></div>
+
+
+
+<div class="viewcode-block" id="find_closest_points_to_geometry">
+<a class="viewcode-back" href="../../../../gplately.ptt.utils.html#gplately.ptt.utils.proximity_query.find_closest_points_to_geometry">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">find_closest_points_to_geometry</span><span class="p">(</span>
+    <span class="n">geometry</span><span class="p">,</span>
+    <span class="n">points</span><span class="p">,</span>
+    <span class="n">point_proxies</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">distance_threshold_radians</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">return_closest_position</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">return_closest_index</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">geometry_is_solid</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">all_points</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">subdivision_depth</span><span class="o">=</span><span class="n">points_spatial_tree</span><span class="o">.</span><span class="n">DEFAULT_SUBDIVISION_DEPTH</span><span class="p">,</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Same as &#39;find_closest_points_to_geometries()&#39; except with a single geometry instead of a list of geometries.</span>
+
+<span class="sd">    Returns a single &quot;point proxy (and its distance information)&quot; instead of a list</span>
+<span class="sd">    (see &#39;find_closest_points_to_geometries()&#39; for more information).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">point_proxies_closest_to_geometries</span> <span class="o">=</span> <span class="n">find_closest_points_to_geometries</span><span class="p">(</span>
+        <span class="p">[</span><span class="n">geometry</span><span class="p">],</span>
+        <span class="n">points</span><span class="p">,</span>
+        <span class="n">point_proxies</span><span class="p">,</span>
+        <span class="n">distance_threshold_radians</span><span class="p">,</span>
+        <span class="n">return_closest_position</span><span class="p">,</span>
+        <span class="n">return_closest_index</span><span class="p">,</span>
+        <span class="n">geometry_is_solid</span><span class="p">,</span>
+        <span class="n">all_points</span><span class="p">,</span>
+        <span class="n">subdivision_depth</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="c1"># There&#39;s only one geometry - return its result.</span>
+    <span class="k">return</span> <span class="n">point_proxies_closest_to_geometries</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span></div>
+
+
+
+<div class="viewcode-block" id="find_closest_points_to_geometry_using_points_spatial_tree">
+<a class="viewcode-back" href="../../../../gplately.ptt.utils.html#gplately.ptt.utils.proximity_query.find_closest_points_to_geometry_using_points_spatial_tree">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">find_closest_points_to_geometry_using_points_spatial_tree</span><span class="p">(</span>
+    <span class="n">geometry</span><span class="p">,</span>
+    <span class="n">points</span><span class="p">,</span>
+    <span class="n">spatial_tree_of_points</span><span class="p">,</span>
+    <span class="n">point_proxies</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">distance_threshold_radians</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">return_closest_position</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">return_closest_index</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">geometry_is_solid</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">all_points</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Same as &#39;find_closest_points_to_geometries_using_points_spatial_tree()&#39; except with a single geometry instead of a list of geometries.</span>
+
+<span class="sd">    Returns a single &quot;point proxy (and its distance information)&quot; instead of a list.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">point_proxies_closest_to_geometries</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">find_closest_points_to_geometries_using_points_spatial_tree</span><span class="p">(</span>
+            <span class="p">[</span><span class="n">geometry</span><span class="p">],</span>
+            <span class="n">points</span><span class="p">,</span>
+            <span class="n">spatial_tree_of_points</span><span class="p">,</span>
+            <span class="n">point_proxies</span><span class="p">,</span>
+            <span class="n">distance_threshold_radians</span><span class="p">,</span>
+            <span class="n">return_closest_position</span><span class="p">,</span>
+            <span class="n">return_closest_index</span><span class="p">,</span>
+            <span class="n">geometry_is_solid</span><span class="p">,</span>
+            <span class="n">all_points</span><span class="p">,</span>
+        <span class="p">)</span>
+    <span class="p">)</span>
+
+    <span class="c1"># There&#39;s only one geometry - return its result.</span>
+    <span class="k">return</span> <span class="n">point_proxies_closest_to_geometries</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span></div>
+
+
+
+<span class="c1">##################</span>
+<span class="c1"># Implementation #</span>
+<span class="c1">##################</span>
+
+
+<div class="viewcode-block" id="_visit_closest_geometries_to_points">
+<a class="viewcode-back" href="../../../../gplately.ptt.utils.html#gplately.ptt.utils.proximity_query._visit_closest_geometries_to_points">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">_visit_closest_geometries_to_points</span><span class="p">(</span>
+    <span class="n">node</span><span class="p">,</span>
+    <span class="n">points</span><span class="p">,</span>
+    <span class="n">geometries</span><span class="p">,</span>
+    <span class="n">geometry_proxies</span><span class="p">,</span>
+    <span class="n">parent_geometry_indices_to_visit</span><span class="p">,</span>
+    <span class="n">geometry_proxies_closest_to_points</span><span class="p">,</span>
+    <span class="n">distance_threshold_radians</span><span class="p">,</span>
+    <span class="n">return_closest_position</span><span class="p">,</span>
+    <span class="n">return_closest_index</span><span class="p">,</span>
+    <span class="n">geometries_are_solid</span><span class="p">,</span>
+    <span class="n">all_geometries</span><span class="p">,</span>
+<span class="p">):</span>
+
+    <span class="n">node_bounding_circle_centre</span><span class="p">,</span> <span class="n">node_bounding_circle_radius</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">node</span><span class="o">.</span><span class="n">get_bounding_circle</span><span class="p">()</span>
+    <span class="p">)</span>
+
+    <span class="c1"># If there is a distance threshold then ignore the geometries that are further</span>
+    <span class="c1"># from node bounding circle than the distance threshold.</span>
+    <span class="c1"># Note that the distance to the bounding circle is the distance to its *centre* minus its radius.</span>
+    <span class="c1"># In other words, the distance to its *centre* is the distance to the circle plus its radius.</span>
+    <span class="n">distance_threshold_to_node_centre_radians</span> <span class="o">=</span> <span class="n">distance_threshold_radians</span>
+    <span class="k">if</span> <span class="n">distance_threshold_to_node_centre_radians</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">distance_threshold_to_node_centre_radians</span> <span class="o">+=</span> <span class="n">node_bounding_circle_radius</span>
+        <span class="c1"># If threshold exceeds maximum possible distance then we don&#39;t need a threshold.</span>
+        <span class="k">if</span> <span class="n">distance_threshold_to_node_centre_radians</span> <span class="o">&gt;=</span> <span class="n">math</span><span class="o">.</span><span class="n">pi</span><span class="p">:</span>
+            <span class="n">distance_threshold_to_node_centre_radians</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="c1"># See if the current quad tree node&#39;s bounding circle is close to any geometries.</span>
+    <span class="n">geometry_indices_to_visit</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="c1"># Some extra parameters if we&#39;re only interested in the *closest* geometry to each point.</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">all_geometries</span><span class="p">:</span>
+        <span class="n">distance_node_centre_to_geometries</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">min_distance_node_centre_to_geometries</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">max_distance_node_centre_to_geometries</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="k">for</span> <span class="n">geometry_index</span> <span class="ow">in</span> <span class="n">parent_geometry_indices_to_visit</span><span class="p">:</span>
+        <span class="n">geometry</span> <span class="o">=</span> <span class="n">geometries</span><span class="p">[</span><span class="n">geometry_index</span><span class="p">]</span>
+        <span class="n">distance_node_centre_to_geometry</span> <span class="o">=</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">GeometryOnSphere</span><span class="o">.</span><span class="n">distance</span><span class="p">(</span>
+            <span class="n">node_bounding_circle_centre</span><span class="p">,</span>
+            <span class="n">geometry</span><span class="p">,</span>
+            <span class="n">distance_threshold_to_node_centre_radians</span><span class="p">,</span>
+            <span class="n">geometry2_is_solid</span><span class="o">=</span><span class="n">geometries_are_solid</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="k">if</span> <span class="n">distance_node_centre_to_geometry</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="c1"># Ignore the current geometry.</span>
+            <span class="c1"># This can only happen if the distance threshold is not None.</span>
+            <span class="k">continue</span>
+
+        <span class="n">geometry_indices_to_visit</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">geometry_index</span><span class="p">)</span>
+
+        <span class="c1"># Calculate extra parameters if we&#39;re only interested in the *closest* geometry to each point.</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">all_geometries</span><span class="p">:</span>
+            <span class="n">distance_node_centre_to_geometries</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="p">(</span><span class="n">distance_node_centre_to_geometry</span><span class="p">,</span> <span class="n">geometry_index</span><span class="p">)</span>
+            <span class="p">)</span>
+
+            <span class="k">if</span> <span class="p">(</span>
+                <span class="n">min_distance_node_centre_to_geometries</span> <span class="ow">is</span> <span class="kc">None</span>
+                <span class="ow">or</span> <span class="n">distance_node_centre_to_geometry</span>
+                <span class="o">&lt;</span> <span class="n">min_distance_node_centre_to_geometries</span>
+            <span class="p">):</span>
+
+                <span class="n">min_distance_node_centre_to_geometries</span> <span class="o">=</span> <span class="p">(</span>
+                    <span class="n">distance_node_centre_to_geometry</span>
+                <span class="p">)</span>
+
+            <span class="k">if</span> <span class="p">(</span>
+                <span class="n">max_distance_node_centre_to_geometries</span> <span class="ow">is</span> <span class="kc">None</span>
+                <span class="ow">or</span> <span class="n">distance_node_centre_to_geometry</span>
+                <span class="o">&gt;</span> <span class="n">max_distance_node_centre_to_geometries</span>
+            <span class="p">):</span>
+
+                <span class="n">max_distance_node_centre_to_geometries</span> <span class="o">=</span> <span class="p">(</span>
+                    <span class="n">distance_node_centre_to_geometry</span>
+                <span class="p">)</span>
+
+    <span class="c1"># If quad tree node is further than threshold distance to all geometries then nothing to do since</span>
+    <span class="c1"># all points are marked as not within the distance threshold.</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">geometry_indices_to_visit</span><span class="p">:</span>
+        <span class="k">return</span>
+
+    <span class="c1"># If we&#39;re only interested in the *closest* geometry to each point then we can exclude</span>
+    <span class="c1"># geometries that cannot possibly be the closest to any point in the current node.</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">all_geometries</span><span class="p">:</span>
+        <span class="c1"># If the difference between the min and max distances exceeds the bounding circle diameter then</span>
+        <span class="c1"># we can remove those geometries whose minimum distance to bounding circle exceeds the maximum</span>
+        <span class="c1"># distance to the closest geometry - this means the distance from the closest geometry to the</span>
+        <span class="c1"># point (in the current node) *furthest* from it is still less than the distance from another geometry</span>
+        <span class="c1"># to the point (in the current node) *closest* to that geometry - hence all points (in the current node)</span>
+        <span class="c1"># are closer to the closest geometry.</span>
+        <span class="n">node_bounding_circle_diameter</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">node_bounding_circle_radius</span>
+        <span class="k">if</span> <span class="p">(</span>
+            <span class="n">max_distance_node_centre_to_geometries</span>
+            <span class="o">-</span> <span class="n">min_distance_node_centre_to_geometries</span>
+            <span class="o">&gt;</span> <span class="n">node_bounding_circle_diameter</span>
+        <span class="p">):</span>
+            <span class="c1"># Sort from smallest to largest distance to make geometry removal easier.</span>
+            <span class="n">distance_node_centre_to_geometries</span><span class="o">.</span><span class="n">sort</span><span class="p">()</span>
+
+            <span class="c1"># Essentially remove any geometries whose distance compared to the closest geometry exceeds</span>
+            <span class="c1"># the diameter of the current node&#39;s bounding circle.</span>
+            <span class="n">new_geometry_indices_to_visit</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">index</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">distance_node_centre_to_geometries</span><span class="p">)):</span>
+                <span class="n">distance_node_centre_to_geometry</span><span class="p">,</span> <span class="n">geometry_index</span> <span class="o">=</span> <span class="p">(</span>
+                    <span class="n">distance_node_centre_to_geometries</span><span class="p">[</span><span class="n">index</span><span class="p">]</span>
+                <span class="p">)</span>
+                <span class="k">if</span> <span class="p">(</span>
+                    <span class="n">distance_node_centre_to_geometry</span>
+                    <span class="o">-</span> <span class="n">min_distance_node_centre_to_geometries</span>
+                    <span class="o">&gt;</span> <span class="n">node_bounding_circle_diameter</span>
+                <span class="p">):</span>
+                    <span class="c1"># All remaining geometries are essentially removed since the distance list is sorted.</span>
+                    <span class="k">break</span>
+                <span class="n">new_geometry_indices_to_visit</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">geometry_index</span><span class="p">)</span>
+
+            <span class="n">geometry_indices_to_visit</span> <span class="o">=</span> <span class="n">new_geometry_indices_to_visit</span>
+
+    <span class="c1"># Visit child nodes (if internal node) or test each point (if leaf node).</span>
+    <span class="k">if</span> <span class="n">node</span><span class="o">.</span><span class="n">is_internal_node</span><span class="p">():</span>
+        <span class="k">for</span> <span class="n">child_node</span> <span class="ow">in</span> <span class="n">node</span><span class="o">.</span><span class="n">get_child_nodes</span><span class="p">():</span>
+            <span class="n">_visit_closest_geometries_to_points</span><span class="p">(</span>
+                <span class="n">child_node</span><span class="p">,</span>
+                <span class="n">points</span><span class="p">,</span>
+                <span class="n">geometries</span><span class="p">,</span>
+                <span class="n">geometry_proxies</span><span class="p">,</span>
+                <span class="n">geometry_indices_to_visit</span><span class="p">,</span>
+                <span class="n">geometry_proxies_closest_to_points</span><span class="p">,</span>
+                <span class="n">distance_threshold_radians</span><span class="p">,</span>
+                <span class="n">return_closest_position</span><span class="p">,</span>
+                <span class="n">return_closest_index</span><span class="p">,</span>
+                <span class="n">geometries_are_solid</span><span class="p">,</span>
+                <span class="n">all_geometries</span><span class="p">,</span>
+            <span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">point_index</span> <span class="ow">in</span> <span class="n">node</span><span class="o">.</span><span class="n">get_point_indices</span><span class="p">():</span>
+            <span class="n">point</span> <span class="o">=</span> <span class="n">points</span><span class="p">[</span><span class="n">point_index</span><span class="p">]</span>
+
+            <span class="c1"># Start out with the distance threshold (which might be None).</span>
+            <span class="c1"># If only looking for closest geometry then we&#39;ll reduce this to the closest geometry so far as we go.</span>
+            <span class="n">distance_threshold_to_point</span> <span class="o">=</span> <span class="n">distance_threshold_radians</span>
+
+            <span class="c1"># If only looking for closest geometry then keep track of it.</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">all_geometries</span><span class="p">:</span>
+                <span class="n">closest_geometry_proxy_to_point</span> <span class="o">=</span> <span class="kc">None</span>
+
+            <span class="k">for</span> <span class="n">geometry_index</span> <span class="ow">in</span> <span class="n">geometry_indices_to_visit</span><span class="p">:</span>
+                <span class="n">geometry</span> <span class="o">=</span> <span class="n">geometries</span><span class="p">[</span><span class="n">geometry_index</span><span class="p">]</span>
+                <span class="n">geometry_proxy</span> <span class="o">=</span> <span class="n">geometry_proxies</span><span class="p">[</span><span class="n">geometry_index</span><span class="p">]</span>
+
+                <span class="n">point_to_geometry_distance_info</span> <span class="o">=</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">GeometryOnSphere</span><span class="o">.</span><span class="n">distance</span><span class="p">(</span>
+                    <span class="n">point</span><span class="p">,</span>
+                    <span class="n">geometry</span><span class="p">,</span>
+                    <span class="n">distance_threshold_to_point</span><span class="p">,</span>
+                    <span class="n">return_closest_position</span><span class="p">,</span>
+                    <span class="n">return_closest_index</span><span class="p">,</span>
+                    <span class="c1"># Whether to treat &#39;geometry&#39; as solid or not (if it&#39;s a polygon)...</span>
+                    <span class="n">geometry2_is_solid</span><span class="o">=</span><span class="n">geometries_are_solid</span><span class="p">,</span>
+                <span class="p">)</span>
+
+                <span class="c1"># If point is close to a geometry (or closer than previous closest geometry).</span>
+                <span class="k">if</span> <span class="n">point_to_geometry_distance_info</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="c1"># Unpack the distance info.</span>
+                    <span class="k">if</span> <span class="n">return_closest_position</span><span class="p">:</span>
+                        <span class="k">if</span> <span class="n">return_closest_index</span><span class="p">:</span>
+                            <span class="n">distance</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">closest_position</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">closest_index</span> <span class="o">=</span> <span class="p">(</span>
+                                <span class="n">point_to_geometry_distance_info</span>
+                            <span class="p">)</span>
+                            <span class="n">geometry_proxy_to_point</span> <span class="o">=</span> <span class="p">(</span>
+                                <span class="n">distance</span><span class="p">,</span>
+                                <span class="n">closest_position</span><span class="p">,</span>
+                                <span class="n">closest_index</span><span class="p">,</span>
+                                <span class="n">geometry_proxy</span><span class="p">,</span>
+                            <span class="p">)</span>
+                        <span class="k">else</span><span class="p">:</span>
+                            <span class="n">distance</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">closest_position</span> <span class="o">=</span> <span class="p">(</span>
+                                <span class="n">point_to_geometry_distance_info</span>
+                            <span class="p">)</span>
+                            <span class="n">geometry_proxy_to_point</span> <span class="o">=</span> <span class="p">(</span>
+                                <span class="n">distance</span><span class="p">,</span>
+                                <span class="n">closest_position</span><span class="p">,</span>
+                                <span class="n">geometry_proxy</span><span class="p">,</span>
+                            <span class="p">)</span>
+                    <span class="k">elif</span> <span class="n">return_closest_index</span><span class="p">:</span>
+                        <span class="n">distance</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">closest_index</span> <span class="o">=</span> <span class="n">point_to_geometry_distance_info</span>
+                        <span class="n">geometry_proxy_to_point</span> <span class="o">=</span> <span class="p">(</span>
+                            <span class="n">distance</span><span class="p">,</span>
+                            <span class="n">closest_index</span><span class="p">,</span>
+                            <span class="n">geometry_proxy</span><span class="p">,</span>
+                        <span class="p">)</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">distance</span> <span class="o">=</span> <span class="n">point_to_geometry_distance_info</span>
+                        <span class="n">geometry_proxy_to_point</span> <span class="o">=</span> <span class="p">(</span><span class="n">distance</span><span class="p">,</span> <span class="n">geometry_proxy</span><span class="p">)</span>
+
+                    <span class="k">if</span> <span class="n">all_geometries</span><span class="p">:</span>
+                        <span class="c1"># Each point has a *list* of geometry proxies (or None).</span>
+                        <span class="c1"># Create list if first geometry proxy encountered for current point.</span>
+                        <span class="k">if</span> <span class="n">geometry_proxies_closest_to_points</span><span class="p">[</span><span class="n">point_index</span><span class="p">]</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                            <span class="n">geometry_proxies_closest_to_points</span><span class="p">[</span><span class="n">point_index</span><span class="p">]</span> <span class="o">=</span> <span class="p">[]</span>
+                        <span class="n">geometry_proxies_closest_to_points</span><span class="p">[</span><span class="n">point_index</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                            <span class="n">geometry_proxy_to_point</span>
+                        <span class="p">)</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="c1"># Only looking for closest geometry, so reduce distance threshold to closest so far.</span>
+                        <span class="n">distance_threshold_to_point</span> <span class="o">=</span> <span class="n">distance</span>
+                        <span class="n">closest_geometry_proxy_to_point</span> <span class="o">=</span> <span class="n">geometry_proxy_to_point</span>
+
+            <span class="c1"># If only looking for closest geometry then only need to store closest geometry (not a list of geometries).</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">all_geometries</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">closest_geometry_proxy_to_point</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">geometry_proxies_closest_to_points</span><span class="p">[</span><span class="n">point_index</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+                        <span class="n">closest_geometry_proxy_to_point</span>
+                    <span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="_visit_closest_points_to_geometry">
+<a class="viewcode-back" href="../../../../gplately.ptt.utils.html#gplately.ptt.utils.proximity_query._visit_closest_points_to_geometry">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">_visit_closest_points_to_geometry</span><span class="p">(</span>
+    <span class="n">node</span><span class="p">,</span>
+    <span class="n">geometry</span><span class="p">,</span>
+    <span class="n">geometry_centroid</span><span class="p">,</span>
+    <span class="n">points</span><span class="p">,</span>
+    <span class="n">point_proxies</span><span class="p">,</span>
+    <span class="n">point_proxies_closest_to_geometry</span><span class="p">,</span>
+    <span class="n">distance_threshold_radians</span><span class="p">,</span>
+    <span class="n">return_closest_position</span><span class="p">,</span>
+    <span class="n">return_closest_index</span><span class="p">,</span>
+    <span class="n">geometry_is_solid</span><span class="p">,</span>
+    <span class="n">all_points</span><span class="p">,</span>
+<span class="p">):</span>
+
+    <span class="n">node_bounding_circle_centre</span><span class="p">,</span> <span class="n">node_bounding_circle_radius</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">node</span><span class="o">.</span><span class="n">get_bounding_circle</span><span class="p">()</span>
+    <span class="p">)</span>
+
+    <span class="c1"># If there is a distance threshold then ignore the current points node if its bounding circle is</span>
+    <span class="c1"># further from the geometry than the distance threshold.</span>
+    <span class="c1"># Note that the distance to the bounding circle is the distance to its *centre* minus its radius.</span>
+    <span class="c1"># In other words, the distance to its *centre* is the distance to the circle plus its radius.</span>
+    <span class="n">distance_threshold_to_node_centre_radians</span> <span class="o">=</span> <span class="n">distance_threshold_radians</span>
+    <span class="k">if</span> <span class="n">distance_threshold_to_node_centre_radians</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">distance_threshold_to_node_centre_radians</span> <span class="o">+=</span> <span class="n">node_bounding_circle_radius</span>
+        <span class="c1"># If threshold exceeds maximum possible distance then we don&#39;t need a threshold.</span>
+        <span class="k">if</span> <span class="n">distance_threshold_to_node_centre_radians</span> <span class="o">&gt;=</span> <span class="n">math</span><span class="o">.</span><span class="n">pi</span><span class="p">:</span>
+            <span class="n">distance_threshold_to_node_centre_radians</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="c1"># See if can cull the current points node.</span>
+    <span class="k">if</span> <span class="n">distance_threshold_to_node_centre_radians</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">if</span> <span class="p">(</span>
+            <span class="n">pygplates</span><span class="o">.</span><span class="n">GeometryOnSphere</span><span class="o">.</span><span class="n">distance</span><span class="p">(</span>
+                <span class="n">node_bounding_circle_centre</span><span class="p">,</span>
+                <span class="n">geometry</span><span class="p">,</span>
+                <span class="n">distance_threshold_to_node_centre_radians</span><span class="p">,</span>
+                <span class="n">geometry2_is_solid</span><span class="o">=</span><span class="n">geometry_is_solid</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="ow">is</span> <span class="kc">None</span>
+        <span class="p">):</span>
+            <span class="c1"># Ignore the current points node - all points in the node are not close enough.</span>
+            <span class="c1"># This can only happen if the distance threshold is not None.</span>
+            <span class="k">return</span> <span class="n">point_proxies_closest_to_geometry</span><span class="p">,</span> <span class="n">distance_threshold_radians</span>
+
+    <span class="c1"># Visit child nodes (if internal node) or test each point (if leaf node).</span>
+    <span class="k">if</span> <span class="n">node</span><span class="o">.</span><span class="n">is_internal_node</span><span class="p">():</span>
+        <span class="n">child_nodes</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">get_child_nodes</span><span class="p">()</span>
+
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">all_points</span><span class="p">:</span>
+            <span class="c1"># We only need the closest point so visit the closest child nodes first since they might reduce</span>
+            <span class="c1"># the distance threshold such that the further child nodes are more likely to be culled.</span>
+            <span class="c1">#</span>
+            <span class="c1"># Note: We just test distance to geometry centroid (point) rather than geometry itself</span>
+            <span class="c1"># since it is faster and we don&#39;t need a lot of accuracy here - we just want a rough ordering.</span>
+            <span class="n">child_node_distances</span> <span class="o">=</span> <span class="p">[]</span>
+            <span class="k">for</span> <span class="n">child_node_index</span><span class="p">,</span> <span class="n">child_node</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">child_nodes</span><span class="p">):</span>
+                <span class="n">child_node_bounding_circle_centre</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">child_node</span><span class="o">.</span><span class="n">get_bounding_circle</span><span class="p">()</span>
+                <span class="n">distance_to_geometry_centroid</span> <span class="o">=</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">GeometryOnSphere</span><span class="o">.</span><span class="n">distance</span><span class="p">(</span>
+                    <span class="n">child_node_bounding_circle_centre</span><span class="p">,</span> <span class="n">geometry_centroid</span>
+                <span class="p">)</span>
+                <span class="n">child_node_distances</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                    <span class="p">(</span><span class="n">distance_to_geometry_centroid</span><span class="p">,</span> <span class="n">child_node_index</span><span class="p">)</span>
+                <span class="p">)</span>
+
+            <span class="c1"># Sort child nodes by distance.</span>
+            <span class="n">child_node_distances</span><span class="o">.</span><span class="n">sort</span><span class="p">()</span>
+            <span class="n">child_nodes</span> <span class="o">=</span> <span class="p">[</span>
+                <span class="n">child_nodes</span><span class="p">[</span><span class="n">child_node_index</span><span class="p">]</span>
+                <span class="k">for</span> <span class="n">_</span><span class="p">,</span> <span class="n">child_node_index</span> <span class="ow">in</span> <span class="n">child_node_distances</span>
+            <span class="p">]</span>
+
+        <span class="k">for</span> <span class="n">child_node</span> <span class="ow">in</span> <span class="n">child_nodes</span><span class="p">:</span>
+            <span class="n">point_proxies_closest_to_geometry</span><span class="p">,</span> <span class="n">distance_threshold_radians</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">_visit_closest_points_to_geometry</span><span class="p">(</span>
+                    <span class="n">child_node</span><span class="p">,</span>
+                    <span class="n">geometry</span><span class="p">,</span>
+                    <span class="n">geometry_centroid</span><span class="p">,</span>
+                    <span class="n">points</span><span class="p">,</span>
+                    <span class="n">point_proxies</span><span class="p">,</span>
+                    <span class="n">point_proxies_closest_to_geometry</span><span class="p">,</span>
+                    <span class="n">distance_threshold_radians</span><span class="p">,</span>
+                    <span class="n">return_closest_position</span><span class="p">,</span>
+                    <span class="n">return_closest_index</span><span class="p">,</span>
+                    <span class="n">geometry_is_solid</span><span class="p">,</span>
+                    <span class="n">all_points</span><span class="p">,</span>
+                <span class="p">)</span>
+            <span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1"># If only looking for closest point then keep track of it.</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">all_points</span><span class="p">:</span>
+            <span class="n">closest_point_proxy_to_geometry</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="k">for</span> <span class="n">point_index</span> <span class="ow">in</span> <span class="n">node</span><span class="o">.</span><span class="n">get_point_indices</span><span class="p">():</span>
+            <span class="n">point</span> <span class="o">=</span> <span class="n">points</span><span class="p">[</span><span class="n">point_index</span><span class="p">]</span>
+            <span class="n">point_proxy</span> <span class="o">=</span> <span class="n">point_proxies</span><span class="p">[</span><span class="n">point_index</span><span class="p">]</span>
+
+            <span class="n">geometry_to_point_distance_info</span> <span class="o">=</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">GeometryOnSphere</span><span class="o">.</span><span class="n">distance</span><span class="p">(</span>
+                <span class="n">geometry</span><span class="p">,</span>
+                <span class="n">point</span><span class="p">,</span>
+                <span class="n">distance_threshold_radians</span><span class="p">,</span>
+                <span class="n">return_closest_position</span><span class="p">,</span>
+                <span class="n">return_closest_index</span><span class="p">,</span>
+                <span class="c1"># Whether to treat &#39;geometry&#39; as solid or not (if it&#39;s a polygon)...</span>
+                <span class="n">geometry2_is_solid</span><span class="o">=</span><span class="n">geometry_is_solid</span><span class="p">,</span>
+            <span class="p">)</span>
+
+            <span class="c1"># If geometry is close to a point (or closer than previous closest point).</span>
+            <span class="k">if</span> <span class="n">geometry_to_point_distance_info</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="c1"># Unpack the distance info.</span>
+                <span class="k">if</span> <span class="n">return_closest_position</span><span class="p">:</span>
+                    <span class="k">if</span> <span class="n">return_closest_index</span><span class="p">:</span>
+                        <span class="n">distance</span><span class="p">,</span> <span class="n">closest_position</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">closest_index</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="p">(</span>
+                            <span class="n">geometry_to_point_distance_info</span>
+                        <span class="p">)</span>
+                        <span class="n">point_proxy_to_geometry</span> <span class="o">=</span> <span class="p">(</span>
+                            <span class="n">distance</span><span class="p">,</span>
+                            <span class="n">closest_position</span><span class="p">,</span>
+                            <span class="n">closest_index</span><span class="p">,</span>
+                            <span class="n">point_proxy</span><span class="p">,</span>
+                        <span class="p">)</span>
+                    <span class="k">else</span><span class="p">:</span>
+                        <span class="n">distance</span><span class="p">,</span> <span class="n">closest_position</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">geometry_to_point_distance_info</span>
+                        <span class="n">point_proxy_to_geometry</span> <span class="o">=</span> <span class="p">(</span>
+                            <span class="n">distance</span><span class="p">,</span>
+                            <span class="n">closest_position</span><span class="p">,</span>
+                            <span class="n">point_proxy</span><span class="p">,</span>
+                        <span class="p">)</span>
+                <span class="k">elif</span> <span class="n">return_closest_index</span><span class="p">:</span>
+                    <span class="n">distance</span><span class="p">,</span> <span class="n">closest_index</span><span class="p">,</span> <span class="n">_</span> <span class="o">=</span> <span class="n">geometry_to_point_distance_info</span>
+                    <span class="n">point_proxy_to_geometry</span> <span class="o">=</span> <span class="p">(</span><span class="n">distance</span><span class="p">,</span> <span class="n">closest_index</span><span class="p">,</span> <span class="n">point_proxy</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">distance</span> <span class="o">=</span> <span class="n">geometry_to_point_distance_info</span>
+                    <span class="n">point_proxy_to_geometry</span> <span class="o">=</span> <span class="p">(</span><span class="n">distance</span><span class="p">,</span> <span class="n">point_proxy</span><span class="p">)</span>
+
+                <span class="k">if</span> <span class="n">all_points</span><span class="p">:</span>
+                    <span class="c1"># Geometry has a *list* of point proxies (or None).</span>
+                    <span class="c1"># Create list if first point proxy encountered for geometry.</span>
+                    <span class="k">if</span> <span class="n">point_proxies_closest_to_geometry</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                        <span class="n">point_proxies_closest_to_geometry</span> <span class="o">=</span> <span class="p">[]</span>
+                    <span class="n">point_proxies_closest_to_geometry</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">point_proxy_to_geometry</span><span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="c1"># Only looking for closest point, so reduce distance threshold to closest so far.</span>
+                    <span class="n">distance_threshold_radians</span> <span class="o">=</span> <span class="n">distance</span>
+                    <span class="n">closest_point_proxy_to_geometry</span> <span class="o">=</span> <span class="n">point_proxy_to_geometry</span>
+
+        <span class="c1"># If only looking for closest point then only need to store closest point (not a list of points).</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">all_points</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">closest_point_proxy_to_geometry</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">point_proxies_closest_to_geometry</span> <span class="o">=</span> <span class="n">closest_point_proxy_to_geometry</span>
+
+    <span class="k">return</span> <span class="n">point_proxies_closest_to_geometry</span><span class="p">,</span> <span class="n">distance_threshold_radians</span></div>
+
+
+
+<span class="c1"># if __name__ == &#39;__main__&#39;:</span>
+<span class="c1">#</span>
+<span class="c1">#    #</span>
+<span class="c1">#    # Some testing/example code.</span>
+<span class="c1">#    #</span>
+<span class="c1">#</span>
+<span class="c1">#    import time</span>
+<span class="c1">#</span>
+<span class="c1">#</span>
+<span class="c1">#    print(&#39;Loading coastline polygons and rotation model...&#39;)</span>
+<span class="c1">#    coastline_features = pygplates.FeatureCollection(&#39;../../../sample_data/2.0/SampleData/FeatureCollections/Coastlines/Matthews_etal_GPC_2016_Coastlines.gpmlz&#39;)</span>
+<span class="c1">#    rotation_model = pygplates.RotationModel(&#39;../../../sample_data/2.0/SampleData/FeatureCollections/Rotations/Matthews_etal_GPC_2016_410-0Ma_GK07.rot&#39;)</span>
+<span class="c1">#</span>
+<span class="c1">#    print(&#39;Reconstructing coastline polygons...&#39;)</span>
+<span class="c1">#    reconstruction_time = 200</span>
+<span class="c1">#    coastline_reconstructed_feature_geometries = []</span>
+<span class="c1">#    pygplates.reconstruct(coastline_features, rotation_model, coastline_reconstructed_feature_geometries, reconstruction_time)</span>
+<span class="c1">#</span>
+<span class="c1">#    geometries = []</span>
+<span class="c1">#    geometry_features = []</span>
+<span class="c1">#    for reconstructed_feature_geometry in coastline_reconstructed_feature_geometries:</span>
+<span class="c1">#        geometries.append(reconstructed_feature_geometry.get_reconstructed_geometry())</span>
+<span class="c1">#        geometry_features.append(reconstructed_feature_geometry.get_feature())</span>
+<span class="c1">#</span>
+<span class="c1">#    # Create uniform lat/lon distribution of points.</span>
+<span class="c1">#    print(&#39;Creating lat/lon grid of points...&#39;)</span>
+<span class="c1">#    num_latitudes = 180</span>
+<span class="c1">#    num_longitudes = 360</span>
+<span class="c1">#    lat_grid_spacing_degrees = 180.0 / num_latitudes</span>
+<span class="c1">#    lon_grid_spacing_degrees = 360.0 / num_longitudes</span>
+<span class="c1">#</span>
+<span class="c1">#    points = []</span>
+<span class="c1">#    for lat_index in range(num_latitudes):</span>
+<span class="c1">#        # The 0.5 puts the point in the centre of the grid pixel.</span>
+<span class="c1">#        # This also avoids sampling right on the poles.</span>
+<span class="c1">#        lat = -90 + (lat_index + 0.5) * lat_grid_spacing_degrees</span>
+<span class="c1">#</span>
+<span class="c1">#        for lon_index in range(num_longitudes):</span>
+<span class="c1">#            # The 0.5 puts the point in the centre of the grid pixel.</span>
+<span class="c1">#            # This also avoids sampling right on the dateline where there might be</span>
+<span class="c1">#            # age grid or static polygon artifacts.</span>
+<span class="c1">#            lon = -180 + (lon_index + 0.5) * lon_grid_spacing_degrees</span>
+<span class="c1">#</span>
+<span class="c1">#            point = pygplates.PointOnSphere(lat, lon)</span>
+<span class="c1">#            points.append(point)</span>
+<span class="c1">#</span>
+<span class="c1">#    print(&#39;Finding geometries closest to points...&#39;)</span>
+<span class="c1">#    time_begin = time.clock()</span>
+<span class="c1">#</span>
+<span class="c1">#    distance_threshold_radians = 400 / pygplates.Earth.mean_radius_in_kms</span>
+<span class="c1">#</span>
+<span class="c1">#    if True:</span>
+<span class="c1">#        #</span>
+<span class="c1">#        # The fast way (about 3 seconds).</span>
+<span class="c1">#        #</span>
+<span class="c1">#        geometry_features_closest_to_points = find_closest_geometries_to_points(</span>
+<span class="c1">#                points,</span>
+<span class="c1">#                geometries,</span>
+<span class="c1">#                geometry_features,</span>
+<span class="c1">#                distance_threshold_radians = distance_threshold_radians,</span>
+<span class="c1">#                all_geometries=True)</span>
+<span class="c1">#    else:</span>
+<span class="c1">#        #</span>
+<span class="c1">#        # The slow way (about 270 seconds).</span>
+<span class="c1">#        #</span>
+<span class="c1">#        # Similar to &#39;find_closest_geometries_to_points()&#39; except without using a quad tree.</span>
+<span class="c1">#        #</span>
+<span class="c1">#        geometries_and_features = [(geometries[index], geometry_features[index]) for index in range(len(geometries))]</span>
+<span class="c1">#        geometry_features_closest_to_points = [None] * len(points)</span>
+<span class="c1">#        for point_index, point in enumerate(points):</span>
+<span class="c1">#            geometry_features_closest_to_points[point_index] = []</span>
+<span class="c1">#            for geometry, geometry_feature in geometries_and_features:</span>
+<span class="c1">#                dist = pygplates.GeometryOnSphere.distance(point, geometry, distance_threshold_radians)</span>
+<span class="c1">#                if dist is not None:</span>
+<span class="c1">#                    geometry_features_closest_to_points[point_index].append((dist, geometry_feature))</span>
+<span class="c1">#</span>
+<span class="c1">#    time_end = time.clock()</span>
+<span class="c1">#    print(&#39;  {0} seconds&#39;.format(time_end - time_begin))</span>
+<span class="c1">#</span>
+<span class="c1">#    print(&#39;Associate each point with zero or more closest geometries...&#39;)</span>
+<span class="c1">#</span>
+<span class="c1">#    # Group points with each geometry so can create one multi-point per geometry.</span>
+<span class="c1">#    geometry_feature_to_points_mapping = {}</span>
+<span class="c1">#    for point_index, geometry_feature_list in enumerate(geometry_features_closest_to_points):</span>
+<span class="c1">#        if geometry_feature_list:</span>
+<span class="c1">#            for distance, geometry_feature in geometry_feature_list:</span>
+<span class="c1">#                points_near_geometry, distances_near_geometry = geometry_feature_to_points_mapping.setdefault(geometry_feature, ([], []))</span>
+<span class="c1">#                points_near_geometry.append(points[point_index])</span>
+<span class="c1">#                distances_near_geometry.append(distance * pygplates.Earth.mean_radius_in_kms)</span>
+<span class="c1">#</span>
+<span class="c1">#    # Create multi-point features.</span>
+<span class="c1">#    multi_point_features = []</span>
+<span class="c1">#    for geometry_feature, (points_near_geometry, distances_near_geometry) in geometry_feature_to_points_mapping.iteritems():</span>
+<span class="c1">#        multi_point_feature = pygplates.Feature()</span>
+<span class="c1">#        multi_point_feature.set_geometry((</span>
+<span class="c1">#                pygplates.MultiPointOnSphere(points_near_geometry),</span>
+<span class="c1">#                {pygplates.ScalarType.create_gpml(&#39;Distance&#39;) : distances_near_geometry}))</span>
+<span class="c1">#</span>
+<span class="c1">#        begin_time, end_time = geometry_feature.get_valid_time()</span>
+<span class="c1">#        multi_point_feature.set_valid_time(begin_time, end_time)</span>
+<span class="c1">#</span>
+<span class="c1">#        multi_point_feature.set_reconstruction_plate_id(</span>
+<span class="c1">#                geometry_feature.get_reconstruction_plate_id())</span>
+<span class="c1">#</span>
+<span class="c1">#        multi_point_features.append(multi_point_feature)</span>
+<span class="c1">#</span>
+<span class="c1">#    print(&#39;Writing points feature collection...&#39;)</span>
+<span class="c1">#    pygplates.FeatureCollection(multi_point_features).write(&#39;multi_point_features.gpml&#39;)</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023-2025, The University of Sydney.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

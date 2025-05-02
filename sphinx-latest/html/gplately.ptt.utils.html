@@ -1,0 +1,841 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>gplately.ptt.utils package &mdash; gplately 2.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=51b770b3"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="gplately.utils package" href="gplately.utils.html" />
+    <link rel="prev" title="gplately.ptt package" href="gplately.ptt.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            gplately
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">GPlately v2.0.0</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="basic_usages.html">Minimal working example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="use_cases.html">Common Use Cases</a></li>
+<li class="toctree-l1"><a class="reference internal" href="faq.html">Trouble-shooting and FAQ</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="command_line_interface.html">Command Line Interface (CLI)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="primer.html">Primer</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">gplately</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="gplately.html">gplately package</a><ul class="current">
+<li class="toctree-l3 current"><a class="reference internal" href="gplately.html#subpackages">Subpackages</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="gplately.commands.html">gplately.commands package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="gplately.lib.html">gplately.lib package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="gplately.mapping.html">gplately.mapping package</a></li>
+<li class="toctree-l4 current"><a class="reference internal" href="gplately.ptt.html">gplately.ptt package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="gplately.utils.html">gplately.utils package</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="gplately.html#submodules">Submodules</a></li>
+<li class="toctree-l3"><a class="reference internal" href="gplately.html#module-gplately.auxiliary">gplately.auxiliary module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="gplately.html#module-gplately.data">gplately.data module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="gplately.html#module-gplately.decorators">gplately.decorators module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="gplately.html#module-gplately.download">gplately.download module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="gplately.html#module-gplately.exceptions">gplately.exceptions module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="gplately.html#module-gplately.geometry">gplately.geometry module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="gplately.html#module-gplately.gpml">gplately.gpml module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="gplately.html#module-gplately.grids">gplately.grids module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="gplately.html#module-gplately.oceans">gplately.oceans module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="gplately.html#module-gplately.parallel">gplately.parallel module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="gplately.html#module-gplately.plot">gplately.plot module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="gplately.html#module-gplately.pygplates">gplately.pygplates module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="gplately.html#module-gplately.reconstruction">gplately.reconstruction module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="gplately.html#module-gplately.spatial">gplately.spatial module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="gplately.html#module-gplately.tools">gplately.tools module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="gplately.html#module-gplately">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">gplately</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="modules.html">gplately</a></li>
+          <li class="breadcrumb-item"><a href="gplately.html">gplately package</a></li>
+          <li class="breadcrumb-item"><a href="gplately.ptt.html">gplately.ptt package</a></li>
+      <li class="breadcrumb-item active">gplately.ptt.utils package</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/gplately.ptt.utils.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="gplately-ptt-utils-package">
+<h1>gplately.ptt.utils package<a class="headerlink" href="#gplately-ptt-utils-package" title="Link to this heading"></a></h1>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Link to this heading"></a></h2>
+</section>
+<section id="module-gplately.ptt.utils.GPMLTools">
+<span id="gplately-ptt-utils-gpmltools-module"></span><h2>gplately.ptt.utils.GPMLTools module<a class="headerlink" href="#module-gplately.ptt.utils.GPMLTools" title="Link to this heading"></a></h2>
+<p>Tools to handle GPML files.</p>
+<dl class="py function">
+<dt class="sig sig-object py" id="gplately.ptt.utils.GPMLTools.filterGPML">
+<span class="sig-prename descclassname"><span class="pre">gplately.ptt.utils.GPMLTools.</span></span><span class="sig-name descname"><span class="pre">filterGPML</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gplately/ptt/utils/GPMLTools.html#filterGPML"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.ptt.utils.GPMLTools.filterGPML" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</section>
+<section id="module-gplately.ptt.utils.call_system_command">
+<span id="gplately-ptt-utils-call-system-command-module"></span><h2>gplately.ptt.utils.call_system_command module<a class="headerlink" href="#module-gplately.ptt.utils.call_system_command" title="Link to this heading"></a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="gplately.ptt.utils.call_system_command.call_system_command">
+<span class="sig-prename descclassname"><span class="pre">gplately.ptt.utils.call_system_command.</span></span><span class="sig-name descname"><span class="pre">call_system_command</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">args</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">check_return_code</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">raise_errors</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">print_errors</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stdin</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_stdout</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_stderr</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">subprocess_options</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gplately/ptt/utils/call_system_command.html#call_system_command"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.ptt.utils.call_system_command.call_system_command" title="Link to this definition"></a></dt>
+<dd><p>Function to call a command on the system (based on ‘subprocess’ module).</p>
+<ul class="simple">
+<li><p>Option to check return code of command and which return code to check (defaults to checking code 0 for success).</p></li>
+<li><p>Option to raise error or return False on failure (raises by default).</p></li>
+<li><p>Option to print an error message to stderr on failure (prints by default).</p></li>
+<li><p>Option to pass a stdin string to the standard input of command (not passed by default).</p></li>
+<li><p>Option to receive stdout/stderr strings from the standard output/error of command (not received by default).</p></li>
+<li><p>Optionally pass advanced parameters to ‘subprocess.Popen()’ such as ‘shell=True’ (no advanced parameters passed by default).</p></li>
+</ul>
+<p>On success:</p>
+<ul class="simple">
+<li><p>Returns (stdout, stderr) tuple of strings if ‘return_stdout’ and ‘return_stderr’ are True,</p></li>
+<li><p>else returns stdout string if only ‘return_stdout’ is True,</p></li>
+<li><p>else returns stderr string if only ‘return_stderr’ is True,</p></li>
+<li><p>else returns True (if both ‘return_stdout’ and ‘return_stderr’ are False).</p></li>
+</ul>
+<p>On failure:</p>
+<ul class="simple">
+<li><p>Raises an exception if ‘raise_errors’ is True,</p></li>
+<li><p>else returns None (which can be tested as if it was ‘False’).</p></li>
+</ul>
+</dd></dl>
+
+</section>
+<section id="module-gplately.ptt.utils.points_in_polygons">
+<span id="gplately-ptt-utils-points-in-polygons-module"></span><h2>gplately.ptt.utils.points_in_polygons module<a class="headerlink" href="#module-gplately.ptt.utils.points_in_polygons" title="Link to this heading"></a></h2>
+<p>Efficient point-in-polygon testing when there are many relatively uniformly spaced points to be tested against polygons.</p>
+<p>For example, to find the plate ID of the polygon containing each point in a sequence of points:</p>
+<p><a href="#id1"><span class="problematic" id="id2">``</span></a><a href="#id3"><span class="problematic" id="id4">`</span></a>pyton
+import points_in_polygons</p>
+<p># A list of ‘pygplates.PointOnSphere’ points.
+points = […]</p>
+<p># Some polygon features (eg, coastlines).
+polygon_feature_collection = pygplates.FeatureCollection(‘polygons.gpml’)</p>
+<p># Extract the polygons from the features.
+polygons = []
+polygon_features = []
+for polygon_feature in polygon_feature_collection:</p>
+<blockquote>
+<div><p>polygons.append(polygon_feature.get_geometry())
+polygon_features.append(polygon_feature)</p>
+</div></blockquote>
+<p>#
+# Assuming the polygons are <em>non-overlapping</em>, find the single polygon (feature) containing each point.
+#
+polygon_features_containing_points = points_in_polygons.find_polygons(points, polygons, polygon_features)</p>
+<p># Assign a plate ID to each point (or 0 if point outside all polygons).
+plate_ids = []
+for polygon_feature in polygon_features_containing_points:</p>
+<blockquote>
+<div><dl class="simple">
+<dt>if polygon_feature is not None:</dt><dd><p>plate_id = polygon_feature.get_reconstruction_plate_id()</p>
+</dd>
+<dt>else:</dt><dd><p>plate_id = 0</p>
+</dd>
+</dl>
+<p>plate_ids.append(plate_id)</p>
+</div></blockquote>
+<p>#
+# Assuming the polygons are <em>overlapping</em>, find all polygons (features) containing each point.
+#
+polygon_features_containing_points = points_in_polygons.find_polygons(points, polygons, polygon_features, all_polygons=True)</p>
+<p># Assign multiple points to each plate ID.
+plate_id_to_points_mapping = {} # Each plate ID has a list of points.
+for point_index, polygon_feature_list in enumerate(polygon_features_containing_points):</p>
+<blockquote>
+<div><dl class="simple">
+<dt>if polygon_feature_list:</dt><dd><dl class="simple">
+<dt>for polygon_feature in polygon_feature_list</dt><dd><p>plate_id = polygon_feature.get_reconstruction_plate_id()
+points_with_plate_id = plate_id_to_points_mapping.setdefault(plate_id, [])
+points_with_plate_id.append(points[point_index])</p>
+</dd>
+</dl>
+</dd>
+</dl>
+</div></blockquote>
+<p><a href="#id5"><span class="problematic" id="id6">``</span></a><a href="#id7"><span class="problematic" id="id8">`</span></a></p>
+<dl class="py function">
+<dt class="sig sig-object py" id="gplately.ptt.utils.points_in_polygons._fill_spatial_tree_node_inside_polygon">
+<span class="sig-prename descclassname"><span class="pre">gplately.ptt.utils.points_in_polygons.</span></span><span class="sig-name descname"><span class="pre">_fill_spatial_tree_node_inside_polygon</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">node</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">polygon_proxy</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">polygon_proxies_containing_points</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">all_polygons</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gplately/ptt/utils/points_in_polygons.html#_fill_spatial_tree_node_inside_polygon"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.ptt.utils.points_in_polygons._fill_spatial_tree_node_inside_polygon" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="gplately.ptt.utils.points_in_polygons._visit_spatial_tree_node">
+<span class="sig-prename descclassname"><span class="pre">gplately.ptt.utils.points_in_polygons.</span></span><span class="sig-name descname"><span class="pre">_visit_spatial_tree_node</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">node</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">points</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parent_overlapping_polygons_and_proxies</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">polygon_proxies_containing_points</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">all_polygons</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gplately/ptt/utils/points_in_polygons.html#_visit_spatial_tree_node"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.ptt.utils.points_in_polygons._visit_spatial_tree_node" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="gplately.ptt.utils.points_in_polygons.find_polygons">
+<span class="sig-prename descclassname"><span class="pre">gplately.ptt.utils.points_in_polygons.</span></span><span class="sig-name descname"><span class="pre">find_polygons</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">points</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">polygons</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">polygon_proxies</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">all_polygons</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">subdivision_depth</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">4</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gplately/ptt/utils/points_in_polygons.html#find_polygons"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.ptt.utils.points_in_polygons.find_polygons" title="Link to this definition"></a></dt>
+<dd><p>Efficient point-in-polygon testing when there are many relatively uniformly spaced points to be tested against polygons.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>points</strong> (<em>a sequence</em><em> of </em><em>'pygplates.PointOnSphere'</em>) – a sequence of points</p></li>
+<li><p><strong>polygons</strong> (<em>a sequence</em><em> of </em><em>'pygplates.PolygonOnSphere'</em>) – a sequence of polygons</p></li>
+<li><p><strong>polygon_proxies</strong> (<em>Optional sequence</em><em> of </em><em>objects associated with 'polygons'</em>) – If not specified then the proxies default to the polygons themselves.
+These can be any object (such as the ‘pygplates.Feature’ that the polygon came from).</p></li>
+<li><p><strong>all_polygons</strong> (<em>bool</em>) – Whether to find all polygons containing each point or just the first one encountered.
+Set to True if polygons overlap each other, otherwise set to False (for non-overlapping polygons).
+Defaults to False (non-overlapping polygons).</p></li>
+<li><p><strong>subdivision_depth</strong> (<em>number</em>) – The depth of the lat/lon quad tree used to speed up point-in-polygon queries.
+The lat/lon width of a leaf quad tree node is (90 / (2^subdivision_depth)) degrees.
+Generally the denser the ‘points’ the larger the depth should be.
+Setting this value too high causes unnecessary time to be spent generating a deep quad tree.
+Setting this value too low reduces the culling efficiency of the quad tree.
+However a value of 4 seems to work quite well for a uniform lat/lon spacing of ‘points’ of 1 degree and below
+without the cost of generating a deep quad tree.
+So most of the time the subdivision depth can be left at its default value.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><em>A list of polygon proxies associated with ‘points’</em> – The length of the returned list matches the length of ‘points’.
+For each point in ‘points’, if the point is contained by a polygon then that polygon’s proxy
+is stored (otherwise None is stored) at the same index (as the point) in the returned list.
+If ‘all_polygons’ is False then each item in returned list is a single polygon proxy (or a single None).
+If ‘all_polygons’ is True then each item in returned list is a <em>list</em> of polygon proxies (or a single None).</p></li>
+<li><p><em>Raises ValueError if the lengths of ‘polygons’ and ‘polygon_proxies’ (if specified) do not match.</em></p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="gplately.ptt.utils.points_in_polygons.find_polygons_using_points_spatial_tree">
+<span class="sig-prename descclassname"><span class="pre">gplately.ptt.utils.points_in_polygons.</span></span><span class="sig-name descname"><span class="pre">find_polygons_using_points_spatial_tree</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">points</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">spatial_tree_of_points</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">polygons</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">polygon_proxies</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">all_polygons</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gplately/ptt/utils/points_in_polygons.html#find_polygons_using_points_spatial_tree"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.ptt.utils.points_in_polygons.find_polygons_using_points_spatial_tree" title="Link to this definition"></a></dt>
+<dd><p>Same as ‘find_polygons()’ except ‘spatial_tree_of_points’ is a ‘points_spatial_tree.PointsSpatialTree’ of ‘points’.</p>
+<p>This is useful when re-using a single ‘points_spatial_tree.PointsSpatialTree’.
+For example, when using it both for point-in-polygon queries and minimum distance queries.</p>
+<p>Note that ‘spatial_tree_of_points’ should have been built from ‘points’ since it contains
+indices into the ‘points’ sequence.</p>
+</dd></dl>
+
+</section>
+<section id="module-gplately.ptt.utils.points_spatial_tree">
+<span id="gplately-ptt-utils-points-spatial-tree-module"></span><h2>gplately.ptt.utils.points_spatial_tree module<a class="headerlink" href="#module-gplately.ptt.utils.points_spatial_tree" title="Link to this heading"></a></h2>
+<p>Spatial tree for points (pygplates.PointOnSphere).</p>
+<p>Can be used to speed up point-in-polygon and minimum distance queries
+from points to arbitrary geometries.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="gplately.ptt.utils.points_spatial_tree.PointsSpatialTree">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">gplately.ptt.utils.points_spatial_tree.</span></span><span class="sig-name descname"><span class="pre">PointsSpatialTree</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">points</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">subdivision_depth</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">4</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gplately/ptt/utils/points_spatial_tree.html#PointsSpatialTree"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.ptt.utils.points_spatial_tree.PointsSpatialTree" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="gplately.ptt.utils.points_spatial_tree.PointsSpatialTree.get_root_nodes">
+<span class="sig-name descname"><span class="pre">get_root_nodes</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/gplately/ptt/utils/points_spatial_tree.html#PointsSpatialTree.get_root_nodes"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.ptt.utils.points_spatial_tree.PointsSpatialTree.get_root_nodes" title="Link to this definition"></a></dt>
+<dd><p>Return any root nodes that have points in their subtree.There are a maximum of 8 root nodes.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>A list of Node.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="gplately.ptt.utils.points_spatial_tree.PointsSpatialTreeNode">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">gplately.ptt.utils.points_spatial_tree.</span></span><span class="sig-name descname"><span class="pre">PointsSpatialTreeNode</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">centre_lon</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">centre_lat</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">half_width_degrees</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">is_north_hemisphere</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gplately/ptt/utils/points_spatial_tree.html#PointsSpatialTreeNode"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.ptt.utils.points_spatial_tree.PointsSpatialTreeNode" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="py method">
+<dt class="sig sig-object py" id="gplately.ptt.utils.points_spatial_tree.PointsSpatialTreeNode._create_bounding_circle">
+<span class="sig-name descname"><span class="pre">_create_bounding_circle</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/gplately/ptt/utils/points_spatial_tree.html#PointsSpatialTreeNode._create_bounding_circle"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.ptt.utils.points_spatial_tree.PointsSpatialTreeNode._create_bounding_circle" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="gplately.ptt.utils.points_spatial_tree.PointsSpatialTreeNode._create_bounding_polygon">
+<span class="sig-name descname"><span class="pre">_create_bounding_polygon</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/gplately/ptt/utils/points_spatial_tree.html#PointsSpatialTreeNode._create_bounding_polygon"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.ptt.utils.points_spatial_tree.PointsSpatialTreeNode._create_bounding_polygon" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="gplately.ptt.utils.points_spatial_tree.PointsSpatialTreeNode.get_bounding_circle">
+<span class="sig-name descname"><span class="pre">get_bounding_circle</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/gplately/ptt/utils/points_spatial_tree.html#PointsSpatialTreeNode.get_bounding_circle"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.ptt.utils.points_spatial_tree.PointsSpatialTreeNode.get_bounding_circle" title="Link to this definition"></a></dt>
+<dd><p>Returns a small circle that bounds the current node.
+The returned small circle is guaranteed to contain all points in this node (and any child nodes, etc).
+However it is not guaranteed to contain the bounding polygon.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>The centre of small circle and its radius (in radians) as the 2-tuple of type (pygplates.PointOnSphere, float).</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="gplately.ptt.utils.points_spatial_tree.PointsSpatialTreeNode.get_bounding_polygon">
+<span class="sig-name descname"><span class="pre">get_bounding_polygon</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/gplately/ptt/utils/points_spatial_tree.html#PointsSpatialTreeNode.get_bounding_polygon"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.ptt.utils.points_spatial_tree.PointsSpatialTreeNode.get_bounding_polygon" title="Link to this definition"></a></dt>
+<dd><p>Returns a polygon that bounds the current node.
+The returned polygon is guaranteed to contain all points in this node (and any child nodes, etc).
+However it is not guaranteed to contain the bounding circle.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>pygplates.PolygonOnSphere</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="gplately.ptt.utils.points_spatial_tree.PointsSpatialTreeNode.get_child_nodes">
+<span class="sig-name descname"><span class="pre">get_child_nodes</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/gplately/ptt/utils/points_spatial_tree.html#PointsSpatialTreeNode.get_child_nodes"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.ptt.utils.points_spatial_tree.PointsSpatialTreeNode.get_child_nodes" title="Link to this definition"></a></dt>
+<dd><p>Return any child nodes that have points in their subtree.
+There are a maximum of 4 child nodes.
+Should only be called if ‘is_internal_node()’ returns True.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>A list of Node.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="gplately.ptt.utils.points_spatial_tree.PointsSpatialTreeNode.get_point_indices">
+<span class="sig-name descname"><span class="pre">get_point_indices</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/gplately/ptt/utils/points_spatial_tree.html#PointsSpatialTreeNode.get_point_indices"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.ptt.utils.points_spatial_tree.PointsSpatialTreeNode.get_point_indices" title="Link to this definition"></a></dt>
+<dd><p>Return indices of points that exist in this leaf node.
+The indices refer to the sequence of points passed into spatial tree constructor.
+Should only be called if ‘is_leaf_node()’ returns True.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>A list of int.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="gplately.ptt.utils.points_spatial_tree.PointsSpatialTreeNode.is_internal_node">
+<span class="sig-name descname"><span class="pre">is_internal_node</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/gplately/ptt/utils/points_spatial_tree.html#PointsSpatialTreeNode.is_internal_node"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.ptt.utils.points_spatial_tree.PointsSpatialTreeNode.is_internal_node" title="Link to this definition"></a></dt>
+<dd><p>Returns True if this node is an internal node.
+An internal node has child nodes - see ‘get_child_nodes()’.
+But it does not have any point indices.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="gplately.ptt.utils.points_spatial_tree.PointsSpatialTreeNode.is_leaf_node">
+<span class="sig-name descname"><span class="pre">is_leaf_node</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/gplately/ptt/utils/points_spatial_tree.html#PointsSpatialTreeNode.is_leaf_node"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.ptt.utils.points_spatial_tree.PointsSpatialTreeNode.is_leaf_node" title="Link to this definition"></a></dt>
+<dd><p>Returns True if this node is a leaf node.
+A leaf node has indices into the sequence of points passed into
+spatial tree constructor - see ‘get_point_indices()’.
+But it does not have any child nodes.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+<section id="module-gplately.ptt.utils.proximity_query">
+<span id="gplately-ptt-utils-proximity-query-module"></span><h2>gplately.ptt.utils.proximity_query module<a class="headerlink" href="#module-gplately.ptt.utils.proximity_query" title="Link to this heading"></a></h2>
+<p>Efficient distance queries involving many points tested against geometries.</p>
+<p>Uses a point spatial tree to improve efficiency over single point/geometry queries.
+Most efficient when points are relatively uniformly spaced points.</p>
+<p>EXAMPLE 1: Find the closest geometry(s) to each point in a sequence of points.</p>
+<dl>
+<dt><a href="#id9"><span class="problematic" id="id10">``</span></a><a href="#id11"><span class="problematic" id="id12">`</span></a>python</dt><dd><p>import proximity_query
+import math</p>
+<p># A list of ‘pygplates.PointOnSphere’ points.
+points = […]</p>
+<p># Some geometry features (eg, coastlines).
+geometry_feature_collection = pygplates.FeatureCollection(‘geometries.gpml’)</p>
+<p># Look for features within 90 degrees of each point.
+distance_threshold_radians = math.radians(90.0)</p>
+<p># Extract the geometries from the features.
+geometries = []
+geometry_features = []
+for geometry_feature in geometry_feature_collection:</p>
+<blockquote>
+<div><p>geometries.append(geometry_feature.get_geometry())
+geometry_features.append(geometry_feature)</p>
+</div></blockquote>
+<p># Find the closest geometry (feature) to each point (within threshold distance).</p>
+<dl class="simple">
+<dt>geometry_features_closest_to_points = proximity_query.find_closest_geometries_to_points(</dt><dd><p>points,
+geometries,
+geometry_features,
+distance_threshold_radians = distance_threshold_radians)</p>
+</dd>
+</dl>
+<p># Print name of closest feature to each point (if any).
+for point_index, closest_geometry_feature in enumerate(geometry_features_closest_to_points):</p>
+<blockquote>
+<div><dl>
+<dt>if closest_geometry_feature is not None:</dt><dd><p>distance, geometry_feature = closest_geometry_feature
+print(‘Closest feature to’, points[point_index].to_lat_lon(), ‘is’, geometry_feature.get_name(),</p>
+<blockquote>
+<div><p>‘with distance’, distance * pygplates.Earth.mean_radius_in_kms, ‘kms’)</p>
+</div></blockquote>
+</dd>
+<dt>else:</dt><dd><p>print(‘No features close to’, points[point_index].to_lat_lon())</p>
+</dd>
+</dl>
+</div></blockquote>
+<p>#
+# Find all geometries (features) near each point (within threshold distance).
+#
+geometry_features_closest_to_points = proximity_query.find_closest_geometries_to_points(</p>
+<blockquote>
+<div><p>points,
+geometries,
+geometry_features,
+distance_threshold_radians = distance_threshold_radians,
+all_geometries=True)</p>
+</div></blockquote>
+<p># Print names of the closest features to each point (if any).
+for point_index, geometry_feature_list in enumerate(geometry_features_closest_to_points):</p>
+<blockquote>
+<div><dl>
+<dt>if geometry_feature_list:</dt><dd><p>print(‘Closest features to’, points[point_index].to_lat_lon(), ‘are…’)
+for distance, geometry_feature in geometry_feature_list:</p>
+<blockquote>
+<div><dl class="simple">
+<dt>print(’    ‘, geometry_feature.get_name(), ‘with distance’,</dt><dd><p>distance * pygplates.Earth.mean_radius_in_kms, ‘kms’)</p>
+</dd>
+</dl>
+</div></blockquote>
+</dd>
+<dt>else:</dt><dd><p>print(‘No features close to’, points[point_index].to_lat_lon())</p>
+</dd>
+</dl>
+</div></blockquote>
+</dd>
+</dl>
+<p><a href="#id13"><span class="problematic" id="id14">``</span></a><a href="#id15"><span class="problematic" id="id16">`</span></a></p>
+<p>EXAMPLE 2: Find the closest point(s) to each geometry in a sequence of geometries.</p>
+<dl>
+<dt><a href="#id17"><span class="problematic" id="id18">``</span></a><a href="#id19"><span class="problematic" id="id20">`</span></a>python</dt><dd><p>import proximity_query
+import math</p>
+<p># Some geometry features (eg, coastlines).
+geometry_feature_collection = pygplates.FeatureCollection(‘geometries.gpml’)</p>
+<p># Extract the geometries from the features.
+geometries = []
+geometry_features = []
+for geometry_feature in geometry_feature_collection:</p>
+<blockquote>
+<div><p>geometries.append(geometry_feature.get_geometry())
+geometry_features.append(geometry_feature)</p>
+</div></blockquote>
+<p># Some uniformly spaced lat/lon points.
+points = []
+lon_lat_points = []
+for lat in range(-90, 91):</p>
+<blockquote>
+<div><dl class="simple">
+<dt>for lon in range(-180, 181):</dt><dd><p>points.append(pygplates.PointOnSphere(lat, lon))
+lon_lat_points.append((lon, lat))</p>
+</dd>
+</dl>
+</div></blockquote>
+<p># Look for points within 5 degrees of each geometry.
+distance_threshold_radians = math.radians(5.0)</p>
+<p>#
+# Find the closest point (lon, lat) to each geometry (within threshold distance).
+#
+lon_lat_points_closest_to_geometries = proximity_query.find_closest_points_to_geometries(</p>
+<blockquote>
+<div><p>geometries,
+points,
+lon_lat_points,
+distance_threshold_radians = distance_threshold_radians)</p>
+</div></blockquote>
+<p># Print longitude/latitude of closest point to each geometry (if any).
+for geometry_index, closest_lon_lat_point in enumerate(lon_lat_points_closest_to_geometries):</p>
+<blockquote>
+<div><dl>
+<dt>if closest_lon_lat_point is not None:</dt><dd><p>distance, lon_lat_point = closest_lon_lat_point
+print(‘Closest point to geometry’, geometry_features[geometry_index].get_name(), ‘is’,</p>
+<blockquote>
+<div><p>lon_lat_point, ‘with distance’, distance * pygplates.Earth.mean_radius_in_kms, ‘kms’)</p>
+</div></blockquote>
+</dd>
+<dt>else:</dt><dd><p>print(‘No points close to geometry’, geometry_features[geometry_index].get_name())</p>
+</dd>
+</dl>
+</div></blockquote>
+<p>#
+# Find all points (lon, lat) near each geometry (within threshold distance).
+#
+lon_lat_points_closest_to_geometries = proximity_query.find_closest_points_to_geometries(</p>
+<blockquote>
+<div><p>geometries,
+points,
+lon_lat_points,
+distance_threshold_radians = distance_threshold_radians,
+all_points=True)</p>
+</div></blockquote>
+<p># Print longitude/latitude of the closest points to each geometry (if any).
+for geometry_index, lon_lat_point_list in enumerate(lon_lat_points_closest_to_geometries):</p>
+<blockquote>
+<div><dl>
+<dt>if lon_lat_point_list:</dt><dd><p>print(‘Closest points to geometry’, geometry_features[geometry_index].get_name(), ‘are…’)
+for distance, lon_lat_point in lon_lat_point_list:</p>
+<blockquote>
+<div><p>print(’    ‘, lon_lat_point, ‘with distance’, distance * pygplates.Earth.mean_radius_in_kms, ‘kms’)</p>
+</div></blockquote>
+</dd>
+<dt>else:</dt><dd><p>print(‘No points close to geometry’, geometry_features[geometry_index].get_name())</p>
+</dd>
+</dl>
+</div></blockquote>
+</dd>
+</dl>
+<p><a href="#id21"><span class="problematic" id="id22">``</span></a><a href="#id23"><span class="problematic" id="id24">`</span></a></p>
+<dl class="py function">
+<dt class="sig sig-object py" id="gplately.ptt.utils.proximity_query._visit_closest_geometries_to_points">
+<span class="sig-prename descclassname"><span class="pre">gplately.ptt.utils.proximity_query.</span></span><span class="sig-name descname"><span class="pre">_visit_closest_geometries_to_points</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">node</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">points</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">geometries</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">geometry_proxies</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">parent_geometry_indices_to_visit</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">geometry_proxies_closest_to_points</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">distance_threshold_radians</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_closest_position</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_closest_index</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">geometries_are_solid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">all_geometries</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gplately/ptt/utils/proximity_query.html#_visit_closest_geometries_to_points"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.ptt.utils.proximity_query._visit_closest_geometries_to_points" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="gplately.ptt.utils.proximity_query._visit_closest_points_to_geometry">
+<span class="sig-prename descclassname"><span class="pre">gplately.ptt.utils.proximity_query.</span></span><span class="sig-name descname"><span class="pre">_visit_closest_points_to_geometry</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">node</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">geometry</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">geometry_centroid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">points</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">point_proxies</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">point_proxies_closest_to_geometry</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">distance_threshold_radians</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_closest_position</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_closest_index</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">geometry_is_solid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">all_points</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gplately/ptt/utils/proximity_query.html#_visit_closest_points_to_geometry"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.ptt.utils.proximity_query._visit_closest_points_to_geometry" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="gplately.ptt.utils.proximity_query.find_closest_geometries_to_points">
+<span class="sig-prename descclassname"><span class="pre">gplately.ptt.utils.proximity_query.</span></span><span class="sig-name descname"><span class="pre">find_closest_geometries_to_points</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">points</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">geometries</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">geometry_proxies</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">distance_threshold_radians</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_closest_position</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_closest_index</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">geometries_are_solid</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">all_geometries</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">subdivision_depth</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">4</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gplately/ptt/utils/proximity_query.html#find_closest_geometries_to_points"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.ptt.utils.proximity_query.find_closest_geometries_to_points" title="Link to this definition"></a></dt>
+<dd><p>Efficient point-to-geometry distance queries when there are many relatively uniformly spaced points to be tested against geometries.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>points</strong> (<em>a sequence</em><em> of </em><em>'pygplates.PointOnSphere'</em>) – a sequence of points</p></li>
+<li><p><strong>geometries</strong> (<em>a sequence</em><em> of </em><em>'pygplates.GeometryOnSphere'</em>) – a sequence of geometries</p></li>
+<li><p><strong>geometry_proxies</strong> (<em>sequence</em><em> of </em><em>objects associated with 'geometries'</em><em>, </em><em>optional</em>) – If not specified then the proxies default to the geometries themselves.
+These can be any object (such as the ‘pygplates.Feature’ that the geometry came from).</p></li>
+<li><p><strong>distance_threshold_radians</strong> (<em>number</em><em>, </em><em>optional</em>) – Optional distance threshold in radians - threshold should be in the range [0,PI] if specified.</p></li>
+<li><p><strong>return_closest_position</strong> (<em>bool</em><em>, </em><em>default=False</em>) – Whether to also return the closest point on each geometry - default is False.</p></li>
+<li><p><strong>return_closest_index</strong> (<em>bool</em><em>, </em><em>default=False</em>) – Whether to also return the index of the closest point (for multi-points) or
+the index of the closest segment (for polylines and polygons) - default is False.</p></li>
+<li><p><strong>geometries_are_solid</strong> (<em>bool</em><em>, </em><em>default=False</em>) – Whether the interiors of the geometries are solid or not - only applies to polygon geometries - default is False.</p></li>
+<li><p><strong>all_geometries</strong> (<em>bool</em><em>, </em><em>default=False</em>) – Whether to find all geometries near each point (within threshold distance) or just the closest.
+Defaults to False (only returns closest geometry to each point).</p></li>
+<li><p><strong>subdivision_depth</strong> (<em>number</em>) – The depth of the lat/lon quad tree used to speed up point-to-geometry distance queries.
+The lat/lon width of a leaf quad tree node is (90 / (2^subdivision_depth)) degrees.
+Generally the denser the ‘points’ the larger the depth should be.
+Setting this value too high causes unnecessary time to be spent generating a deep quad tree.
+Setting this value too low reduces the culling efficiency of the quad tree.
+However a value of 4 seems to work quite well for a uniform lat/lon spacing of ‘points’ of 1 degree and below
+without the cost of generating a deep quad tree.
+So most of the time the subdivision depth can be left at its default value.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><p>The length of the returned list matches the length of ‘points’.
+For each point in ‘points’, if the point is close to a geometry then that geometry’s proxy (and its distance information)
+is stored (otherwise None is stored) at the same index (as the point) in the returned list.
+If ‘all_geometries’ is False then each item in returned list is a single geometry proxy (and its distance information)
+representing the closest geometry within threshold distance (or a single None).
+If ‘all_geometries’ is True then each item in returned list is a <em>list</em> of geometry proxies (and their distance informations)
+representing all geometries within threshold distance (or a single None).
+Above we mentioned “geometry proxy (and its distance information)”. This is a tuple whose size depends on
+the values of ‘return_closest_position’ and ‘return_closest_index’ according to…</p>
+<blockquote>
+<div><dl class="simple">
+<dt>if return_closest_position and return_closest_index:</dt><dd><p>geometry_proxy_to_point = (distance, closest_position, closest_index, geometry_proxy)</p>
+</dd>
+<dt>elif return_closest_position:</dt><dd><p>geometry_proxy_to_point = (distance, closest_position, geometry_proxy)</p>
+</dd>
+<dt>elif return_closest_index:</dt><dd><p>geometry_proxy_to_point = (distance, closest_index, geometry_proxy)</p>
+</dd>
+<dt>else:</dt><dd><p>geometry_proxy_to_point = (distance, geometry_proxy)</p>
+</dd>
+</dl>
+</div></blockquote>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><p>A list of geometry proxies associated with ‘points’</p>
+<p>The arguments ‘distance_threshold_radians’, ‘return_closest_position’, ‘return_closest_index’ and ‘geometries_are_solid’ are
+similar to those in pygplates.GeometryOnSphere.distance().
+See <a class="reference external" href="http://www.gplates.org/docs/pygplates/generated/pygplates.GeometryOnSphere.html#pygplates.GeometryOnSphere.distance">http://www.gplates.org/docs/pygplates/generated/pygplates.GeometryOnSphere.html#pygplates.GeometryOnSphere.distance</a>.</p>
+<p>Raises ValueError if the lengths of ‘geometries’ and ‘geometry_proxies’ (if specified) do not match.</p>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="gplately.ptt.utils.proximity_query.find_closest_geometries_to_points_using_points_spatial_tree">
+<span class="sig-prename descclassname"><span class="pre">gplately.ptt.utils.proximity_query.</span></span><span class="sig-name descname"><span class="pre">find_closest_geometries_to_points_using_points_spatial_tree</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">points</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">spatial_tree_of_points</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">geometries</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">geometry_proxies</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">distance_threshold_radians</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_closest_position</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_closest_index</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">geometries_are_solid</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">all_geometries</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gplately/ptt/utils/proximity_query.html#find_closest_geometries_to_points_using_points_spatial_tree"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.ptt.utils.proximity_query.find_closest_geometries_to_points_using_points_spatial_tree" title="Link to this definition"></a></dt>
+<dd><p>Same as ‘find_closest_geometries_to_points()’ except ‘spatial_tree_of_points’ is a ‘points_spatial_tree.PointsSpatialTree’ of ‘points’.</p>
+<p>This is useful when re-using a single ‘points_spatial_tree.PointsSpatialTree’.
+For example, when using it both for point-in-polygon queries and minimum distance queries.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="gplately.ptt.utils.proximity_query.find_closest_points_to_geometries">
+<span class="sig-prename descclassname"><span class="pre">gplately.ptt.utils.proximity_query.</span></span><span class="sig-name descname"><span class="pre">find_closest_points_to_geometries</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">geometries</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">points</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">point_proxies</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">distance_threshold_radians</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_closest_position</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_closest_index</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">geometries_are_solid</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">all_points</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">subdivision_depth</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">4</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gplately/ptt/utils/proximity_query.html#find_closest_points_to_geometries"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.ptt.utils.proximity_query.find_closest_points_to_geometries" title="Link to this definition"></a></dt>
+<dd><p>Efficient geometry-to-point distance queries when geometries are tested against many relatively uniformly spaced points.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>geometries</strong> (<em>a sequence</em><em> of </em><em>'pygplates.GeometryOnSphere'</em>) – a sequence of geometries</p></li>
+<li><p><strong>points</strong> (<em>a sequence</em><em> of </em><em>'pygplates.PointOnSphere'</em>) – a sequence of points</p></li>
+<li><p><strong>point_proxies</strong> (<em>sequence</em><em> of </em><em>objects associated with 'points'</em><em>, </em><em>optional</em>) – If not specified then the proxies default to the points themselves.
+These can be any object (such as a scalar value associated with the point).</p></li>
+<li><p><strong>distance_threshold_radians</strong> (<em>number</em><em>, </em><em>optional</em>) – Optional distance threshold in radians - threshold should be in the range [0,PI] if specified.</p></li>
+<li><p><strong>return_closest_position</strong> (<em>bool</em><em>, </em><em>default=False</em>) – Whether to also return the closest point on each geometry - default is False.</p></li>
+<li><p><strong>return_closest_index</strong> (<em>bool</em><em>, </em><em>default=False</em>) – Whether to also return the index of the closest point (for multi-points) or
+the index of the closest segment (for polylines and polygons) - default is False.</p></li>
+<li><p><strong>geometries_are_solid</strong> (<em>bool</em><em>, </em><em>default=False</em>) – Whether the interiors of the geometries are solid or not - only applies to polygon geometries - default is False.</p></li>
+<li><p><strong>all_points</strong> (<em>bool</em><em>, </em><em>default=False</em>) – Whether to find all points near each geometry (within threshold distance) or just the closest.
+Defaults to False (only returns closest point to each geometry).</p></li>
+<li><p><strong>subdivision_depth</strong> (<em>number</em>) – The depth of the lat/lon quad tree used to speed up point-to-geometry distance queries.
+The lat/lon width of a leaf quad tree node is (90 / (2^subdivision_depth)) degrees.
+Generally the denser the ‘points’ the larger the depth should be.
+Setting this value too high causes unnecessary time to be spent generating a deep quad tree.
+Setting this value too low reduces the culling efficiency of the quad tree.
+However a value of 4 seems to work quite well for a uniform lat/lon spacing of ‘points’ of 1 degree and below
+without the cost of generating a deep quad tree.
+So most of the time the subdivision depth can be left at its default value.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><p>The length of the returned list matches the length of ‘geometries’.
+For each geometry in ‘geometries’, if the geometry is close to a point then that point’s proxy (and its distance information)
+is stored (otherwise None is stored) at the same index (as the geometry) in the returned list.
+If ‘all_points’ is False then each item in returned list is a single point proxy (and its distance information)
+representing the closest point within threshold distance (or a single None).
+If ‘all_points’ is True then each item in returned list is a <em>list</em> of point proxies (and their distance informations)
+representing all points within threshold distance (or a single None).
+Above we mentioned “point proxy (and its distance information)”. This is a tuple whose size depends on
+the values of ‘return_closest_position’ and ‘return_closest_index’ according to…</p>
+<blockquote>
+<div><dl class="simple">
+<dt>if return_closest_position and return_closest_index:</dt><dd><p>point_proxy_to_point = (distance, closest_position, closest_index, point_proxy)</p>
+</dd>
+<dt>elif return_closest_position:</dt><dd><p>point_proxy_to_point = (distance, closest_position, point_proxy)</p>
+</dd>
+<dt>elif return_closest_index:</dt><dd><p>point_proxy_to_point = (distance, closest_index, point_proxy)</p>
+</dd>
+<dt>else:</dt><dd><p>point_proxy_to_point = (distance, point_proxy)</p>
+</dd>
+</dl>
+</div></blockquote>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><p>A list of point proxies associated with ‘geometries’</p>
+<p>The arguments ‘distance_threshold_radians’, ‘return_closest_position’, ‘return_closest_index’ and ‘geometries_are_solid’ are
+similar to those in pygplates.GeometryOnSphere.distance().
+See <a class="reference external" href="http://www.gplates.org/docs/pygplates/generated/pygplates.GeometryOnSphere.html#pygplates.GeometryOnSphere.distance">http://www.gplates.org/docs/pygplates/generated/pygplates.GeometryOnSphere.html#pygplates.GeometryOnSphere.distance</a>.</p>
+<p>Raises ValueError if the lengths of ‘points’ and ‘point_proxies’ (if specified) do not match.</p>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="gplately.ptt.utils.proximity_query.find_closest_points_to_geometries_using_points_spatial_tree">
+<span class="sig-prename descclassname"><span class="pre">gplately.ptt.utils.proximity_query.</span></span><span class="sig-name descname"><span class="pre">find_closest_points_to_geometries_using_points_spatial_tree</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">geometries</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">points</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">spatial_tree_of_points</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">point_proxies</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">distance_threshold_radians</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_closest_position</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_closest_index</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">geometries_are_solid</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">all_points</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gplately/ptt/utils/proximity_query.html#find_closest_points_to_geometries_using_points_spatial_tree"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.ptt.utils.proximity_query.find_closest_points_to_geometries_using_points_spatial_tree" title="Link to this definition"></a></dt>
+<dd><p>Same as ‘find_closest_points_to_geometries()’ except ‘spatial_tree_of_points’ is a ‘points_spatial_tree.PointsSpatialTree’ of ‘points’.</p>
+<p>This is useful when re-using a single ‘points_spatial_tree.PointsSpatialTree’.
+For example, when using it both for point-in-polygon queries and minimum distance queries.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="gplately.ptt.utils.proximity_query.find_closest_points_to_geometry">
+<span class="sig-prename descclassname"><span class="pre">gplately.ptt.utils.proximity_query.</span></span><span class="sig-name descname"><span class="pre">find_closest_points_to_geometry</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">geometry</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">points</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">point_proxies</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">distance_threshold_radians</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_closest_position</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_closest_index</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">geometry_is_solid</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">all_points</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">subdivision_depth</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">4</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gplately/ptt/utils/proximity_query.html#find_closest_points_to_geometry"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.ptt.utils.proximity_query.find_closest_points_to_geometry" title="Link to this definition"></a></dt>
+<dd><p>Same as ‘find_closest_points_to_geometries()’ except with a single geometry instead of a list of geometries.</p>
+<p>Returns a single “point proxy (and its distance information)” instead of a list
+(see ‘find_closest_points_to_geometries()’ for more information).</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="gplately.ptt.utils.proximity_query.find_closest_points_to_geometry_using_points_spatial_tree">
+<span class="sig-prename descclassname"><span class="pre">gplately.ptt.utils.proximity_query.</span></span><span class="sig-name descname"><span class="pre">find_closest_points_to_geometry_using_points_spatial_tree</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">geometry</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">points</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">spatial_tree_of_points</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">point_proxies</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">distance_threshold_radians</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_closest_position</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_closest_index</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">geometry_is_solid</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">all_points</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gplately/ptt/utils/proximity_query.html#find_closest_points_to_geometry_using_points_spatial_tree"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.ptt.utils.proximity_query.find_closest_points_to_geometry_using_points_spatial_tree" title="Link to this definition"></a></dt>
+<dd><p>Same as ‘find_closest_points_to_geometries_using_points_spatial_tree()’ except with a single geometry instead of a list of geometries.</p>
+<p>Returns a single “point proxy (and its distance information)” instead of a list.</p>
+</dd></dl>
+
+</section>
+<section id="module-gplately.ptt.utils.reconstruct_by_topologies">
+<span id="gplately-ptt-utils-reconstruct-by-topologies-module"></span><h2>gplately.ptt.utils.reconstruct_by_topologies module<a class="headerlink" href="#module-gplately.ptt.utils.reconstruct_by_topologies" title="Link to this heading"></a></h2>
+<p>Reconstruct point locations incrementally through time using dynamic (topological) polygons.</p>
+<dl class="py class">
+<dt class="sig sig-object py" id="gplately.ptt.utils.reconstruct_by_topologies.ReconstructByTopologies">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">gplately.ptt.utils.reconstruct_by_topologies.</span></span><span class="sig-name descname"><span class="pre">ReconstructByTopologies</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rotation_features_or_model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">topology_features</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reconstruction_begin_time</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reconstruction_end_time</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reconstruction_time_interval</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">points</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">point_begin_times</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">point_end_times</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">point_plate_ids</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">detect_collisions</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">global_collision_parameters</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(7.0,</span> <span class="pre">10.0)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">feature_specific_collision_parameters</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gplately/ptt/utils/reconstruct_by_topologies.html#ReconstructByTopologies"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.ptt.utils.reconstruct_by_topologies.ReconstructByTopologies" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Class to reconstruct geometries using topologies.</p>
+<p>Currently only points are supported.</p>
+<dl class="py method">
+<dt class="sig sig-object py" id="gplately.ptt.utils.reconstruct_by_topologies.ReconstructByTopologies._activate_deactivate_points">
+<span class="sig-name descname"><span class="pre">_activate_deactivate_points</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/gplately/ptt/utils/reconstruct_by_topologies.html#ReconstructByTopologies._activate_deactivate_points"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.ptt.utils.reconstruct_by_topologies.ReconstructByTopologies._activate_deactivate_points" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="gplately.ptt.utils.reconstruct_by_topologies.ReconstructByTopologies._detect_collision">
+<span class="sig-name descname"><span class="pre">_detect_collision</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">time</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prev_point</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">curr_point</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prev_topology_plate_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prev_resolved_plate_boundary</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">curr_topology_plate_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">stage_rotation_dict</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gplately/ptt/utils/reconstruct_by_topologies.html#ReconstructByTopologies._detect_collision"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.ptt.utils.reconstruct_by_topologies.ReconstructByTopologies._detect_collision" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="gplately.ptt.utils.reconstruct_by_topologies.ReconstructByTopologies._detect_collision_using_collision_parameters">
+<span class="sig-name descname"><span class="pre">_detect_collision_using_collision_parameters</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">delta_velocity_magnitude</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prev_point</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prev_boundary_geometry</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">threshold_velocity_delta</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">threshold_distance_to_boundary_per_my</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gplately/ptt/utils/reconstruct_by_topologies.html#ReconstructByTopologies._detect_collision_using_collision_parameters"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.ptt.utils.reconstruct_by_topologies.ReconstructByTopologies._detect_collision_using_collision_parameters" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="gplately.ptt.utils.reconstruct_by_topologies.ReconstructByTopologies._find_resolved_topologies_containing_points">
+<span class="sig-name descname"><span class="pre">_find_resolved_topologies_containing_points</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/gplately/ptt/utils/reconstruct_by_topologies.html#ReconstructByTopologies._find_resolved_topologies_containing_points"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.ptt.utils.reconstruct_by_topologies.ReconstructByTopologies._find_resolved_topologies_containing_points" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="gplately.ptt.utils.reconstruct_by_topologies.ReconstructByTopologies.begin_reconstruction">
+<span class="sig-name descname"><span class="pre">begin_reconstruction</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/gplately/ptt/utils/reconstruct_by_topologies.html#ReconstructByTopologies.begin_reconstruction"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.ptt.utils.reconstruct_by_topologies.ReconstructByTopologies.begin_reconstruction" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="gplately.ptt.utils.reconstruct_by_topologies.ReconstructByTopologies.get_active_current_points">
+<span class="sig-name descname"><span class="pre">get_active_current_points</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/gplately/ptt/utils/reconstruct_by_topologies.html#ReconstructByTopologies.get_active_current_points"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.ptt.utils.reconstruct_by_topologies.ReconstructByTopologies.get_active_current_points" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="gplately.ptt.utils.reconstruct_by_topologies.ReconstructByTopologies.get_all_current_points">
+<span class="sig-name descname"><span class="pre">get_all_current_points</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/gplately/ptt/utils/reconstruct_by_topologies.html#ReconstructByTopologies.get_all_current_points"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.ptt.utils.reconstruct_by_topologies.ReconstructByTopologies.get_all_current_points" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="gplately.ptt.utils.reconstruct_by_topologies.ReconstructByTopologies.get_current_time">
+<span class="sig-name descname"><span class="pre">get_current_time</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/gplately/ptt/utils/reconstruct_by_topologies.html#ReconstructByTopologies.get_current_time"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.ptt.utils.reconstruct_by_topologies.ReconstructByTopologies.get_current_time" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="gplately.ptt.utils.reconstruct_by_topologies.ReconstructByTopologies.reconstruct">
+<span class="sig-name descname"><span class="pre">reconstruct</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/gplately/ptt/utils/reconstruct_by_topologies.html#ReconstructByTopologies.reconstruct"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.ptt.utils.reconstruct_by_topologies.ReconstructByTopologies.reconstruct" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="gplately.ptt.utils.reconstruct_by_topologies.ReconstructByTopologies.reconstruct_to_next_time">
+<span class="sig-name descname"><span class="pre">reconstruct_to_next_time</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/gplately/ptt/utils/reconstruct_by_topologies.html#ReconstructByTopologies.reconstruct_to_next_time"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.ptt.utils.reconstruct_by_topologies.ReconstructByTopologies.reconstruct_to_next_time" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="gplately.ptt.utils.reconstruct_by_topologies.ReconstructByTopologies.use_plate_partitioner">
+<span class="sig-name descname"><span class="pre">use_plate_partitioner</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">False</span></em><a class="headerlink" href="#gplately.ptt.utils.reconstruct_by_topologies.ReconstructByTopologies.use_plate_partitioner" title="Link to this definition"></a></dt>
+<dd><p>If True then use pygplates.PlatePartitioner to partition points,
+otherwise use faster points_in_polygons.find_polygons().</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="gplately.ptt.utils.reconstruct_by_topologies.reconstruct_points">
+<span class="sig-prename descclassname"><span class="pre">gplately.ptt.utils.reconstruct_by_topologies.</span></span><span class="sig-name descname"><span class="pre">reconstruct_points</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rotation_features_or_model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">topology_features</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reconstruction_begin_time</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reconstruction_end_time</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reconstruction_time_interval</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">points</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">point_begin_times</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">point_end_times</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">point_plate_ids</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">detect_collisions</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">global_collision_parameters</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(7.0,</span> <span class="pre">10.0)</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">feature_specific_collision_parameters</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gplately/ptt/utils/reconstruct_by_topologies.html#reconstruct_points"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.ptt.utils.reconstruct_by_topologies.reconstruct_points" title="Link to this definition"></a></dt>
+<dd><p>Function to reconstruct points using the ReconstructByTopologies class below.</p>
+<p>For description of parameters see the ReconstructByTopologies class below.</p>
+</dd></dl>
+
+</section>
+<section id="module-gplately.ptt.utils.subduction_teeth">
+<span id="gplately-ptt-utils-subduction-teeth-module"></span><h2>gplately.ptt.utils.subduction_teeth module<a class="headerlink" href="#module-gplately.ptt.utils.subduction_teeth" title="Link to this heading"></a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="gplately.ptt.utils.subduction_teeth.tesselate_triangles">
+<span class="sig-prename descclassname"><span class="pre">gplately.ptt.utils.subduction_teeth.</span></span><span class="sig-name descname"><span class="pre">tesselate_triangles</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">shapefilename</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tesselation_radians</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">triangle_base_length</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">triangle_aspect</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gplately/ptt/utils/subduction_teeth.html#tesselate_triangles"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.ptt.utils.subduction_teeth.tesselate_triangles" title="Link to this definition"></a></dt>
+<dd><p>Place subduction teeth along line segments within a MultiLineString shapefile</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>shapefilename</strong> (<em>str</em>) – path to shapefile</p></li>
+<li><p><strong>tesselation_radians</strong> (<em>float</em>) – tesselation radians</p></li>
+<li><p><strong>triangle_base_length</strong> (<em>float</em>) – length of base</p></li>
+<li><p><strong>triangle_aspect</strong> (<em>float</em>) – aspect ratio, setting triangle_aspect to -1 reverses the tooth direction</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>X_points</strong> (<em>(n,3)</em>) – array of triangle x points</p></li>
+<li><p><strong>Y_points</strong> (<em>(n,3)</em>) – array of triangle y points</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="module-gplately.ptt.utils">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-gplately.ptt.utils" title="Link to this heading"></a></h2>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="gplately.ptt.html" class="btn btn-neutral float-left" title="gplately.ptt package" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="gplately.utils.html" class="btn btn-neutral float-right" title="gplately.utils package" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023-2025, The University of Sydney.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

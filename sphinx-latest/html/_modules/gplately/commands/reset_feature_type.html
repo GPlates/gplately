@@ -1,0 +1,269 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>gplately.commands.reset_feature_type &mdash; gplately 2.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=51b770b3"></script>
+      <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            gplately
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">GPlately v2.0.0</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../basic_usages.html">Minimal working example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../use_cases.html">Common Use Cases</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../faq.html">Trouble-shooting and FAQ</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../command_line_interface.html">Command Line Interface (CLI)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../primer.html">Primer</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules.html">gplately</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">gplately</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">gplately.commands.reset_feature_type</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for gplately.commands.reset_feature_type</h1><div class="highlight"><pre>
+<span></span><span class="c1">#</span>
+<span class="c1">#    Copyright (C) 2024 The University of Sydney, Australia</span>
+<span class="c1">#</span>
+<span class="c1">#    This program is free software; you can redistribute it and/or modify it under</span>
+<span class="c1">#    the terms of the GNU General Public License, version 2, as published by</span>
+<span class="c1">#    the Free Software Foundation.</span>
+<span class="c1">#</span>
+<span class="c1">#    This program is distributed in the hope that it will be useful, but WITHOUT</span>
+<span class="c1">#    ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or</span>
+<span class="c1">#    FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License</span>
+<span class="c1">#    for more details.</span>
+<span class="c1">#</span>
+<span class="c1">#    You should have received a copy of the GNU General Public License along</span>
+<span class="c1">#    with this program; if not, write to Free Software Foundation, Inc.,</span>
+<span class="c1">#    51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.</span>
+<span class="c1">#</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">argparse</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">re</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">pygplates</span>
+
+<span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s2">&quot;gplately&quot;</span><span class="p">)</span>
+
+<span class="n">help_str</span> <span class="o">=</span> <span class="s2">&quot;Reset the feature type for the selected features. &quot;</span>
+
+<span class="n">__description__</span> <span class="o">=</span> <span class="sa">f</span><span class="s2">&quot;&quot;&quot;</span><span class="si">{</span><span class="n">help_str</span><span class="si">}</span>
+
+<span class="s2">Example usage: </span>
+<span class="s2">    - `gplately reset_feature_type -s gpml:ClosedContinentalBoundary -t gpml:UnclassifiedFeature input_file output_file`</span>
+<span class="s2">        (change all gpml:ClosedContinentalBoundary to gpml:UnclassifiedFeature)</span>
+<span class="s2">        </span>
+<span class="s2">    - `gplately reset_feature_type -s &quot;gpml:ContinentalFragment|gpml:Coastline&quot; -t gpml:UnclassifiedFeature input_file output_file`</span>
+<span class="s2">        (change all gpml:ContinentalFragment and gpml:Coastline to gpml:UnclassifiedFeature)</span>
+<span class="s2">        </span>
+<span class="s2">    - `gplately reset_feature_type -s &quot;.*&quot; -t gpml:UnclassifiedFeature input_file output_file` </span>
+<span class="s2">        (change all feature types to gpml:UnclassifiedFeature)     </span>
+
+<span class="s2">    See https://github.com/GPlates/gplately/blob/master/tests-dir/unittest/test_reset_feature_type.sh for more examples. </span>
+<span class="s2">&quot;&quot;&quot;</span>
+
+
+<div class="viewcode-block" id="add_parser">
+<a class="viewcode-back" href="../../../gplately.commands.html#gplately.commands.reset_feature_type.add_parser">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">add_parser</span><span class="p">(</span><span class="n">subparser</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;add `reset_feature_type` command line argument parser&quot;&quot;&quot;</span>
+    <span class="n">reset_feature_type_cmd</span> <span class="o">=</span> <span class="n">subparser</span><span class="o">.</span><span class="n">add_parser</span><span class="p">(</span>
+        <span class="s2">&quot;reset_feature_type&quot;</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="n">help_str</span><span class="p">,</span>
+        <span class="n">add_help</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">description</span><span class="o">=</span><span class="n">__description__</span><span class="p">,</span>
+        <span class="n">formatter_class</span><span class="o">=</span><span class="n">argparse</span><span class="o">.</span><span class="n">RawDescriptionHelpFormatter</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="n">reset_feature_type_cmd</span><span class="o">.</span><span class="n">set_defaults</span><span class="p">(</span><span class="n">func</span><span class="o">=</span><span class="n">reset_feature_type</span><span class="p">)</span>
+    <span class="n">reset_feature_type_cmd</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span><span class="s2">&quot;input_file&quot;</span><span class="p">,</span> <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span> <span class="n">help</span><span class="o">=</span><span class="s2">&quot;the input file&quot;</span><span class="p">)</span>
+    <span class="n">reset_feature_type_cmd</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">&quot;output_file&quot;</span><span class="p">,</span>
+        <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;the output file into which the new features will be saved&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="n">reset_feature_type_cmd</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">&quot;-s&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;--select-feature-type&quot;</span><span class="p">,</span>
+        <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span>
+        <span class="n">dest</span><span class="o">=</span><span class="s2">&quot;select_feature_type_re&quot;</span><span class="p">,</span>
+        <span class="n">metavar</span><span class="o">=</span><span class="s2">&quot;feature_type_re&quot;</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;the regular expression to select features by featuer type&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="n">reset_feature_type_cmd</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">&quot;-t&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;--set-feature-type&quot;</span><span class="p">,</span>
+        <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span>
+        <span class="n">dest</span><span class="o">=</span><span class="s2">&quot;set_feature_type&quot;</span><span class="p">,</span>
+        <span class="n">metavar</span><span class="o">=</span><span class="s2">&quot;feature_type&quot;</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;the feature type to be set to, such as gpml:UnclassifiedFeature, gpml:Coastline, etc. See https://www.gplates.org/docs/gpgim/#FeatureClassList&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="n">reset_feature_type_cmd</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">&quot;--keep-feature-id&quot;</span><span class="p">,</span>
+        <span class="n">dest</span><span class="o">=</span><span class="s2">&quot;keep_feature_id&quot;</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;flag to indicate if we use the same feature IDs after resetting the feature type&quot;</span><span class="p">,</span>
+        <span class="n">action</span><span class="o">=</span><span class="s2">&quot;store_true&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="n">reset_feature_type_cmd</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">&quot;--verify-information-model&quot;</span><span class="p">,</span>
+        <span class="n">dest</span><span class="o">=</span><span class="s2">&quot;verify_information_model&quot;</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;flag to indicate if we need to keep GPGIM integrity&quot;</span><span class="p">,</span>
+        <span class="n">action</span><span class="o">=</span><span class="s2">&quot;store_true&quot;</span><span class="p">,</span>
+    <span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="reset_feature_type">
+<a class="viewcode-back" href="../../../gplately.commands.html#gplately.commands.reset_feature_type.reset_feature_type">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">reset_feature_type</span><span class="p">(</span><span class="n">args</span><span class="p">):</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">pygplates</span><span class="o">.</span><span class="n">Feature</span><span class="p">(</span>
+            <span class="n">pygplates</span><span class="o">.</span><span class="n">FeatureType</span><span class="o">.</span><span class="n">create_from_qualified_string</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">set_feature_type</span><span class="p">),</span>
+            <span class="n">verify_information_model</span><span class="o">=</span><span class="n">pygplates</span><span class="o">.</span><span class="n">VerifyInformationModel</span><span class="o">.</span><span class="n">yes</span><span class="p">,</span>  <span class="c1"># in case the user provided a wrong feature type</span>
+        <span class="p">)</span>
+    <span class="k">except</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">InformationModelError</span><span class="p">:</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Invalid feature type: </span><span class="si">{</span><span class="n">args</span><span class="o">.</span><span class="n">set_feature_type</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span>
+            <span class="sa">f</span><span class="s2">&quot;You have asked to reset features to an invalid feature type. It cannot be done.&quot;</span>
+        <span class="p">)</span>
+        <span class="k">return</span>
+
+    <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">verify_information_model</span><span class="p">:</span>
+        <span class="n">verify_information_model</span> <span class="o">=</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">VerifyInformationModel</span><span class="o">.</span><span class="n">yes</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">verify_information_model</span> <span class="o">=</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">VerifyInformationModel</span><span class="o">.</span><span class="n">no</span>
+
+    <span class="n">new_fc</span> <span class="o">=</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">FeatureCollection</span><span class="p">()</span>
+    <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">FeatureCollection</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">input_file</span><span class="p">):</span>
+        <span class="n">feature_type</span> <span class="o">=</span> <span class="n">f</span><span class="o">.</span><span class="n">get_feature_type</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">re</span><span class="o">.</span><span class="n">fullmatch</span><span class="p">(</span>
+            <span class="n">args</span><span class="o">.</span><span class="n">select_feature_type_re</span><span class="p">,</span> <span class="n">feature_type</span><span class="o">.</span><span class="n">to_qualified_string</span><span class="p">()</span>
+        <span class="p">):</span>
+            <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">keep_feature_id</span><span class="p">:</span>
+                <span class="n">new_f</span> <span class="o">=</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">Feature</span><span class="p">(</span>
+                    <span class="n">pygplates</span><span class="o">.</span><span class="n">FeatureType</span><span class="o">.</span><span class="n">create_from_qualified_string</span><span class="p">(</span>
+                        <span class="n">args</span><span class="o">.</span><span class="n">set_feature_type</span>
+                    <span class="p">),</span>
+                    <span class="n">f</span><span class="o">.</span><span class="n">get_feature_id</span><span class="p">(),</span>
+                <span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">new_f</span> <span class="o">=</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">Feature</span><span class="p">(</span>
+                    <span class="n">pygplates</span><span class="o">.</span><span class="n">FeatureType</span><span class="o">.</span><span class="n">create_from_qualified_string</span><span class="p">(</span>
+                        <span class="n">args</span><span class="o">.</span><span class="n">set_feature_type</span>
+                    <span class="p">)</span>
+                <span class="p">)</span>
+            <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">f</span><span class="p">:</span>
+                <span class="k">try</span><span class="p">:</span>
+                    <span class="n">new_f</span><span class="o">.</span><span class="n">add</span><span class="p">(</span>
+                        <span class="n">p</span><span class="o">.</span><span class="n">get_name</span><span class="p">(),</span>
+                        <span class="n">p</span><span class="o">.</span><span class="n">get_time_dependent_value</span><span class="p">(),</span>
+                        <span class="n">verify_information_model</span><span class="p">,</span>
+                    <span class="p">)</span>
+                <span class="k">except</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">InformationModelError</span><span class="p">:</span>
+                    <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span>
+                        <span class="sa">f</span><span class="s2">&quot;The feature type cannot be changed to </span><span class="si">{</span><span class="n">args</span><span class="o">.</span><span class="n">set_feature_type</span><span class="si">}</span><span class="s2">. &quot;</span>
+                        <span class="o">+</span> <span class="s2">&quot;Some properties in the features are not allowed in the new feature type.&quot;</span>
+                    <span class="p">)</span>
+                    <span class="k">return</span>
+            <span class="n">new_fc</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">new_f</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">new_fc</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
+
+    <span class="n">new_fc</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">output_file</span><span class="p">)</span>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
+        <span class="sa">f</span><span class="s2">&quot;Reset feature type successfully. The new features have been saved in </span><span class="si">{</span><span class="n">args</span><span class="o">.</span><span class="n">output_file</span><span class="si">}</span><span class="s2">.&quot;</span>
+    <span class="p">)</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023-2025, The University of Sydney.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

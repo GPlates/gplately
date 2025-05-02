@@ -1,0 +1,436 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>gplately.commands package &mdash; gplately 2.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=51b770b3"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="gplately.lib package" href="gplately.lib.html" />
+    <link rel="prev" title="gplately package" href="gplately.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            gplately
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">GPlately v2.0.0</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="basic_usages.html">Minimal working example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="use_cases.html">Common Use Cases</a></li>
+<li class="toctree-l1"><a class="reference internal" href="faq.html">Trouble-shooting and FAQ</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="command_line_interface.html">Command Line Interface (CLI)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="primer.html">Primer</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">gplately</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="gplately.html">gplately package</a><ul class="current">
+<li class="toctree-l3 current"><a class="reference internal" href="gplately.html#subpackages">Subpackages</a><ul class="current">
+<li class="toctree-l4 current"><a class="current reference internal" href="#">gplately.commands package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="gplately.lib.html">gplately.lib package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="gplately.mapping.html">gplately.mapping package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="gplately.ptt.html">gplately.ptt package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="gplately.utils.html">gplately.utils package</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="gplately.html#submodules">Submodules</a></li>
+<li class="toctree-l3"><a class="reference internal" href="gplately.html#module-gplately.auxiliary">gplately.auxiliary module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="gplately.html#module-gplately.data">gplately.data module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="gplately.html#module-gplately.decorators">gplately.decorators module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="gplately.html#module-gplately.download">gplately.download module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="gplately.html#module-gplately.exceptions">gplately.exceptions module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="gplately.html#module-gplately.geometry">gplately.geometry module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="gplately.html#module-gplately.gpml">gplately.gpml module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="gplately.html#module-gplately.grids">gplately.grids module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="gplately.html#module-gplately.oceans">gplately.oceans module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="gplately.html#module-gplately.parallel">gplately.parallel module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="gplately.html#module-gplately.plot">gplately.plot module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="gplately.html#module-gplately.pygplates">gplately.pygplates module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="gplately.html#module-gplately.reconstruction">gplately.reconstruction module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="gplately.html#module-gplately.spatial">gplately.spatial module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="gplately.html#module-gplately.tools">gplately.tools module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="gplately.html#module-gplately">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">gplately</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="modules.html">gplately</a></li>
+          <li class="breadcrumb-item"><a href="gplately.html">gplately package</a></li>
+      <li class="breadcrumb-item active">gplately.commands package</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/gplately.commands.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="gplately-commands-package">
+<h1>gplately.commands package<a class="headerlink" href="#gplately-commands-package" title="Link to this heading"></a></h1>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Link to this heading"></a></h2>
+</section>
+<section id="module-gplately.commands.create_age_grids">
+<span id="gplately-commands-create-age-grids-module"></span><h2>gplately.commands.create_age_grids module<a class="headerlink" href="#module-gplately.commands.create_age_grids" title="Link to this heading"></a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="gplately.commands.create_age_grids._run_create_agegrids">
+<span class="sig-prename descclassname"><span class="pre">gplately.commands.create_age_grids.</span></span><span class="sig-name descname"><span class="pre">_run_create_agegrids</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gplately/commands/create_age_grids.html#_run_create_agegrids"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.commands.create_age_grids._run_create_agegrids" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="gplately.commands.create_age_grids.add_parser">
+<span class="sig-prename descclassname"><span class="pre">gplately.commands.create_age_grids.</span></span><span class="sig-name descname"><span class="pre">add_parser</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parser</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gplately/commands/create_age_grids.html#add_parser"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.commands.create_age_grids.add_parser" title="Link to this definition"></a></dt>
+<dd><p>add command line argument parser</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="gplately.commands.create_age_grids.create_agegrids">
+<span class="sig-prename descclassname"><span class="pre">gplately.commands.create_age_grids.</span></span><span class="sig-name descname"><span class="pre">create_agegrids</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">input_filenames</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">continents_filenames</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_dir</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_time</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">max_time</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ridge_time_step</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">n_jobs</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">refinement_levels</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">int</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">grid_spacing</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ridge_sampling</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">0.5</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">initial_spreadrate</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">75</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">file_collection</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">unmasked</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plate_model_repo</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'plate-model-repo'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_continent_contouring</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">bool</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="_modules/gplately/commands/create_age_grids.html#create_agegrids"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.commands.create_age_grids.create_agegrids" title="Link to this definition"></a></dt>
+<dd><p>Create age grids for a plate model.</p>
+</dd></dl>
+
+</section>
+<section id="module-gplately.commands.feature_filter">
+<span id="gplately-commands-feature-filter-module"></span><h2>gplately.commands.feature_filter module<a class="headerlink" href="#module-gplately.commands.feature_filter" title="Link to this heading"></a></h2>
+<dl class="py class">
+<dt class="sig sig-object py" id="gplately.commands.feature_filter.BirthAgeFilter">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">gplately.commands.feature_filter.</span></span><span class="sig-name descname"><span class="pre">BirthAgeFilter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">age</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">keep_older</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gplately/commands/feature_filter.html#BirthAgeFilter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.commands.feature_filter.BirthAgeFilter" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#gplately.commands.feature_filter.FeatureFilter" title="gplately.commands.feature_filter.FeatureFilter"><code class="xref py py-class docutils literal notranslate"><span class="pre">FeatureFilter</span></code></a></p>
+<p>filter features by the time of appearance</p>
+<dl class="simple">
+<dt>for example:</dt><dd><p>BirthAgeFilter(500) – keep features whose time of apprearance are bigger than 500
+BirthAgeFilter(500, keep_older=False) –  keep features whose time of apprearance are smaller than 500</p>
+</dd>
+</dl>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>age</strong> – the age criterion</p></li>
+<li><p><strong>keep_older</strong> – if True, return True when the feature’s birth age is older than the age criterion. If False, otherwise.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="gplately.commands.feature_filter.BirthAgeFilter._abc_impl">
+<span class="sig-name descname"><span class="pre">_abc_impl</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;_abc._abc_data</span> <span class="pre">object&gt;</span></em><a class="headerlink" href="#gplately.commands.feature_filter.BirthAgeFilter._abc_impl" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="gplately.commands.feature_filter.BirthAgeFilter.should_keep">
+<span class="sig-name descname"><span class="pre">should_keep</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">feature</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Feature</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="reference internal" href="_modules/gplately/commands/feature_filter.html#BirthAgeFilter.should_keep"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.commands.feature_filter.BirthAgeFilter.should_keep" title="Link to this definition"></a></dt>
+<dd><p>This abstract method must be implemented in subclass.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>feature</strong> – pygplates.Feature</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>true if the feature should be kept; false otherwise</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="gplately.commands.feature_filter.FeatureFilter">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">gplately.commands.feature_filter.</span></span><span class="sig-name descname"><span class="pre">FeatureFilter</span></span><a class="reference internal" href="_modules/gplately/commands/feature_filter.html#FeatureFilter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.commands.feature_filter.FeatureFilter" title="Link to this definition"></a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="gplately.commands.feature_filter.FeatureFilter._abc_impl">
+<span class="sig-name descname"><span class="pre">_abc_impl</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;_abc._abc_data</span> <span class="pre">object&gt;</span></em><a class="headerlink" href="#gplately.commands.feature_filter.FeatureFilter._abc_impl" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="gplately.commands.feature_filter.FeatureFilter.should_keep">
+<em class="property"><span class="k"><span class="pre">abstractmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">should_keep</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">feature</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Feature</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="reference internal" href="_modules/gplately/commands/feature_filter.html#FeatureFilter.should_keep"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.commands.feature_filter.FeatureFilter.should_keep" title="Link to this definition"></a></dt>
+<dd><p>This abstract method must be implemented in subclass.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>feature</strong> – pygplates.Feature</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>true if the feature should be kept; false otherwise</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="gplately.commands.feature_filter.FeatureNameFilter">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">gplately.commands.feature_filter.</span></span><span class="sig-name descname"><span class="pre">FeatureNameFilter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">names</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">str</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">exact_match</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">case_sensitive</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">exclude</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gplately/commands/feature_filter.html#FeatureNameFilter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.commands.feature_filter.FeatureNameFilter" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#gplately.commands.feature_filter.FeatureFilter" title="gplately.commands.feature_filter.FeatureFilter"><code class="xref py py-class docutils literal notranslate"><span class="pre">FeatureFilter</span></code></a></p>
+<p>filter features by name</p>
+<dl class="simple">
+<dt>for example:</dt><dd><p>FeatureNameFilter([‘Africa’, ‘Asia’]) – keep features who name contains ‘Africa’ or ‘Asia’
+FeatureNameFilter([‘Africa’, ‘Asia’], exclude=True) – keep features who name does not contain ‘Africa’ or ‘Asia’
+FeatureNameFilter([‘Africa’, ‘Asia’], exact_match=True) – keep features who name is ‘Africa’ or ‘Asia’
+FeatureNameFilter([‘Africa’, ‘Asia’], exclude=True, exact_match=True) – keep features who name is not ‘Africa’ or ‘Asia’
+FeatureNameFilter([‘Africa’, ‘Asia’], exclude=True, exact_match=True, case_sensitive=True) – keep features who name is not ‘Africa’ or ‘Asia’ (case sensitive)</p>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="gplately.commands.feature_filter.FeatureNameFilter._abc_impl">
+<span class="sig-name descname"><span class="pre">_abc_impl</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;_abc._abc_data</span> <span class="pre">object&gt;</span></em><a class="headerlink" href="#gplately.commands.feature_filter.FeatureNameFilter._abc_impl" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="gplately.commands.feature_filter.FeatureNameFilter.check_name">
+<span class="sig-name descname"><span class="pre">check_name</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name_1</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name_2</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="reference internal" href="_modules/gplately/commands/feature_filter.html#FeatureNameFilter.check_name"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.commands.feature_filter.FeatureNameFilter.check_name" title="Link to this definition"></a></dt>
+<dd><p>check if two names are the same or name_2 contains name_1</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="gplately.commands.feature_filter.FeatureNameFilter.should_keep">
+<span class="sig-name descname"><span class="pre">should_keep</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">feature</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Feature</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="reference internal" href="_modules/gplately/commands/feature_filter.html#FeatureNameFilter.should_keep"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.commands.feature_filter.FeatureNameFilter.should_keep" title="Link to this definition"></a></dt>
+<dd><p>This abstract method must be implemented in subclass.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>feature</strong> – pygplates.Feature</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>true if the feature should be kept; false otherwise</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="gplately.commands.feature_filter.FeatureTypeFilter">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">gplately.commands.feature_filter.</span></span><span class="sig-name descname"><span class="pre">FeatureTypeFilter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">feature_type_re</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gplately/commands/feature_filter.html#FeatureTypeFilter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.commands.feature_filter.FeatureTypeFilter" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#gplately.commands.feature_filter.FeatureFilter" title="gplately.commands.feature_filter.FeatureFilter"><code class="xref py py-class docutils literal notranslate"><span class="pre">FeatureFilter</span></code></a></p>
+<p>filter features by the feature type(regular expression)</p>
+<p class="rubric">Examples</p>
+<ul class="simple">
+<li><p>gplately filter input_file output_file -t gpml:Basin</p></li>
+<li><p>gplately filter input_file output_file  -t “gpml:IslandArc|gpml:Basin”</p></li>
+</ul>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>feature_type_re</strong> – the regular expression to match the feature type</p>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="gplately.commands.feature_filter.FeatureTypeFilter._abc_impl">
+<span class="sig-name descname"><span class="pre">_abc_impl</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;_abc._abc_data</span> <span class="pre">object&gt;</span></em><a class="headerlink" href="#gplately.commands.feature_filter.FeatureTypeFilter._abc_impl" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="gplately.commands.feature_filter.FeatureTypeFilter.should_keep">
+<span class="sig-name descname"><span class="pre">should_keep</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">feature</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Feature</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="reference internal" href="_modules/gplately/commands/feature_filter.html#FeatureTypeFilter.should_keep"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.commands.feature_filter.FeatureTypeFilter.should_keep" title="Link to this definition"></a></dt>
+<dd><p>This abstract method must be implemented in subclass.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>feature</strong> – pygplates.Feature</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>true if the feature should be kept; false otherwise</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py class">
+<dt class="sig sig-object py" id="gplately.commands.feature_filter.PlateIDFilter">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">gplately.commands.feature_filter.</span></span><span class="sig-name descname"><span class="pre">PlateIDFilter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">pids</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">int</span><span class="p"><span class="pre">]</span></span></span></em>, <em class="sig-param"><span class="n"><span class="pre">exclude</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gplately/commands/feature_filter.html#PlateIDFilter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.commands.feature_filter.PlateIDFilter" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference internal" href="#gplately.commands.feature_filter.FeatureFilter" title="gplately.commands.feature_filter.FeatureFilter"><code class="xref py py-class docutils literal notranslate"><span class="pre">FeatureFilter</span></code></a></p>
+<p>filter features by plate ID</p>
+<dl class="simple">
+<dt>for example:</dt><dd><p>PlateIDFilter([101,201,301]) – keep features whose plate id is 101 or 201 or 301
+PlateIDFilter([101,201,301], exclude=True) – keep features whose plate id is not 101 nor 201 nor 301</p>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="gplately.commands.feature_filter.PlateIDFilter._abc_impl">
+<span class="sig-name descname"><span class="pre">_abc_impl</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;_abc._abc_data</span> <span class="pre">object&gt;</span></em><a class="headerlink" href="#gplately.commands.feature_filter.PlateIDFilter._abc_impl" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="gplately.commands.feature_filter.PlateIDFilter.should_keep">
+<span class="sig-name descname"><span class="pre">should_keep</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">feature</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Feature</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="reference internal" href="_modules/gplately/commands/feature_filter.html#PlateIDFilter.should_keep"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.commands.feature_filter.PlateIDFilter.should_keep" title="Link to this definition"></a></dt>
+<dd><p>This abstract method must be implemented in subclass.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>feature</strong> – pygplates.Feature</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>true if the feature should be kept; false otherwise</p>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="gplately.commands.feature_filter.add_parser">
+<span class="sig-prename descclassname"><span class="pre">gplately.commands.feature_filter.</span></span><span class="sig-name descname"><span class="pre">add_parser</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">subparser</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gplately/commands/feature_filter.html#add_parser"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.commands.feature_filter.add_parser" title="Link to this definition"></a></dt>
+<dd><p>add feature filter command line argument parser</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="gplately.commands.feature_filter.filter_feature_collection">
+<span class="sig-prename descclassname"><span class="pre">gplately.commands.feature_filter.</span></span><span class="sig-name descname"><span class="pre">filter_feature_collection</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">feature_collection</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">FeatureCollection</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filters</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><a class="reference internal" href="#gplately.commands.feature_filter.FeatureFilter" title="gplately.commands.feature_filter.FeatureFilter"><span class="pre">FeatureFilter</span></a><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gplately/commands/feature_filter.html#filter_feature_collection"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.commands.feature_filter.filter_feature_collection" title="Link to this definition"></a></dt>
+<dd><p>Filter feature collection by various criteria.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="gplately.commands.feature_filter.run_filter_feature_collection">
+<span class="sig-prename descclassname"><span class="pre">gplately.commands.feature_filter.</span></span><span class="sig-name descname"><span class="pre">run_filter_feature_collection</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gplately/commands/feature_filter.html#run_filter_feature_collection"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.commands.feature_filter.run_filter_feature_collection" title="Link to this definition"></a></dt>
+<dd><p>Filter the input feature collection according to command line arguments.</p>
+</dd></dl>
+
+</section>
+<section id="module-gplately.commands.list_models">
+<span id="gplately-commands-list-models-module"></span><h2>gplately.commands.list_models module<a class="headerlink" href="#module-gplately.commands.list_models" title="Link to this heading"></a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="gplately.commands.list_models.add_parser">
+<span class="sig-prename descclassname"><span class="pre">gplately.commands.list_models.</span></span><span class="sig-name descname"><span class="pre">add_parser</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">subparser</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gplately/commands/list_models.html#add_parser"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.commands.list_models.add_parser" title="Link to this definition"></a></dt>
+<dd><p>add ‘list model’ command line argument parser</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="gplately.commands.list_models.get_layer_names">
+<span class="sig-prename descclassname"><span class="pre">gplately.commands.list_models.</span></span><span class="sig-name descname"><span class="pre">get_layer_names</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gplately/commands/list_models.html#get_layer_names"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.commands.list_models.get_layer_names" title="Link to this definition"></a></dt>
+<dd><p>Given model name, return the layer names in the model.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="gplately.commands.list_models.get_model_names">
+<span class="sig-prename descclassname"><span class="pre">gplately.commands.list_models.</span></span><span class="sig-name descname"><span class="pre">get_model_names</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="_modules/gplately/commands/list_models.html#get_model_names"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.commands.list_models.get_model_names" title="Link to this definition"></a></dt>
+<dd><p>return a list of model names from the servers.
+the function will try a list of urls one by one. if the first url is not working, try the second one.
+if the second one is still not working, try the thrid one. Repeat until the end of the list.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="gplately.commands.list_models.get_model_url">
+<span class="sig-prename descclassname"><span class="pre">gplately.commands.list_models.</span></span><span class="sig-name descname"><span class="pre">get_model_url</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gplately/commands/list_models.html#get_model_url"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.commands.list_models.get_model_url" title="Link to this definition"></a></dt>
+<dd><p>Given model name, return the URL to the model files.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="gplately.commands.list_models.run_list_models">
+<span class="sig-prename descclassname"><span class="pre">gplately.commands.list_models.</span></span><span class="sig-name descname"><span class="pre">run_list_models</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gplately/commands/list_models.html#run_list_models"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.commands.list_models.run_list_models" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</section>
+<section id="module-gplately.commands.regrid">
+<span id="gplately-commands-regrid-module"></span><h2>gplately.commands.regrid module<a class="headerlink" href="#module-gplately.commands.regrid" title="Link to this heading"></a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="gplately.commands.regrid._batch_regrid_netcdf4">
+<span class="sig-prename descclassname"><span class="pre">gplately.commands.regrid.</span></span><span class="sig-name descname"><span class="pre">_batch_regrid_netcdf4</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_raster_filename</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_raster_filename</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">resample</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">significant_digits</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gplately/commands/regrid.html#_batch_regrid_netcdf4"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.commands.regrid._batch_regrid_netcdf4" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="gplately.commands.regrid._regrid_netcdf4">
+<span class="sig-prename descclassname"><span class="pre">gplately.commands.regrid.</span></span><span class="sig-name descname"><span class="pre">_regrid_netcdf4</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gplately/commands/regrid.html#_regrid_netcdf4"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.commands.regrid._regrid_netcdf4" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="gplately.commands.regrid.add_parser">
+<span class="sig-prename descclassname"><span class="pre">gplately.commands.regrid.</span></span><span class="sig-name descname"><span class="pre">add_parser</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parser</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gplately/commands/regrid.html#add_parser"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.commands.regrid.add_parser" title="Link to this definition"></a></dt>
+<dd><p>add command line argument parser</p>
+</dd></dl>
+
+</section>
+<section id="module-gplately.commands.reset_feature_type">
+<span id="gplately-commands-reset-feature-type-module"></span><h2>gplately.commands.reset_feature_type module<a class="headerlink" href="#module-gplately.commands.reset_feature_type" title="Link to this heading"></a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="gplately.commands.reset_feature_type.add_parser">
+<span class="sig-prename descclassname"><span class="pre">gplately.commands.reset_feature_type.</span></span><span class="sig-name descname"><span class="pre">add_parser</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">subparser</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gplately/commands/reset_feature_type.html#add_parser"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.commands.reset_feature_type.add_parser" title="Link to this definition"></a></dt>
+<dd><p>add <cite>reset_feature_type</cite> command line argument parser</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="gplately.commands.reset_feature_type.reset_feature_type">
+<span class="sig-prename descclassname"><span class="pre">gplately.commands.reset_feature_type.</span></span><span class="sig-name descname"><span class="pre">reset_feature_type</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gplately/commands/reset_feature_type.html#reset_feature_type"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.commands.reset_feature_type.reset_feature_type" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+</section>
+<section id="module-gplately.commands">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-gplately.commands" title="Link to this heading"></a></h2>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="gplately.html" class="btn btn-neutral float-left" title="gplately package" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="gplately.lib.html" class="btn btn-neutral float-right" title="gplately.lib package" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023-2025, The University of Sydney.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

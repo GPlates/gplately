@@ -1,0 +1,271 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>gplately.ptt.utils.call_system_command &mdash; gplately 2.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../../_static/documentation_options.js?v=51b770b3"></script>
+      <script src="../../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../../index.html" class="icon icon-home">
+            gplately
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">GPlately v2.0.0</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../basic_usages.html">Minimal working example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../use_cases.html">Common Use Cases</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../faq.html">Trouble-shooting and FAQ</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../command_line_interface.html">Command Line Interface (CLI)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../primer.html">Primer</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../modules.html">gplately</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">gplately</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">gplately.ptt.utils.call_system_command</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for gplately.ptt.utils.call_system_command</h1><div class="highlight"><pre>
+<span></span><span class="c1">#</span>
+<span class="c1">#    Copyright (C) 2017 The University of Sydney, Australia</span>
+<span class="c1">#</span>
+<span class="c1">#    This program is free software; you can redistribute it and/or modify it under</span>
+<span class="c1">#    the terms of the GNU General Public License, version 2, as published by</span>
+<span class="c1">#    the Free Software Foundation.</span>
+<span class="c1">#</span>
+<span class="c1">#    This program is distributed in the hope that it will be useful, but WITHOUT</span>
+<span class="c1">#    ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or</span>
+<span class="c1">#    FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License</span>
+<span class="c1">#    for more details.</span>
+<span class="c1">#</span>
+<span class="c1">#    You should have received a copy of the GNU General Public License along</span>
+<span class="c1">#    with this program; if not, write to Free Software Foundation, Inc.,</span>
+<span class="c1">#    51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.</span>
+<span class="c1">#</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">print_function</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">subprocess</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
+
+
+<div class="viewcode-block" id="call_system_command">
+<a class="viewcode-back" href="../../../../gplately.ptt.utils.html#gplately.ptt.utils.call_system_command.call_system_command">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">call_system_command</span><span class="p">(</span>
+    <span class="n">args</span><span class="p">,</span>  <span class="c1"># Command and its arguments - either a single string or a sequence of arguments (see subprocess.Popen()).</span>
+    <span class="n">check_return_code</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>  <span class="c1"># Check command&#39;s return code with this value (set to None to avoid checking).</span>
+    <span class="n">raise_errors</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>  <span class="c1"># Whether to raise an exception when there&#39;s an error (terminates calling script unless caught).</span>
+    <span class="n">print_errors</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>  <span class="c1"># Whether to print an error message to stderr when there&#39;s an error.</span>
+    <span class="n">stdin</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>  <span class="c1"># Optional string to send to stdin of the command.</span>
+    <span class="n">return_stdout</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>  <span class="c1"># Whether to capture, and return, stdout of the command,</span>
+    <span class="n">return_stderr</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>  <span class="c1"># Whether to capture, and return, stderr of the command,</span>
+    <span class="o">**</span><span class="n">subprocess_options</span>  <span class="c1"># Advanced options passed directly to subprocess.Popen().</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Function to call a command on the system (based on &#39;subprocess&#39; module).</span>
+
+<span class="sd">    - Option to check return code of command and which return code to check (defaults to checking code 0 for success).</span>
+<span class="sd">    - Option to raise error or return False on failure (raises by default).</span>
+<span class="sd">    - Option to print an error message to stderr on failure (prints by default).</span>
+<span class="sd">    - Option to pass a stdin string to the standard input of command (not passed by default).</span>
+<span class="sd">    - Option to receive stdout/stderr strings from the standard output/error of command (not received by default).</span>
+<span class="sd">    - Optionally pass advanced parameters to &#39;subprocess.Popen()&#39; such as &#39;shell=True&#39; (no advanced parameters passed by default).</span>
+
+<span class="sd">    On success:</span>
+
+<span class="sd">    - Returns (stdout, stderr) tuple of strings if &#39;return_stdout&#39; and &#39;return_stderr&#39; are True,</span>
+<span class="sd">    - else returns stdout string if only &#39;return_stdout&#39; is True,</span>
+<span class="sd">    - else returns stderr string if only &#39;return_stderr&#39; is True,</span>
+<span class="sd">    - else returns True (if both &#39;return_stdout&#39; and &#39;return_stderr&#39; are False).</span>
+
+<span class="sd">    On failure:</span>
+
+<span class="sd">    - Raises an exception if &#39;raise_errors&#39; is True,</span>
+<span class="sd">    - else returns None (which can be tested as if it was &#39;False&#39;).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># Whether to send stdin to command.</span>
+    <span class="k">if</span> <span class="n">stdin</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">stdin_pipe</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">PIPE</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">stdin_pipe</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="c1"># Whether to receive stdout/stderr from command.</span>
+    <span class="k">if</span> <span class="n">return_stdout</span><span class="p">:</span>
+        <span class="n">stdout_pipe</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">PIPE</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">stdout_pipe</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="k">if</span> <span class="n">return_stderr</span><span class="p">:</span>
+        <span class="n">stderr_pipe</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">PIPE</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">stderr_pipe</span> <span class="o">=</span> <span class="kc">None</span>
+
+    <span class="c1"># Execute command.</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">command</span> <span class="o">=</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">Popen</span><span class="p">(</span>
+            <span class="n">args</span><span class="p">,</span>
+            <span class="n">stdin</span><span class="o">=</span><span class="n">stdin_pipe</span><span class="p">,</span>
+            <span class="n">stdout</span><span class="o">=</span><span class="n">stdout_pipe</span><span class="p">,</span>
+            <span class="n">stderr</span><span class="o">=</span><span class="n">stderr_pipe</span><span class="p">,</span>
+            <span class="n">universal_newlines</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+            <span class="o">**</span><span class="n">subprocess_options</span>
+        <span class="p">)</span>
+        <span class="n">stdout</span><span class="p">,</span> <span class="n">stderr</span> <span class="o">=</span> <span class="n">command</span><span class="o">.</span><span class="n">communicate</span><span class="p">(</span><span class="n">stdin</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">ValueError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">print_errors</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span>
+                <span class="s2">&quot;System command called with invalid arguments: </span><span class="si">{0}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">e</span><span class="p">),</span>
+                <span class="n">file</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">raise_errors</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+        <span class="k">raise</span>
+    <span class="k">except</span> <span class="ne">OSError</span> <span class="k">as</span> <span class="n">e</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">print_errors</span><span class="p">:</span>
+            <span class="nb">print</span><span class="p">(</span>
+                <span class="s2">&quot;Unable to execute system command: </span><span class="si">{0}</span><span class="s2"> </span><span class="si">{1}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">args</span><span class="p">,</span> <span class="n">e</span><span class="p">),</span>
+                <span class="n">file</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">raise_errors</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">None</span>
+        <span class="k">raise</span>
+
+    <span class="c1"># Check return code (if requested).</span>
+    <span class="k">if</span> <span class="n">check_return_code</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">command_return_code</span> <span class="o">=</span> <span class="n">command</span><span class="o">.</span><span class="n">poll</span><span class="p">()</span>
+        <span class="k">if</span> <span class="n">command_return_code</span> <span class="o">!=</span> <span class="n">check_return_code</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">print_errors</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span>
+                    <span class="s2">&quot;System command failed: </span><span class="si">{0}</span><span class="s2"> return code: </span><span class="si">{1}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                        <span class="n">args</span><span class="p">,</span> <span class="n">command_return_code</span>
+                    <span class="p">),</span>
+                    <span class="n">file</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="p">,</span>
+                <span class="p">)</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">raise_errors</span><span class="p">:</span>
+                <span class="k">return</span> <span class="kc">None</span>
+
+            <span class="c1"># Raise same error that subprocess.check_call() does.</span>
+            <span class="k">raise</span> <span class="n">subprocess</span><span class="o">.</span><span class="n">CalledProcessError</span><span class="p">(</span>
+                <span class="n">command_return_code</span><span class="p">,</span> <span class="n">args</span><span class="p">,</span> <span class="n">output</span><span class="o">=</span><span class="n">stdout</span>
+            <span class="p">)</span>
+
+    <span class="c1"># Return (stdout, stderr) tuple if requested.</span>
+    <span class="k">if</span> <span class="n">return_stdout</span> <span class="ow">and</span> <span class="n">return_stderr</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">stdout</span><span class="p">,</span> <span class="n">stderr</span>
+    <span class="k">elif</span> <span class="n">return_stdout</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">stdout</span>
+    <span class="k">elif</span> <span class="n">return_stderr</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">stderr</span>
+
+    <span class="k">return</span> <span class="kc">True</span></div>
+
+
+
+<span class="c1">#   if __name__ == &#39;__main__&#39;:</span>
+<span class="c1">#</span>
+<span class="c1">#       # Windows &#39;dir&#39; command (change to &#39;ls -l&#39;, for example, on Mac and Linux).</span>
+<span class="c1">#       call_system_command(&#39;dir /w&#39;, shell=True)</span>
+<span class="c1">#       call_system_command([&#39;dir&#39;, &#39;/w&#39;], print_errors=False, shell=True)</span>
+<span class="c1">#       if not call_system_command([&#39;dir&#39;, &#39;/w&#39;], raise_errors=False, shell=True):</span>
+<span class="c1">#           print &#39;Failed directory listing.&#39;</span>
+<span class="c1">#</span>
+<span class="c1">#       # Info on a grid file.</span>
+<span class="c1">#       call_system_command([&#39;gmt&#39;, &#39;grdinfo&#39;, &#39;mohoGOCE180.nc&#39;])</span>
+<span class="c1">#</span>
+<span class="c1">#       # Sample a grid file at specified points.</span>
+<span class="c1">#       # Send stdin (the lon/lat points to sample) and receive stdout (the sampled raster values).</span>
+<span class="c1">#       output = call_system_command([&quot;gmt&quot;, &quot;grdtrack&quot;, &quot;-nl&quot;, &quot;-GmohoGOCE180.nc&quot;], stdin=&#39;10 20\n-10 -20\n&#39;, return_stdout=True, return_stderr=True, raise_errors=False)</span>
+<span class="c1">#       # Check return value since we&#39;re not raising exceptions (due to &quot;raise_errors=False&quot;).</span>
+<span class="c1">#       # Note: Need to test &#39;output&#39; *before* attempting to extract tuple components from it.</span>
+<span class="c1">#       if output:</span>
+<span class="c1">#           stdout, stderr = output</span>
+<span class="c1">#           print stdout</span>
+<span class="c1">#       # Run again but only return stdout (not stderr).</span>
+<span class="c1">#       stdout = call_system_command([&quot;gmt&quot;, &quot;grdtrack&quot;, &quot;-nl&quot;, &quot;-GmohoGOCE180.nc&quot;], stdin=&#39;10 20\n-10 -20\n&#39;, return_stdout=True, raise_errors=False)</span>
+<span class="c1">#       # Check return value since we&#39;re not raising exceptions (due to &quot;raise_errors=False&quot;).</span>
+<span class="c1">#       if stdout is not None:</span>
+<span class="c1">#           print stdout</span>
+<span class="c1">#           pass</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023-2025, The University of Sydney.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

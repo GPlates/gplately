@@ -1,0 +1,328 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>gplately.utils.seafloor_grid_utils &mdash; gplately 2.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=51b770b3"></script>
+      <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            gplately
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">GPlately v2.0.0</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../basic_usages.html">Minimal working example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../use_cases.html">Common Use Cases</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../faq.html">Trouble-shooting and FAQ</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../command_line_interface.html">Command Line Interface (CLI)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../primer.html">Primer</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules.html">gplately</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">gplately</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">gplately.utils.seafloor_grid_utils</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for gplately.utils.seafloor_grid_utils</h1><div class="highlight"><pre>
+<span></span><span class="c1">#</span>
+<span class="c1">#    Copyright (C) 2024 The University of Sydney, Australia</span>
+<span class="c1">#</span>
+<span class="c1">#    This program is free software; you can redistribute it and/or modify it under</span>
+<span class="c1">#    the terms of the GNU General Public License, version 2, as published by</span>
+<span class="c1">#    the Free Software Foundation.</span>
+<span class="c1">#</span>
+<span class="c1">#    This program is distributed in the hope that it will be useful, but WITHOUT</span>
+<span class="c1">#    ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or</span>
+<span class="c1">#    FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License</span>
+<span class="c1">#    for more details.</span>
+<span class="c1">#</span>
+<span class="c1">#    You should have received a copy of the GNU General Public License along</span>
+<span class="c1">#    with this program; if not, write to Free Software Foundation, Inc.,</span>
+<span class="c1">#    51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.</span>
+<span class="c1">#</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Auxiliary functions for SeafloorGrid</span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pygplates</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">..</span><span class="w"> </span><span class="kn">import</span> <span class="n">ptt</span>
+
+
+<div class="viewcode-block" id="create_icosahedral_mesh">
+<a class="viewcode-back" href="../../../gplately.utils.html#gplately.utils.seafloor_grid_utils.create_icosahedral_mesh">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">create_icosahedral_mesh</span><span class="p">(</span><span class="n">refinement_levels</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Define a global point mesh with Stripy&#39;s</span>
+<span class="sd">    [icosahedral triangulated mesh](https://github.com/underworldcode/stripy/blob/294354c00dd72e085a018e69c345d9353c6fafef/stripy/spherical_meshes.py#L27)</span>
+<span class="sd">    and turn all mesh domains into pyGPlates MultiPointOnSphere types.</span>
+
+<span class="sd">    This global mesh will be masked with a set of continental or COB terrane</span>
+<span class="sd">    polygons to define the ocean basin at a given reconstruction time.</span>
+<span class="sd">    The `refinement_levels` integer is proportional to the resolution of the</span>
+<span class="sd">    mesh and the ocean/continent boundary.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    refinement_levels : int</span>
+<span class="sd">        Refine the number of points in the triangulation. The larger the</span>
+<span class="sd">        refinement level, the sharper the ocean basin resolution.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    multi_point : instance of &lt;pygplates.MultiPointOnSphere&gt;</span>
+<span class="sd">        The longitues and latitudes that make up the icosahedral ocean mesh</span>
+<span class="sd">        collated into a MultiPointOnSphere object.</span>
+<span class="sd">    icosahedral_global_mesh : instance of &lt;stripy.spherical_meshes.icosahedral_mesh&gt;</span>
+<span class="sd">        The original global icosahedral triangulated mesh.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="kn">import</span><span class="w"> </span><span class="nn">stripy</span>
+
+    <span class="c1"># Create the ocean basin mesh using Stripy&#39;s icosahedral spherical mesh</span>
+    <span class="n">icosahedral_global_mesh</span> <span class="o">=</span> <span class="n">stripy</span><span class="o">.</span><span class="n">spherical_meshes</span><span class="o">.</span><span class="n">icosahedral_mesh</span><span class="p">(</span>
+        <span class="n">refinement_levels</span><span class="p">,</span> <span class="n">include_face_points</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">trisection</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">tree</span><span class="o">=</span><span class="kc">False</span>
+    <span class="p">)</span>
+    <span class="c1"># Get lons and lats of mesh, and turn them into a MultiPointOnSphere</span>
+    <span class="n">lats_arr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">rad2deg</span><span class="p">(</span><span class="n">icosahedral_global_mesh</span><span class="o">.</span><span class="n">lats</span><span class="p">)</span>
+    <span class="n">lons_arr</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">rad2deg</span><span class="p">(</span><span class="n">icosahedral_global_mesh</span><span class="o">.</span><span class="n">lons</span><span class="p">)</span>
+    <span class="n">multi_point</span> <span class="o">=</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">MultiPointOnSphere</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">lats_arr</span><span class="p">,</span> <span class="n">lons_arr</span><span class="p">))</span>
+
+    <span class="k">return</span> <span class="n">multi_point</span><span class="p">,</span> <span class="n">icosahedral_global_mesh</span></div>
+
+
+
+<div class="viewcode-block" id="ensure_polygon_geometry">
+<a class="viewcode-back" href="../../../gplately.utils.html#gplately.utils.seafloor_grid_utils.ensure_polygon_geometry">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">ensure_polygon_geometry</span><span class="p">(</span><span class="n">reconstructed_polygons</span><span class="p">,</span> <span class="n">rotation_model</span><span class="p">,</span> <span class="n">time</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Ensure COB terrane/continental polygon geometries are polygons</span>
+<span class="sd">    with reconstruction plate IDs and valid times.</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    This step must be done so that the initial set of ocean basin points</span>
+<span class="sd">    (the Stripy icosahedral mesh) can be partitioned into plates using</span>
+<span class="sd">    each reconstruction plate ID for the given plate `model`.</span>
+
+<span class="sd">    This allows for an oceanic point-in-continental</span>
+<span class="sd">    polygon query for every identified plate ID. See documentation for</span>
+<span class="sd">    `point_in_polygon_routine` for more details.</span>
+
+<span class="sd">    `ensure_polygon_geometry` works as follows:</span>
+<span class="sd">    COB terrane/continental polygons are assumed to have been reconstructed</span>
+<span class="sd">    already in `reconstructed_polygons` (a list of</span>
+<span class="sd">    type &lt;pygplates.ReconstructedFeatureGeometry&gt;). The list contents are</span>
+<span class="sd">    turned into a &lt;pygplates.FeatureCollection&gt; to be ascribed a</span>
+<span class="sd">    `PolygonOnSphere` geometry, a reconstruction plate ID, and a valid time.</span>
+<span class="sd">    Once finished, this feature collection is turned back into a list of</span>
+<span class="sd">    instance &lt;pygplates.ReconstructedFeatureGeometry&gt; and returned.</span>
+
+<span class="sd">    This revert must be completed for compatibility with the subsequent</span>
+<span class="sd">    point-in-polygon routine.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    reconstructed_polygons : list of instance &lt;pygplates.ReconstructedFeatureGeometry&gt;</span>
+<span class="sd">        If used in `SeafloorGrid`, these are automatically obtained from the</span>
+<span class="sd">        `PlotTopologies.continents` attribute (the reconstructed continental</span>
+<span class="sd">        polygons at the current reconstruction time).</span>
+
+<span class="sd">    rotation_model : instance of &lt;pygplates.RotationModel&gt;</span>
+<span class="sd">        A parameter for turning the &lt;pygplates.FeatureCollection&gt; back into a</span>
+<span class="sd">        list of instance &lt;pygplates.ReconstructedFeatureGeometry&gt; for</span>
+<span class="sd">        compatibility with the point-in-polygon routine.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">continent_FeatCol</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="c1"># self._PlotTopologies_object.continents</span>
+    <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">reconstructed_polygons</span><span class="p">:</span>
+        <span class="n">continent_FeatCol</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">n</span><span class="o">.</span><span class="n">get_feature</span><span class="p">())</span>
+
+    <span class="n">polygon_feats</span> <span class="o">=</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">FeatureCollection</span><span class="p">(</span><span class="n">continent_FeatCol</span><span class="p">)</span>
+
+    <span class="c1"># From GPRM&#39;s force_polygon_geometries(); set feature attributes</span>
+    <span class="c1"># like valid times and plate IDs to each masking polygon</span>
+    <span class="n">polygons</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">feature</span> <span class="ow">in</span> <span class="n">polygon_feats</span><span class="p">:</span>
+        <span class="k">for</span> <span class="n">geom</span> <span class="ow">in</span> <span class="n">feature</span><span class="o">.</span><span class="n">get_all_geometries</span><span class="p">():</span>
+            <span class="n">polygon</span> <span class="o">=</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">Feature</span><span class="p">(</span><span class="n">feature</span><span class="o">.</span><span class="n">get_feature_type</span><span class="p">())</span>
+            <span class="n">polygon</span><span class="o">.</span><span class="n">set_geometry</span><span class="p">(</span><span class="n">pygplates</span><span class="o">.</span><span class="n">PolygonOnSphere</span><span class="p">(</span><span class="n">geom</span><span class="p">))</span>
+            <span class="n">polygon</span><span class="o">.</span><span class="n">set_reconstruction_plate_id</span><span class="p">(</span><span class="n">feature</span><span class="o">.</span><span class="n">get_reconstruction_plate_id</span><span class="p">())</span>
+            <span class="c1"># Avoid features in COBTerranes with invalid time</span>
+            <span class="k">if</span> <span class="n">feature</span><span class="o">.</span><span class="n">get_valid_time</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="n">feature</span><span class="o">.</span><span class="n">get_valid_time</span><span class="p">()[</span><span class="mi">1</span><span class="p">]:</span>
+                <span class="n">polygon</span><span class="o">.</span><span class="n">set_valid_time</span><span class="p">(</span>
+                    <span class="n">feature</span><span class="o">.</span><span class="n">get_valid_time</span><span class="p">()[</span><span class="mi">0</span><span class="p">],</span> <span class="n">feature</span><span class="o">.</span><span class="n">get_valid_time</span><span class="p">()[</span><span class="mi">1</span><span class="p">]</span>
+                <span class="p">)</span>
+                <span class="n">polygons</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">polygon</span><span class="p">)</span>
+    <span class="n">cobter_polygon_features</span> <span class="o">=</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">FeatureCollection</span><span class="p">(</span><span class="n">polygons</span><span class="p">)</span>
+
+    <span class="c1"># Turn the feature collection back into ReconstructedFeatureGeometry</span>
+    <span class="c1"># objects otherwise it will not work with PIP</span>
+    <span class="n">reconstructed_cobter_polygons</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">pygplates</span><span class="o">.</span><span class="n">reconstruct</span><span class="p">(</span>
+        <span class="n">cobter_polygon_features</span><span class="p">,</span> <span class="n">rotation_model</span><span class="p">,</span> <span class="n">reconstructed_cobter_polygons</span><span class="p">,</span> <span class="n">time</span>
+    <span class="p">)</span>
+    <span class="k">return</span> <span class="n">reconstructed_cobter_polygons</span></div>
+
+
+
+<div class="viewcode-block" id="point_in_polygon_routine">
+<a class="viewcode-back" href="../../../gplately.utils.html#gplately.utils.seafloor_grid_utils.point_in_polygon_routine">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">point_in_polygon_routine</span><span class="p">(</span><span class="n">multi_point</span><span class="p">,</span> <span class="n">COB_polygons</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Perform Plate Tectonic Tools&#39; point in polygon routine to partition</span>
+<span class="sd">    points in a `multi_point` MultiPointOnSphere feature based on whether</span>
+<span class="sd">    they are inside or outside the polygons in `COB_polygons`.</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    Assuming the `COB_polygons` have passed through `ensure_polygon_geometry`,</span>
+<span class="sd">    each polygon should have a plate ID assigned to it.</span>
+
+<span class="sd">    This PIP routine serves two purposes for `SeafloorGrid`:</span>
+
+<span class="sd">    1) It identifies continental regions in the icosahedral global mesh</span>
+<span class="sd">    MultiPointOnSphere feature and &#39;erases&#39; in-continent oceanic points</span>
+<span class="sd">    for the construction of a continental mask at each timestep;</span>
+
+<span class="sd">    2) It identifies oceanic points in the icosahedral global mesh.</span>
+<span class="sd">    These points will be passed to a function that calculates each point&#39;s</span>
+<span class="sd">    proximity to its nearest MOR segment (if any) within the polygonal domain</span>
+<span class="sd">    of its allocated plate ID. Each distance is divided by half the</span>
+<span class="sd">    `initial_ocean_mean_spreading_rate` (an attribute of `SeafloorGrids`) to</span>
+<span class="sd">    determine a simplified seafloor age for each point.</span>
+
+<span class="sd">    Number 2) only happens once at the start of the gridding process to</span>
+<span class="sd">    momentarily fill the gridding region with initial ocean points that have</span>
+<span class="sd">    set ages (albeit not from a plate model file). After multiple time steps</span>
+<span class="sd">    of reconstruction, the ocean basin will be filled with new points (with</span>
+<span class="sd">    plate-model prescribed ages) that emerge from ridge topologies.</span>
+
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    pygplates.MultiPointOnSphere(points_in_arr) : instance &lt;pygplates.MultiPointOnSphere&gt;</span>
+<span class="sd">        Point features that are within COB terrane polygons.</span>
+<span class="sd">    pygplates.MultiPointOnSphere(points_out_arr) : instance &lt;pygplates.MultiPointOnSphere&gt;</span>
+<span class="sd">        Point features that are outside COB terrane polygons.</span>
+<span class="sd">    zvals : list</span>
+<span class="sd">        A binary list. If an entry is == 0, its corresponing point in the</span>
+<span class="sd">        MultiPointOnSphere object is on the ocean. If == 1, the point is</span>
+<span class="sd">        in the COB terrane polygon.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># Convert MultiPointOnSphere to array of PointOnSphere</span>
+    <span class="n">multi_point</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">multi_point</span><span class="o">.</span><span class="n">get_points</span><span class="p">(),</span> <span class="n">dtype</span><span class="o">=</span><span class="s2">&quot;object&quot;</span><span class="p">)</span>
+
+    <span class="c1"># Collect reconstructed geometries of continental polygons</span>
+    <span class="n">polygons</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">COB_polygons</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="s2">&quot;object&quot;</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">ind</span><span class="p">,</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">COB_polygons</span><span class="p">):</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">ReconstructedFeatureGeometry</span><span class="p">):</span>
+            <span class="n">geom</span> <span class="o">=</span> <span class="n">i</span><span class="o">.</span><span class="n">get_reconstructed_geometry</span><span class="p">()</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">GeometryOnSphere</span><span class="p">):</span>
+            <span class="n">geom</span> <span class="o">=</span> <span class="n">i</span>
+        <span class="k">else</span><span class="p">:</span>  <span class="c1"># e.g. ndarray of coordinates</span>
+            <span class="n">geom</span> <span class="o">=</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">PolygonOnSphere</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+        <span class="n">polygons</span><span class="p">[</span><span class="n">ind</span><span class="p">]</span> <span class="o">=</span> <span class="n">geom</span>
+    <span class="n">proxies</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="n">polygons</span><span class="o">.</span><span class="n">size</span><span class="p">)</span>
+
+    <span class="n">pip_result</span> <span class="o">=</span> <span class="n">ptt</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">points_in_polygons</span><span class="o">.</span><span class="n">find_polygons</span><span class="p">(</span>
+        <span class="n">multi_point</span><span class="p">,</span> <span class="n">polygons</span><span class="p">,</span> <span class="n">proxies</span><span class="p">,</span> <span class="n">all_polygons</span><span class="o">=</span><span class="kc">False</span>
+    <span class="p">)</span>  <span class="c1"># 1 for points in polygons, None for points outside</span>
+    <span class="n">zvals</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
+        <span class="n">pip_result</span><span class="p">,</span>
+        <span class="n">dtype</span><span class="o">=</span><span class="s2">&quot;float&quot;</span><span class="p">,</span>
+    <span class="p">)</span><span class="o">.</span><span class="n">ravel</span><span class="p">()</span>
+    <span class="n">zvals</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">isnan</span><span class="p">(</span><span class="n">zvals</span><span class="p">)]</span> <span class="o">=</span> <span class="mf">0.0</span>
+    <span class="n">zvals</span> <span class="o">=</span> <span class="n">zvals</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s2">&quot;int&quot;</span><span class="p">)</span>
+    <span class="n">points_in_arr</span> <span class="o">=</span> <span class="n">multi_point</span><span class="p">[</span><span class="n">zvals</span> <span class="o">==</span> <span class="mi">1</span><span class="p">]</span>
+    <span class="n">points_out_arr</span> <span class="o">=</span> <span class="n">multi_point</span><span class="p">[</span><span class="n">zvals</span> <span class="o">!=</span> <span class="mi">1</span><span class="p">]</span>
+
+    <span class="k">return</span> <span class="p">(</span>
+        <span class="n">pygplates</span><span class="o">.</span><span class="n">MultiPointOnSphere</span><span class="p">(</span><span class="n">points_in_arr</span><span class="p">),</span>
+        <span class="n">pygplates</span><span class="o">.</span><span class="n">MultiPointOnSphere</span><span class="p">(</span><span class="n">points_out_arr</span><span class="p">),</span>
+        <span class="n">zvals</span><span class="p">,</span>
+    <span class="p">)</span></div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023-2025, The University of Sydney.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

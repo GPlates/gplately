@@ -1,0 +1,182 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Installation &mdash; gplately 2.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=51b770b3"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="Minimal working example" href="basic_usages.html" />
+    <link rel="prev" title="GPlately v2.0.0" href="index.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            gplately
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">GPlately v2.0.0</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Installation</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#using-conda-recommended">Using conda (recommended)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#using-pip">Using pip</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#using-docker">Using Docker 🐳</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="basic_usages.html">Minimal working example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="use_cases.html">Common Use Cases</a></li>
+<li class="toctree-l1"><a class="reference internal" href="faq.html">Trouble-shooting and FAQ</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="command_line_interface.html">Command Line Interface (CLI)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="primer.html">Primer</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="modules.html">gplately</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">gplately</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+      <li class="breadcrumb-item active">Installation</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/installation.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="installation">
+<h1>Installation<a class="headerlink" href="#installation" title="Link to this heading"></a></h1>
+<nav class="contents local" id="contents">
+<ul class="simple">
+<li><p><a class="reference internal" href="#using-conda-recommended" id="id3">Using conda (recommended)</a></p></li>
+<li><p><a class="reference internal" href="#using-pip" id="id4">Using pip</a></p></li>
+<li><p><a class="reference internal" href="#using-docker" id="id5">Using Docker 🐳</a></p></li>
+</ul>
+</nav>
+<section id="using-conda-recommended">
+<h2><a class="toc-backref" href="#id3" role="doc-backlink">Using conda (recommended)</a><a class="headerlink" href="#using-conda-recommended" title="Link to this heading"></a></h2>
+<p>The latest stable public release of <cite>GPlately</cite> can be installed using conda from the “conda-forge” channel. The following commands will create a new conda environment called “my-gplately-conda-env” and install GPlately within that environment.</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>conda<span class="w"> </span>create<span class="w"> </span>-n<span class="w"> </span>my-gplately-conda-env
+<span class="gp">$ </span>conda<span class="w"> </span>activate<span class="w"> </span>my-gplately-conda-env
+<span class="gp">$ </span>conda<span class="w"> </span>install<span class="w"> </span>-c<span class="w"> </span>conda-forge<span class="w"> </span>gplately
+</pre></div>
+</div>
+<p>✏️ If <cite>conda</cite> gets __stuck while solving the <a href="#id1"><span class="problematic" id="id2">environment__</span></a> during the installation of <cite>GPlately</cite>, you can try using [micromamba](<a class="reference external" href="https://mamba.readthedocs.io/en/latest/user_guide/micromamba.html">https://mamba.readthedocs.io/en/latest/user_guide/micromamba.html</a>) instead.</p>
+</section>
+<section id="using-pip">
+<h2><a class="toc-backref" href="#id4" role="doc-backlink">Using pip</a><a class="headerlink" href="#using-pip" title="Link to this heading"></a></h2>
+<p><cite>GPlately</cite> can also be installed using <cite>pip</cite>.</p>
+<p>🟢 Install the latest stable public release from [PyPI](<a class="reference external" href="https://pypi.org/project/gplately/">https://pypi.org/project/gplately/</a>)</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>pip<span class="w"> </span>install<span class="w"> </span>gplately
+</pre></div>
+</div>
+<p>🟢 Install from [GitHub repository](<a class="reference external" href="https://github.com/GPlates/gplately.git">https://github.com/GPlates/gplately.git</a>) (if you need the latest code changes on GitHub)</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>pip<span class="w"> </span>install<span class="w"> </span>git+https://github.com/GPlates/gplately.git
+</pre></div>
+</div>
+<p>🟢 Install from a local folder (if you need local code changes)</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>git<span class="w"> </span>clone<span class="w"> </span>https://github.com/GPlates/gplately.git<span class="w"> </span>gplately.git
+<span class="gp">$ </span><span class="nb">cd</span><span class="w"> </span>gplately.git<span class="w"> </span><span class="c1"># go into the folder created by &quot;git clone&quot; command</span>
+<span class="gp">$ </span>git<span class="w"> </span>checkout<span class="w"> </span>master<span class="w"> </span><span class="c1"># check out the &quot;master&quot; branch or the name of branch you want</span>
+<span class="gp">$ </span>git<span class="w"> </span>pull<span class="w"> </span><span class="c1"># fetch all recent code changes from the GitHub remote repository</span>
+<span class="gp"># </span>make<span class="w"> </span>your<span class="w"> </span><span class="nb">local</span><span class="w"> </span>code<span class="w"> </span>changes
+<span class="gp">$ </span>pip<span class="w"> </span>install<span class="w"> </span>.<span class="w"> </span><span class="c1"># alternatively, you can use &quot;pip install -e .&quot; to install gplately in editable mode</span>
+</pre></div>
+</div>
+</section>
+<section id="using-docker">
+<h2><a class="toc-backref" href="#id5" role="doc-backlink">Using Docker 🐳</a><a class="headerlink" href="#using-docker" title="Link to this heading"></a></h2>
+<p>👉 Run GPlately notebooks with Docker</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>docker<span class="w"> </span>pull<span class="w"> </span>gplates/gplately
+<span class="gp">$ </span>docker<span class="w"> </span>run<span class="w"> </span>--rm<span class="w"> </span>-ti<span class="w"> </span>-p<span class="w"> </span><span class="m">8888</span>:8888<span class="w">  </span>gplates/gplately
+</pre></div>
+</div>
+<p><a class="reference external" href="http://localhost:8888">http://localhost:8888</a></p>
+<p>👉 Run GPlately command with Docker</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>docker<span class="w"> </span>run<span class="w"> </span>gplates/gplately<span class="w"> </span>gplately<span class="w"> </span>--version
+<span class="gp">$ </span>docker<span class="w"> </span>run<span class="w"> </span>gplates/gplately<span class="w"> </span>gplately<span class="w"> </span>--help
+</pre></div>
+</div>
+<p>👉 Run your Python script with Docker</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>docker<span class="w"> </span>run<span class="w"> </span>-it<span class="w"> </span>--rm<span class="w"> </span>-v<span class="w"> </span>THE_FULL_PATH_TO_YOUR_SCRIPT_FOLDER:/ws<span class="w"> </span>-w<span class="w"> </span>/ws<span class="w"> </span>gplates/gplately<span class="w"> </span>python<span class="w"> </span>my_script_to_run.py
+</pre></div>
+</div>
+<p>✏️ Replace <code class="docutils literal notranslate"><span class="pre">THE_FULL_PATH_TO_YOUR_SCRIPT_FOLDER</span></code> with the full path to the folder containing your script file. In PowerShell, you can use “$PWD”  if your script is in the current working directory. On Linux or macOS, you can use `pwd` instead.</p>
+<p>Visit [this page](<a class="reference external" href="https://github.com/GPlates/gplately/tree/master/docker/README.md">https://github.com/GPlates/gplately/tree/master/docker/README.md</a>) for more details about using Docker with GPlately.</p>
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="index.html" class="btn btn-neutral float-left" title="GPlately v2.0.0" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="basic_usages.html" class="btn btn-neutral float-right" title="Minimal working example" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023-2025, The University of Sydney.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

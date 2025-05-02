@@ -1,0 +1,358 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>gplately.lib.rotation &mdash; gplately 2.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=51b770b3"></script>
+      <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            gplately
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">GPlately v2.0.0</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../basic_usages.html">Minimal working example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../use_cases.html">Common Use Cases</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../faq.html">Trouble-shooting and FAQ</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../command_line_interface.html">Command Line Interface (CLI)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../primer.html">Primer</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules.html">gplately</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">gplately</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">gplately.lib.rotation</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for gplately.lib.rotation</h1><div class="highlight"><pre>
+<span></span><span class="c1">#</span>
+<span class="c1">#    Copyright (C) 2024 The University of Sydney, Australia</span>
+<span class="c1">#</span>
+<span class="c1">#    This program is free software; you can redistribute it and/or modify it under</span>
+<span class="c1">#    the terms of the GNU General Public License, version 2, as published by</span>
+<span class="c1">#    the Free Software Foundation.</span>
+<span class="c1">#</span>
+<span class="c1">#    This program is distributed in the hope that it will be useful, but WITHOUT</span>
+<span class="c1">#    ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or</span>
+<span class="c1">#    FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License</span>
+<span class="c1">#    for more details.</span>
+<span class="c1">#</span>
+<span class="c1">#    You should have received a copy of the GNU General Public License along</span>
+<span class="c1">#    with this program; if not, write to Free Software Foundation, Inc.,</span>
+<span class="c1">#    51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.</span>
+<span class="c1">#</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">math</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">.</span><span class="w"> </span><span class="kn">import</span> <span class="n">quaternions</span>
+
+<span class="c1">#</span>
+<span class="c1"># a collection of rotation related functions</span>
+<span class="c1">#</span>
+
+
+<div class="viewcode-block" id="cross">
+<a class="viewcode-back" href="../../../gplately.lib.html#gplately.lib.rotation.cross">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">cross</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;cross product of two vectors defined only in three-dimensional space</span>
+<span class="sd">    https://www.mathsisfun.com/algebra/vectors-cross-product.html</span>
+<span class="sd">    https://en.wikipedia.org/wiki/Cross_product#Computing</span>
+
+<span class="sd">    :param a: 3D vector, such as [1,2,3]</span>
+<span class="sd">    :param b: 3D vector, such as [234]</span>
+
+<span class="sd">    :returns: cross product 3D vector</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="n">c</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="n">a</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">b</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">-</span> <span class="n">a</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">*</span> <span class="n">b</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
+        <span class="n">a</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span> <span class="o">*</span> <span class="n">b</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="n">a</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">b</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span>
+        <span class="n">a</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">b</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">a</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">*</span> <span class="n">b</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+    <span class="p">]</span>
+    <span class="k">return</span> <span class="n">c</span></div>
+
+
+
+<div class="viewcode-block" id="dot">
+<a class="viewcode-back" href="../../../gplately.lib.html#gplately.lib.rotation.dot">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">dot</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;dot product of two vectors</span>
+<span class="sd">    https://www.mathsisfun.com/algebra/vectors-dot-product.html</span>
+
+<span class="sd">    :param a: a vector, such as [1,2,3,4,5] (must be the same length with b)</span>
+<span class="sd">    :param b: a vector, such as [6,7,8,9,10] (must be the same length with a)</span>
+
+<span class="sd">    :returns: dot product (a number)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="nb">sum</span><span class="p">(</span><span class="n">i</span> <span class="o">*</span> <span class="n">j</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">a</span><span class="p">,</span> <span class="n">b</span><span class="p">))</span></div>
+
+
+
+<div class="viewcode-block" id="find_axis_and_angle">
+<a class="viewcode-back" href="../../../gplately.lib.html#gplately.lib.rotation.find_axis_and_angle">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">find_axis_and_angle</span><span class="p">(</span><span class="n">point_a</span><span class="p">,</span> <span class="n">point_b</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;given two points point_a and point_b in (lat, lon) format in radians,</span>
+<span class="sd">    return axis(lat, lon) and angle in radians</span>
+
+<span class="sd">    :param point_a: point a (lat, lon) in radians</span>
+<span class="sd">    :param point_b: point b (lat, lon) in radians</span>
+
+<span class="sd">    :returns: axis(lat, lon) in radians; angle in radians</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># get 3D vectors</span>
+    <span class="n">a_v</span> <span class="o">=</span> <span class="n">quaternions</span><span class="o">.</span><span class="n">lat_lon_to_cart</span><span class="p">(</span><span class="n">point_a</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">point_a</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+    <span class="n">b_v</span> <span class="o">=</span> <span class="n">quaternions</span><span class="o">.</span><span class="n">lat_lon_to_cart</span><span class="p">(</span><span class="n">point_b</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">point_b</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+
+    <span class="n">ab_cross</span> <span class="o">=</span> <span class="n">quaternions</span><span class="o">.</span><span class="n">normalize</span><span class="p">(</span><span class="n">cross</span><span class="p">(</span><span class="n">a_v</span><span class="p">,</span> <span class="n">b_v</span><span class="p">))</span>
+    <span class="n">ab_dot</span> <span class="o">=</span> <span class="n">dot</span><span class="p">(</span><span class="n">a_v</span><span class="p">,</span> <span class="n">b_v</span><span class="p">)</span>
+
+    <span class="n">axis</span> <span class="o">=</span> <span class="n">quaternions</span><span class="o">.</span><span class="n">cart_to_lat_lon</span><span class="p">(</span><span class="o">*</span><span class="n">ab_cross</span><span class="p">)</span>  <span class="c1"># in radians</span>
+    <span class="n">angle</span> <span class="o">=</span> <span class="n">math</span><span class="o">.</span><span class="n">acos</span><span class="p">(</span><span class="n">ab_dot</span><span class="p">)</span>  <span class="c1"># in radians</span>
+
+    <span class="k">return</span> <span class="n">axis</span><span class="p">,</span> <span class="n">angle</span></div>
+
+
+
+<div class="viewcode-block" id="rotate">
+<a class="viewcode-back" href="../../../gplately.lib.html#gplately.lib.rotation.rotate">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">rotate</span><span class="p">(</span><span class="n">point</span><span class="p">,</span> <span class="n">axis</span><span class="p">,</span> <span class="n">angle</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;rotate a point by axis and angle</span>
+
+<span class="sd">    :param point: (lat, lon) in radians</span>
+<span class="sd">    :param axis: (lat, lon) in radians</span>
+<span class="sd">    :param angle: in radians</span>
+
+<span class="sd">    :returns: new point(lat, lon) in radians</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">v</span> <span class="o">=</span> <span class="n">quaternions</span><span class="o">.</span><span class="n">lat_lon_to_cart</span><span class="p">(</span><span class="n">point</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">point</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+    <span class="n">axis</span> <span class="o">=</span> <span class="n">quaternions</span><span class="o">.</span><span class="n">lat_lon_to_cart</span><span class="p">(</span><span class="n">axis</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">axis</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+    <span class="n">quat</span> <span class="o">=</span> <span class="n">quaternions</span><span class="o">.</span><span class="n">axis_angle_to_quat</span><span class="p">(</span><span class="n">axis</span><span class="p">,</span> <span class="n">angle</span><span class="p">)</span>
+    <span class="n">ret</span> <span class="o">=</span> <span class="n">quaternions</span><span class="o">.</span><span class="n">quat_vec_mult</span><span class="p">(</span><span class="n">quat</span><span class="p">,</span> <span class="n">v</span><span class="p">)</span>
+    <span class="n">ret_lat_lon</span> <span class="o">=</span> <span class="n">quaternions</span><span class="o">.</span><span class="n">cart_to_lat_lon</span><span class="p">(</span><span class="n">ret</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">ret</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">ret</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span>
+    <span class="k">return</span> <span class="p">(</span><span class="n">ret_lat_lon</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">ret_lat_lon</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span></div>
+
+
+
+<div class="viewcode-block" id="interp_two_points">
+<a class="viewcode-back" href="../../../gplately.lib.html#gplately.lib.rotation.interp_two_points">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">interp_two_points</span><span class="p">(</span><span class="n">point_a</span><span class="p">,</span> <span class="n">point_b</span><span class="p">,</span> <span class="n">num</span><span class="o">=</span><span class="mi">10</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;interpolate between two points(in radians) along the great circle</span>
+<span class="sd">    return a list of interpolated points (lat, lon) in radians</span>
+
+<span class="sd">    :param point_a: point a (lat, lon) in radians</span>
+<span class="sd">    :param point_b: point b (lat, lon) in radians</span>
+<span class="sd">    :param num: the number of segments</span>
+
+<span class="sd">    :returns: a list of interpolated points (lat, lon) in radians</span>
+<span class="sd">        the return list has num+1 points(num segments)</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># make the two input points are not the same</span>
+    <span class="k">assert</span> <span class="ow">not</span> <span class="p">(</span>
+        <span class="n">math</span><span class="o">.</span><span class="n">isclose</span><span class="p">(</span><span class="n">point_a</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">point_b</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="ow">and</span> <span class="n">math</span><span class="o">.</span><span class="n">isclose</span><span class="p">(</span><span class="n">point_a</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">point_b</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+    <span class="p">)</span>
+    <span class="n">ret</span> <span class="o">=</span> <span class="p">[</span><span class="n">point_a</span><span class="p">]</span>
+    <span class="n">axis</span><span class="p">,</span> <span class="n">angle</span> <span class="o">=</span> <span class="n">find_axis_and_angle</span><span class="p">(</span><span class="n">point_a</span><span class="p">,</span> <span class="n">point_b</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">angle_</span> <span class="ow">in</span> <span class="p">[(</span><span class="n">angle</span> <span class="o">/</span> <span class="n">num</span><span class="p">)</span> <span class="o">*</span> <span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">1</span><span class="p">,</span> <span class="n">num</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)]:</span>
+        <span class="n">lat</span><span class="p">,</span> <span class="n">lon</span> <span class="o">=</span> <span class="n">rotate</span><span class="p">(</span><span class="n">point_a</span><span class="p">,</span> <span class="n">axis</span><span class="p">,</span> <span class="n">angle_</span><span class="p">)</span>
+        <span class="n">ret</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">lat</span><span class="p">,</span> <span class="n">lon</span><span class="p">))</span>
+
+    <span class="k">return</span> <span class="n">ret</span></div>
+
+
+
+<div class="viewcode-block" id="sample_between_two_points">
+<a class="viewcode-back" href="../../../gplately.lib.html#gplately.lib.rotation.sample_between_two_points">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">sample_between_two_points</span><span class="p">(</span><span class="n">point_a</span><span class="p">,</span> <span class="n">point_b</span><span class="p">,</span> <span class="n">distances_to_point_a</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;sample points between two points along the great circle according to a list of distances to point a</span>
+
+<span class="sd">    :param point_a: point a (lat, lon) in radians</span>
+<span class="sd">    :param point_b: point b (lat, lon) in radians</span>
+<span class="sd">    :param distances_to_point_a: a list of distances(in radians) to point a.</span>
+<span class="sd">        the distance must less than the distance between point a and point b.</span>
+<span class="sd">        invalid distances will produce Nones in the return list</span>
+
+<span class="sd">    :returns: a list of sampled points (lat, lon) in radians.</span>
+<span class="sd">        The return list has the same length with the list of distances_to_point_a.</span>
+<span class="sd">        point_a and point_b will not be included.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># make sure the two input points are not the same</span>
+    <span class="k">assert</span> <span class="ow">not</span> <span class="p">(</span>
+        <span class="n">math</span><span class="o">.</span><span class="n">isclose</span><span class="p">(</span><span class="n">point_a</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">point_b</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="ow">and</span> <span class="n">math</span><span class="o">.</span><span class="n">isclose</span><span class="p">(</span><span class="n">point_a</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">point_b</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+    <span class="p">)</span>
+    <span class="n">ret</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">axis</span><span class="p">,</span> <span class="n">angle</span> <span class="o">=</span> <span class="n">find_axis_and_angle</span><span class="p">(</span><span class="n">point_a</span><span class="p">,</span> <span class="n">point_b</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">distance</span> <span class="ow">in</span> <span class="n">distances_to_point_a</span><span class="p">:</span>
+        <span class="k">if</span> <span class="n">distance</span> <span class="o">&lt;</span> <span class="mi">0</span> <span class="ow">or</span> <span class="n">distance</span> <span class="o">&gt;</span> <span class="n">angle</span><span class="p">:</span>
+            <span class="n">ret</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">lat</span><span class="p">,</span> <span class="n">lon</span> <span class="o">=</span> <span class="n">rotate</span><span class="p">(</span><span class="n">point_a</span><span class="p">,</span> <span class="n">axis</span><span class="p">,</span> <span class="n">distance</span><span class="p">)</span>
+            <span class="n">ret</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">lat</span><span class="p">,</span> <span class="n">lon</span><span class="p">))</span>
+
+    <span class="k">return</span> <span class="n">ret</span></div>
+
+
+
+<div class="viewcode-block" id="distance">
+<a class="viewcode-back" href="../../../gplately.lib.html#gplately.lib.rotation.distance">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">distance</span><span class="p">(</span><span class="n">point_a</span><span class="p">,</span> <span class="n">point_b</span><span class="p">,</span> <span class="n">earth_radius</span><span class="o">=</span><span class="mf">6378.14</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;calculate the distance between to points (lat, lon) in radians</span>
+<span class="sd">    return the distance in km</span>
+
+<span class="sd">    :param point_a: point a (lat, lon) in radians</span>
+<span class="sd">    :param point_b: point b (lat, lon) in radians</span>
+<span class="sd">    :param earth_radius: earth radius</span>
+
+<span class="sd">    :returns: distance in km</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">math</span><span class="o">.</span><span class="n">isclose</span><span class="p">(</span><span class="n">point_a</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">point_b</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="ow">and</span> <span class="n">math</span><span class="o">.</span><span class="n">isclose</span><span class="p">(</span><span class="n">point_a</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">point_b</span><span class="p">[</span><span class="mi">1</span><span class="p">]):</span>
+        <span class="k">return</span> <span class="mi">0</span>
+    <span class="n">_</span><span class="p">,</span> <span class="n">angle</span> <span class="o">=</span> <span class="n">find_axis_and_angle</span><span class="p">(</span><span class="n">point_a</span><span class="p">,</span> <span class="n">point_b</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">radian_to_km</span><span class="p">(</span><span class="n">angle</span><span class="p">,</span> <span class="n">earth_radius</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="radian_distance">
+<a class="viewcode-back" href="../../../gplately.lib.html#gplately.lib.rotation.radian_distance">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">radian_distance</span><span class="p">(</span><span class="n">point_a</span><span class="p">,</span> <span class="n">point_b</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;calculate the distance between to points (lat, lon) in radians</span>
+<span class="sd">    return the distance in radians</span>
+
+<span class="sd">    :param point_a: point a (lat, lon) in radians</span>
+<span class="sd">    :param point_b: point b (lat, lon) in radians</span>
+
+<span class="sd">    :returns: distance in radians</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">math</span><span class="o">.</span><span class="n">isclose</span><span class="p">(</span><span class="n">point_a</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">point_b</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="ow">and</span> <span class="n">math</span><span class="o">.</span><span class="n">isclose</span><span class="p">(</span><span class="n">point_a</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">point_b</span><span class="p">[</span><span class="mi">1</span><span class="p">]):</span>
+        <span class="k">return</span> <span class="mi">0</span>
+    <span class="n">_</span><span class="p">,</span> <span class="n">angle</span> <span class="o">=</span> <span class="n">find_axis_and_angle</span><span class="p">(</span><span class="n">point_a</span><span class="p">,</span> <span class="n">point_b</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">angle</span></div>
+
+
+
+<div class="viewcode-block" id="km_to_radian">
+<a class="viewcode-back" href="../../../gplately.lib.html#gplately.lib.rotation.km_to_radian">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">km_to_radian</span><span class="p">(</span><span class="n">km</span><span class="p">,</span> <span class="n">earth_radius</span><span class="o">=</span><span class="mf">6378.14</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">km</span> <span class="o">/</span> <span class="n">earth_radius</span></div>
+
+
+
+<div class="viewcode-block" id="radian_to_km">
+<a class="viewcode-back" href="../../../gplately.lib.html#gplately.lib.rotation.radian_to_km">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">radian_to_km</span><span class="p">(</span><span class="n">radian</span><span class="p">,</span> <span class="n">earth_radius</span><span class="o">=</span><span class="mf">6378.14</span><span class="p">):</span>
+    <span class="k">return</span> <span class="n">radian</span> <span class="o">*</span> <span class="n">earth_radius</span></div>
+
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="c1"># test</span>
+    <span class="c1"># 1. find axis and angle between two points a and b</span>
+    <span class="c1"># 2. use the axis and angle to rotate point a</span>
+    <span class="c1"># 3. check if the rotation ends up at point b</span>
+    <span class="n">point_a</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">((</span><span class="n">math</span><span class="o">.</span><span class="n">radians</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="p">(</span><span class="mi">45</span><span class="p">,</span> <span class="mi">20</span><span class="p">)))</span>  <span class="c1"># lat, lon</span>
+    <span class="n">point_b</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">((</span><span class="n">math</span><span class="o">.</span><span class="n">radians</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="p">(</span><span class="o">-</span><span class="mi">45</span><span class="p">,</span> <span class="mi">120</span><span class="p">)))</span>
+
+    <span class="n">axis</span><span class="p">,</span> <span class="n">angle</span> <span class="o">=</span> <span class="n">find_axis_and_angle</span><span class="p">(</span><span class="n">point_a</span><span class="p">,</span> <span class="n">point_b</span><span class="p">)</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="n">axis</span><span class="p">,</span> <span class="n">angle</span><span class="p">)</span>
+
+    <span class="n">point_b_new</span> <span class="o">=</span> <span class="n">rotate</span><span class="p">(</span><span class="n">point_a</span><span class="p">,</span> <span class="n">axis</span><span class="p">,</span> <span class="n">angle</span><span class="p">)</span>
+
+    <span class="c1"># check if the two points are the same</span>
+    <span class="nb">print</span><span class="p">(</span><span class="nb">tuple</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">degrees</span><span class="p">(</span><span class="n">i</span><span class="p">),</span> <span class="mi">2</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">point_b_new</span><span class="p">))</span>
+    <span class="nb">print</span><span class="p">(</span><span class="nb">tuple</span><span class="p">(</span><span class="nb">round</span><span class="p">(</span><span class="n">math</span><span class="o">.</span><span class="n">degrees</span><span class="p">(</span><span class="n">i</span><span class="p">),</span> <span class="mi">2</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">point_b</span><span class="p">))</span>
+
+    <span class="c1"># intepolate between point a and b</span>
+    <span class="n">points_in_between</span> <span class="o">=</span> <span class="n">interp_two_points</span><span class="p">(</span><span class="n">point_a</span><span class="p">,</span> <span class="n">point_b</span><span class="p">)</span>
+    <span class="k">with</span> <span class="nb">open</span><span class="p">(</span><span class="s2">&quot;interpolation.gmt&quot;</span><span class="p">,</span> <span class="s2">&quot;w+&quot;</span><span class="p">)</span> <span class="k">as</span> <span class="n">f</span><span class="p">:</span>
+        <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">math</span><span class="o">.</span><span class="n">degrees</span><span class="p">(</span><span class="n">axis</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">math</span><span class="o">.</span><span class="n">degrees</span><span class="p">(</span><span class="n">axis</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">math</span><span class="o">.</span><span class="n">degrees</span><span class="p">(</span><span class="n">axis</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">math</span><span class="o">.</span><span class="n">degrees</span><span class="p">(</span><span class="n">axis</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">p</span> <span class="ow">in</span> <span class="n">points_in_between</span><span class="p">:</span>
+            <span class="n">f</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">math</span><span class="o">.</span><span class="n">degrees</span><span class="p">(</span><span class="n">p</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="s2"> </span><span class="si">{</span><span class="n">math</span><span class="o">.</span><span class="n">degrees</span><span class="p">(</span><span class="n">p</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span><span class="si">:</span><span class="s2">.2f</span><span class="si">}</span><span class="se">\n</span><span class="s2">&quot;</span><span class="p">)</span>
+
+    <span class="nb">print</span><span class="p">(</span><span class="n">distance</span><span class="p">(</span><span class="n">point_a</span><span class="p">,</span> <span class="n">point_b</span><span class="p">))</span>
+    <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;test finished!&quot;</span><span class="p">)</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023-2025, The University of Sydney.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,574 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>gplately.ptt.utils.points_spatial_tree &mdash; gplately 2.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../../_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="../../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../../_static/documentation_options.js?v=51b770b3"></script>
+      <script src="../../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../../index.html" class="icon icon-home">
+            gplately
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">GPlately v2.0.0</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../basic_usages.html">Minimal working example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../use_cases.html">Common Use Cases</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../faq.html">Trouble-shooting and FAQ</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../command_line_interface.html">Command Line Interface (CLI)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../../primer.html">Primer</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../../modules.html">gplately</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../../index.html">gplately</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">gplately.ptt.utils.points_spatial_tree</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for gplately.ptt.utils.points_spatial_tree</h1><div class="highlight"><pre>
+<span></span><span class="c1">#</span>
+<span class="c1">#    Copyright (C) 2017 The University of Sydney, Australia</span>
+<span class="c1">#</span>
+<span class="c1">#    This program is free software; you can redistribute it and/or modify it under</span>
+<span class="c1">#    the terms of the GNU General Public License, version 2, as published by</span>
+<span class="c1">#    the Free Software Foundation.</span>
+<span class="c1">#</span>
+<span class="c1">#    This program is distributed in the hope that it will be useful, but WITHOUT</span>
+<span class="c1">#    ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or</span>
+<span class="c1">#    FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License</span>
+<span class="c1">#    for more details.</span>
+<span class="c1">#</span>
+<span class="c1">#    You should have received a copy of the GNU General Public License along</span>
+<span class="c1">#    with this program; if not, write to Free Software Foundation, Inc.,</span>
+<span class="c1">#    51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.</span>
+<span class="c1">#</span>
+
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Spatial tree for points (pygplates.PointOnSphere).                    </span>
+<span class="sd">                                                                       </span>
+<span class="sd">Can be used to speed up point-in-polygon and minimum distance queries </span>
+<span class="sd">from points to arbitrary geometries.                                  </span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">print_function</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">math</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">pygplates</span>
+
+<span class="c1"># the following line would ensure more correct python2-3 compatibility,</span>
+<span class="c1"># but requires a non-standard module</span>
+<span class="c1"># from builtins import range</span>
+
+<span class="c1"># The depth of the internal lat/lon quad tree.</span>
+<span class="c1"># A value of 4 seems to work quite well for a uniform lat/lon spacing of &#39;points&#39; of 1 degree</span>
+<span class="c1"># and below without the cost of generating a deep quad tree.</span>
+<span class="n">DEFAULT_SUBDIVISION_DEPTH</span> <span class="o">=</span> <span class="mi">4</span>
+
+
+<div class="viewcode-block" id="PointsSpatialTree">
+<a class="viewcode-back" href="../../../../gplately.ptt.utils.html#gplately.ptt.utils.points_spatial_tree.PointsSpatialTree">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">PointsSpatialTree</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">points</span><span class="p">,</span> <span class="n">subdivision_depth</span><span class="o">=</span><span class="n">DEFAULT_SUBDIVISION_DEPTH</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">        Construct a spatial tree from a sequence of points up to a maximum tree depth.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        points: a sequence of &#39;pygplates.PointOnSphere&#39;</span>
+<span class="sd">            a sequence of points</span>
+
+<span class="sd">        subdivision_depth: number</span>
+<span class="sd">            The depth of the internal lat/lon quad tree.</span>
+<span class="sd">            The lat/lon width of a leaf quad tree node is (90 / (2^subdivision_depth)) degrees.</span>
+<span class="sd">            Generally the denser the &#39;points&#39; the larger the depth should be.</span>
+<span class="sd">            Setting this value too high causes unnecessary time to be spent generating a deep quad tree.</span>
+<span class="sd">            Setting this value too low reduces the culling/querying efficiency of the quad tree.</span>
+<span class="sd">            However a value of 4 seems to work quite well for a uniform lat/lon spacing of &#39;points&#39; of 1 degree</span>
+<span class="sd">            and below without the cost of generating a deep quad tree.</span>
+<span class="sd">            So most of the time the subdivision depth can be left at its default value.</span>
+
+<span class="sd">        Raises ValueError if &#39;subdivision_depth&#39; is not in the range [0, 100].</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="n">subdivision_depth</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Subdivision depth must be a non-negative value.&quot;</span><span class="p">)</span>
+        <span class="k">elif</span> <span class="n">subdivision_depth</span> <span class="o">&gt;</span> <span class="mi">100</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Subdivision depth is too large (should be 100 or less).&quot;</span><span class="p">)</span>
+
+        <span class="c1"># Each root quad tree node is quadrant of the globe (square in lat/lon space of size 90 x 90 degrees).</span>
+        <span class="c1"># So there are 8 of them.</span>
+        <span class="c1"># We&#39;ll only create them as needed.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_root_nodes</span> <span class="o">=</span> <span class="p">[</span><span class="kc">None</span><span class="p">]</span> <span class="o">*</span> <span class="mi">8</span>
+
+        <span class="c1"># Place each point in a quad tree leaf node.</span>
+        <span class="k">for</span> <span class="n">point_index</span><span class="p">,</span> <span class="n">point</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">points</span><span class="p">):</span>
+            <span class="n">point_lat</span><span class="p">,</span> <span class="n">point_lon</span> <span class="o">=</span> <span class="n">point</span><span class="o">.</span><span class="n">to_lat_lon</span><span class="p">()</span>
+
+            <span class="c1"># Get root node that current point is in.</span>
+            <span class="k">if</span> <span class="n">point_lat</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="n">root_node_lat_index</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">root_node_lat_index</span> <span class="o">=</span> <span class="mi">1</span>
+
+            <span class="k">if</span> <span class="n">point_lon</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">point_lon</span> <span class="o">&lt;</span> <span class="o">-</span><span class="mi">90</span><span class="p">:</span>
+                    <span class="n">root_node_lon_index</span> <span class="o">=</span> <span class="mi">0</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">root_node_lon_index</span> <span class="o">=</span> <span class="mi">1</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">point_lon</span> <span class="o">&lt;</span> <span class="mi">90</span><span class="p">:</span>
+                    <span class="n">root_node_lon_index</span> <span class="o">=</span> <span class="mi">2</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">root_node_lon_index</span> <span class="o">=</span> <span class="mi">3</span>
+
+            <span class="n">root_node_index</span> <span class="o">=</span> <span class="mi">4</span> <span class="o">*</span> <span class="n">root_node_lat_index</span> <span class="o">+</span> <span class="n">root_node_lon_index</span>
+            <span class="n">root_node</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_root_nodes</span><span class="p">[</span><span class="n">root_node_index</span><span class="p">]</span>
+
+            <span class="n">is_north_hemisphere</span> <span class="o">=</span> <span class="n">root_node_lat_index</span> <span class="o">==</span> <span class="mi">1</span>
+            <span class="n">root_node_half_width_degrees</span> <span class="o">=</span> <span class="mf">45.0</span>
+            <span class="n">root_node_centre_lon</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="o">-</span><span class="mi">180</span> <span class="o">+</span> <span class="mi">90</span> <span class="o">*</span> <span class="n">root_node_lon_index</span> <span class="o">+</span> <span class="n">root_node_half_width_degrees</span>
+            <span class="p">)</span>
+            <span class="n">root_node_centre_lat</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="o">-</span><span class="mi">90</span> <span class="o">+</span> <span class="mi">90</span> <span class="o">*</span> <span class="n">root_node_lat_index</span> <span class="o">+</span> <span class="n">root_node_half_width_degrees</span>
+            <span class="p">)</span>
+
+            <span class="c1"># Create root node if first time visited.</span>
+            <span class="k">if</span> <span class="n">root_node</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">root_node</span> <span class="o">=</span> <span class="n">PointsSpatialTreeNode</span><span class="p">(</span>
+                    <span class="n">root_node_centre_lon</span><span class="p">,</span>
+                    <span class="n">root_node_centre_lat</span><span class="p">,</span>
+                    <span class="n">root_node_half_width_degrees</span><span class="p">,</span>
+                    <span class="n">is_north_hemisphere</span><span class="p">,</span>
+                <span class="p">)</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">_root_nodes</span><span class="p">[</span><span class="n">root_node_index</span><span class="p">]</span> <span class="o">=</span> <span class="n">root_node</span>
+
+            <span class="c1"># Iterate through the subdivision levels and place current point in the correct quad tree leaf node.</span>
+            <span class="n">node</span> <span class="o">=</span> <span class="n">root_node</span>
+            <span class="n">node_half_width_degrees</span> <span class="o">=</span> <span class="n">root_node_half_width_degrees</span>
+            <span class="n">node_centre_lon</span> <span class="o">=</span> <span class="n">root_node_centre_lon</span>
+            <span class="n">node_centre_lat</span> <span class="o">=</span> <span class="n">root_node_centre_lat</span>
+            <span class="k">for</span> <span class="n">level</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="mi">0</span><span class="p">,</span> <span class="n">subdivision_depth</span><span class="p">):</span>
+
+                <span class="n">child_node_half_width_degrees</span> <span class="o">=</span> <span class="n">node_half_width_degrees</span> <span class="o">/</span> <span class="mf">2.0</span>
+
+                <span class="k">if</span> <span class="n">point_lat</span> <span class="o">&lt;</span> <span class="n">node_centre_lat</span><span class="p">:</span>
+                    <span class="n">child_node_lat_offset</span> <span class="o">=</span> <span class="mi">0</span>
+                    <span class="n">child_node_centre_lat</span> <span class="o">=</span> <span class="p">(</span>
+                        <span class="n">node_centre_lat</span> <span class="o">-</span> <span class="n">child_node_half_width_degrees</span>
+                    <span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">child_node_lat_offset</span> <span class="o">=</span> <span class="mi">1</span>
+                    <span class="n">child_node_centre_lat</span> <span class="o">=</span> <span class="p">(</span>
+                        <span class="n">node_centre_lat</span> <span class="o">+</span> <span class="n">child_node_half_width_degrees</span>
+                    <span class="p">)</span>
+
+                <span class="k">if</span> <span class="n">point_lon</span> <span class="o">&lt;</span> <span class="n">node_centre_lon</span><span class="p">:</span>
+                    <span class="n">child_node_lon_offset</span> <span class="o">=</span> <span class="mi">0</span>
+                    <span class="n">child_node_centre_lon</span> <span class="o">=</span> <span class="p">(</span>
+                        <span class="n">node_centre_lon</span> <span class="o">-</span> <span class="n">child_node_half_width_degrees</span>
+                    <span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>
+                    <span class="n">child_node_lon_offset</span> <span class="o">=</span> <span class="mi">1</span>
+                    <span class="n">child_node_centre_lon</span> <span class="o">=</span> <span class="p">(</span>
+                        <span class="n">node_centre_lon</span> <span class="o">+</span> <span class="n">child_node_half_width_degrees</span>
+                    <span class="p">)</span>
+
+                <span class="c1"># The current node is an internal node (because it will have child nodes).</span>
+                <span class="c1"># Create a list of child nodes if first time visiting node.</span>
+                <span class="k">if</span> <span class="n">node</span><span class="o">.</span><span class="n">_child_nodes</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="c1"># Only create each child node as needed.</span>
+                    <span class="n">node</span><span class="o">.</span><span class="n">_child_nodes</span> <span class="o">=</span> <span class="p">[</span><span class="kc">None</span><span class="p">]</span> <span class="o">*</span> <span class="mi">4</span>
+
+                <span class="n">child_node_index</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="n">child_node_lat_offset</span> <span class="o">+</span> <span class="n">child_node_lon_offset</span>
+                <span class="n">child_node</span> <span class="o">=</span> <span class="n">node</span><span class="o">.</span><span class="n">_child_nodes</span><span class="p">[</span><span class="n">child_node_index</span><span class="p">]</span>
+
+                <span class="k">if</span> <span class="n">child_node</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                    <span class="n">child_node</span> <span class="o">=</span> <span class="n">PointsSpatialTreeNode</span><span class="p">(</span>
+                        <span class="n">child_node_centre_lon</span><span class="p">,</span>
+                        <span class="n">child_node_centre_lat</span><span class="p">,</span>
+                        <span class="n">child_node_half_width_degrees</span><span class="p">,</span>
+                        <span class="n">is_north_hemisphere</span><span class="p">,</span>
+                    <span class="p">)</span>
+                    <span class="n">node</span><span class="o">.</span><span class="n">_child_nodes</span><span class="p">[</span><span class="n">child_node_index</span><span class="p">]</span> <span class="o">=</span> <span class="n">child_node</span>
+
+                <span class="c1"># Child node becomes parent node in next iteration.</span>
+                <span class="n">node</span> <span class="o">=</span> <span class="n">child_node</span>
+                <span class="n">node_half_width_degrees</span> <span class="o">=</span> <span class="n">child_node_half_width_degrees</span>
+                <span class="n">node_centre_lon</span> <span class="o">=</span> <span class="n">child_node_centre_lon</span>
+                <span class="n">node_centre_lat</span> <span class="o">=</span> <span class="n">child_node_centre_lat</span>
+
+            <span class="c1"># Reached leaf node (end of subdivision).</span>
+            <span class="c1"># Create a list of point indices if first time visiting node.</span>
+            <span class="k">if</span> <span class="n">node</span><span class="o">.</span><span class="n">_point_indices</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+                <span class="n">node</span><span class="o">.</span><span class="n">_point_indices</span> <span class="o">=</span> <span class="p">[]</span>
+
+            <span class="c1"># Add the current point (index) to the leaf node.</span>
+            <span class="n">node</span><span class="o">.</span><span class="n">_point_indices</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">point_index</span><span class="p">)</span>
+
+<div class="viewcode-block" id="PointsSpatialTree.get_root_nodes">
+<a class="viewcode-back" href="../../../../gplately.ptt.utils.html#gplately.ptt.utils.points_spatial_tree.PointsSpatialTree.get_root_nodes">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_root_nodes</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return any root nodes that have points in their subtree.There are a maximum of 8 root nodes.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        A list of Node.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">return</span> <span class="p">[</span><span class="n">root_node</span> <span class="k">for</span> <span class="n">root_node</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_root_nodes</span> <span class="k">if</span> <span class="n">root_node</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">]</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="PointsSpatialTreeNode">
+<a class="viewcode-back" href="../../../../gplately.ptt.utils.html#gplately.ptt.utils.points_spatial_tree.PointsSpatialTreeNode">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">PointsSpatialTreeNode</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">centre_lon</span><span class="p">,</span> <span class="n">centre_lat</span><span class="p">,</span> <span class="n">half_width_degrees</span><span class="p">,</span> <span class="n">is_north_hemisphere</span><span class="p">):</span>
+        <span class="c1"># Parameters to describe location and extents of this node.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_centre_lon</span> <span class="o">=</span> <span class="n">centre_lon</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_centre_lat</span> <span class="o">=</span> <span class="n">centre_lat</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_half_width_degrees</span> <span class="o">=</span> <span class="n">half_width_degrees</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_is_north_hemisphere</span> <span class="o">=</span> <span class="n">is_north_hemisphere</span>
+
+        <span class="c1"># We&#39;ll create the bounding polygon/circle when/if they are requested.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_bounding_polygon</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_bounding_circle</span> <span class="o">=</span> <span class="kc">None</span>
+
+        <span class="c1"># If an internal quad tree node then &#39;_child_nodes&#39; will be a list of</span>
+        <span class="c1"># 4 child quad tree nodes and &#39;_point_indices&#39; will be None.</span>
+        <span class="c1"># Otherwise quad tree node is a leaf node where &#39;point_indices&#39; is a list of points and</span>
+        <span class="c1"># &#39;child_nodes&#39; will be None.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_child_nodes</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_point_indices</span> <span class="o">=</span> <span class="kc">None</span>
+
+<div class="viewcode-block" id="PointsSpatialTreeNode.get_bounding_polygon">
+<a class="viewcode-back" href="../../../../gplately.ptt.utils.html#gplately.ptt.utils.points_spatial_tree.PointsSpatialTreeNode.get_bounding_polygon">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_bounding_polygon</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns a polygon that bounds the current node.</span>
+<span class="sd">        The returned polygon is guaranteed to contain all points in this node (and any child nodes, etc).</span>
+<span class="sd">        However it is not guaranteed to contain the bounding circle.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        pygplates.PolygonOnSphere</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_bounding_polygon</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_create_bounding_polygon</span><span class="p">()</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_bounding_polygon</span></div>
+
+
+<div class="viewcode-block" id="PointsSpatialTreeNode.get_bounding_circle">
+<a class="viewcode-back" href="../../../../gplately.ptt.utils.html#gplately.ptt.utils.points_spatial_tree.PointsSpatialTreeNode.get_bounding_circle">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_bounding_circle</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns a small circle that bounds the current node.</span>
+<span class="sd">        The returned small circle is guaranteed to contain all points in this node (and any child nodes, etc).</span>
+<span class="sd">        However it is not guaranteed to contain the bounding polygon.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        The centre of small circle and its radius (in radians) as the 2-tuple of type (pygplates.PointOnSphere, float).</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_bounding_circle</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_create_bounding_circle</span><span class="p">()</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_bounding_circle</span></div>
+
+
+<div class="viewcode-block" id="PointsSpatialTreeNode.is_leaf_node">
+<a class="viewcode-back" href="../../../../gplately.ptt.utils.html#gplately.ptt.utils.points_spatial_tree.PointsSpatialTreeNode.is_leaf_node">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">is_leaf_node</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns True if this node is a leaf node.</span>
+<span class="sd">        A leaf node has indices into the sequence of points passed into</span>
+<span class="sd">        spatial tree constructor - see &#39;get_point_indices()&#39;.</span>
+<span class="sd">        But it does not have any child nodes.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_point_indices</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span></div>
+
+
+<div class="viewcode-block" id="PointsSpatialTreeNode.is_internal_node">
+<a class="viewcode-back" href="../../../../gplately.ptt.utils.html#gplately.ptt.utils.points_spatial_tree.PointsSpatialTreeNode.is_internal_node">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">is_internal_node</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns True if this node is an internal node.</span>
+<span class="sd">        An internal node has child nodes - see &#39;get_child_nodes()&#39;.</span>
+<span class="sd">        But it does not have any point indices.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_child_nodes</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span></div>
+
+
+<div class="viewcode-block" id="PointsSpatialTreeNode.get_child_nodes">
+<a class="viewcode-back" href="../../../../gplately.ptt.utils.html#gplately.ptt.utils.points_spatial_tree.PointsSpatialTreeNode.get_child_nodes">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_child_nodes</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return any child nodes that have points in their subtree.</span>
+<span class="sd">        There are a maximum of 4 child nodes.</span>
+<span class="sd">        Should only be called if &#39;is_internal_node()&#39; returns True.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        A list of Node.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">return</span> <span class="p">[</span>
+            <span class="n">child_node</span> <span class="k">for</span> <span class="n">child_node</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_child_nodes</span> <span class="k">if</span> <span class="n">child_node</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+        <span class="p">]</span></div>
+
+
+<div class="viewcode-block" id="PointsSpatialTreeNode.get_point_indices">
+<a class="viewcode-back" href="../../../../gplately.ptt.utils.html#gplately.ptt.utils.points_spatial_tree.PointsSpatialTreeNode.get_point_indices">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_point_indices</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return indices of points that exist in this leaf node.</span>
+<span class="sd">        The indices refer to the sequence of points passed into spatial tree constructor.</span>
+<span class="sd">        Should only be called if &#39;is_leaf_node()&#39; returns True.</span>
+
+<span class="sd">        Returns</span>
+<span class="sd">        -------</span>
+<span class="sd">        A list of int.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_point_indices</span></div>
+
+
+<div class="viewcode-block" id="PointsSpatialTreeNode._create_bounding_polygon">
+<a class="viewcode-back" href="../../../../gplately.ptt.utils.html#gplately.ptt.utils.points_spatial_tree.PointsSpatialTreeNode._create_bounding_polygon">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_create_bounding_polygon</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+
+        <span class="c1"># Create the points of the polygon bounding the current quad tree node.</span>
+        <span class="n">bounding_polygon_points</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="n">left_lon</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_centre_lon</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">_half_width_degrees</span>
+        <span class="n">right_lon</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_centre_lon</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">_half_width_degrees</span>
+        <span class="n">bottom_lat</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_centre_lat</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">_half_width_degrees</span>
+        <span class="n">top_lat</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_centre_lat</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">_half_width_degrees</span>
+
+        <span class="c1"># Northern and southern hemispheres handled separately.</span>
+        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_is_north_hemisphere</span><span class="p">:</span>
+            <span class="c1"># Northern hemisphere.</span>
+            <span class="n">left_boundary</span> <span class="o">=</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">PolylineOnSphere</span><span class="p">([(</span><span class="mi">0</span><span class="p">,</span> <span class="n">left_lon</span><span class="p">),</span> <span class="p">(</span><span class="mi">90</span><span class="p">,</span> <span class="n">left_lon</span><span class="p">)])</span>
+            <span class="n">right_boundary</span> <span class="o">=</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">PolylineOnSphere</span><span class="p">(</span>
+                <span class="p">[(</span><span class="mi">0</span><span class="p">,</span> <span class="n">right_lon</span><span class="p">),</span> <span class="p">(</span><span class="mi">90</span><span class="p">,</span> <span class="n">right_lon</span><span class="p">)]</span>
+            <span class="p">)</span>
+
+            <span class="c1"># Midpoint of small circle arc bounding the bottom of quad tree node.</span>
+            <span class="n">bottom_mid_point</span> <span class="o">=</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">PointOnSphere</span><span class="p">(</span>
+                <span class="n">bottom_lat</span><span class="p">,</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">left_lon</span> <span class="o">+</span> <span class="n">right_lon</span><span class="p">)</span>
+            <span class="p">)</span>
+
+            <span class="c1"># Find the great circle (rotation) that passes through the bottom midpoint (and is oriented towards North pole).</span>
+            <span class="n">bottom_great_circle_rotation_axis</span> <span class="o">=</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">Vector3D</span><span class="o">.</span><span class="n">cross</span><span class="p">(</span>
+                <span class="n">bottom_mid_point</span><span class="o">.</span><span class="n">to_xyz</span><span class="p">(),</span>
+                <span class="n">pygplates</span><span class="o">.</span><span class="n">Vector3D</span><span class="o">.</span><span class="n">cross</span><span class="p">(</span>
+                    <span class="n">pygplates</span><span class="o">.</span><span class="n">PointOnSphere</span><span class="o">.</span><span class="n">north_pole</span><span class="o">.</span><span class="n">to_xyz</span><span class="p">(),</span>
+                    <span class="n">bottom_mid_point</span><span class="o">.</span><span class="n">to_xyz</span><span class="p">(),</span>
+                <span class="p">),</span>
+            <span class="p">)</span><span class="o">.</span><span class="n">to_normalised</span><span class="p">()</span>
+            <span class="n">bottom_great_circle_rotation</span> <span class="o">=</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">FiniteRotation</span><span class="p">(</span>
+                <span class="n">bottom_great_circle_rotation_axis</span><span class="o">.</span><span class="n">to_xyz</span><span class="p">(),</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">pi</span>
+            <span class="p">)</span>
+
+            <span class="c1"># Intersect great circle bottom boundary with left and right boundaries to find bottom-left and bottom-right points.</span>
+            <span class="c1"># The bottom boundary is actually a small circle (due to lat/lon grid), but since we need to use *great* circle arcs</span>
+            <span class="c1"># in our geometries we need to be a bit loose with our bottom boundary otherwise it will go inside the quad tree node.</span>
+            <span class="n">bottom_boundary</span> <span class="o">=</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">PolylineOnSphere</span><span class="p">(</span>
+                <span class="p">[</span>
+                    <span class="n">bottom_great_circle_rotation</span> <span class="o">*</span> <span class="n">bottom_mid_point</span><span class="p">,</span>
+                    <span class="n">bottom_mid_point</span><span class="p">,</span>
+                    <span class="n">bottom_great_circle_rotation</span><span class="o">.</span><span class="n">get_inverse</span><span class="p">()</span> <span class="o">*</span> <span class="n">bottom_mid_point</span><span class="p">,</span>
+                <span class="p">]</span>
+            <span class="p">)</span>
+            <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">bottom_left_point</span> <span class="o">=</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">GeometryOnSphere</span><span class="o">.</span><span class="n">distance</span><span class="p">(</span>
+                <span class="n">bottom_boundary</span><span class="p">,</span> <span class="n">left_boundary</span><span class="p">,</span> <span class="n">return_closest_positions</span><span class="o">=</span><span class="kc">True</span>
+            <span class="p">)</span>
+            <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">bottom_right_point</span> <span class="o">=</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">GeometryOnSphere</span><span class="o">.</span><span class="n">distance</span><span class="p">(</span>
+                <span class="n">bottom_boundary</span><span class="p">,</span> <span class="n">right_boundary</span><span class="p">,</span> <span class="n">return_closest_positions</span><span class="o">=</span><span class="kc">True</span>
+            <span class="p">)</span>
+
+            <span class="n">bounding_polygon_points</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">bottom_left_point</span><span class="p">)</span>
+            <span class="n">bounding_polygon_points</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">bottom_right_point</span><span class="p">)</span>
+
+            <span class="n">bounding_polygon_points</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">pygplates</span><span class="o">.</span><span class="n">PointOnSphere</span><span class="p">(</span><span class="n">top_lat</span><span class="p">,</span> <span class="n">right_lon</span><span class="p">))</span>
+            <span class="n">bounding_polygon_points</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">pygplates</span><span class="o">.</span><span class="n">PointOnSphere</span><span class="p">(</span><span class="n">top_lat</span><span class="p">,</span> <span class="n">left_lon</span><span class="p">))</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># Southern hemisphere.</span>
+            <span class="n">left_boundary</span> <span class="o">=</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">PolylineOnSphere</span><span class="p">([(</span><span class="mi">0</span><span class="p">,</span> <span class="n">left_lon</span><span class="p">),</span> <span class="p">(</span><span class="o">-</span><span class="mi">90</span><span class="p">,</span> <span class="n">left_lon</span><span class="p">)])</span>
+            <span class="n">right_boundary</span> <span class="o">=</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">PolylineOnSphere</span><span class="p">(</span>
+                <span class="p">[(</span><span class="mi">0</span><span class="p">,</span> <span class="n">right_lon</span><span class="p">),</span> <span class="p">(</span><span class="o">-</span><span class="mi">90</span><span class="p">,</span> <span class="n">right_lon</span><span class="p">)]</span>
+            <span class="p">)</span>
+
+            <span class="c1"># Midpoint of small circle arc bounding the top of quad tree node.</span>
+            <span class="n">top_mid_point</span> <span class="o">=</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">PointOnSphere</span><span class="p">(</span>
+                <span class="n">top_lat</span><span class="p">,</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">left_lon</span> <span class="o">+</span> <span class="n">right_lon</span><span class="p">)</span>
+            <span class="p">)</span>
+
+            <span class="c1"># Find the great circle (rotation) that passes through the top midpoint (and is oriented towards North pole).</span>
+            <span class="n">top_great_circle_rotation_axis</span> <span class="o">=</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">Vector3D</span><span class="o">.</span><span class="n">cross</span><span class="p">(</span>
+                <span class="n">top_mid_point</span><span class="o">.</span><span class="n">to_xyz</span><span class="p">(),</span>
+                <span class="n">pygplates</span><span class="o">.</span><span class="n">Vector3D</span><span class="o">.</span><span class="n">cross</span><span class="p">(</span>
+                    <span class="n">pygplates</span><span class="o">.</span><span class="n">PointOnSphere</span><span class="o">.</span><span class="n">north_pole</span><span class="o">.</span><span class="n">to_xyz</span><span class="p">(),</span> <span class="n">top_mid_point</span><span class="o">.</span><span class="n">to_xyz</span><span class="p">()</span>
+                <span class="p">),</span>
+            <span class="p">)</span><span class="o">.</span><span class="n">to_normalised</span><span class="p">()</span>
+            <span class="n">top_great_circle_rotation</span> <span class="o">=</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">FiniteRotation</span><span class="p">(</span>
+                <span class="n">top_great_circle_rotation_axis</span><span class="o">.</span><span class="n">to_xyz</span><span class="p">(),</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">pi</span>
+            <span class="p">)</span>
+
+            <span class="c1"># Intersect great circle top boundary with left and right boundaries to find top-left and top-right points.</span>
+            <span class="c1"># The top boundary is actually a small circle (due to lat/lon grid), but since we need to use *great* circle arcs</span>
+            <span class="c1"># in our geometries we need to be a bit loose with our top boundary otherwise it will go inside the quad tree node.</span>
+            <span class="n">top_boundary</span> <span class="o">=</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">PolylineOnSphere</span><span class="p">(</span>
+                <span class="p">[</span>
+                    <span class="n">top_great_circle_rotation</span> <span class="o">*</span> <span class="n">top_mid_point</span><span class="p">,</span>
+                    <span class="n">top_mid_point</span><span class="p">,</span>
+                    <span class="n">top_great_circle_rotation</span><span class="o">.</span><span class="n">get_inverse</span><span class="p">()</span> <span class="o">*</span> <span class="n">top_mid_point</span><span class="p">,</span>
+                <span class="p">]</span>
+            <span class="p">)</span>
+            <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">top_left_point</span> <span class="o">=</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">GeometryOnSphere</span><span class="o">.</span><span class="n">distance</span><span class="p">(</span>
+                <span class="n">top_boundary</span><span class="p">,</span> <span class="n">left_boundary</span><span class="p">,</span> <span class="n">return_closest_positions</span><span class="o">=</span><span class="kc">True</span>
+            <span class="p">)</span>
+            <span class="n">_</span><span class="p">,</span> <span class="n">_</span><span class="p">,</span> <span class="n">top_right_point</span> <span class="o">=</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">GeometryOnSphere</span><span class="o">.</span><span class="n">distance</span><span class="p">(</span>
+                <span class="n">top_boundary</span><span class="p">,</span> <span class="n">right_boundary</span><span class="p">,</span> <span class="n">return_closest_positions</span><span class="o">=</span><span class="kc">True</span>
+            <span class="p">)</span>
+
+            <span class="n">bounding_polygon_points</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">top_left_point</span><span class="p">)</span>
+            <span class="n">bounding_polygon_points</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">top_right_point</span><span class="p">)</span>
+
+            <span class="n">bounding_polygon_points</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="n">pygplates</span><span class="o">.</span><span class="n">PointOnSphere</span><span class="p">(</span><span class="n">bottom_lat</span><span class="p">,</span> <span class="n">right_lon</span><span class="p">)</span>
+            <span class="p">)</span>
+            <span class="n">bounding_polygon_points</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="n">pygplates</span><span class="o">.</span><span class="n">PointOnSphere</span><span class="p">(</span><span class="n">bottom_lat</span><span class="p">,</span> <span class="n">left_lon</span><span class="p">)</span>
+            <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_bounding_polygon</span> <span class="o">=</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">PolygonOnSphere</span><span class="p">(</span><span class="n">bounding_polygon_points</span><span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="PointsSpatialTreeNode._create_bounding_circle">
+<a class="viewcode-back" href="../../../../gplately.ptt.utils.html#gplately.ptt.utils.points_spatial_tree.PointsSpatialTreeNode._create_bounding_circle">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_create_bounding_circle</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+
+        <span class="n">bound_circle_centre</span> <span class="o">=</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">PointOnSphere</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_centre_lat</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_centre_lon</span>
+        <span class="p">)</span>
+
+        <span class="n">left_lon</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_centre_lon</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">_half_width_degrees</span>
+        <span class="n">right_lon</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_centre_lon</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">_half_width_degrees</span>
+        <span class="n">bottom_lat</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_centre_lat</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">_half_width_degrees</span>
+        <span class="n">top_lat</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_centre_lat</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">_half_width_degrees</span>
+
+        <span class="c1"># The small circle that bound the four corner points will also bound the associated lat/lon box.</span>
+        <span class="c1"># This is because the small circle centre will be inside the box and the small circle curvature</span>
+        <span class="c1"># is greater than all four sides of the box (two great circle arcs and two small circle arcs).</span>
+        <span class="n">dist_to_bottom_left</span> <span class="o">=</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">GeometryOnSphere</span><span class="o">.</span><span class="n">distance</span><span class="p">(</span>
+            <span class="n">bound_circle_centre</span><span class="p">,</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">PointOnSphere</span><span class="p">(</span><span class="n">bottom_lat</span><span class="p">,</span> <span class="n">left_lon</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="n">dist_to_bottom_right</span> <span class="o">=</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">GeometryOnSphere</span><span class="o">.</span><span class="n">distance</span><span class="p">(</span>
+            <span class="n">bound_circle_centre</span><span class="p">,</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">PointOnSphere</span><span class="p">(</span><span class="n">bottom_lat</span><span class="p">,</span> <span class="n">right_lon</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="n">dist_to_top_left</span> <span class="o">=</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">GeometryOnSphere</span><span class="o">.</span><span class="n">distance</span><span class="p">(</span>
+            <span class="n">bound_circle_centre</span><span class="p">,</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">PointOnSphere</span><span class="p">(</span><span class="n">top_lat</span><span class="p">,</span> <span class="n">left_lon</span><span class="p">)</span>
+        <span class="p">)</span>
+        <span class="n">dist_to_top_right</span> <span class="o">=</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">GeometryOnSphere</span><span class="o">.</span><span class="n">distance</span><span class="p">(</span>
+            <span class="n">bound_circle_centre</span><span class="p">,</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">PointOnSphere</span><span class="p">(</span><span class="n">top_lat</span><span class="p">,</span> <span class="n">right_lon</span><span class="p">)</span>
+        <span class="p">)</span>
+
+        <span class="n">bounding_circle_radius_radians</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span>
+            <span class="n">dist_to_bottom_left</span><span class="p">,</span>
+            <span class="n">dist_to_bottom_right</span><span class="p">,</span>
+            <span class="n">dist_to_top_left</span><span class="p">,</span>
+            <span class="n">dist_to_top_right</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="bp">self</span><span class="o">.</span><span class="n">_bounding_circle</span> <span class="o">=</span> <span class="p">(</span><span class="n">bound_circle_centre</span><span class="p">,</span> <span class="n">bounding_circle_radius_radians</span><span class="p">)</span></div>
+</div>
+
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023-2025, The University of Sydney.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -1,0 +1,864 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>gplately.ptt.remove_plate_rotations &mdash; gplately 2.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=51b770b3"></script>
+      <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            gplately
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">GPlately v2.0.0</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../basic_usages.html">Minimal working example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../use_cases.html">Common Use Cases</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../faq.html">Trouble-shooting and FAQ</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../command_line_interface.html">Command Line Interface (CLI)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../primer.html">Primer</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules.html">gplately</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">gplately</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">gplately.ptt.remove_plate_rotations</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for gplately.ptt.remove_plate_rotations</h1><div class="highlight"><pre>
+<span></span><span class="c1">#</span>
+<span class="c1">#    Copyright (C) 2019 The University of Sydney, Australia</span>
+<span class="c1">#</span>
+<span class="c1">#    This program is free software; you can redistribute it and/or modify it under</span>
+<span class="c1">#    the terms of the GNU General Public License, version 2, as published by</span>
+<span class="c1">#    the Free Software Foundation.</span>
+<span class="c1">#</span>
+<span class="c1">#    This program is distributed in the hope that it will be useful, but WITHOUT</span>
+<span class="c1">#    ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or</span>
+<span class="c1">#    FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License</span>
+<span class="c1">#    for more details.</span>
+<span class="c1">#</span>
+<span class="c1">#    You should have received a copy of the GNU General Public License along</span>
+<span class="c1">#    with this program; if not, write to Free Software Foundation, Inc.,</span>
+<span class="c1">#    51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.</span>
+<span class="c1">#</span>
+
+
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">Remove one or more plate IDs from a rotation model (consisting of one or more rotation files). </span>
+<span class="sd">&quot;&quot;&quot;</span>
+
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">print_function</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">argparse</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">math</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os.path</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">traceback</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">pygplates</span>
+
+
+<div class="viewcode-block" id="remove_plates">
+<a class="viewcode-back" href="../../../gplately.ptt.html#gplately.ptt.remove_plate_rotations.remove_plates">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">remove_plates</span><span class="p">(</span><span class="n">rotation_feature_collections</span><span class="p">,</span> <span class="n">plate_ids</span><span class="p">,</span> <span class="n">accuracy_parameters</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+    <span class="c1"># Docstring in numpydoc format...</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Remove one or more plate IDs from a rotation model (consisting of one or more rotation feature collections).</span>
+
+<span class="sd">    Any rotations with a fixed plate referencing one of the removed plates will be adjusted such that</span>
+<span class="sd">    the rotation model effectively remains unchanged.</span>
+
+<span class="sd">    Optional accuracy threshold parameters can be specified to ensure the rotation model after removing</span>
+<span class="sd">    plate rotations is very similar to the rotation model before removal.</span>
+
+<span class="sd">    The results are returned as a list of pygplates.FeatureCollection (one per input rotation feature collection).</span>
+
+<span class="sd">    Ensure you specify all input rotation feature collections that contain the plate IDs to be removed (either as a moving or fixed plate ID).</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    rotation_feature_collections : sequence of (str, or sequence of pygplates.Feature, or pygplates.FeatureCollection, or pygplates.Feature)</span>
+<span class="sd">        A sequence of rotation feature collections.</span>
+<span class="sd">        Each collection in the sequence can be a rotation filename, or a sequence (eg, list of tuple) or features, or</span>
+<span class="sd">        a feature collection, or even a single feature.</span>
+<span class="sd">    plate_ids : sequence of int</span>
+<span class="sd">        Plate IDs to remove from rotation model.</span>
+<span class="sd">    accuracy_parameters: tuple of (float, float, bool), optional</span>
+<span class="sd">        First parameter is the threshold rotation accuracy (in degrees), the second parameter is the threshold time interval and</span>
+<span class="sd">        the third parameter is True if insert poles should have times that are integer multiples of the threshold time interval.</span>
+<span class="sd">        The first parameter is used to compare the latitude, longitude and angle of two rotations before and after removing a plate rotation.</span>
+<span class="sd">        If any of those three parameters differ by more than the rotation accuracy (in degrees) then</span>
+<span class="sd">        samples at times mid-way between samples are inserted to ensure before/after accuracy of rotations.</span>
+<span class="sd">        This mid-way adaptive bisection is repeated (when there is inaccuracy) until the interval between samples</span>
+<span class="sd">        becomes smaller than the second parameter (threshold time interval).</span>
+<span class="sd">        Rotation threshold is in degrees and threshold time interval is in millions of years.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    list of pygplates.FeatureCollection</span>
+<span class="sd">        The (potentially) modified feature collections.</span>
+<span class="sd">        Returned list is same length as ``rotation_feature_collections``.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># Convert each feature collection into a list of features so we can more easily remove features</span>
+    <span class="c1"># and insert features at arbitrary locations within each feature collection (for example removing</span>
+    <span class="c1"># a plate sequence and replacing it with a sequence with the same plate ID).</span>
+    <span class="n">rotation_feature_collections</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="nb">list</span><span class="p">(</span><span class="n">pygplates</span><span class="o">.</span><span class="n">FeatureCollection</span><span class="p">(</span><span class="n">rotation_feature_collection</span><span class="p">))</span>
+        <span class="k">for</span> <span class="n">rotation_feature_collection</span> <span class="ow">in</span> <span class="n">rotation_feature_collections</span>
+    <span class="p">]</span>
+
+    <span class="c1"># Iterate over the plates to be removed and remove each one separately.</span>
+    <span class="k">for</span> <span class="n">remove_plate_id</span> <span class="ow">in</span> <span class="n">plate_ids</span><span class="p">:</span>
+        <span class="c1"># Rotation model before any modifications to rotation features.</span>
+        <span class="c1">#</span>
+        <span class="c1"># Previously we only created one instance of RotationModel in this function (to serve all removed plates).</span>
+        <span class="c1"># However we need to create a new RotationModel instance for each plate ID being removed, in</span>
+        <span class="c1"># case any rotation sequence referencing the removed plate (as its fixed plate) has a time range</span>
+        <span class="c1"># further into the past than the removed plate sequence. This is a subtle issue to do with</span>
+        <span class="c1"># not having a plate circuit *through the removed plate* for times older than supported by</span>
+        <span class="c1"># the removed plate sequence - in this case RotationModel would just return an identity rotation.</span>
+        <span class="c1"># However if we create a new RotationModel *without* the removed plate sequence then we</span>
+        <span class="c1"># avoid this issue altogether.</span>
+        <span class="c1">#</span>
+        <span class="c1"># Note that RotationModel clones the current rotation features (by default), so any subsequent</span>
+        <span class="c1"># feature modifications (in this loop iteration) should not affect it.</span>
+        <span class="c1"># However the RotationModel in the next loop iteration will be affected of course.</span>
+        <span class="c1"># UPDATE: Since pygplates 0.25 cloning is no longer necessary (and has been deprecated).</span>
+        <span class="n">rotation_model</span> <span class="o">=</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">RotationModel</span><span class="p">(</span><span class="n">rotation_feature_collections</span><span class="p">)</span>
+
+        <span class="c1"># Rotation sequences with the current remove plate ID as the *moving* plate ID.</span>
+        <span class="c1"># Each sequence will have a different *fixed* plate ID.</span>
+        <span class="n">remove_plate_sequences</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">rotation_feature_collection</span> <span class="ow">in</span> <span class="n">rotation_feature_collections</span><span class="p">:</span>
+            <span class="n">rotation_feature_index</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="k">while</span> <span class="n">rotation_feature_index</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">rotation_feature_collection</span><span class="p">):</span>
+                <span class="n">rotation_feature</span> <span class="o">=</span> <span class="n">rotation_feature_collection</span><span class="p">[</span><span class="n">rotation_feature_index</span><span class="p">]</span>
+                <span class="n">total_reconstruction_pole</span> <span class="o">=</span> <span class="p">(</span>
+                    <span class="n">rotation_feature</span><span class="o">.</span><span class="n">get_total_reconstruction_pole</span><span class="p">()</span>
+                <span class="p">)</span>
+                <span class="k">if</span> <span class="n">total_reconstruction_pole</span><span class="p">:</span>
+                    <span class="p">(</span>
+                        <span class="n">fixed_plate_id</span><span class="p">,</span>
+                        <span class="n">moving_plate_id</span><span class="p">,</span>
+                        <span class="n">rotation_sequence</span><span class="p">,</span>
+                    <span class="p">)</span> <span class="o">=</span> <span class="n">total_reconstruction_pole</span>
+                    <span class="k">if</span> <span class="n">moving_plate_id</span> <span class="o">==</span> <span class="n">remove_plate_id</span><span class="p">:</span>
+                        <span class="n">sample_times</span> <span class="o">=</span> <span class="p">[</span>
+                            <span class="n">pygplates</span><span class="o">.</span><span class="n">GeoTimeInstant</span><span class="p">(</span><span class="n">sample</span><span class="o">.</span><span class="n">get_time</span><span class="p">())</span>
+                            <span class="k">for</span> <span class="n">sample</span> <span class="ow">in</span> <span class="n">rotation_sequence</span><span class="o">.</span><span class="n">get_enabled_time_samples</span><span class="p">()</span>
+                        <span class="p">]</span>
+                        <span class="k">if</span> <span class="n">sample_times</span><span class="p">:</span>
+                            <span class="n">remove_plate_sequences</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                                <span class="p">(</span><span class="n">fixed_plate_id</span><span class="p">,</span> <span class="n">sample_times</span><span class="p">)</span>
+                            <span class="p">)</span>
+                        <span class="c1"># Remove plate sequences whose moving plate is the current remove plate.</span>
+                        <span class="c1"># Note that this won&#39;t affect &#39;rotation_model&#39; (since it used a cloned version of all features).</span>
+                        <span class="k">del</span> <span class="n">rotation_feature_collection</span><span class="p">[</span><span class="n">rotation_feature_index</span><span class="p">]</span>
+                        <span class="n">rotation_feature_index</span> <span class="o">-=</span> <span class="mi">1</span>
+
+                <span class="n">rotation_feature_index</span> <span class="o">+=</span> <span class="mi">1</span>
+
+        <span class="c1"># Sort the remove plate sequences in time order.</span>
+        <span class="c1"># This helps out below, to find the max sample time over the removed sequences (all having same *moving* plate ID).</span>
+        <span class="c1">#</span>
+        <span class="c1"># Easiest way to do this is to sort based on the first time sample in each sequence</span>
+        <span class="c1"># (since each sequence should already be sorted internally).</span>
+        <span class="n">remove_plate_sequences</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">sequence</span><span class="p">:</span> <span class="n">sequence</span><span class="p">[</span><span class="mi">1</span><span class="p">][</span><span class="mi">0</span><span class="p">])</span>
+
+        <span class="c1"># Find those sequences that need adjustment due to the plate removal.</span>
+        <span class="c1"># These are sequences whose *fixed* plate is the plate currently being removed.</span>
+        <span class="k">for</span> <span class="n">rotation_feature_collection</span> <span class="ow">in</span> <span class="n">rotation_feature_collections</span><span class="p">:</span>
+            <span class="n">rotation_feature_index</span> <span class="o">=</span> <span class="mi">0</span>
+            <span class="k">while</span> <span class="n">rotation_feature_index</span> <span class="o">&lt;</span> <span class="nb">len</span><span class="p">(</span><span class="n">rotation_feature_collection</span><span class="p">):</span>
+                <span class="n">rotation_feature</span> <span class="o">=</span> <span class="n">rotation_feature_collection</span><span class="p">[</span><span class="n">rotation_feature_index</span><span class="p">]</span>
+                <span class="n">total_reconstruction_pole</span> <span class="o">=</span> <span class="p">(</span>
+                    <span class="n">rotation_feature</span><span class="o">.</span><span class="n">get_total_reconstruction_pole</span><span class="p">()</span>
+                <span class="p">)</span>
+                <span class="k">if</span> <span class="n">total_reconstruction_pole</span><span class="p">:</span>
+                    <span class="p">(</span>
+                        <span class="n">fixed_plate_id</span><span class="p">,</span>
+                        <span class="n">moving_plate_id</span><span class="p">,</span>
+                        <span class="n">rotation_sequence</span><span class="p">,</span>
+                    <span class="p">)</span> <span class="o">=</span> <span class="n">total_reconstruction_pole</span>
+                    <span class="k">if</span> <span class="n">fixed_plate_id</span> <span class="o">==</span> <span class="n">remove_plate_id</span><span class="p">:</span>
+                        <span class="n">child_remove_plate_id</span> <span class="o">=</span> <span class="n">moving_plate_id</span>
+                        <span class="n">child_remove_plate_rotation_feature</span> <span class="o">=</span> <span class="n">rotation_feature</span>
+                        <span class="n">child_remove_plate_samples</span> <span class="o">=</span> <span class="p">(</span>
+                            <span class="n">rotation_sequence</span><span class="o">.</span><span class="n">get_time_samples</span><span class="p">()</span>
+                        <span class="p">)</span>
+
+                        <span class="n">child_remove_plate_sample_times</span> <span class="o">=</span> <span class="p">[</span>
+                            <span class="n">pygplates</span><span class="o">.</span><span class="n">GeoTimeInstant</span><span class="p">(</span><span class="n">sample</span><span class="o">.</span><span class="n">get_time</span><span class="p">())</span>
+                            <span class="k">for</span> <span class="n">sample</span> <span class="ow">in</span> <span class="n">child_remove_plate_samples</span>
+                        <span class="p">]</span>
+                        <span class="n">child_remove_plate_min_sample_time</span> <span class="o">=</span> <span class="p">(</span>
+                            <span class="n">child_remove_plate_sample_times</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                        <span class="p">)</span>
+                        <span class="n">child_remove_plate_max_sample_time</span> <span class="o">=</span> <span class="p">(</span>
+                            <span class="n">child_remove_plate_sample_times</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+                        <span class="p">)</span>
+
+                        <span class="c1"># Iterate over the removed sequences whose moving plate matched the current plate being removed.</span>
+                        <span class="k">for</span> <span class="n">remove_plate_sequence_index</span><span class="p">,</span> <span class="p">(</span>
+                            <span class="n">parent_remove_plate_id</span><span class="p">,</span>
+                            <span class="n">remove_plate_sample_times</span><span class="p">,</span>
+                        <span class="p">)</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">remove_plate_sequences</span><span class="p">):</span>
+                            <span class="n">remove_plate_min_sample_time</span> <span class="o">=</span> <span class="n">remove_plate_sample_times</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                            <span class="n">remove_plate_max_sample_time</span> <span class="o">=</span> <span class="n">remove_plate_sample_times</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+
+                            <span class="c1"># Find the time overlap of the removed sequence and the (child) sequence requiring modification.</span>
+                            <span class="n">min_sample_time</span> <span class="o">=</span> <span class="nb">max</span><span class="p">(</span>
+                                <span class="n">remove_plate_min_sample_time</span><span class="p">,</span>
+                                <span class="n">child_remove_plate_min_sample_time</span><span class="p">,</span>
+                            <span class="p">)</span>
+                            <span class="k">if</span> <span class="p">(</span>
+                                <span class="n">remove_plate_sequence_index</span>
+                                <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">remove_plate_sequences</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span>
+                            <span class="p">):</span>
+                                <span class="c1"># We want the last remove plate sequence to go back to the child max sample time.</span>
+                                <span class="c1"># If it doesn&#39;t go that far back then we will artificially extend the remove plate sequence that far back.</span>
+                                <span class="n">max_sample_time</span> <span class="o">=</span> <span class="n">child_remove_plate_max_sample_time</span>
+                            <span class="k">else</span><span class="p">:</span>
+                                <span class="n">max_sample_time</span> <span class="o">=</span> <span class="nb">min</span><span class="p">(</span>
+                                    <span class="n">remove_plate_max_sample_time</span><span class="p">,</span>
+                                    <span class="n">child_remove_plate_max_sample_time</span><span class="p">,</span>
+                                <span class="p">)</span>
+
+                            <span class="c1"># Note that the remove sequences are ordered by time (ie, first sequence should start at 0Ma, etc).</span>
+                            <span class="c1"># The two sequences must overlap.</span>
+                            <span class="c1"># Note that this excludes the case where the min of one sequence equals the max of the other (or max and min).</span>
+                            <span class="k">if</span> <span class="n">min_sample_time</span> <span class="o">&lt;</span> <span class="n">max_sample_time</span><span class="p">:</span>
+                                <span class="n">sample_times</span> <span class="o">=</span> <span class="p">[]</span>
+                                <span class="c1"># Find those sample times of the child sequence within the overlap range.</span>
+                                <span class="k">for</span> <span class="p">(</span>
+                                    <span class="n">child_remove_plate_sample_time</span>
+                                <span class="p">)</span> <span class="ow">in</span> <span class="n">child_remove_plate_sample_times</span><span class="p">:</span>
+                                    <span class="k">if</span> <span class="p">(</span>
+                                        <span class="n">child_remove_plate_sample_time</span>
+                                        <span class="o">&gt;=</span> <span class="n">min_sample_time</span>
+                                        <span class="ow">and</span> <span class="n">child_remove_plate_sample_time</span>
+                                        <span class="o">&lt;=</span> <span class="n">max_sample_time</span>
+                                    <span class="p">):</span>
+                                        <span class="n">sample_times</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                                            <span class="n">child_remove_plate_sample_time</span>
+                                        <span class="p">)</span>
+                                <span class="c1"># Find those sample times of the remove sequence within the overlap range.</span>
+                                <span class="c1"># Also avoiding duplicating sample times (times already in the child sequence).</span>
+                                <span class="k">for</span> <span class="p">(</span>
+                                    <span class="n">remove_plate_sample_time</span>
+                                <span class="p">)</span> <span class="ow">in</span> <span class="n">remove_plate_sample_times</span><span class="p">:</span>
+                                    <span class="c1"># Only add the sample time if it&#39;s not already in the list.</span>
+                                    <span class="k">if</span> <span class="p">(</span>
+                                        <span class="n">remove_plate_sample_time</span>
+                                        <span class="ow">not</span> <span class="ow">in</span> <span class="n">child_remove_plate_sample_times</span>
+                                        <span class="ow">and</span> <span class="n">remove_plate_sample_time</span> <span class="o">&gt;=</span> <span class="n">min_sample_time</span>
+                                        <span class="ow">and</span> <span class="n">remove_plate_sample_time</span> <span class="o">&lt;=</span> <span class="n">max_sample_time</span>
+                                    <span class="p">):</span>
+                                        <span class="n">sample_times</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">remove_plate_sample_time</span><span class="p">)</span>
+                                <span class="c1"># Need to sort the sample times (since they&#39;re likely interleaved between remove and child sequences).</span>
+                                <span class="n">sample_times</span><span class="o">.</span><span class="n">sort</span><span class="p">()</span>
+
+                                <span class="c1"># Gather the rotation samples from the child&#39;s moving plate to the removed plate&#39;s fixed plate.</span>
+                                <span class="n">parent_to_child_rotation_samples</span> <span class="o">=</span> <span class="p">(</span>
+                                    <span class="n">_merge_rotation_samples</span><span class="p">(</span>
+                                        <span class="n">rotation_model</span><span class="p">,</span>
+                                        <span class="n">child_remove_plate_id</span><span class="p">,</span>
+                                        <span class="n">remove_plate_id</span><span class="p">,</span>
+                                        <span class="n">parent_remove_plate_id</span><span class="p">,</span>
+                                        <span class="n">child_remove_plate_samples</span><span class="p">,</span>
+                                        <span class="n">child_remove_plate_sample_times</span><span class="p">,</span>
+                                        <span class="n">sample_times</span><span class="p">,</span>
+                                        <span class="n">remove_plate_max_sample_time</span><span class="p">,</span>
+                                    <span class="p">)</span>
+                                <span class="p">)</span>
+
+                                <span class="c1"># Insert new samples at times where the difference between original and new rotation models exceeds a threshold.</span>
+                                <span class="k">if</span> <span class="n">accuracy_parameters</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+                                    <span class="p">(</span>
+                                        <span class="n">threshold_rotation_accuracy_degrees</span><span class="p">,</span>
+                                        <span class="n">threshold_time_interval</span><span class="p">,</span>
+                                        <span class="n">use_uniform_accuracy_times</span><span class="p">,</span>
+                                    <span class="p">)</span> <span class="o">=</span> <span class="n">accuracy_parameters</span>
+                                    <span class="n">_ensure_sequence_accuracy</span><span class="p">(</span>
+                                        <span class="n">rotation_model</span><span class="p">,</span>
+                                        <span class="n">parent_to_child_rotation_samples</span><span class="p">,</span>
+                                        <span class="n">child_remove_plate_id</span><span class="p">,</span>
+                                        <span class="n">remove_plate_id</span><span class="p">,</span>
+                                        <span class="n">parent_remove_plate_id</span><span class="p">,</span>
+                                        <span class="n">remove_plate_max_sample_time</span><span class="p">,</span>
+                                        <span class="n">threshold_rotation_accuracy_degrees</span><span class="p">,</span>
+                                        <span class="n">threshold_time_interval</span><span class="p">,</span>
+                                        <span class="n">use_uniform_accuracy_times</span><span class="p">,</span>
+                                    <span class="p">)</span>
+
+                                <span class="c1"># Create a new rotation sequence.</span>
+                                <span class="n">parent_to_child_rotation_feature</span> <span class="o">=</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">Feature</span><span class="o">.</span><span class="n">create_total_reconstruction_sequence</span><span class="p">(</span>
+                                    <span class="n">parent_remove_plate_id</span><span class="p">,</span>
+                                    <span class="n">child_remove_plate_id</span><span class="p">,</span>
+                                    <span class="n">pygplates</span><span class="o">.</span><span class="n">GpmlIrregularSampling</span><span class="p">(</span>
+                                        <span class="n">parent_to_child_rotation_samples</span>
+                                    <span class="p">),</span>
+                                    <span class="n">child_remove_plate_rotation_feature</span><span class="o">.</span><span class="n">get_name</span><span class="p">(</span>
+                                        <span class="kc">None</span>
+                                    <span class="p">),</span>  <span class="c1"># Note: specifying None avoids a pygplates crash in revs &lt; 20</span>
+                                    <span class="n">child_remove_plate_rotation_feature</span><span class="o">.</span><span class="n">get_description</span><span class="p">(</span>
+                                        <span class="kc">None</span>
+                                    <span class="p">),</span>
+                                <span class="p">)</span>  <span class="c1"># Note: specifying None avoids a pygplates crash in revs &lt; 20</span>
+
+                                <span class="c1"># Insert the new rotation feature to the current location in the feature collection.</span>
+                                <span class="c1"># This is better than adding to the end of the collection and thus reordering the order of rotation sequences</span>
+                                <span class="c1"># in the output collection/file (making it harder to visually find it in a text editor).</span>
+                                <span class="c1"># Also note that this won&#39;t affect &#39;rotation_model&#39; (since it used a cloned version of all features).</span>
+                                <span class="n">rotation_feature_collection</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span>
+                                    <span class="n">rotation_feature_index</span><span class="p">,</span>
+                                    <span class="n">parent_to_child_rotation_feature</span><span class="p">,</span>
+                                <span class="p">)</span>
+                                <span class="n">rotation_feature_index</span> <span class="o">+=</span> <span class="mi">1</span>
+
+                        <span class="c1"># The original rotation feature will no longer be needed because we remove plate sequences</span>
+                        <span class="c1"># whose fixed plate is the current remove plate.</span>
+                        <span class="c1"># We would have added one or more sequences above to replace it though.</span>
+                        <span class="c1"># Also note that this won&#39;t affect &#39;rotation_model&#39; (since it used a cloned version of all features).</span>
+                        <span class="k">del</span> <span class="n">rotation_feature_collection</span><span class="p">[</span><span class="n">rotation_feature_index</span><span class="p">]</span>
+                        <span class="n">rotation_feature_index</span> <span class="o">-=</span> <span class="mi">1</span>
+
+                <span class="n">rotation_feature_index</span> <span class="o">+=</span> <span class="mi">1</span>
+
+        <span class="c1"># Note that we don&#39;t join rotation sequences having the same moving/fixed plates.</span>
+        <span class="c1"># However they will show up as a &#39;duplicate geo-time&#39; warning when loading into GPlates.</span>
+        <span class="c1"># TODO: Remove duplicate geo-times and join the offending rotation sequences.</span>
+        <span class="c1">#</span>
+        <span class="c1"># Details: It&#39;s possible that a sequence having a crossover (really two sequences with same moving</span>
+        <span class="c1"># plate but different fixed plates) can have one of its fixed plates removed and hence replaced</span>
+        <span class="c1"># by the fixed plate of the removed sequence. In this situation the original crossover sequence</span>
+        <span class="c1"># (really two sequences) could now have the same fixed plate ID, and since it also has the</span>
+        <span class="c1"># same moving plate ID it should really be one sequence.</span>
+
+    <span class="c1"># Return our (potentially) modified feature collections as a list of pygplates.FeatureCollection.</span>
+    <span class="k">return</span> <span class="p">[</span>
+        <span class="n">pygplates</span><span class="o">.</span><span class="n">FeatureCollection</span><span class="p">(</span><span class="n">rotation_feature_collection</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">rotation_feature_collection</span> <span class="ow">in</span> <span class="n">rotation_feature_collections</span>
+    <span class="p">]</span></div>
+
+
+
+<div class="viewcode-block" id="_merge_rotation_samples">
+<a class="viewcode-back" href="../../../gplately.ptt.html#gplately.ptt.remove_plate_rotations._merge_rotation_samples">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">_merge_rotation_samples</span><span class="p">(</span>
+    <span class="n">rotation_model</span><span class="p">,</span>
+    <span class="n">child_remove_plate_id</span><span class="p">,</span>
+    <span class="n">remove_plate_id</span><span class="p">,</span>
+    <span class="n">parent_remove_plate_id</span><span class="p">,</span>
+    <span class="n">child_remove_plate_samples</span><span class="p">,</span>
+    <span class="n">child_remove_plate_sample_times</span><span class="p">,</span>
+    <span class="n">sample_times</span><span class="p">,</span>
+    <span class="n">remove_plate_max_sample_time</span><span class="p">,</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Gather the rotation samples from the child&#39;s moving plate to the removed plate&#39;s fixed plate.&quot;&quot;&quot;</span>
+
+    <span class="c1"># Gather the rotation samples from the child&#39;s moving plate to the removed plate&#39;s fixed plate.</span>
+    <span class="n">parent_to_child_rotation_samples</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">sample_time</span> <span class="ow">in</span> <span class="n">sample_times</span><span class="p">:</span>
+        <span class="c1"># Rotation from parent to remove-plate is now replaced by rotation from</span>
+        <span class="c1"># (parent of remove-plate) to (child of remove-plate).</span>
+        <span class="c1">#</span>
+        <span class="c1">#   R(0-&gt;t,parent_plate-&gt;child_plate) = R(0-&gt;t,parent_plate-&gt;remove_plate) * R(0-&gt;t,remove_plate-&gt;child_plate)</span>
+        <span class="c1">#</span>
+        <span class="c1"># Also note that below we set fixed plate as the &#39;anchor_plate_id&#39; argument to pygplates.RotationModel.get_rotation(),</span>
+        <span class="c1"># not the &#39;fixed_plate_id&#39; argument, in case there is no plate circuit path to anchor plate 000.</span>
+        <span class="c1"># This also means the user doesn&#39;t have to load all rotations in the model,</span>
+        <span class="c1"># only those that have the remove plate IDs as a moving or fixed plate.</span>
+
+        <span class="k">if</span> <span class="n">sample_time</span> <span class="o">&gt;</span> <span class="n">remove_plate_max_sample_time</span><span class="p">:</span>
+            <span class="c1"># The time span of the (oldest) removed plate sequence is too short, so extend its oldest sample further into</span>
+            <span class="c1"># the past (ie, assume a constant rotation). We do this by calculating R(0-&gt;t,parent_plate-&gt;remove_plate)</span>
+            <span class="c1"># at the max sample time of remove plate sequence instead of the current sample time.</span>
+            <span class="c1">#</span>
+            <span class="c1"># Note that the remove sequences are ordered by time (ie, first sequence should start at 0Ma, etc).</span>
+            <span class="c1"># So &#39;max_sample_time&#39; should be the oldest time of the oldest removed plate sequence.</span>
+
+            <span class="c1"># R(0-&gt;t,parent_plate-&gt;remove_plate)</span>
+            <span class="n">parent_to_remove_rotation</span> <span class="o">=</span> <span class="n">rotation_model</span><span class="o">.</span><span class="n">get_rotation</span><span class="p">(</span>
+                <span class="c1"># Note the time is &#39;remove_plate_max_sample_time&#39; and not &#39;sample_time&#39;...</span>
+                <span class="n">remove_plate_max_sample_time</span><span class="p">,</span>
+                <span class="n">remove_plate_id</span><span class="p">,</span>
+                <span class="n">anchor_plate_id</span><span class="o">=</span><span class="n">parent_remove_plate_id</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="c1"># R(0-&gt;t,remove_plate-&gt;child_plate)</span>
+            <span class="n">remove_to_child_rotation</span> <span class="o">=</span> <span class="n">rotation_model</span><span class="o">.</span><span class="n">get_rotation</span><span class="p">(</span>
+                <span class="n">sample_time</span><span class="p">,</span> <span class="n">child_remove_plate_id</span><span class="p">,</span> <span class="n">anchor_plate_id</span><span class="o">=</span><span class="n">remove_plate_id</span>
+            <span class="p">)</span>
+
+            <span class="n">parent_to_child_rotation</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">parent_to_remove_rotation</span> <span class="o">*</span> <span class="n">remove_to_child_rotation</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># Note that here we don&#39;t actually need to compose rotations as in the above equation because both rotations</span>
+            <span class="c1"># are at the same (sample) time so we can just get pygplates.RotationModel.get_rotation() to compose them for us.</span>
+            <span class="c1">#</span>
+            <span class="c1"># R(0-&gt;t,parent_plate-&gt;child_plate)</span>
+            <span class="n">parent_to_child_rotation</span> <span class="o">=</span> <span class="n">rotation_model</span><span class="o">.</span><span class="n">get_rotation</span><span class="p">(</span>
+                <span class="n">sample_time</span><span class="p">,</span>
+                <span class="n">child_remove_plate_id</span><span class="p">,</span>
+                <span class="n">anchor_plate_id</span><span class="o">=</span><span class="n">parent_remove_plate_id</span><span class="p">,</span>
+            <span class="p">)</span>
+
+        <span class="c1"># If the sample time corresponds to an existing sample then use its description,</span>
+        <span class="c1"># otherwise create a new sample description noting that the new sample is due to</span>
+        <span class="c1"># the removal of a specific fixed plate.</span>
+        <span class="k">if</span> <span class="n">sample_time</span> <span class="ow">in</span> <span class="n">child_remove_plate_sample_times</span><span class="p">:</span>
+            <span class="n">child_remove_plate_sample</span> <span class="o">=</span> <span class="n">child_remove_plate_samples</span><span class="p">[</span>
+                <span class="n">child_remove_plate_sample_times</span><span class="o">.</span><span class="n">index</span><span class="p">(</span><span class="n">sample_time</span><span class="p">)</span>
+            <span class="p">]</span>
+            <span class="n">sample_description</span> <span class="o">=</span> <span class="n">child_remove_plate_sample</span><span class="o">.</span><span class="n">get_description</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">sample_description</span> <span class="o">=</span> <span class="s2">&quot;Removed fixed plate </span><span class="si">{0}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">remove_plate_id</span><span class="p">)</span>
+
+        <span class="n">parent_to_child_rotation_samples</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+            <span class="n">pygplates</span><span class="o">.</span><span class="n">GpmlTimeSample</span><span class="p">(</span>
+                <span class="n">pygplates</span><span class="o">.</span><span class="n">GpmlFiniteRotation</span><span class="p">(</span><span class="n">parent_to_child_rotation</span><span class="p">),</span>
+                <span class="n">sample_time</span><span class="p">,</span>
+                <span class="n">sample_description</span><span class="p">,</span>
+            <span class="p">)</span>
+        <span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">parent_to_child_rotation_samples</span></div>
+
+
+
+<div class="viewcode-block" id="_ensure_sequence_accuracy">
+<a class="viewcode-back" href="../../../gplately.ptt.html#gplately.ptt.remove_plate_rotations._ensure_sequence_accuracy">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">_ensure_sequence_accuracy</span><span class="p">(</span>
+    <span class="n">rotation_model</span><span class="p">,</span>
+    <span class="n">parent_to_child_rotation_samples</span><span class="p">,</span>
+    <span class="n">child_remove_plate_id</span><span class="p">,</span>
+    <span class="n">remove_plate_id</span><span class="p">,</span>
+    <span class="n">parent_remove_plate_id</span><span class="p">,</span>
+    <span class="n">remove_plate_max_sample_time</span><span class="p">,</span>
+    <span class="n">threshold_rotation_accuracy_degrees</span><span class="p">,</span>
+    <span class="n">threshold_time_interval</span><span class="p">,</span>
+    <span class="n">insert_poles_at_integer_multiples_of_time_interval</span><span class="p">,</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Insert new samples at times where the difference between original and new rotation models exceeds a threshold.&quot;&quot;&quot;</span>
+
+    <span class="n">num_original_samples</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">parent_to_child_rotation_samples</span><span class="p">)</span>
+
+    <span class="n">sample_pair_stack</span> <span class="o">=</span> <span class="p">[]</span>
+
+    <span class="c1"># Add the stage rotation intervals to the stack for later processing.</span>
+    <span class="k">for</span> <span class="n">sample_index</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_original_samples</span> <span class="o">-</span> <span class="mi">1</span><span class="p">):</span>
+        <span class="n">sample1</span><span class="p">,</span> <span class="n">sample2</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">parent_to_child_rotation_samples</span><span class="p">[</span><span class="n">sample_index</span><span class="p">],</span>
+            <span class="n">parent_to_child_rotation_samples</span><span class="p">[</span><span class="n">sample_index</span> <span class="o">+</span> <span class="mi">1</span><span class="p">],</span>
+        <span class="p">)</span>
+        <span class="n">sample_time1</span><span class="p">,</span> <span class="n">sample_time2</span> <span class="o">=</span> <span class="n">sample1</span><span class="o">.</span><span class="n">get_time</span><span class="p">(),</span> <span class="n">sample2</span><span class="o">.</span><span class="n">get_time</span><span class="p">()</span>
+        <span class="k">if</span> <span class="p">(</span>
+            <span class="n">pygplates</span><span class="o">.</span><span class="n">GeoTimeInstant</span><span class="p">(</span><span class="n">sample_time2</span> <span class="o">-</span> <span class="n">sample_time1</span><span class="p">)</span>
+            <span class="o">&gt;</span> <span class="n">threshold_time_interval</span>
+        <span class="p">):</span>
+            <span class="n">sample_pair_stack</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">sample1</span><span class="p">,</span> <span class="n">sample2</span><span class="p">))</span>
+
+    <span class="c1"># Process the stage rotation intervals on the stack until it is empty.</span>
+    <span class="k">while</span> <span class="n">sample_pair_stack</span><span class="p">:</span>
+        <span class="n">sample1</span><span class="p">,</span> <span class="n">sample2</span> <span class="o">=</span> <span class="n">sample_pair_stack</span><span class="o">.</span><span class="n">pop</span><span class="p">()</span>
+        <span class="n">sample_time1</span><span class="p">,</span> <span class="n">sample_time2</span> <span class="o">=</span> <span class="n">sample1</span><span class="o">.</span><span class="n">get_time</span><span class="p">(),</span> <span class="n">sample2</span><span class="o">.</span><span class="n">get_time</span><span class="p">()</span>
+
+        <span class="n">mid_sample_time</span> <span class="o">=</span> <span class="mf">0.5</span> <span class="o">*</span> <span class="p">(</span><span class="n">sample_time1</span> <span class="o">+</span> <span class="n">sample_time2</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">insert_poles_at_integer_multiples_of_time_interval</span><span class="p">:</span>
+            <span class="c1"># Round to the nearest uniformly spaced interval.</span>
+            <span class="n">interpolated_sample_time</span> <span class="o">=</span> <span class="n">threshold_time_interval</span> <span class="o">*</span> <span class="n">math</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span>
+                <span class="p">(</span><span class="n">mid_sample_time</span> <span class="o">/</span> <span class="n">threshold_time_interval</span><span class="p">)</span> <span class="o">+</span> <span class="mf">0.5</span>
+            <span class="p">)</span>
+            <span class="k">if</span> <span class="n">interpolated_sample_time</span> <span class="o">&gt;</span> <span class="n">mid_sample_time</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">interpolated_sample_time</span> <span class="o">&gt;=</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">GeoTimeInstant</span><span class="p">(</span><span class="n">sample_time2</span><span class="p">):</span>
+                    <span class="c1"># We rounded up and the time was greater-or-equal to the end sample time so subtract one time interval.</span>
+                    <span class="c1"># This is guaranteed to remain within the start/end range since that range should exceed the time interval.</span>
+                    <span class="n">interpolated_sample_time</span> <span class="o">-=</span> <span class="n">threshold_time_interval</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="k">if</span> <span class="n">interpolated_sample_time</span> <span class="o">&lt;=</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">GeoTimeInstant</span><span class="p">(</span><span class="n">sample_time1</span><span class="p">):</span>
+                    <span class="c1"># We rounded down and the time was less-or-equal to the start sample time so add one time interval.</span>
+                    <span class="c1"># This is guaranteed to remain within the start/end range since that range should exceed the time interval.</span>
+                    <span class="n">interpolated_sample_time</span> <span class="o">+=</span> <span class="n">threshold_time_interval</span>
+
+        <span class="k">else</span><span class="p">:</span>
+            <span class="c1"># Just use the sample midway between &#39;sample1&#39; and &#39;sample2&#39;.</span>
+            <span class="n">interpolated_sample_time</span> <span class="o">=</span> <span class="n">mid_sample_time</span>
+
+        <span class="n">interpolated_sample</span> <span class="o">=</span> <span class="n">_create_accurate_sample</span><span class="p">(</span>
+            <span class="n">rotation_model</span><span class="p">,</span>
+            <span class="n">interpolated_sample_time</span><span class="p">,</span>
+            <span class="n">sample1</span><span class="p">,</span>
+            <span class="n">sample2</span><span class="p">,</span>
+            <span class="n">child_remove_plate_id</span><span class="p">,</span>
+            <span class="n">remove_plate_id</span><span class="p">,</span>
+            <span class="n">parent_remove_plate_id</span><span class="p">,</span>
+            <span class="n">remove_plate_max_sample_time</span><span class="p">,</span>
+            <span class="n">threshold_rotation_accuracy_degrees</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">interpolated_sample</span><span class="p">:</span>
+            <span class="n">parent_to_child_rotation_samples</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">interpolated_sample</span><span class="p">)</span>
+
+            <span class="c1"># Recurse if the time interval between start sample and the interpolated sample exceeds threshold interval.</span>
+            <span class="k">if</span> <span class="p">(</span>
+                <span class="n">pygplates</span><span class="o">.</span><span class="n">GeoTimeInstant</span><span class="p">(</span><span class="n">interpolated_sample_time</span> <span class="o">-</span> <span class="n">sample_time1</span><span class="p">)</span>
+                <span class="o">&gt;</span> <span class="n">threshold_time_interval</span>
+            <span class="p">):</span>
+                <span class="n">sample_pair_stack</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">sample1</span><span class="p">,</span> <span class="n">interpolated_sample</span><span class="p">))</span>
+
+            <span class="c1"># Recurse if the time interval between the interpolated sample and end sample exceeds threshold interval.</span>
+            <span class="k">if</span> <span class="p">(</span>
+                <span class="n">pygplates</span><span class="o">.</span><span class="n">GeoTimeInstant</span><span class="p">(</span><span class="n">sample_time2</span> <span class="o">-</span> <span class="n">interpolated_sample_time</span><span class="p">)</span>
+                <span class="o">&gt;</span> <span class="n">threshold_time_interval</span>
+            <span class="p">):</span>
+                <span class="n">sample_pair_stack</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">interpolated_sample</span><span class="p">,</span> <span class="n">sample2</span><span class="p">))</span>
+
+    <span class="c1"># Sort the sample by time (if we added any new samples).</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">parent_to_child_rotation_samples</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">num_original_samples</span><span class="p">:</span>
+        <span class="n">parent_to_child_rotation_samples</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">sample</span><span class="p">:</span> <span class="n">sample</span><span class="o">.</span><span class="n">get_time</span><span class="p">())</span></div>
+
+
+
+<div class="viewcode-block" id="_create_accurate_sample">
+<a class="viewcode-back" href="../../../gplately.ptt.html#gplately.ptt.remove_plate_rotations._create_accurate_sample">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">_create_accurate_sample</span><span class="p">(</span>
+    <span class="n">rotation_model</span><span class="p">,</span>
+    <span class="n">interpolated_sample_time</span><span class="p">,</span>
+    <span class="n">sample1</span><span class="p">,</span>
+    <span class="n">sample2</span><span class="p">,</span>
+    <span class="n">child_remove_plate_id</span><span class="p">,</span>
+    <span class="n">remove_plate_id</span><span class="p">,</span>
+    <span class="n">parent_remove_plate_id</span><span class="p">,</span>
+    <span class="n">remove_plate_max_sample_time</span><span class="p">,</span>
+    <span class="n">threshold_rotation_accuracy_degrees</span><span class="p">,</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Create a new accurate interpolated sample if the difference between original and new rotation models exceeds a threshold, otherwise None.&quot;&quot;&quot;</span>
+
+    <span class="c1"># Find the *original* rotation from parent plate to child plate (through removed plate).</span>
+    <span class="c1">#</span>
+    <span class="c1"># R(0-&gt;t,parent_plate-&gt;remove_plate)</span>
+    <span class="n">parent_to_remove_rotation</span> <span class="o">=</span> <span class="n">rotation_model</span><span class="o">.</span><span class="n">get_rotation</span><span class="p">(</span>
+        <span class="c1"># If the time span of the (oldest) removed plate sequence is too short then extend its oldest rotation to the interpolated-sample time...</span>
+        <span class="nb">min</span><span class="p">(</span><span class="n">interpolated_sample_time</span><span class="p">,</span> <span class="n">remove_plate_max_sample_time</span><span class="p">),</span>
+        <span class="n">remove_plate_id</span><span class="p">,</span>
+        <span class="n">anchor_plate_id</span><span class="o">=</span><span class="n">parent_remove_plate_id</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="c1"># R(0-&gt;t,remove_plate-&gt;child_plate)</span>
+    <span class="n">remove_to_child_rotation</span> <span class="o">=</span> <span class="n">rotation_model</span><span class="o">.</span><span class="n">get_rotation</span><span class="p">(</span>
+        <span class="n">interpolated_sample_time</span><span class="p">,</span> <span class="n">child_remove_plate_id</span><span class="p">,</span> <span class="n">anchor_plate_id</span><span class="o">=</span><span class="n">remove_plate_id</span>
+    <span class="p">)</span>
+    <span class="n">original_parent_to_child_rotation</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="n">parent_to_remove_rotation</span> <span class="o">*</span> <span class="n">remove_to_child_rotation</span>
+    <span class="p">)</span>
+
+    <span class="c1"># Find the *new* rotation from parent plate to child plate (through removed plate).</span>
+    <span class="c1">#</span>
+    <span class="c1"># This interpolates the newly calculated samples (that go directly from parent to child, ie, not via removed plate).</span>
+    <span class="n">new_parent_to_child_rotation</span> <span class="o">=</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">FiniteRotation</span><span class="o">.</span><span class="n">interpolate</span><span class="p">(</span>
+        <span class="n">sample1</span><span class="o">.</span><span class="n">get_value</span><span class="p">()</span><span class="o">.</span><span class="n">get_finite_rotation</span><span class="p">(),</span>
+        <span class="n">sample2</span><span class="o">.</span><span class="n">get_value</span><span class="p">()</span><span class="o">.</span><span class="n">get_finite_rotation</span><span class="p">(),</span>
+        <span class="n">sample1</span><span class="o">.</span><span class="n">get_time</span><span class="p">(),</span>
+        <span class="n">sample2</span><span class="o">.</span><span class="n">get_time</span><span class="p">(),</span>
+        <span class="n">interpolated_sample_time</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="c1"># If original and new parent-to-child rotations differ too much then add a new (accurate) sample at the interpolated-sample time.</span>
+    <span class="n">interpolated_sample</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">FiniteRotation</span><span class="o">.</span><span class="n">are_equal</span><span class="p">(</span>
+        <span class="n">original_parent_to_child_rotation</span><span class="p">,</span>
+        <span class="n">new_parent_to_child_rotation</span><span class="p">,</span>
+        <span class="n">threshold_rotation_accuracy_degrees</span><span class="p">,</span>
+    <span class="p">):</span>
+        <span class="n">interpolated_sample</span> <span class="o">=</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">GpmlTimeSample</span><span class="p">(</span>
+            <span class="n">pygplates</span><span class="o">.</span><span class="n">GpmlFiniteRotation</span><span class="p">(</span><span class="n">original_parent_to_child_rotation</span><span class="p">),</span>
+            <span class="n">interpolated_sample_time</span><span class="p">,</span>
+            <span class="s2">&quot;Inserted pole to improve accuracy after removing fixed plate </span><span class="si">{0}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                <span class="n">remove_plate_id</span>
+            <span class="p">),</span>
+        <span class="p">)</span>
+
+    <span class="k">return</span> <span class="n">interpolated_sample</span></div>
+
+
+
+<span class="c1"># Action to parse a tuple of accuracy parameters.</span>
+<div class="viewcode-block" id="ArgParseAccuracyAction">
+<a class="viewcode-back" href="../../../gplately.ptt.html#gplately.ptt.remove_plate_rotations.ArgParseAccuracyAction">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">ArgParseAccuracyAction</span><span class="p">(</span><span class="n">argparse</span><span class="o">.</span><span class="n">Action</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="fm">__call__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">parser</span><span class="p">,</span> <span class="n">namespace</span><span class="p">,</span> <span class="n">values</span><span class="p">,</span> <span class="n">option_string</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="c1"># Need two numbers (rotation threshold and threshold time interval).</span>
+        <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">values</span><span class="p">)</span> <span class="o">!=</span> <span class="mi">2</span><span class="p">:</span>
+            <span class="n">parser</span><span class="o">.</span><span class="n">error</span><span class="p">(</span>
+                <span class="s2">&quot;accuracy must be specified as two numbers (rotation threshold and threshold time interval)&quot;</span>
+            <span class="p">)</span>
+
+        <span class="k">try</span><span class="p">:</span>
+            <span class="c1"># Convert strings to float.</span>
+            <span class="n">threshold_rotation_accuracy_degrees</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">values</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span>
+            <span class="n">threshold_time_interval</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">values</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>
+        <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentTypeError</span><span class="p">(</span>
+                <span class="s2">&quot;encountered a rotation threshold and threshold time interval that is not a number&quot;</span>
+            <span class="p">)</span>
+
+        <span class="k">if</span> <span class="p">(</span>
+            <span class="n">threshold_rotation_accuracy_degrees</span> <span class="o">&lt;</span> <span class="mi">0</span>
+            <span class="ow">or</span> <span class="n">threshold_rotation_accuracy_degrees</span> <span class="o">&gt;</span> <span class="mi">90</span>
+        <span class="p">):</span>
+            <span class="n">parser</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;rotation threshold must be in the range [0, 90]&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">threshold_time_interval</span> <span class="o">&lt;=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">parser</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="s2">&quot;threshold time interval must be positive&quot;</span><span class="p">)</span>
+
+        <span class="nb">setattr</span><span class="p">(</span>
+            <span class="n">namespace</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">dest</span><span class="p">,</span>
+            <span class="p">(</span><span class="n">threshold_rotation_accuracy_degrees</span><span class="p">,</span> <span class="n">threshold_time_interval</span><span class="p">),</span>
+        <span class="p">)</span></div>
+
+
+
+<span class="n">__description__</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;Remove one or more plate IDs from a rotation model (consisting of one or more rotation files).</span>
+<span class="s2">    </span>
+<span class="s2">    Any rotations with a fixed plate referencing one of the removed plates will be adjusted such that</span>
+<span class="s2">    the rotation model effectively remains unchanged.</span>
+<span class="s2">    </span>
+<span class="s2">    Optional accuracy threshold parameters can be specified to ensure the rotation model after removing</span>
+<span class="s2">    plate rotations is very similar to the rotation model before removal.</span>
+<span class="s2">    </span>
+<span class="s2">    Ensure you specify all input rotation files that contain the plate IDs to be removed (either as a moving or fixed plate ID).</span>
+<span class="s2">    </span>
+<span class="s2">    The results are written back to the input rotation files unless an output filename prefix is provided.</span>
+
+<span class="s2">    NOTE: Separate the positional and optional arguments with &#39;--&#39; (workaround for bug in argparse module).</span>
+<span class="s2">    For example...</span>
+
+<span class="s2">    </span><span class="si">%(prog)s</span><span class="s2"> -p 70 4 3 1 -o removed_ref_frames_ -- rotations.rot</span>
+<span class="s2">    &quot;&quot;&quot;</span>
+
+
+<div class="viewcode-block" id="main">
+<a class="viewcode-back" href="../../../gplately.ptt.html#gplately.ptt.remove_plate_rotations.main">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">main</span><span class="p">(</span><span class="n">args</span><span class="p">):</span>
+
+    <span class="c1"># Initialise accuracy parameters (if used).</span>
+    <span class="n">accuracy_parameters</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">accuracy</span><span class="p">:</span>
+        <span class="n">accuracy_parameters</span> <span class="o">=</span> <span class="p">(</span>
+            <span class="n">args</span><span class="o">.</span><span class="n">accuracy</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+            <span class="n">args</span><span class="o">.</span><span class="n">accuracy</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
+            <span class="n">args</span><span class="o">.</span><span class="n">use_uniform_accuracy_times</span><span class="p">,</span>
+        <span class="p">)</span>
+
+    <span class="c1"># Read the input rotation feature collections.</span>
+    <span class="n">input_rotation_feature_collections</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="n">pygplates</span><span class="o">.</span><span class="n">FeatureCollection</span><span class="p">(</span><span class="n">input_rotation_filename</span><span class="p">)</span>
+        <span class="k">for</span> <span class="n">input_rotation_filename</span> <span class="ow">in</span> <span class="n">args</span><span class="o">.</span><span class="n">input_rotation_filenames</span>
+    <span class="p">]</span>
+
+    <span class="c1"># Remove plate rotations.</span>
+    <span class="n">output_rotation_feature_collections</span> <span class="o">=</span> <span class="n">remove_plates</span><span class="p">(</span>
+        <span class="n">input_rotation_feature_collections</span><span class="p">,</span> <span class="n">args</span><span class="o">.</span><span class="n">plate_ids</span><span class="p">,</span> <span class="n">accuracy_parameters</span>
+    <span class="p">)</span>
+
+    <span class="c1"># Write the modified rotation feature collections to disk.</span>
+    <span class="k">for</span> <span class="n">rotation_feature_collection_index</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span>
+        <span class="nb">len</span><span class="p">(</span><span class="n">output_rotation_feature_collections</span><span class="p">)</span>
+    <span class="p">):</span>
+        <span class="n">output_rotation_feature_collection</span> <span class="o">=</span> <span class="n">output_rotation_feature_collections</span><span class="p">[</span>
+            <span class="n">rotation_feature_collection_index</span>
+        <span class="p">]</span>
+
+        <span class="c1"># Each output filename is the input filename with an optional prefix prepended.</span>
+        <span class="n">input_rotation_filename</span> <span class="o">=</span> <span class="n">args</span><span class="o">.</span><span class="n">input_rotation_filenames</span><span class="p">[</span>
+            <span class="n">rotation_feature_collection_index</span>
+        <span class="p">]</span>
+        <span class="k">if</span> <span class="n">args</span><span class="o">.</span><span class="n">output_filename_prefix</span><span class="p">:</span>
+            <span class="nb">dir</span><span class="p">,</span> <span class="n">file_basename</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="n">input_rotation_filename</span><span class="p">)</span>
+            <span class="n">output_rotation_filename</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
+                <span class="nb">dir</span><span class="p">,</span> <span class="s2">&quot;</span><span class="si">{0}{1}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">output_filename_prefix</span><span class="p">,</span> <span class="n">file_basename</span><span class="p">)</span>
+            <span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">output_rotation_filename</span> <span class="o">=</span> <span class="n">input_rotation_filename</span>
+
+        <span class="n">output_rotation_feature_collection</span><span class="o">.</span><span class="n">write</span><span class="p">(</span><span class="n">output_rotation_filename</span><span class="p">)</span>
+
+    <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="add_arguments">
+<a class="viewcode-back" href="../../../gplately.ptt.html#gplately.ptt.remove_plate_rotations.add_arguments">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">add_arguments</span><span class="p">(</span><span class="n">parser</span><span class="p">):</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">formatter_class</span> <span class="o">=</span> <span class="n">argparse</span><span class="o">.</span><span class="n">RawDescriptionHelpFormatter</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">description</span> <span class="o">=</span> <span class="n">__description__</span>
+
+    <span class="n">parser</span><span class="o">.</span><span class="n">set_defaults</span><span class="p">(</span><span class="n">func</span><span class="o">=</span><span class="n">main</span><span class="p">)</span>
+
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">&quot;-p&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;--plates&quot;</span><span class="p">,</span>
+        <span class="nb">type</span><span class="o">=</span><span class="nb">int</span><span class="p">,</span>
+        <span class="n">nargs</span><span class="o">=</span><span class="s2">&quot;+&quot;</span><span class="p">,</span>
+        <span class="n">required</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+        <span class="n">metavar</span><span class="o">=</span><span class="s2">&quot;remove_plate_ID&quot;</span><span class="p">,</span>
+        <span class="n">dest</span><span class="o">=</span><span class="s2">&quot;plate_ids&quot;</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Plate IDs of one or more plates to remove.&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">&quot;-a&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;--accuracy&quot;</span><span class="p">,</span>
+        <span class="n">nargs</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
+        <span class="n">action</span><span class="o">=</span><span class="n">ArgParseAccuracyAction</span><span class="p">,</span>
+        <span class="n">metavar</span><span class="o">=</span><span class="p">(</span>
+            <span class="s2">&quot;threshold_rotation_accuracy_degrees&quot;</span><span class="p">,</span>
+            <span class="s2">&quot;threshold_time_interval_My&quot;</span><span class="p">,</span>
+        <span class="p">),</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Optional accuracy parameters. &quot;</span>
+        <span class="s2">&quot;If specified then the first parameter is the threshold rotation accuracy (in degrees) and &quot;</span>
+        <span class="s2">&quot;the second parameter is the threshold time interval. &quot;</span>
+        <span class="s2">&quot;The first parameter is used to compare the latitude, longitude and angle of two rotations before and &quot;</span>
+        <span class="s2">&quot;after removing a plate rotation. If any of those three parameters differ by more than the rotation accuracy (in degrees) then &quot;</span>
+        <span class="s2">&quot;samples at times mid-way between samples are inserted to ensure before/after accuracy of rotations. &quot;</span>
+        <span class="s2">&quot;This mid-way adaptive bisection is repeated (when there is inaccuracy) until the interval between samples &quot;</span>
+        <span class="s2">&quot;becomes smaller than the second parameter (threshold time interval). &quot;</span>
+        <span class="s2">&quot;Rotation threshold is in degrees and threshold time interval is in millions of years.&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">&quot;-u&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;--use_uniform_accuracy_times&quot;</span><span class="p">,</span>
+        <span class="n">action</span><span class="o">=</span><span class="s2">&quot;store_true&quot;</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s1">&#39;If specified then rotation poles inserted for accuracy (according to &quot;-a&quot; option) will be restricted to times &#39;</span>
+        <span class="s1">&#39;that are integer multiples of the threshold time interval (specified in the &quot;-a&quot; option).&#39;</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">&quot;-o&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;--output_filename_prefix&quot;</span><span class="p">,</span>
+        <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span>
+        <span class="n">metavar</span><span class="o">=</span><span class="s2">&quot;output_filename_prefix&quot;</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Optional output filename prefix. If one is provided then an output rotation file &quot;</span>
+        <span class="s2">&quot;is created for each input rotation file by prefixing the input filenames. &quot;</span>
+        <span class="s2">&quot;If no filename prefix is provided then the input files are overwritten.&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">&quot;input_rotation_filenames&quot;</span><span class="p">,</span>
+        <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span>
+        <span class="n">nargs</span><span class="o">=</span><span class="s2">&quot;+&quot;</span><span class="p">,</span>
+        <span class="n">metavar</span><span class="o">=</span><span class="s2">&quot;input_rotation_filename&quot;</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;One or more rotation files of a rotation model.&quot;</span><span class="p">,</span>
+    <span class="p">)</span></div>
+
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+    <span class="c1"># The command-line parser.</span>
+    <span class="n">parser</span> <span class="o">=</span> <span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentParser</span><span class="p">(</span>
+        <span class="n">description</span><span class="o">=</span><span class="n">__description__</span><span class="p">,</span>
+        <span class="n">formatter_class</span><span class="o">=</span><span class="n">argparse</span><span class="o">.</span><span class="n">RawDescriptionHelpFormatter</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="c1"># add arguments</span>
+    <span class="n">add_arguments</span><span class="p">(</span><span class="n">parser</span><span class="p">)</span>
+
+    <span class="c1"># Parse command-line options.</span>
+    <span class="n">args</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_args</span><span class="p">()</span>
+
+    <span class="c1"># call main function</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="n">main</span><span class="p">(</span><span class="n">args</span><span class="p">)</span>
+        <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">0</span><span class="p">)</span>
+    <span class="k">except</span> <span class="ne">Exception</span> <span class="k">as</span> <span class="n">exc</span><span class="p">:</span>
+        <span class="nb">print</span><span class="p">(</span><span class="s2">&quot;ERROR: </span><span class="si">{0}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">exc</span><span class="p">),</span> <span class="n">file</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="p">)</span>
+        <span class="c1"># Uncomment this to print traceback to location of raised exception.</span>
+        <span class="c1"># traceback.print_exc()</span>
+        <span class="n">sys</span><span class="o">.</span><span class="n">exit</span><span class="p">(</span><span class="mi">1</span><span class="p">)</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023-2025, The University of Sydney.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

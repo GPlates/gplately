@@ -1,0 +1,449 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>gplately.ptt.diagnose_rotations &mdash; gplately 2.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=51b770b3"></script>
+      <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            gplately
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">GPlately v2.0.0</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../basic_usages.html">Minimal working example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../use_cases.html">Common Use Cases</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../faq.html">Trouble-shooting and FAQ</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../command_line_interface.html">Command Line Interface (CLI)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../primer.html">Primer</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../modules.html">gplately</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">gplately</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">gplately.ptt.diagnose_rotations</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for gplately.ptt.diagnose_rotations</h1><div class="highlight"><pre>
+<span></span><span class="c1">#</span>
+<span class="c1">#    Copyright (C) 2020 The University of Sydney, Australia</span>
+<span class="c1">#</span>
+<span class="c1">#    This program is free software; you can redistribute it and/or modify it under</span>
+<span class="c1">#    the terms of the GNU General Public License, version 2, as published by</span>
+<span class="c1">#    the Free Software Foundation.</span>
+<span class="c1">#</span>
+<span class="c1">#    This program is distributed in the hope that it will be useful, but WITHOUT</span>
+<span class="c1">#    ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or</span>
+<span class="c1">#    FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License</span>
+<span class="c1">#    for more details.</span>
+<span class="c1">#</span>
+<span class="c1">#    You should have received a copy of the GNU General Public License along</span>
+<span class="c1">#    with this program; if not, write to Free Software Foundation, Inc.,</span>
+<span class="c1">#    51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.</span>
+<span class="c1">#</span>
+
+<span class="kn">from</span><span class="w"> </span><span class="nn">__future__</span><span class="w"> </span><span class="kn">import</span> <span class="n">print_function</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">argparse</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">os.path</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">sys</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">pygplates</span>
+
+<span class="c1"># The default is useful when the rotations were loaded from a PLATES rotation file</span>
+<span class="c1"># that stored rotation lat/lon/angle to 2 decimal places of accuracy.</span>
+<span class="n">DEFAULT_ROTATION_THRESHOLD_DEGREES</span> <span class="o">=</span> <span class="mf">0.01</span>
+
+
+<div class="viewcode-block" id="diagnose_rotations">
+<a class="viewcode-back" href="../../../gplately.ptt.html#gplately.ptt.diagnose_rotations.diagnose_rotations">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">diagnose_rotations</span><span class="p">(</span>
+    <span class="n">rotation_features</span><span class="p">,</span> <span class="n">rotation_threshold_degrees</span><span class="o">=</span><span class="n">DEFAULT_ROTATION_THRESHOLD_DEGREES</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">    Diagnose one or more rotation files to check for inconsistencies.</span>
+
+<span class="sd">    &#39;rotation_features&#39; can be a rotation feature collection, or rotation filename, or rotation feature, or</span>
+<span class="sd">    sequence of rotation features, or a sequence (eg, list or tuple) of any combination of those four types.</span>
+
+<span class="sd">    &#39;rotation_threshold_degrees&#39; allows two rotations to compare equal if their rotation latitude, longitude or angle</span>
+<span class="sd">    differ by less than the specified amount (in degrees). The default value is useful for some PLATES rotation files</span>
+<span class="sd">    that are typically accurate to 2 decimal places (or threshold of 0.01).</span>
+<span class="sd">    Specifing &#39;None&#39; is equivalent to having no threshold (see pygplates.FiniteRotation.are_equal).</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># Use helper class to convert &#39;rotation_features&#39; argument to a list of features.</span>
+    <span class="n">rotation_features</span> <span class="o">=</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">FeaturesFunctionArgument</span><span class="p">(</span><span class="n">rotation_features</span><span class="p">)</span>
+    <span class="n">rotation_feature_sequence</span> <span class="o">=</span> <span class="n">rotation_features</span><span class="o">.</span><span class="n">get_features</span><span class="p">()</span>
+
+    <span class="c1"># Make sure threshold is a number.</span>
+    <span class="k">if</span> <span class="n">rotation_threshold_degrees</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">rotation_threshold_degrees</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">rotation_threshold_degrees</span><span class="p">)</span>
+
+    <span class="c1"># A &#39;dict&#39; to map each moving plate to a list of total reconstruction poles</span>
+    <span class="c1"># (one per moving/fixed plate pair)</span>
+    <span class="n">total_reconstruction_poles_by_moving_plate</span> <span class="o">=</span> <span class="p">{}</span>
+
+    <span class="c1"># Get the moving/fixed total reconstruction poles.</span>
+    <span class="k">for</span> <span class="n">rotation_feature</span> <span class="ow">in</span> <span class="n">rotation_feature_sequence</span><span class="p">:</span>
+        <span class="n">total_reconstruction_pole</span> <span class="o">=</span> <span class="n">rotation_feature</span><span class="o">.</span><span class="n">get_total_reconstruction_pole</span><span class="p">()</span>
+        <span class="c1"># If the current feature is a valid rotation feature...</span>
+        <span class="k">if</span> <span class="n">total_reconstruction_pole</span><span class="p">:</span>
+            <span class="p">(</span>
+                <span class="n">fixed_plate_id</span><span class="p">,</span>
+                <span class="n">moving_plate_id</span><span class="p">,</span>
+                <span class="n">rotation_sequence</span><span class="p">,</span>
+            <span class="p">)</span> <span class="o">=</span> <span class="n">total_reconstruction_pole</span>
+            <span class="c1"># Each moving plate has a list of total reconstruction poles.</span>
+            <span class="n">total_reconstruction_poles</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">total_reconstruction_poles_by_moving_plate</span><span class="o">.</span><span class="n">setdefault</span><span class="p">(</span>
+                    <span class="n">moving_plate_id</span><span class="p">,</span> <span class="p">[]</span>
+                <span class="p">)</span>
+            <span class="p">)</span>
+            <span class="n">total_reconstruction_poles</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">total_reconstruction_pole</span><span class="p">)</span>
+
+    <span class="c1"># Iterate over the moving plates.</span>
+    <span class="k">for</span> <span class="p">(</span>
+        <span class="n">moving_plate_id</span><span class="p">,</span>
+        <span class="n">total_reconstruction_poles</span><span class="p">,</span>
+    <span class="p">)</span> <span class="ow">in</span> <span class="n">total_reconstruction_poles_by_moving_plate</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="n">moving_plate_time_samples</span> <span class="o">=</span> <span class="p">[]</span>
+
+        <span class="c1"># Iterate over the total reconstruction poles associated with the current moving plate.</span>
+        <span class="k">for</span> <span class="n">total_reconstruction_pole</span> <span class="ow">in</span> <span class="n">total_reconstruction_poles</span><span class="p">:</span>
+            <span class="n">fixed_plate_id</span> <span class="o">=</span> <span class="n">total_reconstruction_pole</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="n">rotation_sequence</span> <span class="o">=</span> <span class="n">total_reconstruction_pole</span><span class="p">[</span><span class="mi">2</span><span class="p">]</span>
+
+            <span class="c1"># Skip moving/fixed plates 999 since they are used as comments in PLATES rotation file.</span>
+            <span class="k">if</span> <span class="n">moving_plate_id</span> <span class="o">==</span> <span class="mi">999</span> <span class="ow">and</span> <span class="n">fixed_plate_id</span> <span class="o">==</span> <span class="mi">999</span><span class="p">:</span>
+                <span class="k">continue</span>
+
+            <span class="n">time_samples</span> <span class="o">=</span> <span class="n">rotation_sequence</span><span class="o">.</span><span class="n">get_enabled_time_samples</span><span class="p">()</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">time_samples</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span>
+                    <span class="s2">&quot;Moving_pid(</span><span class="si">{0}</span><span class="s2">), fixed_pid(</span><span class="si">{1}</span><span class="s2">): no enabled poles in sequence.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                        <span class="n">moving_plate_id</span><span class="p">,</span> <span class="n">fixed_plate_id</span>
+                    <span class="p">)</span>
+                <span class="p">)</span>
+                <span class="k">continue</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">time_samples</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span>
+                    <span class="s2">&quot;Moving_pid(</span><span class="si">{0}</span><span class="s2">), fixed_pid(</span><span class="si">{1}</span><span class="s2">): only one enabled pole in sequence.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                        <span class="n">moving_plate_id</span><span class="p">,</span> <span class="n">fixed_plate_id</span>
+                    <span class="p">)</span>
+                <span class="p">)</span>
+                <span class="k">continue</span>
+            <span class="n">times</span> <span class="o">=</span> <span class="p">[</span><span class="n">time_sample</span><span class="o">.</span><span class="n">get_time</span><span class="p">()</span> <span class="k">for</span> <span class="n">time_sample</span> <span class="ow">in</span> <span class="n">time_samples</span><span class="p">]</span>
+            <span class="k">if</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">times</span><span class="p">)</span> <span class="o">!=</span> <span class="n">times</span><span class="p">:</span>
+                <span class="nb">print</span><span class="p">(</span>
+                    <span class="s2">&quot;Moving_pid(</span><span class="si">{0}</span><span class="s2">), fixed_pid(</span><span class="si">{1}</span><span class="s2">): times of enabled samples not monotonically increasing between </span><span class="si">{2}</span><span class="s2"> and </span><span class="si">{3}</span><span class="s2">.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                        <span class="n">moving_plate_id</span><span class="p">,</span> <span class="n">fixed_plate_id</span><span class="p">,</span> <span class="n">times</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">times</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+                    <span class="p">)</span>
+                <span class="p">)</span>
+                <span class="k">continue</span>
+
+            <span class="n">moving_plate_time_samples</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="n">fixed_plate_id</span><span class="p">,</span> <span class="n">time_samples</span><span class="p">))</span>
+
+        <span class="c1"># Go through all rotation sequences with the same moving plate (and potentially different</span>
+        <span class="c1"># fixed plates) to see if there&#39;s any overlap in their time ranges and to see if two</span>
+        <span class="c1"># adjacent rotation sequences have matching rotations (or crossovers if fixed plates differ)</span>
+        <span class="c1"># at the joint time.</span>
+        <span class="k">for</span> <span class="n">index1</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">moving_plate_time_samples</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">):</span>
+            <span class="k">for</span> <span class="n">index2</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">index1</span> <span class="o">+</span> <span class="mi">1</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">moving_plate_time_samples</span><span class="p">)):</span>
+                <span class="n">fixed_plate_id1</span> <span class="o">=</span> <span class="n">moving_plate_time_samples</span><span class="p">[</span><span class="n">index1</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+                <span class="n">fixed_plate_id2</span> <span class="o">=</span> <span class="n">moving_plate_time_samples</span><span class="p">[</span><span class="n">index2</span><span class="p">][</span><span class="mi">0</span><span class="p">]</span>
+                <span class="n">fixed_plate_time_samples1</span> <span class="o">=</span> <span class="n">moving_plate_time_samples</span><span class="p">[</span><span class="n">index1</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span>
+                <span class="n">fixed_plate_time_samples2</span> <span class="o">=</span> <span class="n">moving_plate_time_samples</span><span class="p">[</span><span class="n">index2</span><span class="p">][</span><span class="mi">1</span><span class="p">]</span>
+                <span class="n">time_range1</span> <span class="o">=</span> <span class="p">(</span>
+                    <span class="n">pygplates</span><span class="o">.</span><span class="n">GeoTimeInstant</span><span class="p">(</span><span class="n">fixed_plate_time_samples1</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">get_time</span><span class="p">()),</span>
+                    <span class="n">pygplates</span><span class="o">.</span><span class="n">GeoTimeInstant</span><span class="p">(</span><span class="n">fixed_plate_time_samples1</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">get_time</span><span class="p">()),</span>
+                <span class="p">)</span>
+                <span class="n">time_range2</span> <span class="o">=</span> <span class="p">(</span>
+                    <span class="n">pygplates</span><span class="o">.</span><span class="n">GeoTimeInstant</span><span class="p">(</span><span class="n">fixed_plate_time_samples2</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">get_time</span><span class="p">()),</span>
+                    <span class="n">pygplates</span><span class="o">.</span><span class="n">GeoTimeInstant</span><span class="p">(</span><span class="n">fixed_plate_time_samples2</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span><span class="o">.</span><span class="n">get_time</span><span class="p">()),</span>
+                <span class="p">)</span>
+
+                <span class="k">if</span> <span class="n">time_range1</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&gt;</span> <span class="n">time_range2</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
+                    <span class="k">if</span> <span class="n">time_range1</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">time_range2</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span>
+                        <span class="nb">print</span><span class="p">(</span>
+                            <span class="s2">&quot;Moving_pid(</span><span class="si">{0}</span><span class="s2">), fixed_pid1(</span><span class="si">{1}</span><span class="s2">), fixed_pid2(</span><span class="si">{2}</span><span class="s2">): sequences overlap between </span><span class="si">{3}</span><span class="s2"> and </span><span class="si">{4}</span><span class="s2">.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                                <span class="n">moving_plate_id</span><span class="p">,</span>
+                                <span class="n">fixed_plate_id1</span><span class="p">,</span>
+                                <span class="n">fixed_plate_id2</span><span class="p">,</span>
+                                <span class="n">time_range1</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+                                <span class="n">time_range2</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
+                            <span class="p">)</span>
+                        <span class="p">)</span>
+                    <span class="k">elif</span> <span class="n">time_range1</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">time_range2</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span>
+                        <span class="c1"># Sequence at &#39;index1&#39; is *older* than sequence at &#39;index2&#39; and abuts it.</span>
+                        <span class="k">if</span> <span class="n">fixed_plate_id1</span> <span class="o">==</span> <span class="n">fixed_plate_id2</span><span class="p">:</span>
+                            <span class="c1"># Check that both rotations are equal.</span>
+                            <span class="k">if</span> <span class="ow">not</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">FiniteRotation</span><span class="o">.</span><span class="n">are_equal</span><span class="p">(</span>
+                                <span class="n">fixed_plate_time_samples1</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                                <span class="o">.</span><span class="n">get_value</span><span class="p">()</span>
+                                <span class="o">.</span><span class="n">get_finite_rotation</span><span class="p">(),</span>
+                                <span class="n">fixed_plate_time_samples2</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+                                <span class="o">.</span><span class="n">get_value</span><span class="p">()</span>
+                                <span class="o">.</span><span class="n">get_finite_rotation</span><span class="p">(),</span>
+                                <span class="n">rotation_threshold_degrees</span><span class="p">,</span>
+                            <span class="p">):</span>
+                                <span class="nb">print</span><span class="p">(</span>
+                                    <span class="s2">&quot;Moving_pid(</span><span class="si">{0}</span><span class="s2">), fixed_pid(</span><span class="si">{1}</span><span class="s2">): two different rotations at time </span><span class="si">{2}</span><span class="s2">.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                                        <span class="n">moving_plate_id</span><span class="p">,</span> <span class="n">fixed_plate_id1</span><span class="p">,</span> <span class="n">time_range1</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                                    <span class="p">)</span>
+                                <span class="p">)</span>
+                        <span class="k">else</span><span class="p">:</span>
+                            <span class="c1"># We have a crossover (different fixed plates).</span>
+                            <span class="c1"># Check that the crossover is synchronised.</span>
+                            <span class="c1"># Implementation follows that in pygplates.synchronise_crossovers():</span>
+                            <span class="c1">#  1. Disable crossover in older rotation sequence,</span>
+                            <span class="c1">#  2. Calculate rotation relative to older crossover&#39;s fixed plate,</span>
+                            <span class="c1">#  3. Compare calculated rotation with previous rotation,</span>
+                            <span class="c1">#  4. Re-enable crossover in older rotation sequence.</span>
+                            <span class="n">fixed_plate_time_samples1</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_disabled</span><span class="p">()</span>
+                            <span class="n">rotation_model</span> <span class="o">=</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">RotationModel</span><span class="p">(</span>
+                                <span class="n">rotation_feature_sequence</span>
+                            <span class="p">)</span>
+                            <span class="k">if</span> <span class="ow">not</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">FiniteRotation</span><span class="o">.</span><span class="n">are_equal</span><span class="p">(</span>
+                                <span class="n">rotation_model</span><span class="o">.</span><span class="n">get_rotation</span><span class="p">(</span>
+                                    <span class="n">time_range1</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+                                    <span class="n">moving_plate_id</span><span class="p">,</span>
+                                    <span class="n">anchor_plate_id</span><span class="o">=</span><span class="n">fixed_plate_id1</span><span class="p">,</span>
+                                <span class="p">),</span>
+                                <span class="n">fixed_plate_time_samples1</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                                <span class="o">.</span><span class="n">get_value</span><span class="p">()</span>
+                                <span class="o">.</span><span class="n">get_finite_rotation</span><span class="p">(),</span>
+                                <span class="n">rotation_threshold_degrees</span><span class="p">,</span>
+                            <span class="p">):</span>
+                                <span class="nb">print</span><span class="p">(</span>
+                                    <span class="s2">&quot;Moving_pid(</span><span class="si">{0}</span><span class="s2">), young_fixed_pid(</span><span class="si">{1}</span><span class="s2">), old_fixed_pid(</span><span class="si">{2}</span><span class="s2">): &quot;</span>
+                                    <span class="s2">&quot;crossover at time </span><span class="si">{3}</span><span class="s2"> needs fixing.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                                        <span class="n">moving_plate_id</span><span class="p">,</span>
+                                        <span class="n">fixed_plate_id2</span><span class="p">,</span>
+                                        <span class="n">fixed_plate_id1</span><span class="p">,</span>
+                                        <span class="n">time_range1</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+                                    <span class="p">)</span>
+                                <span class="p">)</span>
+                            <span class="n">fixed_plate_time_samples1</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_enabled</span><span class="p">()</span>
+                <span class="k">else</span><span class="p">:</span>  <span class="c1"># time_range1[0] &lt;= time_range2[0] ...</span>
+                    <span class="k">if</span> <span class="n">time_range2</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;</span> <span class="n">time_range1</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span>
+                        <span class="nb">print</span><span class="p">(</span>
+                            <span class="s2">&quot;Moving_pid(</span><span class="si">{0}</span><span class="s2">), fixed_pid1(</span><span class="si">{1}</span><span class="s2">), fixed_pid2(</span><span class="si">{2}</span><span class="s2">): sequences overlap between </span><span class="si">{3}</span><span class="s2"> and </span><span class="si">{4}</span><span class="s2">.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                                <span class="n">moving_plate_id</span><span class="p">,</span>
+                                <span class="n">fixed_plate_id1</span><span class="p">,</span>
+                                <span class="n">fixed_plate_id2</span><span class="p">,</span>
+                                <span class="n">time_range2</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+                                <span class="n">time_range1</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span>
+                            <span class="p">)</span>
+                        <span class="p">)</span>
+                    <span class="k">elif</span> <span class="n">time_range2</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">==</span> <span class="n">time_range1</span><span class="p">[</span><span class="mi">1</span><span class="p">]:</span>
+                        <span class="c1"># Sequence at &#39;index1&#39; is *younger* than sequence at &#39;index2&#39; and abuts it.</span>
+                        <span class="k">if</span> <span class="n">fixed_plate_id1</span> <span class="o">==</span> <span class="n">fixed_plate_id2</span><span class="p">:</span>
+                            <span class="c1"># Check that both rotations are equal.</span>
+                            <span class="k">if</span> <span class="ow">not</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">FiniteRotation</span><span class="o">.</span><span class="n">are_equal</span><span class="p">(</span>
+                                <span class="n">fixed_plate_time_samples1</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
+                                <span class="o">.</span><span class="n">get_value</span><span class="p">()</span>
+                                <span class="o">.</span><span class="n">get_finite_rotation</span><span class="p">(),</span>
+                                <span class="n">fixed_plate_time_samples2</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                                <span class="o">.</span><span class="n">get_value</span><span class="p">()</span>
+                                <span class="o">.</span><span class="n">get_finite_rotation</span><span class="p">(),</span>
+                                <span class="n">rotation_threshold_degrees</span><span class="p">,</span>
+                            <span class="p">):</span>
+                                <span class="nb">print</span><span class="p">(</span>
+                                    <span class="s2">&quot;Moving_pid(</span><span class="si">{0}</span><span class="s2">), fixed_pid(</span><span class="si">{1}</span><span class="s2">): two different rotations at time </span><span class="si">{2}</span><span class="s2">.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                                        <span class="n">moving_plate_id</span><span class="p">,</span> <span class="n">fixed_plate_id1</span><span class="p">,</span> <span class="n">time_range2</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                                    <span class="p">)</span>
+                                <span class="p">)</span>
+                        <span class="k">else</span><span class="p">:</span>
+                            <span class="c1"># We have a crossover (different fixed plates).</span>
+                            <span class="c1"># Check that the crossover is synchronised.</span>
+                            <span class="c1"># Implementation follows that in pygplates.synchronise_crossovers():</span>
+                            <span class="c1">#  1. Disable crossover in older rotation sequence,</span>
+                            <span class="c1">#  2. Calculate rotation relative to older crossover&#39;s fixed plate,</span>
+                            <span class="c1">#  3. Compare calculated rotation with previous rotation,</span>
+                            <span class="c1">#  4. Re-enable crossover in older rotation sequence.</span>
+                            <span class="n">fixed_plate_time_samples2</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_disabled</span><span class="p">()</span>
+                            <span class="n">rotation_model</span> <span class="o">=</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">RotationModel</span><span class="p">(</span>
+                                <span class="n">rotation_feature_sequence</span>
+                            <span class="p">)</span>
+                            <span class="k">if</span> <span class="ow">not</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">FiniteRotation</span><span class="o">.</span><span class="n">are_equal</span><span class="p">(</span>
+                                <span class="n">rotation_model</span><span class="o">.</span><span class="n">get_rotation</span><span class="p">(</span>
+                                    <span class="n">time_range2</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+                                    <span class="n">moving_plate_id</span><span class="p">,</span>
+                                    <span class="n">anchor_plate_id</span><span class="o">=</span><span class="n">fixed_plate_id2</span><span class="p">,</span>
+                                <span class="p">),</span>
+                                <span class="n">fixed_plate_time_samples2</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+                                <span class="o">.</span><span class="n">get_value</span><span class="p">()</span>
+                                <span class="o">.</span><span class="n">get_finite_rotation</span><span class="p">(),</span>
+                                <span class="n">rotation_threshold_degrees</span><span class="p">,</span>
+                            <span class="p">):</span>
+                                <span class="nb">print</span><span class="p">(</span>
+                                    <span class="s2">&quot;Moving_pid(</span><span class="si">{0}</span><span class="s2">), young_fixed_pid(</span><span class="si">{1}</span><span class="s2">), old_fixed_pid(</span><span class="si">{2}</span><span class="s2">): &quot;</span>
+                                    <span class="s2">&quot;crossover at time </span><span class="si">{3}</span><span class="s2"> needs fixing.&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                                        <span class="n">moving_plate_id</span><span class="p">,</span>
+                                        <span class="n">fixed_plate_id1</span><span class="p">,</span>
+                                        <span class="n">fixed_plate_id2</span><span class="p">,</span>
+                                        <span class="n">time_range2</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>
+                                    <span class="p">)</span>
+                                <span class="p">)</span>
+                            <span class="n">fixed_plate_time_samples2</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">set_enabled</span><span class="p">()</span></div>
+
+
+
+<span class="n">__description__</span> <span class="o">=</span> <span class="s2">&quot;&quot;&quot;Diagnose one or more rotation files to check for inconsistencies.</span>
+
+<span class="s2">NOTE: Separate the positional and optional arguments with &#39;--&#39; (workaround for bug in argparse module).</span>
+<span class="s2">For example...</span>
+
+<span class="si">%(prog)s</span><span class="s2"> input_rotations1.rot input_rotations2.rot</span>
+<span class="s2">&quot;&quot;&quot;</span>
+
+
+<div class="viewcode-block" id="add_arguments">
+<a class="viewcode-back" href="../../../gplately.ptt.html#gplately.ptt.diagnose_rotations.add_arguments">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">add_arguments</span><span class="p">(</span><span class="n">parser</span><span class="p">:</span> <span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentParser</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;add command line argument parser&quot;&quot;&quot;</span>
+
+    <span class="n">parser</span><span class="o">.</span><span class="n">formatter_class</span> <span class="o">=</span> <span class="n">argparse</span><span class="o">.</span><span class="n">RawDescriptionHelpFormatter</span>
+    <span class="n">parser</span><span class="o">.</span><span class="n">description</span> <span class="o">=</span> <span class="n">__description__</span>
+
+    <span class="n">parser</span><span class="o">.</span><span class="n">set_defaults</span><span class="p">(</span><span class="n">func</span><span class="o">=</span><span class="n">main</span><span class="p">)</span>
+
+    <span class="k">def</span><span class="w"> </span><span class="nf">parse_positive_number</span><span class="p">(</span><span class="n">value_string</span><span class="p">):</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">value</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">value_string</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentTypeError</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%s</span><span class="s2"> is not a number&quot;</span> <span class="o">%</span> <span class="n">value_string</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">value</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentTypeError</span><span class="p">(</span><span class="s2">&quot;</span><span class="si">%g</span><span class="s2"> is not a positive number&quot;</span> <span class="o">%</span> <span class="n">value</span><span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">value</span>
+
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">&quot;-t&quot;</span><span class="p">,</span>
+        <span class="s2">&quot;--rotation_threshold_degrees&quot;</span><span class="p">,</span>
+        <span class="nb">type</span><span class="o">=</span><span class="n">parse_positive_number</span><span class="p">,</span>
+        <span class="n">default</span><span class="o">=</span><span class="n">DEFAULT_ROTATION_THRESHOLD_DEGREES</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;Two rotations differ if either the rotation latitude, longitude or angle differ by &quot;</span>
+        <span class="s2">&quot;the specified amount (in degrees). The default (0.01 degrees) is useful for some &quot;</span>
+        <span class="s2">&quot;PLATES rotation files that are typically accurate to 2 decimal places.&quot;</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="n">parser</span><span class="o">.</span><span class="n">add_argument</span><span class="p">(</span>
+        <span class="s2">&quot;rotation_filenames&quot;</span><span class="p">,</span>
+        <span class="nb">type</span><span class="o">=</span><span class="nb">str</span><span class="p">,</span>
+        <span class="n">nargs</span><span class="o">=</span><span class="s2">&quot;+&quot;</span><span class="p">,</span>
+        <span class="n">metavar</span><span class="o">=</span><span class="s2">&quot;rotation_filename&quot;</span><span class="p">,</span>
+        <span class="n">help</span><span class="o">=</span><span class="s2">&quot;One or more rotation filenames.&quot;</span><span class="p">,</span>
+    <span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="main">
+<a class="viewcode-back" href="../../../gplately.ptt.html#gplately.ptt.diagnose_rotations.main">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">main</span><span class="p">(</span><span class="n">args</span><span class="p">):</span>
+    <span class="n">diagnose_rotations</span><span class="p">(</span><span class="n">args</span><span class="o">.</span><span class="n">rotation_filenames</span><span class="p">,</span> <span class="n">args</span><span class="o">.</span><span class="n">rotation_threshold_degrees</span><span class="p">)</span></div>
+
+
+
+<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+
+    <span class="c1"># The command-line parser.</span>
+    <span class="n">parser</span> <span class="o">=</span> <span class="n">argparse</span><span class="o">.</span><span class="n">ArgumentParser</span><span class="p">(</span>
+        <span class="n">description</span><span class="o">=</span><span class="n">__description__</span><span class="p">,</span>
+        <span class="n">formatter_class</span><span class="o">=</span><span class="n">argparse</span><span class="o">.</span><span class="n">RawDescriptionHelpFormatter</span><span class="p">,</span>
+    <span class="p">)</span>
+
+    <span class="c1"># add arguments</span>
+    <span class="n">add_arguments</span><span class="p">(</span><span class="n">parser</span><span class="p">)</span>
+
+    <span class="c1"># Parse command-line options.</span>
+    <span class="n">args</span> <span class="o">=</span> <span class="n">parser</span><span class="o">.</span><span class="n">parse_args</span><span class="p">()</span>
+
+    <span class="c1"># call main function</span>
+    <span class="n">main</span><span class="p">(</span><span class="n">args</span><span class="p">)</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023-2025, The University of Sydney.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

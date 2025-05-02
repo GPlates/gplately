@@ -1,0 +1,731 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>gplately.geometry &mdash; gplately 2.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../_static/documentation_options.js?v=51b770b3"></script>
+      <script src="../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../genindex.html" />
+    <link rel="search" title="Search" href="../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../index.html" class="icon icon-home">
+            gplately
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">GPlately v2.0.0</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../basic_usages.html">Minimal working example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../use_cases.html">Common Use Cases</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../faq.html">Trouble-shooting and FAQ</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../command_line_interface.html">Command Line Interface (CLI)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../primer.html">Primer</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../modules.html">gplately</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../index.html">gplately</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">gplately.geometry</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for gplately.geometry</h1><div class="highlight"><pre>
+<span></span><span class="c1">#</span>
+<span class="c1">#    Copyright (C) 2024 The University of Sydney, Australia</span>
+<span class="c1">#</span>
+<span class="c1">#    This program is free software; you can redistribute it and/or modify it under</span>
+<span class="c1">#    the terms of the GNU General Public License, version 2, as published by</span>
+<span class="c1">#    the Free Software Foundation.</span>
+<span class="c1">#</span>
+<span class="c1">#    This program is distributed in the hope that it will be useful, but WITHOUT</span>
+<span class="c1">#    ANY WARRANTY; without even the implied warranty of MERCHANTABILITY or</span>
+<span class="c1">#    FITNESS FOR A PARTICULAR PURPOSE.  See the GNU General Public License</span>
+<span class="c1">#    for more details.</span>
+<span class="c1">#</span>
+<span class="c1">#    You should have received a copy of the GNU General Public License along</span>
+<span class="c1">#    with this program; if not, write to Free Software Foundation, Inc.,</span>
+<span class="c1">#    51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.</span>
+<span class="c1">#</span>
+
+<span class="sd">&quot;&quot;&quot;This sub-module contains tools for converting PyGPlates or GPlately geometries to Shapely geometries for mapping (and vice versa). </span>
+
+<span class="sd">Supported PyGPlates geometries inherit from the following classes:</span>
+
+<span class="sd">* [pygplates.GeometryOnSphere](https://www.gplates.org/docs/pygplates/generated/pygplates.geometryonsphere): This </span>
+<span class="sd">class has the following derived GeometryOnSphere classes:</span>
+<span class="sd">    * [pygplates.PointOnSphere](https://www.gplates.org/docs/pygplates/generated/pygplates.pointonsphere#pygplates.PointOnSphere)</span>
+<span class="sd">    * [pygplates.MultiPointOnSphere](https://www.gplates.org/docs/pygplates/generated/pygplates.multipointonsphere#pygplates.MultiPointOnSphere)</span>
+<span class="sd">    * [pygplates.PolylineOnSphere](https://www.gplates.org/docs/pygplates/generated/pygplates.polylineonsphere#pygplates.PolylineOnSphere)</span>
+<span class="sd">    * [pygplates.PolygonOnSphere](https://www.gplates.org/docs/pygplates/generated/pygplates.polygononsphere#pygplates.PolygonOnSphere)</span>
+<span class="sd">    </span>
+
+<span class="sd">* [pygplates.LatLonPoint](https://www.gplates.org/docs/pygplates/generated/pygplates.latlonpoint)</span>
+<span class="sd">* [pygplates.ReconstructedFeatureGeometry](https://www.gplates.org/docs/pygplates/generated/pygplates.reconstructedfeaturegeometry)</span>
+<span class="sd">* [pygplates.ResolvedTopologicalLine](https://www.gplates.org/docs/pygplates/generated/pygplates.resolvedtopologicalline)</span>
+<span class="sd">* [pygplates.ResolvedTopologicalBoundary](https://www.gplates.org/docs/pygplates/generated/pygplates.resolvedtopologicalboundary)</span>
+<span class="sd">* [pygplates.ResolvedTopologicalNetwork](https://www.gplates.org/docs/pygplates/generated/pygplates.resolvedtopologicalnetwork)</span>
+
+<span class="sd">Note: GPlately geometries derive from the `GeometryOnSphere` and `pygplates.GeometryOnSphere` base classes. </span>
+
+<span class="sd">Supported Shapely geometric objects include:</span>
+
+<span class="sd">* __Point__: a single point in 2D space with coordinate tuple (x,y) or 3D space with coordinate tuple (x,y,z).</span>
+<span class="sd">* __LineString__: a sequence of points joined together to form a line (a list of point coordinate tuples).</span>
+<span class="sd">* __Polygon__: a sequence of points joined together to form the outer ring of a filled area, or a hole (a list of at least</span>
+<span class="sd">three point coordinate tuples).</span>
+
+<span class="sd">Also supported are collections of geometric objects, such as:</span>
+
+<span class="sd">* __MultiPoint__: a list of __Point__ objects (a list of point coordinate tuples).</span>
+<span class="sd">* __MultiLineString__: a list of __LineString__ objects (a list containing lists of point coordinate tuples).</span>
+<span class="sd">* __MultiPolygon__:  a list of __Polygon__ objects (a list containing lists of point coordinate tuples that define exterior rings and/or holes).</span>
+
+
+<span class="sd">__Converting PyGPlates geometries into Shapely geometries__ involves:</span>
+
+<span class="sd">* __wrapping geometries at the dateline__: this involves splitting a polygon, MultiPolygon, line segment or MultiLine segment between</span>
+<span class="sd">connecting points at the dateline. This is to ensure the geometry&#39;s points are joined along the short path rather than </span>
+<span class="sd">the long path horizontally across the 2D map projection display.</span>
+<span class="sd">* __ordering geometries counter-clockwise__</span>
+
+<span class="sd">Input PyGPlates geometries are converted to the following Shapely geometries:</span>
+
+<span class="sd">- `PointOnSphere` or `LatLonPoint`: `Point`</span>
+<span class="sd">- `MultiPointOnSphere`: `MultiPoint`</span>
+<span class="sd">- `PolylineOnSphere`: `LineString` or `MultiLineString`</span>
+<span class="sd">- `PolygonOnSphere`: `Polygon` or `MultiPolygon`</span>
+
+<span class="sd">__Converting Shapely geometries into PyGPlates geometries__: </span>
+<span class="sd">Input Shapely geometries are converted to the following PyGPlates geometries:</span>
+
+<span class="sd">- `Point`: `PointOnSphere`</span>
+<span class="sd">- `MultiPoint`: `MultiPointOnSphere`</span>
+<span class="sd">- `LineString`: `PolylineOnSphere`</span>
+<span class="sd">- `LinearRing` or `Polygon`: `PolygonOnSphere`</span>
+
+<span class="sd">&quot;&quot;&quot;</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pygplates</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">shapely.geometry</span><span class="w"> </span><span class="kn">import</span> <span class="n">LinearRing</span> <span class="k">as</span> <span class="n">_LinearRing</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">shapely.geometry</span><span class="w"> </span><span class="kn">import</span> <span class="n">LineString</span> <span class="k">as</span> <span class="n">_LineString</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">shapely.geometry</span><span class="w"> </span><span class="kn">import</span> <span class="n">MultiLineString</span> <span class="k">as</span> <span class="n">_MultiLineString</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">shapely.geometry</span><span class="w"> </span><span class="kn">import</span> <span class="n">MultiPoint</span> <span class="k">as</span> <span class="n">_MultiPoint</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">shapely.geometry</span><span class="w"> </span><span class="kn">import</span> <span class="n">MultiPolygon</span> <span class="k">as</span> <span class="n">_MultiPolygon</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">shapely.geometry</span><span class="w"> </span><span class="kn">import</span> <span class="n">Point</span> <span class="k">as</span> <span class="n">_Point</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">shapely.geometry</span><span class="w"> </span><span class="kn">import</span> <span class="n">Polygon</span> <span class="k">as</span> <span class="n">_Polygon</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">shapely.geometry.base</span><span class="w"> </span><span class="kn">import</span> <span class="n">BaseGeometry</span> <span class="k">as</span> <span class="n">_BaseGeometry</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">shapely.geometry.base</span><span class="w"> </span><span class="kn">import</span> <span class="n">BaseMultipartGeometry</span> <span class="k">as</span> <span class="n">_BaseMultipartGeometry</span>
+
+<span class="n">__all__</span> <span class="o">=</span> <span class="p">[</span>
+    <span class="s2">&quot;GeometryOnSphere&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;LatLonPoint&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;MultiPointOnSphere&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;PointOnSphere&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;PolygonOnSphere&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;PolylineOnSphere&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;pygplates_to_shapely&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;shapely_to_pygplates&quot;</span><span class="p">,</span>
+    <span class="s2">&quot;wrap_geometries&quot;</span><span class="p">,</span>
+<span class="p">]</span>
+
+
+<div class="viewcode-block" id="GeometryOnSphere">
+<a class="viewcode-back" href="../../gplately.html#gplately.geometry.GeometryOnSphere">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">GeometryOnSphere</span><span class="p">(</span><span class="n">pygplates</span><span class="o">.</span><span class="n">GeometryOnSphere</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Class to mix in `to_shapely` method to all GPlately geometry classes.</span>
+
+<span class="sd">    All GPlately geometry classes inherit from this class, in addition</span>
+<span class="sd">    to their PyGPlates base class.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="GeometryOnSphere.to_shapely">
+<a class="viewcode-back" href="../../gplately.html#gplately.geometry.GeometryOnSphere.to_shapely">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">to_shapely</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span>
+        <span class="n">central_meridian</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span>
+        <span class="n">tessellate_degrees</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">validate</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">force_ccw</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+        <span class="n">explode</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Convert to Shapely geometry.</span>
+
+<span class="sd">        See Also</span>
+<span class="sd">        --------</span>
+<span class="sd">        pygplates_to_shapely : Equivalent function.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="n">pygplates_to_shapely</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span>
+            <span class="n">central_meridian</span><span class="o">=</span><span class="n">central_meridian</span><span class="p">,</span>
+            <span class="n">tessellate_degrees</span><span class="o">=</span><span class="n">tessellate_degrees</span><span class="p">,</span>
+            <span class="n">validate</span><span class="o">=</span><span class="n">validate</span><span class="p">,</span>
+            <span class="n">force_ccw</span><span class="o">=</span><span class="n">force_ccw</span><span class="p">,</span>
+            <span class="n">explode</span><span class="o">=</span><span class="n">explode</span><span class="p">,</span>
+        <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="GeometryOnSphere.from_shapely">
+<a class="viewcode-back" href="../../gplately.html#gplately.geometry.GeometryOnSphere.from_shapely">[docs]</a>
+    <span class="nd">@classmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">from_shapely</span><span class="p">(</span><span class="bp">cls</span><span class="p">,</span> <span class="n">geom</span><span class="p">):</span>
+        <span class="n">converted</span> <span class="o">=</span> <span class="n">shapely_to_pygplates</span><span class="p">(</span><span class="n">geom</span><span class="p">)</span>
+        <span class="k">return</span> <span class="bp">cls</span><span class="p">(</span><span class="n">converted</span><span class="p">)</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="PointOnSphere">
+<a class="viewcode-back" href="../../gplately.html#gplately.geometry.PointOnSphere">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">PointOnSphere</span><span class="p">(</span><span class="n">pygplates</span><span class="o">.</span><span class="n">PointOnSphere</span><span class="p">,</span> <span class="n">GeometryOnSphere</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;GPlately equivalent of `pygplates.PointOnSphere`, incorporating</span>
+<span class="sd">    `to_shapely` method</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">pass</span></div>
+
+
+
+<div class="viewcode-block" id="MultiPointOnSphere">
+<a class="viewcode-back" href="../../gplately.html#gplately.geometry.MultiPointOnSphere">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">MultiPointOnSphere</span><span class="p">(</span><span class="n">pygplates</span><span class="o">.</span><span class="n">MultiPointOnSphere</span><span class="p">,</span> <span class="n">GeometryOnSphere</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;GPlately equivalent of `pygplates.MultiPointOnSphere`, incorporating</span>
+<span class="sd">    `to_shapely` method</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">pass</span></div>
+
+
+
+<div class="viewcode-block" id="PolylineOnSphere">
+<a class="viewcode-back" href="../../gplately.html#gplately.geometry.PolylineOnSphere">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">PolylineOnSphere</span><span class="p">(</span><span class="n">pygplates</span><span class="o">.</span><span class="n">PolylineOnSphere</span><span class="p">,</span> <span class="n">GeometryOnSphere</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;GPlately equivalent of `pygplates.PolylineOnSphere`, incorporating</span>
+<span class="sd">    `to_shapely` method</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">pass</span></div>
+
+
+
+<div class="viewcode-block" id="PolygonOnSphere">
+<a class="viewcode-back" href="../../gplately.html#gplately.geometry.PolygonOnSphere">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">PolygonOnSphere</span><span class="p">(</span><span class="n">pygplates</span><span class="o">.</span><span class="n">PolygonOnSphere</span><span class="p">,</span> <span class="n">GeometryOnSphere</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;GPlately equivalent of `pygplates.PolygonOnSphere`, incorporating</span>
+<span class="sd">    `to_shapely` method</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="k">pass</span></div>
+
+
+
+<div class="viewcode-block" id="LatLonPoint">
+<a class="viewcode-back" href="../../gplately.html#gplately.geometry.LatLonPoint">[docs]</a>
+<span class="k">class</span><span class="w"> </span><span class="nc">LatLonPoint</span><span class="p">(</span><span class="n">pygplates</span><span class="o">.</span><span class="n">LatLonPoint</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;GPlately equivalent of `pygplates.LatLonPoint`, incorporating</span>
+<span class="sd">    `to_shapely` method</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
+<div class="viewcode-block" id="LatLonPoint.to_shapely">
+<a class="viewcode-back" href="../../gplately.html#gplately.geometry.LatLonPoint.to_shapely">[docs]</a>
+    <span class="k">def</span><span class="w"> </span><span class="nf">to_shapely</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">central_meridian</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">tessellate_degrees</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">pygplates_to_shapely</span><span class="p">(</span>
+            <span class="bp">self</span><span class="p">,</span>
+            <span class="n">central_meridian</span><span class="o">=</span><span class="n">central_meridian</span><span class="p">,</span>
+            <span class="n">tessellate_degrees</span><span class="o">=</span><span class="n">tessellate_degrees</span><span class="p">,</span>
+        <span class="p">)</span></div>
+</div>
+
+
+
+<div class="viewcode-block" id="pygplates_to_shapely">
+<a class="viewcode-back" href="../../gplately.html#gplately.geometry.pygplates_to_shapely">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">pygplates_to_shapely</span><span class="p">(</span>
+    <span class="n">geometry</span><span class="p">,</span>
+    <span class="n">central_meridian</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span>
+    <span class="n">tessellate_degrees</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">validate</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">force_ccw</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">explode</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Convert one or more PyGPlates or GPlately geometries to Shapely format.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    geometry : pygplates.GeometryOnSphere or pygplates.LatLonPoint or list</span>
+<span class="sd">        The geometry or geometries to convert.</span>
+<span class="sd">    central_meridian : float, default: 0.0</span>
+<span class="sd">        The central meridian around which to wrap geometries;</span>
+<span class="sd">        geometries will be split at the antimeridian.</span>
+<span class="sd">    tessellate_degrees : float, optional</span>
+<span class="sd">        If provided, the geometry will be tessellated to this resolution prior to conversion.</span>
+<span class="sd">    validate : bool, default: False</span>
+<span class="sd">        Attempt to ensure output geometry is valid by applying a buffer of 0.</span>
+<span class="sd">    force_ccw : bool, default: False</span>
+<span class="sd">        Ensure the coordinates of the output geometry are counter-clockwise(only applies to polygons).</span>
+<span class="sd">    explode : bool, default: False</span>
+<span class="sd">        Convert multi-part output geometries to multiple single-part geometries.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    output_geometry : shapely.geometry.base.BaseGeometry or list</span>
+<span class="sd">        Converted Shapely geometry or geometries.</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    If a single input geometry was passed, `output_geometry` will be a</span>
+<span class="sd">    subclass of `shapely.geometry.base.BaseGeometry`. Otherwise,</span>
+<span class="sd">    `output_geometry` will be a list of the same length as the input.</span>
+
+<span class="sd">    Input geometries that were split while wrapping around</span>
+<span class="sd">    `central_meridian` will produce multi-part output geometries, unless `explode=True` is specified.</span>
+
+<span class="sd">    Input geometry types are converted as follows:</span>
+<span class="sd">        - `PointOnSphere` or `LatLonPoint`:</span>
+<span class="sd">            `Point`</span>
+<span class="sd">        - `MultiPointOnSphere`:</span>
+<span class="sd">            `MultiPoint`</span>
+<span class="sd">        - `PolylineOnSphere`:</span>
+<span class="sd">            `LineString` or</span>
+<span class="sd">            `MultiLineString`</span>
+<span class="sd">        - `PolygonOnSphere`:</span>
+<span class="sd">            `Polygon` or</span>
+<span class="sd">            `MultiPolygon`</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">_contains_pygplates_geometries</span><span class="p">(</span><span class="n">geometry</span><span class="p">):</span>
+        <span class="k">return</span> <span class="p">[</span>
+            <span class="n">pygplates_to_shapely</span><span class="p">(</span>
+                <span class="n">i</span><span class="p">,</span>
+                <span class="n">central_meridian</span><span class="o">=</span><span class="n">central_meridian</span><span class="p">,</span>
+                <span class="n">tessellate_degrees</span><span class="o">=</span><span class="n">tessellate_degrees</span><span class="p">,</span>
+                <span class="n">validate</span><span class="o">=</span><span class="n">validate</span><span class="p">,</span>
+                <span class="n">force_ccw</span><span class="o">=</span><span class="n">force_ccw</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">geometry</span>
+        <span class="p">]</span>
+
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">geometry</span><span class="p">,</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">LatLonPoint</span><span class="p">):</span>
+        <span class="n">geometry</span> <span class="o">=</span> <span class="n">geometry</span><span class="o">.</span><span class="n">to_point_on_sphere</span><span class="p">()</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">geometry</span><span class="p">,</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">ReconstructedFeatureGeometry</span><span class="p">):</span>
+        <span class="n">geometry</span> <span class="o">=</span> <span class="n">geometry</span><span class="o">.</span><span class="n">get_reconstructed_geometry</span><span class="p">()</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span>
+        <span class="n">geometry</span><span class="p">,</span>
+        <span class="p">(</span>
+            <span class="n">pygplates</span><span class="o">.</span><span class="n">ResolvedTopologicalLine</span><span class="p">,</span>
+            <span class="n">pygplates</span><span class="o">.</span><span class="n">ResolvedTopologicalBoundary</span><span class="p">,</span>
+            <span class="n">pygplates</span><span class="o">.</span><span class="n">ResolvedTopologicalNetwork</span><span class="p">,</span>
+        <span class="p">),</span>
+    <span class="p">):</span>
+        <span class="n">geometry</span> <span class="o">=</span> <span class="n">geometry</span><span class="o">.</span><span class="n">get_resolved_geometry</span><span class="p">()</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">geometry</span><span class="p">,</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">GeometryOnSphere</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;Invalid geometry type: &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">geometry</span><span class="p">)))</span>
+
+    <span class="n">wrapper</span> <span class="o">=</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">DateLineWrapper</span><span class="p">(</span><span class="n">central_meridian</span><span class="o">=</span><span class="n">central_meridian</span><span class="p">)</span>
+    <span class="n">wrapped</span> <span class="o">=</span> <span class="n">wrapper</span><span class="o">.</span><span class="n">wrap</span><span class="p">(</span><span class="n">geometry</span><span class="p">,</span> <span class="n">tessellate_degrees</span><span class="o">=</span><span class="n">tessellate_degrees</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">wrapped</span><span class="p">,</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">LatLonPoint</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">_Point</span><span class="p">(</span><span class="n">wrapped</span><span class="o">.</span><span class="n">to_lat_lon</span><span class="p">()[::</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">wrapped</span><span class="p">,</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">DateLineWrapper</span><span class="o">.</span><span class="n">LatLonMultiPoint</span><span class="p">):</span>
+        <span class="n">points</span> <span class="o">=</span> <span class="n">wrapped</span><span class="o">.</span><span class="n">get_points</span><span class="p">()</span>
+        <span class="k">return</span> <span class="n">_MultiPoint</span><span class="p">([</span><span class="n">i</span><span class="o">.</span><span class="n">to_lat_lon</span><span class="p">()[::</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">points</span><span class="p">])</span>
+
+    <span class="n">output_geoms</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">output_type</span> <span class="o">=</span> <span class="kc">None</span>
+    <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">wrapped</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">DateLineWrapper</span><span class="o">.</span><span class="n">LatLonPolyline</span><span class="p">):</span>
+            <span class="n">tmp</span> <span class="o">=</span> <span class="n">_LineString</span><span class="p">([</span><span class="n">j</span><span class="o">.</span><span class="n">to_lat_lon</span><span class="p">()[::</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">i</span><span class="o">.</span><span class="n">get_points</span><span class="p">()])</span>
+            <span class="n">output_geoms</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">tmp</span><span class="p">)</span>
+            <span class="n">output_type</span> <span class="o">=</span> <span class="n">_MultiLineString</span>
+        <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">DateLineWrapper</span><span class="o">.</span><span class="n">LatLonPolygon</span><span class="p">):</span>
+            <span class="n">tmp</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">j</span><span class="o">.</span><span class="n">to_lat_lon</span><span class="p">()[::</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">i</span><span class="o">.</span><span class="n">get_exterior_points</span><span class="p">()])</span>
+            <span class="c1"># tmp[:,1] = np.clip(tmp[:,1], -89, 89) # clip polygons near poles</span>
+            <span class="n">tmp</span> <span class="o">=</span> <span class="n">_Polygon</span><span class="p">(</span><span class="n">tmp</span><span class="p">)</span>
+            <span class="k">if</span> <span class="n">force_ccw</span> <span class="ow">and</span> <span class="n">tmp</span><span class="o">.</span><span class="n">exterior</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">tmp</span><span class="o">.</span><span class="n">exterior</span><span class="o">.</span><span class="n">is_ccw</span><span class="p">:</span>
+                <span class="n">tmp</span> <span class="o">=</span> <span class="n">_Polygon</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">tmp</span><span class="o">.</span><span class="n">exterior</span><span class="o">.</span><span class="n">coords</span><span class="p">)[::</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+                <span class="c1"># tmp.exterior.coords = list(tmp.exterior.coords)[::-1]</span>
+            <span class="k">if</span> <span class="n">validate</span><span class="p">:</span>
+                <span class="n">tmp</span> <span class="o">=</span> <span class="n">tmp</span><span class="o">.</span><span class="n">buffer</span><span class="p">(</span><span class="mf">0.0</span><span class="p">)</span>
+            <span class="c1"># this is for pole-clipped polygons turned into MultiPolygons</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">tmp</span><span class="p">,</span> <span class="n">_MultiPolygon</span><span class="p">):</span>
+                <span class="c1"># for geom in list(tmp):</span>
+                <span class="k">for</span> <span class="n">geom</span> <span class="ow">in</span> <span class="n">tmp</span><span class="o">.</span><span class="n">geoms</span><span class="p">:</span>
+                    <span class="n">output_geoms</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">geom</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">output_geoms</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">tmp</span><span class="p">)</span>
+            <span class="n">output_type</span> <span class="o">=</span> <span class="n">_MultiPolygon</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
+                <span class="s2">&quot;Unrecognised output from `pygplates.DateLineWrapper.wrap`: &quot;</span>
+                <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">i</span><span class="p">))</span>
+            <span class="p">)</span>
+    <span class="k">if</span> <span class="n">output_type</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
+            <span class="s2">&quot;Unrecognised output from `pygplates.DateLineWrapper.wrap`: &quot;</span>
+            <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">wrapped</span><span class="p">[</span><span class="mi">0</span><span class="p">]))</span>
+        <span class="p">)</span>
+    <span class="c1"># Empty geometries can sometimes occur by this point, causing nearly all</span>
+    <span class="c1"># subsequent geometric operations to fail</span>
+    <span class="n">output_geoms</span> <span class="o">=</span> <span class="p">[</span><span class="n">i</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">output_geoms</span> <span class="k">if</span> <span class="ow">not</span> <span class="n">i</span><span class="o">.</span><span class="n">is_empty</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">force_ccw</span><span class="p">:</span>
+        <span class="n">output_geoms</span> <span class="o">=</span> <span class="p">[</span><span class="n">_ensure_ccw</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">output_geoms</span><span class="p">]</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">output_geoms</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">output_geoms</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">explode</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">output_geoms</span>
+    <span class="k">return</span> <span class="n">output_type</span><span class="p">(</span><span class="n">output_geoms</span><span class="p">)</span></div>
+
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_ensure_ccw</span><span class="p">(</span><span class="n">geometry</span><span class="p">):</span>
+    <span class="k">if</span> <span class="p">(</span>
+        <span class="nb">isinstance</span><span class="p">(</span><span class="n">geometry</span><span class="p">,</span> <span class="n">_Polygon</span><span class="p">)</span>
+        <span class="ow">and</span> <span class="n">geometry</span><span class="o">.</span><span class="n">exterior</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+        <span class="ow">and</span> <span class="ow">not</span> <span class="n">geometry</span><span class="o">.</span><span class="n">exterior</span><span class="o">.</span><span class="n">is_ccw</span>
+    <span class="p">):</span>
+        <span class="k">return</span> <span class="n">_Polygon</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">geometry</span><span class="o">.</span><span class="n">exterior</span><span class="o">.</span><span class="n">coords</span><span class="p">)[::</span><span class="o">-</span><span class="mi">1</span><span class="p">])</span>
+    <span class="k">return</span> <span class="n">geometry</span>
+
+
+<div class="viewcode-block" id="shapely_to_pygplates">
+<a class="viewcode-back" href="../../gplately.html#gplately.geometry.shapely_to_pygplates">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">shapely_to_pygplates</span><span class="p">(</span><span class="n">geometry</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Convert one or more Shapely geometries to gplately format.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    geometry : shapely.geometry.base.BaseGeometry or list</span>
+<span class="sd">        The geometry or geometries to convert.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    output_geometry : GeometryOnSphere or list</span>
+<span class="sd">        Converted gplately geometry or geometries.</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    If a single input geometry was passed, `output_geometry` will be a subclass of `GeometryOnSphere`.</span>
+<span class="sd">    Otherwise, `output_geometry` will be a list of `GeometryOnSphere`, of the same length as the input.</span>
+
+<span class="sd">    Input geometry types are converted as follows:</span>
+<span class="sd">        - `Point`: `PointOnSphere`</span>
+<span class="sd">        - `MultiPoint`: `MultiPointOnSphere`</span>
+<span class="sd">        - `LineString`: `PolylineOnSphere`</span>
+<span class="sd">        - `LinearRing` or `Polygon`: `PolygonOnSphere`</span>
+
+<span class="sd">    Multi-part input geometry types other than `MultiPoint` will be treated</span>
+<span class="sd">    as an iterable of their component single-part geometries.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">pygplates_conversion</span> <span class="o">=</span> <span class="p">{</span>
+        <span class="n">_Point</span><span class="p">:</span> <span class="n">PointOnSphere</span><span class="p">,</span>
+        <span class="n">_MultiPoint</span><span class="p">:</span> <span class="n">MultiPointOnSphere</span><span class="p">,</span>
+        <span class="n">_LineString</span><span class="p">:</span> <span class="n">PolylineOnSphere</span><span class="p">,</span>
+        <span class="n">_LinearRing</span><span class="p">:</span> <span class="n">PolygonOnSphere</span><span class="p">,</span>
+        <span class="n">_Polygon</span><span class="p">:</span> <span class="n">PolygonOnSphere</span><span class="p">,</span>
+    <span class="p">}</span>
+
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">geometry</span><span class="p">,</span> <span class="n">_BaseMultipartGeometry</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span>
+        <span class="n">geometry</span><span class="p">,</span> <span class="n">_MultiPoint</span>
+    <span class="p">):</span>
+        <span class="k">return</span> <span class="p">[</span><span class="n">shapely_to_pygplates</span><span class="p">(</span><span class="n">i</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">geometry</span><span class="o">.</span><span class="n">geoms</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">_contains_shapely_geometries</span><span class="p">(</span><span class="n">geometry</span><span class="p">):</span>
+        <span class="c1"># Recursively convert all elements in iterable of geometries</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">geometry</span><span class="p">:</span>
+            <span class="n">tmp</span> <span class="o">=</span> <span class="n">shapely_to_pygplates</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">tmp</span><span class="p">,</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">GeometryOnSphere</span><span class="p">):</span>
+                <span class="c1"># Output is a single geometry</span>
+                <span class="n">out</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">tmp</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="c1"># Output should be a list of geometries</span>
+                <span class="n">out</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">tmp</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">out</span>
+
+    <span class="k">for</span> <span class="n">input_type</span> <span class="ow">in</span> <span class="n">pygplates_conversion</span><span class="p">:</span>
+        <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">geometry</span><span class="p">,</span> <span class="n">input_type</span><span class="p">):</span>
+            <span class="n">output_type</span> <span class="o">=</span> <span class="n">pygplates_conversion</span><span class="p">[</span><span class="n">input_type</span><span class="p">]</span>
+            <span class="k">break</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;Invalid geometry type: &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">geometry</span><span class="p">)))</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">geometry</span><span class="p">,</span> <span class="n">_MultiPoint</span><span class="p">):</span>
+        <span class="n">coords</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">i</span><span class="o">.</span><span class="n">coords</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">geometry</span><span class="o">.</span><span class="n">geoms</span><span class="p">])</span><span class="o">.</span><span class="n">squeeze</span><span class="p">()</span>
+    <span class="k">elif</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">geometry</span><span class="p">,</span> <span class="n">_Polygon</span><span class="p">):</span>
+        <span class="k">if</span> <span class="n">geometry</span><span class="o">.</span><span class="n">exterior</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">AttributeError</span><span class="p">(</span><span class="s2">&quot;Polygon geometry has no exterior&quot;</span><span class="p">)</span>
+        <span class="n">coords</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">geometry</span><span class="o">.</span><span class="n">exterior</span><span class="o">.</span><span class="n">coords</span><span class="p">)</span><span class="o">.</span><span class="n">squeeze</span><span class="p">()[:</span><span class="o">-</span><span class="mi">1</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span>
+    <span class="k">elif</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">geometry</span><span class="p">,</span> <span class="s2">&quot;coords&quot;</span><span class="p">):</span>
+        <span class="n">coords</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">geometry</span><span class="o">.</span><span class="n">coords</span><span class="p">)</span><span class="o">.</span><span class="n">squeeze</span><span class="p">()</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;Invalid geometry type: &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">geometry</span><span class="p">)))</span>
+    <span class="k">if</span> <span class="n">coords</span><span class="o">.</span><span class="n">ndim</span> <span class="o">&gt;</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="n">coords</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">fliplr</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">coords</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">flip</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span>
+    <span class="k">return</span> <span class="n">output_type</span><span class="p">(</span><span class="n">coords</span><span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="wrap_geometries">
+<a class="viewcode-back" href="../../gplately.html#gplately.geometry.wrap_geometries">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">wrap_geometries</span><span class="p">(</span>
+    <span class="n">geometries</span><span class="p">,</span>
+    <span class="n">central_meridian</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span>
+    <span class="n">tessellate_degrees</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">validate</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">force_ccw</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">explode</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Wrap one or more Shapely geometries around a central meridian.</span>
+
+<span class="sd">    Wrapped geometries will be split at the antimeridian.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    geometry : shapely.geometry.base.BaseGeometry or list</span>
+<span class="sd">        The geometry or geometries to wrap.</span>
+<span class="sd">    central_meridian : float, default: 0.0</span>
+<span class="sd">        The central meridian around which to wrap geometries;</span>
+<span class="sd">        geometries will be split at the antimeridian.</span>
+<span class="sd">    tessellate_degrees : float, optional</span>
+<span class="sd">        If provided, the geometry will be tessellated to this resolution prior to wrapping.</span>
+<span class="sd">    validate : bool, default: False</span>
+<span class="sd">        Attempt to ensure output geometry is valid by applying a buffer of 0.</span>
+<span class="sd">    force_ccw : bool, default: False</span>
+<span class="sd">        Ensure the coordinates of the output geometry are counter-clockwise(only applies to polygons).</span>
+<span class="sd">    explode : bool, default: False</span>
+<span class="sd">        Convert multi-part output geometries to multiple single-part geometries.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    output_geometries : shapely.geometry.base.BaseGeometry or list</span>
+<span class="sd">        Wrapped Shapely geometry or geometries.</span>
+
+<span class="sd">    Notes</span>
+<span class="sd">    -----</span>
+<span class="sd">    If a single input geometry was passed, `output_geometry` will be a</span>
+<span class="sd">    subclass of `shapely.geometry.base.BaseGeometry`.</span>
+<span class="sd">    Otherwise, `output_geometry` will be a list of the same length as the input, unless `explode=True` is specified.</span>
+
+<span class="sd">    Input geometries that were split while wrapping around</span>
+<span class="sd">    `central_meridian` will produce multi-part output geometries, unless `explode=True` is specified.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">geometries</span><span class="p">,</span> <span class="n">_BaseGeometry</span><span class="p">):</span>
+        <span class="k">return</span> <span class="n">_wrap_geometry</span><span class="p">(</span>
+            <span class="n">geometry</span><span class="o">=</span><span class="n">geometries</span><span class="p">,</span>
+            <span class="n">central_meridian</span><span class="o">=</span><span class="n">central_meridian</span><span class="p">,</span>
+            <span class="n">tessellate_degrees</span><span class="o">=</span><span class="n">tessellate_degrees</span><span class="p">,</span>
+            <span class="n">validate</span><span class="o">=</span><span class="n">validate</span><span class="p">,</span>
+            <span class="n">force_ccw</span><span class="o">=</span><span class="n">force_ccw</span><span class="p">,</span>
+            <span class="n">explode</span><span class="o">=</span><span class="n">explode</span><span class="p">,</span>
+        <span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">geometries</span><span class="p">:</span>
+            <span class="n">tmp</span> <span class="o">=</span> <span class="n">_wrap_geometry</span><span class="p">(</span>
+                <span class="n">geometry</span><span class="o">=</span><span class="n">i</span><span class="p">,</span>
+                <span class="n">central_meridian</span><span class="o">=</span><span class="n">central_meridian</span><span class="p">,</span>
+                <span class="n">tessellate_degrees</span><span class="o">=</span><span class="n">tessellate_degrees</span><span class="p">,</span>
+                <span class="n">validate</span><span class="o">=</span><span class="n">validate</span><span class="p">,</span>
+                <span class="n">force_ccw</span><span class="o">=</span><span class="n">force_ccw</span><span class="p">,</span>
+                <span class="n">explode</span><span class="o">=</span><span class="n">explode</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">tmp</span><span class="p">,</span> <span class="n">_BaseGeometry</span><span class="p">):</span>
+                <span class="n">out</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">tmp</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">out</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">tmp</span><span class="p">)</span>
+        <span class="k">return</span> <span class="n">out</span></div>
+
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_wrap_geometry</span><span class="p">(</span>
+    <span class="n">geometry</span><span class="p">,</span>
+    <span class="n">central_meridian</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span>
+    <span class="n">tessellate_degrees</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+    <span class="n">validate</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">force_ccw</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">explode</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+<span class="p">):</span>
+    <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">geometry</span><span class="p">,</span> <span class="n">_BaseGeometry</span><span class="p">):</span>
+        <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span><span class="s2">&quot;Invalid geometry type: &quot;</span> <span class="o">+</span> <span class="nb">str</span><span class="p">(</span><span class="nb">type</span><span class="p">(</span><span class="n">geometry</span><span class="p">)))</span>
+
+    <span class="n">converted</span> <span class="o">=</span> <span class="n">shapely_to_pygplates</span><span class="p">(</span><span class="n">geometry</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">converted</span><span class="p">,</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">GeometryOnSphere</span><span class="p">):</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="p">[</span><span class="n">converted</span><span class="p">]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">converted</span><span class="p">:</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">GeometryOnSphere</span><span class="p">):</span>
+                <span class="n">out</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">out</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">explode</span><span class="p">:</span>
+        <span class="n">out_tmp</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">out</span><span class="p">:</span>
+            <span class="n">tmp</span> <span class="o">=</span> <span class="n">pygplates_to_shapely</span><span class="p">(</span>
+                <span class="n">geometry</span><span class="o">=</span><span class="n">i</span><span class="p">,</span>
+                <span class="n">central_meridian</span><span class="o">=</span><span class="n">central_meridian</span><span class="p">,</span>
+                <span class="n">tessellate_degrees</span><span class="o">=</span><span class="n">tessellate_degrees</span><span class="p">,</span>
+                <span class="n">validate</span><span class="o">=</span><span class="n">validate</span><span class="p">,</span>
+                <span class="n">force_ccw</span><span class="o">=</span><span class="n">force_ccw</span><span class="p">,</span>
+                <span class="n">explode</span><span class="o">=</span><span class="n">explode</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">tmp</span><span class="p">,</span> <span class="n">_BaseGeometry</span><span class="p">):</span>
+                <span class="n">out_tmp</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">tmp</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">out_tmp</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="n">tmp</span><span class="p">)</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="n">out_tmp</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">out</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="n">pygplates_to_shapely</span><span class="p">(</span>
+                <span class="n">geometry</span><span class="o">=</span><span class="n">i</span><span class="p">,</span>
+                <span class="n">central_meridian</span><span class="o">=</span><span class="n">central_meridian</span><span class="p">,</span>
+                <span class="n">tessellate_degrees</span><span class="o">=</span><span class="n">tessellate_degrees</span><span class="p">,</span>
+                <span class="n">validate</span><span class="o">=</span><span class="n">validate</span><span class="p">,</span>
+                <span class="n">force_ccw</span><span class="o">=</span><span class="n">force_ccw</span><span class="p">,</span>
+                <span class="n">explode</span><span class="o">=</span><span class="n">explode</span><span class="p">,</span>
+            <span class="p">)</span>
+            <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">out</span>
+        <span class="p">]</span>
+    <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">out</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">out</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+    <span class="k">if</span> <span class="n">explode</span><span class="p">:</span>
+        <span class="k">return</span> <span class="n">out</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">geometry</span><span class="p">,</span> <span class="p">(</span><span class="n">_Point</span><span class="p">,</span> <span class="n">_MultiPoint</span><span class="p">)):</span>
+        <span class="k">return</span> <span class="n">_MultiPoint</span><span class="p">(</span><span class="n">out</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">geometry</span><span class="p">,</span> <span class="p">(</span><span class="n">_LineString</span><span class="p">,</span> <span class="n">_MultiLineString</span><span class="p">)):</span>
+        <span class="k">return</span> <span class="n">_MultiLineString</span><span class="p">(</span><span class="n">out</span><span class="p">)</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">geometry</span><span class="p">,</span> <span class="p">(</span><span class="n">_LinearRing</span><span class="p">,</span> <span class="n">_Polygon</span><span class="p">,</span> <span class="n">_MultiPolygon</span><span class="p">)):</span>
+        <span class="k">return</span> <span class="n">_MultiPolygon</span><span class="p">(</span><span class="n">out</span><span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_contains_shapely_geometries</span><span class="p">(</span><span class="n">i</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Check if input is an iterable containing only Shapely geometries.&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">i</span><span class="p">,</span> <span class="n">_BaseGeometry</span><span class="p">):</span>
+        <span class="k">return</span> <span class="kc">False</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="c1"># Check all elements in i are Shapely geometries</span>
+        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">i</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">j</span><span class="p">,</span> <span class="n">_BaseGeometry</span><span class="p">):</span>
+                <span class="k">break</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">True</span>
+    <span class="k">except</span> <span class="ne">TypeError</span><span class="p">:</span>  <span class="c1"># i is not iterable</span>
+        <span class="k">pass</span>
+    <span class="k">return</span> <span class="kc">False</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_is_pygplates_geometry</span><span class="p">(</span><span class="n">geom</span><span class="p">):</span>
+    <span class="k">return</span> <span class="nb">isinstance</span><span class="p">(</span>
+        <span class="n">geom</span><span class="p">,</span>
+        <span class="p">(</span>
+            <span class="n">pygplates</span><span class="o">.</span><span class="n">GeometryOnSphere</span><span class="p">,</span>
+            <span class="n">pygplates</span><span class="o">.</span><span class="n">LatLonPoint</span><span class="p">,</span>
+            <span class="n">pygplates</span><span class="o">.</span><span class="n">ReconstructedFeatureGeometry</span><span class="p">,</span>
+            <span class="n">pygplates</span><span class="o">.</span><span class="n">ResolvedTopologicalLine</span><span class="p">,</span>
+            <span class="n">pygplates</span><span class="o">.</span><span class="n">ResolvedTopologicalBoundary</span><span class="p">,</span>
+            <span class="n">pygplates</span><span class="o">.</span><span class="n">ResolvedTopologicalNetwork</span><span class="p">,</span>
+        <span class="p">),</span>
+    <span class="p">)</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_contains_pygplates_geometries</span><span class="p">(</span><span class="n">i</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Check if input is an iterable containing only PyGPlates geometries.&quot;&quot;&quot;</span>
+    <span class="k">if</span> <span class="n">_is_pygplates_geometry</span><span class="p">(</span><span class="n">i</span><span class="p">):</span>
+        <span class="k">return</span> <span class="kc">False</span>
+    <span class="k">try</span><span class="p">:</span>
+        <span class="c1"># Check all elements in i are PyGPlates geometries</span>
+        <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="n">i</span><span class="p">:</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">_is_pygplates_geometry</span><span class="p">(</span><span class="n">j</span><span class="p">):</span>
+                <span class="k">break</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">return</span> <span class="kc">True</span>
+    <span class="k">except</span> <span class="ne">TypeError</span><span class="p">:</span>  <span class="c1"># i is not iterable</span>
+        <span class="k">pass</span>
+    <span class="k">return</span> <span class="kc">False</span>
+
+
+<span class="n">__pdoc__</span> <span class="o">=</span> <span class="p">{</span>
+    <span class="s2">&quot;PointOnSphere&quot;</span><span class="p">:</span> <span class="n">PointOnSphere</span><span class="o">.</span><span class="vm">__doc__</span><span class="p">,</span>
+    <span class="s2">&quot;PolygonOnSphere&quot;</span><span class="p">:</span> <span class="n">PolygonOnSphere</span><span class="o">.</span><span class="vm">__doc__</span><span class="p">,</span>
+    <span class="s2">&quot;LatLonPoint&quot;</span><span class="p">:</span> <span class="n">LatLonPoint</span><span class="o">.</span><span class="vm">__doc__</span><span class="p">,</span>
+    <span class="s2">&quot;MultiPointOnSphere&quot;</span><span class="p">:</span> <span class="n">MultiPointOnSphere</span><span class="o">.</span><span class="vm">__doc__</span><span class="p">,</span>
+    <span class="s2">&quot;PolylineOnSphere&quot;</span><span class="p">:</span> <span class="n">PolylineOnSphere</span><span class="o">.</span><span class="vm">__doc__</span><span class="p">,</span>
+<span class="p">}</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023-2025, The University of Sydney.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

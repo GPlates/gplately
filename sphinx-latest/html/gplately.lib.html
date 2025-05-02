@@ -1,0 +1,490 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="./">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>gplately.lib package &mdash; gplately 2.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
+
+  
+      <script src="_static/jquery.js?v=5d32c60e"></script>
+      <script src="_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="_static/documentation_options.js?v=51b770b3"></script>
+      <script src="_static/doctools.js?v=9bcbadda"></script>
+      <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="next" title="gplately.mapping package" href="gplately.mapping.html" />
+    <link rel="prev" title="gplately.commands package" href="gplately.commands.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="index.html" class="icon icon-home">
+            gplately
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">GPlately v2.0.0</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="basic_usages.html">Minimal working example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="use_cases.html">Common Use Cases</a></li>
+<li class="toctree-l1"><a class="reference internal" href="faq.html">Trouble-shooting and FAQ</a></li>
+<li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="command_line_interface.html">Command Line Interface (CLI)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="primer.html">Primer</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="modules.html">gplately</a><ul class="current">
+<li class="toctree-l2 current"><a class="reference internal" href="gplately.html">gplately package</a><ul class="current">
+<li class="toctree-l3 current"><a class="reference internal" href="gplately.html#subpackages">Subpackages</a><ul class="current">
+<li class="toctree-l4"><a class="reference internal" href="gplately.commands.html">gplately.commands package</a></li>
+<li class="toctree-l4 current"><a class="current reference internal" href="#">gplately.lib package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="gplately.mapping.html">gplately.mapping package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="gplately.ptt.html">gplately.ptt package</a></li>
+<li class="toctree-l4"><a class="reference internal" href="gplately.utils.html">gplately.utils package</a></li>
+</ul>
+</li>
+<li class="toctree-l3"><a class="reference internal" href="gplately.html#submodules">Submodules</a></li>
+<li class="toctree-l3"><a class="reference internal" href="gplately.html#module-gplately.auxiliary">gplately.auxiliary module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="gplately.html#module-gplately.data">gplately.data module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="gplately.html#module-gplately.decorators">gplately.decorators module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="gplately.html#module-gplately.download">gplately.download module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="gplately.html#module-gplately.exceptions">gplately.exceptions module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="gplately.html#module-gplately.geometry">gplately.geometry module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="gplately.html#module-gplately.gpml">gplately.gpml module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="gplately.html#module-gplately.grids">gplately.grids module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="gplately.html#module-gplately.oceans">gplately.oceans module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="gplately.html#module-gplately.parallel">gplately.parallel module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="gplately.html#module-gplately.plot">gplately.plot module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="gplately.html#module-gplately.pygplates">gplately.pygplates module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="gplately.html#module-gplately.reconstruction">gplately.reconstruction module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="gplately.html#module-gplately.spatial">gplately.spatial module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="gplately.html#module-gplately.tools">gplately.tools module</a></li>
+<li class="toctree-l3"><a class="reference internal" href="gplately.html#module-gplately">Module contents</a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="index.html">gplately</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="modules.html">gplately</a></li>
+          <li class="breadcrumb-item"><a href="gplately.html">gplately package</a></li>
+      <li class="breadcrumb-item active">gplately.lib package</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="_sources/gplately.lib.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="gplately-lib-package">
+<h1>gplately.lib package<a class="headerlink" href="#gplately-lib-package" title="Link to this heading"></a></h1>
+<section id="submodules">
+<h2>Submodules<a class="headerlink" href="#submodules" title="Link to this heading"></a></h2>
+</section>
+<section id="module-gplately.lib.icosahedron">
+<span id="gplately-lib-icosahedron-module"></span><h2>gplately.lib.icosahedron module<a class="headerlink" href="#module-gplately.lib.icosahedron" title="Link to this heading"></a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="gplately.lib.icosahedron.bisect">
+<span class="sig-prename descclassname"><span class="pre">gplately.lib.icosahedron.</span></span><span class="sig-name descname"><span class="pre">bisect</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">vertices</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">faces</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">level</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gplately/lib/icosahedron.html#bisect"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.lib.icosahedron.bisect" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="gplately.lib.icosahedron.get_mesh">
+<span class="sig-prename descclassname"><span class="pre">gplately.lib.icosahedron.</span></span><span class="sig-name descname"><span class="pre">get_mesh</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">level</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">5</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gplately/lib/icosahedron.html#get_mesh"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.lib.icosahedron.get_mesh" title="Link to this definition"></a></dt>
+<dd><p>call this function to get the mesh</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="gplately.lib.icosahedron.normalize">
+<span class="sig-prename descclassname"><span class="pre">gplately.lib.icosahedron.</span></span><span class="sig-name descname"><span class="pre">normalize</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">v</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gplately/lib/icosahedron.html#normalize"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.lib.icosahedron.normalize" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="gplately.lib.icosahedron.xyz2lonlat">
+<span class="sig-prename descclassname"><span class="pre">gplately.lib.icosahedron.</span></span><span class="sig-name descname"><span class="pre">xyz2lonlat</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">z</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gplately/lib/icosahedron.html#xyz2lonlat"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.lib.icosahedron.xyz2lonlat" title="Link to this definition"></a></dt>
+<dd><p>x = R * cos(lat) * cos(lon)
+y = R * cos(lat) * sin(lon)
+z = R <a href="#id1"><span class="problematic" id="id2">*</span></a>sin(lat)
+lat = asin(z / R)
+lon = atan2(y, x)</p>
+</dd></dl>
+
+</section>
+<section id="module-gplately.lib.polyline">
+<span id="gplately-lib-polyline-module"></span><h2>gplately.lib.polyline module<a class="headerlink" href="#module-gplately.lib.polyline" title="Link to this heading"></a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="gplately.lib.polyline._find_next_point">
+<span class="sig-prename descclassname"><span class="pre">gplately.lib.polyline.</span></span><span class="sig-name descname"><span class="pre">_find_next_point</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">line</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">distance</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">strict</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">accum_length</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gplately/lib/polyline.html#_find_next_point"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.lib.polyline._find_next_point" title="Link to this definition"></a></dt>
+<dd><p>recursive function to find the next point along the polyline</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>line</strong> – a list of (lat, lon) in radians</p></li>
+<li><p><strong>distance</strong> – the distance to the next point in radians</p></li>
+<li><p><strong>strict</strong> – in strict mode, we guarantee the distance. sacrifice the end point if necessary</p></li>
+</ul>
+</dd>
+<dt class="field-even">Accum_length<span class="colon">:</span></dt>
+<dd class="field-even"><p>parameter to pass down the accumulated length for this recursive function</p>
+</dd>
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>(next point, new line)
+next point (lat,lon) in radians. None, if no more point
+new line – the line after taking out this point</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="gplately.lib.polyline.discretize_polyline">
+<span class="sig-prename descclassname"><span class="pre">gplately.lib.polyline.</span></span><span class="sig-name descname"><span class="pre">discretize_polyline</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">line</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">distance</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">strict</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gplately/lib/polyline.html#discretize_polyline"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.lib.polyline.discretize_polyline" title="Link to this definition"></a></dt>
+<dd><p>travel along a polyline; take a sampling point for each <cite>distance</cite>; return a list of the sampling points.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>line</strong> – a list of (lat, lon) in radians</p></li>
+<li><p><strong>distance</strong> – the distance of the adjacent sampling points in radians</p></li>
+<li><p><strong>strict</strong> – in strict mode, we guarantee the distance, sacrifice the end point if necessary.
+in unstrict mode, we always keep the end point</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><p>the new line
+a list of (lat, lon) in radians.
+If the input line is shorter than distance,</p>
+<blockquote>
+<div><p>in strict mode, return [];
+in unstrict mode, return [start_point, end_point]</p>
+</div></blockquote>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="module-gplately.lib.quaternions">
+<span id="gplately-lib-quaternions-module"></span><h2>gplately.lib.quaternions module<a class="headerlink" href="#module-gplately.lib.quaternions" title="Link to this heading"></a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="gplately.lib.quaternions.axis_angle_to_quat">
+<span class="sig-prename descclassname"><span class="pre">gplately.lib.quaternions.</span></span><span class="sig-name descname"><span class="pre">axis_angle_to_quat</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">v</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">theta</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gplately/lib/quaternions.html#axis_angle_to_quat"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.lib.quaternions.axis_angle_to_quat" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="gplately.lib.quaternions.cart_to_lat_lon">
+<span class="sig-prename descclassname"><span class="pre">gplately.lib.quaternions.</span></span><span class="sig-name descname"><span class="pre">cart_to_lat_lon</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">x</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">z</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gplately/lib/quaternions.html#cart_to_lat_lon"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.lib.quaternions.cart_to_lat_lon" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="gplately.lib.quaternions.lat_lon_to_cart">
+<span class="sig-prename descclassname"><span class="pre">gplately.lib.quaternions.</span></span><span class="sig-name descname"><span class="pre">lat_lon_to_cart</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">lat</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lon</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gplately/lib/quaternions.html#lat_lon_to_cart"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.lib.quaternions.lat_lon_to_cart" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="gplately.lib.quaternions.normalize">
+<span class="sig-prename descclassname"><span class="pre">gplately.lib.quaternions.</span></span><span class="sig-name descname"><span class="pre">normalize</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">v</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tolerance</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1e-05</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gplately/lib/quaternions.html#normalize"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.lib.quaternions.normalize" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="gplately.lib.quaternions.quat_conjugate">
+<span class="sig-prename descclassname"><span class="pre">gplately.lib.quaternions.</span></span><span class="sig-name descname"><span class="pre">quat_conjugate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">q</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gplately/lib/quaternions.html#quat_conjugate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.lib.quaternions.quat_conjugate" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="gplately.lib.quaternions.quat_mult">
+<span class="sig-prename descclassname"><span class="pre">gplately.lib.quaternions.</span></span><span class="sig-name descname"><span class="pre">quat_mult</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">q1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">q2</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gplately/lib/quaternions.html#quat_mult"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.lib.quaternions.quat_mult" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="gplately.lib.quaternions.quat_to_axis_angle">
+<span class="sig-prename descclassname"><span class="pre">gplately.lib.quaternions.</span></span><span class="sig-name descname"><span class="pre">quat_to_axis_angle</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">quat</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gplately/lib/quaternions.html#quat_to_axis_angle"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.lib.quaternions.quat_to_axis_angle" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="gplately.lib.quaternions.quat_vec_mult">
+<span class="sig-prename descclassname"><span class="pre">gplately.lib.quaternions.</span></span><span class="sig-name descname"><span class="pre">quat_vec_mult</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">q1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">v1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gplately/lib/quaternions.html#quat_vec_mult"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.lib.quaternions.quat_vec_mult" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="gplately.lib.quaternions.test_rotate">
+<span class="sig-prename descclassname"><span class="pre">gplately.lib.quaternions.</span></span><span class="sig-name descname"><span class="pre">test_rotate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">point</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">axis</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">angle</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gplately/lib/quaternions.html#test_rotate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.lib.quaternions.test_rotate" title="Link to this definition"></a></dt>
+<dd><p>test rotate point</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>point</strong> – point to be rotated (in lat,lon)</p></li>
+<li><p><strong>axis</strong> – rotation axis (in lat,lon)</p></li>
+<li><p><strong>angle</strong> – roation angle (in degrees)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>new coordinates of the point (in lat,lon)</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="module-gplately.lib.rotation">
+<span id="gplately-lib-rotation-module"></span><h2>gplately.lib.rotation module<a class="headerlink" href="#module-gplately.lib.rotation" title="Link to this heading"></a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="gplately.lib.rotation.cross">
+<span class="sig-prename descclassname"><span class="pre">gplately.lib.rotation.</span></span><span class="sig-name descname"><span class="pre">cross</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">a</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">b</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gplately/lib/rotation.html#cross"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.lib.rotation.cross" title="Link to this definition"></a></dt>
+<dd><p>cross product of two vectors defined only in three-dimensional space
+<a class="reference external" href="https://www.mathsisfun.com/algebra/vectors-cross-product.html">https://www.mathsisfun.com/algebra/vectors-cross-product.html</a>
+<a class="reference external" href="https://en.wikipedia.org/wiki/Cross_product#Computing">https://en.wikipedia.org/wiki/Cross_product#Computing</a></p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>a</strong> – 3D vector, such as [1,2,3]</p></li>
+<li><p><strong>b</strong> – 3D vector, such as [234]</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>cross product 3D vector</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="gplately.lib.rotation.distance">
+<span class="sig-prename descclassname"><span class="pre">gplately.lib.rotation.</span></span><span class="sig-name descname"><span class="pre">distance</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">point_a</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">point_b</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">earth_radius</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">6378.14</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gplately/lib/rotation.html#distance"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.lib.rotation.distance" title="Link to this definition"></a></dt>
+<dd><p>calculate the distance between to points (lat, lon) in radians
+return the distance in km</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>point_a</strong> – point a (lat, lon) in radians</p></li>
+<li><p><strong>point_b</strong> – point b (lat, lon) in radians</p></li>
+<li><p><strong>earth_radius</strong> – earth radius</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>distance in km</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="gplately.lib.rotation.dot">
+<span class="sig-prename descclassname"><span class="pre">gplately.lib.rotation.</span></span><span class="sig-name descname"><span class="pre">dot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">a</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">b</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gplately/lib/rotation.html#dot"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.lib.rotation.dot" title="Link to this definition"></a></dt>
+<dd><p>dot product of two vectors
+<a class="reference external" href="https://www.mathsisfun.com/algebra/vectors-dot-product.html">https://www.mathsisfun.com/algebra/vectors-dot-product.html</a></p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>a</strong> – a vector, such as [1,2,3,4,5] (must be the same length with b)</p></li>
+<li><p><strong>b</strong> – a vector, such as [6,7,8,9,10] (must be the same length with a)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>dot product (a number)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="gplately.lib.rotation.find_axis_and_angle">
+<span class="sig-prename descclassname"><span class="pre">gplately.lib.rotation.</span></span><span class="sig-name descname"><span class="pre">find_axis_and_angle</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">point_a</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">point_b</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gplately/lib/rotation.html#find_axis_and_angle"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.lib.rotation.find_axis_and_angle" title="Link to this definition"></a></dt>
+<dd><p>given two points point_a and point_b in (lat, lon) format in radians,
+return axis(lat, lon) and angle in radians</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>point_a</strong> – point a (lat, lon) in radians</p></li>
+<li><p><strong>point_b</strong> – point b (lat, lon) in radians</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>axis(lat, lon) in radians; angle in radians</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="gplately.lib.rotation.interp_two_points">
+<span class="sig-prename descclassname"><span class="pre">gplately.lib.rotation.</span></span><span class="sig-name descname"><span class="pre">interp_two_points</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">point_a</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">point_b</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">num</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">10</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gplately/lib/rotation.html#interp_two_points"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.lib.rotation.interp_two_points" title="Link to this definition"></a></dt>
+<dd><p>interpolate between two points(in radians) along the great circle
+return a list of interpolated points (lat, lon) in radians</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>point_a</strong> – point a (lat, lon) in radians</p></li>
+<li><p><strong>point_b</strong> – point b (lat, lon) in radians</p></li>
+<li><p><strong>num</strong> – the number of segments</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>a list of interpolated points (lat, lon) in radians
+the return list has num+1 points(num segments)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="gplately.lib.rotation.km_to_radian">
+<span class="sig-prename descclassname"><span class="pre">gplately.lib.rotation.</span></span><span class="sig-name descname"><span class="pre">km_to_radian</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">km</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">earth_radius</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">6378.14</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gplately/lib/rotation.html#km_to_radian"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.lib.rotation.km_to_radian" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="gplately.lib.rotation.radian_distance">
+<span class="sig-prename descclassname"><span class="pre">gplately.lib.rotation.</span></span><span class="sig-name descname"><span class="pre">radian_distance</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">point_a</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">point_b</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gplately/lib/rotation.html#radian_distance"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.lib.rotation.radian_distance" title="Link to this definition"></a></dt>
+<dd><p>calculate the distance between to points (lat, lon) in radians
+return the distance in radians</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>point_a</strong> – point a (lat, lon) in radians</p></li>
+<li><p><strong>point_b</strong> – point b (lat, lon) in radians</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>distance in radians</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="gplately.lib.rotation.radian_to_km">
+<span class="sig-prename descclassname"><span class="pre">gplately.lib.rotation.</span></span><span class="sig-name descname"><span class="pre">radian_to_km</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">radian</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">earth_radius</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">6378.14</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gplately/lib/rotation.html#radian_to_km"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.lib.rotation.radian_to_km" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="gplately.lib.rotation.rotate">
+<span class="sig-prename descclassname"><span class="pre">gplately.lib.rotation.</span></span><span class="sig-name descname"><span class="pre">rotate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">point</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">axis</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">angle</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gplately/lib/rotation.html#rotate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.lib.rotation.rotate" title="Link to this definition"></a></dt>
+<dd><p>rotate a point by axis and angle</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>point</strong> – (lat, lon) in radians</p></li>
+<li><p><strong>axis</strong> – (lat, lon) in radians</p></li>
+<li><p><strong>angle</strong> – in radians</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>new point(lat, lon) in radians</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="gplately.lib.rotation.sample_between_two_points">
+<span class="sig-prename descclassname"><span class="pre">gplately.lib.rotation.</span></span><span class="sig-name descname"><span class="pre">sample_between_two_points</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">point_a</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">point_b</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">distances_to_point_a</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gplately/lib/rotation.html#sample_between_two_points"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.lib.rotation.sample_between_two_points" title="Link to this definition"></a></dt>
+<dd><p>sample points between two points along the great circle according to a list of distances to point a</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>point_a</strong> – point a (lat, lon) in radians</p></li>
+<li><p><strong>point_b</strong> – point b (lat, lon) in radians</p></li>
+<li><p><strong>distances_to_point_a</strong> – a list of distances(in radians) to point a.
+the distance must less than the distance between point a and point b.
+invalid distances will produce Nones in the return list</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>a list of sampled points (lat, lon) in radians.
+The return list has the same length with the list of distances_to_point_a.
+point_a and point_b will not be included.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="module-gplately.lib">
+<span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-gplately.lib" title="Link to this heading"></a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="gplately.lib.discretize_polyline">
+<span class="sig-prename descclassname"><span class="pre">gplately.lib.</span></span><span class="sig-name descname"><span class="pre">discretize_polyline</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">line</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">distance</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">strict</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gplately/lib/polyline.html#discretize_polyline"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.lib.discretize_polyline" title="Link to this definition"></a></dt>
+<dd><p>travel along a polyline; take a sampling point for each <cite>distance</cite>; return a list of the sampling points.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>line</strong> – a list of (lat, lon) in radians</p></li>
+<li><p><strong>distance</strong> – the distance of the adjacent sampling points in radians</p></li>
+<li><p><strong>strict</strong> – in strict mode, we guarantee the distance, sacrifice the end point if necessary.
+in unstrict mode, we always keep the end point</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><p>the new line
+a list of (lat, lon) in radians.
+If the input line is shorter than distance,</p>
+<blockquote>
+<div><p>in strict mode, return [];
+in unstrict mode, return [start_point, end_point]</p>
+</div></blockquote>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="gplately.commands.html" class="btn btn-neutral float-left" title="gplately.commands package" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="gplately.mapping.html" class="btn btn-neutral float-right" title="gplately.mapping package" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023-2025, The University of Sydney.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
