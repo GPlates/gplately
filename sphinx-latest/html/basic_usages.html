@@ -46,7 +46,8 @@
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Minimal working example</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#todo">TODO:</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#option-1-python-script">Option 1: Python script</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#option-2-jupyter-notebook">Option 2: Jupyter Notebook</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="use_cases.html">Common Use Cases</a></li>
@@ -88,11 +89,142 @@
 <h1>Minimal working example<a class="headerlink" href="#minimal-working-example" title="Link to this heading"></a></h1>
 <nav class="contents local" id="contents">
 <ul class="simple">
-<li><p><a class="reference internal" href="#todo" id="id1">TODO:</a></p></li>
+<li><p><a class="reference internal" href="#option-1-python-script" id="id1">Option 1: Python script</a></p></li>
+<li><p><a class="reference internal" href="#option-2-jupyter-notebook" id="id2">Option 2: Jupyter Notebook</a></p></li>
 </ul>
 </nav>
-<section id="todo">
-<h2><a class="toc-backref" href="#id1" role="doc-backlink">TODO:</a><a class="headerlink" href="#todo" title="Link to this heading"></a></h2>
+<p>Follow the steps below to create your own first paleogeographic map.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>You need to know <a class="reference external" href="https://www.freecodecamp.org/news/command-line-for-beginners/">how to use a terminal</a> to follow the instructions below.</p>
+</div>
+<section id="option-1-python-script">
+<h2><a class="toc-backref" href="#id1" role="doc-backlink">Option 1: Python script</a><a class="headerlink" href="#option-1-python-script" title="Link to this heading"></a></h2>
+<ul>
+<li><p><strong>Step 1</strong>: use <a class="reference external" href="https://mamba.readthedocs.io/en/latest/user_guide/micromamba.html">micromamba</a> to create a GPlately environment</p>
+<blockquote>
+<div><div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>micromamba<span class="w"> </span>create<span class="w"> </span>-n<span class="w"> </span>my-gplately-env
+<span class="gp">$ </span>micromamba<span class="w"> </span>activate<span class="w"> </span>my-gplately-env
+<span class="gp">$ </span>micromamba<span class="w"> </span>install<span class="w"> </span>-c<span class="w"> </span>conda-forge<span class="w"> </span>gplately
+</pre></div>
+</div>
+</div></blockquote>
+</li>
+</ul>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><a href="https://mamba.readthedocs.io/en/latest/installation/micromamba-installation.html" target="_blank">How to install micromamba?</a></p>
+</div>
+<ul>
+<li><p><strong>Step 2</strong>: create a gplately_hello_world.py file and copy &amp; paste the Python code below</p>
+<blockquote>
+<div><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span><span class="kn">import</span><span class="w"> </span><span class="nn">cartopy.crs</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">ccrs</span>
+<span class="linenos"> 2</span><span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+<span class="linenos"> 3</span>
+<span class="hll"><span class="linenos"> 4</span><span class="kn">import</span><span class="w"> </span><span class="nn">gplately</span>
+</span><span class="linenos"> 5</span>
+<span class="linenos"> 6</span><span class="c1"># create a basemap using Mollweide projection</span>
+<span class="linenos"> 7</span><span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">4</span><span class="p">))</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="mi">111</span><span class="p">,</span> <span class="n">projection</span><span class="o">=</span><span class="n">ccrs</span><span class="o">.</span><span class="n">Mollweide</span><span class="p">(</span><span class="mi">180</span><span class="p">))</span>
+<span class="linenos"> 8</span>
+<span class="linenos"> 9</span><span class="c1"># get a PlotTopologies object</span>
+<span class="hll"><span class="linenos">10</span><span class="n">gplot</span> <span class="o">=</span> <span class="n">gplately</span><span class="o">.</span><span class="n">auxiliary</span><span class="o">.</span><span class="n">get_gplot</span><span class="p">(</span><span class="s2">&quot;Muller2019&quot;</span><span class="p">,</span> <span class="n">time</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
+</span><span class="linenos">11</span>
+<span class="linenos">12</span><span class="c1"># use the PlotTopologies object to plot a paleo-coastlines map</span>
+<span class="hll"><span class="linenos">13</span><span class="n">gplot</span><span class="o">.</span><span class="n">plot_coastlines</span><span class="p">(</span><span class="n">ax</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;lightblue&quot;</span><span class="p">,</span><span class="n">facecolor</span><span class="o">=</span><span class="s2">&quot;0.8&quot;</span><span class="p">)</span>
+</span><span class="linenos">14</span>
+<span class="linenos">15</span><span class="c1"># add title for the map</span>
+<span class="linenos">16</span><span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">int</span><span class="p">(</span><span class="n">gplot</span><span class="o">.</span><span class="n">time</span><span class="p">)</span><span class="si">}</span><span class="s2"> Ma&quot;</span><span class="p">)</span>
+<span class="linenos">17</span>
+<span class="linenos">18</span><span class="c1"># save the map to a .png file</span>
+<span class="linenos">19</span><span class="n">plt</span><span class="o">.</span><span class="n">gcf</span><span class="p">()</span><span class="o">.</span><span class="n">savefig</span><span class="p">(</span><span class="s2">&quot;gplately-hello-world.png&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div></blockquote>
+</li>
+<li><p><strong>Step 3</strong>: run the Python file and check the map</p>
+<blockquote>
+<div><div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>python3<span class="w"> </span>gplately_hello_world.py
+</pre></div>
+</div>
+<p>Open the file <code class="docutils literal notranslate"><span class="pre">gplately-hello-world.png</span></code> in your current working directory.
+The paleogeographic map created by the code above shows the coastlines at 100 Million years ago.</p>
+<a class="reference internal image-reference" href="_images/gplately-helloworld.png"><img alt="GPlately Hello World Map" src="_images/gplately-helloworld.png" style="width: 400px;" />
+</a>
+</div></blockquote>
+</li>
+</ul>
+</section>
+<section id="option-2-jupyter-notebook">
+<h2><a class="toc-backref" href="#id2" role="doc-backlink">Option 2: Jupyter Notebook</a><a class="headerlink" href="#option-2-jupyter-notebook" title="Link to this heading"></a></h2>
+<ul>
+<li><p><strong>Step 1</strong>: use <a class="reference external" href="https://mamba.readthedocs.io/en/latest/user_guide/micromamba.html">micromamba</a> to create a GPlately environment</p>
+<blockquote>
+<div><div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>micromamba<span class="w"> </span>create<span class="w"> </span>-n<span class="w"> </span>my-gplately-env
+<span class="gp">$ </span>micromamba<span class="w"> </span>activate<span class="w"> </span>my-gplately-env
+<span class="gp">$ </span>micromamba<span class="w"> </span>install<span class="w"> </span>-c<span class="w"> </span>conda-forge<span class="w"> </span>gplately<span class="w"> </span>jupyter
+</pre></div>
+</div>
+</div></blockquote>
+</li>
+</ul>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><a href="https://mamba.readthedocs.io/en/latest/installation/micromamba-installation.html" target="_blank">How to install micromamba?</a></p>
+</div>
+<ul>
+<li><p><strong>Step 2</strong>: start a Jupyter Notebook server</p>
+<blockquote>
+<div><div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>jupyter<span class="w"> </span>notebook
+</pre></div>
+</div>
+</div></blockquote>
+</li>
+</ul>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><a class="reference external" href="https://jupyter-notebook.readthedocs.io/en/latest/">Jupyter Notebook Documentation</a></p>
+</div>
+<ul>
+<li><p><strong>Step 3</strong>: create an empty notebook and copy &amp; paste the Python code below</p>
+<blockquote>
+<div><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span><span class="kn">import</span><span class="w"> </span><span class="nn">cartopy.crs</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">ccrs</span>
+<span class="linenos"> 2</span><span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+<span class="linenos"> 3</span>
+<span class="hll"><span class="linenos"> 4</span><span class="kn">import</span><span class="w"> </span><span class="nn">gplately</span>
+</span><span class="linenos"> 5</span>
+<span class="linenos"> 6</span><span class="c1"># create a basemap using Mollweide projection</span>
+<span class="linenos"> 7</span><span class="n">ax</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">8</span><span class="p">,</span> <span class="mi">4</span><span class="p">))</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="mi">111</span><span class="p">,</span> <span class="n">projection</span><span class="o">=</span><span class="n">ccrs</span><span class="o">.</span><span class="n">Mollweide</span><span class="p">(</span><span class="mi">180</span><span class="p">))</span>
+<span class="linenos"> 8</span>
+<span class="linenos"> 9</span><span class="c1"># get a PlotTopologies object</span>
+<span class="hll"><span class="linenos">10</span><span class="n">gplot</span> <span class="o">=</span> <span class="n">gplately</span><span class="o">.</span><span class="n">auxiliary</span><span class="o">.</span><span class="n">get_gplot</span><span class="p">(</span><span class="s2">&quot;Muller2019&quot;</span><span class="p">,</span> <span class="n">time</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
+</span><span class="linenos">11</span>
+<span class="linenos">12</span><span class="c1"># use the PlotTopologies object to plot a paleo-coastlines map</span>
+<span class="hll"><span class="linenos">13</span><span class="n">gplot</span><span class="o">.</span><span class="n">plot_coastlines</span><span class="p">(</span><span class="n">ax</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;lightblue&quot;</span><span class="p">,</span><span class="n">facecolor</span><span class="o">=</span><span class="s2">&quot;0.8&quot;</span><span class="p">)</span>
+</span><span class="linenos">14</span>
+<span class="linenos">15</span><span class="c1"># add title for the map</span>
+<span class="linenos">16</span><span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="nb">int</span><span class="p">(</span><span class="n">gplot</span><span class="o">.</span><span class="n">time</span><span class="p">)</span><span class="si">}</span><span class="s2"> Ma&quot;</span><span class="p">)</span>
+<span class="linenos">17</span>
+<span class="linenos">18</span><span class="c1"># display the map</span>
+<span class="linenos">19</span><span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span>
+</pre></div>
+</div>
+</div></blockquote>
+</li>
+<li><p><strong>Step 4</strong>: run the notebook and check the map</p>
+<blockquote>
+<div><p>The paleogeographic map created by the code above shows the coastlines at 100 Million years ago.</p>
+<a class="reference internal image-reference" href="_images/gplately-helloworld.png"><img alt="GPlately Hello World Map" src="_images/gplately-helloworld.png" style="width: 400px;" />
+</a>
+</div></blockquote>
+</li>
+</ul>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<ul class="simple">
+<li><p><a class="reference external" href="https://github.com/GPlates/gplately/blob/update-doc-readme-examples/Notebooks/Examples/hello_world.py">GPlately Hello World Python Script</a></p></li>
+<li><p><a class="reference external" href="https://github.com/GPlates/gplately/blob/update-doc-readme-examples/Notebooks/Examples/hello_world.ipynb">GPlately Hello World Jupyter Notebook</a></p></li>
+</ul>
+</div>
 </section>
 </section>
 
