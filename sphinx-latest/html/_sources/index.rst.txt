@@ -1,31 +1,21 @@
-GPlately v2.0.0
-===============
+GPlately v2.0.0 documentation
+=============================
 
-GPlately was created to accelerate spatio-temporal data analysis by leveraging pyGPlates within a simplified Python interface. 
+GPlately_ was created to accelerate spatio-temporal data analysis by leveraging pyGPlates_ within a simplified Python interface. 
 This object-oriented package enables the reconstruction of data through deep geologic time (such as points, lines, polygons, and rasters), 
 the interrogation of plate kinematic information (plate velocities, rates of subduction and seafloor spreading), 
 the rapid comparison of multiple plate motion models, and the plotting of reconstructed output data on maps. 
 All tools are designed to be parallel-safe, accelerating spatio-temporal analysis over multiple CPU processors.
 
-GPlately can be installed using either pip or conda (via the conda-forge channel). For detailed installation instructions, 
-please refer to the Installation section. Additionally, Docker images are available for your convenience.
+GPlately can be installed using either pip_ or conda_ (via the `conda-forge channel`_). 
+See the `installation section`_ for details. Additionally, |Docker images| are available for your convenience.
 
-Sample data is available from EarthByte servers, which include rasters, seafloor age grids, rotation files, 
+Sample data is available from |EarthByte servers|, which include rasters, seafloor age grids, rotation files, 
 and more to help you get started with plate reconstructions.
 
-Indices and tables
-==================
-
-* :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
-
-.. Hidden TOCs
-
 .. toctree::
-   :caption: GPlately v2.0.0
-   :maxdepth: 2
-   :hidden:
+   :caption: User Guide
+   :maxdepth: 3
 
    installation
    basic_usages
@@ -35,6 +25,8 @@ Indices and tables
    command_line_interface
    primer
 
+.. Hidden TOCs
+
 .. toctree::
    :caption: API Reference
    :maxdepth: 2
@@ -42,7 +34,23 @@ Indices and tables
 
    modules
 
+Indices and tables
+==================
+
+* :ref:`genindex`
+* :ref:`modindex`
+* :ref:`search`
+
+.. |EarthByte servers| raw:: html
+   
+   <a href="https://www.earthbyte.org/category/resources/" target="_blank">EarthByte servers</a>
+
+.. _installation section: installation.html
 .. _GPlately: https://github.com/GPlates/gplately
-.. _NPM: https://www.npmjs.com/
-.. _Conda: https://anaconda.org/anaconda/conda
-.. _PyGPlates: https://www.gplates.org/docs/pygplates/
+.. _pyGPlates: https://www.gplates.org/docs/pygplates/
+.. _pip: https://pip.pypa.io/en/stable/
+.. _conda: https://docs.conda.io/projects/conda/en/latest/index.html
+.. _`conda-forge channel`: https://conda-forge.org/
+.. |Docker images| raw:: html
+
+   <a href="https://github.com/GPlates/gplately/blob/master/docker/README.md" target="_blank">Docker images</a>
