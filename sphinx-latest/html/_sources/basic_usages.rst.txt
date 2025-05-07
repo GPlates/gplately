@@ -123,9 +123,10 @@ Option 2: Jupyter Notebook
 
 - **Step 4**: run the notebook and check the map
 
+   The map will be displayed inline within the Jupyter Notebook's web interface.
    The paleogeographic map created by the code above shows the coastlines at 100 Million years ago.
 
-   .. image:: images/gplately-helloworld.png
+   .. image:: images/gplately-helloworld-notebook.png
       :width: 400
       :alt: GPlately Hello World Map
 
