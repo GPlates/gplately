@@ -46,9 +46,9 @@
               <p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
 <ul class="current">
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Installation</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#conda-recommended">conda (recommended)</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#pip">pip</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#docker">docker 🐳</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#use-conda-recommended">Use conda (recommended)</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#use-pip">Use pip</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#use-docker">Use docker 🐳</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="basic_usages.html">Minimal working example</a></li>
@@ -91,13 +91,13 @@
 <h1>Installation<a class="headerlink" href="#installation" title="Link to this heading"></a></h1>
 <nav class="contents local" id="contents">
 <ul class="simple">
-<li><p><a class="reference internal" href="#conda-recommended" id="id2">conda (recommended)</a></p></li>
-<li><p><a class="reference internal" href="#pip" id="id3">pip</a></p></li>
-<li><p><a class="reference internal" href="#docker" id="id4">docker 🐳</a></p></li>
+<li><p><a class="reference internal" href="#use-conda-recommended" id="id1">Use conda (recommended)</a></p></li>
+<li><p><a class="reference internal" href="#use-pip" id="id2">Use pip</a></p></li>
+<li><p><a class="reference internal" href="#use-docker" id="id3">Use docker 🐳</a></p></li>
 </ul>
 </nav>
-<section id="conda-recommended">
-<h2><a class="toc-backref" href="#id2" role="doc-backlink">conda (recommended)</a><a class="headerlink" href="#conda-recommended" title="Link to this heading"></a></h2>
+<section id="use-conda-recommended">
+<h2><a class="toc-backref" href="#id1" role="doc-backlink">Use conda (recommended)</a><a class="headerlink" href="#use-conda-recommended" title="Link to this heading"></a></h2>
 <p>The latest stable public release of <strong>GPlately</strong> can be installed using <a class="reference external" href="https://docs.conda.io/projects/conda/en/latest/index.html">conda</a> from the <a class="reference external" href="https://conda-forge.org/">conda-forge channel</a>.
 The following commands will create a new conda environment called <strong>my-gplately-conda-env</strong> and install GPlately within that environment.</p>
 <div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>conda<span class="w"> </span>create<span class="w"> </span>-n<span class="w"> </span>my-gplately-conda-env
@@ -110,8 +110,8 @@ The following commands will create a new conda environment called <strong>my-gpl
 <p>✏️ If conda gets <strong>stuck while solving the environment</strong> during the installation of GPlately, you can try to use <a class="reference external" href="https://mamba.readthedocs.io/en/latest/user_guide/micromamba.html">micromamba</a> instead.</p>
 </div>
 </section>
-<section id="pip">
-<h2><a class="toc-backref" href="#id3" role="doc-backlink">pip</a><a class="headerlink" href="#pip" title="Link to this heading"></a></h2>
+<section id="use-pip">
+<h2><a class="toc-backref" href="#id2" role="doc-backlink">Use pip</a><a class="headerlink" href="#use-pip" title="Link to this heading"></a></h2>
 <p>GPlately can also be installed using <a class="reference external" href="https://pip.pypa.io/en/stable/">pip</a>.</p>
 <p>👉 Install the latest stable public release from <a class="reference external" href="https://pypi.org/project/gplately/">PyPI</a></p>
 <div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>pip<span class="w"> </span>install<span class="w"> </span>gplately
@@ -135,8 +135,8 @@ The following commands will create a new conda environment called <strong>my-gpl
 <p>✏️ The “pip install -e .” command installs GPlately in <a class="reference external" href="https://pip.pypa.io/en/stable/topics/local-project-installs/#editable-installs">editable mode</a>.</p>
 </div>
 </section>
-<section id="docker">
-<h2><a class="toc-backref" href="#id4" role="doc-backlink">docker 🐳</a><a class="headerlink" href="#docker" title="Link to this heading"></a></h2>
+<section id="use-docker">
+<h2><a class="toc-backref" href="#id3" role="doc-backlink">Use docker 🐳</a><a class="headerlink" href="#use-docker" title="Link to this heading"></a></h2>
 <p>👉 Run GPlately notebooks with Docker</p>
 <div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>docker<span class="w"> </span>pull<span class="w"> </span>gplates/gplately
 <span class="gp">$ </span>docker<span class="w"> </span>run<span class="w"> </span>--rm<span class="w"> </span>-ti<span class="w"> </span>-p<span class="w"> </span><span class="m">8888</span>:8888<span class="w"> </span>gplates/gplately

@@ -5,8 +5,8 @@ Installation
    :local:
    :depth: 2
    
-conda (recommended)
--------------------
+Use conda (recommended)
+-----------------------
 
 The latest stable public release of **GPlately** can be installed using conda_ from the `conda-forge channel`_. 
 The following commands will create a new conda environment called **my-gplately-conda-env** and install GPlately within that environment.
@@ -21,8 +21,8 @@ The following commands will create a new conda environment called **my-gplately-
     
     ✏️ If conda gets **stuck while solving the environment** during the installation of GPlately, you can try to use micromamba_ instead.
 
-pip
----
+Use pip
+-------
 
 GPlately can also be installed using pip_.
 
@@ -58,8 +58,8 @@ GPlately can also be installed using pip_.
 .. _`editable mode`: https://pip.pypa.io/en/stable/topics/local-project-installs/#editable-installs
 
 
-docker 🐳
----------
+Use docker 🐳
+-------------
 
 👉 Run GPlately notebooks with Docker
 
