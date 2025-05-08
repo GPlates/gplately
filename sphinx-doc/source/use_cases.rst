@@ -33,18 +33,22 @@ Additionally, it supports the retrieval of other data types, including rasters, 
    etopo = gdownload.get_raster("ETOPO1_tif")
 
 
-Both `PlateModelManager` and `DataServer` support the following plate reconstruction models:
+The table below lists all available plate reconstruction models.
+
+.. note::
+
+      Use horizontal scrolling to see all the columns in the table.
 
 .. list-table:: Plate Reconstruction Models
    :header-rows: 1
-   :align: center
+   :align: left
    :width: 100%
    :widths: 30 10 10 10 10 10 10 10 
 
    * - Model Name
      - Topology
      - Static Polygons
-     - Coastlines
+     - Coasts
      - Continents
      - COB
      - Age Grids
@@ -65,40 +69,196 @@ Both `PlateModelManager` and `DataServer` support the following plate reconstruc
      - ✅
      - ❌
      - ❌
+   * - Muller2022_ 
+     - ✅
+     - ✅ 
+     - ✅ 
+     - ✅
+     - ✅
+     - ❌ 
+     - ❌
+   * - Zahirovic2022_ 
+     - ✅
+     - ✅ 
+     - ✅ 
+     - ✅ 
+     - ❌ 
+     - ✅ 
+     - ✅ 
+   * - Merdith2021_ 
+     - ✅ 
+     - ✅ 
+     - ✅  
+     - ✅ 
+     - ❌ 
+     - ❌
+     - ❌  
+   * - Clennett2020_ 
+     - ✅ 
+     - ✅
+     - ✅ 
+     - ❌
+     - ❌
+     - ✅ 
+     - ✅
+   * - Clennett2020_M2019_
+     - ✅ 
+     - ✅ 
+     - ✅ 
+     - ❌ 
+     - ❌ 
+     - ✅ 
+     - ✅ 
+   * - Clennett2020_S2013_
+     - ✅
+     - ✅ 
+     - ✅ 
+     - ❌ 
+     - ❌ 
+     - ❌ 
+     - ❌ 
+   * - Muller2019_
+     - ✅
+     - ✅
+     - ✅ 
+     - ✅ 
+     - ✅  
+     - ✅ 
+     - ❌ 
+   * - Young2018_
+     - ✅ 
+     - ✅ 
+     - ✅ 
+     - ✅ 
+     - ❌ 
+     - ❌ 
+     - ❌ 
+   * - TorsvikCocks2017
+     - ❌ 
+     - ✅ 
+     - ✅  
+     - ❌ 
+     - ❌ 
+     - ❌
+     - ❌
+   * - Matthews2016_ 
+     - ✅ 
+     - ✅ 
+     - ✅ 
+     - ✅ 
+     - ❌
+     - ❌
+     - ❌ 
+   * - Matthews2016_pmag_ref
+     - ❌ 
+     - ✅ 
+     - ✅ 
+     - ✅ 
+     - ❌
+     - ❌
+     - ❌ 
+   * - Muller2016_
+     - ✅ 
+     - ✅
+     - ✅ 
+     - ❌ 
+     - ✅ 
+     - ✅ 
+     - ❌ 
+   * - Scotese2016_ 
+     - ❌ 
+     - ✅ 
+     - ✅ 
+     - ❌ 
+     - ❌ 
+     - ❌
+     - ❌ 
+   * - Zahirovic2016_
+     - ✅ 
+     - ✅ 
+     - ✅ 
+     - ✅ 
+     - ❌ 
+     - ❌ 
+     - ❌ 
+   * - Gibbons2015_ 
+     - ✅
+     - ✅ 
+     - ✅ 
+     - ❌ 
+     - ❌
+     - ❌ 
+     - ❌ 
+   * - Zahirovic2014_
+     - ❌
+     - ✅
+     - ✅ 
+     - ❌ 
+     - ❌ 
+     - ❌ 
+     - ❌ 
+   * - Shephard2013_
+     - ✅
+     - ✅ 
+     - ✅ 
+     - ❌ 
+     - ❌ 
+     - ❌
+     - ❌
+   * - Gurnis2012_
+     - ✅
+     - ✅ 
+     - ✅ 
+     - ❌
+     - ❌ 
+     - ❌ 
+     - ❌
+   * - Seton2012_
+     - ✅ 
+     - ✅ 
+     - ✅ 
+     - ✅ 
+     - ✅ 
+     - ✅ 
+     - ❌ 
+   * - Muller2008
+     - ❌ 
+     - ✅ 
+     - ❌ 
+     - ❌ 
+     - ❌ 
+     - ❌
+     - ❌ 
 
 .. _Cao2024: https://doi.org/10.5281/zenodo.11536686
 .. _Alfonso2024: https://doi.org/10.5281/zenodo.11392268
+.. _Muller2022: https://doi.org/10.5281/zenodo.10297173
+.. _Zahirovic2022: https://zenodo.org/records/4729045
+.. _Merdith2021: https://doi.org/10.5281/zenodo.10346399
+.. _Clennett2020: https://doi.org/10.5281/zenodo.10348270
+.. _Clennett2020_M2019: https://doi.org/10.5281/zenodo.10348270
+.. _Clennett2020_S2013: https://doi.org/10.5281/zenodo.10348270
+.. _Muller2019: https://doi.org/10.5281/zenodo.10525286
+.. _Young2018: https://doi.org/10.5281/zenodo.10525369
+.. _Matthews2016: https://doi.org/10.5281/zenodo.10526156
+.. _Muller2016: https://doi.org/10.5281/zenodo.10565444
+.. _Scotese2016: https://doi.org/10.5281/zenodo.10596609
+.. _Zahirovic2016: https://doi.org/10.5281/zenodo.10531296
+.. _Gibbons2015: https://doi.org/10.5281/zenodo.10595658
+.. _Zahirovic2014: https://doi.org/10.5281/zenodo.10595658
+.. _Shephard2013: https://doi.org/10.5281/zenodo.10595888
+.. _Gurnis2012: https://doi.org/10.5281/zenodo.10596349
+.. _Seton2012: https://doi.org/10.5281/zenodo.10596049
 
-------------------
+.. note::
 
-| **Model name string Identifier** | **Zenodo** | **Topology features** | **Static polygons** | **Coast-lines**  | **Cont-inents** | **COB**    | **Age grids**   | **SR grids**  |
-|:--------------------------------:|:---------:|:--------------------:|:--------------------:|:-----------------:|:---------------:|:----------:|:--------------:|:--------------:|
-|  Alfonso2024                     |     ✅     |          ✅           |          ✅          |        ✅        |        ❌       |     ❌    |       ❌       |       ❌      |
-|  Cao2024                         |     ✅     |          ✅           |          ✅          |        ✅        |        ✅       |     ✅    |       ❌       |       ❌      |
-|  Muller2022                      |     ✅     |          ✅           |          ✅          |        ✅        |        ✅       |     ✅    |       ❌       |       ❌      |
-|  Zahirovic2022                   |     ✅     |          ✅           |          ✅          |        ✅        |        ✅       |     ❌    |       ✅       |       ✅      |
-|  Merdith2021                     |     ✅     |          ✅           |          ✅          |        ✅        |        ✅       |     ❌    |       ❌       |       ❌      |
-|  Clennett2020                    |     ✅     |          ✅           |          ✅          |        ✅        |        ❌       |     ❌    |       ✅       |       ✅      |
-|  Clennett2020_M2019              |     ✅     |          ✅           |          ✅          |        ✅        |        ❌       |     ❌    |       ✅       |       ✅      |
-|  Clennett2020_S2013              |     ✅     |          ✅           |          ✅          |        ✅        |        ❌       |     ❌    |       ❌       |       ❌      |
-|  Muller2019                      |     ✅     |          ✅           |          ✅          |        ✅        |        ✅       |     ✅    |       ✅       |       ❌      |
-|  Young2018                       |     ✅     |          ✅           |          ✅          |        ✅        |        ✅       |     ❌    |       ❌       |       ❌      |
-|  TorsvikCocks2017                |     ❌     |          ❌           |          ✅          |        ✅        |        ❌       |     ❌    |       ❌       |       ❌      |
-|  Matthews2016                    |     ✅     |          ✅           |          ✅          |        ✅        |        ✅       |     ❌    |       ❌       |       ❌      |
-|  Matthews2016_pmag_ref           |     ❌     |          ❌           |          ✅          |        ✅        |        ✅       |     ❌    |       ❌       |       ❌      |
-|  Muller2016                      |     ✅     |          ✅           |          ✅          |        ✅        |        ❌       |     ✅    |       ✅       |       ❌      |
-|  Scotese2016                     |     ✅     |          ❌           |          ✅          |        ✅        |        ❌       |     ❌    |       ❌       |       ❌      |
-|  Zahirovic2016                   |     ✅     |          ✅           |          ✅          |        ✅        |        ✅       |     ❌    |       ❌       |       ❌      |
-|  Gibbons2015                     |     ✅     |          ✅           |          ✅          |        ✅        |        ❌       |     ❌    |       ❌       |       ❌      |
-|  Zahirovic2014                   |     ✅     |          ❌           |          ✅          |        ✅        |        ❌       |     ❌    |       ❌       |       ❌      |
-|  Shephard2013                    |     ✅     |          ✅           |          ✅          |        ✅        |        ❌       |     ❌    |       ❌       |       ❌      |
-|  Gurnis2012                      |     ✅     |          ✅           |          ✅          |        ✅        |        ❌       |     ❌    |       ❌       |       ❌      |
-|  Seton2012                       |     ✅     |          ✅           |          ✅          |        ✅        |        ✅       |     ✅    |       ✅       |       ❌      |
-|  Muller2008                      |     ❌     |          ❌           |          ✅          |        ❌        |        ❌       |     ❌    |       ❌       |       ❌      |
+   All models include rotation files.
 
-**Please note that all models have rotation files.**
+.. note::
 
-------------------
+   - ``COB``: continent-ocean boundaries
+   - ``Age Grids``: seafloor age grid 
+
 
 PlateReconstruction
 -------------------
