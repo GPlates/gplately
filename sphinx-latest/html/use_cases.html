@@ -48,7 +48,12 @@
 <li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
 <li class="toctree-l1"><a class="reference internal" href="basic_usages.html">Minimal working example</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Common Use Cases</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="#todo">TODO:</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#dataserver">DataServer</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#platereconstruction">PlateReconstruction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#points">Points</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#raster">Raster</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#plottopologies">PlotTopologies</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#seafloorgrid">SeafloorGrid</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="faq.html">Trouble-shooting and FAQ</a></li>
@@ -89,11 +94,258 @@
 <h1>Common Use Cases<a class="headerlink" href="#common-use-cases" title="Link to this heading"></a></h1>
 <nav class="contents local" id="contents">
 <ul class="simple">
-<li><p><a class="reference internal" href="#todo" id="id1">TODO:</a></p></li>
+<li><p><a class="reference internal" href="#dataserver" id="id12">DataServer</a></p></li>
+<li><p><a class="reference internal" href="#platereconstruction" id="id13">PlateReconstruction</a></p></li>
+<li><p><a class="reference internal" href="#points" id="id14">Points</a></p></li>
+<li><p><a class="reference internal" href="#raster" id="id15">Raster</a></p></li>
+<li><p><a class="reference internal" href="#plottopologies" id="id16">PlotTopologies</a></p></li>
+<li><p><a class="reference internal" href="#seafloorgrid" id="id17">SeafloorGrid</a></p></li>
 </ul>
 </nav>
-<section id="todo">
-<h2><a class="toc-backref" href="#id1" role="doc-backlink">TODO:</a><a class="headerlink" href="#todo" title="Link to this heading"></a></h2>
+<section id="dataserver">
+<h2><a class="toc-backref" href="#id12" role="doc-backlink">DataServer</a><a class="headerlink" href="#dataserver" title="Link to this heading"></a></h2>
+<p>The <cite>DataServer</cite> class allows users to automatically download and cache the necessary files for plate reconstructions to a designated folder on your system.
+These files include rotation models, topology features, and static geometries such as coastlines, continents, and continent-ocean boundaries.
+Additionally, it supports the retrieval of other data types, including rasters, grids, and feature data.
+(Use the newer <strong>PlateModelManager</strong> whenever possible.)</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span><span class="kn">from</span><span class="w"> </span><span class="nn">gplately.download</span><span class="w"> </span><span class="kn">import</span> <span class="n">DataServer</span>
+<span class="linenos"> 2</span>
+<span class="linenos"> 3</span><span class="n">gdownload</span> <span class="o">=</span> <span class="n">DataServer</span><span class="p">(</span><span class="s2">&quot;Muller2019&quot;</span><span class="p">)</span>
+<span class="linenos"> 4</span>
+<span class="linenos"> 5</span><span class="c1"># Download plate reconstruction files and geometries from the Müller et al. 2019 model</span>
+<span class="linenos"> 6</span><span class="n">rotation_model</span><span class="p">,</span> <span class="n">topology_features</span><span class="p">,</span> <span class="n">static_polygons</span> <span class="o">=</span> <span class="p">(</span>
+<span class="linenos"> 7</span>   <span class="n">gdownload</span><span class="o">.</span><span class="n">get_plate_reconstruction_files</span><span class="p">()</span>
+<span class="linenos"> 8</span><span class="p">)</span>
+<span class="linenos"> 9</span><span class="n">coastlines</span><span class="p">,</span> <span class="n">continents</span><span class="p">,</span> <span class="n">COBs</span> <span class="o">=</span> <span class="n">gdownload</span><span class="o">.</span><span class="n">get_topology_geometries</span><span class="p">()</span>
+<span class="linenos">10</span>
+<span class="linenos">11</span><span class="c1"># Download the Müller et al. 2019 100 Ma age grid</span>
+<span class="linenos">12</span><span class="n">age_grid</span> <span class="o">=</span> <span class="n">gdownload</span><span class="o">.</span><span class="n">get_age_grid</span><span class="p">(</span><span class="n">times</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
+<span class="linenos">13</span>
+<span class="linenos">14</span><span class="c1"># Download the ETOPO1 geotiff raster</span>
+<span class="linenos">15</span><span class="n">etopo</span> <span class="o">=</span> <span class="n">gdownload</span><span class="o">.</span><span class="n">get_raster</span><span class="p">(</span><span class="s2">&quot;ETOPO1_tif&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Both <cite>PlateModelManager</cite> and <cite>DataServer</cite> support the following plate reconstruction models:</p>
+<table class="docutils align-center" id="id1" style="width: 100%">
+<caption><span class="caption-text">Plate Reconstruction Models</span><a class="headerlink" href="#id1" title="Link to this table"></a></caption>
+<colgroup>
+<col style="width: 30.0%" />
+<col style="width: 10.0%" />
+<col style="width: 10.0%" />
+<col style="width: 10.0%" />
+<col style="width: 10.0%" />
+<col style="width: 10.0%" />
+<col style="width: 10.0%" />
+<col style="width: 10.0%" />
+</colgroup>
+<thead>
+<tr class="row-odd"><th class="head"><p>Model Name</p></th>
+<th class="head"><p>Topology</p></th>
+<th class="head"><p>Static Polygons</p></th>
+<th class="head"><p>Coastlines</p></th>
+<th class="head"><p>Continents</p></th>
+<th class="head"><p>COB</p></th>
+<th class="head"><p>Age Grids</p></th>
+<th class="head"><p>SR Grids</p></th>
+</tr>
+</thead>
+<tbody>
+<tr class="row-even"><td><p><a class="reference external" href="https://doi.org/10.5281/zenodo.11392268">Alfonso2024</a></p></td>
+<td><p>✅</p></td>
+<td><p>✅</p></td>
+<td><p>✅</p></td>
+<td><p>✅</p></td>
+<td><p>❌</p></td>
+<td><p>❌</p></td>
+<td><p>❌</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference external" href="https://doi.org/10.5281/zenodo.11536686">Cao2024</a></p></td>
+<td><p>✅</p></td>
+<td><p>✅</p></td>
+<td><p>✅</p></td>
+<td><p>✅</p></td>
+<td><p>✅</p></td>
+<td><p>❌</p></td>
+<td><p>❌</p></td>
+</tr>
+</tbody>
+</table>
+<hr class="docutils" />
+<div class="line-block">
+<div class="line"><strong>Model name string Identifier</strong> | <strong>Zenodo</strong> | <strong>Topology features</strong> | <strong>Static polygons</strong> | <strong>Coast-lines</strong>  | <strong>Cont-inents</strong> | <strong>COB</strong>    | <strong>Age grids</strong>   | <strong>SR grids</strong>  |</div>
+</div>
+<p><a href="#id2"><span class="problematic" id="id3">|:--------------------------------:|</span></a>:———:<a href="#id4"><span class="problematic" id="id5">|:--------------------:|</span></a>:——————–:<a href="#id6"><span class="problematic" id="id7">|:-----------------:|</span></a>:—————:<a href="#id8"><span class="problematic" id="id9">|:----------:|</span></a>:————–:<a href="#id10"><span class="problematic" id="id11">|:--------------:|</span></a>
+|  Alfonso2024                     |     ✅     |          ✅           |          ✅          |        ✅        |        ❌       |     ❌    |       ❌       |       ❌      |
+|  Cao2024                         |     ✅     |          ✅           |          ✅          |        ✅        |        ✅       |     ✅    |       ❌       |       ❌      |
+|  Muller2022                      |     ✅     |          ✅           |          ✅          |        ✅        |        ✅       |     ✅    |       ❌       |       ❌      |
+|  Zahirovic2022                   |     ✅     |          ✅           |          ✅          |        ✅        |        ✅       |     ❌    |       ✅       |       ✅      |
+|  Merdith2021                     |     ✅     |          ✅           |          ✅          |        ✅        |        ✅       |     ❌    |       ❌       |       ❌      |
+|  Clennett2020                    |     ✅     |          ✅           |          ✅          |        ✅        |        ❌       |     ❌    |       ✅       |       ✅      |
+|  Clennett2020_M2019              |     ✅     |          ✅           |          ✅          |        ✅        |        ❌       |     ❌    |       ✅       |       ✅      |
+|  Clennett2020_S2013              |     ✅     |          ✅           |          ✅          |        ✅        |        ❌       |     ❌    |       ❌       |       ❌      |
+|  Muller2019                      |     ✅     |          ✅           |          ✅          |        ✅        |        ✅       |     ✅    |       ✅       |       ❌      |
+|  Young2018                       |     ✅     |          ✅           |          ✅          |        ✅        |        ✅       |     ❌    |       ❌       |       ❌      |
+|  TorsvikCocks2017                |     ❌     |          ❌           |          ✅          |        ✅        |        ❌       |     ❌    |       ❌       |       ❌      |
+|  Matthews2016                    |     ✅     |          ✅           |          ✅          |        ✅        |        ✅       |     ❌    |       ❌       |       ❌      |
+|  Matthews2016_pmag_ref           |     ❌     |          ❌           |          ✅          |        ✅        |        ✅       |     ❌    |       ❌       |       ❌      |
+|  Muller2016                      |     ✅     |          ✅           |          ✅          |        ✅        |        ❌       |     ✅    |       ✅       |       ❌      |
+|  Scotese2016                     |     ✅     |          ❌           |          ✅          |        ✅        |        ❌       |     ❌    |       ❌       |       ❌      |
+|  Zahirovic2016                   |     ✅     |          ✅           |          ✅          |        ✅        |        ✅       |     ❌    |       ❌       |       ❌      |
+|  Gibbons2015                     |     ✅     |          ✅           |          ✅          |        ✅        |        ❌       |     ❌    |       ❌       |       ❌      |
+|  Zahirovic2014                   |     ✅     |          ❌           |          ✅          |        ✅        |        ❌       |     ❌    |       ❌       |       ❌      |
+|  Shephard2013                    |     ✅     |          ✅           |          ✅          |        ✅        |        ❌       |     ❌    |       ❌       |       ❌      |
+|  Gurnis2012                      |     ✅     |          ✅           |          ✅          |        ✅        |        ❌       |     ❌    |       ❌       |       ❌      |
+|  Seton2012                       |     ✅     |          ✅           |          ✅          |        ✅        |        ✅       |     ✅    |       ✅       |       ❌      |
+|  Muller2008                      |     ❌     |          ❌           |          ✅          |        ❌        |        ❌       |     ❌    |       ❌       |       ❌      |</p>
+<p><strong>Please note that all models have rotation files.</strong></p>
+</section>
+<hr class="docutils" />
+<section id="platereconstruction">
+<h2><a class="toc-backref" href="#id13" role="doc-backlink">PlateReconstruction</a><a class="headerlink" href="#platereconstruction" title="Link to this heading"></a></h2>
+<p>The <cite>PlateReconstruction</cite> class contains tools to reconstruct geological features like tectonic plates and plate boundaries,
+and to interrogate plate kinematic data like plate motion velocities, and rates of subduction and seafloor spreading.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span><span class="kn">from</span><span class="w"> </span><span class="nn">gplately</span><span class="w"> </span><span class="kn">import</span> <span class="n">PlateReconstruction</span><span class="p">,</span> <span class="n">PlateModelManager</span>
+<span class="linenos"> 2</span>
+<span class="linenos"> 3</span><span class="n">model</span> <span class="o">=</span> <span class="n">PlateModelManager</span><span class="p">()</span><span class="o">.</span><span class="n">get_model</span><span class="p">(</span><span class="s2">&quot;Muller2019&quot;</span><span class="p">)</span>
+<span class="linenos"> 4</span>
+<span class="linenos"> 5</span><span class="c1"># Build a plate reconstruction model using a rotation model, a set of topology features and static polygons</span>
+<span class="linenos"> 6</span><span class="n">recon_model</span> <span class="o">=</span> <span class="n">PlateReconstruction</span><span class="p">(</span>
+<span class="linenos"> 7</span>   <span class="n">model</span><span class="o">.</span><span class="n">get_rotation_model</span><span class="p">(),</span>
+<span class="linenos"> 8</span>   <span class="n">topology_features</span><span class="o">=</span><span class="n">model</span><span class="o">.</span><span class="n">get_layer</span><span class="p">(</span><span class="s2">&quot;Topologies&quot;</span><span class="p">),</span>
+<span class="linenos"> 9</span>   <span class="n">static_polygons</span><span class="o">=</span><span class="n">model</span><span class="o">.</span><span class="n">get_layer</span><span class="p">(</span><span class="s2">&quot;StaticPolygons&quot;</span><span class="p">),</span>
+<span class="linenos">10</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Alternatively, you may use the auxiliary functions to create a <cite>PlateReconstruction</cite> instance.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos">1</span><span class="kn">from</span><span class="w"> </span><span class="nn">gplately.auxiliary</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_plate_reconstruction</span>
+<span class="linenos">2</span>
+<span class="linenos">3</span><span class="c1"># use the auxiliary function to create a PlateReconstruction instance</span>
+<span class="linenos">4</span><span class="n">plate_reconstruction_instance</span> <span class="o">=</span> <span class="n">get_plate_reconstruction</span><span class="p">(</span><span class="s2">&quot;Muller2019&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>This [02-PlateReconstructions.ipynb](<a class="reference external" href="https://github.com/GPlates/gplately/blob/master/Notebooks/02-PlateReconstructions.ipynb">https://github.com/GPlates/gplately/blob/master/Notebooks/02-PlateReconstructions.ipynb</a>) demonstrates in details
+how to use the <cite>PlateReconstruction</cite> class.</p>
+</section>
+<section id="points">
+<h2><a class="toc-backref" href="#id14" role="doc-backlink">Points</a><a class="headerlink" href="#points" title="Link to this heading"></a></h2>
+<p>The methods in the <cite>Points</cite> class track the motion of a point (or group of points) represented by a latitude and longitude
+through geologic time. This motion can be visualised using flowlines or motion paths and quantified with point
+motion velocities.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="linenos"> 2</span>
+<span class="linenos"> 3</span><span class="kn">from</span><span class="w"> </span><span class="nn">gplately</span><span class="w"> </span><span class="kn">import</span> <span class="n">PlateModelManager</span><span class="p">,</span> <span class="n">Points</span><span class="p">,</span> <span class="n">auxiliary</span>
+<span class="linenos"> 4</span>
+<span class="linenos"> 5</span><span class="n">model</span> <span class="o">=</span> <span class="n">PlateModelManager</span><span class="p">()</span><span class="o">.</span><span class="n">get_model</span><span class="p">(</span><span class="s2">&quot;Muller2019&quot;</span><span class="p">)</span>
+<span class="linenos"> 6</span>
+<span class="linenos"> 7</span><span class="c1"># Create a plate reconstruction model using a rotation model, a set of topology features and static polygons</span>
+<span class="linenos"> 8</span><span class="n">recon_model</span> <span class="o">=</span> <span class="n">auxiliary</span><span class="o">.</span><span class="n">get_plate_reconstruction</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
+<span class="linenos"> 9</span>
+<span class="linenos">10</span><span class="c1"># Define some points using their latitude and longitude coordinates so we can track them though time!</span>
+<span class="linenos">11</span><span class="n">pt_lons</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="mf">140.0</span><span class="p">,</span> <span class="mf">150.0</span><span class="p">,</span> <span class="mf">160.0</span><span class="p">])</span>
+<span class="linenos">12</span><span class="n">pt_lats</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="o">-</span><span class="mf">30.0</span><span class="p">,</span> <span class="o">-</span><span class="mf">40.0</span><span class="p">,</span> <span class="o">-</span><span class="mf">50.0</span><span class="p">])</span>
+<span class="linenos">13</span>
+<span class="linenos">14</span><span class="c1"># Create a Points instance from these points</span>
+<span class="linenos">15</span><span class="n">gpts</span> <span class="o">=</span> <span class="n">Points</span><span class="p">(</span><span class="n">recon_model</span><span class="p">,</span> <span class="n">pt_lons</span><span class="p">,</span> <span class="n">pt_lats</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The [03-WorkingWithPoints.ipynb](<a class="reference external" href="https://github.com/GPlates/gplately/blob/master/Notebooks/03-WorkingWithPoints.ipynb">https://github.com/GPlates/gplately/blob/master/Notebooks/03-WorkingWithPoints.ipynb</a>) demonstrates in details
+how to use the <cite>Points</cite> class.</p>
+<p>![PointsDemo](<a class="reference external" href="https://raw.githubusercontent.com/GPlates/gplately/master/Notebooks/NotebookFiles/pdoc_Files/Reconstructed-Jurassic-Foraminifera-locations-min.png">https://raw.githubusercontent.com/GPlates/gplately/master/Notebooks/NotebookFiles/pdoc_Files/Reconstructed-Jurassic-Foraminifera-locations-min.png</a>)</p>
+<p>The [09-CreatingMotionPathsAndFlowlines.ipynb](<a class="reference external" href="https://github.com/GPlates/gplately/blob/master/Notebooks/09-CreatingMotionPathsAndFlowlines.ipynb">https://github.com/GPlates/gplately/blob/master/Notebooks/09-CreatingMotionPathsAndFlowlines.ipynb</a>) demonstrates how to create motion paths and flowlines.</p>
+<p>![motion paths and flowlines](<a class="reference external" href="https://raw.githubusercontent.com/GPlates/gplately/master/Notebooks/NotebookFiles/pdoc_Files/Hawaii_Emperor_motion_path.png">https://raw.githubusercontent.com/GPlates/gplately/master/Notebooks/NotebookFiles/pdoc_Files/Hawaii_Emperor_motion_path.png</a>)</p>
+</section>
+<section id="raster">
+<h2><a class="toc-backref" href="#id15" role="doc-backlink">Raster</a><a class="headerlink" href="#raster" title="Link to this heading"></a></h2>
+<p>The <cite>Raster</cite> class contains methods to work with netCDF4 or MaskedArray gridded data. Grids may be filled,
+resized, resampled, and reconstructed back and forwards through geologic time. Other array data can also be
+interpolated onto <cite>Raster</cite> grids.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span><span class="kn">from</span><span class="w"> </span><span class="nn">gplately</span><span class="w"> </span><span class="kn">import</span> <span class="n">PlateModelManager</span><span class="p">,</span> <span class="n">PresentDayRasterManager</span><span class="p">,</span> <span class="n">Raster</span><span class="p">,</span> <span class="n">auxiliary</span>
+<span class="linenos"> 2</span>
+<span class="linenos"> 3</span><span class="n">model_name</span> <span class="o">=</span> <span class="s2">&quot;Muller2019&quot;</span>
+<span class="linenos"> 4</span><span class="c1"># Create a plate reconstruction model using a rotation model, a set of topology features and static polygons</span>
+<span class="linenos"> 5</span><span class="n">recon_model</span> <span class="o">=</span> <span class="n">auxiliary</span><span class="o">.</span><span class="n">get_plate_reconstruction</span><span class="p">(</span><span class="n">model_name</span><span class="p">)</span>
+<span class="linenos"> 6</span>
+<span class="linenos"> 7</span><span class="c1"># Any numpy array can be turned into a Raster object!</span>
+<span class="linenos"> 8</span><span class="n">raster</span> <span class="o">=</span> <span class="n">Raster</span><span class="p">(</span>
+<span class="linenos"> 9</span>   <span class="n">plate_reconstruction</span><span class="o">=</span><span class="n">recon_model</span><span class="p">,</span>
+<span class="linenos">10</span>   <span class="n">data</span><span class="o">=</span><span class="n">PresentDayRasterManager</span><span class="p">()</span><span class="o">.</span><span class="n">get_raster</span><span class="p">(</span><span class="s2">&quot;topography&quot;</span><span class="p">),</span>
+<span class="linenos">11</span>   <span class="n">extent</span><span class="o">=</span><span class="s2">&quot;global&quot;</span><span class="p">,</span>  <span class="c1"># equivalent to (-180, 180, -90, 90)</span>
+<span class="linenos">12</span>   <span class="n">origin</span><span class="o">=</span><span class="s2">&quot;lower&quot;</span><span class="p">,</span>  <span class="c1"># or set extent to (-180, 180, -90, 90)</span>
+<span class="linenos">13</span><span class="p">)</span>
+<span class="linenos">14</span>
+<span class="linenos">15</span><span class="c1"># Reconstruct the raster data to 50 million years ago!</span>
+<span class="linenos">16</span><span class="n">reconstructed_raster</span> <span class="o">=</span> <span class="n">raster</span><span class="o">.</span><span class="n">reconstruct</span><span class="p">(</span>
+<span class="linenos">17</span>   <span class="n">time</span><span class="o">=</span><span class="mi">50</span><span class="p">,</span>
+<span class="linenos">18</span>   <span class="n">partitioning_features</span><span class="o">=</span><span class="n">PlateModelManager</span><span class="p">()</span>
+<span class="linenos">19</span>   <span class="o">.</span><span class="n">get_model</span><span class="p">(</span><span class="n">model_name</span><span class="p">)</span>
+<span class="linenos">20</span>   <span class="o">.</span><span class="n">get_layer</span><span class="p">(</span><span class="s2">&quot;ContinentalPolygons&quot;</span><span class="p">),</span>
+<span class="linenos">21</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The [06-Rasters.ipynb](<a class="reference external" href="https://github.com/GPlates/gplately/blob/master/Notebooks/06-Rasters.ipynb">https://github.com/GPlates/gplately/blob/master/Notebooks/06-Rasters.ipynb</a>) demonstrates in details
+how to use the <cite>Raster</cite> class.</p>
+<p>![RasterDemo](<a class="reference external" href="https://raw.githubusercontent.com/GPlates/gplately/master/Notebooks/NotebookFiles/pdoc_Files/etopo_reconstruction.png">https://raw.githubusercontent.com/GPlates/gplately/master/Notebooks/NotebookFiles/pdoc_Files/etopo_reconstruction.png</a>)</p>
+</section>
+<section id="plottopologies">
+<h2><a class="toc-backref" href="#id16" role="doc-backlink">PlotTopologies</a><a class="headerlink" href="#plottopologies" title="Link to this heading"></a></h2>
+<p>The <cite>PlotTopologies</cite> class works with the aforementioned <cite>PlateReconstruction</cite> class to plot
+geologic features of different types listed
+[here](<a class="reference external" href="https://gplates.github.io/gplately/plot.html#gplately.plot.PlotTopologies">https://gplates.github.io/gplately/plot.html#gplately.plot.PlotTopologies</a>), as well as
+coastline, continent and continent-ocean boundary geometries reconstructed through time using pyGPlates.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span><span class="kn">from</span><span class="w"> </span><span class="nn">gplately</span><span class="w"> </span><span class="kn">import</span> <span class="n">PlateModelManager</span><span class="p">,</span> <span class="n">PlotTopologies</span><span class="p">,</span> <span class="n">auxiliary</span>
+<span class="linenos"> 2</span>
+<span class="linenos"> 3</span><span class="n">model</span> <span class="o">=</span> <span class="n">PlateModelManager</span><span class="p">()</span><span class="o">.</span><span class="n">get_model</span><span class="p">(</span><span class="s2">&quot;Muller2019&quot;</span><span class="p">)</span>
+<span class="linenos"> 4</span><span class="n">recon_model</span> <span class="o">=</span> <span class="n">auxiliary</span><span class="o">.</span><span class="n">get_plate_reconstruction</span><span class="p">(</span><span class="n">model</span><span class="p">)</span>
+<span class="linenos"> 5</span>
+<span class="linenos"> 6</span><span class="n">gplot</span> <span class="o">=</span> <span class="n">PlotTopologies</span><span class="p">(</span>
+<span class="linenos"> 7</span>   <span class="n">recon_model</span><span class="p">,</span>
+<span class="linenos"> 8</span>   <span class="n">coastlines</span><span class="o">=</span><span class="n">model</span><span class="o">.</span><span class="n">get_layer</span><span class="p">(</span><span class="s2">&quot;Coastlines&quot;</span><span class="p">),</span>
+<span class="linenos"> 9</span>   <span class="n">COBs</span><span class="o">=</span><span class="n">model</span><span class="o">.</span><span class="n">get_layer</span><span class="p">(</span><span class="s2">&quot;COBs&quot;</span><span class="p">),</span>
+<span class="linenos">10</span>   <span class="n">continents</span><span class="o">=</span><span class="n">model</span><span class="o">.</span><span class="n">get_layer</span><span class="p">(</span><span class="s2">&quot;ContinentalPolygons&quot;</span><span class="p">),</span>
+<span class="linenos">11</span>   <span class="n">time</span><span class="o">=</span><span class="mi">55</span><span class="p">,</span>
+<span class="linenos">12</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>You may use the auxiliary functions to create a <cite>PlotTopologies</cite> object.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos">1</span><span class="kn">from</span><span class="w"> </span><span class="nn">gplately.auxiliary</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_gplot</span>
+<span class="linenos">2</span>
+<span class="linenos">3</span><span class="c1"># use the auxiliary function to create a PlotTopologies object</span>
+<span class="linenos">4</span><span class="n">plot_topologies_obj</span> <span class="o">=</span> <span class="n">get_gplot</span><span class="p">(</span><span class="s2">&quot;Muller2019&quot;</span><span class="p">,</span> <span class="n">time</span><span class="o">=</span><span class="mi">55</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The [02-PlateReconstructions.ipynb](<a class="reference external" href="https://github.com/GPlates/gplately/blob/master/Notebooks/02-PlateReconstructions.ipynb">https://github.com/GPlates/gplately/blob/master/Notebooks/02-PlateReconstructions.ipynb</a>) demonstrates in details
+how to use the <cite>PlotTopologies</cite> class.</p>
+<p>![PlotTopologiesDemo](<a class="reference external" href="https://raw.githubusercontent.com/GPlates/gplately/master/Notebooks/NotebookFiles/pdoc_Files/plottopologies.png">https://raw.githubusercontent.com/GPlates/gplately/master/Notebooks/NotebookFiles/pdoc_Files/plottopologies.png</a>)</p>
+</section>
+<section id="seafloorgrid">
+<h2><a class="toc-backref" href="#id17" role="doc-backlink">SeafloorGrid</a><a class="headerlink" href="#seafloorgrid" title="Link to this heading"></a></h2>
+<p>The <cite>SeafloorGrid</cite> class wraps an automatic workflow to grid seafloor ages and seafloor spreading rates
+as encoded by a plate reconstruction model.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span><span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
+<span class="linenos"> 2</span>
+<span class="linenos"> 3</span><span class="n">os</span><span class="o">.</span><span class="n">environ</span><span class="p">[</span><span class="s2">&quot;DISABLE_GPLATELY_DEV_WARNING&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;true&quot;</span>
+<span class="linenos"> 4</span>
+<span class="linenos"> 5</span><span class="kn">from</span><span class="w"> </span><span class="nn">gplately</span><span class="w"> </span><span class="kn">import</span> <span class="n">SeafloorGrid</span><span class="p">,</span> <span class="n">auxiliary</span>
+<span class="linenos"> 6</span>
+<span class="linenos"> 7</span><span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s2">&quot;__main__&quot;</span><span class="p">:</span>
+<span class="linenos"> 8</span>   <span class="n">gplot</span> <span class="o">=</span> <span class="n">auxiliary</span><span class="o">.</span><span class="n">get_gplot</span><span class="p">(</span><span class="s2">&quot;Muller2019&quot;</span><span class="p">)</span>
+<span class="linenos"> 9</span>
+<span class="linenos">10</span>   <span class="c1"># Set up automatic gridding from 5Ma to present day</span>
+<span class="linenos">11</span>   <span class="n">seafloorgrid</span> <span class="o">=</span> <span class="n">SeafloorGrid</span><span class="p">(</span>
+<span class="linenos">12</span>      <span class="n">PlateReconstruction_object</span><span class="o">=</span><span class="n">gplot</span><span class="o">.</span><span class="n">plate_reconstruction</span><span class="p">,</span>  <span class="c1"># The PlateReconstruction object</span>
+<span class="linenos">13</span>      <span class="n">PlotTopologies_object</span><span class="o">=</span><span class="n">gplot</span><span class="p">,</span>  <span class="c1"># The PlotTopologies object</span>
+<span class="linenos">14</span>      <span class="n">max_time</span><span class="o">=</span><span class="mi">5</span><span class="p">,</span>  <span class="c1"># start time (Ma)</span>
+<span class="linenos">15</span>      <span class="n">min_time</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>  <span class="c1"># end time (Ma)</span>
+<span class="linenos">16</span>      <span class="n">ridge_time_step</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>  <span class="c1"># time increment (Myr)</span>
+<span class="linenos">17</span>   <span class="p">)</span>
+<span class="linenos">18</span>
+<span class="linenos">19</span>   <span class="c1"># Begin automatic gridding!</span>
+<span class="linenos">20</span>   <span class="n">seafloorgrid</span><span class="o">.</span><span class="n">reconstruct_by_topologies</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>The [10-SeafloorGrids.ipynb](<a class="reference external" href="https://github.com/GPlates/gplately/blob/master/Notebooks/10-SeafloorGrids.ipynb">https://github.com/GPlates/gplately/blob/master/Notebooks/10-SeafloorGrids.ipynb</a>) is a tutorial notebook that demonstrates
+how to set up and use the <cite>SeafloorGrid</cite> object, and shows a sample set of output grids.</p>
+<p>![SeafloorGridDemo](<a class="reference external" href="https://raw.githubusercontent.com/GPlates/gplately/master/Notebooks/NotebookFiles/pdoc_Files/seafloorgrid.gif">https://raw.githubusercontent.com/GPlates/gplately/master/Notebooks/NotebookFiles/pdoc_Files/seafloorgrid.gif</a>)</p>
 </section>
 </section>
 
