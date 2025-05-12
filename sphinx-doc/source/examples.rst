@@ -1,3 +1,5 @@
+.. _gplately-examples:
+
 Examples
 ========
 

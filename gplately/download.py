@@ -15,13 +15,13 @@
 #    51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
 
-""" 
+"""
 Functions for downloading assorted plate reconstruction data to use with GPlately's
 main objects. Files are stored in the user's cache and can be reused after being
-downloaded once. 
+downloaded once.
 
 These data have been created and used in plate reconstruction models and studies, and
-are available from public web servers (like EarthByte's webDAV server, or the GPlates 
+are available from public web servers (like EarthByte's webDAV server, or the GPlates
 2.3 sample dataset library).
 
 """
@@ -1076,7 +1076,7 @@ def get_feature_data(feature_data_id_string=None, verbose=True):
 
 class DataServer(object):
     """The DataServer class may be deprecated in the future.
-    We recommend using the newer [plate-model-manager](https://pypi.org/project/plate-model-manager/) module whenever possible.
+    We recommend using the newer `plate-model-manager <https://pypi.org/project/plate-model-manager/>`__ module whenever possible.
 
     The methods in this DataServer class download plate reconstruction models to the cache folder on your computer from
     EarthByte's [WebDAV server](https://repo.gplates.org/webdav/pmm/).
