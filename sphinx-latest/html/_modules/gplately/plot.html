@@ -50,9 +50,9 @@
 <li class="toctree-l1"><a class="reference internal" href="../../command_line_interface.html">Command Line Interface (CLI)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../primer.html">Primer</a></li>
 </ul>
-<p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
+<p class="caption" role="heading"><span class="caption-text">Reference</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../../modules.html">gplately</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api.html">GPlately API</a></li>
 </ul>
 
         </div>
@@ -203,28 +203,28 @@
 
 
 <div class="viewcode-block" id="shapelify_features">
-<a class="viewcode-back" href="../../gplately.html#gplately.plot.shapelify_features">[docs]</a>
+<a class="viewcode-back" href="../../gplately.html#gplately.shapelify_features">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">shapelify_features</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
     <span class="k">return</span> <span class="n">_shapelify_features</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 
 
 
 <div class="viewcode-block" id="shapelify_feature_lines">
-<a class="viewcode-back" href="../../gplately.html#gplately.plot.shapelify_feature_lines">[docs]</a>
+<a class="viewcode-back" href="../../gplately.html#gplately.shapelify_feature_lines">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">shapelify_feature_lines</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
     <span class="k">return</span> <span class="n">_shapelify_features</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 
 
 
 <div class="viewcode-block" id="shapelify_feature_polygons">
-<a class="viewcode-back" href="../../gplately.html#gplately.plot.shapelify_feature_polygons">[docs]</a>
+<a class="viewcode-back" href="../../gplately.html#gplately.shapelify_feature_polygons">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">shapelify_feature_polygons</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
     <span class="k">return</span> <span class="n">_shapelify_features</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 
 
 
 <div class="viewcode-block" id="plot_subduction_teeth">
-<a class="viewcode-back" href="../../gplately.html#gplately.plot.plot_subduction_teeth">[docs]</a>
+<a class="viewcode-back" href="../../gplately.html#gplately.plot_subduction_teeth">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">plot_subduction_teeth</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
     <span class="k">return</span> <span class="n">_plot_subduction_teeth</span><span class="p">(</span><span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span></div>
 
@@ -237,7 +237,7 @@
 
 
 <div class="viewcode-block" id="PlotTopologies">
-<a class="viewcode-back" href="../../gplately.html#gplately.plot.PlotTopologies">[docs]</a>
+<a class="viewcode-back" href="../../gplately.html#gplately.PlotTopologies">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">PlotTopologies</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;A class with tools to read, reconstruct and plot topology features at specific</span>
 <span class="sd">    reconstruction times.</span>
@@ -387,6 +387,8 @@
 
 <span class="sd">    &quot;&quot;&quot;</span>
 
+<div class="viewcode-block" id="PlotTopologies.__init__">
+<a class="viewcode-back" href="../../generated/gplately.PlotTopologies.html#gplately.PlotTopologies.__init__">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">plate_reconstruction</span><span class="p">,</span>
@@ -431,7 +433,8 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_time</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="k">if</span> <span class="n">time</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="c1"># setting time runs the update_time routine</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">time</span> <span class="o">=</span> <span class="n">time</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">time</span> <span class="o">=</span> <span class="n">time</span></div>
+
 
     <span class="k">def</span><span class="w"> </span><span class="nf">__reduce__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="c1"># Arguments for __init__.</span>
@@ -590,7 +593,7 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">update_time</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">time</span><span class="p">)</span>
 
 <div class="viewcode-block" id="PlotTopologies._check_anchor_plate_id">
-<a class="viewcode-back" href="../../gplately.html#gplately.plot.PlotTopologies._check_anchor_plate_id">[docs]</a>
+<a class="viewcode-back" href="../../gplately.html#gplately.PlotTopologies._check_anchor_plate_id">[docs]</a>
     <span class="nd">@staticmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">_check_anchor_plate_id</span><span class="p">(</span><span class="nb">id</span><span class="p">):</span>
         <span class="nb">id</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">id</span><span class="p">)</span>
@@ -623,7 +626,7 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_ridges</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">_transforms</span>
 
 <div class="viewcode-block" id="PlotTopologies.update_time">
-<a class="viewcode-back" href="../../gplately.html#gplately.plot.PlotTopologies.update_time">[docs]</a>
+<a class="viewcode-back" href="../../gplately.html#gplately.PlotTopologies.update_time">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">update_time</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">time</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Re-reconstruct features and topologies to the time specified by the `PlotTopologies` `time` attribute</span>
 <span class="sd">        whenever it or the anchor plate is updated.</span>
@@ -795,7 +798,7 @@
 
     <span class="c1"># subduction teeth</span>
 <div class="viewcode-block" id="PlotTopologies._tessellate_triangles">
-<a class="viewcode-back" href="../../gplately.html#gplately.plot.PlotTopologies._tessellate_triangles">[docs]</a>
+<a class="viewcode-back" href="../../gplately.html#gplately.PlotTopologies._tessellate_triangles">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">_tessellate_triangles</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">features</span><span class="p">,</span> <span class="n">tesselation_radians</span><span class="p">,</span> <span class="n">triangle_base_length</span><span class="p">,</span> <span class="n">triangle_aspect</span><span class="o">=</span><span class="mf">1.0</span>
     <span class="p">):</span>
@@ -873,7 +876,7 @@
 
 
 <div class="viewcode-block" id="PlotTopologies.get_feature">
-<a class="viewcode-back" href="../../gplately.html#gplately.plot.PlotTopologies.get_feature">[docs]</a>
+<a class="viewcode-back" href="../../gplately.html#gplately.PlotTopologies.get_feature">[docs]</a>
     <span class="nd">@validate_reconstruction_time</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_feature</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
@@ -916,7 +919,7 @@
 
 
 <div class="viewcode-block" id="PlotTopologies.plot_feature">
-<a class="viewcode-back" href="../../gplately.html#gplately.plot.PlotTopologies.plot_feature">[docs]</a>
+<a class="viewcode-back" href="../../gplately.html#gplately.PlotTopologies.plot_feature">[docs]</a>
     <span class="nd">@append_docstring</span><span class="p">(</span><span class="n">PLOT_DOCSTRING</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s2">&quot;feature&quot;</span><span class="p">))</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">plot_feature</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ax</span><span class="p">,</span> <span class="n">feature</span><span class="p">,</span> <span class="n">feature_name</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;black&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Plot pygplates.FeatureCollection or pygplates.Feature onto a map.&quot;&quot;&quot;</span>
@@ -934,7 +937,7 @@
 
 
 <div class="viewcode-block" id="PlotTopologies._plot_feature">
-<a class="viewcode-back" href="../../gplately.html#gplately.plot.PlotTopologies._plot_feature">[docs]</a>
+<a class="viewcode-back" href="../../gplately.html#gplately.PlotTopologies._plot_feature">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">_plot_feature</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ax</span><span class="p">,</span> <span class="n">get_feature_func</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">if</span> <span class="s2">&quot;transform&quot;</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
             <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
@@ -967,7 +970,7 @@
 
 
 <div class="viewcode-block" id="PlotTopologies.get_coastlines">
-<a class="viewcode-back" href="../../gplately.html#gplately.plot.PlotTopologies.get_coastlines">[docs]</a>
+<a class="viewcode-back" href="../../gplately.html#gplately.PlotTopologies.get_coastlines">[docs]</a>
     <span class="nd">@validate_reconstruction_time</span>
     <span class="nd">@append_docstring</span><span class="p">(</span><span class="n">GET_DATE_DOCSTRING</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s2">&quot;coastlines&quot;</span><span class="p">))</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_coastlines</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">central_meridian</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">tessellate_degrees</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
@@ -980,7 +983,7 @@
 
 
 <div class="viewcode-block" id="PlotTopologies.plot_coastlines">
-<a class="viewcode-back" href="../../gplately.html#gplately.plot.PlotTopologies.plot_coastlines">[docs]</a>
+<a class="viewcode-back" href="../../gplately.html#gplately.PlotTopologies.plot_coastlines">[docs]</a>
     <span class="nd">@validate_reconstruction_time</span>
     <span class="nd">@append_docstring</span><span class="p">(</span><span class="n">PLOT_DOCSTRING</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s2">&quot;coastlines&quot;</span><span class="p">))</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">plot_coastlines</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ax</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;black&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
@@ -1003,7 +1006,7 @@
 
 
 <div class="viewcode-block" id="PlotTopologies.get_continents">
-<a class="viewcode-back" href="../../gplately.html#gplately.plot.PlotTopologies.get_continents">[docs]</a>
+<a class="viewcode-back" href="../../gplately.html#gplately.PlotTopologies.get_continents">[docs]</a>
     <span class="nd">@validate_reconstruction_time</span>
     <span class="nd">@append_docstring</span><span class="p">(</span><span class="n">GET_DATE_DOCSTRING</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s2">&quot;continents&quot;</span><span class="p">))</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_continents</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">central_meridian</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">tessellate_degrees</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
@@ -1016,7 +1019,7 @@
 
 
 <div class="viewcode-block" id="PlotTopologies.plot_continents">
-<a class="viewcode-back" href="../../gplately.html#gplately.plot.PlotTopologies.plot_continents">[docs]</a>
+<a class="viewcode-back" href="../../gplately.html#gplately.PlotTopologies.plot_continents">[docs]</a>
     <span class="nd">@validate_reconstruction_time</span>
     <span class="nd">@append_docstring</span><span class="p">(</span><span class="n">PLOT_DOCSTRING</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s2">&quot;continents&quot;</span><span class="p">))</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">plot_continents</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ax</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;black&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
@@ -1039,7 +1042,7 @@
 
 
 <div class="viewcode-block" id="PlotTopologies.get_continent_ocean_boundaries">
-<a class="viewcode-back" href="../../gplately.html#gplately.plot.PlotTopologies.get_continent_ocean_boundaries">[docs]</a>
+<a class="viewcode-back" href="../../gplately.html#gplately.PlotTopologies.get_continent_ocean_boundaries">[docs]</a>
     <span class="nd">@validate_reconstruction_time</span>
     <span class="nd">@append_docstring</span><span class="p">(</span><span class="n">GET_DATE_DOCSTRING</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s2">&quot;COBs&quot;</span><span class="p">))</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_continent_ocean_boundaries</span><span class="p">(</span>
@@ -1056,7 +1059,7 @@
 
 
 <div class="viewcode-block" id="PlotTopologies.plot_continent_ocean_boundaries">
-<a class="viewcode-back" href="../../gplately.html#gplately.plot.PlotTopologies.plot_continent_ocean_boundaries">[docs]</a>
+<a class="viewcode-back" href="../../gplately.html#gplately.PlotTopologies.plot_continent_ocean_boundaries">[docs]</a>
     <span class="nd">@validate_reconstruction_time</span>
     <span class="nd">@append_docstring</span><span class="p">(</span><span class="n">PLOT_DOCSTRING</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s2">&quot;continent ocean boundaries&quot;</span><span class="p">))</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">plot_continent_ocean_boundaries</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ax</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;black&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
@@ -1084,7 +1087,7 @@
 
 
 <div class="viewcode-block" id="PlotTopologies.get_ridges">
-<a class="viewcode-back" href="../../gplately.html#gplately.plot.PlotTopologies.get_ridges">[docs]</a>
+<a class="viewcode-back" href="../../gplately.html#gplately.PlotTopologies.get_ridges">[docs]</a>
     <span class="nd">@validate_reconstruction_time</span>
     <span class="nd">@append_docstring</span><span class="p">(</span><span class="n">GET_DATE_DOCSTRING</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s2">&quot;ridges&quot;</span><span class="p">))</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_ridges</span><span class="p">(</span>
@@ -1109,7 +1112,7 @@
 
 
 <div class="viewcode-block" id="PlotTopologies.plot_ridges">
-<a class="viewcode-back" href="../../gplately.html#gplately.plot.PlotTopologies.plot_ridges">[docs]</a>
+<a class="viewcode-back" href="../../gplately.html#gplately.PlotTopologies.plot_ridges">[docs]</a>
     <span class="nd">@validate_reconstruction_time</span>
     <span class="nd">@validate_topology_availability</span><span class="p">(</span><span class="s2">&quot;ridges&quot;</span><span class="p">)</span>
     <span class="nd">@append_docstring</span><span class="p">(</span><span class="n">PLOT_DOCSTRING</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s2">&quot;ridges&quot;</span><span class="p">))</span>
@@ -1152,7 +1155,7 @@
 
 
 <div class="viewcode-block" id="PlotTopologies.get_trenches">
-<a class="viewcode-back" href="../../gplately.html#gplately.plot.PlotTopologies.get_trenches">[docs]</a>
+<a class="viewcode-back" href="../../gplately.html#gplately.PlotTopologies.get_trenches">[docs]</a>
     <span class="nd">@validate_reconstruction_time</span>
     <span class="nd">@append_docstring</span><span class="p">(</span><span class="n">GET_DATE_DOCSTRING</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s2">&quot;trenches&quot;</span><span class="p">))</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_trenches</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">central_meridian</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">tessellate_degrees</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
@@ -1165,7 +1168,7 @@
 
 
 <div class="viewcode-block" id="PlotTopologies.get_ridges_and_transforms">
-<a class="viewcode-back" href="../../gplately.html#gplately.plot.PlotTopologies.get_ridges_and_transforms">[docs]</a>
+<a class="viewcode-back" href="../../gplately.html#gplately.PlotTopologies.get_ridges_and_transforms">[docs]</a>
     <span class="nd">@validate_reconstruction_time</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_ridges_and_transforms</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">central_meridian</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">tessellate_degrees</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
@@ -1194,7 +1197,7 @@
 
 
 <div class="viewcode-block" id="PlotTopologies.plot_trenches">
-<a class="viewcode-back" href="../../gplately.html#gplately.plot.PlotTopologies.plot_trenches">[docs]</a>
+<a class="viewcode-back" href="../../gplately.html#gplately.PlotTopologies.plot_trenches">[docs]</a>
     <span class="nd">@validate_topology_availability</span><span class="p">(</span><span class="s2">&quot;trenches&quot;</span><span class="p">)</span>
     <span class="nd">@append_docstring</span><span class="p">(</span><span class="n">PLOT_DOCSTRING</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s2">&quot;trenches&quot;</span><span class="p">))</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">plot_trenches</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ax</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;black&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
@@ -1228,7 +1231,7 @@
 
 
 <div class="viewcode-block" id="PlotTopologies.get_misc_boundaries">
-<a class="viewcode-back" href="../../gplately.html#gplately.plot.PlotTopologies.get_misc_boundaries">[docs]</a>
+<a class="viewcode-back" href="../../gplately.html#gplately.PlotTopologies.get_misc_boundaries">[docs]</a>
     <span class="nd">@validate_reconstruction_time</span>
     <span class="nd">@append_docstring</span><span class="p">(</span><span class="n">GET_DATE_DOCSTRING</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s2">&quot;other&quot;</span><span class="p">))</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_misc_boundaries</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">central_meridian</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">tessellate_degrees</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
@@ -1241,7 +1244,7 @@
 
 
 <div class="viewcode-block" id="PlotTopologies.plot_misc_boundaries">
-<a class="viewcode-back" href="../../gplately.html#gplately.plot.PlotTopologies.plot_misc_boundaries">[docs]</a>
+<a class="viewcode-back" href="../../gplately.html#gplately.PlotTopologies.plot_misc_boundaries">[docs]</a>
     <span class="nd">@validate_reconstruction_time</span>
     <span class="nd">@append_docstring</span><span class="p">(</span><span class="n">PLOT_DOCSTRING</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s2">&quot;other&quot;</span><span class="p">))</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">plot_misc_boundaries</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ax</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;black&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
@@ -1275,7 +1278,7 @@
 
 
 <div class="viewcode-block" id="PlotTopologies.plot_subduction_teeth_deprecated">
-<a class="viewcode-back" href="../../gplately.html#gplately.plot.PlotTopologies.plot_subduction_teeth_deprecated">[docs]</a>
+<a class="viewcode-back" href="../../gplately.html#gplately.PlotTopologies.plot_subduction_teeth_deprecated">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">plot_subduction_teeth_deprecated</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">ax</span><span class="p">,</span> <span class="n">spacing</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span> <span class="n">size</span><span class="o">=</span><span class="mf">2.0</span><span class="p">,</span> <span class="n">aspect</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;black&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
     <span class="p">):</span>
@@ -1349,7 +1352,7 @@
 
 
 <div class="viewcode-block" id="PlotTopologies.get_subduction_direction">
-<a class="viewcode-back" href="../../gplately.html#gplately.plot.PlotTopologies.get_subduction_direction">[docs]</a>
+<a class="viewcode-back" href="../../gplately.html#gplately.PlotTopologies.get_subduction_direction">[docs]</a>
     <span class="nd">@validate_reconstruction_time</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_subduction_direction</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">central_meridian</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">tessellate_degrees</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Create a geopandas.GeoDataFrame object containing geometries of trench directions.</span>
@@ -1410,7 +1413,7 @@
 
 
 <div class="viewcode-block" id="PlotTopologies.plot_subduction_teeth">
-<a class="viewcode-back" href="../../gplately.html#gplately.plot.PlotTopologies.plot_subduction_teeth">[docs]</a>
+<a class="viewcode-back" href="../../gplately.html#gplately.PlotTopologies.plot_subduction_teeth">[docs]</a>
     <span class="nd">@validate_reconstruction_time</span>
     <span class="nd">@validate_topology_availability</span><span class="p">(</span><span class="s2">&quot;Subduction Zones&quot;</span><span class="p">)</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">plot_subduction_teeth</span><span class="p">(</span>
@@ -1466,7 +1469,7 @@
 
 
 <div class="viewcode-block" id="PlotTopologies.plot_plate_polygon_by_id">
-<a class="viewcode-back" href="../../gplately.html#gplately.plot.PlotTopologies.plot_plate_polygon_by_id">[docs]</a>
+<a class="viewcode-back" href="../../gplately.html#gplately.PlotTopologies.plot_plate_polygon_by_id">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">plot_plate_polygon_by_id</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ax</span><span class="p">,</span> <span class="n">plate_id</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;black&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Plot a plate polygon with an associated `plate_id` onto a standard map Projection.</span>
 
@@ -1506,7 +1509,7 @@
 
 
 <div class="viewcode-block" id="PlotTopologies.plot_plate_id">
-<a class="viewcode-back" href="../../gplately.html#gplately.plot.PlotTopologies.plot_plate_id">[docs]</a>
+<a class="viewcode-back" href="../../gplately.html#gplately.PlotTopologies.plot_plate_id">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">plot_plate_id</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;TODO: remove this function</span>
 
@@ -1523,7 +1526,7 @@
 
 
 <div class="viewcode-block" id="PlotTopologies.plot_grid">
-<a class="viewcode-back" href="../../gplately.html#gplately.plot.PlotTopologies.plot_grid">[docs]</a>
+<a class="viewcode-back" href="../../gplately.html#gplately.PlotTopologies.plot_grid">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">plot_grid</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ax</span><span class="p">,</span> <span class="n">grid</span><span class="p">,</span> <span class="n">extent</span><span class="o">=</span><span class="p">[</span><span class="o">-</span><span class="mi">180</span><span class="p">,</span> <span class="mi">180</span><span class="p">,</span> <span class="o">-</span><span class="mi">90</span><span class="p">,</span> <span class="mi">90</span><span class="p">],</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Plot a `MaskedArray` raster or grid onto a standard map Projection.</span>
 
@@ -1587,7 +1590,7 @@
 
 
 <div class="viewcode-block" id="PlotTopologies.plot_grid_from_netCDF">
-<a class="viewcode-back" href="../../gplately.html#gplately.plot.PlotTopologies.plot_grid_from_netCDF">[docs]</a>
+<a class="viewcode-back" href="../../gplately.html#gplately.PlotTopologies.plot_grid_from_netCDF">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">plot_grid_from_netCDF</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ax</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Read a raster from a netCDF file, convert it to a `MaskedArray` and plot it</span>
 <span class="sd">        onto a standard map Projection.</span>
@@ -1634,7 +1637,7 @@
 
 
 <div class="viewcode-block" id="PlotTopologies.plot_plate_motion_vectors">
-<a class="viewcode-back" href="../../gplately.html#gplately.plot.PlotTopologies.plot_plate_motion_vectors">[docs]</a>
+<a class="viewcode-back" href="../../gplately.html#gplately.PlotTopologies.plot_plate_motion_vectors">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">plot_plate_motion_vectors</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">ax</span><span class="p">,</span> <span class="n">spacingX</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">spacingY</span><span class="o">=</span><span class="mi">10</span><span class="p">,</span> <span class="n">normalise</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
     <span class="p">):</span>
@@ -1725,7 +1728,7 @@
 
 
 <div class="viewcode-block" id="PlotTopologies.plot_pole">
-<a class="viewcode-back" href="../../gplately.html#gplately.plot.PlotTopologies.plot_pole">[docs]</a>
+<a class="viewcode-back" href="../../gplately.html#gplately.PlotTopologies.plot_pole">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">plot_pole</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ax</span><span class="p">,</span> <span class="n">lon</span><span class="p">,</span> <span class="n">lat</span><span class="p">,</span> <span class="n">a95</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Plot pole onto a matplotlib axes.</span>
@@ -1767,7 +1770,7 @@
 
 
 <div class="viewcode-block" id="PlotTopologies.get_continental_rifts">
-<a class="viewcode-back" href="../../gplately.html#gplately.plot.PlotTopologies.get_continental_rifts">[docs]</a>
+<a class="viewcode-back" href="../../gplately.html#gplately.PlotTopologies.get_continental_rifts">[docs]</a>
     <span class="nd">@validate_reconstruction_time</span>
     <span class="nd">@append_docstring</span><span class="p">(</span><span class="n">GET_DATE_DOCSTRING</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s2">&quot;continental rifts&quot;</span><span class="p">))</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_continental_rifts</span><span class="p">(</span>
@@ -1784,7 +1787,7 @@
 
 
 <div class="viewcode-block" id="PlotTopologies.plot_continental_rifts">
-<a class="viewcode-back" href="../../gplately.html#gplately.plot.PlotTopologies.plot_continental_rifts">[docs]</a>
+<a class="viewcode-back" href="../../gplately.html#gplately.PlotTopologies.plot_continental_rifts">[docs]</a>
     <span class="nd">@validate_reconstruction_time</span>
     <span class="nd">@append_docstring</span><span class="p">(</span><span class="n">PLOT_DOCSTRING</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s2">&quot;continental rifts&quot;</span><span class="p">))</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">plot_continental_rifts</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ax</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;black&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
@@ -1800,7 +1803,7 @@
 
 
 <div class="viewcode-block" id="PlotTopologies.get_faults">
-<a class="viewcode-back" href="../../gplately.html#gplately.plot.PlotTopologies.get_faults">[docs]</a>
+<a class="viewcode-back" href="../../gplately.html#gplately.PlotTopologies.get_faults">[docs]</a>
     <span class="nd">@validate_reconstruction_time</span>
     <span class="nd">@append_docstring</span><span class="p">(</span><span class="n">GET_DATE_DOCSTRING</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s2">&quot;faults&quot;</span><span class="p">))</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_faults</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">central_meridian</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">tessellate_degrees</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
@@ -1813,7 +1816,7 @@
 
 
 <div class="viewcode-block" id="PlotTopologies.plot_faults">
-<a class="viewcode-back" href="../../gplately.html#gplately.plot.PlotTopologies.plot_faults">[docs]</a>
+<a class="viewcode-back" href="../../gplately.html#gplately.PlotTopologies.plot_faults">[docs]</a>
     <span class="nd">@validate_reconstruction_time</span>
     <span class="nd">@append_docstring</span><span class="p">(</span><span class="n">PLOT_DOCSTRING</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s2">&quot;faults&quot;</span><span class="p">))</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">plot_faults</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ax</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;black&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
@@ -1829,7 +1832,7 @@
 
 
 <div class="viewcode-block" id="PlotTopologies.get_fracture_zones">
-<a class="viewcode-back" href="../../gplately.html#gplately.plot.PlotTopologies.get_fracture_zones">[docs]</a>
+<a class="viewcode-back" href="../../gplately.html#gplately.PlotTopologies.get_fracture_zones">[docs]</a>
     <span class="nd">@validate_reconstruction_time</span>
     <span class="nd">@append_docstring</span><span class="p">(</span><span class="n">GET_DATE_DOCSTRING</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s2">&quot;fracture zones&quot;</span><span class="p">))</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_fracture_zones</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">central_meridian</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">tessellate_degrees</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
@@ -1842,7 +1845,7 @@
 
 
 <div class="viewcode-block" id="PlotTopologies.plot_fracture_zones">
-<a class="viewcode-back" href="../../gplately.html#gplately.plot.PlotTopologies.plot_fracture_zones">[docs]</a>
+<a class="viewcode-back" href="../../gplately.html#gplately.PlotTopologies.plot_fracture_zones">[docs]</a>
     <span class="nd">@validate_reconstruction_time</span>
     <span class="nd">@append_docstring</span><span class="p">(</span><span class="n">PLOT_DOCSTRING</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s2">&quot;fracturezones&quot;</span><span class="p">))</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">plot_fracture_zones</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ax</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;black&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
@@ -1858,7 +1861,7 @@
 
 
 <div class="viewcode-block" id="PlotTopologies.get_inferred_paleo_boundaries">
-<a class="viewcode-back" href="../../gplately.html#gplately.plot.PlotTopologies.get_inferred_paleo_boundaries">[docs]</a>
+<a class="viewcode-back" href="../../gplately.html#gplately.PlotTopologies.get_inferred_paleo_boundaries">[docs]</a>
     <span class="nd">@validate_reconstruction_time</span>
     <span class="nd">@append_docstring</span><span class="p">(</span><span class="n">GET_DATE_DOCSTRING</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s2">&quot;inferred paleo-boundaries&quot;</span><span class="p">))</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_inferred_paleo_boundaries</span><span class="p">(</span>
@@ -1875,7 +1878,7 @@
 
 
 <div class="viewcode-block" id="PlotTopologies.plot_inferred_paleo_boundaries">
-<a class="viewcode-back" href="../../gplately.html#gplately.plot.PlotTopologies.plot_inferred_paleo_boundaries">[docs]</a>
+<a class="viewcode-back" href="../../gplately.html#gplately.PlotTopologies.plot_inferred_paleo_boundaries">[docs]</a>
     <span class="nd">@validate_reconstruction_time</span>
     <span class="nd">@append_docstring</span><span class="p">(</span><span class="n">PLOT_DOCSTRING</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s2">&quot;inferred paleo-boundaries&quot;</span><span class="p">))</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">plot_inferred_paleo_boundaries</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ax</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;black&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
@@ -1891,7 +1894,7 @@
 
 
 <div class="viewcode-block" id="PlotTopologies.get_terrane_boundaries">
-<a class="viewcode-back" href="../../gplately.html#gplately.plot.PlotTopologies.get_terrane_boundaries">[docs]</a>
+<a class="viewcode-back" href="../../gplately.html#gplately.PlotTopologies.get_terrane_boundaries">[docs]</a>
     <span class="nd">@validate_reconstruction_time</span>
     <span class="nd">@append_docstring</span><span class="p">(</span><span class="n">GET_DATE_DOCSTRING</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s2">&quot;terrane boundaries&quot;</span><span class="p">))</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_terrane_boundaries</span><span class="p">(</span>
@@ -1908,7 +1911,7 @@
 
 
 <div class="viewcode-block" id="PlotTopologies.plot_terrane_boundaries">
-<a class="viewcode-back" href="../../gplately.html#gplately.plot.PlotTopologies.plot_terrane_boundaries">[docs]</a>
+<a class="viewcode-back" href="../../gplately.html#gplately.PlotTopologies.plot_terrane_boundaries">[docs]</a>
     <span class="nd">@validate_reconstruction_time</span>
     <span class="nd">@append_docstring</span><span class="p">(</span><span class="n">PLOT_DOCSTRING</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s2">&quot;terrane boundaries&quot;</span><span class="p">))</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">plot_terrane_boundaries</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ax</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;black&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
@@ -1924,7 +1927,7 @@
 
 
 <div class="viewcode-block" id="PlotTopologies.get_transitional_crusts">
-<a class="viewcode-back" href="../../gplately.html#gplately.plot.PlotTopologies.get_transitional_crusts">[docs]</a>
+<a class="viewcode-back" href="../../gplately.html#gplately.PlotTopologies.get_transitional_crusts">[docs]</a>
     <span class="nd">@validate_reconstruction_time</span>
     <span class="nd">@append_docstring</span><span class="p">(</span><span class="n">GET_DATE_DOCSTRING</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s2">&quot;transitional crusts&quot;</span><span class="p">))</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_transitional_crusts</span><span class="p">(</span>
@@ -1941,7 +1944,7 @@
 
 
 <div class="viewcode-block" id="PlotTopologies.plot_transitional_crusts">
-<a class="viewcode-back" href="../../gplately.html#gplately.plot.PlotTopologies.plot_transitional_crusts">[docs]</a>
+<a class="viewcode-back" href="../../gplately.html#gplately.PlotTopologies.plot_transitional_crusts">[docs]</a>
     <span class="nd">@validate_reconstruction_time</span>
     <span class="nd">@append_docstring</span><span class="p">(</span><span class="n">PLOT_DOCSTRING</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s2">&quot;transitional crusts&quot;</span><span class="p">))</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">plot_transitional_crusts</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ax</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;black&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
@@ -1957,7 +1960,7 @@
 
 
 <div class="viewcode-block" id="PlotTopologies.get_orogenic_belts">
-<a class="viewcode-back" href="../../gplately.html#gplately.plot.PlotTopologies.get_orogenic_belts">[docs]</a>
+<a class="viewcode-back" href="../../gplately.html#gplately.PlotTopologies.get_orogenic_belts">[docs]</a>
     <span class="nd">@validate_reconstruction_time</span>
     <span class="nd">@append_docstring</span><span class="p">(</span><span class="n">GET_DATE_DOCSTRING</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s2">&quot;orogenic belts&quot;</span><span class="p">))</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_orogenic_belts</span><span class="p">(</span>
@@ -1974,7 +1977,7 @@
 
 
 <div class="viewcode-block" id="PlotTopologies.plot_orogenic_belts">
-<a class="viewcode-back" href="../../gplately.html#gplately.plot.PlotTopologies.plot_orogenic_belts">[docs]</a>
+<a class="viewcode-back" href="../../gplately.html#gplately.PlotTopologies.plot_orogenic_belts">[docs]</a>
     <span class="nd">@validate_reconstruction_time</span>
     <span class="nd">@append_docstring</span><span class="p">(</span><span class="n">PLOT_DOCSTRING</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s2">&quot;orogenic belts&quot;</span><span class="p">))</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">plot_orogenic_belts</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ax</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;black&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
@@ -1990,7 +1993,7 @@
 
 
 <div class="viewcode-block" id="PlotTopologies.get_sutures">
-<a class="viewcode-back" href="../../gplately.html#gplately.plot.PlotTopologies.get_sutures">[docs]</a>
+<a class="viewcode-back" href="../../gplately.html#gplately.PlotTopologies.get_sutures">[docs]</a>
     <span class="nd">@validate_reconstruction_time</span>
     <span class="nd">@append_docstring</span><span class="p">(</span><span class="n">GET_DATE_DOCSTRING</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s2">&quot;sutures&quot;</span><span class="p">))</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_sutures</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">central_meridian</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">tessellate_degrees</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
@@ -2003,7 +2006,7 @@
 
 
 <div class="viewcode-block" id="PlotTopologies.plot_sutures">
-<a class="viewcode-back" href="../../gplately.html#gplately.plot.PlotTopologies.plot_sutures">[docs]</a>
+<a class="viewcode-back" href="../../gplately.html#gplately.PlotTopologies.plot_sutures">[docs]</a>
     <span class="nd">@validate_reconstruction_time</span>
     <span class="nd">@append_docstring</span><span class="p">(</span><span class="n">PLOT_DOCSTRING</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s2">&quot;sutures&quot;</span><span class="p">))</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">plot_sutures</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ax</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;black&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
@@ -2019,7 +2022,7 @@
 
 
 <div class="viewcode-block" id="PlotTopologies.get_continental_crusts">
-<a class="viewcode-back" href="../../gplately.html#gplately.plot.PlotTopologies.get_continental_crusts">[docs]</a>
+<a class="viewcode-back" href="../../gplately.html#gplately.PlotTopologies.get_continental_crusts">[docs]</a>
     <span class="nd">@validate_reconstruction_time</span>
     <span class="nd">@append_docstring</span><span class="p">(</span><span class="n">GET_DATE_DOCSTRING</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s2">&quot;continental crusts&quot;</span><span class="p">))</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_continental_crusts</span><span class="p">(</span>
@@ -2036,7 +2039,7 @@
 
 
 <div class="viewcode-block" id="PlotTopologies.plot_continental_crusts">
-<a class="viewcode-back" href="../../gplately.html#gplately.plot.PlotTopologies.plot_continental_crusts">[docs]</a>
+<a class="viewcode-back" href="../../gplately.html#gplately.PlotTopologies.plot_continental_crusts">[docs]</a>
     <span class="nd">@validate_reconstruction_time</span>
     <span class="nd">@append_docstring</span><span class="p">(</span><span class="n">PLOT_DOCSTRING</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s2">&quot;continental crusts&quot;</span><span class="p">))</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">plot_continental_crusts</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ax</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;black&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
@@ -2052,7 +2055,7 @@
 
 
 <div class="viewcode-block" id="PlotTopologies.get_extended_continental_crusts">
-<a class="viewcode-back" href="../../gplately.html#gplately.plot.PlotTopologies.get_extended_continental_crusts">[docs]</a>
+<a class="viewcode-back" href="../../gplately.html#gplately.PlotTopologies.get_extended_continental_crusts">[docs]</a>
     <span class="nd">@validate_reconstruction_time</span>
     <span class="nd">@append_docstring</span><span class="p">(</span><span class="n">GET_DATE_DOCSTRING</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s2">&quot;extended continental crusts&quot;</span><span class="p">))</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_extended_continental_crusts</span><span class="p">(</span>
@@ -2069,7 +2072,7 @@
 
 
 <div class="viewcode-block" id="PlotTopologies.plot_extended_continental_crusts">
-<a class="viewcode-back" href="../../gplately.html#gplately.plot.PlotTopologies.plot_extended_continental_crusts">[docs]</a>
+<a class="viewcode-back" href="../../gplately.html#gplately.PlotTopologies.plot_extended_continental_crusts">[docs]</a>
     <span class="nd">@validate_reconstruction_time</span>
     <span class="nd">@append_docstring</span><span class="p">(</span><span class="n">PLOT_DOCSTRING</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s2">&quot;extended continental crusts&quot;</span><span class="p">))</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">plot_extended_continental_crusts</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ax</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;black&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
@@ -2085,7 +2088,7 @@
 
 
 <div class="viewcode-block" id="PlotTopologies.get_passive_continental_boundaries">
-<a class="viewcode-back" href="../../gplately.html#gplately.plot.PlotTopologies.get_passive_continental_boundaries">[docs]</a>
+<a class="viewcode-back" href="../../gplately.html#gplately.PlotTopologies.get_passive_continental_boundaries">[docs]</a>
     <span class="nd">@validate_reconstruction_time</span>
     <span class="nd">@append_docstring</span><span class="p">(</span><span class="n">GET_DATE_DOCSTRING</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s2">&quot;passive continental boundaries&quot;</span><span class="p">))</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_passive_continental_boundaries</span><span class="p">(</span>
@@ -2102,7 +2105,7 @@
 
 
 <div class="viewcode-block" id="PlotTopologies.plot_passive_continental_boundaries">
-<a class="viewcode-back" href="../../gplately.html#gplately.plot.PlotTopologies.plot_passive_continental_boundaries">[docs]</a>
+<a class="viewcode-back" href="../../gplately.html#gplately.PlotTopologies.plot_passive_continental_boundaries">[docs]</a>
     <span class="nd">@validate_reconstruction_time</span>
     <span class="nd">@append_docstring</span><span class="p">(</span><span class="n">PLOT_DOCSTRING</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s2">&quot;passive continental boundaries&quot;</span><span class="p">))</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">plot_passive_continental_boundaries</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ax</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;black&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
@@ -2118,7 +2121,7 @@
 
 
 <div class="viewcode-block" id="PlotTopologies.get_slab_edges">
-<a class="viewcode-back" href="../../gplately.html#gplately.plot.PlotTopologies.get_slab_edges">[docs]</a>
+<a class="viewcode-back" href="../../gplately.html#gplately.PlotTopologies.get_slab_edges">[docs]</a>
     <span class="nd">@validate_reconstruction_time</span>
     <span class="nd">@append_docstring</span><span class="p">(</span><span class="n">GET_DATE_DOCSTRING</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s2">&quot;slab edges&quot;</span><span class="p">))</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_slab_edges</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">central_meridian</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">tessellate_degrees</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
@@ -2131,7 +2134,7 @@
 
 
 <div class="viewcode-block" id="PlotTopologies.plot_slab_edges">
-<a class="viewcode-back" href="../../gplately.html#gplately.plot.PlotTopologies.plot_slab_edges">[docs]</a>
+<a class="viewcode-back" href="../../gplately.html#gplately.PlotTopologies.plot_slab_edges">[docs]</a>
     <span class="nd">@validate_reconstruction_time</span>
     <span class="nd">@append_docstring</span><span class="p">(</span><span class="n">PLOT_DOCSTRING</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s2">&quot;slab edges&quot;</span><span class="p">))</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">plot_slab_edges</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ax</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;black&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
@@ -2147,7 +2150,7 @@
 
 
 <div class="viewcode-block" id="PlotTopologies.get_transforms">
-<a class="viewcode-back" href="../../gplately.html#gplately.plot.PlotTopologies.get_transforms">[docs]</a>
+<a class="viewcode-back" href="../../gplately.html#gplately.PlotTopologies.get_transforms">[docs]</a>
     <span class="nd">@validate_reconstruction_time</span>
     <span class="nd">@append_docstring</span><span class="p">(</span><span class="n">GET_DATE_DOCSTRING</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s2">&quot;transforms&quot;</span><span class="p">))</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_transforms</span><span class="p">(</span>
@@ -2172,7 +2175,7 @@
 
 
 <div class="viewcode-block" id="PlotTopologies.plot_transforms">
-<a class="viewcode-back" href="../../gplately.html#gplately.plot.PlotTopologies.plot_transforms">[docs]</a>
+<a class="viewcode-back" href="../../gplately.html#gplately.PlotTopologies.plot_transforms">[docs]</a>
     <span class="nd">@validate_reconstruction_time</span>
     <span class="nd">@append_docstring</span><span class="p">(</span><span class="n">PLOT_DOCSTRING</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s2">&quot;transforms&quot;</span><span class="p">))</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">plot_transforms</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ax</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;black&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
@@ -2196,7 +2199,7 @@
 
 
 <div class="viewcode-block" id="PlotTopologies.plot_ridges_and_transforms">
-<a class="viewcode-back" href="../../gplately.html#gplately.plot.PlotTopologies.plot_ridges_and_transforms">[docs]</a>
+<a class="viewcode-back" href="../../gplately.html#gplately.PlotTopologies.plot_ridges_and_transforms">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">plot_ridges_and_transforms</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ax</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;black&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Deprecated! DO NOT USE!</span>
@@ -2221,7 +2224,7 @@
 
 
 <div class="viewcode-block" id="PlotTopologies.get_unclassified_features">
-<a class="viewcode-back" href="../../gplately.html#gplately.plot.PlotTopologies.get_unclassified_features">[docs]</a>
+<a class="viewcode-back" href="../../gplately.html#gplately.PlotTopologies.get_unclassified_features">[docs]</a>
     <span class="nd">@validate_reconstruction_time</span>
     <span class="nd">@append_docstring</span><span class="p">(</span><span class="n">GET_DATE_DOCSTRING</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s2">&quot;unclassified features&quot;</span><span class="p">))</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_unclassified_features</span><span class="p">(</span>
@@ -2238,7 +2241,7 @@
 
 
 <div class="viewcode-block" id="PlotTopologies.plot_unclassified_features">
-<a class="viewcode-back" href="../../gplately.html#gplately.plot.PlotTopologies.plot_unclassified_features">[docs]</a>
+<a class="viewcode-back" href="../../gplately.html#gplately.PlotTopologies.plot_unclassified_features">[docs]</a>
     <span class="nd">@validate_reconstruction_time</span>
     <span class="nd">@append_docstring</span><span class="p">(</span><span class="n">PLOT_DOCSTRING</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s2">&quot;unclassified features&quot;</span><span class="p">))</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">plot_unclassified_features</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ax</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;black&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
@@ -2254,7 +2257,7 @@
 
 
 <div class="viewcode-block" id="PlotTopologies.get_all_topologies">
-<a class="viewcode-back" href="../../gplately.html#gplately.plot.PlotTopologies.get_all_topologies">[docs]</a>
+<a class="viewcode-back" href="../../gplately.html#gplately.PlotTopologies.get_all_topologies">[docs]</a>
     <span class="nd">@validate_reconstruction_time</span>
     <span class="nd">@append_docstring</span><span class="p">(</span><span class="n">GET_DATE_DOCSTRING</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s2">&quot;topologies&quot;</span><span class="p">))</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_all_topologies</span><span class="p">(</span>
@@ -2297,7 +2300,7 @@
 
 
 <div class="viewcode-block" id="PlotTopologies.plot_all_topologies">
-<a class="viewcode-back" href="../../gplately.html#gplately.plot.PlotTopologies.plot_all_topologies">[docs]</a>
+<a class="viewcode-back" href="../../gplately.html#gplately.PlotTopologies.plot_all_topologies">[docs]</a>
     <span class="nd">@validate_topology_availability</span><span class="p">(</span><span class="s2">&quot;all topologies&quot;</span><span class="p">)</span>
     <span class="nd">@append_docstring</span><span class="p">(</span><span class="n">PLOT_DOCSTRING</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s2">&quot;topologies&quot;</span><span class="p">))</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">plot_all_topologies</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ax</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;black&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
@@ -2315,7 +2318,7 @@
 
 
 <div class="viewcode-block" id="PlotTopologies.get_all_topological_sections">
-<a class="viewcode-back" href="../../gplately.html#gplately.plot.PlotTopologies.get_all_topological_sections">[docs]</a>
+<a class="viewcode-back" href="../../gplately.html#gplately.PlotTopologies.get_all_topological_sections">[docs]</a>
     <span class="nd">@validate_reconstruction_time</span>
     <span class="nd">@append_docstring</span><span class="p">(</span><span class="n">GET_DATE_DOCSTRING</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s2">&quot;topologies&quot;</span><span class="p">))</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_all_topological_sections</span><span class="p">(</span>
@@ -2376,7 +2379,7 @@
 
 
 <div class="viewcode-block" id="PlotTopologies.plot_all_topological_sections">
-<a class="viewcode-back" href="../../gplately.html#gplately.plot.PlotTopologies.plot_all_topological_sections">[docs]</a>
+<a class="viewcode-back" href="../../gplately.html#gplately.PlotTopologies.plot_all_topological_sections">[docs]</a>
     <span class="nd">@validate_topology_availability</span><span class="p">(</span><span class="s2">&quot;all topological sections&quot;</span><span class="p">)</span>
     <span class="nd">@append_docstring</span><span class="p">(</span><span class="n">PLOT_DOCSTRING</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s2">&quot;topologies&quot;</span><span class="p">))</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">plot_all_topological_sections</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ax</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;black&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
@@ -2391,7 +2394,7 @@
 
 
 <div class="viewcode-block" id="PlotTopologies.get_topological_plate_boundaries">
-<a class="viewcode-back" href="../../gplately.html#gplately.plot.PlotTopologies.get_topological_plate_boundaries">[docs]</a>
+<a class="viewcode-back" href="../../gplately.html#gplately.PlotTopologies.get_topological_plate_boundaries">[docs]</a>
     <span class="nd">@validate_reconstruction_time</span>
     <span class="nd">@append_docstring</span><span class="p">(</span><span class="n">GET_DATE_DOCSTRING</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s2">&quot;topological plate boundaries&quot;</span><span class="p">))</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_topological_plate_boundaries</span><span class="p">(</span>
@@ -2406,7 +2409,7 @@
 
 
 <div class="viewcode-block" id="PlotTopologies.plot_topological_plate_boundaries">
-<a class="viewcode-back" href="../../gplately.html#gplately.plot.PlotTopologies.plot_topological_plate_boundaries">[docs]</a>
+<a class="viewcode-back" href="../../gplately.html#gplately.PlotTopologies.plot_topological_plate_boundaries">[docs]</a>
     <span class="nd">@validate_topology_availability</span><span class="p">(</span><span class="s2">&quot;topological plate boundaries&quot;</span><span class="p">)</span>
     <span class="nd">@append_docstring</span><span class="p">(</span><span class="n">PLOT_DOCSTRING</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s2">&quot;topological plate boundaries&quot;</span><span class="p">))</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">plot_topological_plate_boundaries</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ax</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;black&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
@@ -2434,7 +2437,7 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_transforms</span>
 
 <div class="viewcode-block" id="PlotTopologies.plot_misc_transforms">
-<a class="viewcode-back" href="../../gplately.html#gplately.plot.PlotTopologies.plot_misc_transforms">[docs]</a>
+<a class="viewcode-back" href="../../gplately.html#gplately.PlotTopologies.plot_misc_transforms">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">plot_misc_transforms</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ax</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;black&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Deprecated! DO NOT USE.</span>
@@ -2450,7 +2453,7 @@
 
 
 <div class="viewcode-block" id="PlotTopologies.get_misc_transforms">
-<a class="viewcode-back" href="../../gplately.html#gplately.plot.PlotTopologies.get_misc_transforms">[docs]</a>
+<a class="viewcode-back" href="../../gplately.html#gplately.PlotTopologies.get_misc_transforms">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_misc_transforms</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">central_meridian</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span>

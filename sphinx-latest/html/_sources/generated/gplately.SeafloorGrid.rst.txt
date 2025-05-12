@@ -1,0 +1,38 @@
+﻿gplately.SeafloorGrid
+=====================
+
+.. currentmodule:: gplately
+
+.. autoclass:: SeafloorGrid
+
+   
+   .. automethod:: __init__
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~SeafloorGrid.__init__
+      ~SeafloorGrid.build_all_MOR_seedpoints
+      ~SeafloorGrid.build_all_continental_masks
+      ~SeafloorGrid.create_initial_ocean_seed_points
+      ~SeafloorGrid.lat_lon_z_to_netCDF
+      ~SeafloorGrid.prepare_for_reconstruction_by_topologies
+      ~SeafloorGrid.reconstruct_by_topological_model
+      ~SeafloorGrid.reconstruct_by_topologies
+      ~SeafloorGrid.save_netcdf_files
+      ~SeafloorGrid.update_time
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~SeafloorGrid.PlotTopologiesTime
+      ~SeafloorGrid.max_time
+   
+   

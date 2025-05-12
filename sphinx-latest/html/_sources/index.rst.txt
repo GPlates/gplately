@@ -25,14 +25,11 @@ and more to help you get started with plate reconstructions.
    command_line_interface
    primer
 
-.. Hidden TOCs
-
 .. toctree::
-   :caption: API Reference
+   :caption: Reference
    :maxdepth: 2
-   :hidden:
 
-   modules
+   api
 
 Indices and tables
 ==================

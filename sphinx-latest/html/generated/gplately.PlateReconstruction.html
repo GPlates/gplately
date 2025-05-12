@@ -1,0 +1,1185 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>gplately.PlateReconstruction &mdash; gplately 2.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
+
+  
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=51b770b3"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="gplately.Points" href="gplately.Points.html" />
+    <link rel="prev" title="gplately.DataServer" href="gplately.DataServer.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            gplately
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../basic_usages.html">Minimal working example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../use_cases.html">Common Use Cases</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../faq.html">Trouble-shooting and FAQ</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../command_line_interface.html">Command Line Interface (CLI)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../primer.html">Primer</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Reference</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../api.html">GPlately API</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="gplately.DataServer.html">gplately.DataServer</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">gplately.PlateReconstruction</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#gplately.PlateReconstruction"><code class="docutils literal notranslate"><span class="pre">PlateReconstruction</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#gplately.PlateReconstruction.rotation_model"><code class="docutils literal notranslate"><span class="pre">PlateReconstruction.rotation_model</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gplately.PlateReconstruction.topology_features"><code class="docutils literal notranslate"><span class="pre">PlateReconstruction.topology_features</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gplately.PlateReconstruction.static_polygons"><code class="docutils literal notranslate"><span class="pre">PlateReconstruction.static_polygons</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gplately.PlateReconstruction.anchor_plate_id"><code class="docutils literal notranslate"><span class="pre">PlateReconstruction.anchor_plate_id</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gplately.PlateReconstruction.__init__"><code class="docutils literal notranslate"><span class="pre">PlateReconstruction.__init__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gplately.PlateReconstruction._check_anchor_plate_id"><code class="docutils literal notranslate"><span class="pre">PlateReconstruction._check_anchor_plate_id()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gplately.PlateReconstruction._check_static_polygons"><code class="docutils literal notranslate"><span class="pre">PlateReconstruction._check_static_polygons()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gplately.PlateReconstruction._check_topology_features"><code class="docutils literal notranslate"><span class="pre">PlateReconstruction._check_topology_features()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gplately.PlateReconstruction._ridge_spreading_rates"><code class="docutils literal notranslate"><span class="pre">PlateReconstruction._ridge_spreading_rates()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gplately.PlateReconstruction._subduction_convergence"><code class="docutils literal notranslate"><span class="pre">PlateReconstruction._subduction_convergence()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id0"><code class="docutils literal notranslate"><span class="pre">PlateReconstruction.anchor_plate_id</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gplately.PlateReconstruction.create_flowline"><code class="docutils literal notranslate"><span class="pre">PlateReconstruction.create_flowline()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gplately.PlateReconstruction.create_motion_path"><code class="docutils literal notranslate"><span class="pre">PlateReconstruction.create_motion_path()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gplately.PlateReconstruction.crustal_production_destruction_rate"><code class="docutils literal notranslate"><span class="pre">PlateReconstruction.crustal_production_destruction_rate()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gplately.PlateReconstruction.divergent_convergent_plate_boundaries"><code class="docutils literal notranslate"><span class="pre">PlateReconstruction.divergent_convergent_plate_boundaries()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gplately.PlateReconstruction.get_point_velocities"><code class="docutils literal notranslate"><span class="pre">PlateReconstruction.get_point_velocities()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gplately.PlateReconstruction.reconstruct"><code class="docutils literal notranslate"><span class="pre">PlateReconstruction.reconstruct()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gplately.PlateReconstruction.reconstruct_snapshot"><code class="docutils literal notranslate"><span class="pre">PlateReconstruction.reconstruct_snapshot()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gplately.PlateReconstruction.static_polygons_snapshot"><code class="docutils literal notranslate"><span class="pre">PlateReconstruction.static_polygons_snapshot()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gplately.PlateReconstruction.tessellate_mid_ocean_ridges"><code class="docutils literal notranslate"><span class="pre">PlateReconstruction.tessellate_mid_ocean_ridges()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gplately.PlateReconstruction.tessellate_subduction_zones"><code class="docutils literal notranslate"><span class="pre">PlateReconstruction.tessellate_subduction_zones()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gplately.PlateReconstruction.topological_snapshot"><code class="docutils literal notranslate"><span class="pre">PlateReconstruction.topological_snapshot()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gplately.PlateReconstruction.total_continental_arc_length"><code class="docutils literal notranslate"><span class="pre">PlateReconstruction.total_continental_arc_length()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gplately.PlateReconstruction.total_ridge_length"><code class="docutils literal notranslate"><span class="pre">PlateReconstruction.total_ridge_length()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gplately.PlateReconstruction.total_subduction_zone_length"><code class="docutils literal notranslate"><span class="pre">PlateReconstruction.total_subduction_zone_length()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="gplately.Points.html">gplately.Points</a></li>
+<li class="toctree-l2"><a class="reference internal" href="gplately.Raster.html">gplately.Raster</a></li>
+<li class="toctree-l2"><a class="reference internal" href="gplately.PlotTopologies.html">gplately.PlotTopologies</a></li>
+<li class="toctree-l2"><a class="reference internal" href="gplately.SeafloorGrid.html">gplately.SeafloorGrid</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">gplately</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../api.html">GPlately API</a></li>
+      <li class="breadcrumb-item active">gplately.PlateReconstruction</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/generated/gplately.PlateReconstruction.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="gplately-platereconstruction">
+<h1>gplately.PlateReconstruction<a class="headerlink" href="#gplately-platereconstruction" title="Link to this heading"></a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="gplately.PlateReconstruction">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">gplately.</span></span><span class="sig-name descname"><span class="pre">PlateReconstruction</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rotation_model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">topology_features</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">static_polygons</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">anchor_plate_id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plate_model_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'Nemo'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gplately/reconstruction.html#PlateReconstruction"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.PlateReconstruction" title="Link to this definition"></a></dt>
+<dd><p>The <cite>PlateReconstruction</cite> class contains methods to reconstruct topology features to specific
+geological times given a <cite>rotation_model</cite>, a set of <cite>topology_features</cite> and a set of
+<cite>static_polygons</cite>. Topological plate velocity data at specific geological times can also be
+calculated from these reconstructed features.</p>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="gplately.PlateReconstruction.rotation_model">
+<span class="sig-name descname"><span class="pre">rotation_model</span></span><a class="headerlink" href="#gplately.PlateReconstruction.rotation_model" title="Link to this definition"></a></dt>
+<dd><p>A rotation model to query equivalent and/or relative topological plate rotations
+from a time in the past relative to another time in the past or to present day.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><cite>pygplates.RotationModel</cite></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="gplately.PlateReconstruction.topology_features">
+<span class="sig-name descname"><span class="pre">topology_features</span></span><a class="headerlink" href="#gplately.PlateReconstruction.topology_features" title="Link to this definition"></a></dt>
+<dd><p>Topological features like trenches, ridges and transforms.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><cite>pygplates.FeatureCollection</cite>, default None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="gplately.PlateReconstruction.static_polygons">
+<span class="sig-name descname"><span class="pre">static_polygons</span></span><a class="headerlink" href="#gplately.PlateReconstruction.static_polygons" title="Link to this definition"></a></dt>
+<dd><p>Present-day polygons whose shapes do not change through geological time when reconstructed.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><cite>pygplates.FeatureCollection</cite>, default None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="gplately.PlateReconstruction.anchor_plate_id">
+<span class="sig-name descname"><span class="pre">anchor_plate_id</span></span><a class="headerlink" href="#gplately.PlateReconstruction.anchor_plate_id" title="Link to this definition"></a></dt>
+<dd><p>Anchor plate ID for reconstruction.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>int</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="gplately.PlateReconstruction.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rotation_model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">topology_features</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">static_polygons</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">anchor_plate_id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plate_model_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'Nemo'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gplately/reconstruction.html#PlateReconstruction.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.PlateReconstruction.__init__" title="Link to this definition"></a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>rotation_model</strong> (str/<cite>os.PathLike</cite>, or instance of &lt;pygplates.FeatureCollection&gt;, or &lt;pygplates.Feature&gt;, or sequence of &lt;pygplates.Feature&gt;, or instance of &lt;pygplates.RotationModel&gt;) – A rotation model to query equivalent and/or relative topological plate rotations
+from a time in the past relative to another time in the past or to present day. Can be
+provided as a rotation filename, or rotation feature collection, or rotation feature, or
+sequence of rotation features, or a sequence (eg, a list or tuple) of any combination of
+those four types.</p></li>
+<li><p><strong>topology_features</strong> (str/<cite>os.PathLike</cite>, or a sequence (eg, <cite>list</cite> or <cite>tuple</cite>) of instances of &lt;pygplates.Feature&gt;, or a single instance of &lt;pygplates.Feature&gt;, or an instance of &lt;pygplates.FeatureCollection&gt;, default None) – Reconstructable topological features like trenches, ridges and transforms. Can be provided
+as an optional topology-feature filename, or sequence of features, or a single feature.</p></li>
+<li><p><strong>static_polygons</strong> (str/<cite>os.PathLike</cite>, or instance of &lt;pygplates.Feature&gt;, or sequence of &lt;pygplates.Feature&gt;,or an instance of &lt;pygplates.FeatureCollection&gt;, default None) – Present-day polygons whose shapes do not change through geological time. They are
+used to cookie-cut dynamic polygons into identifiable topological plates (assigned
+an ID) according to their present-day locations. Can be provided as a static polygon feature
+collection, or optional filename, or a single feature, or a sequence of
+features.</p></li>
+<li><p><strong>anchor_plate_id</strong> (<em>int</em><em>, </em><em>optional</em>) – Default anchor plate ID for reconstruction.
+If not specified then uses the default anchor plate of <cite>rotation_model</cite> if it’s a <cite>pygplates.RotationModel</cite> (otherwise uses zero).</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<p class="rubric">Methods</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#gplately.PlateReconstruction.__init__" title="gplately.PlateReconstruction.__init__"><code class="xref py py-obj docutils literal notranslate"><span class="pre">__init__</span></code></a>(rotation_model[, ...])</p></td>
+<td><p></p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="../gplately.html#gplately.PlateReconstruction.create_flowline" title="gplately.PlateReconstruction.create_flowline"><code class="xref py py-obj docutils literal notranslate"><span class="pre">create_flowline</span></code></a>(lons, lats, time_array, ...)</p></td>
+<td><p>Create a path of points to track plate motion away from spreading ridges over time using half-stage rotations.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="../gplately.html#gplately.PlateReconstruction.create_motion_path" title="gplately.PlateReconstruction.create_motion_path"><code class="xref py py-obj docutils literal notranslate"><span class="pre">create_motion_path</span></code></a>(lons, lats, time_array[, ...])</p></td>
+<td><p>Create a path of points to mark the trajectory of a plate's motion through geological time.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="../gplately.html#gplately.PlateReconstruction.crustal_production_destruction_rate" title="gplately.PlateReconstruction.crustal_production_destruction_rate"><code class="xref py py-obj docutils literal notranslate"><span class="pre">crustal_production_destruction_rate</span></code></a>(time[, ...])</p></td>
+<td><p>Calculates the total crustal production and destruction rates (in km^2/yr) of divergent and convergent plate boundaries at the specified geological time (Ma).</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="../gplately.html#gplately.PlateReconstruction.divergent_convergent_plate_boundaries" title="gplately.PlateReconstruction.divergent_convergent_plate_boundaries"><code class="xref py py-obj docutils literal notranslate"><span class="pre">divergent_convergent_plate_boundaries</span></code></a>(time)</p></td>
+<td><p>Samples points uniformly along plate boundaries and calculates statistics at diverging/converging locations at a particular geological time.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="../gplately.html#gplately.PlateReconstruction.get_point_velocities" title="gplately.PlateReconstruction.get_point_velocities"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_point_velocities</span></code></a>(lons, lats, time[, ...])</p></td>
+<td><p>Calculates the north and east components of the velocity vector (in kms/myr) for each specified point (from <cite>lons</cite> and <cite>lats</cite>) at a particular geological <cite>time</cite>.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="../gplately.html#gplately.PlateReconstruction.reconstruct" title="gplately.PlateReconstruction.reconstruct"><code class="xref py py-obj docutils literal notranslate"><span class="pre">reconstruct</span></code></a>(feature, to_time[, from_time, ...])</p></td>
+<td><p>Reconstructs regular geological features, motion paths or flowlines to a specific geological time.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="../gplately.html#gplately.PlateReconstruction.reconstruct_snapshot" title="gplately.PlateReconstruction.reconstruct_snapshot"><code class="xref py py-obj docutils literal notranslate"><span class="pre">reconstruct_snapshot</span></code></a>(...[, anchor_plate_id, ...])</p></td>
+<td><p>Create a snapshot of reconstructed regular features (including motion paths and flowlines) at a specific geological time.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="../gplately.html#gplately.PlateReconstruction.static_polygons_snapshot" title="gplately.PlateReconstruction.static_polygons_snapshot"><code class="xref py py-obj docutils literal notranslate"><span class="pre">static_polygons_snapshot</span></code></a>(time, *[, ...])</p></td>
+<td><p>Create a reconstructed snapshot of the static polygons at the specified reconstruction time.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="../gplately.html#gplately.PlateReconstruction.tessellate_mid_ocean_ridges" title="gplately.PlateReconstruction.tessellate_mid_ocean_ridges"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tessellate_mid_ocean_ridges</span></code></a>(time[, ...])</p></td>
+<td><p>Samples points along resolved spreading features (e.g. mid-ocean ridges) and calculates spreading rates and lengths of ridge segments at a particular geological time.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="../gplately.html#gplately.PlateReconstruction.tessellate_subduction_zones" title="gplately.PlateReconstruction.tessellate_subduction_zones"><code class="xref py py-obj docutils literal notranslate"><span class="pre">tessellate_subduction_zones</span></code></a>(time[, ...])</p></td>
+<td><p>Samples points along subduction zone trenches and obtains subduction data at a particular geological time.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="../gplately.html#gplately.PlateReconstruction.topological_snapshot" title="gplately.PlateReconstruction.topological_snapshot"><code class="xref py py-obj docutils literal notranslate"><span class="pre">topological_snapshot</span></code></a>(time, *[, ...])</p></td>
+<td><p>Create a snapshot of resolved topologies at the specified reconstruction time.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="../gplately.html#gplately.PlateReconstruction.total_continental_arc_length" title="gplately.PlateReconstruction.total_continental_arc_length"><code class="xref py py-obj docutils literal notranslate"><span class="pre">total_continental_arc_length</span></code></a>(time, ...[, ...])</p></td>
+<td><p>Calculates the total length of all global continental arcs (km) at the specified geological time (Ma).</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="../gplately.html#gplately.PlateReconstruction.total_ridge_length" title="gplately.PlateReconstruction.total_ridge_length"><code class="xref py py-obj docutils literal notranslate"><span class="pre">total_ridge_length</span></code></a>(time[, use_ptt, ...])</p></td>
+<td><p>Calculates the total length of all resolved spreading features (e.g. mid-ocean ridges) at the specified geological time (Ma).</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="../gplately.html#gplately.PlateReconstruction.total_subduction_zone_length" title="gplately.PlateReconstruction.total_subduction_zone_length"><code class="xref py py-obj docutils literal notranslate"><span class="pre">total_subduction_zone_length</span></code></a>(time[, ...])</p></td>
+<td><p>Calculates the total length of all subduction zones (km) at the specified geological time (Ma).</p></td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Attributes</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="../gplately.html#id119" title="gplately.PlateReconstruction.anchor_plate_id"><code class="xref py py-obj docutils literal notranslate"><span class="pre">anchor_plate_id</span></code></a></p></td>
+<td><p>Anchor plate ID for reconstruction.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py method">
+<dt class="sig sig-object py" id="gplately.PlateReconstruction._check_anchor_plate_id">
+<em class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">_check_anchor_plate_id</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">id</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gplately/reconstruction.html#PlateReconstruction._check_anchor_plate_id"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.PlateReconstruction._check_anchor_plate_id" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="gplately.PlateReconstruction._check_static_polygons">
+<span class="sig-name descname"><span class="pre">_check_static_polygons</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gplately/reconstruction.html#PlateReconstruction._check_static_polygons"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.PlateReconstruction._check_static_polygons" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="gplately.PlateReconstruction._check_topology_features">
+<span class="sig-name descname"><span class="pre">_check_topology_features</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">include_topological_slab_boundaries</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gplately/reconstruction.html#PlateReconstruction._check_topology_features"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.PlateReconstruction._check_topology_features" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="gplately.PlateReconstruction._ridge_spreading_rates">
+<span class="sig-name descname"><span class="pre">_ridge_spreading_rates</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">time</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">uniform_point_spacing_radians</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">velocity_delta_time</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">anchor_plate_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">spreading_feature_types</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">transform_segment_deviation_in_radians</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">include_network_boundaries</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">divergence_threshold_in_cm_per_yr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_obliquity_and_normal_and_left_right_plates</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gplately/reconstruction.html#PlateReconstruction._ridge_spreading_rates"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.PlateReconstruction._ridge_spreading_rates" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="gplately.PlateReconstruction._subduction_convergence">
+<span class="sig-name descname"><span class="pre">_subduction_convergence</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">time</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">uniform_point_spacing_radians</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">velocity_delta_time</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">anchor_plate_id</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">include_network_boundaries</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">convergence_threshold_in_cm_per_yr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_distance_to_nearest_edge_of_trench</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_distance_to_start_edge_of_trench</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_convergence_velocity_components</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_trench_absolute_velocity_components</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_subducting_absolute_velocity</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_subducting_absolute_velocity_components</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_trench_normal</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gplately/reconstruction.html#PlateReconstruction._subduction_convergence"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.PlateReconstruction._subduction_convergence" title="Link to this definition"></a></dt>
+<dd></dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="id0">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">anchor_plate_id</span></span><a class="headerlink" href="#id0" title="Link to this definition"></a></dt>
+<dd><p>Anchor plate ID for reconstruction. Must be an integer &gt;= 0.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="gplately.PlateReconstruction.create_flowline">
+<span class="sig-name descname"><span class="pre">create_flowline</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">lons</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lats</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time_array</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">left_plate_ID</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">right_plate_ID</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_rate_of_motion</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gplately/reconstruction.html#PlateReconstruction.create_flowline"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.PlateReconstruction.create_flowline" title="Link to this definition"></a></dt>
+<dd><p>Create a path of points to track plate motion away from
+spreading ridges over time using half-stage rotations.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>lons</strong> (<em>arr</em>) – An array of longitudes of points along spreading ridges.</p></li>
+<li><p><strong>lats</strong> (<em>arr</em>) – An array of latitudes of points along spreading ridges.</p></li>
+<li><p><strong>time_array</strong> (<em>arr</em>) – A list of times to obtain seed point locations at.</p></li>
+<li><p><strong>left_plate_ID</strong> (<em>int</em>) – The plate ID of the polygon to the left of the spreading
+ridge.</p></li>
+<li><p><strong>right_plate_ID</strong> (<em>int</em>) – The plate ID of the polygon to the right of the spreading
+ridge.</p></li>
+<li><p><strong>return_rate_of_motion</strong> (<em>bool</em><em>, </em><em>default False</em>) – Choose whether to return a step time and step rate array
+for a step plot of motion.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>left_lon</strong> (<em>ndarray</em>) – The longitudes of the __left__ flowline for n seed points.
+There are n columns for n seed points, and m rows
+for m time steps in <cite>time_array</cite>.</p></li>
+<li><p><strong>left_lat</strong> (<em>ndarray</em>) – The latitudes of the __left__ flowline of n seed points.
+There are n columns for n seed points, and m rows
+for m time steps in <cite>time_array</cite>.</p></li>
+<li><p><strong>right_lon</strong> (<em>ndarray</em>) – The longitudes of the __right__ flowline of n seed points.
+There are n columns for n seed points, and m rows
+for m time steps in <cite>time_array</cite>.</p></li>
+<li><p><strong>right_lat</strong> (<em>ndarray</em>) – The latitudes of the __right__ flowline of n seed points.
+There are n columns for n seed points, and m rows
+for m time steps in <cite>time_array</cite>.</p></li>
+</ul>
+</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<p>To access the ith seed point’s left and right latitudes and
+longitudes:</p>
+<blockquote>
+<div><dl class="simple">
+<dt>for i in np.arange(0,len(seed_points)):</dt><dd><p>left_flowline_longitudes = left_lon[:,i]
+left_flowline_latitudes = left_lat[:,i]
+right_flowline_longitudes = right_lon[:,i]
+right_flowline_latitudes = right_lat[:,i]</p>
+</dd>
+</dl>
+</div></blockquote>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="gplately.PlateReconstruction.create_motion_path">
+<span class="sig-name descname"><span class="pre">create_motion_path</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">lons</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lats</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time_array</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plate_id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">anchor_plate_id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_rate_of_motion</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gplately/reconstruction.html#PlateReconstruction.create_motion_path"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.PlateReconstruction.create_motion_path" title="Link to this definition"></a></dt>
+<dd><p>Create a path of points to mark the trajectory of a plate’s motion
+through geological time.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>lons</strong> (<em>arr</em>) – An array containing the longitudes of seed points on a plate in motion.</p></li>
+<li><p><strong>lats</strong> (<em>arr</em>) – An array containing the latitudes of seed points on a plate in motion.</p></li>
+<li><p><strong>time_array</strong> (<em>arr</em>) – <p>An array of reconstruction times at which to determine the trajectory
+of a point on a plate. For example:</p>
+<blockquote>
+<div><p>import numpy as np
+min_time = 30
+max_time = 100
+time_step = 2.5
+time_array = np.arange(min_time, max_time + time_step, time_step)</p>
+</div></blockquote>
+</p></li>
+<li><p><strong>plate_id</strong> (<em>int</em><em>, </em><em>optional</em>) – The ID of the moving plate. If this is not passed, the plate ID of the
+seed points are ascertained using pygplates’ <cite>PlatePartitioner</cite>.</p></li>
+<li><p><strong>anchor_plate_id</strong> (<em>int</em><em>, </em><em>optional</em>) – The ID of the anchor plate. Defaults to the default anchor plate
+(specified in <cite>__init__</cite> or set with <cite>anchor_plate_id</cite> attribute).</p></li>
+<li><p><strong>return_rate_of_motion</strong> (<em>bool</em><em>, </em><em>default=False</em>) – Choose whether to return the rate of plate motion through time for each</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>rlons</strong> (<em>ndarray</em>) – An n-dimensional array with columns containing the longitudes of
+the seed points at each timestep in <cite>time_array</cite>. There are n
+columns for n seed points.</p></li>
+<li><p><strong>rlats</strong> (<em>ndarray</em>) – An n-dimensional array with columns containing the latitudes of
+the seed points at each timestep in <cite>time_array</cite>. There are n
+columns for n seed points.</p></li>
+<li><p><em>StepTimes</em></p></li>
+<li><p><em>StepRates</em></p></li>
+</ul>
+</p>
+</dd>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>ValueError</strong> – If <em>plate_id</em> is <cite>None</cite> and topology features have not been set in this <cite>PlateReconstruction</cite>.</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<p>To access the latitudes and longitudes of each seed point’s motion path:</p>
+<blockquote>
+<div><dl class="simple">
+<dt>for i in np.arange(0,len(seed_points)):</dt><dd><p>current_lons = lon[:,i]
+current_lats = lat[:,i]</p>
+</dd>
+</dl>
+</div></blockquote>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="gplately.PlateReconstruction.crustal_production_destruction_rate">
+<span class="sig-name descname"><span class="pre">crustal_production_destruction_rate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">time</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">uniform_point_spacing_radians</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.001</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">divergence_velocity_threshold_in_cms_per_yr</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">convergence_velocity_threshold_in_cms_per_yr</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">first_uniform_point_spacing_radians</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">velocity_delta_time</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">velocity_delta_time_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">pygplates.pygplates.VelocityDeltaTimeType.t_plus_delta_t_to_t</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">include_network_boundaries</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">include_topological_slab_boundaries</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">boundary_section_filter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gplately/reconstruction.html#PlateReconstruction.crustal_production_destruction_rate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.PlateReconstruction.crustal_production_destruction_rate" title="Link to this definition"></a></dt>
+<dd><p>Calculates the total crustal production and destruction rates (in km^2/yr) of divergent and convergent plate boundaries at the specified geological time (Ma).</p>
+<p>Resolves topologies at <cite>time</cite> and uniformly samples all plate boundaries into divergent and convergent boundary points.</p>
+<p>Total crustal production (and destruction) rate is then calculated by accumulating divergent (and convergent) orthogonal velocities multiplied by their local boundary lengths.
+Velocities and lengths are scaled using the geocentric radius (at each divergent and convergent sampled point).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>time</strong> (<em>float</em>) – The reconstruction time (Ma) at which to query divergent/convergent plate boundaries.</p></li>
+<li><p><strong>uniform_point_spacing_radians</strong> (<em>float</em><em>, </em><em>default=0.001</em>) – The spacing between uniform points along plate boundaries (in radians).</p></li>
+<li><p><strong>divergence_velocity_threshold_in_cms_per_yr</strong> (<em>float</em><em>, </em><em>default=0.0</em>) – Orthogonal (ie, in the direction of boundary normal) velocity threshold for <em>diverging</em> sample points.
+Points with an orthogonal <em>diverging</em> velocity above this value will accumulate crustal <em>production</em>.
+The default is <cite>0.0</cite> which removes all converging sample points (leaving only diverging points).
+This value can be negative which means a small amount of convergence is allowed for the diverging points.
+The units should be in cm/yr.</p></li>
+<li><p><strong>convergence_velocity_threshold_in_cms_per_yr</strong> (<em>float</em><em>, </em><em>default=0.0</em>) – Orthogonal (ie, in the direction of boundary normal) velocity threshold for <em>converging</em> sample points.
+Points with an orthogonal <em>converging</em> velocity above this value will accumulate crustal <em>destruction</em>.
+The default is <cite>0.0</cite> which removes all diverging sample points (leaving only converging points).
+This value can be negative which means a small amount of divergence is allowed for the converging points.
+The units should be in cm/yr.</p></li>
+<li><p><strong>first_uniform_point_spacing_radians</strong> (<em>float</em><em>, </em><em>optional</em>) – Spacing of first uniform point in each resolved topological section (in radians) - see
+<cite>divergent_convergent_plate_boundaries()</cite> for more details. Defaults to half of <cite>uniform_point_spacing_radians</cite>.</p></li>
+<li><p><strong>velocity_delta_time</strong> (<em>float</em><em>, </em><em>default=1.0</em>) – The time delta used to calculate velocities (defaults to 1 Myr).</p></li>
+<li><p><strong>velocity_delta_time_type</strong> (<em>{pygplates.VelocityDeltaTimeType.t_plus_delta_t_to_t</em><em>, </em><em>pygplates.VelocityDeltaTimeType.t_to_t_minus_delta_t</em><em>, </em><em>pygplates.VelocityDeltaTimeType.t_plus_minus_half_delta_t}</em><em>, </em><em>default=pygplates.VelocityDeltaTimeType.t_plus_delta_t_to_t</em>) – How the two velocity times are calculated relative to <cite>time</cite> (defaults to <code class="docutils literal notranslate"><span class="pre">[time</span> <span class="pre">+</span> <span class="pre">velocity_delta_time,</span> <span class="pre">time]</span></code>).</p></li>
+<li><p><strong>include_network_boundaries</strong> (<em>bool</em><em>, </em><em>default=False</em>) – Whether to sample along network boundaries that are not also plate boundaries (defaults to False).
+If a deforming network shares a boundary with a plate then it’ll get included regardless of this option.</p></li>
+<li><p><strong>include_topological_slab_boundaries</strong> (<em>bool</em><em>, </em><em>default=False</em>) – Whether to sample along slab boundaries (features of type <cite>gpml:TopologicalSlabBoundary</cite>).
+By default they are <em>not</em> sampled since they are <em>not</em> plate boundaries.</p></li>
+<li><p><strong>boundary_section_filter</strong> – Same as the <code class="docutils literal notranslate"><span class="pre">boundary_section_filter</span></code> argument in <cite>divergent_convergent_plate_boundaries()</cite>.
+Defaults to <code class="docutils literal notranslate"><span class="pre">None</span></code> (meaning all plate boundaries are included by default).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>total_crustal_production_rate_in_km_2_per_yr</strong> (<em>float</em>) – The total rate of crustal <em>production</em> at divergent plate boundaries (in km^2/yr) at the specified <cite>time</cite>.</p></li>
+<li><p><strong>total_crustal_destruction_rate_in_km_2_per_yr</strong> (<em>float</em>) – The total rate of crustal <em>destruction</em> at convergent plate boundaries (in km^2/yr) at the specified <cite>time</cite>.</p></li>
+</ul>
+</p>
+</dd>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>ValueError</strong> – If topology features have not been set in this <cite>PlateReconstruction</cite>.</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<p>To calculate total crustal production/destruction along plate boundaries at 50Ma:</p>
+<blockquote>
+<div><p>total_crustal_production_rate_in_km_2_per_yr, total_crustal_destruction_rate_in_km_2_per_yr = plate_reconstruction.crustal_production_destruction_rate(50)</p>
+</div></blockquote>
+<p>To do the same, but restrict convergence to points where orthogonal converging velocities are greater than 0.2 cm/yr
+(with divergence remaining unchanged with the default 0.0 threshold):</p>
+<blockquote>
+<div><dl class="simple">
+<dt>total_crustal_production_rate_in_km_2_per_yr, total_crustal_destruction_rate_in_km_2_per_yr = plate_reconstruction.crustal_production_destruction_rate(50,</dt><dd><p>convergence_velocity_threshold_in_cms_per_yr=0.2)</p>
+</dd>
+</dl>
+</div></blockquote>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="gplately.PlateReconstruction.divergent_convergent_plate_boundaries">
+<span class="sig-name descname"><span class="pre">divergent_convergent_plate_boundaries</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">time</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">uniform_point_spacing_radians</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.001</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">divergence_velocity_threshold</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">convergence_velocity_threshold</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">first_uniform_point_spacing_radians</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">anchor_plate_id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">velocity_delta_time</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">velocity_delta_time_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">pygplates.pygplates.VelocityDeltaTimeType.t_plus_delta_t_to_t</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">velocity_units</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">pygplates.pygplates.VelocityUnits.cms_per_yr</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">earth_radius_in_kms</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">6371.009</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">include_network_boundaries</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">include_topological_slab_boundaries</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">boundary_section_filter</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gplately/reconstruction.html#PlateReconstruction.divergent_convergent_plate_boundaries"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.PlateReconstruction.divergent_convergent_plate_boundaries" title="Link to this definition"></a></dt>
+<dd><p>Samples points uniformly along plate boundaries and calculates statistics at diverging/converging locations at a particular geological time.</p>
+<p>Resolves topologies at <cite>time</cite>, uniformly samples all plate boundaries into points and returns two lists of
+[pygplates.PlateBoundaryStatistic](<a class="reference external" href="https://www.gplates.org/docs/pygplates/generated/pygplates.PlateBoundaryStatistic">https://www.gplates.org/docs/pygplates/generated/pygplates.PlateBoundaryStatistic</a>).
+The first list represents sample points where the plates are diverging, and the second where plates are converging.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>time</strong> (<em>float</em>) – The reconstruction time (Ma) at which to query divergent/convergent plate boundaries.</p></li>
+<li><p><strong>uniform_point_spacing_radians</strong> (<em>float</em><em>, </em><em>default=0.001</em>) – The spacing between uniform points along plate boundaries (in radians).</p></li>
+<li><p><strong>divergence_velocity_threshold</strong> (<em>float</em><em>, </em><em>default=0.0</em>) – Orthogonal (ie, in the direction of boundary normal) velocity threshold for <em>diverging</em> sample points.
+Points with an orthogonal <em>diverging</em> velocity above this value will be returned in <cite>diverging_data</cite>.
+The default is <cite>0.0</cite> which removes all converging sample points (leaving only diverging points).
+This value can be negative which means a small amount of convergence is allowed for the diverging points.
+The units should match the units of <cite>velocity_units</cite> (eg, if that’s cm/yr then this threshold should also be in cm/yr).</p></li>
+<li><p><strong>convergence_velocity_threshold</strong> (<em>float</em><em>, </em><em>default=0.0</em>) – Orthogonal (ie, in the direction of boundary normal) velocity threshold for <em>converging</em> sample points.
+Points with an orthogonal <em>converging</em> velocity above this value will be returned in <cite>converging_data</cite>.
+The default is <cite>0.0</cite> which removes all diverging sample points (leaving only converging points).
+This value can be negative which means a small amount of divergence is allowed for the converging points.
+The units should match the units of <cite>velocity_units</cite> (eg, if that’s cm/yr then this threshold should also be in cm/yr).</p></li>
+<li><p><strong>first_uniform_point_spacing_radians</strong> (<em>float</em><em>, </em><em>optional</em>) – Spacing of first uniform point in each resolved topological section (in radians) - see
+[pygplates.TopologicalSnapshot.calculate_plate_boundary_statistics()](<a class="reference external" href="https://www.gplates.org/docs/pygplates/generated/pygplates.topologicalsnapshot#pygplates.TopologicalSnapshot.calculate_plate_boundary_statistics">https://www.gplates.org/docs/pygplates/generated/pygplates.topologicalsnapshot#pygplates.TopologicalSnapshot.calculate_plate_boundary_statistics</a>)
+for more details. Defaults to half of <cite>uniform_point_spacing_radians</cite>.</p></li>
+<li><p><strong>anchor_plate_id</strong> (<em>int</em><em>, </em><em>optional</em>) – Anchor plate ID. Defaults to the current anchor plate ID (<cite>anchor_plate_id</cite> attribute).</p></li>
+<li><p><strong>velocity_delta_time</strong> (<em>float</em><em>, </em><em>default=1.0</em>) – The time delta used to calculate velocities (defaults to 1 Myr).</p></li>
+<li><p><strong>velocity_delta_time_type</strong> (<em>{pygplates.VelocityDeltaTimeType.t_plus_delta_t_to_t</em><em>, </em><em>pygplates.VelocityDeltaTimeType.t_to_t_minus_delta_t</em><em>, </em><em>pygplates.VelocityDeltaTimeType.t_plus_minus_half_delta_t}</em><em>, </em><em>default=pygplates.VelocityDeltaTimeType.t_plus_delta_t_to_t</em>) – How the two velocity times are calculated relative to <cite>time</cite> (defaults to <code class="docutils literal notranslate"><span class="pre">[time</span> <span class="pre">+</span> <span class="pre">velocity_delta_time,</span> <span class="pre">time]</span></code>).</p></li>
+<li><p><strong>velocity_units</strong> (<em>{pygplates.VelocityUnits.cms_per_yr</em><em>, </em><em>pygplates.VelocityUnits.kms_per_my}</em><em>, </em><em>default=pygplates.VelocityUnits.cms_per_yr</em>) – Whether to return velocities in centimetres per year or kilometres per million years (defaults to centimetres per year).</p></li>
+<li><p><strong>earth_radius_in_kms</strong> (<em>float</em><em>, </em><em>default=pygplates.Earth.mean_radius_in_kms</em>) – Radius of the Earth in kilometres.
+This is only used to calculate velocities (strain rates always use <code class="docutils literal notranslate"><span class="pre">pygplates.Earth.equatorial_radius_in_kms</span></code>).</p></li>
+<li><p><strong>include_network_boundaries</strong> (<em>bool</em><em>, </em><em>default=False</em>) – Whether to sample along network boundaries that are not also plate boundaries (defaults to False).
+If a deforming network shares a boundary with a plate then it’ll get included regardless of this option.</p></li>
+<li><p><strong>include_topological_slab_boundaries</strong> (<em>bool</em><em>, </em><em>default=False</em>) – Whether to sample along slab boundaries (features of type <cite>gpml:TopologicalSlabBoundary</cite>).
+By default they are <em>not</em> sampled since they are <em>not</em> plate boundaries.</p></li>
+<li><p><strong>boundary_section_filter</strong> – Same as the <code class="docutils literal notranslate"><span class="pre">boundary_section_filter</span></code> argument in
+[pygplates.TopologicalSnapshot.calculate_plate_boundary_statistics()](<a class="reference external" href="https://www.gplates.org/docs/pygplates/generated/pygplates.topologicalsnapshot#pygplates.TopologicalSnapshot.calculate_plate_boundary_statistics">https://www.gplates.org/docs/pygplates/generated/pygplates.topologicalsnapshot#pygplates.TopologicalSnapshot.calculate_plate_boundary_statistics</a>).
+Defaults to <code class="docutils literal notranslate"><span class="pre">None</span></code> (meaning all plate boundaries are included by default).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>diverging_data</strong> (list of <cite>pygplates.PlateBoundaryStatistic</cite>) – The results for all uniformly sampled points along plate boundaries that are <em>diverging</em> relative to <cite>divergence_threshold</cite>.
+The size of the returned list is equal to the number of sampled points that are <em>diverging</em>.
+Each [pygplates.PlateBoundaryStatistic](<a class="reference external" href="https://www.gplates.org/docs/pygplates/generated/pygplates.PlateBoundaryStatistic">https://www.gplates.org/docs/pygplates/generated/pygplates.PlateBoundaryStatistic</a>) is guaranteed to have a valid (ie, not <code class="docutils literal notranslate"><span class="pre">None</span></code>)
+[convergence velocity](<a class="reference external" href="https://www.gplates.org/docs/pygplates/generated/pygplates.PlateBoundaryStatistic.html#pygplates.PlateBoundaryStatistic.convergence_velocity">https://www.gplates.org/docs/pygplates/generated/pygplates.PlateBoundaryStatistic.html#pygplates.PlateBoundaryStatistic.convergence_velocity</a>).</p></li>
+<li><p><strong>converging_data</strong> (list of <cite>pygplates.PlateBoundaryStatistic</cite>) – The results for all uniformly sampled points along plate boundaries that are <em>converging</em> relative to <cite>convergence_threshold</cite>.
+The size of the returned list is equal to the number of sampled points that are <em>converging</em>.
+Each [pygplates.PlateBoundaryStatistic](<a class="reference external" href="https://www.gplates.org/docs/pygplates/generated/pygplates.PlateBoundaryStatistic">https://www.gplates.org/docs/pygplates/generated/pygplates.PlateBoundaryStatistic</a>) is guaranteed to have a valid (ie, not <code class="docutils literal notranslate"><span class="pre">None</span></code>)
+[convergence velocity](<a class="reference external" href="https://www.gplates.org/docs/pygplates/generated/pygplates.PlateBoundaryStatistic.html#pygplates.PlateBoundaryStatistic.convergence_velocity">https://www.gplates.org/docs/pygplates/generated/pygplates.PlateBoundaryStatistic.html#pygplates.PlateBoundaryStatistic.convergence_velocity</a>).</p></li>
+</ul>
+</p>
+</dd>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>ValueError</strong> – If topology features have not been set in this <cite>PlateReconstruction</cite>.</p>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<p>To sample diverging/converging points along plate boundaries at 50Ma:</p>
+<blockquote>
+<div><p>diverging_data, converging_data = plate_reconstruction.divergent_convergent_plate_boundaries(50)</p>
+</div></blockquote>
+<p>To do the same, but restrict converging data to points where orthogonal converging velocities are greater than 0.2 cm/yr
+(with diverging data remaining unchanged with the default 0.0 threshold):</p>
+<blockquote>
+<div><dl class="simple">
+<dt>diverging_data, converging_data = plate_reconstruction.divergent_convergent_plate_boundaries(50,</dt><dd><p>convergence_velocity_threshold=0.2)</p>
+</dd>
+</dl>
+</div></blockquote>
+<p class="rubric">Notes</p>
+<p>If you want to access all sampled points regardless of their convergence/divergence you can call <cite>topological_snapshot()</cite> and then use it to directly call
+[pygplates.TopologicalSnapshot.calculate_plate_boundary_statistics()](<a class="reference external" href="https://www.gplates.org/docs/pygplates/generated/pygplates.topologicalsnapshot#pygplates.TopologicalSnapshot.calculate_plate_boundary_statistics">https://www.gplates.org/docs/pygplates/generated/pygplates.topologicalsnapshot#pygplates.TopologicalSnapshot.calculate_plate_boundary_statistics</a>).
+Then you can do your own analysis on the returned data:</p>
+<blockquote>
+<div><dl class="simple">
+<dt>plate_boundary_statistics = plate_reconstruction.topological_snapshot(</dt><dd><p>time,
+include_topological_slab_boundaries=False</p>
+</dd>
+<dt>).calculate_plate_boundary_statistics(</dt><dd><p>uniform_point_spacing_radians=0.001</p>
+</dd>
+</dl>
+<p>)</p>
+<dl>
+<dt>for stat in plate_boundary_statistics:</dt><dd><dl class="simple">
+<dt>if np.isnan(stat.convergence_velocity_orthogonal)</dt><dd><p>continue  # missing left or right plate</p>
+</dd>
+</dl>
+<p>latitude, longitude = stat.boundary_point.to_lat_lon()</p>
+</dd>
+</dl>
+</div></blockquote>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="gplately.PlateReconstruction.get_point_velocities">
+<span class="sig-name descname"><span class="pre">get_point_velocities</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">lons</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lats</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">delta_time</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">velocity_delta_time_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">pygplates.pygplates.VelocityDeltaTimeType.t_plus_delta_t_to_t</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">velocity_units</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">pygplates.pygplates.VelocityUnits.kms_per_my</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">earth_radius_in_kms</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">6371.009</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">include_networks</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">include_topological_slab_boundaries</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">anchor_plate_id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_east_north_arrays</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gplately/reconstruction.html#PlateReconstruction.get_point_velocities"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.PlateReconstruction.get_point_velocities" title="Link to this definition"></a></dt>
+<dd><p>Calculates the north and east components of the velocity vector (in kms/myr) for each specified point (from <cite>lons</cite> and <cite>lats</cite>) at a particular geological <cite>time</cite>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>lons</strong> (<em>array</em>) – A 1D array of point data’s longitudes.</p></li>
+<li><p><strong>lats</strong> (<em>array</em>) – A 1D array of point data’s latitudes.</p></li>
+<li><p><strong>time</strong> (<em>float</em>) – The specific geological time (Ma) at which to calculate plate velocities.</p></li>
+<li><p><strong>delta_time</strong> (<em>float</em><em>, </em><em>default=1.0</em>) – The time interval used for velocity calculations. 1.0Ma by default.</p></li>
+<li><p><strong>velocity_delta_time_type</strong> (<em>{pygplates.VelocityDeltaTimeType.t_plus_delta_t_to_t</em><em>, </em><em>pygplates.VelocityDeltaTimeType.t_to_t_minus_delta_t</em><em>, </em><em>pygplates.VelocityDeltaTimeType.t_plus_minus_half_delta_t}</em><em>, </em><em>default=pygplates.VelocityDeltaTimeType.t_plus_delta_t_to_t</em>) – How the two velocity times are calculated relative to <cite>time</cite> (defaults to <code class="docutils literal notranslate"><span class="pre">[time</span> <span class="pre">+</span> <span class="pre">velocity_delta_time,</span> <span class="pre">time]</span></code>).</p></li>
+<li><p><strong>velocity_units</strong> (<em>{pygplates.VelocityUnits.cms_per_yr</em><em>, </em><em>pygplates.VelocityUnits.kms_per_my}</em><em>, </em><em>default=pygplates.VelocityUnits.kms_per_my</em>) – Whether to return velocities in centimetres per year or kilometres per million years (defaults to kilometres per million years).</p></li>
+<li><p><strong>earth_radius_in_kms</strong> (<em>float</em><em>, </em><em>default=pygplates.Earth.mean_radius_in_kms</em>) – Radius of the Earth in kilometres.
+This is only used to calculate velocities (strain rates always use <code class="docutils literal notranslate"><span class="pre">pygplates.Earth.equatorial_radius_in_kms</span></code>).</p></li>
+<li><p><strong>include_networks</strong> (<em>bool</em><em>, </em><em>default=True</em>) – Whether to include deforming networks when calculating velocities.
+By default they are included (and also given precedence since they typically overlay a rigid plate).</p></li>
+<li><p><strong>include_topological_slab_boundaries</strong> (<em>bool</em><em>, </em><em>default=False</em>) – Whether to include features of type <cite>gpml:TopologicalSlabBoundary</cite> when calculating velocities.
+By default they are <strong>not</strong> included (they tend to overlay a rigid plate which should instead be used to calculate plate velocity).</p></li>
+<li><p><strong>anchor_plate_id</strong> (<em>int</em><em>, </em><em>optional</em>) – Anchor plate ID. Defaults to the current anchor plate ID (<cite>anchor_plate_id</cite> attribute).</p></li>
+<li><p><strong>return_east_north_arrays</strong> (<em>bool</em><em>, </em><em>default=False</em>) – Return the velocities as arrays separately containing the east and north components of the velocities.
+Note that setting this to True matches the output of <cite>points.plate_velocity</cite>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><strong>north_east_velocities</strong> (<em>2D ndarray</em>) – Only provided if <cite>return_east_north_arrays</cite> is False.
+Each array element contains the (north, east) velocity components of a single point.</p></li>
+<li><p><strong>east_velocities, north_velocities</strong> (<em>1D ndarray</em>) – Only provided if <cite>return_east_north_arrays</cite> is True.
+The east and north components of velocities as separate arrays.
+These are also ordered (east, north) instead of (north, east).</p></li>
+</ul>
+</p>
+</dd>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>ValueError</strong> – If topology features have not been set in this <cite>PlateReconstruction</cite>.</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>The velocities are in <em>kilometres per million years</em> by default (not <em>centimetres per year</em>, the default in <cite>Point.plate_velocity</cite>).
+This difference is maintained for backward compatibility.</p>
+<p>For each velocity, the <em>north</em> component is first followed by the <em>east</em> component.
+This is different to <cite>Point.plate_velocity</cite> where the <em>east</em> component is first.
+This difference is maintained for backward compatibility.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="gplately.PlateReconstruction.reconstruct">
+<span class="sig-name descname"><span class="pre">reconstruct</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">feature</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">to_time</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">from_time</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">anchor_plate_id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">reconstruct_type</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">pygplates.pygplates.ReconstructType.feature_geometry</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">group_with_feature</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gplately/reconstruction.html#PlateReconstruction.reconstruct"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.PlateReconstruction.reconstruct" title="Link to this definition"></a></dt>
+<dd><p>Reconstructs regular geological features, motion paths or flowlines to a specific geological time.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>feature</strong> (str/<cite>os.PathLike</cite>, or instance of &lt;pygplates.FeatureCollection&gt;, or &lt;pygplates.Feature&gt;, or sequence of &lt;pygplates.Feature&gt;) – The geological features to reconstruct. Can be provided as a feature collection, or filename,
+or feature, or sequence of features, or a sequence (eg, a list or tuple) of any combination of
+those four types.</p></li>
+<li><p><strong>to_time</strong> (<em>float</em><em>, or </em><em>pygplates.GeoTimeInstant</em>) – The specific geological time to reconstruct to.</p></li>
+<li><p><strong>from_time</strong> (<em>float</em><em>, </em><em>default=0</em>) – The specific geological time to reconstruct <em>from</em>. By default, this is set to present day.
+If not set to 0 Ma (present day) then the geometry in <cite>feature</cite> is assumed to be a reconstructed snapshot
+at <cite>from_time</cite>, in which case it is reverse reconstructed to present day before reconstructing to <cite>to_time</cite>.
+Usually features should contain present day geometry but might contain reconstructed geometry in some cases,
+such as those generated by the reconstruction export in GPlates.</p></li>
+<li><p><strong>anchor_plate_id</strong> (<em>int</em><em>, </em><em>optional</em>) – Anchor plate ID. Defaults to the current anchor plate ID (<cite>anchor_plate_id</cite> attribute).</p></li>
+<li><p><strong>reconstruct_type</strong> (<em>pygplates.ReconstructType</em><em>, </em><em>default=pygplates.ReconstructType.feature_geometry</em>) – The specific reconstruction type to generate based on input feature geometry type. Can be provided as
+pygplates.ReconstructType.feature_geometry to only reconstruct regular feature geometries, or
+pygplates.ReconstructType.motion_path to only reconstruct motion path features, or
+pygplates.ReconstructType.flowline to only reconstruct flowline features.
+Generates <a href="#id1"><span class="problematic" id="id2">`</span></a>pygplates.ReconstructedFeatureGeometry&gt;`s, or <a href="#id3"><span class="problematic" id="id4">`</span></a>pygplates.ReconstructedMotionPath`s, or
+<a href="#id5"><span class="problematic" id="id6">`</span></a>pygplates.ReconstructedFlowline`s respectively.</p></li>
+<li><p><strong>group_with_feature</strong> (<em>bool</em><em>, </em><em>default=False</em>) – Used to group reconstructed geometries with their features. This can be useful when a feature has more than one
+geometry and hence more than one reconstructed geometry. The returned list then becomes a list of tuples where
+each tuple contains a <cite>pygplates.Feature</cite> and a <code class="docutils literal notranslate"><span class="pre">list</span></code> of reconstructed geometries.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>reconstructed_features</strong> – The reconstructed geological features.
+The reconstructed geometries are output in the same order as that of their respective input features (in the
+parameter <cite>features</cite>). This includes the order across any input feature collections or files. If <cite>group_with_feature</cite>
+is True then the list contains tuples that group each <cite>pygplates.Feature</cite> with a list of its reconstructed geometries.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list</p>
+</dd>
+</dl>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><a class="reference internal" href="../gplately.html#gplately.PlateReconstruction.reconstruct_snapshot" title="gplately.PlateReconstruction.reconstruct_snapshot"><code class="xref py py-obj docutils literal notranslate"><span class="pre">reconstruct_snapshot</span></code></a></p>
+</div>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="gplately.PlateReconstruction.reconstruct_snapshot">
+<span class="sig-name descname"><span class="pre">reconstruct_snapshot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">reconstructable_features</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">anchor_plate_id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">from_time</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gplately/reconstruction.html#PlateReconstruction.reconstruct_snapshot"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.PlateReconstruction.reconstruct_snapshot" title="Link to this definition"></a></dt>
+<dd><p>Create a snapshot of reconstructed regular features (including motion paths and flowlines) at a specific geological time.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>reconstructable_features</strong> (str/<cite>os.PathLike</cite>, or a sequence (eg, <cite>list</cite> or <cite>tuple</cite>) of instances of &lt;pygplates.Feature&gt;, or a single instance of &lt;pygplates.Feature&gt;, or an instance of &lt;pygplates.FeatureCollection&gt;) – Regular reconstructable features (including motion paths and flowlines). Can be provided as a feature collection, or
+filename, or feature, or sequence of features, or a sequence (eg, list or tuple) of any combination of those four types.</p></li>
+<li><p><strong>time</strong> (<em>float</em><em>, or </em><em>pygplates.GeoTimeInstant</em>) – The specific geological time to reconstruct to.</p></li>
+<li><p><strong>anchor_plate_id</strong> (<em>int</em><em>, </em><em>optional</em>) – Anchor plate ID. Defaults to the current anchor plate ID (<cite>anchor_plate_id</cite> attribute).</p></li>
+<li><p><strong>from_time</strong> (<em>float</em><em>, </em><em>default=0</em>) – The specific geological time to reconstruct <em>from</em>. By default, this is set to present day.
+If not set to 0 Ma (present day) then the geometry in <cite>feature</cite> is assumed to be a reconstructed snapshot
+at <cite>from_time</cite>, in which case it is reverse reconstructed to present day before reconstructing to <cite>to_time</cite>.
+Usually features should contain present day geometry but might contain reconstructed geometry in some cases,
+such as those generated by the reconstruction export in GPlates.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>reconstruct_snapshot</strong> – A [pygplates.ReconstructSnapshot](<a class="reference external" href="https://www.gplates.org/docs/pygplates/generated/pygplates.ReconstructSnapshot">https://www.gplates.org/docs/pygplates/generated/pygplates.ReconstructSnapshot</a>)
+of the specified reconstructable features reconstructed using the internal rotation model to the specified reconstruction time.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>pygplates.ReconstructSnapshot</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="gplately.PlateReconstruction.static_polygons_snapshot">
+<span class="sig-name descname"><span class="pre">static_polygons_snapshot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">time</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">anchor_plate_id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gplately/reconstruction.html#PlateReconstruction.static_polygons_snapshot"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.PlateReconstruction.static_polygons_snapshot" title="Link to this definition"></a></dt>
+<dd><p>Create a reconstructed snapshot of the static polygons at the specified reconstruction time.</p>
+<p>This returns a [pygplates.ReconstructSnapshot](<a class="reference external" href="https://www.gplates.org/docs/pygplates/generated/pygplates.ReconstructSnapshot">https://www.gplates.org/docs/pygplates/generated/pygplates.ReconstructSnapshot</a>)
+from which you can extract reconstructed static polygons, find reconstructed polygons containing points and calculate velocities at point locations, etc.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>time</strong> (<em>float</em><em>, </em><em>int</em><em> or </em><em>pygplates.GeoTimeInstant</em>) – The geological time at which to create the reconstructed static polygons snapshot.</p></li>
+<li><p><strong>anchor_plate_id</strong> (<em>int</em><em>, </em><em>optional</em>) – The anchored plate id to use when reconstructing the static polygons.
+If not specified then uses the current anchor plate (<cite>anchor_plate_id</cite> attribute).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>static_polygons_snapshot</strong> – The reconstructed static polygons [snapshot](<a class="reference external" href="https://www.gplates.org/docs/pygplates/generated/pygplates.ReconstructSnapshot">https://www.gplates.org/docs/pygplates/generated/pygplates.ReconstructSnapshot</a>)
+at the specified <cite>time</cite> (and anchor plate).</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><cite>pygplates.ReconstructSnapshot</cite></p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>ValueError</strong> – If static polygons have not been set in this <cite>PlateReconstruction</cite>.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="gplately.PlateReconstruction.tessellate_mid_ocean_ridges">
+<span class="sig-name descname"><span class="pre">tessellate_mid_ocean_ridges</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">time,</span> <span class="pre">tessellation_threshold_radians=0.001,</span> <span class="pre">ignore_warnings=False,</span> <span class="pre">return_geodataframe=False,</span> <span class="pre">*,</span> <span class="pre">use_ptt=False,</span> <span class="pre">spreading_feature_types=[&lt;pygplates.pygplates.FeatureType</span> <span class="pre">object&gt;],</span> <span class="pre">transform_segment_deviation_in_radians=1.2217304763960306,</span> <span class="pre">include_network_boundaries=False,</span> <span class="pre">divergence_threshold_in_cm_per_yr=None,</span> <span class="pre">output_obliquity_and_normal_and_left_right_plates=False,</span> <span class="pre">anchor_plate_id=None,</span> <span class="pre">velocity_delta_time=1.0</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gplately/reconstruction.html#PlateReconstruction.tessellate_mid_ocean_ridges"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.PlateReconstruction.tessellate_mid_ocean_ridges" title="Link to this definition"></a></dt>
+<dd><p>Samples points along resolved spreading features (e.g. mid-ocean ridges) and calculates spreading rates and
+lengths of ridge segments at a particular geological time.</p>
+<p>Resolves topologies at <cite>time</cite> and tessellates all resolved spreading features into points.</p>
+<p>The transform segments of spreading features are ignored (unless <cite>transform_segment_deviation_in_radians</cite> is <cite>None</cite>).</p>
+<p>Returns a 4-column vertically stacked tuple with the following data per sampled ridge point
+(depending on <cite>output_obliquity_and_normal_and_left_right_plates</cite>):</p>
+<p>If <cite>output_obliquity_and_normal_and_left_right_plates</cite> is <cite>False</cite> (the default):</p>
+<ul class="simple">
+<li><p>Col. 0 - longitude of sampled ridge point</p></li>
+<li><p>Col. 1 - latitude of sampled ridge point</p></li>
+<li><p>Col. 2 - spreading velocity magnitude (in cm/yr)</p></li>
+<li><p>Col. 3 - length of arc segment (in degrees) that current point is on</p></li>
+</ul>
+<p>If <cite>output_obliquity_and_normal_and_left_right_plates</cite> is <cite>True</cite>:</p>
+<ul class="simple">
+<li><p>Col. 0 - longitude of sampled ridge point</p></li>
+<li><p>Col. 1 - latitude of sampled ridge point</p></li>
+<li><p>Col. 2 - spreading velocity magnitude (in cm/yr)</p></li>
+<li><p>Col. 3 - spreading obliquity in degrees (deviation from normal line in range 0 to 90 degrees)</p></li>
+<li><p>Col. 4 - length of arc segment (in degrees) that current point is on</p></li>
+<li><p>Col. 5 - azimuth of vector normal to the arc segment in degrees (clockwise starting at North, ie, 0 to 360 degrees)</p></li>
+<li><p>Col. 6 - left plate ID</p></li>
+<li><p>Col. 7 - right plate ID</p></li>
+</ul>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>time</strong> (<em>float</em>) – The reconstruction time (Ma) at which to query spreading rates.</p></li>
+<li><p><strong>tessellation_threshold_radians</strong> (<em>float</em><em>, </em><em>default=0.001</em>) – The threshold sampling distance along the plate boundaries (in radians).</p></li>
+<li><p><strong>ignore_warnings</strong> (<em>bool</em><em>, </em><em>default=False</em>) – Choose to ignore warnings from Plate Tectonic Tools’ ridge_spreading_rate workflow (if <cite>use_ptt</cite> is <cite>True</cite>).</p></li>
+<li><p><strong>return_geodataframe</strong> (<em>bool</em><em>, </em><em>default=False</em>) – Choose to return data in a geopandas.GeoDataFrame.</p></li>
+<li><p><strong>use_ptt</strong> (<em>bool</em><em>, </em><em>default=False</em>) – If set to <cite>True</cite> then uses Plate Tectonic Tools’ <cite>ridge_spreading_rate</cite> workflow to calculate ridge spreading rates
+(which uses the spreading stage rotation of the left/right plate IDs calculate spreading velocities).
+If set to <cite>False</cite> then uses plate divergence to calculate ridge spreading rates
+(which samples velocities of the two adjacent boundary plates at each sampled point to calculate spreading velocities).
+Plate divergence is the more general approach that works along all plate boundaries (not just mid-ocean ridges).</p></li>
+<li><p><strong>spreading_feature_types</strong> (<em>&lt;pygplates.FeatureType&gt;</em><em> or </em><em>sequence</em><em> of </em><em>&lt;pygplates.FeatureType&gt;</em><em>, </em><em>default=`pygplates.FeatureType.gpml_mid_ocean_ridge`</em>) – Only sample points along plate boundaries of the specified feature types.
+Default is to only sample mid-ocean ridges.
+You can explicitly specify <cite>None</cite> to sample all plate boundaries, but note that if <cite>use_ptt</cite> is <cite>True</cite>
+then only plate boundaries that are spreading feature types are sampled
+(since Plate Tectonic Tools only works on <em>spreading</em> plate boundaries, eg, mid-ocean ridges).</p></li>
+<li><p><strong>transform_segment_deviation_in_radians</strong> (<em>float</em><em>, </em><em>default=&lt;implementation-defined&gt;</em>) – How much a spreading direction can deviate from the segment normal before it’s considered a transform segment (in radians).
+The default value has been empirically determined to give the best results for typical models.
+If <cite>None</cite> then the full feature geometry is used (ie, it is not split into ridge and transform segments with the transform segments getting ignored).</p></li>
+<li><p><strong>include_network_boundaries</strong> (<em>bool</em><em>, </em><em>default=False</em>) – Whether to calculate spreading rate along network boundaries that are not also plate boundaries (defaults to False).
+If a deforming network shares a boundary with a plate then it’ll get included regardless of this option.
+Since spreading features occur along <em>plate</em> boundaries this would only be an issue if an intra-plate network boundary was incorrectly labelled as spreading.</p></li>
+<li><p><strong>divergence_threshold_in_cm_per_yr</strong> (<em>float</em><em>, </em><em>optional</em>) – Only return sample points with an orthogonal (ie, in the spreading geometry’s normal direction) diverging velocity above this value (in cm/yr).
+For example, setting this to <cite>0.0</cite> would remove all converging sample points (leaving only diverging points).
+This value can be negative which means a small amount of convergence is allowed.
+If <cite>None</cite> then all (diverging and converging) sample points are returned.
+This is the default since <cite>spreading_feature_types</cite> is instead used (by default) to include only plate boundaries that are typically diverging (eg, mid-ocean ridges).
+However, setting <cite>spreading_feature_types</cite> to <cite>None</cite> (and <cite>transform_segment_deviation_in_radians</cite> to <cite>None</cite>) and explicitly specifying this parameter (eg, to <cite>0.0</cite>)
+can be used to find points along all plate boundaries that are diverging.
+However, this parameter can only be specified if <cite>use_ptt</cite> is <cite>False</cite>.</p></li>
+<li><p><strong>output_obliquity_and_normal_and_left_right_plates</strong> (<em>bool</em><em>, </em><em>default=False</em>) – Whether to also return spreading obliquity, normal azimuth and left/right plates.</p></li>
+<li><p><strong>anchor_plate_id</strong> (<em>int</em><em>, </em><em>optional</em>) – Anchor plate ID. Defaults to the current anchor plate ID (<cite>anchor_plate_id</cite> attribute)..</p></li>
+<li><p><strong>velocity_delta_time</strong> (<em>float</em><em>, </em><em>default=1.0</em>) – Velocity delta time used in spreading velocity calculations (defaults to 1 Myr).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><p><strong>ridge_data</strong> – The results for all tessellated points sampled along the mid-ocean ridges.
+The size of the returned list is equal to the number of tessellated points.
+Each tuple in the list corresponds to a tessellated point and has the following tuple items
+(depending on <cite>output_obliquity_and_normal_and_left_right_plates</cite>):</p>
+<p>If <cite>output_obliquity_and_normal_and_left_right_plates</cite> is <cite>False</cite> (the default):</p>
+<ul class="simple">
+<li><p>longitude of sampled point</p></li>
+<li><p>latitude of sampled point</p></li>
+<li><p>spreading velocity magnitude (in cm/yr)</p></li>
+<li><p>length of arc segment (in degrees) that sampled point is on</p></li>
+</ul>
+<p>If <cite>output_obliquity_and_normal_and_left_right_plates</cite> is <cite>True</cite>:</p>
+<ul class="simple">
+<li><p>longitude of sampled point</p></li>
+<li><p>latitude of sampled point</p></li>
+<li><p>spreading velocity magnitude (in cm/yr)</p></li>
+<li><p>spreading obliquity in degrees (deviation from normal line in range 0 to 90 degrees)</p></li>
+<li><p>length of arc segment (in degrees) that sampled point is on</p></li>
+<li><p>azimuth of vector normal to the arc segment in degrees (clockwise starting at North, ie, 0 to 360 degrees)</p></li>
+<li><p>left plate ID</p></li>
+<li><p>right plate ID</p></li>
+</ul>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>a list of vertically-stacked tuples</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>ValueError</strong> – If topology features have not been set in this <cite>PlateReconstruction</cite>.</p></li>
+<li><p><strong>ValueError</strong> – If <cite>use_ptt</cite> is <cite>True</cite> and <cite>divergence_threshold_in_cm_per_yr</cite> is not <cite>None</cite>.</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>If <cite>use_ptt</cite> is False then each ridge segment is sampled at <em>exactly</em> uniform intervals along its length such that the sampled points
+have a uniform spacing (along each ridge segment polyline) that is <em>equal</em> to <cite>tessellation_threshold_radians</cite>.
+If <cite>use_ptt</cite> is True then each ridge segment is sampled at <em>approximately</em> uniform intervals along its length such that the sampled points
+have a uniform spacing (along each ridge segment polyline) that is <em>less than or equal to</em> <cite>tessellation_threshold_radians</cite>.</p>
+<p class="rubric">Examples</p>
+<p>To sample points along mid-ocean ridges at 50Ma, but ignoring the transform segments (of the ridges):</p>
+<blockquote>
+<div><p>ridge_data = plate_reconstruction.tessellate_mid_ocean_ridges(50)</p>
+</div></blockquote>
+<p>To do the same, but instead of ignoring transform segments include both ridge and transform segments,
+but only where orthogonal diverging velocities are greater than 0.2 cm/yr:</p>
+<blockquote>
+<div><dl class="simple">
+<dt>ridge_data = plate_reconstruction.tessellate_mid_ocean_ridges(50,</dt><dd><p>transform_segment_deviation_in_radians=None,
+divergence_threshold_in_cm_per_yr=0.2)</p>
+</dd>
+</dl>
+</div></blockquote>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="gplately.PlateReconstruction.tessellate_subduction_zones">
+<span class="sig-name descname"><span class="pre">tessellate_subduction_zones</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">time</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tessellation_threshold_radians</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.001</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ignore_warnings</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_geodataframe</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_ptt</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">include_network_boundaries</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">convergence_threshold_in_cm_per_yr</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">anchor_plate_id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">velocity_delta_time</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_distance_to_nearest_edge_of_trench</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_distance_to_start_edge_of_trench</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_convergence_velocity_components</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_trench_absolute_velocity_components</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_subducting_absolute_velocity</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_subducting_absolute_velocity_components</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_trench_normal</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gplately/reconstruction.html#PlateReconstruction.tessellate_subduction_zones"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.PlateReconstruction.tessellate_subduction_zones" title="Link to this definition"></a></dt>
+<dd><p>Samples points along subduction zone trenches and obtains subduction data at a particular geological time.</p>
+<p>Resolves topologies at <cite>time</cite> and tessellates all resolved subducting features into points.</p>
+<p>Returns a 10-column vertically-stacked tuple with the following data per sampled trench point:</p>
+<ul class="simple">
+<li><p>Col. 0 - longitude of sampled trench point</p></li>
+<li><p>Col. 1 - latitude of sampled trench point</p></li>
+<li><p>Col. 2 - subducting convergence (relative to trench) velocity magnitude (in cm/yr)</p></li>
+<li><p>Col. 3 - subducting convergence velocity obliquity angle in degrees (angle between trench normal vector and convergence velocity vector)</p></li>
+<li><p>Col. 4 - trench absolute (relative to anchor plate) velocity magnitude (in cm/yr)</p></li>
+<li><p>Col. 5 - trench absolute velocity obliquity angle in degrees (angle between trench normal vector and trench absolute velocity vector)</p></li>
+<li><p>Col. 6 - length of arc segment (in degrees) that current point is on</p></li>
+<li><p>Col. 7 - trench normal (in subduction direction, ie, towards overriding plate) azimuth angle (clockwise starting at North, ie, 0 to 360 degrees) at current point</p></li>
+<li><p>Col. 8 - subducting plate ID</p></li>
+<li><p>Col. 9 - trench plate ID</p></li>
+</ul>
+<p>The optional ‘output_*’ parameters can be used to append extra data to the output tuple of each sampled trench point.
+The order of any extra data is the same order in which the parameters are listed below.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>time</strong> (<em>float</em>) – The reconstruction time (Ma) at which to query subduction convergence.</p></li>
+<li><p><strong>tessellation_threshold_radians</strong> (<em>float</em><em>, </em><em>default=0.001</em>) – The threshold sampling distance along the plate boundaries (in radians).</p></li>
+<li><p><strong>ignore_warnings</strong> (<em>bool</em><em>, </em><em>default=False</em>) – Choose to ignore warnings from Plate Tectonic Tools’ subduction_convergence workflow (if <cite>use_ptt</cite> is <cite>True</cite>).</p></li>
+<li><p><strong>return_geodataframe</strong> (<em>bool</em><em>, </em><em>default=False</em>) – Choose to return data in a geopandas.GeoDataFrame.</p></li>
+<li><p><strong>use_ptt</strong> (<em>bool</em><em>, </em><em>default=False</em>) – If set to <cite>True</cite> then uses Plate Tectonic Tools’ <cite>subduction_convergence</cite> workflow to calculate subduction convergence
+(which uses the subducting stage rotation of the subduction/trench plate IDs calculate subducting velocities).
+If set to <cite>False</cite> then uses plate convergence to calculate subduction convergence
+(which samples velocities of the two adjacent boundary plates at each sampled point to calculate subducting velocities).
+Both methods ignore plate boundaries that do not have a subduction polarity (feature property), which essentially means
+they only sample subduction zones.</p></li>
+<li><p><strong>include_network_boundaries</strong> (<em>bool</em><em>, </em><em>default=False</em>) – Whether to calculate subduction convergence along network boundaries that are not also plate boundaries (defaults to False).
+If a deforming network shares a boundary with a plate then it’ll get included regardless of this option.
+Since subduction zones occur along <em>plate</em> boundaries this would only be an issue if an intra-plate network boundary was incorrectly labelled as subducting.</p></li>
+<li><p><strong>convergence_threshold_in_cm_per_yr</strong> (<em>float</em><em>, </em><em>optional</em>) – Only return sample points with an orthogonal (ie, in the subducting geometry’s normal direction) converging velocity above this value (in cm/yr).
+For example, setting this to <cite>0.0</cite> would remove all diverging sample points (leaving only converging points).
+This value can be negative which means a small amount of divergence is allowed.
+If <cite>None</cite> then all (converging and diverging) sample points are returned. This is the default.
+Note that this parameter can only be specified if <cite>use_ptt</cite> is <cite>False</cite>.</p></li>
+<li><p><strong>anchor_plate_id</strong> (<em>int</em><em>, </em><em>optional</em>) – Anchor plate ID. Defaults to the current anchor plate ID (<cite>anchor_plate_id</cite> attribute)..</p></li>
+<li><p><strong>velocity_delta_time</strong> (<em>float</em><em>, </em><em>default=1.0</em>) – Velocity delta time used in convergence velocity calculations (defaults to 1 Myr).</p></li>
+<li><p><strong>output_distance_to_nearest_edge_of_trench</strong> (<em>bool</em><em>, </em><em>default=False</em>) – Append the distance (in degrees) along the trench line to the nearest trench edge to each returned sample point.
+A trench edge is the farthermost location on the current trench feature that contributes to a plate boundary.</p></li>
+<li><p><strong>output_distance_to_start_edge_of_trench</strong> (<em>bool</em><em>, </em><em>default=False</em>) – Append the distance (in degrees) along the trench line from the start edge of the trench to each returned sample point.
+The start of the trench is along the clockwise direction around the overriding plate.</p></li>
+<li><p><strong>output_convergence_velocity_components</strong> (<em>bool</em><em>, </em><em>default=False</em>) – Append the convergence velocity orthogonal and parallel components (in cm/yr) to each returned sample point.
+Orthogonal is normal to trench (in direction of overriding plate when positive).
+Parallel is along trench (90 degrees clockwise from trench normal when positive).</p></li>
+<li><p><strong>output_trench_absolute_velocity_components</strong> (<em>bool</em><em>, </em><em>default=False</em>) – Append the trench absolute velocity orthogonal and parallel components (in cm/yr) to each returned sample point.
+Orthogonal is normal to trench (in direction of overriding plate when positive).
+Parallel is along trench (90 degrees clockwise from trench normal when positive).</p></li>
+<li><p><strong>output_subducting_absolute_velocity</strong> (<em>bool</em><em>, </em><em>default=False</em>) – Append the subducting plate absolute velocity magnitude (in cm/yr) and obliquity angle (in degrees) to each returned sample point.</p></li>
+<li><p><strong>output_subducting_absolute_velocity_components</strong> (<em>bool</em><em>, </em><em>default=False</em>) – Append the subducting plate absolute velocity orthogonal and parallel components (in cm/yr) to each returned sample point.
+Orthogonal is normal to trench (in direction of overriding plate when positive).
+Parallel is along trench (90 degrees clockwise from trench normal when positive).</p></li>
+<li><p><strong>output_trench_normal</strong> (<em>bool</em><em>, </em><em>default=False</em>) – Append the x, y and z components of the trench normal unit-length 3D vectors.
+These vectors are normal to the trench in the direction of subduction (towards overriding plate).
+These are global 3D vectors which differ from trench normal azimuth angles (ie, angles relative to North).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><p><strong>subduction_data</strong> – The results for all tessellated points sampled along the trench.
+The size of the returned list is equal to the number of tessellated points.
+Each tuple in the list corresponds to a tessellated point and has the following tuple items:</p>
+<ul class="simple">
+<li><p>Col. 0 - longitude of sampled trench point</p></li>
+<li><p>Col. 1 - latitude of sampled trench point</p></li>
+<li><p>Col. 2 - subducting convergence (relative to trench) velocity magnitude (in cm/yr)</p></li>
+<li><p>Col. 3 - subducting convergence velocity obliquity angle in degrees (angle between trench normal vector and convergence velocity vector)</p></li>
+<li><p>Col. 4 - trench absolute (relative to anchor plate) velocity magnitude (in cm/yr)</p></li>
+<li><p>Col. 5 - trench absolute velocity obliquity angle in degrees (angle between trench normal vector and trench absolute velocity vector)</p></li>
+<li><p>Col. 6 - length of arc segment (in degrees) that current point is on</p></li>
+<li><p>Col. 7 - trench normal (in subduction direction, ie, towards overriding plate) azimuth angle (clockwise starting at North, ie, 0 to 360 degrees) at current point</p></li>
+<li><p>Col. 8 - subducting plate ID</p></li>
+<li><p>Col. 9 - trench plate ID</p></li>
+</ul>
+<p>The optional ‘output_*’ parameters can be used to append extra data to the tuple of each sampled trench point.
+The order of any extra data is the same order in which the parameters are listed in this function.</p>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>a list of vertically-stacked tuples</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>ValueError</strong> – If topology features have not been set in this <cite>PlateReconstruction</cite>.</p></li>
+<li><p><strong>ValueError</strong> – If <cite>use_ptt</cite> is <cite>True</cite> and <cite>convergence_threshold_in_cm_per_yr</cite> is not <cite>None</cite>.</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>If <cite>use_ptt</cite> is False then each trench is sampled at <em>exactly</em> uniform intervals along its length such that the sampled points
+have a uniform spacing (along each trench polyline) that is <em>equal</em> to <cite>tessellation_threshold_radians</cite>.
+If <cite>use_ptt</cite> is True then each trench is sampled at <em>approximately</em> uniform intervals along its length such that the sampled points
+have a uniform spacing (along each trench polyline) that is <em>less than or equal to</em> <cite>tessellation_threshold_radians</cite>.</p>
+<p>The trench normal (at each sampled trench point) always points <em>towards</em> the overriding plate.
+The obliquity angles are in the range (-180, 180). The range (0, 180) goes clockwise (when viewed from above the Earth)
+from the trench normal direction to the velocity vector. The range (0, -180) goes counter-clockwise.
+You can change the range (-180, 180) to the range (0, 360) by adding 360 to negative angles.
+The trench normal is perpendicular to the trench and pointing toward the overriding plate.</p>
+<p>Note that the convergence velocity magnitude is negative if the plates are diverging (if convergence obliquity angle
+is greater than 90 or less than -90). And note that the trench absolute velocity magnitude is negative if the trench
+(subduction zone) is moving towards the overriding plate (if trench absolute obliquity angle is less than 90 and greater
+than -90) - note that this ignores the kinematics of the subducting plate. Similiarly for the subducting plate absolute
+velocity magnitude (if keyword argument <cite>output_subducting_absolute_velocity</cite> is True).</p>
+<p>The trench plate ID at each sample point can differ from the overriding plate ID.
+This is because, even in a non-deforming model, the smaller plates (not modelled by topologies) can move differently
+than the larger topological plate. So the trench line has the plate IDs of the smaller plates.</p>
+<p class="rubric">Examples</p>
+<p>To sample points along subduction zones at 50Ma:</p>
+<blockquote>
+<div><p>subduction_data = plate_reconstruction.tessellate_subduction_zones(50)</p>
+</div></blockquote>
+<p>To sample points along subduction zones at 50Ma, but only where there’s convergence:</p>
+<blockquote>
+<div><dl class="simple">
+<dt>subduction_data = plate_reconstruction.tessellate_subduction_zones(50,</dt><dd><p>convergence_threshold_in_cm_per_yr=0.0)</p>
+</dd>
+</dl>
+</div></blockquote>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="gplately.PlateReconstruction.topological_snapshot">
+<span class="sig-name descname"><span class="pre">topological_snapshot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">time</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">anchor_plate_id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">include_topological_slab_boundaries</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gplately/reconstruction.html#PlateReconstruction.topological_snapshot"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.PlateReconstruction.topological_snapshot" title="Link to this definition"></a></dt>
+<dd><p>Create a snapshot of resolved topologies at the specified reconstruction time.</p>
+<p>This returns a [pygplates.TopologicalSnapshot](<a class="reference external" href="https://www.gplates.org/docs/pygplates/generated/pygplates.TopologicalSnapshot">https://www.gplates.org/docs/pygplates/generated/pygplates.TopologicalSnapshot</a>)
+from which you can extract resolved topologies, calculate velocities at point locations, calculate plate boundary statistics, etc.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>time</strong> (<em>float</em><em>, </em><em>int</em><em> or </em><em>pygplates.GeoTimeInstant</em>) – The geological time at which to create the topological snapshot.</p></li>
+<li><p><strong>anchor_plate_id</strong> (<em>int</em><em>, </em><em>optional</em>) – The anchored plate id to use when resolving topologies.
+If not specified then uses the current anchor plate (<cite>anchor_plate_id</cite> attribute).</p></li>
+<li><p><strong>include_topological_slab_boundaries</strong> (<em>bool</em><em>, </em><em>default=True</em>) – Include topological boundary features of type <cite>gpml:TopologicalSlabBoundary</cite>.
+By default all features passed into constructor (<cite>__init__</cite>) are included in the snapshot.
+However setting this to False is useful when you’re only interested in <em>plate</em> boundaries.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>topological_snapshot</strong> – The [topological snapshot](<a class="reference external" href="https://www.gplates.org/docs/pygplates/generated/pygplates.TopologicalSnapshot">https://www.gplates.org/docs/pygplates/generated/pygplates.TopologicalSnapshot</a>)
+at the specified <cite>time</cite> (and anchor plate).</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><cite>pygplates.TopologicalSnapshot</cite></p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>ValueError</strong> – If topology features have not been set in this <cite>PlateReconstruction</cite>.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="gplately.PlateReconstruction.total_continental_arc_length">
+<span class="sig-name descname"><span class="pre">total_continental_arc_length</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">time</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">continental_grid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">trench_arc_distance</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ignore_warnings</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_ptt</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">include_network_boundaries</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">convergence_threshold_in_cm_per_yr</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gplately/reconstruction.html#PlateReconstruction.total_continental_arc_length"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.PlateReconstruction.total_continental_arc_length" title="Link to this definition"></a></dt>
+<dd><p>Calculates the total length of all global continental arcs (km) at the specified geological time (Ma).</p>
+<p>Resolves topologies at <cite>time</cite> and tessellates all resolved subducting features into points (see <cite>tessellate_subduction_zones</cite>).
+The resolved points then are projected out by the <cite>trench_arc_distance</cite> (towards overriding plate) and their new locations are
+linearly interpolated onto the supplied <cite>continental_grid</cite>. If the projected trench points lie in the grid, they are considered
+continental arc points, and their arc segment lengths are appended to the total continental arc length for the specified <cite>time</cite>.
+The total length is scaled to kilometres using the geocentric radius (at each sampled point).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>time</strong> (<em>int</em>) – The geological time at which to calculate total continental arc lengths.</p></li>
+<li><p><strong>continental_grid</strong> (<a class="reference internal" href="../gplately.html#gplately.Raster" title="gplately.Raster"><em>Raster</em></a><em>, </em><em>array_like</em><em>, or </em><em>str</em>) – The continental grid used to identify continental arc points. Must
+be convertible to <cite>gplately.Raster</cite>. For an array, a global extent is
+assumed [-180,180,-90,90]. For a filename, the extent is obtained
+from the file.</p></li>
+<li><p><strong>trench_arc_distance</strong> (<em>float</em>) – The trench-to-arc distance (in kilometres) to project sampled trench points out by in the direction of the overriding plate.</p></li>
+<li><p><strong>ignore_warnings</strong> (<em>bool</em><em>, </em><em>default=True</em>) – Choose whether to ignore warning messages from Plate Tectonic Tools’ subduction_convergence workflow (if <cite>use_ptt</cite> is <cite>True</cite>)
+that alerts the user of subduction sub-segments that are ignored due to unidentified polarities and/or subducting plates.</p></li>
+<li><p><strong>use_ptt</strong> (<em>bool</em><em>, </em><em>default=False</em>) – If set to <cite>True</cite> then uses Plate Tectonic Tools’ <cite>subduction_convergence</cite> workflow to sample subducting features and their subduction polarities.
+If set to <cite>False</cite> then uses plate convergence instead.
+Plate convergence is the more general approach that works along all plate boundaries (not just subduction zones).</p></li>
+<li><p><strong>include_network_boundaries</strong> (<em>bool</em><em>, </em><em>default=False</em>) – Whether to sample subducting features along network boundaries that are not also plate boundaries (defaults to False).
+If a deforming network shares a boundary with a plate then it’ll get included regardless of this option.
+Since subduction zones occur along <em>plate</em> boundaries this would only be an issue if an intra-plate network boundary was incorrectly labelled as subducting.</p></li>
+<li><p><strong>convergence_threshold_in_cm_per_yr</strong> (<em>float</em><em>, </em><em>optional</em>) – Only sample points with an orthogonal (ie, in the subducting geometry’s normal direction) converging velocity above this value (in cm/yr).
+For example, setting this to <cite>0.0</cite> would remove all diverging sample points (leaving only converging points).
+This value can be negative which means a small amount of divergence is allowed.
+If <cite>None</cite> then all (converging and diverging) points are sampled. This is the default.
+Note that this parameter can only be specified if <cite>use_ptt</cite> is <cite>False</cite>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>total_continental_arc_length_kms</strong> – The continental arc length (in km) at the specified time.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>ValueError</strong> – If topology features have not been set in this <cite>PlateReconstruction</cite>.</p></li>
+<li><p><strong>ValueError</strong> – If <cite>use_ptt</cite> is <cite>True</cite> and <cite>convergence_threshold_in_cm_per_yr</cite> is not <cite>None</cite>.</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<p>To calculate the total length of continental arcs at 50Ma:</p>
+<blockquote>
+<div><p>total_continental_arc_length_kms = plate_reconstruction.total_continental_arc_length(50)</p>
+</div></blockquote>
+<p>To calculate the total length of subduction zones adjacent to continents at 50Ma, but only where there’s actual convergence:</p>
+<blockquote>
+<div><dl class="simple">
+<dt>total_continental_arc_length_kms = plate_reconstruction.total_continental_arc_length(50,</dt><dd><p>convergence_threshold_in_cm_per_yr=0.0)</p>
+</dd>
+</dl>
+</div></blockquote>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="gplately.PlateReconstruction.total_ridge_length">
+<span class="sig-name descname"><span class="pre">total_ridge_length</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="pre">time,</span> <span class="pre">use_ptt=False,</span> <span class="pre">ignore_warnings=False,</span> <span class="pre">*,</span> <span class="pre">spreading_feature_types=[&lt;pygplates.pygplates.FeatureType</span> <span class="pre">object&gt;],</span> <span class="pre">transform_segment_deviation_in_radians=1.2217304763960306,</span> <span class="pre">include_network_boundaries=False,</span> <span class="pre">divergence_threshold_in_cm_per_yr=None</span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gplately/reconstruction.html#PlateReconstruction.total_ridge_length"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.PlateReconstruction.total_ridge_length" title="Link to this definition"></a></dt>
+<dd><p>Calculates the total length of all resolved spreading features (e.g. mid-ocean ridges) at the specified geological time (Ma).</p>
+<p>Resolves topologies at <cite>time</cite> and tessellates all resolved spreading features into points (see <cite>tessellate_mid_ocean_ridges</cite>).</p>
+<p>The transform segments of spreading features are ignored (unless <em>transform_segment_deviation_in_radians</em> is <cite>None</cite>).</p>
+<p>Total length is calculated by sampling points along the resolved spreading features (e.g. mid-ocean ridges) and accumulating their lengths
+(see <cite>tessellate_mid_ocean_ridges</cite>). Scales lengths to kilometres using the geocentric radius (at each sampled point).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>time</strong> (<em>int</em>) – The geological time at which to calculate total mid-ocean ridge lengths.</p></li>
+<li><p><strong>use_ptt</strong> (<em>bool</em><em>, </em><em>default=False</em>) – If set to <cite>True</cite> then uses Plate Tectonic Tools’ <cite>ridge_spreading_rate</cite> workflow to calculate total ridge length
+(which uses the spreading stage rotation of the left/right plate IDs to calculate spreading directions - see <cite>transform_segment_deviation_in_radians</cite>).
+If set to <cite>False</cite> then uses plate divergence to calculate total ridge length (which samples velocities of the two adjacent
+boundary plates at each sampled point to calculate spreading directions - see <cite>transform_segment_deviation_in_radians</cite>).
+Plate divergence is the more general approach that works along all plate boundaries (not just mid-ocean ridges).</p></li>
+<li><p><strong>ignore_warnings</strong> (<em>bool</em><em>, </em><em>default=False</em>) – Choose to ignore warnings from Plate Tectonic Tools’ ridge_spreading_rate workflow (if <cite>use_ptt</cite> is <cite>True</cite>).</p></li>
+<li><p><strong>spreading_feature_types</strong> (<em>&lt;pygplates.FeatureType&gt;</em><em> or </em><em>sequence</em><em> of </em><em>&lt;pygplates.FeatureType&gt;</em><em>, </em><em>default=`pygplates.FeatureType.gpml_mid_ocean_ridge`</em>) – Only count lengths along plate boundaries of the specified feature types.
+Default is to only sample mid-ocean ridges.
+You can explicitly specify <cite>None</cite> to sample all plate boundaries, but note that if <cite>use_ptt</cite> is <cite>True</cite>
+then only plate boundaries that are spreading feature types are sampled
+(since Plate Tectonic Tools only works on <em>spreading</em> plate boundaries, eg, mid-ocean ridges).</p></li>
+<li><p><strong>transform_segment_deviation_in_radians</strong> (<em>float</em><em>, </em><em>default=&lt;implementation-defined&gt;</em>) – How much a spreading direction can deviate from the segment normal before it’s considered a transform segment (in radians).
+The default value has been empirically determined to give the best results for typical models.
+If <cite>None</cite> then the full feature geometry is used (ie, it is not split into ridge and transform segments with the transform segments getting ignored).</p></li>
+<li><p><strong>include_network_boundaries</strong> (<em>bool</em><em>, </em><em>default=False</em>) – Whether to count lengths along network boundaries that are not also plate boundaries (defaults to False).
+If a deforming network shares a boundary with a plate then it’ll get included regardless of this option.
+Since spreading features occur along <em>plate</em> boundaries this would only be an issue if an intra-plate network boundary was incorrectly labelled as spreading.</p></li>
+<li><p><strong>divergence_threshold_in_cm_per_yr</strong> (<em>float</em><em>, </em><em>optional</em>) – Only count lengths associated with sample points that have an orthogonal (ie, in the spreading geometry’s normal direction) diverging velocity above this value (in cm/yr).
+For example, setting this to <cite>0.0</cite> would remove all converging sample points (leaving only diverging points).
+This value can be negative which means a small amount of convergence is allowed.
+If <cite>None</cite> then all (diverging and converging) sample points are counted.
+This is the default since <em>spreading_feature_types</em> is instead used (by default) to include only plate boundaries that are typically diverging (eg, mid-ocean ridges).
+However, setting <cite>spreading_feature_types</cite> to <cite>None</cite> (and <cite>transform_segment_deviation_in_radians</cite> to <cite>None</cite>) and explicitly specifying this parameter (eg, to <cite>0.0</cite>)
+can be used to count points along all plate boundaries that are diverging.
+However, this parameter can only be specified if <em>use_ptt</em> is <cite>False</cite>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>total_ridge_length_kms</strong> – The total length of global mid-ocean ridges (in kilometres) at the specified time.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>ValueError</strong> – If topology features have not been set in this <cite>PlateReconstruction</cite>.</p></li>
+<li><p><strong>ValueError</strong> – If <cite>use_ptt</cite> is <cite>True</cite> and <cite>divergence_threshold_in_cm_per_yr</cite> is not <cite>None</cite>.</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<p>To calculate the total length of mid-ocean ridges at 50Ma, but ignoring the transform segments (of the ridges):</p>
+<blockquote>
+<div><p>total_ridge_length_kms = plate_reconstruction.total_ridge_length(50)</p>
+</div></blockquote>
+<p>To do the same, but instead of ignoring transform segments include both ridge and transform segments,
+but only where orthogonal diverging velocities are greater than 0.2 cm/yr:</p>
+<blockquote>
+<div><dl class="simple">
+<dt>total_ridge_length_kms = plate_reconstruction.total_ridge_length(50,</dt><dd><p>transform_segment_deviation_in_radians=None,
+divergence_threshold_in_cm_per_yr=0.2)</p>
+</dd>
+</dl>
+</div></blockquote>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="gplately.PlateReconstruction.total_subduction_zone_length">
+<span class="sig-name descname"><span class="pre">total_subduction_zone_length</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">time</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">use_ptt</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ignore_warnings</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="keyword-only-separator o"><abbr title="Keyword-only parameters separator (PEP 3102)"><span class="pre">*</span></abbr></span></em>, <em class="sig-param"><span class="n"><span class="pre">include_network_boundaries</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">convergence_threshold_in_cm_per_yr</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gplately/reconstruction.html#PlateReconstruction.total_subduction_zone_length"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.PlateReconstruction.total_subduction_zone_length" title="Link to this definition"></a></dt>
+<dd><p>Calculates the total length of all subduction zones (km) at the specified geological time (Ma).</p>
+<p>Resolves topologies at <cite>time</cite> and tessellates all resolved subducting features into points (see <cite>tessellate_subduction_zones</cite>).</p>
+<p>Total length is calculated by sampling points along the resolved subducting features (e.g. subduction zones) and accumulating their lengths
+(see <cite>tessellate_subduction_zones</cite>). Scales lengths to kilometres using the geocentric radius (at each sampled point).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>time</strong> (<em>int</em>) – The geological time at which to calculate total subduction zone lengths.</p></li>
+<li><p><strong>use_ptt</strong> (<em>bool</em><em>, </em><em>default=False</em>) – If set to <cite>True</cite> then uses Plate Tectonic Tools’ <cite>subduction_convergence</cite> workflow to calculate total subduction zone length.
+If set to <cite>False</cite> then uses plate convergence instead.
+Plate convergence is the more general approach that works along all plate boundaries (not just subduction zones).</p></li>
+<li><p><strong>ignore_warnings</strong> (<em>bool</em><em>, </em><em>default=False</em>) – Choose to ignore warnings from Plate Tectonic Tools’ subduction_convergence workflow (if <cite>use_ptt</cite> is <cite>True</cite>).</p></li>
+<li><p><strong>include_network_boundaries</strong> (<em>bool</em><em>, </em><em>default=False</em>) – Whether to count lengths along network boundaries that are not also plate boundaries (defaults to False).
+If a deforming network shares a boundary with a plate then it’ll get included regardless of this option.
+Since subduction zones occur along <em>plate</em> boundaries this would only be an issue if an intra-plate network boundary was incorrectly labelled as subducting.</p></li>
+<li><p><strong>convergence_threshold_in_cm_per_yr</strong> (<em>float</em><em>, </em><em>optional</em>) – Only count lengths associated with sample points that have an orthogonal (ie, in the subducting geometry’s normal direction) converging velocity above this value (in cm/yr).
+For example, setting this to <cite>0.0</cite> would remove all diverging sample points (leaving only converging points).
+This value can be negative which means a small amount of divergence is allowed.
+If <cite>None</cite> then all (converging and diverging) sample points are counted. This is the default.
+Note that this parameter can only be specified if <cite>use_ptt</cite> is <cite>False</cite>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>total_subduction_zone_length_kms</strong> – The total subduction zone length (in km) at the specified <cite>time</cite>.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>float</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>ValueError</strong> – If topology features have not been set in this <cite>PlateReconstruction</cite>.</p></li>
+<li><p><strong>ValueError</strong> – If <cite>use_ptt</cite> is <cite>True</cite> and <cite>convergence_threshold_in_cm_per_yr</cite> is not <cite>None</cite>.</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">Examples</p>
+<p>To calculate the total length of subduction zones at 50Ma:</p>
+<blockquote>
+<div><p>total_subduction_zone_length_kms = plate_reconstruction.total_subduction_zone_length(50)</p>
+</div></blockquote>
+<p>To calculate the total length of subduction zones at 50Ma, but only where there’s actual convergence:</p>
+<blockquote>
+<div><dl class="simple">
+<dt>total_subduction_zone_length_kms = plate_reconstruction.total_subduction_zone_length(50,</dt><dd><p>convergence_threshold_in_cm_per_yr=0.0)</p>
+</dd>
+</dl>
+</div></blockquote>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="gplately.DataServer.html" class="btn btn-neutral float-left" title="gplately.DataServer" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="gplately.Points.html" class="btn btn-neutral float-right" title="gplately.Points" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023-2025, The University of Sydney.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

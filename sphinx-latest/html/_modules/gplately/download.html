@@ -50,9 +50,9 @@
 <li class="toctree-l1"><a class="reference internal" href="../../command_line_interface.html">Command Line Interface (CLI)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../primer.html">Primer</a></li>
 </ul>
-<p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
+<p class="caption" role="heading"><span class="caption-text">Reference</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../../modules.html">gplately</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api.html">GPlately API</a></li>
 </ul>
 
         </div>
@@ -97,13 +97,13 @@
 <span class="c1">#    51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.</span>
 <span class="c1">#</span>
 
-<span class="sd">&quot;&quot;&quot; </span>
+<span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">Functions for downloading assorted plate reconstruction data to use with GPlately&#39;s</span>
 <span class="sd">main objects. Files are stored in the user&#39;s cache and can be reused after being</span>
-<span class="sd">downloaded once. </span>
+<span class="sd">downloaded once.</span>
 
 <span class="sd">These data have been created and used in plate reconstruction models and studies, and</span>
-<span class="sd">are available from public web servers (like EarthByte&#39;s webDAV server, or the GPlates </span>
+<span class="sd">are available from public web servers (like EarthByte&#39;s webDAV server, or the GPlates</span>
 <span class="sd">2.3 sample dataset library).</span>
 
 <span class="sd">&quot;&quot;&quot;</span>
@@ -134,14 +134,14 @@
 
 
 <div class="viewcode-block" id="DownloadWarning">
-<a class="viewcode-back" href="../../gplately.html#gplately.download.DownloadWarning">[docs]</a>
+<a class="viewcode-back" href="../../gplately.html#gplately.DownloadWarning">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">DownloadWarning</span><span class="p">(</span><span class="ne">RuntimeWarning</span><span class="p">):</span>
     <span class="k">pass</span></div>
 
 
 
 <div class="viewcode-block" id="_test_internet_connection">
-<a class="viewcode-back" href="../../gplately.html#gplately.download._test_internet_connection">[docs]</a>
+<a class="viewcode-back" href="../../gplately.html#gplately._test_internet_connection">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">_test_internet_connection</span><span class="p">(</span><span class="n">url</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Test whether a connection to the required web server</span>
 <span class="sd">    can be made given a `url`.</span>
@@ -157,7 +157,7 @@
 
 
 <div class="viewcode-block" id="_determine_processor">
-<a class="viewcode-back" href="../../gplately.html#gplately.download._determine_processor">[docs]</a>
+<a class="viewcode-back" href="../../gplately.html#gplately._determine_processor">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">_determine_processor</span><span class="p">(</span><span class="n">url</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Set instructions for how to process/unpack a file depending on</span>
 <span class="sd">    its filetype. The unpacked file paths will have an .unzip, or</span>
@@ -177,7 +177,7 @@
 
 
 <div class="viewcode-block" id="path_of_cached_file">
-<a class="viewcode-back" href="../../gplately.html#gplately.download.path_of_cached_file">[docs]</a>
+<a class="viewcode-back" href="../../gplately.html#gplately.path_of_cached_file">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">path_of_cached_file</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">model_name</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Determine the absolute path where the file(s) from `url`</span>
 <span class="sd">    will be downloaded to.</span>
@@ -244,7 +244,7 @@
 
 
 <div class="viewcode-block" id="_extract_processed_files">
-<a class="viewcode-back" href="../../gplately.html#gplately.download._extract_processed_files">[docs]</a>
+<a class="viewcode-back" href="../../gplately.html#gplately._extract_processed_files">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">_extract_processed_files</span><span class="p">(</span><span class="n">processed_directory</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Return a list of all full filenames from a given directory</span>
 <span class="sd">    in the GPlately cache.</span>
@@ -261,7 +261,7 @@
 
 
 <div class="viewcode-block" id="path_to_cache">
-<a class="viewcode-back" href="../../gplately.html#gplately.download.path_to_cache">[docs]</a>
+<a class="viewcode-back" href="../../gplately.html#gplately.path_to_cache">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">path_to_cache</span><span class="p">():</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Determine the absolute path to the system gplately cache.&quot;&quot;&quot;</span>
     <span class="n">path</span> <span class="o">=</span> <span class="n">_pooch</span><span class="o">.</span><span class="n">utils</span><span class="o">.</span><span class="n">cache_location</span><span class="p">(</span><span class="n">_os_cache</span><span class="p">(</span><span class="s2">&quot;gplately&quot;</span><span class="p">),</span> <span class="n">env</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">version</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
@@ -270,7 +270,7 @@
 
 
 <div class="viewcode-block" id="clear_cache">
-<a class="viewcode-back" href="../../gplately.html#gplately.download.clear_cache">[docs]</a>
+<a class="viewcode-back" href="../../gplately.html#gplately.clear_cache">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">clear_cache</span><span class="p">():</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Clear the `gplately` cache directory.</span>
 
@@ -288,7 +288,7 @@
 
 
 <div class="viewcode-block" id="_parse_url_for_filenames">
-<a class="viewcode-back" href="../../gplately.html#gplately.download._parse_url_for_filenames">[docs]</a>
+<a class="viewcode-back" href="../../gplately.html#gplately._parse_url_for_filenames">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">_parse_url_for_filenames</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">return_hash</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
     <span class="c1"># Determine the filename of an E-Tag txt file</span>
     <span class="n">md5</span> <span class="o">=</span> <span class="n">_hashlib</span><span class="o">.</span><span class="n">md5</span><span class="p">(</span><span class="n">url</span><span class="o">.</span><span class="n">encode</span><span class="p">())</span><span class="o">.</span><span class="n">hexdigest</span><span class="p">()</span>
@@ -302,7 +302,7 @@
 
 
 <div class="viewcode-block" id="_get_url_etag">
-<a class="viewcode-back" href="../../gplately.html#gplately.download._get_url_etag">[docs]</a>
+<a class="viewcode-back" href="../../gplately.html#gplately._get_url_etag">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">_get_url_etag</span><span class="p">(</span><span class="n">url</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Obtain the E-Tag of a web server URL.</span>
 
@@ -328,7 +328,7 @@
 
 
 <div class="viewcode-block" id="_save_url_etag_to_txt">
-<a class="viewcode-back" href="../../gplately.html#gplately.download._save_url_etag_to_txt">[docs]</a>
+<a class="viewcode-back" href="../../gplately.html#gplately._save_url_etag_to_txt">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">_save_url_etag_to_txt</span><span class="p">(</span><span class="n">etag</span><span class="p">,</span> <span class="n">text_path</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Write an E-Tag to a text file.&quot;&quot;&quot;</span>
     <span class="c1"># Write E-Tag to a text file on the GPlately cache.</span>
@@ -339,7 +339,7 @@
 
 
 <div class="viewcode-block" id="_match_url_to_extension">
-<a class="viewcode-back" href="../../gplately.html#gplately.download._match_url_to_extension">[docs]</a>
+<a class="viewcode-back" href="../../gplately.html#gplately._match_url_to_extension">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">_match_url_to_extension</span><span class="p">(</span><span class="n">url</span><span class="p">):</span>
     <span class="n">url</span> <span class="o">=</span> <span class="nb">str</span><span class="p">(</span><span class="n">url</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">url</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;.nc&quot;</span><span class="p">):</span>
@@ -354,7 +354,7 @@
 
 
 <div class="viewcode-block" id="_first_time_download_from_web">
-<a class="viewcode-back" href="../../gplately.html#gplately.download._first_time_download_from_web">[docs]</a>
+<a class="viewcode-back" href="../../gplately.html#gplately._first_time_download_from_web">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">_first_time_download_from_web</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">model_name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    # Provided a web connection to a server can be established,</span>
@@ -442,7 +442,7 @@
 
 
 <div class="viewcode-block" id="download_from_web">
-<a class="viewcode-back" href="../../gplately.html#gplately.download.download_from_web">[docs]</a>
+<a class="viewcode-back" href="../../gplately.html#gplately.download_from_web">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">download_from_web</span><span class="p">(</span><span class="n">url</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">download_changes</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span> <span class="n">model_name</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Download a file from a `url` into the `gplately` cache.</span>
 
@@ -725,7 +725,7 @@
 
 
 <div class="viewcode-block" id="_collect_file_extension">
-<a class="viewcode-back" href="../../gplately.html#gplately.download._collect_file_extension">[docs]</a>
+<a class="viewcode-back" href="../../gplately.html#gplately._collect_file_extension">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">_collect_file_extension</span><span class="p">(</span><span class="n">fnames</span><span class="p">,</span> <span class="n">file_extension</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Searches cached directory for filenames with a specified extension(s).&quot;&quot;&quot;</span>
     <span class="n">sorted_fnames</span> <span class="o">=</span> <span class="p">[]</span>
@@ -738,7 +738,7 @@
 
 
 <div class="viewcode-block" id="_str_in_folder">
-<a class="viewcode-back" href="../../gplately.html#gplately.download._str_in_folder">[docs]</a>
+<a class="viewcode-back" href="../../gplately.html#gplately._str_in_folder">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">_str_in_folder</span><span class="p">(</span><span class="n">fnames</span><span class="p">,</span> <span class="n">strings_to_include</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">strings_to_ignore</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
     <span class="n">fnames_to_ignore</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="n">fnames_to_include</span> <span class="o">=</span> <span class="p">[]</span>
@@ -763,7 +763,7 @@
 
 
 <div class="viewcode-block" id="_str_in_filename">
-<a class="viewcode-back" href="../../gplately.html#gplately.download._str_in_filename">[docs]</a>
+<a class="viewcode-back" href="../../gplately.html#gplately._str_in_filename">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">_str_in_filename</span><span class="p">(</span>
     <span class="n">fnames</span><span class="p">,</span>
     <span class="n">strings_to_include</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
@@ -866,7 +866,7 @@
 
 
 <div class="viewcode-block" id="_check_gpml_or_shp">
-<a class="viewcode-back" href="../../gplately.html#gplately.download._check_gpml_or_shp">[docs]</a>
+<a class="viewcode-back" href="../../gplately.html#gplately._check_gpml_or_shp">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">_check_gpml_or_shp</span><span class="p">(</span><span class="n">fnames</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;For topology features, returns GPML by default. Searches for ESRI Shapefiles</span>
 <span class="sd">    instead if GPML files not found.&quot;&quot;&quot;</span>
@@ -881,7 +881,7 @@
 
 
 <div class="viewcode-block" id="_remove_hash">
-<a class="viewcode-back" href="../../gplately.html#gplately.download._remove_hash">[docs]</a>
+<a class="viewcode-back" href="../../gplately.html#gplately._remove_hash">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">_remove_hash</span><span class="p">(</span><span class="n">fname</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Removes hashes (32 character file IDs) from cached filenames.&quot;&quot;&quot;</span>
     <span class="n">split_paths</span> <span class="o">=</span> <span class="n">fname</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;-&quot;</span><span class="p">)</span>
@@ -892,7 +892,7 @@
 
 
 <div class="viewcode-block" id="_order_filenames_by_time">
-<a class="viewcode-back" href="../../gplately.html#gplately.download._order_filenames_by_time">[docs]</a>
+<a class="viewcode-back" href="../../gplately.html#gplately._order_filenames_by_time">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">_order_filenames_by_time</span><span class="p">(</span><span class="n">fnames</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Orders filenames in a list from present day to deeper geological time if they</span>
 <span class="sd">    are labelled by time.&quot;&quot;&quot;</span>
@@ -931,7 +931,7 @@
 
 
 <div class="viewcode-block" id="_collection_sorter">
-<a class="viewcode-back" href="../../gplately.html#gplately.download._collection_sorter">[docs]</a>
+<a class="viewcode-back" href="../../gplately.html#gplately._collection_sorter">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">_collection_sorter</span><span class="p">(</span><span class="n">fnames</span><span class="p">,</span> <span class="n">string_identifier</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;If multiple file collections or plate reconstruction models are downloaded from</span>
 <span class="sd">    a single zip folder, only return the needed model.</span>
@@ -960,7 +960,7 @@
 
 
 <div class="viewcode-block" id="_match_filetype_to_extension">
-<a class="viewcode-back" href="../../gplately.html#gplately.download._match_filetype_to_extension">[docs]</a>
+<a class="viewcode-back" href="../../gplately.html#gplately._match_filetype_to_extension">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">_match_filetype_to_extension</span><span class="p">(</span><span class="n">filetype</span><span class="p">):</span>
     <span class="n">extensions</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="k">if</span> <span class="n">filetype</span> <span class="o">==</span> <span class="s2">&quot;netCDF&quot;</span><span class="p">:</span>
@@ -976,7 +976,7 @@
 
 
 <div class="viewcode-block" id="get_raster">
-<a class="viewcode-back" href="../../gplately.html#gplately.download.get_raster">[docs]</a>
+<a class="viewcode-back" href="../../gplately.html#gplately.get_raster">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">get_raster</span><span class="p">(</span><span class="n">raster_id_string</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Downloads assorted raster data that are not associated with the plate</span>
 <span class="sd">    reconstruction models supported by GPlately&#39;s `DataServer`. Stores rasters in the</span>
@@ -1085,7 +1085,7 @@
 
 
 <div class="viewcode-block" id="get_feature_data">
-<a class="viewcode-back" href="../../gplately.html#gplately.download.get_feature_data">[docs]</a>
+<a class="viewcode-back" href="../../gplately.html#gplately.get_feature_data">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">get_feature_data</span><span class="p">(</span><span class="n">feature_data_id_string</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Downloads assorted geological feature data from web servers (i.e.</span>
 <span class="sd">    [GPlates 2.3 sample data](https://www.earthbyte.org/gplates-2-3-software-and-data-sets/))</span>
@@ -1226,10 +1226,10 @@
 
 
 <div class="viewcode-block" id="DataServer">
-<a class="viewcode-back" href="../../gplately.html#gplately.download.DataServer">[docs]</a>
+<a class="viewcode-back" href="../../gplately.html#gplately.DataServer">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">DataServer</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;The DataServer class may be deprecated in the future.</span>
-<span class="sd">    We recommend using the newer [plate-model-manager](https://pypi.org/project/plate-model-manager/) module whenever possible.</span>
+<span class="sd">    We recommend using the newer `plate-model-manager &lt;https://pypi.org/project/plate-model-manager/&gt;`__ module whenever possible.</span>
 
 <span class="sd">    The methods in this DataServer class download plate reconstruction models to the cache folder on your computer from</span>
 <span class="sd">    EarthByte&#39;s [WebDAV server](https://repo.gplates.org/webdav/pmm/).</span>
@@ -1252,6 +1252,8 @@
 
 <span class="sd">    &quot;&quot;&quot;</span>
 
+<div class="viewcode-block" id="DataServer.__init__">
+<a class="viewcode-back" href="../../generated/gplately.DataServer.html#gplately.DataServer.__init__">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">file_collection</span><span class="p">,</span> <span class="n">data_dir</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Parameters</span>
@@ -1285,10 +1287,11 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_static_polygons</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_coastlines</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_continents</span> <span class="o">=</span> <span class="kc">None</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_COBs</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_COBs</span> <span class="o">=</span> <span class="kc">None</span></div>
+
 
 <div class="viewcode-block" id="DataServer._create_feature_collection">
-<a class="viewcode-back" href="../../gplately.html#gplately.download.DataServer._create_feature_collection">[docs]</a>
+<a class="viewcode-back" href="../../gplately.html#gplately.DataServer._create_feature_collection">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">_create_feature_collection</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">file_list</span><span class="p">):</span>
         <span class="n">feature_collection</span> <span class="o">=</span> <span class="n">_pygplates</span><span class="o">.</span><span class="n">FeatureCollection</span><span class="p">()</span>
         <span class="k">for</span> <span class="n">feature</span> <span class="ow">in</span> <span class="n">file_list</span><span class="p">:</span>
@@ -1377,7 +1380,7 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">from_age</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">to_age</span>
 
 <div class="viewcode-block" id="DataServer.get_plate_reconstruction_files">
-<a class="viewcode-back" href="../../gplately.html#gplately.download.DataServer.get_plate_reconstruction_files">[docs]</a>
+<a class="viewcode-back" href="../../gplately.html#gplately.DataServer.get_plate_reconstruction_files">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_plate_reconstruction_files</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Downloads and constructs a `rotation model`, a set of `topology features` and</span>
 <span class="sd">        and a set of `static polygons`. These objects can then be used to create `PlateReconstruction` object.</span>
@@ -1414,7 +1417,7 @@
 
 
 <div class="viewcode-block" id="DataServer.get_topology_geometries">
-<a class="viewcode-back" href="../../gplately.html#gplately.download.DataServer.get_topology_geometries">[docs]</a>
+<a class="viewcode-back" href="../../gplately.html#gplately.DataServer.get_topology_geometries">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_topology_geometries</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Uses the [plate-model-manager](https://pypi.org/project/plate-model-manager/) to download coastline, continent and COB (continent-ocean boundary)</span>
 <span class="sd">        Shapely geometries from the requested plate model. These are needed to call the `PlotTopologies`</span>
@@ -1471,7 +1474,7 @@
 
 
 <div class="viewcode-block" id="DataServer.get_age_grid">
-<a class="viewcode-back" href="../../gplately.html#gplately.download.DataServer.get_age_grid">[docs]</a>
+<a class="viewcode-back" href="../../gplately.html#gplately.DataServer.get_age_grid">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_age_grid</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">times</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Downloads seafloor and paleo-age grids from the plate reconstruction model (`file_collection`)</span>
 <span class="sd">        passed into the `DataServer` object. Stores grids in the &quot;gplately&quot; cache.</span>
@@ -1578,7 +1581,7 @@
 
 
 <div class="viewcode-block" id="DataServer.get_spreading_rate_grid">
-<a class="viewcode-back" href="../../gplately.html#gplately.download.DataServer.get_spreading_rate_grid">[docs]</a>
+<a class="viewcode-back" href="../../gplately.html#gplately.DataServer.get_spreading_rate_grid">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_spreading_rate_grid</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">times</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Downloads seafloor spreading rate grids from the plate reconstruction</span>
 <span class="sd">        model (`file_collection`) passed into the `DataServer` object. Stores</span>
@@ -1680,14 +1683,14 @@
 
 
 <div class="viewcode-block" id="DataServer.get_valid_times">
-<a class="viewcode-back" href="../../gplately.html#gplately.download.DataServer.get_valid_times">[docs]</a>
+<a class="viewcode-back" href="../../gplately.html#gplately.DataServer.get_valid_times">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_valid_times</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns a tuple of the valid plate model time range, (max_time, min_time).&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">from_age</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">to_age</span></div>
 
 
 <div class="viewcode-block" id="DataServer.get_raster">
-<a class="viewcode-back" href="../../gplately.html#gplately.download.DataServer.get_raster">[docs]</a>
+<a class="viewcode-back" href="../../gplately.html#gplately.DataServer.get_raster">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_raster</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">raster_id_string</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Downloads assorted raster data that are not associated with the plate</span>
 <span class="sd">        reconstruction models supported by GPlately&#39;s `DataServer`. Stores rasters in the</span>
@@ -1769,7 +1772,7 @@
 
 
 <div class="viewcode-block" id="DataServer.get_feature_data">
-<a class="viewcode-back" href="../../gplately.html#gplately.download.DataServer.get_feature_data">[docs]</a>
+<a class="viewcode-back" href="../../gplately.html#gplately.DataServer.get_feature_data">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_feature_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">feature_data_id_string</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Downloads assorted geological feature data from web servers (i.e.</span>
 <span class="sd">        [GPlates 2.3 sample data](https://www.earthbyte.org/gplates-2-3-software-and-data-sets/))</span>

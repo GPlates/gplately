@@ -19,9 +19,7 @@
       <script src="_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
-    <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="gplately.commands package" href="gplately.commands.html" />
-    <link rel="prev" title="gplately" href="modules.html" /> 
+    <link rel="search" title="Search" href="search.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -53,199 +51,9 @@
 <li class="toctree-l1"><a class="reference internal" href="command_line_interface.html">Command Line Interface (CLI)</a></li>
 <li class="toctree-l1"><a class="reference internal" href="primer.html">Primer</a></li>
 </ul>
-<p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
-<ul class="current">
-<li class="toctree-l1 current"><a class="reference internal" href="modules.html">gplately</a><ul class="current">
-<li class="toctree-l2 current"><a class="current reference internal" href="#">gplately package</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#subpackages">Subpackages</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="gplately.commands.html">gplately.commands package</a></li>
-<li class="toctree-l4"><a class="reference internal" href="gplately.lib.html">gplately.lib package</a></li>
-<li class="toctree-l4"><a class="reference internal" href="gplately.mapping.html">gplately.mapping package</a></li>
-<li class="toctree-l4"><a class="reference internal" href="gplately.ptt.html">gplately.ptt package</a></li>
-<li class="toctree-l4"><a class="reference internal" href="gplately.utils.html">gplately.utils package</a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="#submodules">Submodules</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#module-gplately.auxiliary">gplately.auxiliary module</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#gplately.auxiliary.get_gplot"><code class="docutils literal notranslate"><span class="pre">get_gplot()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#gplately.auxiliary.get_plate_reconstruction"><code class="docutils literal notranslate"><span class="pre">get_plate_reconstruction()</span></code></a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="#module-gplately.data">gplately.data module</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#gplately.data.DataCollection"><code class="docutils literal notranslate"><span class="pre">DataCollection</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#gplately.data._feature_data"><code class="docutils literal notranslate"><span class="pre">_feature_data()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#gplately.data._find_needed_collection"><code class="docutils literal notranslate"><span class="pre">_find_needed_collection()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#gplately.data._rasters"><code class="docutils literal notranslate"><span class="pre">_rasters()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#gplately.data._studyname"><code class="docutils literal notranslate"><span class="pre">_studyname()</span></code></a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="#module-gplately.decorators">gplately.decorators module</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#gplately.decorators.append_docstring"><code class="docutils literal notranslate"><span class="pre">append_docstring()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#gplately.decorators.validate_reconstruction_time"><code class="docutils literal notranslate"><span class="pre">validate_reconstruction_time()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#gplately.decorators.validate_topology_availability"><code class="docutils literal notranslate"><span class="pre">validate_topology_availability()</span></code></a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="#module-gplately.download">gplately.download module</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#gplately.download.DataServer"><code class="docutils literal notranslate"><span class="pre">DataServer</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#gplately.download.DownloadWarning"><code class="docutils literal notranslate"><span class="pre">DownloadWarning</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#gplately.download._check_gpml_or_shp"><code class="docutils literal notranslate"><span class="pre">_check_gpml_or_shp()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#gplately.download._collect_file_extension"><code class="docutils literal notranslate"><span class="pre">_collect_file_extension()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#gplately.download._collection_sorter"><code class="docutils literal notranslate"><span class="pre">_collection_sorter()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#gplately.download._determine_processor"><code class="docutils literal notranslate"><span class="pre">_determine_processor()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#gplately.download._extract_processed_files"><code class="docutils literal notranslate"><span class="pre">_extract_processed_files()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#gplately.download._first_time_download_from_web"><code class="docutils literal notranslate"><span class="pre">_first_time_download_from_web()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#gplately.download._get_url_etag"><code class="docutils literal notranslate"><span class="pre">_get_url_etag()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#gplately.download._match_filetype_to_extension"><code class="docutils literal notranslate"><span class="pre">_match_filetype_to_extension()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#gplately.download._match_url_to_extension"><code class="docutils literal notranslate"><span class="pre">_match_url_to_extension()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#gplately.download._order_filenames_by_time"><code class="docutils literal notranslate"><span class="pre">_order_filenames_by_time()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#gplately.download._parse_url_for_filenames"><code class="docutils literal notranslate"><span class="pre">_parse_url_for_filenames()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#gplately.download._remove_hash"><code class="docutils literal notranslate"><span class="pre">_remove_hash()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#gplately.download._save_url_etag_to_txt"><code class="docutils literal notranslate"><span class="pre">_save_url_etag_to_txt()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#gplately.download._str_in_filename"><code class="docutils literal notranslate"><span class="pre">_str_in_filename()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#gplately.download._str_in_folder"><code class="docutils literal notranslate"><span class="pre">_str_in_folder()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#gplately.download._test_internet_connection"><code class="docutils literal notranslate"><span class="pre">_test_internet_connection()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#gplately.download.clear_cache"><code class="docutils literal notranslate"><span class="pre">clear_cache()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#gplately.download.download_from_web"><code class="docutils literal notranslate"><span class="pre">download_from_web()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#gplately.download.get_feature_data"><code class="docutils literal notranslate"><span class="pre">get_feature_data()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#gplately.download.get_raster"><code class="docutils literal notranslate"><span class="pre">get_raster()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#gplately.download.path_of_cached_file"><code class="docutils literal notranslate"><span class="pre">path_of_cached_file()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#gplately.download.path_to_cache"><code class="docutils literal notranslate"><span class="pre">path_to_cache()</span></code></a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="#module-gplately.exceptions">gplately.exceptions module</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#gplately.exceptions.ReconstructionTimeNotSet"><code class="docutils literal notranslate"><span class="pre">ReconstructionTimeNotSet</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#gplately.exceptions.UnableToGetModelList"><code class="docutils literal notranslate"><span class="pre">UnableToGetModelList</span></code></a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="#module-gplately.geometry">gplately.geometry module</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#gplately.geometry.GeometryOnSphere"><code class="docutils literal notranslate"><span class="pre">GeometryOnSphere</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#gplately.geometry.LatLonPoint"><code class="docutils literal notranslate"><span class="pre">LatLonPoint</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#gplately.geometry.MultiPointOnSphere"><code class="docutils literal notranslate"><span class="pre">MultiPointOnSphere</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#gplately.geometry.PointOnSphere"><code class="docutils literal notranslate"><span class="pre">PointOnSphere</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#gplately.geometry.PolygonOnSphere"><code class="docutils literal notranslate"><span class="pre">PolygonOnSphere</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#gplately.geometry.PolylineOnSphere"><code class="docutils literal notranslate"><span class="pre">PolylineOnSphere</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#gplately.geometry.pygplates_to_shapely"><code class="docutils literal notranslate"><span class="pre">pygplates_to_shapely()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#gplately.geometry.shapely_to_pygplates"><code class="docutils literal notranslate"><span class="pre">shapely_to_pygplates()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#gplately.geometry.wrap_geometries"><code class="docutils literal notranslate"><span class="pre">wrap_geometries()</span></code></a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="#module-gplately.gpml">gplately.gpml module</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#gplately.gpml.create_feature_dict"><code class="docutils literal notranslate"><span class="pre">create_feature_dict()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#gplately.gpml.extract_feature"><code class="docutils literal notranslate"><span class="pre">extract_feature()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#gplately.gpml.get_topological_references"><code class="docutils literal notranslate"><span class="pre">get_topological_references()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#gplately.gpml.is_topological"><code class="docutils literal notranslate"><span class="pre">is_topological()</span></code></a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="#module-gplately.grids">gplately.grids module</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#classes">Classes</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#gplately.grids.Raster"><code class="docutils literal notranslate"><span class="pre">Raster</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#gplately.grids.RegularGridInterpolator"><code class="docutils literal notranslate"><span class="pre">RegularGridInterpolator</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#gplately.grids.fill_raster"><code class="docutils literal notranslate"><span class="pre">fill_raster()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#gplately.grids.rasterise"><code class="docutils literal notranslate"><span class="pre">rasterise()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#gplately.grids.rasterize"><code class="docutils literal notranslate"><span class="pre">rasterize()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#gplately.grids.read_netcdf_grid"><code class="docutils literal notranslate"><span class="pre">read_netcdf_grid()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#gplately.grids.reconstruct_grid"><code class="docutils literal notranslate"><span class="pre">reconstruct_grid()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#gplately.grids.sample_grid"><code class="docutils literal notranslate"><span class="pre">sample_grid()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#gplately.grids.write_netcdf_grid"><code class="docutils literal notranslate"><span class="pre">write_netcdf_grid()</span></code></a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="#module-gplately.oceans">gplately.oceans module</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#seafloorgrid-methodology"><cite>SeafloorGrid</cite> Methodology</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#id11">Classes</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#gplately.oceans.SeafloorGrid"><code class="docutils literal notranslate"><span class="pre">SeafloorGrid</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#gplately.oceans._build_continental_mask_with_contouring"><code class="docutils literal notranslate"><span class="pre">_build_continental_mask_with_contouring()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#gplately.oceans._collect_point_data_in_dataframe"><code class="docutils literal notranslate"><span class="pre">_collect_point_data_in_dataframe()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#gplately.oceans._generate_mid_ocean_ridge_points"><code class="docutils literal notranslate"><span class="pre">_generate_mid_ocean_ridge_points()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#gplately.oceans._lat_lon_z_to_netCDF_time"><code class="docutils literal notranslate"><span class="pre">_lat_lon_z_to_netCDF_time()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#gplately.oceans._save_age_grid_sample_points_to_gpml"><code class="docutils literal notranslate"><span class="pre">_save_age_grid_sample_points_to_gpml()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#gplately.oceans._save_netcdf_file"><code class="docutils literal notranslate"><span class="pre">_save_netcdf_file()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#gplately.oceans._save_seed_points_as_multipoint_coverage"><code class="docutils literal notranslate"><span class="pre">_save_seed_points_as_multipoint_coverage()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#gplately.oceans.create_icosahedral_mesh"><code class="docutils literal notranslate"><span class="pre">create_icosahedral_mesh()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#gplately.oceans.ensure_polygon_geometry"><code class="docutils literal notranslate"><span class="pre">ensure_polygon_geometry()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#gplately.oceans.point_in_polygon_routine"><code class="docutils literal notranslate"><span class="pre">point_in_polygon_routine()</span></code></a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="#module-gplately.parallel">gplately.parallel module</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#gplately.parallel.Parallel"><code class="docutils literal notranslate"><span class="pre">Parallel</span></code></a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="#module-gplately.plot">gplately.plot module</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#id12">Classes</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#gplately.plot.PlotTopologies"><code class="docutils literal notranslate"><span class="pre">PlotTopologies</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#gplately.plot.plot_subduction_teeth"><code class="docutils literal notranslate"><span class="pre">plot_subduction_teeth()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#gplately.plot.shapelify_feature_lines"><code class="docutils literal notranslate"><span class="pre">shapelify_feature_lines()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#gplately.plot.shapelify_feature_polygons"><code class="docutils literal notranslate"><span class="pre">shapelify_feature_polygons()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#gplately.plot.shapelify_features"><code class="docutils literal notranslate"><span class="pre">shapelify_features()</span></code></a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="#module-gplately.pygplates">gplately.pygplates module</a></li>
-<li class="toctree-l3"><a class="reference internal" href="#module-gplately.reconstruction">gplately.reconstruction module</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#gplately.reconstruction.PlateReconstruction"><code class="docutils literal notranslate"><span class="pre">PlateReconstruction</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#gplately.reconstruction.Points"><code class="docutils literal notranslate"><span class="pre">Points</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#gplately.reconstruction._ContinentCollision"><code class="docutils literal notranslate"><span class="pre">_ContinentCollision</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#gplately.reconstruction._DefaultCollision"><code class="docutils literal notranslate"><span class="pre">_DefaultCollision</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#gplately.reconstruction._ReconstructByTopologies"><code class="docutils literal notranslate"><span class="pre">_ReconstructByTopologies</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#gplately.reconstruction.reconstruct_points"><code class="docutils literal notranslate"><span class="pre">reconstruct_points()</span></code></a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="#module-gplately.spatial">gplately.spatial module</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#gplately.spatial.cartesian_distance"><code class="docutils literal notranslate"><span class="pre">cartesian_distance()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#gplately.spatial.geocentric_radius"><code class="docutils literal notranslate"><span class="pre">geocentric_radius()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#gplately.spatial.great_circle_distance"><code class="docutils literal notranslate"><span class="pre">great_circle_distance()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#gplately.spatial.haversine_distance"><code class="docutils literal notranslate"><span class="pre">haversine_distance()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#gplately.spatial.lonlat2xyz"><code class="docutils literal notranslate"><span class="pre">lonlat2xyz()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#gplately.spatial.xyz2lonlat"><code class="docutils literal notranslate"><span class="pre">xyz2lonlat()</span></code></a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="#module-gplately.tools">gplately.tools module</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#gplately.tools.My2s"><code class="docutils literal notranslate"><span class="pre">My2s()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#gplately.tools._deg2pixels"><code class="docutils literal notranslate"><span class="pre">_deg2pixels()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#gplately.tools._get_rotation"><code class="docutils literal notranslate"><span class="pre">_get_rotation()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#gplately.tools._pixels2deg"><code class="docutils literal notranslate"><span class="pre">_pixels2deg()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#gplately.tools.calculate_spreading_rates"><code class="docutils literal notranslate"><span class="pre">calculate_spreading_rates()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#gplately.tools.correct_longitudes_for_dateline"><code class="docutils literal notranslate"><span class="pre">correct_longitudes_for_dateline()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#gplately.tools.extract_feature_lonlat"><code class="docutils literal notranslate"><span class="pre">extract_feature_lonlat()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#gplately.tools.find_distance_to_nearest_ridge"><code class="docutils literal notranslate"><span class="pre">find_distance_to_nearest_ridge()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#gplately.tools.geocentric_area"><code class="docutils literal notranslate"><span class="pre">geocentric_area()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#gplately.tools.griddata_sphere"><code class="docutils literal notranslate"><span class="pre">griddata_sphere()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#gplately.tools.lat_area_function"><code class="docutils literal notranslate"><span class="pre">lat_area_function()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#gplately.tools.plate_isotherm_depth"><code class="docutils literal notranslate"><span class="pre">plate_isotherm_depth()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#gplately.tools.plate_partitioner_for_point"><code class="docutils literal notranslate"><span class="pre">plate_partitioner_for_point()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#gplately.tools.plate_surface_depth"><code class="docutils literal notranslate"><span class="pre">plate_surface_depth()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#gplately.tools.plate_temp"><code class="docutils literal notranslate"><span class="pre">plate_temp()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#gplately.tools.points_to_features"><code class="docutils literal notranslate"><span class="pre">points_to_features()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#gplately.tools.read_csv"><code class="docutils literal notranslate"><span class="pre">read_csv()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#gplately.tools.read_rotation_file_pandas"><code class="docutils literal notranslate"><span class="pre">read_rotation_file_pandas()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#gplately.tools.smooth_1D"><code class="docutils literal notranslate"><span class="pre">smooth_1D()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#gplately.tools.smooth_1D_gaussian"><code class="docutils literal notranslate"><span class="pre">smooth_1D_gaussian()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#gplately.tools.surface_area_oblate_spheroid"><code class="docutils literal notranslate"><span class="pre">surface_area_oblate_spheroid()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#gplately.tools.update_progress"><code class="docutils literal notranslate"><span class="pre">update_progress()</span></code></a></li>
-</ul>
-</li>
-<li class="toctree-l3"><a class="reference internal" href="#module-gplately">Module contents</a><ul>
-<li class="toctree-l4"><a class="reference internal" href="#id76">)</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#id97">)</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#id102">)</a></li>
-<li class="toctree-l4"><a class="reference internal" href="#gplately.DataCollection"><code class="docutils literal notranslate"><span class="pre">DataCollection</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#gplately.DataServer"><code class="docutils literal notranslate"><span class="pre">DataServer</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#gplately.PlateModelManager"><code class="docutils literal notranslate"><span class="pre">PlateModelManager</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#gplately.PlateReconstruction"><code class="docutils literal notranslate"><span class="pre">PlateReconstruction</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#gplately.PlotTopologies"><code class="docutils literal notranslate"><span class="pre">PlotTopologies</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#gplately.Points"><code class="docutils literal notranslate"><span class="pre">Points</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#gplately.PresentDayRasterManager"><code class="docutils literal notranslate"><span class="pre">PresentDayRasterManager</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#gplately.Raster"><code class="docutils literal notranslate"><span class="pre">Raster</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#gplately.SeafloorGrid"><code class="docutils literal notranslate"><span class="pre">SeafloorGrid</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#gplately._ContinentCollision"><code class="docutils literal notranslate"><span class="pre">_ContinentCollision</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#gplately._DefaultCollision"><code class="docutils literal notranslate"><span class="pre">_DefaultCollision</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#gplately._ReconstructByTopologies"><code class="docutils literal notranslate"><span class="pre">_ReconstructByTopologies</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#gplately.get_geometries"><code class="docutils literal notranslate"><span class="pre">get_geometries()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#gplately.get_valid_geometries"><code class="docutils literal notranslate"><span class="pre">get_valid_geometries()</span></code></a></li>
-</ul>
-</li>
-</ul>
-</li>
-</ul>
-</li>
+<p class="caption" role="heading"><span class="caption-text">Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="api.html">GPlately API</a></li>
 </ul>
 
         </div>
@@ -262,7 +70,6 @@
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
       <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
-          <li class="breadcrumb-item"><a href="modules.html">gplately</a></li>
       <li class="breadcrumb-item active">gplately package</li>
       <li class="wy-breadcrumbs-aside">
             <a href="_sources/gplately.rst.txt" rel="nofollow"> View page source</a>
@@ -696,7 +503,7 @@
 <dd class="field-even"><p>a PlotTopologies object</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference internal" href="#gplately.plot.PlotTopologies" title="gplately.plot.PlotTopologies">PlotTopologies</a></p>
+<dd class="field-odd"><p><a class="reference internal" href="#gplately.PlotTopologies" title="gplately.PlotTopologies">PlotTopologies</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -716,7 +523,7 @@
 <dd class="field-even"><p>a PlateReconstruction object</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference internal" href="#gplately.reconstruction.PlateReconstruction" title="gplately.reconstruction.PlateReconstruction">PlateReconstruction</a></p>
+<dd class="field-odd"><p><a class="reference internal" href="#gplately.PlateReconstruction" title="gplately.PlateReconstruction">PlateReconstruction</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -888,7 +695,7 @@ are available from public web servers (like EarthByte’s webDAV server, or the 
 <em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">gplately.download.</span></span><span class="sig-name descname"><span class="pre">DataServer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file_collection</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_dir</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gplately/download.html#DataServer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.download.DataServer" title="Link to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>The DataServer class may be deprecated in the future.
-We recommend using the newer [plate-model-manager](<a class="reference external" href="https://pypi.org/project/plate-model-manager/">https://pypi.org/project/plate-model-manager/</a>) module whenever possible.</p>
+We recommend using the newer <a class="reference external" href="https://pypi.org/project/plate-model-manager/">plate-model-manager</a> module whenever possible.</p>
 <p>The methods in this DataServer class download plate reconstruction models to the cache folder on your computer from
 EarthByte’s [WebDAV server](<a class="reference external" href="https://repo.gplates.org/webdav/pmm/">https://repo.gplates.org/webdav/pmm/</a>).</p>
 <p>If the <cite>DataServer</cite> object and its methods are called for the first time, i.e. by:</p>
@@ -2166,7 +1973,7 @@ neighbours.</p>
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>data</strong> (<em>str</em><em> or </em><em>array-like</em>) – The raster data, either as a filename (<cite>str</cite>) or array.</p></li>
-<li><p><strong>plate_reconstruction</strong> (<a class="reference internal" href="#gplately.reconstruction.PlateReconstruction" title="gplately.reconstruction.PlateReconstruction"><em>PlateReconstruction</em></a>) – Allows for the accessibility of PlateReconstruction object attributes.
+<li><p><strong>plate_reconstruction</strong> (<a class="reference internal" href="#gplately.PlateReconstruction" title="gplately.PlateReconstruction"><em>PlateReconstruction</em></a>) – Allows for the accessibility of PlateReconstruction object attributes.
 Namely, PlateReconstruction object attributes rotation_model,
 topology_features and static_polygons can be used in the <cite>Raster</cite>
 object if called using “self.plate_reconstruction.X”, where X is the
@@ -2210,7 +2017,7 @@ attributes can be used in the <cite>Raster</cite> object if called using
 attribute can be modified after creation of the <cite>Raster</cite>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference internal" href="#gplately.reconstruction.PlateReconstruction" title="gplately.reconstruction.PlateReconstruction">PlateReconstruction</a></p>
+<dd class="field-odd"><p><a class="reference internal" href="#gplately.PlateReconstruction" title="gplately.PlateReconstruction">PlateReconstruction</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -7059,7 +6866,7 @@ The total length is scaled to kilometres using the geocentric radius (at each sa
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>time</strong> (<em>int</em>) – The geological time at which to calculate total continental arc lengths.</p></li>
-<li><p><strong>continental_grid</strong> (<a class="reference internal" href="#gplately.grids.Raster" title="gplately.grids.Raster"><em>Raster</em></a><em>, </em><em>array_like</em><em>, or </em><em>str</em>) – The continental grid used to identify continental arc points. Must
+<li><p><strong>continental_grid</strong> (<a class="reference internal" href="#gplately.Raster" title="gplately.Raster"><em>Raster</em></a><em>, </em><em>array_like</em><em>, or </em><em>str</em>) – The continental grid used to identify continental arc points. Must
 be convertible to <cite>gplately.Raster</cite>. For an array, a global extent is
 assumed [-180,180,-90,90]. For a filename, the extent is obtained
 from the file.</p></li>
@@ -8752,7 +8559,7 @@ lists containing any relevant file download links.</p>
 <em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">gplately.</span></span><span class="sig-name descname"><span class="pre">DataServer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file_collection</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_dir</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gplately/download.html#DataServer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.DataServer" title="Link to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
 <p>The DataServer class may be deprecated in the future.
-We recommend using the newer [plate-model-manager](<a class="reference external" href="https://pypi.org/project/plate-model-manager/">https://pypi.org/project/plate-model-manager/</a>) module whenever possible.</p>
+We recommend using the newer <a class="reference external" href="https://pypi.org/project/plate-model-manager/">plate-model-manager</a> module whenever possible.</p>
 <p>The methods in this DataServer class download plate reconstruction models to the cache folder on your computer from
 EarthByte’s [WebDAV server](<a class="reference external" href="https://repo.gplates.org/webdav/pmm/">https://repo.gplates.org/webdav/pmm/</a>).</p>
 <p>If the <cite>DataServer</cite> object and its methods are called for the first time, i.e. by:</p>
@@ -14142,10 +13949,7 @@ shapefile.</p>
 
            </div>
           </div>
-          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="modules.html" class="btn btn-neutral float-left" title="gplately" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="gplately.commands.html" class="btn btn-neutral float-right" title="gplately.commands package" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
-    </div>
+          <footer>
 
   <hr/>
 

@@ -1,0 +1,42 @@
+﻿gplately.PlateReconstruction
+============================
+
+.. currentmodule:: gplately
+
+.. autoclass:: PlateReconstruction
+
+   
+   .. automethod:: __init__
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~PlateReconstruction.__init__
+      ~PlateReconstruction.create_flowline
+      ~PlateReconstruction.create_motion_path
+      ~PlateReconstruction.crustal_production_destruction_rate
+      ~PlateReconstruction.divergent_convergent_plate_boundaries
+      ~PlateReconstruction.get_point_velocities
+      ~PlateReconstruction.reconstruct
+      ~PlateReconstruction.reconstruct_snapshot
+      ~PlateReconstruction.static_polygons_snapshot
+      ~PlateReconstruction.tessellate_mid_ocean_ridges
+      ~PlateReconstruction.tessellate_subduction_zones
+      ~PlateReconstruction.topological_snapshot
+      ~PlateReconstruction.total_continental_arc_length
+      ~PlateReconstruction.total_ridge_length
+      ~PlateReconstruction.total_subduction_zone_length
+   
+   
+
+   
+   
+   .. rubric:: Attributes
+
+   .. autosummary::
+   
+      ~PlateReconstruction.anchor_plate_id
+   
+   

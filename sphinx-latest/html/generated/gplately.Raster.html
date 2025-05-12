@@ -1,0 +1,888 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>gplately.Raster &mdash; gplately 2.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
+
+  
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=51b770b3"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="gplately.PlotTopologies" href="gplately.PlotTopologies.html" />
+    <link rel="prev" title="gplately.Points" href="gplately.Points.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            gplately
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../basic_usages.html">Minimal working example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../use_cases.html">Common Use Cases</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../faq.html">Trouble-shooting and FAQ</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../command_line_interface.html">Command Line Interface (CLI)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../primer.html">Primer</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Reference</span></p>
+<ul class="current">
+<li class="toctree-l1 current"><a class="reference internal" href="../api.html">GPlately API</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="gplately.DataServer.html">gplately.DataServer</a></li>
+<li class="toctree-l2"><a class="reference internal" href="gplately.PlateReconstruction.html">gplately.PlateReconstruction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="gplately.Points.html">gplately.Points</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">gplately.Raster</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#gplately.Raster"><code class="docutils literal notranslate"><span class="pre">Raster</span></code></a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#gplately.Raster.data"><code class="docutils literal notranslate"><span class="pre">Raster.data</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gplately.Raster.plate_reconstruction"><code class="docutils literal notranslate"><span class="pre">Raster.plate_reconstruction</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gplately.Raster.extent"><code class="docutils literal notranslate"><span class="pre">Raster.extent</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gplately.Raster.lons"><code class="docutils literal notranslate"><span class="pre">Raster.lons</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gplately.Raster.lats"><code class="docutils literal notranslate"><span class="pre">Raster.lats</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gplately.Raster.origin"><code class="docutils literal notranslate"><span class="pre">Raster.origin</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gplately.Raster.filename"><code class="docutils literal notranslate"><span class="pre">Raster.filename</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gplately.Raster.interpolate"><code class="docutils literal notranslate"><span class="pre">Raster.interpolate()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gplately.Raster.resample"><code class="docutils literal notranslate"><span class="pre">Raster.resample()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gplately.Raster.resize"><code class="docutils literal notranslate"><span class="pre">Raster.resize()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gplately.Raster.fill_NaNs"><code class="docutils literal notranslate"><span class="pre">Raster.fill_NaNs()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gplately.Raster.__init__"><code class="docutils literal notranslate"><span class="pre">Raster.__init__()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gplately.Raster.clip_by_extent"><code class="docutils literal notranslate"><span class="pre">Raster.clip_by_extent()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gplately.Raster.clip_by_polygon"><code class="docutils literal notranslate"><span class="pre">Raster.clip_by_polygon()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gplately.Raster.copy"><code class="docutils literal notranslate"><span class="pre">Raster.copy()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id0"><code class="docutils literal notranslate"><span class="pre">Raster.data</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gplately.Raster.dtype"><code class="docutils literal notranslate"><span class="pre">Raster.dtype</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id1"><code class="docutils literal notranslate"><span class="pre">Raster.extent</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id2"><code class="docutils literal notranslate"><span class="pre">Raster.filename</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id3"><code class="docutils literal notranslate"><span class="pre">Raster.fill_NaNs()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gplately.Raster.imshow"><code class="docutils literal notranslate"><span class="pre">Raster.imshow()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id4"><code class="docutils literal notranslate"><span class="pre">Raster.interpolate()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id5"><code class="docutils literal notranslate"><span class="pre">Raster.lats</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id6"><code class="docutils literal notranslate"><span class="pre">Raster.lons</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gplately.Raster.ndim"><code class="docutils literal notranslate"><span class="pre">Raster.ndim</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id7"><code class="docutils literal notranslate"><span class="pre">Raster.origin</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id8"><code class="docutils literal notranslate"><span class="pre">Raster.plate_reconstruction</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gplately.Raster.plot"><code class="docutils literal notranslate"><span class="pre">Raster.plot()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gplately.Raster.query"><code class="docutils literal notranslate"><span class="pre">Raster.query()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gplately.Raster.reconstruct"><code class="docutils literal notranslate"><span class="pre">Raster.reconstruct()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id9"><code class="docutils literal notranslate"><span class="pre">Raster.resample()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#id10"><code class="docutils literal notranslate"><span class="pre">Raster.resize()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gplately.Raster.rotate_reference_frames"><code class="docutils literal notranslate"><span class="pre">Raster.rotate_reference_frames()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gplately.Raster.save_to_netcdf4"><code class="docutils literal notranslate"><span class="pre">Raster.save_to_netcdf4()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gplately.Raster.shape"><code class="docutils literal notranslate"><span class="pre">Raster.shape</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gplately.Raster.size"><code class="docutils literal notranslate"><span class="pre">Raster.size</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gplately.Raster.time"><code class="docutils literal notranslate"><span class="pre">Raster.time</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="gplately.PlotTopologies.html">gplately.PlotTopologies</a></li>
+<li class="toctree-l2"><a class="reference internal" href="gplately.SeafloorGrid.html">gplately.SeafloorGrid</a></li>
+</ul>
+</li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">gplately</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../api.html">GPlately API</a></li>
+      <li class="breadcrumb-item active">gplately.Raster</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/generated/gplately.Raster.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="gplately-raster">
+<h1>gplately.Raster<a class="headerlink" href="#gplately-raster" title="Link to this heading"></a></h1>
+<dl class="py class">
+<dt class="sig sig-object py" id="gplately.Raster">
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">gplately.</span></span><span class="sig-name descname"><span class="pre">Raster</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plate_reconstruction</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">extent</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'global'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">realign</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">resample</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">resize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">origin</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x_dimension_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y_dimension_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_variable_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gplately/grids.html#Raster"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.Raster" title="Link to this definition"></a></dt>
+<dd><p>The Raster class handles raster data.</p>
+<p><cite>Raster</cite>’s functionalities include sampling data at points using spline
+interpolation, resampling rasters with new X and Y-direction spacings and
+resizing rasters using new X and Y grid pixel resolutions. NaN-type data
+in rasters can be replaced with the values of their nearest valid
+neighbours.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>str</em><em> or </em><em>array-like</em>) – The raster data, either as a filename (<cite>str</cite>) or array.</p></li>
+<li><p><strong>plate_reconstruction</strong> (<a class="reference internal" href="../gplately.html#gplately.PlateReconstruction" title="gplately.PlateReconstruction"><em>PlateReconstruction</em></a>) – Allows for the accessibility of PlateReconstruction object attributes.
+Namely, PlateReconstruction object attributes rotation_model,
+topology_features and static_polygons can be used in the <cite>Raster</cite>
+object if called using “self.plate_reconstruction.X”, where X is the
+attribute.</p></li>
+<li><p><strong>extent</strong> (<em>str</em><em> or </em><em>4-tuple</em><em>, </em><em>default: 'global'</em>) – 4-tuple to specify (min_lon, max_lon, min_lat, max_lat) extents
+of the raster. If no extents are supplied, full global extent
+[-180,180,-90,90] is assumed (equivalent to <cite>extent=’global’</cite>).
+For array data with an upper-left origin, make sure <cite>min_lat</cite> is
+greater than <cite>max_lat</cite>, or specify <cite>origin</cite> parameter.</p></li>
+<li><p><strong>resample</strong> (<em>2-tuple</em><em>, </em><em>optional</em>) – Optionally resample grid, pass spacing in X and Y direction as a
+2-tuple e.g. resample=(spacingX, spacingY).</p></li>
+<li><p><strong>time</strong> (<em>float</em><em>, </em><em>default: 0.0</em>) – The time step represented by the raster data. Used for raster
+reconstruction.</p></li>
+<li><p><strong>origin</strong> (<em>{'lower'</em><em>, </em><em>'upper'}</em><em>, </em><em>optional</em>) – When <cite>data</cite> is an array, use this parameter to specify the origin
+(upper left or lower left) of the data (overriding <cite>extent</cite>).</p></li>
+<li><p><strong>**kwargs</strong> – Handle deprecated arguments such as <cite>PlateReconstruction_object</cite>,
+<cite>filename</cite>, and <cite>array</cite>.</p></li>
+</ul>
+</dd>
+</dl>
+<dl class="py attribute">
+<dt class="sig sig-object py" id="gplately.Raster.data">
+<span class="sig-name descname"><span class="pre">data</span></span><a class="headerlink" href="#gplately.Raster.data" title="Link to this definition"></a></dt>
+<dd><p>Array containing the underlying raster data. This attribute can be
+modified after creation of the <cite>Raster</cite>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>ndarray, shape (ny, nx)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="gplately.Raster.plate_reconstruction">
+<span class="sig-name descname"><span class="pre">plate_reconstruction</span></span><a class="headerlink" href="#gplately.Raster.plate_reconstruction" title="Link to this definition"></a></dt>
+<dd><p>An object of GPlately’s <cite>PlateReconstruction</cite> class, like the
+<cite>rotation_model</cite>, a set of reconstructable <cite>topology_features</cite> and
+<cite>static_polygons</cite> that belong to a particular plate model. These
+attributes can be used in the <cite>Raster</cite> object if called using
+“self.plate_reconstruction.X”, where X is the attribute. This
+attribute can be modified after creation of the <cite>Raster</cite>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="../gplately.html#gplately.PlateReconstruction" title="gplately.PlateReconstruction">PlateReconstruction</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="gplately.Raster.extent">
+<span class="sig-name descname"><span class="pre">extent</span></span><a class="headerlink" href="#gplately.Raster.extent" title="Link to this definition"></a></dt>
+<dd><p>Four-element array to specify [min lon, max lon, min lat, max lat]
+extents of any sampling points. If no extents are supplied, full
+global extent [-180,180,-90,90] is assumed.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>tuple of floats</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="gplately.Raster.lons">
+<span class="sig-name descname"><span class="pre">lons</span></span><a class="headerlink" href="#gplately.Raster.lons" title="Link to this definition"></a></dt>
+<dd><p>The x-coordinates of the raster data. This attribute can be modified
+after creation of the <cite>Raster</cite>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>ndarray, shape (nx,)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="gplately.Raster.lats">
+<span class="sig-name descname"><span class="pre">lats</span></span><a class="headerlink" href="#gplately.Raster.lats" title="Link to this definition"></a></dt>
+<dd><p>The y-coordinates of the raster data. This attribute can be modified
+after creation of the <cite>Raster</cite>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>ndarray, shape (ny,)</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="gplately.Raster.origin">
+<span class="sig-name descname"><span class="pre">origin</span></span><a class="headerlink" href="#gplately.Raster.origin" title="Link to this definition"></a></dt>
+<dd><p>The origin (lower or upper left) or the data array.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>{‘lower’, ‘upper’}</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py attribute">
+<dt class="sig sig-object py" id="gplately.Raster.filename">
+<span class="sig-name descname"><span class="pre">filename</span></span><a class="headerlink" href="#gplately.Raster.filename" title="Link to this definition"></a></dt>
+<dd><p>The filename used to create the <cite>Raster</cite> object. If the object was
+created directly from an array, this attribute is <cite>None</cite>.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>str or None</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="gplately.Raster.interpolate">
+<span class="sig-name descname"><span class="pre">interpolate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">lons</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lats</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">method</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'linear'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_indices</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gplately/grids.html#Raster.interpolate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.Raster.interpolate" title="Link to this definition"></a></dt>
+<dd><p>Sample gridded data at a set of points using spline interpolation.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="gplately.Raster.resample">
+<span class="sig-name descname"><span class="pre">resample</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">spacingX</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">spacingY</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">overwrite</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gplately/grids.html#Raster.resample"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.Raster.resample" title="Link to this definition"></a></dt>
+<dd><p>Resamples the grid using X &amp; Y-spaced lat-lon arrays, meshed with
+linear interpolation.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="gplately.Raster.resize">
+<span class="sig-name descname"><span class="pre">resize</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">resX</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">resY</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">overwrite</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gplately/grids.html#Raster.resize"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.Raster.resize" title="Link to this definition"></a></dt>
+<dd><p>Resizes the grid with a specific resolution and samples points
+using linear interpolation.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="gplately.Raster.fill_NaNs">
+<span class="sig-name descname"><span class="pre">fill_NaNs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">overwrite</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gplately/grids.html#Raster.fill_NaNs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.Raster.fill_NaNs" title="Link to this definition"></a></dt>
+<dd><p>Searches for invalid ‘data’ cells containing NaN-type entries and
+replaces NaNs with the value of the nearest valid data cell.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py">
+<span class="sig-name descname"><span class="pre">reconstruct(time,</span> <span class="pre">fill_value=None,</span> <span class="pre">partitioning_features=None,</span></span></dt>
+<dd><blockquote>
+<div><p>threads=1, anchor_plate_id=None, inplace=False)</p>
+</div></blockquote>
+<p>Reconstruct the raster from its initial time (<cite>self.time</cite>) to a new
+time.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="gplately.Raster.__init__">
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plate_reconstruction</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">extent</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'global'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">realign</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">resample</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">resize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">origin</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x_dimension_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y_dimension_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_variable_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gplately/grids.html#Raster.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.Raster.__init__" title="Link to this definition"></a></dt>
+<dd><p>Constructs all necessary attributes for the raster object.</p>
+<p>Note: either a str path to a netCDF file OR an ndarray representing a grid must be specified.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>str</em><em> or </em><em>array-like</em>) – The raster data, either as a filename (<cite>str</cite>) or array.</p></li>
+<li><p><strong>plate_reconstruction</strong> (<a class="reference internal" href="../gplately.html#gplately.PlateReconstruction" title="gplately.PlateReconstruction"><em>PlateReconstruction</em></a>) – Allows for the accessibility of PlateReconstruction object attributes. Namely, PlateReconstruction object
+attributes rotation_model, topology_featues and static_polygons can be used in the points object if called using
+“self.plate_reconstruction.X”, where X is the attribute.</p></li>
+<li><p><strong>extent</strong> (<em>str</em><em> or </em><em>4-tuple</em><em>, </em><em>default: 'global'</em>) – 4-tuple to specify (min_lon, max_lon, min_lat, max_lat) extents
+of the raster. If no extents are supplied, full global extent
+[-180,180,-90,90] is assumed (equivalent to <cite>extent=’global’</cite>).
+For array data with an upper-left origin, make sure <cite>min_lat</cite> is
+greater than <cite>max_lat</cite>, or specify <cite>origin</cite> parameter.</p></li>
+<li><p><strong>resample</strong> (<em>2-tuple</em><em>, </em><em>optional</em>) – Optionally resample grid, pass spacing in X and Y direction as a
+2-tuple e.g. resample=(spacingX, spacingY).</p></li>
+<li><p><strong>resize</strong> (<em>2-tuple</em><em>, </em><em>optional</em>) – Optionally resample grid to X-columns, Y-rows as a
+2-tuple e.g. resample=(resX, resY).</p></li>
+<li><p><strong>time</strong> (<em>float</em><em>, </em><em>default: 0.0</em>) – The time step represented by the raster data. Used for raster
+reconstruction.</p></li>
+<li><p><strong>origin</strong> (<em>{'lower'</em><em>, </em><em>'upper'}</em><em>, </em><em>optional</em>) – When <cite>data</cite> is an array, use this parameter to specify the origin
+(upper left or lower left) of the data (overriding <cite>extent</cite>).</p></li>
+<li><p><strong>x_dimension_name</strong> (<em>str</em><em>, </em><em>optional</em><em>, </em><em>default=&quot;&quot;</em>) – If the grid file uses comman names, such as “x”, “lon”, “lons” or “longitude”, you need not set this parameter.
+Otherwise, you need to tell us what the x dimension name is.</p></li>
+<li><p><strong>y_dimension_name</strong> (<em>str</em><em>, </em><em>optional</em><em>, </em><em>default=&quot;&quot;</em>) – If the grid file uses comman names, such as “y”, “lat”, “lats” or “latitude”, you need not set this parameter.
+Otherwise, you need to tell us what the y dimension name is.</p></li>
+<li><p><strong>data_variable_name</strong> (<em>str</em><em>, </em><em>optional</em><em>, </em><em>default=&quot;&quot;</em>) – The program will try its best to determine the data variable name.
+However, it would be better if you could tell us what the data variable name is.
+Otherwise, the program will guess. The result may/may not be correct.</p></li>
+<li><p><strong>**kwargs</strong> – Handle deprecated arguments such as <cite>PlateReconstruction_object</cite>,
+<cite>filename</cite>, and <cite>array</cite>.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<p class="rubric">Methods</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#gplately.Raster.__init__" title="gplately.Raster.__init__"><code class="xref py py-obj docutils literal notranslate"><span class="pre">__init__</span></code></a>([data, plate_reconstruction, ...])</p></td>
+<td><p>Constructs all necessary attributes for the raster object.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="../gplately.html#gplately.Raster.clip_by_extent" title="gplately.Raster.clip_by_extent"><code class="xref py py-obj docutils literal notranslate"><span class="pre">clip_by_extent</span></code></a>(extent)</p></td>
+<td><p>clip the raster according to a given extent [x_min, x_max, y_min, y_max] the extent of the returned raster may be slightly bigger than the given extent.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="../gplately.html#gplately.Raster.clip_by_polygon" title="gplately.Raster.clip_by_polygon"><code class="xref py py-obj docutils literal notranslate"><span class="pre">clip_by_polygon</span></code></a>(polygon)</p></td>
+<td><p>TODO:</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="../gplately.html#gplately.Raster.copy" title="gplately.Raster.copy"><code class="xref py py-obj docutils literal notranslate"><span class="pre">copy</span></code></a>()</p></td>
+<td><p>Returns a copy of the Raster</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="../gplately.html#id157" title="gplately.Raster.fill_NaNs"><code class="xref py py-obj docutils literal notranslate"><span class="pre">fill_NaNs</span></code></a>([inplace, return_array])</p></td>
+<td><p>Search raster for invalid ‘data’ cells containing NaN-type entries replaces them with the value of their nearest valid data cells.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="../gplately.html#gplately.Raster.imshow" title="gplately.Raster.imshow"><code class="xref py py-obj docutils literal notranslate"><span class="pre">imshow</span></code></a>([ax, projection])</p></td>
+<td><p>Display raster data.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="../gplately.html#id158" title="gplately.Raster.interpolate"><code class="xref py py-obj docutils literal notranslate"><span class="pre">interpolate</span></code></a>(lons, lats[, method, return_indices])</p></td>
+<td><p>Interpolate a set of point data onto the gridded data provided to the <cite>Raster</cite> object.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="../gplately.html#gplately.Raster.plot" title="gplately.Raster.plot"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot</span></code></a>([ax, projection])</p></td>
+<td><p>Display raster data.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="../gplately.html#gplately.Raster.query" title="gplately.Raster.query"><code class="xref py py-obj docutils literal notranslate"><span class="pre">query</span></code></a>(lons, lats[, region_of_interest])</p></td>
+<td><p>Given a set of location coordinates, return the grid values at these locations</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="../gplately.html#gplately.Raster.reconstruct" title="gplately.Raster.reconstruct"><code class="xref py py-obj docutils literal notranslate"><span class="pre">reconstruct</span></code></a>(time[, fill_value, ...])</p></td>
+<td><p>Reconstruct raster data to a given time.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="../gplately.html#id163" title="gplately.Raster.resample"><code class="xref py py-obj docutils literal notranslate"><span class="pre">resample</span></code></a>(spacingX, spacingY[, method, inplace])</p></td>
+<td><p>Resample the <cite>grid</cite> passed to the <cite>Raster</cite> object with a new <cite>spacingX</cite> and <cite>spacingY</cite> using linear interpolation.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="../gplately.html#id164" title="gplately.Raster.resize"><code class="xref py py-obj docutils literal notranslate"><span class="pre">resize</span></code></a>(resX, resY[, inplace, method, ...])</p></td>
+<td><p>Resize the grid passed to the <cite>Raster</cite> object with a new x and y resolution (<cite>resX</cite> and <cite>resY</cite>) using linear interpolation.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="../gplately.html#gplately.Raster.rotate_reference_frames" title="gplately.Raster.rotate_reference_frames"><code class="xref py py-obj docutils literal notranslate"><span class="pre">rotate_reference_frames</span></code></a>(...[, ...])</p></td>
+<td><p>Rotate a grid defined in one plate model reference frame within a gplately.Raster object to another plate reconstruction model reference frame.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="../gplately.html#gplately.Raster.save_to_netcdf4" title="gplately.Raster.save_to_netcdf4"><code class="xref py py-obj docutils literal notranslate"><span class="pre">save_to_netcdf4</span></code></a>(filename[, ...])</p></td>
+<td><p>Saves the grid attributed to the <cite>Raster</cite> object to the given <cite>filename</cite> (including the &quot;.nc&quot; extension) in netCDF4 format.</p></td>
+</tr>
+</tbody>
+</table>
+<p class="rubric">Attributes</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="../gplately.html#id154" title="gplately.Raster.data"><code class="xref py py-obj docutils literal notranslate"><span class="pre">data</span></code></a></p></td>
+<td><p>The object's raster data.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="../gplately.html#gplately.Raster.dtype" title="gplately.Raster.dtype"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dtype</span></code></a></p></td>
+<td><p>The data type of the array.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="../gplately.html#id155" title="gplately.Raster.extent"><code class="xref py py-obj docutils literal notranslate"><span class="pre">extent</span></code></a></p></td>
+<td><p>The spatial extent (x0, x1, y0, y1) of the data.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="../gplately.html#id156" title="gplately.Raster.filename"><code class="xref py py-obj docutils literal notranslate"><span class="pre">filename</span></code></a></p></td>
+<td><p>The filename of the raster file used to create the object.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="../gplately.html#id159" title="gplately.Raster.lats"><code class="xref py py-obj docutils literal notranslate"><span class="pre">lats</span></code></a></p></td>
+<td><p>The y-coordinates of the raster data.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="../gplately.html#id160" title="gplately.Raster.lons"><code class="xref py py-obj docutils literal notranslate"><span class="pre">lons</span></code></a></p></td>
+<td><p>The x-coordinates of the raster data.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="../gplately.html#gplately.Raster.ndim" title="gplately.Raster.ndim"><code class="xref py py-obj docutils literal notranslate"><span class="pre">ndim</span></code></a></p></td>
+<td><p>The number of dimensions in the array.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="../gplately.html#id161" title="gplately.Raster.origin"><code class="xref py py-obj docutils literal notranslate"><span class="pre">origin</span></code></a></p></td>
+<td><p>The origin of the data array, used for e.g. plotting.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="../gplately.html#id162" title="gplately.Raster.plate_reconstruction"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plate_reconstruction</span></code></a></p></td>
+<td><p>The <cite>PlateReconstruction</cite> object to be used for raster reconstruction.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="../gplately.html#gplately.Raster.shape" title="gplately.Raster.shape"><code class="xref py py-obj docutils literal notranslate"><span class="pre">shape</span></code></a></p></td>
+<td><p>The shape of the data array.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="../gplately.html#gplately.Raster.size" title="gplately.Raster.size"><code class="xref py py-obj docutils literal notranslate"><span class="pre">size</span></code></a></p></td>
+<td><p>The size of the data array.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="../gplately.html#gplately.Raster.time" title="gplately.Raster.time"><code class="xref py py-obj docutils literal notranslate"><span class="pre">time</span></code></a></p></td>
+<td><p>The time step represented by the raster data.</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py method">
+<dt class="sig sig-object py" id="gplately.Raster.clip_by_extent">
+<span class="sig-name descname"><span class="pre">clip_by_extent</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">extent</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gplately/grids.html#Raster.clip_by_extent"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.Raster.clip_by_extent" title="Link to this definition"></a></dt>
+<dd><p>clip the raster according to a given extent [x_min, x_max, y_min, y_max]
+the extent of the returned raster may be slightly bigger than the given extent.
+this happens when the border of the given extent fall between two gird lines.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="gplately.Raster.clip_by_polygon">
+<span class="sig-name descname"><span class="pre">clip_by_polygon</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">polygon</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gplately/grids.html#Raster.clip_by_polygon"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.Raster.clip_by_polygon" title="Link to this definition"></a></dt>
+<dd><p>TODO:</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="gplately.Raster.copy">
+<span class="sig-name descname"><span class="pre">copy</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gplately/grids.html#Raster.copy"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.Raster.copy" title="Link to this definition"></a></dt>
+<dd><p>Returns a copy of the Raster</p>
+<dl class="field-list simple">
+<dt class="field-odd">Returns<span class="colon">:</span></dt>
+<dd class="field-odd"><p>A copy of the current Raster object</p>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference internal" href="../gplately.html#gplately.Raster" title="gplately.Raster">Raster</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="id0">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">data</span></span><a class="headerlink" href="#id0" title="Link to this definition"></a></dt>
+<dd><p>The object’s raster data.</p>
+<p>Can be modified.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="gplately.Raster.dtype">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">dtype</span></span><a class="headerlink" href="#gplately.Raster.dtype" title="Link to this definition"></a></dt>
+<dd><p>The data type of the array.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="id1">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">extent</span></span><a class="headerlink" href="#id1" title="Link to this definition"></a></dt>
+<dd><p>The spatial extent (x0, x1, y0, y1) of the data.</p>
+<p>If y0 &lt; y1, the origin is the lower-left corner; else the upper-left.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="id2">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">filename</span></span><a class="headerlink" href="#id2" title="Link to this definition"></a></dt>
+<dd><p>The filename of the raster file used to create the object.</p>
+<p>If a NumPy array was used instead, this attribute is <cite>None</cite>.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id3">
+<span class="sig-name descname"><span class="pre">fill_NaNs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inplace</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_array</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gplately/grids.html#Raster.fill_NaNs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#id3" title="Link to this definition"></a></dt>
+<dd><p>Search raster for invalid ‘data’ cells containing NaN-type entries replaces them
+with the value of their nearest valid data cells.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>inplace</strong> (<em>bool</em><em>, </em><em>default=False</em>) – Choose whether to overwrite the grid currently held in the <cite>data</cite> attribute with
+the filled grid.</p></li>
+<li><p><strong>return_array</strong> (<em>bool</em><em>, </em><em>default False</em>) – Return a <cite>numpy.ndarray</cite>, rather than a <cite>Raster</cite>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The resized grid. If <cite>inplace</cite> is set to <cite>True</cite>, this raster overwrites the
+one attributed to <cite>data</cite>.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="../gplately.html#gplately.Raster" title="gplately.Raster">Raster</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="gplately.Raster.imshow">
+<span class="sig-name descname"><span class="pre">imshow</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">projection</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gplately/grids.html#Raster.imshow"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.Raster.imshow" title="Link to this definition"></a></dt>
+<dd><p>Display raster data.</p>
+<p>A pre-existing matplotlib <cite>Axes</cite> instance is used if available,
+else a new one is created. The <cite>origin</cite> and <cite>extent</cite> of the image
+are determined automatically and should not be specified.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ax</strong> (<em>matplotlib.axes.Axes</em><em>, </em><em>optional</em>) – If specified, the image will be drawn within these axes.</p></li>
+<li><p><strong>projection</strong> (<em>cartopy.crs.Projection</em><em>, </em><em>optional</em>) – The map projection to be used. If both <cite>ax</cite> and <cite>projection</cite>
+are specified, this will be checked against the <cite>projection</cite>
+attribute of <cite>ax</cite>, if it exists.</p></li>
+<li><p><strong>**kwargs</strong> (<em>dict</em><em>, </em><em>optional</em>) – Any further keyword arguments are passed to
+<cite>matplotlib.pyplot.imshow</cite> or <cite>matplotlib.axes.Axes.imshow</cite>,
+where appropriate.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>matplotlib.image.AxesImage</p>
+</dd>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>ValueError</strong> – If <cite>ax</cite> and <cite>projection</cite> are both specified, but do not match
+    (i.e. <cite>ax.projection != projection</cite>).</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id4">
+<span class="sig-name descname"><span class="pre">interpolate</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">lons</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lats</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">method</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'linear'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_indices</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gplately/grids.html#Raster.interpolate"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#id4" title="Link to this definition"></a></dt>
+<dd><p>Interpolate a set of point data onto the gridded data provided
+to the <cite>Raster</cite> object.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>lons</strong> (<em>array_like</em>) – The longitudes and latitudes of the points to interpolate onto the
+gridded data. Must be broadcastable to a common shape.</p></li>
+<li><p><strong>lats</strong> (<em>array_like</em>) – The longitudes and latitudes of the points to interpolate onto the
+gridded data. Must be broadcastable to a common shape.</p></li>
+<li><p><strong>method</strong> (<em>str</em><em> or </em><em>int; default: 'linear'</em>) – The order of spline interpolation. Must be an integer in the range
+0-5. ‘nearest’, ‘linear’, and ‘cubic’ are aliases for 0, 1, and 3,
+respectively.</p></li>
+<li><p><strong>return_indices</strong> (<em>bool</em><em>, </em><em>default=False</em>) – Whether to return the row and column indices of the nearest grid
+points.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><ul class="simple">
+<li><p><em>numpy.ndarray</em> – The values interpolated at the input points.</p></li>
+<li><p><strong>indices</strong> (<em>2-tuple of numpy.ndarray</em>) – The i- and j-indices of the nearest grid points to the input
+points, only present if <cite>return_indices=True</cite>.</p></li>
+</ul>
+</p>
+</dd>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ValueError</strong> – If an invalid <cite>method</cite> is provided.</p></li>
+<li><p><strong>RuntimeWarning</strong> – If <cite>lats</cite> contains any invalid values outside of the interval
+    [-90, 90]. Invalid values will be clipped to this interval.</p></li>
+</ul>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>If <cite>return_indices</cite> is set to <cite>True</cite>, the nearest array indices
+are returned as a tuple of arrays, in (i, j) or (lat, lon) format.</p>
+<p>An example output:</p>
+<blockquote>
+<div><p># The first array holds the rows of the raster where point data spatially falls near.
+# The second array holds the columns of the raster where point data spatially falls near.
+sampled_indices = (array([1019, 1019, 1019, …, 1086, 1086, 1087]), array([2237, 2237, 2237, …,  983,  983,  983]))</p>
+</div></blockquote>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="id5">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">lats</span></span><a class="headerlink" href="#id5" title="Link to this definition"></a></dt>
+<dd><p>The y-coordinates of the raster data.</p>
+<p>Can be modified.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="id6">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">lons</span></span><a class="headerlink" href="#id6" title="Link to this definition"></a></dt>
+<dd><p>The x-coordinates of the raster data.</p>
+<p>Can be modified.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="gplately.Raster.ndim">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">ndim</span></span><a class="headerlink" href="#gplately.Raster.ndim" title="Link to this definition"></a></dt>
+<dd><p>The number of dimensions in the array.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="id7">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">origin</span></span><a class="headerlink" href="#id7" title="Link to this definition"></a></dt>
+<dd><p>The origin of the data array, used for e.g. plotting.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="id8">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">plate_reconstruction</span></span><a class="headerlink" href="#id8" title="Link to this definition"></a></dt>
+<dd><p>The <cite>PlateReconstruction</cite> object to be used for raster
+reconstruction.</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="gplately.Raster.plot">
+<span class="sig-name descname"><span class="pre">plot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ax</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">projection</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#gplately.Raster.plot" title="Link to this definition"></a></dt>
+<dd><p>Display raster data.</p>
+<p>A pre-existing matplotlib <cite>Axes</cite> instance is used if available,
+else a new one is created. The <cite>origin</cite> and <cite>extent</cite> of the image
+are determined automatically and should not be specified.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ax</strong> (<em>matplotlib.axes.Axes</em><em>, </em><em>optional</em>) – If specified, the image will be drawn within these axes.</p></li>
+<li><p><strong>projection</strong> (<em>cartopy.crs.Projection</em><em>, </em><em>optional</em>) – The map projection to be used. If both <cite>ax</cite> and <cite>projection</cite>
+are specified, this will be checked against the <cite>projection</cite>
+attribute of <cite>ax</cite>, if it exists.</p></li>
+<li><p><strong>**kwargs</strong> (<em>dict</em><em>, </em><em>optional</em>) – Any further keyword arguments are passed to
+<cite>matplotlib.pyplot.imshow</cite> or <cite>matplotlib.axes.Axes.imshow</cite>,
+where appropriate.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p>matplotlib.image.AxesImage</p>
+</dd>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>ValueError</strong> – If <cite>ax</cite> and <cite>projection</cite> are both specified, but do not match
+    (i.e. <cite>ax.projection != projection</cite>).</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="gplately.Raster.query">
+<span class="sig-name descname"><span class="pre">query</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">lons</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lats</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">region_of_interest</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gplately/grids.html#Raster.query"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.Raster.query" title="Link to this definition"></a></dt>
+<dd><p>Given a set of location coordinates, return the grid values at these locations</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>lons</strong> (<em>list</em>) – a list of longitudes of the location coordinates</p></li>
+<li><p><strong>lats</strong> (<em>list</em>) – a list of latitude of the location coordinates</p></li>
+<li><p><strong>region_of_interest</strong> (<em>float</em>) – the radius of the region of interest in km
+this is the arch length. we need to calculate the straight distance between the two points in 3D space from this arch length.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>a list of grid values for the given locations.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>list</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="gplately.Raster.reconstruct">
+<span class="sig-name descname"><span class="pre">reconstruct</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">time</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fill_value</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">partitioning_features</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">threads</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">anchor_plate_id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inplace</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_array</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gplately/grids.html#Raster.reconstruct"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.Raster.reconstruct" title="Link to this definition"></a></dt>
+<dd><p>Reconstruct raster data to a given time.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>time</strong> (<em>float</em>) – Time to which the data will be reconstructed.</p></li>
+<li><p><strong>fill_value</strong> (<em>float</em><em>, </em><em>int</em><em>, </em><em>str</em><em>, or </em><em>tuple</em><em>, </em><em>optional</em>) – The value to be used for regions outside of the static polygons
+at <cite>time</cite>. By default (<cite>fill_value=None</cite>), this value will be
+determined based on the input.</p></li>
+<li><p><strong>partitioning_features</strong> (<em>sequence</em><em> of </em><em>Feature</em><em> or </em><em>str</em><em>, </em><em>optional</em>) – The features used to partition the raster grid and assign plate
+IDs. By default, <cite>self.plate_reconstruction.static_polygons</cite>
+will be used, but alternatively any valid argument to
+‘pygplates.FeaturesFunctionArgument’ can be specified here.</p></li>
+<li><p><strong>threads</strong> (<em>int</em><em>, </em><em>default 1</em>) – Number of threads to use for certain computationally heavy
+routines.</p></li>
+<li><p><strong>anchor_plate_id</strong> (<em>int</em><em>, </em><em>optional</em>) – ID of the anchored plate. By default, reconstructions are made with respect to
+the anchor plate ID specified in the <cite>gplately.PlateReconstruction</cite> object.</p></li>
+<li><p><strong>inplace</strong> (<em>bool</em><em>, </em><em>default False</em>) – Perform the reconstruction in-place (replace the raster’s data
+with the reconstructed data).</p></li>
+<li><p><strong>return_array</strong> (<em>bool</em><em>, </em><em>default False</em>) – Return a <cite>numpy.ndarray</cite>, rather than a <cite>Raster</cite>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The reconstructed grid. Areas for which no plate ID could be
+determined will be filled with <cite>fill_value</cite>.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="../gplately.html#gplately.Raster" title="gplately.Raster">Raster</a> or np.ndarray</p>
+</dd>
+<dt class="field-even">Raises<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>TypeError</strong> – If this <cite>Raster</cite> has no <cite>plate_reconstruction</cite> set.</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>For two-dimensional grids, <cite>fill_value</cite> should be a single
+number. The default value will be <cite>np.nan</cite> for float or
+complex types, the minimum value for integer types, and the
+maximum value for unsigned types.
+For RGB image grids, <cite>fill_value</cite> should be a 3-tuple RGB
+colour code or a matplotlib colour string. The default value
+will be black (0.0, 0.0, 0.0) or (0, 0, 0).
+For RGBA image grids, <cite>fill_value</cite> should be a 4-tuple RGBA
+colour code or a matplotlib colour string. The default fill
+value will be transparent black (0.0, 0.0, 0.0, 0.0) or
+(0, 0, 0, 0).</p>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id9">
+<span class="sig-name descname"><span class="pre">resample</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">spacingX</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">spacingY</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">method</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'linear'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inplace</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gplately/grids.html#Raster.resample"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#id9" title="Link to this definition"></a></dt>
+<dd><p>Resample the <cite>grid</cite> passed to the <cite>Raster</cite> object with a new <cite>spacingX</cite> and
+<cite>spacingY</cite> using linear interpolation.</p>
+<p class="rubric">Notes</p>
+<p>Ultimately, <cite>resample</cite> changes the lat-lon resolution of the gridded data. The
+larger the x and y spacings given are, the larger the pixellation of raster data.</p>
+<p><cite>resample</cite> creates new latitude and longitude arrays with specified spacings in the
+X and Y directions (<cite>spacingX</cite> and <cite>spacingY</cite>). These arrays are linearly interpolated
+into a new raster. If <cite>inplace</cite> is set to <cite>True</cite>, the respaced latitude array, longitude
+array and raster will inplace the ones currently attributed to the <cite>Raster</cite> object.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>spacingX</strong> (<em>ndarray</em>) – Specify the spacing in the X and Y directions with which to resample. The larger
+<cite>spacingX</cite> and <cite>spacingY</cite> are, the larger the raster pixels become (less resolved).
+Note: to keep the size of the raster consistent, set <cite>spacingX = spacingY</cite>;
+otherwise, if for example <cite>spacingX &gt; spacingY</cite>, the raster will appear stretched
+longitudinally.</p></li>
+<li><p><strong>spacingY</strong> (<em>ndarray</em>) – Specify the spacing in the X and Y directions with which to resample. The larger
+<cite>spacingX</cite> and <cite>spacingY</cite> are, the larger the raster pixels become (less resolved).
+Note: to keep the size of the raster consistent, set <cite>spacingX = spacingY</cite>;
+otherwise, if for example <cite>spacingX &gt; spacingY</cite>, the raster will appear stretched
+longitudinally.</p></li>
+<li><p><strong>method</strong> (<em>str</em><em> or </em><em>int; default: 'linear'</em>) – The order of spline interpolation. Must be an integer in the range
+0-5. ‘nearest’, ‘linear’, and ‘cubic’ are aliases for 0, 1, and 3,
+respectively.</p></li>
+<li><p><strong>inplace</strong> (<em>bool</em><em>, </em><em>default=False</em>) – Choose to overwrite the data (the <cite>self.data</cite> attribute), latitude array
+(<cite>self.lats</cite>) and longitude array (<cite>self.lons</cite>) currently attributed to the
+<cite>Raster</cite> object.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The resampled grid. If <cite>inplace</cite> is set to <cite>True</cite>, this raster overwrites the
+one attributed to <cite>data</cite>.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="../gplately.html#gplately.Raster" title="gplately.Raster">Raster</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="id10">
+<span class="sig-name descname"><span class="pre">resize</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">resX</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">resY</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inplace</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">method</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'linear'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_array</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gplately/grids.html#Raster.resize"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#id10" title="Link to this definition"></a></dt>
+<dd><p>Resize the grid passed to the <cite>Raster</cite> object with a new x and y resolution
+(<cite>resX</cite> and <cite>resY</cite>) using linear interpolation.</p>
+<p class="rubric">Notes</p>
+<p>Ultimately, <cite>resize</cite> “stretches” a raster in the x and y directions. The larger
+the resolutions in x and y, the more stretched the raster appears in x and y.</p>
+<p>It creates new latitude and longitude arrays with specific resolutions in
+the X and Y directions (<cite>resX</cite> and <cite>resY</cite>). These arrays are linearly interpolated
+into a new raster. If <cite>inplace</cite> is set to <cite>True</cite>, the resized latitude, longitude
+arrays and raster will inplace the ones currently attributed to the <cite>Raster</cite> object.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>resX</strong> (<em>ndarray</em>) – Specify the resolutions with which to resize the raster. The larger <cite>resX</cite> is,
+the more longitudinally-stretched the raster becomes. The larger <cite>resY</cite> is, the
+more latitudinally-stretched the raster becomes.</p></li>
+<li><p><strong>resY</strong> (<em>ndarray</em>) – Specify the resolutions with which to resize the raster. The larger <cite>resX</cite> is,
+the more longitudinally-stretched the raster becomes. The larger <cite>resY</cite> is, the
+more latitudinally-stretched the raster becomes.</p></li>
+<li><p><strong>method</strong> (<em>str</em><em> or </em><em>int; default: 'linear'</em>) – The order of spline interpolation. Must be an integer in the range
+0-5. ‘nearest’, ‘linear’, and ‘cubic’ are aliases for 0, 1, and 3,
+respectively.</p></li>
+<li><p><strong>inplace</strong> (<em>bool</em><em>, </em><em>default=False</em>) – Choose to overwrite the data (the <cite>self.data</cite> attribute), latitude array
+(<cite>self.lats</cite>) and longitude array (<cite>self.lons</cite>) currently attributed to the
+<cite>Raster</cite> object.</p></li>
+<li><p><strong>return_array</strong> (<em>bool</em><em>, </em><em>default False</em>) – Return a <cite>numpy.ndarray</cite>, rather than a <cite>Raster</cite>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The resized grid. If <cite>inplace</cite> is set to <cite>True</cite>, this raster overwrites the
+one attributed to <cite>data</cite>.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="../gplately.html#gplately.Raster" title="gplately.Raster">Raster</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="gplately.Raster.rotate_reference_frames">
+<span class="sig-name descname"><span class="pre">rotate_reference_frames</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">grid_spacing_degrees</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reconstruction_time</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">from_rotation_features_or_model</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">to_rotation_features_or_model</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">from_rotation_reference_plate</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">to_rotation_reference_plate</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">non_reference_plate</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">701</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gplately/grids.html#Raster.rotate_reference_frames"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.Raster.rotate_reference_frames" title="Link to this definition"></a></dt>
+<dd><p>Rotate a grid defined in one plate model reference frame
+within a gplately.Raster object to another plate
+reconstruction model reference frame.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>grid_spacing_degrees</strong> (<em>float</em>) – The spacing (in degrees) for the output rotated grid.</p></li>
+<li><p><strong>reconstruction_time</strong> (<em>float</em>) – The time at which to rotate the input grid.</p></li>
+<li><p><strong>from_rotation_features_or_model</strong> (<em>str</em><em>, </em><em>list</em><em> of </em><em>str</em><em>, or </em><em>instance</em><em> of </em><em>pygplates.RotationModel</em>) – A filename, or a list of filenames, or a pyGPlates
+RotationModel object that defines the rotation model
+that the input grid is currently associated with.</p></li>
+<li><p><strong>to_rotation_features_or_model</strong> (<em>str</em><em>, </em><em>list</em><em> of </em><em>str</em><em>, or </em><em>instance</em><em> of </em><em>pygplates.RotationModel</em>) – A filename, or a list of filenames, or a pyGPlates
+RotationModel object that defines the rotation model
+that the input grid shall be rotated with.</p></li>
+<li><p><strong>from_rotation_reference_plate</strong> (<em>int</em><em>, </em><em>default = 0</em>) – The current reference plate for the plate model the grid
+is defined in. Defaults to the anchor plate 0.</p></li>
+<li><p><strong>to_rotation_reference_plate</strong> (<em>int</em><em>, </em><em>default = 0</em>) – The desired reference plate for the plate model the grid
+is being rotated to. Defaults to the anchor plate 0.</p></li>
+<li><p><strong>non_reference_plate</strong> (<em>int</em><em>, </em><em>default = 701</em>) – An arbitrary placeholder reference frame with which
+to define the “from” and “to” reference frames.</p></li>
+<li><p><strong>output_name</strong> (<em>str</em><em>, </em><em>default None</em>) – If passed, the rotated grid is saved as a netCDF grid to this filename.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>An instance of the gplately.Raster object containing the rotated grid.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="../gplately.html#gplately.Raster" title="gplately.Raster">gplately.Raster</a>()</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
+<dt class="sig sig-object py" id="gplately.Raster.save_to_netcdf4">
+<span class="sig-name descname"><span class="pre">save_to_netcdf4</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">significant_digits</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fill_value</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">nan</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gplately/grids.html#Raster.save_to_netcdf4"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.Raster.save_to_netcdf4" title="Link to this definition"></a></dt>
+<dd><p>Saves the grid attributed to the <cite>Raster</cite> object to the given <cite>filename</cite> (including
+the “.nc” extension) in netCDF4 format.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="gplately.Raster.shape">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">shape</span></span><a class="headerlink" href="#gplately.Raster.shape" title="Link to this definition"></a></dt>
+<dd><p>The shape of the data array.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="gplately.Raster.size">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">size</span></span><a class="headerlink" href="#gplately.Raster.size" title="Link to this definition"></a></dt>
+<dd><p>The size of the data array.</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="gplately.Raster.time">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">time</span></span><a class="headerlink" href="#gplately.Raster.time" title="Link to this definition"></a></dt>
+<dd><p>The time step represented by the raster data.</p>
+</dd></dl>
+
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="gplately.Points.html" class="btn btn-neutral float-left" title="gplately.Points" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="gplately.PlotTopologies.html" class="btn btn-neutral float-right" title="gplately.PlotTopologies" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023-2025, The University of Sydney.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
