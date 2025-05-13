@@ -37,5 +37,5 @@ autosummary_generate = True
 autodoc_default_options = {
     "members": True,
     "undoc-members": False,
-    "private-members": True,
+    "private-members": False,
 }
