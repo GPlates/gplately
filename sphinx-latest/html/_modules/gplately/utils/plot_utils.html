@@ -113,8 +113,6 @@
 <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s2">&quot;gplately&quot;</span><span class="p">)</span>
 
 
-<div class="viewcode-block" id="_tessellate_triangles">
-<a class="viewcode-back" href="../../../gplately.utils.html#gplately.utils.plot_utils._tessellate_triangles">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">_tessellate_triangles</span><span class="p">(</span>
     <span class="n">geometries</span><span class="p">,</span>
     <span class="n">width</span><span class="p">,</span>
@@ -199,12 +197,9 @@
         <span class="n">polarity</span><span class="p">,</span>
     <span class="p">)</span>
 
-    <span class="k">return</span> <span class="n">results</span></div>
+    <span class="k">return</span> <span class="n">results</span>
 
 
-
-<div class="viewcode-block" id="_project_geometry">
-<a class="viewcode-back" href="../../../gplately.utils.html#gplately.utils.plot_utils._project_geometry">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">_project_geometry</span><span class="p">(</span><span class="n">geometry</span><span class="p">,</span> <span class="n">projection</span><span class="p">,</span> <span class="n">transform</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Project shapely geometries onto a certain Cartopy CRS map projection.</span>
 
@@ -235,12 +230,9 @@
             <span class="n">projected</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">i</span><span class="o">.</span><span class="n">geoms</span><span class="p">))</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">projected</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">projected</span></div>
+    <span class="k">return</span> <span class="n">projected</span>
 
 
-
-<div class="viewcode-block" id="_calculate_triangle_vertices">
-<a class="viewcode-back" href="../../../gplately.utils.html#gplately.utils.plot_utils._calculate_triangle_vertices">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">_calculate_triangle_vertices</span><span class="p">(</span>
     <span class="n">geometries</span><span class="p">,</span>
     <span class="n">width</span><span class="p">,</span>
@@ -325,12 +317,9 @@
                 <span class="p">)</span>
             <span class="p">)</span>
             <span class="n">triangles</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Polygon</span><span class="p">(</span><span class="n">triangle_points</span><span class="p">))</span>
-    <span class="k">return</span> <span class="n">triangles</span></div>
+    <span class="k">return</span> <span class="n">triangles</span>
 
 
-
-<div class="viewcode-block" id="_parse_polarity">
-<a class="viewcode-back" href="../../../gplately.utils.html#gplately.utils.plot_utils._parse_polarity">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">_parse_polarity</span><span class="p">(</span><span class="n">polarity</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Ensure subduction polarities have valid strings as labels - either &quot;left&quot;, &quot;l&quot;, &quot;right&quot; or &quot;r&quot;.</span>
 
@@ -369,12 +358,9 @@
             <span class="n">polarity</span>
         <span class="p">)</span> <span class="o">+</span> <span class="s2">&quot;</span><span class="se">\n</span><span class="s2">(must be one of: </span><span class="si">{}</span><span class="s2">)&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">valid_args</span><span class="p">)</span>
         <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="n">err_msg</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">polarity</span></div>
+    <span class="k">return</span> <span class="n">polarity</span>
 
 
-
-<div class="viewcode-block" id="_find_polarity_column">
-<a class="viewcode-back" href="../../../gplately.utils.html#gplately.utils.plot_utils._find_polarity_column">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">_find_polarity_column</span><span class="p">(</span><span class="n">columns</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Search for a &#39;polarity&#39; column in a geopandas.GeoDataFrame to extract subduction</span>
 <span class="sd">    polarity values.</span>
@@ -400,12 +386,9 @@
     <span class="k">for</span> <span class="n">column</span> <span class="ow">in</span> <span class="n">columns</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">re</span><span class="o">.</span><span class="n">fullmatch</span><span class="p">(</span><span class="n">pattern</span><span class="p">,</span> <span class="n">column</span><span class="p">)</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">column</span>
-    <span class="k">return</span> <span class="kc">None</span></div>
+    <span class="k">return</span> <span class="kc">None</span>
 
 
-
-<div class="viewcode-block" id="_parse_geometries">
-<a class="viewcode-back" href="../../../gplately.utils.html#gplately.utils.plot_utils._parse_geometries">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">_parse_geometries</span><span class="p">(</span><span class="n">geometries</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Resolve a geopandas.GeoSeries object into shapely BaseGeometry and/or</span>
 <span class="sd">    BaseMutipartGeometry instances.</span>
@@ -437,12 +420,9 @@
             <span class="n">out</span><span class="o">.</span><span class="n">extend</span><span class="p">(</span><span class="nb">list</span><span class="p">(</span><span class="n">i</span><span class="o">.</span><span class="n">geoms</span><span class="p">))</span>
         <span class="k">else</span><span class="p">:</span>
             <span class="n">out</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">i</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">out</span></div>
+    <span class="k">return</span> <span class="n">out</span>
 
 
-
-<div class="viewcode-block" id="_clean_polygons">
-<a class="viewcode-back" href="../../../gplately.utils.html#gplately.utils.plot_utils._clean_polygons">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">_clean_polygons</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">projection</span><span class="p">):</span>
     <span class="n">data</span> <span class="o">=</span> <span class="n">gpd</span><span class="o">.</span><span class="n">GeoDataFrame</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
     <span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">explode</span><span class="p">(</span><span class="n">ignore_index</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
@@ -510,12 +490,9 @@
     <span class="n">boundary</span> <span class="o">=</span> <span class="n">projection</span><span class="o">.</span><span class="n">boundary</span>
     <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">boundary</span><span class="o">.</span><span class="n">coords</span><span class="p">)</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">==</span> <span class="mi">3</span><span class="p">:</span>
         <span class="n">boundary</span> <span class="o">=</span> <span class="nb">type</span><span class="p">(</span><span class="n">boundary</span><span class="p">)(</span><span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">boundary</span><span class="o">.</span><span class="n">coords</span><span class="p">)[:,</span> <span class="p">:</span><span class="mi">2</span><span class="p">])</span>
-    <span class="k">return</span> <span class="n">_fill_all_edges</span><span class="p">(</span><span class="n">projected</span><span class="p">,</span> <span class="n">boundary</span><span class="p">,</span> <span class="n">min_distance</span><span class="o">=</span><span class="n">min_distance</span><span class="p">)</span></div>
+    <span class="k">return</span> <span class="n">_fill_all_edges</span><span class="p">(</span><span class="n">projected</span><span class="p">,</span> <span class="n">boundary</span><span class="p">,</span> <span class="n">min_distance</span><span class="o">=</span><span class="n">min_distance</span><span class="p">)</span>
 
 
-
-<div class="viewcode-block" id="_fill_all_edges">
-<a class="viewcode-back" href="../../../gplately.utils.html#gplately.utils.plot_utils._fill_all_edges">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">_fill_all_edges</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">boundary</span><span class="p">,</span> <span class="n">min_distance</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
     <span class="n">data</span> <span class="o">=</span> <span class="n">gpd</span><span class="o">.</span><span class="n">GeoDataFrame</span><span class="p">(</span><span class="n">data</span><span class="p">)</span><span class="o">.</span><span class="n">explode</span><span class="p">(</span><span class="n">ignore_index</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
@@ -544,12 +521,9 @@
             <span class="n">min_distance</span><span class="o">=</span><span class="n">min_distance</span><span class="p">,</span>
         <span class="p">)</span>
         <span class="n">data</span><span class="o">.</span><span class="n">geometry</span><span class="o">.</span><span class="n">at</span><span class="p">[</span><span class="n">index</span><span class="p">]</span> <span class="o">=</span> <span class="n">fixed</span>
-    <span class="k">return</span> <span class="n">data</span></div>
+    <span class="k">return</span> <span class="n">data</span>
 
 
-
-<div class="viewcode-block" id="_fill_edge_polygon">
-<a class="viewcode-back" href="../../../gplately.utils.html#gplately.utils.plot_utils._fill_edge_polygon">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">_fill_edge_polygon</span><span class="p">(</span><span class="n">geometry</span><span class="p">,</span> <span class="n">boundary</span><span class="p">,</span> <span class="n">min_distance</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
     <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">geometry</span><span class="p">,</span> <span class="n">BaseMultipartGeometry</span><span class="p">):</span>
         <span class="k">return</span> <span class="nb">type</span><span class="p">(</span><span class="n">geometry</span><span class="p">)(</span>
@@ -607,27 +581,20 @@
         <span class="k">if</span> <span class="n">i</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">segments_list</span><span class="p">)</span> <span class="o">-</span> <span class="mi">2</span><span class="p">:</span>
             <span class="n">out</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">segment_after</span><span class="p">)</span>
 
-    <span class="k">return</span> <span class="n">Polygon</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">([</span><span class="n">i</span><span class="o">.</span><span class="n">coords</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">out</span><span class="p">]))</span></div>
+    <span class="k">return</span> <span class="n">Polygon</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">vstack</span><span class="p">([</span><span class="n">i</span><span class="o">.</span><span class="n">coords</span> <span class="k">for</span> <span class="n">i</span> <span class="ow">in</span> <span class="n">out</span><span class="p">]))</span>
 
 
-
-<div class="viewcode-block" id="_meridian_from_ax">
-<a class="viewcode-back" href="../../../gplately.utils.html#gplately.utils.plot_utils._meridian_from_ax">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">_meridian_from_ax</span><span class="p">(</span><span class="n">ax</span><span class="p">):</span>
     <span class="k">if</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">ax</span><span class="p">,</span> <span class="s2">&quot;projection&quot;</span><span class="p">)</span> <span class="ow">and</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">ax</span><span class="o">.</span><span class="n">projection</span><span class="p">,</span> <span class="n">ccrs</span><span class="o">.</span><span class="n">Projection</span><span class="p">):</span>
         <span class="n">proj</span> <span class="o">=</span> <span class="n">ax</span><span class="o">.</span><span class="n">projection</span>
         <span class="k">return</span> <span class="n">_meridian_from_projection</span><span class="p">(</span><span class="n">projection</span><span class="o">=</span><span class="n">proj</span><span class="p">)</span>
-    <span class="k">return</span> <span class="mf">0.0</span></div>
+    <span class="k">return</span> <span class="mf">0.0</span>
 
 
-
-<div class="viewcode-block" id="_meridian_from_projection">
-<a class="viewcode-back" href="../../../gplately.utils.html#gplately.utils.plot_utils._meridian_from_projection">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">_meridian_from_projection</span><span class="p">(</span><span class="n">projection</span><span class="p">):</span>
     <span class="n">x</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">projection</span><span class="o">.</span><span class="n">x_limits</span><span class="p">)</span>
     <span class="n">y</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">mean</span><span class="p">(</span><span class="n">projection</span><span class="o">.</span><span class="n">y_limits</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">ccrs</span><span class="o">.</span><span class="n">PlateCarree</span><span class="p">()</span><span class="o">.</span><span class="n">transform_point</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">projection</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span></div>
-
+    <span class="k">return</span> <span class="n">ccrs</span><span class="o">.</span><span class="n">PlateCarree</span><span class="p">()</span><span class="o">.</span><span class="n">transform_point</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">projection</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
 
 
 <div class="viewcode-block" id="plot_subduction_teeth">

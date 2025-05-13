@@ -88,11 +88,6 @@
 <section id="module-gplately.commands.create_age_grids">
 <span id="gplately-commands-create-age-grids-module"></span><h2>gplately.commands.create_age_grids module<a class="headerlink" href="#module-gplately.commands.create_age_grids" title="Link to this heading"></a></h2>
 <dl class="py function">
-<dt class="sig sig-object py" id="gplately.commands.create_age_grids._run_create_agegrids">
-<span class="sig-prename descclassname"><span class="pre">gplately.commands.create_age_grids.</span></span><span class="sig-name descname"><span class="pre">_run_create_agegrids</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gplately/commands/create_age_grids.html#_run_create_agegrids"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.commands.create_age_grids._run_create_agegrids" title="Link to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py function">
 <dt class="sig sig-object py" id="gplately.commands.create_age_grids.add_parser">
 <span class="sig-prename descclassname"><span class="pre">gplately.commands.create_age_grids.</span></span><span class="sig-name descname"><span class="pre">add_parser</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parser</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gplately/commands/create_age_grids.html#add_parser"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.commands.create_age_grids.add_parser" title="Link to this definition"></a></dt>
 <dd><p>add command line argument parser</p>
@@ -125,11 +120,6 @@ BirthAgeFilter(500, keep_older=False) –  keep features whose time of apprearan
 </ul>
 </dd>
 </dl>
-<dl class="py attribute">
-<dt class="sig sig-object py" id="gplately.commands.feature_filter.BirthAgeFilter._abc_impl">
-<span class="sig-name descname"><span class="pre">_abc_impl</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;_abc._abc_data</span> <span class="pre">object&gt;</span></em><a class="headerlink" href="#gplately.commands.feature_filter.BirthAgeFilter._abc_impl" title="Link to this definition"></a></dt>
-<dd></dd></dl>
-
 <dl class="py method">
 <dt class="sig sig-object py" id="gplately.commands.feature_filter.BirthAgeFilter.should_keep">
 <span class="sig-name descname"><span class="pre">should_keep</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">feature</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Feature</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="reference internal" href="_modules/gplately/commands/feature_filter.html#BirthAgeFilter.should_keep"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.commands.feature_filter.BirthAgeFilter.should_keep" title="Link to this definition"></a></dt>
@@ -150,11 +140,6 @@ BirthAgeFilter(500, keep_older=False) –  keep features whose time of apprearan
 <dt class="sig sig-object py" id="gplately.commands.feature_filter.FeatureFilter">
 <em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">gplately.commands.feature_filter.</span></span><span class="sig-name descname"><span class="pre">FeatureFilter</span></span><a class="reference internal" href="_modules/gplately/commands/feature_filter.html#FeatureFilter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.commands.feature_filter.FeatureFilter" title="Link to this definition"></a></dt>
 <dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
-<dl class="py attribute">
-<dt class="sig sig-object py" id="gplately.commands.feature_filter.FeatureFilter._abc_impl">
-<span class="sig-name descname"><span class="pre">_abc_impl</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;_abc._abc_data</span> <span class="pre">object&gt;</span></em><a class="headerlink" href="#gplately.commands.feature_filter.FeatureFilter._abc_impl" title="Link to this definition"></a></dt>
-<dd></dd></dl>
-
 <dl class="py method">
 <dt class="sig sig-object py" id="gplately.commands.feature_filter.FeatureFilter.should_keep">
 <em class="property"><span class="k"><span class="pre">abstractmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">should_keep</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">feature</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Feature</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="reference internal" href="_modules/gplately/commands/feature_filter.html#FeatureFilter.should_keep"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.commands.feature_filter.FeatureFilter.should_keep" title="Link to this definition"></a></dt>
@@ -184,11 +169,6 @@ FeatureNameFilter([‘Africa’, ‘Asia’], exclude=True, exact_match=True) �
 FeatureNameFilter([‘Africa’, ‘Asia’], exclude=True, exact_match=True, case_sensitive=True) – keep features who name is not ‘Africa’ or ‘Asia’ (case sensitive)</p>
 </dd>
 </dl>
-<dl class="py attribute">
-<dt class="sig sig-object py" id="gplately.commands.feature_filter.FeatureNameFilter._abc_impl">
-<span class="sig-name descname"><span class="pre">_abc_impl</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;_abc._abc_data</span> <span class="pre">object&gt;</span></em><a class="headerlink" href="#gplately.commands.feature_filter.FeatureNameFilter._abc_impl" title="Link to this definition"></a></dt>
-<dd></dd></dl>
-
 <dl class="py method">
 <dt class="sig sig-object py" id="gplately.commands.feature_filter.FeatureNameFilter.check_name">
 <span class="sig-name descname"><span class="pre">check_name</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">name_1</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">name_2</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="reference internal" href="_modules/gplately/commands/feature_filter.html#FeatureNameFilter.check_name"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.commands.feature_filter.FeatureNameFilter.check_name" title="Link to this definition"></a></dt>
@@ -226,11 +206,6 @@ FeatureNameFilter([‘Africa’, ‘Asia’], exclude=True, exact_match=True, ca
 <dd class="field-odd"><p><strong>feature_type_re</strong> – the regular expression to match the feature type</p>
 </dd>
 </dl>
-<dl class="py attribute">
-<dt class="sig sig-object py" id="gplately.commands.feature_filter.FeatureTypeFilter._abc_impl">
-<span class="sig-name descname"><span class="pre">_abc_impl</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;_abc._abc_data</span> <span class="pre">object&gt;</span></em><a class="headerlink" href="#gplately.commands.feature_filter.FeatureTypeFilter._abc_impl" title="Link to this definition"></a></dt>
-<dd></dd></dl>
-
 <dl class="py method">
 <dt class="sig sig-object py" id="gplately.commands.feature_filter.FeatureTypeFilter.should_keep">
 <span class="sig-name descname"><span class="pre">should_keep</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">feature</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Feature</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="reference internal" href="_modules/gplately/commands/feature_filter.html#FeatureTypeFilter.should_keep"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.commands.feature_filter.FeatureTypeFilter.should_keep" title="Link to this definition"></a></dt>
@@ -257,11 +232,6 @@ FeatureNameFilter([‘Africa’, ‘Asia’], exclude=True, exact_match=True, ca
 PlateIDFilter([101,201,301], exclude=True) – keep features whose plate id is not 101 nor 201 nor 301</p>
 </dd>
 </dl>
-<dl class="py attribute">
-<dt class="sig sig-object py" id="gplately.commands.feature_filter.PlateIDFilter._abc_impl">
-<span class="sig-name descname"><span class="pre">_abc_impl</span></span><em class="property"><span class="w"> </span><span class="p"><span class="pre">=</span></span><span class="w"> </span><span class="pre">&lt;_abc._abc_data</span> <span class="pre">object&gt;</span></em><a class="headerlink" href="#gplately.commands.feature_filter.PlateIDFilter._abc_impl" title="Link to this definition"></a></dt>
-<dd></dd></dl>
-
 <dl class="py method">
 <dt class="sig sig-object py" id="gplately.commands.feature_filter.PlateIDFilter.should_keep">
 <span class="sig-name descname"><span class="pre">should_keep</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">feature</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">Feature</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">bool</span></span></span><a class="reference internal" href="_modules/gplately/commands/feature_filter.html#PlateIDFilter.should_keep"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.commands.feature_filter.PlateIDFilter.should_keep" title="Link to this definition"></a></dt>
@@ -333,16 +303,6 @@ if the second one is still not working, try the thrid one. Repeat until the end 
 </section>
 <section id="module-gplately.commands.regrid">
 <span id="gplately-commands-regrid-module"></span><h2>gplately.commands.regrid module<a class="headerlink" href="#module-gplately.commands.regrid" title="Link to this heading"></a></h2>
-<dl class="py function">
-<dt class="sig sig-object py" id="gplately.commands.regrid._batch_regrid_netcdf4">
-<span class="sig-prename descclassname"><span class="pre">gplately.commands.regrid.</span></span><span class="sig-name descname"><span class="pre">_batch_regrid_netcdf4</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">input_raster_filename</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_raster_filename</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">resample</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">significant_digits</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gplately/commands/regrid.html#_batch_regrid_netcdf4"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.commands.regrid._batch_regrid_netcdf4" title="Link to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py function">
-<dt class="sig sig-object py" id="gplately.commands.regrid._regrid_netcdf4">
-<span class="sig-prename descclassname"><span class="pre">gplately.commands.regrid.</span></span><span class="sig-name descname"><span class="pre">_regrid_netcdf4</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">args</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gplately/commands/regrid.html#_regrid_netcdf4"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.commands.regrid._regrid_netcdf4" title="Link to this definition"></a></dt>
-<dd></dd></dl>
-
 <dl class="py function">
 <dt class="sig sig-object py" id="gplately.commands.regrid.add_parser">
 <span class="sig-prename descclassname"><span class="pre">gplately.commands.regrid.</span></span><span class="sig-name descname"><span class="pre">add_parser</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">parser</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gplately/commands/regrid.html#add_parser"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.commands.regrid.add_parser" title="Link to this definition"></a></dt>

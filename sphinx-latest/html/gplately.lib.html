@@ -117,29 +117,6 @@ lon = atan2(y, x)</p>
 <section id="module-gplately.lib.polyline">
 <span id="gplately-lib-polyline-module"></span><h2>gplately.lib.polyline module<a class="headerlink" href="#module-gplately.lib.polyline" title="Link to this heading"></a></h2>
 <dl class="py function">
-<dt class="sig sig-object py" id="gplately.lib.polyline._find_next_point">
-<span class="sig-prename descclassname"><span class="pre">gplately.lib.polyline.</span></span><span class="sig-name descname"><span class="pre">_find_next_point</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">line</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">distance</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">strict</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">accum_length</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gplately/lib/polyline.html#_find_next_point"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.lib.polyline._find_next_point" title="Link to this definition"></a></dt>
-<dd><p>recursive function to find the next point along the polyline</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>line</strong> – a list of (lat, lon) in radians</p></li>
-<li><p><strong>distance</strong> – the distance to the next point in radians</p></li>
-<li><p><strong>strict</strong> – in strict mode, we guarantee the distance. sacrifice the end point if necessary</p></li>
-</ul>
-</dd>
-<dt class="field-even">Accum_length<span class="colon">:</span></dt>
-<dd class="field-even"><p>parameter to pass down the accumulated length for this recursive function</p>
-</dd>
-<dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>(next point, new line)
-next point (lat,lon) in radians. None, if no more point
-new line – the line after taking out this point</p>
-</dd>
-</dl>
-</dd></dl>
-
-<dl class="py function">
 <dt class="sig sig-object py" id="gplately.lib.polyline.discretize_polyline">
 <span class="sig-prename descclassname"><span class="pre">gplately.lib.polyline.</span></span><span class="sig-name descname"><span class="pre">discretize_polyline</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">line</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">distance</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">strict</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="_modules/gplately/lib/polyline.html#discretize_polyline"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.lib.polyline.discretize_polyline" title="Link to this definition"></a></dt>
 <dd><p>travel along a polyline; take a sampling point for each <cite>distance</cite>; return a list of the sampling points.</p>

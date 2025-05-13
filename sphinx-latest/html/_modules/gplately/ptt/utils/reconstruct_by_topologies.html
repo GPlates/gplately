@@ -501,8 +501,6 @@
         <span class="k">return</span> <span class="kc">True</span></div>
 
 
-<div class="viewcode-block" id="ReconstructByTopologies._activate_deactivate_points">
-<a class="viewcode-back" href="../../../../gplately.ptt.utils.html#gplately.ptt.utils.reconstruct_by_topologies.ReconstructByTopologies._activate_deactivate_points">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">_activate_deactivate_points</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 
         <span class="n">current_time</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_current_time</span><span class="p">()</span>
@@ -535,11 +533,8 @@
                     <span class="n">current_time</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">point_begin_times</span><span class="p">[</span><span class="n">point_index</span><span class="p">]</span>
                     <span class="ow">and</span> <span class="n">current_time</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">point_end_times</span><span class="p">[</span><span class="n">point_index</span><span class="p">]</span>
                 <span class="p">):</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">curr_points</span><span class="p">[</span><span class="n">point_index</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span></div>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">curr_points</span><span class="p">[</span><span class="n">point_index</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
 
-
-<div class="viewcode-block" id="ReconstructByTopologies._find_resolved_topologies_containing_points">
-<a class="viewcode-back" href="../../../../gplately.ptt.utils.html#gplately.ptt.utils.reconstruct_by_topologies.ReconstructByTopologies._find_resolved_topologies_containing_points">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">_find_resolved_topologies_containing_points</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 
         <span class="n">current_time</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_current_time</span><span class="p">()</span>
@@ -610,11 +605,8 @@
             <span class="c1"># Set the plate ID of resolved topology containing current point.</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">curr_topology_plate_ids</span><span class="p">[</span><span class="n">point_index</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
                 <span class="n">curr_polygon</span><span class="o">.</span><span class="n">get_feature</span><span class="p">()</span><span class="o">.</span><span class="n">get_reconstruction_plate_id</span><span class="p">()</span>
-            <span class="p">)</span></div>
+            <span class="p">)</span>
 
-
-<div class="viewcode-block" id="ReconstructByTopologies._detect_collision">
-<a class="viewcode-back" href="../../../../gplately.ptt.utils.html#gplately.ptt.utils.reconstruct_by_topologies.ReconstructByTopologies._detect_collision">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">_detect_collision</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">time</span><span class="p">,</span>
@@ -755,11 +747,8 @@
                     <span class="c1"># Detected a collision.</span>
                     <span class="k">return</span> <span class="kc">True</span>
 
-        <span class="k">return</span> <span class="kc">False</span></div>
+        <span class="k">return</span> <span class="kc">False</span>
 
-
-<div class="viewcode-block" id="ReconstructByTopologies._detect_collision_using_collision_parameters">
-<a class="viewcode-back" href="../../../../gplately.ptt.utils.html#gplately.ptt.utils.reconstruct_by_topologies.ReconstructByTopologies._detect_collision_using_collision_parameters">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">_detect_collision_using_collision_parameters</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">delta_velocity_magnitude</span><span class="p">,</span>
@@ -792,7 +781,6 @@
                 <span class="k">return</span> <span class="kc">True</span>
 
         <span class="k">return</span> <span class="kc">False</span></div>
-</div>
 
 </pre></div>
 

@@ -249,18 +249,13 @@
                 <span class="bp">self</span><span class="o">.</span><span class="n">rotation_model</span><span class="p">,</span> <span class="n">default_anchor_plate_id</span><span class="o">=</span><span class="n">anchor_plate</span>
             <span class="p">)</span>
 
-<div class="viewcode-block" id="PlateReconstruction._check_anchor_plate_id">
-<a class="viewcode-back" href="../../gplately.html#gplately.PlateReconstruction._check_anchor_plate_id">[docs]</a>
     <span class="nd">@staticmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">_check_anchor_plate_id</span><span class="p">(</span><span class="nb">id</span><span class="p">):</span>
         <span class="nb">id</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">id</span><span class="p">)</span>
         <span class="k">if</span> <span class="nb">id</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Invalid anchor plate ID: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">id</span><span class="p">))</span>
-        <span class="k">return</span> <span class="nb">id</span></div>
+        <span class="k">return</span> <span class="nb">id</span>
 
-
-<div class="viewcode-block" id="PlateReconstruction._check_topology_features">
-<a class="viewcode-back" href="../../gplately.html#gplately.PlateReconstruction._check_topology_features">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">_check_topology_features</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="n">include_topological_slab_boundaries</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">topology_features</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
@@ -276,8 +271,7 @@
                 <span class="o">!=</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">FeatureType</span><span class="o">.</span><span class="n">gpml_topological_slab_boundary</span>
             <span class="p">]</span>
 
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">topology_features</span></div>
-
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">topology_features</span>
 
 <div class="viewcode-block" id="PlateReconstruction.topological_snapshot">
 <a class="viewcode-back" href="../../gplately.html#gplately.PlateReconstruction.topological_snapshot">[docs]</a>
@@ -356,8 +350,6 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_topological_snapshot</span></div>
 
 
-<div class="viewcode-block" id="PlateReconstruction._check_static_polygons">
-<a class="viewcode-back" href="../../gplately.html#gplately.PlateReconstruction._check_static_polygons">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">_check_static_polygons</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="c1"># Check we have static polygons.</span>
         <span class="c1">#</span>
@@ -367,8 +359,7 @@
                 <span class="s2">&quot;Static polygons have not been set in this PlateReconstruction.&quot;</span>
             <span class="p">)</span>
 
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">static_polygons</span></div>
-
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">static_polygons</span>
 
 <div class="viewcode-block" id="PlateReconstruction.static_polygons_snapshot">
 <a class="viewcode-back" href="../../gplately.html#gplately.PlateReconstruction.static_polygons_snapshot">[docs]</a>
@@ -734,8 +725,6 @@
         <span class="k">return</span> <span class="n">total_crustal_production_rate</span><span class="p">,</span> <span class="n">total_crustal_destruction_rate</span></div>
 
 
-<div class="viewcode-block" id="PlateReconstruction._subduction_convergence">
-<a class="viewcode-back" href="../../gplately.html#gplately.PlateReconstruction._subduction_convergence">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">_subduction_convergence</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">time</span><span class="p">,</span>
@@ -1079,8 +1068,7 @@
 
                 <span class="n">subduction_data</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">output_tuple</span><span class="p">)</span>
 
-        <span class="k">return</span> <span class="n">subduction_data</span></div>
-
+        <span class="k">return</span> <span class="n">subduction_data</span>
 
 <div class="viewcode-block" id="PlateReconstruction.tessellate_subduction_zones">
 <a class="viewcode-back" href="../../gplately.html#gplately.PlateReconstruction.tessellate_subduction_zones">[docs]</a>
@@ -1627,8 +1615,6 @@
         <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">sum</span><span class="p">(</span><span class="n">segment_lengths</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="PlateReconstruction._ridge_spreading_rates">
-<a class="viewcode-back" href="../../gplately.html#gplately.PlateReconstruction._ridge_spreading_rates">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">_ridge_spreading_rates</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">time</span><span class="p">,</span>
@@ -1765,8 +1751,7 @@
                     <span class="p">)</span>
                 <span class="p">)</span>
 
-        <span class="k">return</span> <span class="n">ridge_data</span></div>
-
+        <span class="k">return</span> <span class="n">ridge_data</span>
 
 <div class="viewcode-block" id="PlateReconstruction.tessellate_mid_ocean_ridges">
 <a class="viewcode-back" href="../../gplately.html#gplately.PlateReconstruction.tessellate_mid_ocean_ridges">[docs]</a>
@@ -3146,15 +3131,12 @@
         <span class="c1"># Note: This is documented as an attribute in the class docstring.</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_anchor_plate_id</span>
 
-<div class="viewcode-block" id="Points._check_anchor_plate_id">
-<a class="viewcode-back" href="../../gplately.html#gplately.Points._check_anchor_plate_id">[docs]</a>
     <span class="nd">@staticmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">_check_anchor_plate_id</span><span class="p">(</span><span class="nb">id</span><span class="p">):</span>
         <span class="nb">id</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="nb">id</span><span class="p">)</span>
         <span class="k">if</span> <span class="nb">id</span> <span class="o">&lt;</span> <span class="mi">0</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Invalid anchor plate ID: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">id</span><span class="p">))</span>
-        <span class="k">return</span> <span class="nb">id</span></div>
-
+        <span class="k">return</span> <span class="nb">id</span>
 
 <div class="viewcode-block" id="Points.copy">
 <a class="viewcode-back" href="../../gplately.html#gplately.Points.copy">[docs]</a>
@@ -4058,8 +4040,6 @@
         <span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="Points._get_dataframe">
-<a class="viewcode-back" href="../../gplately.html#gplately.Points._get_dataframe">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">_get_dataframe</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="kn">import</span><span class="w"> </span><span class="nn">geopandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">gpd</span>
 
@@ -4070,8 +4050,7 @@
         <span class="k">for</span> <span class="n">key</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">attributes</span><span class="p">:</span>
             <span class="n">data</span><span class="p">[</span><span class="n">key</span><span class="p">]</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">attributes</span><span class="p">[</span><span class="n">key</span><span class="p">]</span>
 
-        <span class="k">return</span> <span class="n">gpd</span><span class="o">.</span><span class="n">GeoDataFrame</span><span class="p">(</span><span class="n">data</span><span class="p">)</span></div>
-
+        <span class="k">return</span> <span class="n">gpd</span><span class="o">.</span><span class="n">GeoDataFrame</span><span class="p">(</span><span class="n">data</span><span class="p">)</span>
 
 <div class="viewcode-block" id="Points.save">
 <a class="viewcode-back" href="../../gplately.html#gplately.Points.save">[docs]</a>
@@ -4226,8 +4205,6 @@
 
 
 <span class="c1"># FROM RECONSTRUCT_BY_TOPOLOGIES.PY</span>
-<div class="viewcode-block" id="_DefaultCollision">
-<a class="viewcode-back" href="../../gplately.html#gplately._DefaultCollision">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">_DefaultCollision</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Default collision detection function class (the function is the &#39;__call__&#39; method).</span>
@@ -4435,8 +4412,6 @@
 
         <span class="k">return</span> <span class="kc">False</span>
 
-<div class="viewcode-block" id="_DefaultCollision._detect_collision_using_collision_parameters">
-<a class="viewcode-back" href="../../gplately.html#gplately._DefaultCollision._detect_collision_using_collision_parameters">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">_detect_collision_using_collision_parameters</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">reconstruction_time_interval</span><span class="p">,</span>
@@ -4470,16 +4445,12 @@
                 <span class="c1"># Detected a collision.</span>
                 <span class="k">return</span> <span class="kc">True</span>
 
-        <span class="k">return</span> <span class="kc">False</span></div>
-</div>
-
+        <span class="k">return</span> <span class="kc">False</span>
 
 
 <span class="n">_DEFAULT_COLLISION</span> <span class="o">=</span> <span class="n">_DefaultCollision</span><span class="p">()</span>
 
 
-<div class="viewcode-block" id="_ContinentCollision">
-<a class="viewcode-back" href="../../gplately.html#gplately._ContinentCollision">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">_ContinentCollision</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Continental collision detection function class (the function is the &#39;__call__&#39; method).</span>
@@ -4584,8 +4555,7 @@
                 <span class="n">curr_resolved_plate_boundary</span><span class="p">,</span>
             <span class="p">)</span>
 
-        <span class="k">return</span> <span class="kc">False</span></div>
-
+        <span class="k">return</span> <span class="kc">False</span>
 
 
 <div class="viewcode-block" id="reconstruct_points">
@@ -4625,8 +4595,6 @@
 
 
 
-<div class="viewcode-block" id="_ReconstructByTopologies">
-<a class="viewcode-back" href="../../gplately.html#gplately._ReconstructByTopologies">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">_ReconstructByTopologies</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">    Class to reconstruct geometries using topologies.</span>
@@ -4730,8 +4698,6 @@
 
         <span class="bp">self</span><span class="o">.</span><span class="n">detect_collisions</span> <span class="o">=</span> <span class="n">detect_collisions</span>
 
-<div class="viewcode-block" id="_ReconstructByTopologies.reconstruct">
-<a class="viewcode-back" href="../../gplately.html#gplately._ReconstructByTopologies.reconstruct">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">reconstruct</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="c1"># Initialise the reconstruction.</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">begin_reconstruction</span><span class="p">()</span>
@@ -4742,11 +4708,8 @@
         <span class="k">while</span> <span class="bp">self</span><span class="o">.</span><span class="n">reconstruct_to_next_time</span><span class="p">():</span>
             <span class="k">pass</span>
 
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_active_current_points</span><span class="p">()</span></div>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_active_current_points</span><span class="p">()</span>
 
-
-<div class="viewcode-block" id="_ReconstructByTopologies.begin_reconstruction">
-<a class="viewcode-back" href="../../gplately.html#gplately._ReconstructByTopologies.begin_reconstruction">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">begin_reconstruction</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">current_time_index</span> <span class="o">=</span> <span class="mi">0</span>
 
@@ -4773,39 +4736,24 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">deletedpoints</span> <span class="o">=</span> <span class="p">[]</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_activate_deactivate_points</span><span class="p">()</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_find_resolved_topologies_containing_points</span><span class="p">()</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_find_resolved_topologies_containing_points</span><span class="p">()</span>
 
-
-<div class="viewcode-block" id="_ReconstructByTopologies.get_current_time">
-<a class="viewcode-back" href="../../gplately.html#gplately._ReconstructByTopologies.get_current_time">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_current_time</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">reconstruction_begin_time</span>
             <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_time_index</span> <span class="o">*</span> <span class="bp">self</span><span class="o">.</span><span class="n">reconstruction_time_step</span>
-        <span class="p">)</span></div>
+        <span class="p">)</span>
 
-
-<div class="viewcode-block" id="_ReconstructByTopologies.get_all_current_points">
-<a class="viewcode-back" href="../../gplately.html#gplately._ReconstructByTopologies.get_all_current_points">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_all_current_points</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">curr_points</span></div>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">curr_points</span>
 
-
-<div class="viewcode-block" id="_ReconstructByTopologies.get_active_current_points">
-<a class="viewcode-back" href="../../gplately.html#gplately._ReconstructByTopologies.get_active_current_points">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_active_current_points</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="c1"># Return only the active points (the ones that are not None).</span>
-        <span class="k">return</span> <span class="p">[</span><span class="n">point</span> <span class="k">for</span> <span class="n">point</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_all_current_points</span><span class="p">()</span> <span class="k">if</span> <span class="n">point</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">]</span></div>
+        <span class="k">return</span> <span class="p">[</span><span class="n">point</span> <span class="k">for</span> <span class="n">point</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_all_current_points</span><span class="p">()</span> <span class="k">if</span> <span class="n">point</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">]</span>
 
-
-<div class="viewcode-block" id="_ReconstructByTopologies.get_in_continent_indices">
-<a class="viewcode-back" href="../../gplately.html#gplately._ReconstructByTopologies.get_in_continent_indices">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_in_continent_indices</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">in_continent_points</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">in_continent_indices</span></div>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">in_continent_points</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">in_continent_indices</span>
 
-
-<div class="viewcode-block" id="_ReconstructByTopologies.reconstruct_to_next_time">
-<a class="viewcode-back" href="../../gplately.html#gplately._ReconstructByTopologies.reconstruct_to_next_time">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">reconstruct_to_next_time</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="c1"># If we&#39;re at the last time then there is no next time to reconstruct to.</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_time_index</span> <span class="o">==</span> <span class="bp">self</span><span class="o">.</span><span class="n">last_time_index</span><span class="p">:</span>
@@ -4928,11 +4876,8 @@
                     <span class="bp">self</span><span class="o">.</span><span class="n">deletedpoints</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">point_index</span><span class="p">)</span>
 
         <span class="c1"># We successfully reconstructed to the next time.</span>
-        <span class="k">return</span> <span class="kc">True</span></div>
+        <span class="k">return</span> <span class="kc">True</span>
 
-
-<div class="viewcode-block" id="_ReconstructByTopologies._activate_deactivate_points">
-<a class="viewcode-back" href="../../gplately.html#gplately._ReconstructByTopologies._activate_deactivate_points">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">_activate_deactivate_points</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">current_time</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_current_time</span><span class="p">()</span>
 
@@ -4964,11 +4909,8 @@
                     <span class="n">current_time</span> <span class="o">&lt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">point_begin_times</span><span class="p">[</span><span class="n">point_index</span><span class="p">]</span>
                     <span class="ow">and</span> <span class="n">current_time</span> <span class="o">&gt;=</span> <span class="bp">self</span><span class="o">.</span><span class="n">point_end_times</span><span class="p">[</span><span class="n">point_index</span><span class="p">]</span>
                 <span class="p">):</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">curr_points</span><span class="p">[</span><span class="n">point_index</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span></div>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">curr_points</span><span class="p">[</span><span class="n">point_index</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
 
-
-<div class="viewcode-block" id="_ReconstructByTopologies._find_resolved_topologies_containing_points">
-<a class="viewcode-back" href="../../gplately.html#gplately._ReconstructByTopologies._find_resolved_topologies_containing_points">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">_find_resolved_topologies_containing_points</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="kn">from</span><span class="w"> </span><span class="nn">.</span><span class="w"> </span><span class="kn">import</span> <span class="n">ptt</span> <span class="k">as</span> <span class="n">_ptt</span>
 
@@ -5039,9 +4981,7 @@
             <span class="c1"># Set the plate ID of resolved topology containing current point.</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">curr_topology_plate_ids</span><span class="p">[</span><span class="n">point_index</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
                 <span class="n">curr_polygon</span><span class="o">.</span><span class="n">get_feature</span><span class="p">()</span><span class="o">.</span><span class="n">get_reconstruction_plate_id</span><span class="p">()</span>
-            <span class="p">)</span></div>
-</div>
-
+            <span class="p">)</span>
 </pre></div>
 
            </div>

@@ -446,16 +446,12 @@
 
 
 <span class="c1"># Private helper class (has &#39;_&#39; prefix) to find topology-related GpmlPropertyDelegate&#39;s.</span>
-<div class="viewcode-block" id="_TopologicalReferenceVisitor">
-<a class="viewcode-back" href="../../../gplately.ptt.html#gplately.ptt.cleanup_topologies._TopologicalReferenceVisitor">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">_TopologicalReferenceVisitor</span><span class="p">(</span><span class="n">pygplates</span><span class="o">.</span><span class="n">PropertyValueVisitor</span><span class="p">):</span>
     <span class="n">ALL_TIME</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="s2">&quot;inf&quot;</span><span class="p">),</span> <span class="nb">float</span><span class="p">(</span><span class="s2">&quot;-inf&quot;</span><span class="p">)</span>  <span class="c1"># begin_time, end_time</span>
 
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="nb">super</span><span class="p">(</span><span class="n">_TopologicalReferenceVisitor</span><span class="p">,</span> <span class="bp">self</span><span class="p">)</span><span class="o">.</span><span class="fm">__init__</span><span class="p">()</span>
 
-<div class="viewcode-block" id="_TopologicalReferenceVisitor.visit_feature">
-<a class="viewcode-back" href="../../../gplately.ptt.html#gplately.ptt.cleanup_topologies._TopologicalReferenceVisitor.visit_feature">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">visit_feature</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">feature</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">topology_type</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">references</span> <span class="o">=</span> <span class="p">[]</span>
@@ -471,18 +467,12 @@
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">topology_type</span><span class="p">:</span>
                 <span class="k">break</span>
 
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">topology_type</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">references</span></div>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">topology_type</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">references</span>
 
-
-<div class="viewcode-block" id="_TopologicalReferenceVisitor.visit_gpml_constant_value">
-<a class="viewcode-back" href="../../../gplately.ptt.html#gplately.ptt.cleanup_topologies._TopologicalReferenceVisitor.visit_gpml_constant_value">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">visit_gpml_constant_value</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">gpml_constant_value</span><span class="p">):</span>
         <span class="c1"># Visit the GpmlConstantValue&#39;s nested property value.</span>
-        <span class="n">gpml_constant_value</span><span class="o">.</span><span class="n">get_value</span><span class="p">()</span><span class="o">.</span><span class="n">accept_visitor</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span></div>
+        <span class="n">gpml_constant_value</span><span class="o">.</span><span class="n">get_value</span><span class="p">()</span><span class="o">.</span><span class="n">accept_visitor</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
 
-
-<div class="viewcode-block" id="_TopologicalReferenceVisitor.visit_gpml_piecewise_aggregation">
-<a class="viewcode-back" href="../../../gplately.ptt.html#gplately.ptt.cleanup_topologies._TopologicalReferenceVisitor.visit_gpml_piecewise_aggregation">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">visit_gpml_piecewise_aggregation</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">gpml_piecewise_aggregation</span><span class="p">):</span>
         <span class="c1"># Only need to visit if contains a topological line, polygon or network.</span>
         <span class="n">value_type</span> <span class="o">=</span> <span class="n">gpml_piecewise_aggregation</span><span class="o">.</span><span class="n">get_value_type</span><span class="p">()</span>
@@ -525,11 +515,8 @@
                         <span class="n">gpml_time_window</span><span class="o">.</span><span class="n">get_end_time</span><span class="p">(),</span>
                     <span class="p">)</span>
                     <span class="n">gpml_time_window</span><span class="o">.</span><span class="n">get_value</span><span class="p">()</span><span class="o">.</span><span class="n">accept_visitor</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">current_time_period</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ALL_TIME</span></div>
+                    <span class="bp">self</span><span class="o">.</span><span class="n">current_time_period</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">ALL_TIME</span>
 
-
-<div class="viewcode-block" id="_TopologicalReferenceVisitor.visit_gpml_topological_line">
-<a class="viewcode-back" href="../../../gplately.ptt.html#gplately.ptt.cleanup_topologies._TopologicalReferenceVisitor.visit_gpml_topological_line">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">visit_gpml_topological_line</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">gpml_topological_line</span><span class="p">):</span>
         <span class="n">referenced_feature_ids</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
         <span class="c1"># Topological line sections are topological sections (which contain a property delegate).</span>
@@ -537,11 +524,8 @@
             <span class="n">referenced_feature_ids</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">section</span><span class="o">.</span><span class="n">get_property_delegate</span><span class="p">()</span><span class="o">.</span><span class="n">get_feature_id</span><span class="p">())</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">topology_type</span> <span class="o">=</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">GpmlTopologicalLine</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">references</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">current_time_period</span><span class="p">,</span> <span class="n">referenced_feature_ids</span><span class="p">))</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">references</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">current_time_period</span><span class="p">,</span> <span class="n">referenced_feature_ids</span><span class="p">))</span>
 
-
-<div class="viewcode-block" id="_TopologicalReferenceVisitor.visit_gpml_topological_polygon">
-<a class="viewcode-back" href="../../../gplately.ptt.html#gplately.ptt.cleanup_topologies._TopologicalReferenceVisitor.visit_gpml_topological_polygon">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">visit_gpml_topological_polygon</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">gpml_topological_polygon</span><span class="p">):</span>
         <span class="n">referenced_feature_ids</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
         <span class="c1"># Topological polygon exterior sections are topological sections (which contain a property delegate).</span>
@@ -551,11 +535,8 @@
             <span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">topology_type</span> <span class="o">=</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">GpmlTopologicalPolygon</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">references</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">current_time_period</span><span class="p">,</span> <span class="n">referenced_feature_ids</span><span class="p">))</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">references</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">current_time_period</span><span class="p">,</span> <span class="n">referenced_feature_ids</span><span class="p">))</span>
 
-
-<div class="viewcode-block" id="_TopologicalReferenceVisitor.visit_gpml_topological_network">
-<a class="viewcode-back" href="../../../gplately.ptt.html#gplately.ptt.cleanup_topologies._TopologicalReferenceVisitor.visit_gpml_topological_network">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">visit_gpml_topological_network</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">gpml_topological_network</span><span class="p">):</span>
         <span class="n">referenced_feature_ids</span> <span class="o">=</span> <span class="nb">set</span><span class="p">()</span>
         <span class="c1"># Topological network boundary sections are topological sections (which contain a property delegate).</span>
@@ -568,9 +549,7 @@
             <span class="n">referenced_feature_ids</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">interior</span><span class="o">.</span><span class="n">get_feature_id</span><span class="p">())</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">topology_type</span> <span class="o">=</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">GpmlTopologicalNetwork</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">references</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">current_time_period</span><span class="p">,</span> <span class="n">referenced_feature_ids</span><span class="p">))</span></div>
-</div>
-
+        <span class="bp">self</span><span class="o">.</span><span class="n">references</span><span class="o">.</span><span class="n">append</span><span class="p">((</span><span class="bp">self</span><span class="o">.</span><span class="n">current_time_period</span><span class="p">,</span> <span class="n">referenced_feature_ids</span><span class="p">))</span>
 
 
 <div class="viewcode-block" id="add_arguments">

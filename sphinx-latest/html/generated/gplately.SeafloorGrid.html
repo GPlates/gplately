@@ -64,20 +64,6 @@
 <li class="toctree-l3"><a class="reference internal" href="#gplately.SeafloorGrid"><code class="docutils literal notranslate"><span class="pre">SeafloorGrid</span></code></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#gplately.SeafloorGrid.__init__"><code class="docutils literal notranslate"><span class="pre">SeafloorGrid.__init__()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#gplately.SeafloorGrid.PlotTopologiesTime"><code class="docutils literal notranslate"><span class="pre">SeafloorGrid.PlotTopologiesTime</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#gplately.SeafloorGrid._build_continental_mask"><code class="docutils literal notranslate"><span class="pre">SeafloorGrid._build_continental_mask()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#gplately.SeafloorGrid._collect_point_data_in_dataframe"><code class="docutils literal notranslate"><span class="pre">SeafloorGrid._collect_point_data_in_dataframe()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#gplately.SeafloorGrid._create_continental_mask"><code class="docutils literal notranslate"><span class="pre">SeafloorGrid._create_continental_mask()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#gplately.SeafloorGrid._extract_zvalues_from_npz_to_ndarray"><code class="docutils literal notranslate"><span class="pre">SeafloorGrid._extract_zvalues_from_npz_to_ndarray()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#gplately.SeafloorGrid._generate_ocean_points"><code class="docutils literal notranslate"><span class="pre">SeafloorGrid._generate_ocean_points()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#gplately.SeafloorGrid._get_ocean_points_from_continent_mask"><code class="docutils literal notranslate"><span class="pre">SeafloorGrid._get_ocean_points_from_continent_mask()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#gplately.SeafloorGrid._load_middle_ocean_ridge_points"><code class="docutils literal notranslate"><span class="pre">SeafloorGrid._load_middle_ocean_ridge_points()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#gplately.SeafloorGrid._map_res_to_node_percentage"><code class="docutils literal notranslate"><span class="pre">SeafloorGrid._map_res_to_node_percentage()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#gplately.SeafloorGrid._remove_continental_points"><code class="docutils literal notranslate"><span class="pre">SeafloorGrid._remove_continental_points()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#gplately.SeafloorGrid._save_gridding_input_data"><code class="docutils literal notranslate"><span class="pre">SeafloorGrid._save_gridding_input_data()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#gplately.SeafloorGrid._set_grid_resolution"><code class="docutils literal notranslate"><span class="pre">SeafloorGrid._set_grid_resolution()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#gplately.SeafloorGrid._setup_output_paths"><code class="docutils literal notranslate"><span class="pre">SeafloorGrid._setup_output_paths()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#gplately.SeafloorGrid._update_current_active_points"><code class="docutils literal notranslate"><span class="pre">SeafloorGrid._update_current_active_points()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#gplately.SeafloorGrid._update_current_active_points_coordinates"><code class="docutils literal notranslate"><span class="pre">SeafloorGrid._update_current_active_points_coordinates()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#gplately.SeafloorGrid.build_all_MOR_seedpoints"><code class="docutils literal notranslate"><span class="pre">SeafloorGrid.build_all_MOR_seedpoints()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#gplately.SeafloorGrid.build_all_continental_masks"><code class="docutils literal notranslate"><span class="pre">SeafloorGrid.build_all_continental_masks()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#gplately.SeafloorGrid.create_initial_ocean_seed_points"><code class="docutils literal notranslate"><span class="pre">SeafloorGrid.create_initial_ocean_seed_points()</span></code></a></li>
@@ -223,92 +209,6 @@ passed as “/path/to/continent_mask_{}Ma.nc” with curly brackets. Include dec
 <dt class="sig sig-object py" id="gplately.SeafloorGrid.PlotTopologiesTime">
 <em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">PlotTopologiesTime</span></span><a class="headerlink" href="#gplately.SeafloorGrid.PlotTopologiesTime" title="Link to this definition"></a></dt>
 <dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="gplately.SeafloorGrid._build_continental_mask">
-<span class="sig-name descname"><span class="pre">_build_continental_mask</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">time</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">float</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">overwrite</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gplately/oceans.html#SeafloorGrid._build_continental_mask"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.SeafloorGrid._build_continental_mask" title="Link to this definition"></a></dt>
-<dd><p>Create a continental mask for a given time.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="gplately.SeafloorGrid._collect_point_data_in_dataframe">
-<span class="sig-name descname"><span class="pre">_collect_point_data_in_dataframe</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">feature_collection</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">zval_ndarray</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gplately/oceans.html#SeafloorGrid._collect_point_data_in_dataframe"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.SeafloorGrid._collect_point_data_in_dataframe" title="Link to this definition"></a></dt>
-<dd><p>At a given timestep, create a pandas dataframe holding all attributes of point features.</p>
-<p>Rather than store z values as shapefile attributes, store them in a dataframe indexed by feature ID.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="gplately.SeafloorGrid._create_continental_mask">
-<span class="sig-name descname"><span class="pre">_create_continental_mask</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">time_array</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gplately/oceans.html#SeafloorGrid._create_continental_mask"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.SeafloorGrid._create_continental_mask" title="Link to this definition"></a></dt>
-<dd><p>Create a continental mask for each timestep.</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="gplately.SeafloorGrid._extract_zvalues_from_npz_to_ndarray">
-<span class="sig-name descname"><span class="pre">_extract_zvalues_from_npz_to_ndarray</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">featurecollection</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gplately/oceans.html#SeafloorGrid._extract_zvalues_from_npz_to_ndarray"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.SeafloorGrid._extract_zvalues_from_npz_to_ndarray" title="Link to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="gplately.SeafloorGrid._generate_ocean_points">
-<span class="sig-name descname"><span class="pre">_generate_ocean_points</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gplately/oceans.html#SeafloorGrid._generate_ocean_points"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.SeafloorGrid._generate_ocean_points" title="Link to this definition"></a></dt>
-<dd><p>generate ocean points by using the icosahedral mesh</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="gplately.SeafloorGrid._get_ocean_points_from_continent_mask">
-<span class="sig-name descname"><span class="pre">_get_ocean_points_from_continent_mask</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gplately/oceans.html#SeafloorGrid._get_ocean_points_from_continent_mask"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.SeafloorGrid._get_ocean_points_from_continent_mask" title="Link to this definition"></a></dt>
-<dd><p>get the ocean points from continent mask grid</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="gplately.SeafloorGrid._load_middle_ocean_ridge_points">
-<span class="sig-name descname"><span class="pre">_load_middle_ocean_ridge_points</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">time</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gplately/oceans.html#SeafloorGrid._load_middle_ocean_ridge_points"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.SeafloorGrid._load_middle_ocean_ridge_points" title="Link to this definition"></a></dt>
-<dd><p>add middle ocean ridge points at <cite>time</cite> to current_active_points_df</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="gplately.SeafloorGrid._map_res_to_node_percentage">
-<span class="sig-name descname"><span class="pre">_map_res_to_node_percentage</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">continent_mask_filename</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gplately/oceans.html#SeafloorGrid._map_res_to_node_percentage"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.SeafloorGrid._map_res_to_node_percentage" title="Link to this definition"></a></dt>
-<dd><p>Determine which percentage to use to scale the continent mask resolution at max time</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="gplately.SeafloorGrid._remove_continental_points">
-<span class="sig-name descname"><span class="pre">_remove_continental_points</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">time</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gplately/oceans.html#SeafloorGrid._remove_continental_points"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.SeafloorGrid._remove_continental_points" title="Link to this definition"></a></dt>
-<dd><p>remove all the points which are inside continents at <cite>time</cite> from self.current_active_points_df</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="gplately.SeafloorGrid._save_gridding_input_data">
-<span class="sig-name descname"><span class="pre">_save_gridding_input_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">time</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gplately/oceans.html#SeafloorGrid._save_gridding_input_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.SeafloorGrid._save_gridding_input_data" title="Link to this definition"></a></dt>
-<dd><p>save the data into file for creating netcdf file later</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="gplately.SeafloorGrid._set_grid_resolution">
-<span class="sig-name descname"><span class="pre">_set_grid_resolution</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">grid_spacing</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gplately/oceans.html#SeafloorGrid._set_grid_resolution"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.SeafloorGrid._set_grid_resolution" title="Link to this definition"></a></dt>
-<dd><p>determine the output grid resolution</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="gplately.SeafloorGrid._setup_output_paths">
-<span class="sig-name descname"><span class="pre">_setup_output_paths</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">save_directory</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gplately/oceans.html#SeafloorGrid._setup_output_paths"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.SeafloorGrid._setup_output_paths" title="Link to this definition"></a></dt>
-<dd><p>create various folders for output files</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="gplately.SeafloorGrid._update_current_active_points">
-<span class="sig-name descname"><span class="pre">_update_current_active_points</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">lons</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lats</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">begin_times</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">end_times</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">spread_rates</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">replace</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gplately/oceans.html#SeafloorGrid._update_current_active_points"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.SeafloorGrid._update_current_active_points" title="Link to this definition"></a></dt>
-<dd><p>If the <cite>replace</cite> is true, use the new data to replace self.current_active_points_df.
-Otherwise, append the new data to the end of self.current_active_points_df</p>
-</dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="gplately.SeafloorGrid._update_current_active_points_coordinates">
-<span class="sig-name descname"><span class="pre">_update_current_active_points_coordinates</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">reconstructed_points</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">List</span><span class="p"><span class="pre">[</span></span><span class="pre">PointOnSphere</span><span class="p"><span class="pre">]</span></span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gplately/oceans.html#SeafloorGrid._update_current_active_points_coordinates"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.SeafloorGrid._update_current_active_points_coordinates" title="Link to this definition"></a></dt>
-<dd><p>Update the current active points with the reconstructed coordinates.
-The length of <cite>reconstructed_points</cite> must be the same with the length of self.current_active_points_df</p>
-</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="gplately.SeafloorGrid.build_all_MOR_seedpoints">

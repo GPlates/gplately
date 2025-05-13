@@ -655,15 +655,12 @@
 <span class="c1">#</span>
 <span class="c1"># Returns a tuple of left and right plate ids from a &#39;feature&#39;, or None if not found.</span>
 <span class="c1">#</span>
-<div class="viewcode-block" id="_get_left_and_right_plate_ids">
-<a class="viewcode-back" href="../../../gplately.ptt.html#gplately.ptt.separate_ridge_transform_segments._get_left_and_right_plate_ids">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">_get_left_and_right_plate_ids</span><span class="p">(</span><span class="n">feature</span><span class="p">):</span>
     <span class="c1"># Get left and right plate ids (if any).</span>
     <span class="n">left_plate_id</span> <span class="o">=</span> <span class="n">feature</span><span class="o">.</span><span class="n">get_left_plate</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
     <span class="n">right_plate_id</span> <span class="o">=</span> <span class="n">feature</span><span class="o">.</span><span class="n">get_right_plate</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
     <span class="k">if</span> <span class="n">left_plate_id</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span> <span class="ow">and</span> <span class="n">right_plate_id</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">left_plate_id</span><span class="p">,</span> <span class="n">right_plate_id</span></div>
-
+        <span class="k">return</span> <span class="n">left_plate_id</span><span class="p">,</span> <span class="n">right_plate_id</span>
 
 
 <span class="c1">#</span>
@@ -673,8 +670,6 @@
 <span class="c1"># otherwise looks for plate/conjugate ids if feature came from a PLATES data file,</span>
 <span class="c1"># otherwise returns None.</span>
 <span class="c1">#</span>
-<div class="viewcode-block" id="_get_reconstruction_and_conjugate_plate_ids">
-<a class="viewcode-back" href="../../../gplately.ptt.html#gplately.ptt.separate_ridge_transform_segments._get_reconstruction_and_conjugate_plate_ids">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">_get_reconstruction_and_conjugate_plate_ids</span><span class="p">(</span><span class="n">feature</span><span class="p">):</span>
     <span class="n">reconstruction_plate_id</span> <span class="o">=</span> <span class="n">feature</span><span class="o">.</span><span class="n">get_reconstruction_plate_id</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
     <span class="n">conjugate_plate_id</span> <span class="o">=</span> <span class="n">feature</span><span class="o">.</span><span class="n">get_conjugate_plate_id</span><span class="p">(</span><span class="kc">None</span><span class="p">)</span>
@@ -693,8 +688,7 @@
         <span class="k">except</span> <span class="ne">AttributeError</span><span class="p">:</span>
             <span class="c1"># The property value type did not match the property name.</span>
             <span class="c1"># This indicates the data does not conform to the GPlates Geological Information Model (GPGIM).</span>
-            <span class="k">pass</span></div>
-
+            <span class="k">pass</span>
 
 
 <span class="n">DEFAULT_OUTPUT_RIDGES_FILENAME_SUFFIX</span> <span class="o">=</span> <span class="s2">&quot;_ridges&quot;</span>

@@ -187,8 +187,6 @@
             <span class="k">return</span> <span class="n">results</span></div>
 
 
-<div class="viewcode-block" id="Parallel._func_queue">
-<a class="viewcode-back" href="../../gplately.html#gplately.parallel.Parallel._func_queue">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">_func_queue</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">function</span><span class="p">,</span> <span class="n">q_in</span><span class="p">,</span> <span class="n">q_out</span><span class="p">,</span> <span class="o">*</span><span class="n">args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
         <span class="k">while</span> <span class="kc">True</span><span class="p">:</span>
             <span class="n">pos</span><span class="p">,</span> <span class="n">input_args</span> <span class="o">=</span> <span class="n">q_in</span><span class="o">.</span><span class="n">get</span><span class="p">()</span>
@@ -198,7 +196,6 @@
             <span class="n">res</span> <span class="o">=</span> <span class="n">function</span><span class="p">(</span><span class="o">*</span><span class="n">input_args</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">)</span>
             <span class="n">q_out</span><span class="o">.</span><span class="n">put</span><span class="p">((</span><span class="n">pos</span><span class="p">,</span> <span class="n">res</span><span class="p">))</span>
         <span class="k">return</span></div>
-</div>
 
 </pre></div>
 

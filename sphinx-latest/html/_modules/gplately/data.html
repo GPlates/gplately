@@ -108,8 +108,6 @@
 <span class="sd">&quot;&quot;&quot;</span>
 
 
-<div class="viewcode-block" id="_find_needed_collection">
-<a class="viewcode-back" href="../../gplately.html#gplately.data._find_needed_collection">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">_find_needed_collection</span><span class="p">(</span><span class="n">collection_identifier</span><span class="p">,</span> <span class="n">data_dictionary</span><span class="p">,</span> <span class="n">time</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Search through link databases and time arrays (or single integer</span>
 <span class="sd">    time) for requested download links.&quot;&quot;&quot;</span>
@@ -146,22 +144,16 @@
                         <span class="n">all_urls</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">url</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">time</span><span class="p">))))</span>
                         <span class="k">return</span> <span class="n">all_urls</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="k">return</span> <span class="n">url</span></div>
+                <span class="k">return</span> <span class="n">url</span>
 
 
-
-<div class="viewcode-block" id="_studyname">
-<a class="viewcode-back" href="../../gplately.html#gplately.data._studyname">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">_studyname</span><span class="p">(</span><span class="n">study_name</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Locate the citation surname for a particular identifier string</span>
 <span class="sd">    (i.e. &quot;Muller&quot; for &quot;Muller2019&quot;).&quot;&quot;&quot;</span>
     <span class="n">name</span> <span class="o">=</span> <span class="n">_re</span><span class="o">.</span><span class="n">findall</span><span class="p">(</span><span class="sa">r</span><span class="s2">&quot;[A-Za-z]+|\d+&quot;</span><span class="p">,</span> <span class="n">study_name</span><span class="p">)[</span><span class="mi">0</span><span class="p">]</span>
-    <span class="k">return</span> <span class="n">name</span></div>
+    <span class="k">return</span> <span class="n">name</span>
 
 
-
-<div class="viewcode-block" id="_rasters">
-<a class="viewcode-back" href="../../gplately.html#gplately.data._rasters">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">_rasters</span><span class="p">():</span>
 
     <span class="n">database</span> <span class="o">=</span> <span class="p">{</span>
@@ -172,12 +164,9 @@
             <span class="s2">&quot;https://www.ngdc.noaa.gov/mgg/global/relief/ETOPO1/image/color_etopo1_ice_low.tif.gz&quot;</span>
         <span class="p">],</span>
     <span class="p">}</span>
-    <span class="k">return</span> <span class="n">database</span></div>
+    <span class="k">return</span> <span class="n">database</span>
 
 
-
-<div class="viewcode-block" id="_feature_data">
-<a class="viewcode-back" href="../../gplately.html#gplately.data._feature_data">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">_feature_data</span><span class="p">():</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Assorted feature data from EarthByte&#39;s GPlates 2.3 sample data repository.&quot;&quot;&quot;</span>
 
@@ -195,8 +184,7 @@
             <span class="s2">&quot;https://www.earthbyte.org/webdav/ftp/earthbyte/GPlates/GPlates2.3_GeoData/Individual/Hotspots.zip&quot;</span>
         <span class="p">],</span>
     <span class="p">}</span>
-    <span class="k">return</span> <span class="n">database</span></div>
-
+    <span class="k">return</span> <span class="n">database</span>
 
 
 <div class="viewcode-block" id="DataCollection">

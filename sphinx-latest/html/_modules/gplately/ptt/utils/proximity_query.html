@@ -649,8 +649,6 @@
 <span class="c1">##################</span>
 
 
-<div class="viewcode-block" id="_visit_closest_geometries_to_points">
-<a class="viewcode-back" href="../../../../gplately.ptt.utils.html#gplately.ptt.utils.proximity_query._visit_closest_geometries_to_points">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">_visit_closest_geometries_to_points</span><span class="p">(</span>
     <span class="n">node</span><span class="p">,</span>
     <span class="n">points</span><span class="p">,</span>
@@ -864,12 +862,9 @@
                 <span class="k">if</span> <span class="n">closest_geometry_proxy_to_point</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
                     <span class="n">geometry_proxies_closest_to_points</span><span class="p">[</span><span class="n">point_index</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
                         <span class="n">closest_geometry_proxy_to_point</span>
-                    <span class="p">)</span></div>
+                    <span class="p">)</span>
 
 
-
-<div class="viewcode-block" id="_visit_closest_points_to_geometry">
-<a class="viewcode-back" href="../../../../gplately.ptt.utils.html#gplately.ptt.utils.proximity_query._visit_closest_points_to_geometry">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">_visit_closest_points_to_geometry</span><span class="p">(</span>
     <span class="n">node</span><span class="p">,</span>
     <span class="n">geometry</span><span class="p">,</span>
@@ -1020,8 +1015,7 @@
             <span class="k">if</span> <span class="n">closest_point_proxy_to_geometry</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="n">point_proxies_closest_to_geometry</span> <span class="o">=</span> <span class="n">closest_point_proxy_to_geometry</span>
 
-    <span class="k">return</span> <span class="n">point_proxies_closest_to_geometry</span><span class="p">,</span> <span class="n">distance_threshold_radians</span></div>
-
+    <span class="k">return</span> <span class="n">point_proxies_closest_to_geometry</span><span class="p">,</span> <span class="n">distance_threshold_radians</span>
 
 
 <span class="c1"># if __name__ == &#39;__main__&#39;:</span>

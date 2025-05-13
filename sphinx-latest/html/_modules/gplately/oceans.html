@@ -411,8 +411,6 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">total_column_headers</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">default_column_headers</span> <span class="o">+</span> <span class="bp">self</span><span class="o">.</span><span class="n">zval_names</span></div>
 
 
-<div class="viewcode-block" id="SeafloorGrid._map_res_to_node_percentage">
-<a class="viewcode-back" href="../../gplately.html#gplately.SeafloorGrid._map_res_to_node_percentage">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">_map_res_to_node_percentage</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">continent_mask_filename</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Determine which percentage to use to scale the continent mask resolution at max time&quot;&quot;&quot;</span>
         <span class="n">maskY</span><span class="p">,</span> <span class="n">maskX</span> <span class="o">=</span> <span class="n">grids</span><span class="o">.</span><span class="n">read_netcdf_grid</span><span class="p">(</span>
@@ -431,11 +429,8 @@
             <span class="n">percentage</span> <span class="o">=</span> <span class="mf">0.6</span>
         <span class="k">elif</span> <span class="n">mask_deg</span> <span class="o">&gt;=</span> <span class="mi">1</span><span class="p">:</span>
             <span class="n">percentage</span> <span class="o">=</span> <span class="mf">0.75</span>
-        <span class="k">return</span> <span class="n">mask_deg</span><span class="p">,</span> <span class="n">percentage</span></div>
+        <span class="k">return</span> <span class="n">mask_deg</span><span class="p">,</span> <span class="n">percentage</span>
 
-
-<div class="viewcode-block" id="SeafloorGrid._setup_output_paths">
-<a class="viewcode-back" href="../../gplately.html#gplately.SeafloorGrid._setup_output_paths">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">_setup_output_paths</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">save_directory</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;create various folders for output files&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">save_directory</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">save_directory</span><span class="p">)</span>
@@ -515,11 +510,8 @@
             <span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">gridding_input_filepath</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">gridding_input_directory</span><span class="p">,</span> <span class="n">gridding_input_basename</span>
-        <span class="p">)</span></div>
+        <span class="p">)</span>
 
-
-<div class="viewcode-block" id="SeafloorGrid._set_grid_resolution">
-<a class="viewcode-back" href="../../gplately.html#gplately.SeafloorGrid._set_grid_resolution">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">_set_grid_resolution</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">grid_spacing</span><span class="o">=</span><span class="mf">0.1</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;determine the output grid resolution&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">grid_spacing</span><span class="p">:</span>
@@ -572,8 +564,7 @@
                 <span class="n">warnings</span><span class="o">.</span><span class="n">simplefilter</span><span class="p">(</span><span class="s2">&quot;always&quot;</span><span class="p">)</span>
                 <span class="n">warnings</span><span class="o">.</span><span class="n">warn</span><span class="p">(</span>
                     <span class="sa">f</span><span class="s2">&quot;The provided grid_spacing of </span><span class="si">{</span><span class="n">grid_spacing</span><span class="si">}</span><span class="s2"> does not cleanly divide into the global extent. A degree spacing of </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">grid_spacing</span><span class="si">}</span><span class="s2"> has been employed instead.&quot;</span>
-                <span class="p">)</span></div>
-
+                <span class="p">)</span>
 
     <span class="c1"># Allow SeafloorGrid time to be updated, and to update the internally-used</span>
     <span class="c1"># PlotTopologies&#39; time attribute too. If PlotTopologies is used outside the</span>
@@ -601,8 +592,6 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_PlotTopologies_object</span><span class="o">.</span><span class="n">time</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">max_time</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="SeafloorGrid._collect_point_data_in_dataframe">
-<a class="viewcode-back" href="../../gplately.html#gplately.SeafloorGrid._collect_point_data_in_dataframe">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">_collect_point_data_in_dataframe</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">feature_collection</span><span class="p">,</span> <span class="n">zval_ndarray</span><span class="p">,</span> <span class="n">time</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;At a given timestep, create a pandas dataframe holding all attributes of point features.</span>
 
@@ -614,11 +603,8 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">zval_names</span><span class="p">,</span>
             <span class="n">zval_ndarray</span><span class="p">,</span>
             <span class="n">time</span><span class="p">,</span>
-        <span class="p">)</span></div>
+        <span class="p">)</span>
 
-
-<div class="viewcode-block" id="SeafloorGrid._generate_ocean_points">
-<a class="viewcode-back" href="../../gplately.html#gplately.SeafloorGrid._generate_ocean_points">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">_generate_ocean_points</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;generate ocean points by using the icosahedral mesh&quot;&quot;&quot;</span>
         <span class="c1"># Ensure COB terranes at max time have reconstruction IDs and valid times</span>
@@ -656,11 +642,8 @@
             <span class="n">partition_return</span><span class="o">=</span><span class="n">pygplates</span><span class="o">.</span><span class="n">PartitionReturn</span><span class="o">.</span><span class="n">separate_partitioned_and_unpartitioned</span><span class="p">,</span>
             <span class="n">properties_to_copy</span><span class="o">=</span><span class="p">[</span><span class="n">pygplates</span><span class="o">.</span><span class="n">PropertyName</span><span class="o">.</span><span class="n">gpml_shapefile_attributes</span><span class="p">],</span>
         <span class="p">)</span>
-        <span class="k">return</span> <span class="n">paleogeography</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>  <span class="c1"># points in oceans</span></div>
+        <span class="k">return</span> <span class="n">paleogeography</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>  <span class="c1"># points in oceans</span>
 
-
-<div class="viewcode-block" id="SeafloorGrid._get_ocean_points_from_continent_mask">
-<a class="viewcode-back" href="../../gplately.html#gplately.SeafloorGrid._get_ocean_points_from_continent_mask">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">_get_ocean_points_from_continent_mask</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;get the ocean points from continent mask grid&quot;&quot;&quot;</span>
         <span class="n">max_time_cont_mask</span> <span class="o">=</span> <span class="n">grids</span><span class="o">.</span><span class="n">Raster</span><span class="p">(</span>
@@ -693,8 +676,7 @@
         <span class="n">ocean_pt_feature</span><span class="o">.</span><span class="n">set_geometry</span><span class="p">(</span>
             <span class="n">pygplates</span><span class="o">.</span><span class="n">MultiPointOnSphere</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">mask_lat</span><span class="p">,</span> <span class="n">mask_lon</span><span class="p">))</span>
         <span class="p">)</span>
-        <span class="k">return</span> <span class="p">[</span><span class="n">ocean_pt_feature</span><span class="p">]</span></div>
-
+        <span class="k">return</span> <span class="p">[</span><span class="n">ocean_pt_feature</span><span class="p">]</span>
 
 <div class="viewcode-block" id="SeafloorGrid.create_initial_ocean_seed_points">
 <a class="viewcode-back" href="../../gplately.html#gplately.SeafloorGrid.create_initial_ocean_seed_points">[docs]</a>
@@ -886,8 +868,6 @@
                 <span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="SeafloorGrid._create_continental_mask">
-<a class="viewcode-back" href="../../gplately.html#gplately.SeafloorGrid._create_continental_mask">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">_create_continental_mask</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">time_array</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Create a continental mask for each timestep.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">time_array</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">!=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_max_time</span><span class="p">:</span>
@@ -924,11 +904,8 @@
             <span class="p">)</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Finished building a continental mask at </span><span class="si">{</span><span class="n">time</span><span class="si">}</span><span class="s2"> Ma!&quot;</span><span class="p">)</span>
 
-        <span class="k">return</span></div>
+        <span class="k">return</span>
 
-
-<div class="viewcode-block" id="SeafloorGrid._build_continental_mask">
-<a class="viewcode-back" href="../../gplately.html#gplately.SeafloorGrid._build_continental_mask">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">_build_continental_mask</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">time</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span> <span class="n">overwrite</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Create a continental mask for a given time.&quot;&quot;&quot;</span>
         <span class="n">mask_fn</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">continent_mask_filepath</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">time</span><span class="p">)</span>
@@ -954,8 +931,7 @@
             <span class="n">extent</span><span class="o">=</span><span class="p">[</span><span class="o">-</span><span class="mi">180</span><span class="p">,</span> <span class="mi">180</span><span class="p">,</span> <span class="o">-</span><span class="mi">90</span><span class="p">,</span> <span class="mi">90</span><span class="p">],</span>
             <span class="n">fill_value</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
         <span class="p">)</span>
-        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Finished building a continental mask at </span><span class="si">{</span><span class="n">time</span><span class="si">}</span><span class="s2"> Ma!&quot;</span><span class="p">)</span></div>
-
+        <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Finished building a continental mask at </span><span class="si">{</span><span class="n">time</span><span class="si">}</span><span class="s2"> Ma!&quot;</span><span class="p">)</span>
 
 <div class="viewcode-block" id="SeafloorGrid.build_all_continental_masks">
 <a class="viewcode-back" href="../../gplately.html#gplately.SeafloorGrid.build_all_continental_masks">[docs]</a>
@@ -1005,8 +981,6 @@
                     <span class="bp">self</span><span class="o">.</span><span class="n">_build_continental_mask</span><span class="p">(</span><span class="n">time</span><span class="p">,</span> <span class="n">overwrite</span><span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="SeafloorGrid._extract_zvalues_from_npz_to_ndarray">
-<a class="viewcode-back" href="../../gplately.html#gplately.SeafloorGrid._extract_zvalues_from_npz_to_ndarray">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">_extract_zvalues_from_npz_to_ndarray</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">featurecollection</span><span class="p">,</span> <span class="n">time</span><span class="p">):</span>
         <span class="c1"># NPZ file of seedpoint z values that emerged at this time</span>
         <span class="n">loaded_npz</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">load</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">zvalues_file_basepath</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">time</span><span class="p">))</span>
@@ -1016,8 +990,7 @@
             <span class="c1"># Account for the 0th index being for point feature IDs</span>
             <span class="n">curr_zvalues</span><span class="p">[:,</span> <span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="n">loaded_npz</span><span class="p">[</span><span class="s2">&quot;arr_</span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">i</span><span class="p">)])</span>
 
-        <span class="k">return</span> <span class="n">curr_zvalues</span></div>
-
+        <span class="k">return</span> <span class="n">curr_zvalues</span>
 
 <div class="viewcode-block" id="SeafloorGrid.prepare_for_reconstruction_by_topologies">
 <a class="viewcode-back" href="../../gplately.html#gplately.SeafloorGrid.prepare_for_reconstruction_by_topologies">[docs]</a>
@@ -1089,8 +1062,6 @@
         <span class="k">return</span> <span class="n">active_points</span><span class="p">,</span> <span class="n">appearance_time</span><span class="p">,</span> <span class="n">birth_lat</span><span class="p">,</span> <span class="n">prev_lat</span><span class="p">,</span> <span class="n">prev_lon</span><span class="p">,</span> <span class="n">zvalues</span></div>
 
 
-<div class="viewcode-block" id="SeafloorGrid._update_current_active_points">
-<a class="viewcode-back" href="../../gplately.html#gplately.SeafloorGrid._update_current_active_points">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">_update_current_active_points</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">lons</span><span class="p">,</span> <span class="n">lats</span><span class="p">,</span> <span class="n">begin_times</span><span class="p">,</span> <span class="n">end_times</span><span class="p">,</span> <span class="n">spread_rates</span><span class="p">,</span> <span class="n">replace</span><span class="o">=</span><span class="kc">True</span>
     <span class="p">):</span>
@@ -1112,11 +1083,8 @@
                     <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">data</span><span class="p">),</span>
                 <span class="p">],</span>
                 <span class="n">ignore_index</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
-            <span class="p">)</span></div>
+            <span class="p">)</span>
 
-
-<div class="viewcode-block" id="SeafloorGrid._update_current_active_points_coordinates">
-<a class="viewcode-back" href="../../gplately.html#gplately.SeafloorGrid._update_current_active_points_coordinates">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">_update_current_active_points_coordinates</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">reconstructed_points</span><span class="p">:</span> <span class="n">List</span><span class="p">[</span><span class="n">pygplates</span><span class="o">.</span><span class="n">PointOnSphere</span><span class="p">]</span>
     <span class="p">):</span>
@@ -1141,11 +1109,8 @@
                 <span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_update_current_active_points</span><span class="p">(</span>
             <span class="n">lons</span><span class="p">,</span> <span class="n">lats</span><span class="p">,</span> <span class="n">begin_times</span><span class="p">,</span> <span class="n">end_times</span><span class="p">,</span> <span class="n">spread_rates</span>
-        <span class="p">)</span></div>
+        <span class="p">)</span>
 
-
-<div class="viewcode-block" id="SeafloorGrid._remove_continental_points">
-<a class="viewcode-back" href="../../gplately.html#gplately.SeafloorGrid._remove_continental_points">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">_remove_continental_points</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">time</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;remove all the points which are inside continents at `time` from self.current_active_points_df&quot;&quot;&quot;</span>
         <span class="n">gridZ</span><span class="p">,</span> <span class="n">gridX</span><span class="p">,</span> <span class="n">gridY</span> <span class="o">=</span> <span class="n">grids</span><span class="o">.</span><span class="n">read_netcdf_grid</span><span class="p">(</span>
@@ -1172,11 +1137,8 @@
                 <span class="k">return</span> <span class="kc">True</span>
 
         <span class="n">m</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_active_points_df</span><span class="o">.</span><span class="n">apply</span><span class="p">(</span><span class="n">remove_points_on_continents</span><span class="p">,</span> <span class="n">axis</span><span class="o">=</span><span class="mi">1</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">current_active_points_df</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_active_points_df</span><span class="p">[</span><span class="n">m</span><span class="p">]</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">current_active_points_df</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">current_active_points_df</span><span class="p">[</span><span class="n">m</span><span class="p">]</span>
 
-
-<div class="viewcode-block" id="SeafloorGrid._load_middle_ocean_ridge_points">
-<a class="viewcode-back" href="../../gplately.html#gplately.SeafloorGrid._load_middle_ocean_ridge_points">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">_load_middle_ocean_ridge_points</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">time</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;add middle ocean ridge points at `time` to current_active_points_df&quot;&quot;&quot;</span>
         <span class="n">df</span> <span class="o">=</span> <span class="n">pd</span><span class="o">.</span><span class="n">read_pickle</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">mid_ocean_ridges_file_path</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">time</span><span class="p">))</span>
@@ -1210,11 +1172,8 @@
             <span class="n">curr_zvalues</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_extract_zvalues_from_npz_to_ndarray</span><span class="p">(</span><span class="n">fc</span><span class="p">,</span> <span class="n">time</span><span class="p">)</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_update_current_active_points</span><span class="p">(</span>
                 <span class="n">lons</span><span class="p">,</span> <span class="n">lats</span><span class="p">,</span> <span class="n">begin_times</span><span class="p">,</span> <span class="n">end_times</span><span class="p">,</span> <span class="n">curr_zvalues</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">],</span> <span class="n">replace</span><span class="o">=</span><span class="kc">False</span>
-            <span class="p">)</span></div>
+            <span class="p">)</span>
 
-
-<div class="viewcode-block" id="SeafloorGrid._save_gridding_input_data">
-<a class="viewcode-back" href="../../gplately.html#gplately.SeafloorGrid._save_gridding_input_data">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">_save_gridding_input_data</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">time</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;save the data into file for creating netcdf file later&quot;&quot;&quot;</span>
         <span class="n">data_len</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">current_active_points_df</span><span class="p">[</span><span class="s2">&quot;lon&quot;</span><span class="p">])</span>
@@ -1226,8 +1185,7 @@
             <span class="n">BIRTH_LAT_SNAPSHOT</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">data_len</span><span class="p">,</span>
             <span class="n">POINT_ID_SNAPSHOT</span><span class="o">=</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">*</span> <span class="n">data_len</span><span class="p">,</span>
             <span class="n">SPREADING_RATE</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">current_active_points_df</span><span class="p">[</span><span class="s2">&quot;SPREADING_RATE&quot;</span><span class="p">],</span>
-        <span class="p">)</span></div>
-
+        <span class="p">)</span>
 
 <div class="viewcode-block" id="SeafloorGrid.reconstruct_by_topological_model">
 <a class="viewcode-back" href="../../gplately.html#gplately.SeafloorGrid.reconstruct_by_topological_model">[docs]</a>
@@ -1630,8 +1588,6 @@
 
 
 
-<div class="viewcode-block" id="_save_netcdf_file">
-<a class="viewcode-back" href="../../gplately.html#gplately._save_netcdf_file">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">_save_netcdf_file</span><span class="p">(</span>
     <span class="n">time</span><span class="p">,</span>
     <span class="n">name</span><span class="p">,</span>
@@ -1707,12 +1663,9 @@
         <span class="n">significant_digits</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
         <span class="n">fill_value</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span>
     <span class="p">)</span>
-    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Save </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2"> netCDF grid at </span><span class="si">{</span><span class="n">time</span><span class="si">:</span><span class="s2">0.2f</span><span class="si">}</span><span class="s2"> Ma completed!&quot;</span><span class="p">)</span></div>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Save </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2"> netCDF grid at </span><span class="si">{</span><span class="n">time</span><span class="si">:</span><span class="s2">0.2f</span><span class="si">}</span><span class="s2"> Ma completed!&quot;</span><span class="p">)</span>
 
 
-
-<div class="viewcode-block" id="_lat_lon_z_to_netCDF_time">
-<a class="viewcode-back" href="../../gplately.html#gplately._lat_lon_z_to_netCDF_time">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">_lat_lon_z_to_netCDF_time</span><span class="p">(</span>
     <span class="n">time</span><span class="p">,</span>
     <span class="n">zval_name</span><span class="p">,</span>
@@ -1802,12 +1755,9 @@
         <span class="n">significant_digits</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span>
         <span class="n">fill_value</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span>
     <span class="p">)</span>
-    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">zval_name</span><span class="si">}</span><span class="s2"> netCDF grids for </span><span class="si">{</span><span class="n">time</span><span class="si">:</span><span class="s2">0.2f</span><span class="si">}</span><span class="s2"> Ma complete!&quot;</span><span class="p">)</span></div>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;</span><span class="si">{</span><span class="n">zval_name</span><span class="si">}</span><span class="s2"> netCDF grids for </span><span class="si">{</span><span class="n">time</span><span class="si">:</span><span class="s2">0.2f</span><span class="si">}</span><span class="s2"> Ma complete!&quot;</span><span class="p">)</span>
 
 
-
-<div class="viewcode-block" id="_save_age_grid_sample_points_to_gpml">
-<a class="viewcode-back" href="../../gplately.html#gplately._save_age_grid_sample_points_to_gpml">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">_save_age_grid_sample_points_to_gpml</span><span class="p">(</span>
     <span class="n">lons</span><span class="p">,</span> <span class="n">lats</span><span class="p">,</span> <span class="n">seafloor_ages</span><span class="p">,</span> <span class="n">paleo_time</span><span class="p">,</span> <span class="n">output_file_dir</span>
 <span class="p">):</span>
@@ -1822,12 +1772,9 @@
         <span class="n">features</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
     <span class="n">pygplates</span><span class="o">.</span><span class="n">FeatureCollection</span><span class="p">(</span><span class="n">features</span><span class="p">)</span><span class="o">.</span><span class="n">write</span><span class="p">(</span>
         <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">output_file_dir</span><span class="p">,</span> <span class="n">SAMPLE_POINTS_GPMLZ_FILE_NAME</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">paleo_time</span><span class="p">))</span>
-    <span class="p">)</span></div>
+    <span class="p">)</span>
 
 
-
-<div class="viewcode-block" id="_save_seed_points_as_multipoint_coverage">
-<a class="viewcode-back" href="../../gplately.html#gplately._save_seed_points_as_multipoint_coverage">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">_save_seed_points_as_multipoint_coverage</span><span class="p">(</span>
     <span class="n">lons</span><span class="p">,</span> <span class="n">lats</span><span class="p">,</span> <span class="n">seafloor_ages</span><span class="p">,</span> <span class="n">paleo_time</span><span class="p">,</span> <span class="n">output_file_dir</span>
 <span class="p">):</span>
@@ -1843,12 +1790,9 @@
         <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
             <span class="n">output_file_dir</span><span class="p">,</span> <span class="s2">&quot;seed_points_coverage_</span><span class="si">{:0.2f}</span><span class="s2">_Ma.gpmlz&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">paleo_time</span><span class="p">)</span>
         <span class="p">)</span>
-    <span class="p">)</span></div>
+    <span class="p">)</span>
 
 
-
-<div class="viewcode-block" id="_build_continental_mask_with_contouring">
-<a class="viewcode-back" href="../../gplately.html#gplately._build_continental_mask_with_contouring">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">_build_continental_mask_with_contouring</span><span class="p">(</span>
     <span class="n">time</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
     <span class="n">continent_mask_filepath</span><span class="p">,</span>
@@ -1934,12 +1878,9 @@
     <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
         <span class="sa">f</span><span class="s2">&quot;Finished building a continental mask at </span><span class="si">{</span><span class="n">time</span><span class="si">}</span><span class="s2"> Ma using ptt&#39;s &#39;Continent Contouring&#39;!&quot;</span>
         <span class="o">+</span> <span class="s2">&quot; For more information about &#39;Continent Contouring&#39;, visit https://gplates.github.io/gplately/dev-doc/ptt/continent_contours.html.&quot;</span>
-    <span class="p">)</span></div>
+    <span class="p">)</span>
 
 
-
-<div class="viewcode-block" id="_generate_mid_ocean_ridge_points">
-<a class="viewcode-back" href="../../gplately.html#gplately._generate_mid_ocean_ridge_points">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">_generate_mid_ocean_ridge_points</span><span class="p">(</span>
     <span class="n">time</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
     <span class="n">delta_time</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
@@ -2083,12 +2024,9 @@
             <span class="n">zvalues_file_basepath</span><span class="p">,</span> <span class="n">mor_points</span><span class="p">,</span> <span class="n">zval_names</span><span class="p">,</span> <span class="n">point_spreading_rates</span><span class="p">,</span> <span class="n">time</span>
         <span class="p">)</span>
 
-    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Finished building MOR seedpoints at </span><span class="si">{</span><span class="n">time</span><span class="si">}</span><span class="s2"> Ma!&quot;</span><span class="p">)</span></div>
+    <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Finished building MOR seedpoints at </span><span class="si">{</span><span class="n">time</span><span class="si">}</span><span class="s2"> Ma!&quot;</span><span class="p">)</span>
 
 
-
-<div class="viewcode-block" id="_collect_point_data_in_dataframe">
-<a class="viewcode-back" href="../../gplately.html#gplately._collect_point_data_in_dataframe">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">_collect_point_data_in_dataframe</span><span class="p">(</span>
     <span class="n">zvalues_file_basepath</span><span class="p">,</span> <span class="n">feature_collection</span><span class="p">,</span> <span class="n">zval_names</span><span class="p">,</span> <span class="n">zval_ndarray</span><span class="p">,</span> <span class="n">time</span>
 <span class="p">):</span>
@@ -2115,8 +2053,7 @@
         <span class="n">zvalues_file_basepath</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">time</span><span class="p">),</span>
         <span class="n">FEATURE_ID</span><span class="o">=</span><span class="p">[</span><span class="nb">str</span><span class="p">(</span><span class="n">feature</span><span class="o">.</span><span class="n">get_feature_id</span><span class="p">())</span> <span class="k">for</span> <span class="n">feature</span> <span class="ow">in</span> <span class="n">feature_collection</span><span class="p">],</span>
         <span class="o">*</span><span class="n">data_to_store</span><span class="p">,</span>
-    <span class="p">)</span></div>
-
+    <span class="p">)</span>
 </pre></div>
 
            </div>

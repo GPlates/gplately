@@ -80,9 +80,6 @@
 <li class="toctree-l4"><a class="reference internal" href="#gplately.PlotTopologies.trench_right"><code class="docutils literal notranslate"><span class="pre">PlotTopologies.trench_right</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#gplately.PlotTopologies.other"><code class="docutils literal notranslate"><span class="pre">PlotTopologies.other</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#gplately.PlotTopologies.__init__"><code class="docutils literal notranslate"><span class="pre">PlotTopologies.__init__()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#gplately.PlotTopologies._check_anchor_plate_id"><code class="docutils literal notranslate"><span class="pre">PlotTopologies._check_anchor_plate_id()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#gplately.PlotTopologies._plot_feature"><code class="docutils literal notranslate"><span class="pre">PlotTopologies._plot_feature()</span></code></a></li>
-<li class="toctree-l4"><a class="reference internal" href="#gplately.PlotTopologies._tessellate_triangles"><code class="docutils literal notranslate"><span class="pre">PlotTopologies._tessellate_triangles()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#id3"><code class="docutils literal notranslate"><span class="pre">PlotTopologies.anchor_plate_id</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#gplately.PlotTopologies.get_all_topological_sections"><code class="docutils literal notranslate"><span class="pre">PlotTopologies.get_all_topological_sections()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#gplately.PlotTopologies.get_all_topologies"><code class="docutils literal notranslate"><span class="pre">PlotTopologies.get_all_topologies()</span></code></a></li>
@@ -711,40 +708,6 @@ boundaries and passive continental boundaries.</p>
 </tr>
 </tbody>
 </table>
-<dl class="py method">
-<dt class="sig sig-object py" id="gplately.PlotTopologies._check_anchor_plate_id">
-<em class="property"><span class="k"><span class="pre">static</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">_check_anchor_plate_id</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">id</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gplately/plot.html#PlotTopologies._check_anchor_plate_id"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.PlotTopologies._check_anchor_plate_id" title="Link to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="gplately.PlotTopologies._plot_feature">
-<span class="sig-name descname"><span class="pre">_plot_feature</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ax</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">get_feature_func</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../_modules/gplately/plot.html#PlotTopologies._plot_feature"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.PlotTopologies._plot_feature" title="Link to this definition"></a></dt>
-<dd></dd></dl>
-
-<dl class="py method">
-<dt class="sig sig-object py" id="gplately.PlotTopologies._tessellate_triangles">
-<span class="sig-name descname"><span class="pre">_tessellate_triangles</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">features</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tesselation_radians</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">triangle_base_length</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">triangle_aspect</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gplately/plot.html#PlotTopologies._tessellate_triangles"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.PlotTopologies._tessellate_triangles" title="Link to this definition"></a></dt>
-<dd><p>Places subduction teeth along subduction boundary line segments within a MultiLineString shapefile.</p>
-<dl class="field-list simple">
-<dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><ul class="simple">
-<li><p><strong>shapefilename</strong> (<em>str</em>) – Path to shapefile containing the subduction boundary features</p></li>
-<li><p><strong>tesselation_radians</strong> (<em>float</em>) – Parametrises subduction teeth density. Triangles are generated only along line segments with distances
-that exceed the given threshold tessellation_radians.</p></li>
-<li><p><strong>triangle_base_length</strong> (<em>float</em>) – Length of teeth triangle base</p></li>
-<li><p><strong>triangle_aspect</strong> (<em>float</em><em>, </em><em>default=1.0</em>) – Aspect ratio of teeth triangles. Ratio is 1.0 by default.</p></li>
-</ul>
-</dd>
-<dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p><ul class="simple">
-<li><p><strong>X_points</strong> (<em>(n,3) array</em>) – X points that define the teeth triangles</p></li>
-<li><p><strong>Y_points</strong> (<em>(n,3) array</em>) – Y points that define the teeth triangles</p></li>
-</ul>
-</p>
-</dd>
-</dl>
-</dd></dl>
-
 <dl class="py property">
 <dt class="sig sig-object py" id="id3">
 <em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">anchor_plate_id</span></span><a class="headerlink" href="#id3" title="Link to this definition"></a></dt>

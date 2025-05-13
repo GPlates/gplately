@@ -710,8 +710,6 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">output_tuple</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
 
-<div class="viewcode-block" id="RegularGridInterpolator._prepare_xi">
-<a class="viewcode-back" href="../../gplately.html#gplately.RegularGridInterpolator._prepare_xi">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">_prepare_xi</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">xi</span><span class="p">):</span>
         <span class="k">try</span><span class="p">:</span>
             <span class="kn">from</span><span class="w"> </span><span class="nn">scipy.interpolate.interpnd</span><span class="w"> </span><span class="kn">import</span> <span class="n">_ndim_coords_from_arrays</span>
@@ -747,11 +745,8 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="n">out_of_bounds</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_find_out_of_bounds</span><span class="p">(</span><span class="n">xi</span><span class="o">.</span><span class="n">T</span><span class="p">)</span>
 
-        <span class="k">return</span> <span class="n">xi</span><span class="p">,</span> <span class="n">xi_shape</span><span class="p">,</span> <span class="n">ndim</span><span class="p">,</span> <span class="n">nans</span><span class="p">,</span> <span class="n">out_of_bounds</span></div>
+        <span class="k">return</span> <span class="n">xi</span><span class="p">,</span> <span class="n">xi_shape</span><span class="p">,</span> <span class="n">ndim</span><span class="p">,</span> <span class="n">nans</span><span class="p">,</span> <span class="n">out_of_bounds</span>
 
-
-<div class="viewcode-block" id="RegularGridInterpolator._find_out_of_bounds">
-<a class="viewcode-back" href="../../gplately.html#gplately.RegularGridInterpolator._find_out_of_bounds">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">_find_out_of_bounds</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">xi</span><span class="p">):</span>
         <span class="c1"># check for out of bounds xi</span>
         <span class="n">out_of_bounds</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">xi</span><span class="o">.</span><span class="n">shape</span><span class="p">[</span><span class="mi">1</span><span class="p">]),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">bool</span><span class="p">)</span>
@@ -759,11 +754,8 @@
         <span class="k">for</span> <span class="n">x</span><span class="p">,</span> <span class="n">grid</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">xi</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">grid</span><span class="p">):</span>
             <span class="n">out_of_bounds</span> <span class="o">+=</span> <span class="n">x</span> <span class="o">&lt;</span> <span class="n">grid</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
             <span class="n">out_of_bounds</span> <span class="o">+=</span> <span class="n">x</span> <span class="o">&gt;</span> <span class="n">grid</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
-        <span class="k">return</span> <span class="n">out_of_bounds</span></div>
+        <span class="k">return</span> <span class="n">out_of_bounds</span>
 
-
-<div class="viewcode-block" id="RegularGridInterpolator._find_indices">
-<a class="viewcode-back" href="../../gplately.html#gplately.RegularGridInterpolator._find_indices">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">_find_indices</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">xi</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Index identifier outsourced from scipy 1.9&#39;s</span>
 <span class="sd">        RegularGridInterpolator to ensure stable</span>
@@ -787,11 +779,8 @@
                 <span class="n">norm_dist</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">denom</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">,</span> <span class="p">(</span><span class="n">x</span> <span class="o">-</span> <span class="n">grid</span><span class="p">[</span><span class="n">i</span><span class="p">])</span> <span class="o">/</span> <span class="n">denom</span><span class="p">,</span> <span class="mi">0</span><span class="p">)</span>
             <span class="n">norm_distances</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">norm_dist</span><span class="p">)</span>
 
-        <span class="k">return</span> <span class="n">indices</span><span class="p">,</span> <span class="n">norm_distances</span></div>
+        <span class="k">return</span> <span class="n">indices</span><span class="p">,</span> <span class="n">norm_distances</span>
 
-
-<div class="viewcode-block" id="RegularGridInterpolator._evaluate_linear">
-<a class="viewcode-back" href="../../gplately.html#gplately.RegularGridInterpolator._evaluate_linear">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">_evaluate_linear</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">indices</span><span class="p">,</span> <span class="n">norm_distances</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Linear interpolator outsourced from scipy 1.9&#39;s</span>
 <span class="sd">        RegularGridInterpolator to ensure stable</span>
@@ -826,11 +815,8 @@
             <span class="k">for</span> <span class="n">w</span> <span class="ow">in</span> <span class="n">weights</span><span class="p">:</span>
                 <span class="n">weight</span> <span class="o">*=</span> <span class="n">w</span>
             <span class="n">values</span> <span class="o">+=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="n">edge_indices</span><span class="p">])</span> <span class="o">*</span> <span class="n">weight</span><span class="p">[</span><span class="n">vslice</span><span class="p">]</span>
-        <span class="k">return</span> <span class="n">values</span></div>
+        <span class="k">return</span> <span class="n">values</span>
 
-
-<div class="viewcode-block" id="RegularGridInterpolator._evaluate_nearest">
-<a class="viewcode-back" href="../../gplately.html#gplately.RegularGridInterpolator._evaluate_nearest">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">_evaluate_nearest</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">indices</span><span class="p">,</span> <span class="n">norm_distances</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Nearest neighbour interpolator outsourced from scipy 1.9&#39;s</span>
 <span class="sd">        RegularGridInterpolator to ensure stable</span>
@@ -840,7 +826,6 @@
             <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">yi</span> <span class="o">&lt;=</span> <span class="mf">0.5</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">yi</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">indices</span><span class="p">,</span> <span class="n">norm_distances</span><span class="p">)</span>
         <span class="p">]</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="nb">tuple</span><span class="p">(</span><span class="n">idx_res</span><span class="p">)]</span></div>
-</div>
 
 
 

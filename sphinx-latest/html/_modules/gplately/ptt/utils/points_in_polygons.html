@@ -282,8 +282,6 @@
 <span class="c1">##################</span>
 
 
-<div class="viewcode-block" id="_visit_spatial_tree_node">
-<a class="viewcode-back" href="../../../../gplately.ptt.utils.html#gplately.ptt.utils.points_in_polygons._visit_spatial_tree_node">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">_visit_spatial_tree_node</span><span class="p">(</span>
     <span class="n">node</span><span class="p">,</span>
     <span class="n">points</span><span class="p">,</span>
@@ -387,12 +385,9 @@
                         <span class="c1"># Each point has a *single* polygon proxy (or None).</span>
                         <span class="n">polygon_proxies_containing_points</span><span class="p">[</span><span class="n">point_index</span><span class="p">]</span> <span class="o">=</span> <span class="n">polygon_proxy</span>
                         <span class="c1"># No need to visit remaining polygons for the current point.</span>
-                        <span class="k">break</span></div>
+                        <span class="k">break</span>
 
 
-
-<div class="viewcode-block" id="_fill_spatial_tree_node_inside_polygon">
-<a class="viewcode-back" href="../../../../gplately.ptt.utils.html#gplately.ptt.utils.points_in_polygons._fill_spatial_tree_node_inside_polygon">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">_fill_spatial_tree_node_inside_polygon</span><span class="p">(</span>
     <span class="n">node</span><span class="p">,</span> <span class="n">polygon_proxy</span><span class="p">,</span> <span class="n">polygon_proxies_containing_points</span><span class="p">,</span> <span class="n">all_polygons</span>
 <span class="p">):</span>
@@ -416,8 +411,7 @@
                 <span class="n">polygon_proxies_containing_points</span><span class="p">[</span><span class="n">point_index</span><span class="p">]</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">polygon_proxy</span><span class="p">)</span>
             <span class="k">else</span><span class="p">:</span>
                 <span class="c1"># Each point has a *single* polygon proxy (or None).</span>
-                <span class="n">polygon_proxies_containing_points</span><span class="p">[</span><span class="n">point_index</span><span class="p">]</span> <span class="o">=</span> <span class="n">polygon_proxy</span></div>
-
+                <span class="n">polygon_proxies_containing_points</span><span class="p">[</span><span class="n">point_index</span><span class="p">]</span> <span class="o">=</span> <span class="n">polygon_proxy</span>
 
 
 <span class="c1"># if __name__ == &#39;__main__&#39;:</span>

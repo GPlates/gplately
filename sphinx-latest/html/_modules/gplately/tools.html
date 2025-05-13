@@ -943,8 +943,6 @@
 
 
 
-<div class="viewcode-block" id="_get_rotation">
-<a class="viewcode-back" href="../../gplately.html#gplately.tools._get_rotation">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">_get_rotation</span><span class="p">(</span><span class="n">plate_pair</span><span class="p">,</span> <span class="n">rotation_model</span><span class="p">,</span> <span class="n">time</span><span class="p">,</span> <span class="n">delta_time</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
     <span class="n">to_time</span> <span class="o">=</span> <span class="n">time</span> <span class="o">-</span> <span class="n">delta_time</span> <span class="o">*</span> <span class="mf">0.5</span>
     <span class="n">from_time</span> <span class="o">=</span> <span class="n">time</span> <span class="o">+</span> <span class="n">delta_time</span> <span class="o">*</span> <span class="mf">0.5</span>
@@ -961,22 +959,15 @@
         <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
     <span class="p">)</span>
 
-    <span class="k">return</span> <span class="n">rotation</span></div>
+    <span class="k">return</span> <span class="n">rotation</span>
 
 
-
-<div class="viewcode-block" id="_deg2pixels">
-<a class="viewcode-back" href="../../gplately.html#gplately.tools._deg2pixels">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">_deg2pixels</span><span class="p">(</span><span class="n">deg_res</span><span class="p">,</span> <span class="n">deg_min</span><span class="p">,</span> <span class="n">deg_max</span><span class="p">):</span>
-    <span class="k">return</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">floor</span><span class="p">((</span><span class="n">deg_max</span> <span class="o">-</span> <span class="n">deg_min</span><span class="p">)</span> <span class="o">/</span> <span class="n">deg_res</span><span class="p">))</span> <span class="o">+</span> <span class="mi">1</span></div>
+    <span class="k">return</span> <span class="nb">int</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">floor</span><span class="p">((</span><span class="n">deg_max</span> <span class="o">-</span> <span class="n">deg_min</span><span class="p">)</span> <span class="o">/</span> <span class="n">deg_res</span><span class="p">))</span> <span class="o">+</span> <span class="mi">1</span>
 
 
-
-<div class="viewcode-block" id="_pixels2deg">
-<a class="viewcode-back" href="../../gplately.html#gplately.tools._pixels2deg">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">_pixels2deg</span><span class="p">(</span><span class="n">spacing_pixel</span><span class="p">,</span> <span class="n">deg_min</span><span class="p">,</span> <span class="n">deg_max</span><span class="p">):</span>
-    <span class="k">return</span> <span class="p">(</span><span class="n">deg_max</span> <span class="o">-</span> <span class="n">deg_min</span><span class="p">)</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">spacing_pixel</span> <span class="o">-</span> <span class="mi">1</span><span class="p">))</span></div>
-
+    <span class="k">return</span> <span class="p">(</span><span class="n">deg_max</span> <span class="o">-</span> <span class="n">deg_min</span><span class="p">)</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">floor</span><span class="p">(</span><span class="nb">int</span><span class="p">(</span><span class="n">spacing_pixel</span> <span class="o">-</span> <span class="mi">1</span><span class="p">))</span>
 </pre></div>
 
            </div>

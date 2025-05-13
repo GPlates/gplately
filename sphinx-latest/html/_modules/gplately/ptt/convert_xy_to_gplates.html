@@ -111,19 +111,14 @@
 
 
 <span class="c1"># Class to hold a feature&#39;s type, list of property name/value pairs and list of geometry points.</span>
-<div class="viewcode-block" id="_FeatureData">
-<a class="viewcode-back" href="../../../gplately.ptt.html#gplately.ptt.convert_xy_to_gplates._FeatureData">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">_FeatureData</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">line_number</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">line_number</span> <span class="o">=</span> <span class="n">line_number</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">type</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># Default to &#39;unclassified&#39; feature.</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">properties</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">points_data</span> <span class="o">=</span> <span class="p">[]</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">points_data</span> <span class="o">=</span> <span class="p">[]</span>
 
 
-
-<div class="viewcode-block" id="_read_feature_metadata">
-<a class="viewcode-back" href="../../../gplately.ptt.html#gplately.ptt.convert_xy_to_gplates._read_feature_metadata">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">_read_feature_metadata</span><span class="p">(</span><span class="n">feature_data</span><span class="p">,</span> <span class="n">line</span><span class="p">):</span>
     <span class="c1"># See if line looks like &quot;name=value&quot;.</span>
     <span class="n">line_data</span> <span class="o">=</span> <span class="n">line</span><span class="o">.</span><span class="n">split</span><span class="p">(</span><span class="s2">&quot;=&quot;</span><span class="p">)</span>
@@ -192,12 +187,9 @@
                 <span class="n">feature_data</span><span class="o">.</span><span class="n">line_number</span><span class="p">,</span> <span class="n">name</span>
             <span class="p">),</span>
             <span class="n">file</span><span class="o">=</span><span class="n">sys</span><span class="o">.</span><span class="n">stderr</span><span class="p">,</span>
-        <span class="p">)</span></div>
+        <span class="p">)</span>
 
 
-
-<div class="viewcode-block" id="_create_feature">
-<a class="viewcode-back" href="../../../gplately.ptt.html#gplately.ptt.convert_xy_to_gplates._create_feature">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">_create_feature</span><span class="p">(</span><span class="n">feature_data</span><span class="p">,</span> <span class="n">multi_geometry_type</span><span class="p">,</span> <span class="n">lon_lat_order</span><span class="p">,</span> <span class="n">scalar_types</span><span class="p">):</span>
     <span class="c1"># Create a new feature.</span>
     <span class="k">try</span><span class="p">:</span>
@@ -259,8 +251,7 @@
     <span class="k">else</span><span class="p">:</span>
         <span class="n">feature</span><span class="o">.</span><span class="n">set_geometry</span><span class="p">(</span><span class="n">geometry</span><span class="p">)</span>
 
-    <span class="k">return</span> <span class="n">feature</span></div>
-
+    <span class="k">return</span> <span class="n">feature</span>
 
 
 <div class="viewcode-block" id="import_geometry_from_xy_file">

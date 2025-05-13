@@ -129,8 +129,6 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_polygons_including_continent</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_polygons_excluding_continent</span> <span class="o">=</span> <span class="p">[]</span>
 
-<div class="viewcode-block" id="ContouredContinent._add_continent">
-<a class="viewcode-back" href="../../../gplately.ptt.html#gplately.ptt.continent_contours.ContouredContinent._add_continent">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">_add_continent</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">continent_polygon</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Add a continent (landmass) polygon to this contoured continent.</span>
@@ -143,11 +141,8 @@
 <span class="sd">        It&#39;s also possible for a continent polygon to be inside an ocean polygon.</span>
 <span class="sd">        For example, a continental island inside an ocean basin (that itself has no continent containing it).</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_polygons_including_continent</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">continent_polygon</span><span class="p">)</span></div>
+        <span class="bp">self</span><span class="o">.</span><span class="n">_polygons_including_continent</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">continent_polygon</span><span class="p">)</span>
 
-
-<div class="viewcode-block" id="ContouredContinent._add_ocean">
-<a class="viewcode-back" href="../../../gplately.ptt.html#gplately.ptt.continent_contours.ContouredContinent._add_ocean">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">_add_ocean</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ocean_polygon</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Add an ocean polygon to this contoured continent.</span>
@@ -164,8 +159,7 @@
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">ocean_polygon</span><span class="o">.</span><span class="n">get_number_of_interior_rings</span><span class="p">()</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">AssertionError</span><span class="p">(</span><span class="s2">&quot;Ocean polygons cannot have interior rings&quot;</span><span class="p">)</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">_polygons_excluding_continent</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ocean_polygon</span><span class="p">)</span></div>
-
+        <span class="bp">self</span><span class="o">.</span><span class="n">_polygons_excluding_continent</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ocean_polygon</span><span class="p">)</span>
 
 <div class="viewcode-block" id="ContouredContinent.get_contours">
 <a class="viewcode-back" href="../../../gplately.ptt.html#gplately.ptt.continent_contours.ContouredContinent.get_contours">[docs]</a>
@@ -1026,8 +1020,6 @@
         <span class="k">return</span> <span class="n">contoured_continents</span></div>
 
 
-<div class="viewcode-block" id="ContinentContouring._Continent">
-<a class="viewcode-back" href="../../../gplately.ptt.html#gplately.ptt.continent_contours.ContinentContouring._Continent">[docs]</a>
     <span class="k">class</span><span class="w"> </span><span class="nc">_Continent</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Private inner class containing information about a continent (before continents are merged due to non-zero buffer/gap distances).&quot;&quot;&quot;</span>
 
@@ -1043,21 +1035,15 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">grid_points_inside_continent</span> <span class="o">=</span> <span class="n">grid_points_inside_continent</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">contouring_buffer_and_gap_distance_radians</span> <span class="o">=</span> <span class="p">(</span>
                 <span class="n">contouring_buffer_and_gap_distance_radians</span>
-            <span class="p">)</span></div>
+            <span class="p">)</span>
 
-
-<div class="viewcode-block" id="ContinentContouring._MergedContinent">
-<a class="viewcode-back" href="../../../gplately.ptt.html#gplately.ptt.continent_contours.ContinentContouring._MergedContinent">[docs]</a>
     <span class="k">class</span><span class="w"> </span><span class="nc">_MergedContinent</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Private inner class containing information about a merged continent (referencing several continents merged due to non-zero buffer/gap distances).&quot;&quot;&quot;</span>
 
         <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">continents</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">continents</span> <span class="o">=</span> <span class="n">continents</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">contoured_continent</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># to be set later (after constructor)</span></div>
+            <span class="bp">self</span><span class="o">.</span><span class="n">contoured_continent</span> <span class="o">=</span> <span class="kc">None</span>  <span class="c1"># to be set later (after constructor)</span>
 
-
-<div class="viewcode-block" id="ContinentContouring._find_merged_continents">
-<a class="viewcode-back" href="../../../gplately.ptt.html#gplately.ptt.continent_contours.ContinentContouring._find_merged_continents">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">_find_merged_continents</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">continents</span><span class="p">,</span> <span class="n">continent_separation_distance_threshold_radians</span>
     <span class="p">):</span>
@@ -1161,11 +1147,8 @@
         <span class="c1"># time2 = time.time()</span>
         <span class="c1"># print(&#39; _find_merged_continents({}): {:.2f}&#39;.format(len(merged_continents), time2 - time1))</span>
 
-        <span class="k">return</span> <span class="n">merged_continents</span></div>
+        <span class="k">return</span> <span class="n">merged_continents</span>
 
-
-<div class="viewcode-block" id="ContinentContouring._remove_ocean_areas_below_exclusion_threshold">
-<a class="viewcode-back" href="../../../gplately.ptt.html#gplately.ptt.continent_contours.ContinentContouring._remove_ocean_areas_below_exclusion_threshold">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">_remove_ocean_areas_below_exclusion_threshold</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">contoured_continents</span><span class="p">,</span> <span class="n">continent_exclusion_area_threshold_steradians</span>
     <span class="p">):</span>
@@ -1316,14 +1299,11 @@
         <span class="c1"># This can happen there was a very large landmass that only had polygons that *excluded* continental crust,</span>
         <span class="c1"># and all those *excluding* polygons were removed, leaving a landmass that covered the entire globe.</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">contoured_continents</span><span class="p">:</span>
-            <span class="n">contoured_continents</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ContouredContinent</span><span class="p">())</span></div>
-
+            <span class="n">contoured_continents</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">ContouredContinent</span><span class="p">())</span>
 
         <span class="c1"># time2 = time.time()</span>
         <span class="c1"># print(&#39; _remove_ocean_areas_below_exclusion_threshold({}): {:.2f}&#39;.format(len(removed_ocean_ring_polygons), time2 - time1))</span>
 
-<div class="viewcode-block" id="ContinentContouring._find_continent_polygon_groups">
-<a class="viewcode-back" href="../../../gplately.ptt.html#gplately.ptt.continent_contours.ContinentContouring._find_continent_polygon_groups">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">_find_continent_polygon_groups</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">continent_polygons</span><span class="p">,</span> <span class="n">continent_separation_distance_threshold_radians</span>
     <span class="p">):</span>
@@ -1408,11 +1388,8 @@
         <span class="c1"># time2 = time.time()</span>
         <span class="c1"># print(&#39; _find_continent_polygon_groups({}): {:.2f}&#39;.format(len(continent_polygon_groups), time2 - time1))</span>
 
-        <span class="k">return</span> <span class="n">continent_polygon_groups</span></div>
+        <span class="k">return</span> <span class="n">continent_polygon_groups</span>
 
-
-<div class="viewcode-block" id="ContinentContouring._find_grid_points_inside_continent_polygons">
-<a class="viewcode-back" href="../../../gplately.ptt.html#gplately.ptt.continent_contours.ContinentContouring._find_grid_points_inside_continent_polygons">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">_find_grid_points_inside_continent_polygons</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">continent_polygons</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Find the latitude/longitude grid points that are inside (one or more of) the specified polygons.</span>
@@ -1450,11 +1427,8 @@
         <span class="c1"># Reshape 1D array as 2D array indexed by (latitude, longitude) - same order as the points.</span>
         <span class="k">return</span> <span class="n">points_inside_polygons</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span>
             <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">contouring_grid_num_latitudes</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">contouring_grid_num_longitudes</span><span class="p">)</span>
-        <span class="p">)</span></div>
+        <span class="p">)</span>
 
-
-<div class="viewcode-block" id="ContinentContouring._find_grid_points_inside_or_near_continent_polygons">
-<a class="viewcode-back" href="../../../gplately.ptt.html#gplately.ptt.continent_contours.ContinentContouring._find_grid_points_inside_or_near_continent_polygons">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">_find_grid_points_inside_or_near_continent_polygons</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">continent_polygons</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Find the latitude/longitude grid points that are inside or near the specified continental polygons.</span>
@@ -1529,11 +1503,8 @@
         <span class="c1"># Reshape 1D array as 2D array indexed by (latitude, longitude) - same order as the points.</span>
         <span class="k">return</span> <span class="n">points_inside_or_near_polygons</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span>
             <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">contouring_grid_num_latitudes</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">contouring_grid_num_longitudes</span><span class="p">)</span>
-        <span class="p">)</span></div>
+        <span class="p">)</span>
 
-
-<div class="viewcode-block" id="ContinentContouring._find_grid_points_inside_contoured_continents">
-<a class="viewcode-back" href="../../../gplately.ptt.html#gplately.ptt.continent_contours.ContinentContouring._find_grid_points_inside_contoured_continents">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">_find_grid_points_inside_contoured_continents</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">contoured_continents</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Find the latitude/longitude grid points that are inside (one or more of) the specified contoured continents.</span>
@@ -1571,11 +1542,8 @@
         <span class="c1"># Reshape 1D array as 2D array indexed by (latitude, longitude) - same order as the points.</span>
         <span class="k">return</span> <span class="n">points_inside_any_contoured_continent</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span>
             <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">contouring_grid_num_latitudes</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">contouring_grid_num_longitudes</span><span class="p">)</span>
-        <span class="p">)</span></div>
+        <span class="p">)</span>
 
-
-<div class="viewcode-block" id="ContinentContouring._find_grid_points_near_merged_continent">
-<a class="viewcode-back" href="../../../gplately.ptt.html#gplately.ptt.continent_contours.ContinentContouring._find_grid_points_near_merged_continent">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">_find_grid_points_near_merged_continent</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">merged_continent</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Find the latitude/longitude grid points that are near the polygons of the continents in the specified merged continent.</span>
@@ -1625,11 +1593,8 @@
         <span class="c1"># Reshape 1D array as 2D array indexed by (latitude, longitude) - same order as the points.</span>
         <span class="k">return</span> <span class="n">points_near_merged_continent</span><span class="o">.</span><span class="n">reshape</span><span class="p">(</span>
             <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">contouring_grid_num_latitudes</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">contouring_grid_num_longitudes</span><span class="p">)</span>
-        <span class="p">)</span></div>
+        <span class="p">)</span>
 
-
-<div class="viewcode-block" id="ContinentContouring._create_contoured_continent">
-<a class="viewcode-back" href="../../../gplately.ptt.html#gplately.ptt.continent_contours.ContinentContouring._create_contoured_continent">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">_create_contoured_continent</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">points_inside_continent</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        Create landmasses and their boundaries from the specified mask of grid points.</span>
@@ -2159,11 +2124,8 @@
         <span class="c1"># time3 = time.time()</span>
         <span class="c1"># print(&#39;  _create_contoured_continent: {:.2f} {:.2f}&#39;.format(time2 - time1, time3 - time2))</span>
 
-        <span class="k">return</span> <span class="n">contoured_continent</span></div>
+        <span class="k">return</span> <span class="n">contoured_continent</span>
 
-
-<div class="viewcode-block" id="ContinentContouring._add_landmass_to_contoured_continent">
-<a class="viewcode-back" href="../../../gplately.ptt.html#gplately.ptt.continent_contours.ContinentContouring._add_landmass_to_contoured_continent">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">_add_landmass_to_contoured_continent</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">contoured_continent</span><span class="p">,</span>
@@ -2227,11 +2189,8 @@
         <span class="k">else</span><span class="p">:</span>  <span class="c1"># len(contour_rings_including_continent) &gt;= 2</span>
             <span class="k">raise</span> <span class="ne">AssertionError</span><span class="p">(</span>
                 <span class="s2">&quot;A single landmass cannot have multiple polygons that include continent&quot;</span>
-            <span class="p">)</span></div>
+            <span class="p">)</span>
 
-
-<div class="viewcode-block" id="ContinentContouring._extract_contour">
-<a class="viewcode-back" href="../../../gplately.ptt.html#gplately.ptt.continent_contours.ContinentContouring._extract_contour">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">_extract_contour</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">first_segment_lat_lon_indices</span><span class="p">,</span>
@@ -2425,7 +2384,6 @@
 
         <span class="c1"># Return the ring of contour points.</span>
         <span class="k">return</span> <span class="n">contour_points</span></div>
-</div>
 
 </pre></div>
 

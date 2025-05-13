@@ -399,8 +399,6 @@
 
 
 
-<div class="viewcode-block" id="_merge_rotation_samples">
-<a class="viewcode-back" href="../../../gplately.ptt.html#gplately.ptt.remove_plate_rotations._merge_rotation_samples">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">_merge_rotation_samples</span><span class="p">(</span>
     <span class="n">rotation_model</span><span class="p">,</span>
     <span class="n">child_remove_plate_id</span><span class="p">,</span>
@@ -479,12 +477,9 @@
             <span class="p">)</span>
         <span class="p">)</span>
 
-    <span class="k">return</span> <span class="n">parent_to_child_rotation_samples</span></div>
+    <span class="k">return</span> <span class="n">parent_to_child_rotation_samples</span>
 
 
-
-<div class="viewcode-block" id="_ensure_sequence_accuracy">
-<a class="viewcode-back" href="../../../gplately.ptt.html#gplately.ptt.remove_plate_rotations._ensure_sequence_accuracy">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">_ensure_sequence_accuracy</span><span class="p">(</span>
     <span class="n">rotation_model</span><span class="p">,</span>
     <span class="n">parent_to_child_rotation_samples</span><span class="p">,</span>
@@ -573,12 +568,9 @@
 
     <span class="c1"># Sort the sample by time (if we added any new samples).</span>
     <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">parent_to_child_rotation_samples</span><span class="p">)</span> <span class="o">&gt;</span> <span class="n">num_original_samples</span><span class="p">:</span>
-        <span class="n">parent_to_child_rotation_samples</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">sample</span><span class="p">:</span> <span class="n">sample</span><span class="o">.</span><span class="n">get_time</span><span class="p">())</span></div>
+        <span class="n">parent_to_child_rotation_samples</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">key</span><span class="o">=</span><span class="k">lambda</span> <span class="n">sample</span><span class="p">:</span> <span class="n">sample</span><span class="o">.</span><span class="n">get_time</span><span class="p">())</span>
 
 
-
-<div class="viewcode-block" id="_create_accurate_sample">
-<a class="viewcode-back" href="../../../gplately.ptt.html#gplately.ptt.remove_plate_rotations._create_accurate_sample">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">_create_accurate_sample</span><span class="p">(</span>
     <span class="n">rotation_model</span><span class="p">,</span>
     <span class="n">interpolated_sample_time</span><span class="p">,</span>
@@ -635,8 +627,7 @@
             <span class="p">),</span>
         <span class="p">)</span>
 
-    <span class="k">return</span> <span class="n">interpolated_sample</span></div>
-
+    <span class="k">return</span> <span class="n">interpolated_sample</span>
 
 
 <span class="c1"># Action to parse a tuple of accuracy parameters.</span>

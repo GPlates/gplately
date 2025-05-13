@@ -168,15 +168,12 @@
         <span class="k">return</span> <span class="p">[</span><span class="n">name</span> <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">rasters</span><span class="p">]</span></div>
 
 
-<div class="viewcode-block" id="PresentDayRasterManager._check_raster_avail">
-<a class="viewcode-back" href="../../gplately.html#gplately.PresentDayRasterManager._check_raster_avail">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">_check_raster_avail</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;check if the raster name is in raster configuration&quot;&quot;&quot;</span>
         <span class="n">name</span> <span class="o">=</span> <span class="n">_name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">rasters</span><span class="p">:</span>
             <span class="k">raise</span> <span class="n">RasterNameNotFound</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Raster </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2"> is not found in </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">rasters</span><span class="si">}</span><span class="s2">.&quot;</span><span class="p">)</span>
-        <span class="k">return</span> <span class="n">name</span></div>
-
+        <span class="k">return</span> <span class="n">name</span>
 
 <div class="viewcode-block" id="PresentDayRasterManager.is_wms">
 <a class="viewcode-back" href="../../gplately.html#gplately.PresentDayRasterManager.is_wms">[docs]</a>

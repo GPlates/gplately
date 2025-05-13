@@ -102,8 +102,6 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">.</span><span class="w"> </span><span class="kn">import</span> <span class="n">rotation</span>
 
 
-<div class="viewcode-block" id="_find_next_point">
-<a class="viewcode-back" href="../../../gplately.lib.html#gplately.lib.polyline._find_next_point">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">_find_next_point</span><span class="p">(</span><span class="n">line</span><span class="p">,</span> <span class="n">distance</span><span class="p">,</span> <span class="n">strict</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">accum_length</span><span class="o">=</span><span class="mi">0</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;recursive function to find the next point along the polyline</span>
 
@@ -142,8 +140,7 @@
                 <span class="c1"># in strict mode, we guarantee the distance. It means we will sacrifice the end point if necessary</span>
                 <span class="k">return</span> <span class="kc">None</span><span class="p">,</span> <span class="p">[]</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="k">return</span> <span class="n">second_point</span><span class="p">,</span> <span class="n">line</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>  <span class="c1"># reached the last point</span></div>
-
+                <span class="k">return</span> <span class="n">second_point</span><span class="p">,</span> <span class="n">line</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>  <span class="c1"># reached the last point</span>
 
 
 <div class="viewcode-block" id="discretize_polyline">
