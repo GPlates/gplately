@@ -60,8 +60,8 @@ GPlately can also be installed using pip_.
 .. _`editable mode`: https://pip.pypa.io/en/stable/topics/local-project-installs/#editable-installs
 
 
-Use docker 🐳
--------------
+Use docker
+----------
 
 👉 Run GPlately notebooks with Docker
 
