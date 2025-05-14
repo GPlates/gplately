@@ -1076,7 +1076,7 @@ def get_feature_data(feature_data_id_string=None, verbose=True):
 
 class DataServer(object):
     """
-    The methods in this DataServer class download plate reconstruction models to the cache folder on your computer from
+    Download plate reconstruction models to the cache folder on your computer from
     EarthByte's `WebDAV server <https://repo.gplates.org/webdav/pmm/>`__.
 
     If the `DataServer` object and its methods are called for the first time, i.e. by:
@@ -1090,7 +1090,7 @@ class DataServer(object):
     object and method(s) are re-run, the files will be re-accessed from the cache provided they have not been
     moved or deleted.
 
-    `This table <https://gplates.github.io/gplately/sphinx-doc/build/html/use_cases.html#id1>`__
+    `This table <https://gplates.github.io/gplately/sphinx-latest/html/use_cases.html#id1>`__
     provides a list of available plate reconstruction models.
     For more information about these plate models,
     visit this `EarthByte web page <https://www.earthbyte.org/category/resources/data-models/global-regional-plate-motion-models/>`__.
