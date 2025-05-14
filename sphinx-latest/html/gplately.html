@@ -7582,68 +7582,8 @@ By default, this is set to 4 standard deviations.</p></li>
 <section id="module-gplately">
 <span id="module-contents"></span><h2>Module contents<a class="headerlink" href="#module-gplately" title="Link to this heading"></a></h2>
 <p>![Intro GIF](<a class="reference external" href="https://raw.githubusercontent.com/GPlates/gplately/master/Notebooks/NotebookFiles/pdoc_Files/docs_muller19_seed_points.gif">https://raw.githubusercontent.com/GPlates/gplately/master/Notebooks/NotebookFiles/pdoc_Files/docs_muller19_seed_points.gif</a>)</p>
-<p><strong>Version - latest indev</strong></p>
-<p>## Introduction
-TODO</p>
-<p>## Installation</p>
-<p>### 1. Using conda (recommended)</p>
-<p>The latest stable public release of <cite>GPlately</cite> can be installed using conda from the “conda-forge” channel. The following commands will create a new conda environment called “my-gplately-conda-env” and install GPlately within that environment.</p>
-<p><code class="docutils literal notranslate"><span class="pre">`sh</span>
-<span class="pre">conda</span> <span class="pre">create</span> <span class="pre">-n</span> <span class="pre">my-gplately-conda-env</span>
-<span class="pre">conda</span> <span class="pre">activate</span> <span class="pre">my-gplately-conda-env</span>
-<span class="pre">conda</span> <span class="pre">install</span> <span class="pre">-c</span> <span class="pre">conda-forge</span> <span class="pre">gplately</span>
-<span class="pre">`</span></code></p>
-<p>✏️ If <cite>conda</cite> gets __stuck while solving the <a href="#id177"><span class="problematic" id="id186">environment__</span></a> during the installation of <cite>GPlately</cite>, you can try using [micromamba](<a class="reference external" href="https://mamba.readthedocs.io/en/latest/user_guide/micromamba.html">https://mamba.readthedocs.io/en/latest/user_guide/micromamba.html</a>) instead.</p>
-<p>### 2. Using pip</p>
-<p><cite>GPlately</cite> can also be installed using <cite>pip</cite>.</p>
-<p>🟢 Install the latest stable public release from [PyPI](<a class="reference external" href="https://pypi.org/project/gplately/">https://pypi.org/project/gplately/</a>)</p>
-<p><code class="docutils literal notranslate"><span class="pre">`sh</span>
-<span class="pre">pip</span> <span class="pre">install</span> <span class="pre">gplately</span>
-<span class="pre">`</span></code></p>
-<p>🟢 Install from [GitHub repository](<a class="reference external" href="https://github.com/GPlates/gplately.git">https://github.com/GPlates/gplately.git</a>) (if you need the latest code changes on GitHub)</p>
-<p><code class="docutils literal notranslate"><span class="pre">`sh</span>
-<span class="pre">pip</span> <span class="pre">install</span> <span class="pre">git+https://github.com/GPlates/gplately.git</span>
-<span class="pre">`</span></code></p>
-<p>🟢 Install from a local folder (if you need local code changes)</p>
-<p><code class="docutils literal notranslate"><span class="pre">`sh</span>
-<span class="pre">git</span> <span class="pre">clone</span> <span class="pre">https://github.com/GPlates/gplately.git</span> <span class="pre">gplately.git</span>
-<span class="pre">cd</span> <span class="pre">gplately.git</span> <span class="pre">#</span> <span class="pre">go</span> <span class="pre">into</span> <span class="pre">the</span> <span class="pre">folder</span> <span class="pre">created</span> <span class="pre">by</span> <span class="pre">&quot;git</span> <span class="pre">clone&quot;</span> <span class="pre">command</span>
-<span class="pre">git</span> <span class="pre">checkout</span> <span class="pre">master</span> <span class="pre">#</span> <span class="pre">check</span> <span class="pre">out</span> <span class="pre">the</span> <span class="pre">&quot;master&quot;</span> <span class="pre">branch</span> <span class="pre">or</span> <span class="pre">the</span> <span class="pre">name</span> <span class="pre">of</span> <span class="pre">branch</span> <span class="pre">you</span> <span class="pre">want</span>
-<span class="pre">git</span> <span class="pre">pull</span> <span class="pre">#</span> <span class="pre">fetch</span> <span class="pre">all</span> <span class="pre">recent</span> <span class="pre">code</span> <span class="pre">changes</span> <span class="pre">from</span> <span class="pre">the</span> <span class="pre">GitHub</span> <span class="pre">remote</span> <span class="pre">repository</span>
-<span class="pre">#</span> <span class="pre">make</span> <span class="pre">your</span> <span class="pre">local</span> <span class="pre">code</span> <span class="pre">changes</span>
-<span class="pre">pip</span> <span class="pre">install</span> <span class="pre">.</span> <span class="pre">#</span> <span class="pre">alternatively,</span> <span class="pre">you</span> <span class="pre">can</span> <span class="pre">use</span> <span class="pre">&quot;pip</span> <span class="pre">install</span> <span class="pre">-e</span> <span class="pre">.&quot;</span> <span class="pre">to</span> <span class="pre">install</span> <span class="pre">gplately</span> <span class="pre">in</span> <span class="pre">editable</span> <span class="pre">mode</span>
-<span class="pre">`</span></code></p>
-<p>### 3. Using Docker 🐳</p>
-<p>👉 Run GPlately notebooks with Docker</p>
-<ul class="simple">
-<li><p><cite>docker pull gplates/gplately</cite></p></li>
-<li><p><cite>docker run –rm -ti -p 8888:8888  gplates/gplately</cite></p></li>
-<li><p><a class="reference external" href="http://localhost:8888">http://localhost:8888</a></p></li>
-</ul>
-<p>👉 Run GPlately command with Docker</p>
-<ul class="simple">
-<li><p><cite>docker run gplates/gplately gplately –version</cite></p></li>
-<li><p><cite>docker run gplates/gplately gplately –help</cite></p></li>
-</ul>
-<p>👉 Run your Python script with Docker</p>
-<ul class="simple">
-<li><p><cite>docker run -it –rm -v THE_FULL_PATH_TO_YOUR_SCRIPT_FOLDER:/ws -w /ws gplates/gplately python my_script_to_run.py</cite></p></li>
-</ul>
-<p>✏️ Replace __THE_FULL_PATH_TO_YOUR_SCRIPT_FOLDER__ with the full path to the folder containing your script file. In PowerShell, you can use “$PWD”  if your script is in the current working directory. On Linux or macOS, you can use `pwd` instead.</p>
-<p>Visit [this page](<a class="reference external" href="https://github.com/GPlates/gplately/tree/master/docker/README.md">https://github.com/GPlates/gplately/tree/master/docker/README.md</a>) for more details about using Docker with GPlately.</p>
-<p>## Minimal working example
-- TODO
-- Show a basic, functional example with minimal dependencies.
-- Keep it simple and easy to understand.
-- …should satisfy getting a first user up and running quickly. Where the Quick Start in the GitHub Readme links to the 2nd and 3rd chapters (a quick start does not need to link to the Introduction, the first user is already sufficiently motivated by now).</p>
-<p>Can then add more chapters from Dietmar’s Quick Start:</p>
-<ul class="simple">
-<li><p>If you prefer using Jupyter Notebook, click here.</p></li>
-<li><p>If you prefer using Python script, click here.</p></li>
-</ul>
-<p>## Common Use Cases
-- This can cover what is currently in our Quick Start.
-- Ie, a brief description and code example of each of the main classes (5 or so classes).</p>
+<p>## Version - latest dev</p>
+<p>## Quick start🚀</p>
 <p>### [PlateModelManager](<a class="reference external" href="https://pypi.org/project/plate-model-manager/">https://pypi.org/project/plate-model-manager/</a>)
 The <strong>PlateModelManager</strong> module was introduced as a more efficient alternative to the <strong>DataServer</strong> class,
 designed specifically for downloading and managing plate reconstruction model files.
@@ -7881,42 +7821,24 @@ seafloorgrid.reconstruct_by_topologies()</p>
 <p>The [10-SeafloorGrids.ipynb](<a class="reference external" href="https://github.com/GPlates/gplately/blob/master/Notebooks/10-SeafloorGrids.ipynb">https://github.com/GPlates/gplately/blob/master/Notebooks/10-SeafloorGrids.ipynb</a>) is a tutorial notebook that demonstrates
 how to set up and use the <cite>SeafloorGrid</cite> object, and shows a sample set of output grids.</p>
 <p>![SeafloorGridDemo](<a class="reference external" href="https://raw.githubusercontent.com/GPlates/gplately/master/Notebooks/NotebookFiles/pdoc_Files/seafloorgrid.gif">https://raw.githubusercontent.com/GPlates/gplately/master/Notebooks/NotebookFiles/pdoc_Files/seafloorgrid.gif</a>)</p>
-<p>## Trouble-shooting and FAQ
-And then instead of Next Steps &amp; Links we just continue with regular detailed documentation chapters:</p>
-<p>## Examples
-- TODO
-- Notebooks
-- Other examples (not notebooks).</p>
+<p>## Sample workflows</p>
 <ul class="simple">
-<li><p>[__01 - Getting <a href="#id177"><span class="problematic" id="id187">Started__</span></a>](01-GettingStarted.html): A brief overview of how to initialise GPlately’s main objects</p></li>
-<li><p>[__02 - Plate <a href="#id177"><span class="problematic" id="id188">Reconstructions__</span></a>](02-PlateReconstructions.html): Setting up a <cite>PlateReconstruction</cite> object, reconstructing geological data through time</p></li>
-<li><p>[__03 - Working with <a href="#id177"><span class="problematic" id="id189">Points__</span></a>](03-WorkingWithPoints.html): Setting up a <cite>Points</cite> object, reconstructing seed point locations through time with. This notebook uses point data from the Paleobiology Database (PBDB).</p></li>
-<li><p>[__04 - Velocity <a href="#id177"><span class="problematic" id="id190">Basics__</span></a>](04-VelocityBasics.html): Calculating plate velocities, plotting velocity vector fields</p></li>
-<li><p>[__05 - Working with Feature <a href="#id177"><span class="problematic" id="id191">Geometries__</span></a>](05-WorkingWithFeatureGeometries.html): Processing and plotting assorted polyline, polygon and point data from [GPlates 2.3’s sample data sets](<a class="reference external" href="https://www.earthbyte.org/gplates-2-3-software-and-data-sets/">https://www.earthbyte.org/gplates-2-3-software-and-data-sets/</a>)</p></li>
-<li><p>[__06 - <a href="#id177"><span class="problematic" id="id192">Rasters__</span></a>](06-Rasters.html): Reading, resizing, resampling raster data, and linearly interpolating point data onto raster data</p></li>
-<li><p>[__07 - Plate Tectonic <a href="#id177"><span class="problematic" id="id193">Stats__</span></a>](07-WorkingWithPlateTectonicStats.html): Calculating and plotting subduction zone and ridge data (convergence/spreading velocities, subduction angles, subduction zone and ridge lengths, crustal surface areas produced and subducted etc.)</p></li>
-<li><p>[__08 - Predicting Slab <a href="#id177"><span class="problematic" id="id194">Flux__</span></a>](08-PredictingSlabFlux.html): Predicting the average slab dip angle of subducting oceanic lithosphere.</p></li>
-<li><p>[__09 - Motion Paths and <a href="#id177"><span class="problematic" id="id195">Flowlines__</span></a>](09-CreatingMotionPathsAndFlowlines.html): Using pyGPlates to create motion paths and flowines of points on a tectonic plate to illustrate the plate’s trajectory through geological time.</p></li>
-<li><p>[__10 - <a href="#id177"><span class="problematic" id="id196">SeafloorGrid__</span></a>](10-SeafloorGrids.html): Defines the parameters needed to set up a <cite>SeafloorGrid</cite> object, and demonstrates how to produce age and spreading rate grids from a set of plate reconstruction model files.</p></li>
-<li><p>[__11 - <a href="#id177"><span class="problematic" id="id197">AndesFluxes__</span></a>](11-AndesFluxes.html): Demonstrates how the reconstructed subduction history along the Andean margin can be potentially used in the plate kinematics analysis and data mining.</p></li>
+<li><p>[__01 - Getting <a href="#id177"><span class="problematic" id="id186">Started__</span></a>](01-GettingStarted.html): A brief overview of how to initialise GPlately’s main objects</p></li>
+<li><p>[__02 - Plate <a href="#id177"><span class="problematic" id="id187">Reconstructions__</span></a>](02-PlateReconstructions.html): Setting up a <cite>PlateReconstruction</cite> object, reconstructing geological data through time</p></li>
+<li><p>[__03 - Working with <a href="#id177"><span class="problematic" id="id188">Points__</span></a>](03-WorkingWithPoints.html): Setting up a <cite>Points</cite> object, reconstructing seed point locations through time with. This notebook uses point data from the Paleobiology Database (PBDB).</p></li>
+<li><p>[__04 - Velocity <a href="#id177"><span class="problematic" id="id189">Basics__</span></a>](04-VelocityBasics.html): Calculating plate velocities, plotting velocity vector fields</p></li>
+<li><p>[__05 - Working with Feature <a href="#id177"><span class="problematic" id="id190">Geometries__</span></a>](05-WorkingWithFeatureGeometries.html): Processing and plotting assorted polyline, polygon and point data from [GPlates 2.3’s sample data sets](<a class="reference external" href="https://www.earthbyte.org/gplates-2-3-software-and-data-sets/">https://www.earthbyte.org/gplates-2-3-software-and-data-sets/</a>)</p></li>
+<li><p>[__06 - <a href="#id177"><span class="problematic" id="id191">Rasters__</span></a>](06-Rasters.html): Reading, resizing, resampling raster data, and linearly interpolating point data onto raster data</p></li>
+<li><p>[__07 - Plate Tectonic <a href="#id177"><span class="problematic" id="id192">Stats__</span></a>](07-WorkingWithPlateTectonicStats.html): Calculating and plotting subduction zone and ridge data (convergence/spreading velocities, subduction angles, subduction zone and ridge lengths, crustal surface areas produced and subducted etc.)</p></li>
+<li><p>[__08 - Predicting Slab <a href="#id177"><span class="problematic" id="id193">Flux__</span></a>](08-PredictingSlabFlux.html): Predicting the average slab dip angle of subducting oceanic lithosphere.</p></li>
+<li><p>[__09 - Motion Paths and <a href="#id177"><span class="problematic" id="id194">Flowlines__</span></a>](09-CreatingMotionPathsAndFlowlines.html): Using pyGPlates to create motion paths and flowines of points on a tectonic plate to illustrate the plate’s trajectory through geological time.</p></li>
+<li><p>[__10 - <a href="#id177"><span class="problematic" id="id195">SeafloorGrid__</span></a>](10-SeafloorGrids.html): Defines the parameters needed to set up a <cite>SeafloorGrid</cite> object, and demonstrates how to produce age and spreading rate grids from a set of plate reconstruction model files.</p></li>
+<li><p>[__11 - <a href="#id177"><span class="problematic" id="id196">AndesFluxes__</span></a>](11-AndesFluxes.html): Demonstrates how the reconstructed subduction history along the Andean margin can be potentially used in the plate kinematics analysis and data mining.</p></li>
 </ul>
-<p>In addition to the notebooks above, a variety of examples are available to help you get started with GPlately.
-Visit [this page](<a class="reference external" href="https://github.com/GPlates/gplately/blob/master/Notebooks/Examples/readme.md">https://github.com/GPlates/gplately/blob/master/Notebooks/Examples/readme.md</a>) for more details.</p>
-<p>## Command-line interface
-- TODO
-- Maybe goes through each command with an example.
-- Could possibly be merged into another chapter.</p>
-<p>GPlately comes with a collection of useful command-line tools, each designed as a subcommand of GPlately.
-For example, the command <cite>gplately list</cite> shows a list of available reconstruction models.
-To view all the available tools, simply run <cite>gplately -h</cite>. For a detailed list of the tools along with usage examples,
-visit [this page](<a class="reference external" href="https://github.com/GPlates/gplately/blob/master/gplately/commands/readme.md">https://github.com/GPlates/gplately/blob/master/gplately/commands/readme.md</a>).</p>
-<p>## Primer
-- TODO
-- This is like the Reference Manual mentioned below.</p>
-<p>## API Reference
-- TODO
-- This is the main part of GPlately.
-- It’s covered very well.</p>
+<p>## Examples</p>
+<p>A variety of examples are available to help you get started with GPlately. Visit [this page](<a class="reference external" href="https://github.com/GPlates/gplately/blob/master/Notebooks/Examples/readme.md">https://github.com/GPlates/gplately/blob/master/Notebooks/Examples/readme.md</a>) for more details.</p>
+<p>## Command-line interface</p>
+<p>GPlately comes with a collection of useful command-line tools, each designed as a subcommand of GPlately. For example, the command <cite>gplately list</cite> shows a list of available reconstruction models. To view all the available tools, simply run <cite>gplately -h</cite>. For a detailed list of the tools along with usage examples, visit [this page](<a class="reference external" href="https://github.com/GPlates/gplately/blob/master/gplately/commands/readme.md">https://github.com/GPlates/gplately/blob/master/gplately/commands/readme.md</a>).</p>
 </section>
 <dl class="py class">
 <dt class="sig sig-object py" id="gplately.DataCollection">
@@ -8057,7 +7979,7 @@ visit this <a class="reference external" href="https://www.earthbyte.org/categor
 passed into the <cite>DataServer</cite> object. Stores grids in the “gplately” cache.</p>
 <p>Currently, <cite>DataServer</cite> supports the following age grids:</p>
 <ul>
-<li><p>__Muller et al. <a href="#id177"><span class="problematic" id="id198">2019__</span></a></p>
+<li><p>__Muller et al. <a href="#id177"><span class="problematic" id="id197">2019__</span></a></p>
 <blockquote>
 <div><ul class="simple">
 <li><p><cite>file_collection</cite> = <cite>Muller2019</cite></p></li>
@@ -8066,7 +7988,7 @@ passed into the <cite>DataServer</cite> object. Stores grids in the “gplately�
 </ul>
 </div></blockquote>
 </li>
-<li><p>__Muller et al. <a href="#id177"><span class="problematic" id="id199">2016__</span></a></p>
+<li><p>__Muller et al. <a href="#id177"><span class="problematic" id="id198">2016__</span></a></p>
 <blockquote>
 <div><ul class="simple">
 <li><p><cite>file_collection</cite> = <cite>Muller2016</cite></p></li>
@@ -8075,7 +7997,7 @@ passed into the <cite>DataServer</cite> object. Stores grids in the “gplately�
 </ul>
 </div></blockquote>
 </li>
-<li><p>__Seton et al. <a href="#id177"><span class="problematic" id="id200">2012__</span></a></p>
+<li><p>__Seton et al. <a href="#id177"><span class="problematic" id="id199">2012__</span></a></p>
 <blockquote>
 <div><ul class="simple">
 <li><p><cite>file_collection</cite> = <cite>Seton2012</cite></p></li>
@@ -8330,7 +8252,7 @@ grids in the “gplately” cache.</p>
 <p>Currently, <cite>DataServer</cite> supports spreading rate grids from the following plate
 models:</p>
 <ul>
-<li><p>__Clennett et al. <a href="#id177"><span class="problematic" id="id201">2020__</span></a></p>
+<li><p>__Clennett et al. <a href="#id177"><span class="problematic" id="id200">2020__</span></a></p>
 <blockquote>
 <div><ul class="simple">
 <li><p><cite>file_collection</cite> = <cite>Clennett2020</cite></p></li>
