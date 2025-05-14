@@ -19,10 +19,10 @@
 working with point data, and calculating plate velocities at specific geological times.
 """
 
+import logging
 import math
 import os
 import warnings
-import logging
 
 import numpy as np
 import pygplates
@@ -1389,7 +1389,7 @@ class PlateReconstruction(object):
             The geological time at which to calculate total continental arc lengths.
         continental_grid: Raster, array_like, or str
             The continental grid used to identify continental arc points. Must
-            be convertible to `Raster`. For an array, a global extent is
+            be convertible to `gplately.Raster`. For an array, a global extent is
             assumed [-180,180,-90,90]. For a filename, the extent is obtained
             from the file.
         trench_arc_distance : float

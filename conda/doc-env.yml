@@ -9,3 +9,6 @@ dependencies:
   - jupyter
   - pdoc3
   - rioxarray
+  - docutils
+  - sphinx 
+  - sphinx_rtd_theme
