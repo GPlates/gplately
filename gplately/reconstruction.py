@@ -15,9 +15,10 @@
 #    51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
 
-"""This sub-module contains tools that wrap up pyGPlates and Plate Tectonic Tools functionalities for reconstructing features,
-working with point data, and calculating plate velocities at specific geological times.
-"""
+#
+# This sub-module contains tools that wrap up pyGPlates and Plate Tectonic Tools functionalities for reconstructing features,
+# working with point data, and calculating plate velocities at specific geological times.
+#
 
 import logging
 import math
@@ -35,9 +36,9 @@ logger = logging.getLogger("gplately")
 
 
 class PlateReconstruction(object):
-    """The `PlateReconstruction` class contains methods to reconstruct topology features to specific
-    geological times given a `rotation_model`, a set of `topology_features` and a set of
-    `static_polygons`. Topological plate velocity data at specific geological times can also be
+    """reconstruct topology features to specific geological times given a ``rotation_model``,
+    a set of ``topology_features`` and a set of ``static_polygons``.
+    Topological plate velocity data at specific geological times can also be
     calculated from these reconstructed features.
 
     Attributes
@@ -49,8 +50,6 @@ class PlateReconstruction(object):
         Topological features like trenches, ridges and transforms.
     static_polygons : `pygplates.FeatureCollection`, default None
         Present-day polygons whose shapes do not change through geological time when reconstructed.
-    anchor_plate_id : int
-        Anchor plate ID for reconstruction.
     """
 
     def __init__(
@@ -81,7 +80,7 @@ class PlateReconstruction(object):
             features.
         anchor_plate_id : int, optional
             Default anchor plate ID for reconstruction.
-            If not specified then uses the default anchor plate of `rotation_model` if it's a `pygplates.RotationModel` (otherwise uses zero).
+            If not specified then uses the default anchor plate of ``rotation_model``.
         """
         # Add a warning if the rotation_model is empty
         if not rotation_model:
@@ -95,22 +94,23 @@ class PlateReconstruction(object):
             self.name = None
 
         if anchor_plate_id is None:
-            if isinstance(rotation_model, pygplates.RotationModel):
+            if isinstance(rotation_model, pygplates.RotationModel):  # type: ignore
                 # Use the default anchor plate of 'rotation_model'.
                 self.rotation_model = rotation_model
             else:
                 # Using rotation features/files, so default anchor plate is 0.
-                self.rotation_model = pygplates.RotationModel(rotation_model)
+                self.rotation_model = pygplates.RotationModel(rotation_model)  # type: ignore
         else:
             # User has explicitly specified an anchor plate ID, so let's check it.
             anchor_plate_id = self._check_anchor_plate_id(anchor_plate_id)
             # This works when 'rotation_model' is a RotationModel or rotation features/files.
-            self.rotation_model = pygplates.RotationModel(
+            self.rotation_model = pygplates.RotationModel(  # type: ignore
                 rotation_model, default_anchor_plate_id=anchor_plate_id
             )
 
         self.topology_features = _load_FeatureCollection(topology_features)
         self.static_polygons = _load_FeatureCollection(static_polygons)
+        #: optional plate model name
         self.plate_model_name = plate_model_name
 
         # Keep a snapshot of the resolved topologies at its last requested snapshot time (and anchor plate).
@@ -146,7 +146,7 @@ class PlateReconstruction(object):
 
     @property
     def anchor_plate_id(self):
-        """Anchor plate ID for reconstruction. Must be an integer >= 0."""
+        """Default anchor plate ID for reconstruction. Must be an integer >= 0."""
         # The default anchor plate comes from the RotationModel.
         return self.rotation_model.get_default_anchor_plate_id()
 
@@ -158,7 +158,7 @@ class PlateReconstruction(object):
         if anchor_plate != self.anchor_plate_id:
             # Update the RotationModel (which is where the anchor plate is stored).
             # This keeps the same rotation model but just changes the anchor plate.
-            self.rotation_model = pygplates.RotationModel(
+            self.rotation_model = pygplates.RotationModel(  # type: ignore
                 self.rotation_model, default_anchor_plate_id=anchor_plate
             )
 
@@ -181,7 +181,7 @@ class PlateReconstruction(object):
                 feature
                 for feature in self.topology_features
                 if feature.get_feature_type()
-                != pygplates.FeatureType.gpml_topological_slab_boundary
+                != pygplates.FeatureType.gpml_topological_slab_boundary  # type: ignore
             ]
 
         return self.topology_features
@@ -229,7 +229,7 @@ class PlateReconstruction(object):
             # last snapshot time...
             or self._topological_snapshot.get_reconstruction_time()
             # use pygplates.GeoTimeInstant to get a numerical tolerance in floating-point time comparison...
-            != pygplates.GeoTimeInstant(time)
+            != pygplates.GeoTimeInstant(time)  # type: ignore
             # last snapshot anchor plate...
             or self._topological_snapshot.get_rotation_model().get_default_anchor_plate_id()
             != anchor_plate_id
@@ -238,7 +238,7 @@ class PlateReconstruction(object):
             != include_topological_slab_boundaries
         ):
             # Create snapshot for current parameters.
-            self._topological_snapshot = pygplates.TopologicalSnapshot(
+            self._topological_snapshot = pygplates.TopologicalSnapshot(  # type: ignore
                 self._check_topology_features(
                     include_topological_slab_boundaries=include_topological_slab_boundaries
                 ),
@@ -307,13 +307,13 @@ class PlateReconstruction(object):
             # last snapshot time...
             or self._static_polygons_snapshot.get_reconstruction_time()
             # use pygplates.GeoTimeInstant to get a numerical tolerance in floating-point time comparison...
-            != pygplates.GeoTimeInstant(time)
+            != pygplates.GeoTimeInstant(time)  # type: ignore
             # last snapshot anchor plate...
             or self._static_polygons_snapshot.get_rotation_model().get_default_anchor_plate_id()
             != anchor_plate_id
         ):
             # Create snapshot for current parameters.
-            self._static_polygons_snapshot = pygplates.ReconstructSnapshot(
+            self._static_polygons_snapshot = pygplates.ReconstructSnapshot(  # type: ignore
                 self._check_static_polygons(),
                 self.rotation_model,
                 time,
@@ -332,9 +332,9 @@ class PlateReconstruction(object):
         first_uniform_point_spacing_radians=None,
         anchor_plate_id=None,
         velocity_delta_time=1.0,
-        velocity_delta_time_type=pygplates.VelocityDeltaTimeType.t_plus_delta_t_to_t,
-        velocity_units=pygplates.VelocityUnits.cms_per_yr,
-        earth_radius_in_kms=pygplates.Earth.mean_radius_in_kms,
+        velocity_delta_time_type=pygplates.VelocityDeltaTimeType.t_plus_delta_t_to_t,  # type: ignore
+        velocity_units=pygplates.VelocityUnits.cms_per_yr,  # type: ignore
+        earth_radius_in_kms=pygplates.Earth.mean_radius_in_kms,  # type: ignore
         include_network_boundaries=False,
         include_topological_slab_boundaries=False,
         boundary_section_filter=None,
@@ -486,7 +486,7 @@ class PlateReconstruction(object):
         *,
         first_uniform_point_spacing_radians=None,
         velocity_delta_time=1.0,
-        velocity_delta_time_type=pygplates.VelocityDeltaTimeType.t_plus_delta_t_to_t,
+        velocity_delta_time_type=pygplates.VelocityDeltaTimeType.t_plus_delta_t_to_t,  # type: ignore
         include_network_boundaries=False,
         include_topological_slab_boundaries=False,
         boundary_section_filter=None,
