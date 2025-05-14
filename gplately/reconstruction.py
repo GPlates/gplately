@@ -36,20 +36,10 @@ logger = logging.getLogger("gplately")
 
 
 class PlateReconstruction(object):
-    """reconstruct topology features to specific geological times given a ``rotation_model``,
+    """Reconstruct topology features to specific geological times given a ``rotation_model``,
     a set of ``topology_features`` and a set of ``static_polygons``.
     Topological plate velocity data at specific geological times can also be
     calculated from these reconstructed features.
-
-    Attributes
-    ----------
-    rotation_model : `pygplates.RotationModel`
-        A rotation model to query equivalent and/or relative topological plate rotations
-        from a time in the past relative to another time in the past or to present day.
-    topology_features : `pygplates.FeatureCollection`, default None
-        Topological features like trenches, ridges and transforms.
-    static_polygons : `pygplates.FeatureCollection`, default None
-        Present-day polygons whose shapes do not change through geological time when reconstructed.
     """
 
     def __init__(
@@ -82,6 +72,10 @@ class PlateReconstruction(object):
             Default anchor plate ID for reconstruction.
             If not specified then uses the default anchor plate of ``rotation_model``.
         """
+        #: `pygplates.RotationModel`, query equivalent and/or relative topological plate rotations
+        #: from a time in the past relative to another time in the past or to present day.
+        self.rotation_model = None
+
         # Add a warning if the rotation_model is empty
         if not rotation_model:
             logger.warning(
@@ -108,7 +102,11 @@ class PlateReconstruction(object):
                 rotation_model, default_anchor_plate_id=anchor_plate_id
             )
 
+        #: `pygplates.FeatureCollection`, default None.
+        #: Topological features like trenches, ridges and transforms.
         self.topology_features = _load_FeatureCollection(topology_features)
+        #: `pygplates.FeatureCollection`, default None.
+        #: Present-day polygons whose shapes do not change through geological time when reconstructed.
         self.static_polygons = _load_FeatureCollection(static_polygons)
         #: optional plate model name
         self.plate_model_name = plate_model_name
@@ -146,7 +144,7 @@ class PlateReconstruction(object):
 
     @property
     def anchor_plate_id(self):
-        """Default anchor plate ID for reconstruction. Must be an integer >= 0."""
+        """default anchor plate ID for reconstruction. Must be an integer >= 0."""
         # The default anchor plate comes from the RotationModel.
         return self.rotation_model.get_default_anchor_plate_id()
 
