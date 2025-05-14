@@ -1075,28 +1075,25 @@ def get_feature_data(feature_data_id_string=None, verbose=True):
 
 
 class DataServer(object):
-    """The DataServer class may be deprecated in the future.
-    We recommend using the newer `plate-model-manager <https://pypi.org/project/plate-model-manager/>`__ module whenever possible.
-
+    """
     The methods in this DataServer class download plate reconstruction models to the cache folder on your computer from
-    EarthByte's [WebDAV server](https://repo.gplates.org/webdav/pmm/).
+    EarthByte's `WebDAV server <https://repo.gplates.org/webdav/pmm/>`__.
 
     If the `DataServer` object and its methods are called for the first time, i.e. by:
+
+    .. code-block:: python
 
         # string identifier to access the Muller et al. 2019 model
         gDownload = gplately.download.DataServer("Muller2019")
 
-    all requested files are downloaded into the user's 'gplately' cache folder only _once_. If the same
+    all requested files are downloaded into the user's 'gplately' cache folder only **once**. If the same
     object and method(s) are re-run, the files will be re-accessed from the cache provided they have not been
     moved or deleted.
 
-    [This page](https://gplates.github.io/gplately/dev-doc/#dataserver) contains a list of available plate reconstruction models.
-    For more information about these plate models, visit this [EarthByte web page](https://www.earthbyte.org/category/resources/data-models/global-regional-plate-motion-models/).
-
-    You can also use the `pmm ls` command to retrieve more information about a model.
-    For instance, running `pmm ls cao2024` will display details about the "Cao2024" model.
-    Make sure to install the `plate-model-manager` module first by running `pip install plate-model-manager` before executing this command.
-
+    `This table <https://gplates.github.io/gplately/sphinx-doc/build/html/use_cases.html#id1>`__
+    provides a list of available plate reconstruction models.
+    For more information about these plate models,
+    visit this `EarthByte web page <https://www.earthbyte.org/category/resources/data-models/global-regional-plate-motion-models/>`__.
     """
 
     def __init__(self, file_collection, data_dir=None, verbose=True):

@@ -34,6 +34,9 @@ html_favicon = "favicon.ico"
 
 autosummary_generate = True
 
+# the following autodoc_default_options is here because a bug of autosummary
+# some links in the autosummary tables are not clickable without these autodoc_default_options settings
+# this is a workaround for a autosummary bug. If the bug is fixed, the autodoc_default_options can be removed.
 autodoc_default_options = {
     "members": True,
     "undoc-members": False,
