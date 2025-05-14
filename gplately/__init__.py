@@ -19,87 +19,9 @@
 
 ![Intro GIF](https://raw.githubusercontent.com/GPlates/gplately/master/Notebooks/NotebookFiles/pdoc_Files/docs_muller19_seed_points.gif)
 
-**Version - latest indev**
+## Version - latest dev
 
-## Introduction
-TODO
-
-## Installation
-
-### 1. Using conda (recommended)
-
-The latest stable public release of `GPlately` can be installed using conda from the "conda-forge" channel. The following commands will create a new conda environment called "my-gplately-conda-env" and install GPlately within that environment.
-
-```sh
-conda create -n my-gplately-conda-env
-conda activate my-gplately-conda-env
-conda install -c conda-forge gplately
-```
-
-✏️ If `conda` gets __stuck while solving the environment__ during the installation of `GPlately`, you can try using [micromamba](https://mamba.readthedocs.io/en/latest/user_guide/micromamba.html) instead.
-
-### 2. Using pip
-
-`GPlately` can also be installed using `pip`.
-
-🟢 Install the latest stable public release from [PyPI](https://pypi.org/project/gplately/)
-
-```sh
-pip install gplately
-```
-
-🟢 Install from [GitHub repository](https://github.com/GPlates/gplately.git) (if you need the latest code changes on GitHub)
-
-```sh
-pip install git+https://github.com/GPlates/gplately.git
-```
-
-🟢 Install from a local folder (if you need local code changes)
-
-```sh
-git clone https://github.com/GPlates/gplately.git gplately.git
-cd gplately.git # go into the folder created by "git clone" command
-git checkout master # check out the "master" branch or the name of branch you want
-git pull # fetch all recent code changes from the GitHub remote repository
-# make your local code changes
-pip install . # alternatively, you can use "pip install -e ." to install gplately in editable mode
-```
-
-### 3. Using Docker 🐳
-
-👉 Run GPlately notebooks with Docker
-
-- `docker pull gplates/gplately`
-- `docker run --rm -ti -p 8888:8888  gplates/gplately`
-- http://localhost:8888
-
-👉 Run GPlately command with Docker
-
-- `docker run gplates/gplately gplately --version`
-- `docker run gplates/gplately gplately --help`
-
-👉 Run your Python script with Docker
-
-- `docker run -it --rm -v THE_FULL_PATH_TO_YOUR_SCRIPT_FOLDER:/ws -w /ws gplates/gplately python my_script_to_run.py`
-
-✏️ Replace __THE_FULL_PATH_TO_YOUR_SCRIPT_FOLDER__ with the full path to the folder containing your script file. In PowerShell, you can use "$PWD"  if your script is in the current working directory. On Linux or macOS, you can use \`pwd\` instead.
-
-Visit [this page](https://github.com/GPlates/gplately/tree/master/docker/README.md) for more details about using Docker with GPlately.
-
-## Minimal working example
-- TODO
-- Show a basic, functional example with minimal dependencies.
-- Keep it simple and easy to understand.
-- ...should satisfy getting a first user up and running quickly. Where the Quick Start in the GitHub Readme links to the 2nd and 3rd chapters (a quick start does not need to link to the Introduction, the first user is already sufficiently motivated by now).
-
-Can then add more chapters from Dietmar's Quick Start:
-
-- If you prefer using Jupyter Notebook, click here.
-- If you prefer using Python script, click here.
-
-## Common Use Cases
-- This can cover what is currently in our Quick Start.
-- Ie, a brief description and code example of each of the main classes (5 or so classes).
+## Quick start🚀
 
 ### [PlateModelManager](https://pypi.org/project/plate-model-manager/)
 The **PlateModelManager** module was introduced as a more efficient alternative to the **DataServer** class,
@@ -377,13 +299,8 @@ how to set up and use the `SeafloorGrid` object, and shows a sample set of outpu
 
 ![SeafloorGridDemo](https://raw.githubusercontent.com/GPlates/gplately/master/Notebooks/NotebookFiles/pdoc_Files/seafloorgrid.gif)
 
-## Trouble-shooting and FAQ
-And then instead of Next Steps & Links we just continue with regular detailed documentation chapters:
 
-## Examples
-- TODO
-- Notebooks
-- Other examples (not notebooks).
+## Sample workflows
 
 - [__01 - Getting Started__](01-GettingStarted.html): A brief overview of how to initialise GPlately's main objects
 - [__02 - Plate Reconstructions__](02-PlateReconstructions.html): Setting up a `PlateReconstruction` object, reconstructing geological data through time
@@ -397,28 +314,13 @@ And then instead of Next Steps & Links we just continue with regular detailed do
 - [__10 - SeafloorGrid__](10-SeafloorGrids.html): Defines the parameters needed to set up a `SeafloorGrid` object, and demonstrates how to produce age and spreading rate grids from a set of plate reconstruction model files.
 - [__11 - AndesFluxes__](11-AndesFluxes.html): Demonstrates how the reconstructed subduction history along the Andean margin can be potentially used in the plate kinematics analysis and data mining.
 
-In addition to the notebooks above, a variety of examples are available to help you get started with GPlately.
-Visit [this page](https://github.com/GPlates/gplately/blob/master/Notebooks/Examples/readme.md) for more details.
+## Examples
+
+A variety of examples are available to help you get started with GPlately. Visit [this page](https://github.com/GPlates/gplately/blob/master/Notebooks/Examples/readme.md) for more details.
 
 ## Command-line interface
-- TODO
-- Maybe goes through each command with an example.
-- Could possibly be merged into another chapter.
 
-GPlately comes with a collection of useful command-line tools, each designed as a subcommand of GPlately.
-For example, the command `gplately list` shows a list of available reconstruction models.
-To view all the available tools, simply run `gplately -h`. For a detailed list of the tools along with usage examples,
-visit [this page](https://github.com/GPlates/gplately/blob/master/gplately/commands/readme.md).
-
-
-## Primer
-- TODO
-- This is like the Reference Manual mentioned below.
-
-## API Reference
-- TODO
-- This is the main part of GPlately.
-- It's covered very well.
+GPlately comes with a collection of useful command-line tools, each designed as a subcommand of GPlately. For example, the command `gplately list` shows a list of available reconstruction models. To view all the available tools, simply run `gplately -h`. For a detailed list of the tools along with usage examples, visit [this page](https://github.com/GPlates/gplately/blob/master/gplately/commands/readme.md).
 
 """
 from .utils import dev_warning
