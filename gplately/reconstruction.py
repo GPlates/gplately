@@ -36,8 +36,8 @@ logger = logging.getLogger("gplately")
 
 
 class PlateReconstruction(object):
-    """Reconstruct topology features to specific geological times given a ``rotation_model``,
-    a set of ``topology_features`` and a set of ``static_polygons``.
+    """Reconstruct topology features to specific geological times given a :py:attr:`~rotation_model`,
+    a set of :py:attr:`~topology_features` and a set of :py:attr:`~static_polygons`.
     Topological plate velocity data at specific geological times can also be
     calculated from these reconstructed features.
     """
@@ -53,16 +53,19 @@ class PlateReconstruction(object):
         """
         Parameters
         ----------
-        rotation_model : str/`os.PathLike`, or instance of <pygplates.FeatureCollection>, or <pygplates.Feature>, or sequence of <pygplates.Feature>, or instance of <pygplates.RotationModel>
+        rotation_model : str/`os.PathLike`, or instance of `pygplates.FeatureCollection`_, or `pygplates.Feature`_,
+            or sequence of `pygplates.Feature`_, or instance of `pygplates.RotationModel`_
             A rotation model to query equivalent and/or relative topological plate rotations
             from a time in the past relative to another time in the past or to present day. Can be
             provided as a rotation filename, or rotation feature collection, or rotation feature, or
             sequence of rotation features, or a sequence (eg, a list or tuple) of any combination of
             those four types.
-        topology_features : str/`os.PathLike`, or a sequence (eg, `list` or `tuple`) of instances of <pygplates.Feature>, or a single instance of <pygplates.Feature>, or an instance of <pygplates.FeatureCollection>, default None
+        topology_features : str/`os.PathLike`, or a sequence (eg, `list` or `tuple`) of instances of `pygplates.Feature`_,
+            or a single instance of `pygplates.Feature`_, or an instance of `pygplates.FeatureCollection`_, default None
             Reconstructable topological features like trenches, ridges and transforms. Can be provided
             as an optional topology-feature filename, or sequence of features, or a single feature.
-        static_polygons : str/`os.PathLike`, or instance of <pygplates.Feature>, or sequence of <pygplates.Feature>,or an instance of <pygplates.FeatureCollection>, default None
+        static_polygons : str/`os.PathLike`, or instance of `pygplates.Feature`_, or sequence of
+            `pygplates.Feature`_, or an instance of `pygplates.FeatureCollection`_, default None
             Present-day polygons whose shapes do not change through geological time. They are
             used to cookie-cut dynamic polygons into identifiable topological plates (assigned
             an ID) according to their present-day locations. Can be provided as a static polygon feature
@@ -70,9 +73,14 @@ class PlateReconstruction(object):
             features.
         anchor_plate_id : int, optional
             Default anchor plate ID for reconstruction.
-            If not specified then uses the default anchor plate of ``rotation_model``.
+            If not specified then uses the default anchor plate of :py:attr:`~rotation_model`.
+
+
+        .. _pygplates.RotationModel: https://www.gplates.org/docs/pygplates/generated/pygplates.rotationmodel
+        .. _pygplates.Feature: https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature
+        .. _pygplates.FeatureCollection: https://www.gplates.org/docs/pygplates/generated/pygplates.featurecollection#pygplates.FeatureCollection
         """
-        #: `pygplates.RotationModel`, query equivalent and/or relative topological plate rotations
+        #: (`pygplates.RotationModel <https://www.gplates.org/docs/pygplates/generated/pygplates.rotationmodel>`__) - query equivalent and/or relative topological plate rotations
         #: from a time in the past relative to another time in the past or to present day.
         self.rotation_model = None
 
@@ -102,12 +110,14 @@ class PlateReconstruction(object):
                 rotation_model, default_anchor_plate_id=anchor_plate_id
             )
 
-        #: `pygplates.FeatureCollection`, default None.
+        #: (`pygplates.FeatureCollection <https://www.gplates.org/docs/pygplates/generated/pygplates.featurecollection#pygplates.FeatureCollection>`__, default None) -
         #: Topological features like trenches, ridges and transforms.
         self.topology_features = _load_FeatureCollection(topology_features)
-        #: `pygplates.FeatureCollection`, default None.
+
+        #: (`pygplates.FeatureCollection <https://www.gplates.org/docs/pygplates/generated/pygplates.featurecollection#pygplates.FeatureCollection>`__, default None) -
         #: Present-day polygons whose shapes do not change through geological time when reconstructed.
         self.static_polygons = _load_FeatureCollection(static_polygons)
+
         #: optional plate model name
         self.plate_model_name = plate_model_name
 
@@ -340,7 +350,7 @@ class PlateReconstruction(object):
         """Samples points uniformly along plate boundaries and calculates statistics at diverging/converging locations at a particular geological time.
 
         Resolves topologies at `time`, uniformly samples all plate boundaries into points and returns two lists of
-        [pygplates.PlateBoundaryStatistic](https://www.gplates.org/docs/pygplates/generated/pygplates.PlateBoundaryStatistic).
+        `pygplates.PlateBoundaryStatistic <https://www.gplates.org/docs/pygplates/generated/pygplates.PlateBoundaryStatistic>`__.
         The first list represents sample points where the plates are diverging, and the second where plates are converging.
 
         Parameters
@@ -1385,9 +1395,9 @@ class PlateReconstruction(object):
         ----------
         time : int
             The geological time at which to calculate total continental arc lengths.
-        continental_grid: Raster, array_like, or str
+        continental_grid: gplately.Raster, array_like, or str
             The continental grid used to identify continental arc points. Must
-            be convertible to `gplately.Raster`. For an array, a global extent is
+            be convertible to :class:`Raster`. For an array, a global extent is
             assumed [-180,180,-90,90]. For a filename, the extent is obtained
             from the file.
         trench_arc_distance : float
