@@ -15,9 +15,10 @@
 #    51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
 
-"""This sub-module contains tools that wrap up pyGPlates and Plate Tectonic Tools functionalities for reconstructing features,
-working with point data, and calculating plate velocities at specific geological times.
-"""
+#
+# This sub-module contains tools that wrap up pyGPlates and Plate Tectonic Tools functionalities for reconstructing features,
+# working with point data, and calculating plate velocities at specific geological times.
+#
 
 import logging
 import math
@@ -35,22 +36,10 @@ logger = logging.getLogger("gplately")
 
 
 class PlateReconstruction(object):
-    """The `PlateReconstruction` class contains methods to reconstruct topology features to specific
-    geological times given a `rotation_model`, a set of `topology_features` and a set of
-    `static_polygons`. Topological plate velocity data at specific geological times can also be
+    """Reconstruct topology features to specific geological times given a :py:attr:`~rotation_model`,
+    a set of :py:attr:`~topology_features` and a set of :py:attr:`~static_polygons`.
+    Topological plate velocity data at specific geological times can also be
     calculated from these reconstructed features.
-
-    Attributes
-    ----------
-    rotation_model : `pygplates.RotationModel`
-        A rotation model to query equivalent and/or relative topological plate rotations
-        from a time in the past relative to another time in the past or to present day.
-    topology_features : `pygplates.FeatureCollection`, default None
-        Topological features like trenches, ridges and transforms.
-    static_polygons : `pygplates.FeatureCollection`, default None
-        Present-day polygons whose shapes do not change through geological time when reconstructed.
-    anchor_plate_id : int
-        Anchor plate ID for reconstruction.
     """
 
     def __init__(
@@ -64,16 +53,19 @@ class PlateReconstruction(object):
         """
         Parameters
         ----------
-        rotation_model : str/`os.PathLike`, or instance of <pygplates.FeatureCollection>, or <pygplates.Feature>, or sequence of <pygplates.Feature>, or instance of <pygplates.RotationModel>
+        rotation_model : str/`os.PathLike`, or instance of `pygplates.FeatureCollection`_, or `pygplates.Feature`_,
+            or sequence of `pygplates.Feature`_, or instance of `pygplates.RotationModel`_
             A rotation model to query equivalent and/or relative topological plate rotations
             from a time in the past relative to another time in the past or to present day. Can be
             provided as a rotation filename, or rotation feature collection, or rotation feature, or
             sequence of rotation features, or a sequence (eg, a list or tuple) of any combination of
             those four types.
-        topology_features : str/`os.PathLike`, or a sequence (eg, `list` or `tuple`) of instances of <pygplates.Feature>, or a single instance of <pygplates.Feature>, or an instance of <pygplates.FeatureCollection>, default None
+        topology_features : str/`os.PathLike`, or a sequence (eg, `list` or `tuple`) of instances of `pygplates.Feature`_,
+            or a single instance of `pygplates.Feature`_, or an instance of `pygplates.FeatureCollection`_, default None
             Reconstructable topological features like trenches, ridges and transforms. Can be provided
             as an optional topology-feature filename, or sequence of features, or a single feature.
-        static_polygons : str/`os.PathLike`, or instance of <pygplates.Feature>, or sequence of <pygplates.Feature>,or an instance of <pygplates.FeatureCollection>, default None
+        static_polygons : str/`os.PathLike`, or instance of `pygplates.Feature`_, or sequence of
+            `pygplates.Feature`_, or an instance of `pygplates.FeatureCollection`_, default None
             Present-day polygons whose shapes do not change through geological time. They are
             used to cookie-cut dynamic polygons into identifiable topological plates (assigned
             an ID) according to their present-day locations. Can be provided as a static polygon feature
@@ -81,8 +73,17 @@ class PlateReconstruction(object):
             features.
         anchor_plate_id : int, optional
             Default anchor plate ID for reconstruction.
-            If not specified then uses the default anchor plate of `rotation_model` if it's a `pygplates.RotationModel` (otherwise uses zero).
+            If not specified then uses the default anchor plate of :py:attr:`~rotation_model`.
+
+
+        .. _pygplates.RotationModel: https://www.gplates.org/docs/pygplates/generated/pygplates.rotationmodel
+        .. _pygplates.Feature: https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature
+        .. _pygplates.FeatureCollection: https://www.gplates.org/docs/pygplates/generated/pygplates.featurecollection#pygplates.FeatureCollection
         """
+        #: (`pygplates.RotationModel <https://www.gplates.org/docs/pygplates/generated/pygplates.rotationmodel>`__) - query equivalent and/or relative topological plate rotations
+        #: from a time in the past relative to another time in the past or to present day.
+        self.rotation_model = None
+
         # Add a warning if the rotation_model is empty
         if not rotation_model:
             logger.warning(
@@ -95,22 +96,29 @@ class PlateReconstruction(object):
             self.name = None
 
         if anchor_plate_id is None:
-            if isinstance(rotation_model, pygplates.RotationModel):
+            if isinstance(rotation_model, pygplates.RotationModel):  # type: ignore
                 # Use the default anchor plate of 'rotation_model'.
                 self.rotation_model = rotation_model
             else:
                 # Using rotation features/files, so default anchor plate is 0.
-                self.rotation_model = pygplates.RotationModel(rotation_model)
+                self.rotation_model = pygplates.RotationModel(rotation_model)  # type: ignore
         else:
             # User has explicitly specified an anchor plate ID, so let's check it.
             anchor_plate_id = self._check_anchor_plate_id(anchor_plate_id)
             # This works when 'rotation_model' is a RotationModel or rotation features/files.
-            self.rotation_model = pygplates.RotationModel(
+            self.rotation_model = pygplates.RotationModel(  # type: ignore
                 rotation_model, default_anchor_plate_id=anchor_plate_id
             )
 
+        #: (`pygplates.FeatureCollection <https://www.gplates.org/docs/pygplates/generated/pygplates.featurecollection#pygplates.FeatureCollection>`__, default None) -
+        #: Topological features like trenches, ridges and transforms.
         self.topology_features = _load_FeatureCollection(topology_features)
+
+        #: (`pygplates.FeatureCollection <https://www.gplates.org/docs/pygplates/generated/pygplates.featurecollection#pygplates.FeatureCollection>`__, default None) -
+        #: Present-day polygons whose shapes do not change through geological time when reconstructed.
         self.static_polygons = _load_FeatureCollection(static_polygons)
+
+        #: optional plate model name
         self.plate_model_name = plate_model_name
 
         # Keep a snapshot of the resolved topologies at its last requested snapshot time (and anchor plate).
@@ -146,7 +154,7 @@ class PlateReconstruction(object):
 
     @property
     def anchor_plate_id(self):
-        """Anchor plate ID for reconstruction. Must be an integer >= 0."""
+        """default anchor plate ID for reconstruction. Must be an integer >= 0."""
         # The default anchor plate comes from the RotationModel.
         return self.rotation_model.get_default_anchor_plate_id()
 
@@ -158,7 +166,7 @@ class PlateReconstruction(object):
         if anchor_plate != self.anchor_plate_id:
             # Update the RotationModel (which is where the anchor plate is stored).
             # This keeps the same rotation model but just changes the anchor plate.
-            self.rotation_model = pygplates.RotationModel(
+            self.rotation_model = pygplates.RotationModel(  # type: ignore
                 self.rotation_model, default_anchor_plate_id=anchor_plate
             )
 
@@ -181,7 +189,7 @@ class PlateReconstruction(object):
                 feature
                 for feature in self.topology_features
                 if feature.get_feature_type()
-                != pygplates.FeatureType.gpml_topological_slab_boundary
+                != pygplates.FeatureType.gpml_topological_slab_boundary  # type: ignore
             ]
 
         return self.topology_features
@@ -229,7 +237,7 @@ class PlateReconstruction(object):
             # last snapshot time...
             or self._topological_snapshot.get_reconstruction_time()
             # use pygplates.GeoTimeInstant to get a numerical tolerance in floating-point time comparison...
-            != pygplates.GeoTimeInstant(time)
+            != pygplates.GeoTimeInstant(time)  # type: ignore
             # last snapshot anchor plate...
             or self._topological_snapshot.get_rotation_model().get_default_anchor_plate_id()
             != anchor_plate_id
@@ -238,7 +246,7 @@ class PlateReconstruction(object):
             != include_topological_slab_boundaries
         ):
             # Create snapshot for current parameters.
-            self._topological_snapshot = pygplates.TopologicalSnapshot(
+            self._topological_snapshot = pygplates.TopologicalSnapshot(  # type: ignore
                 self._check_topology_features(
                     include_topological_slab_boundaries=include_topological_slab_boundaries
                 ),
@@ -307,13 +315,13 @@ class PlateReconstruction(object):
             # last snapshot time...
             or self._static_polygons_snapshot.get_reconstruction_time()
             # use pygplates.GeoTimeInstant to get a numerical tolerance in floating-point time comparison...
-            != pygplates.GeoTimeInstant(time)
+            != pygplates.GeoTimeInstant(time)  # type: ignore
             # last snapshot anchor plate...
             or self._static_polygons_snapshot.get_rotation_model().get_default_anchor_plate_id()
             != anchor_plate_id
         ):
             # Create snapshot for current parameters.
-            self._static_polygons_snapshot = pygplates.ReconstructSnapshot(
+            self._static_polygons_snapshot = pygplates.ReconstructSnapshot(  # type: ignore
                 self._check_static_polygons(),
                 self.rotation_model,
                 time,
@@ -332,9 +340,9 @@ class PlateReconstruction(object):
         first_uniform_point_spacing_radians=None,
         anchor_plate_id=None,
         velocity_delta_time=1.0,
-        velocity_delta_time_type=pygplates.VelocityDeltaTimeType.t_plus_delta_t_to_t,
-        velocity_units=pygplates.VelocityUnits.cms_per_yr,
-        earth_radius_in_kms=pygplates.Earth.mean_radius_in_kms,
+        velocity_delta_time_type=pygplates.VelocityDeltaTimeType.t_plus_delta_t_to_t,  # type: ignore
+        velocity_units=pygplates.VelocityUnits.cms_per_yr,  # type: ignore
+        earth_radius_in_kms=pygplates.Earth.mean_radius_in_kms,  # type: ignore
         include_network_boundaries=False,
         include_topological_slab_boundaries=False,
         boundary_section_filter=None,
@@ -342,7 +350,7 @@ class PlateReconstruction(object):
         """Samples points uniformly along plate boundaries and calculates statistics at diverging/converging locations at a particular geological time.
 
         Resolves topologies at `time`, uniformly samples all plate boundaries into points and returns two lists of
-        [pygplates.PlateBoundaryStatistic](https://www.gplates.org/docs/pygplates/generated/pygplates.PlateBoundaryStatistic).
+        `pygplates.PlateBoundaryStatistic <https://www.gplates.org/docs/pygplates/generated/pygplates.PlateBoundaryStatistic>`__.
         The first list represents sample points where the plates are diverging, and the second where plates are converging.
 
         Parameters
@@ -486,7 +494,7 @@ class PlateReconstruction(object):
         *,
         first_uniform_point_spacing_radians=None,
         velocity_delta_time=1.0,
-        velocity_delta_time_type=pygplates.VelocityDeltaTimeType.t_plus_delta_t_to_t,
+        velocity_delta_time_type=pygplates.VelocityDeltaTimeType.t_plus_delta_t_to_t,  # type: ignore
         include_network_boundaries=False,
         include_topological_slab_boundaries=False,
         boundary_section_filter=None,
@@ -1387,9 +1395,9 @@ class PlateReconstruction(object):
         ----------
         time : int
             The geological time at which to calculate total continental arc lengths.
-        continental_grid: Raster, array_like, or str
+        continental_grid: gplately.Raster, array_like, or str
             The continental grid used to identify continental arc points. Must
-            be convertible to `gplately.Raster`. For an array, a global extent is
+            be convertible to :class:`Raster`. For an array, a global extent is
             assumed [-180,180,-90,90]. For a filename, the extent is obtained
             from the file.
         trench_arc_distance : float
