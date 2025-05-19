@@ -20,6 +20,8 @@
 # working with point data, and calculating plate velocities at specific geological times.
 #
 
+# pyright: reportMissingTypeStubs=true
+
 import logging
 import math
 import os
@@ -31,6 +33,7 @@ import pygplates
 from . import tools as _tools
 from .gpml import _load_FeatureCollection
 from .ptt import separate_ridge_transform_segments
+from typing import Union
 
 logger = logging.getLogger("gplately")
 
@@ -47,7 +50,7 @@ class PlateReconstruction(object):
         rotation_model,
         topology_features=None,
         static_polygons=None,
-        anchor_plate_id=None,
+        anchor_plate_id: Union[int, None] = None,
         plate_model_name: str = "Nemo",
     ):
         """
@@ -74,6 +77,8 @@ class PlateReconstruction(object):
         anchor_plate_id : int, optional
             Default anchor plate ID for reconstruction.
             If not specified then uses the default anchor plate of :py:attr:`~rotation_model`.
+        plate_model_name : str, optional
+            Only if the plate model has a name and users would like the PlateReconstruction object tracks the name
 
 
         .. _pygplates.RotationModel: https://www.gplates.org/docs/pygplates/generated/pygplates.rotationmodel
@@ -101,7 +106,7 @@ class PlateReconstruction(object):
                 self.rotation_model = rotation_model
             else:
                 # Using rotation features/files, so default anchor plate is 0.
-                self.rotation_model = pygplates.RotationModel(rotation_model)  # type: ignore
+                self.rotation_model = pygplates.RotationModel(rotation_model)
         else:
             # User has explicitly specified an anchor plate ID, so let's check it.
             anchor_plate_id = self._check_anchor_plate_id(anchor_plate_id)
@@ -557,13 +562,26 @@ class PlateReconstruction(object):
         --------
         To calculate total crustal production/destruction along plate boundaries at 50Ma:
 
-            total_crustal_production_rate_in_km_2_per_yr, total_crustal_destruction_rate_in_km_2_per_yr = plate_reconstruction.crustal_production_destruction_rate(50)
+        .. code-block:: python
+            :linenos:
+
+            (
+                total_crustal_production_rate_in_km_2_per_yr,
+                total_crustal_destruction_rate_in_km_2_per_yr,
+            ) = plate_reconstruction.crustal_production_destruction_rate(50)
 
         To do the same, but restrict convergence to points where orthogonal converging velocities are greater than 0.2 cm/yr
         (with divergence remaining unchanged with the default 0.0 threshold):
 
-            total_crustal_production_rate_in_km_2_per_yr, total_crustal_destruction_rate_in_km_2_per_yr = plate_reconstruction.crustal_production_destruction_rate(50,
-                    convergence_velocity_threshold_in_cms_per_yr=0.2)
+        .. code-block:: python
+            :linenos:
+
+            (
+                total_crustal_production_rate_in_km_2_per_yr,
+                total_crustal_destruction_rate_in_km_2_per_yr,
+            ) = plate_reconstruction.crustal_production_destruction_rate(
+                50, convergence_velocity_threshold_in_cms_per_yr=0.2
+            )
         """
 
         # Generate statistics at uniformly spaced points along plate boundaries.
@@ -2022,6 +2040,7 @@ class PlateReconstruction(object):
                 ).get_features()
             ]
             # Reverse reconstruct in-place (modifies each feature's geometry).
+
             pygplates.reverse_reconstruct(
                 reconstructable_features,
                 self.rotation_model,
@@ -2263,6 +2282,9 @@ class PlateReconstruction(object):
             An array of reconstruction times at which to determine the trajectory
             of a point on a plate. For example:
 
+            .. code-block:: python
+                :linenos:
+
                 import numpy as np
                 min_time = 30
                 max_time = 100
@@ -2299,6 +2321,9 @@ class PlateReconstruction(object):
         Examples
         --------
         To access the latitudes and longitudes of each seed point's motion path:
+
+        .. code-block:: python
+            :linenos:
 
             for i in np.arange(0,len(seed_points)):
                 current_lons = lon[:,i]
@@ -2476,8 +2501,11 @@ class PlateReconstruction(object):
 
         Examples
         --------
-        To access the ith seed point's left and right latitudes and
+        To access the i\ :sup:`th` seed point's left and right latitudes and
         longitudes:
+
+        .. code-block:: python
+            :linenos:
 
             for i in np.arange(0,len(seed_points)):
                 left_flowline_longitudes = left_lon[:,i]
