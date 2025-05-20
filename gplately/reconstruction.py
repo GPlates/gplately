@@ -202,7 +202,7 @@ class PlateReconstruction(object):
     ):
         """Create a snapshot of resolved topologies at the specified reconstruction time.
 
-        This returns a [pygplates.TopologicalSnapshot](https://www.gplates.org/docs/pygplates/generated/pygplates.TopologicalSnapshot)
+        This returns a `pygplates.TopologicalSnapshot <https://www.gplates.org/docs/pygplates/generated/pygplates.TopologicalSnapshot>`__
         from which you can extract resolved topologies, calculate velocities at point locations, calculate plate boundary statistics, etc.
 
         Parameters
@@ -211,22 +211,22 @@ class PlateReconstruction(object):
             The geological time at which to create the topological snapshot.
         anchor_plate_id : int, optional
             The anchored plate id to use when resolving topologies.
-            If not specified then uses the current anchor plate (`anchor_plate_id` attribute).
+            If not specified then uses the current anchor plate (:py:attr:`gplately.PlateReconstruction.anchor_plate_id` attribute).
         include_topological_slab_boundaries : bool, default=True
-            Include topological boundary features of type `gpml:TopologicalSlabBoundary`.
-            By default all features passed into constructor (`__init__`) are included in the snapshot.
-            However setting this to False is useful when you're only interested in *plate* boundaries.
+            Include topological boundary features of type ``gpml:TopologicalSlabBoundary``.
+            By default all features passed into constructor ``__init__()`` are included in the snapshot.
+            However setting this to False is useful when you're only interested in **plate** boundaries.
 
         Returns
         -------
-        topological_snapshot : `pygplates.TopologicalSnapshot`
-            The [topological snapshot](https://www.gplates.org/docs/pygplates/generated/pygplates.TopologicalSnapshot)
-            at the specified `time` (and anchor plate).
+        topological_snapshot : pygplates.TopologicalSnapshot
+            The `topological snapshot <https://www.gplates.org/docs/pygplates/generated/pygplates.TopologicalSnapshot>`__
+            at the specified ``time`` (and anchor plate).
 
         Raises
         ------
         ValueError
-            If topology features have not been set in this `PlateReconstruction`.
+            If topology features have not been set in this :py:class:`gplately.PlateReconstruction` object.
         """
         if anchor_plate_id is None:
             anchor_plate_id = self.anchor_plate_id
@@ -1339,51 +1339,57 @@ class PlateReconstruction(object):
     ):
         """Calculates the total length of all subduction zones (km) at the specified geological time (Ma).
 
-        Resolves topologies at `time` and tessellates all resolved subducting features into points (see `tessellate_subduction_zones`).
+        Resolves topologies at ``time`` and tessellates all resolved subducting features into points (see :py:meth:`tessellate_subduction_zones`).
 
         Total length is calculated by sampling points along the resolved subducting features (e.g. subduction zones) and accumulating their lengths
-        (see `tessellate_subduction_zones`). Scales lengths to kilometres using the geocentric radius (at each sampled point).
+        (see :py:meth:`tessellate_subduction_zones`). Scales lengths to kilometres using the geocentric radius (at each sampled point).
 
         Parameters
         ----------
         time : int
             The geological time at which to calculate total subduction zone lengths.
         use_ptt : bool, default=False
-            If set to `True` then uses Plate Tectonic Tools' `subduction_convergence` workflow to calculate total subduction zone length.
-            If set to `False` then uses plate convergence instead.
+            If set to ``True`` then uses :py:func:`ptt.subduction_convergence.subduction_convergence` to calculate total subduction zone length.
+            If set to ``False`` then uses plate convergence instead.
             Plate convergence is the more general approach that works along all plate boundaries (not just subduction zones).
         ignore_warnings : bool, default=False
-            Choose to ignore warnings from Plate Tectonic Tools' subduction_convergence workflow (if `use_ptt` is `True`).
+            Choose to ignore warnings from :py:func:`ptt.subduction_convergence.subduction_convergence` (if ``use_ptt`` is ``True``).
         include_network_boundaries : bool, default=False
             Whether to count lengths along network boundaries that are not also plate boundaries (defaults to False).
             If a deforming network shares a boundary with a plate then it'll get included regardless of this option.
-            Since subduction zones occur along *plate* boundaries this would only be an issue if an intra-plate network boundary was incorrectly labelled as subducting.
+            Since subduction zones occur along **plate** boundaries this would only be an issue if an intra-plate network boundary was incorrectly labelled as subducting.
         convergence_threshold_in_cm_per_yr : float, optional
             Only count lengths associated with sample points that have an orthogonal (ie, in the subducting geometry's normal direction) converging velocity above this value (in cm/yr).
-            For example, setting this to `0.0` would remove all diverging sample points (leaving only converging points).
+            For example, setting this to ``0.0`` would remove all diverging sample points (leaving only converging points).
             This value can be negative which means a small amount of divergence is allowed.
-            If `None` then all (converging and diverging) sample points are counted. This is the default.
-            Note that this parameter can only be specified if `use_ptt` is `False`.
+            If ``None`` then all (converging and diverging) sample points are counted. This is the default.
+            Note that this parameter can only be specified if ``use_ptt`` is ``False``.
 
         Returns
         -------
         total_subduction_zone_length_kms : float
-            The total subduction zone length (in km) at the specified `time`.
+            The total subduction zone length (in km) at the specified ``time``.
 
         Raises
         ------
         ValueError
-            If topology features have not been set in this `PlateReconstruction`.
+            If topology features have not been set in this :py:class:`gplately.PlateReconstruction` object.
         ValueError
-            If `use_ptt` is `True` and `convergence_threshold_in_cm_per_yr` is not `None`.
+            If ``use_ptt`` is ``True`` and ``convergence_threshold_in_cm_per_yr`` is not ``None``.
 
         Examples
         --------
         To calculate the total length of subduction zones at 50Ma:
 
+        .. code-block:: python
+            :linenos:
+
             total_subduction_zone_length_kms = plate_reconstruction.total_subduction_zone_length(50)
 
         To calculate the total length of subduction zones at 50Ma, but only where there's actual convergence:
+
+        .. code-block:: python
+            :linenos:
 
             total_subduction_zone_length_kms = plate_reconstruction.total_subduction_zone_length(50,
                     convergence_threshold_in_cm_per_yr=0.0)
@@ -1419,10 +1425,10 @@ class PlateReconstruction(object):
     ):
         """Calculates the total length of all global continental arcs (km) at the specified geological time (Ma).
 
-        Resolves topologies at `time` and tessellates all resolved subducting features into points (see `tessellate_subduction_zones`).
-        The resolved points then are projected out by the `trench_arc_distance` (towards overriding plate) and their new locations are
-        linearly interpolated onto the supplied `continental_grid`. If the projected trench points lie in the grid, they are considered
-        continental arc points, and their arc segment lengths are appended to the total continental arc length for the specified `time`.
+        Resolves topologies at ``time`` and tessellates all resolved subducting features into points (see :py:meth:`tessellate_subduction_zones`).
+        The resolved points then are projected out by the ``trench_arc_distance`` (towards overriding plate) and their new locations are
+        linearly interpolated onto the supplied ``continental_grid``. If the projected trench points lie in the grid, they are considered
+        continental arc points, and their arc segment lengths are appended to the total continental arc length for the specified ``time``.
         The total length is scaled to kilometres using the geocentric radius (at each sampled point).
 
         Parameters
@@ -1431,17 +1437,17 @@ class PlateReconstruction(object):
             The geological time at which to calculate total continental arc lengths.
         continental_grid: gplately.Raster, array_like, or str
             The continental grid used to identify continental arc points. Must
-            be convertible to :class:`Raster`. For an array, a global extent is
+            be convertible to :class:`gplately.Raster`. For an array, a global extent is
             assumed [-180,180,-90,90]. For a filename, the extent is obtained
             from the file.
         trench_arc_distance : float
             The trench-to-arc distance (in kilometres) to project sampled trench points out by in the direction of the overriding plate.
         ignore_warnings : bool, default=True
-            Choose whether to ignore warning messages from Plate Tectonic Tools' subduction_convergence workflow (if `use_ptt` is `True`)
+            Choose whether to ignore warning messages from :py:func:`ptt.subduction_convergence.subduction_convergence` (if ``use_ptt`` is ``True``)
             that alerts the user of subduction sub-segments that are ignored due to unidentified polarities and/or subducting plates.
         use_ptt : bool, default=False
-            If set to `True` then uses Plate Tectonic Tools' `subduction_convergence` workflow to sample subducting features and their subduction polarities.
-            If set to `False` then uses plate convergence instead.
+            If set to ``True`` then uses :py:func:`ptt.subduction_convergence.subduction_convergence` to sample subducting features and their subduction polarities.
+            If set to ``False`` then uses plate convergence instead.
             Plate convergence is the more general approach that works along all plate boundaries (not just subduction zones).
         include_network_boundaries : bool, default=False
             Whether to sample subducting features along network boundaries that are not also plate boundaries (defaults to False).
@@ -1449,10 +1455,10 @@ class PlateReconstruction(object):
             Since subduction zones occur along *plate* boundaries this would only be an issue if an intra-plate network boundary was incorrectly labelled as subducting.
         convergence_threshold_in_cm_per_yr : float, optional
             Only sample points with an orthogonal (ie, in the subducting geometry's normal direction) converging velocity above this value (in cm/yr).
-            For example, setting this to `0.0` would remove all diverging sample points (leaving only converging points).
+            For example, setting this to ``0.0`` would remove all diverging sample points (leaving only converging points).
             This value can be negative which means a small amount of divergence is allowed.
-            If `None` then all (converging and diverging) points are sampled. This is the default.
-            Note that this parameter can only be specified if `use_ptt` is `False`.
+            If ``None`` then all (converging and diverging) points are sampled. This is the default.
+            Note that this parameter can only be specified if ``use_ptt`` is ``False``.
 
         Returns
         -------
@@ -1462,20 +1468,29 @@ class PlateReconstruction(object):
         Raises
         ------
         ValueError
-            If topology features have not been set in this `PlateReconstruction`.
+            If topology features have not been set in this :py:class:`gplately.PlateReconstruction` object.
         ValueError
-            If `use_ptt` is `True` and `convergence_threshold_in_cm_per_yr` is not `None`.
+            If ``use_ptt`` is ``True`` and ``convergence_threshold_in_cm_per_yr`` is not ``None``.
 
         Examples
         --------
         To calculate the total length of continental arcs at 50Ma:
 
+        .. code-block:: python
+            :linenos:
+
             total_continental_arc_length_kms = plate_reconstruction.total_continental_arc_length(50)
 
         To calculate the total length of subduction zones adjacent to continents at 50Ma, but only where there's actual convergence:
 
-            total_continental_arc_length_kms = plate_reconstruction.total_continental_arc_length(50,
-                    convergence_threshold_in_cm_per_yr=0.0)
+        .. code-block:: python
+            :linenos:
+
+            total_continental_arc_length_kms = (
+                plate_reconstruction.total_continental_arc_length(
+                    50, convergence_threshold_in_cm_per_yr=0.0
+                )
+            )
         """
         from . import grids as _grids
 
@@ -1929,48 +1944,48 @@ class PlateReconstruction(object):
     ):
         """Calculates the total length of all resolved spreading features (e.g. mid-ocean ridges) at the specified geological time (Ma).
 
-        Resolves topologies at `time` and tessellates all resolved spreading features into points (see `tessellate_mid_ocean_ridges`).
+        Resolves topologies at ``time`` and tessellates all resolved spreading features into points (see :py:meth:`tessellate_mid_ocean_ridges`).
 
-        The transform segments of spreading features are ignored (unless *transform_segment_deviation_in_radians* is `None`).
+        The transform segments of spreading features are ignored (unless ``transform_segment_deviation_in_radians`` is ``None``).
 
         Total length is calculated by sampling points along the resolved spreading features (e.g. mid-ocean ridges) and accumulating their lengths
-        (see `tessellate_mid_ocean_ridges`). Scales lengths to kilometres using the geocentric radius (at each sampled point).
+        (see :py:meth:`tessellate_mid_ocean_ridges`). Scales lengths to kilometres using the geocentric radius (at each sampled point).
 
         Parameters
         ----------
         time : int
             The geological time at which to calculate total mid-ocean ridge lengths.
         use_ptt : bool, default=False
-            If set to `True` then uses Plate Tectonic Tools' `ridge_spreading_rate` workflow to calculate total ridge length
-            (which uses the spreading stage rotation of the left/right plate IDs to calculate spreading directions - see `transform_segment_deviation_in_radians`).
-            If set to `False` then uses plate divergence to calculate total ridge length (which samples velocities of the two adjacent
-            boundary plates at each sampled point to calculate spreading directions - see `transform_segment_deviation_in_radians`).
+            If set to ``True`` then uses :py:func:`ptt.ridge_spreading_rate.spreading_rates()` to calculate total ridge length
+            (which uses the spreading stage rotation of the left/right plate IDs to calculate spreading directions - see ``transform_segment_deviation_in_radians``).
+            If set to ``False`` then uses plate divergence to calculate total ridge length (which samples velocities of the two adjacent
+            boundary plates at each sampled point to calculate spreading directions - see ``transform_segment_deviation_in_radians``).
             Plate divergence is the more general approach that works along all plate boundaries (not just mid-ocean ridges).
         ignore_warnings : bool, default=False
-            Choose to ignore warnings from Plate Tectonic Tools' ridge_spreading_rate workflow (if `use_ptt` is `True`).
-        spreading_feature_types : <pygplates.FeatureType> or sequence of <pygplates.FeatureType>, default=`pygplates.FeatureType.gpml_mid_ocean_ridge`
+            Choose to ignore warnings from :py:func:`ptt.ridge_spreading_rate.spreading_rates()` (if ``use_ptt`` is ``True``).
+        spreading_feature_types : <pygplates.FeatureType> or sequence of <pygplates.FeatureType>, default=pygplates.FeatureType.gpml_mid_ocean_ridge
             Only count lengths along plate boundaries of the specified feature types.
             Default is to only sample mid-ocean ridges.
-            You can explicitly specify `None` to sample all plate boundaries, but note that if `use_ptt` is `True`
+            You can explicitly specify ``None`` to sample all plate boundaries, but note that if ``use_ptt`` is ``True``
             then only plate boundaries that are spreading feature types are sampled
-            (since Plate Tectonic Tools only works on *spreading* plate boundaries, eg, mid-ocean ridges).
+            (since Plate Tectonic Tools only works on **spreading** plate boundaries, eg, mid-ocean ridges).
         transform_segment_deviation_in_radians : float, default=<implementation-defined>
             How much a spreading direction can deviate from the segment normal before it's considered a transform segment (in radians).
             The default value has been empirically determined to give the best results for typical models.
-            If `None` then the full feature geometry is used (ie, it is not split into ridge and transform segments with the transform segments getting ignored).
+            If ``None`` then the full feature geometry is used (ie, it is not split into ridge and transform segments with the transform segments getting ignored).
         include_network_boundaries : bool, default=False
             Whether to count lengths along network boundaries that are not also plate boundaries (defaults to False).
             If a deforming network shares a boundary with a plate then it'll get included regardless of this option.
-            Since spreading features occur along *plate* boundaries this would only be an issue if an intra-plate network boundary was incorrectly labelled as spreading.
+            Since spreading features occur along **plate** boundaries this would only be an issue if an intra-plate network boundary was incorrectly labelled as spreading.
         divergence_threshold_in_cm_per_yr : float, optional
             Only count lengths associated with sample points that have an orthogonal (ie, in the spreading geometry's normal direction) diverging velocity above this value (in cm/yr).
-            For example, setting this to `0.0` would remove all converging sample points (leaving only diverging points).
+            For example, setting this to ``0.0`` would remove all converging sample points (leaving only diverging points).
             This value can be negative which means a small amount of convergence is allowed.
-            If `None` then all (diverging and converging) sample points are counted.
-            This is the default since *spreading_feature_types* is instead used (by default) to include only plate boundaries that are typically diverging (eg, mid-ocean ridges).
-            However, setting `spreading_feature_types` to `None` (and `transform_segment_deviation_in_radians` to `None`) and explicitly specifying this parameter (eg, to `0.0`)
+            If ``None`` then all (diverging and converging) sample points are counted.
+            This is the default since ``spreading_feature_types`` is instead used (by default) to include only plate boundaries that are typically diverging (eg, mid-ocean ridges).
+            However, setting ``spreading_feature_types`` to ``None`` (and ``transform_segment_deviation_in_radians`` to ``None``) and explicitly specifying this parameter (eg, to ``0.0``)
             can be used to count points along all plate boundaries that are diverging.
-            However, this parameter can only be specified if *use_ptt* is `False`.
+            However, this parameter can only be specified if ``use_ptt`` is ``False``.
 
         Returns
         -------
@@ -1980,18 +1995,24 @@ class PlateReconstruction(object):
         Raises
         ------
         ValueError
-            If topology features have not been set in this `PlateReconstruction`.
+            If topology features have not been set in this :py:class:`gplately.PlateReconstruction` object.
         ValueError
-            If `use_ptt` is `True` and `divergence_threshold_in_cm_per_yr` is not `None`.
+            If ``use_ptt`` is ``True`` and ``divergence_threshold_in_cm_per_yr`` is not ``None``.
 
         Examples
         --------
         To calculate the total length of mid-ocean ridges at 50Ma, but ignoring the transform segments (of the ridges):
 
+        .. code-block:: python
+            :linenos:
+
             total_ridge_length_kms = plate_reconstruction.total_ridge_length(50)
 
         To do the same, but instead of ignoring transform segments include both ridge and transform segments,
         but only where orthogonal diverging velocities are greater than 0.2 cm/yr:
+
+        .. code-block:: python
+            :linenos:
 
             total_ridge_length_kms = plate_reconstruction.total_ridge_length(50,
                     transform_segment_deviation_in_radians=None,
