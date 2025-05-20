@@ -436,10 +436,10 @@ class PlateReconstruction(object):
             :linenos:
 
             diverging_data, converging_data = (
-            plate_reconstruction.divergent_convergent_plate_boundaries(
-                50, convergence_velocity_threshold=0.2
+                plate_reconstruction.divergent_convergent_plate_boundaries(
+                    50, convergence_velocity_threshold=0.2
+                )
             )
-        )
 
         Notes
         -----
@@ -458,6 +458,7 @@ class PlateReconstruction(object):
                 if np.isnan(stat.convergence_velocity_orthogonal):
                     continue  # missing left or right plate
                 latitude, longitude = stat.boundary_point.to_lat_lon()
+
         """
 
         # Generate statistics at uniformly spaced points along plate boundaries.
@@ -2665,48 +2666,11 @@ class PlateReconstruction(object):
 
 
 class Points(object):
-    """`Points` contains methods to reconstruct and work with with geological point data. For example, the
-    locations and plate velocities of point data can be calculated at a specific geological `time`. The `Points`
-    object requires the `PlateReconstruction` object to work because it holds the `rotation_model` needed to
-    quantify point rotations through time and `static_polygons` needed to partition points into plates.
-
-    Attributes
-    ----------
-    plate_reconstruction : PlateReconstruction
-        Allows for the accessibility of `PlateReconstruction` object attributes: `rotation_model`, `topology_featues`
-        and `static_polygons` for use in the `Points` object if called using “self.plate_reconstruction.X”,
-        where X is the attribute.
-
-    lons : float 1D array
-        A 1D array containing the longitudes of point data.
-        These are the longitudes of the initial points at the initial `time`.
-
-    lats : float 1D array
-        A 1D array containing the latitudes of point data.
-        These are the latitudes of the initial points at the initial `time`.
-
-    plate_id : int 1D array
-        A 1D array containing the plate IDs of the points.
-        The length matches that of `lons` and `lats`.
-
-    age : float 1D array
-        A 1D array containing the ages (time of appearance) of the points.
-        The length matches that of `lons` and `lats`.
-        For points on oceanic crust this is when they were created at a mid-ocean ridge.
-        Any points existing for all time will have a value of `numpy.inf` (equivalent to `float('inf')`).
-
-    size : int
-        Number of points.
-        This is the size of `lons`, `lats`, `plate_id` and `age`.
-
-    time : float
-        The initial time (Ma) of the points.
-        The initial `lons` and `lats` are the locations of the points at this time.
-
-    anchor_plate_id : int
-        Anchor plate that the initial `lons` and `lats` are relative to, at the initial `time`.
-        This is also used as the default anchor plate when reconstructing the points.
-        It does not change, even if the anchor plate of `plate_reconstruction` subsequently changes.
+    """Reconstruct and work with with geological point data.
+    For example, the locations and plate velocities of point data can be calculated at a specific geological ``time``.
+    The :py:class:`gplately.Points` object requires the :py:class:`gplately.PlateReconstruction` object to work
+    because it holds the :py:attr:`gplately.PlateReconstruction.rotation_model` needed to quantify point rotations through time and
+    :py:attr:`gplately.PlateReconstruction.static_polygons` needed to partition points into plates.
     """
 
     def __init__(
@@ -3040,41 +3004,94 @@ class Points(object):
 
     @property
     def plate_reconstruction(self):
+        """
+        Allows for the accessibility of `PlateReconstruction` object attributes `rotation_model`, `topology_featues`
+        and `static_polygons` for use in the `Points` object if called using “self.plate_reconstruction.X”,
+        where X is the attribute.
+
+        :type: PlateReconstruction
+
+        """
         # Note: This is documented as an attribute in the class docstring.
         return self._plate_reconstruction
 
     @property
     def lons(self):
+        """
+        A 1D array containing the longitudes of point data.
+        These are the longitudes of the initial points at the initial `time`.
+
+        :type: float 1D array
+        """
         # Note: This is documented as an attribute in the class docstring.
         return self._lons
 
     @property
     def lats(self):
+        """
+        A 1D array containing the latitudes of point data.
+        These are the latitudes of the initial points at the initial `time`.
+
+        :type: float 1D array
+        """
         # Note: This is documented as an attribute in the class docstring.
         return self._lats
 
     @property
     def plate_id(self):
+        """
+        A 1D array containing the plate IDs of the points.
+        The length matches that of `lons` and `lats`.
+
+        :type: int 1D array
+        """
         # Note: This is documented as an attribute in the class docstring.
         return self._plate_id
 
     @property
     def age(self):
+        """
+        A 1D array containing the ages (time of appearance) of the points.
+        The length matches that of `lons` and `lats`.
+        For points on oceanic crust this is when they were created at a mid-ocean ridge.
+        Any points existing for all time will have a value of `numpy.inf` (equivalent to `float('inf')`).
+
+        :type: float 1D array
+        """
         # Note: This is documented as an attribute in the class docstring.
         return self._age
 
     @property
     def size(self):
+        """
+        Number of points.
+        This is the size of `lons`, `lats`, `plate_id` and `age`.
+
+        :type: int
+        """
         # Note: This is documented as an attribute in the class docstring.
         return len(self.points)
 
     @property
     def time(self):
+        """
+        The initial time (Ma) of the points.
+        The initial `lons` and `lats` are the locations of the points at this time.
+
+        :type: float
+        """
         # Note: This is documented as an attribute in the class docstring.
         return self._time
 
     @property
     def anchor_plate_id(self):
+        """
+        Anchor plate that the initial `lons` and `lats` are relative to, at the initial `time`.
+        This is also used as the default anchor plate when reconstructing the points.
+        It does not change, even if the anchor plate of `plate_reconstruction` subsequently changes.
+
+        :type: int
+        """
         # Note: This is documented as an attribute in the class docstring.
         return self._anchor_plate_id
 
@@ -3109,6 +3126,8 @@ class Points(object):
 
         Example
         -------
+        .. code-block:: python
+            :linenos:
 
             # Define latitudes and longitudes to set up a Points object
             pt_lons = np.array([140., 150., 160.])
@@ -3127,6 +3146,8 @@ class Points(object):
 
         The output would be:
 
+        .. code:: console
+
             {'a': [10, 2, 2], 'b': [2, 3, 3], 'c': [30, 0, 0]}
 
         Parameters
@@ -3138,7 +3159,7 @@ class Points(object):
 
         Notes
         -----
-        * An **assertion** is raised if the number of points in the Points object is not equal
+        An **assertion** is raised if the number of points in the Points object is not equal
         to the number of values associated with an attribute key. For example, consider an instance
         of the Points object with 3 points. If the points are ascribed an attribute `temperature`,
         there must be one `temperature` value per point, i.e. `temperature = [20, 15, 17.5]`.
@@ -3187,6 +3208,9 @@ class Points(object):
         Example
         -------
 
+        .. code-block:: python
+            :linenos:
+
             pt_lons = np.array([140., 150., 160.])
             pt_lats = np.array([-30., -40., -50.])
 
@@ -3201,7 +3225,9 @@ class Points(object):
 
             gpts.get_geopandas_dataframe()
 
-        ...has the output:
+        has the output:
+
+        .. code:: console
 
                 a  b   c                     geometry
             0  10  2  30  POINT (140.00000 -30.00000)
