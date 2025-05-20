@@ -13,6 +13,6 @@ micromamba activate gplately
 pip-compile pyproject.toml
 pip3 install .
 pip3 install -U sphinx sphinx_rtd_theme
-sphinx-apidoc -f -o sphinx-doc/source gplately/
+sphinx-autogen -o sphinx-doc/source/generated sphinx-doc/source/*.rst
 cd sphinx-doc
 make html

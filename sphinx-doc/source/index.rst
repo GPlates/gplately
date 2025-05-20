@@ -31,12 +31,10 @@ and more to help you get started with plate reconstructions.
 
    api
 
-Indices and tables
-==================
+Index
+=====
 
 * :ref:`genindex`
-* :ref:`modindex`
-* :ref:`search`
 
 .. |EarthByte servers| raw:: html
    

@@ -121,5 +121,5 @@ __pdoc__ = {
     "get_valid_geometries": False,
     "PlateModelManager": False,
     "PresentDayRasterManager": False,
-    "mapping": False,  # this folder contains no public interfac
+    "mapping": False,  # this folder contains no public interface
 }

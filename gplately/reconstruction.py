@@ -15,10 +15,10 @@
 #    51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
 
-#
-# This sub-module contains tools that wrap up pyGPlates and Plate Tectonic Tools functionalities for reconstructing features,
-# working with point data, and calculating plate velocities at specific geological times.
-#
+"""
+This sub-module contains tools that wrap up pyGPlates and Plate Tectonic Tools functionalities for reconstructing features,
+working with point data, and calculating plate velocities at specific geological times.
+"""
 
 # pyright: reportMissingTypeStubs=true
 
