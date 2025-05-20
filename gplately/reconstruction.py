@@ -1028,7 +1028,7 @@ class PlateReconstruction(object):
     ):
         """Samples points along subduction zone trenches and obtains subduction data at a particular geological time.
 
-        Resolves topologies at `time` and tessellates all resolved subducting features into points.
+        Resolves topologies at ``time`` and tessellates all resolved subducting features into points.
 
         Returns a 10-column vertically-stacked tuple with the following data per sampled trench point:
 
@@ -1043,7 +1043,7 @@ class PlateReconstruction(object):
         * Col. 8 - subducting plate ID
         * Col. 9 - trench plate ID
 
-        The optional 'output_*' parameters can be used to append extra data to the output tuple of each sampled trench point.
+        The optional ``output_*`` parameters can be used to append extra data to the output tuple of each sampled trench point.
         The order of any extra data is the same order in which the parameters are listed below.
 
         Parameters
@@ -1053,13 +1053,13 @@ class PlateReconstruction(object):
         tessellation_threshold_radians : float, default=0.001
             The threshold sampling distance along the plate boundaries (in radians).
         ignore_warnings : bool, default=False
-            Choose to ignore warnings from Plate Tectonic Tools' subduction_convergence workflow (if `use_ptt` is `True`).
+            Choose to ignore warnings from :py:func:`ptt.subduction_convergence.subduction_convergence` (if ``use_ptt`` is ``True``).
         return_geodataframe : bool, default=False
             Choose to return data in a geopandas.GeoDataFrame.
         use_ptt : bool, default=False
-            If set to `True` then uses Plate Tectonic Tools' `subduction_convergence` workflow to calculate subduction convergence
+            If set to ``True`` then uses :py:func:`ptt.subduction_convergence.subduction_convergence` to calculate subduction convergence
             (which uses the subducting stage rotation of the subduction/trench plate IDs calculate subducting velocities).
-            If set to `False` then uses plate convergence to calculate subduction convergence
+            If set to ``False`` then uses plate convergence to calculate subduction convergence
             (which samples velocities of the two adjacent boundary plates at each sampled point to calculate subducting velocities).
             Both methods ignore plate boundaries that do not have a subduction polarity (feature property), which essentially means
             they only sample subduction zones.
@@ -1072,9 +1072,9 @@ class PlateReconstruction(object):
             For example, setting this to `0.0` would remove all diverging sample points (leaving only converging points).
             This value can be negative which means a small amount of divergence is allowed.
             If `None` then all (converging and diverging) sample points are returned. This is the default.
-            Note that this parameter can only be specified if `use_ptt` is `False`.
+            Note that this parameter can only be specified if ``use_ptt`` is ``False``.
         anchor_plate_id : int, optional
-            Anchor plate ID. Defaults to the current anchor plate ID (`anchor_plate_id` attribute)..
+            Anchor plate ID. Defaults to the current anchor plate ID (:py:attr:`gplately.PlateReconstruction.anchor_plate_id` attribute).
         velocity_delta_time : float, default=1.0
             Velocity delta time used in convergence velocity calculations (defaults to 1 Myr).
         output_distance_to_nearest_edge_of_trench : bool, default=False
@@ -1120,22 +1120,22 @@ class PlateReconstruction(object):
             * Col. 8 - subducting plate ID
             * Col. 9 - trench plate ID
 
-            The optional 'output_*' parameters can be used to append extra data to the tuple of each sampled trench point.
+            The optional ``output_*`` parameters can be used to append extra data to the tuple of each sampled trench point.
             The order of any extra data is the same order in which the parameters are listed in this function.
 
         Raises
         ------
         ValueError
-            If topology features have not been set in this `PlateReconstruction`.
+            If topology features have not been set in this :py:class:`gplately.PlateReconstruction` object.
         ValueError
-            If `use_ptt` is `True` and `convergence_threshold_in_cm_per_yr` is not `None`.
+            If ``use_ptt`` is ``True`` and ``convergence_threshold_in_cm_per_yr`` is not ``None``.
 
         Notes
         -----
-        If `use_ptt` is False then each trench is sampled at *exactly* uniform intervals along its length such that the sampled points
-        have a uniform spacing (along each trench polyline) that is *equal* to `tessellation_threshold_radians`.
-        If `use_ptt` is True then each trench is sampled at *approximately* uniform intervals along its length such that the sampled points
-        have a uniform spacing (along each trench polyline) that is *less than or equal to* `tessellation_threshold_radians`.
+        If ``use_ptt`` is False then each trench is sampled at **exactly** uniform intervals along its length such that the sampled points
+        have a uniform spacing (along each trench polyline) that is **equal** to ``tessellation_threshold_radians``.
+        If ``use_ptt`` is True then each trench is sampled at *approximately* uniform intervals along its length such that the sampled points
+        have a uniform spacing (along each trench polyline) that is **less than or equal to** ``tessellation_threshold_radians``.
 
         The trench normal (at each sampled trench point) always points *towards* the overriding plate.
         The obliquity angles are in the range (-180, 180). The range (0, 180) goes clockwise (when viewed from above the Earth)
@@ -1147,7 +1147,7 @@ class PlateReconstruction(object):
         is greater than 90 or less than -90). And note that the trench absolute velocity magnitude is negative if the trench
         (subduction zone) is moving towards the overriding plate (if trench absolute obliquity angle is less than 90 and greater
         than -90) - note that this ignores the kinematics of the subducting plate. Similiarly for the subducting plate absolute
-        velocity magnitude (if keyword argument `output_subducting_absolute_velocity` is True).
+        velocity magnitude (if keyword argument ``output_subducting_absolute_velocity`` is True).
 
         The trench plate ID at each sample point can differ from the overriding plate ID.
         This is because, even in a non-deforming model, the smaller plates (not modelled by topologies) can move differently
@@ -1157,12 +1157,19 @@ class PlateReconstruction(object):
         --------
         To sample points along subduction zones at 50Ma:
 
+        .. code-block:: python
+            :linenos:
+
             subduction_data = plate_reconstruction.tessellate_subduction_zones(50)
 
         To sample points along subduction zones at 50Ma, but only where there's convergence:
 
-            subduction_data = plate_reconstruction.tessellate_subduction_zones(50,
-                    convergence_threshold_in_cm_per_yr=0.0)
+        .. code-block:: python
+            :linenos:
+
+            subduction_data = plate_reconstruction.tessellate_subduction_zones(
+                50, convergence_threshold_in_cm_per_yr=0.0
+            )
         """
 
         if use_ptt:
@@ -2501,21 +2508,21 @@ class PlateReconstruction(object):
         Returns
         -------
         left_lon : ndarray
-            The longitudes of the __left__ flowline for n seed points.
+            The longitudes of the left flowline for n seed points.
             There are n columns for n seed points, and m rows
-            for m time steps in `time_array`.
+            for m time steps in time_array.
         left_lat : ndarray
-            The latitudes of the __left__ flowline of n seed points.
+            The latitudes of the left flowline of n seed points.
             There are n columns for n seed points, and m rows
-            for m time steps in `time_array`.
+            for m time steps in time_array.
         right_lon : ndarray
-            The longitudes of the __right__ flowline of n seed points.
+            The longitudes of the right flowline of n seed points.
             There are n columns for n seed points, and m rows
-            for m time steps in `time_array`.
+            for m time steps in time_array.
         right_lat : ndarray
-            The latitudes of the __right__ flowline of n seed points.
+            The latitudes of the right flowline of n seed points.
             There are n columns for n seed points, and m rows
-            for m time steps in `time_array`.
+            for m time steps in time_array.
 
         Examples
         --------
