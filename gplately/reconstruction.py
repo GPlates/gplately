@@ -1511,7 +1511,7 @@ class PlateReconstruction(object):
                 continental_grid = np.array(continental_grid)
                 graster = _grids.Raster(
                     data=continental_grid,
-                    extent=[-180, 180, -90, 90],
+                    extent=(-180, 180, -90, 90),
                     time=float(time),
                 )
             except Exception as e:
@@ -1559,9 +1559,13 @@ class PlateReconstruction(object):
             method="linear",
             return_indices=False,
         )
+        # the code below will not work if graster.interpolate() returned a tuple
+        assert isinstance(sampled_points, np.ndarray)
         continental_indices = np.where(sampled_points > 0)
         point_lats = ilat[continental_indices]
         point_radii = _tools.geocentric_radius(point_lats) * 1.0e-3  # km
+        # the code below will not work if trench_arcseg is GeoDataFrame
+        assert isinstance(trench_arcseg, np.ndarray)
         segment_arclens = np.deg2rad(trench_arcseg[continental_indices])
         segment_lengths = point_radii * segment_arclens
         return np.sum(segment_lengths)
@@ -1613,6 +1617,8 @@ class PlateReconstruction(object):
             if not stat.convergence_velocity:
                 continue
 
+            spreading_obliquity = stat.convergence_velocity_obliquity
+
             # If requested, reject point if it's not diverging within specified threshold.
             if divergence_threshold_in_cm_per_yr is not None:
                 # Note that we use the 'orthogonal' component of velocity vector.
@@ -1628,13 +1634,11 @@ class PlateReconstruction(object):
             ):
                 # Convert obliquity from the range [-pi, pi] to [0, pi/2].
                 # We're only interested in the deviation angle from the normal line (positive or negative normal direction).
-                spreading_obliquity = np.abs(
-                    stat.convergence_velocity_obliquity
-                )  # not interested in clockwise vs anti-clockwise
+                # not interested in clockwise vs anti-clockwise
+                spreading_obliquity = np.abs(stat.convergence_velocity_obliquity)
+                # angle relative to negative normal direction
                 if spreading_obliquity > 0.5 * np.pi:
-                    spreading_obliquity = (
-                        np.pi - spreading_obliquity
-                    )  # angle relative to negative normal direction
+                    spreading_obliquity = np.pi - spreading_obliquity
 
                 # If a transform segment deviation was specified then we need to reject transform segments.
                 if transform_segment_deviation_in_radians is not None:

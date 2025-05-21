@@ -1656,7 +1656,7 @@ class Raster(object):
         self,
         data=None,
         plate_reconstruction=None,
-        extent="global",
+        extent: Union[str, tuple] = "global",
         realign=False,
         resample=None,
         resize=None,
