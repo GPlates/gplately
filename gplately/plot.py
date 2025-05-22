@@ -15,10 +15,11 @@
 #    51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
 
-"""This sub-module contains tools for reconstructing and plotting geological features and feature data through time.
+"""
+This sub-module contains tools for reconstructing and plotting geological features and feature data through time.
 
 Methods in `plot.py` reconstruct geological features using
-[pyGPlates' `reconstruct` function](https://www.gplates.org/docs/pygplates/generated/pygplates.reconstruct.html),
+`pyGPlates' reconstruct function <https://www.gplates.org/docs/pygplates/generated/pygplates.reconstruct.html>__,
 turns them into plottable Shapely geometries, and plots them onto Cartopy GeoAxes using Shapely and GeoPandas.
 
 Classes
@@ -47,7 +48,6 @@ from .decorators import (
 from .gpml import _load_FeatureCollection
 from .mapping.cartopy_plot import DEFAULT_CARTOPY_PROJECTION, CartopyPlotEngine
 from .mapping.plot_engine import PlotEngine
-from .reconstruction import PlateReconstruction as _PlateReconstruction
 from .tools import EARTH_RADIUS
 from .utils.feature_utils import shapelify_features as _shapelify_features
 from .utils.plot_utils import _meridian_from_ax
@@ -56,25 +56,26 @@ from .utils.plot_utils import plot_subduction_teeth as _plot_subduction_teeth
 logger = logging.getLogger("gplately")
 
 PLOT_DOCSTRING = """
+             
+Parameters
+----------
+ax : instance of <cartopy.mpl.geoaxes.GeoAxes> or <cartopy.mpl.geoaxes.GeoAxesSubplot>
+    A subclass of ``matplotlib.axes.Axes`` which represents a map Projection.
+    The map should be set at a particular Cartopy projection.
 
-        Parameters
-        ----------
-        ax : instance of <cartopy.mpl.geoaxes.GeoAxes> or <cartopy.mpl.geoaxes.GeoAxesSubplot>
-            A subclass of `matplotlib.axes.Axes` which represents a map Projection.
-            The map should be set at a particular Cartopy projection.
+color : str, default=’black’
+    The colour of the **{0}** lines. By default, it is set to black.
 
-        color : str, default=’black’
-            The colour of the `{0}` lines. By default, it is set to black.
+**kwargs :
+    Keyword arguments for parameters such as ``alpha``, etc. for plotting **{0}** geometries.
+    See Matplotlib keyword arguments `here <https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html>`__.
 
-        **kwargs :
-            Keyword arguments for parameters such as `alpha`, etc. for plotting `{0}` geometries.
-            See `Matplotlib` keyword arguments [here](https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html).
-
-        Returns
-        -------
-        ax : instance of <geopandas.GeoDataFrame.plot>
-            A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map
-            with `{0}` features plotted onto the chosen map projection.
+Returns
+-------
+ax : instance of <geopandas.GeoDataFrame.plot>
+    A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map
+    with **{0}** features plotted onto the chosen map projection.
+        
 """
 
 GET_DATE_DOCSTRING = """
@@ -95,21 +96,27 @@ GET_DATE_DOCSTRING = """
         Raises
         ------
         ValueError
-            If the optional `time` parameter has not been passed to
-            `PlotTopologies`. This is needed to construct `{0}`
-            to the requested `time` and thus populate the GeoDataFrame.
+            If the optional ``time`` parameter has not been passed to
+            :class:`gplately.PlotTopologies`. This is needed to construct `{0}`
+            to the requested ``time`` and thus populate the GeoDataFrame.
 
         Notes
         -----
         The `{0}` needed to produce the GeoDataFrame are automatically
-        constructed if the optional `time` parameter is passed to the
-        `PlotTopologies` object before calling this function. `time` can be
-        passed either when `PlotTopologies` is first called...
+        constructed if the optional ``time`` parameter is passed to the
+        :class:`gplately.PlotTopologies` object before calling this function. ``time`` can be
+        passed either when :class:`gplately.PlotTopologies` is first called...
 
+        .. code-block:: python
+            :linenos:
+            
             gplot = gplately.PlotTopologies(..., time=100,...)
 
         or anytime afterwards, by setting:
 
+        .. code-block:: python
+            :linenos:
+            
             time = 100 # Ma
             gplot.time = time
 
@@ -143,32 +150,30 @@ shapelify_feature_polygons.__doc__ = _shapelify_features.__doc__
 
 
 class PlotTopologies(object):
-    """A class with tools to read, reconstruct and plot topology features at specific
-    reconstruction times.
+    """Read, reconstruct and plot topology features at specific reconstruction times.
 
-    `PlotTopologies` is a shorthand for PyGPlates and Shapely functionalities that:
+    The :class:`gplately.PlotTopologies` is a shorthand for PyGPlates and Shapely functionalities that:
 
-    * Read features held in GPlates GPML (GPlates Markup Language) files and
-    ESRI shapefiles;
-    * Reconstruct the locations of these features as they migrate through
-    geological time;
-    * Turn these reconstructed features into Shapely geometries for plotting
-    on `cartopy.mpl.geoaxes.GeoAxes` or `cartopy.mpl.geoaxes.GeoAxesSubplot` map
-    Projections.
+    * Read features held in GPlates GPML (GPlates Markup Language) files and ESRI shapefiles;
+    * Reconstruct the locations of these features as they migrate through geological time;
+    * Turn these reconstructed features into Shapely geometries for plotting on ``cartopy.mpl.geoaxes.GeoAxes`` or ``cartopy.mpl.geoaxes.GeoAxesSubplot`` map Projections.
 
-    To call the `PlotTopologies` object, supply:
+    To create the :class:`gplately.PlotTopologies` object, supply:
 
-    * an instance of the GPlately `plate_reconstruction` object
+    * an instance of the :class:`gplately.PlateReconstruction` object
 
     and optionally,
 
-    * a `coastline_filename`
-    * a `continent_filename`
-    * a `COB_filename`
-    * a reconstruction `time`
-    * an `anchor_plate_id`
+    * a coastline_filename
+    * a continent_filename
+    * a COB_filename
+    * a reconstruction time
+    * an anchor_plate_id
 
     For example:
+
+    .. code-block:: python
+        :linenos:
 
         # Calling the PlotTopologies object
         gplot = gplately.plot.PlotTopologies(plate_reconstruction,
@@ -182,22 +187,25 @@ class PlotTopologies(object):
         # Setting a new reconstruction time
         gplot.time = 20 # Ma
 
-    The `coastline_filename`, `continent_filename` and `COB_filename` can be single
-    strings to GPML and/or shapefiles, as well as instances of `pygplates.FeatureCollection`.
-    If using GPlately's `DataServer` object to source these files, they will be passed as
-    `pygplates.FeatureCollection` items.
+    The ``coastline_filename``, ``continent_filename`` and ``COB_filename`` can be single
+    strings to GPML and/or shapefiles, as well as instances of ``pygplates.FeatureCollection``.
+    If using GPlately's :class:`gplately.DataServer` object to source these files, they will be passed as
+    ``pygplates.FeatureCollection`` items.
 
-    Some features for plotting (like plate boundaries) are taken from the `PlateReconstruction`
-    object's`topology_features` attribute. They have already been reconstructed to the given `time`.
-    Simply provide a new reconstruction time by changing the `time` attribute, e.g.
+    Some features for plotting (like plate boundaries) are taken from the :class:`gplately.PlateReconstruction`
+    object's ``topology_features`` attribute. They have already been reconstructed to the given ``time``.
+    Simply provide a new reconstruction time by changing the ``time`` attribute, e.g.
+
+    .. code-block:: python
+        :linenos:
 
         gplot.time = 20 # Ma
 
     which will automatically reconstruct all topologies to the specified time.
-    You __MUST__ set `gplot.time` before plotting anything.
+    You **MUST** set ``gplot.time`` before plotting anything.
 
     A variety of geological features can be plotted on GeoAxes/GeoAxesSubplot maps
-    as Shapely `MultiLineString` or `MultiPolygon` geometries, including:
+    as Shapely ``MultiLineString`` or ``MultiPolygon`` geometries, including:
 
     * subduction boundaries & subduction polarity teeth
     * mid-ocean ridge boundaries
@@ -215,80 +223,6 @@ class PlotTopologies(object):
         - seafloor fabric
         - large igneous provinces
         - volcanic provinces
-
-    Attributes
-    ----------
-    plate_reconstruction : instance of <gplately.reconstruction.PlateReconstruction>
-        The GPlately `PlateReconstruction` object will be used to access a plate
-        `rotation_model` and a set of `topology_features` which contains plate boundary
-        features like trenches, ridges and transforms.
-
-    anchor_plate_id : int
-        The anchor plate ID used for reconstruction.
-        Defaults to the anchor plate of `plate_reconstruction`.
-
-    base_projection : instance of <cartopy.crs.{transform}>, default <cartopy.crs.PlateCarree> object
-        where {transform} is the map Projection to use on the Cartopy GeoAxes.
-        By default, the base projection is set to cartopy.crs.PlateCarree. See the
-        [Cartopy projection list](https://scitools.org.uk/cartopy/docs/v0.15/crs/projections.html)
-        for all supported Projection types.
-
-    coastlines : str, or instance of <pygplates.FeatureCollection>
-        The full string path to a coastline feature file. Coastline features can also
-        be passed as instances of the `pygplates.FeatureCollection` object (this is
-        the case if these features are sourced from the `DataServer` object).
-
-    continents : str, or instance of <pygplates.FeatureCollection>
-        The full string path to a continent feature file. Continent features can also
-        be passed as instances of the `pygplates.FeatureCollection` object (this is
-        the case if these features are sourced from the `DataServer` object).
-
-    COBs : str, or instance of <pygplates.FeatureCollection>
-        The full string path to a COB feature file. COB features can also be passed
-        as instances of the `pygplates.FeatureCollection` object (this is the case
-        if these features are sourced from the `DataServer` object).
-
-    coastlines : iterable/list of <pygplates.ReconstructedFeatureGeometry>
-        A list containing coastline features reconstructed to the specified `time` attribute.
-
-    continents : iterable/list of <pygplates.ReconstructedFeatureGeometry>
-        A list containing continent features reconstructed to the specified `time` attribute.
-
-    COBs : iterable/list of <pygplates.ReconstructedFeatureGeometry>
-        A list containing COB features reconstructed to the specified `time` attribute.
-
-    time : float
-        The time (Ma) to reconstruct and plot geological features to.
-
-    topologies : iterable/list of <pygplates.Feature>
-        A list containing assorted topologies like:
-
-        - pygplates.FeatureType.gpml_topological_network
-        - pygplates.FeatureType.gpml_oceanic_crust
-        - pygplates.FeatureType.gpml_topological_slab_boundary
-        - pygplates.FeatureType.gpml_topological_closed_plate_boundary
-
-    ridges : iterable/list of <pygplates.Feature>
-        A list containing ridge and transform boundary sections of type
-        pygplates.FeatureType.gpml_mid_ocean_ridge
-
-    transforms : iterable/list of <pygplates.Feature>
-        A list containing transform boundary sections of type pygplates.FeatureType.gpml_transforms
-
-    trenches : iterable/list of <pygplates.Feature>
-        A list containing trench boundary sections of type pygplates.FeatureType.gpml_subduction_zone
-
-    trench_left : iterable/list of <pygplates.Feature>
-        A list containing left subduction boundary sections of type pygplates.FeatureType.gpml_subduction_zone
-
-    trench_right : iterable/list of <pygplates.Feature>
-        A list containing right subduction boundary sections of type pygplates.FeatureType.gpml_subduction_zone
-
-    other : iterable/list of <pygplates.Feature>
-        A list containing other geological features like unclassified features, extended continental crusts,
-        continental rifts, faults, orogenic belts, fracture zones, inferred paleo boundaries, terrane
-        boundaries and passive continental boundaries.
-
     """
 
     def __init__(
@@ -301,14 +235,52 @@ class PlotTopologies(object):
         anchor_plate_id=None,
         plot_engine: PlotEngine = CartopyPlotEngine(),
     ):
+        """
+        Parameters
+        ----------
+        plate_reconstruction : instance of <gplately.reconstruction.PlateReconstruction>
+            The GPlately :class:`gplately.PlateReconstruction` object will be used to access a plate
+            ``rotation_model`` and a set of ``topology_features`` which contains plate boundary
+            features like trenches, ridges and transforms.
+        coastlines : str, or instance of <pygplates.FeatureCollection>
+            The full string path to a coastline feature file. Coastline features can also
+            be passed as instances of the ``pygplates.FeatureCollection`` object (this is
+            the case if these features are sourced from the :class:`gplately.DataServer` object).
+        continents : str, or instance of <pygplates.FeatureCollection>
+            The full string path to a continent feature file. Continent features can also
+            be passed as instances of the ``pygplates.FeatureCollection`` object (this is
+            the case if these features are sourced from the :class:`gplately.DataServer` object).
+        COBs : str, or instance of <pygplates.FeatureCollection>
+            The full string path to a COB feature file. COB features can also be passed
+            as instances of the ``pygplates.FeatureCollection`` object (this is the case
+            if these features are sourced from the :class:`gplately.DataServer` object).
+        time: float
+            The time (Ma) to reconstruct and plot geological features to.
+        anchor_plate_id : int
+            Anchor plate ID for reconstruction. Must be an integer >= 0.
+        plot_engine : :class:`PlotEngine`, default=CartopyPlotEngine()
+            Use Cartopy or pyGMT to plot the map.
+        """
         self._plot_engine = plot_engine
         self.plate_reconstruction = plate_reconstruction
+        """The GPlately :class:`gplately.PlateReconstruction` object will be used to access a plate
+        ``rotation_model`` and a set of ``topology_features`` which contains plate boundary
+        features like trenches, ridges and transforms.
+
+        :type: instance of <gplately.reconstruction.PlateReconstruction>
+        """
 
         if self.plate_reconstruction.topology_features is None:
             self.plate_reconstruction.topology_features = []
             logger.warning("Plate model does not have topology features.")
 
         self.base_projection = DEFAULT_CARTOPY_PROJECTION
+        """instance of <cartopy.crs.{transform}>, default <cartopy.crs.PlateCarree> object
+        where {transform} is the map Projection to use on the Cartopy GeoAxes.
+        By default, the base projection is set to cartopy.crs.PlateCarree. See the
+        `Cartopy projection list <https://scitools.org.uk/cartopy/docs/v0.15/crs/projections.html>`__
+        for all supported Projection types.
+        """
 
         # store these for when time is updated
         # make sure these are initialised as FeatureCollection objects
@@ -317,8 +289,46 @@ class PlotTopologies(object):
         self._COBs = _load_FeatureCollection(COBs)
 
         self.coastlines = None
+        """A list containing coastline features reconstructed to the specified ``time`` attribute.
+
+        :type: iterable/list of <pygplates.ReconstructedFeatureGeometry>
+        """
         self.continents = None
+        """A list containing continent features reconstructed to the specified ``time`` attribute.
+        
+        :type: iterable/list of <pygplates.ReconstructedFeatureGeometry>
+        """
         self.COBs = None
+        """A list containing COB features reconstructed to the specified ``time`` attribute.
+
+        :type: iterable/list of <pygplates.ReconstructedFeatureGeometry>
+        """
+
+        self.trenches = None
+        """A list containing trench boundary sections of type `pygplates.FeatureType.gpml_subduction_zone`.
+        
+        :type: iterable/list of <pygplates.Feature>
+        """
+
+        self.trench_left = None
+        """A list containing left subduction boundary sections of type `pygplates.FeatureType.gpml_subduction_zone`.
+        
+        :type: iterable/list of <pygplates.Feature>
+        """
+
+        self.trench_right = None
+        """A list containing right subduction boundary sections of type pygplates.FeatureType.gpml_subduction_zone
+
+        :type: iterable/list of <pygplates.Feature>
+        """
+
+        self.other = None
+        """A list containing other geological features like unclassified features, extended continental crusts,
+        continental rifts, faults, orogenic belts, fracture zones, inferred paleo boundaries, terrane
+        boundaries and passive continental boundaries.
+        
+        :type: iterable/list of <pygplates.Feature>
+        """
         self._topological_plate_boundaries = None
         self._topologies = None
         self._ridges = []
@@ -420,13 +430,23 @@ class PlotTopologies(object):
     def topologies(self):
         """
         Resolved topologies for BOTH rigid boundaries and networks.
+        A list containing assorted topologies like:
+
+        - pygplates.FeatureType.gpml_topological_network
+        - pygplates.FeatureType.gpml_oceanic_crust
+        - pygplates.FeatureType.gpml_topological_slab_boundary
+        - pygplates.FeatureType.gpml_topological_closed_plate_boundary
+
+        :type: iterable/list of <pygplates.Feature>
         """
         return self._topologies
 
     @property
     def ridges(self):
-        """
-        Mid-ocean ridge features (all the features which are labelled as gpml:MidOceanRidge in the model).
+        """Mid-ocean ridge features (all the features which are labelled as gpml:MidOceanRidge in the model).
+        A list containing ridge and transform boundary sections of type `pygplates.FeatureType.gpml_mid_ocean_ridge`.
+
+        :type: iterable/list of <pygplates.Feature>
         """
         logger.debug(
             "The 'ridges' property has been changed since GPlately 1.3.0. "
@@ -439,8 +459,10 @@ class PlotTopologies(object):
 
     @property
     def transforms(self):
-        """
-        Transform boundary features (all the features which are labelled as gpml:Transform in the model).
+        """Transform boundary features (all the features which are labelled as gpml:Transform in the model).
+        A list containing transform boundary sections of type `pygplates.FeatureType.gpml_transforms`.
+
+        :type: iterable/list of <pygplates.Feature>
         """
         logger.debug(
             "The 'transforms' property has been changed since GPlately 1.3.0. "
@@ -453,7 +475,10 @@ class PlotTopologies(object):
 
     @property
     def time(self):
-        """The reconstruction time."""
+        """The time (Ma) to reconstruct and plot geological features to.
+
+        :type; float
+        """
         return self._time
 
     @time.setter
@@ -474,7 +499,11 @@ class PlotTopologies(object):
 
     @property
     def anchor_plate_id(self):
-        """Anchor plate ID for reconstruction. Must be an integer >= 0."""
+        """Anchor plate ID for reconstruction. Must be an integer >= 0.
+        Defaults to the anchor plate of ``plate_reconstruction``.
+
+        :type: int
+        """
         if self._anchor_plate_id is None:
             # Default to anchor plate of 'self.plate_reconstruction'.
             return self.plate_reconstruction.anchor_plate_id
@@ -524,12 +553,12 @@ class PlotTopologies(object):
         return self._ridges + self._transforms
 
     def update_time(self, time):
-        """Re-reconstruct features and topologies to the time specified by the `PlotTopologies` `time` attribute
+        """Re-reconstruct features and topologies to the time specified by the :class:`gplately.PlotTopologies` ``time`` attribute
         whenever it or the anchor plate is updated.
 
         Notes
         -----
-        The following `PlotTopologies` attributes are updated whenever a reconstruction `time` attribute is set:
+        The following :class:`gplately.PlotTopologies` attributes are updated whenever a reconstruction ``time`` attribute is set:
 
         - resolved topology features (topological plates and networks)
         - ridge and transform boundary sections (resolved features)
@@ -538,10 +567,10 @@ class PlotTopologies(object):
         - subduction boundary sections (resolved features)
         - left subduction boundary sections (resolved features)
         - right subduction boundary sections (resolved features)
-        - other boundary sections (resolved features) that are not subduction zones or mid-ocean ridges
-        (ridge/transform)
+        - other boundary sections (resolved features) that are not subduction zones or mid-ocean ridges(ridge/transform)
 
-        Moreover, coastlines, continents and COBs are reconstructed to the new specified `time`.
+        Moreover, coastlines, continents and COBs are reconstructed to the new specified ``time``.
+
         """
         assert time is not None, "time must be set to a valid reconstruction time"
         self._time = float(time)
@@ -867,12 +896,13 @@ class PlotTopologies(object):
     def plot_coastlines(self, ax, color="black", **kwargs):
         """Plot reconstructed coastline polygons onto a standard map Projection.
 
-        Notes
-        -----
-        The `coastlines` for plotting are accessed from the `PlotTopologies` object's `coastlines` attribute.
-        These `coastlines` are reconstructed to the `time` passed to the `PlotTopologies` object and converted into Shapely polylines.
-        The reconstructed `coastlines` are added onto the GeoAxes or GeoAxesSubplot map `ax` using GeoPandas.
-        Map resentation details (e.g. facecolor, edgecolor, alpha…) are permitted as keyword arguments.
+        .. note::
+
+            The coastlines for plotting are accessed from the :class:`gplately.PlotTopologies` object's coastlines attribute.
+            These coastlines are reconstructed to the ``time`` passed to the :class:`gplately.PlotTopologies` object and converted into Shapely polylines.
+            The reconstructed coastlines are added onto the GeoAxes or GeoAxesSubplot map ``ax`` using GeoPandas.
+            Map resentation details (e.g. facecolor, edgecolor, alpha…) are permitted as keyword arguments.
+
         """
         return self.plot_feature(
             ax,

@@ -38,88 +38,27 @@ del ensure_plate_model_manager_compatible
 
 from plate_model_manager import PlateModelManager, PresentDayRasterManager
 
-from . import (
-    auxiliary,
-    data,
-    download,
-    geometry,
-    gpml,
-    grids,
-    oceans,
-    plot,
-    ptt,
-    pygplates,
-    reconstruction,
-    spatial,
-)
-from .data import DataCollection
+from . import auxiliary, ptt
 from .download import DataServer
 from .grids import Raster
 from .oceans import SeafloorGrid
 from .plot import PlotTopologies
-from .reconstruction import (
-    PlateReconstruction,
-    Points,
-    _ContinentCollision,
-    _DefaultCollision,
-    _ReconstructByTopologies,
-)
+from .reconstruction import PlateReconstruction, Points
 from .tools import EARTH_RADIUS
-from .utils import io_utils
-from .utils.io_utils import get_geometries, get_valid_geometries
 
 __all__ = [
     # Modules
     "auxiliary",
-    "data",
-    "download",
-    "geometry",
-    "gpml",
-    "grids",
-    "oceans",
-    "plot",
-    "pygplates",
-    "io_utils",
-    "reconstruction",
     "ptt",
-    "spatial",
     # Classes
-    "DataCollection",
-    "PlateModelManager",
-    "PresentDayRasterManager",
     "DataServer",
     "PlateReconstruction",
     "PlotTopologies",
     "Points",
     "Raster",
     "SeafloorGrid",
-    "_ContinentCollision",
-    "_DefaultCollision",
-    "_ReconstructByTopologies",
-    # Functions
-    "get_geometries",
-    "get_valid_geometries",
-    # Constants
+    "PlateModelManager",
+    "PresentDayRasterManager",
+    # constants
     "EARTH_RADIUS",
 ]
-
-__pdoc__ = {
-    "data": False,
-    "download": False,
-    "_DefaultCollision": False,
-    "_ContinentCollision": False,
-    "_ReconstructByTopologies": False,
-    "examples": False,
-    "notebooks": False,
-    "commands": False,
-    "decorators": False,
-    "exceptions": False,
-    "lib": False,
-    "pygplates": False,
-    "DataCollection": False,
-    "get_geometries": False,
-    "get_valid_geometries": False,
-    "PlateModelManager": False,
-    "PresentDayRasterManager": False,
-    "mapping": False,  # this folder contains no public interface
-}
