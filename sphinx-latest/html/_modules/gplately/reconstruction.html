@@ -2909,6 +2909,9 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="n">anchor_plate_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_check_anchor_plate_id</span><span class="p">(</span><span class="n">anchor_plate_id</span><span class="p">)</span>
 
+        <span class="n">point_ages</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([])</span>
+        <span class="n">point_plate_ids</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([])</span>
+
         <span class="c1"># The caller can specify a &#39;list&#39; for the &#39;remove_unreconstructable_points&#39; argument if they want us to</span>
         <span class="c1"># return the indices of any points that are NOT reconstructable.</span>
         <span class="c1">#</span>
@@ -2978,8 +2981,6 @@
         <span class="c1"># However, if the user provided both plate IDs and ages then all points will be reconstructable.</span>
         <span class="n">points_are_reconstructable</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="n">num_points</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
 
-        <span class="n">point_ages</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([])</span>
-        <span class="n">point_plate_ids</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([])</span>
         <span class="c1"># If caller did not provide plate IDs or begin ages then</span>
         <span class="c1"># we need to determine them using the static polygons.</span>
         <span class="k">if</span> <span class="n">plate_id</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="n">age</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
