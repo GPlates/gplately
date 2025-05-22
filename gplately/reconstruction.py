@@ -2392,6 +2392,7 @@ class PlateReconstruction(object):
 
         if plate_id is None:
             query_plate_id = True
+            plate_ids = []
         else:
             query_plate_id = False
             plate_ids = np.ones(len(lons), dtype=int) * plate_id
@@ -2400,6 +2401,9 @@ class PlateReconstruction(object):
         if return_rate_of_motion is True:
             StepTimes = np.empty(((len(time_array) - 1) * 2, len(lons)))
             StepRates = np.empty(((len(time_array) - 1) * 2, len(lons)))
+        else:
+            StepTimes = np.array([])
+            StepRates = np.array([])
         for i, lat_lon in enumerate(seed_points):
             seed_points_at_digitisation_time = pygplates.PointOnSphere(
                 pygplates.LatLonPoint(float(lat_lon[0]), float(lat_lon[1]))
@@ -2433,9 +2437,12 @@ class PlateReconstruction(object):
                 anchor_plate_id=anchor_plate_id,  # if None then uses 'self.anchor_plate_id' (default anchor plate of 'self.rotation_model')
             )
             # Turn motion paths in to lat-lon coordinates
+            trail = None
             for reconstructed_motion_path in reconstructed_motion_paths:
+                # not sure about this. always set the "trail" to the last one in reconstructed_motion_paths?
+                # or there is only one path in reconstructed_motion_paths? -- Michael Chin
                 trail = reconstructed_motion_path.get_motion_path().to_lat_lon_array()
-
+            assert trail
             lon, lat = np.flipud(trail[:, 1]), np.flipud(trail[:, 0])
 
             rlons[:, i] = lon
@@ -2837,10 +2844,11 @@ class Points(object):
         # However, if the user provided both plate IDs and ages then all points will be reconstructable.
         points_are_reconstructable = np.full(num_points, True)
 
+        point_ages = np.array([])
+        point_plate_ids = np.array([])
         # If caller did not provide plate IDs or begin ages then
         # we need to determine them using the static polygons.
         if plate_id is None or age is None:
-
             if plate_id is None:
                 point_plate_ids = np.empty(num_points, dtype=int)
             if age is None:
@@ -2926,18 +2934,18 @@ class Points(object):
             # Set the geometry.
             point_feature.set_geometry(points[point_index])
             # Set the plate ID.
-            point_feature.set_reconstruction_plate_id(point_plate_ids[point_index])
+            point_feature.set_reconstruction_plate_id(point_plate_ids[point_index])  # type: ignore
             # Set the begin/end time.
             point_feature.set_valid_time(
                 point_ages[point_index],  # begin (age)
                 -np.inf,  # end (distant future; could also be zero for present day)
-            )
+            )  # type: ignore
             point_features.append(point_feature)
 
         # If the points represent a snapshot at a *past* geological time then we need to reverse reconstruct them
         # such that their features contain present-day points.
         if time != 0:
-            pygplates.reverse_reconstruct(
+            pygplates.reverse_reconstruct(  # type: ignore
                 point_features,
                 plate_reconstruction.rotation_model,
                 time,
@@ -3692,6 +3700,8 @@ class Points(object):
         north_east_velocities = np.empty((self.size, 2))
         if return_reconstructed_points:
             lat_lon_points = np.empty((self.size, 2))
+        else:
+            lat_lon_points = np.array([])
 
         # Determine time interval for velocity calculation.
         if (
@@ -3777,7 +3787,7 @@ class Points(object):
                 reconstruct_rotation * reconstructed_points_with_plate_id
             )
 
-            velocity_vectors_with_plate_id = pygplates.calculate_velocities(
+            velocity_vectors_with_plate_id = pygplates.calculate_velocities(  # type: ignore
                 reconstructed_points_with_plate_id,
                 velocity_equivalent_stage_rotation,
                 delta_time,
@@ -3868,6 +3878,9 @@ class Points(object):
         rlons = np.empty((len(time_array), len(self.lons)))
         rlats = np.empty((len(time_array), len(self.lons)))
 
+        StepTimes = np.array([])
+        StepRates = np.array([])
+
         for i, point_feature in enumerate(self.feature_collection):
             # Create the motion path feature
             motion_path_feature = pygplates.Feature.create_motion_path(
@@ -3891,7 +3904,11 @@ class Points(object):
             )
 
             # Turn motion paths in to lat-lon coordinates
+            trail = np.array([])
             for reconstructed_motion_path in reconstructed_motion_paths:
+                # not sure about this. always set the "trail" to the last one in reconstructed_motion_paths?
+                # or there is only one path in reconstructed_motion_paths? -- Michael Chin
+                # again???
                 trail = reconstructed_motion_path.get_motion_path().to_lat_lon_array()
 
             lon, lat = np.flipud(trail[:, 1]), np.flipud(trail[:, 0])
@@ -4150,11 +4167,11 @@ class Points(object):
             reconstruction_time,
             anchor_plate_id=from_rotation_reference_plate,
             return_array=True,
-        )
+        )  # type: ignore
 
         # convert FeatureCollection to MultiPointOnSphere
         input_points = pygplates.MultiPointOnSphere(
-            (lat, lon) for lon, lat in zip(lons, lats)
+            (lat, lon) for lon, lat in zip(lons, lats)  # type: ignore
         )
 
         # Rotate grid nodes to the other reference frame
@@ -4323,13 +4340,13 @@ class _DefaultCollision(object):
 
             # Note that even though the current point is not inside the previous boundary (because different plate ID), we can still
             # calculate a velocity using its plate ID (because we really should use the same point in our velocity comparison).
-            prev_location_velocity = pygplates.calculate_velocities(
+            prev_location_velocity = pygplates.calculate_velocities(  # type: ignore
                 (curr_point,),
                 prev_location_velocity_stage_rotation,
                 1,
                 pygplates.VelocityUnits.kms_per_my,
             )[0]
-            curr_location_velocity = pygplates.calculate_velocities(
+            curr_location_velocity = pygplates.calculate_velocities(  # type: ignore
                 (curr_point,),
                 curr_location_velocity_stage_rotation,
                 1,
@@ -4587,8 +4604,8 @@ class _ReconstructByTopologies(object):
         reconstruction_end_time,
         reconstruction_time_interval,
         points,
-        point_begin_times=None,
-        point_end_times=None,
+        point_begin_times: Union[list, None] = None,
+        point_end_times: Union[list, None] = None,
         point_plate_ids=None,
         detect_collisions=_DEFAULT_COLLISION,
     ):
@@ -4759,6 +4776,7 @@ class _ReconstructByTopologies(object):
             if curr_plate_id is None:
                 # Current point is currently active but it fell outside all resolved polygons.
                 # So instead we just reconstruct using its plate ID (that was manually assigned by the user/caller).
+                assert self.point_plate_ids
                 curr_plate_id = self.point_plate_ids[point_index]
 
             # Get the stage rotation that will move the point from where it is at the current time to its
@@ -4858,6 +4876,8 @@ class _ReconstructByTopologies(object):
         for point_index in range(self.num_points):
             if self.curr_points[point_index] is None:
                 if not self.point_has_been_activated[point_index]:
+                    assert self.point_begin_times
+                    assert self.point_end_times
                     # Point is not active and has never been activated, so see if can activate it.
                     if (
                         current_time <= self.point_begin_times[point_index]
@@ -4877,6 +4897,8 @@ class _ReconstructByTopologies(object):
                         self.point_has_been_activated[point_index] = True
                         self.num_activated_points += 1
             else:
+                assert self.point_begin_times
+                assert self.point_end_times
                 # Point is active, so see if can deactivate it.
                 if not (
                     current_time <= self.point_begin_times[point_index]
@@ -4891,7 +4913,7 @@ class _ReconstructByTopologies(object):
 
         # Resolve the plate polygons for the current time.
         resolved_topologies = []
-        pygplates.resolve_topologies(
+        pygplates.resolve_topologies(  # type: ignore
             self.topology_features,
             self.rotation_model,
             resolved_topologies,
@@ -4912,7 +4934,7 @@ class _ReconstructByTopologies(object):
             curr_valid_points_indices = [None] * self.num_points
             for point_index, curr_point in enumerate(self.curr_points):
                 if curr_point is not None:
-                    curr_valid_points_indices[point_index] = len(curr_valid_points)
+                    curr_valid_points_indices[point_index] = len(curr_valid_points)  # type: ignore
                     curr_valid_points.append(curr_point)
             # For each valid current point find the resolved topology containing it.
             resolved_topologies_containing_curr_valid_points = (
@@ -4936,13 +4958,13 @@ class _ReconstructByTopologies(object):
 
             # Find the plate id of the polygon that contains 'curr_point'.
             if _ReconstructByTopologies.use_plate_partitioner:
-                curr_polygon = plate_partitioner.partition_point(curr_point)
+                curr_polygon = plate_partitioner.partition_point(curr_point)  # type: ignore
             else:
-                curr_polygon = resolved_topologies_containing_curr_valid_points[
+                curr_polygon = resolved_topologies_containing_curr_valid_points[  # type: ignore
                     # Index back into 'curr_valid_points' and hence also into
                     # 'resolved_topologies_containing_curr_valid_points'.
-                    curr_valid_points_indices[point_index]
-                ]
+                    curr_valid_points_indices[point_index]  # type: ignore
+                ]  # type: ignore
             self.curr_resolved_plate_boundaries[point_index] = curr_polygon
 
             # If the polygon is None, that means (presumably) that it fell into a crack between
