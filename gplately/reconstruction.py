@@ -2775,6 +2775,9 @@ class Points(object):
         else:
             anchor_plate_id = self._check_anchor_plate_id(anchor_plate_id)
 
+        point_ages = np.array([])
+        point_plate_ids = np.array([])
+
         # The caller can specify a 'list' for the 'remove_unreconstructable_points' argument if they want us to
         # return the indices of any points that are NOT reconstructable.
         #
@@ -2844,8 +2847,6 @@ class Points(object):
         # However, if the user provided both plate IDs and ages then all points will be reconstructable.
         points_are_reconstructable = np.full(num_points, True)
 
-        point_ages = np.array([])
-        point_plate_ids = np.array([])
         # If caller did not provide plate IDs or begin ages then
         # we need to determine them using the static polygons.
         if plate_id is None or age is None:
