@@ -227,27 +227,18 @@
 
 
 <span class="c1"># JUST FOR PYDOC TO GENERATE THE SAME DOC AS BEFORE</span>
-<div class="viewcode-block" id="create_icosahedral_mesh">
-<a class="viewcode-back" href="../../gplately.html#gplately.create_icosahedral_mesh">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">create_icosahedral_mesh</span><span class="p">(</span><span class="n">refinement_levels</span><span class="p">):</span>
-    <span class="k">return</span> <span class="n">seafloor_grid_utils</span><span class="o">.</span><span class="n">create_icosahedral_mesh</span><span class="p">(</span><span class="n">refinement_levels</span><span class="p">)</span></div>
+    <span class="k">return</span> <span class="n">seafloor_grid_utils</span><span class="o">.</span><span class="n">create_icosahedral_mesh</span><span class="p">(</span><span class="n">refinement_levels</span><span class="p">)</span>
 
 
-
-<div class="viewcode-block" id="ensure_polygon_geometry">
-<a class="viewcode-back" href="../../gplately.html#gplately.ensure_polygon_geometry">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">ensure_polygon_geometry</span><span class="p">(</span><span class="n">reconstructed_polygons</span><span class="p">,</span> <span class="n">rotation_model</span><span class="p">,</span> <span class="n">time</span><span class="p">):</span>
     <span class="k">return</span> <span class="n">seafloor_grid_utils</span><span class="o">.</span><span class="n">ensure_polygon_geometry</span><span class="p">(</span>
         <span class="n">reconstructed_polygons</span><span class="p">,</span> <span class="n">rotation_model</span><span class="p">,</span> <span class="n">time</span>
-    <span class="p">)</span></div>
+    <span class="p">)</span>
 
 
-
-<div class="viewcode-block" id="point_in_polygon_routine">
-<a class="viewcode-back" href="../../gplately.html#gplately.point_in_polygon_routine">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">point_in_polygon_routine</span><span class="p">(</span><span class="n">multi_point</span><span class="p">,</span> <span class="n">COB_polygons</span><span class="p">):</span>
-    <span class="k">return</span> <span class="n">seafloor_grid_utils</span><span class="o">.</span><span class="n">point_in_polygon_routine</span><span class="p">(</span><span class="n">multi_point</span><span class="p">,</span> <span class="n">COB_polygons</span><span class="p">)</span></div>
-
+    <span class="k">return</span> <span class="n">seafloor_grid_utils</span><span class="o">.</span><span class="n">point_in_polygon_routine</span><span class="p">(</span><span class="n">multi_point</span><span class="p">,</span> <span class="n">COB_polygons</span><span class="p">)</span>
 
 
 <span class="n">create_icosahedral_mesh</span><span class="o">.</span><span class="vm">__doc__</span> <span class="o">=</span> <span class="n">seafloor_grid_utils</span><span class="o">.</span><span class="n">create_icosahedral_mesh</span><span class="o">.</span><span class="vm">__doc__</span>
@@ -261,7 +252,7 @@
 
 
 <div class="viewcode-block" id="SeafloorGrid">
-<a class="viewcode-back" href="../../gplately.html#gplately.SeafloorGrid">[docs]</a>
+<a class="viewcode-back" href="../../generated/gplately.SeafloorGrid.html#gplately.SeafloorGrid">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">SeafloorGrid</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;A class to generate grids that track data atop global ocean basin points</span>
 <span class="sd">    (which emerge from mid ocean ridges) through geological time.</span>
@@ -586,7 +577,7 @@
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Enter a valid time &gt;= 0&quot;</span><span class="p">)</span>
 
 <div class="viewcode-block" id="SeafloorGrid.update_time">
-<a class="viewcode-back" href="../../gplately.html#gplately.SeafloorGrid.update_time">[docs]</a>
+<a class="viewcode-back" href="../../generated/gplately.SeafloorGrid.html#gplately.SeafloorGrid.update_time">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">update_time</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">max_time</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_max_time</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">max_time</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_PlotTopologies_object</span><span class="o">.</span><span class="n">time</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">max_time</span><span class="p">)</span></div>
@@ -679,7 +670,7 @@
         <span class="k">return</span> <span class="p">[</span><span class="n">ocean_pt_feature</span><span class="p">]</span>
 
 <div class="viewcode-block" id="SeafloorGrid.create_initial_ocean_seed_points">
-<a class="viewcode-back" href="../../gplately.html#gplately.SeafloorGrid.create_initial_ocean_seed_points">[docs]</a>
+<a class="viewcode-back" href="../../generated/gplately.SeafloorGrid.html#gplately.SeafloorGrid.create_initial_ocean_seed_points">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">create_initial_ocean_seed_points</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Create the initial ocean basin seed point domain (at `max_time` only)</span>
 <span class="sd">        using Stripy&#39;s icosahedral triangulation with the specified `self.refinement_levels`.</span>
@@ -800,7 +791,7 @@
 
 
 <div class="viewcode-block" id="SeafloorGrid.build_all_MOR_seedpoints">
-<a class="viewcode-back" href="../../gplately.html#gplately.SeafloorGrid.build_all_MOR_seedpoints">[docs]</a>
+<a class="viewcode-back" href="../../generated/gplately.SeafloorGrid.html#gplately.SeafloorGrid.build_all_MOR_seedpoints">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">build_all_MOR_seedpoints</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Resolve mid-ocean ridges for all times between `min_time` and `max_time`, divide them</span>
 <span class="sd">        into points that make up their shared sub-segments. Rotate these points to the left</span>
@@ -934,7 +925,7 @@
         <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Finished building a continental mask at </span><span class="si">{</span><span class="n">time</span><span class="si">}</span><span class="s2"> Ma!&quot;</span><span class="p">)</span>
 
 <div class="viewcode-block" id="SeafloorGrid.build_all_continental_masks">
-<a class="viewcode-back" href="../../gplately.html#gplately.SeafloorGrid.build_all_continental_masks">[docs]</a>
+<a class="viewcode-back" href="../../generated/gplately.SeafloorGrid.html#gplately.SeafloorGrid.build_all_continental_masks">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">build_all_continental_masks</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Create a continental mask to define the ocean basin for all times between `min_time` and `max_time`.</span>
 
@@ -993,7 +984,7 @@
         <span class="k">return</span> <span class="n">curr_zvalues</span>
 
 <div class="viewcode-block" id="SeafloorGrid.prepare_for_reconstruction_by_topologies">
-<a class="viewcode-back" href="../../gplately.html#gplately.SeafloorGrid.prepare_for_reconstruction_by_topologies">[docs]</a>
+<a class="viewcode-back" href="../../generated/gplately.SeafloorGrid.html#gplately.SeafloorGrid.prepare_for_reconstruction_by_topologies">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">prepare_for_reconstruction_by_topologies</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Prepare three main auxiliary files for seafloor data gridding:</span>
 <span class="sd">        * Initial ocean seed points (at `max_time`)</span>
@@ -1188,7 +1179,7 @@
         <span class="p">)</span>
 
 <div class="viewcode-block" id="SeafloorGrid.reconstruct_by_topological_model">
-<a class="viewcode-back" href="../../gplately.html#gplately.SeafloorGrid.reconstruct_by_topological_model">[docs]</a>
+<a class="viewcode-back" href="../../generated/gplately.SeafloorGrid.html#gplately.SeafloorGrid.reconstruct_by_topological_model">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">reconstruct_by_topological_model</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Use pygplates&#39; TopologicalModel class to reconstruct seed points.</span>
 <span class="sd">        This method is an alternative to reconstruct_by_topological() which uses Python code to do the reconstruction.</span>
@@ -1256,7 +1247,7 @@
 
 
 <div class="viewcode-block" id="SeafloorGrid.reconstruct_by_topologies">
-<a class="viewcode-back" href="../../gplately.html#gplately.SeafloorGrid.reconstruct_by_topologies">[docs]</a>
+<a class="viewcode-back" href="../../generated/gplately.SeafloorGrid.html#gplately.SeafloorGrid.reconstruct_by_topologies">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">reconstruct_by_topologies</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Obtain all active ocean seed points at `time` - these are</span>
 <span class="sd">        points that have not been consumed at subduction zones or have not</span>
@@ -1451,7 +1442,7 @@
         <span class="c1"># return reconstruction_data</span>
 
 <div class="viewcode-block" id="SeafloorGrid.lat_lon_z_to_netCDF">
-<a class="viewcode-back" href="../../gplately.html#gplately.SeafloorGrid.lat_lon_z_to_netCDF">[docs]</a>
+<a class="viewcode-back" href="../../generated/gplately.SeafloorGrid.html#gplately.SeafloorGrid.lat_lon_z_to_netCDF">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">lat_lon_z_to_netCDF</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">zval_name</span><span class="p">,</span>
@@ -1537,7 +1528,7 @@
 
 
 <div class="viewcode-block" id="SeafloorGrid.save_netcdf_files">
-<a class="viewcode-back" href="../../gplately.html#gplately.SeafloorGrid.save_netcdf_files">[docs]</a>
+<a class="viewcode-back" href="../../generated/gplately.SeafloorGrid.html#gplately.SeafloorGrid.save_netcdf_files">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">save_netcdf_files</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">name</span><span class="p">,</span>

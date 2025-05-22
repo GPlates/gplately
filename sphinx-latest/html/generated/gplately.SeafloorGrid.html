@@ -165,31 +165,31 @@ passed as “/path/to/continent_mask_{}Ma.nc” with curly brackets. Include dec
 <tr class="row-odd"><td><p><a class="reference internal" href="#gplately.SeafloorGrid.__init__" title="gplately.SeafloorGrid.__init__"><code class="xref py py-obj docutils literal notranslate"><span class="pre">__init__</span></code></a>(PlateReconstruction_object, ...[, ...])</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="../gplately.html#gplately.SeafloorGrid.build_all_MOR_seedpoints" title="gplately.SeafloorGrid.build_all_MOR_seedpoints"><code class="xref py py-obj docutils literal notranslate"><span class="pre">build_all_MOR_seedpoints</span></code></a>()</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#gplately.SeafloorGrid.build_all_MOR_seedpoints" title="gplately.SeafloorGrid.build_all_MOR_seedpoints"><code class="xref py py-obj docutils literal notranslate"><span class="pre">build_all_MOR_seedpoints</span></code></a>()</p></td>
 <td><p>Resolve mid-ocean ridges for all times between <cite>min_time</cite> and <cite>max_time</cite>, divide them into points that make up their shared sub-segments.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="../gplately.html#gplately.SeafloorGrid.build_all_continental_masks" title="gplately.SeafloorGrid.build_all_continental_masks"><code class="xref py py-obj docutils literal notranslate"><span class="pre">build_all_continental_masks</span></code></a>()</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#gplately.SeafloorGrid.build_all_continental_masks" title="gplately.SeafloorGrid.build_all_continental_masks"><code class="xref py py-obj docutils literal notranslate"><span class="pre">build_all_continental_masks</span></code></a>()</p></td>
 <td><p>Create a continental mask to define the ocean basin for all times between <cite>min_time</cite> and <cite>max_time</cite>.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="../gplately.html#gplately.SeafloorGrid.create_initial_ocean_seed_points" title="gplately.SeafloorGrid.create_initial_ocean_seed_points"><code class="xref py py-obj docutils literal notranslate"><span class="pre">create_initial_ocean_seed_points</span></code></a>()</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#gplately.SeafloorGrid.create_initial_ocean_seed_points" title="gplately.SeafloorGrid.create_initial_ocean_seed_points"><code class="xref py py-obj docutils literal notranslate"><span class="pre">create_initial_ocean_seed_points</span></code></a>()</p></td>
 <td><p>Create the initial ocean basin seed point domain (at <cite>max_time</cite> only) using Stripy's icosahedral triangulation with the specified <cite>self.refinement_levels</cite>.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="../gplately.html#gplately.SeafloorGrid.lat_lon_z_to_netCDF" title="gplately.SeafloorGrid.lat_lon_z_to_netCDF"><code class="xref py py-obj docutils literal notranslate"><span class="pre">lat_lon_z_to_netCDF</span></code></a>(zval_name[, time_arr, ...])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#gplately.SeafloorGrid.lat_lon_z_to_netCDF" title="gplately.SeafloorGrid.lat_lon_z_to_netCDF"><code class="xref py py-obj docutils literal notranslate"><span class="pre">lat_lon_z_to_netCDF</span></code></a>(zval_name[, time_arr, ...])</p></td>
 <td><p>Produce a netCDF4 grid of a z-value identified by its <cite>zval_name</cite> for a given time range in <cite>time_arr</cite>.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="../gplately.html#gplately.SeafloorGrid.prepare_for_reconstruction_by_topologies" title="gplately.SeafloorGrid.prepare_for_reconstruction_by_topologies"><code class="xref py py-obj docutils literal notranslate"><span class="pre">prepare_for_reconstruction_by_topologies</span></code></a>()</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#gplately.SeafloorGrid.prepare_for_reconstruction_by_topologies" title="gplately.SeafloorGrid.prepare_for_reconstruction_by_topologies"><code class="xref py py-obj docutils literal notranslate"><span class="pre">prepare_for_reconstruction_by_topologies</span></code></a>()</p></td>
 <td><p>Prepare three main auxiliary files for seafloor data gridding: * Initial ocean seed points (at <cite>max_time</cite>) * Continental masks (from <cite>max_time</cite> to <cite>min_time</cite>) * MOR points (from <cite>max_time</cite> to <cite>min_time</cite>)</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="../gplately.html#gplately.SeafloorGrid.reconstruct_by_topological_model" title="gplately.SeafloorGrid.reconstruct_by_topological_model"><code class="xref py py-obj docutils literal notranslate"><span class="pre">reconstruct_by_topological_model</span></code></a>()</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#gplately.SeafloorGrid.reconstruct_by_topological_model" title="gplately.SeafloorGrid.reconstruct_by_topological_model"><code class="xref py py-obj docutils literal notranslate"><span class="pre">reconstruct_by_topological_model</span></code></a>()</p></td>
 <td><p>Use pygplates' TopologicalModel class to reconstruct seed points.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="../gplately.html#gplately.SeafloorGrid.reconstruct_by_topologies" title="gplately.SeafloorGrid.reconstruct_by_topologies"><code class="xref py py-obj docutils literal notranslate"><span class="pre">reconstruct_by_topologies</span></code></a>()</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#gplately.SeafloorGrid.reconstruct_by_topologies" title="gplately.SeafloorGrid.reconstruct_by_topologies"><code class="xref py py-obj docutils literal notranslate"><span class="pre">reconstruct_by_topologies</span></code></a>()</p></td>
 <td><p>Obtain all active ocean seed points at <cite>time</cite> - these are points that have not been consumed at subduction zones or have not collided with continental polygons.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="../gplately.html#gplately.SeafloorGrid.save_netcdf_files" title="gplately.SeafloorGrid.save_netcdf_files"><code class="xref py py-obj docutils literal notranslate"><span class="pre">save_netcdf_files</span></code></a>(name[, times, unmasked, ...])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#gplately.SeafloorGrid.save_netcdf_files" title="gplately.SeafloorGrid.save_netcdf_files"><code class="xref py py-obj docutils literal notranslate"><span class="pre">save_netcdf_files</span></code></a>(name[, times, unmasked, ...])</p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="../gplately.html#gplately.SeafloorGrid.update_time" title="gplately.SeafloorGrid.update_time"><code class="xref py py-obj docutils literal notranslate"><span class="pre">update_time</span></code></a>(max_time)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#gplately.SeafloorGrid.update_time" title="gplately.SeafloorGrid.update_time"><code class="xref py py-obj docutils literal notranslate"><span class="pre">update_time</span></code></a>(max_time)</p></td>
 <td><p></p></td>
 </tr>
 </tbody>
@@ -197,10 +197,10 @@ passed as “/path/to/continent_mask_{}Ma.nc” with curly brackets. Include dec
 <p class="rubric">Attributes</p>
 <table class="autosummary longtable docutils align-default">
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="../gplately.html#gplately.SeafloorGrid.PlotTopologiesTime" title="gplately.SeafloorGrid.PlotTopologiesTime"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PlotTopologiesTime</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#gplately.SeafloorGrid.PlotTopologiesTime" title="gplately.SeafloorGrid.PlotTopologiesTime"><code class="xref py py-obj docutils literal notranslate"><span class="pre">PlotTopologiesTime</span></code></a></p></td>
 <td><p></p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="../gplately.html#gplately.SeafloorGrid.max_time" title="gplately.SeafloorGrid.max_time"><code class="xref py py-obj docutils literal notranslate"><span class="pre">max_time</span></code></a></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#gplately.SeafloorGrid.max_time" title="gplately.SeafloorGrid.max_time"><code class="xref py py-obj docutils literal notranslate"><span class="pre">max_time</span></code></a></p></td>
 <td><p>The reconstruction time.</p></td>
 </tr>
 </tbody>

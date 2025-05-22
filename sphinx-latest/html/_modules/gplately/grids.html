@@ -102,12 +102,12 @@
 
 <span class="sd">Some methods available in `grids`:</span>
 
-<span class="sd">* Point data can be interpolated onto a raster or grid with Scipy using linear or </span>
-<span class="sd">nearest-neighbour interpolation. </span>
-<span class="sd">* Rasters can be resampled with a set of X and Y-direction spacings, and can be resized </span>
-<span class="sd">using given X and Y resolutions. </span>
-<span class="sd">* Grids with invalid (NaN-type) data cells can have their NaN entries replaced </span>
-<span class="sd">with the values of their nearest valid neighbours. </span>
+<span class="sd">* Point data can be interpolated onto a raster or grid with Scipy using linear or</span>
+<span class="sd">nearest-neighbour interpolation.</span>
+<span class="sd">* Rasters can be resampled with a set of X and Y-direction spacings, and can be resized</span>
+<span class="sd">using given X and Y resolutions.</span>
+<span class="sd">* Grids with invalid (NaN-type) data cells can have their NaN entries replaced</span>
+<span class="sd">with the values of their nearest valid neighbours.</span>
 
 <span class="sd">Classes</span>
 <span class="sd">-------</span>
@@ -119,12 +119,12 @@
 <span class="kn">import</span><span class="w"> </span><span class="nn">math</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">multiprocessing</span><span class="w"> </span><span class="kn">import</span> <span class="n">cpu_count</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Tuple</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Tuple</span><span class="p">,</span> <span class="n">Union</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.colors</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
-<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">netCDF4</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">pygplates</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">cartopy.crs</span><span class="w"> </span><span class="kn">import</span> <span class="n">PlateCarree</span> <span class="k">as</span> <span class="n">_PlateCarree</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">cartopy.mpl.geoaxes</span><span class="w"> </span><span class="kn">import</span> <span class="n">GeoAxes</span> <span class="k">as</span> <span class="n">_GeoAxes</span>
@@ -157,8 +157,6 @@
 <span class="p">]</span>
 
 
-<div class="viewcode-block" id="fill_raster">
-<a class="viewcode-back" href="../../gplately.html#gplately.fill_raster">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">fill_raster</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">invalid</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Search a grid of `data` for invalid cells (i.e NaN-type entries) and fill each</span>
 <span class="sd">    invalid cell with the value of its nearest valid neighbour.</span>
@@ -209,8 +207,7 @@
         <span class="k">if</span> <span class="n">masked_array</span><span class="p">:</span>
             <span class="n">invalid</span> <span class="o">+=</span> <span class="n">mask_fill_value</span>
     <span class="n">ind</span> <span class="o">=</span> <span class="n">distance_transform_edt</span><span class="p">(</span><span class="n">invalid</span><span class="p">,</span> <span class="n">return_distances</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">return_indices</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">data</span><span class="p">[</span><span class="nb">tuple</span><span class="p">(</span><span class="n">ind</span><span class="p">)]</span></div>
-
+    <span class="k">return</span> <span class="n">data</span><span class="p">[</span><span class="nb">tuple</span><span class="p">(</span><span class="n">ind</span><span class="p">)]</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_realign_grid</span><span class="p">(</span><span class="n">array</span><span class="p">,</span> <span class="n">lons</span><span class="p">,</span> <span class="n">lats</span><span class="p">):</span>
@@ -243,8 +240,6 @@
     <span class="k">return</span> <span class="kc">None</span>
 
 
-<div class="viewcode-block" id="read_netcdf_grid">
-<a class="viewcode-back" href="../../gplately.html#gplately.read_netcdf_grid">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">read_netcdf_grid</span><span class="p">(</span>
     <span class="n">filename</span><span class="p">,</span>
     <span class="n">return_grids</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
@@ -474,12 +469,9 @@
     <span class="k">if</span> <span class="n">return_grids</span><span class="p">:</span>
         <span class="k">return</span> <span class="n">cdf_grid_z</span><span class="p">,</span> <span class="n">cdf_lon</span><span class="p">,</span> <span class="n">cdf_lat</span>
     <span class="k">else</span><span class="p">:</span>
-        <span class="k">return</span> <span class="n">cdf_grid_z</span></div>
+        <span class="k">return</span> <span class="n">cdf_grid_z</span>
 
 
-
-<div class="viewcode-block" id="write_netcdf_grid">
-<a class="viewcode-back" href="../../gplately.html#gplately.write_netcdf_grid">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">write_netcdf_grid</span><span class="p">(</span>
     <span class="n">filename</span><span class="p">,</span>
     <span class="n">grid</span><span class="p">,</span>
@@ -529,6 +521,7 @@
 <span class="sd">    A netCDF grid will be saved to the path specified in `filename`.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="kn">import</span><span class="w"> </span><span class="nn">netCDF4</span>
+
     <span class="kn">from</span><span class="w"> </span><span class="nn">gplately</span><span class="w"> </span><span class="kn">import</span> <span class="n">__version__</span> <span class="k">as</span> <span class="n">_version</span>
 
     <span class="k">if</span> <span class="n">extent</span> <span class="o">==</span> <span class="s2">&quot;global&quot;</span><span class="p">:</span>
@@ -605,12 +598,9 @@
         <span class="c1"># cdf_data.set_auto_maskandscale(False)</span>
 
         <span class="c1"># write data</span>
-        <span class="n">cdf_data</span><span class="p">[:,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">grid</span></div>
+        <span class="n">cdf_data</span><span class="p">[:,</span> <span class="p">:]</span> <span class="o">=</span> <span class="n">grid</span>
 
 
-
-<div class="viewcode-block" id="RegularGridInterpolator">
-<a class="viewcode-back" href="../../gplately.html#gplately.RegularGridInterpolator">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">RegularGridInterpolator</span><span class="p">(</span><span class="n">_RGI</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;A class to sample gridded data at a set of point coordinates using either linear or nearest-neighbour</span>
 <span class="sd">    interpolation methods. It is a child class of `scipy 1.10`&#39;s [`RegularGridInterpolator`](https://docs.scipy.org/doc/scipy/reference/generated/scipy.interpolate.RegularGridInterpolator.html) class.</span>
@@ -825,12 +815,9 @@
         <span class="n">idx_res</span> <span class="o">=</span> <span class="p">[</span>
             <span class="n">np</span><span class="o">.</span><span class="n">where</span><span class="p">(</span><span class="n">yi</span> <span class="o">&lt;=</span> <span class="mf">0.5</span><span class="p">,</span> <span class="n">i</span><span class="p">,</span> <span class="n">i</span> <span class="o">+</span> <span class="mi">1</span><span class="p">)</span> <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">yi</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">indices</span><span class="p">,</span> <span class="n">norm_distances</span><span class="p">)</span>
         <span class="p">]</span>
-        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="nb">tuple</span><span class="p">(</span><span class="n">idx_res</span><span class="p">)]</span></div>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">values</span><span class="p">[</span><span class="nb">tuple</span><span class="p">(</span><span class="n">idx_res</span><span class="p">)]</span>
 
 
-
-<div class="viewcode-block" id="sample_grid">
-<a class="viewcode-back" href="../../gplately.html#gplately.sample_grid">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">sample_grid</span><span class="p">(</span>
     <span class="n">lon</span><span class="p">,</span>
     <span class="n">lat</span><span class="p">,</span>
@@ -965,12 +952,9 @@
             <span class="n">np</span><span class="o">.</span><span class="n">rint</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">ravel</span><span class="p">(</span><span class="n">point_j</span><span class="p">))</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">int_</span><span class="p">),</span>
         <span class="p">)</span>
         <span class="k">return</span> <span class="n">interpolated</span><span class="p">,</span> <span class="n">indices</span>
-    <span class="k">return</span> <span class="n">interpolated</span></div>
+    <span class="k">return</span> <span class="n">interpolated</span>
 
 
-
-<div class="viewcode-block" id="reconstruct_grid">
-<a class="viewcode-back" href="../../gplately.html#gplately.reconstruct_grid">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">reconstruct_grid</span><span class="p">(</span>
     <span class="n">grid</span><span class="p">,</span>
     <span class="n">partitioning_features</span><span class="p">,</span>
@@ -1253,12 +1237,9 @@
             <span class="n">output_data</span> <span class="o">=</span> <span class="n">valid_data</span><span class="p">[</span><span class="n">k</span><span class="p">,</span> <span class="n">indices</span><span class="p">]</span>
             <span class="n">output_grid</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">k</span><span class="p">][</span><span class="n">valid_output_mask</span><span class="p">]</span> <span class="o">=</span> <span class="n">output_data</span>
 
-    <span class="k">return</span> <span class="n">output_grid</span></div>
+    <span class="k">return</span> <span class="n">output_grid</span>
 
 
-
-<div class="viewcode-block" id="rasterise">
-<a class="viewcode-back" href="../../gplately.html#gplately.rasterise">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">rasterise</span><span class="p">(</span>
     <span class="n">features</span><span class="p">,</span>
     <span class="n">rotation_model</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
@@ -1447,8 +1428,7 @@
         <span class="n">dtype</span><span class="o">=</span><span class="n">dtype</span><span class="p">,</span>
         <span class="n">merge_alg</span><span class="o">=</span><span class="n">MergeAlg</span><span class="o">.</span><span class="n">replace</span><span class="p">,</span>
         <span class="n">transform</span><span class="o">=</span><span class="n">_from_bounds</span><span class="p">(</span><span class="n">minx</span><span class="p">,</span> <span class="n">miny</span><span class="p">,</span> <span class="n">maxx</span><span class="p">,</span> <span class="n">maxy</span><span class="p">,</span> <span class="n">nx</span><span class="p">,</span> <span class="n">ny</span><span class="p">),</span>
-    <span class="p">)</span></div>
-
+    <span class="p">)</span>
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">_get_rasterise_values</span><span class="p">(</span>
@@ -1660,11 +1640,11 @@
 
 
 <div class="viewcode-block" id="Raster">
-<a class="viewcode-back" href="../../gplately.html#gplately.Raster">[docs]</a>
+<a class="viewcode-back" href="../../generated/gplately.Raster.html#gplately.Raster">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">Raster</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;The Raster class handles raster data.</span>
 
-<span class="sd">    `Raster`&#39;s functionalities include sampling data at points using spline</span>
+<span class="sd">    `gplately.Raster`&#39;s functionalities include sampling data at points using spline</span>
 <span class="sd">    interpolation, resampling rasters with new X and Y-direction spacings and</span>
 <span class="sd">    resizing rasters using new X and Y grid pixel resolutions. NaN-type data</span>
 <span class="sd">    in rasters can be replaced with the values of their nearest valid</span>
@@ -1675,7 +1655,7 @@
 <span class="sd">    data : str or array-like</span>
 <span class="sd">        The raster data, either as a filename (`str`) or array.</span>
 
-<span class="sd">    plate_reconstruction : PlateReconstruction</span>
+<span class="sd">    plate_reconstruction : gplately.PlateReconstruction</span>
 <span class="sd">        Allows for the accessibility of PlateReconstruction object attributes.</span>
 <span class="sd">        Namely, PlateReconstruction object attributes rotation_model,</span>
 <span class="sd">        topology_features and static_polygons can be used in the `Raster`</span>
@@ -1710,8 +1690,8 @@
 <span class="sd">    data : ndarray, shape (ny, nx)</span>
 <span class="sd">        Array containing the underlying raster data. This attribute can be</span>
 <span class="sd">        modified after creation of the `Raster`.</span>
-<span class="sd">    plate_reconstruction : PlateReconstruction</span>
-<span class="sd">        An object of GPlately&#39;s `PlateReconstruction` class, like the</span>
+<span class="sd">    plate_reconstruction : gplately.PlateReconstruction</span>
+<span class="sd">        An object of GPlately&#39;s `gplately.PlateReconstruction` class, like the</span>
 <span class="sd">        `rotation_model`, a set of reconstructable `topology_features` and</span>
 <span class="sd">        `static_polygons` that belong to a particular plate model. These</span>
 <span class="sd">        attributes can be used in the `Raster` object if called using</span>
@@ -1762,7 +1742,7 @@
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">data</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
         <span class="n">plate_reconstruction</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-        <span class="n">extent</span><span class="o">=</span><span class="s2">&quot;global&quot;</span><span class="p">,</span>
+        <span class="n">extent</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;global&quot;</span><span class="p">,</span>
         <span class="n">realign</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
         <span class="n">resample</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
         <span class="n">resize</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
@@ -2049,7 +2029,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_plate_reconstruction</span> <span class="o">=</span> <span class="n">reconstruction</span>
 
 <div class="viewcode-block" id="Raster.copy">
-<a class="viewcode-back" href="../../gplately.html#gplately.Raster.copy">[docs]</a>
+<a class="viewcode-back" href="../../generated/gplately.Raster.html#gplately.Raster.copy">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">copy</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns a copy of the Raster</span>
 
@@ -2064,7 +2044,7 @@
 
 
 <div class="viewcode-block" id="Raster.interpolate">
-<a class="viewcode-back" href="../../gplately.html#gplately.Raster.interpolate">[docs]</a>
+<a class="viewcode-back" href="../../generated/gplately.Raster.html#gplately.Raster.interpolate">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">interpolate</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">lons</span><span class="p">,</span>
@@ -2125,7 +2105,7 @@
 
 
 <div class="viewcode-block" id="Raster.resample">
-<a class="viewcode-back" href="../../gplately.html#gplately.Raster.resample">[docs]</a>
+<a class="viewcode-back" href="../../generated/gplately.Raster.html#gplately.Raster.resample">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">resample</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">spacingX</span><span class="p">,</span> <span class="n">spacingY</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s2">&quot;linear&quot;</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Resample the `grid` passed to the `Raster` object with a new `spacingX` and</span>
 <span class="sd">        `spacingY` using linear interpolation.</span>
@@ -2184,7 +2164,7 @@
 
 
 <div class="viewcode-block" id="Raster.resize">
-<a class="viewcode-back" href="../../gplately.html#gplately.Raster.resize">[docs]</a>
+<a class="viewcode-back" href="../../generated/gplately.Raster.html#gplately.Raster.resize">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">resize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">resX</span><span class="p">,</span> <span class="n">resY</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s2">&quot;linear&quot;</span><span class="p">,</span> <span class="n">return_array</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Resize the grid passed to the `Raster` object with a new x and y resolution</span>
 <span class="sd">        (`resX` and `resY`) using linear interpolation.</span>
@@ -2242,7 +2222,7 @@
 
 
 <div class="viewcode-block" id="Raster.fill_NaNs">
-<a class="viewcode-back" href="../../gplately.html#gplately.Raster.fill_NaNs">[docs]</a>
+<a class="viewcode-back" href="../../generated/gplately.Raster.html#gplately.Raster.fill_NaNs">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">fill_NaNs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">return_array</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Search raster for invalid ‘data’ cells containing NaN-type entries replaces them</span>
 <span class="sd">        with the value of their nearest valid data cells.</span>
@@ -2272,7 +2252,7 @@
 
 
 <div class="viewcode-block" id="Raster.save_to_netcdf4">
-<a class="viewcode-back" href="../../gplately.html#gplately.Raster.save_to_netcdf4">[docs]</a>
+<a class="viewcode-back" href="../../generated/gplately.Raster.html#gplately.Raster.save_to_netcdf4">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">save_to_netcdf4</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="n">significant_digits</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">fill_value</span><span class="o">=</span><span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Saves the grid attributed to the `Raster` object to the given `filename` (including</span>
 <span class="sd">        the &quot;.nc&quot; extension) in netCDF4 format.&quot;&quot;&quot;</span>
@@ -2282,7 +2262,7 @@
 
 
 <div class="viewcode-block" id="Raster.reconstruct">
-<a class="viewcode-back" href="../../gplately.html#gplately.Raster.reconstruct">[docs]</a>
+<a class="viewcode-back" href="../../generated/gplately.Raster.html#gplately.Raster.reconstruct">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">reconstruct</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">time</span><span class="p">,</span>
@@ -2387,7 +2367,7 @@
 
 
 <div class="viewcode-block" id="Raster.imshow">
-<a class="viewcode-back" href="../../gplately.html#gplately.Raster.imshow">[docs]</a>
+<a class="viewcode-back" href="../../generated/gplately.Raster.html#gplately.Raster.imshow">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">imshow</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">projection</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Display raster data.</span>
 
@@ -2464,7 +2444,7 @@
     <span class="n">plot</span> <span class="o">=</span> <span class="n">imshow</span>
 
 <div class="viewcode-block" id="Raster.rotate_reference_frames">
-<a class="viewcode-back" href="../../gplately.html#gplately.Raster.rotate_reference_frames">[docs]</a>
+<a class="viewcode-back" href="../../generated/gplately.Raster.html#gplately.Raster.rotate_reference_frames">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">rotate_reference_frames</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">grid_spacing_degrees</span><span class="p">,</span>
@@ -2597,7 +2577,7 @@
 
 
 <div class="viewcode-block" id="Raster.query">
-<a class="viewcode-back" href="../../gplately.html#gplately.Raster.query">[docs]</a>
+<a class="viewcode-back" href="../../generated/gplately.Raster.html#gplately.Raster.query">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">query</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">lons</span><span class="p">,</span> <span class="n">lats</span><span class="p">,</span> <span class="n">region_of_interest</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Given a set of location coordinates, return the grid values at these locations</span>
 
@@ -2667,7 +2647,7 @@
 
 
 <div class="viewcode-block" id="Raster.clip_by_extent">
-<a class="viewcode-back" href="../../gplately.html#gplately.Raster.clip_by_extent">[docs]</a>
+<a class="viewcode-back" href="../../generated/gplately.Raster.html#gplately.Raster.clip_by_extent">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">clip_by_extent</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">extent</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;clip the raster according to a given extent [x_min, x_max, y_min, y_max]</span>
 <span class="sd">        the extent of the returned raster may be slightly bigger than the given extent.</span>
@@ -2732,7 +2712,7 @@
 
 
 <div class="viewcode-block" id="Raster.clip_by_polygon">
-<a class="viewcode-back" href="../../gplately.html#gplately.Raster.clip_by_polygon">[docs]</a>
+<a class="viewcode-back" href="../../generated/gplately.Raster.html#gplately.Raster.clip_by_polygon">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">clip_by_polygon</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">polygon</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;TODO:&quot;&quot;&quot;</span>
         <span class="k">pass</span></div>
