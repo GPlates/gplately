@@ -15,14 +15,18 @@
 #    51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
 
-"""This sub-module contains tools that wrap up pyGPlates and Plate Tectonic Tools functionalities for reconstructing features,
+"""
+This sub-module contains tools that wrap up pyGPlates and Plate Tectonic Tools functionalities for reconstructing features,
 working with point data, and calculating plate velocities at specific geological times.
 """
+
+# pyright: reportMissingTypeStubs=true
 
 import logging
 import math
 import os
 import warnings
+from typing import Union
 
 import numpy as np
 import pygplates
@@ -35,22 +39,10 @@ logger = logging.getLogger("gplately")
 
 
 class PlateReconstruction(object):
-    """The `PlateReconstruction` class contains methods to reconstruct topology features to specific
-    geological times given a `rotation_model`, a set of `topology_features` and a set of
-    `static_polygons`. Topological plate velocity data at specific geological times can also be
+    """Reconstruct topology features to specific geological times given a :py:attr:`~rotation_model`,
+    a set of :py:attr:`~topology_features` and a set of :py:attr:`~static_polygons`.
+    Topological plate velocity data at specific geological times can also be
     calculated from these reconstructed features.
-
-    Attributes
-    ----------
-    rotation_model : `pygplates.RotationModel`
-        A rotation model to query equivalent and/or relative topological plate rotations
-        from a time in the past relative to another time in the past or to present day.
-    topology_features : `pygplates.FeatureCollection`, default None
-        Topological features like trenches, ridges and transforms.
-    static_polygons : `pygplates.FeatureCollection`, default None
-        Present-day polygons whose shapes do not change through geological time when reconstructed.
-    anchor_plate_id : int
-        Anchor plate ID for reconstruction.
     """
 
     def __init__(
@@ -58,22 +50,22 @@ class PlateReconstruction(object):
         rotation_model,
         topology_features=None,
         static_polygons=None,
-        anchor_plate_id=None,
+        anchor_plate_id: Union[int, None] = None,
         plate_model_name: str = "Nemo",
     ):
         """
         Parameters
         ----------
-        rotation_model : str/`os.PathLike`, or instance of <pygplates.FeatureCollection>, or <pygplates.Feature>, or sequence of <pygplates.Feature>, or instance of <pygplates.RotationModel>
+        rotation_model : str/`os.PathLike`, or instance of `pygplates.FeatureCollection`_, or `pygplates.Feature`_, or sequence of `pygplates.Feature`_, or instance of `pygplates.RotationModel`_
             A rotation model to query equivalent and/or relative topological plate rotations
             from a time in the past relative to another time in the past or to present day. Can be
             provided as a rotation filename, or rotation feature collection, or rotation feature, or
             sequence of rotation features, or a sequence (eg, a list or tuple) of any combination of
             those four types.
-        topology_features : str/`os.PathLike`, or a sequence (eg, `list` or `tuple`) of instances of <pygplates.Feature>, or a single instance of <pygplates.Feature>, or an instance of <pygplates.FeatureCollection>, default None
+        topology_features : str/`os.PathLike`, or a sequence (eg, `list` or `tuple`) of instances of `pygplates.Feature`_, or a single instance of `pygplates.Feature`_, or an instance of `pygplates.FeatureCollection`_, default None
             Reconstructable topological features like trenches, ridges and transforms. Can be provided
             as an optional topology-feature filename, or sequence of features, or a single feature.
-        static_polygons : str/`os.PathLike`, or instance of <pygplates.Feature>, or sequence of <pygplates.Feature>,or an instance of <pygplates.FeatureCollection>, default None
+        static_polygons : str/`os.PathLike`, or instance of `pygplates.Feature`_, or sequence of `pygplates.Feature`_, or an instance of `pygplates.FeatureCollection`_, default None
             Present-day polygons whose shapes do not change through geological time. They are
             used to cookie-cut dynamic polygons into identifiable topological plates (assigned
             an ID) according to their present-day locations. Can be provided as a static polygon feature
@@ -81,8 +73,19 @@ class PlateReconstruction(object):
             features.
         anchor_plate_id : int, optional
             Default anchor plate ID for reconstruction.
-            If not specified then uses the default anchor plate of `rotation_model` if it's a `pygplates.RotationModel` (otherwise uses zero).
+            If not specified then uses the default anchor plate of :py:attr:`~rotation_model`.
+        plate_model_name : str, optional
+            Only if the plate model has a name and users would like the :py:class:`gplately.PlateReconstruction` object tracks the name
+
+
+        .. _pygplates.RotationModel: https://www.gplates.org/docs/pygplates/generated/pygplates.rotationmodel
+        .. _pygplates.Feature: https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature
+        .. _pygplates.FeatureCollection: https://www.gplates.org/docs/pygplates/generated/pygplates.featurecollection#pygplates.FeatureCollection
         """
+        #: (`pygplates.RotationModel <https://www.gplates.org/docs/pygplates/generated/pygplates.rotationmodel>`__) - query equivalent and/or relative topological plate rotations
+        #: from a time in the past relative to another time in the past or to present day.
+        self.rotation_model = None
+
         # Add a warning if the rotation_model is empty
         if not rotation_model:
             logger.warning(
@@ -95,7 +98,7 @@ class PlateReconstruction(object):
             self.name = None
 
         if anchor_plate_id is None:
-            if isinstance(rotation_model, pygplates.RotationModel):
+            if isinstance(rotation_model, pygplates.RotationModel):  # type: ignore
                 # Use the default anchor plate of 'rotation_model'.
                 self.rotation_model = rotation_model
             else:
@@ -105,12 +108,20 @@ class PlateReconstruction(object):
             # User has explicitly specified an anchor plate ID, so let's check it.
             anchor_plate_id = self._check_anchor_plate_id(anchor_plate_id)
             # This works when 'rotation_model' is a RotationModel or rotation features/files.
-            self.rotation_model = pygplates.RotationModel(
+            self.rotation_model = pygplates.RotationModel(  # type: ignore
                 rotation_model, default_anchor_plate_id=anchor_plate_id
             )
 
+        #: (`pygplates.FeatureCollection <https://www.gplates.org/docs/pygplates/generated/pygplates.featurecollection#pygplates.FeatureCollection>`__, default None) -
+        #: Topological features like trenches, ridges and transforms.
         self.topology_features = _load_FeatureCollection(topology_features)
+
+        #: (`pygplates.FeatureCollection <https://www.gplates.org/docs/pygplates/generated/pygplates.featurecollection#pygplates.FeatureCollection>`__, default None) -
+        #: Present-day polygons whose shapes do not change through geological time when reconstructed.
         self.static_polygons = _load_FeatureCollection(static_polygons)
+
+        #: (str, optional) -
+        #: optional plate model name
         self.plate_model_name = plate_model_name
 
         # Keep a snapshot of the resolved topologies at its last requested snapshot time (and anchor plate).
@@ -146,9 +157,10 @@ class PlateReconstruction(object):
 
     @property
     def anchor_plate_id(self):
-        """Anchor plate ID for reconstruction. Must be an integer >= 0."""
+        """default anchor plate ID for reconstruction. Must be an integer >= 0."""
         # The default anchor plate comes from the RotationModel.
-        return self.rotation_model.get_default_anchor_plate_id()
+        if self.rotation_model:
+            return self.rotation_model.get_default_anchor_plate_id()
 
     @anchor_plate_id.setter
     def anchor_plate_id(self, anchor_plate):
@@ -158,7 +170,7 @@ class PlateReconstruction(object):
         if anchor_plate != self.anchor_plate_id:
             # Update the RotationModel (which is where the anchor plate is stored).
             # This keeps the same rotation model but just changes the anchor plate.
-            self.rotation_model = pygplates.RotationModel(
+            self.rotation_model = pygplates.RotationModel(  # type: ignore
                 self.rotation_model, default_anchor_plate_id=anchor_plate
             )
 
@@ -181,7 +193,7 @@ class PlateReconstruction(object):
                 feature
                 for feature in self.topology_features
                 if feature.get_feature_type()
-                != pygplates.FeatureType.gpml_topological_slab_boundary
+                != pygplates.FeatureType.gpml_topological_slab_boundary  # type: ignore
             ]
 
         return self.topology_features
@@ -191,7 +203,7 @@ class PlateReconstruction(object):
     ):
         """Create a snapshot of resolved topologies at the specified reconstruction time.
 
-        This returns a [pygplates.TopologicalSnapshot](https://www.gplates.org/docs/pygplates/generated/pygplates.TopologicalSnapshot)
+        This returns a `pygplates.TopologicalSnapshot <https://www.gplates.org/docs/pygplates/generated/pygplates.TopologicalSnapshot>`__
         from which you can extract resolved topologies, calculate velocities at point locations, calculate plate boundary statistics, etc.
 
         Parameters
@@ -200,22 +212,22 @@ class PlateReconstruction(object):
             The geological time at which to create the topological snapshot.
         anchor_plate_id : int, optional
             The anchored plate id to use when resolving topologies.
-            If not specified then uses the current anchor plate (`anchor_plate_id` attribute).
+            If not specified then uses the current anchor plate (:py:attr:`gplately.PlateReconstruction.anchor_plate_id` attribute).
         include_topological_slab_boundaries : bool, default=True
-            Include topological boundary features of type `gpml:TopologicalSlabBoundary`.
-            By default all features passed into constructor (`__init__`) are included in the snapshot.
-            However setting this to False is useful when you're only interested in *plate* boundaries.
+            Include topological boundary features of type ``gpml:TopologicalSlabBoundary``.
+            By default all features passed into constructor ``__init__()`` are included in the snapshot.
+            However setting this to False is useful when you're only interested in **plate** boundaries.
 
         Returns
         -------
-        topological_snapshot : `pygplates.TopologicalSnapshot`
-            The [topological snapshot](https://www.gplates.org/docs/pygplates/generated/pygplates.TopologicalSnapshot)
-            at the specified `time` (and anchor plate).
+        topological_snapshot : pygplates.TopologicalSnapshot
+            The `topological snapshot <https://www.gplates.org/docs/pygplates/generated/pygplates.TopologicalSnapshot>`__
+            at the specified ``time`` (and anchor plate).
 
         Raises
         ------
         ValueError
-            If topology features have not been set in this `PlateReconstruction`.
+            If topology features have not been set in this :py:class:`gplately.PlateReconstruction` object.
         """
         if anchor_plate_id is None:
             anchor_plate_id = self.anchor_plate_id
@@ -229,7 +241,7 @@ class PlateReconstruction(object):
             # last snapshot time...
             or self._topological_snapshot.get_reconstruction_time()
             # use pygplates.GeoTimeInstant to get a numerical tolerance in floating-point time comparison...
-            != pygplates.GeoTimeInstant(time)
+            != pygplates.GeoTimeInstant(time)  # type: ignore
             # last snapshot anchor plate...
             or self._topological_snapshot.get_rotation_model().get_default_anchor_plate_id()
             != anchor_plate_id
@@ -238,7 +250,7 @@ class PlateReconstruction(object):
             != include_topological_slab_boundaries
         ):
             # Create snapshot for current parameters.
-            self._topological_snapshot = pygplates.TopologicalSnapshot(
+            self._topological_snapshot = pygplates.TopologicalSnapshot(  # type: ignore
                 self._check_topology_features(
                     include_topological_slab_boundaries=include_topological_slab_boundaries
                 ),
@@ -274,7 +286,7 @@ class PlateReconstruction(object):
     def static_polygons_snapshot(self, time, *, anchor_plate_id=None):
         """Create a reconstructed snapshot of the static polygons at the specified reconstruction time.
 
-        This returns a [pygplates.ReconstructSnapshot](https://www.gplates.org/docs/pygplates/generated/pygplates.ReconstructSnapshot)
+        This returns a `pygplates.ReconstructSnapshot <https://www.gplates.org/docs/pygplates/generated/pygplates.ReconstructSnapshot>`__
         from which you can extract reconstructed static polygons, find reconstructed polygons containing points and calculate velocities at point locations, etc.
 
         Parameters
@@ -283,18 +295,18 @@ class PlateReconstruction(object):
             The geological time at which to create the reconstructed static polygons snapshot.
         anchor_plate_id : int, optional
             The anchored plate id to use when reconstructing the static polygons.
-            If not specified then uses the current anchor plate (`anchor_plate_id` attribute).
+            If not specified then uses the current anchor plate (:py:attr:`anchor_plate_id` attribute).
 
         Returns
         -------
-        static_polygons_snapshot : `pygplates.ReconstructSnapshot`
-            The reconstructed static polygons [snapshot](https://www.gplates.org/docs/pygplates/generated/pygplates.ReconstructSnapshot)
-            at the specified `time` (and anchor plate).
+        static_polygons_snapshot : pygplates.ReconstructSnapshot
+            The reconstructed static polygons `snapshot <https://www.gplates.org/docs/pygplates/generated/pygplates.ReconstructSnapshot>`__
+            at the specified "time" (and anchor plate).
 
         Raises
         ------
         ValueError
-            If static polygons have not been set in this `PlateReconstruction`.
+            If static polygons have not been set in this :py:class:`gplately.PlateReconstruction` object.
         """
         if anchor_plate_id is None:
             anchor_plate_id = self.anchor_plate_id
@@ -307,13 +319,13 @@ class PlateReconstruction(object):
             # last snapshot time...
             or self._static_polygons_snapshot.get_reconstruction_time()
             # use pygplates.GeoTimeInstant to get a numerical tolerance in floating-point time comparison...
-            != pygplates.GeoTimeInstant(time)
+            != pygplates.GeoTimeInstant(time)  # type: ignore
             # last snapshot anchor plate...
             or self._static_polygons_snapshot.get_rotation_model().get_default_anchor_plate_id()
             != anchor_plate_id
         ):
             # Create snapshot for current parameters.
-            self._static_polygons_snapshot = pygplates.ReconstructSnapshot(
+            self._static_polygons_snapshot = pygplates.ReconstructSnapshot(  # type: ignore
                 self._check_static_polygons(),
                 self.rotation_model,
                 time,
@@ -332,17 +344,17 @@ class PlateReconstruction(object):
         first_uniform_point_spacing_radians=None,
         anchor_plate_id=None,
         velocity_delta_time=1.0,
-        velocity_delta_time_type=pygplates.VelocityDeltaTimeType.t_plus_delta_t_to_t,
-        velocity_units=pygplates.VelocityUnits.cms_per_yr,
-        earth_radius_in_kms=pygplates.Earth.mean_radius_in_kms,
+        velocity_delta_time_type=pygplates.VelocityDeltaTimeType.t_plus_delta_t_to_t,  # type: ignore
+        velocity_units=pygplates.VelocityUnits.cms_per_yr,  # type: ignore
+        earth_radius_in_kms=pygplates.Earth.mean_radius_in_kms,  # type: ignore
         include_network_boundaries=False,
         include_topological_slab_boundaries=False,
         boundary_section_filter=None,
     ):
         """Samples points uniformly along plate boundaries and calculates statistics at diverging/converging locations at a particular geological time.
 
-        Resolves topologies at `time`, uniformly samples all plate boundaries into points and returns two lists of
-        [pygplates.PlateBoundaryStatistic](https://www.gplates.org/docs/pygplates/generated/pygplates.PlateBoundaryStatistic).
+        Resolves topologies at ""time"", uniformly samples all plate boundaries into points and returns two lists of
+        `pygplates.PlateBoundaryStatistic <https://www.gplates.org/docs/pygplates/generated/pygplates.PlateBoundaryStatistic>`__.
         The first list represents sample points where the plates are diverging, and the second where plates are converging.
 
         Parameters
@@ -352,90 +364,102 @@ class PlateReconstruction(object):
         uniform_point_spacing_radians : float, default=0.001
             The spacing between uniform points along plate boundaries (in radians).
         divergence_velocity_threshold : float, default=0.0
-            Orthogonal (ie, in the direction of boundary normal) velocity threshold for *diverging* sample points.
-            Points with an orthogonal *diverging* velocity above this value will be returned in `diverging_data`.
-            The default is `0.0` which removes all converging sample points (leaving only diverging points).
+            Orthogonal (ie, in the direction of boundary normal) velocity threshold for "diverging" sample points.
+            Points with an orthogonal "diverging" velocity above this value will be returned in "diverging_data".
+            The default is 0.0 which removes all converging sample points (leaving only diverging points).
             This value can be negative which means a small amount of convergence is allowed for the diverging points.
-            The units should match the units of `velocity_units` (eg, if that's cm/yr then this threshold should also be in cm/yr).
+            The units should match the units of "velocity_units" (eg, if that's cm/yr then this threshold should also be in cm/yr).
         convergence_velocity_threshold : float, default=0.0
-            Orthogonal (ie, in the direction of boundary normal) velocity threshold for *converging* sample points.
-            Points with an orthogonal *converging* velocity above this value will be returned in `converging_data`.
-            The default is `0.0` which removes all diverging sample points (leaving only converging points).
+            Orthogonal (ie, in the direction of boundary normal) velocity threshold for "converging" sample points.
+            Points with an orthogonal "converging" velocity above this value will be returned in "converging_data".
+            The default is 0.0 which removes all diverging sample points (leaving only converging points).
             This value can be negative which means a small amount of divergence is allowed for the converging points.
-            The units should match the units of `velocity_units` (eg, if that's cm/yr then this threshold should also be in cm/yr).
+            The units should match the units of "velocity_units" (eg, if that's cm/yr then this threshold should also be in cm/yr).
         first_uniform_point_spacing_radians : float, optional
             Spacing of first uniform point in each resolved topological section (in radians) - see
-            [pygplates.TopologicalSnapshot.calculate_plate_boundary_statistics()](https://www.gplates.org/docs/pygplates/generated/pygplates.topologicalsnapshot#pygplates.TopologicalSnapshot.calculate_plate_boundary_statistics)
-            for more details. Defaults to half of `uniform_point_spacing_radians`.
+            `pygplates.TopologicalSnapshot.calculate_plate_boundary_statistics() <https://www.gplates.org/docs/pygplates/generated/pygplates.topologicalsnapshot#pygplates.TopologicalSnapshot.calculate_plate_boundary_statistics>`__
+            for more details. Defaults to half of "uniform_point_spacing_radians".
         anchor_plate_id : int, optional
-            Anchor plate ID. Defaults to the current anchor plate ID (`anchor_plate_id` attribute).
+            Anchor plate ID. Defaults to the current anchor plate ID (:py:attr:`anchor_plate_id` attribute).
         velocity_delta_time : float, default=1.0
             The time delta used to calculate velocities (defaults to 1 Myr).
-        velocity_delta_time_type : {pygplates.VelocityDeltaTimeType.t_plus_delta_t_to_t, pygplates.VelocityDeltaTimeType.t_to_t_minus_delta_t, pygplates.VelocityDeltaTimeType.t_plus_minus_half_delta_t}, default=pygplates.VelocityDeltaTimeType.t_plus_delta_t_to_t
-            How the two velocity times are calculated relative to `time` (defaults to ``[time + velocity_delta_time, time]``).
-        velocity_units : {pygplates.VelocityUnits.cms_per_yr, pygplates.VelocityUnits.kms_per_my}, default=pygplates.VelocityUnits.cms_per_yr
+        velocity_delta_time_type : pygplates.VelocityDeltaTimeType, default=pygplates.VelocityDeltaTimeType.t_plus_delta_t_to_t
+            How the two velocity times are calculated relative to "time" (defaults to "[time + velocity_delta_time, time]").
+        velocity_units : pygplates.VelocityUnits, default=pygplates.VelocityUnits.cms_per_yr
             Whether to return velocities in centimetres per year or kilometres per million years (defaults to centimetres per year).
         earth_radius_in_kms : float, default=pygplates.Earth.mean_radius_in_kms
             Radius of the Earth in kilometres.
-            This is only used to calculate velocities (strain rates always use ``pygplates.Earth.equatorial_radius_in_kms``).
+            This is only used to calculate velocities (strain rates always use "pygplates.Earth.equatorial_radius_in_kms").
         include_network_boundaries : bool, default=False
             Whether to sample along network boundaries that are not also plate boundaries (defaults to False).
             If a deforming network shares a boundary with a plate then it'll get included regardless of this option.
         include_topological_slab_boundaries : bool, default=False
-            Whether to sample along slab boundaries (features of type `gpml:TopologicalSlabBoundary`).
-            By default they are *not* sampled since they are *not* plate boundaries.
+            Whether to sample along slab boundaries (features of type gpml:TopologicalSlabBoundary).
+            By default they are not sampled since they are not plate boundaries.
         boundary_section_filter
-            Same as the ``boundary_section_filter`` argument in
-            [pygplates.TopologicalSnapshot.calculate_plate_boundary_statistics()](https://www.gplates.org/docs/pygplates/generated/pygplates.topologicalsnapshot#pygplates.TopologicalSnapshot.calculate_plate_boundary_statistics).
-            Defaults to ``None`` (meaning all plate boundaries are included by default).
+            Same as the "boundary_section_filter" argument in
+            `pygplates.TopologicalSnapshot.calculate_plate_boundary_statistics() <https://www.gplates.org/docs/pygplates/generated/pygplates.topologicalsnapshot#pygplates.TopologicalSnapshot.calculate_plate_boundary_statistics>`__.
+            Defaults to None (meaning all plate boundaries are included by default).
 
         Returns
         -------
-        diverging_data : list of `pygplates.PlateBoundaryStatistic`
-            The results for all uniformly sampled points along plate boundaries that are *diverging* relative to `divergence_threshold`.
-            The size of the returned list is equal to the number of sampled points that are *diverging*.
-            Each [pygplates.PlateBoundaryStatistic](https://www.gplates.org/docs/pygplates/generated/pygplates.PlateBoundaryStatistic) is guaranteed to have a valid (ie, not ``None``)
-            [convergence velocity](https://www.gplates.org/docs/pygplates/generated/pygplates.PlateBoundaryStatistic.html#pygplates.PlateBoundaryStatistic.convergence_velocity).
-        converging_data : list of `pygplates.PlateBoundaryStatistic`
-            The results for all uniformly sampled points along plate boundaries that are *converging* relative to `convergence_threshold`.
-            The size of the returned list is equal to the number of sampled points that are *converging*.
-            Each [pygplates.PlateBoundaryStatistic](https://www.gplates.org/docs/pygplates/generated/pygplates.PlateBoundaryStatistic) is guaranteed to have a valid (ie, not ``None``)
-            [convergence velocity](https://www.gplates.org/docs/pygplates/generated/pygplates.PlateBoundaryStatistic.html#pygplates.PlateBoundaryStatistic.convergence_velocity).
+        diverging_data : list of pygplates.PlateBoundaryStatistic
+            The results for all uniformly sampled points along plate boundaries that are "diverging" relative to "divergence_threshold".
+            The size of the returned list is equal to the number of sampled points that are "diverging".
+            Each `pygplates.PlateBoundaryStatistic <https://www.gplates.org/docs/pygplates/generated/pygplates.PlateBoundaryStatistic>`__ is guaranteed to have a valid (ie, not None)
+            `convergence velocity <https://www.gplates.org/docs/pygplates/generated/pygplates.PlateBoundaryStatistic.html#pygplates.PlateBoundaryStatistic.convergence_velocity>`__.
+        converging_data : list of pygplates.PlateBoundaryStatistic
+            The results for all uniformly sampled points along plate boundaries that are "converging" relative to "convergence_threshold".
+            The size of the returned list is equal to the number of sampled points that are "converging".
+            Each `pygplates.PlateBoundaryStatistic <https://www.gplates.org/docs/pygplates/generated/pygplates.PlateBoundaryStatistic>`__ is guaranteed to have a valid (ie, not None)
+            `convergence velocity <https://www.gplates.org/docs/pygplates/generated/pygplates.PlateBoundaryStatistic.html#pygplates.PlateBoundaryStatistic.convergence_velocity>`__.
 
         Raises
         ------
         ValueError
-            If topology features have not been set in this `PlateReconstruction`.
+            If topology features have not been set in this :py:class:`gplately.PlateReconstruction` object.
 
         Examples
         --------
         To sample diverging/converging points along plate boundaries at 50Ma:
 
-            diverging_data, converging_data = plate_reconstruction.divergent_convergent_plate_boundaries(50)
+        .. code-block:: python
+            :linenos:
+
+            diverging_data, converging_data = (
+                plate_reconstruction.divergent_convergent_plate_boundaries(50)
+            )
 
         To do the same, but restrict converging data to points where orthogonal converging velocities are greater than 0.2 cm/yr
         (with diverging data remaining unchanged with the default 0.0 threshold):
 
-            diverging_data, converging_data = plate_reconstruction.divergent_convergent_plate_boundaries(50,
-                    convergence_velocity_threshold=0.2)
+        .. code-block:: python
+            :linenos:
+
+            diverging_data, converging_data = (
+                plate_reconstruction.divergent_convergent_plate_boundaries(
+                    50, convergence_velocity_threshold=0.2
+                )
+            )
 
         Notes
         -----
         If you want to access all sampled points regardless of their convergence/divergence you can call `topological_snapshot()` and then use it to directly call
-        [pygplates.TopologicalSnapshot.calculate_plate_boundary_statistics()](https://www.gplates.org/docs/pygplates/generated/pygplates.topologicalsnapshot#pygplates.TopologicalSnapshot.calculate_plate_boundary_statistics).
+        `pygplates.TopologicalSnapshot.calculate_plate_boundary_statistics() <https://www.gplates.org/docs/pygplates/generated/pygplates.topologicalsnapshot#pygplates.TopologicalSnapshot.calculate_plate_boundary_statistics>`__.
         Then you can do your own analysis on the returned data:
 
+        .. code-block:: python
+            :linenos:
+
             plate_boundary_statistics = plate_reconstruction.topological_snapshot(
-                time,
-                include_topological_slab_boundaries=False
-            ).calculate_plate_boundary_statistics(
-                uniform_point_spacing_radians=0.001
-            )
+                time, include_topological_slab_boundaries=False
+            ).calculate_plate_boundary_statistics(uniform_point_spacing_radians=0.001)
 
             for stat in plate_boundary_statistics:
-                if np.isnan(stat.convergence_velocity_orthogonal)
+                if np.isnan(stat.convergence_velocity_orthogonal):
                     continue  # missing left or right plate
                 latitude, longitude = stat.boundary_point.to_lat_lon()
+
         """
 
         # Generate statistics at uniformly spaced points along plate boundaries.
@@ -486,12 +510,12 @@ class PlateReconstruction(object):
         *,
         first_uniform_point_spacing_radians=None,
         velocity_delta_time=1.0,
-        velocity_delta_time_type=pygplates.VelocityDeltaTimeType.t_plus_delta_t_to_t,
+        velocity_delta_time_type=pygplates.VelocityDeltaTimeType.t_plus_delta_t_to_t,  # type: ignore
         include_network_boundaries=False,
         include_topological_slab_boundaries=False,
         boundary_section_filter=None,
     ):
-        """Calculates the total crustal production and destruction rates (in km^2/yr) of divergent and convergent plate boundaries at the specified geological time (Ma).
+        """Calculates the total crustal production and destruction rates (in km\\ :sup:`2`/yr) of divergent and convergent plate boundaries at the specified geological time (Ma).
 
         Resolves topologies at `time` and uniformly samples all plate boundaries into divergent and convergent boundary points.
 
@@ -521,7 +545,7 @@ class PlateReconstruction(object):
             `divergent_convergent_plate_boundaries()` for more details. Defaults to half of `uniform_point_spacing_radians`.
         velocity_delta_time : float, default=1.0
             The time delta used to calculate velocities (defaults to 1 Myr).
-        velocity_delta_time_type : {pygplates.VelocityDeltaTimeType.t_plus_delta_t_to_t, pygplates.VelocityDeltaTimeType.t_to_t_minus_delta_t, pygplates.VelocityDeltaTimeType.t_plus_minus_half_delta_t}, default=pygplates.VelocityDeltaTimeType.t_plus_delta_t_to_t
+        velocity_delta_time_type : pygplates.VelocityDeltaTimeType.t_plus_delta_t_to_t, pygplates.VelocityDeltaTimeType.t_to_t_minus_delta_t, pygplates.VelocityDeltaTimeType.t_plus_minus_half_delta_t, default=pygplates.VelocityDeltaTimeType.t_plus_delta_t_to_t
             How the two velocity times are calculated relative to `time` (defaults to ``[time + velocity_delta_time, time]``).
         include_network_boundaries : bool, default=False
             Whether to sample along network boundaries that are not also plate boundaries (defaults to False).
@@ -536,26 +560,39 @@ class PlateReconstruction(object):
         Returns
         -------
         total_crustal_production_rate_in_km_2_per_yr : float
-            The total rate of crustal *production* at divergent plate boundaries (in km^2/yr) at the specified `time`.
+            The total rate of crustal *production* at divergent plate boundaries (in km\\ :sup:`2`/yr) at the specified `time`.
         total_crustal_destruction_rate_in_km_2_per_yr : float
-            The total rate of crustal *destruction* at convergent plate boundaries (in km^2/yr) at the specified `time`.
+            The total rate of crustal *destruction* at convergent plate boundaries (in km\\ :sup:`2`/yr) at the specified `time`.
 
         Raises
         ------
         ValueError
-            If topology features have not been set in this `PlateReconstruction`.
+            If topology features have not been set in this :py:class:`gplately.PlateReconstruction` object.
 
         Examples
         --------
         To calculate total crustal production/destruction along plate boundaries at 50Ma:
 
-            total_crustal_production_rate_in_km_2_per_yr, total_crustal_destruction_rate_in_km_2_per_yr = plate_reconstruction.crustal_production_destruction_rate(50)
+        .. code-block:: python
+            :linenos:
+
+            (
+                total_crustal_production_rate_in_km_2_per_yr,
+                total_crustal_destruction_rate_in_km_2_per_yr,
+            ) = plate_reconstruction.crustal_production_destruction_rate(50)
 
         To do the same, but restrict convergence to points where orthogonal converging velocities are greater than 0.2 cm/yr
         (with divergence remaining unchanged with the default 0.0 threshold):
 
-            total_crustal_production_rate_in_km_2_per_yr, total_crustal_destruction_rate_in_km_2_per_yr = plate_reconstruction.crustal_production_destruction_rate(50,
-                    convergence_velocity_threshold_in_cms_per_yr=0.2)
+        .. code-block:: python
+            :linenos:
+
+            (
+                total_crustal_production_rate_in_km_2_per_yr,
+                total_crustal_destruction_rate_in_km_2_per_yr,
+            ) = plate_reconstruction.crustal_production_destruction_rate(
+                50, convergence_velocity_threshold_in_cms_per_yr=0.2
+            )
         """
 
         # Generate statistics at uniformly spaced points along plate boundaries.
@@ -993,7 +1030,7 @@ class PlateReconstruction(object):
     ):
         """Samples points along subduction zone trenches and obtains subduction data at a particular geological time.
 
-        Resolves topologies at `time` and tessellates all resolved subducting features into points.
+        Resolves topologies at ``time`` and tessellates all resolved subducting features into points.
 
         Returns a 10-column vertically-stacked tuple with the following data per sampled trench point:
 
@@ -1008,7 +1045,7 @@ class PlateReconstruction(object):
         * Col. 8 - subducting plate ID
         * Col. 9 - trench plate ID
 
-        The optional 'output_*' parameters can be used to append extra data to the output tuple of each sampled trench point.
+        The optional ``output_*`` parameters can be used to append extra data to the output tuple of each sampled trench point.
         The order of any extra data is the same order in which the parameters are listed below.
 
         Parameters
@@ -1018,13 +1055,13 @@ class PlateReconstruction(object):
         tessellation_threshold_radians : float, default=0.001
             The threshold sampling distance along the plate boundaries (in radians).
         ignore_warnings : bool, default=False
-            Choose to ignore warnings from Plate Tectonic Tools' subduction_convergence workflow (if `use_ptt` is `True`).
+            Choose to ignore warnings from :py:func:`ptt.subduction_convergence.subduction_convergence` (if ``use_ptt`` is ``True``).
         return_geodataframe : bool, default=False
             Choose to return data in a geopandas.GeoDataFrame.
         use_ptt : bool, default=False
-            If set to `True` then uses Plate Tectonic Tools' `subduction_convergence` workflow to calculate subduction convergence
+            If set to ``True`` then uses :py:func:`ptt.subduction_convergence.subduction_convergence` to calculate subduction convergence
             (which uses the subducting stage rotation of the subduction/trench plate IDs calculate subducting velocities).
-            If set to `False` then uses plate convergence to calculate subduction convergence
+            If set to ``False`` then uses plate convergence to calculate subduction convergence
             (which samples velocities of the two adjacent boundary plates at each sampled point to calculate subducting velocities).
             Both methods ignore plate boundaries that do not have a subduction polarity (feature property), which essentially means
             they only sample subduction zones.
@@ -1037,9 +1074,9 @@ class PlateReconstruction(object):
             For example, setting this to `0.0` would remove all diverging sample points (leaving only converging points).
             This value can be negative which means a small amount of divergence is allowed.
             If `None` then all (converging and diverging) sample points are returned. This is the default.
-            Note that this parameter can only be specified if `use_ptt` is `False`.
+            Note that this parameter can only be specified if ``use_ptt`` is ``False``.
         anchor_plate_id : int, optional
-            Anchor plate ID. Defaults to the current anchor plate ID (`anchor_plate_id` attribute)..
+            Anchor plate ID. Defaults to the current anchor plate ID (:py:attr:`gplately.PlateReconstruction.anchor_plate_id` attribute).
         velocity_delta_time : float, default=1.0
             Velocity delta time used in convergence velocity calculations (defaults to 1 Myr).
         output_distance_to_nearest_edge_of_trench : bool, default=False
@@ -1085,22 +1122,22 @@ class PlateReconstruction(object):
             * Col. 8 - subducting plate ID
             * Col. 9 - trench plate ID
 
-            The optional 'output_*' parameters can be used to append extra data to the tuple of each sampled trench point.
+            The optional ``output_*`` parameters can be used to append extra data to the tuple of each sampled trench point.
             The order of any extra data is the same order in which the parameters are listed in this function.
 
         Raises
         ------
         ValueError
-            If topology features have not been set in this `PlateReconstruction`.
+            If topology features have not been set in this :py:class:`gplately.PlateReconstruction` object.
         ValueError
-            If `use_ptt` is `True` and `convergence_threshold_in_cm_per_yr` is not `None`.
+            If ``use_ptt`` is ``True`` and ``convergence_threshold_in_cm_per_yr`` is not ``None``.
 
         Notes
         -----
-        If `use_ptt` is False then each trench is sampled at *exactly* uniform intervals along its length such that the sampled points
-        have a uniform spacing (along each trench polyline) that is *equal* to `tessellation_threshold_radians`.
-        If `use_ptt` is True then each trench is sampled at *approximately* uniform intervals along its length such that the sampled points
-        have a uniform spacing (along each trench polyline) that is *less than or equal to* `tessellation_threshold_radians`.
+        If ``use_ptt`` is False then each trench is sampled at **exactly** uniform intervals along its length such that the sampled points
+        have a uniform spacing (along each trench polyline) that is **equal** to ``tessellation_threshold_radians``.
+        If ``use_ptt`` is True then each trench is sampled at *approximately* uniform intervals along its length such that the sampled points
+        have a uniform spacing (along each trench polyline) that is **less than or equal to** ``tessellation_threshold_radians``.
 
         The trench normal (at each sampled trench point) always points *towards* the overriding plate.
         The obliquity angles are in the range (-180, 180). The range (0, 180) goes clockwise (when viewed from above the Earth)
@@ -1112,7 +1149,7 @@ class PlateReconstruction(object):
         is greater than 90 or less than -90). And note that the trench absolute velocity magnitude is negative if the trench
         (subduction zone) is moving towards the overriding plate (if trench absolute obliquity angle is less than 90 and greater
         than -90) - note that this ignores the kinematics of the subducting plate. Similiarly for the subducting plate absolute
-        velocity magnitude (if keyword argument `output_subducting_absolute_velocity` is True).
+        velocity magnitude (if keyword argument ``output_subducting_absolute_velocity`` is True).
 
         The trench plate ID at each sample point can differ from the overriding plate ID.
         This is because, even in a non-deforming model, the smaller plates (not modelled by topologies) can move differently
@@ -1122,12 +1159,19 @@ class PlateReconstruction(object):
         --------
         To sample points along subduction zones at 50Ma:
 
+        .. code-block:: python
+            :linenos:
+
             subduction_data = plate_reconstruction.tessellate_subduction_zones(50)
 
         To sample points along subduction zones at 50Ma, but only where there's convergence:
 
-            subduction_data = plate_reconstruction.tessellate_subduction_zones(50,
-                    convergence_threshold_in_cm_per_yr=0.0)
+        .. code-block:: python
+            :linenos:
+
+            subduction_data = plate_reconstruction.tessellate_subduction_zones(
+                50, convergence_threshold_in_cm_per_yr=0.0
+            )
         """
 
         if use_ptt:
@@ -1297,51 +1341,57 @@ class PlateReconstruction(object):
     ):
         """Calculates the total length of all subduction zones (km) at the specified geological time (Ma).
 
-        Resolves topologies at `time` and tessellates all resolved subducting features into points (see `tessellate_subduction_zones`).
+        Resolves topologies at ``time`` and tessellates all resolved subducting features into points (see :py:meth:`tessellate_subduction_zones`).
 
         Total length is calculated by sampling points along the resolved subducting features (e.g. subduction zones) and accumulating their lengths
-        (see `tessellate_subduction_zones`). Scales lengths to kilometres using the geocentric radius (at each sampled point).
+        (see :py:meth:`tessellate_subduction_zones`). Scales lengths to kilometres using the geocentric radius (at each sampled point).
 
         Parameters
         ----------
         time : int
             The geological time at which to calculate total subduction zone lengths.
         use_ptt : bool, default=False
-            If set to `True` then uses Plate Tectonic Tools' `subduction_convergence` workflow to calculate total subduction zone length.
-            If set to `False` then uses plate convergence instead.
+            If set to ``True`` then uses :py:func:`ptt.subduction_convergence.subduction_convergence` to calculate total subduction zone length.
+            If set to ``False`` then uses plate convergence instead.
             Plate convergence is the more general approach that works along all plate boundaries (not just subduction zones).
         ignore_warnings : bool, default=False
-            Choose to ignore warnings from Plate Tectonic Tools' subduction_convergence workflow (if `use_ptt` is `True`).
+            Choose to ignore warnings from :py:func:`ptt.subduction_convergence.subduction_convergence` (if ``use_ptt`` is ``True``).
         include_network_boundaries : bool, default=False
             Whether to count lengths along network boundaries that are not also plate boundaries (defaults to False).
             If a deforming network shares a boundary with a plate then it'll get included regardless of this option.
-            Since subduction zones occur along *plate* boundaries this would only be an issue if an intra-plate network boundary was incorrectly labelled as subducting.
+            Since subduction zones occur along **plate** boundaries this would only be an issue if an intra-plate network boundary was incorrectly labelled as subducting.
         convergence_threshold_in_cm_per_yr : float, optional
             Only count lengths associated with sample points that have an orthogonal (ie, in the subducting geometry's normal direction) converging velocity above this value (in cm/yr).
-            For example, setting this to `0.0` would remove all diverging sample points (leaving only converging points).
+            For example, setting this to ``0.0`` would remove all diverging sample points (leaving only converging points).
             This value can be negative which means a small amount of divergence is allowed.
-            If `None` then all (converging and diverging) sample points are counted. This is the default.
-            Note that this parameter can only be specified if `use_ptt` is `False`.
+            If ``None`` then all (converging and diverging) sample points are counted. This is the default.
+            Note that this parameter can only be specified if ``use_ptt`` is ``False``.
 
         Returns
         -------
         total_subduction_zone_length_kms : float
-            The total subduction zone length (in km) at the specified `time`.
+            The total subduction zone length (in km) at the specified ``time``.
 
         Raises
         ------
         ValueError
-            If topology features have not been set in this `PlateReconstruction`.
+            If topology features have not been set in this :py:class:`gplately.PlateReconstruction` object.
         ValueError
-            If `use_ptt` is `True` and `convergence_threshold_in_cm_per_yr` is not `None`.
+            If ``use_ptt`` is ``True`` and ``convergence_threshold_in_cm_per_yr`` is not ``None``.
 
         Examples
         --------
         To calculate the total length of subduction zones at 50Ma:
 
+        .. code-block:: python
+            :linenos:
+
             total_subduction_zone_length_kms = plate_reconstruction.total_subduction_zone_length(50)
 
         To calculate the total length of subduction zones at 50Ma, but only where there's actual convergence:
+
+        .. code-block:: python
+            :linenos:
 
             total_subduction_zone_length_kms = plate_reconstruction.total_subduction_zone_length(50,
                     convergence_threshold_in_cm_per_yr=0.0)
@@ -1377,29 +1427,29 @@ class PlateReconstruction(object):
     ):
         """Calculates the total length of all global continental arcs (km) at the specified geological time (Ma).
 
-        Resolves topologies at `time` and tessellates all resolved subducting features into points (see `tessellate_subduction_zones`).
-        The resolved points then are projected out by the `trench_arc_distance` (towards overriding plate) and their new locations are
-        linearly interpolated onto the supplied `continental_grid`. If the projected trench points lie in the grid, they are considered
-        continental arc points, and their arc segment lengths are appended to the total continental arc length for the specified `time`.
+        Resolves topologies at ``time`` and tessellates all resolved subducting features into points (see :py:meth:`tessellate_subduction_zones`).
+        The resolved points then are projected out by the ``trench_arc_distance`` (towards overriding plate) and their new locations are
+        linearly interpolated onto the supplied ``continental_grid``. If the projected trench points lie in the grid, they are considered
+        continental arc points, and their arc segment lengths are appended to the total continental arc length for the specified ``time``.
         The total length is scaled to kilometres using the geocentric radius (at each sampled point).
 
         Parameters
         ----------
         time : int
             The geological time at which to calculate total continental arc lengths.
-        continental_grid: Raster, array_like, or str
+        continental_grid: gplately.Raster, array_like, or str
             The continental grid used to identify continental arc points. Must
-            be convertible to `gplately.Raster`. For an array, a global extent is
+            be convertible to :class:`gplately.Raster`. For an array, a global extent is
             assumed [-180,180,-90,90]. For a filename, the extent is obtained
             from the file.
         trench_arc_distance : float
             The trench-to-arc distance (in kilometres) to project sampled trench points out by in the direction of the overriding plate.
         ignore_warnings : bool, default=True
-            Choose whether to ignore warning messages from Plate Tectonic Tools' subduction_convergence workflow (if `use_ptt` is `True`)
+            Choose whether to ignore warning messages from :py:func:`ptt.subduction_convergence.subduction_convergence` (if ``use_ptt`` is ``True``)
             that alerts the user of subduction sub-segments that are ignored due to unidentified polarities and/or subducting plates.
         use_ptt : bool, default=False
-            If set to `True` then uses Plate Tectonic Tools' `subduction_convergence` workflow to sample subducting features and their subduction polarities.
-            If set to `False` then uses plate convergence instead.
+            If set to ``True`` then uses :py:func:`ptt.subduction_convergence.subduction_convergence` to sample subducting features and their subduction polarities.
+            If set to ``False`` then uses plate convergence instead.
             Plate convergence is the more general approach that works along all plate boundaries (not just subduction zones).
         include_network_boundaries : bool, default=False
             Whether to sample subducting features along network boundaries that are not also plate boundaries (defaults to False).
@@ -1407,10 +1457,10 @@ class PlateReconstruction(object):
             Since subduction zones occur along *plate* boundaries this would only be an issue if an intra-plate network boundary was incorrectly labelled as subducting.
         convergence_threshold_in_cm_per_yr : float, optional
             Only sample points with an orthogonal (ie, in the subducting geometry's normal direction) converging velocity above this value (in cm/yr).
-            For example, setting this to `0.0` would remove all diverging sample points (leaving only converging points).
+            For example, setting this to ``0.0`` would remove all diverging sample points (leaving only converging points).
             This value can be negative which means a small amount of divergence is allowed.
-            If `None` then all (converging and diverging) points are sampled. This is the default.
-            Note that this parameter can only be specified if `use_ptt` is `False`.
+            If ``None`` then all (converging and diverging) points are sampled. This is the default.
+            Note that this parameter can only be specified if ``use_ptt`` is ``False``.
 
         Returns
         -------
@@ -1420,20 +1470,29 @@ class PlateReconstruction(object):
         Raises
         ------
         ValueError
-            If topology features have not been set in this `PlateReconstruction`.
+            If topology features have not been set in this :py:class:`gplately.PlateReconstruction` object.
         ValueError
-            If `use_ptt` is `True` and `convergence_threshold_in_cm_per_yr` is not `None`.
+            If ``use_ptt`` is ``True`` and ``convergence_threshold_in_cm_per_yr`` is not ``None``.
 
         Examples
         --------
         To calculate the total length of continental arcs at 50Ma:
 
+        .. code-block:: python
+            :linenos:
+
             total_continental_arc_length_kms = plate_reconstruction.total_continental_arc_length(50)
 
         To calculate the total length of subduction zones adjacent to continents at 50Ma, but only where there's actual convergence:
 
-            total_continental_arc_length_kms = plate_reconstruction.total_continental_arc_length(50,
-                    convergence_threshold_in_cm_per_yr=0.0)
+        .. code-block:: python
+            :linenos:
+
+            total_continental_arc_length_kms = (
+                plate_reconstruction.total_continental_arc_length(
+                    50, convergence_threshold_in_cm_per_yr=0.0
+                )
+            )
         """
         from . import grids as _grids
 
@@ -1452,7 +1511,7 @@ class PlateReconstruction(object):
                 continental_grid = np.array(continental_grid)
                 graster = _grids.Raster(
                     data=continental_grid,
-                    extent=[-180, 180, -90, 90],
+                    extent=(-180, 180, -90, 90),
                     time=float(time),
                 )
             except Exception as e:
@@ -1500,9 +1559,13 @@ class PlateReconstruction(object):
             method="linear",
             return_indices=False,
         )
+        # the code below will not work if graster.interpolate() returned a tuple
+        assert isinstance(sampled_points, np.ndarray)
         continental_indices = np.where(sampled_points > 0)
         point_lats = ilat[continental_indices]
         point_radii = _tools.geocentric_radius(point_lats) * 1.0e-3  # km
+        # the code below will not work if trench_arcseg is GeoDataFrame
+        assert isinstance(trench_arcseg, np.ndarray)
         segment_arclens = np.deg2rad(trench_arcseg[continental_indices])
         segment_lengths = point_radii * segment_arclens
         return np.sum(segment_lengths)
@@ -1554,6 +1617,8 @@ class PlateReconstruction(object):
             if not stat.convergence_velocity:
                 continue
 
+            spreading_obliquity = stat.convergence_velocity_obliquity
+
             # If requested, reject point if it's not diverging within specified threshold.
             if divergence_threshold_in_cm_per_yr is not None:
                 # Note that we use the 'orthogonal' component of velocity vector.
@@ -1569,13 +1634,11 @@ class PlateReconstruction(object):
             ):
                 # Convert obliquity from the range [-pi, pi] to [0, pi/2].
                 # We're only interested in the deviation angle from the normal line (positive or negative normal direction).
-                spreading_obliquity = np.abs(
-                    stat.convergence_velocity_obliquity
-                )  # not interested in clockwise vs anti-clockwise
+                # not interested in clockwise vs anti-clockwise
+                spreading_obliquity = np.abs(stat.convergence_velocity_obliquity)
+                # angle relative to negative normal direction
                 if spreading_obliquity > 0.5 * np.pi:
-                    spreading_obliquity = (
-                        np.pi - spreading_obliquity
-                    )  # angle relative to negative normal direction
+                    spreading_obliquity = np.pi - spreading_obliquity
 
                 # If a transform segment deviation was specified then we need to reject transform segments.
                 if transform_segment_deviation_in_radians is not None:
@@ -1664,21 +1727,21 @@ class PlateReconstruction(object):
         """Samples points along resolved spreading features (e.g. mid-ocean ridges) and calculates spreading rates and
         lengths of ridge segments at a particular geological time.
 
-        Resolves topologies at `time` and tessellates all resolved spreading features into points.
+        Resolves topologies at time and tessellates all resolved spreading features into points.
 
-        The transform segments of spreading features are ignored (unless `transform_segment_deviation_in_radians` is `None`).
+        The transform segments of spreading features are ignored (unless "transform_segment_deviation_in_radians is None).
 
         Returns a 4-column vertically stacked tuple with the following data per sampled ridge point
-        (depending on `output_obliquity_and_normal_and_left_right_plates`):
+        (depending on "output_obliquity_and_normal_and_left_right_plates"):
 
-        If `output_obliquity_and_normal_and_left_right_plates` is `False` (the default):
+        If "output_obliquity_and_normal_and_left_right_plates" is False (the default):
 
         * Col. 0 - longitude of sampled ridge point
         * Col. 1 - latitude of sampled ridge point
         * Col. 2 - spreading velocity magnitude (in cm/yr)
         * Col. 3 - length of arc segment (in degrees) that current point is on
 
-        If `output_obliquity_and_normal_and_left_right_plates` is `True`:
+        If "output_obliquity_and_normal_and_left_right_plates" is True:
 
         * Col. 0 - longitude of sampled ridge point
         * Col. 1 - latitude of sampled ridge point
@@ -1696,25 +1759,25 @@ class PlateReconstruction(object):
         tessellation_threshold_radians : float, default=0.001
             The threshold sampling distance along the plate boundaries (in radians).
         ignore_warnings : bool, default=False
-            Choose to ignore warnings from Plate Tectonic Tools' ridge_spreading_rate workflow (if `use_ptt` is `True`).
+            Choose to ignore warnings from Plate Tectonic Tools' ridge_spreading_rate workflow (if "use_ptt" is True).
         return_geodataframe : bool, default=False
             Choose to return data in a geopandas.GeoDataFrame.
         use_ptt : bool, default=False
-            If set to `True` then uses Plate Tectonic Tools' `ridge_spreading_rate` workflow to calculate ridge spreading rates
+            If set to True then uses Plate Tectonic Tools' ridge_spreading_rate workflow to calculate ridge spreading rates
             (which uses the spreading stage rotation of the left/right plate IDs calculate spreading velocities).
-            If set to `False` then uses plate divergence to calculate ridge spreading rates
+            If set to False then uses plate divergence to calculate ridge spreading rates
             (which samples velocities of the two adjacent boundary plates at each sampled point to calculate spreading velocities).
             Plate divergence is the more general approach that works along all plate boundaries (not just mid-ocean ridges).
-        spreading_feature_types : <pygplates.FeatureType> or sequence of <pygplates.FeatureType>, default=`pygplates.FeatureType.gpml_mid_ocean_ridge`
+        spreading_feature_types : <pygplates.FeatureType> or sequence of <pygplates.FeatureType>, default=pygplates.FeatureType.gpml_mid_ocean_ridge
             Only sample points along plate boundaries of the specified feature types.
             Default is to only sample mid-ocean ridges.
-            You can explicitly specify `None` to sample all plate boundaries, but note that if `use_ptt` is `True`
+            You can explicitly specify None to sample all plate boundaries, but note that if "use_ptt" is True
             then only plate boundaries that are spreading feature types are sampled
-            (since Plate Tectonic Tools only works on *spreading* plate boundaries, eg, mid-ocean ridges).
+            (since Plate Tectonic Tools only works on spreading plate boundaries, eg, mid-ocean ridges).
         transform_segment_deviation_in_radians : float, default=<implementation-defined>
             How much a spreading direction can deviate from the segment normal before it's considered a transform segment (in radians).
             The default value has been empirically determined to give the best results for typical models.
-            If `None` then the full feature geometry is used (ie, it is not split into ridge and transform segments with the transform segments getting ignored).
+            If "None" then the full feature geometry is used (ie, it is not split into ridge and transform segments with the transform segments getting ignored).
         include_network_boundaries : bool, default=False
             Whether to calculate spreading rate along network boundaries that are not also plate boundaries (defaults to False).
             If a deforming network shares a boundary with a plate then it'll get included regardless of this option.
@@ -1724,14 +1787,14 @@ class PlateReconstruction(object):
             For example, setting this to `0.0` would remove all converging sample points (leaving only diverging points).
             This value can be negative which means a small amount of convergence is allowed.
             If `None` then all (diverging and converging) sample points are returned.
-            This is the default since `spreading_feature_types` is instead used (by default) to include only plate boundaries that are typically diverging (eg, mid-ocean ridges).
-            However, setting `spreading_feature_types` to `None` (and `transform_segment_deviation_in_radians` to `None`) and explicitly specifying this parameter (eg, to `0.0`)
+            This is the default since "spreading_feature_types" is instead used (by default) to include only plate boundaries that are typically diverging (eg, mid-ocean ridges).
+            However, setting "spreading_feature_types" to None (and "transform_segment_deviation_in_radians" to None) and explicitly specifying this parameter (eg, to 0.0)
             can be used to find points along all plate boundaries that are diverging.
-            However, this parameter can only be specified if `use_ptt` is `False`.
+            However, this parameter can only be specified if "use_ptt" is False.
         output_obliquity_and_normal_and_left_right_plates : bool, default=False
             Whether to also return spreading obliquity, normal azimuth and left/right plates.
         anchor_plate_id : int, optional
-            Anchor plate ID. Defaults to the current anchor plate ID (`anchor_plate_id` attribute)..
+            Anchor plate ID. Defaults to the current anchor plate ID (:py:attr:`anchor_plate_id` attribute)..
         velocity_delta_time : float, default=1.0
             Velocity delta time used in spreading velocity calculations (defaults to 1 Myr).
 
@@ -1741,16 +1804,16 @@ class PlateReconstruction(object):
             The results for all tessellated points sampled along the mid-ocean ridges.
             The size of the returned list is equal to the number of tessellated points.
             Each tuple in the list corresponds to a tessellated point and has the following tuple items
-            (depending on `output_obliquity_and_normal_and_left_right_plates`):
+            (depending on "output_obliquity_and_normal_and_left_right_plates"):
 
-            If `output_obliquity_and_normal_and_left_right_plates` is `False` (the default):
+            If "output_obliquity_and_normal_and_left_right_plates" is False (the default):
 
             * longitude of sampled point
             * latitude of sampled point
             * spreading velocity magnitude (in cm/yr)
             * length of arc segment (in degrees) that sampled point is on
 
-            If `output_obliquity_and_normal_and_left_right_plates` is `True`:
+            If "output_obliquity_and_normal_and_left_right_plates" is True:
 
             * longitude of sampled point
             * latitude of sampled point
@@ -1764,29 +1827,37 @@ class PlateReconstruction(object):
         Raises
         ------
         ValueError
-            If topology features have not been set in this `PlateReconstruction`.
+            If topology features have not been set in this :py:class:`gplately.PlateReconstruction` object.
         ValueError
-            If `use_ptt` is `True` and `divergence_threshold_in_cm_per_yr` is not `None`.
+            If "use_ptt" is True and "divergence_threshold_in_cm_per_yr" is not None.
 
         Notes
         -----
-        If `use_ptt` is False then each ridge segment is sampled at *exactly* uniform intervals along its length such that the sampled points
-        have a uniform spacing (along each ridge segment polyline) that is *equal* to `tessellation_threshold_radians`.
-        If `use_ptt` is True then each ridge segment is sampled at *approximately* uniform intervals along its length such that the sampled points
-        have a uniform spacing (along each ridge segment polyline) that is *less than or equal to* `tessellation_threshold_radians`.
+        If "use_ptt" is False then each ridge segment is sampled at exactly uniform intervals along its length such that the sampled points
+        have a uniform spacing (along each ridge segment polyline) that is equal to "tessellation_threshold_radians".
+        If "use_ptt" is True then each ridge segment is sampled at approximately uniform intervals along its length such that the sampled points
+        have a uniform spacing (along each ridge segment polyline) that is less than or equal to "tessellation_threshold_radians".
 
         Examples
         --------
         To sample points along mid-ocean ridges at 50Ma, but ignoring the transform segments (of the ridges):
+
+        .. code-block:: python
+            :linenos:
 
             ridge_data = plate_reconstruction.tessellate_mid_ocean_ridges(50)
 
         To do the same, but instead of ignoring transform segments include both ridge and transform segments,
         but only where orthogonal diverging velocities are greater than 0.2 cm/yr:
 
-            ridge_data = plate_reconstruction.tessellate_mid_ocean_ridges(50,
-                    transform_segment_deviation_in_radians=None,
-                    divergence_threshold_in_cm_per_yr=0.2)
+        .. code-block:: python
+            :linenos:
+
+            ridge_data = plate_reconstruction.tessellate_mid_ocean_ridges(
+                50,
+                transform_segment_deviation_in_radians=None,
+                divergence_threshold_in_cm_per_yr=0.2,
+            )
         """
 
         if use_ptt:
@@ -1879,48 +1950,48 @@ class PlateReconstruction(object):
     ):
         """Calculates the total length of all resolved spreading features (e.g. mid-ocean ridges) at the specified geological time (Ma).
 
-        Resolves topologies at `time` and tessellates all resolved spreading features into points (see `tessellate_mid_ocean_ridges`).
+        Resolves topologies at ``time`` and tessellates all resolved spreading features into points (see :py:meth:`tessellate_mid_ocean_ridges`).
 
-        The transform segments of spreading features are ignored (unless *transform_segment_deviation_in_radians* is `None`).
+        The transform segments of spreading features are ignored (unless ``transform_segment_deviation_in_radians`` is ``None``).
 
         Total length is calculated by sampling points along the resolved spreading features (e.g. mid-ocean ridges) and accumulating their lengths
-        (see `tessellate_mid_ocean_ridges`). Scales lengths to kilometres using the geocentric radius (at each sampled point).
+        (see :py:meth:`tessellate_mid_ocean_ridges`). Scales lengths to kilometres using the geocentric radius (at each sampled point).
 
         Parameters
         ----------
         time : int
             The geological time at which to calculate total mid-ocean ridge lengths.
         use_ptt : bool, default=False
-            If set to `True` then uses Plate Tectonic Tools' `ridge_spreading_rate` workflow to calculate total ridge length
-            (which uses the spreading stage rotation of the left/right plate IDs to calculate spreading directions - see `transform_segment_deviation_in_radians`).
-            If set to `False` then uses plate divergence to calculate total ridge length (which samples velocities of the two adjacent
-            boundary plates at each sampled point to calculate spreading directions - see `transform_segment_deviation_in_radians`).
+            If set to ``True`` then uses :py:func:`ptt.ridge_spreading_rate.spreading_rates()` to calculate total ridge length
+            (which uses the spreading stage rotation of the left/right plate IDs to calculate spreading directions - see ``transform_segment_deviation_in_radians``).
+            If set to ``False`` then uses plate divergence to calculate total ridge length (which samples velocities of the two adjacent
+            boundary plates at each sampled point to calculate spreading directions - see ``transform_segment_deviation_in_radians``).
             Plate divergence is the more general approach that works along all plate boundaries (not just mid-ocean ridges).
         ignore_warnings : bool, default=False
-            Choose to ignore warnings from Plate Tectonic Tools' ridge_spreading_rate workflow (if `use_ptt` is `True`).
-        spreading_feature_types : <pygplates.FeatureType> or sequence of <pygplates.FeatureType>, default=`pygplates.FeatureType.gpml_mid_ocean_ridge`
+            Choose to ignore warnings from :py:func:`ptt.ridge_spreading_rate.spreading_rates()` (if ``use_ptt`` is ``True``).
+        spreading_feature_types : <pygplates.FeatureType> or sequence of <pygplates.FeatureType>, default=pygplates.FeatureType.gpml_mid_ocean_ridge
             Only count lengths along plate boundaries of the specified feature types.
             Default is to only sample mid-ocean ridges.
-            You can explicitly specify `None` to sample all plate boundaries, but note that if `use_ptt` is `True`
+            You can explicitly specify ``None`` to sample all plate boundaries, but note that if ``use_ptt`` is ``True``
             then only plate boundaries that are spreading feature types are sampled
-            (since Plate Tectonic Tools only works on *spreading* plate boundaries, eg, mid-ocean ridges).
+            (since Plate Tectonic Tools only works on **spreading** plate boundaries, eg, mid-ocean ridges).
         transform_segment_deviation_in_radians : float, default=<implementation-defined>
             How much a spreading direction can deviate from the segment normal before it's considered a transform segment (in radians).
             The default value has been empirically determined to give the best results for typical models.
-            If `None` then the full feature geometry is used (ie, it is not split into ridge and transform segments with the transform segments getting ignored).
+            If ``None`` then the full feature geometry is used (ie, it is not split into ridge and transform segments with the transform segments getting ignored).
         include_network_boundaries : bool, default=False
             Whether to count lengths along network boundaries that are not also plate boundaries (defaults to False).
             If a deforming network shares a boundary with a plate then it'll get included regardless of this option.
-            Since spreading features occur along *plate* boundaries this would only be an issue if an intra-plate network boundary was incorrectly labelled as spreading.
+            Since spreading features occur along **plate** boundaries this would only be an issue if an intra-plate network boundary was incorrectly labelled as spreading.
         divergence_threshold_in_cm_per_yr : float, optional
             Only count lengths associated with sample points that have an orthogonal (ie, in the spreading geometry's normal direction) diverging velocity above this value (in cm/yr).
-            For example, setting this to `0.0` would remove all converging sample points (leaving only diverging points).
+            For example, setting this to ``0.0`` would remove all converging sample points (leaving only diverging points).
             This value can be negative which means a small amount of convergence is allowed.
-            If `None` then all (diverging and converging) sample points are counted.
-            This is the default since *spreading_feature_types* is instead used (by default) to include only plate boundaries that are typically diverging (eg, mid-ocean ridges).
-            However, setting `spreading_feature_types` to `None` (and `transform_segment_deviation_in_radians` to `None`) and explicitly specifying this parameter (eg, to `0.0`)
+            If ``None`` then all (diverging and converging) sample points are counted.
+            This is the default since ``spreading_feature_types`` is instead used (by default) to include only plate boundaries that are typically diverging (eg, mid-ocean ridges).
+            However, setting ``spreading_feature_types`` to ``None`` (and ``transform_segment_deviation_in_radians`` to ``None``) and explicitly specifying this parameter (eg, to ``0.0``)
             can be used to count points along all plate boundaries that are diverging.
-            However, this parameter can only be specified if *use_ptt* is `False`.
+            However, this parameter can only be specified if ``use_ptt`` is ``False``.
 
         Returns
         -------
@@ -1930,18 +2001,24 @@ class PlateReconstruction(object):
         Raises
         ------
         ValueError
-            If topology features have not been set in this `PlateReconstruction`.
+            If topology features have not been set in this :py:class:`gplately.PlateReconstruction` object.
         ValueError
-            If `use_ptt` is `True` and `divergence_threshold_in_cm_per_yr` is not `None`.
+            If ``use_ptt`` is ``True`` and ``divergence_threshold_in_cm_per_yr`` is not ``None``.
 
         Examples
         --------
         To calculate the total length of mid-ocean ridges at 50Ma, but ignoring the transform segments (of the ridges):
 
+        .. code-block:: python
+            :linenos:
+
             total_ridge_length_kms = plate_reconstruction.total_ridge_length(50)
 
         To do the same, but instead of ignoring transform segments include both ridge and transform segments,
         but only where orthogonal diverging velocities are greater than 0.2 cm/yr:
+
+        .. code-block:: python
+            :linenos:
 
             total_ridge_length_kms = plate_reconstruction.total_ridge_length(50,
                     transform_segment_deviation_in_radians=None,
@@ -1979,7 +2056,7 @@ class PlateReconstruction(object):
 
         Parameters
         ----------
-        reconstructable_features : str/`os.PathLike`, or a sequence (eg, `list` or `tuple`) of instances of <pygplates.Feature>, or a single instance of <pygplates.Feature>, or an instance of <pygplates.FeatureCollection>
+        reconstructable_features : str/os.PathLike, or a sequence (eg, list or tuple) of instances of <pygplates.Feature>, or a single instance of <pygplates.Feature>, or an instance of <pygplates.FeatureCollection>
             Regular reconstructable features (including motion paths and flowlines). Can be provided as a feature collection, or
             filename, or feature, or sequence of features, or a sequence (eg, list or tuple) of any combination of those four types.
 
@@ -1987,19 +2064,19 @@ class PlateReconstruction(object):
             The specific geological time to reconstruct to.
 
         anchor_plate_id : int, optional
-            Anchor plate ID. Defaults to the current anchor plate ID (`anchor_plate_id` attribute).
+            Anchor plate ID. Defaults to the current anchor plate ID (:py:attr:`anchor_plate_id` attribute).
 
         from_time : float, default=0
-            The specific geological time to reconstruct *from*. By default, this is set to present day.
-            If not set to 0 Ma (present day) then the geometry in `feature` is assumed to be a reconstructed snapshot
-            at `from_time`, in which case it is reverse reconstructed to present day before reconstructing to `to_time`.
+            The specific geological time to reconstruct from. By default, this is set to present day.
+            If not set to 0 Ma (present day) then the geometry in "feature" is assumed to be a reconstructed snapshot
+            at "from_time", in which case it is reverse reconstructed to present day before reconstructing to "to_time".
             Usually features should contain present day geometry but might contain reconstructed geometry in some cases,
             such as those generated by the reconstruction export in GPlates.
 
         Returns
         -------
         reconstruct_snapshot : pygplates.ReconstructSnapshot
-            A [pygplates.ReconstructSnapshot](https://www.gplates.org/docs/pygplates/generated/pygplates.ReconstructSnapshot)
+            A `pygplates.ReconstructSnapshot <https://www.gplates.org/docs/pygplates/generated/pygplates.ReconstructSnapshot>`__
             of the specified reconstructable features reconstructed using the internal rotation model to the specified reconstruction time.
         """
 
@@ -2014,7 +2091,8 @@ class PlateReconstruction(object):
                 ).get_features()
             ]
             # Reverse reconstruct in-place (modifies each feature's geometry).
-            pygplates.reverse_reconstruct(
+
+            pygplates.reverse_reconstruct(  # type: ignore
                 reconstructable_features,
                 self.rotation_model,
                 from_time,
@@ -2042,7 +2120,7 @@ class PlateReconstruction(object):
 
         Parameters
         ----------
-        feature : str/`os.PathLike`, or instance of <pygplates.FeatureCollection>, or <pygplates.Feature>, or sequence of <pygplates.Feature>
+        feature : str/os.PathLike, or instance of <pygplates.FeatureCollection>, or <pygplates.Feature>, or sequence of <pygplates.Feature>
             The geological features to reconstruct. Can be provided as a feature collection, or filename,
             or feature, or sequence of features, or a sequence (eg, a list or tuple) of any combination of
             those four types.
@@ -2051,35 +2129,35 @@ class PlateReconstruction(object):
             The specific geological time to reconstruct to.
 
         from_time : float, default=0
-            The specific geological time to reconstruct *from*. By default, this is set to present day.
-            If not set to 0 Ma (present day) then the geometry in `feature` is assumed to be a reconstructed snapshot
-            at `from_time`, in which case it is reverse reconstructed to present day before reconstructing to `to_time`.
+            The specific geological time to reconstruct from. By default, this is set to present day.
+            If not set to 0 Ma (present day) then the geometry in "feature" is assumed to be a reconstructed snapshot
+            at "from_time", in which case it is reverse reconstructed to present day before reconstructing to "to_time".
             Usually features should contain present day geometry but might contain reconstructed geometry in some cases,
             such as those generated by the reconstruction export in GPlates.
 
         anchor_plate_id : int, optional
-            Anchor plate ID. Defaults to the current anchor plate ID (`anchor_plate_id` attribute).
+            Anchor plate ID. Defaults to the current anchor plate ID (:py:attr:`anchor_plate_id` attribute).
 
         reconstruct_type : pygplates.ReconstructType, default=pygplates.ReconstructType.feature_geometry
             The specific reconstruction type to generate based on input feature geometry type. Can be provided as
             pygplates.ReconstructType.feature_geometry to only reconstruct regular feature geometries, or
             pygplates.ReconstructType.motion_path to only reconstruct motion path features, or
             pygplates.ReconstructType.flowline to only reconstruct flowline features.
-            Generates `pygplates.ReconstructedFeatureGeometry>`s, or `pygplates.ReconstructedMotionPath`s, or
-            `pygplates.ReconstructedFlowline`s respectively.
+            Generates pygplates.ReconstructedFeatureGeometry, or pygplates.ReconstructedMotionPath, or
+            pygplates.ReconstructedFlowline respectively.
 
         group_with_feature : bool, default=False
             Used to group reconstructed geometries with their features. This can be useful when a feature has more than one
             geometry and hence more than one reconstructed geometry. The returned list then becomes a list of tuples where
-            each tuple contains a `pygplates.Feature` and a ``list`` of reconstructed geometries.
+            each tuple contains a pygplates.Feature and a list of reconstructed geometries.
 
         Returns
         -------
         reconstructed_features : list
             The reconstructed geological features.
             The reconstructed geometries are output in the same order as that of their respective input features (in the
-            parameter `features`). This includes the order across any input feature collections or files. If `group_with_feature`
-            is True then the list contains tuples that group each `pygplates.Feature` with a list of its reconstructed geometries.
+            parameter "features"). This includes the order across any input feature collections or files. If "group_with_feature"
+            is True then the list contains tuples that group each pygplates.Feature with a list of its reconstructed geometries.
 
         See Also
         --------
@@ -2115,7 +2193,8 @@ class PlateReconstruction(object):
         anchor_plate_id=None,
         return_east_north_arrays=False,
     ):
-        """Calculates the north and east components of the velocity vector (in kms/myr) for each specified point (from `lons` and `lats`) at a particular geological `time`.
+        """Calculates the north and east components of the velocity vector (in kms/myr) for each specified point
+        (from "lons" and "lats") at a particular geological "time".
 
         Parameters
         ----------
@@ -2131,53 +2210,53 @@ class PlateReconstruction(object):
         delta_time : float, default=1.0
             The time interval used for velocity calculations. 1.0Ma by default.
 
-        velocity_delta_time_type : {pygplates.VelocityDeltaTimeType.t_plus_delta_t_to_t, pygplates.VelocityDeltaTimeType.t_to_t_minus_delta_t, pygplates.VelocityDeltaTimeType.t_plus_minus_half_delta_t}, default=pygplates.VelocityDeltaTimeType.t_plus_delta_t_to_t
-            How the two velocity times are calculated relative to `time` (defaults to ``[time + velocity_delta_time, time]``).
+        velocity_delta_time_type : pygplates.VelocityDeltaTimeType, default=pygplates.VelocityDeltaTimeType.t_plus_delta_t_to_t
+            How the two velocity times are calculated relative to "time" (defaults to "[time + velocity_delta_time, time]").
 
-        velocity_units : {pygplates.VelocityUnits.cms_per_yr, pygplates.VelocityUnits.kms_per_my}, default=pygplates.VelocityUnits.kms_per_my
+        velocity_units : pygplates.VelocityUnits, default=pygplates.VelocityUnits.kms_per_my
             Whether to return velocities in centimetres per year or kilometres per million years (defaults to kilometres per million years).
 
         earth_radius_in_kms : float, default=pygplates.Earth.mean_radius_in_kms
             Radius of the Earth in kilometres.
-            This is only used to calculate velocities (strain rates always use ``pygplates.Earth.equatorial_radius_in_kms``).
+            This is only used to calculate velocities (strain rates always use pygplates.Earth.equatorial_radius_in_kms).
 
         include_networks : bool, default=True
             Whether to include deforming networks when calculating velocities.
             By default they are included (and also given precedence since they typically overlay a rigid plate).
 
         include_topological_slab_boundaries : bool, default=False
-            Whether to include features of type `gpml:TopologicalSlabBoundary` when calculating velocities.
-            By default they are **not** included (they tend to overlay a rigid plate which should instead be used to calculate plate velocity).
+            Whether to include features of type gpml:TopologicalSlabBoundary when calculating velocities.
+            By default they are not included (they tend to overlay a rigid plate which should instead be used to calculate plate velocity).
 
         anchor_plate_id : int, optional
-            Anchor plate ID. Defaults to the current anchor plate ID (`anchor_plate_id` attribute).
+            Anchor plate ID. Defaults to the current anchor plate ID (:py:attr:`anchor_plate_id` attribute).
 
         return_east_north_arrays : bool, default=False
             Return the velocities as arrays separately containing the east and north components of the velocities.
-            Note that setting this to True matches the output of `points.plate_velocity`.
+            Note that setting this to True matches the output of :py:meth:`gplately.Points.plate_velocity`.
 
         Returns
         -------
         north_east_velocities : 2D ndarray
-            Only provided if `return_east_north_arrays` is False.
+            Only provided if "return_east_north_arrays" is False.
             Each array element contains the (north, east) velocity components of a single point.
         east_velocities, north_velocities : 1D ndarray
-            Only provided if `return_east_north_arrays` is True.
+            Only provided if "return_east_north_arrays" is True.
             The east and north components of velocities as separate arrays.
             These are also ordered (east, north) instead of (north, east).
 
         Raises
         ------
         ValueError
-            If topology features have not been set in this `PlateReconstruction`.
+            If topology features have not been set in this :py:class:`gplately.PlateReconstruction` object.
 
         Notes
         -----
-        The velocities are in *kilometres per million years* by default (not *centimetres per year*, the default in `Point.plate_velocity`).
+        The velocities are in "kilometres per million years" by default (not "centimetres per year", the default in :py:meth:`gplately.Points.plate_velocity`).
         This difference is maintained for backward compatibility.
 
-        For each velocity, the *north* component is first followed by the *east* component.
-        This is different to `Point.plate_velocity` where the *east* component is first.
+        For each velocity, the "north" component is first followed by the "east" component.
+        This is different to :py:meth:`gplately.Points.plate_velocity` where the "east" component is first.
         This difference is maintained for backward compatibility.
         """
         # Add points to a multipoint geometry
@@ -2255,6 +2334,9 @@ class PlateReconstruction(object):
             An array of reconstruction times at which to determine the trajectory
             of a point on a plate. For example:
 
+            .. code-block:: python
+                :linenos:
+
                 import numpy as np
                 min_time = 30
                 max_time = 100
@@ -2292,6 +2374,9 @@ class PlateReconstruction(object):
         --------
         To access the latitudes and longitudes of each seed point's motion path:
 
+        .. code-block:: python
+            :linenos:
+
             for i in np.arange(0,len(seed_points)):
                 current_lons = lon[:,i]
                 current_lats = lat[:,i]
@@ -2307,6 +2392,7 @@ class PlateReconstruction(object):
 
         if plate_id is None:
             query_plate_id = True
+            plate_ids = []
         else:
             query_plate_id = False
             plate_ids = np.ones(len(lons), dtype=int) * plate_id
@@ -2315,6 +2401,9 @@ class PlateReconstruction(object):
         if return_rate_of_motion is True:
             StepTimes = np.empty(((len(time_array) - 1) * 2, len(lons)))
             StepRates = np.empty(((len(time_array) - 1) * 2, len(lons)))
+        else:
+            StepTimes = np.array([])
+            StepRates = np.array([])
         for i, lat_lon in enumerate(seed_points):
             seed_points_at_digitisation_time = pygplates.PointOnSphere(
                 pygplates.LatLonPoint(float(lat_lon[0]), float(lat_lon[1]))
@@ -2348,9 +2437,12 @@ class PlateReconstruction(object):
                 anchor_plate_id=anchor_plate_id,  # if None then uses 'self.anchor_plate_id' (default anchor plate of 'self.rotation_model')
             )
             # Turn motion paths in to lat-lon coordinates
+            trail = None
             for reconstructed_motion_path in reconstructed_motion_paths:
+                # not sure about this. always set the "trail" to the last one in reconstructed_motion_paths?
+                # or there is only one path in reconstructed_motion_paths? -- Michael Chin
                 trail = reconstructed_motion_path.get_motion_path().to_lat_lon_array()
-
+            assert trail
             lon, lat = np.flipud(trail[:, 1]), np.flipud(trail[:, 0])
 
             rlons[:, i] = lon
@@ -2450,26 +2542,29 @@ class PlateReconstruction(object):
         Returns
         -------
         left_lon : ndarray
-            The longitudes of the __left__ flowline for n seed points.
+            The longitudes of the left flowline for n seed points.
             There are n columns for n seed points, and m rows
-            for m time steps in `time_array`.
+            for m time steps in time_array.
         left_lat : ndarray
-            The latitudes of the __left__ flowline of n seed points.
+            The latitudes of the left flowline of n seed points.
             There are n columns for n seed points, and m rows
-            for m time steps in `time_array`.
+            for m time steps in time_array.
         right_lon : ndarray
-            The longitudes of the __right__ flowline of n seed points.
+            The longitudes of the right flowline of n seed points.
             There are n columns for n seed points, and m rows
-            for m time steps in `time_array`.
+            for m time steps in time_array.
         right_lat : ndarray
-            The latitudes of the __right__ flowline of n seed points.
+            The latitudes of the right flowline of n seed points.
             There are n columns for n seed points, and m rows
-            for m time steps in `time_array`.
+            for m time steps in time_array.
 
         Examples
         --------
-        To access the ith seed point's left and right latitudes and
+        To access the i\\ :sup:`th` seed point's left and right latitudes and
         longitudes:
+
+        .. code-block:: python
+            :linenos:
 
             for i in np.arange(0,len(seed_points)):
                 left_flowline_longitudes = left_lon[:,i]
@@ -2583,48 +2678,11 @@ class PlateReconstruction(object):
 
 
 class Points(object):
-    """`Points` contains methods to reconstruct and work with with geological point data. For example, the
-    locations and plate velocities of point data can be calculated at a specific geological `time`. The `Points`
-    object requires the `PlateReconstruction` object to work because it holds the `rotation_model` needed to
-    quantify point rotations through time and `static_polygons` needed to partition points into plates.
-
-    Attributes
-    ----------
-    plate_reconstruction : PlateReconstruction
-        Allows for the accessibility of `PlateReconstruction` object attributes: `rotation_model`, `topology_featues`
-        and `static_polygons` for use in the `Points` object if called using “self.plate_reconstruction.X”,
-        where X is the attribute.
-
-    lons : float 1D array
-        A 1D array containing the longitudes of point data.
-        These are the longitudes of the initial points at the initial `time`.
-
-    lats : float 1D array
-        A 1D array containing the latitudes of point data.
-        These are the latitudes of the initial points at the initial `time`.
-
-    plate_id : int 1D array
-        A 1D array containing the plate IDs of the points.
-        The length matches that of `lons` and `lats`.
-
-    age : float 1D array
-        A 1D array containing the ages (time of appearance) of the points.
-        The length matches that of `lons` and `lats`.
-        For points on oceanic crust this is when they were created at a mid-ocean ridge.
-        Any points existing for all time will have a value of `numpy.inf` (equivalent to `float('inf')`).
-
-    size : int
-        Number of points.
-        This is the size of `lons`, `lats`, `plate_id` and `age`.
-
-    time : float
-        The initial time (Ma) of the points.
-        The initial `lons` and `lats` are the locations of the points at this time.
-
-    anchor_plate_id : int
-        Anchor plate that the initial `lons` and `lats` are relative to, at the initial `time`.
-        This is also used as the default anchor plate when reconstructing the points.
-        It does not change, even if the anchor plate of `plate_reconstruction` subsequently changes.
+    """Reconstruct and work with with geological point data.
+    For example, the locations and plate velocities of point data can be calculated at a specific geological ``time``.
+    The :py:class:`gplately.Points` object requires the :py:class:`gplately.PlateReconstruction` object to work
+    because it holds the :py:attr:`gplately.PlateReconstruction.rotation_model` needed to quantify point rotations through time and
+    :py:attr:`gplately.PlateReconstruction.static_polygons` needed to partition points into plates.
     """
 
     def __init__(
@@ -2634,7 +2692,7 @@ class Points(object):
         lats,
         time=0,
         plate_id=None,
-        age=np.inf,
+        age: Union[float, np.ndarray, None] = np.inf,
         *,
         anchor_plate_id=None,
         remove_unreconstructable_points=False,
@@ -2643,69 +2701,73 @@ class Points(object):
         Parameters
         ----------
         plate_reconstruction : PlateReconstruction
-            Allows for the accessibility of `PlateReconstruction` object attributes: `rotation_model`, `topology_featues`
-            and `static_polygons` for use in the `Points` object if called using “self.plate_reconstruction.X”,
+            Allows for the accessibility of
+            :py:attr:`gplately.PlateReconstruction.rotation_model`,
+            :py:attr:`gplately.PlateReconstruction.topology_featues`, and
+            :py:attr:`gplately.PlateReconstruction.static_polygons`,
+            for use in the :py:class:`Points` object if called using ``self.plate_reconstruction.X``,
             where X is the attribute.
 
         lons : float or 1D array
-            These are the longitudes of the initial points at the initial `time`.
+            These are the longitudes of the initial points at the initial ``time``.
             A single float, or a 1D array, containing the longitudes of point data.
-            If a single float then `lats` must also be a single float. If a 1D array then `lats` must also be a 1D array.
+            If a single float then ``lats`` must also be a single float. If a 1D array then ``lats`` must also be a 1D array.
 
         lats : float or 1D array
-            These are the latitudes of the initial points at the initial `time`.
+            These are the latitudes of the initial points at the initial ``time``.
             A single float, or a 1D array, containing the latitudes of point data.
-            If a single float then `lons` must also be a single float. If a 1D array then `lons` must also be a 1D array.
+            If a single float then ``lons`` must also be a single float. If a 1D array then ``lons`` must also be a 1D array.
 
         time : float, default=0
             The initial time (Ma) of the points.
-            Note that `lons` and `lats` are the initial locations of the points at this time.
+            Note that ``lons`` and ``lats`` are the initial locations of the points at this time.
             By default, it is set to the present day (0 Ma).
 
         plate_id : int or 1D array or None, default=None
             Plate ID(s) of a particular tectonic plate on which point data lies, if known.
             If a single integer then all points will have the same plate ID. If a 1D array then length must match the number of points.
-            If `None` then plate IDs are determined using the `static_polygons` of `plate_reconstruction` (see Notes).
+            If ``None`` then plate IDs are determined using the :py:attr:`gplately.PlateReconstruction.static_polygons` (see Notes).
             By default, the plate IDs are determined using the static polygons.
 
         age : float or 1D array or None, default=numpy.inf
             Age(s) at which each point appears, if known.
             If a single float then all points will have the same age. If a 1D array then length must match the number of points.
-            If `None` then ages are determined using the `static_polygons` of `plate_reconstruction` (see Notes).
+            If ``None`` then ages are determined using the :py:attr:`gplately.PlateReconstruction.static_polygons` (see Notes).
             For points on oceanic crust this is when they were created at a mid-ocean ridge.
             By default, all points exist for all time (ie, time of appearance is infinity). This default is for backward
-            compatibility, but you'll typically only want this if all your points are on *continental* crust (not *oceanic*).
+            compatibility, but you'll typically only want this if all your points are on **continental** crust (not *oceanic*).
 
         anchor_plate_id : int, optional
-            Anchor plate that the specified `lons` and `lats` are relative to.
-            Defaults to the current anchor plate ID of `plate_reconstruction` (its `anchor_plate_id` attribute).
+            Anchor plate that the specified ``lons`` and ``lats`` are relative to.
+            Defaults to the current anchor plate ID of ``plate_reconstruction`` (its ``anchor_plate_id`` attribute).
 
         remove_unreconstructable_points : bool or list, default=False
-            Whether to remove points (in `lons` and `lats`) that cannot be reconstructed.
+            Whether to remove points (in ``lons`` and ``lats``) that cannot be reconstructed.
             By default, any unreconstructable points are retained.
             A point cannot be reconstructed if it cannot be assigned a plate ID, or cannot be assigned an age, because it did not
-            intersect any reconstructed static polygons (note that this can only happen when `plate_id` and/or `age` is None).
-            Also, a point cannot be reconstructed if point ages were *explicitly* provided (ie, `age` was *not* None) and
-            a point's age was less than (younger than) `time`, meaning it did not exist as far back as `time`.
-            Additionally, if this variable is a regular Python `list` then the indices (into the supplied `lons` and `lats` arguments)
+            intersect any reconstructed static polygons (note that this can only happen when ``plate_id`` and/or ``age`` is None).
+            Also, a point cannot be reconstructed if point ages were **explicitly** provided (ie, ``age`` was **not** None) and
+            a point's age was less than (younger than) ``time``, meaning it did not exist as far back as ``time``.
+            Additionally, if this variable is a regular Python ``list`` then the indices (into the supplied ``lons`` and ``lats`` arguments)
             of any removed points (ie, that are unreconstructable) are appended to that list.
 
         Notes
         -----
-        If `time` is non-zero (ie, not present day) then `lons` and `lats` are assumed to be the *reconstructed* point locations at `time`.
-        And the reconstructed positions are assumed to be relative to the anchor plate
-        (which is `plate_reconstruction.anchor_plate_id` if `anchor_plate_id` is None).
+        If ``time`` is non-zero (ie, not present day) then ``lons`` and ``lats`` are assumed to be the **reconstructed** point
+        locations at `time`. And the reconstructed positions are assumed to be relative to the anchor plate
+        (which is ``plate_reconstruction.anchor_plate_id`` if ``anchor_plate_id`` is None).
 
-        If `plate_id` and/or `age` is `None` then the plate ID and/or age of each point is determined by reconstructing the static polygons
-        of `plate_reconstruction` to `time` and reconstructing relative to the anchor plate (regardless of whether `time` is present day or not).
+        If ``plate_id`` and/or ``age`` is ``None`` then the plate ID and/or age of each point is determined by reconstructing the static polygons
+        of ``plate_reconstruction`` to ``time`` and reconstructing relative to the anchor plate (regardless of whether ``time`` is present day or not).
         And then, for each point, assigning the plate ID and/or time-of-appearance (begin time) of the static polygon containing the point.
 
-        A point is considered unreconstructable if it does not exist at `time`. This can happen if its age was explicitly provided (ie, `age` is *not* None)
-        but is younger than `time`. It can also happen if the point is automatically assigned a plate ID (ie, `plate_id` is None) or an age (ie, `age` is None)
-        but does not intersect any reconstructed static polygons (at `time`). In either of these cases it is marked as unreconstructable and will not be available
-        for any method outputing a reconstruction, such as `reconstruct`, or any method depending on a reconstruction, such as `plate_velocity`.
+        A point is considered unreconstructable if it does not exist at ``time``. This can happen if its age was explicitly provided (ie, ``age`` is *not* None)
+        but is younger than ``time``. It can also happen if the point is automatically assigned a plate ID (ie, ``plate_id`` is None) or an age (ie, ``age`` is None)
+        but does not intersect any reconstructed static polygons (at ``time``). In either of these cases it is marked as unreconstructable and will not be available
+        for any method outputing a reconstruction, such as ``reconstruct``, or any method depending on a reconstruction, such as ``plate_velocity``.
         However, all the initial locations and their associated plate IDs and ages will still be accessible as attributes, regardless of whether all the points
-        are reconstructable or not. That is, unless `remove_unreconstructable_points` is True (or a `list`), in which case only the reconstructable points are retained.
+        are reconstructable or not. That is, unless ``remove_unreconstructable_points`` is True (or a ``list``),
+        in which case only the reconstructable points are retained.
         """
         # If anchor plate is None then use default anchor plate of 'plate_reconstruction'.
         if anchor_plate_id is None:
@@ -2782,10 +2844,11 @@ class Points(object):
         # However, if the user provided both plate IDs and ages then all points will be reconstructable.
         points_are_reconstructable = np.full(num_points, True)
 
+        point_ages = np.array([])
+        point_plate_ids = np.array([])
         # If caller did not provide plate IDs or begin ages then
         # we need to determine them using the static polygons.
         if plate_id is None or age is None:
-
             if plate_id is None:
                 point_plate_ids = np.empty(num_points, dtype=int)
             if age is None:
@@ -2871,18 +2934,18 @@ class Points(object):
             # Set the geometry.
             point_feature.set_geometry(points[point_index])
             # Set the plate ID.
-            point_feature.set_reconstruction_plate_id(point_plate_ids[point_index])
+            point_feature.set_reconstruction_plate_id(point_plate_ids[point_index])  # type: ignore
             # Set the begin/end time.
             point_feature.set_valid_time(
                 point_ages[point_index],  # begin (age)
                 -np.inf,  # end (distant future; could also be zero for present day)
-            )
+            )  # type: ignore
             point_features.append(point_feature)
 
         # If the points represent a snapshot at a *past* geological time then we need to reverse reconstruct them
         # such that their features contain present-day points.
         if time != 0:
-            pygplates.reverse_reconstruct(
+            pygplates.reverse_reconstruct(  # type: ignore
                 point_features,
                 plate_reconstruction.rotation_model,
                 time,
@@ -2958,41 +3021,97 @@ class Points(object):
 
     @property
     def plate_reconstruction(self):
+        """
+        Allows for the accessibility of
+        :py:attr:`gplately.PlateReconstruction.rotation_model`,
+        :py:attr:`gplately.PlateReconstruction.topology_featues`, and
+        :py:attr:`gplately.PlateReconstruction.static_polygons`, for use in the :py:class:`Points` object
+        if called using ``self.plate_reconstruction.X``,
+        where X is the attribute.
+
+        :type: PlateReconstruction
+
+        """
         # Note: This is documented as an attribute in the class docstring.
         return self._plate_reconstruction
 
     @property
     def lons(self):
+        """
+        A 1D array containing the longitudes of point data.
+        These are the longitudes of the initial points at the initial ``time``.
+
+        :type: float 1D array
+        """
         # Note: This is documented as an attribute in the class docstring.
         return self._lons
 
     @property
     def lats(self):
+        """
+        A 1D array containing the latitudes of point data.
+        These are the latitudes of the initial points at the initial ``time``.
+
+        :type: float 1D array
+        """
         # Note: This is documented as an attribute in the class docstring.
         return self._lats
 
     @property
     def plate_id(self):
+        """
+        A 1D array containing the plate IDs of the points.
+        The length matches that of ``lons`` and ``lats``.
+
+        :type: int 1D array
+        """
         # Note: This is documented as an attribute in the class docstring.
         return self._plate_id
 
     @property
     def age(self):
+        """
+        A 1D array containing the ages (time of appearance) of the points.
+        The length matches that of ``lons`` and ``lats``.
+        For points on oceanic crust this is when they were created at a mid-ocean ridge.
+        Any points existing for all time will have a value of ``numpy.inf`` (equivalent to ``float('inf')``).
+
+        :type: float 1D array
+        """
         # Note: This is documented as an attribute in the class docstring.
         return self._age
 
     @property
     def size(self):
+        """
+        Number of points.
+        This is the size of ``lons``, ``lats``, ``plate_id`` and ``age``.
+
+        :type: int
+        """
         # Note: This is documented as an attribute in the class docstring.
         return len(self.points)
 
     @property
     def time(self):
+        """
+        The initial time (Ma) of the points.
+        The initial ``lons`` and ``lats`` are the locations of the points at this time.
+
+        :type: float
+        """
         # Note: This is documented as an attribute in the class docstring.
         return self._time
 
     @property
     def anchor_plate_id(self):
+        """
+        Anchor plate that the initial ``lons`` and ``lats`` are relative to, at the initial ``time``.
+        This is also used as the default anchor plate when reconstructing the points.
+        It does not change, even if the anchor plate of ``plate_reconstruction`` subsequently changes.
+
+        :type: int
+        """
         # Note: This is documented as an attribute in the class docstring.
         return self._anchor_plate_id
 
@@ -3004,12 +3123,12 @@ class Points(object):
         return id
 
     def copy(self):
-        """Returns a copy of the Points object
+        """Returns a copy of the :py:class:`Points` object
 
         Returns
         -------
         Points
-            A copy of the current Points object
+            A copy of the current :py:class:`Points` object
         """
         gpts = Points(
             self.plate_reconstruction,
@@ -3025,8 +3144,16 @@ class Points(object):
     def add_attributes(self, **kwargs):
         """Adds the value of a feature attribute associated with a key.
 
+        Parameters
+        ----------
+        **kwargs : sequence of key=item/s
+            A single key=value pair, or a sequence of key=value pairs denoting the name and
+            value of an attribute.
+
         Example
         -------
+        .. code-block:: python
+            :linenos:
 
             # Define latitudes and longitudes to set up a Points object
             pt_lons = np.array([140., 150., 160.])
@@ -3045,21 +3172,17 @@ class Points(object):
 
         The output would be:
 
+        .. code:: console
+
             {'a': [10, 2, 2], 'b': [2, 3, 3], 'c': [30, 0, 0]}
 
-        Parameters
-        ----------
-        **kwargs : sequence of key=item/s
-            A single key=value pair, or a sequence of key=value pairs denoting the name and
-            value of an attribute.
 
+        .. note::
 
-        Notes
-        -----
-        * An **assertion** is raised if the number of points in the Points object is not equal
-        to the number of values associated with an attribute key. For example, consider an instance
-        of the Points object with 3 points. If the points are ascribed an attribute `temperature`,
-        there must be one `temperature` value per point, i.e. `temperature = [20, 15, 17.5]`.
+            An **assertion** is raised if the number of points in the Points object is not equal
+            to the number of values associated with an attribute key. For example, consider an instance
+            of the Points object with 3 points. If the points are ascribed an attribute ``temperature``,
+            there must be one ``temperature`` value per point, i.e. ``temperature = [20, 15, 17.5]``.
 
         """
         keys = kwargs.keys()
@@ -3092,18 +3215,21 @@ class Points(object):
                     feature.set_shapefile_attribute(key, val)
 
     def get_geopandas_dataframe(self):
-        """Adds a shapely point `geometry` attribute to each point in the `gplately.Points` object.
+        """Adds a shapely point ``geometry`` attribute to each point in the :class:`gplately.Points` object.
         pandas.DataFrame that has a column with geometry
         Any existing point attributes are kept.
 
         Returns
         -------
         GeoDataFrame : instance of `geopandas.GeoDataFrame`
-            A pandas.DataFrame with rows equal to the number of points in the `gplately.Points` object,
-            and an additional column containing a shapely `geometry` attribute.
+            A pandas.DataFrame with rows equal to the number of points in the :class:`gplately.Points` object,
+            and an additional column containing a shapely ``geometry`` attribute.
 
         Example
         -------
+
+        .. code-block:: python
+            :linenos:
 
             pt_lons = np.array([140., 150., 160.])
             pt_lats = np.array([-30., -40., -50.])
@@ -3119,7 +3245,9 @@ class Points(object):
 
             gpts.get_geopandas_dataframe()
 
-        ...has the output:
+        has the output:
+
+        .. code:: console
 
                 a  b   c                     geometry
             0  10  2  30  POINT (140.00000 -30.00000)
@@ -3142,20 +3270,23 @@ class Points(object):
         return gpd.GeoDataFrame(attributes, geometry="geometry")
 
     def get_geodataframe(self):
-        """Returns the output of `Points.get_geopandas_dataframe()`.
+        """Returns the output of :py:meth:`Points.get_geopandas_dataframe()`.
 
-        Adds a shapely point `geometry` attribute to each point in the `gplately.Points` object.
+        Adds a shapely point geometry attribute to each point in the :class:`gplately.Points` object.
         pandas.DataFrame that has a column with geometry
         Any existing point attributes are kept.
 
         Returns
         -------
-        GeoDataFrame : instance of `geopandas.GeoDataFrame`
-            A pandas.DataFrame with rows equal to the number of points in the `gplately.Points` object,
-            and an additional column containing a shapely `geometry` attribute.
+        GeoDataFrame : instance of geopandas.GeoDataFrame
+            A pandas.DataFrame with rows equal to the number of points in the :class:`gplately.Points` object,
+            and an additional column containing a shapely geometry attribute.
 
         Example
         -------
+
+        .. code-block:: python
+            :linenos:
 
             pt_lons = np.array([140., 150., 160.])
             pt_lats = np.array([-30., -40., -50.])
@@ -3171,7 +3302,9 @@ class Points(object):
 
             gpts.get_geopandas_dataframe()
 
-        ...has the output:
+        the output:
+
+        .. code:: console
 
                 a  b   c                     geometry
             0  10  2  30  POINT (140.00000 -30.00000)
@@ -3185,9 +3318,11 @@ class Points(object):
     def reconstruct(
         self, time, anchor_plate_id=None, return_array=False, return_point_indices=False
     ):
-        """Reconstructs points supplied to this `Points` object from the supplied initial time (`self.time`) to the specified time (`time`).
+        """Reconstructs points supplied to this :class:`gplately.Points` object from the supplied initial time (``self.time``)
+        to the specified time (``time``).
 
-        Only those points that are reconstructable (see `Points`) and that have ages greater than or equal to `time` (ie, at points that exist at `time`) are reconstructed.
+        Only those points that are reconstructable (see :class:`gplately.Points`) and that have ages greater than or equal
+        to ``time`` (ie, at points that exist at ``time``) are reconstructed.
 
         Parameters
         ----------
@@ -3196,30 +3331,30 @@ class Points(object):
 
         anchor_plate_id : int, optional
             Reconstruct features with respect to a certain anchor plate.
-            By default, reconstructions are made with respect to `self.anchor_plate_id`
+            By default, reconstructions are made with respect to ``self.anchor_plate_id``
             (which is the anchor plate that the initial points at the initial time are relative to).
 
         return_array : bool, default=False
-            Return a 2-tuple of `numpy.ndarray`, rather than a `Points` object.
+            Return a 2-tuple of ``numpy.ndarray``, rather than a :class:`gplately.Points` object.
 
         return_point_indices : bool, default=False
             Return the indices of the points that are reconstructed.
-            Those points with an age less than `time` have not yet appeared at `time`, and therefore are not reconstructed.
-            These are indices into `self.lons`, `self.lats`, `self.plate_id` and `self.age`.
+            Those points with an age less than ``time`` have not yet appeared at ``time``, and therefore are not reconstructed.
+            These are indices into ``self.lons``, ``self.lats``, ``self.plate_id`` and ``self.age``.
 
         Returns
         -------
-        reconstructed_points : Points
-            Only provided if `return_array` is False.
-            The reconstructed points in a `Points` object.
+        reconstructed_points : :class:`gplately.Points`
+            Only provided if ``return_array`` is False.
+            The reconstructed points in a :class:`gplately.Points` object.
         rlons, rlats : ndarray
-            Only provided if `return_array` is True.
+            Only provided if ``return_array`` is True.
             The longitude and latitude coordinate arrays of the reconstructed points.
         point_indices : ndarray
-            Only provided if `return_point_indices` is True.
+            Only provided if ``return_point_indices`` is True.
             The indices of the returned points (that are reconstructed).
-            This array is the same size as `rlons` and `rlats` (or size of `reconstructed_points`).
-            These are indices into `self.lons`, `self.lats`, `self.plate_id` and `self.age`.
+            This array is the same size as ``rlons`` and ``rlats`` (or size of ``reconstructed_points``).
+            These are indices into ``self.lons``, ``self.lats``, ``self.plate_id`` and ``self.age``.
         """
         if anchor_plate_id is None:
             anchor_plate_id = self.anchor_plate_id
@@ -3316,20 +3451,20 @@ class Points(object):
     def reconstruct_to_birth_age(
         self, ages, anchor_plate_id=None, return_point_indices=False
     ):
-        """Reconstructs points supplied to this `Points` object from the supplied initial time (`self.time`) to a range of times.
+        """Reconstructs points supplied to this :class:`gplately.Points` object from the supplied initial time (``self.time``) to a range of times.
 
-        The number of supplied times must equal the number of points supplied to this `Points` object (ie, 'self.size' attribute).
-        Only those points that are reconstructable (see `Points`) and that have ages greater than or equal to the respective supplied ages
-        (ie, at points that exist at the supplied ages) are reconstructed.
+        The number of supplied times must equal the number of points supplied to this :class:`gplately.Points` object (ie, ``self.size`` attribute).
+        Only those points that are reconstructable (see :class:`gplately.Points`) and that have ages greater than or equal
+        to the respective supplied ages (ie, at points that exist at the supplied ages) are reconstructed.
 
         Parameters
         ----------
         ages : array
-            Geological times to reconstruct points to. Must have the same length as the number of points (`self.size` attribute).
+            Geological times to reconstruct points to. Must have the same length as the number of points (``self.size`` attribute).
 
         anchor_plate_id : int, optional
             Reconstruct points with respect to a certain anchor plate.
-            By default, reconstructions are made with respect to `self.anchor_plate_id`
+            By default, reconstructions are made with respect to ``self.anchor_plate_id``
             (which is the anchor plate that the initial points at the initial time are relative to).
 
         return_point_indices : bool, default=False
@@ -3340,22 +3475,25 @@ class Points(object):
         Raises
         ------
         ValueError
-            If the number of ages is not equal to the number of points supplied to this `Points` object.
+            If the number of ages is not equal to the number of points supplied to this :class:`gplately.Points` object.
 
         Returns
         -------
         rlons, rlats : ndarray
             The longitude and latitude coordinate arrays of points reconstructed to the specified ages.
         point_indices : ndarray
-            Only provided if `return_point_indices` is True.
+            Only provided if ``return_point_indices`` is True.
             The indices of the returned points (that are reconstructed).
-            This array is the same size as `rlons` and `rlats`.
-            These are indices into `self.lons`, `self.lats`, `self.plate_id` and `self.age`.
+            This array is the same size as ``rlons`` and ``rlats``.
+            These are indices into ``self.lons``, ``self.lats``, ``self.plate_id` and ``self.age``.
 
         Examples
         --------
         To reconstruct n seed points' locations to B Ma (for this example n=2, with (lon,lat) = (78,30) and (56,22) at time=0 Ma,
         and we reconstruct to B=10 Ma):
+
+        .. code-block:: python
+            :linenos:
 
             # Longitude and latitude of n=2 seed points
             pt_lon = np.array([78., 56])
@@ -3485,9 +3623,12 @@ class Points(object):
     ):
         """Calculates the east and north components of the tectonic plate velocities of the internal points at a particular geological time.
 
-        The point velocities are calculated using the plate IDs of the internal points and the rotation model of the internal `PlateReconstruction` object.
-        If the requested `time` differs from the initial time (`self.time`) then the internal points are first reconstructed to `time` before calculating velocities.
-        Velocities are only calculated at points that are reconstructable (see `Points`) and that have ages greater than or equal to `time` (ie, at points that exist at `time`).
+        The point velocities are calculated using the plate IDs of the internal points and the rotation model of the internal
+        :class:`gplately.PlateReconstruction` object.
+        If the requested ``time`` differs from the initial time (``self.time``) then the internal points are first reconstructed to ``time``
+        before calculating velocities.
+        Velocities are only calculated at points that are reconstructable (see :class:`gplately.Points`) and that have ages greater than or equal to
+        ``time`` (ie, at points that exist at ``time``).
 
         Parameters
         ----------
@@ -3497,10 +3638,10 @@ class Points(object):
         delta_time : float, default=1.0
             The time interval used for velocity calculations. 1.0Ma by default.
 
-        velocity_delta_time_type : {pygplates.VelocityDeltaTimeType.t_plus_delta_t_to_t, pygplates.VelocityDeltaTimeType.t_to_t_minus_delta_t, pygplates.VelocityDeltaTimeType.t_plus_minus_half_delta_t}, default=pygplates.VelocityDeltaTimeType.t_plus_delta_t_to_t
-            How the two velocity times are calculated relative to `time` (defaults to ``[time + velocity_delta_time, time]``).
+        velocity_delta_time_type : pygplates.VelocityDeltaTimeType, default=pygplates.VelocityDeltaTimeType.t_plus_delta_t_to_t
+            How the two velocity times are calculated relative to ``time`` (defaults to ``[time + velocity_delta_time, time]``).
 
-        velocity_units : {pygplates.VelocityUnits.cms_per_yr, pygplates.VelocityUnits.kms_per_my}, default=pygplates.VelocityUnits.cms_per_yr
+        velocity_units : pygplates.VelocityUnits, default=pygplates.VelocityUnits.cms_per_yr
             Whether to return velocities in centimetres per year or kilometres per million years (defaults to centimetres per year).
 
         earth_radius_in_kms : float, default=pygplates.Earth.mean_radius_in_kms
@@ -3509,7 +3650,7 @@ class Points(object):
 
         anchor_plate_id : int, optional
             Anchor plate used to reconstruct the points and calculate velocities at their locations.
-            By default, reconstructions are made with respect to `self.anchor_plate_id`
+            By default, reconstructions are made with respect to ``self.anchor_plate_id``
             (which is the anchor plate that the initial points at the initial time are relative to).
 
         return_reconstructed_points : bool, default=False
@@ -3517,36 +3658,40 @@ class Points(object):
 
         return_point_indices : bool, default=False
             Return the indices of those internal points at which velocities are calculated.
-            These are indices into `self.lons`, `self.lats`, `self.plate_id` and `self.age`.
-            Those points with an age less than `time` have not yet appeared at `time`, and therefore will not have velocities returned.
+            These are indices into ``self.lons``, ``self.lats``, ``self.plate_id`` and ``self.age``.
+            Those points with an age less than ``time`` have not yet appeared at ``time``, and therefore will not have velocities returned.
 
         Returns
         -------
         velocity_lons, velocity_lats : ndarray
-            The velocity arrays containing the *east* (longitude) and *north* (latitude) components of the velocity of each internal point that exists at `time`
-            (ie, whose age greater than or equal to `time`).
+            The velocity arrays containing the **east** (longitude) and *north* (latitude) components of the velocity of each internal point that exists at ``time``
+            (ie, whose age greater than or equal to ``time``).
         rlons, rlats : ndarray
-            Only provided if `return_reconstructed_points` is True.
+            Only provided if ``return_reconstructed_points`` is True.
             The longitude and latitude coordinate arrays of the reconstructed points (at which velocities are calculated).
-            These arrays are the same size as `velocity_lons` and `velocity_lats`.
+            These arrays are the same size as ``velocity_lons`` and ``velocity_lats``.
         point_indices : ndarray
-            Only provided if `return_point_indices` is True.
+            Only provided if ``return_point_indices`` is True.
             The indices of the returned points (at which velocities are calculated).
-            These are indices into `self.lons`, `self.lats`, `self.plate_id` and `self.age`.
-            This array is the same size as `velocity_lons` and `velocity_lats`.
+            These are indices into ``self.lons``, ``self.lats``, ``self.plate_id`` and ``self.age``.
+            This array is the same size as ``velocity_lons`` and ``velocity_lats``.
 
-        Notes
-        -----
-        The velocities are in *centimetres per year* by default (not *kilometres per million years*, the default in `PlateReconstruction.get_point_velocities`).
-        This difference is maintained for backward compatibility.
 
-        For each velocity, the *east* component is first followed by the *north* component.
-        This is different to `PlateReconstruction.get_point_velocities` where the *north* component is first.
-        This difference is maintained for backward compatibility.
+        .. note::
 
-        See Also
-        --------
-        PlateReconstruction.get_point_velocities : Velocities of points calculated using topologies instead of plate IDs (assigned from static polygons).
+            The velocities are in **centimetres per year** by default (not **kilometres per million years**, the default
+            in :meth:`PlateReconstruction.get_point_velocities`).
+            This difference is maintained for backward compatibility.
+
+            For each velocity, the *east** component is first followed by the *north* component.
+            This is different to :meth:`PlateReconstruction.get_point_velocities` where the **north** component is first.
+            This difference is maintained for backward compatibility.
+
+
+        .. seealso::
+
+            :meth:`PlateReconstruction.get_point_velocities` : Velocities of points calculated using topologies instead of plate IDs (assigned from static polygons).
+
         """
         if anchor_plate_id is None:
             anchor_plate_id = self.anchor_plate_id
@@ -3555,6 +3700,8 @@ class Points(object):
         north_east_velocities = np.empty((self.size, 2))
         if return_reconstructed_points:
             lat_lon_points = np.empty((self.size, 2))
+        else:
+            lat_lon_points = np.array([])
 
         # Determine time interval for velocity calculation.
         if (
@@ -3640,7 +3787,7 @@ class Points(object):
                 reconstruct_rotation * reconstructed_points_with_plate_id
             )
 
-            velocity_vectors_with_plate_id = pygplates.calculate_velocities(
+            velocity_vectors_with_plate_id = pygplates.calculate_velocities(  # type: ignore
                 reconstructed_points_with_plate_id,
                 velocity_equivalent_stage_rotation,
                 delta_time,
@@ -3694,8 +3841,12 @@ class Points(object):
         Parameters
         ----------
         time_array : arr
-            An array of reconstruction times at which to determine the trajectory
-            of a point on a plate. For example:
+            An array of reconstruction times at which to determine the trajectory of a point on a plate.
+
+            For example,
+
+            .. code-block:: python
+                :linenos:
 
                 import numpy as np
                 min_time = 30
@@ -3705,7 +3856,7 @@ class Points(object):
 
         anchor_plate_id : int, optional
             Reconstruct features with respect to a certain anchor plate. By default, reconstructions are made
-            with respect to the anchor plate ID specified in the `gplately.PlateReconstruction` object.
+            with respect to the anchor plate ID specified in the :class:`gplately.PlateReconstruction` object.
         return_rate_of_motion : bool, default=False
             Choose whether to return the rate of plate motion through time for each
 
@@ -3713,11 +3864,11 @@ class Points(object):
         -------
         rlons : ndarray
             An n-dimensional array with columns containing the longitudes of
-            the seed points at each timestep in `time_array`. There are n
+            the seed points at each timestep in ``time_array``. There are n
             columns for n seed points.
         rlats : ndarray
             An n-dimensional array with columns containing the latitudes of
-            the seed points at each timestep in `time_array`. There are n
+            the seed points at each timestep in ``time_array``. There are n
             columns for n seed points.
         """
         time_array = np.atleast_1d(time_array)
@@ -3726,6 +3877,9 @@ class Points(object):
         # rates of motion (if requested)
         rlons = np.empty((len(time_array), len(self.lons)))
         rlats = np.empty((len(time_array), len(self.lons)))
+
+        StepTimes = np.array([])
+        StepRates = np.array([])
 
         for i, point_feature in enumerate(self.feature_collection):
             # Create the motion path feature
@@ -3750,7 +3904,11 @@ class Points(object):
             )
 
             # Turn motion paths in to lat-lon coordinates
+            trail = np.array([])
             for reconstructed_motion_path in reconstructed_motion_paths:
+                # not sure about this. always set the "trail" to the last one in reconstructed_motion_paths?
+                # or there is only one path in reconstructed_motion_paths? -- Michael Chin
+                # again???
                 trail = reconstructed_motion_path.get_motion_path().to_lat_lon_array()
 
             lon, lat = np.flipud(trail[:, 1]), np.flipud(trail[:, 0])
@@ -3841,33 +3999,38 @@ class Points(object):
         Returns
         -------
         left_lon : ndarray
-            The longitudes of the __left__ flowline for n seed points.
+            The longitudes of the **left** flowline for n seed points.
             There are n columns for n seed points, and m rows
-            for m time steps in `time_array`.
+            for m time steps in ``time_array``.
         left_lat : ndarray
-            The latitudes of the __left__ flowline of n seed points.
+            The latitudes of the **left** flowline of n seed points.
             There are n columns for n seed points, and m rows
-            for m time steps in `time_array`.
+            for m time steps in ``time_array``.
         right_lon : ndarray
-            The longitudes of the __right__ flowline of n seed points.
+            The longitudes of the **right** flowline of n seed points.
             There are n columns for n seed points, and m rows
-            for m time steps in `time_array`.
+            for m time steps in ``time_array``.
         right_lat : ndarray
-            The latitudes of the __right__ flowline of n seed points.
+            The latitudes of the **right** flowline of n seed points.
             There are n columns for n seed points, and m rows
-            for m time steps in `time_array`.
+            for m time steps in ``time_array``.
 
         Examples
         --------
         To access the ith seed point's left and right latitudes and
         longitudes:
 
+        .. code-block:: python
+            :linenos:
+
             for i in np.arange(0,len(seed_points)):
                 left_flowline_longitudes = left_lon[:,i]
                 left_flowline_latitudes = left_lat[:,i]
                 right_flowline_longitudes = right_lon[:,i]
                 right_flowline_latitudes = right_lat[:,i]
+
         """
+
         model = self.plate_reconstruction
         return model.create_flowline(
             self.lons,
@@ -3941,24 +4104,23 @@ class Points(object):
         output_name=None,
         return_array=False,
     ):
-        """Rotate a grid defined in one plate model reference frame
-        within a gplately.Raster object to another plate
+        """Rotate a grid defined in one plate model reference frame within a :class:`gplately.Raster` object to another plate
         reconstruction model reference frame.
 
         Parameters
         ----------
         reconstruction_time : float
             The time at which to rotate the reconstructed points.
-        from_rotation_features_or_model : str/`os.PathLike`, list of str/`os.PathLike`, or instance of `pygplates.RotationModel`
+        from_rotation_features_or_model : str/os.PathLike, list of str/os.PathLike, or instance of pygplates.RotationModel
             A filename, or a list of filenames, or a pyGPlates
             RotationModel object that defines the rotation model
             that the input grid is currently associated with.
-            `self.plate_reconstruction.rotation_model` is default.
-        to_rotation_features_or_model : str/`os.PathLike`, list of str/`os.PathLike`, or instance of `pygplates.RotationModel`
+            ``self.plate_reconstruction.rotation_model`` is default.
+        to_rotation_features_or_model : str/os.PathLike, list of str/os.PathLike, or instance of pygplates.RotationModel
             A filename, or a list of filenames, or a pyGPlates
             RotationModel object that defines the rotation model
             that the input grid shall be rotated with.
-            `self.plate_reconstruction.rotation_model` is default.
+            ``self.plate_reconstruction.rotation_model`` is default.
         from_rotation_reference_plate : int, default = 0
             The current reference plate for the plate model the points
             are defined in. Defaults to the anchor plate 0.
@@ -3974,7 +4136,7 @@ class Points(object):
         Returns
         -------
         Points
-            An instance of the `Points` object containing the rotated points.
+            An instance of the :class:`gplately.Points` object containing the rotated points.
         """
         if output_name is not None:
             raise NotImplementedError("'output_name' parameter is not implemented")
@@ -4005,11 +4167,11 @@ class Points(object):
             reconstruction_time,
             anchor_plate_id=from_rotation_reference_plate,
             return_array=True,
-        )
+        )  # type: ignore
 
         # convert FeatureCollection to MultiPointOnSphere
         input_points = pygplates.MultiPointOnSphere(
-            (lat, lon) for lon, lat in zip(lons, lats)
+            (lat, lon) for lon, lat in zip(lons, lats)  # type: ignore
         )
 
         # Rotate grid nodes to the other reference frame
@@ -4178,13 +4340,13 @@ class _DefaultCollision(object):
 
             # Note that even though the current point is not inside the previous boundary (because different plate ID), we can still
             # calculate a velocity using its plate ID (because we really should use the same point in our velocity comparison).
-            prev_location_velocity = pygplates.calculate_velocities(
+            prev_location_velocity = pygplates.calculate_velocities(  # type: ignore
                 (curr_point,),
                 prev_location_velocity_stage_rotation,
                 1,
                 pygplates.VelocityUnits.kms_per_my,
             )[0]
-            curr_location_velocity = pygplates.calculate_velocities(
+            curr_location_velocity = pygplates.calculate_velocities(  # type: ignore
                 (curr_point,),
                 curr_location_velocity_stage_rotation,
                 1,
@@ -4442,8 +4604,8 @@ class _ReconstructByTopologies(object):
         reconstruction_end_time,
         reconstruction_time_interval,
         points,
-        point_begin_times=None,
-        point_end_times=None,
+        point_begin_times: Union[list, None] = None,
+        point_end_times: Union[list, None] = None,
         point_plate_ids=None,
         detect_collisions=_DEFAULT_COLLISION,
     ):
@@ -4614,6 +4776,7 @@ class _ReconstructByTopologies(object):
             if curr_plate_id is None:
                 # Current point is currently active but it fell outside all resolved polygons.
                 # So instead we just reconstruct using its plate ID (that was manually assigned by the user/caller).
+                assert self.point_plate_ids
                 curr_plate_id = self.point_plate_ids[point_index]
 
             # Get the stage rotation that will move the point from where it is at the current time to its
@@ -4713,6 +4876,8 @@ class _ReconstructByTopologies(object):
         for point_index in range(self.num_points):
             if self.curr_points[point_index] is None:
                 if not self.point_has_been_activated[point_index]:
+                    assert self.point_begin_times
+                    assert self.point_end_times
                     # Point is not active and has never been activated, so see if can activate it.
                     if (
                         current_time <= self.point_begin_times[point_index]
@@ -4732,6 +4897,8 @@ class _ReconstructByTopologies(object):
                         self.point_has_been_activated[point_index] = True
                         self.num_activated_points += 1
             else:
+                assert self.point_begin_times
+                assert self.point_end_times
                 # Point is active, so see if can deactivate it.
                 if not (
                     current_time <= self.point_begin_times[point_index]
@@ -4746,7 +4913,7 @@ class _ReconstructByTopologies(object):
 
         # Resolve the plate polygons for the current time.
         resolved_topologies = []
-        pygplates.resolve_topologies(
+        pygplates.resolve_topologies(  # type: ignore
             self.topology_features,
             self.rotation_model,
             resolved_topologies,
@@ -4767,7 +4934,7 @@ class _ReconstructByTopologies(object):
             curr_valid_points_indices = [None] * self.num_points
             for point_index, curr_point in enumerate(self.curr_points):
                 if curr_point is not None:
-                    curr_valid_points_indices[point_index] = len(curr_valid_points)
+                    curr_valid_points_indices[point_index] = len(curr_valid_points)  # type: ignore
                     curr_valid_points.append(curr_point)
             # For each valid current point find the resolved topology containing it.
             resolved_topologies_containing_curr_valid_points = (
@@ -4791,13 +4958,13 @@ class _ReconstructByTopologies(object):
 
             # Find the plate id of the polygon that contains 'curr_point'.
             if _ReconstructByTopologies.use_plate_partitioner:
-                curr_polygon = plate_partitioner.partition_point(curr_point)
+                curr_polygon = plate_partitioner.partition_point(curr_point)  # type: ignore
             else:
-                curr_polygon = resolved_topologies_containing_curr_valid_points[
+                curr_polygon = resolved_topologies_containing_curr_valid_points[  # type: ignore
                     # Index back into 'curr_valid_points' and hence also into
                     # 'resolved_topologies_containing_curr_valid_points'.
-                    curr_valid_points_indices[point_index]
-                ]
+                    curr_valid_points_indices[point_index]  # type: ignore
+                ]  # type: ignore
             self.curr_resolved_plate_boundaries[point_index] = curr_polygon
 
             # If the polygon is None, that means (presumably) that it fell into a crack between

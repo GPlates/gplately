@@ -4,7 +4,6 @@ on:
   push:
     branches: 
       - master
-      - update-doc-readme-examples
   pull_request:
     branches: 
       - master
@@ -54,7 +53,7 @@ jobs:
 
       - name: Build doc with sphinx
         run : |
-          sphinx-apidoc -f -o sphinx-doc/source gplately/
+          sphinx-autogen -o generated sphinx-doc/source/*.rst
           cd sphinx-doc
           make html
 

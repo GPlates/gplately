@@ -20,12 +20,12 @@ gridded-data.
 
 Some methods available in `grids`:
 
-* Point data can be interpolated onto a raster or grid with Scipy using linear or 
-nearest-neighbour interpolation. 
-* Rasters can be resampled with a set of X and Y-direction spacings, and can be resized 
-using given X and Y resolutions. 
-* Grids with invalid (NaN-type) data cells can have their NaN entries replaced 
-with the values of their nearest valid neighbours. 
+* Point data can be interpolated onto a raster or grid with Scipy using linear or
+nearest-neighbour interpolation.
+* Rasters can be resampled with a set of X and Y-direction spacings, and can be resized
+using given X and Y resolutions.
+* Grids with invalid (NaN-type) data cells can have their NaN entries replaced
+with the values of their nearest valid neighbours.
 
 Classes
 -------
@@ -37,12 +37,12 @@ import logging
 import math
 import warnings
 from multiprocessing import cpu_count
-from typing import Union, Tuple
+from typing import Tuple, Union
 
 import matplotlib.colors
 import matplotlib.pyplot as plt
-import numpy as np
 import netCDF4
+import numpy as np
 import pygplates
 from cartopy.crs import PlateCarree as _PlateCarree
 from cartopy.mpl.geoaxes import GeoAxes as _GeoAxes
@@ -439,6 +439,7 @@ def write_netcdf_grid(
     A netCDF grid will be saved to the path specified in `filename`.
     """
     import netCDF4
+
     from gplately import __version__ as _version
 
     if extent == "global":
@@ -1559,7 +1560,7 @@ def _parse_extent_origin(extent, origin):
 class Raster(object):
     """The Raster class handles raster data.
 
-    `Raster`'s functionalities include sampling data at points using spline
+    `gplately.Raster`'s functionalities include sampling data at points using spline
     interpolation, resampling rasters with new X and Y-direction spacings and
     resizing rasters using new X and Y grid pixel resolutions. NaN-type data
     in rasters can be replaced with the values of their nearest valid
@@ -1570,7 +1571,7 @@ class Raster(object):
     data : str or array-like
         The raster data, either as a filename (`str`) or array.
 
-    plate_reconstruction : PlateReconstruction
+    plate_reconstruction : gplately.PlateReconstruction
         Allows for the accessibility of PlateReconstruction object attributes.
         Namely, PlateReconstruction object attributes rotation_model,
         topology_features and static_polygons can be used in the `Raster`
@@ -1605,8 +1606,8 @@ class Raster(object):
     data : ndarray, shape (ny, nx)
         Array containing the underlying raster data. This attribute can be
         modified after creation of the `Raster`.
-    plate_reconstruction : PlateReconstruction
-        An object of GPlately's `PlateReconstruction` class, like the
+    plate_reconstruction : gplately.PlateReconstruction
+        An object of GPlately's `gplately.PlateReconstruction` class, like the
         `rotation_model`, a set of reconstructable `topology_features` and
         `static_polygons` that belong to a particular plate model. These
         attributes can be used in the `Raster` object if called using
@@ -1655,7 +1656,7 @@ class Raster(object):
         self,
         data=None,
         plate_reconstruction=None,
-        extent="global",
+        extent: Union[str, tuple] = "global",
         realign=False,
         resample=None,
         resize=None,

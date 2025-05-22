@@ -9,7 +9,8 @@ from .reconstruction import PlateReconstruction
 
 
 def get_plate_reconstruction(model: Union[str, PlateModel], model_repo_dir: str = "./"):
-    """Convenient function to return a PlateReconstruction object. Check out the [usage example](https://gplates.github.io/gplately/dev-doc/#platemodelmanager).
+    """Convenient function to return a :py:class:`gplately.PlateReconstruction` object.
+    Check out the `usage example <https://github.com/GPlates/gplately/blob/master/Notebooks/Examples/use_auxiliary_functions.py>`__.
 
     Parameters
     ----------
@@ -20,7 +21,7 @@ def get_plate_reconstruction(model: Union[str, PlateModel], model_repo_dir: str 
 
     Returns
     -------
-    PlateReconstruction
+    gplately.PlateReconstruction
         a PlateReconstruction object
 
     """
@@ -61,7 +62,8 @@ def get_gplot(
     time: Union[int, float] = 0,
     plot_engine: PlotEngine = CartopyPlotEngine(),
 ) -> PlotTopologies:
-    """Convenient function to return a PlotTopologies object. Check out the [usage example](https://gplates.github.io/gplately/dev-doc/#platemodelmanager).
+    """Convenient function to return a :py:class:`gplately.PlotTopologies` object.
+    Check out the `usage example <https://github.com/GPlates/gplately/blob/master/Notebooks/Examples/use_auxiliary_functions.py>`__).
 
     Parameters
     ----------
@@ -76,7 +78,7 @@ def get_gplot(
 
     Returns
     -------
-    PlotTopologies
+    gplately.PlotTopologies
         a PlotTopologies object
     """
     if isinstance(model, str):
