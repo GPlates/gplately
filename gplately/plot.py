@@ -60,70 +60,39 @@ PLOT_DOCSTRING = """
 Parameters
 ----------
 ax : instance of <cartopy.mpl.geoaxes.GeoAxes> or <cartopy.mpl.geoaxes.GeoAxesSubplot>
-    A subclass of ``matplotlib.axes.Axes`` which represents a map Projection.
-    The map should be set at a particular Cartopy projection.
+    The subclasses of ``matplotlib.axes.Axes`` 
 
-color : str, default=’black’
-    The colour of the **{0}** lines. By default, it is set to black.
+color : str, default='black'
+    The colour of the **{0}** geometries.
 
 **kwargs :
-    Keyword arguments for parameters such as ``alpha``, etc. for plotting **{0}** geometries.
-    See Matplotlib keyword arguments `here <https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html>`__.
+    `Matplotlib keyword arguments <https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html>`__.
 
 Returns
 -------
 ax : instance of <geopandas.GeoDataFrame.plot>
-    A standard cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot map
-    with **{0}** features plotted onto the chosen map projection.
+    The cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot with **{0}** features plotted.
         
 """
 
 GET_DATE_DOCSTRING = """
 
-        Parameters
-        ----------
-        central_meridian : float
-            Central meridian around which to perform wrapping; default: 0.0.
-        tessellate_degrees : float or None
-            If provided, geometries will be tessellated to this resolution prior
-            to wrapping.
+Parameters
+----------
+central_meridian : float, default=0.0
+    the central meridian of the map. This will affect the dateline wrapping.
+tessellate_degrees : float or None
+    If provided, geometries will be tessellated to this resolution prior to wrapping.
 
-        Returns
-        -------
-        geopandas.GeoDataFrame
-            A pandas.DataFrame that has a column with `{0}` geometry.
+Returns
+-------
+geopandas.GeoDataFrame
+    A pandas.DataFrame that has a column with **{0}** geometry.
 
-        Raises
-        ------
-        ValueError
-            If the optional ``time`` parameter has not been passed to
-            :class:`gplately.PlotTopologies`. This is needed to construct `{0}`
-            to the requested ``time`` and thus populate the GeoDataFrame.
-
-        Notes
-        -----
-        The `{0}` needed to produce the GeoDataFrame are automatically
-        constructed if the optional ``time`` parameter is passed to the
-        :class:`gplately.PlotTopologies` object before calling this function. ``time`` can be
-        passed either when :class:`gplately.PlotTopologies` is first called...
-
-        .. code-block:: python
-            :linenos:
-            
-            gplot = gplately.PlotTopologies(..., time=100,...)
-
-        or anytime afterwards, by setting:
-
-        .. code-block:: python
-            :linenos:
-            
-            time = 100 # Ma
-            gplot.time = time
-
-        ...after which this function can be re-run. Once the `{0}`
-        are reconstructed, they are converted into Shapely lines whose
-        coordinates are passed to a geopandas GeoDataFrame.
-
+Raises
+------
+ValueError
+    The :attr:`gplately.PlotTopologies.time` attribute is required to reconstruct **{0}** and populate the GeoDataFrame.
 """
 
 
@@ -175,17 +144,18 @@ class PlotTopologies(object):
     .. code-block:: python
         :linenos:
 
-        # Calling the PlotTopologies object
-        gplot = gplately.plot.PlotTopologies(plate_reconstruction,
-                                            coastline_filename=None,
-                                            continent_filename=None,
-                                            COB_filename=None,
-                                            time=None,
-                                            anchor_plate_id=None,
-                )
+        # create a PlotTopologies object
+        gplot = gplately.plot.PlotTopologies(
+            plate_reconstruction,
+            coastline_filename=None,
+            continent_filename=None,
+            COB_filename=None,
+            time=100,
+            anchor_plate_id=None,
+        )
 
         # Setting a new reconstruction time
-        gplot.time = 20 # Ma
+        gplot.time = 20  # Ma
 
     The ``coastline_filename``, ``continent_filename`` and ``COB_filename`` can be single
     strings to GPML and/or shapefiles, as well as instances of ``pygplates.FeatureCollection``.
@@ -231,7 +201,7 @@ class PlotTopologies(object):
         coastlines=None,
         continents=None,
         COBs=None,
-        time=None,
+        time=140,
         anchor_plate_id=None,
         plot_engine: PlotEngine = CartopyPlotEngine(),
     ):
@@ -258,12 +228,13 @@ class PlotTopologies(object):
             The time (Ma) to reconstruct and plot geological features to.
         anchor_plate_id : int
             Anchor plate ID for reconstruction. Must be an integer >= 0.
-        plot_engine : :class:`PlotEngine`, default=CartopyPlotEngine()
+        plot_engine : :class:`gplately.PlotEngine`, default=CartopyPlotEngine()
             Use Cartopy or pyGMT to plot the map.
         """
+
         self._plot_engine = plot_engine
         self.plate_reconstruction = plate_reconstruction
-        """The GPlately :class:`gplately.PlateReconstruction` object will be used to access a plate
+        """The :class:`gplately.PlateReconstruction` object will be used to access a plate
         ``rotation_model`` and a set of ``topology_features`` which contains plate boundary
         features like trenches, ridges and transforms.
 
@@ -304,25 +275,25 @@ class PlotTopologies(object):
         :type: iterable/list of <pygplates.ReconstructedFeatureGeometry>
         """
 
-        self.trenches = None
+        self.trenches = []
         """A list containing trench boundary sections of type `pygplates.FeatureType.gpml_subduction_zone`.
         
         :type: iterable/list of <pygplates.Feature>
         """
 
-        self.trench_left = None
+        self.trench_left = []
         """A list containing left subduction boundary sections of type `pygplates.FeatureType.gpml_subduction_zone`.
         
         :type: iterable/list of <pygplates.Feature>
         """
 
-        self.trench_right = None
+        self.trench_right = []
         """A list containing right subduction boundary sections of type pygplates.FeatureType.gpml_subduction_zone
 
         :type: iterable/list of <pygplates.Feature>
         """
 
-        self.other = None
+        self.other = []
         """A list containing other geological features like unclassified features, extended continental crusts,
         continental rifts, faults, orogenic belts, fracture zones, inferred paleo boundaries, terrane
         boundaries and passive continental boundaries.
@@ -443,7 +414,7 @@ class PlotTopologies(object):
 
     @property
     def ridges(self):
-        """Mid-ocean ridge features (all the features which are labelled as gpml:MidOceanRidge in the model).
+        """Mid-ocean ridge features (all the features which are labelled as ``gpml:MidOceanRidge`` in the model).
         A list containing ridge and transform boundary sections of type `pygplates.FeatureType.gpml_mid_ocean_ridge`.
 
         :type: iterable/list of <pygplates.Feature>
@@ -459,7 +430,7 @@ class PlotTopologies(object):
 
     @property
     def transforms(self):
-        """Transform boundary features (all the features which are labelled as gpml:Transform in the model).
+        """Transform boundary features (all the features which are labelled as ``gpml:Transform`` in the model).
         A list containing transform boundary sections of type `pygplates.FeatureType.gpml_transforms`.
 
         :type: iterable/list of <pygplates.Feature>
@@ -477,7 +448,23 @@ class PlotTopologies(object):
     def time(self):
         """The time (Ma) to reconstruct and plot geological features to.
 
-        :type; float
+        :type: float
+
+        .. note::
+
+            You can either set the ``time`` attribute when creating the :class:`gplately.PlotTopologies` object,
+
+            .. code-block:: python
+                :linenos:
+
+                gplot = gplately.PlotTopologies(..., time=100,...)
+
+            or anytime afterwards,
+
+            .. code-block:: python
+                :linenos:
+
+                gplot.time = 100 #Ma
         """
         return self._time
 
@@ -553,7 +540,7 @@ class PlotTopologies(object):
         return self._ridges + self._transforms
 
     def update_time(self, time):
-        """Re-reconstruct features and topologies to the time specified by the :class:`gplately.PlotTopologies` ``time`` attribute
+        """Rereconstruct features and topologies to the time specified by the :class:`gplately.PlotTopologies` ``time`` attribute
         whenever it or the anchor plate is updated.
 
         Notes
@@ -806,21 +793,21 @@ class PlotTopologies(object):
     ):
         """Create a geopandas.GeoDataFrame object containing geometries of reconstructed features.
 
-        Notes
-        -----
-        The feature needed to produce the GeoDataFrame should already be constructed to a `time`.
-        This function converts the feature into a set of Shapely geometries whose coordinates are
-        passed to a geopandas GeoDataFrame.
+        .. note::
+
+            The feature needed to produce the GeoDataFrame should already be reconstructed to a ``time``.
+            This function converts the feature into a set of Shapely geometries whose coordinates are
+            passed to a geopandas GeoDataFrame.
 
         Parameters
         ----------
         feature : instance of <pygplates.Feature>
-            A feature reconstructed to `time`.
+            A feature reconstructed to ``time``.
 
         Returns
         -------
         gdf : instance of <geopandas.GeoDataFrame>
-            A pandas.DataFrame that has a column with `feature` geometries.
+            A pandas.DataFrame that has a column with ``feature`` geometries.
 
         """
 
@@ -927,12 +914,13 @@ class PlotTopologies(object):
     def plot_continents(self, ax, color="black", **kwargs):
         """Plot reconstructed continental polygons onto a standard map Projection.
 
-        Notes
-        -----
-        The `continents` for plotting are accessed from the `PlotTopologies` object's `continents` attribute.
-        These `continents` are reconstructed to the `time` passed to the `PlotTopologies` object and converted into Shapely polygons.
-        The reconstructed `coastlines` are plotted onto the GeoAxes or GeoAxesSubplot map `ax` using GeoPandas.
-        Map presentation details (e.g. facecolor, edgecolor, alpha…) are permitted as keyword arguments.
+        .. note::
+
+            The ``continents`` for plotting are accessed from the :attr:`gplately.PlotTopologies.continents` attribute.
+            These ``continents`` are reconstructed to :attr:`gplately.PlotTopologies.time` and converted into Shapely polygons.
+            The reconstructed ``coastlines`` are plotted onto the GeoAxes or GeoAxesSubplot map ``ax`` using GeoPandas.
+            Map presentation details (e.g. facecolor, edgecolor, alpha…) are permitted as keyword arguments.
+
         """
         return self.plot_feature(
             ax,
@@ -961,17 +949,17 @@ class PlotTopologies(object):
     def plot_continent_ocean_boundaries(self, ax, color="black", **kwargs):
         """Plot reconstructed continent-ocean boundary (COB) polygons onto a standard map Projection.
 
-        Notes
-        -----
-        The `COBs` for plotting are accessed from the `PlotTopologies` object's
-        `COBs` attribute. These `COBs` are reconstructed to the `time`
-        passed to the `PlotTopologies` object and converted into Shapely polylines.
-        The reconstructed `COBs` are plotted onto the GeoAxes or GeoAxesSubplot map
-        `ax` using GeoPandas. Map presentation details (e.g. `facecolor`, `edgecolor`, `alpha`…)
-        are permitted as keyword arguments.
+        .. note::
 
-        These COBs are transformed into shapely geometries and added onto the chosen map for a specific geological time
-        (supplied to the PlotTopologies object). Map presentation details (e.g. facecolor, edgecolor, alpha…) are permitted.
+            The ``COBs`` for plotting are accessed from the :attr:`gplately.PlotTopologies.COBs` attribute.
+            These ``COBs`` are reconstructed to the :attr:`gplately.PlotTopologies.time` attribute and converted into Shapely polylines.
+            The reconstructed ``COBs`` are plotted onto the GeoAxes or GeoAxesSubplot map
+            ``ax`` using GeoPandas. Map presentation details (e.g. ``facecolor``, ``edgecolor``, ``alpha``…)
+            are permitted as keyword arguments.
+
+            These COBs are transformed into shapely geometries and added onto the chosen map for a specific geological time
+            (supplied to the PlotTopologies object). Map presentation details (e.g. facecolor, edgecolor, alpha…) are permitted.
+
         """
         return self.plot_feature(
             ax,
@@ -1007,24 +995,7 @@ class PlotTopologies(object):
     @validate_topology_availability("ridges")
     @append_docstring(PLOT_DOCSTRING.format("ridges"))
     def plot_ridges(self, ax, color="black", **kwargs):
-        """Plot reconstructed mid-ocean ridge lines(gpml:MidOceanRidge) onto a map.
-
-        Notes
-        -----
-        The `ridges` sections for plotting are accessed from the
-        `PlotTopologies` object's `ridges` attribute. These `ridges`
-        are reconstructed to the `time` passed to the `PlotTopologies` object and converted
-        into Shapely polylines. The reconstructed `ridges` are plotted onto the
-        GeoAxes or GeoAxesSubplot map `ax` using GeoPandas. Map presentation details
-        (e.g. `facecolor`, `edgecolor`, `alpha`…) are permitted as keyword arguments.
-
-        Note: The `ridges` geometries are wrapped to the dateline using
-        pyGPlates' [DateLineWrapper](https://www.gplates.org/docs/pygplates/generated/pygplates.datelinewrapper)
-        by splitting a polyline into multiple polylines at the dateline. This is to avoid
-        horizontal lines being formed between polylines at longitudes of -180 and 180 degrees.
-        Point features near the poles (-89 & 89 degree latitude) are also clipped to ensure
-        compatibility with Cartopy.
-        """
+        """Plot reconstructed mid-ocean ridge lines(gpml:MidOceanRidge) onto a map."""
 
         logger.debug(
             "The 'plot_ridges' function has been changed since GPlately 1.3.0. "
@@ -1082,25 +1053,7 @@ class PlotTopologies(object):
     @validate_topology_availability("trenches")
     @append_docstring(PLOT_DOCSTRING.format("trenches"))
     def plot_trenches(self, ax, color="black", **kwargs):
-        """Plot reconstructed subduction trench polylines onto a standard map
-        Projection.
-
-        Notes
-        -----
-        The trench sections for plotting are accessed from the
-        `PlotTopologies` object's `trenches` attribute. These `trenches`
-        are reconstructed to the `time` passed to the `PlotTopologies` object and converted
-        into Shapely polylines. The reconstructed `trenches` are plotted onto the
-        GeoAxes or GeoAxesSubplot map `ax` using GeoPandas. Map presentation details
-        (e.g. `facecolor`, `edgecolor`, `alpha`…) are permitted as keyword arguments.
-
-        Trench geometries are wrapped to the dateline using
-        pyGPlates' [DateLineWrapper](https://www.gplates.org/docs/pygplates/generated/pygplates.datelinewrapper)
-        by splitting a polyline into multiple polylines at the dateline. This is to avoid
-        horizontal lines being formed between polylines at longitudes of -180 and 180 degrees.
-        Point features near the poles (-89 & 89 degree latitude) are also clipped to ensure
-        compatibility with Cartopy.
-        """
+        """Plot reconstructed subduction trench polylines onto a map."""
         return self.plot_feature(
             ax,
             self.trenches,
@@ -1126,21 +1079,22 @@ class PlotTopologies(object):
         """Plot reconstructed miscellaneous plate boundary polylines onto a standard
         map Projection.
 
-        Notes
-        -----
-        The miscellaneous boundary sections for plotting are accessed from the
-        `PlotTopologies` object's `other` attribute. These `other` boundaries
-        are reconstructed to the `time` passed to the `PlotTopologies` object and converted
-        into Shapely polylines. The reconstructed `other` boundaries are plotted onto the
-        GeoAxes or GeoAxesSubplot map `ax` using GeoPandas. Map presentation details
-        (e.g. `facecolor`, `edgecolor`, `alpha`…) are permitted as keyword arguments.
+        .. note::
 
-        Miscellaneous boundary geometries are wrapped to the dateline using
-        pyGPlates' [DateLineWrapper](https://www.gplates.org/docs/pygplates/generated/pygplates.datelinewrapper)
-        by splitting a polyline into multiple polylines at the dateline. This is to avoid
-        horizontal lines being formed between polylines at longitudes of -180 and 180 degrees.
-        Point features near the poles (-89 & 89 degree latitude) are also clipped to ensure
-        compatibility with Cartopy.
+            The miscellaneous boundary sections for plotting are accessed from the
+            :attr:`gplately.PlotTopologies.other` attribute. These ``other`` boundaries
+            are reconstructed to the :attr:`gplately.PlotTopologies.time` and converted
+            into Shapely polylines. The reconstructed ``other`` boundaries are plotted onto the
+            GeoAxes or GeoAxesSubplot map ``ax`` using GeoPandas. Map presentation details
+            (e.g. ``facecolor``, ``edgecolor``, ``alpha``…) are permitted as keyword arguments.
+
+            Miscellaneous boundary geometries are wrapped to the dateline using
+            pyGPlates' `DateLineWrapper <https://www.gplates.org/docs/pygplates/generated/pygplates.datelinewrapper>`__
+            by splitting a polyline into multiple polylines at the dateline. This is to avoid
+            horizontal lines being formed between polylines at longitudes of -180 and 180 degrees.
+            Point features near the poles (-89 & 89 degree latitude) are also clipped to ensure
+            compatibility with Cartopy.
+
         """
         return self.plot_feature(
             ax,
@@ -1151,7 +1105,7 @@ class PlotTopologies(object):
             **kwargs,
         )
 
-    def plot_subduction_teeth_deprecated(
+    def _plot_subduction_teeth_deprecated(
         self, ax, spacing=0.1, size=2.0, aspect=1, color="black", **kwargs
     ):
         """Plot subduction teeth onto a standard map Projection.
@@ -1226,21 +1180,10 @@ class PlotTopologies(object):
     def get_subduction_direction(self, central_meridian=0.0, tessellate_degrees=None):
         """Create a geopandas.GeoDataFrame object containing geometries of trench directions.
 
-        Notes
-        -----
-        The `trench_left` and `trench_right` geometries needed to produce the GeoDataFrame are automatically
-        constructed if the optional `time` parameter is passed to the `PlotTopologies` object before calling
-        this function. `time` can be passed either when `PlotTopologies` is first called...
+        .. note::
 
-            gplot = gplately.PlotTopologies(..., time=100,...)
-
-        or anytime afterwards, by setting:
-
-            time = 100 #Ma
-            gplot.time = time
-
-        ...after which this function can be re-run. Once the `other` geometries are reconstructed, they are
-        converted into Shapely features whose coordinates are passed to a geopandas GeoDataFrame.
+            The ``trench_left`` and ``trench_right`` geometries needed to produce the GeoDataFrame are automatically
+            reconstructed according to the :attr:`gplately.PlotTopologies.time` attribute.
 
         Returns
         -------
@@ -1252,8 +1195,7 @@ class PlotTopologies(object):
         Raises
         ------
         ValueError
-            If the optional `time` parameter has not been passed to `PlotTopologies`. This is needed to construct
-            `trench_left` or `trench_right` geometries to the requested `time` and thus populate the GeoDataFrame.
+            If the :attr:`gplately.PlotTopologies.time` is invalid.
         """
         if self.trench_left is None or self.trench_right is None:
             raise Exception(
@@ -1287,37 +1229,37 @@ class PlotTopologies(object):
     ) -> None:
         """Plot subduction teeth onto a standard map Projection.
 
-        Notes
-        -----
-        Subduction teeth are tessellated from `PlotTopologies` object attributes `trench_left` and
-        `trench_right`, and transformed into Shapely polygons for plotting.
+        .. note::
+
+            Subduction teeth are tessellated from :attr:`gplately.PlotTopologies.trench_left` and
+            :attr:`gplately.PlotTopologies.trench_left` attributes, and transformed into Shapely polygons for plotting.
 
         Parameters
         ----------
         ax : instance of <cartopy.mpl.geoaxes.GeoAxes> or <cartopy.mpl.geoaxes.GeoAxesSubplot>
-            A subclass of `matplotlib.axes.Axes` which represents a map Projection.
+            A subclass of ``matplotlib.axes.Axes`` which represents a map Projection.
             The map should be set at a particular Cartopy projection.
 
         spacing : float, default=0.07
             The tessellation threshold (in radians). Parametrises subduction tooth density.
             Triangles are generated only along line segments with distances that exceed
-            the given threshold `spacing`.
+            the given threshold ``spacing``.
 
         size : float, default=None
-            Length of teeth triangle base (in radians). If kept at `None`, then
-            `size = 0.5*spacing`.
+            Length of teeth triangle base (in radians). If kept at ``None``, then
+            ``size = 0.5*spacing``.
 
         aspect : float, default=None
-            Aspect ratio of teeth triangles. If kept at `None`, then `aspect = 2/3*size`.
+            Aspect ratio of teeth triangles. If kept at ``None``, then ``aspect = 2/3*size``.
 
         color : str, default='black'
             The colour of the teeth. By default, it is set to black.
 
         **kwargs :
-            Keyword arguments parameters such as `alpha`, etc.
+            Keyword arguments parameters such as ``alpha``, etc.
             for plotting subduction tooth polygons.
-            See `Matplotlib` keyword arguments
-            [here](https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html).
+            See Matplotlib keyword arguments
+            `here <https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html>`__.
         """
         kwargs["spacing"] = spacing
         kwargs["size"] = size
@@ -1334,24 +1276,24 @@ class PlotTopologies(object):
         )
 
     def plot_plate_polygon_by_id(self, ax, plate_id, color="black", **kwargs):
-        """Plot a plate polygon with an associated `plate_id` onto a standard map Projection.
+        """Plot a plate polygon with an associated ``plate_id`` onto a standard map Projection.
 
         Parameters
         ----------
         ax : instance of <cartopy.mpl.geoaxes.GeoAxes> or <cartopy.mpl.geoaxes.GeoAxesSubplot>
-            A subclass of `matplotlib.axes.Axes` which represents a map Projection.
+            A subclass of ``matplotlib.axes.Axes`` which represents a map Projection.
             The map should be set at a particular Cartopy projection.
 
         plate_id : int
             A plate ID that identifies the continental polygon to plot. See the
-            [Global EarthByte plate IDs list](https://www.earthbyte.org/webdav/ftp/earthbyte/GPlates/SampleData/FeatureCollections/Rotations/Global_EarthByte_PlateIDs_20071218.pdf)
+            `Global EarthByte plate IDs list <https://www.earthbyte.org/webdav/ftp/earthbyte/GPlates/SampleData/FeatureCollections/Rotations/Global_EarthByte_PlateIDs_20071218.pdf>`__
             for a full list of plate IDs to plot.
 
         **kwargs :
             Keyword arguments for map presentation parameters such as
-            `alpha`, etc. for plotting the grid.
-            See `Matplotlib`'s `imshow` keyword arguments
-            [here](https://matplotlib.org/3.5.1/api/_as_gen/matplotlib.axes.Axes.imshow.html).
+            ``alpha``, etc. for plotting the grid.
+            See Matplotlib's ``imshow()`` keyword arguments
+            `here <https://matplotlib.org/3.5.1/api/_as_gen/matplotlib.axes.Axes.imshow.html>`__.
 
         """
         features = []
@@ -1371,35 +1313,34 @@ class PlotTopologies(object):
         )
 
     def plot_plate_id(self, *args, **kwargs):
-        """TODO: remove this function
+        """Deprecated! DO NOT USE!
 
         The function name plot_plate_id() is bad and should be changed.
         The new name is plot_plate_polygon_by_id().
         For backward compatibility, we allow users to use the old name in their legcy code for now.
         No new code should call this function.
-
         """
+        # TODO: remove this function
         logger.warning(
             "The class method plot_plate_id is deprecated and will be removed in the future soon. Use plot_plate_polygon_by_id instead."
         )
         return self.plot_plate_polygon_by_id(*args, **kwargs)
 
     def plot_grid(self, ax, grid, extent=[-180, 180, -90, 90], **kwargs):
-        """Plot a `MaskedArray` raster or grid onto a standard map Projection.
+        """Plot a ``MaskedArray`` raster or grid onto a standard map Projection.
 
-        Notes
-        -----
-        Uses Matplotlib's `imshow`
-        [function](https://matplotlib.org/3.5.1/api/_as_gen/matplotlib.axes.Axes.imshow.html).
+        .. note::
+
+            Uses Matplotlib's `imshow() <https://matplotlib.org/3.5.1/api/_as_gen/matplotlib.axes.Axes.imshow.html>`__.
 
         Parameters
         ----------
         ax : instance of <cartopy.mpl.geoaxes.GeoAxes> or <cartopy.mpl.geoaxes.GeoAxesSubplot>
-            A subclass of `matplotlib.axes.Axes` which represents a map Projection.
+            A subclass of ``matplotlib.axes.Axes`` which represents a map Projection.
             The map should be set at a particular Cartopy projection.
 
-        grid : MaskedArray or `gplately.grids.Raster`
-            A `MaskedArray` with elements that define a grid. The number of rows in the raster
+        grid : MaskedArray or gplately.grids.Raster
+            A ``MaskedArray`` with elements that define a grid. The number of rows in the raster
             corresponds to the number of latitudinal coordinates, while the number of raster
             columns corresponds to the number of longitudinal coordinates.
 
@@ -1410,9 +1351,9 @@ class PlotTopologies(object):
 
         **kwargs :
             Keyword arguments for map presentation parameters such as
-            `alpha`, etc. for plotting the grid.
-            See `Matplotlib`'s `imshow` keyword arguments
-            [here](https://matplotlib.org/3.5.1/api/_as_gen/matplotlib.axes.Axes.imshow.html).
+            ``alpha``, etc. for plotting the grid.
+            See Matplotlib's ``imshow()`` keyword arguments
+            `here <https://matplotlib.org/3.5.1/api/_as_gen/matplotlib.axes.Axes.imshow.html>`__.
 
         Returns
         -------
@@ -1446,18 +1387,17 @@ class PlotTopologies(object):
         )
 
     def plot_grid_from_netCDF(self, ax, filename, **kwargs):
-        """Read a raster from a netCDF file, convert it to a `MaskedArray` and plot it
+        """Read a raster from a netCDF file, convert it to a ``MaskedArray`` and plot it
         onto a standard map Projection.
 
-        Notes
-        -----
-        `plot_grid_from_netCDF` uses Matplotlib's `imshow`
-        [function](https://matplotlib.org/3.5.1/api/_as_gen/matplotlib.axes.Axes.imshow.html).
+        .. note::
+
+            Uses Matplotlib's `imshow() <https://matplotlib.org/3.5.1/api/_as_gen/matplotlib.axes.Axes.imshow.html>`__.
 
         Parameters
         ----------
         ax : instance of <cartopy.mpl.geoaxes.GeoAxes> or <cartopy.mpl.geoaxes.GeoAxesSubplot>
-            A subclass of `matplotlib.axes.Axes` which represents a map Projection.
+            A subclass of ``matplotlib.axes.Axes`` which represents a map Projection.
             The map should be set at a particular Cartopy projection.
 
         filename : str
@@ -1465,8 +1405,8 @@ class PlotTopologies(object):
 
         **kwargs :
             Keyword arguments for map presentation parameters for
-            plotting the grid. See `Matplotlib`'s `imshow` keyword arguments
-            [here](https://matplotlib.org/3.5.1/api/_as_gen/matplotlib.axes.Axes.imshow.html).
+            plotting the grid. See Matplotlib's ``imshow()`` keyword arguments
+            `here <https://matplotlib.org/3.5.1/api/_as_gen/matplotlib.axes.Axes.imshow.html>`__.
 
         Returns
         -------
@@ -1495,23 +1435,23 @@ class PlotTopologies(object):
         """Calculate plate motion velocity vector fields at a particular geological time
         and plot them onto a standard map Projection.
 
-        Notes
-        -----
-        `plot_plate_motion_vectors` generates a MeshNode domain of point features using
-        given spacings in the X and Y directions (`spacingX` and `spacingY`). Each point in
-        the domain is assigned a plate ID, and these IDs are used to obtain equivalent stage
-        rotations of identified tectonic plates over a 5 Ma time interval. Each point and
-        its stage rotation are used to calculate plate velocities at a particular geological
-        time. Velocities for each domain point are represented in the north-east-down
-        coordinate system and plotted on a GeoAxes.
+        .. note::
 
-        Vector fields can be optionally normalised by setting `normalise` to `True`. This
-        makes vector arrow lengths uniform.
+            The ``plot_plate_motion_vectors`` generates a MeshNode domain of point features using
+            given spacings in the X and Y directions (``spacingX`` and ``spacingY``). Each point in
+            the domain is assigned a plate ID, and these IDs are used to obtain equivalent stage
+            rotations of identified tectonic plates over a 5 Ma time interval. Each point and
+            its stage rotation are used to calculate plate velocities at a particular geological
+            time. Velocities for each domain point are represented in the north-east-down
+            coordinate system and plotted on a GeoAxes.
+
+            Vector fields can be optionally normalised by setting ``normalise`` to ``True``. This
+            makes vector arrow lengths uniform.
 
         Parameters
         ----------
         ax : instance of <cartopy.mpl.geoaxes.GeoAxes> or <cartopy.mpl.geoaxes.GeoAxesSubplot>
-            A subclass of `matplotlib.axes.Axes` which represents a map Projection.
+            A subclass of ``matplotlib.axes.Axes`` which represents a map Projection.
             The map should be set at a particular Cartopy projection.
 
         spacingX : int, default=10
@@ -1526,8 +1466,8 @@ class PlotTopologies(object):
 
         **kwargs :
             Keyword arguments for quiver presentation parameters for plotting
-            the velocity vector field. See `Matplotlib` quiver keyword arguments
-            [here](https://matplotlib.org/3.5.1/api/_as_gen/matplotlib.axes.Axes.quiver.html).
+            the velocity vector field. See ``Matplotlib`` quiver keyword arguments
+            `here <https://matplotlib.org/3.5.1/api/_as_gen/matplotlib.axes.Axes.quiver.html>`__.
 
         Returns
         -------
@@ -1584,7 +1524,7 @@ class PlotTopologies(object):
         Parameters
         ----------
         ax : instance of <cartopy.mpl.geoaxes.GeoAxes> or <cartopy.mpl.geoaxes.GeoAxesSubplot>
-            A subclass of `matplotlib.axes.Axes` which represents a map Projection.
+            A subclass of ``matplotlib.axes.Axes`` which represents a map Projection.
             The map should be set at a particular Cartopy projection.
 
         lon : float
@@ -2072,7 +2012,7 @@ class PlotTopologies(object):
         )
 
     @validate_reconstruction_time
-    @append_docstring(GET_DATE_DOCSTRING.format("topologies"))
+    @append_docstring(GET_DATE_DOCSTRING.format("topological sections"))
     def get_all_topological_sections(
         self,
         central_meridian=0.0,
@@ -2156,6 +2096,7 @@ class PlotTopologies(object):
     @validate_topology_availability("topological plate boundaries")
     @append_docstring(PLOT_DOCSTRING.format("topological plate boundaries"))
     def plot_topological_plate_boundaries(self, ax, color="black", **kwargs):
+        """Plot the topological plate boundaries."""
         return self.plot_feature(
             ax,
             self._topological_plate_boundaries,

@@ -41,24 +41,31 @@ from plate_model_manager import PlateModelManager, PresentDayRasterManager
 from . import auxiliary, ptt
 from .download import DataServer
 from .grids import Raster
+from .mapping.cartopy_plot import CartopyPlotEngine
+from .mapping.plot_engine import PlotEngine
+from .mapping.pygmt_plot import PygmtPlotEngine
 from .oceans import SeafloorGrid
 from .plot import PlotTopologies
 from .reconstruction import PlateReconstruction, Points
 from .tools import EARTH_RADIUS
 
 __all__ = [
-    # Modules
+    # modules
     "auxiliary",
     "ptt",
-    # Classes
+    # main classes
     "DataServer",
     "PlateReconstruction",
     "PlotTopologies",
     "Points",
     "Raster",
     "SeafloorGrid",
+    # other classes
     "PlateModelManager",
     "PresentDayRasterManager",
+    "PlotEngine",
+    "CartopyPlotEngine",
+    "PygmtPlotEngine",
     # constants
     "EARTH_RADIUS",
 ]
