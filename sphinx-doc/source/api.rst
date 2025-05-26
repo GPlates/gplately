@@ -1,7 +1,7 @@
-GPlately API
+Main Classes
 ============
 
-This page lists the Python functions and classes of the GPlately Python package.
+This page lists the main classes of the GPlately Python package.
 
 .. note:: 
     
