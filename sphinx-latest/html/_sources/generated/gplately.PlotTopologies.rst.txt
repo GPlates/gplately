@@ -67,7 +67,6 @@
       ~PlotTopologies.plot_ridges_and_transforms
       ~PlotTopologies.plot_slab_edges
       ~PlotTopologies.plot_subduction_teeth
-      ~PlotTopologies.plot_subduction_teeth_deprecated
       ~PlotTopologies.plot_sutures
       ~PlotTopologies.plot_terrane_boundaries
       ~PlotTopologies.plot_topological_plate_boundaries
@@ -93,5 +92,14 @@
       ~PlotTopologies.topological_plate_boundaries
       ~PlotTopologies.topologies
       ~PlotTopologies.transforms
+      ~PlotTopologies.plate_reconstruction
+      ~PlotTopologies.base_projection
+      ~PlotTopologies.coastlines
+      ~PlotTopologies.continents
+      ~PlotTopologies.COBs
+      ~PlotTopologies.trenches
+      ~PlotTopologies.trench_left
+      ~PlotTopologies.trench_right
+      ~PlotTopologies.other
    
    

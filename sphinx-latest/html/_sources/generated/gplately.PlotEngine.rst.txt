@@ -1,0 +1,25 @@
+﻿gplately.PlotEngine
+===================
+
+.. currentmodule:: gplately
+
+.. autoclass:: PlotEngine
+
+   
+   .. automethod:: __init__
+
+   
+   .. rubric:: Methods
+
+   .. autosummary::
+   
+      ~PlotEngine.__init__
+      ~PlotEngine.plot_geo_data_frame
+      ~PlotEngine.plot_pygplates_features
+      ~PlotEngine.plot_subduction_zones
+   
+   
+
+   
+   
+   

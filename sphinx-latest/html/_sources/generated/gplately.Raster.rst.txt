@@ -15,7 +15,6 @@
    
       ~Raster.__init__
       ~Raster.clip_by_extent
-      ~Raster.clip_by_polygon
       ~Raster.copy
       ~Raster.fill_NaNs
       ~Raster.imshow

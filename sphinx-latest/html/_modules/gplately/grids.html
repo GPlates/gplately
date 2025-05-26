@@ -52,7 +52,8 @@
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Reference</span></p>
 <ul>
-<li class="toctree-l1"><a class="reference internal" href="../../api.html">GPlately API</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../api.html">Main Classes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../secondaries.html">Secondaries</a></li>
 </ul>
 
         </div>
@@ -97,7 +98,8 @@
 <span class="c1">#    51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.</span>
 <span class="c1">#</span>
 
-<span class="sd">&quot;&quot;&quot;This sub-module contains tools for working with MaskedArray, ndarray and netCDF4 rasters, as well as</span>
+<span class="sd">&quot;&quot;&quot;</span>
+<span class="sd">This sub-module contains tools for working with MaskedArray, ndarray and netCDF4 rasters, as well as</span>
 <span class="sd">gridded-data.</span>
 
 <span class="sd">Some methods available in `grids`:</span>
@@ -134,7 +136,7 @@
 <span class="kn">from</span><span class="w"> </span><span class="nn">scipy.interpolate</span><span class="w"> </span><span class="kn">import</span> <span class="n">RegularGridInterpolator</span> <span class="k">as</span> <span class="n">_RGI</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">scipy.interpolate</span><span class="w"> </span><span class="kn">import</span> <span class="n">griddata</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">scipy.ndimage</span><span class="w"> </span><span class="kn">import</span> <span class="n">distance_transform_edt</span><span class="p">,</span> <span class="n">map_coordinates</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">scipy.spatial</span><span class="w"> </span><span class="kn">import</span> <span class="n">cKDTree</span> <span class="k">as</span> <span class="n">_cKDTree</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">scipy.spatial</span><span class="w"> </span><span class="kn">import</span> <span class="n">cKDTree</span> <span class="k">as</span> <span class="n">_cKDTree</span>  <span class="c1"># type: ignore</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">scipy.spatial.transform</span><span class="w"> </span><span class="kn">import</span> <span class="n">Rotation</span> <span class="k">as</span> <span class="n">_Rotation</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">.geometry</span><span class="w"> </span><span class="kn">import</span> <span class="n">pygplates_to_shapely</span>
@@ -158,24 +160,24 @@
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">fill_raster</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">invalid</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Search a grid of `data` for invalid cells (i.e NaN-type entries) and fill each</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Search a grid of ``data`` for invalid cells (i.e NaN-type entries) and fill each</span>
 <span class="sd">    invalid cell with the value of its nearest valid neighbour.</span>
 
-<span class="sd">    Notes</span>
-<span class="sd">    -----</span>
-<span class="sd">    Uses `scipy`&#39;s `distance_transform_edt` function to perform an Exact Euclidean</span>
-<span class="sd">    Distance Transform (EEDT). This locates the nearest valid neighbours of an invalid</span>
-<span class="sd">    `data` cell.</span>
+<span class="sd">    .. note::</span>
 
-<span class="sd">    An optional parameter, `invalid`, is a binary ndarray with the same dimensions</span>
-<span class="sd">    as `data` and the following entries:</span>
+<span class="sd">        Uses scipy&#39;s ``distance_transform_edt`` function to perform an Exact Euclidean</span>
+<span class="sd">        Distance Transform (EEDT). This locates the nearest valid neighbours of an invalid</span>
+<span class="sd">        ``data`` cell.</span>
 
-<span class="sd">    * 1 if its corresponding entry in `data` is of NaN-type;</span>
-<span class="sd">    * 0 if not NaN-type</span>
+<span class="sd">        An optional parameter, ``invalid``, is a binary ndarray with the same dimensions</span>
+<span class="sd">        as ``data`` and the following entries:</span>
 
-<span class="sd">    This will be used to locate nearest neighbour fill values during the Exact Euclidian</span>
-<span class="sd">    Distance Transform. If `invalid` is not passed to `fill_raster`, it will be created</span>
-<span class="sd">    for the user.</span>
+<span class="sd">        * 1 if its corresponding entry in ``data`` is of NaN-type;</span>
+<span class="sd">        * 0 if not NaN-type</span>
+
+<span class="sd">        This will be used to locate nearest neighbour fill values during the Exact Euclidian</span>
+<span class="sd">        Distance Transform. If ``invalid`` is not passed to ``fill_raster``, it will be created</span>
+<span class="sd">        for the user.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
@@ -183,18 +185,19 @@
 <span class="sd">        A MaskedArray of data that may have invalid cells (i.e. entries of type NaN).</span>
 
 <span class="sd">    invalid : ndarray, optional, default=None</span>
-<span class="sd">        An ndarray with the same shape as `data` whose elements are 1 if its corresponding</span>
-<span class="sd">        elements in `data` are of type `NaN`, and 0 if its corresponding entries in `data`</span>
-<span class="sd">        are valid. An optional parameter - this will be created for the user if it isn’t</span>
+<span class="sd">        An ndarray with the same shape as ``data`` whose elements are 1 if its corresponding</span>
+<span class="sd">        elements in ``data`` are of type ``NaN``, and 0 if its corresponding entries in ``data``</span>
+<span class="sd">        are valid. An optional parameter - this will be created for the user if it isn&#39;t</span>
 <span class="sd">        provided.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
 <span class="sd">    data : ndarray</span>
-<span class="sd">        An updated `data` array where each invalid cell has been replaced with the value</span>
+<span class="sd">        An updated ``data`` array where each invalid cell has been replaced with the value</span>
 <span class="sd">        of its nearest valid neighbour.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="n">masked_array</span> <span class="o">=</span> <span class="nb">hasattr</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="s2">&quot;fill_value&quot;</span><span class="p">)</span>
+    <span class="n">mask_fill_value</span> <span class="o">=</span> <span class="kc">None</span>
     <span class="k">if</span> <span class="n">masked_array</span><span class="p">:</span>
         <span class="n">mask_fill_value</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">data</span> <span class="o">==</span> <span class="n">data</span><span class="o">.</span><span class="n">fill_value</span>
         <span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
@@ -475,7 +478,7 @@
 <span class="k">def</span><span class="w"> </span><span class="nf">write_netcdf_grid</span><span class="p">(</span>
     <span class="n">filename</span><span class="p">,</span>
     <span class="n">grid</span><span class="p">,</span>
-    <span class="n">extent</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;global&quot;</span><span class="p">,</span>
+    <span class="n">extent</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">tuple</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;global&quot;</span><span class="p">,</span>
     <span class="n">significant_digits</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
     <span class="n">fill_value</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">nan</span><span class="p">,</span>
 <span class="p">):</span>
@@ -525,12 +528,14 @@
     <span class="kn">from</span><span class="w"> </span><span class="nn">gplately</span><span class="w"> </span><span class="kn">import</span> <span class="n">__version__</span> <span class="k">as</span> <span class="n">_version</span>
 
     <span class="k">if</span> <span class="n">extent</span> <span class="o">==</span> <span class="s2">&quot;global&quot;</span><span class="p">:</span>
-        <span class="n">extent</span> <span class="o">=</span> <span class="p">[</span><span class="o">-</span><span class="mi">180</span><span class="p">,</span> <span class="mi">180</span><span class="p">,</span> <span class="o">-</span><span class="mi">90</span><span class="p">,</span> <span class="mi">90</span><span class="p">]</span>
+        <span class="n">extent</span> <span class="o">=</span> <span class="p">(</span><span class="o">-</span><span class="mi">180</span><span class="p">,</span> <span class="mi">180</span><span class="p">,</span> <span class="o">-</span><span class="mi">90</span><span class="p">,</span> <span class="mi">90</span><span class="p">)</span>
     <span class="k">else</span><span class="p">:</span>
+        <span class="n">extent</span> <span class="o">=</span> <span class="nb">tuple</span><span class="p">(</span><span class="n">extent</span><span class="p">)</span>
         <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">extent</span><span class="p">)</span> <span class="o">==</span> <span class="mi">4</span><span class="p">,</span> <span class="s2">&quot;specify the [min lon, max lon, min lat, max lat]&quot;</span>
 
     <span class="n">nrows</span><span class="p">,</span> <span class="n">ncols</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">grid</span><span class="p">)</span>
 
+    <span class="k">assert</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">extent</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">)</span>
     <span class="n">lon_grid</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">extent</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">extent</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">ncols</span><span class="p">)</span>
     <span class="n">lat_grid</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="n">extent</span><span class="p">[</span><span class="mi">2</span><span class="p">],</span> <span class="n">extent</span><span class="p">[</span><span class="mi">3</span><span class="p">],</span> <span class="n">nrows</span><span class="p">)</span>
 
@@ -823,7 +828,7 @@
     <span class="n">lat</span><span class="p">,</span>
     <span class="n">grid</span><span class="p">,</span>
     <span class="n">method</span><span class="o">=</span><span class="s2">&quot;linear&quot;</span><span class="p">,</span>
-    <span class="n">extent</span><span class="o">=</span><span class="s2">&quot;global&quot;</span><span class="p">,</span>
+    <span class="n">extent</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">tuple</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;global&quot;</span><span class="p">,</span>
     <span class="n">origin</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
     <span class="n">return_indices</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
 <span class="p">):</span>
@@ -929,6 +934,7 @@
     <span class="k">else</span><span class="p">:</span>  <span class="c1"># ndim(grid) == 3</span>
         <span class="n">depth</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">shape</span><span class="p">(</span><span class="n">grid</span><span class="p">)[</span><span class="mi">2</span><span class="p">]</span>
         <span class="n">interpolated</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="n">interpolated_k</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([])</span>
         <span class="k">for</span> <span class="n">k</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">depth</span><span class="p">):</span>
             <span class="n">interpolated_k</span> <span class="o">=</span> <span class="n">map_coordinates</span><span class="p">(</span>
                 <span class="n">grid</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">k</span><span class="p">],</span>
@@ -961,7 +967,7 @@
     <span class="n">rotation_model</span><span class="p">,</span>
     <span class="n">to_time</span><span class="p">,</span>
     <span class="n">from_time</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span>
-    <span class="n">extent</span><span class="o">=</span><span class="s2">&quot;global&quot;</span><span class="p">,</span>
+    <span class="n">extent</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">tuple</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;global&quot;</span><span class="p">,</span>
     <span class="n">origin</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
     <span class="n">fill_value</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
     <span class="n">threads</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
@@ -975,42 +981,41 @@
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    grid : array_like, or str</span>
-<span class="sd">        The grid to be reconstructed. If `grid` is a filename, it will be</span>
-<span class="sd">        loaded using `gplately.grids.read_netcdf_grid`.</span>
+<span class="sd">        The grid to be reconstructed. If ``grid`` is a filename, it will be</span>
+<span class="sd">        loaded using :meth:`gplately.grids.read_netcdf_grid`.</span>
 <span class="sd">    partitioning_features : valid argument to pygplates.FeaturesFunctionArgument</span>
-<span class="sd">        Features used to partition `grid` by plate ID, usually a static</span>
-<span class="sd">        polygons file. `partitioning_features` may be a single</span>
-<span class="sd">        feature (`pygplates.Feature`), a feature collection</span>
-<span class="sd">        (`pygplates.FeatureCollection`), a filename (`str`), or a (potentially</span>
+<span class="sd">        Features used to partition ``grid`` by plate ID, usually a static</span>
+<span class="sd">        polygons file. ``partitioning_features`` may be a single</span>
+<span class="sd">        feature (``pygplates.Feature``), a feature collection</span>
+<span class="sd">        (``pygplates.FeatureCollection``), a filename (``str``), or a (potentially</span>
 <span class="sd">        nested) sequence of any combination of the above types.</span>
 <span class="sd">    rotation_model : valid argument to pygplates.RotationModel</span>
-<span class="sd">        The rotation model used to reconstruct `grid`.</span>
-<span class="sd">        `rotation_model` may be a rotation model object</span>
-<span class="sd">        (`pygplates.RotationModel`), a rotation feature collection</span>
-<span class="sd">        (`pygplates.FeatureCollection`), a rotation filename</span>
-<span class="sd">        (`str`), a rotation feature (`pygplates.Feature`), a sequence of</span>
-<span class="sd">        rotation features, or a (potentially nested) sequence of any</span>
-<span class="sd">        combination of the above types.</span>
+<span class="sd">        The rotation model used to reconstruct ``grid``.</span>
+<span class="sd">        ``rotation_model`` may be a rotation model object</span>
+<span class="sd">        (``pygplates.RotationModel``), a rotation feature collection</span>
+<span class="sd">        (``pygplates.FeatureCollection``), a rotation filename</span>
+<span class="sd">        (``str``), a rotation feature (``pygplates.Feature``), a sequence of</span>
+<span class="sd">        rotation features, or a (potentially nested) sequence of any combination of the above types.</span>
 <span class="sd">    to_time : float</span>
-<span class="sd">        Time to which `grid` will be reconstructed.</span>
+<span class="sd">        Time to which ``grid`` will be reconstructed.</span>
 <span class="sd">    from_time : float, default 0.0</span>
-<span class="sd">        Time from which to reconstruct `grid`.</span>
+<span class="sd">        Time from which to reconstruct ``grid``.</span>
 <span class="sd">    extent : tuple or &quot;global&quot;, default &quot;global&quot;</span>
-<span class="sd">        Extent of `grid`. Valid arguments are a tuple of</span>
+<span class="sd">        Extent of ``grid``. Valid arguments are a tuple of</span>
 <span class="sd">        the form (xmin, xmax, ymin, ymax), or the string &quot;global&quot;,</span>
 <span class="sd">        equivalent to (-180.0, 180.0, -90.0, 90.0).</span>
 <span class="sd">    origin : {&quot;upper&quot;, &quot;lower&quot;}, optional</span>
-<span class="sd">        Origin of `grid` - either lower-left or upper-left. By default,</span>
+<span class="sd">        Origin of ``grid`` - either lower-left or upper-left. By default,</span>
 <span class="sd">        determined from `extent`.</span>
 <span class="sd">    fill_value : float, int, or tuple, optional</span>
-<span class="sd">        The value to be used for regions outside of `partitioning_features`</span>
-<span class="sd">        at `to_time`. By default (`fill_value=None`), this value will be</span>
+<span class="sd">        The value to be used for regions outside of ``partitioning_features``</span>
+<span class="sd">        at ``to_time``. By default (``fill_value=None``), this value will be</span>
 <span class="sd">        determined based on the input.</span>
 <span class="sd">    threads : int, default 1</span>
 <span class="sd">        Number of threads to use for certain computationally heavy routines.</span>
 <span class="sd">    anchor_plate_id : int, optional</span>
 <span class="sd">        ID of the anchored plate. By default, reconstructions are made with respect to the</span>
-<span class="sd">        default anchor plate ID of `rotation_model` if it&#39;s a `pygplates.RotationModel` (otherwise zero).</span>
+<span class="sd">        default anchor plate ID of ``rotation_model`` if it&#39;s a ``pygplates.RotationModel`` (otherwise zero).</span>
 <span class="sd">    x_dimension_name : str, optional, default=&quot;&quot;</span>
 <span class="sd">        If the grid file uses comman names, such as &quot;x&quot;, &quot;lon&quot;, &quot;lons&quot; or &quot;longitude&quot;, you need not set this parameter.</span>
 <span class="sd">        Otherwise, you need to tell us what the x dimension name is.</span>
@@ -1026,22 +1031,22 @@
 <span class="sd">    -------</span>
 <span class="sd">    numpy.ndarray</span>
 <span class="sd">        The reconstructed grid. Areas for which no plate ID could be</span>
-<span class="sd">        determined from `partitioning_features` will be filled with</span>
-<span class="sd">        `fill_value`.</span>
+<span class="sd">        determined from ``partitioning_features`` will be filled with</span>
+<span class="sd">        ``fill_value``.</span>
 
-<span class="sd">    Notes</span>
-<span class="sd">    -----</span>
-<span class="sd">    For two-dimensional grids, `fill_value` should be a single</span>
-<span class="sd">    number. The default value will be `np.nan` for float or</span>
-<span class="sd">    complex types, the minimum value for integer types, and the</span>
-<span class="sd">    maximum value for unsigned types.</span>
-<span class="sd">    For RGB image grids, `fill_value` should be a 3-tuple RGB</span>
-<span class="sd">    colour code or a matplotlib colour string. The default value</span>
-<span class="sd">    will be black (0.0, 0.0, 0.0) or (0, 0, 0).</span>
-<span class="sd">    For RGBA image grids, `fill_value` should be a 4-tuple RGBA</span>
-<span class="sd">    colour code or a matplotlib colour string. The default fill</span>
-<span class="sd">    value will be transparent black (0.0, 0.0, 0.0, 0.0) or</span>
-<span class="sd">    (0, 0, 0, 0).</span>
+<span class="sd">    .. note::</span>
+
+<span class="sd">        For two-dimensional grids, ``fill_value`` should be a single</span>
+<span class="sd">        number. The default value will be ``np.nan`` for float or</span>
+<span class="sd">        complex types, the minimum value for integer types, and the</span>
+<span class="sd">        maximum value for unsigned types.</span>
+<span class="sd">        For RGB image grids, ``fill_value`` should be a 3-tuple RGB</span>
+<span class="sd">        colour code or a matplotlib colour string. The default value</span>
+<span class="sd">        will be black (0.0, 0.0, 0.0) or (0, 0, 0).</span>
+<span class="sd">        For RGBA image grids, ``fill_value`` should be a 4-tuple RGBA</span>
+<span class="sd">        colour code or a matplotlib colour string. The default fill</span>
+<span class="sd">        value will be transparent black (0.0, 0.0, 0.0, 0.0) or</span>
+<span class="sd">        (0, 0, 0, 0).</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="n">grid</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
@@ -1248,7 +1253,7 @@
     <span class="n">resx</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>
     <span class="n">resy</span><span class="o">=</span><span class="mf">1.0</span><span class="p">,</span>
     <span class="n">shape</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-    <span class="n">extent</span><span class="o">=</span><span class="s2">&quot;global&quot;</span><span class="p">,</span>
+    <span class="n">extent</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">tuple</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;global&quot;</span><span class="p">,</span>
     <span class="n">origin</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
     <span class="n">tessellate_degrees</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span>
 <span class="p">):</span>
@@ -1370,8 +1375,8 @@
             <span class="n">features</span><span class="p">,</span>
             <span class="n">tessellate_degrees</span><span class="o">=</span><span class="n">tessellate_degrees</span><span class="p">,</span>
         <span class="p">)</span>
-        <span class="n">reconstructed</span> <span class="o">=</span> <span class="kc">None</span>
 
+    <span class="n">reconstructed</span> <span class="o">=</span> <span class="p">[]</span>
     <span class="k">if</span> <span class="n">geometries</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
         <span class="k">if</span> <span class="n">rotation_model</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">if</span> <span class="n">time</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
@@ -1385,8 +1390,7 @@
             <span class="n">time</span> <span class="o">=</span> <span class="mf">0.0</span>
         <span class="n">time</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">time</span><span class="p">)</span>
 
-        <span class="n">reconstructed</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="n">pygplates</span><span class="o">.</span><span class="n">reconstruct</span><span class="p">(</span>
+        <span class="n">pygplates</span><span class="o">.</span><span class="n">reconstruct</span><span class="p">(</span>  <span class="c1"># type: ignore</span>
             <span class="n">features</span><span class="p">,</span>
             <span class="n">rotation_model</span><span class="p">,</span>
             <span class="n">reconstructed</span><span class="p">,</span>
@@ -1644,96 +1648,10 @@
 <span class="k">class</span><span class="w"> </span><span class="nc">Raster</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;The Raster class handles raster data.</span>
 
-<span class="sd">    `gplately.Raster`&#39;s functionalities include sampling data at points using spline</span>
+<span class="sd">    The functionalities of :class:`gplately.Raster` include sampling data at points using spline</span>
 <span class="sd">    interpolation, resampling rasters with new X and Y-direction spacings and</span>
 <span class="sd">    resizing rasters using new X and Y grid pixel resolutions. NaN-type data</span>
-<span class="sd">    in rasters can be replaced with the values of their nearest valid</span>
-<span class="sd">    neighbours.</span>
-
-<span class="sd">    Parameters</span>
-<span class="sd">    ----------</span>
-<span class="sd">    data : str or array-like</span>
-<span class="sd">        The raster data, either as a filename (`str`) or array.</span>
-
-<span class="sd">    plate_reconstruction : gplately.PlateReconstruction</span>
-<span class="sd">        Allows for the accessibility of PlateReconstruction object attributes.</span>
-<span class="sd">        Namely, PlateReconstruction object attributes rotation_model,</span>
-<span class="sd">        topology_features and static_polygons can be used in the `Raster`</span>
-<span class="sd">        object if called using “self.plate_reconstruction.X”, where X is the</span>
-<span class="sd">        attribute.</span>
-
-<span class="sd">    extent : str or 4-tuple, default: &#39;global&#39;</span>
-<span class="sd">        4-tuple to specify (min_lon, max_lon, min_lat, max_lat) extents</span>
-<span class="sd">        of the raster. If no extents are supplied, full global extent</span>
-<span class="sd">        [-180,180,-90,90] is assumed (equivalent to `extent=&#39;global&#39;`).</span>
-<span class="sd">        For array data with an upper-left origin, make sure `min_lat` is</span>
-<span class="sd">        greater than `max_lat`, or specify `origin` parameter.</span>
-
-<span class="sd">    resample : 2-tuple, optional</span>
-<span class="sd">        Optionally resample grid, pass spacing in X and Y direction as a</span>
-<span class="sd">        2-tuple e.g. resample=(spacingX, spacingY).</span>
-
-<span class="sd">    time : float, default: 0.0</span>
-<span class="sd">        The time step represented by the raster data. Used for raster</span>
-<span class="sd">        reconstruction.</span>
-
-<span class="sd">    origin : {&#39;lower&#39;, &#39;upper&#39;}, optional</span>
-<span class="sd">        When `data` is an array, use this parameter to specify the origin</span>
-<span class="sd">        (upper left or lower left) of the data (overriding `extent`).</span>
-
-<span class="sd">    **kwargs</span>
-<span class="sd">        Handle deprecated arguments such as `PlateReconstruction_object`,</span>
-<span class="sd">        `filename`, and `array`.</span>
-
-<span class="sd">    Attributes</span>
-<span class="sd">    ----------</span>
-<span class="sd">    data : ndarray, shape (ny, nx)</span>
-<span class="sd">        Array containing the underlying raster data. This attribute can be</span>
-<span class="sd">        modified after creation of the `Raster`.</span>
-<span class="sd">    plate_reconstruction : gplately.PlateReconstruction</span>
-<span class="sd">        An object of GPlately&#39;s `gplately.PlateReconstruction` class, like the</span>
-<span class="sd">        `rotation_model`, a set of reconstructable `topology_features` and</span>
-<span class="sd">        `static_polygons` that belong to a particular plate model. These</span>
-<span class="sd">        attributes can be used in the `Raster` object if called using</span>
-<span class="sd">        “self.plate_reconstruction.X”, where X is the attribute. This</span>
-<span class="sd">        attribute can be modified after creation of the `Raster`.</span>
-<span class="sd">    extent : tuple of floats</span>
-<span class="sd">        Four-element array to specify [min lon, max lon, min lat, max lat]</span>
-<span class="sd">        extents of any sampling points. If no extents are supplied, full</span>
-<span class="sd">        global extent [-180,180,-90,90] is assumed.</span>
-<span class="sd">    lons : ndarray, shape (nx,)</span>
-<span class="sd">        The x-coordinates of the raster data. This attribute can be modified</span>
-<span class="sd">        after creation of the `Raster`.</span>
-<span class="sd">    lats : ndarray, shape (ny,)</span>
-<span class="sd">        The y-coordinates of the raster data. This attribute can be modified</span>
-<span class="sd">        after creation of the `Raster`.</span>
-<span class="sd">    origin : {&#39;lower&#39;, &#39;upper&#39;}</span>
-<span class="sd">        The origin (lower or upper left) or the data array.</span>
-<span class="sd">    filename : str or None</span>
-<span class="sd">        The filename used to create the `Raster` object. If the object was</span>
-<span class="sd">        created directly from an array, this attribute is `None`.</span>
-
-<span class="sd">    Methods</span>
-<span class="sd">    -------</span>
-<span class="sd">    interpolate(lons, lats, method=&#39;linear&#39;, return_indices=False)</span>
-<span class="sd">        Sample gridded data at a set of points using spline interpolation.</span>
-
-<span class="sd">    resample(spacingX, spacingY, overwrite=False)</span>
-<span class="sd">        Resamples the grid using X &amp; Y-spaced lat-lon arrays, meshed with</span>
-<span class="sd">        linear interpolation.</span>
-
-<span class="sd">    resize(resX, resY, overwrite=False)</span>
-<span class="sd">        Resizes the grid with a specific resolution and samples points</span>
-<span class="sd">        using linear interpolation.</span>
-
-<span class="sd">    fill_NaNs(overwrite=False)</span>
-<span class="sd">        Searches for invalid &#39;data&#39; cells containing NaN-type entries and</span>
-<span class="sd">        replaces NaNs with the value of the nearest valid data cell.</span>
-
-<span class="sd">    reconstruct(time, fill_value=None, partitioning_features=None,</span>
-<span class="sd">                threads=1, anchor_plate_id=None, inplace=False)</span>
-<span class="sd">        Reconstruct the raster from its initial time (`self.time`) to a new</span>
-<span class="sd">        time.</span>
+<span class="sd">    in rasters can be replaced with the values of their nearest valid neighbours.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
 <div class="viewcode-block" id="Raster.__init__">
@@ -1760,19 +1678,21 @@
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
 <span class="sd">        data : str or array-like</span>
-<span class="sd">            The raster data, either as a filename (`str`) or array.</span>
+<span class="sd">            The raster data, either as a filename (``str``) or array.</span>
 
-<span class="sd">        plate_reconstruction : PlateReconstruction</span>
-<span class="sd">            Allows for the accessibility of PlateReconstruction object attributes. Namely, PlateReconstruction object</span>
-<span class="sd">            attributes rotation_model, topology_featues and static_polygons can be used in the points object if called using</span>
-<span class="sd">            “self.plate_reconstruction.X”, where X is the attribute.</span>
+<span class="sd">        plate_reconstruction : gplately.PlateReconstruction</span>
+<span class="sd">            Allows for the accessibility of PlateReconstruction object attributes.</span>
+<span class="sd">            Namely, PlateReconstruction object attributes rotation_model,</span>
+<span class="sd">            topology_features and static_polygons can be used in the ``Raster``</span>
+<span class="sd">            object if called using ``self.plate_reconstruction.X``, where X is the</span>
+<span class="sd">            attribute.</span>
 
 <span class="sd">        extent : str or 4-tuple, default: &#39;global&#39;</span>
 <span class="sd">            4-tuple to specify (min_lon, max_lon, min_lat, max_lat) extents</span>
 <span class="sd">            of the raster. If no extents are supplied, full global extent</span>
-<span class="sd">            [-180,180,-90,90] is assumed (equivalent to `extent=&#39;global&#39;`).</span>
-<span class="sd">            For array data with an upper-left origin, make sure `min_lat` is</span>
-<span class="sd">            greater than `max_lat`, or specify `origin` parameter.</span>
+<span class="sd">            [-180,180,-90,90] is assumed (equivalent to ``extent=&#39;global&#39;``).</span>
+<span class="sd">            For array data with an upper-left origin, make sure ``min_lat`` is</span>
+<span class="sd">            greater than ``max_lat``, or specify ``origin`` parameter.</span>
 
 <span class="sd">        resample : 2-tuple, optional</span>
 <span class="sd">            Optionally resample grid, pass spacing in X and Y direction as a</span>
@@ -1783,12 +1703,11 @@
 <span class="sd">            2-tuple e.g. resample=(resX, resY).</span>
 
 <span class="sd">        time : float, default: 0.0</span>
-<span class="sd">            The time step represented by the raster data. Used for raster</span>
-<span class="sd">            reconstruction.</span>
+<span class="sd">            The time step represented by the raster data. Used for raster reconstruction.</span>
 
 <span class="sd">        origin : {&#39;lower&#39;, &#39;upper&#39;}, optional</span>
-<span class="sd">            When `data` is an array, use this parameter to specify the origin</span>
-<span class="sd">            (upper left or lower left) of the data (overriding `extent`).</span>
+<span class="sd">            When ``data`` is an array, use this parameter to specify the origin</span>
+<span class="sd">            (upper left or lower left) of the data (overriding ``extent``).</span>
 
 <span class="sd">        x_dimension_name : str, optional, default=&quot;&quot;</span>
 <span class="sd">            If the grid file uses comman names, such as &quot;x&quot;, &quot;lon&quot;, &quot;lons&quot; or &quot;longitude&quot;, you need not set this parameter.</span>
@@ -1804,8 +1723,7 @@
 <span class="sd">            Otherwise, the program will guess. The result may/may not be correct.</span>
 
 <span class="sd">        **kwargs</span>
-<span class="sd">            Handle deprecated arguments such as `PlateReconstruction_object`,</span>
-<span class="sd">            `filename`, and `array`.</span>
+<span class="sd">            Handle deprecated arguments such as ``PlateReconstruction_object``, ``filename``, and ``array``.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__class__</span><span class="p">):</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_data</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">_data</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
@@ -1901,9 +1819,10 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">data</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;The object&#39;s raster data.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Array containing the underlying raster data. This attribute can be</span>
+<span class="sd">        modified after creation of the ``Raster``.</span>
 
-<span class="sd">        Can be modified.</span>
+<span class="sd">        :type: ndarray, shape (ny, nx)</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_data</span>
 
@@ -1921,9 +1840,10 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">lons</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;The x-coordinates of the raster data.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;The x-coordinates of the raster data. This attribute can be modified</span>
+<span class="sd">        after creation of the ``Raster``.</span>
 
-<span class="sd">        Can be modified.</span>
+<span class="sd">        :type: ndarray, shape (nx,)</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_lons</span>
 
@@ -1941,9 +1861,10 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">lats</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;The y-coordinates of the raster data.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;The y-coordinates of the raster data. This attribute can be modified</span>
+<span class="sd">        after creation of the ``Raster``.</span>
 
-<span class="sd">        Can be modified.</span>
+<span class="sd">        :type: ndarray, shape (ny,)</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_lats</span>
 
@@ -1961,9 +1882,12 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">extent</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;The spatial extent (x0, x1, y0, y1) of the data.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;The spatial extent (x0, x1, y0, y1) of the data. If no extents are supplied, full</span>
+<span class="sd">        global extent [-180,180,-90,90] is assumed.</span>
 
 <span class="sd">        If y0 &lt; y1, the origin is the lower-left corner; else the upper-left.</span>
+
+<span class="sd">        :type:  tuple of 4 floats</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="p">(</span>
             <span class="nb">float</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lons</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span>
@@ -1974,7 +1898,10 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">origin</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;The origin of the data array, used for e.g. plotting.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;The origin (&#39;lower&#39; or &#39;upper&#39;) of the data array, used for e.g. plotting.</span>
+
+<span class="sd">        :type: str</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">lats</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">lats</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]:</span>
             <span class="k">return</span> <span class="s2">&quot;lower&quot;</span>
         <span class="k">else</span><span class="p">:</span>
@@ -2002,16 +1929,23 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">filename</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;The filename of the raster file used to create the object.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;The filename used to create the ``Raster`` object. If the object was</span>
+<span class="sd">        created directly from an array, this attribute is ``None``.</span>
 
-<span class="sd">        If a NumPy array was used instead, this attribute is `None`.</span>
+<span class="sd">        :type: str or None</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_filename</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">plate_reconstruction</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;The `PlateReconstruction` object to be used for raster</span>
-<span class="sd">        reconstruction.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;An instance of :class:`gplately.PlateReconstruction` class, like the</span>
+<span class="sd">        ``rotation_model``, a set of reconstructable ``topology_features`` and</span>
+<span class="sd">        ``static_polygons`` that belong to a particular plate model. These</span>
+<span class="sd">        attributes can be used in the ``Raster`` object if called using</span>
+<span class="sd">        ``self.plate_reconstruction.X``, where X is the attribute. This</span>
+<span class="sd">        attribute can be modified after creation of the ``Raster``.</span>
+
+<span class="sd">        :type: gplately.PlateReconstruction</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_plate_reconstruction</span>
 
@@ -2039,7 +1973,7 @@
 <span class="sd">            A copy of the current Raster object</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">Raster</span><span class="p">(</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">copy</span><span class="p">(),</span> <span class="bp">self</span><span class="o">.</span><span class="n">plate_reconstruction</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">extent</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">time</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="o">.</span><span class="n">copy</span><span class="p">(),</span> <span class="bp">self</span><span class="o">.</span><span class="n">plate_reconstruction</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">extent</span><span class="p">,</span> <span class="n">time</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">time</span>
         <span class="p">)</span></div>
 
 
@@ -2052,8 +1986,7 @@
         <span class="n">method</span><span class="o">=</span><span class="s2">&quot;linear&quot;</span><span class="p">,</span>
         <span class="n">return_indices</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
     <span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Interpolate a set of point data onto the gridded data provided</span>
-<span class="sd">        to the `Raster` object.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Sample grid data at a set of points using spline interpolation.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -2074,22 +2007,26 @@
 <span class="sd">            The values interpolated at the input points.</span>
 <span class="sd">        indices : 2-tuple of numpy.ndarray</span>
 <span class="sd">            The i- and j-indices of the nearest grid points to the input</span>
-<span class="sd">            points, only present if `return_indices=True`.</span>
+<span class="sd">            points, only present if ``return_indices=True``.</span>
 
 <span class="sd">        Raises</span>
 <span class="sd">        ------</span>
 <span class="sd">        ValueError</span>
-<span class="sd">            If an invalid `method` is provided.</span>
+<span class="sd">            If an invalid ``method`` is provided.</span>
 <span class="sd">        RuntimeWarning</span>
-<span class="sd">            If `lats` contains any invalid values outside of the interval</span>
+<span class="sd">            If ``lats`` contains any invalid values outside of the interval</span>
 <span class="sd">            [-90, 90]. Invalid values will be clipped to this interval.</span>
 
-<span class="sd">        Notes</span>
-<span class="sd">        -----</span>
-<span class="sd">        If `return_indices` is set to `True`, the nearest array indices</span>
-<span class="sd">        are returned as a tuple of arrays, in (i, j) or (lat, lon) format.</span>
+
+<span class="sd">        .. note::</span>
+
+<span class="sd">            If ``return_indices`` is set to ``True``, the nearest array indices</span>
+<span class="sd">            are returned as a tuple of arrays, in (i, j) or (lat, lon) format.</span>
+
 
 <span class="sd">        An example output:</span>
+
+<span class="sd">        .. code:: console</span>
 
 <span class="sd">            # The first array holds the rows of the raster where point data spatially falls near.</span>
 <span class="sd">            # The second array holds the columns of the raster where point data spatially falls near.</span>
@@ -2107,26 +2044,25 @@
 <div class="viewcode-block" id="Raster.resample">
 <a class="viewcode-back" href="../../generated/gplately.Raster.html#gplately.Raster.resample">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">resample</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">spacingX</span><span class="p">,</span> <span class="n">spacingY</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s2">&quot;linear&quot;</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Resample the `grid` passed to the `Raster` object with a new `spacingX` and</span>
-<span class="sd">        `spacingY` using linear interpolation.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Resamples the grid with a new ``spacingX`` and ``spacingY``, meshed with linear interpolation.</span>
 
-<span class="sd">        Notes</span>
-<span class="sd">        -----</span>
-<span class="sd">        Ultimately, `resample` changes the lat-lon resolution of the gridded data. The</span>
-<span class="sd">        larger the x and y spacings given are, the larger the pixellation of raster data.</span>
+<span class="sd">        .. note::</span>
 
-<span class="sd">        `resample` creates new latitude and longitude arrays with specified spacings in the</span>
-<span class="sd">        X and Y directions (`spacingX` and `spacingY`). These arrays are linearly interpolated</span>
-<span class="sd">        into a new raster. If `inplace` is set to `True`, the respaced latitude array, longitude</span>
-<span class="sd">        array and raster will inplace the ones currently attributed to the `Raster` object.</span>
+<span class="sd">            Ultimately, ``resample`` changes the lat-lon resolution of the gridded data. The</span>
+<span class="sd">            larger the x and y spacings given are, the larger the pixellation of raster data.</span>
+
+<span class="sd">            ``resample`` creates new latitude and longitude arrays with specified spacings in the</span>
+<span class="sd">            X and Y directions (``spacingX`` and ``spacingY``). These arrays are linearly interpolated</span>
+<span class="sd">            into a new raster. If ``inplace`` is set to ``True``, the respaced latitude array, longitude</span>
+<span class="sd">            array and raster will inplace the ones currently attributed to the ``Raster`` object.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
 <span class="sd">        spacingX, spacingY : ndarray</span>
 <span class="sd">            Specify the spacing in the X and Y directions with which to resample. The larger</span>
-<span class="sd">            `spacingX` and `spacingY` are, the larger the raster pixels become (less resolved).</span>
-<span class="sd">            Note: to keep the size of the raster consistent, set `spacingX = spacingY`;</span>
-<span class="sd">            otherwise, if for example `spacingX &gt; spacingY`, the raster will appear stretched</span>
+<span class="sd">            ``spacingX`` and ``spacingY`` are, the larger the raster pixels become (less resolved).</span>
+<span class="sd">            Note: to keep the size of the raster consistent, set ``spacingX = spacingY``;</span>
+<span class="sd">            otherwise, if for example ``spacingX &gt; spacingY``, the raster will appear stretched</span>
 <span class="sd">            longitudinally.</span>
 
 <span class="sd">        method : str or int; default: &#39;linear&#39;</span>
@@ -2135,15 +2071,15 @@
 <span class="sd">            respectively.</span>
 
 <span class="sd">        inplace : bool, default=False</span>
-<span class="sd">            Choose to overwrite the data (the `self.data` attribute), latitude array</span>
-<span class="sd">            (`self.lats`) and longitude array (`self.lons`) currently attributed to the</span>
-<span class="sd">            `Raster` object.</span>
+<span class="sd">            Choose to overwrite the data (the ``self.data`` attribute), latitude array</span>
+<span class="sd">            (``self.lats``) and longitude array (``self.lons``) currently attributed to the</span>
+<span class="sd">            ``Raster`` object.</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
 <span class="sd">        Raster</span>
-<span class="sd">            The resampled grid. If `inplace` is set to `True`, this raster overwrites the</span>
-<span class="sd">            one attributed to `data`.</span>
+<span class="sd">            The resampled grid. If ``inplace`` is set to ``True``, this raster overwrites the</span>
+<span class="sd">            one attributed to ``data``.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">spacingX</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">spacingX</span><span class="p">)</span>
         <span class="n">spacingY</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">abs</span><span class="p">(</span><span class="n">spacingY</span><span class="p">)</span>
@@ -2166,24 +2102,23 @@
 <div class="viewcode-block" id="Raster.resize">
 <a class="viewcode-back" href="../../generated/gplately.Raster.html#gplately.Raster.resize">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">resize</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">resX</span><span class="p">,</span> <span class="n">resY</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">method</span><span class="o">=</span><span class="s2">&quot;linear&quot;</span><span class="p">,</span> <span class="n">return_array</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Resize the grid passed to the `Raster` object with a new x and y resolution</span>
-<span class="sd">        (`resX` and `resY`) using linear interpolation.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Resize the grid with a new resolution(``resX`` and ``resY``) using linear interpolation.</span>
 
-<span class="sd">        Notes</span>
-<span class="sd">        -----</span>
-<span class="sd">        Ultimately, `resize` &quot;stretches&quot; a raster in the x and y directions. The larger</span>
-<span class="sd">        the resolutions in x and y, the more stretched the raster appears in x and y.</span>
+<span class="sd">        .. note::</span>
 
-<span class="sd">        It creates new latitude and longitude arrays with specific resolutions in</span>
-<span class="sd">        the X and Y directions (`resX` and `resY`). These arrays are linearly interpolated</span>
-<span class="sd">        into a new raster. If `inplace` is set to `True`, the resized latitude, longitude</span>
-<span class="sd">        arrays and raster will inplace the ones currently attributed to the `Raster` object.</span>
+<span class="sd">            Ultimately, ``resize`` &quot;stretches&quot; a raster in the x and y directions. The larger</span>
+<span class="sd">            the resolutions in x and y, the more stretched the raster appears in x and y.</span>
+
+<span class="sd">            It creates new latitude and longitude arrays with specific resolutions in</span>
+<span class="sd">            the X and Y directions (``resX`` and ``resY``). These arrays are linearly interpolated</span>
+<span class="sd">            into a new raster. If ``inplace`` is set to ``True``, the resized latitude, longitude</span>
+<span class="sd">            arrays and raster will inplace the ones currently attributed to the ``Raster`` object.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
 <span class="sd">        resX, resY : ndarray</span>
-<span class="sd">            Specify the resolutions with which to resize the raster. The larger `resX` is,</span>
-<span class="sd">            the more longitudinally-stretched the raster becomes. The larger `resY` is, the</span>
+<span class="sd">            Specify the resolutions with which to resize the raster. The larger ``resX`` is,</span>
+<span class="sd">            the more longitudinally-stretched the raster becomes. The larger ``resY`` is, the</span>
 <span class="sd">            more latitudinally-stretched the raster becomes.</span>
 
 <span class="sd">        method : str or int; default: &#39;linear&#39;</span>
@@ -2192,18 +2127,18 @@
 <span class="sd">            respectively.</span>
 
 <span class="sd">        inplace : bool, default=False</span>
-<span class="sd">            Choose to overwrite the data (the `self.data` attribute), latitude array</span>
-<span class="sd">            (`self.lats`) and longitude array (`self.lons`) currently attributed to the</span>
-<span class="sd">            `Raster` object.</span>
+<span class="sd">            Choose to overwrite the data (the ``self.data`` attribute), latitude array</span>
+<span class="sd">            (``self.lats``) and longitude array (``self.lons``) currently attributed to the</span>
+<span class="sd">            ``Raster`` object.</span>
 
 <span class="sd">        return_array : bool, default False</span>
-<span class="sd">            Return a `numpy.ndarray`, rather than a `Raster`.</span>
+<span class="sd">            Return a ``numpy.ndarray``, rather than a ``Raster``.</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
 <span class="sd">        Raster</span>
-<span class="sd">            The resized grid. If `inplace` is set to `True`, this raster overwrites the</span>
-<span class="sd">            one attributed to `data`.</span>
+<span class="sd">            The resized grid. If ``inplace`` is set to ``True``, this raster overwrites the</span>
+<span class="sd">            one attributed to ``data``.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># construct grid</span>
         <span class="n">lons</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">linspace</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">extent</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="bp">self</span><span class="o">.</span><span class="n">extent</span><span class="p">[</span><span class="mi">1</span><span class="p">],</span> <span class="n">resX</span><span class="p">)</span>
@@ -2224,23 +2159,23 @@
 <div class="viewcode-block" id="Raster.fill_NaNs">
 <a class="viewcode-back" href="../../generated/gplately.Raster.html#gplately.Raster.fill_NaNs">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">fill_NaNs</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">return_array</span><span class="o">=</span><span class="kc">False</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Search raster for invalid ‘data’ cells containing NaN-type entries replaces them</span>
-<span class="sd">        with the value of their nearest valid data cells.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Search for invalid ``data`` cells containing NaN-type entries and</span>
+<span class="sd">        replaces NaNs with the value of the nearest valid data cell.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ---------</span>
 <span class="sd">        inplace : bool, default=False</span>
-<span class="sd">            Choose whether to overwrite the grid currently held in the `data` attribute with</span>
+<span class="sd">            Choose whether to overwrite the grid currently held in the ``data`` attribute with</span>
 <span class="sd">            the filled grid.</span>
 
 <span class="sd">        return_array : bool, default False</span>
-<span class="sd">            Return a `numpy.ndarray`, rather than a `Raster`.</span>
+<span class="sd">            Return a ``numpy.ndarray``, rather than a ``Raster``.</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        --------</span>
 <span class="sd">        Raster</span>
-<span class="sd">            The resized grid. If `inplace` is set to `True`, this raster overwrites the</span>
-<span class="sd">            one attributed to `data`.</span>
+<span class="sd">            The resized grid. If ``inplace`` is set to ``True``, this raster overwrites the</span>
+<span class="sd">            one attributed to ``data``.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">data</span> <span class="o">=</span> <span class="n">fill_raster</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
         <span class="k">if</span> <span class="n">inplace</span><span class="p">:</span>
@@ -2248,7 +2183,7 @@
         <span class="k">if</span> <span class="n">return_array</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">data</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">Raster</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">plate_reconstruction</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">extent</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">time</span><span class="p">)</span></div>
+            <span class="k">return</span> <span class="n">Raster</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">plate_reconstruction</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">extent</span><span class="p">,</span> <span class="n">time</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">time</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="Raster.save_to_netcdf4">
@@ -2273,7 +2208,7 @@
         <span class="n">inplace</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
         <span class="n">return_array</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
     <span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Reconstruct raster data to a given time.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Reconstruct the raster from its initial time (``self.time``) to a new time.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -2281,49 +2216,48 @@
 <span class="sd">            Time to which the data will be reconstructed.</span>
 <span class="sd">        fill_value : float, int, str, or tuple, optional</span>
 <span class="sd">            The value to be used for regions outside of the static polygons</span>
-<span class="sd">            at `time`. By default (`fill_value=None`), this value will be</span>
+<span class="sd">            at ``time``. By default (``fill_value=None``), this value will be</span>
 <span class="sd">            determined based on the input.</span>
 <span class="sd">        partitioning_features : sequence of Feature or str, optional</span>
 <span class="sd">            The features used to partition the raster grid and assign plate</span>
-<span class="sd">            IDs. By default, `self.plate_reconstruction.static_polygons`</span>
+<span class="sd">            IDs. By default, ``self.plate_reconstruction.static_polygons``</span>
 <span class="sd">            will be used, but alternatively any valid argument to</span>
-<span class="sd">            &#39;pygplates.FeaturesFunctionArgument&#39; can be specified here.</span>
+<span class="sd">            ``pygplates.FeaturesFunctionArgument`` can be specified here.</span>
 <span class="sd">        threads : int, default 1</span>
-<span class="sd">            Number of threads to use for certain computationally heavy</span>
-<span class="sd">            routines.</span>
+<span class="sd">            Number of threads to use for certain computationally heavy routines.</span>
 <span class="sd">        anchor_plate_id : int, optional</span>
 <span class="sd">            ID of the anchored plate. By default, reconstructions are made with respect to</span>
-<span class="sd">            the anchor plate ID specified in the `gplately.PlateReconstruction` object.</span>
+<span class="sd">            the anchor plate ID specified in the :class:`gplately.PlateReconstruction` object.</span>
 <span class="sd">        inplace : bool, default False</span>
-<span class="sd">            Perform the reconstruction in-place (replace the raster&#39;s data</span>
-<span class="sd">            with the reconstructed data).</span>
+<span class="sd">            Perform the reconstruction in-place (replace the raster&#39;s data with the reconstructed data).</span>
 <span class="sd">        return_array : bool, default False</span>
-<span class="sd">            Return a `numpy.ndarray`, rather than a `Raster`.</span>
+<span class="sd">            Return a ``numpy.ndarray``, rather than a ``Raster``.</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
 <span class="sd">        Raster or np.ndarray</span>
 <span class="sd">            The reconstructed grid. Areas for which no plate ID could be</span>
-<span class="sd">            determined will be filled with `fill_value`.</span>
+<span class="sd">            determined will be filled with ``fill_value``.</span>
 
 <span class="sd">        Raises</span>
 <span class="sd">        ------</span>
 <span class="sd">        TypeError</span>
-<span class="sd">            If this `Raster` has no `plate_reconstruction` set.</span>
+<span class="sd">            If this ``Raster`` has no ``plate_reconstruction`` set.</span>
 
-<span class="sd">        Notes</span>
-<span class="sd">        -----</span>
-<span class="sd">        For two-dimensional grids, `fill_value` should be a single</span>
-<span class="sd">        number. The default value will be `np.nan` for float or</span>
-<span class="sd">        complex types, the minimum value for integer types, and the</span>
-<span class="sd">        maximum value for unsigned types.</span>
-<span class="sd">        For RGB image grids, `fill_value` should be a 3-tuple RGB</span>
-<span class="sd">        colour code or a matplotlib colour string. The default value</span>
-<span class="sd">        will be black (0.0, 0.0, 0.0) or (0, 0, 0).</span>
-<span class="sd">        For RGBA image grids, `fill_value` should be a 4-tuple RGBA</span>
-<span class="sd">        colour code or a matplotlib colour string. The default fill</span>
-<span class="sd">        value will be transparent black (0.0, 0.0, 0.0, 0.0) or</span>
-<span class="sd">        (0, 0, 0, 0).</span>
+
+<span class="sd">        .. note::</span>
+
+<span class="sd">            For two-dimensional grids, ``fill_value`` should be a single</span>
+<span class="sd">            number. The default value will be ``np.nan`` for float or</span>
+<span class="sd">            complex types, the minimum value for integer types, and the</span>
+<span class="sd">            maximum value for unsigned types.</span>
+<span class="sd">            For RGB image grids, ``fill_value`` should be a 3-tuple RGB</span>
+<span class="sd">            colour code or a matplotlib colour string. The default value</span>
+<span class="sd">            will be black (0.0, 0.0, 0.0) or (0, 0, 0).</span>
+<span class="sd">            For RGBA image grids, ``fill_value`` should be a 4-tuple RGBA</span>
+<span class="sd">            colour code or a matplotlib colour string. The default fill</span>
+<span class="sd">            value will be transparent black (0.0, 0.0, 0.0, 0.0) or</span>
+<span class="sd">            (0, 0, 0, 0).</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">time</span> <span class="o">&lt;</span> <span class="mf">0.0</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Invalid time: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">time</span><span class="p">))</span>
@@ -2371,8 +2305,8 @@
     <span class="k">def</span><span class="w"> </span><span class="nf">imshow</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ax</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">projection</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Display raster data.</span>
 
-<span class="sd">        A pre-existing matplotlib `Axes` instance is used if available,</span>
-<span class="sd">        else a new one is created. The `origin` and `extent` of the image</span>
+<span class="sd">        A pre-existing matplotlib ``Axes`` instance is used if available,</span>
+<span class="sd">        else a new one is created. The ``origin`` and ``extent`` of the image</span>
 <span class="sd">        are determined automatically and should not be specified.</span>
 
 <span class="sd">        Parameters</span>
@@ -2380,12 +2314,12 @@
 <span class="sd">        ax : matplotlib.axes.Axes, optional</span>
 <span class="sd">            If specified, the image will be drawn within these axes.</span>
 <span class="sd">        projection : cartopy.crs.Projection, optional</span>
-<span class="sd">            The map projection to be used. If both `ax` and `projection`</span>
-<span class="sd">            are specified, this will be checked against the `projection`</span>
-<span class="sd">            attribute of `ax`, if it exists.</span>
+<span class="sd">            The map projection to be used. If both ``ax`` and ``projection``</span>
+<span class="sd">            are specified, this will be checked against the ``projection``</span>
+<span class="sd">            attribute of ``ax``, if it exists.</span>
 <span class="sd">        **kwargs : dict, optional</span>
 <span class="sd">            Any further keyword arguments are passed to</span>
-<span class="sd">            `matplotlib.pyplot.imshow` or `matplotlib.axes.Axes.imshow`,</span>
+<span class="sd">            ``matplotlib.pyplot.imshow`` or ``matplotlib.axes.Axes.imshow``,</span>
 <span class="sd">            where appropriate.</span>
 
 <span class="sd">        Returns</span>
@@ -2395,8 +2329,8 @@
 <span class="sd">        Raises</span>
 <span class="sd">        ------</span>
 <span class="sd">        ValueError</span>
-<span class="sd">            If `ax` and `projection` are both specified, but do not match</span>
-<span class="sd">            (i.e. `ax.projection != projection`).</span>
+<span class="sd">            If ``ax`` and ``projection`` are both specified, but do not match</span>
+<span class="sd">            (i.e. ``ax.projection != projection``).</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">for</span> <span class="n">kw</span> <span class="ow">in</span> <span class="p">(</span><span class="s2">&quot;origin&quot;</span><span class="p">,</span> <span class="s2">&quot;extent&quot;</span><span class="p">):</span>
             <span class="k">if</span> <span class="n">kw</span> <span class="ow">in</span> <span class="n">kwargs</span><span class="o">.</span><span class="n">keys</span><span class="p">():</span>
@@ -2457,8 +2391,7 @@
         <span class="n">output_name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
     <span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Rotate a grid defined in one plate model reference frame</span>
-<span class="sd">        within a gplately.Raster object to another plate</span>
-<span class="sd">        reconstruction model reference frame.</span>
+<span class="sd">        within a :class:gplately.Raster object to another plate reconstruction model reference frame.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -2500,8 +2433,6 @@
             <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">plate_reconstruction</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
                 <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Set a plate reconstruction model&quot;</span><span class="p">)</span>
             <span class="n">to_rotation_features_or_model</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">plate_reconstruction</span><span class="o">.</span><span class="n">rotation_model</span>
-
-        <span class="n">input_positions</span> <span class="o">=</span> <span class="p">[]</span>
 
         <span class="c1"># Create the pygplates.FiniteRotation that rotates</span>
         <span class="c1"># between the two reference frames.</span>
@@ -2591,12 +2522,10 @@
 <span class="sd">            the radius of the region of interest in km</span>
 <span class="sd">            this is the arch length. we need to calculate the straight distance between the two points in 3D space from this arch length.</span>
 
-
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
 <span class="sd">        list</span>
 <span class="sd">            a list of grid values for the given locations.</span>
-
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="k">if</span> <span class="ow">not</span> <span class="nb">hasattr</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="s2">&quot;spatial_cKDTree&quot;</span><span class="p">):</span>
@@ -2652,7 +2581,6 @@
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;clip the raster according to a given extent [x_min, x_max, y_min, y_max]</span>
 <span class="sd">        the extent of the returned raster may be slightly bigger than the given extent.</span>
 <span class="sd">        this happens when the border of the given extent fall between two gird lines.</span>
-
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="p">(</span>
             <span class="n">extent</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&gt;=</span> <span class="n">extent</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
@@ -2697,12 +2625,12 @@
             <span class="o">*</span> <span class="p">(</span><span class="n">y_len</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span>
         <span class="p">)</span>
         <span class="c1"># print(y0, y1)</span>
-        <span class="n">new_extent</span> <span class="o">=</span> <span class="p">[</span>
+        <span class="n">new_extent</span> <span class="o">=</span> <span class="p">(</span>
             <span class="n">x0</span> <span class="o">/</span> <span class="p">(</span><span class="n">x_len</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">extent</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">extent</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">-</span> <span class="mi">180</span><span class="p">,</span>
             <span class="n">x1</span> <span class="o">/</span> <span class="p">(</span><span class="n">x_len</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">extent</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">extent</span><span class="p">[</span><span class="mi">0</span><span class="p">])</span> <span class="o">-</span> <span class="mi">180</span><span class="p">,</span>
             <span class="n">y0</span> <span class="o">/</span> <span class="p">(</span><span class="n">y_len</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">extent</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">extent</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span> <span class="o">-</span> <span class="mi">90</span><span class="p">,</span>
             <span class="n">y1</span> <span class="o">/</span> <span class="p">(</span><span class="n">y_len</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">extent</span><span class="p">[</span><span class="mi">3</span><span class="p">]</span> <span class="o">-</span> <span class="bp">self</span><span class="o">.</span><span class="n">extent</span><span class="p">[</span><span class="mi">2</span><span class="p">])</span> <span class="o">-</span> <span class="mi">90</span><span class="p">,</span>
-        <span class="p">]</span>
+        <span class="p">)</span>
         <span class="c1"># print(new_extent)</span>
         <span class="c1"># print(self.data[y0 : y1 + 1, x0 : x1 + 1].shape)</span>
         <span class="k">return</span> <span class="n">Raster</span><span class="p">(</span>
@@ -2711,12 +2639,9 @@
         <span class="p">)</span></div>
 
 
-<div class="viewcode-block" id="Raster.clip_by_polygon">
-<a class="viewcode-back" href="../../generated/gplately.Raster.html#gplately.Raster.clip_by_polygon">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">clip_by_polygon</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">polygon</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_clip_by_polygon</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">polygon</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;TODO:&quot;&quot;&quot;</span>
-        <span class="k">pass</span></div>
-
+        <span class="k">pass</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">__array__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">)</span>
