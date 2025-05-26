@@ -6,3 +6,4 @@ dependencies:
   - gplately
   - pytest
   - pyyaml
+  - pygmt
