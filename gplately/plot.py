@@ -201,7 +201,7 @@ class PlotTopologies(object):
         coastlines=None,
         continents=None,
         COBs=None,
-        time=140,
+        time: float = 140.0,
         anchor_plate_id=None,
         plot_engine: PlotEngine = CartopyPlotEngine(),
     ):

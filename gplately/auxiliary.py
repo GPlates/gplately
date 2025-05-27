@@ -1,3 +1,5 @@
+"""A set of helper functions designed to streamline the use of GPlately’s functionalities, minimizing the coding effort required from users."""
+
 from typing import Union
 
 from plate_model_manager import PlateModel, PlateModelManager
@@ -9,13 +11,13 @@ from .reconstruction import PlateReconstruction
 
 
 def get_plate_reconstruction(model: Union[str, PlateModel], model_repo_dir: str = "./"):
-    """Convenient function to return a :py:class:`gplately.PlateReconstruction` object.
-    Check out the `usage example <https://github.com/GPlates/gplately/blob/master/Notebooks/Examples/use_auxiliary_functions.py>`__.
+    """Return a :py:class:`gplately.PlateReconstruction` object for a given model name or :class:`gplately.PlateModel` object.
+
 
     Parameters
     ----------
     model : str or PlateModel
-        model name or a PlateModel object
+        model name or a :class:`gplately.PlateModel` object
     model_repo_dir: str, default="./"
         the folder in which you would like to keep the model files
 
@@ -24,6 +26,10 @@ def get_plate_reconstruction(model: Union[str, PlateModel], model_repo_dir: str 
     gplately.PlateReconstruction
         a PlateReconstruction object
 
+
+    .. seealso::
+
+        `usage example <https://github.com/GPlates/gplately/blob/master/Notebooks/Examples/use_auxiliary_functions.py>`__
     """
     if isinstance(model, str):
         model_name: str = model
@@ -62,13 +68,12 @@ def get_gplot(
     time: Union[int, float] = 0,
     plot_engine: PlotEngine = CartopyPlotEngine(),
 ) -> PlotTopologies:
-    """Convenient function to return a :py:class:`gplately.PlotTopologies` object.
-    Check out the `usage example <https://github.com/GPlates/gplately/blob/master/Notebooks/Examples/use_auxiliary_functions.py>`__).
+    """Return a :py:class:`gplately.PlotTopologies` object for a given model name or :class:`gplately.PlateModel` object.
 
     Parameters
     ----------
     model : str or PlateModel
-        model name or a PlateModel object
+        model name or a :class:`gplately.PlateModel` object
     model_repo_dir: str, default="./"
         the folder in which you would like to keep the model files
     time: int or float, default=0
@@ -80,6 +85,11 @@ def get_gplot(
     -------
     gplately.PlotTopologies
         a PlotTopologies object
+
+
+    .. seealso::
+
+        `usage example <https://github.com/GPlates/gplately/blob/master/Notebooks/Examples/use_auxiliary_functions.py>`__
     """
     if isinstance(model, str):
         model_name: str = model

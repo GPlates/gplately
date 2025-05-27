@@ -4564,11 +4564,7 @@ def reconstruct_points(
     point_plate_ids=None,
     detect_collisions=_DEFAULT_COLLISION,
 ):
-    """
-    Function to reconstruct points using the ReconstructByTopologies class below.
-
-    For description of parameters see the ReconstructByTopologies class below.
-    """
+    """Reconstruct points using the topological polygons."""
 
     topology_reconstruction = _ReconstructByTopologies(
         rotation_features_or_model,
@@ -4587,11 +4583,7 @@ def reconstruct_points(
 
 
 class _ReconstructByTopologies(object):
-    """
-    Class to reconstruct geometries using topologies.
-
-    Currently only points are supported.
-    """
+    """Reconstruct geometries using topologies. Currently only points are supported."""
 
     use_plate_partitioner = False
     """If the use_plate_partitioner is True then use pygplates.PlatePartitioner to partition points,

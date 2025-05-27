@@ -44,24 +44,8 @@ eprint = {https://rmets.onlinelibrary.wiley.com/doi/pdf/10.1002/gdj3.185},
 
 ## [Documentation](https://gplates.github.io/gplately/dev)
 
-- Quick Start
-
-  To get started, please follow the [installation instructions](https://gplates.github.io/gplately/stable/index.html#installation) and try out the [minimal working example](https://gplates.github.io/gplately/stable/index.html#minimal-working-example).
-
-- [Sample workflows](https://github.com/GPlates/gplately/tree/master/Notebooks) 
-
-  The sample workflows demonstrate how GPlately can be used in various workflows.
-
-- [Examples](https://github.com/GPlates/gplately/blob/master/Notebooks/Examples/readme.md)  
-
-  The examples are concise, reusable code snippets that demonstrate how to use GPlately for specific tasks. They are designed to be clear and easy to understand, with each example focusing on a single, simple, specific task.
-
-- [command-line interface (CLI)](https://github.com/GPlates/gplately/blob/master/gplately/commands/readme.md) 
-
-  GPlately can be used in a command-line environment. For example,  the command `gplately list` will show a list of available plate reconstruction models. The `gplately -h` will list all available commands.
-
-- [latest stable documentation](https://gplates.github.io/gplately/stable/)
-- [latest indev documentation](https://gplates.github.io/gplately/dev)
+- [latest stable](https://gplates.github.io/gplately/stable/)
+- [latest development](https://gplates.github.io/gplately/dev)
 - [v1.3.0](https://gplates.github.io/gplately/v1.3.0/)
 - [v1.2.0](https://gplates.github.io/gplately/v1.2.0/)
 - [v1.1.0](https://gplates.github.io/gplately/v1.1.0/)
