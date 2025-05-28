@@ -1,9 +1,12 @@
-import logging, math
-from geopandas.geodataframe import GeoDataFrame
+import logging
+import math
+
 import cartopy.crs as ccrs
-from .plot_engine import PlotEngine
-from ..utils.plot_utils import _clean_polygons, plot_subduction_teeth
+from geopandas.geodataframe import GeoDataFrame
+
 from ..tools import EARTH_RADIUS
+from ..utils.plot_utils import _clean_polygons, plot_subduction_teeth
+from .plot_engine import PlotEngine
 
 logger = logging.getLogger("gplately")
 
@@ -11,6 +14,8 @@ DEFAULT_CARTOPY_PROJECTION = ccrs.PlateCarree()
 
 
 class CartopyPlotEngine(PlotEngine):
+    """Use Cartopy for map plotting"""
+
     def __init__(self):
         pass
 

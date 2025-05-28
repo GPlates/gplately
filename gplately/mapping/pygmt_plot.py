@@ -14,8 +14,9 @@
 #    with this program; if not, write to Free Software Foundation, Inc.,
 #    51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
-from geopandas.geodataframe import GeoDataFrame
 import pygmt
+from geopandas.geodataframe import GeoDataFrame
+
 from .plot_engine import PlotEngine
 
 pygmt.config(
@@ -31,6 +32,8 @@ pygmt.config(
 
 
 class PygmtPlotEngine(PlotEngine):
+    """Use pygmt for map plotting"""
+
     def __init__(self):
         pass
 

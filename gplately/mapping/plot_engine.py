@@ -20,6 +20,8 @@ from geopandas.geodataframe import GeoDataFrame
 
 
 class PlotEngine(ABC):
+    """Base class for the classes of plotting"""
+
     @abstractmethod
     def plot_geo_data_frame(self, ax_or_fig, gdf: GeoDataFrame, **kwargs):
         """Plot GeoPandas GeoDataFrame object(abstract method)"""
