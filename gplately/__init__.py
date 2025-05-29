@@ -46,7 +46,8 @@ from .mapping.plot_engine import PlotEngine
 from .mapping.pygmt_plot import PygmtPlotEngine
 from .oceans import SeafloorGrid
 from .plot import PlotTopologies
-from .reconstruction import PlateReconstruction, Points
+from .points import Points
+from .reconstruction import PlateReconstruction
 from .reconstruction import reconstruct_points as reconstruct_points_by_topologies
 from .tools import EARTH_RADIUS
 

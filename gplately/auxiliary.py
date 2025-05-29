@@ -2,8 +2,10 @@
 
 from typing import Union
 
+import pygmt
 from plate_model_manager import PlateModel, PlateModelManager
 
+from .download import path_to_cache
 from .mapping.cartopy_plot import CartopyPlotEngine
 from .mapping.plot_engine import PlotEngine
 from .plot import PlotTopologies
@@ -23,8 +25,8 @@ def get_plate_reconstruction(model: Union[str, PlateModel], model_repo_dir: str 
 
     Returns
     -------
-    gplately.PlateReconstruction
-        a PlateReconstruction object
+    PlateReconstruction
+        a :class:`gplately.PlateReconstruction` object
 
 
     .. seealso::
@@ -83,8 +85,8 @@ def get_gplot(
 
     Returns
     -------
-    gplately.PlotTopologies
-        a PlotTopologies object
+    PlotTopologies
+        a :class:`gplately.PlotTopologies` object
 
 
     .. seealso::
@@ -128,3 +130,35 @@ def get_gplot(
         time=time,
         plot_engine=plot_engine,
     )
+
+
+def get_pygmt_basemap_figure(projection="N180/10c", region="d"):
+    """A helper function to return a ``pygmt.Figure()`` object
+
+    Parameters
+    ----------
+    projection: str, default="N180/10c"
+        string to define the map projection in GMT style
+    region: str, default="d"
+        string to define the map extent in GMT style
+
+
+    Returns
+    -------
+    pygmt.Figure()
+       a ``pygmt.Figure()`` object for map plotting
+
+    """
+    fig = pygmt.Figure()
+    fig.basemap(region=region, projection=projection, frame="lrtb")
+    return fig
+
+
+def get_data_server_cache_path():
+    """Return the path to the :class:`gplately.DataServer` cache as a ``os.PathLike`` object.
+
+    .. seealso::
+
+        :py:attr:`gplately.DataServer.cache_path`
+    """
+    return path_to_cache()

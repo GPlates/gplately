@@ -1,6 +1,8 @@
 Functions
 =========
 
+This page lists the assorted functions of the GPlately Python package.
+
 .. contents::
    :local:
    :depth: 3

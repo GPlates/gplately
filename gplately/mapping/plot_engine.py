@@ -20,16 +20,18 @@ from geopandas.geodataframe import GeoDataFrame
 
 
 class PlotEngine(ABC):
-    """Base class for the classes of plotting"""
+    """Abstract base class for map plotting.
+    Do not use this base class directly. Use subclasses instead, such as :class:`CartopyPlotEngine` or :class:`PygmtPlotEngine`.
+    """
 
     @abstractmethod
     def plot_geo_data_frame(self, ax_or_fig, gdf: GeoDataFrame, **kwargs):
-        """Plot GeoPandas GeoDataFrame object(abstract method)"""
+        """Plot GeoPandas GeoDataFrame object (abstract method)"""
         pass  # This is an abstract method, no implementation here.
 
     @abstractmethod
     def plot_pygplates_features(self, ax_or_fig, features, **kwargs):
-        """Plot one or more pygplates feature(s)(abstract method)"""
+        """Plot one or more pygplates feature(s) (abstract method)"""
         pass  # This is an abstract method, no implementation here.
 
     @abstractmethod

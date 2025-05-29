@@ -1131,6 +1131,11 @@ class DataServer(object):
         return feature_collection
 
     @property
+    def cache_path(self):
+        """the location of DataServer cache on your computer"""
+        return path_to_cache()
+
+    @property
     def rotation_model(self):
         """a pygplates.RotationModel object for the plate reconstruction model"""
         if self._rotation_model is None and self.pmm:
@@ -1244,7 +1249,7 @@ class DataServer(object):
             .. code-block:: python
                 :linenos:
 
-                gDownload = gplately.download.DataServer("Muller2019")
+                gDownload = gplately.DataServer("Muller2019")
                 rotation_model, topology_features, static_polygons = gDownload.get_plate_reconstruction_files()
 
             The code above downloads ``rotation model``, ``topology features`` and ``static polygons`` files from the
@@ -1253,7 +1258,7 @@ class DataServer(object):
             .. code-block:: python
                 :linenos:
 
-                model = gplately.reconstruction.PlateReconstruction(rotation_model, topology_features, static_polygons)
+                model = gplately.PlateReconstruction(rotation_model, topology_features, static_polygons)
 
             If the requested plate model does not have certain file(s), a warning message will alert user of the missing file(s).
         """
@@ -1303,7 +1308,7 @@ class DataServer(object):
             .. code-block:: python
                 :linenos:
 
-                gPlot = gplately.plot.PlotTopologies(gplately.reconstruction.PlateReconstruction, time, continents, coastlines, COBs)
+                gPlot = gplately.PlotTopologies(gplately.PlateReconstruction, time, continents, coastlines, COBs)
 
             to reconstruct features to a certain geological time. The :class:`gplately.PlotTopologies`
             object provides simple methods to plot these geometries along with trenches, ridges and

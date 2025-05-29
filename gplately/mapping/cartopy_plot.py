@@ -20,7 +20,7 @@ class CartopyPlotEngine(PlotEngine):
         pass
 
     def plot_geo_data_frame(self, ax_or_fig, gdf: GeoDataFrame, **kwargs):
-        """Plot GeoDataFrame object with Cartopy
+        """Use Cartopy to plot geometries in a GeoDataFrame object onto a map
 
         Parameters
         ----------
@@ -38,7 +38,7 @@ class CartopyPlotEngine(PlotEngine):
         return gdf.plot(ax=ax_or_fig, **kwargs)
 
     def plot_pygplates_features(self, ax_or_fig, features, **kwargs):
-        """TODO"""
+        """Not implemented yet"""
         pass
 
     def plot_subduction_zones(
@@ -49,7 +49,7 @@ class CartopyPlotEngine(PlotEngine):
         color="blue",
         **kwargs,
     ):
-        """Plot subduction zones with "teeth" using pygmt
+        """Use Cartopy to plot subduction zones with "teeth" onto a map
 
         Parameters
         ----------

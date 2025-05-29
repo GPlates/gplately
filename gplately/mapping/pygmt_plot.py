@@ -38,7 +38,7 @@ class PygmtPlotEngine(PlotEngine):
         pass
 
     def plot_geo_data_frame(self, ax_or_fig, gdf: GeoDataFrame, **kwargs):
-        """Plot GeoDataFrame object with pygmt
+        """Use pygmt to plot geometries in a GeoDataFrame object onto a map
 
         Parameters
         ----------
@@ -88,7 +88,7 @@ class PygmtPlotEngine(PlotEngine):
         )
 
     def plot_pygplates_features(self, ax_or_fig, features, **kwargs):
-        """TODO"""
+        """Not implemented yet"""
         pass
 
     def plot_subduction_zones(
@@ -99,7 +99,7 @@ class PygmtPlotEngine(PlotEngine):
         color="blue",
         **kwargs,
     ):
-        """Plot subduction zones with "teeth" using pygmt
+        """Use pygmt to plot subduction zones with "teeth"
 
         Parameters
         ----------
@@ -129,19 +129,3 @@ class PygmtPlotEngine(PlotEngine):
             fill=color,
             style="f0.2/0.08+r+t",
         )
-
-
-def get_pygmt_basemap_figure(projection="N180/10c", region="d"):
-    """A helper function to return a pygmt.Figure() object
-
-    Parameters
-    ----------
-    projection: str, default="N180/10c"
-        string to define the map projection in GMT style
-    region: str, default="d"
-        string to define the map extent in GMT style
-
-    """
-    fig = pygmt.Figure()
-    fig.basemap(region=region, projection=projection, frame="lrtb")
-    return fig
