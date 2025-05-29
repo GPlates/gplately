@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Secondaries &mdash; gplately 2.0.0 documentation</title>
+  <title>Other Classes &mdash; gplately 2.0.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="_static/css/theme.css?v=e59714d7" />
 
@@ -20,8 +20,8 @@
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="gplately.PlateModelManager" href="generated/gplately.PlateModelManager.html" />
-    <link rel="prev" title="gplately.SeafloorGrid" href="generated/gplately.SeafloorGrid.html" /> 
+    <link rel="next" title="gplately.PlateModel" href="generated/gplately.PlateModel.html" />
+    <link rel="prev" title="gplately.reconstruct_points_by_topologies" href="generated/gplately.reconstruct_points_by_topologies.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -56,7 +56,9 @@
 <p class="caption" role="heading"><span class="caption-text">Reference</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="api.html">Main Classes</a></li>
-<li class="toctree-l1 current"><a class="current reference internal" href="#">Secondaries</a><ul>
+<li class="toctree-l1"><a class="reference internal" href="functions.html">Functions</a></li>
+<li class="toctree-l1 current"><a class="current reference internal" href="#">Other Classes</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="generated/gplately.PlateModel.html">gplately.PlateModel</a></li>
 <li class="toctree-l2"><a class="reference internal" href="generated/gplately.PlateModelManager.html">gplately.PlateModelManager</a></li>
 <li class="toctree-l2"><a class="reference internal" href="generated/gplately.PresentDayRasterManager.html">gplately.PresentDayRasterManager</a></li>
 <li class="toctree-l2"><a class="reference internal" href="generated/gplately.PlotEngine.html">gplately.PlotEngine</a></li>
@@ -80,7 +82,7 @@
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
       <li><a href="index.html" class="icon icon-home" aria-label="Home"></a></li>
-      <li class="breadcrumb-item active">Secondaries</li>
+      <li class="breadcrumb-item active">Other Classes</li>
       <li class="wy-breadcrumbs-aside">
             <a href="_sources/secondaries.rst.txt" rel="nofollow"> View page source</a>
       </li>
@@ -90,24 +92,27 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <section id="secondaries">
-<h1>Secondaries<a class="headerlink" href="#secondaries" title="Link to this heading"></a></h1>
+  <section id="other-classes">
+<h1>Other Classes<a class="headerlink" href="#other-classes" title="Link to this heading"></a></h1>
 <table class="autosummary longtable docutils align-default">
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="generated/gplately.PlateModelManager.html#gplately.PlateModelManager" title="gplately.PlateModelManager"><code class="xref py py-obj docutils literal notranslate"><span class="pre">gplately.PlateModelManager</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/gplately.PlateModel.html#gplately.PlateModel" title="gplately.PlateModel"><code class="xref py py-obj docutils literal notranslate"><span class="pre">gplately.PlateModel</span></code></a></p></td>
+<td><p>Class to manage a plate model</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/gplately.PlateModelManager.html#gplately.PlateModelManager" title="gplately.PlateModelManager"><code class="xref py py-obj docutils literal notranslate"><span class="pre">gplately.PlateModelManager</span></code></a></p></td>
 <td><p>load a models.json file and manage plate models see an example models.json file at PlateModelManager.get_default_repo_url()</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="generated/gplately.PresentDayRasterManager.html#gplately.PresentDayRasterManager" title="gplately.PresentDayRasterManager"><code class="xref py py-obj docutils literal notranslate"><span class="pre">gplately.PresentDayRasterManager</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/gplately.PresentDayRasterManager.html#gplately.PresentDayRasterManager" title="gplately.PresentDayRasterManager"><code class="xref py py-obj docutils literal notranslate"><span class="pre">gplately.PresentDayRasterManager</span></code></a></p></td>
 <td><p>manage present-day rasters</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="generated/gplately.PlotEngine.html#gplately.PlotEngine" title="gplately.PlotEngine"><code class="xref py py-obj docutils literal notranslate"><span class="pre">gplately.PlotEngine</span></code></a></p></td>
-<td><p></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/gplately.PlotEngine.html#gplately.PlotEngine" title="gplately.PlotEngine"><code class="xref py py-obj docutils literal notranslate"><span class="pre">gplately.PlotEngine</span></code></a></p></td>
+<td><p>Abstract base class for map plotting.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="generated/gplately.CartopyPlotEngine.html#gplately.CartopyPlotEngine" title="gplately.CartopyPlotEngine"><code class="xref py py-obj docutils literal notranslate"><span class="pre">gplately.CartopyPlotEngine</span></code></a></p></td>
-<td><p></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/gplately.CartopyPlotEngine.html#gplately.CartopyPlotEngine" title="gplately.CartopyPlotEngine"><code class="xref py py-obj docutils literal notranslate"><span class="pre">gplately.CartopyPlotEngine</span></code></a></p></td>
+<td><p>Use Cartopy for map plotting</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="generated/gplately.PygmtPlotEngine.html#gplately.PygmtPlotEngine" title="gplately.PygmtPlotEngine"><code class="xref py py-obj docutils literal notranslate"><span class="pre">gplately.PygmtPlotEngine</span></code></a></p></td>
-<td><p></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/gplately.PygmtPlotEngine.html#gplately.PygmtPlotEngine" title="gplately.PygmtPlotEngine"><code class="xref py py-obj docutils literal notranslate"><span class="pre">gplately.PygmtPlotEngine</span></code></a></p></td>
+<td><p>Use pygmt for map plotting</p></td>
 </tr>
 </tbody>
 </table>
@@ -117,8 +122,8 @@
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="generated/gplately.SeafloorGrid.html" class="btn btn-neutral float-left" title="gplately.SeafloorGrid" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="generated/gplately.PlateModelManager.html" class="btn btn-neutral float-right" title="gplately.PlateModelManager" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="generated/gplately.reconstruct_points_by_topologies.html" class="btn btn-neutral float-left" title="gplately.reconstruct_points_by_topologies" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="generated/gplately.PlateModel.html" class="btn btn-neutral float-right" title="gplately.PlateModel" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>

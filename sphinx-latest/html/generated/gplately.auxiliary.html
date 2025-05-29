@@ -1,0 +1,231 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>gplately.auxiliary &mdash; gplately 2.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
+
+  
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=51b770b3"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="gplately.reconstruct_points_by_topologies" href="gplately.reconstruct_points_by_topologies.html" />
+    <link rel="prev" title="Functions" href="../functions.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            gplately
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../basic_usages.html">Minimal working example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../use_cases.html">Common Use Cases</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../faq.html">Trouble-shooting and FAQ</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../command_line_interface.html">Command Line Interface (CLI)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../primer.html">Primer</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Reference</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../api.html">Main Classes</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../functions.html">Functions</a><ul class="current">
+<li class="toctree-l2 current"><a class="current reference internal" href="#">gplately.auxiliary</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#gplately.auxiliary.get_data_server_cache_path"><code class="docutils literal notranslate"><span class="pre">get_data_server_cache_path()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#gplately.auxiliary.get_gplot"><code class="docutils literal notranslate"><span class="pre">get_gplot()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#gplately.auxiliary.get_plate_reconstruction"><code class="docutils literal notranslate"><span class="pre">get_plate_reconstruction()</span></code></a></li>
+<li class="toctree-l3"><a class="reference internal" href="#gplately.auxiliary.get_pygmt_basemap_figure"><code class="docutils literal notranslate"><span class="pre">get_pygmt_basemap_figure()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="gplately.reconstruct_points_by_topologies.html">gplately.reconstruct_points_by_topologies</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../secondaries.html">Other Classes</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">gplately</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../functions.html">Functions</a></li>
+      <li class="breadcrumb-item active">gplately.auxiliary</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/generated/gplately.auxiliary.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="module-gplately.auxiliary">
+<span id="gplately-auxiliary"></span><h1>gplately.auxiliary<a class="headerlink" href="#module-gplately.auxiliary" title="Link to this heading"></a></h1>
+<p>A set of helper functions designed to streamline the use of GPlately’s functionalities, minimizing the coding effort required from users.</p>
+<p class="rubric">Functions</p>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="#gplately.auxiliary.get_data_server_cache_path" title="gplately.auxiliary.get_data_server_cache_path"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_data_server_cache_path</span></code></a>()</p></td>
+<td><p>Return the path to the <a class="reference internal" href="gplately.DataServer.html#gplately.DataServer" title="gplately.DataServer"><code class="xref py py-class docutils literal notranslate"><span class="pre">gplately.DataServer</span></code></a> cache as a <code class="docutils literal notranslate"><span class="pre">os.PathLike</span></code> object.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#gplately.auxiliary.get_gplot" title="gplately.auxiliary.get_gplot"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_gplot</span></code></a>(model[, model_repo_dir, time, ...])</p></td>
+<td><p>Return a <a class="reference internal" href="gplately.PlotTopologies.html#gplately.PlotTopologies" title="gplately.PlotTopologies"><code class="xref py py-class docutils literal notranslate"><span class="pre">gplately.PlotTopologies</span></code></a> object for a given model name or <a class="reference internal" href="gplately.PlateModel.html#gplately.PlateModel" title="gplately.PlateModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">gplately.PlateModel</span></code></a> object.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#gplately.auxiliary.get_plate_reconstruction" title="gplately.auxiliary.get_plate_reconstruction"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_plate_reconstruction</span></code></a>(model[, model_repo_dir])</p></td>
+<td><p>Return a <a class="reference internal" href="gplately.PlateReconstruction.html#gplately.PlateReconstruction" title="gplately.PlateReconstruction"><code class="xref py py-class docutils literal notranslate"><span class="pre">gplately.PlateReconstruction</span></code></a> object for a given model name or <a class="reference internal" href="gplately.PlateModel.html#gplately.PlateModel" title="gplately.PlateModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">gplately.PlateModel</span></code></a> object.</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="#gplately.auxiliary.get_pygmt_basemap_figure" title="gplately.auxiliary.get_pygmt_basemap_figure"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_pygmt_basemap_figure</span></code></a>([projection, region])</p></td>
+<td><p>A helper function to return a <code class="docutils literal notranslate"><span class="pre">pygmt.Figure()</span></code> object</p></td>
+</tr>
+</tbody>
+</table>
+<dl class="py function">
+<dt class="sig sig-object py" id="gplately.auxiliary.get_data_server_cache_path">
+<span class="sig-prename descclassname"><span class="pre">gplately.auxiliary.</span></span><span class="sig-name descname"><span class="pre">get_data_server_cache_path</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gplately/auxiliary.html#get_data_server_cache_path"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.auxiliary.get_data_server_cache_path" title="Link to this definition"></a></dt>
+<dd><p>Return the path to the <a class="reference internal" href="gplately.DataServer.html#gplately.DataServer" title="gplately.DataServer"><code class="xref py py-class docutils literal notranslate"><span class="pre">gplately.DataServer</span></code></a> cache as a <code class="docutils literal notranslate"><span class="pre">os.PathLike</span></code> object.</p>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><a class="reference internal" href="gplately.DataServer.html#gplately.DataServer.cache_path" title="gplately.DataServer.cache_path"><code class="xref py py-attr docutils literal notranslate"><span class="pre">gplately.DataServer.cache_path</span></code></a></p>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="gplately.auxiliary.get_gplot">
+<span class="sig-prename descclassname"><span class="pre">gplately.auxiliary.</span></span><span class="sig-name descname"><span class="pre">get_gplot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model:</span> <span class="pre">str</span> <span class="pre">|</span> <span class="pre">~plate_model_manager.plate_model.PlateModel</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_repo_dir:</span> <span class="pre">str</span> <span class="pre">=</span> <span class="pre">'./'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time:</span> <span class="pre">int</span> <span class="pre">|</span> <span class="pre">float</span> <span class="pre">=</span> <span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot_engine:</span> <span class="pre">~gplately.mapping.plot_engine.PlotEngine</span> <span class="pre">=</span> <span class="pre">&lt;gplately.mapping.cartopy_plot.CartopyPlotEngine</span> <span class="pre">object&gt;</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="gplately.PlotTopologies.html#gplately.PlotTopologies" title="gplately.plot.PlotTopologies"><span class="pre">PlotTopologies</span></a></span></span><a class="reference internal" href="../_modules/gplately/auxiliary.html#get_gplot"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.auxiliary.get_gplot" title="Link to this definition"></a></dt>
+<dd><p>Return a <a class="reference internal" href="gplately.PlotTopologies.html#gplately.PlotTopologies" title="gplately.PlotTopologies"><code class="xref py py-class docutils literal notranslate"><span class="pre">gplately.PlotTopologies</span></code></a> object for a given model name or <a class="reference internal" href="gplately.PlateModel.html#gplately.PlateModel" title="gplately.PlateModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">gplately.PlateModel</span></code></a> object.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>model</strong> (<em>str</em><em> or </em><a class="reference internal" href="gplately.PlateModel.html#gplately.PlateModel" title="gplately.PlateModel"><em>PlateModel</em></a>) – model name or a <a class="reference internal" href="gplately.PlateModel.html#gplately.PlateModel" title="gplately.PlateModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">gplately.PlateModel</span></code></a> object</p></li>
+<li><p><strong>model_repo_dir</strong> (<em>str</em><em>, </em><em>default=&quot;./&quot;</em>) – the folder in which you would like to keep the model files</p></li>
+<li><p><strong>time</strong> (<em>int</em><em> or </em><em>float</em><em>, </em><em>default=0</em>) – the reconstruction age/time</p></li>
+<li><p><strong>plot_engine</strong> (<a class="reference internal" href="gplately.PlotEngine.html#gplately.PlotEngine" title="gplately.PlotEngine"><em>PlotEngine</em></a><em>, </em><em>default=CartopyPlotEngine</em><em>(</em><em>)</em>) – two choices - CartopyPlotEngine() or PygmtPlotEngine()</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>a <a class="reference internal" href="gplately.PlotTopologies.html#gplately.PlotTopologies" title="gplately.PlotTopologies"><code class="xref py py-class docutils literal notranslate"><span class="pre">gplately.PlotTopologies</span></code></a> object</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="gplately.PlotTopologies.html#gplately.PlotTopologies" title="gplately.PlotTopologies">PlotTopologies</a></p>
+</dd>
+</dl>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><a class="reference external" href="https://github.com/GPlates/gplately/blob/master/Notebooks/Examples/use_auxiliary_functions.py">usage example</a></p>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="gplately.auxiliary.get_plate_reconstruction">
+<span class="sig-prename descclassname"><span class="pre">gplately.auxiliary.</span></span><span class="sig-name descname"><span class="pre">get_plate_reconstruction</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="gplately.PlateModel.html#gplately.PlateModel" title="plate_model_manager.plate_model.PlateModel"><span class="pre">PlateModel</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_repo_dir</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'./'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gplately/auxiliary.html#get_plate_reconstruction"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.auxiliary.get_plate_reconstruction" title="Link to this definition"></a></dt>
+<dd><p>Return a <a class="reference internal" href="gplately.PlateReconstruction.html#gplately.PlateReconstruction" title="gplately.PlateReconstruction"><code class="xref py py-class docutils literal notranslate"><span class="pre">gplately.PlateReconstruction</span></code></a> object for a given model name or <a class="reference internal" href="gplately.PlateModel.html#gplately.PlateModel" title="gplately.PlateModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">gplately.PlateModel</span></code></a> object.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>model</strong> (<em>str</em><em> or </em><a class="reference internal" href="gplately.PlateModel.html#gplately.PlateModel" title="gplately.PlateModel"><em>PlateModel</em></a>) – model name or a <a class="reference internal" href="gplately.PlateModel.html#gplately.PlateModel" title="gplately.PlateModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">gplately.PlateModel</span></code></a> object</p></li>
+<li><p><strong>model_repo_dir</strong> (<em>str</em><em>, </em><em>default=&quot;./&quot;</em>) – the folder in which you would like to keep the model files</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>a <a class="reference internal" href="gplately.PlateReconstruction.html#gplately.PlateReconstruction" title="gplately.PlateReconstruction"><code class="xref py py-class docutils literal notranslate"><span class="pre">gplately.PlateReconstruction</span></code></a> object</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="gplately.PlateReconstruction.html#gplately.PlateReconstruction" title="gplately.PlateReconstruction">PlateReconstruction</a></p>
+</dd>
+</dl>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><a class="reference external" href="https://github.com/GPlates/gplately/blob/master/Notebooks/Examples/use_auxiliary_functions.py">usage example</a></p>
+</div>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="gplately.auxiliary.get_pygmt_basemap_figure">
+<span class="sig-prename descclassname"><span class="pre">gplately.auxiliary.</span></span><span class="sig-name descname"><span class="pre">get_pygmt_basemap_figure</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">projection</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'N180/10c'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">region</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'d'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gplately/auxiliary.html#get_pygmt_basemap_figure"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.auxiliary.get_pygmt_basemap_figure" title="Link to this definition"></a></dt>
+<dd><p>A helper function to return a <code class="docutils literal notranslate"><span class="pre">pygmt.Figure()</span></code> object</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>projection</strong> (<em>str</em><em>, </em><em>default=&quot;N180/10c&quot;</em>) – string to define the map projection in GMT style</p></li>
+<li><p><strong>region</strong> (<em>str</em><em>, </em><em>default=&quot;d&quot;</em>) – string to define the map extent in GMT style</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>a <code class="docutils literal notranslate"><span class="pre">pygmt.Figure()</span></code> object for map plotting</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p>pygmt.Figure()</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="../functions.html" class="btn btn-neutral float-left" title="Functions" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="gplately.reconstruct_points_by_topologies.html" class="btn btn-neutral float-right" title="gplately.reconstruct_points_by_topologies" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023-2025, The University of Sydney.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

@@ -56,7 +56,9 @@
 <p class="caption" role="heading"><span class="caption-text">Reference</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../api.html">Main Classes</a></li>
-<li class="toctree-l1 current"><a class="reference internal" href="../secondaries.html">Secondaries</a><ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../functions.html">Functions</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../secondaries.html">Other Classes</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="gplately.PlateModel.html">gplately.PlateModel</a></li>
 <li class="toctree-l2"><a class="reference internal" href="gplately.PlateModelManager.html">gplately.PlateModelManager</a></li>
 <li class="toctree-l2"><a class="reference internal" href="gplately.PresentDayRasterManager.html">gplately.PresentDayRasterManager</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="#">gplately.PlotEngine</a><ul>
@@ -89,7 +91,7 @@
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
       <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
-          <li class="breadcrumb-item"><a href="../secondaries.html">Secondaries</a></li>
+          <li class="breadcrumb-item"><a href="../secondaries.html">Other Classes</a></li>
       <li class="breadcrumb-item active">gplately.PlotEngine</li>
       <li class="wy-breadcrumbs-aside">
             <a href="../_sources/generated/gplately.PlotEngine.rst.txt" rel="nofollow"> View page source</a>
@@ -105,7 +107,10 @@
 <dl class="py class">
 <dt class="sig sig-object py" id="gplately.PlotEngine">
 <em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">gplately.</span></span><span class="sig-name descname"><span class="pre">PlotEngine</span></span><a class="reference internal" href="../_modules/gplately/mapping/plot_engine.html#PlotEngine"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.PlotEngine" title="Link to this definition"></a></dt>
-<dd><dl class="py method">
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">ABC</span></code></p>
+<p>Abstract base class for map plotting.
+Do not use this base class directly. Use subclasses instead, such as <a class="reference internal" href="gplately.CartopyPlotEngine.html#gplately.CartopyPlotEngine" title="gplately.CartopyPlotEngine"><code class="xref py py-class docutils literal notranslate"><span class="pre">CartopyPlotEngine</span></code></a> or <a class="reference internal" href="gplately.PygmtPlotEngine.html#gplately.PygmtPlotEngine" title="gplately.PygmtPlotEngine"><code class="xref py py-class docutils literal notranslate"><span class="pre">PygmtPlotEngine</span></code></a>.</p>
+<dl class="py method">
 <dt class="sig sig-object py" id="gplately.PlotEngine.__init__">
 <span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#gplately.PlotEngine.__init__" title="Link to this definition"></a></dt>
 <dd></dd></dl>
@@ -117,10 +122,10 @@
 <td><p></p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#gplately.PlotEngine.plot_geo_data_frame" title="gplately.PlotEngine.plot_geo_data_frame"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_geo_data_frame</span></code></a>(ax_or_fig, gdf, **kwargs)</p></td>
-<td><p>Plot GeoPandas GeoDataFrame object(abstract method)</p></td>
+<td><p>Plot GeoPandas GeoDataFrame object (abstract method)</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#gplately.PlotEngine.plot_pygplates_features" title="gplately.PlotEngine.plot_pygplates_features"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_pygplates_features</span></code></a>(ax_or_fig, features, ...)</p></td>
-<td><p>Plot one or more pygplates feature(s)(abstract method)</p></td>
+<td><p>Plot one or more pygplates feature(s) (abstract method)</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#gplately.PlotEngine.plot_subduction_zones" title="gplately.PlotEngine.plot_subduction_zones"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_subduction_zones</span></code></a>(ax_or_fig, ...[, color])</p></td>
 <td><p>Plot subduction zones with &quot;teeth&quot;(abstract method)</p></td>
@@ -130,13 +135,13 @@
 <dl class="py method">
 <dt class="sig sig-object py" id="gplately.PlotEngine.plot_geo_data_frame">
 <em class="property"><span class="k"><span class="pre">abstractmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">plot_geo_data_frame</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ax_or_fig</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gdf</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">GeoDataFrame</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gplately/mapping/plot_engine.html#PlotEngine.plot_geo_data_frame"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.PlotEngine.plot_geo_data_frame" title="Link to this definition"></a></dt>
-<dd><p>Plot GeoPandas GeoDataFrame object(abstract method)</p>
+<dd><p>Plot GeoPandas GeoDataFrame object (abstract method)</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="gplately.PlotEngine.plot_pygplates_features">
 <em class="property"><span class="k"><span class="pre">abstractmethod</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">plot_pygplates_features</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ax_or_fig</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">features</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gplately/mapping/plot_engine.html#PlotEngine.plot_pygplates_features"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.PlotEngine.plot_pygplates_features" title="Link to this definition"></a></dt>
-<dd><p>Plot one or more pygplates feature(s)(abstract method)</p>
+<dd><p>Plot one or more pygplates feature(s) (abstract method)</p>
 </dd></dl>
 
 <dl class="py method">

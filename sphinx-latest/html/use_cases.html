@@ -64,7 +64,8 @@
 <p class="caption" role="heading"><span class="caption-text">Reference</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="api.html">Main Classes</a></li>
-<li class="toctree-l1"><a class="reference internal" href="secondaries.html">Secondaries</a></li>
+<li class="toctree-l1"><a class="reference internal" href="functions.html">Functions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="secondaries.html">Other Classes</a></li>
 </ul>
 
         </div>
@@ -105,30 +106,30 @@
 </nav>
 <section id="dataserver">
 <h2><a class="toc-backref" href="#id2" role="doc-backlink">DataServer</a><a class="headerlink" href="#dataserver" title="Link to this heading"></a></h2>
-<p>The <strong>DataServer</strong> class allows users to automatically download and cache the necessary files for plate reconstructions to a designated folder
+<p>The <a class="reference internal" href="generated/gplately.DataServer.html#gplately.DataServer" title="gplately.DataServer"><code class="xref py py-class docutils literal notranslate"><span class="pre">gplately.DataServer</span></code></a> class allows users to automatically download and cache the plate reconstruction model files to a designated folder
 on your system. These files include rotation models, topology features, and static geometries such as coastlines, continents, and
 continent-ocean boundaries. Additionally, it supports the retrieval of other data types, including rasters, grids, and feature data.</p>
-<p>The <a class="reference external" href="https://github.com/michaelchin/plate-model-manager">plate-model-manager</a> Python package is a newly developed alternative to the DataServer class.
+<p>The <a class="reference external" href="https://github.com/michaelchin/plate-model-manager">plate-model-manager</a> Python package is a newly developed alternative to the <a class="reference internal" href="generated/gplately.DataServer.html#gplately.DataServer" title="gplately.DataServer"><code class="xref py py-class docutils literal notranslate"><span class="pre">gplately.DataServer</span></code></a> class.
 Users are encouraged to use the newer <a class="reference external" href="https://github.com/michaelchin/plate-model-manager">plate-model-manager</a> whenever possible.</p>
 <div class="admonition seealso">
 <p class="admonition-title">See also</p>
 <p><a class="reference external" href="https://michaelchin.github.io/plate-model-manager/latest/">plate-model-manager documentation</a></p>
 </div>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span><span class="kn">from</span><span class="w"> </span><span class="nn">gplately.download</span><span class="w"> </span><span class="kn">import</span> <span class="n">DataServer</span>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span><span class="kn">from</span><span class="w"> </span><span class="nn">gplately</span><span class="w"> </span><span class="kn">import</span> <span class="n">DataServer</span>
 <span class="linenos"> 2</span>
-<span class="hll"><span class="linenos"> 3</span><span class="n">gdownload</span> <span class="o">=</span> <span class="n">DataServer</span><span class="p">(</span><span class="s2">&quot;Muller2019&quot;</span><span class="p">)</span>
+<span class="hll"><span class="linenos"> 3</span><span class="n">data_server</span> <span class="o">=</span> <span class="n">DataServer</span><span class="p">(</span><span class="s2">&quot;Muller2019&quot;</span><span class="p">)</span>
 </span><span class="linenos"> 4</span>
 <span class="linenos"> 5</span><span class="c1"># Download plate reconstruction files and geometries from the Müller et al. 2019 model</span>
 <span class="linenos"> 6</span><span class="n">rotation_model</span><span class="p">,</span> <span class="n">topology_features</span><span class="p">,</span> <span class="n">static_polygons</span> <span class="o">=</span> <span class="p">(</span>
-<span class="linenos"> 7</span>   <span class="n">gdownload</span><span class="o">.</span><span class="n">get_plate_reconstruction_files</span><span class="p">()</span>
+<span class="linenos"> 7</span>   <span class="n">data_server</span><span class="o">.</span><span class="n">get_plate_reconstruction_files</span><span class="p">()</span>
 <span class="linenos"> 8</span><span class="p">)</span>
-<span class="linenos"> 9</span><span class="n">coastlines</span><span class="p">,</span> <span class="n">continents</span><span class="p">,</span> <span class="n">COBs</span> <span class="o">=</span> <span class="n">gdownload</span><span class="o">.</span><span class="n">get_topology_geometries</span><span class="p">()</span>
+<span class="linenos"> 9</span><span class="n">coastlines</span><span class="p">,</span> <span class="n">continents</span><span class="p">,</span> <span class="n">COBs</span> <span class="o">=</span> <span class="n">data_server</span><span class="o">.</span><span class="n">get_topology_geometries</span><span class="p">()</span>
 <span class="linenos">10</span>
-<span class="linenos">11</span><span class="c1"># Download the Müller et al. 2019 100 Ma age grid</span>
-<span class="linenos">12</span><span class="n">age_grid</span> <span class="o">=</span> <span class="n">gdownload</span><span class="o">.</span><span class="n">get_age_grid</span><span class="p">(</span><span class="n">times</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
+<span class="linenos">11</span><span class="c1"># Download the age grid at 100Ma from the Müller et al. 2019 model</span>
+<span class="linenos">12</span><span class="n">age_grid</span> <span class="o">=</span> <span class="n">data_server</span><span class="o">.</span><span class="n">get_age_grid</span><span class="p">(</span><span class="n">times</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
 <span class="linenos">13</span>
 <span class="linenos">14</span><span class="c1"># Download the ETOPO1 geotiff raster</span>
-<span class="linenos">15</span><span class="n">etopo</span> <span class="o">=</span> <span class="n">gdownload</span><span class="o">.</span><span class="n">get_raster</span><span class="p">(</span><span class="s2">&quot;ETOPO1_tif&quot;</span><span class="p">)</span>
+<span class="linenos">15</span><span class="n">etopo</span> <span class="o">=</span> <span class="n">data_server</span><span class="o">.</span><span class="n">get_raster</span><span class="p">(</span><span class="s2">&quot;ETOPO1_tif&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
 <p>The table below provides a list of all available plate reconstruction models.</p>
@@ -377,7 +378,7 @@ Users are encouraged to use the newer <a class="reference external" href="https:
 </section>
 <section id="platereconstruction">
 <h2><a class="toc-backref" href="#id3" role="doc-backlink">PlateReconstruction</a><a class="headerlink" href="#platereconstruction" title="Link to this heading"></a></h2>
-<p>The <strong>PlateReconstruction</strong> class contains tools to reconstruct geological features like tectonic plates and plate boundaries,
+<p>The <a class="reference internal" href="generated/gplately.PlateReconstruction.html#gplately.PlateReconstruction" title="gplately.PlateReconstruction"><code class="xref py py-class docutils literal notranslate"><span class="pre">gplately.PlateReconstruction</span></code></a> class contains tools to reconstruct geological features like tectonic plates and plate boundaries,
 and to interrogate plate kinematic data like plate motion velocities, and rates of subduction and seafloor spreading.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span><span class="kn">from</span><span class="w"> </span><span class="nn">gplately</span><span class="w"> </span><span class="kn">import</span> <span class="n">PlateReconstruction</span><span class="p">,</span> <span class="n">PlateModelManager</span>
 <span class="linenos"> 2</span>
@@ -391,19 +392,19 @@ and to interrogate plate kinematic data like plate motion velocities, and rates 
 <span class="linenos">10</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>Alternatively, you may use the auxiliary functions to create a PlateReconstruction object.</p>
+<p>Alternatively, you may use the auxiliary functions to create a <a class="reference internal" href="generated/gplately.PlateReconstruction.html#gplately.PlateReconstruction" title="gplately.PlateReconstruction"><code class="xref py py-class docutils literal notranslate"><span class="pre">gplately.PlateReconstruction</span></code></a> object.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos">1</span><span class="kn">from</span><span class="w"> </span><span class="nn">gplately.auxiliary</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_plate_reconstruction</span>
 <span class="linenos">2</span>
 <span class="linenos">3</span><span class="c1"># use the auxiliary function to create a PlateReconstruction object</span>
 <span class="hll"><span class="linenos">4</span><span class="n">plate_reconstruction_instance</span> <span class="o">=</span> <span class="n">get_plate_reconstruction</span><span class="p">(</span><span class="s2">&quot;Muller2019&quot;</span><span class="p">)</span>
 </span></pre></div>
 </div>
-<p>The <a class="reference external" href="https://gplates.github.io/gplately/stable/02-PlateReconstructions.html">PlateReconstructions example</a> demonstrates in details how to use the PlateReconstruction class.
+<p>The <a class="reference external" href="https://gplates.github.io/gplately/stable/02-PlateReconstructions.html">PlateReconstructions example</a> demonstrates in details how to use the <a class="reference internal" href="generated/gplately.PlateReconstruction.html#gplately.PlateReconstruction" title="gplately.PlateReconstruction"><code class="xref py py-class docutils literal notranslate"><span class="pre">gplately.PlateReconstruction</span></code></a> class.
 The <a class="reference external" href="https://github.com/GPlates/gplately/blob/master/Notebooks/02-PlateReconstructions.ipynb">02-PlateReconstructions.ipynb</a> Jupyter Notebook is available in the GPlately GitHub repository.</p>
 </section>
 <section id="points">
 <h2><a class="toc-backref" href="#id4" role="doc-backlink">Points</a><a class="headerlink" href="#points" title="Link to this heading"></a></h2>
-<p>The methods in the <strong>Points</strong> class track the motion of a point (or group of points) represented by a latitude and longitude
+<p>The methods in the <a class="reference internal" href="generated/gplately.Points.html#gplately.Points" title="gplately.Points"><code class="xref py py-class docutils literal notranslate"><span class="pre">gplately.Points</span></code></a> class track the motion of a point (or group of points) represented by a latitude and longitude
 through geologic time. This motion can be visualised using flowlines or motion paths and quantified with point motion velocities.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 <span class="linenos"> 2</span>
@@ -433,7 +434,7 @@ The <a class="reference external" href="https://github.com/GPlates/gplately/blob
 </section>
 <section id="raster">
 <h2><a class="toc-backref" href="#id5" role="doc-backlink">Raster</a><a class="headerlink" href="#raster" title="Link to this heading"></a></h2>
-<p>The <strong>Raster</strong> class contains methods to work with netCDF4 or MaskedArray gridded data. Grids may be filled,
+<p>The <a class="reference internal" href="generated/gplately.Raster.html#gplately.Raster" title="gplately.Raster"><code class="xref py py-class docutils literal notranslate"><span class="pre">gplately.Raster</span></code></a> class contains methods to work with netCDF4 or MaskedArray gridded data. Grids may be filled,
 resized, resampled, and reconstructed back and forwards through geologic time. Other array data can also be
 interpolated onto Raster grids.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span><span class="kn">from</span><span class="w"> </span><span class="nn">gplately</span><span class="w"> </span><span class="kn">import</span> <span class="n">PlateModelManager</span><span class="p">,</span> <span class="n">PresentDayRasterManager</span><span class="p">,</span> <span class="n">Raster</span><span class="p">,</span> <span class="n">auxiliary</span>
@@ -459,16 +460,15 @@ interpolated onto Raster grids.</p>
 <span class="linenos">21</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>The <a class="reference external" href="https://gplates.github.io/gplately/stable/06-Rasters.html">Rasters example</a> demonstrates in details how to use the <cite>Raster</cite> class.
+<p>The <a class="reference external" href="https://gplates.github.io/gplately/stable/06-Rasters.html">Rasters example</a> demonstrates in details how to use the <a class="reference internal" href="generated/gplately.Raster.html#gplately.Raster" title="gplately.Raster"><code class="xref py py-class docutils literal notranslate"><span class="pre">gplately.Raster</span></code></a> class.
 The <a class="reference external" href="https://github.com/GPlates/gplately/blob/master/Notebooks/06-Rasters.ipynb">06-Rasters.ipynb</a> Jupyter Notebook is available in the GPlately GitHub repository.</p>
 <a class="reference internal image-reference" href="_images/etopo_reconstruction.png"><img alt="RasterDemo" src="_images/etopo_reconstruction.png" style="width: 600px;" />
 </a>
 </section>
 <section id="plottopologies">
 <h2><a class="toc-backref" href="#id6" role="doc-backlink">PlotTopologies</a><a class="headerlink" href="#plottopologies" title="Link to this heading"></a></h2>
-<p>The <strong>PlotTopologies</strong> class works with the aforementioned PlateReconstruction class to plot
-geologic features of different types, such as coastlines, continents and continent-ocean boundaries
-reconstructed through time using pyGPlates.</p>
+<p>The <a class="reference internal" href="generated/gplately.PlotTopologies.html#gplately.PlotTopologies" title="gplately.PlotTopologies"><code class="xref py py-class docutils literal notranslate"><span class="pre">gplately.PlotTopologies</span></code></a> class works with the aforementioned <a class="reference internal" href="generated/gplately.PlateReconstruction.html#gplately.PlateReconstruction" title="gplately.PlateReconstruction"><code class="xref py py-class docutils literal notranslate"><span class="pre">gplately.PlateReconstruction</span></code></a> class to plot
+geologic features of different types, such as coastlines, continents and continent-ocean boundaries reconstructed through time using pyGPlates.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span><span class="kn">from</span><span class="w"> </span><span class="nn">gplately</span><span class="w"> </span><span class="kn">import</span> <span class="n">PlateModelManager</span><span class="p">,</span> <span class="n">PlotTopologies</span><span class="p">,</span> <span class="n">auxiliary</span>
 <span class="linenos"> 2</span>
 <span class="linenos"> 3</span><span class="n">model</span> <span class="o">=</span> <span class="n">PlateModelManager</span><span class="p">()</span><span class="o">.</span><span class="n">get_model</span><span class="p">(</span><span class="s2">&quot;Muller2019&quot;</span><span class="p">)</span>
@@ -483,21 +483,21 @@ reconstructed through time using pyGPlates.</p>
 <span class="linenos">12</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>You may use the auxiliary functions to create a PlotTopologies object.</p>
+<p>You may use the auxiliary functions to create a <a class="reference internal" href="generated/gplately.PlotTopologies.html#gplately.PlotTopologies" title="gplately.PlotTopologies"><code class="xref py py-class docutils literal notranslate"><span class="pre">gplately.PlotTopologies</span></code></a> object.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos">1</span><span class="kn">from</span><span class="w"> </span><span class="nn">gplately.auxiliary</span><span class="w"> </span><span class="kn">import</span> <span class="n">get_gplot</span>
 <span class="linenos">2</span>
 <span class="linenos">3</span><span class="c1"># use the auxiliary function to create a PlotTopologies object</span>
 <span class="hll"><span class="linenos">4</span><span class="n">plot_topologies_obj</span> <span class="o">=</span> <span class="n">get_gplot</span><span class="p">(</span><span class="s2">&quot;Muller2019&quot;</span><span class="p">,</span> <span class="n">time</span><span class="o">=</span><span class="mi">55</span><span class="p">)</span>
 </span></pre></div>
 </div>
-<p>The <a class="reference external" href="https://gplates.github.io/gplately/stable/02-PlateReconstructions.html">PlateReconstructions example</a> demonstrates in details how to use the PlotTopologies class.
+<p>The <a class="reference external" href="https://gplates.github.io/gplately/stable/02-PlateReconstructions.html">PlateReconstructions example</a> demonstrates in details how to use the <a class="reference internal" href="generated/gplately.PlotTopologies.html#gplately.PlotTopologies" title="gplately.PlotTopologies"><code class="xref py py-class docutils literal notranslate"><span class="pre">gplately.PlotTopologies</span></code></a> class.
 The <a class="reference external" href="https://github.com/GPlates/gplately/blob/master/Notebooks/02-PlateReconstructions.ipynb">02-PlateReconstructions.ipynb</a> Jupyter Notebook is available in the GPlately GitHub repository.</p>
 <a class="reference internal image-reference" href="_images/plottopologies.png"><img alt="PlotTopologiesDemo" src="_images/plottopologies.png" style="width: 600px;" />
 </a>
 </section>
 <section id="seafloorgrid">
 <h2><a class="toc-backref" href="#id7" role="doc-backlink">SeafloorGrid</a><a class="headerlink" href="#seafloorgrid" title="Link to this heading"></a></h2>
-<p>The <strong>SeafloorGrid</strong> class wraps an automatic workflow to grid seafloor ages and seafloor spreading rates
+<p>The <a class="reference internal" href="generated/gplately.SeafloorGrid.html#gplately.SeafloorGrid" title="gplately.SeafloorGrid"><code class="xref py py-class docutils literal notranslate"><span class="pre">gplately.SeafloorGrid</span></code></a> class wraps an automatic workflow to grid seafloor ages and seafloor spreading rates
 as encoded by a plate reconstruction model.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span><span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
 <span class="linenos"> 2</span>
@@ -522,7 +522,7 @@ as encoded by a plate reconstruction model.</p>
 </span></pre></div>
 </div>
 <p>The <a class="reference external" href="https://gplates.github.io/gplately/dev-doc/10-SeafloorGrids.html">SeafloorGrids example</a> is a tutorial notebook that demonstrates
-how to set up and use the SeafloorGrid object, and shows a sample set of output grids.
+how to set up and use the <a class="reference internal" href="generated/gplately.SeafloorGrid.html#gplately.SeafloorGrid" title="gplately.SeafloorGrid"><code class="xref py py-class docutils literal notranslate"><span class="pre">gplately.SeafloorGrid</span></code></a> object, and shows a sample set of output grids.
 The <a class="reference external" href="https://github.com/GPlates/gplately/blob/master/Notebooks/10-SeafloorGrids.ipynb">10-SeafloorGrids.ipynb</a> Jupyter Notebook is available in the GPlately GitHub repository.</p>
 <a class="reference internal image-reference" href="_images/seafloorgrid.gif"><img alt="SeafloorGridDemo" src="_images/seafloorgrid.gif" style="width: 600px;" />
 </a>

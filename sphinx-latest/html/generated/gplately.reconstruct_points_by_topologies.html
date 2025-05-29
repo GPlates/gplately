@@ -3,9 +3,10 @@
 <!DOCTYPE html>
 <html class="writer-html5" lang="en" data-content_root="../">
 <head>
-  <meta charset="utf-8" />
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>Overview: module code &mdash; gplately 2.0.0 documentation</title>
+  <title>gplately.reconstruct_points_by_topologies &mdash; gplately 2.0.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
 
@@ -18,7 +19,9 @@
       <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
-    <link rel="search" title="Search" href="../search.html" /> 
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Other Classes" href="../secondaries.html" />
+    <link rel="prev" title="gplately.auxiliary" href="gplately.auxiliary.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -51,9 +54,16 @@
 <li class="toctree-l1"><a class="reference internal" href="../primer.html">Primer</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Reference</span></p>
-<ul>
+<ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../api.html">Main Classes</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../functions.html">Functions</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../functions.html">Functions</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="gplately.auxiliary.html">gplately.auxiliary</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">gplately.reconstruct_points_by_topologies</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#gplately.reconstruct_points_by_topologies"><code class="docutils literal notranslate"><span class="pre">reconstruct_points_by_topologies()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
 <li class="toctree-l1"><a class="reference internal" href="../secondaries.html">Other Classes</a></li>
 </ul>
 
@@ -71,8 +81,10 @@
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
       <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
-      <li class="breadcrumb-item active">Overview: module code</li>
+          <li class="breadcrumb-item"><a href="../functions.html">Functions</a></li>
+      <li class="breadcrumb-item active">gplately.reconstruct_points_by_topologies</li>
       <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/generated/gplately.reconstruct_points_by_topologies.rst.txt" rel="nofollow"> View page source</a>
       </li>
   </ul>
   <hr/>
@@ -80,25 +92,23 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <h1>All modules for which code is available</h1>
-<ul><li><a href="gplately/auxiliary.html">gplately.auxiliary</a></li>
-<li><a href="gplately/download.html">gplately.download</a></li>
-<li><a href="gplately/grids.html">gplately.grids</a></li>
-<li><a href="gplately/mapping/cartopy_plot.html">gplately.mapping.cartopy_plot</a></li>
-<li><a href="gplately/mapping/plot_engine.html">gplately.mapping.plot_engine</a></li>
-<li><a href="gplately/mapping/pygmt_plot.html">gplately.mapping.pygmt_plot</a></li>
-<li><a href="gplately/oceans.html">gplately.oceans</a></li>
-<li><a href="gplately/plot.html">gplately.plot</a></li>
-<li><a href="gplately/points.html">gplately.points</a></li>
-<li><a href="gplately/reconstruction.html">gplately.reconstruction</a></li>
-<li><a href="plate_model_manager/plate_model.html">plate_model_manager.plate_model</a></li>
-<li><a href="plate_model_manager/plate_model_manager.html">plate_model_manager.plate_model_manager</a></li>
-<li><a href="plate_model_manager/present_day_rasters.html">plate_model_manager.present_day_rasters</a></li>
-</ul>
+  <section id="gplately-reconstruct-points-by-topologies">
+<h1>gplately.reconstruct_points_by_topologies<a class="headerlink" href="#gplately-reconstruct-points-by-topologies" title="Link to this heading"></a></h1>
+<dl class="py function">
+<dt class="sig sig-object py" id="gplately.reconstruct_points_by_topologies">
+<span class="sig-prename descclassname"><span class="pre">gplately.</span></span><span class="sig-name descname"><span class="pre">reconstruct_points_by_topologies</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rotation_features_or_model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">topology_features</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reconstruction_begin_time</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reconstruction_end_time</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reconstruction_time_interval</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">points</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">point_begin_times=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">point_end_times=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">point_plate_ids=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">detect_collisions=&lt;gplately.reconstruction._DefaultCollision</span> <span class="pre">object&gt;</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#gplately.reconstruct_points_by_topologies" title="Link to this definition"></a></dt>
+<dd><p>Reconstruct points using the topological polygons.</p>
+</dd></dl>
+
+</section>
+
 
            </div>
           </div>
-          <footer>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="gplately.auxiliary.html" class="btn btn-neutral float-left" title="gplately.auxiliary" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../secondaries.html" class="btn btn-neutral float-right" title="Other Classes" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
 
   <hr/>
 

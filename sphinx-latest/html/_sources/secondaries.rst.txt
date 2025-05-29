@@ -1,5 +1,5 @@
-Secondaries
-===========
+Other Classes
+=============
 
 .. contents::
    :local:
@@ -9,6 +9,7 @@ Secondaries
    :nosignatures:
    :toctree: generated
 
+    gplately.PlateModel
     gplately.PlateModelManager
     gplately.PresentDayRasterManager
     gplately.PlotEngine

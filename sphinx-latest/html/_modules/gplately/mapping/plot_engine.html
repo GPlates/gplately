@@ -53,7 +53,8 @@
 <p class="caption" role="heading"><span class="caption-text">Reference</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../../../api.html">Main Classes</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../../secondaries.html">Secondaries</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../functions.html">Functions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../secondaries.html">Other Classes</a></li>
 </ul>
 
         </div>
@@ -105,11 +106,15 @@
 <div class="viewcode-block" id="PlotEngine">
 <a class="viewcode-back" href="../../../generated/gplately.PlotEngine.html#gplately.PlotEngine">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">PlotEngine</span><span class="p">(</span><span class="n">ABC</span><span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Abstract base class for map plotting.</span>
+<span class="sd">    Do not use this base class directly. Use subclasses instead, such as :class:`CartopyPlotEngine` or :class:`PygmtPlotEngine`.</span>
+<span class="sd">    &quot;&quot;&quot;</span>
+
 <div class="viewcode-block" id="PlotEngine.plot_geo_data_frame">
 <a class="viewcode-back" href="../../../generated/gplately.PlotEngine.html#gplately.PlotEngine.plot_geo_data_frame">[docs]</a>
     <span class="nd">@abstractmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">plot_geo_data_frame</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ax_or_fig</span><span class="p">,</span> <span class="n">gdf</span><span class="p">:</span> <span class="n">GeoDataFrame</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Plot GeoPandas GeoDataFrame object(abstract method)&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Plot GeoPandas GeoDataFrame object (abstract method)&quot;&quot;&quot;</span>
         <span class="k">pass</span>  <span class="c1"># This is an abstract method, no implementation here.</span></div>
 
 
@@ -117,7 +122,7 @@
 <a class="viewcode-back" href="../../../generated/gplately.PlotEngine.html#gplately.PlotEngine.plot_pygplates_features">[docs]</a>
     <span class="nd">@abstractmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">plot_pygplates_features</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ax_or_fig</span><span class="p">,</span> <span class="n">features</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Plot one or more pygplates feature(s)(abstract method)&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Plot one or more pygplates feature(s) (abstract method)&quot;&quot;&quot;</span>
         <span class="k">pass</span>  <span class="c1"># This is an abstract method, no implementation here.</span></div>
 
 

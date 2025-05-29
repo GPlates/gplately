@@ -1,0 +1,15 @@
+﻿gplately.auxiliary
+==================
+
+.. automodule:: gplately.auxiliary
+
+   
+   .. rubric:: Functions
+
+   .. autosummary::
+   
+      get_data_server_cache_path
+      get_gplot
+      get_plate_reconstruction
+      get_pygmt_basemap_figure
+   

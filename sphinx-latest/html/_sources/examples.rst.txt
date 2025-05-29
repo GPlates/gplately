@@ -9,15 +9,15 @@ Examples
 
 
 - `01 - Getting Started`_: A brief overview of how to initialise GPlately's main objects
-- `02 - Plate Reconstructions`_: Setting up a **PlateReconstruction** object, reconstructing geological data through time
-- `03 - Working with Points`_: Setting up a **Points** object, reconstructing seed point locations through time with. This notebook uses point data from the Paleobiology Database (PBDB).
+- `02 - Plate Reconstructions`_: Setting up a :py:class:`gplately.PlateReconstruction` object, reconstructing geological data through time
+- `03 - Working with Points`_: Setting up a :py:class:`gplately.Points` object, reconstructing seed point locations through time with. This notebook uses point data from the Paleobiology Database (PBDB).
 - `04 - Velocity Basics`_: Calculating plate velocities, plotting velocity vector fields
 - `05 - Working with Feature Geometries`_: Processing and plotting assorted polyline, polygon and point data from `GPlates 2.3's sample data sets`_.
 - `06 - Rasters`_: Reading, resizing, resampling raster data, and linearly interpolating point data onto raster data
 - `07 - Plate Tectonic Stats`_: Calculating and plotting subduction zone and ridge data (convergence/spreading velocities, subduction angles, subduction zone and ridge lengths, crustal surface areas produced and subducted etc.)
 - `08 - Predicting Slab Flux`_: Predicting the average slab dip angle of subducting oceanic lithosphere.
 - `09 - Motion Paths and Flowlines`_: Using pyGPlates to create motion paths and flowines of points on a tectonic plate to illustrate the plate's trajectory through geological time.
-- `10 - SeafloorGrid`_: Defines the parameters needed to set up a **SeafloorGrid** object, and demonstrates how to produce age and spreading rate grids from a set of plate reconstruction model files.
+- `10 - SeafloorGrid`_: Defines the parameters needed to set up a :py:class:`gplately.SeafloorGrid` object, and demonstrates how to produce age and spreading rate grids from a set of plate reconstruction model files.
 - `11 - AndesFluxes`_: Demonstrates how the reconstructed subduction history along the Andean margin can be potentially used in the plate kinematics analysis and data mining.
 - 12 - Mutschler_WorldPorphyryCopperDeposits
 

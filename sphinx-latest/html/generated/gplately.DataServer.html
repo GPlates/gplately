@@ -60,6 +60,7 @@
 <li class="toctree-l3"><a class="reference internal" href="#gplately.DataServer"><code class="docutils literal notranslate"><span class="pre">DataServer</span></code></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#gplately.DataServer.__init__"><code class="docutils literal notranslate"><span class="pre">DataServer.__init__()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#gplately.DataServer.COBs"><code class="docutils literal notranslate"><span class="pre">DataServer.COBs</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gplately.DataServer.cache_path"><code class="docutils literal notranslate"><span class="pre">DataServer.cache_path</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#gplately.DataServer.coastlines"><code class="docutils literal notranslate"><span class="pre">DataServer.coastlines</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#gplately.DataServer.continents"><code class="docutils literal notranslate"><span class="pre">DataServer.continents</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#gplately.DataServer.from_age"><code class="docutils literal notranslate"><span class="pre">DataServer.from_age</span></code></a></li>
@@ -87,7 +88,8 @@
 <li class="toctree-l2"><a class="reference internal" href="gplately.SeafloorGrid.html">gplately.SeafloorGrid</a></li>
 </ul>
 </li>
-<li class="toctree-l1"><a class="reference internal" href="../secondaries.html">Secondaries</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../functions.html">Functions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../secondaries.html">Other Classes</a></li>
 </ul>
 
         </div>
@@ -120,20 +122,23 @@
 <dl class="py class">
 <dt class="sig sig-object py" id="gplately.DataServer">
 <em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">gplately.</span></span><span class="sig-name descname"><span class="pre">DataServer</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file_collection</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_dir</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gplately/download.html#DataServer"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.DataServer" title="Link to this definition"></a></dt>
-<dd><p>Download plate reconstruction models to the cache folder on your computer from
-EarthByte’s <a class="reference external" href="https://repo.gplates.org/webdav/pmm/">WebDAV server</a>.</p>
-<p>If the <cite>DataServer</cite> object and its methods are called for the first time, i.e. by:</p>
-<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># string identifier to access the Muller et al. 2019 model</span>
-<span class="n">gDownload</span> <span class="o">=</span> <span class="n">gplately</span><span class="o">.</span><span class="n">download</span><span class="o">.</span><span class="n">DataServer</span><span class="p">(</span><span class="s2">&quot;Muller2019&quot;</span><span class="p">)</span>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Download plate reconstruction models to the cache folder on your computer from
+<a class="reference external" href="https://repo.gplates.org/webdav/pmm/">EarthByte’s WebDAV server</a>.</p>
+<p>If the <code class="docutils literal notranslate"><span class="pre">DataServer</span></code> object is created for the first time, i.e. by:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="c1"># create a DataServer object for the Muller et al. 2019 model</span>
+<span class="n">data_server</span> <span class="o">=</span> <span class="n">gplately</span><span class="o">.</span><span class="n">download</span><span class="o">.</span><span class="n">DataServer</span><span class="p">(</span><span class="s2">&quot;Muller2019&quot;</span><span class="p">)</span>
 </pre></div>
 </div>
-<p>all requested files are downloaded into the user’s ‘gplately’ cache folder only <strong>once</strong>. If the same
-object and method(s) are re-run, the files will be re-accessed from the cache provided they have not been
+<p>all requested files are downloaded into the user’s <code class="docutils literal notranslate"><span class="pre">gplately</span></code> cache folder only <strong>once</strong>. If the same
+model is requested again, the new DataServer object will get the files from the cache provided they have not been
 moved or deleted.</p>
-<p><a class="reference external" href="https://gplates.github.io/gplately/sphinx-latest/html/use_cases.html#id1">This table</a>
-provides a list of available plate reconstruction models.
-For more information about these plate models,
-visit this <a class="reference external" href="https://www.earthbyte.org/category/resources/data-models/global-regional-plate-motion-models/">EarthByte web page</a>.</p>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><a class="reference external" href="https://gplates.github.io/gplately/sphinx-latest/html/use_cases.html#id1">This table</a> provides a list of available plate reconstruction models.
+Visit this <a class="reference external" href="https://www.earthbyte.org/category/resources/data-models/global-regional-plate-motion-models/">EarthByte web page</a>
+for more information about these plate models.</p>
+</div>
 <dl class="py method">
 <dt class="sig sig-object py" id="gplately.DataServer.__init__">
 <span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">file_collection</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_dir</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">verbose</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gplately/download.html#DataServer.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.DataServer.__init__" title="Link to this definition"></a></dt>
@@ -154,22 +159,22 @@ visit this <a class="reference external" href="https://www.earthbyte.org/categor
 <td><p></p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#gplately.DataServer.get_age_grid" title="gplately.DataServer.get_age_grid"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_age_grid</span></code></a>(times)</p></td>
-<td><p>Downloads seafloor and paleo-age grids from the plate reconstruction model (<cite>file_collection</cite>) passed into the <cite>DataServer</cite> object.</p></td>
+<td><p>Downloads seafloor and paleo-age grids from the plate reconstruction model (<code class="docutils literal notranslate"><span class="pre">file_collection</span></code>) passed into the <code class="docutils literal notranslate"><span class="pre">DataServer</span></code> object.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#gplately.DataServer.get_feature_data" title="gplately.DataServer.get_feature_data"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_feature_data</span></code></a>([feature_data_id_string])</p></td>
-<td><p>Downloads assorted geological feature data from web servers (i.e. [GPlates 2.3 sample data](<a class="reference external" href="https://www.earthbyte.org/gplates-2-3-software-and-data-sets/">https://www.earthbyte.org/gplates-2-3-software-and-data-sets/</a>)) into the &quot;gplately&quot; cache.</p></td>
+<td><p>Downloads assorted geological feature data from web servers (i.e. <a class="reference external" href="https://www.earthbyte.org/gplates-2-3-software-and-data-sets/">GPlates 2.3 sample data</a>) into the &quot;gplately&quot; cache.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#gplately.DataServer.get_plate_reconstruction_files" title="gplately.DataServer.get_plate_reconstruction_files"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_plate_reconstruction_files</span></code></a>()</p></td>
-<td><p>Downloads and constructs a <cite>rotation model</cite>, a set of <cite>topology features</cite> and and a set of <cite>static polygons</cite>.</p></td>
+<td><p>Downloads and constructs a <code class="docutils literal notranslate"><span class="pre">rotation</span> <span class="pre">model</span></code>, a set of <code class="docutils literal notranslate"><span class="pre">topology</span> <span class="pre">features</span></code> and and a set of <code class="docutils literal notranslate"><span class="pre">static</span> <span class="pre">polygons</span></code>.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#gplately.DataServer.get_raster" title="gplately.DataServer.get_raster"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_raster</span></code></a>([raster_id_string])</p></td>
-<td><p>Downloads assorted raster data that are not associated with the plate reconstruction models supported by GPlately's <cite>DataServer</cite>.</p></td>
+<td><p>Downloads assorted raster data that are not associated with the plate reconstruction models supported by GPlately's <code class="docutils literal notranslate"><span class="pre">DataServer</span></code>.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#gplately.DataServer.get_spreading_rate_grid" title="gplately.DataServer.get_spreading_rate_grid"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_spreading_rate_grid</span></code></a>(times)</p></td>
-<td><p>Downloads seafloor spreading rate grids from the plate reconstruction model (<cite>file_collection</cite>) passed into the <cite>DataServer</cite> object.</p></td>
+<td><p>Downloads seafloor spreading rate grids from the plate reconstruction model (<code class="docutils literal notranslate"><span class="pre">file_collection</span></code>) passed into the <code class="docutils literal notranslate"><span class="pre">DataServer</span></code> object.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#gplately.DataServer.get_topology_geometries" title="gplately.DataServer.get_topology_geometries"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_topology_geometries</span></code></a>()</p></td>
-<td><p>Uses the [plate-model-manager](<a class="reference external" href="https://pypi.org/project/plate-model-manager/">https://pypi.org/project/plate-model-manager/</a>) to download coastline, continent and COB (continent-ocean boundary) Shapely geometries from the requested plate model.</p></td>
+<td><p>Download coastline, continent and COB (continent-ocean boundary) Shapely geometries from the requested plate model.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#gplately.DataServer.get_valid_times" title="gplately.DataServer.get_valid_times"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_valid_times</span></code></a>()</p></td>
 <td><p>Returns a tuple of the valid plate model time range, (max_time, min_time).</p></td>
@@ -180,86 +185,99 @@ visit this <a class="reference external" href="https://www.earthbyte.org/categor
 <table class="autosummary longtable docutils align-default">
 <tbody>
 <tr class="row-odd"><td><p><a class="reference internal" href="#gplately.DataServer.COBs" title="gplately.DataServer.COBs"><code class="xref py py-obj docutils literal notranslate"><span class="pre">COBs</span></code></a></p></td>
-<td><p></p></td>
+<td><p>a pygplates.FeatureCollection object containing continent-ocean boundaries</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#gplately.DataServer.coastlines" title="gplately.DataServer.coastlines"><code class="xref py py-obj docutils literal notranslate"><span class="pre">coastlines</span></code></a></p></td>
-<td><p></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#gplately.DataServer.cache_path" title="gplately.DataServer.cache_path"><code class="xref py py-obj docutils literal notranslate"><span class="pre">cache_path</span></code></a></p></td>
+<td><p>the location of DataServer cache on your computer</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#gplately.DataServer.continents" title="gplately.DataServer.continents"><code class="xref py py-obj docutils literal notranslate"><span class="pre">continents</span></code></a></p></td>
-<td><p></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#gplately.DataServer.coastlines" title="gplately.DataServer.coastlines"><code class="xref py py-obj docutils literal notranslate"><span class="pre">coastlines</span></code></a></p></td>
+<td><p>a pygplates.FeatureCollection object containing coastlines</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#gplately.DataServer.from_age" title="gplately.DataServer.from_age"><code class="xref py py-obj docutils literal notranslate"><span class="pre">from_age</span></code></a></p></td>
-<td><p></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#gplately.DataServer.continents" title="gplately.DataServer.continents"><code class="xref py py-obj docutils literal notranslate"><span class="pre">continents</span></code></a></p></td>
+<td><p>a pygplates.FeatureCollection object containing continental polygons</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#gplately.DataServer.rotation_model" title="gplately.DataServer.rotation_model"><code class="xref py py-obj docutils literal notranslate"><span class="pre">rotation_model</span></code></a></p></td>
-<td><p></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#gplately.DataServer.from_age" title="gplately.DataServer.from_age"><code class="xref py py-obj docutils literal notranslate"><span class="pre">from_age</span></code></a></p></td>
+<td><p>the max age of the plate model</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#gplately.DataServer.static_polygons" title="gplately.DataServer.static_polygons"><code class="xref py py-obj docutils literal notranslate"><span class="pre">static_polygons</span></code></a></p></td>
-<td><p></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#gplately.DataServer.rotation_model" title="gplately.DataServer.rotation_model"><code class="xref py py-obj docutils literal notranslate"><span class="pre">rotation_model</span></code></a></p></td>
+<td><p>a pygplates.RotationModel object for the plate reconstruction model</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#gplately.DataServer.time_range" title="gplately.DataServer.time_range"><code class="xref py py-obj docutils literal notranslate"><span class="pre">time_range</span></code></a></p></td>
-<td><p></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#gplately.DataServer.static_polygons" title="gplately.DataServer.static_polygons"><code class="xref py py-obj docutils literal notranslate"><span class="pre">static_polygons</span></code></a></p></td>
+<td><p>a pygplates.FeatureCollection object containing static polygons</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#gplately.DataServer.to_age" title="gplately.DataServer.to_age"><code class="xref py py-obj docutils literal notranslate"><span class="pre">to_age</span></code></a></p></td>
-<td><p></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#gplately.DataServer.time_range" title="gplately.DataServer.time_range"><code class="xref py py-obj docutils literal notranslate"><span class="pre">time_range</span></code></a></p></td>
+<td><p>the time range of the plate model</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#gplately.DataServer.topology_features" title="gplately.DataServer.topology_features"><code class="xref py py-obj docutils literal notranslate"><span class="pre">topology_features</span></code></a></p></td>
-<td><p></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#gplately.DataServer.to_age" title="gplately.DataServer.to_age"><code class="xref py py-obj docutils literal notranslate"><span class="pre">to_age</span></code></a></p></td>
+<td><p>the min age of the plate model</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#gplately.DataServer.valid_times" title="gplately.DataServer.valid_times"><code class="xref py py-obj docutils literal notranslate"><span class="pre">valid_times</span></code></a></p></td>
-<td><p></p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#gplately.DataServer.topology_features" title="gplately.DataServer.topology_features"><code class="xref py py-obj docutils literal notranslate"><span class="pre">topology_features</span></code></a></p></td>
+<td><p>a pygplates.FeatureCollection object containing topology features</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#gplately.DataServer.valid_times" title="gplately.DataServer.valid_times"><code class="xref py py-obj docutils literal notranslate"><span class="pre">valid_times</span></code></a></p></td>
+<td><p>the max time and min time of the plate model</p></td>
 </tr>
 </tbody>
 </table>
 <dl class="py property">
 <dt class="sig sig-object py" id="gplately.DataServer.COBs">
 <em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">COBs</span></span><a class="headerlink" href="#gplately.DataServer.COBs" title="Link to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>a pygplates.FeatureCollection object containing continent-ocean boundaries</p>
+</dd></dl>
+
+<dl class="py property">
+<dt class="sig sig-object py" id="gplately.DataServer.cache_path">
+<em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">cache_path</span></span><a class="headerlink" href="#gplately.DataServer.cache_path" title="Link to this definition"></a></dt>
+<dd><p>the location of DataServer cache on your computer</p>
+</dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="gplately.DataServer.coastlines">
 <em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">coastlines</span></span><a class="headerlink" href="#gplately.DataServer.coastlines" title="Link to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>a pygplates.FeatureCollection object containing coastlines</p>
+</dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="gplately.DataServer.continents">
 <em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">continents</span></span><a class="headerlink" href="#gplately.DataServer.continents" title="Link to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>a pygplates.FeatureCollection object containing continental polygons</p>
+</dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="gplately.DataServer.from_age">
 <em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">from_age</span></span><a class="headerlink" href="#gplately.DataServer.from_age" title="Link to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>the max age of the plate model</p>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="gplately.DataServer.get_age_grid">
 <span class="sig-name descname"><span class="pre">get_age_grid</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">times</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gplately/download.html#DataServer.get_age_grid"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.DataServer.get_age_grid" title="Link to this definition"></a></dt>
-<dd><p>Downloads seafloor and paleo-age grids from the plate reconstruction model (<cite>file_collection</cite>)
-passed into the <cite>DataServer</cite> object. Stores grids in the “gplately” cache.</p>
-<p>Currently, <cite>DataServer</cite> supports the following age grids:</p>
+<dd><p>Downloads seafloor and paleo-age grids from the plate reconstruction model (<code class="docutils literal notranslate"><span class="pre">file_collection</span></code>)
+passed into the <code class="docutils literal notranslate"><span class="pre">DataServer</span></code> object. Stores grids in the “gplately” cache.</p>
+<p>Currently, <code class="docutils literal notranslate"><span class="pre">DataServer</span></code> supports the following age grids:</p>
 <ul>
-<li><p>__Muller et al. <a href="#id1"><span class="problematic" id="id2">2019__</span></a></p>
+<li><p>Muller et al. 2019</p>
 <blockquote>
 <div><ul class="simple">
-<li><p><cite>file_collection</cite> = <cite>Muller2019</cite></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">file_collection</span></code> = <code class="docutils literal notranslate"><span class="pre">Muller2019</span></code></p></li>
 <li><p>Time range: 0-250 Ma</p></li>
 <li><p>Seafloor age grid rasters in netCDF format.</p></li>
 </ul>
 </div></blockquote>
 </li>
-<li><p>__Muller et al. <a href="#id1"><span class="problematic" id="id3">2016__</span></a></p>
+<li><p>Muller et al. 2016</p>
 <blockquote>
 <div><ul class="simple">
-<li><p><cite>file_collection</cite> = <cite>Muller2016</cite></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">file_collection</span></code> = <code class="docutils literal notranslate"><span class="pre">Muller2016</span></code></p></li>
 <li><p>Time range: 0-240 Ma</p></li>
 <li><p>Seafloor age grid rasters in netCDF format.</p></li>
 </ul>
 </div></blockquote>
 </li>
-<li><p>__Seton et al. <a href="#id1"><span class="problematic" id="id4">2012__</span></a></p>
+<li><p>Seton et al. 2012</p>
 <blockquote>
 <div><ul class="simple">
-<li><p><cite>file_collection</cite> = <cite>Seton2012</cite></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">file_collection</span></code> = <code class="docutils literal notranslate"><span class="pre">Seton2012</span></code></p></li>
 <li><p>Time range: 0-200 Ma</p></li>
 <li><p>Paleo-age grid rasters in netCDF format.</p></li>
 </ul>
@@ -268,47 +286,52 @@ passed into the <cite>DataServer</cite> object. Stores grids in the “gplately�
 </ul>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>times</strong> (<em>int</em><em>, or </em><em>list</em><em> of </em><em>int</em><em>, </em><em>default=None</em>) – Request an age grid from one (an integer) or multiple reconstruction times (a
-list of integers).</p>
+<dd class="field-odd"><p><strong>times</strong> (<em>int</em><em>, or </em><em>list</em><em> of </em><em>int</em><em>, </em><em>default=None</em>) – Request an age grid from one (an integer) or multiple reconstruction times (a list of integers).</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p><p>A gplately.Raster object containing the age grid. The age grid data can be extracted
-into a numpy ndarray or MaskedArray by appending <cite>.data</cite> to the variable assigned to
-<cite>get_age_grid()</cite>.</p>
+<dd class="field-even"><p><p>A <a class="reference internal" href="gplately.Raster.html#gplately.Raster" title="gplately.Raster"><code class="xref py py-class docutils literal notranslate"><span class="pre">gplately.Raster</span></code></a> object containing the age grid. The age grid data can be extracted
+into a numpy ndarray or MaskedArray by appending <code class="docutils literal notranslate"><span class="pre">.data</span></code> to the variable assigned to <code class="docutils literal notranslate"><span class="pre">get_age_grid()</span></code>.</p>
 <p>For example:</p>
-<blockquote>
-<div><p>gdownload = gplately.DataServer(“Muller2019”)</p>
-<p>graster = gdownload.get_age_grid(time=100)</p>
-<p>graster_data = graster.data</p>
-</div></blockquote>
-<p>where <cite>graster_data</cite> is a numpy ndarray.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos">1</span><span class="n">gdownload</span> <span class="o">=</span> <span class="n">gplately</span><span class="o">.</span><span class="n">DataServer</span><span class="p">(</span><span class="s2">&quot;Muller2019&quot;</span><span class="p">)</span>
+<span class="linenos">2</span>
+<span class="linenos">3</span><span class="n">graster</span> <span class="o">=</span> <span class="n">gdownload</span><span class="o">.</span><span class="n">get_age_grid</span><span class="p">(</span><span class="n">time</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
+<span class="linenos">4</span>
+<span class="linenos">5</span><span class="n">graster_data</span> <span class="o">=</span> <span class="n">graster</span><span class="o">.</span><span class="n">data</span>
+</pre></div>
+</div>
+<p>where <code class="docutils literal notranslate"><span class="pre">graster_data</span></code> is a numpy ndarray.</p>
 </p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>a gplately.Raster object</p>
 </dd>
 <dt class="field-even">Raises<span class="colon">:</span></dt>
-<dd class="field-even"><p><strong>ValueError</strong> – If <cite>time</cite> (a single integer, or a list of integers representing reconstruction
+<dd class="field-even"><p><strong>ValueError</strong> – If <code class="docutils literal notranslate"><span class="pre">time</span></code> (a single integer, or a list of integers representing reconstruction
     times to extract the age grids from) is not passed.</p>
 </dd>
 </dl>
-<p class="rubric">Notes</p>
-<p>The first time that <cite>get_age_grid</cite> is called for a specific time(s), the age grid(s)
-will be downloaded into the GPlately cache once. Upon successive calls of <cite>get_age_grid</cite>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The first time that <code class="docutils literal notranslate"><span class="pre">get_age_grid</span></code> is called for a specific time(s), the age grid(s)
+will be downloaded into the GPlately cache once. Upon successive calls of <code class="docutils literal notranslate"><span class="pre">get_age_grid</span></code>
 for the same reconstruction time(s), the age grids will not be re-downloaded; rather,
 they are re-accessed from the same cache provided the age grid(s) have not been moved or deleted.</p>
+</div>
 <p class="rubric">Examples</p>
-<p>if the <cite>DataServer</cite> object was called with the <cite>Muller2019</cite> <cite>file_collection</cite> string:</p>
+<p>if the <code class="docutils literal notranslate"><span class="pre">DataServer</span></code> object was called with the <code class="docutils literal notranslate"><span class="pre">Muller2019</span></code> <code class="docutils literal notranslate"><span class="pre">file_collection</span></code> string:</p>
 <blockquote>
-<div><p>gDownload = gplately.download.DataServer(“Muller2019”)</p>
+<div><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos">1</span><span class="n">gDownload</span> <span class="o">=</span> <span class="n">gplately</span><span class="o">.</span><span class="n">download</span><span class="o">.</span><span class="n">DataServer</span><span class="p">(</span><span class="s2">&quot;Muller2019&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
 </div></blockquote>
-<p><cite>get_age_grid</cite> will download seafloor age grids from the Müller et al. (2019) plate
+<p><code class="docutils literal notranslate"><span class="pre">get_age_grid</span></code> will download seafloor age grids from the Müller et al. (2019) plate
 reconstruction model for the geological time(s) requested in the <cite>time</cite> parameter.
 If found, these age grids are returned as masked arrays.</p>
-<p>For example, to download  Müller et al. (2019) seafloor age grids for 0Ma, 1Ma and
-100 Ma:</p>
+<p>For example, to download  Müller et al. (2019) seafloor age grids for 0Ma, 1Ma and 100 Ma:</p>
 <blockquote>
-<div><p>age_grids = gDownload.get_age_grid([0, 1, 100])</p>
+<div><div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos">1</span><span class="n">age_grids</span> <span class="o">=</span> <span class="n">gDownload</span><span class="o">.</span><span class="n">get_age_grid</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">100</span><span class="p">])</span>
+</pre></div>
+</div>
 </div></blockquote>
 </dd></dl>
 
@@ -316,138 +339,160 @@ If found, these age grids are returned as masked arrays.</p>
 <dt class="sig sig-object py" id="gplately.DataServer.get_feature_data">
 <span class="sig-name descname"><span class="pre">get_feature_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">feature_data_id_string</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gplately/download.html#DataServer.get_feature_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.DataServer.get_feature_data" title="Link to this definition"></a></dt>
 <dd><p>Downloads assorted geological feature data from web servers (i.e.
-[GPlates 2.3 sample data](<a class="reference external" href="https://www.earthbyte.org/gplates-2-3-software-and-data-sets/">https://www.earthbyte.org/gplates-2-3-software-and-data-sets/</a>))
-into the “gplately” cache.</p>
-<p>Currently, <cite>DataServer</cite> supports the following feature data:</p>
+<a class="reference external" href="https://www.earthbyte.org/gplates-2-3-software-and-data-sets/">GPlates 2.3 sample data</a>) into the “gplately” cache.</p>
+<p>Currently, <code class="docutils literal notranslate"><span class="pre">DataServer</span></code> supports the following feature data:</p>
 <ul>
-<li><p>__Large igneous provinces from Johansson et al. (2018)__</p>
+<li><p>Large igneous provinces from Johansson et al. (2018)</p>
+<blockquote>
+<div><ul>
+<li><p>Information</p>
 <blockquote>
 <div><ul class="simple">
 <li><p>Formats: .gpmlz</p></li>
 <li><p><cite>feature_data_id_string</cite> = <cite>Johansson2018</cite></p></li>
 </ul>
-<ul class="simple">
-<li><p>Johansson, L., Zahirovic, S., and Müller, R. D., In Prep, The</p></li>
-</ul>
-<p>interplay between the eruption and weathering of Large Igneous Provinces and
+</div></blockquote>
+</li>
+<li><p>Citations</p>
+<blockquote>
+<div><p>Johansson, L., Zahirovic, S., and Müller, R. D., In Prep, The
+interplay between the eruption and weathering of Large Igneous Provinces and
 the deep-time carbon cycle: Geophysical Research Letters.</p>
 </div></blockquote>
 </li>
 </ul>
-<ul class="simple">
-<li><p>__Large igneous province products interpreted as plume products from Whittaker</p></li>
+</div></blockquote>
+</li>
 </ul>
-<p>et al. (2015)__.</p>
+<ul>
+<li><p>Large igneous province products interpreted as plume products from Whittaker et al. (2015).</p>
+<blockquote>
+<div><ul>
+<li><p>Information</p>
 <blockquote>
 <div><ul class="simple">
 <li><p>Formats: .gpmlz, .shp</p></li>
 <li><p><cite>feature_data_id_string</cite> = <cite>Whittaker2015</cite></p></li>
 </ul>
-<ul class="simple">
-<li><p>Whittaker, J. M., Afonso, J. C., Masterton, S., Müller, R. D.,</p></li>
-</ul>
-<p>Wessel, P., Williams, S. E., &amp; Seton, M. (2015). Long-term interaction between
-mid-ocean ridges and mantle plumes. Nature Geoscience, 8(6), 479-483.
-doi:10.1038/ngeo2437.</p>
 </div></blockquote>
-<ul class="simple">
-<li><p>__Seafloor tectonic fabric (fracture zones, discordant zones, V-shaped structures,</p></li>
+</li>
+<li><p>Citations</p>
+<blockquote>
+<div><p>Whittaker, J. M., Afonso, J. C., Masterton, S., Müller, R. D.,
+Wessel, P., Williams, S. E., &amp; Seton, M. (2015). Long-term interaction between
+mid-ocean ridges and mantle plumes. Nature Geoscience, 8(6), 479-483. doi:10.1038/ngeo2437.</p>
+</div></blockquote>
+</li>
 </ul>
-<p>unclassified V-anomalies, propagating ridge lineations and extinct ridges) from
-Matthews et al. (2011)__</p>
+</div></blockquote>
+</li>
+<li><p>Seafloor tectonic fabric (fracture zones, discordant zones, V-shaped structures, unclassified V-anomalies, propagating ridge lineations and extinct ridges) from Matthews et al. (2011)</p>
+<blockquote>
+<div><ul>
+<li><p>Information</p>
 <blockquote>
 <div><ul class="simple">
 <li><p>Formats: .gpml</p></li>
 <li><p><cite>feature_data_id_string</cite> = <cite>SeafloorFabric</cite></p></li>
 </ul>
-<ul class="simple">
-<li><p>Matthews, K.J., Müller, R.D., Wessel, P. and Whittaker, J.M., 2011. The</p></li>
-</ul>
-<p>tectonic fabric of the ocean basins. Journal of Geophysical Research, 116(B12):
+</div></blockquote>
+</li>
+<li><p>Citations</p>
+<blockquote>
+<div><p>Matthews, K.J., Müller, R.D., Wessel, P. and Whittaker, J.M., 2011. The
+tectonic fabric of the ocean basins. Journal of Geophysical Research, 116(B12):
 B12109, DOI: 10.1029/2011JB008413.</p>
 </div></blockquote>
-<ul>
-<li><p>__Present day surface hotspot/plume locations from Whittaker et al. (2013)__</p>
+</li>
+</ul>
+</div></blockquote>
+</li>
+<li><p>Present day surface hotspot/plume locations from Whittaker et al. (2013)</p>
+<blockquote>
+<div><ul>
+<li><p>Information</p>
 <blockquote>
 <div><ul class="simple">
 <li><p>Formats: .gpmlz</p></li>
 <li><p><cite>feature_data_id_string</cite> = <cite>Hotspots</cite></p></li>
 </ul>
-<ul class="simple">
-<li><p>Whittaker, J., Afonso, J., Masterton, S., Müller, R., Wessel, P.,</p></li>
-</ul>
-<p>Williams, S., and Seton, M., 2015, Long-term interaction between mid-ocean ridges and
+</div></blockquote>
+</li>
+<li><p>Citation</p>
+<blockquote>
+<div><p>Whittaker, J., Afonso, J., Masterton, S., Müller, R., Wessel, P.,
+Williams, S., and Seton, M., 2015, Long-term interaction between mid-ocean ridges and
 mantle plumes: Nature Geoscience, v. 8, no. 6, p. 479-483, doi:10.1038/ngeo2437.</p>
+</div></blockquote>
+</li>
+</ul>
 </div></blockquote>
 </li>
 </ul>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>feature_data_id_string</strong> (<em>str</em><em>, </em><em>default=None</em>) – A string to identify which feature data to download to the cache (see list of supported
-feature data above).</p>
+<dd class="field-odd"><p><strong>feature_data_id_string</strong> (<em>str</em><em>, </em><em>default=None</em>) – A string to identify which feature data to download to the cache (see list of supported feature data above).</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p><strong>feature_data_filenames</strong> – If a single set of feature data is downloaded, a single pyGPlates <cite>FeatureCollection</cite>
-object is returned. Otherwise, a list containing multiple pyGPlates <cite>FeatureCollection</cite>
-objects is returned (like for <cite>SeafloorFabric</cite>). In the latter case, feature reconstruction
+<dd class="field-even"><p><strong>feature_data_filenames</strong> – If a single set of feature data is downloaded, a single pyGPlates <code class="docutils literal notranslate"><span class="pre">FeatureCollection</span></code>
+object is returned. Otherwise, a list containing multiple pyGPlates <code class="docutils literal notranslate"><span class="pre">FeatureCollection</span></code>
+objects is returned (like for <code class="docutils literal notranslate"><span class="pre">SeafloorFabric</span></code>). In the latter case, feature reconstruction
 and plotting may have to be done iteratively.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>instance of &lt;pygplates.FeatureCollection&gt;, or list of instance &lt;pygplates.FeatureCollection&gt;</p>
 </dd>
 <dt class="field-even">Raises<span class="colon">:</span></dt>
-<dd class="field-even"><p><strong>ValueError</strong> – If a <cite>feature_data_id_string</cite> is not provided.</p>
+<dd class="field-even"><p><strong>ValueError</strong> – If a <code class="docutils literal notranslate"><span class="pre">feature_data_id_string</span></code> is not provided.</p>
 </dd>
 </dl>
 <p class="rubric">Examples</p>
-<p>For examples of plotting data downloaded with <cite>get_feature_data</cite>, see GPlately’s sample
-notebook 05 - Working With Feature Geometries [here](<a class="reference external" href="https://github.com/GPlates/gplately/blob/master/Notebooks/05-WorkingWithFeatureGeometries.ipynb">https://github.com/GPlates/gplately/blob/master/Notebooks/05-WorkingWithFeatureGeometries.ipynb</a>).</p>
+<p>For examples of plotting data downloaded with <code class="docutils literal notranslate"><span class="pre">get_feature_data</span></code>, see GPlately’s sample notebook 05 - Working With Feature Geometries
+<a class="reference external" href="https://github.com/GPlates/gplately/blob/master/Notebooks/05-WorkingWithFeatureGeometries.ipynb">here</a>.</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="gplately.DataServer.get_plate_reconstruction_files">
 <span class="sig-name descname"><span class="pre">get_plate_reconstruction_files</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gplately/download.html#DataServer.get_plate_reconstruction_files"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.DataServer.get_plate_reconstruction_files" title="Link to this definition"></a></dt>
-<dd><p>Downloads and constructs a <cite>rotation model</cite>, a set of <cite>topology features</cite> and
-and a set of <cite>static polygons</cite>. These objects can then be used to create <cite>PlateReconstruction</cite> object.</p>
+<dd><p>Downloads and constructs a <code class="docutils literal notranslate"><span class="pre">rotation</span> <span class="pre">model</span></code>, a set of <code class="docutils literal notranslate"><span class="pre">topology</span> <span class="pre">features</span></code> and
+and a set of <code class="docutils literal notranslate"><span class="pre">static</span> <span class="pre">polygons</span></code>. These objects can then be used to create <a class="reference internal" href="gplately.PlateReconstruction.html#gplately.PlateReconstruction" title="gplately.PlateReconstruction"><code class="xref py py-class docutils literal notranslate"><span class="pre">gplately.PlateReconstruction</span></code></a> object.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p><ul class="simple">
+<dd class="field-odd"><p><ul>
 <li><p><strong>rotation_model</strong> (<em>instance of &lt;pygplates.RotationModel&gt;</em>) – A rotation model to query equivalent and/or relative topological plate rotations
 from a time in the past relative to another time in the past or to present day.</p></li>
-<li><p><strong>topology_features</strong> (<em>instance of &lt;pygplates.FeatureCollection&gt;</em>) – Point, polyline and/or polygon feature data that are reconstructable through
-geological time.</p></li>
+<li><p><strong>topology_features</strong> (<em>instance of &lt;pygplates.FeatureCollection&gt;</em>) – Point, polyline and/or polygon feature data that are reconstructable through geological time.</p></li>
 <li><p><strong>static_polygons</strong> (<em>instance of &lt;pygplates.FeatureCollection&gt;</em>) – Present-day polygons whose shapes do not change through geological time. They are
 used to cookie-cut dynamic polygons into identifiable topological plates (assigned
 an ID) according to their present-day locations.</p></li>
+<li><p><em>.. note::</em> – The get_plate_reconstruction_files() method downloads reconstruction files from a given plate model.
+For example,</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos">1</span><span class="n">gDownload</span> <span class="o">=</span> <span class="n">gplately</span><span class="o">.</span><span class="n">DataServer</span><span class="p">(</span><span class="s2">&quot;Muller2019&quot;</span><span class="p">)</span>
+<span class="linenos">2</span><span class="n">rotation_model</span><span class="p">,</span> <span class="n">topology_features</span><span class="p">,</span> <span class="n">static_polygons</span> <span class="o">=</span> <span class="n">gDownload</span><span class="o">.</span><span class="n">get_plate_reconstruction_files</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>The code above downloads <code class="docutils literal notranslate"><span class="pre">rotation</span> <span class="pre">model</span></code>, <code class="docutils literal notranslate"><span class="pre">topology</span> <span class="pre">features</span></code> and <code class="docutils literal notranslate"><span class="pre">static</span> <span class="pre">polygons</span></code> files from the
+Müller et al. (2019) plate reconstruction model. These files can then be used to create <a class="reference internal" href="gplately.PlateReconstruction.html#gplately.PlateReconstruction" title="gplately.PlateReconstruction"><code class="xref py py-class docutils literal notranslate"><span class="pre">gplately.PlateReconstruction</span></code></a> object.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos">1</span><span class="n">model</span> <span class="o">=</span> <span class="n">gplately</span><span class="o">.</span><span class="n">PlateReconstruction</span><span class="p">(</span><span class="n">rotation_model</span><span class="p">,</span> <span class="n">topology_features</span><span class="p">,</span> <span class="n">static_polygons</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>If the requested plate model does not have certain file(s), a warning message will alert user of the missing file(s).</p>
+</li>
 </ul>
 </p>
 </dd>
 </dl>
-<p class="rubric">Notes</p>
-<p>The get_plate_reconstruction_files() method downloads reconstruction files from a given plate model.
-For example,</p>
-<blockquote>
-<div><p>gDownload = gplately.download.DataServer(“Muller2019”)
-rotation_model, topology_features, static_polygons = gDownload.get_plate_reconstruction_files()</p>
-</div></blockquote>
-<p>The code above downloads <cite>rotation model</cite>, <cite>topology features</cite> and <cite>static polygons</cite> files from the
-Müller et al. (2019) plate reconstruction model. These files can then be used to create <cite>PlateReconstruction</cite> object.</p>
-<blockquote>
-<div><p>model = gplately.reconstruction.PlateReconstruction(rotation_model, topology_features, static_polygons)</p>
-</div></blockquote>
-<p>If the requested plate model does not have certain file(s), a warning message will alert user of the missing file(s).</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="gplately.DataServer.get_raster">
 <span class="sig-name descname"><span class="pre">get_raster</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">raster_id_string</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gplately/download.html#DataServer.get_raster"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.DataServer.get_raster" title="Link to this definition"></a></dt>
 <dd><p>Downloads assorted raster data that are not associated with the plate
-reconstruction models supported by GPlately’s <cite>DataServer</cite>. Stores rasters in the
-“gplately” cache.</p>
-<p>Currently, <cite>DataServer</cite> supports the following rasters and images:</p>
+reconstruction models supported by GPlately’s <code class="docutils literal notranslate"><span class="pre">DataServer</span></code>. Stores rasters in the “gplately” cache.</p>
+<p>Currently, <code class="docutils literal notranslate"><span class="pre">DataServer</span></code> supports the following rasters and images:</p>
 <ul class="simple">
 <li><dl class="simple">
-<dt>__[ETOPO1](<a class="reference external" href="https://www.ngdc.noaa.gov/mgg/global/)__">https://www.ngdc.noaa.gov/mgg/global/)__</a>:</dt><dd><ul>
+<dt><a class="reference external" href="https://www.ngdc.noaa.gov/mgg/global/">ETOPO1</a>:</dt><dd><ul>
 <li><p>Filetypes available : TIF, netCDF (GRD)</p></li>
 <li><p><cite>raster_id_string</cite> = <cite>“ETOPO1_grd”</cite>, <cite>“ETOPO1_tif”</cite> (depending on the requested format)</p></li>
 <li><p>A 1-arc minute global relief model combining lang topography and ocean bathymetry.</p></li>
@@ -462,56 +507,55 @@ reconstruction models supported by GPlately’s <cite>DataServer</cite>. Stores 
 <dd class="field-odd"><p><strong>raster_id_string</strong> (<em>str</em><em>, </em><em>default=None</em>) – A string to identify which raster to download.</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p><p>A gplately.Raster object containing the raster data. The gridded data can be extracted
-into a numpy ndarray or MaskedArray by appending <cite>.data</cite> to the variable assigned to <cite>get_raster()</cite>.</p>
+<dd class="field-even"><p><p>A <a class="reference internal" href="gplately.Raster.html#gplately.Raster" title="gplately.Raster"><code class="xref py py-class docutils literal notranslate"><span class="pre">gplately.Raster</span></code></a> object containing the raster data. The gridded data can be extracted
+into a numpy ndarray or MaskedArray by appending <code class="docutils literal notranslate"><span class="pre">.data</span></code> to the variable assigned to <code class="docutils literal notranslate"><span class="pre">get_raster()</span></code>.</p>
 <p>For example:</p>
-<blockquote>
-<div><p>gdownload = gplately.DataServer(“Muller2019”)</p>
-<p>graster = gdownload.get_raster(raster_id_string, verbose)</p>
-<p>graster_data = graster.data</p>
-</div></blockquote>
-<p>where <cite>graster_data</cite> is a numpy ndarray. This array can be visualised using
-<cite>matplotlib.pyplot.imshow</cite> on a <cite>cartopy.mpl.GeoAxis</cite> GeoAxesSubplot
-(see example below).</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos">1</span><span class="n">gdownload</span> <span class="o">=</span> <span class="n">gplately</span><span class="o">.</span><span class="n">DataServer</span><span class="p">(</span><span class="s2">&quot;Muller2019&quot;</span><span class="p">)</span>
+<span class="linenos">2</span>
+<span class="linenos">3</span><span class="n">graster</span> <span class="o">=</span> <span class="n">gdownload</span><span class="o">.</span><span class="n">get_raster</span><span class="p">(</span><span class="n">raster_id_string</span><span class="p">,</span> <span class="n">verbose</span><span class="p">)</span>
+<span class="linenos">4</span>
+<span class="linenos">5</span><span class="n">graster_data</span> <span class="o">=</span> <span class="n">graster</span><span class="o">.</span><span class="n">data</span>
+</pre></div>
+</div>
+<p>where <code class="docutils literal notranslate"><span class="pre">graster_data</span></code> is a numpy ndarray. This array can be visualised using
+<code class="docutils literal notranslate"><span class="pre">matplotlib.pyplot.imshow</span></code> on a <code class="docutils literal notranslate"><span class="pre">cartopy.mpl.GeoAxis</span></code> GeoAxesSubplotc(see example below).</p>
 </p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>a gplately.Raster object</p>
+<dd class="field-odd"><p><a class="reference internal" href="gplately.Raster.html#gplately.Raster" title="gplately.Raster"><code class="xref py py-class docutils literal notranslate"><span class="pre">gplately.Raster</span></code></a></p>
 </dd>
 <dt class="field-even">Raises<span class="colon">:</span></dt>
-<dd class="field-even"><p><strong>ValueError</strong> – <ul class="simple">
-<li><p>if a <cite>raster_id_string</cite> is not supplied.</p></li>
-</ul>
-</p>
+<dd class="field-even"><p><strong>ValueError</strong> – if a <code class="docutils literal notranslate"><span class="pre">raster_id_string</span></code> is not supplied.</p>
 </dd>
 </dl>
-<p class="rubric">Notes</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
 <p>Rasters obtained by this method are (so far) only reconstructed to present-day.</p>
+</div>
 <p class="rubric">Examples</p>
 <p>To download ETOPO1 and plot it on a Mollweide projection:</p>
-<blockquote>
-<div><p>import gplately
-import numpy as np
-import matplotlib.pyplot as plt
-import cartopy.crs as ccrs</p>
-<p>gdownload = gplately.DataServer(“Muller2019”)
-etopo1 = gdownload.get_raster(“ETOPO1_tif”)
-fig = plt.figure(figsize=(18,14), dpi=300)
-ax = fig.add_subplot(111, projection=ccrs.Mollweide(central_longitude = -150))
-ax2.imshow(etopo1, extent=[-180,180,-90,90], transform=ccrs.PlateCarree())</p>
-</div></blockquote>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos"> 1</span><span class="kn">import</span><span class="w"> </span><span class="nn">gplately</span>
+<span class="linenos"> 2</span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="linenos"> 3</span><span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
+<span class="linenos"> 4</span><span class="kn">import</span><span class="w"> </span><span class="nn">cartopy.crs</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">ccrs</span>
+<span class="linenos"> 5</span>
+<span class="linenos"> 6</span><span class="n">gdownload</span> <span class="o">=</span> <span class="n">gplately</span><span class="o">.</span><span class="n">DataServer</span><span class="p">(</span><span class="s2">&quot;Muller2019&quot;</span><span class="p">)</span>
+<span class="linenos"> 7</span><span class="n">etopo1</span> <span class="o">=</span> <span class="n">gdownload</span><span class="o">.</span><span class="n">get_raster</span><span class="p">(</span><span class="s2">&quot;ETOPO1_tif&quot;</span><span class="p">)</span>
+<span class="linenos"> 8</span><span class="n">fig</span> <span class="o">=</span> <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">18</span><span class="p">,</span><span class="mi">14</span><span class="p">),</span> <span class="n">dpi</span><span class="o">=</span><span class="mi">300</span><span class="p">)</span>
+<span class="linenos"> 9</span><span class="n">ax</span> <span class="o">=</span> <span class="n">fig</span><span class="o">.</span><span class="n">add_subplot</span><span class="p">(</span><span class="mi">111</span><span class="p">,</span> <span class="n">projection</span><span class="o">=</span><span class="n">ccrs</span><span class="o">.</span><span class="n">Mollweide</span><span class="p">(</span><span class="n">central_longitude</span> <span class="o">=</span> <span class="o">-</span><span class="mi">150</span><span class="p">))</span>
+<span class="linenos">10</span><span class="n">ax2</span><span class="o">.</span><span class="n">imshow</span><span class="p">(</span><span class="n">etopo1</span><span class="p">,</span> <span class="n">extent</span><span class="o">=</span><span class="p">[</span><span class="o">-</span><span class="mi">180</span><span class="p">,</span><span class="mi">180</span><span class="p">,</span><span class="o">-</span><span class="mi">90</span><span class="p">,</span><span class="mi">90</span><span class="p">],</span> <span class="n">transform</span><span class="o">=</span><span class="n">ccrs</span><span class="o">.</span><span class="n">PlateCarree</span><span class="p">())</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="gplately.DataServer.get_spreading_rate_grid">
 <span class="sig-name descname"><span class="pre">get_spreading_rate_grid</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">times</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gplately/download.html#DataServer.get_spreading_rate_grid"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.DataServer.get_spreading_rate_grid" title="Link to this definition"></a></dt>
 <dd><p>Downloads seafloor spreading rate grids from the plate reconstruction
-model (<cite>file_collection</cite>) passed into the <cite>DataServer</cite> object. Stores
-grids in the “gplately” cache.</p>
-<p>Currently, <cite>DataServer</cite> supports spreading rate grids from the following plate
-models:</p>
+model (<code class="docutils literal notranslate"><span class="pre">file_collection</span></code>) passed into the <code class="docutils literal notranslate"><span class="pre">DataServer</span></code> object. Stores grids in the “gplately” cache.</p>
+<p>Currently, <code class="docutils literal notranslate"><span class="pre">DataServer</span></code> supports spreading rate grids from the following plate models:</p>
 <ul>
-<li><p>__Clennett et al. <a href="#id1"><span class="problematic" id="id5">2020__</span></a></p>
+<li><p>Clennett et al. 2020</p>
 <blockquote>
 <div><ul class="simple">
 <li><p><cite>file_collection</cite> = <cite>Clennett2020</cite></p></li>
@@ -527,53 +571,57 @@ models:</p>
 times (a list of integers).</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p><p>A gplately.Raster object containing the spreading rate grid. The spreading
+<dd class="field-even"><p><p>A <a class="reference internal" href="gplately.Raster.html#gplately.Raster" title="gplately.Raster"><code class="xref py py-class docutils literal notranslate"><span class="pre">gplately.Raster</span></code></a> object containing the spreading rate grid. The spreading
 rate grid data can be extracted into a numpy ndarray or MaskedArray by
-appending <cite>.data</cite> to the variable assigned to <cite>get_spreading_rate_grid()</cite>.</p>
+appending <code class="docutils literal notranslate"><span class="pre">.data</span></code> to the variable assigned to <code class="docutils literal notranslate"><span class="pre">get_spreading_rate_grid()</span></code>.</p>
 <p>For example:</p>
-<blockquote>
-<div><p>gdownload = gplately.DataServer(“Clennett2020”)</p>
-<p>graster = gdownload.get_spreading_rate_grid(time=100)</p>
-<p>graster_data = graster.data</p>
-</div></blockquote>
-<p>where <cite>graster_data</cite> is a numpy ndarray.</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos">1</span><span class="n">gdownload</span> <span class="o">=</span> <span class="n">gplately</span><span class="o">.</span><span class="n">DataServer</span><span class="p">(</span><span class="s2">&quot;Clennett2020&quot;</span><span class="p">)</span>
+<span class="linenos">2</span>
+<span class="linenos">3</span><span class="n">graster</span> <span class="o">=</span> <span class="n">gdownload</span><span class="o">.</span><span class="n">get_spreading_rate_grid</span><span class="p">(</span><span class="n">time</span><span class="o">=</span><span class="mi">100</span><span class="p">)</span>
+<span class="linenos">4</span>
+<span class="linenos">5</span><span class="n">graster_data</span> <span class="o">=</span> <span class="n">graster</span><span class="o">.</span><span class="n">data</span>
+</pre></div>
+</div>
+<p>where <cite>graster_data`</cite> is a numpy ndarray.</p>
 </p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>a gplately.Raster object</p>
+<dd class="field-odd"><p><a class="reference internal" href="gplately.Raster.html#gplately.Raster" title="gplately.Raster"><code class="xref py py-class docutils literal notranslate"><span class="pre">gplately.Raster</span></code></a></p>
 </dd>
 <dt class="field-even">Raises<span class="colon">:</span></dt>
-<dd class="field-even"><p><strong>ValueError</strong> – If <cite>time</cite> (a single integer, or a list of integers representing reconstruction
+<dd class="field-even"><p><strong>ValueError</strong> – If <code class="docutils literal notranslate"><span class="pre">time</span></code> (a single integer, or a list of integers representing reconstruction
     times to extract the spreading rate grids from) is not passed.</p>
 </dd>
 </dl>
-<p class="rubric">Notes</p>
-<p>The first time that <cite>get_spreading_rate_grid</cite> is called for a specific time(s),
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>The first time that <code class="docutils literal notranslate"><span class="pre">get_spreading_rate_grid</span></code> is called for a specific time(s),
 the spreading rate grid(s) will be downloaded into the GPlately cache once.
-Upon successive calls of <cite>get_spreading_rate_grid</cite> for the same reconstruction
+Upon successive calls of <code class="docutils literal notranslate"><span class="pre">get_spreading_rate_grid</span></code> for the same reconstruction
 time(s), the grids will not be re-downloaded; rather, they are re-accessed from
 the same cache location provided they have not been moved or deleted.</p>
+</div>
 <p class="rubric">Examples</p>
-<p>if the <cite>DataServer</cite> object was called with the <cite>Clennett2020</cite> <cite>file_collection</cite> string:</p>
-<blockquote>
-<div><p>gDownload = gplately.download.DataServer(“Clennett2020”)</p>
-</div></blockquote>
-<p><cite>get_spreading_rate_grid</cite> will download seafloor spreading rate grids from the
+<p>if the <code class="docutils literal notranslate"><span class="pre">DataServer</span></code> object was called with the <code class="docutils literal notranslate"><span class="pre">Clennett2020</span></code> <code class="docutils literal notranslate"><span class="pre">file_collection</span></code> string:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos">1</span><span class="n">gDownload</span> <span class="o">=</span> <span class="n">gplately</span><span class="o">.</span><span class="n">download</span><span class="o">.</span><span class="n">DataServer</span><span class="p">(</span><span class="s2">&quot;Clennett2020&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">get_spreading_rate_grid</span></code> will download seafloor spreading rate grids from the
 Clennett et al. (2020) plate reconstruction model for the geological time(s)
-requested in the <cite>time</cite> parameter. When found, these spreading rate grids are
+requested in the <code class="docutils literal notranslate"><span class="pre">time</span></code> parameter. When found, these spreading rate grids are
 returned as masked arrays.</p>
 <p>For example, to download Clennett et al. (2020) seafloor spreading rate grids for
 0Ma, 1Ma and 100 Ma as MaskedArray objects:</p>
-<blockquote>
-<div><p>spreading_rate_grids = gDownload.get_spreading_rate_grid([0, 1, 100])</p>
-</div></blockquote>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos">1</span><span class="n">spreading_rate_grids</span> <span class="o">=</span> <span class="n">gDownload</span><span class="o">.</span><span class="n">get_spreading_rate_grid</span><span class="p">([</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">100</span><span class="p">])</span>
+</pre></div>
+</div>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="gplately.DataServer.get_topology_geometries">
 <span class="sig-name descname"><span class="pre">get_topology_geometries</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gplately/download.html#DataServer.get_topology_geometries"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.DataServer.get_topology_geometries" title="Link to this definition"></a></dt>
-<dd><p>Uses the [plate-model-manager](<a class="reference external" href="https://pypi.org/project/plate-model-manager/">https://pypi.org/project/plate-model-manager/</a>) to download coastline, continent and COB (continent-ocean boundary)
-Shapely geometries from the requested plate model. These are needed to call the <cite>PlotTopologies</cite>
+<dd><p>Download coastline, continent and COB (continent-ocean boundary)
+Shapely geometries from the requested plate model. These are needed to call the <a class="reference internal" href="gplately.PlotTopologies.html#gplately.PlotTopologies" title="gplately.PlotTopologies"><code class="xref py py-class docutils literal notranslate"><span class="pre">gplately.PlotTopologies</span></code></a>
 object and visualise topological plates through time.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -592,33 +640,32 @@ Ready for reconstruction to a particular geological time and for plotting.</p></
 </p>
 </dd>
 </dl>
-<p class="rubric">Notes</p>
-<p>This method accesses the plate reconstruction model ascribed to the <cite>file_collection</cite>
-string passed into the <cite>DataServer</cite> object. For example, if the object was called with
-<cite>“Muller2019”</cite>:</p>
-<blockquote>
-<div><p>gDownload = gplately.download.DataServer(“Muller2019”)
-coastlines, continents, COBs = gDownload.get_topology_geometries()</p>
-</div></blockquote>
-<p>the method will attempt to download <cite>coastlines</cite>, <cite>continents</cite> and <cite>COBs</cite> from the Müller
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>This method accesses the plate reconstruction model ascribed to the <code class="docutils literal notranslate"><span class="pre">file_collection</span></code>
+string passed into the <code class="docutils literal notranslate"><span class="pre">DataServer</span></code> object. For example, if the object was called with “Muller2019”:</p>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos">1</span><span class="n">gDownload</span> <span class="o">=</span> <span class="n">gplately</span><span class="o">.</span><span class="n">download</span><span class="o">.</span><span class="n">DataServer</span><span class="p">(</span><span class="s2">&quot;Muller2019&quot;</span><span class="p">)</span>
+<span class="linenos">2</span><span class="n">coastlines</span><span class="p">,</span> <span class="n">continents</span><span class="p">,</span> <span class="n">COBs</span> <span class="o">=</span> <span class="n">gDownload</span><span class="o">.</span><span class="n">get_topology_geometries</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>the method will attempt to download <code class="docutils literal notranslate"><span class="pre">coastlines</span></code>, <code class="docutils literal notranslate"><span class="pre">continents</span></code> and <code class="docutils literal notranslate"><span class="pre">COBs</span></code> from the Müller
 et al. (2019) plate reconstruction model. If found, these files are returned as individual
 pyGPlates Feature Collections. They can be passed into:</p>
-<blockquote>
-<div><p>gPlot = gplately.plot.PlotTopologies(gplately.reconstruction.PlateReconstruction, time, continents, coastlines, COBs)</p>
-</div></blockquote>
-<p>to reconstruct features to a certain geological time. The <cite>PlotTopologies</cite>
+<div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos">1</span><span class="n">gPlot</span> <span class="o">=</span> <span class="n">gplately</span><span class="o">.</span><span class="n">PlotTopologies</span><span class="p">(</span><span class="n">gplately</span><span class="o">.</span><span class="n">PlateReconstruction</span><span class="p">,</span> <span class="n">time</span><span class="p">,</span> <span class="n">continents</span><span class="p">,</span> <span class="n">coastlines</span><span class="p">,</span> <span class="n">COBs</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>to reconstruct features to a certain geological time. The <a class="reference internal" href="gplately.PlotTopologies.html#gplately.PlotTopologies" title="gplately.PlotTopologies"><code class="xref py py-class docutils literal notranslate"><span class="pre">gplately.PlotTopologies</span></code></a>
 object provides simple methods to plot these geometries along with trenches, ridges and
-transforms (see documentation for more info). Note that the <cite>PlateReconstruction</cite> object
+transforms (see documentation for more info). Note that the <a class="reference internal" href="gplately.PlotTopologies.html#gplately.PlotTopologies" title="gplately.PlotTopologies"><code class="xref py py-class docutils literal notranslate"><span class="pre">gplately.PlotTopologies</span></code></a> object
 is a parameter.</p>
-<ul class="simple">
-<li><p>Note: If the requested plate model does not have a certain geometry, a</p></li>
-</ul>
-<p>message will be printed to alert the user. For example, if <cite>get_topology_geometries()</cite>
-is used with the <cite>“Matthews2016”</cite> plate model, the workflow will print the following
+<p>If the requested plate model does not have a certain geometry, a
+message will be printed to alert the user. For example, if <code class="docutils literal notranslate"><span class="pre">get_topology_geometries()</span></code>
+is used with the “Matthews2016” plate model, the workflow will print the following
 message:</p>
-<blockquote>
-<div><p>No continent-ocean boundaries in Matthews2016.</p>
-</div></blockquote>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="go">No continent-ocean boundaries in Matthews2016.</span>
+</pre></div>
+</div>
+</div>
 </dd></dl>
 
 <dl class="py method">
@@ -630,32 +677,38 @@ message:</p>
 <dl class="py property">
 <dt class="sig sig-object py" id="gplately.DataServer.rotation_model">
 <em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">rotation_model</span></span><a class="headerlink" href="#gplately.DataServer.rotation_model" title="Link to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>a pygplates.RotationModel object for the plate reconstruction model</p>
+</dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="gplately.DataServer.static_polygons">
 <em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">static_polygons</span></span><a class="headerlink" href="#gplately.DataServer.static_polygons" title="Link to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>a pygplates.FeatureCollection object containing static polygons</p>
+</dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="gplately.DataServer.time_range">
 <em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">time_range</span></span><a class="headerlink" href="#gplately.DataServer.time_range" title="Link to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>the time range of the plate model</p>
+</dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="gplately.DataServer.to_age">
 <em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">to_age</span></span><a class="headerlink" href="#gplately.DataServer.to_age" title="Link to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>the min age of the plate model</p>
+</dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="gplately.DataServer.topology_features">
 <em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">topology_features</span></span><a class="headerlink" href="#gplately.DataServer.topology_features" title="Link to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>a pygplates.FeatureCollection object containing topology features</p>
+</dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="gplately.DataServer.valid_times">
 <em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">valid_times</span></span><a class="headerlink" href="#gplately.DataServer.valid_times" title="Link to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>the max time and min time of the plate model</p>
+</dd></dl>
 
 </dd></dl>
 

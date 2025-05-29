@@ -21,7 +21,7 @@
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
     <link rel="next" title="gplately.PresentDayRasterManager" href="gplately.PresentDayRasterManager.html" />
-    <link rel="prev" title="Secondaries" href="../secondaries.html" /> 
+    <link rel="prev" title="gplately.PlateModel" href="gplately.PlateModel.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -56,7 +56,9 @@
 <p class="caption" role="heading"><span class="caption-text">Reference</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../api.html">Main Classes</a></li>
-<li class="toctree-l1 current"><a class="reference internal" href="../secondaries.html">Secondaries</a><ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../functions.html">Functions</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../secondaries.html">Other Classes</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="gplately.PlateModel.html">gplately.PlateModel</a></li>
 <li class="toctree-l2 current"><a class="current reference internal" href="#">gplately.PlateModelManager</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#gplately.PlateModelManager"><code class="docutils literal notranslate"><span class="pre">PlateModelManager</span></code></a><ul>
 <li class="toctree-l4"><a class="reference internal" href="#gplately.PlateModelManager.__init__"><code class="docutils literal notranslate"><span class="pre">PlateModelManager.__init__()</span></code></a></li>
@@ -92,7 +94,7 @@
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
       <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
-          <li class="breadcrumb-item"><a href="../secondaries.html">Secondaries</a></li>
+          <li class="breadcrumb-item"><a href="../secondaries.html">Other Classes</a></li>
       <li class="breadcrumb-item active">gplately.PlateModelManager</li>
       <li class="wy-breadcrumbs-aside">
             <a href="../_sources/generated/gplately.PlateModelManager.rst.txt" rel="nofollow"> View page source</a>
@@ -108,7 +110,8 @@
 <dl class="py class">
 <dt class="sig sig-object py" id="gplately.PlateModelManager">
 <em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">gplately.</span></span><span class="sig-name descname"><span class="pre">PlateModelManager</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model_manifest</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">timeout</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(None,</span> <span class="pre">None)</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/plate_model_manager/plate_model_manager.html#PlateModelManager"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.PlateModelManager" title="Link to this definition"></a></dt>
-<dd><p>load a models.json file and manage plate models
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>load a models.json file and manage plate models
 see an example models.json file at PlateModelManager.get_default_repo_url()</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="gplately.PlateModelManager.__init__">
@@ -177,7 +180,7 @@ see an example models.json file at PlateModelManager.get_default_repo_url()</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="gplately.PlateModelManager.get_model">
-<span class="sig-name descname"><span class="pre">get_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'default'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_dir</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'.'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">PlateModel</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></span><a class="reference internal" href="../_modules/plate_model_manager/plate_model_manager.html#PlateModelManager.get_model"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.PlateModelManager.get_model" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">get_model</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'default'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_dir</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'.'</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference internal" href="gplately.PlateModel.html#gplately.PlateModel" title="plate_model_manager.plate_model.PlateModel"><span class="pre">PlateModel</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">None</span></span></span><a class="reference internal" href="../_modules/plate_model_manager/plate_model_manager.html#PlateModelManager.get_model"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.PlateModelManager.get_model" title="Link to this definition"></a></dt>
 <dd><p>return a PlateModel object by model_name</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -205,7 +208,7 @@ see an example models.json file at PlateModelManager.get_default_repo_url()</p>
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="../secondaries.html" class="btn btn-neutral float-left" title="Secondaries" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="gplately.PlateModel.html" class="btn btn-neutral float-left" title="gplately.PlateModel" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
         <a href="gplately.PresentDayRasterManager.html" class="btn btn-neutral float-right" title="gplately.PresentDayRasterManager" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 

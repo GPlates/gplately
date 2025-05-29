@@ -56,7 +56,9 @@
 <p class="caption" role="heading"><span class="caption-text">Reference</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../api.html">Main Classes</a></li>
-<li class="toctree-l1 current"><a class="reference internal" href="../secondaries.html">Secondaries</a><ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../functions.html">Functions</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../secondaries.html">Other Classes</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="gplately.PlateModel.html">gplately.PlateModel</a></li>
 <li class="toctree-l2"><a class="reference internal" href="gplately.PlateModelManager.html">gplately.PlateModelManager</a></li>
 <li class="toctree-l2"><a class="reference internal" href="gplately.PresentDayRasterManager.html">gplately.PresentDayRasterManager</a></li>
 <li class="toctree-l2"><a class="reference internal" href="gplately.PlotEngine.html">gplately.PlotEngine</a></li>
@@ -89,7 +91,7 @@
           <div role="navigation" aria-label="Page navigation">
   <ul class="wy-breadcrumbs">
       <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
-          <li class="breadcrumb-item"><a href="../secondaries.html">Secondaries</a></li>
+          <li class="breadcrumb-item"><a href="../secondaries.html">Other Classes</a></li>
       <li class="breadcrumb-item active">gplately.CartopyPlotEngine</li>
       <li class="wy-breadcrumbs-aside">
             <a href="../_sources/generated/gplately.CartopyPlotEngine.rst.txt" rel="nofollow"> View page source</a>
@@ -105,7 +107,9 @@
 <dl class="py class">
 <dt class="sig sig-object py" id="gplately.CartopyPlotEngine">
 <em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">gplately.</span></span><span class="sig-name descname"><span class="pre">CartopyPlotEngine</span></span><a class="reference internal" href="../_modules/gplately/mapping/cartopy_plot.html#CartopyPlotEngine"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.CartopyPlotEngine" title="Link to this definition"></a></dt>
-<dd><dl class="py method">
+<dd><p>Bases: <a class="reference internal" href="gplately.PlotEngine.html#gplately.PlotEngine" title="gplately.mapping.plot_engine.PlotEngine"><code class="xref py py-class docutils literal notranslate"><span class="pre">PlotEngine</span></code></a></p>
+<p>Use Cartopy for map plotting</p>
+<dl class="py method">
 <dt class="sig sig-object py" id="gplately.CartopyPlotEngine.__init__">
 <span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gplately/mapping/cartopy_plot.html#CartopyPlotEngine.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.CartopyPlotEngine.__init__" title="Link to this definition"></a></dt>
 <dd></dd></dl>
@@ -117,20 +121,20 @@
 <td><p></p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#gplately.CartopyPlotEngine.plot_geo_data_frame" title="gplately.CartopyPlotEngine.plot_geo_data_frame"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_geo_data_frame</span></code></a>(ax_or_fig, gdf, **kwargs)</p></td>
-<td><p>Plot GeoDataFrame object with Cartopy</p></td>
+<td><p>Use Cartopy to plot geometries in a GeoDataFrame object onto a map</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#gplately.CartopyPlotEngine.plot_pygplates_features" title="gplately.CartopyPlotEngine.plot_pygplates_features"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_pygplates_features</span></code></a>(ax_or_fig, features, ...)</p></td>
-<td><p>TODO</p></td>
+<td><p>Not implemented yet</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#gplately.CartopyPlotEngine.plot_subduction_zones" title="gplately.CartopyPlotEngine.plot_subduction_zones"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_subduction_zones</span></code></a>(ax_or_fig, ...[, color])</p></td>
-<td><p>Plot subduction zones with &quot;teeth&quot; using pygmt</p></td>
+<td><p>Use Cartopy to plot subduction zones with &quot;teeth&quot; onto a map</p></td>
 </tr>
 </tbody>
 </table>
 <dl class="py method">
 <dt class="sig sig-object py" id="gplately.CartopyPlotEngine.plot_geo_data_frame">
 <span class="sig-name descname"><span class="pre">plot_geo_data_frame</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ax_or_fig</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gdf</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">GeoDataFrame</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gplately/mapping/cartopy_plot.html#CartopyPlotEngine.plot_geo_data_frame"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.CartopyPlotEngine.plot_geo_data_frame" title="Link to this definition"></a></dt>
-<dd><p>Plot GeoDataFrame object with Cartopy</p>
+<dd><p>Use Cartopy to plot geometries in a GeoDataFrame object onto a map</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
@@ -144,13 +148,13 @@
 <dl class="py method">
 <dt class="sig sig-object py" id="gplately.CartopyPlotEngine.plot_pygplates_features">
 <span class="sig-name descname"><span class="pre">plot_pygplates_features</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ax_or_fig</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">features</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gplately/mapping/cartopy_plot.html#CartopyPlotEngine.plot_pygplates_features"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.CartopyPlotEngine.plot_pygplates_features" title="Link to this definition"></a></dt>
-<dd><p>TODO</p>
+<dd><p>Not implemented yet</p>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="gplately.CartopyPlotEngine.plot_subduction_zones">
 <span class="sig-name descname"><span class="pre">plot_subduction_zones</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ax_or_fig</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gdf_subduction_left</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">GeoDataFrame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gdf_subduction_right</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">GeoDataFrame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">color</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'blue'</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gplately/mapping/cartopy_plot.html#CartopyPlotEngine.plot_subduction_zones"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.CartopyPlotEngine.plot_subduction_zones" title="Link to this definition"></a></dt>
-<dd><p>Plot subduction zones with “teeth” using pygmt</p>
+<dd><p>Use Cartopy to plot subduction zones with “teeth” onto a map</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">

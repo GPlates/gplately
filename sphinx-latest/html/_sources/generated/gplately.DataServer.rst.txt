@@ -31,6 +31,7 @@
    .. autosummary::
    
       ~DataServer.COBs
+      ~DataServer.cache_path
       ~DataServer.coastlines
       ~DataServer.continents
       ~DataServer.from_age
