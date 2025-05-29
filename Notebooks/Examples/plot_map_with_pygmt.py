@@ -1,7 +1,7 @@
 #!/usr/bin/env python3
 
-from gplately.auxiliary import get_gplot
-from gplately.mapping.pygmt_plot import PygmtPlotEngine, get_pygmt_basemap_figure
+from gplately.auxiliary import get_gplot, get_pygmt_basemap_figure
+from gplately.mapping.pygmt_plot import PygmtPlotEngine
 
 # for now, the pygmt integration is still pretty basic.
 # please create GitHub issues and let us know how we can enhance the pygmt integration.

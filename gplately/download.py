@@ -31,24 +31,21 @@ import pathlib as _pathlib
 import re as _re
 import shutil as _shutil
 import urllib.request as _request
-import warnings
 
 import numpy as _np
 import numpy as np
 import pooch as _pooch
-import pygplates as _pygplates
+import pygplates
 import requests as _requests
-from matplotlib import image as _image
 from plate_model_manager import PlateModelManager, PresentDayRasterManager
 from pooch import Decompress as _Decompress
 from pooch import HTTPDownloader as _HTTPDownloader
 from pooch import Unzip as _Unzip
 from pooch import os_cache as _os_cache
 from pooch import retrieve as _retrieve
-from pooch import utils as _utils
 
-import gplately as _gplately
-from gplately.data import DataCollection
+from .data import _feature_data, _rasters
+from .grids import Raster
 
 
 class DownloadWarning(RuntimeWarning):
@@ -107,6 +104,8 @@ def path_of_cached_file(url, model_name=None):
 
     processor_to_use, processor_extension = _determine_processor(url)
 
+    fn = _parse_url_for_filenames(url)
+    assert isinstance(fn, str)
     # If the requested files need processing (i.e. zip, gz folders)
     if processor_extension:
         # Are they from plate models? These typically are the .zip folders for plate models
@@ -117,30 +116,20 @@ def path_of_cached_file(url, model_name=None):
 
         # If not from plate models but need processing, i.e. ETOPO1
         else:
+
             cached_filename = (
-                str(path)
-                + "/"
-                + "gplately_"
-                + _parse_url_for_filenames(url)
-                + processor_extension
-                + "/"
+                str(path) + "/" + "gplately_" + fn + processor_extension + "/"
             )
-            unprocessed_path = (
-                str(path) + "/" + "gplately_" + _parse_url_for_filenames(url)
-            )
+            unprocessed_path = str(path) + "/" + "gplately_" + fn
             # cached_filename = "gplately_"+_parse_url_for_filenames(url)
 
     # If the requested files do not need processing, like standalone .nc files:
     else:
         if model_name:
-            cached_filename = (
-                str(path) + "/" + model_name + "_" + _parse_url_for_filenames(url)
-            )
+            cached_filename = str(path) + "/" + model_name + "_" + fn
             unprocessed_path = None
         else:
-            cached_filename = (
-                str(path) + "/" + "gplately_" + _parse_url_for_filenames(url)
-            )
+            cached_filename = str(path) + "/" + "gplately_" + fn
             unprocessed_path = None
 
     _pooch.utils.make_local_storage(path)
@@ -243,12 +232,11 @@ def _first_time_download_from_web(url, model_name=None, verbose=True):
     # Provided a web connection to a server can be established,
     download the files from the URL into the GPlately cache.
     """
-
+    logger = _pooch.get_logger()
+    log_level = logger.level
     if _test_internet_connection(url):
 
         if not verbose:
-            logger = _pooch.get_logger()
-            log_level = logger.level
             logger.setLevel("WARNING")
 
         # The filename pooch saves the requested file is derived from
@@ -258,6 +246,9 @@ def _first_time_download_from_web(url, model_name=None, verbose=True):
         # 3. File is not from a plate model but needs processing (i.e. ETOPO, .grd.gz --> .decomp)
         # 4. File is not from a plate model and does not need processing
         processor_to_use, processor_extension = _determine_processor(url)
+
+        fn = _parse_url_for_filenames(url)
+        assert isinstance(fn, str)
 
         # If the requested files need processing (i.e. zip, gz folders)
         if processor_extension:
@@ -278,7 +269,7 @@ def _first_time_download_from_web(url, model_name=None, verbose=True):
             else:
                 # Download the files with a naming structure like:
                 # /path/to/cache/gplately/file_name-as_inteded_in_url+processor_extension
-                used_fname = "gplately_" + _parse_url_for_filenames(url)
+                used_fname = "gplately_" + fn
                 fnames = _retrieve(
                     url=url,
                     known_hash=None,
@@ -293,7 +284,7 @@ def _first_time_download_from_web(url, model_name=None, verbose=True):
             if model_name:
                 # Download the files with a naming structure like:
                 # /path/to/cache/gplately/file_name-as_inteded_in_url+processor_extension
-                used_fname = model_name + "_" + _parse_url_for_filenames(url)
+                used_fname = model_name + "_" + fn
                 fnames = _retrieve(
                     url=url,
                     known_hash=None,
@@ -304,7 +295,7 @@ def _first_time_download_from_web(url, model_name=None, verbose=True):
                 )
             # If not from plate models and do not need processing,
             else:
-                used_fname = "gplately_" + _parse_url_for_filenames(url)
+                used_fname = "gplately_" + fn
                 fnames = _retrieve(
                     url=url,
                     known_hash=None,
@@ -437,7 +428,7 @@ def download_from_web(url, verbose=True, download_changes=True, model_name=None)
         if _test_internet_connection(url):
             fnames, etag, textfilename, used_fname = _first_time_download_from_web(
                 url, model_name=model_name, verbose=verbose
-            )
+            )  # type: ignore
             if verbose:
                 print("Requested files downloaded to the GPlately cache folder!")
             return fnames
@@ -458,7 +449,7 @@ def download_from_web(url, verbose=True, download_changes=True, model_name=None)
         if _test_internet_connection(url):
             fnames, etag, textfilename, used_fname = _first_time_download_from_web(
                 url, model_name=model_name, verbose=verbose
-            )
+            )  # type: ignore
             if verbose:
                 print("Requested files downloaded to the GPlately cache folder!")
             return fnames
@@ -508,7 +499,7 @@ def download_from_web(url, verbose=True, download_changes=True, model_name=None)
                         _first_time_download_from_web(
                             url, model_name=model_name, verbose=verbose
                         )
-                    )
+                    )  # type: ignore
                     return fnames
 
                 # If the e-tag textfile exists for the local files,
@@ -554,7 +545,7 @@ def download_from_web(url, verbose=True, download_changes=True, model_name=None)
                             _first_time_download_from_web(
                                 url, model_name=model_name, verbose=verbose
                             )
-                        )
+                        )  # type: ignore
 
                         if verbose:
                             print(
@@ -579,14 +570,14 @@ def download_from_web(url, verbose=True, download_changes=True, model_name=None)
                         # If not, return as-is.
                         else:
                             return _extract_processed_files(
-                                str(full_path) + _match_url_to_extension(url)
+                                str(full_path) + _match_url_to_extension(url)  # type: ignore
                             )
 
             # If file versioning doesn't matter, just keep returning the cached files.
             else:
-                fnames, etag, local_etag_txtfile = _first_time_download_from_web(
+                fnames, etag, local_etag_txtfile = _first_time_download_from_web(  # type: ignore
                     url, model_name
-                )
+                )  # type: ignore
                 return fnames
 
         # If a connection to the web server could not be made, and the files exist in
@@ -903,7 +894,7 @@ def get_raster(raster_id_string=None, verbose=True):
     # Set to true if we find the given collection in database
     found_collection = False
     raster_filenames = []
-    database = _gplately.data._rasters()
+    database = _rasters()
 
     for collection, zip_url in database.items():
         # Isolate the raster name and the file type
@@ -921,17 +912,17 @@ def get_raster(raster_id_string=None, verbose=True):
         if any(
             grid_extension in raster_filenames for grid_extension in grid_extensions
         ):
-            raster = _gplately.grids.Raster(data=raster_filenames)
+            raster = Raster(data=raster_filenames)
 
         # Otherwise, the raster is an image; use imread to process
         else:
-            raster_matrix = image.imread(raster_filenames)
-            raster = _gplately.grids.Raster(data=raster_matrix)
+            raster_matrix = image.imread(raster_filenames)  # type: ignore
+            raster = Raster(data=raster_matrix)
 
         if raster_id_string.lower() == "etopo1_tif":
             raster.lats = raster.lats[::-1]
         if raster_id_string.lower() == "etopo1_grd":
-            raster._data = raster._data.astype(float)
+            raster._data = raster._data.astype(float)  # type: ignore
 
     return raster
 
@@ -1043,9 +1034,10 @@ def get_feature_data(feature_data_id_string=None, verbose=True):
     if feature_data_id_string is None:
         raise ValueError("Please specify which feature data to fetch.")
 
-    database = _gplately.data._feature_data()
+    database = _feature_data()
 
     found_collection = False
+    feature_data_filenames = []
     for collection, zip_url in database.items():
         if feature_data_id_string.lower() == collection.lower():
             found_collection = True
@@ -1063,37 +1055,38 @@ def get_feature_data(feature_data_id_string=None, verbose=True):
             "{} are not in GPlately's DataServer.".format(feature_data_id_string)
         )
 
-    feat_data = _pygplates.FeatureCollection()
+    feat_data = pygplates.FeatureCollection()
     if len(feature_data_filenames) == 1:
-        feat_data.add(_pygplates.FeatureCollection(feature_data_filenames[0]))
+        feat_data.add(pygplates.FeatureCollection(feature_data_filenames[0]))
         return feat_data
     else:
         feat_data = []
         for file in feature_data_filenames:
-            feat_data.append(_pygplates.FeatureCollection(file))
+            feat_data.append(pygplates.FeatureCollection(file))
         return feat_data
 
 
 class DataServer(object):
     """
     Download plate reconstruction models to the cache folder on your computer from
-    EarthByte's `WebDAV server <https://repo.gplates.org/webdav/pmm/>`__.
+    `EarthByte's WebDAV server <https://repo.gplates.org/webdav/pmm/>`__.
 
-    If the `DataServer` object and its methods are called for the first time, i.e. by:
+    If the ``DataServer`` object is created for the first time, i.e. by:
 
     .. code-block:: python
 
-        # string identifier to access the Muller et al. 2019 model
-        gDownload = gplately.download.DataServer("Muller2019")
+        # create a DataServer object for the Muller et al. 2019 model
+        data_server = gplately.download.DataServer("Muller2019")
 
-    all requested files are downloaded into the user's 'gplately' cache folder only **once**. If the same
-    object and method(s) are re-run, the files will be re-accessed from the cache provided they have not been
+    all requested files are downloaded into the user's ``gplately`` cache folder only **once**. If the same
+    model is requested again, the new DataServer object will get the files from the cache provided they have not been
     moved or deleted.
 
-    `This table <https://gplates.github.io/gplately/sphinx-latest/html/use_cases.html#id1>`__
-    provides a list of available plate reconstruction models.
-    For more information about these plate models,
-    visit this `EarthByte web page <https://www.earthbyte.org/category/resources/data-models/global-regional-plate-motion-models/>`__.
+    .. seealso::
+
+        `This table <https://gplates.github.io/gplately/sphinx-latest/html/use_cases.html#id1>`__ provides a list of available plate reconstruction models.
+        Visit this `EarthByte web page <https://www.earthbyte.org/category/resources/data-models/global-regional-plate-motion-models/>`__
+        for more information about these plate models.
     """
 
     def __init__(self, file_collection, data_dir=None, verbose=True):
@@ -1132,15 +1125,21 @@ class DataServer(object):
         self._COBs = None
 
     def _create_feature_collection(self, file_list):
-        feature_collection = _pygplates.FeatureCollection()
+        feature_collection = pygplates.FeatureCollection()
         for feature in file_list:
-            feature_collection.add(_pygplates.FeatureCollection(feature))
+            feature_collection.add(pygplates.FeatureCollection(feature))
         return feature_collection
 
     @property
+    def cache_path(self):
+        """the location of DataServer cache on your computer"""
+        return path_to_cache()
+
+    @property
     def rotation_model(self):
+        """a pygplates.RotationModel object for the plate reconstruction model"""
         if self._rotation_model is None and self.pmm:
-            self._rotation_model = _pygplates.RotationModel(
+            self._rotation_model = pygplates.RotationModel(
                 self.pmm.get_rotation_model()
             )
             self._rotation_model.reconstruction_identifier = self.file_collection
@@ -1148,78 +1147,87 @@ class DataServer(object):
 
     @property
     def topology_features(self):
+        """a pygplates.FeatureCollection object containing topology features"""
         if self._topology_features is None and self.pmm:
             if "Topologies" in self._available_layers:
                 self._topology_features = self._create_feature_collection(
                     self.pmm.get_topologies()
                 )
             else:
-                self._topology_features = []
+                self._topology_features = pygplates.FeatureCollection()
         return self._topology_features
 
     @property
     def static_polygons(self):
+        """a pygplates.FeatureCollection object containing static polygons"""
         if self._static_polygons is None and self.pmm:
             if "StaticPolygons" in self._available_layers:
                 self._static_polygons = self._create_feature_collection(
                     self.pmm.get_static_polygons()
                 )
             else:
-                self._static_polygons = []
+                self._static_polygons = pygplates.FeatureCollection()
         return self._static_polygons
 
     @property
     def coastlines(self):
+        """a pygplates.FeatureCollection object containing coastlines"""
         if self._coastlines is None and self.pmm:
             if "Coastlines" in self._available_layers:
                 self._coastlines = self._create_feature_collection(
                     self.pmm.get_coastlines()
                 )
             else:
-                self._coastlines = []
+                self._coastlines = pygplates.FeatureCollection()
         return self._coastlines
 
     @property
     def continents(self):
+        """a pygplates.FeatureCollection object containing continental polygons"""
         if self._continents is None and self.pmm:
             if "ContinentalPolygons" in self._available_layers:
                 self._continents = self._create_feature_collection(
                     self.pmm.get_continental_polygons()
                 )
             else:
-                self._continents = []
+                self._continents = pygplates.FeatureCollection()
         return self._continents
 
     @property
     def COBs(self):
+        """a pygplates.FeatureCollection object containing continent-ocean boundaries"""
         if self._COBs is None and self.pmm:
             if "COBs" in self._available_layers:
                 self._COBs = self._create_feature_collection(self.pmm.get_COBs())
             else:
-                self._COBs = []
+                self._COBs = pygplates.FeatureCollection()
         return self._COBs
 
     @property
     def from_age(self):
+        """the max age of the plate model"""
         if self.pmm:
             return self.pmm.get_big_time()
 
     @property
     def to_age(self):
+        """the min age of the plate model"""
         if self.pmm:
             return self.pmm.get_small_time()
 
     @property
     def time_range(self):
+        """the time range of the plate model"""
         return self.from_age, self.to_age
 
     @property
     def valid_times(self):
+        """the max time and min time of the plate model"""
         return self.from_age, self.to_age
 
     def get_plate_reconstruction_files(self):
-        """Downloads and constructs a `rotation model`, a set of `topology features` and
-        and a set of `static polygons`. These objects can then be used to create `PlateReconstruction` object.
+        """Downloads and constructs a ``rotation model``, a set of ``topology features`` and
+        and a set of ``static polygons``. These objects can then be used to create :class:`gplately.PlateReconstruction` object.
 
         Returns
         -------
@@ -1227,33 +1235,38 @@ class DataServer(object):
             A rotation model to query equivalent and/or relative topological plate rotations
             from a time in the past relative to another time in the past or to present day.
         topology_features : instance of <pygplates.FeatureCollection>
-            Point, polyline and/or polygon feature data that are reconstructable through
-            geological time.
+            Point, polyline and/or polygon feature data that are reconstructable through geological time.
         static_polygons : instance of <pygplates.FeatureCollection>
             Present-day polygons whose shapes do not change through geological time. They are
             used to cookie-cut dynamic polygons into identifiable topological plates (assigned
             an ID) according to their present-day locations.
 
-        Notes
-        -----
-        The get_plate_reconstruction_files() method downloads reconstruction files from a given plate model.
-        For example,
+        .. note::
 
-            gDownload = gplately.download.DataServer("Muller2019")
-            rotation_model, topology_features, static_polygons = gDownload.get_plate_reconstruction_files()
+            The get_plate_reconstruction_files() method downloads reconstruction files from a given plate model.
+            For example,
 
-        The code above downloads `rotation model`, `topology features` and `static polygons` files from the
-        Müller et al. (2019) plate reconstruction model. These files can then be used to create `PlateReconstruction` object.
+            .. code-block:: python
+                :linenos:
 
-            model = gplately.reconstruction.PlateReconstruction(rotation_model, topology_features, static_polygons)
+                gDownload = gplately.DataServer("Muller2019")
+                rotation_model, topology_features, static_polygons = gDownload.get_plate_reconstruction_files()
 
-        If the requested plate model does not have certain file(s), a warning message will alert user of the missing file(s).
+            The code above downloads ``rotation model``, ``topology features`` and ``static polygons`` files from the
+            Müller et al. (2019) plate reconstruction model. These files can then be used to create :class:`gplately.PlateReconstruction` object.
+
+            .. code-block:: python
+                :linenos:
+
+                model = gplately.PlateReconstruction(rotation_model, topology_features, static_polygons)
+
+            If the requested plate model does not have certain file(s), a warning message will alert user of the missing file(s).
         """
         return self.rotation_model, self.topology_features, self.static_polygons
 
     def get_topology_geometries(self):
-        """Uses the [plate-model-manager](https://pypi.org/project/plate-model-manager/) to download coastline, continent and COB (continent-ocean boundary)
-        Shapely geometries from the requested plate model. These are needed to call the `PlotTopologies`
+        """Download coastline, continent and COB (continent-ocean boundary)
+        Shapely geometries from the requested plate model. These are needed to call the :class:`gplately.PlotTopologies`
         object and visualise topological plates through time.
 
         Parameters
@@ -1276,56 +1289,64 @@ class DataServer(object):
             locations of the boundaries between oceanic and continental crust.
             Ready for reconstruction to a particular geological time and for plotting.
 
-        Notes
-        -----
-        This method accesses the plate reconstruction model ascribed to the `file_collection`
-        string passed into the `DataServer` object. For example, if the object was called with
-        `"Muller2019"`:
 
-            gDownload = gplately.download.DataServer("Muller2019")
-            coastlines, continents, COBs = gDownload.get_topology_geometries()
+        .. note::
 
-        the method will attempt to download `coastlines`, `continents` and `COBs` from the Müller
-        et al. (2019) plate reconstruction model. If found, these files are returned as individual
-        pyGPlates Feature Collections. They can be passed into:
+            This method accesses the plate reconstruction model ascribed to the ``file_collection``
+            string passed into the ``DataServer`` object. For example, if the object was called with "Muller2019":
 
-            gPlot = gplately.plot.PlotTopologies(gplately.reconstruction.PlateReconstruction, time, continents, coastlines, COBs)
+            .. code-block:: python
+                :linenos:
 
-        to reconstruct features to a certain geological time. The `PlotTopologies`
-        object provides simple methods to plot these geometries along with trenches, ridges and
-        transforms (see documentation for more info). Note that the `PlateReconstruction` object
-        is a parameter.
+                gDownload = gplately.download.DataServer("Muller2019")
+                coastlines, continents, COBs = gDownload.get_topology_geometries()
 
-        * Note: If the requested plate model does not have a certain geometry, a
-        message will be printed to alert the user. For example, if `get_topology_geometries()`
-        is used with the `"Matthews2016"` plate model, the workflow will print the following
-        message:
+            the method will attempt to download ``coastlines``, ``continents`` and ``COBs`` from the Müller
+            et al. (2019) plate reconstruction model. If found, these files are returned as individual
+            pyGPlates Feature Collections. They can be passed into:
+
+            .. code-block:: python
+                :linenos:
+
+                gPlot = gplately.PlotTopologies(gplately.PlateReconstruction, time, continents, coastlines, COBs)
+
+            to reconstruct features to a certain geological time. The :class:`gplately.PlotTopologies`
+            object provides simple methods to plot these geometries along with trenches, ridges and
+            transforms (see documentation for more info). Note that the :class:`gplately.PlotTopologies` object
+            is a parameter.
+
+            If the requested plate model does not have a certain geometry, a
+            message will be printed to alert the user. For example, if ``get_topology_geometries()``
+            is used with the "Matthews2016" plate model, the workflow will print the following
+            message:
+
+            .. code:: console
 
                 No continent-ocean boundaries in Matthews2016.
         """
         return self.coastlines, self.continents, self.COBs
 
     def get_age_grid(self, times):
-        """Downloads seafloor and paleo-age grids from the plate reconstruction model (`file_collection`)
-        passed into the `DataServer` object. Stores grids in the "gplately" cache.
+        """Downloads seafloor and paleo-age grids from the plate reconstruction model (``file_collection``)
+        passed into the ``DataServer`` object. Stores grids in the "gplately" cache.
 
-        Currently, `DataServer` supports the following age grids:
+        Currently, ``DataServer`` supports the following age grids:
 
-        * __Muller et al. 2019__
+        * Muller et al. 2019
 
-            * `file_collection` = `Muller2019`
+            * ``file_collection`` = ``Muller2019``
             * Time range: 0-250 Ma
             * Seafloor age grid rasters in netCDF format.
 
-        * __Muller et al. 2016__
+        * Muller et al. 2016
 
-            * `file_collection` = `Muller2016`
+            * ``file_collection`` = ``Muller2016``
             * Time range: 0-240 Ma
             * Seafloor age grid rasters in netCDF format.
 
-        * __Seton et al. 2012__
+        * Seton et al. 2012
 
-            * `file_collection` = `Seton2012`
+            * ``file_collection`` = ``Seton2012``
             * Time range: 0-200 Ma
             * Paleo-age grid rasters in netCDF format.
 
@@ -1333,17 +1354,18 @@ class DataServer(object):
         Parameters
         ----------
         times : int, or list of int, default=None
-            Request an age grid from one (an integer) or multiple reconstruction times (a
-            list of integers).
+            Request an age grid from one (an integer) or multiple reconstruction times (a list of integers).
 
         Returns
         -------
         a gplately.Raster object
-            A gplately.Raster object containing the age grid. The age grid data can be extracted
-            into a numpy ndarray or MaskedArray by appending `.data` to the variable assigned to
-            `get_age_grid()`.
+            A :class:`gplately.Raster` object containing the age grid. The age grid data can be extracted
+            into a numpy ndarray or MaskedArray by appending ``.data`` to the variable assigned to ``get_age_grid()``.
 
             For example:
+
+            .. code-block:: python
+                :linenos:
 
                 gdownload = gplately.DataServer("Muller2019")
 
@@ -1351,35 +1373,41 @@ class DataServer(object):
 
                 graster_data = graster.data
 
-            where `graster_data` is a numpy ndarray.
+            where ``graster_data`` is a numpy ndarray.
 
         Raises
         -----
         ValueError
-            If `time` (a single integer, or a list of integers representing reconstruction
+            If ``time`` (a single integer, or a list of integers representing reconstruction
             times to extract the age grids from) is not passed.
 
-        Notes
-        -----
-        The first time that `get_age_grid` is called for a specific time(s), the age grid(s)
-        will be downloaded into the GPlately cache once. Upon successive calls of `get_age_grid`
-        for the same reconstruction time(s), the age grids will not be re-downloaded; rather,
-        they are re-accessed from the same cache provided the age grid(s) have not been moved or deleted.
+
+        .. note::
+
+            The first time that ``get_age_grid`` is called for a specific time(s), the age grid(s)
+            will be downloaded into the GPlately cache once. Upon successive calls of ``get_age_grid``
+            for the same reconstruction time(s), the age grids will not be re-downloaded; rather,
+            they are re-accessed from the same cache provided the age grid(s) have not been moved or deleted.
 
         Examples
         --------
-        if the `DataServer` object was called with the `Muller2019` `file_collection` string:
+        if the ``DataServer`` object was called with the ``Muller2019`` ``file_collection`` string:
 
-            gDownload = gplately.download.DataServer("Muller2019")
+            .. code-block:: python
+                :linenos:
 
-        `get_age_grid` will download seafloor age grids from the Müller et al. (2019) plate
+                gDownload = gplately.download.DataServer("Muller2019")
+
+        ``get_age_grid`` will download seafloor age grids from the Müller et al. (2019) plate
         reconstruction model for the geological time(s) requested in the `time` parameter.
         If found, these age grids are returned as masked arrays.
 
-        For example, to download  Müller et al. (2019) seafloor age grids for 0Ma, 1Ma and
-        100 Ma:
+        For example, to download  Müller et al. (2019) seafloor age grids for 0Ma, 1Ma and 100 Ma:
 
-            age_grids = gDownload.get_age_grid([0, 1, 100])
+            .. code-block:: python
+                :linenos:
+
+                age_grids = gDownload.get_age_grid([0, 1, 100])
 
         """
         if not self.pmm:
@@ -1401,7 +1429,7 @@ class DataServer(object):
 
         for ti in time_array:
             agegrid_filename = self.pmm.get_raster("AgeGrids", ti)
-            agegrid = _gplately.grids.Raster(data=agegrid_filename)
+            agegrid = Raster(data=agegrid_filename)
             age_grids.append(agegrid)
 
         if len(age_grids) == 1:
@@ -1411,13 +1439,11 @@ class DataServer(object):
 
     def get_spreading_rate_grid(self, times):
         """Downloads seafloor spreading rate grids from the plate reconstruction
-        model (`file_collection`) passed into the `DataServer` object. Stores
-        grids in the "gplately" cache.
+        model (``file_collection``) passed into the ``DataServer`` object. Stores grids in the "gplately" cache.
 
-        Currently, `DataServer` supports spreading rate grids from the following plate
-        models:
+        Currently, ``DataServer`` supports spreading rate grids from the following plate models:
 
-        * __Clennett et al. 2020__
+        * Clennett et al. 2020
 
             * `file_collection` = `Clennett2020`
             * Time range: 0-250 Ma
@@ -1432,12 +1458,15 @@ class DataServer(object):
 
         Returns
         -------
-        a gplately.Raster object
-            A gplately.Raster object containing the spreading rate grid. The spreading
+        :class:`gplately.Raster`
+            A :class:`gplately.Raster` object containing the spreading rate grid. The spreading
             rate grid data can be extracted into a numpy ndarray or MaskedArray by
-            appending `.data` to the variable assigned to `get_spreading_rate_grid()`.
+            appending ``.data`` to the variable assigned to ``get_spreading_rate_grid()``.
 
             For example:
+
+            .. code-block:: python
+                :linenos:
 
                 gdownload = gplately.DataServer("Clennett2020")
 
@@ -1445,35 +1474,42 @@ class DataServer(object):
 
                 graster_data = graster.data
 
-            where `graster_data` is a numpy ndarray.
+            where `graster_data`` is a numpy ndarray.
 
         Raises
         -----
         ValueError
-            If `time` (a single integer, or a list of integers representing reconstruction
+            If ``time`` (a single integer, or a list of integers representing reconstruction
             times to extract the spreading rate grids from) is not passed.
 
-        Notes
-        -----
-        The first time that `get_spreading_rate_grid` is called for a specific time(s),
-        the spreading rate grid(s) will be downloaded into the GPlately cache once.
-        Upon successive calls of `get_spreading_rate_grid` for the same reconstruction
-        time(s), the grids will not be re-downloaded; rather, they are re-accessed from
-        the same cache location provided they have not been moved or deleted.
+
+        .. note::
+
+            The first time that ``get_spreading_rate_grid`` is called for a specific time(s),
+            the spreading rate grid(s) will be downloaded into the GPlately cache once.
+            Upon successive calls of ``get_spreading_rate_grid`` for the same reconstruction
+            time(s), the grids will not be re-downloaded; rather, they are re-accessed from
+            the same cache location provided they have not been moved or deleted.
 
         Examples
         --------
-        if the `DataServer` object was called with the `Clennett2020` `file_collection` string:
+        if the ``DataServer`` object was called with the ``Clennett2020`` ``file_collection`` string:
+
+        .. code-block:: python
+            :linenos:
 
             gDownload = gplately.download.DataServer("Clennett2020")
 
-        `get_spreading_rate_grid` will download seafloor spreading rate grids from the
+        ``get_spreading_rate_grid`` will download seafloor spreading rate grids from the
         Clennett et al. (2020) plate reconstruction model for the geological time(s)
-        requested in the `time` parameter. When found, these spreading rate grids are
+        requested in the ``time`` parameter. When found, these spreading rate grids are
         returned as masked arrays.
 
         For example, to download Clennett et al. (2020) seafloor spreading rate grids for
         0Ma, 1Ma and 100 Ma as MaskedArray objects:
+
+        .. code-block:: python
+            :linenos:
 
             spreading_rate_grids = gDownload.get_spreading_rate_grid([0, 1, 100])
 
@@ -1500,7 +1536,7 @@ class DataServer(object):
 
         for ti in time_array:
             spreadgrid_filename = self.pmm.get_raster("SpreadingRateGrids", ti)
-            spreadgrid = _gplately.grids.Raster(data=spreadgrid_filename)
+            spreadgrid = Raster(data=spreadgrid_filename)
             spread_grids.append(spreadgrid)
 
         if len(spread_grids) == 1:
@@ -1514,12 +1550,11 @@ class DataServer(object):
 
     def get_raster(self, raster_id_string=None):
         """Downloads assorted raster data that are not associated with the plate
-        reconstruction models supported by GPlately's `DataServer`. Stores rasters in the
-        "gplately" cache.
+        reconstruction models supported by GPlately's ``DataServer``. Stores rasters in the "gplately" cache.
 
-        Currently, `DataServer` supports the following rasters and images:
+        Currently, ``DataServer`` supports the following rasters and images:
 
-        * __[ETOPO1](https://www.ngdc.noaa.gov/mgg/global/)__:
+        * `ETOPO1 <https://www.ngdc.noaa.gov/mgg/global/>`__:
             * Filetypes available : TIF, netCDF (GRD)
             * `raster_id_string` = `"ETOPO1_grd"`, `"ETOPO1_tif"` (depending on the requested format)
             * A 1-arc minute global relief model combining lang topography and ocean bathymetry.
@@ -1533,11 +1568,14 @@ class DataServer(object):
 
         Returns
         -------
-        a gplately.Raster object
-            A gplately.Raster object containing the raster data. The gridded data can be extracted
-            into a numpy ndarray or MaskedArray by appending `.data` to the variable assigned to `get_raster()`.
+        :class:`gplately.Raster`
+            A :class:`gplately.Raster` object containing the raster data. The gridded data can be extracted
+            into a numpy ndarray or MaskedArray by appending ``.data`` to the variable assigned to ``get_raster()``.
 
             For example:
+
+            .. code-block:: python
+                :linenos:
 
                 gdownload = gplately.DataServer("Muller2019")
 
@@ -1545,22 +1583,25 @@ class DataServer(object):
 
                 graster_data = graster.data
 
-            where `graster_data` is a numpy ndarray. This array can be visualised using
-            `matplotlib.pyplot.imshow` on a `cartopy.mpl.GeoAxis` GeoAxesSubplot
-            (see example below).
+            where ``graster_data`` is a numpy ndarray. This array can be visualised using
+            ``matplotlib.pyplot.imshow`` on a ``cartopy.mpl.GeoAxis`` GeoAxesSubplotc(see example below).
 
         Raises
         ------
         ValueError
-            * if a `raster_id_string` is not supplied.
+            if a ``raster_id_string`` is not supplied.
 
-        Notes
-        -----
-        Rasters obtained by this method are (so far) only reconstructed to present-day.
+
+        .. note::
+
+            Rasters obtained by this method are (so far) only reconstructed to present-day.
 
         Examples
         --------
         To download ETOPO1 and plot it on a Mollweide projection:
+
+        .. code-block:: python
+            :linenos:
 
             import gplately
             import numpy as np
@@ -1577,13 +1618,13 @@ class DataServer(object):
         if raster_id_string:
             raster_path = PresentDayRasterManager().get_raster(raster_id_string)
             if raster_path.endswith(".grd") or raster_path.endswith(".nc"):
-                raster = _gplately.grids.Raster(data=raster_path)
+                raster = Raster(data=raster_path)
             # Otherwise, the raster is an image; use imread to process
             else:
                 from matplotlib import image
 
                 raster_matrix = image.imread(raster_path)
-                raster = _gplately.grids.Raster(data=raster_matrix)
+                raster = Raster(data=raster_matrix)
 
             if raster_id_string.lower() == "etopo1_tif":
                 raster.lats = raster.lats[::-1]
@@ -1593,101 +1634,96 @@ class DataServer(object):
 
     def get_feature_data(self, feature_data_id_string=None):
         """Downloads assorted geological feature data from web servers (i.e.
-        [GPlates 2.3 sample data](https://www.earthbyte.org/gplates-2-3-software-and-data-sets/))
-        into the "gplately" cache.
+        `GPlates 2.3 sample data <https://www.earthbyte.org/gplates-2-3-software-and-data-sets/>`__) into the "gplately" cache.
 
-        Currently, `DataServer` supports the following feature data:
+        Currently, ``DataServer`` supports the following feature data:
 
-        * __Large igneous provinces from Johansson et al. (2018)__
+        * Large igneous provinces from Johansson et al. (2018)
 
-            Information
-            -----------
-            * Formats: .gpmlz
-            * `feature_data_id_string` = `Johansson2018`
+            - Information
 
-            Citations
-            ---------
-            * Johansson, L., Zahirovic, S., and Müller, R. D., In Prep, The
-            interplay between the eruption and weathering of Large Igneous Provinces and
-            the deep-time carbon cycle: Geophysical Research Letters.
+                * Formats: .gpmlz
+                * `feature_data_id_string` = `Johansson2018`
 
+            - Citations
 
-        - __Large igneous province products interpreted as plume products from Whittaker
-        et al. (2015)__.
-
-            Information
-            -----------
-            * Formats: .gpmlz, .shp
-            * `feature_data_id_string` = `Whittaker2015`
-
-            Citations
-            ---------
-            * Whittaker, J. M., Afonso, J. C., Masterton, S., Müller, R. D.,
-            Wessel, P., Williams, S. E., & Seton, M. (2015). Long-term interaction between
-            mid-ocean ridges and mantle plumes. Nature Geoscience, 8(6), 479-483.
-            doi:10.1038/ngeo2437.
+                Johansson, L., Zahirovic, S., and Müller, R. D., In Prep, The
+                interplay between the eruption and weathering of Large Igneous Provinces and
+                the deep-time carbon cycle: Geophysical Research Letters.
 
 
-        - __Seafloor tectonic fabric (fracture zones, discordant zones, V-shaped structures,
-        unclassified V-anomalies, propagating ridge lineations and extinct ridges) from
-        Matthews et al. (2011)__
+        - Large igneous province products interpreted as plume products from Whittaker et al. (2015).
 
-            Information
-            -----------
-            * Formats: .gpml
-            * `feature_data_id_string` = `SeafloorFabric`
+            - Information
 
-            Citations
-            ---------
-            * Matthews, K.J., Müller, R.D., Wessel, P. and Whittaker, J.M., 2011. The
-            tectonic fabric of the ocean basins. Journal of Geophysical Research, 116(B12):
-            B12109, DOI: 10.1029/2011JB008413.
+                * Formats: .gpmlz, .shp
+                * `feature_data_id_string` = `Whittaker2015`
+
+            - Citations
+
+                Whittaker, J. M., Afonso, J. C., Masterton, S., Müller, R. D.,
+                Wessel, P., Williams, S. E., & Seton, M. (2015). Long-term interaction between
+                mid-ocean ridges and mantle plumes. Nature Geoscience, 8(6), 479-483. doi:10.1038/ngeo2437.
 
 
-        - __Present day surface hotspot/plume locations from Whittaker et al. (2013)__
+        - Seafloor tectonic fabric (fracture zones, discordant zones, V-shaped structures, unclassified V-anomalies, propagating ridge lineations and extinct ridges) from Matthews et al. (2011)
 
-            Information
-            -----------
-            * Formats: .gpmlz
-            * `feature_data_id_string` = `Hotspots`
+            - Information
 
-            Citation
-            --------
-            * Whittaker, J., Afonso, J., Masterton, S., Müller, R., Wessel, P.,
-            Williams, S., and Seton, M., 2015, Long-term interaction between mid-ocean ridges and
-            mantle plumes: Nature Geoscience, v. 8, no. 6, p. 479-483, doi:10.1038/ngeo2437.
+                * Formats: .gpml
+                * `feature_data_id_string` = `SeafloorFabric`
+
+            - Citations
+
+                Matthews, K.J., Müller, R.D., Wessel, P. and Whittaker, J.M., 2011. The
+                tectonic fabric of the ocean basins. Journal of Geophysical Research, 116(B12):
+                B12109, DOI: 10.1029/2011JB008413.
+
+
+        - Present day surface hotspot/plume locations from Whittaker et al. (2013)
+
+            - Information
+
+                * Formats: .gpmlz
+                * `feature_data_id_string` = `Hotspots`
+
+            - Citation
+
+                Whittaker, J., Afonso, J., Masterton, S., Müller, R., Wessel, P.,
+                Williams, S., and Seton, M., 2015, Long-term interaction between mid-ocean ridges and
+                mantle plumes: Nature Geoscience, v. 8, no. 6, p. 479-483, doi:10.1038/ngeo2437.
 
 
         Parameters
         ----------
         feature_data_id_string : str, default=None
-            A string to identify which feature data to download to the cache (see list of supported
-            feature data above).
+            A string to identify which feature data to download to the cache (see list of supported feature data above).
 
         Returns
         -------
         feature_data_filenames : instance of <pygplates.FeatureCollection>, or list of instance <pygplates.FeatureCollection>
-            If a single set of feature data is downloaded, a single pyGPlates `FeatureCollection`
-            object is returned. Otherwise, a list containing multiple pyGPlates `FeatureCollection`
-            objects is returned (like for `SeafloorFabric`). In the latter case, feature reconstruction
+            If a single set of feature data is downloaded, a single pyGPlates ``FeatureCollection``
+            object is returned. Otherwise, a list containing multiple pyGPlates ``FeatureCollection``
+            objects is returned (like for ``SeafloorFabric``). In the latter case, feature reconstruction
             and plotting may have to be done iteratively.
 
         Raises
         ------
         ValueError
-            If a `feature_data_id_string` is not provided.
+            If a ``feature_data_id_string`` is not provided.
 
         Examples
         --------
-        For examples of plotting data downloaded with `get_feature_data`, see GPlately's sample
-        notebook 05 - Working With Feature Geometries [here](https://github.com/GPlates/gplately/blob/master/Notebooks/05-WorkingWithFeatureGeometries.ipynb).
+        For examples of plotting data downloaded with ``get_feature_data``, see GPlately's sample notebook 05 - Working With Feature Geometries
+        `here <https://github.com/GPlates/gplately/blob/master/Notebooks/05-WorkingWithFeatureGeometries.ipynb>`__.
         """
         if feature_data_id_string is None:
             raise ValueError("Please specify which feature data to fetch.")
 
-        database = _gplately.data._feature_data()
+        database = _feature_data()
 
         found_collection = False
+        feature_data_filenames = []
         for collection, zip_url in database.items():
             if feature_data_id_string.lower() == collection.lower():
                 found_collection = True
@@ -1705,12 +1741,12 @@ class DataServer(object):
                 "{} are not in GPlately's DataServer.".format(feature_data_id_string)
             )
 
-        feat_data = _pygplates.FeatureCollection()
+        feat_data = pygplates.FeatureCollection()
         if len(feature_data_filenames) == 1:
-            feat_data.add(_pygplates.FeatureCollection(feature_data_filenames[0]))
+            feat_data.add(pygplates.FeatureCollection(feature_data_filenames[0]))
             return feat_data
         else:
             feat_data = []
             for file in feature_data_filenames:
-                feat_data.append(_pygplates.FeatureCollection(file))
+                feat_data.append(pygplates.FeatureCollection(file))
             return feat_data

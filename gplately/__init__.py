@@ -36,7 +36,7 @@ del dev_warning
 ensure_plate_model_manager_compatible(REQUIRED_PMM_VERSION)
 del ensure_plate_model_manager_compatible
 
-from plate_model_manager import PlateModelManager, PresentDayRasterManager
+from plate_model_manager import PlateModel, PlateModelManager, PresentDayRasterManager
 
 from . import auxiliary, ptt
 from .download import DataServer
@@ -46,7 +46,9 @@ from .mapping.plot_engine import PlotEngine
 from .mapping.pygmt_plot import PygmtPlotEngine
 from .oceans import SeafloorGrid
 from .plot import PlotTopologies
-from .reconstruction import PlateReconstruction, Points
+from .points import Points
+from .reconstruction import PlateReconstruction
+from .reconstruction import reconstruct_points as reconstruct_points_by_topologies
 from .tools import EARTH_RADIUS
 
 __all__ = [
@@ -61,11 +63,14 @@ __all__ = [
     "Raster",
     "SeafloorGrid",
     # other classes
+    "PlateModel",
     "PlateModelManager",
     "PresentDayRasterManager",
     "PlotEngine",
     "CartopyPlotEngine",
     "PygmtPlotEngine",
+    # functions
+    "reconstruct_points_by_topologies",
     # constants
     "EARTH_RADIUS",
 ]

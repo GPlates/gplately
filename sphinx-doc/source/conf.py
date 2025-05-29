@@ -39,6 +39,7 @@ autosummary_generate = True
 # this is a workaround for a autosummary bug. If the bug is fixed, the autodoc_default_options can be removed.
 autodoc_default_options = {
     "members": True,
-    "undoc-members": False,
+    "undoc-members": True,
     "private-members": False,
+    "show-inheritance": True,
 }

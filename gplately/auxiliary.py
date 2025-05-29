@@ -1,7 +1,11 @@
+"""A set of helper functions designed to streamline the use of GPlately’s functionalities, minimizing the coding effort required from users."""
+
 from typing import Union
 
+import pygmt
 from plate_model_manager import PlateModel, PlateModelManager
 
+from .download import path_to_cache
 from .mapping.cartopy_plot import CartopyPlotEngine
 from .mapping.plot_engine import PlotEngine
 from .plot import PlotTopologies
@@ -9,21 +13,25 @@ from .reconstruction import PlateReconstruction
 
 
 def get_plate_reconstruction(model: Union[str, PlateModel], model_repo_dir: str = "./"):
-    """Convenient function to return a :py:class:`gplately.PlateReconstruction` object.
-    Check out the `usage example <https://github.com/GPlates/gplately/blob/master/Notebooks/Examples/use_auxiliary_functions.py>`__.
+    """Return a :py:class:`gplately.PlateReconstruction` object for a given model name or :class:`gplately.PlateModel` object.
+
 
     Parameters
     ----------
     model : str or PlateModel
-        model name or a PlateModel object
+        model name or a :class:`gplately.PlateModel` object
     model_repo_dir: str, default="./"
         the folder in which you would like to keep the model files
 
     Returns
     -------
-    gplately.PlateReconstruction
-        a PlateReconstruction object
+    PlateReconstruction
+        a :class:`gplately.PlateReconstruction` object
 
+
+    .. seealso::
+
+        `usage example <https://github.com/GPlates/gplately/blob/master/Notebooks/Examples/use_auxiliary_functions.py>`__
     """
     if isinstance(model, str):
         model_name: str = model
@@ -62,13 +70,12 @@ def get_gplot(
     time: Union[int, float] = 0,
     plot_engine: PlotEngine = CartopyPlotEngine(),
 ) -> PlotTopologies:
-    """Convenient function to return a :py:class:`gplately.PlotTopologies` object.
-    Check out the `usage example <https://github.com/GPlates/gplately/blob/master/Notebooks/Examples/use_auxiliary_functions.py>`__).
+    """Return a :py:class:`gplately.PlotTopologies` object for a given model name or :class:`gplately.PlateModel` object.
 
     Parameters
     ----------
     model : str or PlateModel
-        model name or a PlateModel object
+        model name or a :class:`gplately.PlateModel` object
     model_repo_dir: str, default="./"
         the folder in which you would like to keep the model files
     time: int or float, default=0
@@ -78,8 +85,13 @@ def get_gplot(
 
     Returns
     -------
-    gplately.PlotTopologies
-        a PlotTopologies object
+    PlotTopologies
+        a :class:`gplately.PlotTopologies` object
+
+
+    .. seealso::
+
+        `usage example <https://github.com/GPlates/gplately/blob/master/Notebooks/Examples/use_auxiliary_functions.py>`__
     """
     if isinstance(model, str):
         model_name: str = model
@@ -118,3 +130,35 @@ def get_gplot(
         time=time,
         plot_engine=plot_engine,
     )
+
+
+def get_pygmt_basemap_figure(projection="N180/10c", region="d"):
+    """A helper function to return a ``pygmt.Figure()`` object
+
+    Parameters
+    ----------
+    projection: str, default="N180/10c"
+        string to define the map projection in GMT style
+    region: str, default="d"
+        string to define the map extent in GMT style
+
+
+    Returns
+    -------
+    pygmt.Figure()
+       a ``pygmt.Figure()`` object for map plotting
+
+    """
+    fig = pygmt.Figure()
+    fig.basemap(region=region, projection=projection, frame="lrtb")
+    return fig
+
+
+def get_data_server_cache_path():
+    """Return the path to the :class:`gplately.DataServer` cache as a ``os.PathLike`` object.
+
+    .. seealso::
+
+        :py:attr:`gplately.DataServer.cache_path`
+    """
+    return path_to_cache()

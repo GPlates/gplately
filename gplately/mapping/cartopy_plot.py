@@ -1,9 +1,12 @@
-import logging, math
-from geopandas.geodataframe import GeoDataFrame
+import logging
+import math
+
 import cartopy.crs as ccrs
-from .plot_engine import PlotEngine
-from ..utils.plot_utils import _clean_polygons, plot_subduction_teeth
+from geopandas.geodataframe import GeoDataFrame
+
 from ..tools import EARTH_RADIUS
+from ..utils.plot_utils import _clean_polygons, plot_subduction_teeth
+from .plot_engine import PlotEngine
 
 logger = logging.getLogger("gplately")
 
@@ -11,11 +14,13 @@ DEFAULT_CARTOPY_PROJECTION = ccrs.PlateCarree()
 
 
 class CartopyPlotEngine(PlotEngine):
+    """Use Cartopy for map plotting"""
+
     def __init__(self):
         pass
 
     def plot_geo_data_frame(self, ax_or_fig, gdf: GeoDataFrame, **kwargs):
-        """Plot GeoDataFrame object with Cartopy
+        """Use Cartopy to plot geometries in a GeoDataFrame object onto a map
 
         Parameters
         ----------
@@ -33,7 +38,7 @@ class CartopyPlotEngine(PlotEngine):
         return gdf.plot(ax=ax_or_fig, **kwargs)
 
     def plot_pygplates_features(self, ax_or_fig, features, **kwargs):
-        """TODO"""
+        """Not implemented yet"""
         pass
 
     def plot_subduction_zones(
@@ -44,7 +49,7 @@ class CartopyPlotEngine(PlotEngine):
         color="blue",
         **kwargs,
     ):
-        """Plot subduction zones with "teeth" using pygmt
+        """Use Cartopy to plot subduction zones with "teeth" onto a map
 
         Parameters
         ----------

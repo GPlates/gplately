@@ -30,6 +30,7 @@ and more to help you get started with plate reconstructions.
    :maxdepth: 2
 
    api
+   functions
    secondaries
 
 Index

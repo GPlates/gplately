@@ -18,6 +18,7 @@ def main(show=True):
     pm_manager = PlateModelManager()
     muller2019_model = pm_manager.get_model("Matthews2016", data_dir=MODEL_REPO_DIR)
 
+    assert muller2019_model
     rotation_model = muller2019_model.get_rotation_model()
     topology_features = muller2019_model.get_topologies()
     static_polygons = muller2019_model.get_static_polygons()
@@ -49,10 +50,12 @@ def main(show=True):
     )
 
     # Creating the motion path and obtaining rate plot arrays using the gplately Points alternative
-    gpts = gplately.reconstruction.Points(model, lons, lats, time=0.0)
-    lon, lat, _, _ = gpts.motion_path(
+    gpts = gplately.Points(model, lons, lats, time=0.0)
+    mothin_path_ret_tuple = gpts.motion_path(
         time_array, anchor_plate_id=2, return_rate_of_motion=True
     )
+    assert len(mothin_path_ret_tuple) == 4
+    lon, lat, _, _ = mothin_path_ret_tuple
 
     fig = plt.figure(figsize=(12, 6))
     gs = GridSpec(2, 2, figure=fig)
@@ -64,8 +67,8 @@ def main(show=True):
     lon_max = 220
     lat_min = 15.0
     lat_max = 60.0
-    ax.set_extent([lon_min, lon_max, lat_min, lat_max], crs=ccrs.PlateCarree())
-    ax.gridlines(
+    ax.set_extent([lon_min, lon_max, lat_min, lat_max], crs=ccrs.PlateCarree())  # type: ignore
+    ax.gridlines(  # type: ignore
         draw_labels=True, xlocs=np.arange(-180, 180, 20), ylocs=np.arange(-90, 90, 10)
     )
 
@@ -79,7 +82,7 @@ def main(show=True):
         100,
         marker=".",
         c=time_array,
-        cmap=plt.cm.inferno,
+        cmap=plt.cm.inferno,  # type: ignore
         edgecolor="k",
         transform=ccrs.PlateCarree(),
         vmin=time_array[0],
@@ -108,9 +111,12 @@ def main(show=True):
     )
 
     # Get the latitudes and longitudes of all points along the motion path
-    lon, lat, step_times, step_rates_of_motion = model.create_motion_path(
+
+    motion_path_tuple_4 = model.create_motion_path(
         lons, lats, time_array, plate_ID, anchor_plate_ID, return_rate_of_motion=True
     )
+    assert len(motion_path_tuple_4) == 4
+    lon, lat, step_times, step_rates_of_motion = motion_path_tuple_4
 
     ax2 = fig.add_subplot(gs[0, 1], projection=ccrs.PlateCarree(central_longitude=180))
     ax2.set_title("Motion path of the Indian craton to the North European Craton")
@@ -122,9 +128,9 @@ def main(show=True):
     lon_max = 100
     lat_min = -40.0
     lat_max = 40.0
-    ax2.set_extent([lon_min, lon_max, lat_min, lat_max], crs=ccrs.PlateCarree())
+    ax2.set_extent([lon_min, lon_max, lat_min, lat_max], crs=ccrs.PlateCarree())  # type: ignore
 
-    ax2.gridlines(
+    ax2.gridlines(  # type: ignore
         draw_labels=True, xlocs=np.arange(-180, 180, 20), ylocs=np.arange(-90, 90, 10)
     )
     # --- Make sure negtive motion path longitudes are wrapped correctly to the dateline
@@ -138,7 +144,7 @@ def main(show=True):
             200,
             marker="*",
             c=time_array,
-            cmap=plt.cm.inferno,
+            cmap=plt.cm.inferno,  # type: ignore
             edgecolor="C{}".format(i),
             linewidth=0.5,
             transform=ccrs.PlateCarree(),
@@ -155,7 +161,7 @@ def main(show=True):
     ax3.set_xlabel("Time (Ma)", fontsize=12)
     ax3.set_ylabel("Rate of motion (km/Myr)", fontsize=12)
     ax3.invert_xaxis()
-    ax3.set_xlim([max_reconstruction_time, 0])
+    ax3.set_xlim((max_reconstruction_time, 0.0))
     ax3.grid(alpha=0.3)
 
     plt.subplots_adjust(wspace=0.25)
