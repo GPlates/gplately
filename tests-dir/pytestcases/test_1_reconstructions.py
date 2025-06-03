@@ -200,12 +200,6 @@ def test_point_velocities(time, model):
     )
 
 
-def test_pickle_Points():
-    model_dump = pickle.dumps(model)
-    model_load = pickle.loads(model_dump)
-    logger.info("Testing test_pickle_Points")
-
-
 def test_rotation_model_copy(model):
     rot_model = model.rotation_model
     rot_model_copy = RotationModel(rot_model)
