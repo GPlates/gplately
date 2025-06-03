@@ -176,11 +176,6 @@ def test_PlotTopologies_subduction_teeth(gplot):
     plt.close(fig)
 
 
-def test_pickle_Points():
-    gplot_dump = pickle.dumps(gplot)
-    gplot_load = pickle.loads(gplot_dump)
-
-
 def test_pickle_plotTopologies_object(gplot):
     gplot_dump = pickle.dumps(gplot)
     gplot_load = pickle.loads(gplot_dump)

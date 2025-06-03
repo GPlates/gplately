@@ -15,17 +15,17 @@
 #    51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
 
-"""This sub-module contains tools for converting PyGPlates or GPlately geometries to Shapely geometries for mapping (and vice versa). 
+"""This sub-module contains tools for converting PyGPlates or GPlately geometries to Shapely geometries for mapping (and vice versa).
 
 Supported PyGPlates geometries inherit from the following classes:
 
-* [pygplates.GeometryOnSphere](https://www.gplates.org/docs/pygplates/generated/pygplates.geometryonsphere): This 
+* [pygplates.GeometryOnSphere](https://www.gplates.org/docs/pygplates/generated/pygplates.geometryonsphere): This
 class has the following derived GeometryOnSphere classes:
     * [pygplates.PointOnSphere](https://www.gplates.org/docs/pygplates/generated/pygplates.pointonsphere#pygplates.PointOnSphere)
     * [pygplates.MultiPointOnSphere](https://www.gplates.org/docs/pygplates/generated/pygplates.multipointonsphere#pygplates.MultiPointOnSphere)
     * [pygplates.PolylineOnSphere](https://www.gplates.org/docs/pygplates/generated/pygplates.polylineonsphere#pygplates.PolylineOnSphere)
     * [pygplates.PolygonOnSphere](https://www.gplates.org/docs/pygplates/generated/pygplates.polygononsphere#pygplates.PolygonOnSphere)
-    
+
 
 * [pygplates.LatLonPoint](https://www.gplates.org/docs/pygplates/generated/pygplates.latlonpoint)
 * [pygplates.ReconstructedFeatureGeometry](https://www.gplates.org/docs/pygplates/generated/pygplates.reconstructedfeaturegeometry)
@@ -33,7 +33,7 @@ class has the following derived GeometryOnSphere classes:
 * [pygplates.ResolvedTopologicalBoundary](https://www.gplates.org/docs/pygplates/generated/pygplates.resolvedtopologicalboundary)
 * [pygplates.ResolvedTopologicalNetwork](https://www.gplates.org/docs/pygplates/generated/pygplates.resolvedtopologicalnetwork)
 
-Note: GPlately geometries derive from the `GeometryOnSphere` and `pygplates.GeometryOnSphere` base classes. 
+Note: GPlately geometries derive from the `GeometryOnSphere` and `pygplates.GeometryOnSphere` base classes.
 
 Supported Shapely geometric objects include:
 
@@ -52,7 +52,7 @@ Also supported are collections of geometric objects, such as:
 __Converting PyGPlates geometries into Shapely geometries__ involves:
 
 * __wrapping geometries at the dateline__: this involves splitting a polygon, MultiPolygon, line segment or MultiLine segment between
-connecting points at the dateline. This is to ensure the geometry's points are joined along the short path rather than 
+connecting points at the dateline. This is to ensure the geometry's points are joined along the short path rather than
 the long path horizontally across the 2D map projection display.
 * __ordering geometries counter-clockwise__
 
@@ -63,7 +63,7 @@ Input PyGPlates geometries are converted to the following Shapely geometries:
 - `PolylineOnSphere`: `LineString` or `MultiLineString`
 - `PolygonOnSphere`: `Polygon` or `MultiPolygon`
 
-__Converting Shapely geometries into PyGPlates geometries__: 
+__Converting Shapely geometries into PyGPlates geometries__:
 Input Shapely geometries are converted to the following PyGPlates geometries:
 
 - `Point`: `PointOnSphere`
@@ -268,15 +268,36 @@ def pygplates_to_shapely(
         points = wrapped.get_points()
         return _MultiPoint([i.to_lat_lon()[::-1] for i in points])
 
+    # pygplates.DateLineWrapper wraps correctly to the dateline but Cartopy can sometimes
+    # move a point at central_meridian+180 to central_meridian-180 (or vice versa).
+    # To correct this we move points on the dateline slightly inwards (inside the map projection).
+    #
+    # Empirically this can go down to about 1e-11 (fails if 1e-12).
+    # But we leave enough of headroom for errors to accumulate.
+    dateline_clip_threshold = 1e-8
+
     output_geoms = []
     output_type = None
     for i in wrapped:
         if isinstance(i, pygplates.DateLineWrapper.LatLonPolyline):
-            tmp = _LineString([j.to_lat_lon()[::-1] for j in i.get_points()])
+            tmp = np.array([j.to_lat_lon()[::-1] for j in i.get_points()])
+            # Clip near the dateline.
+            tmp[:, 0] = np.clip(
+                tmp[:, 0],
+                central_meridian - (180 - dateline_clip_threshold),
+                central_meridian + (180 - dateline_clip_threshold),
+            )
+            tmp = _LineString(tmp)
             output_geoms.append(tmp)
             output_type = _MultiLineString
         elif isinstance(i, pygplates.DateLineWrapper.LatLonPolygon):
             tmp = np.array([j.to_lat_lon()[::-1] for j in i.get_exterior_points()])
+            # Clip near the dateline.
+            tmp[:, 0] = np.clip(
+                tmp[:, 0],
+                central_meridian - (180 - dateline_clip_threshold),
+                central_meridian + (180 - dateline_clip_threshold),
+            )
             # tmp[:,1] = np.clip(tmp[:,1], -89, 89) # clip polygons near poles
             tmp = _Polygon(tmp)
             if force_ccw and tmp.exterior is not None and not tmp.exterior.is_ccw:
