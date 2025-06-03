@@ -5,7 +5,7 @@ import cartopy.crs as ccrs
 from geopandas.geodataframe import GeoDataFrame
 
 from ..tools import EARTH_RADIUS
-from ..utils.plot_utils import _clean_polygons, plot_subduction_teeth
+from ..utils.plot_utils import plot_subduction_teeth
 from .plot_engine import PlotEngine
 
 logger = logging.getLogger("gplately")
@@ -31,7 +31,9 @@ class CartopyPlotEngine(PlotEngine):
 
         """
         if hasattr(ax_or_fig, "projection"):
-            gdf = _clean_polygons(data=gdf, projection=ax_or_fig.projection)
+            if gdf.crs is None:
+                gdf.crs = ccrs.PlateCarree()
+            gdf = gdf.to_crs(ax_or_fig.projection)
         else:
             kwargs["transform"] = DEFAULT_CARTOPY_PROJECTION
 
