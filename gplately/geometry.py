@@ -271,7 +271,10 @@ def pygplates_to_shapely(
     # pygplates.DateLineWrapper wraps correctly to the dateline but Cartopy can sometimes
     # move a point at central_meridian+180 to central_meridian-180 (or vice versa).
     # To correct this we move points on the dateline slightly inwards (inside the map projection).
-    dateline_clip_threshold = 1e-4
+    #
+    # Empirically this can go down to about 1e-11 (fails if 1e-12).
+    # But we leave enough of headroom for errors to accumulate.
+    dateline_clip_threshold = 1e-8
 
     output_geoms = []
     output_type = None
