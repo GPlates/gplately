@@ -1068,36 +1068,36 @@ def get_feature_data(feature_data_id_string=None, verbose=True):
 
 class DataServer(object):
     """
-    Download plate reconstruction models to the cache folder on your computer from
-    `EarthByte's WebDAV server <https://repo.gplates.org/webdav/pmm/>`__.
+    Download plate reconstruction models from the `EarthByte server <https://repo.gplates.org/webdav/pmm/>`__.
 
-    If the ``DataServer`` object is created for the first time, i.e. by:
-
-    .. code-block:: python
-
-        # create a DataServer object for the Muller et al. 2019 model
-        data_server = gplately.download.DataServer("Muller2019")
-
-    all requested files are downloaded into the user's ``gplately`` cache folder only **once**. If the same
-    model is requested again, the new DataServer object will get the files from the cache provided they have not been
-    moved or deleted.
+    The :class:`DataServer` object downloads the model files to the ``GPlately cache folder``.
+    If the same model is requested again, a new :class:`DataServer` instance will retrieve the files from the cache --
+    provided they haven't been moved or deleted.
 
     .. seealso::
 
-        `This table <https://gplates.github.io/gplately/sphinx-latest/html/use_cases.html#id1>`__ provides a list of available plate reconstruction models.
-        Visit this `EarthByte web page <https://www.earthbyte.org/category/resources/data-models/global-regional-plate-motion-models/>`__
-        for more information about these plate models.
+        - `This table <https://gplates.github.io/gplately/sphinx-latest/html/use_cases.html#id1>`__ provides a list of available plate reconstruction models.
+        - Visit this `EarthByte web page <https://www.earthbyte.org/category/resources/data-models/global-regional-plate-motion-models/>`__ for more information about these plate models.
+        - Call :meth:`gplately.auxiliary.get_data_server_cache_path` to see the path to the ``GPlately cache folder``.
     """
 
     def __init__(self, file_collection, data_dir=None, verbose=True):
-        """
+        """Constructor. Create a :class:`DataServer` object.
+
+        Example
+        -------
+        .. code-block:: python
+
+            # create a DataServer object for the Cao2024 model (https://zenodo.org/records/11536686)
+            data_server = gplately.download.DataServer("Cao2024")
+
         Parameters
         ----------
         file_collection: str
-            model name
+            The model name of interest.
 
         verbose: bool, default=True
-            Toggle print messages regarding server/internet connection status, file availability etc.
+            Toggle print messages regarding server/internet connection status, file availability, etc.
         """
 
         if not data_dir:
@@ -1132,12 +1132,12 @@ class DataServer(object):
 
     @property
     def cache_path(self):
-        """the location of DataServer cache on your computer"""
+        """The location of DataServer cache on your computer."""
         return path_to_cache()
 
     @property
     def rotation_model(self):
-        """a pygplates.RotationModel object for the plate reconstruction model"""
+        """A pygplates.RotationModel object for the plate reconstruction model."""
         if self._rotation_model is None and self.pmm:
             self._rotation_model = pygplates.RotationModel(
                 self.pmm.get_rotation_model()
@@ -1147,7 +1147,7 @@ class DataServer(object):
 
     @property
     def topology_features(self):
-        """a pygplates.FeatureCollection object containing topology features"""
+        """A pygplates.FeatureCollection object containing topology features."""
         if self._topology_features is None and self.pmm:
             if "Topologies" in self._available_layers:
                 self._topology_features = self._create_feature_collection(
@@ -1159,7 +1159,7 @@ class DataServer(object):
 
     @property
     def static_polygons(self):
-        """a pygplates.FeatureCollection object containing static polygons"""
+        """A pygplates.FeatureCollection object containing static polygons."""
         if self._static_polygons is None and self.pmm:
             if "StaticPolygons" in self._available_layers:
                 self._static_polygons = self._create_feature_collection(
@@ -1171,7 +1171,7 @@ class DataServer(object):
 
     @property
     def coastlines(self):
-        """a pygplates.FeatureCollection object containing coastlines"""
+        """A pygplates.FeatureCollection object containing coastlines."""
         if self._coastlines is None and self.pmm:
             if "Coastlines" in self._available_layers:
                 self._coastlines = self._create_feature_collection(
@@ -1183,7 +1183,7 @@ class DataServer(object):
 
     @property
     def continents(self):
-        """a pygplates.FeatureCollection object containing continental polygons"""
+        """A pygplates.FeatureCollection object containing continental polygons."""
         if self._continents is None and self.pmm:
             if "ContinentalPolygons" in self._available_layers:
                 self._continents = self._create_feature_collection(
@@ -1195,7 +1195,7 @@ class DataServer(object):
 
     @property
     def COBs(self):
-        """a pygplates.FeatureCollection object containing continent-ocean boundaries"""
+        """A pygplates.FeatureCollection object containing continent-ocean boundaries."""
         if self._COBs is None and self.pmm:
             if "COBs" in self._available_layers:
                 self._COBs = self._create_feature_collection(self.pmm.get_COBs())
@@ -1205,24 +1205,24 @@ class DataServer(object):
 
     @property
     def from_age(self):
-        """the max age of the plate model"""
+        """The max age/time of the plate model."""
         if self.pmm:
             return self.pmm.get_big_time()
 
     @property
     def to_age(self):
-        """the min age of the plate model"""
+        """The min age/time of the plate model."""
         if self.pmm:
             return self.pmm.get_small_time()
 
     @property
     def time_range(self):
-        """the time range of the plate model"""
+        """The time/age range of the plate model. Return a tuple of (max age, min age)."""
         return self.from_age, self.to_age
 
     @property
     def valid_times(self):
-        """the max time and min time of the plate model"""
+        """The max time/age and min time/age of the plate model. Return a tuple of (max age, min age)."""
         return self.from_age, self.to_age
 
     def get_plate_reconstruction_files(self):
@@ -1391,7 +1391,7 @@ class DataServer(object):
 
         Examples
         --------
-        if the ``DataServer`` object was called with the ``Muller2019`` ``file_collection`` string:
+        if the :class:`DataServer` object was called with the ``Muller2019`` ``file_collection`` string:
 
             .. code-block:: python
                 :linenos:

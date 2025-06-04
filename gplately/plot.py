@@ -59,19 +59,13 @@ PLOT_DOCSTRING = """
              
 Parameters
 ----------
-ax : instance of <cartopy.mpl.geoaxes.GeoAxes> or <cartopy.mpl.geoaxes.GeoAxesSubplot>
-    The subclasses of ``matplotlib.axes.Axes`` 
+ax : cartopy ax or pygmt figure
 
 color : str, default='black'
-    The colour of the **{0}** geometries.
+    The edge colour of the geometries.
 
 **kwargs :
-    `Matplotlib keyword arguments <https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html>`__.
-
-Returns
--------
-ax : instance of <geopandas.GeoDataFrame.plot>
-    The cartopy.mpl.geoaxes.GeoAxes or cartopy.mpl.geoaxes.GeoAxesSubplot with **{0}** features plotted.
+    `Matplotlib keyword arguments <https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html>`__ or pygmt arguments
         
 """
 
@@ -1963,7 +1957,14 @@ class PlotTopologies(object):
         central_meridian=0.0,
         tessellate_degrees=1,
     ):
-        """Create a geopandas.GeoDataFrame object containing geometries of reconstructed unclassified feature lines."""
+        """Return a ``geopandas.GeoDataFrame`` object containing the reconstructed topological features listed below.
+
+        - pygplates.FeatureType.gpml_topological_network
+        - pygplates.FeatureType.gpml_oceanic_crust
+        - pygplates.FeatureType.gpml_topological_slab_boundary
+        - pygplates.FeatureType.gpml_topological_closed_plate_boundary
+
+        """
 
         # get plate IDs and feature types to add to geodataframe
         plate_IDs = []
@@ -1999,7 +2000,14 @@ class PlotTopologies(object):
     @validate_topology_availability("all topologies")
     @append_docstring(PLOT_DOCSTRING.format("topologies"))
     def plot_all_topologies(self, ax, color="black", **kwargs):
-        """Plot topological polygons and networks on a standard map projection."""
+        """Plot the reconstructed topological features listed below on a map.
+
+        - pygplates.FeatureType.gpml_topological_network
+        - pygplates.FeatureType.gpml_oceanic_crust
+        - pygplates.FeatureType.gpml_topological_slab_boundary
+        - pygplates.FeatureType.gpml_topological_closed_plate_boundary
+
+        """
         if "edgecolor" not in kwargs.keys():
             kwargs["edgecolor"] = color
         if "facecolor" not in kwargs.keys():
@@ -2018,7 +2026,16 @@ class PlotTopologies(object):
         central_meridian=0.0,
         tessellate_degrees=1,
     ):
-        """Create a geopandas.GeoDataFrame object containing geometries of resolved topological sections."""
+        """Return a ``geopandas.GeoDataFrame`` object containing the reconstructed topological features listed below.
+
+
+        - ridge and transform boundary
+        - subduction boundary
+        - left subduction boundary
+        - right subduction boundary
+        - other boundary that are not subduction zones or mid-ocean ridges (ridge/transform)
+
+        """
 
         # get plate IDs and feature types to add to geodataframe
         geometries = []
@@ -2072,7 +2089,14 @@ class PlotTopologies(object):
     @validate_topology_availability("all topological sections")
     @append_docstring(PLOT_DOCSTRING.format("topologies"))
     def plot_all_topological_sections(self, ax, color="black", **kwargs):
-        """Plot all topologies on a standard map projection."""
+        """Plot the reconstructed topological features listed below on a map.
+
+        - ridge and transform boundary
+        - subduction boundary
+        - left subduction boundary
+        - right subduction boundary
+        - other boundary that are not subduction zones or mid-ocean ridges (ridge/transform)
+        """
 
         return self._plot_feature(
             ax,
