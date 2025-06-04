@@ -1068,7 +1068,7 @@ def get_feature_data(feature_data_id_string=None, verbose=True):
 
 class DataServer(object):
     """
-    Download plate reconstruction models from the `EarthByte server <https://repo.gplates.org/webdav/pmm/>`__.
+    Download the plate reconstruction models from the `EarthByte server <https://repo.gplates.org/webdav/pmm/>`__.
 
     The :class:`DataServer` object downloads the model files to the ``GPlately cache folder``.
     If the same model is requested again, a new :class:`DataServer` instance will retrieve the files from the cache --
@@ -1204,16 +1204,24 @@ class DataServer(object):
         return self._COBs
 
     @property
-    def from_age(self):
+    def from_age(self) -> float:
         """The max age/time of the plate model."""
         if self.pmm:
             return self.pmm.get_big_time()
+        else:
+            raise Exception(
+                "Unable to get max reconstruction age/time. Check the PlateModel object."
+            )
 
     @property
-    def to_age(self):
+    def to_age(self) -> float:
         """The min age/time of the plate model."""
         if self.pmm:
             return self.pmm.get_small_time()
+        else:
+            raise Exception(
+                "Unable to get min reconstruction age/time. Check the PlateModel object."
+            )
 
     @property
     def time_range(self):
@@ -1327,110 +1335,110 @@ class DataServer(object):
         return self.coastlines, self.continents, self.COBs
 
     def get_age_grid(self, times):
-        """Downloads seafloor and paleo-age grids from the plate reconstruction model (``file_collection``)
-        passed into the ``DataServer`` object. Stores grids in the "gplately" cache.
+        """Download the seafloor age grids for the plate model. Save the grids in the ``GPlately cache folder``.
 
-        Currently, ``DataServer`` supports the following age grids:
+        The available age grids are listed below.
 
         * Muller et al. 2019
 
             * ``file_collection`` = ``Muller2019``
             * Time range: 0-250 Ma
-            * Seafloor age grid rasters in netCDF format.
+            * Seafloor age grids in netCDF format.
 
         * Muller et al. 2016
 
             * ``file_collection`` = ``Muller2016``
             * Time range: 0-240 Ma
-            * Seafloor age grid rasters in netCDF format.
+            * Seafloor age grids in netCDF format.
 
         * Seton et al. 2012
 
             * ``file_collection`` = ``Seton2012``
             * Time range: 0-200 Ma
-            * Paleo-age grid rasters in netCDF format.
+            * Seafloor age grids in netCDF format.
 
 
         Parameters
         ----------
-        times : int, or list of int, default=None
-            Request an age grid from one (an integer) or multiple reconstruction times (a list of integers).
+        times : number, or a list of number
+            A reconstruction time or a list of reconstruction times.
 
         Returns
         -------
-        a gplately.Raster object
-            A :class:`gplately.Raster` object containing the age grid. The age grid data can be extracted
-            into a numpy ndarray or MaskedArray by appending ``.data`` to the variable assigned to ``get_age_grid()``.
+        :class:`gplately.Raster` or a list of :class:`gplately.Raster`
+
+
+        .. note::
+
+            The age grid data can be accessed as a numpy ndarray or MaskedArray via the :attr:`gplately.Raster.data` attribute.
 
             For example:
 
             .. code-block:: python
                 :linenos:
 
-                gdownload = gplately.DataServer("Muller2019")
-
-                graster = gdownload.get_age_grid(time=100)
-
+                data_server = gplately.DataServer("Muller2019")
+                graster = data_server.get_age_grid(100)
                 graster_data = graster.data
 
             where ``graster_data`` is a numpy ndarray.
 
         Raises
-        -----
+        ------
         ValueError
-            If ``time`` (a single integer, or a list of integers representing reconstruction
-            times to extract the age grids from) is not passed.
+            If the ``times`` parameter contains invalid reconstruction time.
 
 
-        .. note::
-
-            The first time that ``get_age_grid`` is called for a specific time(s), the age grid(s)
-            will be downloaded into the GPlately cache once. Upon successive calls of ``get_age_grid``
-            for the same reconstruction time(s), the age grids will not be re-downloaded; rather,
-            they are re-accessed from the same cache provided the age grid(s) have not been moved or deleted.
-
-        Examples
-        --------
-        if the :class:`DataServer` object was called with the ``Muller2019`` ``file_collection`` string:
+        Example
+        -------
+        To download  Müller et al. (2019) seafloor age grids for 0Ma, 1Ma and 100 Ma:
 
             .. code-block:: python
                 :linenos:
 
-                gDownload = gplately.download.DataServer("Muller2019")
+                data_server = gplately.DataServer("Muller2019")
+                age_grids = data_server.get_age_grid([0, 1, 100])
 
-        ``get_age_grid`` will download seafloor age grids from the Müller et al. (2019) plate
-        reconstruction model for the geological time(s) requested in the `time` parameter.
-        If found, these age grids are returned as masked arrays.
+        .. seealso::
 
-        For example, to download  Müller et al. (2019) seafloor age grids for 0Ma, 1Ma and 100 Ma:
+            - :meth:`PlateModel.get_raster()`
+            - :meth:`PlateModel.get_rasters()`
 
             .. code-block:: python
                 :linenos:
+                :emphasize-lines: 4,5
 
-                age_grids = gDownload.get_age_grid([0, 1, 100])
+                from gplately import PlateModelManager
+
+                model = PlateModelManager().get_model("Muller2019")
+                print(model.get_rasters("AgeGrids", times=[10, 20, 30]))
+                print(model.get_raster("AgeGrids", time=100))
 
         """
         if not self.pmm:
-            raise Exception("The plate model object is None. Unable to get agegrid.")
+            raise Exception("The plate model object is None. Unable to get age grid.")
 
         if "AgeGrids" not in self.pmm.get_cfg()["TimeDepRasters"]:
             raise ValueError(
-                "AgeGrids are not currently available for {}".format(
-                    self.file_collection
-                )
+                f"The time-dependent age grids are not currently available for {self.file_collection}."
             )
 
         age_grids = []
+        for time in np.atleast_1d(times):
+            try:
+                time_f = float(time)
+            except:
+                raise ValueError(
+                    f"Invalid time {time}. Reconstruction time must be a number."
+                )
+            if time_f < self.to_age or time_f > self.from_age:
+                raise ValueError(
+                    f"Invalid time {time}. Reconstruction time must be between {self.time_range}."
+                )
+            age_grids.append(Raster(data=self.pmm.get_raster("AgeGrids", time_f)))
 
-        time_array = np.atleast_1d(times)
-
-        if time_array.min() < self.to_age or time_array.max() > self.from_age:
-            raise ValueError("Specify a time range between {}".format(self.time_range))
-
-        for ti in time_array:
-            agegrid_filename = self.pmm.get_raster("AgeGrids", ti)
-            agegrid = Raster(data=agegrid_filename)
-            age_grids.append(agegrid)
+        if not age_grids:
+            raise Exception(f"Unable to get age grids for times: {times}")
 
         if len(age_grids) == 1:
             return age_grids[0]
