@@ -38,6 +38,7 @@ import numpy as np
 import pooch as _pooch
 import pygplates
 import requests as _requests
+from matplotlib import image
 from plate_model_manager import PlateModelManager, PresentDayRasterManager
 from pooch import Decompress as _Decompress
 from pooch import HTTPDownloader as _HTTPDownloader
@@ -1554,92 +1555,83 @@ class DataServer(object):
             return spread_grids
 
     def get_valid_times(self):
-        """Returns a tuple of the valid plate model time range, (max_time, min_time)."""
+        """Return a tuple (max_time, min_time) representing the valid time range of the plate model."""
         return self.from_age, self.to_age
 
-    def get_raster(self, raster_id_string=None):
-        """Downloads assorted raster data that are not associated with the plate
-        reconstruction models supported by GPlately's ``DataServer``. Stores rasters in the "gplately" cache.
+    @staticmethod
+    def get_raster(raster_name: str):
+        """Download rasters that are not associated with any plate reconstruction models. Store the rasters in the ``GPlately cache``.
 
-        Currently, ``DataServer`` supports the following rasters and images:
+        The available present-day rasters are listed below.
 
-        * `ETOPO1 <https://www.ngdc.noaa.gov/mgg/global/>`__:
+        * `ETOPO1 <https://www.ngdc.noaa.gov/mgg/global/>`__
             * Filetypes available : TIF, netCDF (GRD)
-            * `raster_id_string` = `"ETOPO1_grd"`, `"ETOPO1_tif"` (depending on the requested format)
+            * `raster_name` = ``ETOPO1_grd``, ``ETOPO1_tif`` (depending on the requested format)
             * A 1-arc minute global relief model combining lang topography and ocean bathymetry.
             * Citation: doi:10.7289/V5C8276M
 
 
         Parameters
         ----------
-        raster_id_string : str, default=None
-            A string to identify which raster to download.
+        raster_name : :class:`str`
+            The raster name of interest.
 
         Returns
         -------
         :class:`gplately.Raster`
-            A :class:`gplately.Raster` object containing the raster data. The gridded data can be extracted
-            into a numpy ndarray or MaskedArray by appending ``.data`` to the variable assigned to ``get_raster()``.
+            A :class:`gplately.Raster` object containing the raster data which can be accessed as
+            a ``numpy ndarray`` or ``MaskedArray`` via :attr:`gplately.Raster.data` attribute.
 
             For example:
 
             .. code-block:: python
                 :linenos:
 
-                gdownload = gplately.DataServer("Muller2019")
-
-                graster = gdownload.get_raster(raster_id_string, verbose)
-
+                graster = gplately.DataServer.get_raster("ETOPO1_tif")
                 graster_data = graster.data
 
-            where ``graster_data`` is a numpy ndarray. This array can be visualised using
-            ``matplotlib.pyplot.imshow`` on a ``cartopy.mpl.GeoAxis`` GeoAxesSubplotc(see example below).
+            where ``graster_data`` is a ``numpy ndarray``. This array can be visualised using ``matplotlib.pyplot.imshow`` (see example below).
 
         Raises
         ------
-        ValueError
-            if a ``raster_id_string`` is not supplied.
+        Exception
+            Raise ``Exception`` when ``raster_name`` is invalid.
 
 
-        .. note::
-
-            Rasters obtained by this method are (so far) only reconstructed to present-day.
-
-        Examples
-        --------
-        To download ETOPO1 and plot it on a Mollweide projection:
+        Example
+        -------
+        Download ETOPO1 and plot it on a map with Mollweide projection.
 
         .. code-block:: python
             :linenos:
 
-            import gplately
-            import numpy as np
-            import matplotlib.pyplot as plt
             import cartopy.crs as ccrs
+            import matplotlib.pyplot as plt
 
-            gdownload = gplately.DataServer("Muller2019")
-            etopo1 = gdownload.get_raster("ETOPO1_tif")
-            fig = plt.figure(figsize=(18,14), dpi=300)
-            ax = fig.add_subplot(111, projection=ccrs.Mollweide(central_longitude = -150))
-            ax2.imshow(etopo1, extent=[-180,180,-90,90], transform=ccrs.PlateCarree())
+            import gplately
 
+            etopo1 = gplately.DataServer.get_raster("ETOPO1_tif")
+            fig = plt.figure(figsize=(18, 14), dpi=300)
+            ax = fig.add_subplot(111, projection=ccrs.Mollweide(central_longitude=-150))
+            ax.imshow(etopo1.data, extent=(-180, 180, -90, 90), transform=ccrs.PlateCarree())
         """
-        if raster_id_string:
-            raster_path = PresentDayRasterManager().get_raster(raster_id_string)
+        if raster_name:
+            raster_path = PresentDayRasterManager(data_dir=path_to_cache()).get_raster(
+                raster_name
+            )
             if raster_path.endswith(".grd") or raster_path.endswith(".nc"):
                 raster = Raster(data=raster_path)
-            # Otherwise, the raster is an image; use imread to process
             else:
-                from matplotlib import image
+                # Otherwise, the raster is an image; use imread to process
+                raster = Raster(data=image.imread(raster_path))
 
-                raster_matrix = image.imread(raster_path)
-                raster = Raster(data=raster_matrix)
-
-            if raster_id_string.lower() == "etopo1_tif":
+            if raster_name.lower() == "etopo1_tif":
                 raster.lats = raster.lats[::-1]
-            if raster_id_string.lower() == "etopo1_grd":
+            if raster_name.lower() == "etopo1_grd":
                 raster._data = raster._data.astype(float)  # type: ignore
             return raster
+        else:
+            raise Exception("The 'raster_name' parameter is required!")
 
     def get_feature_data(self, feature_data_id_string=None):
         """Downloads assorted geological feature data from web servers (i.e.
