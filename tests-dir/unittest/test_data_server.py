@@ -1,19 +1,41 @@
 #!/usr/bin/env python3
+
+from common import get_logger
+
 import gplately
 
 if __name__ == "__main__":
-    gDownload = gplately.DataServer("Muller2019")
+
+    logger = get_logger()
+
+    logger.info("Start test_data_server .......")
+
+    logger.info(gplately.auxiliary.get_data_server_cache_path())
+
+    data_server = gplately.DataServer("Muller2019")
+
     rotation_model, topology_features, static_polygons = (
-        gDownload.get_plate_reconstruction_files()
+        data_server.get_plate_reconstruction_files()
     )
-    print(rotation_model)
-    print(topology_features)
-    print(static_polygons)
-    coastlines, continents, COBs = gDownload.get_topology_geometries()
-    print(coastlines)
-    print(continents)
-    print(COBs)
-    r1 = gDownload.get_raster("ETOPO1_tif")
-    print(r1)
-    r2 = gDownload.get_age_grid(times=100)
-    print(r2)
+    logger.info(rotation_model)
+    logger.info(topology_features)
+    logger.info(static_polygons)
+
+    coastlines, continents, COBs = data_server.get_topology_geometries()
+    logger.info(coastlines)
+    logger.info(continents)
+    logger.info(COBs)
+
+    r1 = data_server.get_raster("ETOPO1_tif")
+    assert isinstance(r1, gplately.Raster)
+    logger.info(r1)
+
+    r2 = data_server.get_age_grid(times=100)
+    assert isinstance(r2, gplately.Raster)
+    logger.info(r2)
+
+    r3 = data_server.get_age_grid(times=[100, 50, 0])
+    assert len(r3) == 3
+    logger.info(r3)
+
+    logger.info("test_data_server has finished successfully!")

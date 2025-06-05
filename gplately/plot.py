@@ -74,14 +74,14 @@ GET_DATE_DOCSTRING = """
 Parameters
 ----------
 central_meridian : float, default=0.0
-    the central meridian of the map. This will affect the dateline wrapping.
-tessellate_degrees : float or None
+    The central meridian of the map. This will affect the dateline wrapping.
+tessellate_degrees : float or None, default=1.0
     If provided, geometries will be tessellated to this resolution prior to wrapping.
 
 Returns
 -------
-geopandas.GeoDataFrame
-    A pandas.DataFrame that has a column with **{0}** geometry.
+``geopandas.GeoDataFrame``
+    A ``geopandas.GeoDataFrame`` object containing the reconstructed **{0}** geometries. The geometry column name is "geometry".
 
 Raises
 ------
@@ -2103,18 +2103,6 @@ class PlotTopologies(object):
             self.get_all_topological_sections,
             color=color,
             **kwargs,
-        )
-
-    @validate_reconstruction_time
-    @append_docstring(GET_DATE_DOCSTRING.format("topological plate boundaries"))
-    def get_topological_plate_boundaries(
-        self, central_meridian=0.0, tessellate_degrees=1
-    ):
-        """Create a geopandas.GeoDataFrame object containing geometries of reconstructed rigid topological plate boundaries."""
-        return self.get_feature(
-            self._topological_plate_boundaries,
-            central_meridian=central_meridian,
-            tessellate_degrees=tessellate_degrees,
         )
 
     @validate_topology_availability("topological plate boundaries")

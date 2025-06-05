@@ -1,3 +1,4 @@
+import logging
 import os
 import sys
 from pathlib import Path
@@ -9,6 +10,17 @@ OUTPUT_DIR = "output"
 Path(OUTPUT_DIR).mkdir(parents=True, exist_ok=True)
 
 MODEL_REPO_DIR = "plate-model-repo"
+
+logger = logging.getLogger("gplately-unittest-logger")
+fhandler = logging.FileHandler(filename="gplately-unittest.log", mode="a")
+formatter = logging.Formatter("%(asctime)s - %(levelname)s - %(message)s")
+fhandler.setFormatter(formatter)
+logger.addHandler(fhandler)
+logger.setLevel(logging.INFO)
+
+
+def get_logger():
+    return logger
 
 
 def save_fig(filename):

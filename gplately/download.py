@@ -31,6 +31,7 @@ import pathlib as _pathlib
 import re as _re
 import shutil as _shutil
 import urllib.request as _request
+from typing import Union
 
 import numpy as _np
 import numpy as np
@@ -1334,7 +1335,7 @@ class DataServer(object):
         """
         return self.coastlines, self.continents, self.COBs
 
-    def get_age_grid(self, times):
+    def get_age_grid(self, times: Union[int, list[int]]):
         """Download the seafloor age grids for the plate model. Save the grids in the ``GPlately cache folder``.
 
         The available age grids are listed below.
@@ -1360,7 +1361,7 @@ class DataServer(object):
 
         Parameters
         ----------
-        times : number, or a list of number
+        times : int, or a list of int
             A reconstruction time or a list of reconstruction times.
 
         Returns
@@ -1426,16 +1427,16 @@ class DataServer(object):
         age_grids = []
         for time in np.atleast_1d(times):
             try:
-                time_f = float(time)
+                time_i = int(time)
             except:
                 raise ValueError(
                     f"Invalid time {time}. Reconstruction time must be a number."
                 )
-            if time_f < self.to_age or time_f > self.from_age:
+            if time_i < self.to_age or time_i > self.from_age:
                 raise ValueError(
                     f"Invalid time {time}. Reconstruction time must be between {self.time_range}."
                 )
-            age_grids.append(Raster(data=self.pmm.get_raster("AgeGrids", time_f)))
+            age_grids.append(Raster(data=self.pmm.get_raster("AgeGrids", time_i)))
 
         if not age_grids:
             raise Exception(f"Unable to get age grids for times: {times}")
