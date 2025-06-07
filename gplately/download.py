@@ -1227,7 +1227,8 @@ class DataServer(object):
 
     @property
     def time_range(self):
-        """The time/age range of the plate model. Return a tuple of (max age, min age)."""
+        """Deprecated!!! Use :attr:`DataServer.valid_times` instead.
+        The time/age range of the plate model. Return a tuple of (max age, min age)."""
         return self.from_age, self.to_age
 
     @property
