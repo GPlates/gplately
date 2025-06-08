@@ -4,10 +4,11 @@ import numpy as np
 import pytest
 from conftest import gplately_merdith_raster, gplately_merdith_static_geometries
 from conftest import gplately_raster_object as graster
-from conftest import pt_lat, pt_lon, reconstruction_times
+from conftest import logger, pt_lat, pt_lon
 
 import gplately
 
+logger.info(__name__)
 # ========================================= <gplately.Raster> =========================================
 
 """ 
@@ -39,7 +40,7 @@ def test_point_interpolation(graster):
 
 def test_bilinear_interpolation():
     array = np.array([[0, 1], [1, 2]], dtype=float)
-    graster = gplately.Raster(data=array, extent=[0, 1, 0, 1])
+    graster = gplately.Raster(data=array, extent=(0, 1, 0, 1))
 
     ilon = ilat = 2.0 / 3
     result = 1.0 + 1.0 / 3
@@ -55,7 +56,7 @@ def test_bilinear_interpolation():
 
 def test_nearest_neighbour_interpolation():
     array = np.array([[0, 1], [1, 2]], dtype=float)
-    graster = gplately.Raster(data=array, extent=[0, 1, 0, 1])
+    graster = gplately.Raster(data=array, extent=(0, 1, 0, 1))
 
     ilon = ilat = 2.0 / 3
     result = 2
@@ -132,9 +133,7 @@ def test_array(graster):
 
 def test_add(graster):
     data = graster.data
-    other = gplately.Raster(
-        data=np.ones_like(graster.data)
-    )
+    other = gplately.Raster(data=np.ones_like(graster.data))
 
     assert np.allclose((graster + 1).data, data + 1, equal_nan=True)
     assert np.allclose((1 + graster).data, 1 + data, equal_nan=True)
@@ -146,9 +145,7 @@ def test_add(graster):
 
 def test_sub(graster):
     data = graster.data
-    other = gplately.Raster(
-        data=np.ones_like(graster.data)
-    )
+    other = gplately.Raster(data=np.ones_like(graster.data))
 
     assert np.allclose((graster - 1).data, data - 1, equal_nan=True)
     assert np.allclose((1 - graster).data, 1 - data, equal_nan=True)
@@ -160,9 +157,7 @@ def test_sub(graster):
 
 def test_mul(graster):
     data = graster.data
-    other = gplately.Raster(
-        data=np.full_like(graster.data, 2)
-    )
+    other = gplately.Raster(data=np.full_like(graster.data, 2))
 
     assert np.allclose((graster * 2).data, data * 2, equal_nan=True)
     assert np.allclose((2 * graster).data, 2 * data, equal_nan=True)
@@ -174,9 +169,7 @@ def test_mul(graster):
 
 def test_truediv(graster):
     data = graster.data
-    other = gplately.Raster(
-        data=np.full_like(graster.data, 2)
-    )
+    other = gplately.Raster(data=np.full_like(graster.data, 2))
 
     assert np.allclose((graster / 2).data, data / 2, equal_nan=True)
     assert np.allclose((2 / graster).data, 2 / data, equal_nan=True)
@@ -188,9 +181,7 @@ def test_truediv(graster):
 
 def test_floordiv(graster):
     data = graster.data
-    other = gplately.Raster(
-        data=np.full_like(graster.data, 2)
-    )
+    other = gplately.Raster(data=np.full_like(graster.data, 2))
 
     assert np.allclose((graster // 2).data, data // 2, equal_nan=True)
     assert np.allclose((2 // graster).data, 2 // data, equal_nan=True)
@@ -205,9 +196,7 @@ def test_mod(graster):
     data = graster.data.astype(np.int_)
     graster.data = data
 
-    other = gplately.Raster(
-        data=np.full_like(graster.data, 2)
-    )
+    other = gplately.Raster(data=np.full_like(graster.data, 2))
 
     assert np.allclose((graster % 2).data, data % 2, equal_nan=True)
     assert np.allclose((2 % graster).data, 2 % data, equal_nan=True)
@@ -225,13 +214,11 @@ def test_pow(graster):
     data = data / np.nanmax(data)
     graster.data = data
 
-    other = gplately.Raster(
-        data=np.full_like(graster.data, 2)
-    )
+    other = gplately.Raster(data=np.full_like(graster.data, 2))
 
-    assert np.allclose((graster ** 2).data, data ** 2, equal_nan=True)
-    assert np.allclose((2 ** graster), 2 ** data, equal_nan=True)
-    assert isinstance(graster ** 2, gplately.Raster)
-    assert isinstance(2 ** graster, gplately.Raster)
-    assert np.allclose(graster ** other, data ** 2, equal_nan=True)
-    assert np.allclose(other ** graster, 2 ** data, equal_nan=True)
+    assert np.allclose((graster**2).data, data**2, equal_nan=True)
+    assert np.allclose((2**graster), 2**data, equal_nan=True)
+    assert isinstance(graster**2, gplately.Raster)
+    assert isinstance(2**graster, gplately.Raster)
+    assert np.allclose(graster**other, data**2, equal_nan=True)
+    assert np.allclose(other**graster, 2**data, equal_nan=True)

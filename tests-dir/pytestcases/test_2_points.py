@@ -1,17 +1,19 @@
-import pytest
-import pygplates
-import gplately
 import numpy as np
+import pygplates
+import pytest
 from conftest import (
     anchor_plate_ids,
     gplately_plate_reconstruction_object,
     gplately_points_lonlat,
     gplately_points_object,
+    logger,
     muller_2019_model,
     reconstruction_times,
 )
 
+import gplately
 
+logger.info(__name__)
 # ========================================= <gplately.Points> =====================================
 
 """ 
@@ -45,13 +47,12 @@ def test_point_creation_non_zero_time_and_anchor_plate(muller_2019_model):
     # Note: We do it once (outside the loop) to avoid converting files to a rotation model or
     #       feature collections in each loop iteration (since that is fairly slow).
     rotation_model = pygplates.RotationModel(muller_2019_model.get_rotation_model())
-    topology_features = [
-        pygplates.FeatureCollection(file) for file in muller_2019_model.get_topologies()
-    ]
-    static_polygons = [
-        pygplates.FeatureCollection(file)
-        for file in muller_2019_model.get_static_polygons()
-    ]
+    topology_features = pygplates.FeatureCollection()
+    for f in muller_2019_model.get_topologies():
+        topology_features.add(pygplates.FeatureCollection(f))
+    static_polygons = pygplates.FeatureCollection()
+    for f in muller_2019_model.get_static_polygons():
+        static_polygons.add(pygplates.FeatureCollection(f))
 
     # Try specifying point plate IDs and having them assigned.
     # Also use anchor plate 701, but either via the PlateReconstruction or the Points object (not both).
@@ -159,7 +160,7 @@ def test_point_creation_remove_unreconstructable_points(
         lats=rlats,
         time=50,
         plate_id=901,
-        age=[40, 100],
+        age=np.array([40, 100]),
         remove_unreconstructable_points=True,
     )
     # First point removed (since its age is less than 'time').
@@ -172,7 +173,7 @@ def test_point_creation_remove_unreconstructable_points(
         lats=rlats,
         time=50,
         plate_id=901,
-        age=[40, 100],
+        age=np.array([40, 100]),
         remove_unreconstructable_points=unreconstructable_point_indices,
     )
     # First point removed (since its age is less than 'time').
@@ -204,7 +205,7 @@ def test_point_creation_remove_unreconstructable_points(
         lats=rlats,
         time=50,
         plate_id=None,  # assign plate IDs
-        age=[100, 40],
+        age=np.array([100, 40]),
         remove_unreconstructable_points=unreconstructable_point_indices,
     )
     # Second point removed.

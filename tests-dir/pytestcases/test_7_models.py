@@ -1,8 +1,11 @@
-import pytest, logging
+import pytest
+from conftest import logger
 from plate_model_manager import PlateModelManager
+
 from gplately.commands.list_models import get_model_names
 
 OFFICIALLY_SUPPORTED_MODEL_NAMES = [
+    "shirmard2025",
     "Alfonso2024",
     "Muller2022",
     "Zahirovic2022",
@@ -26,7 +29,7 @@ OFFICIALLY_SUPPORTED_MODEL_NAMES = [
     "Muller2008",
 ]
 
-logger = logging.getLogger("TestLog")
+logger.info(__name__)
 
 
 @pytest.mark.parametrize("model_name", OFFICIALLY_SUPPORTED_MODEL_NAMES)

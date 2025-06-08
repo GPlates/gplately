@@ -3,22 +3,18 @@ from itertools import product
 import numpy as np
 import pygplates
 import pytest
-from gplately import EARTH_RADIUS
-from gplately.geometry import *
-from shapely.geometry import (
-    LineString,
-    MultiPoint,
-    Point,
-    Polygon,
-)
+from conftest import logger
+from conftest import test_geometry_azimuths as azimuths
+from conftest import test_geometry_n_points as N_POINTS
+from conftest import test_geometry_origins as origins
+from conftest import test_geometry_radii as RADII
+from shapely.geometry import LineString, MultiPoint, Point, Polygon
 from shapely.geometry.base import BaseMultipartGeometry
 
-from conftest import (
-    test_geometry_n_points as N_POINTS,
-    test_geometry_origins as origins,
-    test_geometry_radii as RADII,
-    test_geometry_azimuths as azimuths,
-)
+from gplately import EARTH_RADIUS
+from gplately.geometry import *
+
+logger.info(__name__)
 
 
 @pytest.mark.parametrize("lat", (-100, 95))
@@ -35,9 +31,7 @@ def test_multipoint_conversion(n_points=N_POINTS):
     grid_lons, grid_lats = np.meshgrid(point_lons, point_lats)
 
     mp_shapely = MultiPoint(
-        np.column_stack(
-            [np.ravel(i) for i in (grid_lons, grid_lats)]
-        )
+        np.column_stack([np.ravel(i) for i in (grid_lons, grid_lats)])
     )
     mp_pgp = MultiPointOnSphere.from_shapely(mp_shapely)
 
@@ -131,9 +125,7 @@ def test_polygon_splitting(n_points=N_POINTS):
     assert isinstance(
         unsplit,
         Polygon,
-    ), "Polygon conversion failed (incorrect output type: {})".format(
-        type(unsplit)
-    )
+    ), "Polygon conversion failed (incorrect output type: {})".format(type(unsplit))
 
     assert (
         len(split.geoms) == 2
@@ -141,9 +133,7 @@ def test_polygon_splitting(n_points=N_POINTS):
         len(split.geoms)
     )
 
-    assert (
-        np.allclose(split.area, unsplit.area)
-    ), "Polygon splitting area mismatch"
+    assert np.allclose(split.area, unsplit.area), "Polygon splitting area mismatch"
 
 
 @pytest.mark.parametrize("origin", origins)
@@ -172,10 +162,7 @@ def _get_circle_perimeters(radius, origin=(0, 0), n=N_POINTS):
     converted = PolygonOnSphere.from_shapely(circle)
 
     pygplates_perimeter = converted.get_arc_length() * EARTH_RADIUS
-    geometric_perimeter = (
-        2 * np.pi
-        * EARTH_RADIUS * np.sin(radius / EARTH_RADIUS)
-    )
+    geometric_perimeter = 2 * np.pi * EARTH_RADIUS * np.sin(radius / EARTH_RADIUS)
     return geometric_perimeter, pygplates_perimeter
 
 
@@ -184,12 +171,8 @@ def _get_circle_areas(radius, origin=(0, 0), n=N_POINTS):
     circle = Polygon(zip(lons, lats))
     converted = PolygonOnSphere.from_shapely(circle)
 
-    pygplates_area = converted.get_area() * (EARTH_RADIUS ** 2)
-    geometric_area = (
-        2 * np.pi *
-        (EARTH_RADIUS ** 2)
-        * (1 - np.cos(radius / EARTH_RADIUS))
-    )
+    pygplates_area = converted.get_area() * (EARTH_RADIUS**2)
+    geometric_area = 2 * np.pi * (EARTH_RADIUS**2) * (1 - np.cos(radius / EARTH_RADIUS))
     return geometric_area, pygplates_area
 
 
@@ -209,10 +192,7 @@ def _point_from_origin_distance_azimuth(
         np.cos(b) * np.cos(0.5 * np.pi - lat1)
         + np.sin(0.5 * np.pi - lat1) * np.sin(b) * np.cos(azimuth)
     )
-    B = np.arcsin(
-        np.sin(b) * np.sin(azimuth)
-        / np.sin(a)
-    )
+    B = np.arcsin(np.sin(b) * np.sin(azimuth) / np.sin(a))
     lat2 = np.rad2deg(0.5 * np.pi - a)
     lon2 = np.rad2deg(B + lon1)
 
