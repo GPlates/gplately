@@ -65,6 +65,14 @@ The table below provides a list of all available plate reconstruction models.
      - COB
      - Age Grids
      - SR Grids
+   * - Shirmard2025_
+     - ✅
+     - ✅
+     - ✅
+     - ✅
+     - ✅
+     - ❌
+     - ❌
    * - Alfonso2024_
      - ✅
      - ✅
@@ -242,6 +250,7 @@ The table below provides a list of all available plate reconstruction models.
      - ❌
      - ❌ 
 
+.. _Shirmard2025: https://zenodo.org/records/15233548
 .. _Cao2024: https://doi.org/10.5281/zenodo.11536686
 .. _Alfonso2024: https://doi.org/10.5281/zenodo.11392268
 .. _Muller2022: https://doi.org/10.5281/zenodo.10297173

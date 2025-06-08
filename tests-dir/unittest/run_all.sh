@@ -4,6 +4,8 @@ BASEDIR=$(dirname "$0")
 
 $BASEDIR/test_plate_model.py
 
+$BASEDIR/test_data_server.py
+
 $BASEDIR/test_subduction_teeth.py save
 
 $BASEDIR/test_plot.py save 
