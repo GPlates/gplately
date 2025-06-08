@@ -115,12 +115,14 @@
 <span class="kn">import</span><span class="w"> </span><span class="nn">re</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">_re</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">shutil</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">_shutil</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">urllib.request</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">_request</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Union</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">_np</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">pooch</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">_pooch</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">pygplates</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">requests</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">_requests</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">matplotlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">image</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">plate_model_manager</span><span class="w"> </span><span class="kn">import</span> <span class="n">PlateModelManager</span><span class="p">,</span> <span class="n">PresentDayRasterManager</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">pooch</span><span class="w"> </span><span class="kn">import</span> <span class="n">Decompress</span> <span class="k">as</span> <span class="n">_Decompress</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">pooch</span><span class="w"> </span><span class="kn">import</span> <span class="n">HTTPDownloader</span> <span class="k">as</span> <span class="n">_HTTPDownloader</span>
@@ -1154,38 +1156,38 @@
 <a class="viewcode-back" href="../../generated/gplately.DataServer.html#gplately.DataServer">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">DataServer</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Download plate reconstruction models to the cache folder on your computer from</span>
-<span class="sd">    `EarthByte&#39;s WebDAV server &lt;https://repo.gplates.org/webdav/pmm/&gt;`__.</span>
+<span class="sd">    Download the plate reconstruction models from the `EarthByte server &lt;https://repo.gplates.org/webdav/pmm/&gt;`__.</span>
 
-<span class="sd">    If the ``DataServer`` object is created for the first time, i.e. by:</span>
-
-<span class="sd">    .. code-block:: python</span>
-
-<span class="sd">        # create a DataServer object for the Muller et al. 2019 model</span>
-<span class="sd">        data_server = gplately.download.DataServer(&quot;Muller2019&quot;)</span>
-
-<span class="sd">    all requested files are downloaded into the user&#39;s ``gplately`` cache folder only **once**. If the same</span>
-<span class="sd">    model is requested again, the new DataServer object will get the files from the cache provided they have not been</span>
-<span class="sd">    moved or deleted.</span>
+<span class="sd">    The :class:`DataServer` object downloads the model files to the ``GPlately cache folder``.</span>
+<span class="sd">    If the same model is requested again, a new :class:`DataServer` instance will retrieve the files from the cache --</span>
+<span class="sd">    provided they haven&#39;t been moved or deleted.</span>
 
 <span class="sd">    .. seealso::</span>
 
-<span class="sd">        `This table &lt;https://gplates.github.io/gplately/sphinx-latest/html/use_cases.html#id1&gt;`__ provides a list of available plate reconstruction models.</span>
-<span class="sd">        Visit this `EarthByte web page &lt;https://www.earthbyte.org/category/resources/data-models/global-regional-plate-motion-models/&gt;`__</span>
-<span class="sd">        for more information about these plate models.</span>
+<span class="sd">        - `This table &lt;https://gplates.github.io/gplately/sphinx-latest/html/use_cases.html#id1&gt;`__ provides a list of available plate reconstruction models.</span>
+<span class="sd">        - Visit this `EarthByte web page &lt;https://www.earthbyte.org/category/resources/data-models/global-regional-plate-motion-models/&gt;`__ for more information about these plate models.</span>
+<span class="sd">        - Call :meth:`gplately.auxiliary.get_data_server_cache_path` to see the path to the ``GPlately cache folder``.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
 <div class="viewcode-block" id="DataServer.__init__">
 <a class="viewcode-back" href="../../generated/gplately.DataServer.html#gplately.DataServer.__init__">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">file_collection</span><span class="p">,</span> <span class="n">data_dir</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">verbose</span><span class="o">=</span><span class="kc">True</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Constructor. Create a :class:`DataServer` object.</span>
+
+<span class="sd">        Example</span>
+<span class="sd">        -------</span>
+<span class="sd">        .. code-block:: python</span>
+
+<span class="sd">            # create a DataServer object for the Cao2024 model (https://zenodo.org/records/11536686)</span>
+<span class="sd">            data_server = gplately.download.DataServer(&quot;Cao2024&quot;)</span>
+
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
 <span class="sd">        file_collection: str</span>
-<span class="sd">            model name</span>
+<span class="sd">            The model name of interest.</span>
 
 <span class="sd">        verbose: bool, default=True</span>
-<span class="sd">            Toggle print messages regarding server/internet connection status, file availability etc.</span>
+<span class="sd">            Toggle print messages regarding server/internet connection status, file availability, etc.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="k">if</span> <span class="ow">not</span> <span class="n">data_dir</span><span class="p">:</span>
@@ -1221,12 +1223,12 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">cache_path</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;the location of DataServer cache on your computer&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;The location of DataServer cache on your computer.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">path_to_cache</span><span class="p">()</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">rotation_model</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;a pygplates.RotationModel object for the plate reconstruction model&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;A pygplates.RotationModel object for the plate reconstruction model.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_rotation_model</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">pmm</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_rotation_model</span> <span class="o">=</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">RotationModel</span><span class="p">(</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">pmm</span><span class="o">.</span><span class="n">get_rotation_model</span><span class="p">()</span>
@@ -1236,7 +1238,7 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">topology_features</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;a pygplates.FeatureCollection object containing topology features&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;A pygplates.FeatureCollection object containing topology features.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_topology_features</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">pmm</span><span class="p">:</span>
             <span class="k">if</span> <span class="s2">&quot;Topologies&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_available_layers</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_topology_features</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_create_feature_collection</span><span class="p">(</span>
@@ -1248,7 +1250,7 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">static_polygons</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;a pygplates.FeatureCollection object containing static polygons&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;A pygplates.FeatureCollection object containing static polygons.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_static_polygons</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">pmm</span><span class="p">:</span>
             <span class="k">if</span> <span class="s2">&quot;StaticPolygons&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_available_layers</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_static_polygons</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_create_feature_collection</span><span class="p">(</span>
@@ -1260,7 +1262,7 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">coastlines</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;a pygplates.FeatureCollection object containing coastlines&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;A pygplates.FeatureCollection object containing coastlines.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_coastlines</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">pmm</span><span class="p">:</span>
             <span class="k">if</span> <span class="s2">&quot;Coastlines&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_available_layers</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_coastlines</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_create_feature_collection</span><span class="p">(</span>
@@ -1272,7 +1274,7 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">continents</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;a pygplates.FeatureCollection object containing continental polygons&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;A pygplates.FeatureCollection object containing continental polygons.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_continents</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">pmm</span><span class="p">:</span>
             <span class="k">if</span> <span class="s2">&quot;ContinentalPolygons&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_available_layers</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_continents</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_create_feature_collection</span><span class="p">(</span>
@@ -1284,7 +1286,7 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">COBs</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;a pygplates.FeatureCollection object containing continent-ocean boundaries&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;A pygplates.FeatureCollection object containing continent-ocean boundaries.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_COBs</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">and</span> <span class="bp">self</span><span class="o">.</span><span class="n">pmm</span><span class="p">:</span>
             <span class="k">if</span> <span class="s2">&quot;COBs&quot;</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">_available_layers</span><span class="p">:</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">_COBs</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_create_feature_collection</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">pmm</span><span class="o">.</span><span class="n">get_COBs</span><span class="p">())</span>
@@ -1293,241 +1295,247 @@
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_COBs</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">from_age</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;the max age of the plate model&quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">from_age</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;The max age/time of the plate model.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">pmm</span><span class="p">:</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">pmm</span><span class="o">.</span><span class="n">get_big_time</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span>
+                <span class="s2">&quot;Unable to get max reconstruction age/time. Check the PlateModel object.&quot;</span>
+            <span class="p">)</span>
 
     <span class="nd">@property</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">to_age</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;the min age of the plate model&quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">to_age</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nb">float</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;The min age/time of the plate model.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">pmm</span><span class="p">:</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">pmm</span><span class="o">.</span><span class="n">get_small_time</span><span class="p">()</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span>
+                <span class="s2">&quot;Unable to get min reconstruction age/time. Check the PlateModel object.&quot;</span>
+            <span class="p">)</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">time_range</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;the time range of the plate model&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Deprecated!!! Use :attr:`DataServer.valid_time` instead.</span>
+<span class="sd">        Keep consistent with `GML naming &lt;https://www.gplates.org/docs/gpgim/#gml:validTime&gt;`__.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">from_age</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">to_age</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">valid_times</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;the max time and min time of the plate model&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Deprecated!!! Use :attr:`DataServer.valid_time` instead.</span>
+<span class="sd">        Keep consistent with `GML naming &lt;https://www.gplates.org/docs/gpgim/#gml:validTime&gt;`__.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">from_age</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">to_age</span>
+
+    <span class="nd">@property</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">valid_time</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;The period of time the plate model are valid. Return a tuple of (max time, min time).&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">from_age</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">to_age</span>
 
 <div class="viewcode-block" id="DataServer.get_plate_reconstruction_files">
 <a class="viewcode-back" href="../../generated/gplately.DataServer.html#gplately.DataServer.get_plate_reconstruction_files">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_plate_reconstruction_files</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Downloads and constructs a ``rotation model``, a set of ``topology features`` and</span>
-<span class="sd">        and a set of ``static polygons``. These objects can then be used to create :class:`gplately.PlateReconstruction` object.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Download and return a tuple of **rotation_model**, **topology_features** and **static_polygons**.</span>
+<span class="sd">        These objects can then be used to create :class:`gplately.PlateReconstruction` object.</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
-<span class="sd">        rotation_model : instance of &lt;pygplates.RotationModel&gt;</span>
+<span class="sd">        rotation_model : pygplates.RotationModel</span>
 <span class="sd">            A rotation model to query equivalent and/or relative topological plate rotations</span>
 <span class="sd">            from a time in the past relative to another time in the past or to present day.</span>
-<span class="sd">        topology_features : instance of &lt;pygplates.FeatureCollection&gt;</span>
-<span class="sd">            Point, polyline and/or polygon feature data that are reconstructable through geological time.</span>
-<span class="sd">        static_polygons : instance of &lt;pygplates.FeatureCollection&gt;</span>
-<span class="sd">            Present-day polygons whose shapes do not change through geological time. They are</span>
-<span class="sd">            used to cookie-cut dynamic polygons into identifiable topological plates (assigned</span>
-<span class="sd">            an ID) according to their present-day locations.</span>
+<span class="sd">        topology_features : pygplates.FeatureCollection</span>
+<span class="sd">            Topological features including ridges, transforms, subduction zones, etc.</span>
+<span class="sd">            These features can be used to build topological plate boundaries and networks.</span>
+<span class="sd">        static_polygons : pygplates.FeatureCollection</span>
+<span class="sd">            Static polygons which can be used to assign plate IDs for other geometries.</span>
+<span class="sd">            The plate IDs are essential to tectonic plate reconstruction.</span>
+
 
 <span class="sd">        .. note::</span>
 
-<span class="sd">            The get_plate_reconstruction_files() method downloads reconstruction files from a given plate model.</span>
-<span class="sd">            For example,</span>
+<span class="sd">            The example code below downloads ``rotation model``, ``topology features`` and ``static polygons`` files from the</span>
+<span class="sd">            Müller et al. (2019) plate reconstruction model and create a :class:`gplately.PlateReconstruction` object.</span>
 
 <span class="sd">            .. code-block:: python</span>
 <span class="sd">                :linenos:</span>
 
-<span class="sd">                gDownload = gplately.DataServer(&quot;Muller2019&quot;)</span>
-<span class="sd">                rotation_model, topology_features, static_polygons = gDownload.get_plate_reconstruction_files()</span>
+<span class="sd">                import gplately</span>
 
-<span class="sd">            The code above downloads ``rotation model``, ``topology features`` and ``static polygons`` files from the</span>
-<span class="sd">            Müller et al. (2019) plate reconstruction model. These files can then be used to create :class:`gplately.PlateReconstruction` object.</span>
+<span class="sd">                data_server = gplately.DataServer(&quot;Muller2019&quot;)</span>
+<span class="sd">                rotation_model, topology_features, static_polygons = (</span>
+<span class="sd">                    data_server.get_plate_reconstruction_files()</span>
+<span class="sd">                )</span>
 
-<span class="sd">            .. code-block:: python</span>
-<span class="sd">                :linenos:</span>
+<span class="sd">                # create a PlateReconstruction object using the returned objects</span>
+<span class="sd">                model = gplately.PlateReconstruction(</span>
+<span class="sd">                    rotation_model, topology_features, static_polygons</span>
+<span class="sd">                )</span>
 
-<span class="sd">                model = gplately.PlateReconstruction(rotation_model, topology_features, static_polygons)</span>
-
-<span class="sd">            If the requested plate model does not have certain file(s), a warning message will alert user of the missing file(s).</span>
+<span class="sd">            If the requested plate model does not have certain file(s), warning messages will alert user of the missing file(s).</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">rotation_model</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">topology_features</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">static_polygons</span></div>
 
 
 <div class="viewcode-block" id="DataServer.get_topology_geometries">
 <a class="viewcode-back" href="../../generated/gplately.DataServer.html#gplately.DataServer.get_topology_geometries">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_topology_geometries</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Download coastline, continent and COB (continent-ocean boundary)</span>
-<span class="sd">        Shapely geometries from the requested plate model. These are needed to call the :class:`gplately.PlotTopologies`</span>
-<span class="sd">        object and visualise topological plates through time.</span>
-
-<span class="sd">        Parameters</span>
-<span class="sd">        ----------</span>
-<span class="sd">        verbose : bool, default True</span>
-<span class="sd">            Toggle print messages regarding server/internet connection status, file availability etc.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Download and return coastlines, continental polygons and COBs (continent-ocean boundary).</span>
+<span class="sd">        These feature collections can be used to create :class:`gplately.PlotTopologies` object and plot paleomaps.</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
-<span class="sd">        coastlines : instance of &lt;pygplates.FeatureCollection&gt;</span>
-<span class="sd">            Present-day global coastline Shapely polylines cookie-cut using static polygons. Ready for</span>
-<span class="sd">            reconstruction to a particular geological time and for plotting.</span>
+<span class="sd">        coastlines : pygplates.FeatureCollection</span>
+<span class="sd">            Global coastlines. These coastlines have been assigned plate IDs using static polygons and are ready to</span>
+<span class="sd">            be reconstructed to a particular geological time.</span>
 
-<span class="sd">        continents : instance of &lt;pygplates.FeatureCollection&gt;</span>
-<span class="sd">            Cookie-cutting Shapely polygons for non-oceanic regions (continents, inta-oceanic arcs, etc.)</span>
-<span class="sd">            ready for reconstruction to a particular geological time and for plotting.</span>
+<span class="sd">        continents : pygplates.FeatureCollection</span>
+<span class="sd">            Continental polygons containing continental crust and volcanically-modified oceanic crust (including island arcs).</span>
 
-<span class="sd">        COBs : instance of &lt;pygplates.FeatureCollection&gt;</span>
-<span class="sd">            Shapely polylines resolved from .shp and/or .gpml topology files that represent the</span>
-<span class="sd">            locations of the boundaries between oceanic and continental crust.</span>
-<span class="sd">            Ready for reconstruction to a particular geological time and for plotting.</span>
+<span class="sd">        COBs : pygplates.FeatureCollection</span>
+<span class="sd">            Continent-ocean boundary. The COBs are represented as lines along passive margins and does not include data from active margins.</span>
 
 
 <span class="sd">        .. note::</span>
 
-<span class="sd">            This method accesses the plate reconstruction model ascribed to the ``file_collection``</span>
-<span class="sd">            string passed into the ``DataServer`` object. For example, if the object was called with &quot;Muller2019&quot;:</span>
+<span class="sd">            The example code below will attempt to download ``coastlines``, ``continents`` and ``COBs`` from the Müller</span>
+<span class="sd">            et al. (2019) plate reconstruction model and create a :class:`gplately.PlotTopologies` object.</span>
 
 <span class="sd">            .. code-block:: python</span>
 <span class="sd">                :linenos:</span>
+<span class="sd">                :emphasize-lines: 9, 12</span>
 
-<span class="sd">                gDownload = gplately.download.DataServer(&quot;Muller2019&quot;)</span>
-<span class="sd">                coastlines, continents, COBs = gDownload.get_topology_geometries()</span>
+<span class="sd">                data_server = gplately.download.DataServer(&quot;Muller2019&quot;)</span>
+<span class="sd">                rotation_model, topology_features, static_polygons = (</span>
+<span class="sd">                    data_server.get_plate_reconstruction_files()</span>
+<span class="sd">                )</span>
+<span class="sd">                model = gplately.PlateReconstruction(</span>
+<span class="sd">                    rotation_model, topology_features, static_polygons</span>
+<span class="sd">                )</span>
 
-<span class="sd">            the method will attempt to download ``coastlines``, ``continents`` and ``COBs`` from the Müller</span>
-<span class="sd">            et al. (2019) plate reconstruction model. If found, these files are returned as individual</span>
-<span class="sd">            pyGPlates Feature Collections. They can be passed into:</span>
+<span class="sd">                coastlines, continents, COBs = data_server.get_topology_geometries()</span>
 
-<span class="sd">            .. code-block:: python</span>
-<span class="sd">                :linenos:</span>
+<span class="sd">                # create a gplately.PlotTopologies object at 100Ma</span>
+<span class="sd">                gPlot = gplately.PlotTopologies(model, 100, continents, coastlines, COBs)</span>
 
-<span class="sd">                gPlot = gplately.PlotTopologies(gplately.PlateReconstruction, time, continents, coastlines, COBs)</span>
-
-<span class="sd">            to reconstruct features to a certain geological time. The :class:`gplately.PlotTopologies`</span>
-<span class="sd">            object provides simple methods to plot these geometries along with trenches, ridges and</span>
-<span class="sd">            transforms (see documentation for more info). Note that the :class:`gplately.PlotTopologies` object</span>
-<span class="sd">            is a parameter.</span>
-
-<span class="sd">            If the requested plate model does not have a certain geometry, a</span>
-<span class="sd">            message will be printed to alert the user. For example, if ``get_topology_geometries()``</span>
-<span class="sd">            is used with the &quot;Matthews2016&quot; plate model, the workflow will print the following</span>
-<span class="sd">            message:</span>
-
-<span class="sd">            .. code:: console</span>
-
-<span class="sd">                No continent-ocean boundaries in Matthews2016.</span>
+<span class="sd">            If the requested plate model does not have certain geometries, warning messages will be printed to alert the user.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
+
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">coastlines</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">continents</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">COBs</span></div>
 
 
 <div class="viewcode-block" id="DataServer.get_age_grid">
 <a class="viewcode-back" href="../../generated/gplately.DataServer.html#gplately.DataServer.get_age_grid">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">get_age_grid</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">times</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Downloads seafloor and paleo-age grids from the plate reconstruction model (``file_collection``)</span>
-<span class="sd">        passed into the ``DataServer`` object. Stores grids in the &quot;gplately&quot; cache.</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_age_grid</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">times</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">]]):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Download the seafloor age grids for the plate model. Save the grids in the ``GPlately cache folder``.</span>
 
-<span class="sd">        Currently, ``DataServer`` supports the following age grids:</span>
+<span class="sd">        .. seealso::</span>
+
+<span class="sd">            :attr:`DataServer.cache_path`</span>
+
+<span class="sd">        The available seafloor age grids are listed below.</span>
 
 <span class="sd">        * Muller et al. 2019</span>
 
 <span class="sd">            * ``file_collection`` = ``Muller2019``</span>
 <span class="sd">            * Time range: 0-250 Ma</span>
-<span class="sd">            * Seafloor age grid rasters in netCDF format.</span>
+<span class="sd">            * Seafloor age grids in netCDF format.</span>
 
 <span class="sd">        * Muller et al. 2016</span>
 
 <span class="sd">            * ``file_collection`` = ``Muller2016``</span>
 <span class="sd">            * Time range: 0-240 Ma</span>
-<span class="sd">            * Seafloor age grid rasters in netCDF format.</span>
+<span class="sd">            * Seafloor age grids in netCDF format.</span>
 
 <span class="sd">        * Seton et al. 2012</span>
 
 <span class="sd">            * ``file_collection`` = ``Seton2012``</span>
 <span class="sd">            * Time range: 0-200 Ma</span>
-<span class="sd">            * Paleo-age grid rasters in netCDF format.</span>
+<span class="sd">            * Seafloor age grids in netCDF format.</span>
 
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
-<span class="sd">        times : int, or list of int, default=None</span>
-<span class="sd">            Request an age grid from one (an integer) or multiple reconstruction times (a list of integers).</span>
+<span class="sd">        times : int, or a list of int</span>
+<span class="sd">            A reconstruction time or a list of reconstruction times.</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
-<span class="sd">        a gplately.Raster object</span>
-<span class="sd">            A :class:`gplately.Raster` object containing the age grid. The age grid data can be extracted</span>
-<span class="sd">            into a numpy ndarray or MaskedArray by appending ``.data`` to the variable assigned to ``get_age_grid()``.</span>
+<span class="sd">        :class:`gplately.Raster` or a list of :class:`gplately.Raster`</span>
+
+
+<span class="sd">        .. note::</span>
+
+<span class="sd">            The age grid data can be accessed as a numpy ndarray or MaskedArray via the :attr:`gplately.Raster.data` attribute.</span>
 
 <span class="sd">            For example:</span>
 
 <span class="sd">            .. code-block:: python</span>
 <span class="sd">                :linenos:</span>
 
-<span class="sd">                gdownload = gplately.DataServer(&quot;Muller2019&quot;)</span>
-
-<span class="sd">                graster = gdownload.get_age_grid(time=100)</span>
-
+<span class="sd">                data_server = gplately.DataServer(&quot;Muller2019&quot;)</span>
+<span class="sd">                graster = data_server.get_age_grid(100)</span>
 <span class="sd">                graster_data = graster.data</span>
 
 <span class="sd">            where ``graster_data`` is a numpy ndarray.</span>
 
 <span class="sd">        Raises</span>
-<span class="sd">        -----</span>
+<span class="sd">        ------</span>
 <span class="sd">        ValueError</span>
-<span class="sd">            If ``time`` (a single integer, or a list of integers representing reconstruction</span>
-<span class="sd">            times to extract the age grids from) is not passed.</span>
+<span class="sd">            If the ``times`` parameter contains invalid reconstruction time.</span>
 
 
-<span class="sd">        .. note::</span>
-
-<span class="sd">            The first time that ``get_age_grid`` is called for a specific time(s), the age grid(s)</span>
-<span class="sd">            will be downloaded into the GPlately cache once. Upon successive calls of ``get_age_grid``</span>
-<span class="sd">            for the same reconstruction time(s), the age grids will not be re-downloaded; rather,</span>
-<span class="sd">            they are re-accessed from the same cache provided the age grid(s) have not been moved or deleted.</span>
-
-<span class="sd">        Examples</span>
-<span class="sd">        --------</span>
-<span class="sd">        if the ``DataServer`` object was called with the ``Muller2019`` ``file_collection`` string:</span>
+<span class="sd">        Example</span>
+<span class="sd">        -------</span>
+<span class="sd">        To download  Müller et al. (2019) seafloor age grids for 0Ma, 1Ma and 100 Ma:</span>
 
 <span class="sd">            .. code-block:: python</span>
 <span class="sd">                :linenos:</span>
 
-<span class="sd">                gDownload = gplately.download.DataServer(&quot;Muller2019&quot;)</span>
+<span class="sd">                data_server = gplately.DataServer(&quot;Muller2019&quot;)</span>
+<span class="sd">                age_grids = data_server.get_age_grid([0, 1, 100])</span>
 
-<span class="sd">        ``get_age_grid`` will download seafloor age grids from the Müller et al. (2019) plate</span>
-<span class="sd">        reconstruction model for the geological time(s) requested in the `time` parameter.</span>
-<span class="sd">        If found, these age grids are returned as masked arrays.</span>
+<span class="sd">        .. seealso::</span>
 
-<span class="sd">        For example, to download  Müller et al. (2019) seafloor age grids for 0Ma, 1Ma and 100 Ma:</span>
+<span class="sd">            - :meth:`PlateModel.get_raster()`</span>
+<span class="sd">            - :meth:`PlateModel.get_rasters()`</span>
 
 <span class="sd">            .. code-block:: python</span>
 <span class="sd">                :linenos:</span>
+<span class="sd">                :emphasize-lines: 4,5</span>
 
-<span class="sd">                age_grids = gDownload.get_age_grid([0, 1, 100])</span>
+<span class="sd">                from gplately import PlateModelManager</span>
+
+<span class="sd">                model = PlateModelManager().get_model(&quot;Muller2019&quot;)</span>
+<span class="sd">                print(model.get_rasters(&quot;AgeGrids&quot;, times=[10, 20, 30]))</span>
+<span class="sd">                print(model.get_raster(&quot;AgeGrids&quot;, time=100))</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">pmm</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;The plate model object is None. Unable to get agegrid.&quot;</span><span class="p">)</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;The plate model object is None. Unable to get age grid.&quot;</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="s2">&quot;AgeGrids&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">pmm</span><span class="o">.</span><span class="n">get_cfg</span><span class="p">()[</span><span class="s2">&quot;TimeDepRasters&quot;</span><span class="p">]:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                <span class="s2">&quot;AgeGrids are not currently available for </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
-                    <span class="bp">self</span><span class="o">.</span><span class="n">file_collection</span>
-                <span class="p">)</span>
+                <span class="sa">f</span><span class="s2">&quot;The time-dependent seafloor age grids are not currently available for </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">file_collection</span><span class="si">}</span><span class="s2">.&quot;</span>
             <span class="p">)</span>
 
         <span class="n">age_grids</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">time</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">atleast_1d</span><span class="p">(</span><span class="n">times</span><span class="p">):</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">time_i</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">time</span><span class="p">)</span>
+            <span class="k">except</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;Invalid time </span><span class="si">{</span><span class="n">time</span><span class="si">}</span><span class="s2">. Reconstruction time must be a number.&quot;</span>
+                <span class="p">)</span>
+            <span class="k">if</span> <span class="n">time_i</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">to_age</span> <span class="ow">or</span> <span class="n">time_i</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">from_age</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;Invalid time </span><span class="si">{</span><span class="n">time</span><span class="si">}</span><span class="s2">. Reconstruction time must be between </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">time_range</span><span class="si">}</span><span class="s2">.&quot;</span>
+                <span class="p">)</span>
+            <span class="n">age_grids</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">Raster</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">pmm</span><span class="o">.</span><span class="n">get_raster</span><span class="p">(</span><span class="s2">&quot;AgeGrids&quot;</span><span class="p">,</span> <span class="n">time_i</span><span class="p">)))</span>
 
-        <span class="n">time_array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">atleast_1d</span><span class="p">(</span><span class="n">times</span><span class="p">)</span>
-
-        <span class="k">if</span> <span class="n">time_array</span><span class="o">.</span><span class="n">min</span><span class="p">()</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">to_age</span> <span class="ow">or</span> <span class="n">time_array</span><span class="o">.</span><span class="n">max</span><span class="p">()</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">from_age</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Specify a time range between </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">time_range</span><span class="p">))</span>
-
-        <span class="k">for</span> <span class="n">ti</span> <span class="ow">in</span> <span class="n">time_array</span><span class="p">:</span>
-            <span class="n">agegrid_filename</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pmm</span><span class="o">.</span><span class="n">get_raster</span><span class="p">(</span><span class="s2">&quot;AgeGrids&quot;</span><span class="p">,</span> <span class="n">ti</span><span class="p">)</span>
-            <span class="n">agegrid</span> <span class="o">=</span> <span class="n">Raster</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">agegrid_filename</span><span class="p">)</span>
-            <span class="n">age_grids</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">agegrid</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">age_grids</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Unable to get the seafloor age grids for times: </span><span class="si">{</span><span class="n">times</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
 
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">age_grids</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">age_grids</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
@@ -1538,10 +1546,13 @@
 <div class="viewcode-block" id="DataServer.get_spreading_rate_grid">
 <a class="viewcode-back" href="../../generated/gplately.DataServer.html#gplately.DataServer.get_spreading_rate_grid">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_spreading_rate_grid</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">times</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Downloads seafloor spreading rate grids from the plate reconstruction</span>
-<span class="sd">        model (``file_collection``) passed into the ``DataServer`` object. Stores grids in the &quot;gplately&quot; cache.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Download seafloor spreading rate grids from the plate reconstruction model and save the grids in the ``GPlately cache folder``.</span>
 
-<span class="sd">        Currently, ``DataServer`` supports spreading rate grids from the following plate models:</span>
+<span class="sd">        .. seealso::</span>
+
+<span class="sd">            :attr:`DataServer.cache_path`</span>
+
+<span class="sd">        The available seafloor spreading rate grids are listed below.</span>
 
 <span class="sd">        * Clennett et al. 2020</span>
 
@@ -1552,67 +1563,12 @@
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
-<span class="sd">        time : int, or list of int, default=None</span>
-<span class="sd">            Request a spreading grid from one (an integer) or multiple reconstruction</span>
-<span class="sd">            times (a list of integers).</span>
+<span class="sd">        time : int, or list of int</span>
+<span class="sd">            Request spreading grid(s) for one (an integer) or multiple reconstruction times (a list of integers).</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
-<span class="sd">        :class:`gplately.Raster`</span>
-<span class="sd">            A :class:`gplately.Raster` object containing the spreading rate grid. The spreading</span>
-<span class="sd">            rate grid data can be extracted into a numpy ndarray or MaskedArray by</span>
-<span class="sd">            appending ``.data`` to the variable assigned to ``get_spreading_rate_grid()``.</span>
-
-<span class="sd">            For example:</span>
-
-<span class="sd">            .. code-block:: python</span>
-<span class="sd">                :linenos:</span>
-
-<span class="sd">                gdownload = gplately.DataServer(&quot;Clennett2020&quot;)</span>
-
-<span class="sd">                graster = gdownload.get_spreading_rate_grid(time=100)</span>
-
-<span class="sd">                graster_data = graster.data</span>
-
-<span class="sd">            where `graster_data`` is a numpy ndarray.</span>
-
-<span class="sd">        Raises</span>
-<span class="sd">        -----</span>
-<span class="sd">        ValueError</span>
-<span class="sd">            If ``time`` (a single integer, or a list of integers representing reconstruction</span>
-<span class="sd">            times to extract the spreading rate grids from) is not passed.</span>
-
-
-<span class="sd">        .. note::</span>
-
-<span class="sd">            The first time that ``get_spreading_rate_grid`` is called for a specific time(s),</span>
-<span class="sd">            the spreading rate grid(s) will be downloaded into the GPlately cache once.</span>
-<span class="sd">            Upon successive calls of ``get_spreading_rate_grid`` for the same reconstruction</span>
-<span class="sd">            time(s), the grids will not be re-downloaded; rather, they are re-accessed from</span>
-<span class="sd">            the same cache location provided they have not been moved or deleted.</span>
-
-<span class="sd">        Examples</span>
-<span class="sd">        --------</span>
-<span class="sd">        if the ``DataServer`` object was called with the ``Clennett2020`` ``file_collection`` string:</span>
-
-<span class="sd">        .. code-block:: python</span>
-<span class="sd">            :linenos:</span>
-
-<span class="sd">            gDownload = gplately.download.DataServer(&quot;Clennett2020&quot;)</span>
-
-<span class="sd">        ``get_spreading_rate_grid`` will download seafloor spreading rate grids from the</span>
-<span class="sd">        Clennett et al. (2020) plate reconstruction model for the geological time(s)</span>
-<span class="sd">        requested in the ``time`` parameter. When found, these spreading rate grids are</span>
-<span class="sd">        returned as masked arrays.</span>
-
-<span class="sd">        For example, to download Clennett et al. (2020) seafloor spreading rate grids for</span>
-<span class="sd">        0Ma, 1Ma and 100 Ma as MaskedArray objects:</span>
-
-<span class="sd">        .. code-block:: python</span>
-<span class="sd">            :linenos:</span>
-
-<span class="sd">            spreading_rate_grids = gDownload.get_spreading_rate_grid([0, 1, 100])</span>
-
+<span class="sd">        :class:`gplately.Raster` or a list of :class:`gplately.Raster`</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="k">if</span> <span class="ow">not</span> <span class="bp">self</span><span class="o">.</span><span class="n">pmm</span><span class="p">:</span>
@@ -1622,22 +1578,31 @@
 
         <span class="k">if</span> <span class="s2">&quot;SpreadingRateGrids&quot;</span> <span class="ow">not</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">pmm</span><span class="o">.</span><span class="n">get_cfg</span><span class="p">()[</span><span class="s2">&quot;TimeDepRasters&quot;</span><span class="p">]:</span>
             <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
-                <span class="s2">&quot;SpreadingRateGrids are not currently available for </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                <span class="s2">&quot;The time-dependant SpreadingRateGrids are not currently available for </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
                     <span class="bp">self</span><span class="o">.</span><span class="n">file_collection</span>
                 <span class="p">)</span>
             <span class="p">)</span>
 
         <span class="n">spread_grids</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">time</span> <span class="ow">in</span> <span class="n">np</span><span class="o">.</span><span class="n">atleast_1d</span><span class="p">(</span><span class="n">times</span><span class="p">):</span>
+            <span class="k">try</span><span class="p">:</span>
+                <span class="n">time_i</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">time</span><span class="p">)</span>
+            <span class="k">except</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;Invalid time </span><span class="si">{</span><span class="n">time</span><span class="si">}</span><span class="s2">. Reconstruction time must be a number.&quot;</span>
+                <span class="p">)</span>
+            <span class="k">if</span> <span class="n">time_i</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">to_age</span> <span class="ow">or</span> <span class="n">time_i</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">from_age</span><span class="p">:</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="sa">f</span><span class="s2">&quot;Invalid time </span><span class="si">{</span><span class="n">time</span><span class="si">}</span><span class="s2">. Reconstruction time must be between </span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">time_range</span><span class="si">}</span><span class="s2">.&quot;</span>
+                <span class="p">)</span>
+            <span class="n">spread_grids</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="n">Raster</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">pmm</span><span class="o">.</span><span class="n">get_raster</span><span class="p">(</span><span class="s2">&quot;SpreadingRateGrids&quot;</span><span class="p">,</span> <span class="n">time_i</span><span class="p">))</span>
+            <span class="p">)</span>
 
-        <span class="n">time_array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">atleast_1d</span><span class="p">(</span><span class="n">times</span><span class="p">)</span>
-
-        <span class="k">if</span> <span class="n">time_array</span><span class="o">.</span><span class="n">min</span><span class="p">()</span> <span class="o">&lt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">to_age</span> <span class="ow">or</span> <span class="n">time_array</span><span class="o">.</span><span class="n">max</span><span class="p">()</span> <span class="o">&gt;</span> <span class="bp">self</span><span class="o">.</span><span class="n">from_age</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Specify a time range between </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">time_range</span><span class="p">))</span>
-
-        <span class="k">for</span> <span class="n">ti</span> <span class="ow">in</span> <span class="n">time_array</span><span class="p">:</span>
-            <span class="n">spreadgrid_filename</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">pmm</span><span class="o">.</span><span class="n">get_raster</span><span class="p">(</span><span class="s2">&quot;SpreadingRateGrids&quot;</span><span class="p">,</span> <span class="n">ti</span><span class="p">)</span>
-            <span class="n">spreadgrid</span> <span class="o">=</span> <span class="n">Raster</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">spreadgrid_filename</span><span class="p">)</span>
-            <span class="n">spread_grids</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">spreadgrid</span><span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">spread_grids</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;Unable to get the seafloor spreading rate grids for times: </span><span class="si">{</span><span class="n">times</span><span class="si">}</span><span class="s2">&quot;</span>
+            <span class="p">)</span>
 
         <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">spread_grids</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span><span class="p">:</span>
             <span class="k">return</span> <span class="n">spread_grids</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
@@ -1648,95 +1613,88 @@
 <div class="viewcode-block" id="DataServer.get_valid_times">
 <a class="viewcode-back" href="../../generated/gplately.DataServer.html#gplately.DataServer.get_valid_times">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_valid_times</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns a tuple of the valid plate model time range, (max_time, min_time).&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Deprecated!!! Use :attr:`DataServer.valid_times` instead.</span>
+<span class="sd">        Return a tuple (max_time, min_time) representing the valid time range of the plate model.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">from_age</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">to_age</span></div>
 
 
 <div class="viewcode-block" id="DataServer.get_raster">
 <a class="viewcode-back" href="../../generated/gplately.DataServer.html#gplately.DataServer.get_raster">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">get_raster</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">raster_id_string</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Downloads assorted raster data that are not associated with the plate</span>
-<span class="sd">        reconstruction models supported by GPlately&#39;s ``DataServer``. Stores rasters in the &quot;gplately&quot; cache.</span>
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_raster</span><span class="p">(</span><span class="n">raster_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Download rasters that are not associated with any plate reconstruction models. Store the rasters in the ``GPlately cache``.</span>
 
-<span class="sd">        Currently, ``DataServer`` supports the following rasters and images:</span>
+<span class="sd">        The available present-day rasters are listed below.</span>
 
-<span class="sd">        * `ETOPO1 &lt;https://www.ngdc.noaa.gov/mgg/global/&gt;`__:</span>
+<span class="sd">        * `ETOPO1 &lt;https://www.ngdc.noaa.gov/mgg/global/&gt;`__</span>
 <span class="sd">            * Filetypes available : TIF, netCDF (GRD)</span>
-<span class="sd">            * `raster_id_string` = `&quot;ETOPO1_grd&quot;`, `&quot;ETOPO1_tif&quot;` (depending on the requested format)</span>
+<span class="sd">            * `raster_name` = ``ETOPO1_grd``, ``ETOPO1_tif`` (depending on the requested format)</span>
 <span class="sd">            * A 1-arc minute global relief model combining lang topography and ocean bathymetry.</span>
 <span class="sd">            * Citation: doi:10.7289/V5C8276M</span>
 
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
-<span class="sd">        raster_id_string : str, default=None</span>
-<span class="sd">            A string to identify which raster to download.</span>
+<span class="sd">        raster_name : :class:`str`</span>
+<span class="sd">            The raster name of interest.</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
 <span class="sd">        :class:`gplately.Raster`</span>
-<span class="sd">            A :class:`gplately.Raster` object containing the raster data. The gridded data can be extracted</span>
-<span class="sd">            into a numpy ndarray or MaskedArray by appending ``.data`` to the variable assigned to ``get_raster()``.</span>
+<span class="sd">            A :class:`gplately.Raster` object containing the raster data which can be accessed as</span>
+<span class="sd">            a ``numpy ndarray`` or ``MaskedArray`` via :attr:`gplately.Raster.data` attribute.</span>
 
 <span class="sd">            For example:</span>
 
 <span class="sd">            .. code-block:: python</span>
 <span class="sd">                :linenos:</span>
 
-<span class="sd">                gdownload = gplately.DataServer(&quot;Muller2019&quot;)</span>
-
-<span class="sd">                graster = gdownload.get_raster(raster_id_string, verbose)</span>
-
+<span class="sd">                graster = gplately.DataServer.get_raster(&quot;ETOPO1_tif&quot;)</span>
 <span class="sd">                graster_data = graster.data</span>
 
-<span class="sd">            where ``graster_data`` is a numpy ndarray. This array can be visualised using</span>
-<span class="sd">            ``matplotlib.pyplot.imshow`` on a ``cartopy.mpl.GeoAxis`` GeoAxesSubplotc(see example below).</span>
+<span class="sd">            where ``graster_data`` is a ``numpy ndarray``. This array can be visualised using ``matplotlib.pyplot.imshow`` (see example below).</span>
 
 <span class="sd">        Raises</span>
 <span class="sd">        ------</span>
-<span class="sd">        ValueError</span>
-<span class="sd">            if a ``raster_id_string`` is not supplied.</span>
+<span class="sd">        Exception</span>
+<span class="sd">            Raise ``Exception`` when ``raster_name`` is invalid.</span>
 
 
-<span class="sd">        .. note::</span>
-
-<span class="sd">            Rasters obtained by this method are (so far) only reconstructed to present-day.</span>
-
-<span class="sd">        Examples</span>
-<span class="sd">        --------</span>
-<span class="sd">        To download ETOPO1 and plot it on a Mollweide projection:</span>
+<span class="sd">        Example</span>
+<span class="sd">        -------</span>
+<span class="sd">        Download ETOPO1 and plot it on a map with Mollweide projection.</span>
 
 <span class="sd">        .. code-block:: python</span>
 <span class="sd">            :linenos:</span>
 
-<span class="sd">            import gplately</span>
-<span class="sd">            import numpy as np</span>
-<span class="sd">            import matplotlib.pyplot as plt</span>
 <span class="sd">            import cartopy.crs as ccrs</span>
+<span class="sd">            import matplotlib.pyplot as plt</span>
 
-<span class="sd">            gdownload = gplately.DataServer(&quot;Muller2019&quot;)</span>
-<span class="sd">            etopo1 = gdownload.get_raster(&quot;ETOPO1_tif&quot;)</span>
-<span class="sd">            fig = plt.figure(figsize=(18,14), dpi=300)</span>
-<span class="sd">            ax = fig.add_subplot(111, projection=ccrs.Mollweide(central_longitude = -150))</span>
-<span class="sd">            ax2.imshow(etopo1, extent=[-180,180,-90,90], transform=ccrs.PlateCarree())</span>
+<span class="sd">            import gplately</span>
 
+<span class="sd">            etopo1 = gplately.DataServer.get_raster(&quot;ETOPO1_tif&quot;)</span>
+<span class="sd">            fig = plt.figure(figsize=(18, 14), dpi=300)</span>
+<span class="sd">            ax = fig.add_subplot(111, projection=ccrs.Mollweide(central_longitude=-150))</span>
+<span class="sd">            ax.imshow(etopo1.data, extent=(-180, 180, -90, 90), transform=ccrs.PlateCarree())</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="n">raster_id_string</span><span class="p">:</span>
-            <span class="n">raster_path</span> <span class="o">=</span> <span class="n">PresentDayRasterManager</span><span class="p">()</span><span class="o">.</span><span class="n">get_raster</span><span class="p">(</span><span class="n">raster_id_string</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">raster_name</span><span class="p">:</span>
+            <span class="n">raster_path</span> <span class="o">=</span> <span class="n">PresentDayRasterManager</span><span class="p">(</span>
+                <span class="n">data_dir</span><span class="o">=</span><span class="nb">str</span><span class="p">(</span><span class="n">path_to_cache</span><span class="p">())</span>
+            <span class="p">)</span><span class="o">.</span><span class="n">get_raster</span><span class="p">(</span><span class="n">raster_name</span><span class="p">)</span>
             <span class="k">if</span> <span class="n">raster_path</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;.grd&quot;</span><span class="p">)</span> <span class="ow">or</span> <span class="n">raster_path</span><span class="o">.</span><span class="n">endswith</span><span class="p">(</span><span class="s2">&quot;.nc&quot;</span><span class="p">):</span>
                 <span class="n">raster</span> <span class="o">=</span> <span class="n">Raster</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">raster_path</span><span class="p">)</span>
-            <span class="c1"># Otherwise, the raster is an image; use imread to process</span>
             <span class="k">else</span><span class="p">:</span>
-                <span class="kn">from</span><span class="w"> </span><span class="nn">matplotlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">image</span>
+                <span class="c1"># Otherwise, the raster is an image; use imread to process</span>
+                <span class="n">raster</span> <span class="o">=</span> <span class="n">Raster</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">image</span><span class="o">.</span><span class="n">imread</span><span class="p">(</span><span class="n">raster_path</span><span class="p">))</span>
 
-                <span class="n">raster_matrix</span> <span class="o">=</span> <span class="n">image</span><span class="o">.</span><span class="n">imread</span><span class="p">(</span><span class="n">raster_path</span><span class="p">)</span>
-                <span class="n">raster</span> <span class="o">=</span> <span class="n">Raster</span><span class="p">(</span><span class="n">data</span><span class="o">=</span><span class="n">raster_matrix</span><span class="p">)</span>
-
-            <span class="k">if</span> <span class="n">raster_id_string</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;etopo1_tif&quot;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">raster_name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;etopo1_tif&quot;</span><span class="p">:</span>
                 <span class="n">raster</span><span class="o">.</span><span class="n">lats</span> <span class="o">=</span> <span class="n">raster</span><span class="o">.</span><span class="n">lats</span><span class="p">[::</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
-            <span class="k">if</span> <span class="n">raster_id_string</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;etopo1_grd&quot;</span><span class="p">:</span>
+            <span class="k">if</span> <span class="n">raster_name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span> <span class="o">==</span> <span class="s2">&quot;etopo1_grd&quot;</span><span class="p">:</span>
                 <span class="n">raster</span><span class="o">.</span><span class="n">_data</span> <span class="o">=</span> <span class="n">raster</span><span class="o">.</span><span class="n">_data</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="nb">float</span><span class="p">)</span>  <span class="c1"># type: ignore</span>
-            <span class="k">return</span> <span class="n">raster</span></div>
+            <span class="k">return</span> <span class="n">raster</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span><span class="s2">&quot;The &#39;raster_name&#39; parameter is required!&quot;</span><span class="p">)</span></div>
 
 
 <div class="viewcode-block" id="DataServer.get_feature_data">
