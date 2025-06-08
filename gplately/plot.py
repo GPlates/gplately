@@ -373,8 +373,7 @@ class PlotTopologies(object):
         #
         # Re-generate the pygplates reconstructed feature geometries and resolved topological geometries
         # deleted from the state returned by __reduce__.
-        if self.time is not None:
-            self.update_time(self.time)
+        self._update_time()
 
     @property
     def topological_plate_boundaries(self):
@@ -438,7 +437,7 @@ class PlotTopologies(object):
 
         .. note::
 
-            You can either set the ``time`` attribute when creating the :class:`gplately.PlotTopologies` object  or anytime afterwards.
+            You can either set the ``time`` attribute when creating the :class:`gplately.PlotTopologies` object or anytime afterwards.
 
             .. code-block:: python
                 :linenos:
@@ -452,9 +451,10 @@ class PlotTopologies(object):
         return self._time
 
     @time.setter
-    def time(self, var: float):
-        """Allows the time attribute to be changed. Updates all instances of the time attribute in the object (e.g.
-        reconstructions and resolving topologies will use this new time).
+    def time(self, new_time: float):
+        """Set the new reconstruction time.
+
+        Reconstruct and resolve topologies to this new time.
 
         Raises
         ------
@@ -462,15 +462,18 @@ class PlotTopologies(object):
             If the reconstruction time is invalid or less then 0.
         """
         try:
-            new_time = float(var)
+            new_time_f = float(new_time)
         except:
-            raise ValueError(f"The new 'time' ({var}) is not a number.")
+            raise ValueError(f"The new 'time' ({new_time}) is not a number.")
 
-        if new_time < 0:
+        if new_time_f < 0:
             raise ValueError(f"The new 'time' ({new_time}) must be greater than 0.")
 
-        if not math.isclose(new_time, self._time):
-            self.update_time(new_time)
+        if getattr(self, "_time", None) is None or not math.isclose(
+            new_time_f, self._time
+        ):
+            self._time = new_time_f
+            self._update_time()
         else:
             logger.warning(
                 "The new reconstruction 'time' is the same with the old one. Do nothing!"
@@ -498,8 +501,7 @@ class PlotTopologies(object):
             self._anchor_plate_id = self._check_anchor_plate_id(anchor_plate)
 
         # Reconstructed/resolved geometries depend on the anchor plate.
-        if self.time is not None:
-            self.update_time(self.time)
+        self._update_time()
 
     @staticmethod
     def _check_anchor_plate_id(id):
@@ -531,12 +533,9 @@ class PlotTopologies(object):
         )
         return self._ridges + self._transforms
 
-    def update_time(self, time):
-        """Rereconstruct features and topologies to the time specified by the :class:`gplately.PlotTopologies` ``time`` attribute
-        whenever it or the anchor plate is updated.
+    def _update_time(self):
+        """Rereconstruct features and topologies to the :attr:`gplately.PlotTopologies.time` attribute.
 
-        Notes
-        -----
         The following :class:`gplately.PlotTopologies` attributes are updated whenever a reconstruction ``time`` attribute is set:
 
         - resolved topology features (topological plates and networks)
@@ -548,11 +547,8 @@ class PlotTopologies(object):
         - right subduction boundary sections (resolved features)
         - other boundary sections (resolved features) that are not subduction zones or mid-ocean ridges(ridge/transform)
 
-        Moreover, coastlines, continents and COBs are reconstructed to the new specified ``time``.
-
+        Moreover, coastlines, continents and COBs are reconstructed to the new :attr:`gplately.PlotTopologies.time`.
         """
-        assert time is not None, "time must be set to a valid reconstruction time"
-        self._time = float(time)
 
         # Get the topological snapshot (of resolved topologies) for the current time (and our anchor plate ID).
         topological_snapshot = self.plate_reconstruction.topological_snapshot(

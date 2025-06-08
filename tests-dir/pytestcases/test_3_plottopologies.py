@@ -1,9 +1,11 @@
-import matplotlib.pyplot as plt
-import numpy as np
 import pickle
+
+import matplotlib.pyplot as plt
 import pytest
 from conftest import gplately_plot_topologies_object as gplot
-from conftest import reconstruction_times
+from conftest import logger, reconstruction_times
+
+import gplately
 
 # ========================================= <gplately.PlotTopologies> =========================================
 
@@ -49,15 +51,52 @@ methods in the object are tested:
 """
 
 
-# CALL THE PLOT TOPOLOGIES OBJECT
-@pytest.mark.parametrize("time", reconstruction_times)
-def test_gplately_plotTopologies_object(time, gplot):
-    # assert gplot, "No <gplately.PlotTopologies> object made with {}.".format(model)
-    assert (
-        gplot
-    ), "Unable to create a <gplately.PlotTopologies> object with Müller et al. (2019) at {} Ma.".format(
-        time
+def test_gplately_plotTopologies_object(
+    gplately_plate_reconstruction_object,
+    gplately_muller_static_geometries,
+):
+    gplot = gplately.PlotTopologies(
+        gplately_plate_reconstruction_object,
+        *gplately_muller_static_geometries,
     )
+    assert gplot.time >= 0
+
+    gplot = gplately.PlotTopologies(
+        gplately_plate_reconstruction_object,
+        *gplately_muller_static_geometries,
+        time=100,
+    )
+    assert gplot.time == 100
+
+    try:
+        gplot = gplately.PlotTopologies(
+            gplately_plate_reconstruction_object,
+            *gplately_muller_static_geometries,
+            time=None,  # type: ignore
+        )
+        assert False
+    except ValueError:
+        assert True
+
+    try:
+        gplot = gplately.PlotTopologies(
+            gplately_plate_reconstruction_object,
+            *gplately_muller_static_geometries,
+            time=-1,
+        )
+        assert False
+    except ValueError:
+        assert True
+
+    try:
+        gplot = gplately.PlotTopologies(
+            gplately_plate_reconstruction_object,
+            *gplately_muller_static_geometries,
+            time="abc",  # type: ignore
+        )
+        assert False
+    except ValueError:
+        assert True
 
 
 # ================================================================================================================================================================================================================
@@ -93,16 +132,15 @@ def test_PlotTopologies_ridge_transforms(time, gplot):
 # Ridges
 @pytest.mark.parametrize("time", reconstruction_times)
 def test_PlotTopologies_ridges(time, gplot):
-    assert (
-        gplot.ridges
-    ), "No ridge features from Müller et al. (2019) at {} Ma are attributed to <gplately.PlotTopologies>.".format(
-        time
-    )
-    assert [
-        ridge.get_feature_type() == "gpml:MidOceanRidge" for ridge in gplot.ridges
-    ], "<gplately.PlotTopologies> ridges are not all of type gpml:MidOceanRidge in Müller et al. (2019) at {} Ma.".format(
-        time
-    )
+    logger.info(f"test_PlotTopologies_ridges with time ({time}).")
+    gplot.time = time
+
+    assert gplot.ridges, f"No ridge features at {time} Ma in gplately.PlotTopologies."
+
+    for ridge in gplot.ridges:
+        assert (
+            ridge.get_feature_type().to_qualified_string() == "gpml:MidOceanRidge"
+        ), "ridge is not gpml:MidOceanRidge."
 
 
 # Transforms
@@ -182,3 +220,21 @@ def test_pickle_plotTopologies_object(gplot):
     assert gplot_load.coastlines and len(gplot_load.coastlines) == len(gplot.coastlines)
     assert gplot_load.continents and len(gplot_load.continents) == len(gplot.continents)
     assert gplot_load.COBs and len(gplot_load.COBs) == len(gplot.COBs)
+
+
+def test_set_invalid_time(gplot):
+    try:
+        gplot.time = None
+    except ValueError as ex:
+        logger.info(ex)
+        assert True
+    try:
+        gplot.time = -1
+    except ValueError as ex:
+        logger.info(ex)
+        assert True
+    try:
+        gplot.time = "abc"
+    except ValueError as ex:
+        logger.info(ex)
+        assert True

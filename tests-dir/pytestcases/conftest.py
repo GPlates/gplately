@@ -7,17 +7,16 @@ from plate_model_manager import PlateModelManager, PresentDayRasterManager
 
 import gplately
 
-logging.basicConfig(
-    filename="test.log", filemode="w", format="%(name)s - %(levelname)s - %(message)s"
-)
-logger = logging.getLogger("TestLog")
+logger = logging.getLogger("gplately-pytest-logger")
+fhandler = logging.FileHandler(filename="gplately-pytest.log", mode="a")
+formatter = logging.Formatter("%(asctime)s - %(levelname)s - %(message)s")
+fhandler.setFormatter(formatter)
+logger.addHandler(fhandler)
 logger.setLevel(logging.INFO)
-logger.info("TEST LOG")
 
 ## ==========================
 
-# We will test GPlately functionalities on the Müller et al. (2019) plate reconstruction
-# model at 0 and 100 Ma.
+# Test GPlately functionalities on the Müller et al. (2019) plate model at 0 and 100 Ma.
 reconstruction_times = [0, 100]
 anchor_plate_ids = [0, 701]
 gridding_times = [249.0, 250.0]
@@ -150,7 +149,7 @@ def gplately_raster_object(
     graster = gplately.Raster(
         data=agegrid_path,
         plate_reconstruction=model,
-        extent=[-180, 180, -90, 90],
+        extent=(-180, 180, -90, 90),
     )
 
     return graster

@@ -1227,13 +1227,21 @@ class DataServer(object):
 
     @property
     def time_range(self):
-        """Deprecated!!! Use :attr:`DataServer.valid_times` instead.
-        The time/age range of the plate model. Return a tuple of (max age, min age)."""
+        """Deprecated!!! Use :attr:`DataServer.valid_time` instead.
+        Keep consistent with `GML naming <https://www.gplates.org/docs/gpgim/#gml:validTime>`__.
+        """
         return self.from_age, self.to_age
 
     @property
     def valid_times(self):
-        """The max time/age and min time/age of the plate model. Return a tuple of (max age, min age)."""
+        """Deprecated!!! Use :attr:`DataServer.valid_time` instead.
+        Keep consistent with `GML naming <https://www.gplates.org/docs/gpgim/#gml:validTime>`__.
+        """
+        return self.from_age, self.to_age
+
+    @property
+    def valid_time(self):
+        """The period of time the plate model are valid. Return a tuple of (max time, min time)."""
         return self.from_age, self.to_age
 
     def get_plate_reconstruction_files(self):
