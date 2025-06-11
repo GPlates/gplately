@@ -1561,9 +1561,7 @@ def _parse_extent_origin(extent, origin):
 
 
 class Raster(object):
-    """The Raster class handles raster data.
-
-    The functionalities of :class:`gplately.Raster` include sampling data at points using spline
+    """The functionalities of :class:`Raster` class include sampling data at points using spline
     interpolation, resampling rasters with new X and Y-direction spacings and
     resizing rasters using new X and Y grid pixel resolutions. NaN-type data
     in rasters can be replaced with the values of their nearest valid neighbours.
@@ -1584,26 +1582,24 @@ class Raster(object):
         data_variable_name: str = "",
         **kwargs,
     ):
-        """Constructs all necessary attributes for the raster object.
-
-        Note: either a str path to a netCDF file OR an ndarray representing a grid must be specified.
+        """Constructor. Create a :class:`Raster` object.
 
         Parameters
         ----------
         data : str or array-like
-            The raster data, either as a filename (``str``) or array.
+            The raster data, either as a file path (:class:`str`) or array data.
 
-        plate_reconstruction : gplately.PlateReconstruction
-            Allows for the accessibility of PlateReconstruction object attributes.
-            Namely, PlateReconstruction object attributes rotation_model,
-            topology_features and static_polygons can be used in the ``Raster``
-            object if called using ``self.plate_reconstruction.X``, where X is the
-            attribute.
+        plate_reconstruction : PlateReconstruction
+            A :class:`PlateReconstruction` object to provide the following essential components for reconstructing points.
+
+            * :py:attr:`PlateReconstruction.rotation_model`
+            * :py:attr:`PlateReconstruction.topology_featues`
+            * :py:attr:`PlateReconstruction.static_polygons`
 
         extent : str or 4-tuple, default: 'global'
             4-tuple to specify (min_lon, max_lon, min_lat, max_lat) extents
             of the raster. If no extents are supplied, full global extent
-            [-180,180,-90,90] is assumed (equivalent to ``extent='global'``).
+            (-180, 180, -90, 90) is assumed (equivalent to ``extent='global'``).
             For array data with an upper-left origin, make sure ``min_lat`` is
             greater than ``max_lat``, or specify ``origin`` parameter.
 
@@ -1616,24 +1612,24 @@ class Raster(object):
             2-tuple e.g. resample=(resX, resY).
 
         time : float, default: 0.0
-            The time step represented by the raster data. Used for raster reconstruction.
+            The geological time the time-dependant raster data.
 
         origin : {'lower', 'upper'}, optional
             When ``data`` is an array, use this parameter to specify the origin
             (upper left or lower left) of the data (overriding ``extent``).
 
         x_dimension_name : str, optional, default=""
-            If the grid file uses comman names, such as "x", "lon", "lons" or "longitude", you need not set this parameter.
-            Otherwise, you need to tell us what the x dimension name is.
+            If the grid file uses the comman names, such as ``x``, ``lon``, ``lons`` or ``longitude``,
+            you need not to provide this parameter. Otherwise, you need to tell us what the x dimension name is.
 
         y_dimension_name : str, optional, default=""
-            If the grid file uses comman names, such as "y", "lat", "lats" or "latitude", you need not set this parameter.
-            Otherwise, you need to tell us what the y dimension name is.
+            If the grid file uses the comman names, such as ``y``, ``lat``, ``lats`` or ``latitude``,
+            you need not to provide this parameter. Otherwise, you need to tell us what the y dimension name is.
 
         data_variable_name : str, optional, default=""
-            The program will try its best to determine the data variable name.
-            However, it would be better if you could tell us what the data variable name is.
-            Otherwise, the program will guess. The result may/may not be correct.
+            GPlately will try its best to guess the data variable name.
+            However, it would be much better if you tell us what the data variable name is.
+            Otherwise, GPlately's guess may/may not be correct.
 
         **kwargs
             Handle deprecated arguments such as ``PlateReconstruction_object``, ``filename``, and ``array``.
@@ -1726,13 +1722,15 @@ class Raster(object):
 
     @property
     def time(self):
-        """The time step represented by the raster data."""
+        """The geological time for the time-dependant raster data.
+
+        :type: float
+        """
         return self._time
 
     @property
     def data(self):
-        """Array containing the underlying raster data. This attribute can be
-        modified after creation of the ``Raster``.
+        """Array containing the raster data. This attribute can be modified after creating the :class:`Raster` object.
 
         :type: ndarray, shape (ny, nx)
         """
@@ -1752,8 +1750,7 @@ class Raster(object):
 
     @property
     def lons(self):
-        """The x-coordinates of the raster data. This attribute can be modified
-        after creation of the ``Raster``.
+        """The x-coordinates of the raster data. This attribute can be modified after creating the :class:`Raster` object.
 
         :type: ndarray, shape (nx,)
         """
@@ -1773,8 +1770,7 @@ class Raster(object):
 
     @property
     def lats(self):
-        """The y-coordinates of the raster data. This attribute can be modified
-        after creation of the ``Raster``.
+        """The y-coordinates of the raster data. This attribute can be modified after creating the :class:`Raster` object.
 
         :type: ndarray, shape (ny,)
         """
@@ -1794,8 +1790,7 @@ class Raster(object):
 
     @property
     def extent(self):
-        """The spatial extent (x0, x1, y0, y1) of the data. If no extents are supplied, full
-        global extent [-180,180,-90,90] is assumed.
+        """The spatial extent ``(x0, x1, y0, y1)`` of the data. If not supplied, global extent ``(-180, 180, -90, 90)`` is assumed.
 
         If y0 < y1, the origin is the lower-left corner; else the upper-left.
 
@@ -1810,7 +1805,7 @@ class Raster(object):
 
     @property
     def origin(self):
-        """The origin ('lower' or 'upper') of the data array, used for e.g. plotting.
+        """The origin (``lower`` or ``upper``) of the data array.
 
         :type: str
         """
@@ -1841,8 +1836,8 @@ class Raster(object):
 
     @property
     def filename(self):
-        """The filename used to create the ``Raster`` object. If the object was
-        created directly from an array, this attribute is ``None``.
+        """The filename used to create the :class:`Raster` object.
+        If the object was created directly from an array, this attribute is ``None``.
 
         :type: str or None
         """
@@ -1850,14 +1845,13 @@ class Raster(object):
 
     @property
     def plate_reconstruction(self):
-        """An instance of :class:`gplately.PlateReconstruction` class, like the
-        ``rotation_model``, a set of reconstructable ``topology_features`` and
-        ``static_polygons`` that belong to a particular plate model. These
-        attributes can be used in the ``Raster`` object if called using
-        ``self.plate_reconstruction.X``, where X is the attribute. This
-        attribute can be modified after creation of the ``Raster``.
+        """A :class:`PlateReconstruction` object to provide the following essential components for reconstructing points.
 
-        :type: gplately.PlateReconstruction
+            * :py:attr:`PlateReconstruction.rotation_model`
+            * :py:attr:`PlateReconstruction.topology_featues`
+            * :py:attr:`PlateReconstruction.static_polygons`
+
+        :type: PlateReconstruction
         """
         return self._plate_reconstruction
 
@@ -1875,12 +1869,12 @@ class Raster(object):
         self._plate_reconstruction = reconstruction
 
     def copy(self):
-        """Returns a copy of the Raster
+        """Return a copy of the :class:`Raster` object.
 
         Returns
         -------
         Raster
-            A copy of the current Raster object
+            A copy of the current :class:`Raster` object.
         """
         return Raster(
             self.data.copy(), self.plate_reconstruction, self.extent, time=self.time
@@ -1902,7 +1896,7 @@ class Raster(object):
             gridded data. Must be broadcastable to a common shape.
         method : str or int; default: 'linear'
             The order of spline interpolation. Must be an integer in the range
-            0-5. 'nearest', 'linear', and 'cubic' are aliases for 0, 1, and 3,
+            0-5. ``nearest``, ``linear``, and ``cubic`` are aliases for 0, 1, and 3,
             respectively.
         return_indices : bool, default=False
             Whether to return the row and column indices of the nearest grid
@@ -1928,7 +1922,7 @@ class Raster(object):
         .. note::
 
             If ``return_indices`` is set to ``True``, the nearest array indices
-            are returned as a tuple of arrays, in (i, j) or (lat, lon) format.
+            are returned as a tuple of arrays, in ``(i, j)`` or ``(lat, lon)`` format.
 
 
         An example output:
@@ -1952,13 +1946,13 @@ class Raster(object):
 
         .. note::
 
-            Ultimately, ``resample`` changes the lat-lon resolution of the gridded data. The
+            Ultimately, the :meth:`resample` changes the lat-lon resolution of the gridded data. The
             larger the x and y spacings given are, the larger the pixellation of raster data.
 
-            ``resample`` creates new latitude and longitude arrays with specified spacings in the
+            The :meth:`resample` creates new latitude and longitude arrays with specified spacings in the
             X and Y directions (``spacingX`` and ``spacingY``). These arrays are linearly interpolated
             into a new raster. If ``inplace`` is set to ``True``, the respaced latitude array, longitude
-            array and raster will inplace the ones currently attributed to the ``Raster`` object.
+            array and raster will inplace the ones currently attributed to the :class:`Raster` object.
 
         Parameters
         ----------
@@ -1977,7 +1971,7 @@ class Raster(object):
         inplace : bool, default=False
             Choose to overwrite the data (the ``self.data`` attribute), latitude array
             (``self.lats``) and longitude array (``self.lons``) currently attributed to the
-            ``Raster`` object.
+            :class:`Raster` object.
 
         Returns
         -------
@@ -2003,17 +1997,17 @@ class Raster(object):
             return Raster(data, self.plate_reconstruction, self.extent, self.time)
 
     def resize(self, resX, resY, inplace=False, method="linear", return_array=False):
-        """Resize the grid with a new resolution(``resX`` and ``resY``) using linear interpolation.
+        """Resize the grid with a new resolution (``resX`` and ``resY``) using linear interpolation.
 
         .. note::
 
-            Ultimately, ``resize`` "stretches" a raster in the x and y directions. The larger
+            Ultimately, The :meth:`resize` "stretches" a raster in the x and y directions. The larger
             the resolutions in x and y, the more stretched the raster appears in x and y.
 
             It creates new latitude and longitude arrays with specific resolutions in
             the X and Y directions (``resX`` and ``resY``). These arrays are linearly interpolated
             into a new raster. If ``inplace`` is set to ``True``, the resized latitude, longitude
-            arrays and raster will inplace the ones currently attributed to the ``Raster`` object.
+            arrays and raster will inplace the ones currently attributed to the :class:`Raster` object.
 
         Parameters
         ----------
@@ -2030,16 +2024,15 @@ class Raster(object):
         inplace : bool, default=False
             Choose to overwrite the data (the ``self.data`` attribute), latitude array
             (``self.lats``) and longitude array (``self.lons``) currently attributed to the
-            ``Raster`` object.
+            :class:`Raster` object.
 
         return_array : bool, default False
-            Return a ``numpy.ndarray``, rather than a ``Raster``.
+            Return a ``numpy.ndarray``, rather than a :class:`Raster` object.
 
         Returns
         -------
         Raster
-            The resized grid. If ``inplace`` is set to ``True``, this raster overwrites the
-            one attributed to ``data``.
+            The resized grid. If ``inplace`` is set to ``True``, the data in :attr:`Raster.data` will be overwritten.
         """
         # construct grid
         lons = np.linspace(self.extent[0], self.extent[1], resX)
@@ -2057,23 +2050,21 @@ class Raster(object):
             return Raster(data, self.plate_reconstruction, self.extent, self.time)
 
     def fill_NaNs(self, inplace=False, return_array=False):
-        """Search for invalid ``data`` cells containing NaN-type entries and
+        """Search for the invalid ``data`` cells containing NaN-type entries and
         replaces NaNs with the value of the nearest valid data cell.
 
         Parameters
         ---------
         inplace : bool, default=False
-            Choose whether to overwrite the grid currently held in the ``data`` attribute with
-            the filled grid.
+            Choose whether to overwrite the grid currently held in the ``data`` attribute with the filled grid.
 
         return_array : bool, default False
-            Return a ``numpy.ndarray``, rather than a ``Raster``.
+            Return a ``numpy.ndarray``, rather than a :class:`Raster`.
 
         Returns
         --------
         Raster
-            The resized grid. If ``inplace`` is set to ``True``, this raster overwrites the
-            one attributed to ``data``.
+            The resized grid. If ``inplace`` is set to ``True``, the data in :attr:`Raster.data` will be overwritten.
         """
         data = fill_raster(self.data)
         if inplace:
@@ -2084,7 +2075,7 @@ class Raster(object):
             return Raster(data, self.plate_reconstruction, self.extent, time=self.time)
 
     def save_to_netcdf4(self, filename, significant_digits=None, fill_value=np.nan):
-        """Saves the grid attributed to the `Raster` object to the given `filename` (including
+        """Saves the grid attributed to the :class:`Raster` object to the given ``filename`` (including
         the ".nc" extension) in netCDF4 format."""
         write_netcdf_grid(
             str(filename), self.data, self.extent, significant_digits, fill_value
@@ -2119,22 +2110,21 @@ class Raster(object):
             Number of threads to use for certain computationally heavy routines.
         anchor_plate_id : int, optional
             ID of the anchored plate. By default, reconstructions are made with respect to
-            the anchor plate ID specified in the :class:`gplately.PlateReconstruction` object.
+            the anchor plate ID specified in the :class:`PlateReconstruction` object.
         inplace : bool, default False
             Perform the reconstruction in-place (replace the raster's data with the reconstructed data).
         return_array : bool, default False
-            Return a ``numpy.ndarray``, rather than a ``Raster``.
+            Return a ``numpy.ndarray``, rather than a :class:`Raster`.
 
         Returns
         -------
         Raster or np.ndarray
-            The reconstructed grid. Areas for which no plate ID could be
-            determined will be filled with ``fill_value``.
+            The reconstructed grid. Areas for which no plate ID could be determined will be filled with ``fill_value``.
 
         Raises
         ------
         TypeError
-            If this ``Raster`` has no ``plate_reconstruction`` set.
+            If this :class:`Raster` object has no a valid ``plate_reconstruction`` object.
 
 
         .. note::
@@ -2218,8 +2208,7 @@ class Raster(object):
         Raises
         ------
         ValueError
-            If ``ax`` and ``projection`` are both specified, but do not match
-            (i.e. ``ax.projection != projection``).
+            If ``ax`` and ``projection`` are both specified, but do not match (i.e. ``ax.projection != projection``).
         """
         for kw in ("origin", "extent"):
             if kw in kwargs.keys():
@@ -2277,7 +2266,7 @@ class Raster(object):
         output_name=None,
     ):
         """Rotate a grid defined in one plate model reference frame
-        within a :class:gplately.Raster object to another plate reconstruction model reference frame.
+        within a :class:`Raster` object to another plate reconstruction model reference frame.
 
         Parameters
         ----------
@@ -2307,8 +2296,8 @@ class Raster(object):
 
         Returns
         -------
-        gplately.Raster()
-            An instance of the gplately.Raster object containing the rotated grid.
+        Raster
+            An instance of the :class:`Raster` object containing the rotated grid.
         """
 
         if from_rotation_features_or_model is None:
@@ -2393,7 +2382,7 @@ class Raster(object):
         return Raster(data=Z)
 
     def query(self, lons, lats, region_of_interest=None):
-        """Given a set of location coordinates, return the grid values at these locations
+        """Given a set of location coordinates, return the grid values at these locations.
 
         Parameters
         ----------
@@ -2458,9 +2447,19 @@ class Raster(object):
         return np.concatenate((self.data[self.data_mask], [math.nan]))[indices]
 
     def clip_by_extent(self, extent):
-        """clip the raster according to a given extent [x_min, x_max, y_min, y_max]
-        the extent of the returned raster may be slightly bigger than the given extent.
-        this happens when the border of the given extent fall between two gird lines.
+        """Clip the raster according to a given extent ``(x_min, x_max, y_min, y_max)``.
+        The extent of the returned raster may be slightly bigger than the given extent.
+        This happens when the border of the given extent fall between two gird lines.
+
+        Parameters
+        ----------
+        extent: tuple
+            A tuple of 4 (min_lon, max_lon, min_lat, max_lat) extent.
+
+        Returns
+        --------
+        Raster
+            The clipped grid.
         """
         if (
             extent[0] >= extent[1]
