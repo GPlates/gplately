@@ -83,8 +83,8 @@ tessellate_degrees : float or None, default=1.0
 
 Returns
 -------
-``geopandas.GeoDataFrame``
-    A ``geopandas.GeoDataFrame`` object containing the reconstructed **{0}** geometries. The geometry column name is "geometry".
+`geopandas.GeoDataFrame`_
+    A `geopandas.GeoDataFrame`_ object containing the reconstructed **{0}** geometries. The geometry column name is "geometry".
 """
 
 
@@ -149,7 +149,7 @@ class PlotTopologies(object):
         # Setting a new reconstruction time
         gplot.time = 20  # Ma
 
-    The ``coastline_filename``, ``continent_filename`` and ``COB_filename`` can be paths (str) to GPML and/or shapefiles,
+    The ``coastline_filename``, ``continent_filename`` and ``COB_filename`` can be paths (:class:`str`) to GPML and/or shapefiles,
     as well as instances of `pygplates.FeatureCollection`_.
 
     Some features for plotting (like plate boundaries) are taken from the :attr:`PlateReconstruction.topology_features`.
@@ -174,7 +174,7 @@ class PlotTopologies(object):
     * continental polygons and
     * continent-ocean boundary polylines
     * topological plate velocity vector fields
-    * netCDF4 MaskedArray or ndarray raster data:
+    * netCDF4 `MaskedArray`_ or ndarray raster data:
         - seafloor age grids
         - paleo-age grids
         - global relief (topography and bathymetry)
@@ -185,6 +185,8 @@ class PlotTopologies(object):
 
     .. _pygplates.Feature: https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature
     .. _pygplates.ReconstructedFeatureGeometry: https://www.gplates.org/docs/pygplates/generated/pygplates.reconstructedfeaturegeometry
+    .. _geopandas.GeoDataFrame: https://geopandas.org/en/stable/docs/reference/api/geopandas.GeoDataFrame.html
+    .. _MaskedArray: https://numpy.org/doc/stable/reference/maskedarray.generic.html
     """
 
     def __init__(
@@ -230,9 +232,8 @@ class PlotTopologies(object):
 
         self._plot_engine = plot_engine
         self.plate_reconstruction = plate_reconstruction
-        """The :class:`PlateReconstruction` object will be used to access a plate
-        ``rotation_model`` and a set of ``topology_features`` which contains plate boundary
-        features like trenches, ridges and transforms.
+        """The :class:`PlateReconstruction` object will be used to access a plate ``rotation_model`` and a set of ``topology_features``
+        which contains plate boundary features like trenches, ridges and transforms.
 
         :type: PlateReconstruction
         """
@@ -444,7 +445,7 @@ class PlotTopologies(object):
 
         .. note::
 
-            You can either set the ``time`` attribute when creating the :class:`gplately.PlotTopologies` object or anytime afterwards.
+            You can either set the ``time`` attribute when creating the :class:`PlotTopologies` object or anytime afterwards.
 
             .. code-block:: python
                 :linenos:
@@ -786,7 +787,7 @@ class PlotTopologies(object):
         tessellate_degrees=None,
         validate_reconstruction_time=True,
     ):
-        """Convert feature(s) to a geopandas.GeoDataFrame object.
+        """Convert feature(s) to a `geopandas.GeoDataFrame`_ object.
 
         Parameters
         ----------
@@ -796,14 +797,13 @@ class PlotTopologies(object):
         Returns
         -------
         gdf : geopandas.GeoDataFrame
-            A ``pandas.GeoDataFrame`` object contaning the feature geometries.
+            A `geopandas.GeoDataFrame`_ object contaning the feature geometries.
 
 
         .. note::
 
-            The feature(s) needed to produce the GeoDataFrame should already be reconstructed to a ``time``.
-            This function converts the feature(s) into a set of Shapely geometries whose coordinates are
-            passed to a geopandas GeoDataFrame.
+            The feature(s) needed to produce the `geopandas.GeoDataFrame`_ object should already be reconstructed to a ``time``.
+            This function converts the feature(s) into a set of Shapely geometries and put them into a `geopandas.GeoDataFrame`_ object.
 
         """
 
@@ -867,7 +867,7 @@ class PlotTopologies(object):
     @validate_reconstruction_time
     @append_docstring(GET_DATE_DOCSTRING.format("coastlines"))
     def get_coastlines(self, central_meridian=0.0, tessellate_degrees=None):
-        """Return the reconstructed coastlines as a ``geopandas.GeoDataFrame`` object."""
+        """Return the reconstructed coastlines as a `geopandas.GeoDataFrame`_ object."""
         return self.get_feature(
             self.coastlines,
             central_meridian=central_meridian,
@@ -889,7 +889,7 @@ class PlotTopologies(object):
     @validate_reconstruction_time
     @append_docstring(GET_DATE_DOCSTRING.format("continents"))
     def get_continents(self, central_meridian=0.0, tessellate_degrees=None):
-        """Return the reconstructed continental polygons as a ``geopandas.GeoDataFrame`` object."""
+        """Return the reconstructed continental polygons as a `geopandas.GeoDataFrame`_ object."""
         return self.get_feature(
             self.continents,
             central_meridian=central_meridian,
@@ -915,7 +915,7 @@ class PlotTopologies(object):
         central_meridian=0.0,
         tessellate_degrees=None,
     ):
-        """Return the reconstructed continent-ocean boundaries as a ``geopandas.GeoDataFrame`` object."""
+        """Return the reconstructed continent-ocean boundaries as a `geopandas.GeoDataFrame`_ object."""
         return self.get_feature(
             self.COBs,
             central_meridian=central_meridian,
@@ -941,7 +941,7 @@ class PlotTopologies(object):
         central_meridian=0.0,
         tessellate_degrees=1,
     ):
-        """Return the reconstructed mid-ocean ridge lines (gpml:MidOceanRidge) as a ``geopandas.GeoDataFrame`` object."""
+        """Return the reconstructed mid-ocean ridge lines (gpml:MidOceanRidge) as a `geopandas.GeoDataFrame`_ object."""
         logger.debug(
             "The 'get_ridges' function has been changed since GPlately 1.3.0. "
             "You need to check your workflow to make sure the new 'get_ridges' function still suits your purpose. "
@@ -982,7 +982,7 @@ class PlotTopologies(object):
     @validate_reconstruction_time
     @append_docstring(GET_DATE_DOCSTRING.format("trenches"))
     def get_trenches(self, central_meridian=0.0, tessellate_degrees=1):
-        """Return the reconstructed trench lines as a ``geopandas.GeoDataFrame`` object."""
+        """Return the reconstructed trench lines as a `geopandas.GeoDataFrame`_ object."""
         return self.get_feature(
             self.trenches,
             central_meridian=central_meridian,
@@ -1031,7 +1031,7 @@ class PlotTopologies(object):
     @validate_reconstruction_time
     @append_docstring(GET_DATE_DOCSTRING.format("other"))
     def get_misc_boundaries(self, central_meridian=0.0, tessellate_degrees=1):
-        """Return the reconstructed "other" lines as a ``geopandas.GeoDataFrame`` object."""
+        """Return the reconstructed "other" lines as a `geopandas.GeoDataFrame`_ object."""
         return self.get_feature(
             self.other,
             central_meridian=central_meridian,
@@ -1114,7 +1114,7 @@ class PlotTopologies(object):
     @validate_reconstruction_time
     def get_subduction_direction(self, central_meridian=0.0, tessellate_degrees=None):
         """Return the :attr:`PlotTopologies.trench_left` and
-        :attr:`PlotTopologies.trench_right` as a ``geopandas.GeoDataFrame`` object.
+        :attr:`PlotTopologies.trench_right` as a `geopandas.GeoDataFrame`_ object.
 
         Parameters
         ----------
@@ -1126,9 +1126,9 @@ class PlotTopologies(object):
         Returns
         -------
         gdf_left :geopandas.GeoDataFrame
-            A ``geopandas.GeoDataFrame`` object containing `trench_left` geometries.
+            A `geopandas.GeoDataFrame`_ object containing `trench_left` geometries.
         gdf_right : geopandas.GeoDataFrame
-            A ``geopandas.GeoDataFrame`` object containing `trench_right` geometries.
+            A `geopandas.GeoDataFrame`_ object containing `trench_right` geometries.
 
         """
         if self.trench_left is None or self.trench_right is None:
@@ -1165,8 +1165,8 @@ class PlotTopologies(object):
 
         .. note::
 
-            Subduction teeth are tessellated from :attr:`gplately.PlotTopologies.trench_left` and
-            :attr:`gplately.PlotTopologies.trench_left` attributes, and transformed into Shapely polygons for plotting.
+            Subduction teeth are tessellated from :attr:`PlotTopologies.trench_left` and
+            :attr:`PlotTopologies.trench_right` attributes, and transformed into Shapely polygons for plotting.
 
         Parameters
         ----------
@@ -1251,22 +1251,21 @@ class PlotTopologies(object):
         return self.plot_plate_polygon_by_id(*args, **kwargs)
 
     def plot_grid(self, ax, grid, extent=[-180, 180, -90, 90], **kwargs):
-        """Plot a ``MaskedArray`` raster or grid onto a map.
+        """Plot a `MaskedArray`_ raster or grid onto a map.
 
         Parameters
         ----------
         ax :
             Cartopy ax.
 
-        grid : MaskedArray or gplately.Raster
-            A ``MaskedArray`` with elements that define a grid. The number of rows in the raster
+        grid : MaskedArray or Raster
+            A `MaskedArray`_ with elements that define a grid. The number of rows in the raster
             corresponds to the number of latitudinal coordinates, while the number of raster
             columns corresponds to the number of longitudinal coordinates.
 
-        extent : 1d array, default=[-180,180,-90,90]
-            A four-element array to specify the [min lon, max lon, min lat, max lat] with
-            which to constrain the grid image. If no extents are supplied, full global
-            extent is assumed.
+        extent : tuple, default=(-180, 180, -90, 90)
+            A tuple of 4 (min lon, max lon, min lat, max lat) extent of gird.
+            If no extent are provided, global extent is assumed.
 
         **kwargs :
             Keyword arguments for plotting the grid.
@@ -1298,7 +1297,7 @@ class PlotTopologies(object):
         )
 
     def plot_grid_from_netCDF(self, ax, filename, **kwargs):
-        """Read a raster from a netCDF file, convert it to a ``MaskedArray`` and plot ii on a map.
+        """Read raster data from a netCDF file, convert the data into a `MaskedArray`_ object and plot it on a map.
 
         Parameters
         ----------
@@ -1334,7 +1333,7 @@ class PlotTopologies(object):
 
         .. note::
 
-            The ``plot_plate_motion_vectors`` generates a MeshNode domain of point features using
+            The :meth:`plot_plate_motion_vectors` generates a MeshNode domain of point features using
             given spacings in the X and Y directions (``spacingX`` and ``spacingY``). Each point in
             the domain is assigned a plate ID, and these IDs are used to obtain equivalent stage
             rotations of identified tectonic plates over a 5 Ma time interval. Each point and
@@ -1360,7 +1359,7 @@ class PlotTopologies(object):
             Choose whether to normalise the velocity magnitudes so that vector lengths are all equal.
 
         **kwargs :
-            Keyword arguments for plotting the velocity vector field. See ``Matplotlib`` quiver keyword arguments
+            Keyword arguments for plotting the velocity vector field. See Matplotlib quiver keyword arguments
             `here <https://matplotlib.org/3.5.1/api/_as_gen/matplotlib.axes.Axes.quiver.html>`__.
 
         """
@@ -1424,7 +1423,7 @@ class PlotTopologies(object):
 
         Returns
         -------
-        matplotlib.patches.Circle handle
+        matplotlib.patches.Circle handle.
         """
         from matplotlib import patches as mpatches
 
@@ -1451,7 +1450,7 @@ class PlotTopologies(object):
         central_meridian=0.0,
         tessellate_degrees=None,
     ):
-        """Return the reconstructed contiental rift lines as a ``geopandas.GeoDataFrame`` object."""
+        """Return the reconstructed contiental rift lines as a `geopandas.GeoDataFrame`_ object."""
         return self.get_feature(
             self.continental_rifts,
             central_meridian=central_meridian,
@@ -1474,7 +1473,7 @@ class PlotTopologies(object):
     @validate_reconstruction_time
     @append_docstring(GET_DATE_DOCSTRING.format("faults"))
     def get_faults(self, central_meridian=0.0, tessellate_degrees=None):
-        """Return the reconstructed fault lines as a ``geopandas.GeoDataFrame`` object."""
+        """Return the reconstructed fault lines as a `geopandas.GeoDataFrame`_ object."""
         return self.get_feature(
             self.faults,
             central_meridian=central_meridian,
@@ -1497,7 +1496,7 @@ class PlotTopologies(object):
     @validate_reconstruction_time
     @append_docstring(GET_DATE_DOCSTRING.format("fracture zones"))
     def get_fracture_zones(self, central_meridian=0.0, tessellate_degrees=None):
-        """Return the reconstructed fracture zone lines as a ``geopandas.GeoDataFrame`` object."""
+        """Return the reconstructed fracture zone lines as a `geopandas.GeoDataFrame`_ object."""
         return self.get_feature(
             self.fracture_zones,
             central_meridian=central_meridian,
@@ -1524,7 +1523,7 @@ class PlotTopologies(object):
         central_meridian=0.0,
         tessellate_degrees=None,
     ):
-        """Return the reconstructed inferred paleo boundary lines as a ``geopandas.GeoDataFrame`` object."""
+        """Return the reconstructed inferred paleo boundary lines as a `geopandas.GeoDataFrame`_ object."""
         return self.get_feature(
             self.inferred_paleo_boundaries,
             central_meridian=central_meridian,
@@ -1551,7 +1550,7 @@ class PlotTopologies(object):
         central_meridian=0.0,
         tessellate_degrees=None,
     ):
-        """Return the reconstructed terrane boundary lines as a ``geopandas.GeoDataFrame`` object."""
+        """Return the reconstructed terrane boundary lines as a `geopandas.GeoDataFrame`_ object."""
         return self.get_feature(
             self.terrane_boundaries,
             central_meridian=central_meridian,
@@ -1578,7 +1577,7 @@ class PlotTopologies(object):
         central_meridian=0.0,
         tessellate_degrees=None,
     ):
-        """Return the reconstructed transitional crust lines as a ``geopandas.GeoDataFrame`` object."""
+        """Return the reconstructed transitional crust lines as a `geopandas.GeoDataFrame`_ object."""
         return self.get_feature(
             self.transitional_crusts,
             central_meridian=central_meridian,
@@ -1605,7 +1604,7 @@ class PlotTopologies(object):
         central_meridian=0.0,
         tessellate_degrees=None,
     ):
-        """Return the reconstructed orogenic belt lines as a ``geopandas.GeoDataFrame`` object."""
+        """Return the reconstructed orogenic belt lines as a `geopandas.GeoDataFrame`_ object."""
         return self.get_feature(
             self.orogenic_belts,
             central_meridian=central_meridian,
@@ -1628,7 +1627,7 @@ class PlotTopologies(object):
     @validate_reconstruction_time
     @append_docstring(GET_DATE_DOCSTRING.format("sutures"))
     def get_sutures(self, central_meridian=0.0, tessellate_degrees=None):
-        """Return the reconstructed suture lines as a ``geopandas.GeoDataFrame`` object."""
+        """Return the reconstructed suture lines as a `geopandas.GeoDataFrame`_ object."""
         return self.get_feature(
             self.sutures,
             central_meridian=central_meridian,
@@ -1655,7 +1654,7 @@ class PlotTopologies(object):
         central_meridian=0.0,
         tessellate_degrees=None,
     ):
-        """Return the reconstructed continental crust lines as a ``geopandas.GeoDataFrame`` object."""
+        """Return the reconstructed continental crust lines as a `geopandas.GeoDataFrame`_ object."""
         return self.get_feature(
             self.continental_crusts,
             central_meridian=central_meridian,
@@ -1682,7 +1681,7 @@ class PlotTopologies(object):
         central_meridian=0.0,
         tessellate_degrees=None,
     ):
-        """Return the reconstructed extended continental crust lines as a ``geopandas.GeoDataFrame`` object."""
+        """Return the reconstructed extended continental crust lines as a `geopandas.GeoDataFrame`_ object."""
         return self.get_feature(
             self.extended_continental_crusts,
             central_meridian=central_meridian,
@@ -1709,7 +1708,7 @@ class PlotTopologies(object):
         central_meridian=0.0,
         tessellate_degrees=None,
     ):
-        """Return the reconstructed passive continental boundary lines as a ``geopandas.GeoDataFrame`` object."""
+        """Return the reconstructed passive continental boundary lines as a `geopandas.GeoDataFrame`_ object."""
         return self.get_feature(
             self.passive_continental_boundaries,
             central_meridian=central_meridian,
@@ -1732,7 +1731,7 @@ class PlotTopologies(object):
     @validate_reconstruction_time
     @append_docstring(GET_DATE_DOCSTRING.format("slab edges"))
     def get_slab_edges(self, central_meridian=0.0, tessellate_degrees=None):
-        """Return the reconstructed slab edge lines as a ``geopandas.GeoDataFrame`` object."""
+        """Return the reconstructed slab edge lines as a `geopandas.GeoDataFrame`_ object."""
         return self.get_feature(
             self.slab_edges,
             central_meridian=central_meridian,
@@ -1759,7 +1758,7 @@ class PlotTopologies(object):
         central_meridian=0.0,
         tessellate_degrees=None,
     ):
-        """Return the reconstructed transform lines(gpml:Transform) as a ``geopandas.GeoDataFrame`` object."""
+        """Return the reconstructed transform lines(gpml:Transform) as a `geopandas.GeoDataFrame`_ object."""
         logger.debug(
             "The 'get_transforms' function has been changed since GPlately 1.3.0. "
             "You need to check your workflow to make sure the new 'get_transforms' function still suits your purpose. "
@@ -1824,7 +1823,7 @@ class PlotTopologies(object):
         central_meridian=0.0,
         tessellate_degrees=None,
     ):
-        """Return the reconstructed unclassified feature lines as a ``geopandas.GeoDataFrame`` object."""
+        """Return the reconstructed unclassified feature lines as a `geopandas.GeoDataFrame`_ object."""
         return self.get_feature(
             self.unclassified_features,
             central_meridian=central_meridian,
@@ -1851,7 +1850,7 @@ class PlotTopologies(object):
         central_meridian=0.0,
         tessellate_degrees=1,
     ):
-        """Return the reconstructed topological features listed below as a ``geopandas.GeoDataFrame`` object.
+        """Return the reconstructed topological features listed below as a `geopandas.GeoDataFrame`_ object.
 
         - pygplates.FeatureType.gpml_topological_network
         - pygplates.FeatureType.gpml_oceanic_crust
@@ -1920,7 +1919,7 @@ class PlotTopologies(object):
         central_meridian=0.0,
         tessellate_degrees=1,
     ):
-        """Return the reconstructed topological features listed below as a ``geopandas.GeoDataFrame`` object.
+        """Return the reconstructed topological features listed below as a `geopandas.GeoDataFrame`_ object.
 
         - ridge and transform boundary
         - subduction boundary
