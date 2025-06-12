@@ -48,7 +48,6 @@ from .oceans import SeafloorGrid
 from .plot import PlotTopologies
 from .points import Points
 from .reconstruction import PlateReconstruction
-from .reconstruction import reconstruct_points as reconstruct_points_by_topologies
 from .tools import EARTH_RADIUS
 
 __all__ = [
@@ -70,7 +69,6 @@ __all__ = [
     "CartopyPlotEngine",
     "PygmtPlotEngine",
     # functions
-    "reconstruct_points_by_topologies",
     # constants
     "EARTH_RADIUS",
 ]

@@ -1,16 +1,14 @@
-import logging
-import os
 import pickle
 
 import numpy as np
-from pygplates import RotationModel
 import pytest
 from conftest import gplately_plate_reconstruction_object as model
-from conftest import reconstruction_times
+from conftest import logger, reconstruction_times
+from pygplates import RotationModel
 
 import gplately
 
-logger = logging.getLogger("TestLog")
+logger.info(__name__)
 
 
 # ========================================= <gplately.PlateReconstruction> =====================================
@@ -68,7 +66,7 @@ def test_tessellate_trenches(time, model):
     )
     assert (
         np.abs(subduction_data[:, 2]) <= 50
-    ).all(), "Some trench convergence velocities exceed 20 cm/yr in Muller et al. (2019) at {} Ma.".format(
+    ).all(), "Some trench convergence velocities exceed 50 cm/yr in Muller et al. (2019) at {} Ma.".format(
         time
     )
 
@@ -91,7 +89,7 @@ def test_tessellate_ridges(time, model):
     )
     assert (
         np.abs(ridge_data[:, 2]) <= 50
-    ).all(), "Some ridge convergence velocities exceed 20 cm/yr in Muller et al. (2019) at {} Ma.".format(
+    ).all(), "Some ridge convergence velocities exceed 50 cm/yr in Muller et al. (2019) at {} Ma.".format(
         time
     )
 
@@ -156,7 +154,7 @@ def test_cont_arc_length(time, model, muller_2019_model):
     agegrid = gplately.Raster(
         data=agegrid_path,
         plate_reconstruction=model,
-        extent=[-180, 180, -90, 90],
+        extent=(-180, 180, -90, 90),
     )
 
     continental_grid = np.isnan(np.array(agegrid))

@@ -5,9 +5,11 @@ import numpy as np
 import pandas as pd
 import pytest
 from conftest import gplately_seafloorgrid_object as seafloorgrid
-from conftest import gridding_times
+from conftest import gridding_times, logger
 
 import gplately
+
+logger.info(__name__)
 
 # ========================================= <gplately.SeafloorGrid> =========================================
 

@@ -1,4 +1,5 @@
-"""A set of helper functions designed to streamline the use of GPlately’s functionalities, minimizing the coding effort required from users."""
+"""A set of helper functions designed to streamline the use of GPlately’s functionalities,
+minimizing the coding effort required from users."""
 
 from typing import Union
 
@@ -14,7 +15,6 @@ from .reconstruction import PlateReconstruction
 
 def get_plate_reconstruction(model: Union[str, PlateModel], model_repo_dir: str = "./"):
     """Return a :py:class:`gplately.PlateReconstruction` object for a given model name or :class:`gplately.PlateModel` object.
-
 
     Parameters
     ----------
