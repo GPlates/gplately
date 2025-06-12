@@ -1,6 +1,0 @@
-﻿gplately.reconstruct\_points\_by\_topologies
-============================================
-
-.. currentmodule:: gplately
-
-.. autofunction:: reconstruct_points_by_topologies

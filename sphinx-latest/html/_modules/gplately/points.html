@@ -112,11 +112,13 @@
 <div class="viewcode-block" id="Points">
 <a class="viewcode-back" href="../../generated/gplately.Points.html#gplately.Points">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">Points</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Reconstruct and work with with geological point data.</span>
-<span class="sd">    For example, the locations and plate velocities of point data can be calculated at a specific geological ``time``.</span>
-<span class="sd">    The :py:class:`gplately.Points` object requires the :py:class:`gplately.PlateReconstruction` object to work</span>
-<span class="sd">    because it holds the :py:attr:`gplately.PlateReconstruction.rotation_model` needed to quantify point rotations through time and</span>
-<span class="sd">    :py:attr:`gplately.PlateReconstruction.static_polygons` needed to partition points into plates.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Reconstruct and work with geological point data.</span>
+
+<span class="sd">    The locations and plate velocities of point data can be calculated at a specific geological time.</span>
+<span class="sd">    The :py:class:`Points` class depends on the :py:class:`PlateReconstruction` class,</span>
+<span class="sd">    as it provides essential components for reconstructing plate motions.</span>
+<span class="sd">    Specifically, it uses the :py:attr:`PlateReconstruction.rotation_model` to compute point rotations through time,</span>
+<span class="sd">    and the :py:attr:`PlateReconstruction.static_polygons` to assign points to their respective tectonic plates.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
 <div class="viewcode-block" id="Points.__init__">
@@ -137,73 +139,71 @@
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
 <span class="sd">        plate_reconstruction : PlateReconstruction</span>
-<span class="sd">            Allows for the accessibility of</span>
-<span class="sd">            :py:attr:`gplately.PlateReconstruction.rotation_model`,</span>
-<span class="sd">            :py:attr:`gplately.PlateReconstruction.topology_featues`, and</span>
-<span class="sd">            :py:attr:`gplately.PlateReconstruction.static_polygons`,</span>
-<span class="sd">            for use in the :py:class:`Points` object if called using ``self.plate_reconstruction.X``,</span>
-<span class="sd">            where X is the attribute.</span>
+<span class="sd">            Object to provide the following essential components for reconstructing points.</span>
+
+<span class="sd">            * :py:attr:`PlateReconstruction.rotation_model`</span>
+<span class="sd">            * :py:attr:`PlateReconstruction.topology_featues`</span>
+<span class="sd">            * :py:attr:`PlateReconstruction.static_polygons`</span>
 
 <span class="sd">        lons : float or 1D array</span>
-<span class="sd">            These are the longitudes of the initial points at the initial ``time``.</span>
-<span class="sd">            A single float, or a 1D array, containing the longitudes of point data.</span>
-<span class="sd">            If a single float then ``lats`` must also be a single float. If a 1D array then ``lats`` must also be a 1D array.</span>
+<span class="sd">            Longitudes of the initial points at the initial ``time``.</span>
 
 <span class="sd">        lats : float or 1D array</span>
-<span class="sd">            These are the latitudes of the initial points at the initial ``time``.</span>
-<span class="sd">            A single float, or a 1D array, containing the latitudes of point data.</span>
-<span class="sd">            If a single float then ``lons`` must also be a single float. If a 1D array then ``lons`` must also be a 1D array.</span>
+<span class="sd">            Latitudes of the initial points at the initial ``time``.</span>
 
 <span class="sd">        time : float, default=0</span>
 <span class="sd">            The initial time (Ma) of the points.</span>
-<span class="sd">            Note that ``lons`` and ``lats`` are the initial locations of the points at this time.</span>
+<span class="sd">            The ``lons`` and ``lats`` are the initial coordinates of the points at this time.</span>
 <span class="sd">            By default, it is set to the present day (0 Ma).</span>
 
 <span class="sd">        plate_id : int or 1D array or None, default=None</span>
 <span class="sd">            Plate ID(s) of a particular tectonic plate on which point data lies, if known.</span>
-<span class="sd">            If a single integer then all points will have the same plate ID. If a 1D array then length must match the number of points.</span>
-<span class="sd">            If ``None`` then plate IDs are determined using the :py:attr:`gplately.PlateReconstruction.static_polygons` (see Notes).</span>
+<span class="sd">            If it is a single integer then all points will have the same plate ID. If it is a 1D array then length must match the number of points.</span>
+<span class="sd">            If ``None`` then plate IDs are determined using the :py:attr:`PlateReconstruction.static_polygons`.</span>
 <span class="sd">            By default, the plate IDs are determined using the static polygons.</span>
 
 <span class="sd">        age : float or 1D array or None, default=numpy.inf</span>
 <span class="sd">            Age(s) at which each point appears, if known.</span>
-<span class="sd">            If a single float then all points will have the same age. If a 1D array then length must match the number of points.</span>
-<span class="sd">            If ``None`` then ages are determined using the :py:attr:`gplately.PlateReconstruction.static_polygons` (see Notes).</span>
+<span class="sd">            If it is a single float then all points will have the same age.</span>
+<span class="sd">            If it is a 1D array then length must match the number of points.</span>
+<span class="sd">            If ``None`` then ages are determined using the :py:attr:`PlateReconstruction.static_polygons`.</span>
 <span class="sd">            For points on oceanic crust this is when they were created at a mid-ocean ridge.</span>
 <span class="sd">            By default, all points exist for all time (ie, time of appearance is infinity). This default is for backward</span>
 <span class="sd">            compatibility, but you&#39;ll typically only want this if all your points are on **continental** crust (not *oceanic*).</span>
 
 <span class="sd">        anchor_plate_id : int, optional</span>
-<span class="sd">            Anchor plate that the specified ``lons`` and ``lats`` are relative to.</span>
+<span class="sd">            Anchor plate ID that the specified ``lons`` and ``lats`` are relative to.</span>
 <span class="sd">            Defaults to the current anchor plate ID of ``plate_reconstruction`` (its ``anchor_plate_id`` attribute).</span>
 
 <span class="sd">        remove_unreconstructable_points : bool or list, default=False</span>
-<span class="sd">            Whether to remove points (in ``lons`` and ``lats``) that cannot be reconstructed.</span>
-<span class="sd">            By default, any unreconstructable points are retained.</span>
+<span class="sd">            Whether to remove points that cannot be reconstructed.</span>
+<span class="sd">            By default, all unreconstructable points are retained.</span>
 <span class="sd">            A point cannot be reconstructed if it cannot be assigned a plate ID, or cannot be assigned an age, because it did not</span>
 <span class="sd">            intersect any reconstructed static polygons (note that this can only happen when ``plate_id`` and/or ``age`` is None).</span>
 <span class="sd">            Also, a point cannot be reconstructed if point ages were **explicitly** provided (ie, ``age`` was **not** None) and</span>
 <span class="sd">            a point&#39;s age was less than (younger than) ``time``, meaning it did not exist as far back as ``time``.</span>
-<span class="sd">            Additionally, if this variable is a regular Python ``list`` then the indices (into the supplied ``lons`` and ``lats`` arguments)</span>
+<span class="sd">            Additionally, if this variable is a :py:class:`list` then the indices (into the supplied ``lons`` and ``lats`` arguments)</span>
 <span class="sd">            of any removed points (ie, that are unreconstructable) are appended to that list.</span>
 
-<span class="sd">        Notes</span>
-<span class="sd">        -----</span>
-<span class="sd">        If ``time`` is non-zero (ie, not present day) then ``lons`` and ``lats`` are assumed to be the **reconstructed** point</span>
-<span class="sd">        locations at `time`. And the reconstructed positions are assumed to be relative to the anchor plate</span>
-<span class="sd">        (which is ``plate_reconstruction.anchor_plate_id`` if ``anchor_plate_id`` is None).</span>
 
-<span class="sd">        If ``plate_id`` and/or ``age`` is ``None`` then the plate ID and/or age of each point is determined by reconstructing the static polygons</span>
-<span class="sd">        of ``plate_reconstruction`` to ``time`` and reconstructing relative to the anchor plate (regardless of whether ``time`` is present day or not).</span>
-<span class="sd">        And then, for each point, assigning the plate ID and/or time-of-appearance (begin time) of the static polygon containing the point.</span>
+<span class="sd">        .. _points-note:</span>
+<span class="sd">        .. note::</span>
 
-<span class="sd">        A point is considered unreconstructable if it does not exist at ``time``. This can happen if its age was explicitly provided (ie, ``age`` is *not* None)</span>
-<span class="sd">        but is younger than ``time``. It can also happen if the point is automatically assigned a plate ID (ie, ``plate_id`` is None) or an age (ie, ``age`` is None)</span>
-<span class="sd">        but does not intersect any reconstructed static polygons (at ``time``). In either of these cases it is marked as unreconstructable and will not be available</span>
-<span class="sd">        for any method outputing a reconstruction, such as ``reconstruct``, or any method depending on a reconstruction, such as ``plate_velocity``.</span>
-<span class="sd">        However, all the initial locations and their associated plate IDs and ages will still be accessible as attributes, regardless of whether all the points</span>
-<span class="sd">        are reconstructable or not. That is, unless ``remove_unreconstructable_points`` is True (or a ``list``),</span>
-<span class="sd">        in which case only the reconstructable points are retained.</span>
+<span class="sd">            If ``time`` is non-zero (ie, not present day) then ``lons`` and ``lats`` are assumed to be the **reconstructed** point</span>
+<span class="sd">            locations at ``time``. And the reconstructed positions are assumed to be relative to the anchor plate</span>
+<span class="sd">            (which is ``plate_reconstruction.anchor_plate_id`` if ``anchor_plate_id`` is None).</span>
+
+<span class="sd">            If ``plate_id`` and/or ``age`` is None then the plate ID and/or age of each point is determined by reconstructing the static polygons</span>
+<span class="sd">            of ``plate_reconstruction`` to ``time`` and reconstructing relative to the anchor plate (regardless of whether ``time`` is present day or not).</span>
+<span class="sd">            And then, for each point, assigning the plate ID and/or time-of-appearance (begin time) of the static polygon containing the point.</span>
+
+<span class="sd">            A point is considered unreconstructable if it does not exist at ``time``. This can happen if its age was explicitly provided (ie, ``age`` is **not** None)</span>
+<span class="sd">            but is younger than ``time``. It can also happen if the point is automatically assigned a plate ID (ie, ``plate_id`` is None) or an age (ie, ``age`` is None)</span>
+<span class="sd">            but does not intersect any reconstructed static polygons (at ``time``). In either of these cases it is marked as unreconstructable and will not be available</span>
+<span class="sd">            for any method outputing a reconstruction, such as :meth:`reconstruct()`, or any method depending on a reconstruction, such as :meth:`plate_velocity`.</span>
+<span class="sd">            However, all the initial locations and their associated plate IDs and ages will still be accessible as attributes, regardless of whether all the points</span>
+<span class="sd">            are reconstructable or not. That is, unless ``remove_unreconstructable_points`` is True (or a :py:class:`list`),</span>
+<span class="sd">            in which case only the reconstructable points are retained.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># If anchor plate is None then use default anchor plate of &#39;plate_reconstruction&#39;.</span>
         <span class="k">if</span> <span class="n">anchor_plate_id</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -460,63 +460,55 @@
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">plate_reconstruction</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        Allows for the accessibility of</span>
-<span class="sd">        :py:attr:`gplately.PlateReconstruction.rotation_model`,</span>
-<span class="sd">        :py:attr:`gplately.PlateReconstruction.topology_featues`, and</span>
-<span class="sd">        :py:attr:`gplately.PlateReconstruction.static_polygons`, for use in the :py:class:`Points` object</span>
-<span class="sd">        if called using ``self.plate_reconstruction.X``,</span>
-<span class="sd">        where X is the attribute.</span>
+<span class="sd">        Object to provide the following essential components for reconstructing points.</span>
+
+<span class="sd">        * :py:attr:`PlateReconstruction.rotation_model`</span>
+<span class="sd">        * :py:attr:`PlateReconstruction.topology_featues`</span>
+<span class="sd">        * :py:attr:`PlateReconstruction.static_polygons`</span>
 
 <span class="sd">        :type: PlateReconstruction</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="c1"># Note: This is documented as an attribute in the class docstring.</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_plate_reconstruction</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">lons</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        A 1D array containing the longitudes of point data.</span>
-<span class="sd">        These are the longitudes of the initial points at the initial ``time``.</span>
+<span class="sd">        Longitudes of the initial points at the initial ``time``.</span>
 
 <span class="sd">        :type: float 1D array</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="c1"># Note: This is documented as an attribute in the class docstring.</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_lons</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">lats</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">        A 1D array containing the latitudes of point data.</span>
-<span class="sd">        These are the latitudes of the initial points at the initial ``time``.</span>
+<span class="sd">        Latitudes of the initial points at the initial ``time``.</span>
 
 <span class="sd">        :type: float 1D array</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="c1"># Note: This is documented as an attribute in the class docstring.</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_lats</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">plate_id</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        A 1D array containing the plate IDs of the points.</span>
-<span class="sd">        The length matches that of ``lons`` and ``lats``.</span>
+<span class="sd">        The length must match that of ``lons`` and ``lats``.</span>
 
 <span class="sd">        :type: int 1D array</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="c1"># Note: This is documented as an attribute in the class docstring.</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_plate_id</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">age</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        A 1D array containing the ages (time of appearance) of the points.</span>
-<span class="sd">        The length matches that of ``lons`` and ``lats``.</span>
+<span class="sd">        The length must match that of ``lons`` and ``lats``.</span>
 <span class="sd">        For points on oceanic crust this is when they were created at a mid-ocean ridge.</span>
 <span class="sd">        Any points existing for all time will have a value of ``numpy.inf`` (equivalent to ``float(&#39;inf&#39;)``).</span>
 
 <span class="sd">        :type: float 1D array</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="c1"># Note: This is documented as an attribute in the class docstring.</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_age</span>
 
     <span class="nd">@property</span>
@@ -527,18 +519,16 @@
 
 <span class="sd">        :type: int</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="c1"># Note: This is documented as an attribute in the class docstring.</span>
         <span class="k">return</span> <span class="nb">len</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">points</span><span class="p">)</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">time</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
 <span class="sd">        The initial time (Ma) of the points.</span>
-<span class="sd">        The initial ``lons`` and ``lats`` are the locations of the points at this time.</span>
+<span class="sd">        The initial ``lons`` and ``lats`` are the coordinates of the points at this time.</span>
 
 <span class="sd">        :type: float</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="c1"># Note: This is documented as an attribute in the class docstring.</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_time</span>
 
     <span class="nd">@property</span>
@@ -550,7 +540,6 @@
 
 <span class="sd">        :type: int</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="c1"># Note: This is documented as an attribute in the class docstring.</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_anchor_plate_id</span>
 
     <span class="nd">@staticmethod</span>
@@ -661,14 +650,12 @@
 <div class="viewcode-block" id="Points.get_geopandas_dataframe">
 <a class="viewcode-back" href="../../generated/gplately.Points.html#gplately.Points.get_geopandas_dataframe">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_geopandas_dataframe</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Adds a shapely point ``geometry`` attribute to each point in the :class:`gplately.Points` object.</span>
-<span class="sd">        pandas.DataFrame that has a column with geometry</span>
-<span class="sd">        Any existing point attributes are kept.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return a ``geopandas.GeoDataFrame`` object for the points.</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
-<span class="sd">        GeoDataFrame : instance of `geopandas.GeoDataFrame`</span>
-<span class="sd">            A pandas.DataFrame with rows equal to the number of points in the :class:`gplately.Points` object,</span>
+<span class="sd">        GeoDataFrame : geopandas.GeoDataFrame</span>
+<span class="sd">            A ``geopandas.GeoDataFrame`` object with rows equal to the number of points in the :class:`Points` object,</span>
 <span class="sd">            and an additional column containing a shapely ``geometry`` attribute.</span>
 
 <span class="sd">        Example</span>
@@ -719,49 +706,7 @@
 <div class="viewcode-block" id="Points.get_geodataframe">
 <a class="viewcode-back" href="../../generated/gplately.Points.html#gplately.Points.get_geodataframe">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_geodataframe</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Returns the output of :py:meth:`Points.get_geopandas_dataframe()`.</span>
-
-<span class="sd">        Adds a shapely point geometry attribute to each point in the :class:`gplately.Points` object.</span>
-<span class="sd">        pandas.DataFrame that has a column with geometry</span>
-<span class="sd">        Any existing point attributes are kept.</span>
-
-<span class="sd">        Returns</span>
-<span class="sd">        -------</span>
-<span class="sd">        GeoDataFrame : instance of geopandas.GeoDataFrame</span>
-<span class="sd">            A pandas.DataFrame with rows equal to the number of points in the :class:`gplately.Points` object,</span>
-<span class="sd">            and an additional column containing a shapely geometry attribute.</span>
-
-<span class="sd">        Example</span>
-<span class="sd">        -------</span>
-
-<span class="sd">        .. code-block:: python</span>
-<span class="sd">            :linenos:</span>
-
-<span class="sd">            pt_lons = np.array([140., 150., 160.])</span>
-<span class="sd">            pt_lats = np.array([-30., -40., -50.])</span>
-
-<span class="sd">            gpts = gplately.Points(model, pt_lons, pt_lats)</span>
-
-<span class="sd">            # Add sample attributes a, b and c to the points in the Points object</span>
-<span class="sd">            gpts.add_attributes(</span>
-<span class="sd">                a=[10,2,2],</span>
-<span class="sd">                b=[2,3,3],</span>
-<span class="sd">                c=[30,0,0],</span>
-<span class="sd">            )</span>
-
-<span class="sd">            gpts.get_geopandas_dataframe()</span>
-
-<span class="sd">        the output:</span>
-
-<span class="sd">        .. code:: console</span>
-
-<span class="sd">                a  b   c                     geometry</span>
-<span class="sd">            0  10  2  30  POINT (140.00000 -30.00000)</span>
-<span class="sd">            1   2  3   0  POINT (150.00000 -40.00000)</span>
-<span class="sd">            2   2  3   0  POINT (160.00000 -50.00000)</span>
-
-
-<span class="sd">        &quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;The same as :meth:`get_geopandas_dataframe`.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_geopandas_dataframe</span><span class="p">()</span></div>
 
 
@@ -770,10 +715,9 @@
     <span class="k">def</span><span class="w"> </span><span class="nf">reconstruct</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">time</span><span class="p">,</span> <span class="n">anchor_plate_id</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">return_array</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">return_point_indices</span><span class="o">=</span><span class="kc">False</span>
     <span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Reconstructs points supplied to this :class:`gplately.Points` object from the supplied initial time (``self.time``)</span>
-<span class="sd">        to the specified time (``time``).</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Reconstruct points from the initial time (``self.time``) to the specified time (``time``).</span>
 
-<span class="sd">        Only those points that are reconstructable (see :class:`gplately.Points`) and that have ages greater than or equal</span>
+<span class="sd">        Only those points that are reconstructable (See :ref:`Notes &lt;points-note&gt;`) and that have ages greater than or equal</span>
 <span class="sd">        to ``time`` (ie, at points that exist at ``time``) are reconstructed.</span>
 
 <span class="sd">        Parameters</span>
@@ -787,7 +731,7 @@
 <span class="sd">            (which is the anchor plate that the initial points at the initial time are relative to).</span>
 
 <span class="sd">        return_array : bool, default=False</span>
-<span class="sd">            Return a 2-tuple of ``numpy.ndarray``, rather than a :class:`gplately.Points` object.</span>
+<span class="sd">            Return a 2-tuple of ``numpy.ndarray``, rather than a :class:`Points` object.</span>
 
 <span class="sd">        return_point_indices : bool, default=False</span>
 <span class="sd">            Return the indices of the points that are reconstructed.</span>
@@ -796,15 +740,12 @@
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
-<span class="sd">        reconstructed_points : :class:`gplately.Points`</span>
-<span class="sd">            Only provided if ``return_array`` is False.</span>
-<span class="sd">            The reconstructed points in a :class:`gplately.Points` object.</span>
+<span class="sd">        reconstructed_points : :class:`Points`</span>
+<span class="sd">            If the ``return_array`` is False, return the reconstructed points in a :class:`Points` object.</span>
 <span class="sd">        rlons, rlats : ndarray</span>
-<span class="sd">            Only provided if ``return_array`` is True.</span>
-<span class="sd">            The longitude and latitude coordinate arrays of the reconstructed points.</span>
+<span class="sd">            If the ``return_array`` is True, return the longitude and latitude coordinate arrays of the reconstructed points.</span>
 <span class="sd">        point_indices : ndarray</span>
-<span class="sd">            Only provided if ``return_point_indices`` is True.</span>
-<span class="sd">            The indices of the returned points (that are reconstructed).</span>
+<span class="sd">            If the ``return_point_indices`` is True, return the indices of the returned points (that are reconstructed).</span>
 <span class="sd">            This array is the same size as ``rlons`` and ``rlats`` (or size of ``reconstructed_points``).</span>
 <span class="sd">            These are indices into ``self.lons``, ``self.lats``, ``self.plate_id`` and ``self.age``.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -906,10 +847,10 @@
     <span class="k">def</span><span class="w"> </span><span class="nf">reconstruct_to_birth_age</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">ages</span><span class="p">,</span> <span class="n">anchor_plate_id</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">return_point_indices</span><span class="o">=</span><span class="kc">False</span>
     <span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Reconstructs points supplied to this :class:`gplately.Points` object from the supplied initial time (``self.time``) to a range of times.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Reconstruct points from the initial time (``self.time``) to a range of times.</span>
 
-<span class="sd">        The number of supplied times must equal the number of points supplied to this :class:`gplately.Points` object (ie, ``self.size`` attribute).</span>
-<span class="sd">        Only those points that are reconstructable (see :class:`gplately.Points`) and that have ages greater than or equal</span>
+<span class="sd">        The number of supplied times must equal the number of points supplied to this :class:`Points` object (ie, ``self.size`` attribute).</span>
+<span class="sd">        Only those points that are reconstructable (See :ref:`Notes &lt;points-note&gt;`) and that have ages greater than or equal</span>
 <span class="sd">        to the respective supplied ages (ie, at points that exist at the supplied ages) are reconstructed.</span>
 
 <span class="sd">        Parameters</span>
@@ -925,12 +866,12 @@
 <span class="sd">        return_point_indices : bool, default=False</span>
 <span class="sd">            Return the indices of the points that are reconstructed.</span>
 <span class="sd">            Those points with an age less than their respective supplied age have not yet appeared, and therefore are not reconstructed.</span>
-<span class="sd">            These are indices into `self.lons`, `self.lats`, `self.plate_id` and `self.age`.</span>
+<span class="sd">            These are indices into ``self.lons``, ``self.lats``, ``self.plate_id`` and ``self.age``.</span>
 
 <span class="sd">        Raises</span>
 <span class="sd">        ------</span>
 <span class="sd">        ValueError</span>
-<span class="sd">            If the number of ages is not equal to the number of points supplied to this :class:`gplately.Points` object.</span>
+<span class="sd">            If the number of ages is not equal to the number of points supplied to this :class:`Points` object.</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
@@ -940,11 +881,11 @@
 <span class="sd">            Only provided if ``return_point_indices`` is True.</span>
 <span class="sd">            The indices of the returned points (that are reconstructed).</span>
 <span class="sd">            This array is the same size as ``rlons`` and ``rlats``.</span>
-<span class="sd">            These are indices into ``self.lons``, ``self.lats``, ``self.plate_id` and ``self.age``.</span>
+<span class="sd">            These are indices into ``self.lons``, ``self.lats``, ``self.plate_id`` and ``self.age``.</span>
 
 <span class="sd">        Examples</span>
 <span class="sd">        --------</span>
-<span class="sd">        To reconstruct n seed points&#39; locations to B Ma (for this example n=2, with (lon,lat) = (78,30) and (56,22) at time=0 Ma,</span>
+<span class="sd">        To reconstruct n seed points to B Ma (for this example n=2, with (lon,lat) = (78,30) and (56,22) at time=0 Ma,</span>
 <span class="sd">        and we reconstruct to B=10 Ma):</span>
 
 <span class="sd">        .. code-block:: python</span>
@@ -1081,11 +1022,9 @@
     <span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Calculates the east and north components of the tectonic plate velocities of the internal points at a particular geological time.</span>
 
-<span class="sd">        The point velocities are calculated using the plate IDs of the internal points and the rotation model of the internal</span>
-<span class="sd">        :class:`gplately.PlateReconstruction` object.</span>
-<span class="sd">        If the requested ``time`` differs from the initial time (``self.time``) then the internal points are first reconstructed to ``time``</span>
-<span class="sd">        before calculating velocities.</span>
-<span class="sd">        Velocities are only calculated at points that are reconstructable (see :class:`gplately.Points`) and that have ages greater than or equal to</span>
+<span class="sd">        The point velocities are calculated using the plate IDs of the internal points and the rotation model of the internal :class:`PlateReconstruction` object.</span>
+<span class="sd">        If the requested ``time`` differs from the initial time (``self.time``) then the internal points are first reconstructed to ``time`` before calculating velocities.</span>
+<span class="sd">        Velocities are only calculated at points that are reconstructable (See :ref:`Notes &lt;points-note&gt;`) and that have ages greater than or equal to</span>
 <span class="sd">        ``time`` (ie, at points that exist at ``time``).</span>
 
 <span class="sd">        Parameters</span>
@@ -1122,8 +1061,8 @@
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
 <span class="sd">        velocity_lons, velocity_lats : ndarray</span>
-<span class="sd">            The velocity arrays containing the **east** (longitude) and *north* (latitude) components of the velocity of each internal point that exists at ``time``</span>
-<span class="sd">            (ie, whose age greater than or equal to ``time``).</span>
+<span class="sd">            The velocity arrays containing the **east** (longitude) and *north* (latitude) components of the velocity</span>
+<span class="sd">            of each internal point that exists at ``time`` (ie, whose age greater than or equal to ``time``).</span>
 <span class="sd">        rlons, rlats : ndarray</span>
 <span class="sd">            Only provided if ``return_reconstructed_points`` is True.</span>
 <span class="sd">            The longitude and latitude coordinate arrays of the reconstructed points (at which velocities are calculated).</span>
@@ -1296,8 +1235,7 @@
     <span class="k">def</span><span class="w"> </span><span class="nf">motion_path</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">time_array</span><span class="p">,</span> <span class="n">anchor_plate_id</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span> <span class="n">return_rate_of_motion</span><span class="o">=</span><span class="kc">False</span>
     <span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Create a path of points to mark the trajectory of a plate&#39;s motion</span>
-<span class="sd">        through geological time.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Create a path of points to mark the trajectory of a plate&#39;s motion through geological time.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -1317,7 +1255,7 @@
 
 <span class="sd">        anchor_plate_id : int, optional</span>
 <span class="sd">            Reconstruct features with respect to a certain anchor plate. By default, reconstructions are made</span>
-<span class="sd">            with respect to the anchor plate ID specified in the :class:`gplately.PlateReconstruction` object.</span>
+<span class="sd">            with respect to the anchor plate ID specified in the :class:`PlateReconstruction` object.</span>
 <span class="sd">        return_rate_of_motion : bool, default=False</span>
 <span class="sd">            Choose whether to return the rate of plate motion through time for each</span>
 
@@ -1325,12 +1263,10 @@
 <span class="sd">        -------</span>
 <span class="sd">        rlons : ndarray</span>
 <span class="sd">            An n-dimensional array with columns containing the longitudes of</span>
-<span class="sd">            the seed points at each timestep in ``time_array``. There are n</span>
-<span class="sd">            columns for n seed points.</span>
+<span class="sd">            the seed points at each timestep in ``time_array``. There are n columns for n seed points.</span>
 <span class="sd">        rlats : ndarray</span>
 <span class="sd">            An n-dimensional array with columns containing the latitudes of</span>
-<span class="sd">            the seed points at each timestep in ``time_array``. There are n</span>
-<span class="sd">            columns for n seed points.</span>
+<span class="sd">            the seed points at each timestep in ``time_array``. There are n columns for n seed points.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">time_array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">atleast_1d</span><span class="p">(</span><span class="n">time_array</span><span class="p">)</span>
 
@@ -1439,8 +1375,7 @@
     <span class="k">def</span><span class="w"> </span><span class="nf">flowline</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">time_array</span><span class="p">,</span> <span class="n">left_plate_ID</span><span class="p">,</span> <span class="n">right_plate_ID</span><span class="p">,</span> <span class="n">return_rate_of_motion</span><span class="o">=</span><span class="kc">False</span>
     <span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Create a path of points to track plate motion away from</span>
-<span class="sd">        spreading ridges over time using half-stage rotations.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Create a path of points to track plate motion away from spreading ridges over time using half-stage rotations.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -1451,38 +1386,30 @@
 <span class="sd">        time_array : arr</span>
 <span class="sd">            A list of times to obtain seed point locations at.</span>
 <span class="sd">        left_plate_ID : int</span>
-<span class="sd">            The plate ID of the polygon to the left of the spreading</span>
-<span class="sd">            ridge.</span>
+<span class="sd">            The plate ID of the polygon to the left of the spreading ridge.</span>
 <span class="sd">        right_plate_ID : int</span>
-<span class="sd">            The plate ID of the polygon to the right of the spreading</span>
-<span class="sd">            ridge.</span>
+<span class="sd">            The plate ID of the polygon to the right of the spreading ridge.</span>
 <span class="sd">        return_rate_of_motion : bool, default False</span>
-<span class="sd">            Choose whether to return a step time and step rate array for</span>
-<span class="sd">            a step-plot of flowline motion.</span>
+<span class="sd">            Choose whether to return a step time and step rate array for a step-plot of flowline motion.</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
 <span class="sd">        left_lon : ndarray</span>
 <span class="sd">            The longitudes of the **left** flowline for n seed points.</span>
-<span class="sd">            There are n columns for n seed points, and m rows</span>
-<span class="sd">            for m time steps in ``time_array``.</span>
+<span class="sd">            There are n columns for n seed points, and m rows for m time steps in ``time_array``.</span>
 <span class="sd">        left_lat : ndarray</span>
 <span class="sd">            The latitudes of the **left** flowline of n seed points.</span>
-<span class="sd">            There are n columns for n seed points, and m rows</span>
-<span class="sd">            for m time steps in ``time_array``.</span>
+<span class="sd">            There are n columns for n seed points, and m rows for m time steps in ``time_array``.</span>
 <span class="sd">        right_lon : ndarray</span>
 <span class="sd">            The longitudes of the **right** flowline of n seed points.</span>
-<span class="sd">            There are n columns for n seed points, and m rows</span>
-<span class="sd">            for m time steps in ``time_array``.</span>
+<span class="sd">            There are n columns for n seed points, and m rows for m time steps in ``time_array``.</span>
 <span class="sd">        right_lat : ndarray</span>
 <span class="sd">            The latitudes of the **right** flowline of n seed points.</span>
-<span class="sd">            There are n columns for n seed points, and m rows</span>
-<span class="sd">            for m time steps in ``time_array``.</span>
+<span class="sd">            There are n columns for n seed points, and m rows for m time steps in ``time_array``.</span>
 
 <span class="sd">        Examples</span>
 <span class="sd">        --------</span>
-<span class="sd">        To access the ith seed point&#39;s left and right latitudes and</span>
-<span class="sd">        longitudes:</span>
+<span class="sd">        To access the i\\ :sup:`th`  seed point&#39;s left and right latitudes and longitudes:</span>
 
 <span class="sd">        .. code-block:: python</span>
 <span class="sd">            :linenos:</span>
@@ -1492,7 +1419,6 @@
 <span class="sd">                left_flowline_latitudes = left_lat[:,i]</span>
 <span class="sd">                right_flowline_longitudes = right_lon[:,i]</span>
 <span class="sd">                right_flowline_latitudes = right_lat[:,i]</span>
-
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="n">model</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">plate_reconstruction</span>
@@ -1527,7 +1453,7 @@
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
-<span class="sd">        filename : string</span>
+<span class="sd">        filename : str</span>
 <span class="sd">            Can be provided as a string including the filename and the file format needed.</span>
 
 <span class="sd">        Returns</span>
@@ -1574,7 +1500,7 @@
         <span class="n">output_name</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
         <span class="n">return_array</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
     <span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Rotate a grid defined in one plate model reference frame within a :class:`gplately.Raster` object to another plate</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Rotate a grid defined in one plate model reference frame within a :class:`Raster` object to another plate</span>
 <span class="sd">        reconstruction model reference frame.</span>
 
 <span class="sd">        Parameters</span>
@@ -1606,7 +1532,7 @@
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
 <span class="sd">        Points</span>
-<span class="sd">            An instance of the :class:`gplately.Points` object containing the rotated points.</span>
+<span class="sd">            An instance of the :class:`Points` object containing the rotated points.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">output_name</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">raise</span> <span class="ne">NotImplementedError</span><span class="p">(</span><span class="s2">&quot;&#39;output_name&#39; parameter is not implemented&quot;</span><span class="p">)</span>

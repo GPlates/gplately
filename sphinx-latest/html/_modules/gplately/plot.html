@@ -167,8 +167,8 @@
 
 <span class="s2">Returns</span>
 <span class="s2">-------</span>
-<span class="s2">``geopandas.GeoDataFrame``</span>
-<span class="s2">    A ``geopandas.GeoDataFrame`` object containing the reconstructed **</span><span class="si">{0}</span><span class="s2">** geometries. The geometry column name is &quot;geometry&quot;.</span>
+<span class="s2">`geopandas.GeoDataFrame`_</span>
+<span class="s2">    A `geopandas.GeoDataFrame`_ object containing the reconstructed **</span><span class="si">{0}</span><span class="s2">** geometries. The geometry column name is &quot;geometry&quot;.</span>
 <span class="s2">&quot;&quot;&quot;</span>
 
 
@@ -199,15 +199,15 @@
 <span class="k">class</span><span class="w"> </span><span class="nc">PlotTopologies</span><span class="p">(</span><span class="nb">object</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Read, reconstruct and plot topology features at specific reconstruction times.</span>
 
-<span class="sd">    The :class:`gplately.PlotTopologies` class:</span>
+<span class="sd">    The :class:`PlotTopologies` class:</span>
 
 <span class="sd">    * Read features held in GPlates GPML (GPlates Markup Language) files and ESRI shapefiles.</span>
 <span class="sd">    * Reconstruct the locations of these features as they migrate through geological time.</span>
 <span class="sd">    * Turn these reconstructed features into Shapely geometries for plotting.</span>
 
-<span class="sd">    To create the :class:`gplately.PlotTopologies` object, supply:</span>
+<span class="sd">    To create the :class:`PlotTopologies` object, supply:</span>
 
-<span class="sd">    * an instance of the :class:`gplately.PlateReconstruction` object</span>
+<span class="sd">    * an instance of the :class:`PlateReconstruction` object</span>
 
 <span class="sd">    and optionally,</span>
 
@@ -235,10 +235,10 @@
 <span class="sd">        # Setting a new reconstruction time</span>
 <span class="sd">        gplot.time = 20  # Ma</span>
 
-<span class="sd">    The ``coastline_filename``, ``continent_filename`` and ``COB_filename`` can be paths (str) to GPML and/or shapefiles,</span>
-<span class="sd">    as well as instances of ``pygplates.FeatureCollection``.</span>
+<span class="sd">    The ``coastline_filename``, ``continent_filename`` and ``COB_filename`` can be paths (:class:`str`) to GPML and/or shapefiles,</span>
+<span class="sd">    as well as instances of `pygplates.FeatureCollection`_.</span>
 
-<span class="sd">    Some features for plotting (like plate boundaries) are taken from the :attr:`gplately.PlateReconstruction.topology_features`.</span>
+<span class="sd">    Some features for plotting (like plate boundaries) are taken from the :attr:`PlateReconstruction.topology_features`.</span>
 <span class="sd">    They have already been reconstructed to the given ``time``.</span>
 <span class="sd">    Simply provide a new reconstruction time by changing the ``time`` attribute, e.g.</span>
 
@@ -260,7 +260,7 @@
 <span class="sd">    * continental polygons and</span>
 <span class="sd">    * continent-ocean boundary polylines</span>
 <span class="sd">    * topological plate velocity vector fields</span>
-<span class="sd">    * netCDF4 MaskedArray or ndarray raster data:</span>
+<span class="sd">    * netCDF4 `MaskedArray`_ or ndarray raster data:</span>
 <span class="sd">        - seafloor age grids</span>
 <span class="sd">        - paleo-age grids</span>
 <span class="sd">        - global relief (topography and bathymetry)</span>
@@ -268,6 +268,11 @@
 <span class="sd">        - seafloor fabric</span>
 <span class="sd">        - large igneous provinces</span>
 <span class="sd">        - volcanic provinces</span>
+
+<span class="sd">    .. _pygplates.Feature: https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature</span>
+<span class="sd">    .. _pygplates.ReconstructedFeatureGeometry: https://www.gplates.org/docs/pygplates/generated/pygplates.reconstructedfeaturegeometry</span>
+<span class="sd">    .. _geopandas.GeoDataFrame: https://geopandas.org/en/stable/docs/reference/api/geopandas.GeoDataFrame.html</span>
+<span class="sd">    .. _MaskedArray: https://numpy.org/doc/stable/reference/maskedarray.generic.html</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
 <div class="viewcode-block" id="PlotTopologies.__init__">
@@ -282,40 +287,43 @@
         <span class="n">anchor_plate_id</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
         <span class="n">plot_engine</span><span class="p">:</span> <span class="n">PlotEngine</span> <span class="o">=</span> <span class="n">CartopyPlotEngine</span><span class="p">(),</span>
     <span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Constructor. Create a :class:`PlotTopologies` object.</span>
+
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
-<span class="sd">        plate_reconstruction : instance of &lt;gplately.reconstruction.PlateReconstruction&gt;</span>
-<span class="sd">            The GPlately :class:`gplately.PlateReconstruction` object will be used to access a plate</span>
+<span class="sd">        plate_reconstruction : PlateReconstruction</span>
+<span class="sd">            The :class:`PlateReconstruction` object will be used to access a plate</span>
 <span class="sd">            ``rotation_model`` and a set of ``topology_features`` which contains plate boundary</span>
 <span class="sd">            features like trenches, ridges and transforms.</span>
-<span class="sd">        coastlines : str, or instance of &lt;pygplates.FeatureCollection&gt;</span>
+<span class="sd">        coastlines : str, or `pygplates.FeatureCollection`_</span>
 <span class="sd">            The full string path to a coastline feature file. Coastline features can also</span>
-<span class="sd">            be passed as instances of the ``pygplates.FeatureCollection`` object (this is</span>
-<span class="sd">            the case if these features are sourced from the :class:`gplately.DataServer` object).</span>
-<span class="sd">        continents : str, or instance of &lt;pygplates.FeatureCollection&gt;</span>
+<span class="sd">            be passed as a `pygplates.FeatureCollection`_ object (this is</span>
+<span class="sd">            the case if these features are sourced from the :class:`DataServer` object).</span>
+<span class="sd">        continents : str, or `pygplates.FeatureCollection`_</span>
 <span class="sd">            The full string path to a continent feature file. Continent features can also</span>
-<span class="sd">            be passed as instances of the ``pygplates.FeatureCollection`` object (this is</span>
-<span class="sd">            the case if these features are sourced from the :class:`gplately.DataServer` object).</span>
-<span class="sd">        COBs : str, or instance of &lt;pygplates.FeatureCollection&gt;</span>
+<span class="sd">            be passed as a `pygplates.FeatureCollection`_ object (this is</span>
+<span class="sd">            the case if these features are sourced from the :class:`DataServer` object).</span>
+<span class="sd">        COBs : str, or `pygplates.FeatureCollection`_</span>
 <span class="sd">            The full string path to a COB feature file. COB features can also be passed</span>
-<span class="sd">            as instances of the ``pygplates.FeatureCollection`` object (this is the case</span>
-<span class="sd">            if these features are sourced from the :class:`gplately.DataServer` object).</span>
+<span class="sd">            as a `pygplates.FeatureCollection`_ object (this is the case</span>
+<span class="sd">            if these features are sourced from the :class:`DataServer` object).</span>
 <span class="sd">        time: float</span>
 <span class="sd">            The time (Ma) to reconstruct and plot geological features to.</span>
 <span class="sd">        anchor_plate_id : int</span>
 <span class="sd">            Anchor plate ID for reconstruction. Must be an integer &gt;= 0.</span>
-<span class="sd">        plot_engine : :class:`gplately.PlotEngine`, default=CartopyPlotEngine()</span>
+<span class="sd">        plot_engine : :class:`PlotEngine`, default=CartopyPlotEngine()</span>
 <span class="sd">            Use Cartopy (:class:`CartopyPlotEngine`) or pyGMT (:class:`PygmtPlotEngine`) to plot the map.</span>
+
+
+<span class="sd">        .. _pygplates.FeatureCollection: https://www.gplates.org/docs/pygplates/generated/pygplates.featurecollection#pygplates.FeatureCollection</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">_plot_engine</span> <span class="o">=</span> <span class="n">plot_engine</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">plate_reconstruction</span> <span class="o">=</span> <span class="n">plate_reconstruction</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;The :class:`gplately.PlateReconstruction` object will be used to access a plate</span>
-<span class="sd">        ``rotation_model`` and a set of ``topology_features`` which contains plate boundary</span>
-<span class="sd">        features like trenches, ridges and transforms.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;The :class:`PlateReconstruction` object will be used to access a plate ``rotation_model`` and a set of ``topology_features``</span>
+<span class="sd">        which contains plate boundary features like trenches, ridges and transforms.</span>
 
-<span class="sd">        :type: instance of &lt;gplately.reconstruction.PlateReconstruction&gt;</span>
+<span class="sd">        :type: PlateReconstruction</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">plate_reconstruction</span><span class="o">.</span><span class="n">topology_features</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -323,11 +331,11 @@
             <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="s2">&quot;Plate model does not have topology features.&quot;</span><span class="p">)</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">base_projection</span> <span class="o">=</span> <span class="n">DEFAULT_CARTOPY_PROJECTION</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;instance of &lt;cartopy.crs.{transform}&gt;, default &lt;cartopy.crs.PlateCarree&gt; object</span>
-<span class="sd">        where {transform} is the map Projection to use on the Cartopy GeoAxes.</span>
-<span class="sd">        By default, the base projection is set to cartopy.crs.PlateCarree. See the</span>
-<span class="sd">        `Cartopy projection list &lt;https://scitools.org.uk/cartopy/docs/v0.15/crs/projections.html&gt;`__</span>
-<span class="sd">        for all supported Projection types.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Cartopy map projection. Defaults to ``cartopy.crs.PlateCarree``.</span>
+<span class="sd">        </span>
+<span class="sd">        .. seealso::</span>
+<span class="sd">        </span>
+<span class="sd">            `Cartopy projection list &lt;https://scitools.org.uk/cartopy/docs/v0.15/crs/projections.html&gt;`__.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="c1"># store these for when time is updated</span>
@@ -339,35 +347,35 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">coastlines</span> <span class="o">=</span> <span class="kc">None</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;A list containing coastline features reconstructed to the specified ``time`` attribute.</span>
 
-<span class="sd">        :type: iterable/list of &lt;pygplates.ReconstructedFeatureGeometry&gt;</span>
+<span class="sd">        :type: iterable/list of `pygplates.ReconstructedFeatureGeometry`_</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">continents</span> <span class="o">=</span> <span class="kc">None</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;A list containing continent features reconstructed to the specified ``time`` attribute.</span>
 <span class="sd">        </span>
-<span class="sd">        :type: iterable/list of &lt;pygplates.ReconstructedFeatureGeometry&gt;</span>
+<span class="sd">        :type: iterable/list of `pygplates.ReconstructedFeatureGeometry`_</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">COBs</span> <span class="o">=</span> <span class="kc">None</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;A list containing COB features reconstructed to the specified ``time`` attribute.</span>
 
-<span class="sd">        :type: iterable/list of &lt;pygplates.ReconstructedFeatureGeometry&gt;</span>
+<span class="sd">        :type: iterable/list of `pygplates.ReconstructedFeatureGeometry`_</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">trenches</span> <span class="o">=</span> <span class="p">[]</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;A list containing trench boundary sections of type `pygplates.FeatureType.gpml_subduction_zone`.</span>
 <span class="sd">        </span>
-<span class="sd">        :type: iterable/list of &lt;pygplates.Feature&gt;</span>
+<span class="sd">        :type: iterable/list of `pygplates.Feature`_</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">trench_left</span> <span class="o">=</span> <span class="p">[]</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;A list containing left subduction boundary sections of type `pygplates.FeatureType.gpml_subduction_zone`.</span>
 <span class="sd">        </span>
-<span class="sd">        :type: iterable/list of &lt;pygplates.Feature&gt;</span>
+<span class="sd">        :type: iterable/list of `pygplates.Feature`_</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">trench_right</span> <span class="o">=</span> <span class="p">[]</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;A list containing right subduction boundary sections of type pygplates.FeatureType.gpml_subduction_zone</span>
 
-<span class="sd">        :type: iterable/list of &lt;pygplates.Feature&gt;</span>
+<span class="sd">        :type: iterable/list of `pygplates.Feature`_</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="bp">self</span><span class="o">.</span><span class="n">other</span> <span class="o">=</span> <span class="p">[]</span>
@@ -375,7 +383,7 @@
 <span class="sd">        continental rifts, faults, orogenic belts, fracture zones, inferred paleo boundaries, terrane</span>
 <span class="sd">        boundaries and passive continental boundaries.</span>
 <span class="sd">        </span>
-<span class="sd">        :type: iterable/list of &lt;pygplates.Feature&gt;</span>
+<span class="sd">        :type: iterable/list of `pygplates.Feature`_</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_topological_plate_boundaries</span> <span class="o">=</span> <span class="kc">None</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_topologies</span> <span class="o">=</span> <span class="kc">None</span>
@@ -482,7 +490,7 @@
 <span class="sd">        - pygplates.FeatureType.gpml_topological_slab_boundary</span>
 <span class="sd">        - pygplates.FeatureType.gpml_topological_closed_plate_boundary</span>
 
-<span class="sd">        :type: iterable/list of &lt;pygplates.Feature&gt;</span>
+<span class="sd">        :type: iterable/list of `pygplates.Feature`_</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_topologies</span>
 
@@ -491,7 +499,7 @@
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Mid-ocean ridge features (all the features which are labelled as ``gpml:MidOceanRidge`` in the model).</span>
 <span class="sd">        A list containing ridge and transform boundary sections of type `pygplates.FeatureType.gpml_mid_ocean_ridge`.</span>
 
-<span class="sd">        :type: iterable/list of &lt;pygplates.Feature&gt;</span>
+<span class="sd">        :type: iterable/list of `pygplates.Feature`_</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
             <span class="s2">&quot;The &#39;ridges&#39; property has been changed since GPlately 1.3.0. &quot;</span>
@@ -507,7 +515,7 @@
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Transform boundary features (all the features which are labelled as ``gpml:Transform`` in the model).</span>
 <span class="sd">        A list containing transform boundary sections of type `pygplates.FeatureType.gpml_transforms`.</span>
 
-<span class="sd">        :type: iterable/list of &lt;pygplates.Feature&gt;</span>
+<span class="sd">        :type: iterable/list of `pygplates.Feature`_</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
             <span class="s2">&quot;The &#39;transforms&#39; property has been changed since GPlately 1.3.0. &quot;</span>
@@ -526,7 +534,7 @@
 
 <span class="sd">        .. note::</span>
 
-<span class="sd">            You can either set the ``time`` attribute when creating the :class:`gplately.PlotTopologies` object or anytime afterwards.</span>
+<span class="sd">            You can either set the ``time`` attribute when creating the :class:`PlotTopologies` object or anytime afterwards.</span>
 
 <span class="sd">            .. code-block:: python</span>
 <span class="sd">                :linenos:</span>
@@ -571,7 +579,7 @@
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">anchor_plate_id</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Anchor plate ID for reconstruction. Must be an integer &gt;= 0.</span>
-<span class="sd">        Defaults to the anchor plate of ``plate_reconstruction``.</span>
+<span class="sd">        Defaults to :attr:`PlateReconstruction.anchor_plate_id`.</span>
 
 <span class="sd">        :type: int</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -870,24 +878,23 @@
         <span class="n">tessellate_degrees</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
         <span class="n">validate_reconstruction_time</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
     <span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Convert feature(s) to a geopandas.GeoDataFrame object.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Convert feature(s) to a `geopandas.GeoDataFrame`_ object.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
-<span class="sd">        feature : pygplates.Feature, pygplates.ReconstructedFeatureGeometry, pygplates.GeometryOnSphere or iterable of the aforementioned three</span>
+<span class="sd">        feature : `pygplates.Feature`_, `pygplates.ReconstructedFeatureGeometry`_, pygplates.GeometryOnSphere or iterable of the aforementioned three</span>
 <span class="sd">            Feature object(s).</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
 <span class="sd">        gdf : geopandas.GeoDataFrame</span>
-<span class="sd">            A ``pandas.GeoDataFrame`` object contaning the feature geometries.</span>
+<span class="sd">            A `geopandas.GeoDataFrame`_ object contaning the feature geometries.</span>
 
 
 <span class="sd">        .. note::</span>
 
-<span class="sd">            The feature(s) needed to produce the GeoDataFrame should already be reconstructed to a ``time``.</span>
-<span class="sd">            This function converts the feature(s) into a set of Shapely geometries whose coordinates are</span>
-<span class="sd">            passed to a geopandas GeoDataFrame.</span>
+<span class="sd">            The feature(s) needed to produce the `geopandas.GeoDataFrame`_ object should already be reconstructed to a ``time``.</span>
+<span class="sd">            This function converts the feature(s) into a set of Shapely geometries and put them into a `geopandas.GeoDataFrame`_ object.</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
 
@@ -908,7 +915,7 @@
 <a class="viewcode-back" href="../../generated/gplately.PlotTopologies.html#gplately.PlotTopologies.plot_feature">[docs]</a>
     <span class="nd">@append_docstring</span><span class="p">(</span><span class="n">PLOT_DOCSTRING</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s2">&quot;feature&quot;</span><span class="p">))</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">plot_feature</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ax</span><span class="p">,</span> <span class="n">feature</span><span class="p">,</span> <span class="n">feature_name</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;black&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Plot pygplates.FeatureCollection or pygplates.Feature onto a map.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Plot `pygplates.FeatureCollection`_ or `pygplates.Feature`_ onto a map.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">feature</span><span class="p">:</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
                 <span class="sa">f</span><span class="s2">&quot;The given feature(</span><span class="si">{</span><span class="n">feature_name</span><span class="si">}</span><span class="s2">:</span><span class="si">{</span><span class="n">feature</span><span class="si">}</span><span class="s2">) in model:</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">plate_reconstruction</span><span class="o">.</span><span class="n">plate_model_name</span><span class="si">}</span><span class="s2"> is empty and will not be plotted.&quot;</span>
@@ -957,7 +964,7 @@
     <span class="nd">@validate_reconstruction_time</span>
     <span class="nd">@append_docstring</span><span class="p">(</span><span class="n">GET_DATE_DOCSTRING</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s2">&quot;coastlines&quot;</span><span class="p">))</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_coastlines</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">central_meridian</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">tessellate_degrees</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the reconstructed coastlines as a ``geopandas.GeoDataFrame`` object.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the reconstructed coastlines as a `geopandas.GeoDataFrame`_ object.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_feature</span><span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">coastlines</span><span class="p">,</span>
             <span class="n">central_meridian</span><span class="o">=</span><span class="n">central_meridian</span><span class="p">,</span>
@@ -985,7 +992,7 @@
     <span class="nd">@validate_reconstruction_time</span>
     <span class="nd">@append_docstring</span><span class="p">(</span><span class="n">GET_DATE_DOCSTRING</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s2">&quot;continents&quot;</span><span class="p">))</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_continents</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">central_meridian</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">tessellate_degrees</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the reconstructed continental polygons as a ``geopandas.GeoDataFrame`` object.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the reconstructed continental polygons as a `geopandas.GeoDataFrame`_ object.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_feature</span><span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">continents</span><span class="p">,</span>
             <span class="n">central_meridian</span><span class="o">=</span><span class="n">central_meridian</span><span class="p">,</span>
@@ -1017,7 +1024,7 @@
         <span class="n">central_meridian</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span>
         <span class="n">tessellate_degrees</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
     <span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the reconstructed continent-ocean boundaries as a ``geopandas.GeoDataFrame`` object.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the reconstructed continent-ocean boundaries as a `geopandas.GeoDataFrame`_ object.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_feature</span><span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">COBs</span><span class="p">,</span>
             <span class="n">central_meridian</span><span class="o">=</span><span class="n">central_meridian</span><span class="p">,</span>
@@ -1049,7 +1056,7 @@
         <span class="n">central_meridian</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span>
         <span class="n">tessellate_degrees</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
     <span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the reconstructed mid-ocean ridge lines (gpml:MidOceanRidge) as a ``geopandas.GeoDataFrame`` object.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the reconstructed mid-ocean ridge lines (gpml:MidOceanRidge) as a `geopandas.GeoDataFrame`_ object.&quot;&quot;&quot;</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
             <span class="s2">&quot;The &#39;get_ridges&#39; function has been changed since GPlately 1.3.0. &quot;</span>
             <span class="s2">&quot;You need to check your workflow to make sure the new &#39;get_ridges&#39; function still suits your purpose. &quot;</span>
@@ -1096,7 +1103,7 @@
     <span class="nd">@validate_reconstruction_time</span>
     <span class="nd">@append_docstring</span><span class="p">(</span><span class="n">GET_DATE_DOCSTRING</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s2">&quot;trenches&quot;</span><span class="p">))</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_trenches</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">central_meridian</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">tessellate_degrees</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the reconstructed trench lines as a ``geopandas.GeoDataFrame`` object.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the reconstructed trench lines as a `geopandas.GeoDataFrame`_ object.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_feature</span><span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">trenches</span><span class="p">,</span>
             <span class="n">central_meridian</span><span class="o">=</span><span class="n">central_meridian</span><span class="p">,</span>
@@ -1154,7 +1161,7 @@
     <span class="nd">@validate_reconstruction_time</span>
     <span class="nd">@append_docstring</span><span class="p">(</span><span class="n">GET_DATE_DOCSTRING</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s2">&quot;other&quot;</span><span class="p">))</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_misc_boundaries</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">central_meridian</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">tessellate_degrees</span><span class="o">=</span><span class="mi">1</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the reconstructed &quot;other&quot; lines as a ``geopandas.GeoDataFrame`` object.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the reconstructed &quot;other&quot; lines as a `geopandas.GeoDataFrame`_ object.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_feature</span><span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">other</span><span class="p">,</span>
             <span class="n">central_meridian</span><span class="o">=</span><span class="n">central_meridian</span><span class="p">,</span>
@@ -1243,7 +1250,7 @@
     <span class="nd">@validate_reconstruction_time</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_subduction_direction</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">central_meridian</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">tessellate_degrees</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the :attr:`PlotTopologies.trench_left` and</span>
-<span class="sd">        :attr:`PlotTopologies.trench_right` as a ``geopandas.GeoDataFrame`` object.</span>
+<span class="sd">        :attr:`PlotTopologies.trench_right` as a `geopandas.GeoDataFrame`_ object.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -1255,9 +1262,9 @@
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
 <span class="sd">        gdf_left :geopandas.GeoDataFrame</span>
-<span class="sd">            A ``geopandas.GeoDataFrame`` object containing `trench_left` geometries.</span>
+<span class="sd">            A `geopandas.GeoDataFrame`_ object containing `trench_left` geometries.</span>
 <span class="sd">        gdf_right : geopandas.GeoDataFrame</span>
-<span class="sd">            A ``geopandas.GeoDataFrame`` object containing `trench_right` geometries.</span>
+<span class="sd">            A `geopandas.GeoDataFrame`_ object containing `trench_right` geometries.</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">trench_left</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="bp">self</span><span class="o">.</span><span class="n">trench_right</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -1297,8 +1304,8 @@
 
 <span class="sd">        .. note::</span>
 
-<span class="sd">            Subduction teeth are tessellated from :attr:`gplately.PlotTopologies.trench_left` and</span>
-<span class="sd">            :attr:`gplately.PlotTopologies.trench_left` attributes, and transformed into Shapely polygons for plotting.</span>
+<span class="sd">            Subduction teeth are tessellated from :attr:`PlotTopologies.trench_left` and</span>
+<span class="sd">            :attr:`PlotTopologies.trench_right` attributes, and transformed into Shapely polygons for plotting.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -1392,22 +1399,21 @@
 <div class="viewcode-block" id="PlotTopologies.plot_grid">
 <a class="viewcode-back" href="../../generated/gplately.PlotTopologies.html#gplately.PlotTopologies.plot_grid">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">plot_grid</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ax</span><span class="p">,</span> <span class="n">grid</span><span class="p">,</span> <span class="n">extent</span><span class="o">=</span><span class="p">[</span><span class="o">-</span><span class="mi">180</span><span class="p">,</span> <span class="mi">180</span><span class="p">,</span> <span class="o">-</span><span class="mi">90</span><span class="p">,</span> <span class="mi">90</span><span class="p">],</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Plot a ``MaskedArray`` raster or grid onto a map.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Plot a `MaskedArray`_ raster or grid onto a map.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
 <span class="sd">        ax :</span>
 <span class="sd">            Cartopy ax.</span>
 
-<span class="sd">        grid : MaskedArray or gplately.Raster</span>
-<span class="sd">            A ``MaskedArray`` with elements that define a grid. The number of rows in the raster</span>
+<span class="sd">        grid : MaskedArray or Raster</span>
+<span class="sd">            A `MaskedArray`_ with elements that define a grid. The number of rows in the raster</span>
 <span class="sd">            corresponds to the number of latitudinal coordinates, while the number of raster</span>
 <span class="sd">            columns corresponds to the number of longitudinal coordinates.</span>
 
-<span class="sd">        extent : 1d array, default=[-180,180,-90,90]</span>
-<span class="sd">            A four-element array to specify the [min lon, max lon, min lat, max lat] with</span>
-<span class="sd">            which to constrain the grid image. If no extents are supplied, full global</span>
-<span class="sd">            extent is assumed.</span>
+<span class="sd">        extent : tuple, default=(-180, 180, -90, 90)</span>
+<span class="sd">            A tuple of 4 (min lon, max lon, min lat, max lat) extent of gird.</span>
+<span class="sd">            If no extent are provided, global extent is assumed.</span>
 
 <span class="sd">        **kwargs :</span>
 <span class="sd">            Keyword arguments for plotting the grid.</span>
@@ -1442,7 +1448,7 @@
 <div class="viewcode-block" id="PlotTopologies.plot_grid_from_netCDF">
 <a class="viewcode-back" href="../../generated/gplately.PlotTopologies.html#gplately.PlotTopologies.plot_grid_from_netCDF">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">plot_grid_from_netCDF</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ax</span><span class="p">,</span> <span class="n">filename</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Read a raster from a netCDF file, convert it to a ``MaskedArray`` and plot ii on a map.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Read raster data from a netCDF file, convert the data into a `MaskedArray`_ object and plot it on a map.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -1481,7 +1487,7 @@
 
 <span class="sd">        .. note::</span>
 
-<span class="sd">            The ``plot_plate_motion_vectors`` generates a MeshNode domain of point features using</span>
+<span class="sd">            The :meth:`plot_plate_motion_vectors` generates a MeshNode domain of point features using</span>
 <span class="sd">            given spacings in the X and Y directions (``spacingX`` and ``spacingY``). Each point in</span>
 <span class="sd">            the domain is assigned a plate ID, and these IDs are used to obtain equivalent stage</span>
 <span class="sd">            rotations of identified tectonic plates over a 5 Ma time interval. Each point and</span>
@@ -1507,7 +1513,7 @@
 <span class="sd">            Choose whether to normalise the velocity magnitudes so that vector lengths are all equal.</span>
 
 <span class="sd">        **kwargs :</span>
-<span class="sd">            Keyword arguments for plotting the velocity vector field. See ``Matplotlib`` quiver keyword arguments</span>
+<span class="sd">            Keyword arguments for plotting the velocity vector field. See Matplotlib quiver keyword arguments</span>
 <span class="sd">            `here &lt;https://matplotlib.org/3.5.1/api/_as_gen/matplotlib.axes.Axes.quiver.html&gt;`__.</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -1574,7 +1580,7 @@
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
-<span class="sd">        matplotlib.patches.Circle handle</span>
+<span class="sd">        matplotlib.patches.Circle handle.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="kn">from</span><span class="w"> </span><span class="nn">matplotlib</span><span class="w"> </span><span class="kn">import</span> <span class="n">patches</span> <span class="k">as</span> <span class="n">mpatches</span>
 
@@ -1604,7 +1610,7 @@
         <span class="n">central_meridian</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span>
         <span class="n">tessellate_degrees</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
     <span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the reconstructed contiental rift lines as a ``geopandas.GeoDataFrame`` object.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the reconstructed contiental rift lines as a `geopandas.GeoDataFrame`_ object.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_feature</span><span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">continental_rifts</span><span class="p">,</span>
             <span class="n">central_meridian</span><span class="o">=</span><span class="n">central_meridian</span><span class="p">,</span>
@@ -1633,7 +1639,7 @@
     <span class="nd">@validate_reconstruction_time</span>
     <span class="nd">@append_docstring</span><span class="p">(</span><span class="n">GET_DATE_DOCSTRING</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s2">&quot;faults&quot;</span><span class="p">))</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_faults</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">central_meridian</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">tessellate_degrees</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the reconstructed fault lines as a ``geopandas.GeoDataFrame`` object.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the reconstructed fault lines as a `geopandas.GeoDataFrame`_ object.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_feature</span><span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">faults</span><span class="p">,</span>
             <span class="n">central_meridian</span><span class="o">=</span><span class="n">central_meridian</span><span class="p">,</span>
@@ -1662,7 +1668,7 @@
     <span class="nd">@validate_reconstruction_time</span>
     <span class="nd">@append_docstring</span><span class="p">(</span><span class="n">GET_DATE_DOCSTRING</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s2">&quot;fracture zones&quot;</span><span class="p">))</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_fracture_zones</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">central_meridian</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">tessellate_degrees</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the reconstructed fracture zone lines as a ``geopandas.GeoDataFrame`` object.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the reconstructed fracture zone lines as a `geopandas.GeoDataFrame`_ object.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_feature</span><span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">fracture_zones</span><span class="p">,</span>
             <span class="n">central_meridian</span><span class="o">=</span><span class="n">central_meridian</span><span class="p">,</span>
@@ -1695,7 +1701,7 @@
         <span class="n">central_meridian</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span>
         <span class="n">tessellate_degrees</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
     <span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the reconstructed inferred paleo boundary lines as a ``geopandas.GeoDataFrame`` object.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the reconstructed inferred paleo boundary lines as a `geopandas.GeoDataFrame`_ object.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_feature</span><span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">inferred_paleo_boundaries</span><span class="p">,</span>
             <span class="n">central_meridian</span><span class="o">=</span><span class="n">central_meridian</span><span class="p">,</span>
@@ -1728,7 +1734,7 @@
         <span class="n">central_meridian</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span>
         <span class="n">tessellate_degrees</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
     <span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the reconstructed terrane boundary lines as a ``geopandas.GeoDataFrame`` object.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the reconstructed terrane boundary lines as a `geopandas.GeoDataFrame`_ object.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_feature</span><span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">terrane_boundaries</span><span class="p">,</span>
             <span class="n">central_meridian</span><span class="o">=</span><span class="n">central_meridian</span><span class="p">,</span>
@@ -1761,7 +1767,7 @@
         <span class="n">central_meridian</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span>
         <span class="n">tessellate_degrees</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
     <span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the reconstructed transitional crust lines as a ``geopandas.GeoDataFrame`` object.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the reconstructed transitional crust lines as a `geopandas.GeoDataFrame`_ object.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_feature</span><span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">transitional_crusts</span><span class="p">,</span>
             <span class="n">central_meridian</span><span class="o">=</span><span class="n">central_meridian</span><span class="p">,</span>
@@ -1794,7 +1800,7 @@
         <span class="n">central_meridian</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span>
         <span class="n">tessellate_degrees</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
     <span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the reconstructed orogenic belt lines as a ``geopandas.GeoDataFrame`` object.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the reconstructed orogenic belt lines as a `geopandas.GeoDataFrame`_ object.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_feature</span><span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">orogenic_belts</span><span class="p">,</span>
             <span class="n">central_meridian</span><span class="o">=</span><span class="n">central_meridian</span><span class="p">,</span>
@@ -1823,7 +1829,7 @@
     <span class="nd">@validate_reconstruction_time</span>
     <span class="nd">@append_docstring</span><span class="p">(</span><span class="n">GET_DATE_DOCSTRING</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s2">&quot;sutures&quot;</span><span class="p">))</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_sutures</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">central_meridian</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">tessellate_degrees</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the reconstructed suture lines as a ``geopandas.GeoDataFrame`` object.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the reconstructed suture lines as a `geopandas.GeoDataFrame`_ object.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_feature</span><span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">sutures</span><span class="p">,</span>
             <span class="n">central_meridian</span><span class="o">=</span><span class="n">central_meridian</span><span class="p">,</span>
@@ -1856,7 +1862,7 @@
         <span class="n">central_meridian</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span>
         <span class="n">tessellate_degrees</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
     <span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the reconstructed continental crust lines as a ``geopandas.GeoDataFrame`` object.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the reconstructed continental crust lines as a `geopandas.GeoDataFrame`_ object.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_feature</span><span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">continental_crusts</span><span class="p">,</span>
             <span class="n">central_meridian</span><span class="o">=</span><span class="n">central_meridian</span><span class="p">,</span>
@@ -1889,7 +1895,7 @@
         <span class="n">central_meridian</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span>
         <span class="n">tessellate_degrees</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
     <span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the reconstructed extended continental crust lines as a ``geopandas.GeoDataFrame`` object.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the reconstructed extended continental crust lines as a `geopandas.GeoDataFrame`_ object.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_feature</span><span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">extended_continental_crusts</span><span class="p">,</span>
             <span class="n">central_meridian</span><span class="o">=</span><span class="n">central_meridian</span><span class="p">,</span>
@@ -1922,7 +1928,7 @@
         <span class="n">central_meridian</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span>
         <span class="n">tessellate_degrees</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
     <span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the reconstructed passive continental boundary lines as a ``geopandas.GeoDataFrame`` object.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the reconstructed passive continental boundary lines as a `geopandas.GeoDataFrame`_ object.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_feature</span><span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">passive_continental_boundaries</span><span class="p">,</span>
             <span class="n">central_meridian</span><span class="o">=</span><span class="n">central_meridian</span><span class="p">,</span>
@@ -1951,7 +1957,7 @@
     <span class="nd">@validate_reconstruction_time</span>
     <span class="nd">@append_docstring</span><span class="p">(</span><span class="n">GET_DATE_DOCSTRING</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s2">&quot;slab edges&quot;</span><span class="p">))</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_slab_edges</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">central_meridian</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">tessellate_degrees</span><span class="o">=</span><span class="kc">None</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the reconstructed slab edge lines as a ``geopandas.GeoDataFrame`` object.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the reconstructed slab edge lines as a `geopandas.GeoDataFrame`_ object.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_feature</span><span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">slab_edges</span><span class="p">,</span>
             <span class="n">central_meridian</span><span class="o">=</span><span class="n">central_meridian</span><span class="p">,</span>
@@ -1984,7 +1990,7 @@
         <span class="n">central_meridian</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span>
         <span class="n">tessellate_degrees</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
     <span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the reconstructed transform lines(gpml:Transform) as a ``geopandas.GeoDataFrame`` object.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the reconstructed transform lines(gpml:Transform) as a `geopandas.GeoDataFrame`_ object.&quot;&quot;&quot;</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">debug</span><span class="p">(</span>
             <span class="s2">&quot;The &#39;get_transforms&#39; function has been changed since GPlately 1.3.0. &quot;</span>
             <span class="s2">&quot;You need to check your workflow to make sure the new &#39;get_transforms&#39; function still suits your purpose. &quot;</span>
@@ -2058,7 +2064,7 @@
         <span class="n">central_meridian</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span>
         <span class="n">tessellate_degrees</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
     <span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the reconstructed unclassified feature lines as a ``geopandas.GeoDataFrame`` object.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the reconstructed unclassified feature lines as a `geopandas.GeoDataFrame`_ object.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_feature</span><span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">unclassified_features</span><span class="p">,</span>
             <span class="n">central_meridian</span><span class="o">=</span><span class="n">central_meridian</span><span class="p">,</span>
@@ -2091,7 +2097,7 @@
         <span class="n">central_meridian</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span>
         <span class="n">tessellate_degrees</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
     <span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the reconstructed topological features listed below as a ``geopandas.GeoDataFrame`` object.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the reconstructed topological features listed below as a `geopandas.GeoDataFrame`_ object.</span>
 
 <span class="sd">        - pygplates.FeatureType.gpml_topological_network</span>
 <span class="sd">        - pygplates.FeatureType.gpml_oceanic_crust</span>
@@ -2166,7 +2172,7 @@
         <span class="n">central_meridian</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span>
         <span class="n">tessellate_degrees</span><span class="o">=</span><span class="mi">1</span><span class="p">,</span>
     <span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the reconstructed topological features listed below as a ``geopandas.GeoDataFrame`` object.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the reconstructed topological features listed below as a `geopandas.GeoDataFrame`_ object.</span>
 
 <span class="sd">        - ridge and transform boundary</span>
 <span class="sd">        - subduction boundary</span>

@@ -280,15 +280,15 @@
         <span class="n">continent_mask_filename</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
         <span class="n">use_continent_contouring</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
     <span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;SeafloorGrid constructor</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Constructor. Create a :class:`SeafloorGrid` object.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
-<span class="sd">        PlateReconstruction_object : gplately.PlateReconstruction</span>
-<span class="sd">            A  :class:`gplately.PlateReconstruction` object with a &lt;pygplates.RotationModel&gt; and</span>
-<span class="sd">            a &lt;pygplates.FeatureCollection&gt; containing topology features.</span>
-<span class="sd">        PlotTopologies_object : gplately.PlotTopologies</span>
-<span class="sd">            A :class:`gplately.PlotTopologies` object with a continental polygon or COB terrane polygon file to mask grids with.</span>
+<span class="sd">        PlateReconstruction_object : PlateReconstruction</span>
+<span class="sd">            A :class:`PlateReconstruction` object with a `pygplates.RotationModel`_ and</span>
+<span class="sd">            a `pygplates.FeatureCollection`_ containing topology features.</span>
+<span class="sd">        PlotTopologies_object : PlotTopologies</span>
+<span class="sd">            A :class:`PlotTopologies` object with a continental polygon or COB terrane polygon file to mask grids with.</span>
 <span class="sd">        max_time : float</span>
 <span class="sd">            The maximum time for age gridding.</span>
 <span class="sd">        min_time : float</span>
@@ -299,32 +299,32 @@
 <span class="sd">            The top-level directory to save all outputs to.</span>
 <span class="sd">        file_collection : str, default=&quot;&quot;</span>
 <span class="sd">            A string to identify the plate model used (will be automated later).</span>
-<span class="sd">        refinement_levels : int, default 5</span>
+<span class="sd">        refinement_levels : int, default=5</span>
 <span class="sd">            Control the number of points in the icosahedral mesh (higher integer means higher resolution of continent masks).</span>
-<span class="sd">        ridge_sampling : float, default 0.5</span>
+<span class="sd">        ridge_sampling : float, default=0.5</span>
 <span class="sd">            Spatial resolution (in degrees) at which points that emerge from ridges are tessellated.</span>
-<span class="sd">        extent : tuple of 4, default (-180.,180.,-90.,90.)</span>
+<span class="sd">        extent : tuple of 4, default=(-180.,180.,-90.,90.)</span>
 <span class="sd">            A tuple containing the mininum longitude, maximum longitude, minimum latitude and</span>
 <span class="sd">            maximum latitude extents for all masking and final grids.</span>
 <span class="sd">        grid_spacing : float, default=0.1</span>
 <span class="sd">            The degree spacing/interval with which to space grid points across all masking and</span>
 <span class="sd">            final grids. If ``grid_spacing`` is provided, all grids will use it. If not, ``grid_spacing`` defaults to 0.1.</span>
-<span class="sd">        subduction_collision_parameters : len-2 tuple of float, default (5.0, 10.0)</span>
+<span class="sd">        subduction_collision_parameters : len-2 tuple of float, default=(5.0, 10.0)</span>
 <span class="sd">            A 2-tuple of (threshold velocity delta in kms/my, threshold distance to boundary per My in kms/my)</span>
 <span class="sd">        initial_ocean_mean_spreading_rate : float, default=75.</span>
 <span class="sd">            A spreading rate to uniformly allocate to points that define the initial ocean</span>
 <span class="sd">            basin. These points will have inaccurate ages, but most of them will be phased</span>
 <span class="sd">            out after points with plate-model prescribed ages emerge from ridges and spread</span>
 <span class="sd">            to push them towards collision boundaries (where they are deleted).</span>
-<span class="sd">        resume_from_checkpoints : bool, default False</span>
+<span class="sd">        resume_from_checkpoints : bool, default=False</span>
 <span class="sd">            If set to ``True``, and the gridding preparation stage (continental masking and/or</span>
 <span class="sd">            ridge seed building) is interrupted, SeafloorGrids will resume gridding preparation</span>
 <span class="sd">            from the last successful preparation time.</span>
-<span class="sd">            If set to ``False``, SeafloorGrids will automatically overwrite all files in</span>
+<span class="sd">            If set to ``False``, SeafloorGrids will automatically overwrite all files in the</span>
 <span class="sd">            ``save_directory`` if re-run after interruption, or normally re-run, thus beginning</span>
 <span class="sd">            gridding preparation from scratch. ``False`` will be useful if data allocated to the</span>
 <span class="sd">            MOR seed points need to be augmented.</span>
-<span class="sd">        zval_names : list of str</span>
+<span class="sd">        zval_names : list of :class:`str`</span>
 <span class="sd">            A list containing string labels for the z values to attribute to points.</span>
 <span class="sd">            Will be used as column headers for z value point dataframes.</span>
 <span class="sd">        continent_mask_filename : str</span>
@@ -332,6 +332,10 @@
 <span class="sd">            Assuming the time is in the filename, i.e. ``/path/to/continent_mask_0Ma.nc``, it should be</span>
 <span class="sd">            passed as ``/path/to/continent_mask_{}Ma.nc`` with curly brackets. Include decimal formatting if needed.</span>
 
+
+<span class="sd">        .. _pygplates.RotationModel: https://www.gplates.org/docs/pygplates/generated/pygplates.rotationmodel</span>
+<span class="sd">        .. _pygplates.Feature: https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature</span>
+<span class="sd">        .. _pygplates.FeatureCollection: https://www.gplates.org/docs/pygplates/generated/pygplates.featurecollection#pygplates.FeatureCollection</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="c1"># Provides a rotation model, topology features and reconstruction time for the SeafloorGrid</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">PlateReconstruction_object</span> <span class="o">=</span> <span class="n">PlateReconstruction_object</span>
@@ -402,7 +406,7 @@
 
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_map_res_to_node_percentage</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">continent_mask_filename</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Determine which percentage to use to scale the continent mask resolution at max time&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Determine which percentage to use to scale the continent mask resolution at max time.&quot;&quot;&quot;</span>
         <span class="n">maskY</span><span class="p">,</span> <span class="n">maskX</span> <span class="o">=</span> <span class="n">grids</span><span class="o">.</span><span class="n">read_netcdf_grid</span><span class="p">(</span>
             <span class="n">continent_mask_filename</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_max_time</span><span class="p">)</span>
         <span class="p">)</span><span class="o">.</span><span class="n">shape</span>
@@ -419,10 +423,14 @@
             <span class="n">percentage</span> <span class="o">=</span> <span class="mf">0.6</span>
         <span class="k">elif</span> <span class="n">mask_deg</span> <span class="o">&gt;=</span> <span class="mi">1</span><span class="p">:</span>
             <span class="n">percentage</span> <span class="o">=</span> <span class="mf">0.75</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">Exception</span><span class="p">(</span>
+                <span class="s2">&quot;Unable to determine percentage. The code here is suspicious. I am unsure about it.&quot;</span>
+            <span class="p">)</span>
         <span class="k">return</span> <span class="n">mask_deg</span><span class="p">,</span> <span class="n">percentage</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_setup_output_paths</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">save_directory</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;create various folders for output files&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Create various folders for output files.&quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">save_directory</span> <span class="o">=</span> <span class="n">Path</span><span class="p">(</span><span class="n">save_directory</span><span class="p">)</span>
 
         <span class="c1"># zvalue files</span>
@@ -503,7 +511,7 @@
         <span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_set_grid_resolution</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">grid_spacing</span><span class="o">=</span><span class="mf">0.1</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;determine the output grid resolution&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Determine the output grid resolution.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">grid_spacing</span><span class="p">:</span>
             <span class="n">grid_spacing</span> <span class="o">=</span> <span class="mf">0.1</span>
         <span class="c1"># A list of degree spacings that allow an even division of the global lat-lon extent.</span>
@@ -561,12 +569,18 @@
     <span class="c1"># object, its `time` attribute is not updated.</span>
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">max_time</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;The reconstruction time.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;The reconstruction time.</span>
+
+<span class="sd">        :type: float</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_max_time</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">PlotTopologiesTime</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;The `time` attribute in the PlotTopologies object.&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;The :attr:`PlotTopologies.time` attribute.</span>
+
+<span class="sd">        :type: float</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_PlotTopologies_object</span><span class="o">.</span><span class="n">time</span>
 
     <span class="nd">@max_time</span><span class="o">.</span><span class="n">setter</span>
@@ -578,14 +592,20 @@
 
 <div class="viewcode-block" id="SeafloorGrid.update_time">
 <a class="viewcode-back" href="../../generated/gplately.SeafloorGrid.html#gplately.SeafloorGrid.update_time">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">update_time</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">max_time</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">update_time</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">max_time</span><span class="p">:</span> <span class="nb">float</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set the new reconstruction time.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        max_time: float</span>
+<span class="sd">            The new reconstruction time.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_max_time</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">max_time</span><span class="p">)</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_PlotTopologies_object</span><span class="o">.</span><span class="n">time</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">max_time</span><span class="p">)</span></div>
 
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_collect_point_data_in_dataframe</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">feature_collection</span><span class="p">,</span> <span class="n">zval_ndarray</span><span class="p">,</span> <span class="n">time</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;At a given timestep, create a pandas dataframe holding all attributes of point features.</span>
-
 <span class="sd">        Rather than store z values as shapefile attributes, store them in a dataframe indexed by feature ID.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="n">_collect_point_data_in_dataframe</span><span class="p">(</span>
@@ -597,7 +617,7 @@
         <span class="p">)</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_generate_ocean_points</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;generate ocean points by using the icosahedral mesh&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Generate ocean points by using the icosahedral mesh.&quot;&quot;&quot;</span>
         <span class="c1"># Ensure COB terranes at max time have reconstruction IDs and valid times</span>
         <span class="n">COB_polygons</span> <span class="o">=</span> <span class="n">ensure_polygon_geometry</span><span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_PlotTopologies_object</span><span class="o">.</span><span class="n">continents</span><span class="p">,</span>
@@ -636,7 +656,7 @@
         <span class="k">return</span> <span class="n">paleogeography</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>  <span class="c1"># points in oceans</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_get_ocean_points_from_continent_mask</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;get the ocean points from continent mask grid&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Get the ocean points from continent mask grid.&quot;&quot;&quot;</span>
         <span class="n">max_time_cont_mask</span> <span class="o">=</span> <span class="n">grids</span><span class="o">.</span><span class="n">Raster</span><span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">continent_mask_filepath</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_max_time</span><span class="p">)</span>
         <span class="p">)</span>
@@ -677,7 +697,7 @@
 
 <span class="sd">        The ocean mesh starts off as a global-spanning Stripy icosahedral mesh.</span>
 <span class="sd">        ``create_initial_ocean_seed_points`` passes the automatically-resolved-to-current-time</span>
-<span class="sd">        continental polygons from the PlotTopologies_object&#39;s ``continents`` attribute</span>
+<span class="sd">        continental polygons from the :attr:`PlotTopologies.continents` attribute</span>
 <span class="sd">        (which can be from a COB terrane file or a continental polygon file) into</span>
 <span class="sd">        Plate Tectonic Tools&#39; point-in-polygon routine. It identifies ocean basin points that lie:</span>
 
@@ -687,12 +707,12 @@
 <span class="sd">        Points from the mesh outside the continental polygons make up the ocean basin seed</span>
 <span class="sd">        point mesh. The masked mesh is outputted as a compressed GPML (GPMLZ) file with</span>
 <span class="sd">        the filename: ``ocean_basin_seed_points_{}Ma.gpmlz`` if a ``save_directory`` is passed.</span>
-<span class="sd">        Otherwise, the mesh is returned as a pyGPlates FeatureCollection object.</span>
+<span class="sd">        Otherwise, the mesh is returned as a `pygplates.FeatureCollection`_ object.</span>
 
 <span class="sd">        .. note::</span>
 
 <span class="sd">            This point mesh represents ocean basin seafloor that was produced</span>
-<span class="sd">            before ``SeafloorGrid.max_time``, and thus has unknown properties like valid</span>
+<span class="sd">            before :attr:`SeafloorGrid.max_time`, and thus has unknown properties like valid</span>
 <span class="sd">            time and spreading rate. As time passes, the plate reconstruction model sees</span>
 <span class="sd">            points emerging from MORs. These new points spread to occupy the ocean basins,</span>
 <span class="sd">            moving the initial filler points closer to subduction zones and continental</span>
@@ -708,8 +728,8 @@
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
-<span class="sd">        ocean_basin_point_mesh : pygplates.FeatureCollection</span>
-<span class="sd">            A feature collection of ``pygplates.PointOnSphere`` objects on the ocean basin.</span>
+<span class="sd">        ocean_basin_point_mesh : `pygplates.FeatureCollection`_</span>
+<span class="sd">            A `pygplates.FeatureCollection`_ object containing the seed points on the ocean basin.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
         <span class="k">if</span> <span class="p">(</span>
@@ -811,13 +831,12 @@
 <span class="sd">            asymmetries.</span>
 
 <span class="sd">            In future, this will have a checkpoint save feature so that execution</span>
-<span class="sd">            (which occurs during preparation for ReconstructByTopologies and can take several hours)</span>
+<span class="sd">            (which occurs during preparation for ``ReconstructByTopologies`` and can take several hours)</span>
 <span class="sd">            can be safeguarded against run interruptions.</span>
 
 <span class="sd">        .. seealso::</span>
 
-<span class="sd">            The get_mid_ocean_ridge_seedpoints() has been adapted from</span>
-<span class="sd">            `this code &lt;https://github.com/siwill22/agegrid-0.1/blob/master/automatic_age_grid_seeding.py#L117&gt;`__.</span>
+<span class="sd">            `Get tessellated points along a mid ocean ridge &lt;https://github.com/siwill22/agegrid-0.1/blob/master/automatic_age_grid_seeding.py#L117&gt;`__.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">overwrite</span> <span class="o">=</span> <span class="kc">True</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">resume_from_checkpoints</span><span class="p">:</span>
@@ -890,7 +909,7 @@
             <span class="n">grids</span><span class="o">.</span><span class="n">write_netcdf_grid</span><span class="p">(</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">continent_mask_filepath</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">time</span><span class="p">),</span>
                 <span class="n">final_grid</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s2">&quot;i1&quot;</span><span class="p">),</span>
-                <span class="n">extent</span><span class="o">=</span><span class="p">[</span><span class="o">-</span><span class="mi">180</span><span class="p">,</span> <span class="mi">180</span><span class="p">,</span> <span class="o">-</span><span class="mi">90</span><span class="p">,</span> <span class="mi">90</span><span class="p">],</span>
+                <span class="n">extent</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mi">180</span><span class="p">,</span> <span class="mi">180</span><span class="p">,</span> <span class="o">-</span><span class="mi">90</span><span class="p">,</span> <span class="mi">90</span><span class="p">),</span>
                 <span class="n">fill_value</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
             <span class="p">)</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Finished building a continental mask at </span><span class="si">{</span><span class="n">time</span><span class="si">}</span><span class="s2"> Ma!&quot;</span><span class="p">)</span>
@@ -992,7 +1011,7 @@
 <span class="sd">        * Continental masks (from ``max_time`` to ``min_time``)</span>
 <span class="sd">        * MOR points (from ``max_time`` to ``min_time``)</span>
 
-<span class="sd">        Returns lists of all attributes for the initial ocean point mesh and</span>
+<span class="sd">        Return lists of all attributes for the initial ocean point mesh and</span>
 <span class="sd">        all ridge points for all times in the reconstruction time array.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
 
@@ -1182,8 +1201,10 @@
 <div class="viewcode-block" id="SeafloorGrid.reconstruct_by_topological_model">
 <a class="viewcode-back" href="../../generated/gplately.SeafloorGrid.html#gplately.SeafloorGrid.reconstruct_by_topological_model">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">reconstruct_by_topological_model</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Use ``pygplates.TopologicalModel`` class to reconstruct seed points.</span>
-<span class="sd">        This method is an alternative to ``reconstruct_by_topological()`` which uses Python code to do the reconstruction.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Use `pygplates.TopologicalModel`_ class to reconstruct seed points.</span>
+<span class="sd">        This method is an alternative to :meth:`reconstruct_by_topologies()` which uses Python code to do the reconstruction.</span>
+
+<span class="sd">        .. _pygplates.TopologicalModel: https://www.gplates.org/docs/pygplates/generated/pygplates.topologicalmodel</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">create_initial_ocean_seed_points</span><span class="p">()</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Finished building initial_ocean_seed_points!&quot;</span><span class="p">)</span>
@@ -1250,10 +1271,8 @@
 <div class="viewcode-block" id="SeafloorGrid.reconstruct_by_topologies">
 <a class="viewcode-back" href="../../generated/gplately.SeafloorGrid.html#gplately.SeafloorGrid.reconstruct_by_topologies">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">reconstruct_by_topologies</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;Obtain all active ocean seed points at ``time`` - these are points that have not been consumed at subduction zones</span>
-<span class="sd">        or have not collided with continental polygons.</span>
-
-<span class="sd">        All active points&#39; latitudes, longitues, seafloor ages, spreading rates and all</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Obtain all active ocean seed points which are points that have not been consumed at subduction zones</span>
+<span class="sd">        or have not collided with continental polygons. Active points&#39; latitudes, longitues, seafloor ages, spreading rates and all</span>
 <span class="sd">        other general z-values are saved to a gridding input file (.npz).</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="s2">&quot;Preparing all initial files...&quot;</span><span class="p">)</span>
@@ -1436,7 +1455,7 @@
                 <span class="k">break</span>
 
             <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;Reconstruction done for </span><span class="si">{</span><span class="n">topology_reconstruction</span><span class="o">.</span><span class="n">get_current_time</span><span class="p">()</span><span class="si">}</span><span class="s2">!&quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;Reconstruction has been done for </span><span class="si">{</span><span class="n">topology_reconstruction</span><span class="o">.</span><span class="n">get_current_time</span><span class="p">()</span><span class="si">}</span><span class="s2">!&quot;</span>
             <span class="p">)</span></div>
 
         <span class="c1"># return reconstruction_data</span>
@@ -1456,19 +1475,18 @@
 <span class="sd">        rate can be gridded with ``SPREADING_RATE``.</span>
 
 <span class="sd">        Saves all grids to compressed netCDF format in the attributed directory. Grids</span>
-<span class="sd">        can be read into ndarray format using ``gplately.grids.read_netcdf_grid()``.</span>
+<span class="sd">        can be read into ndarray format using :func:`gplately.grids.read_netcdf_grid()`.</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
 <span class="sd">        zval_name : str</span>
-<span class="sd">            A string identifiers for a column in the ReconstructByTopologies gridding</span>
-<span class="sd">            input files.</span>
-<span class="sd">        time_arr : list of float, default None</span>
+<span class="sd">            A string identifier for the z-value.</span>
+<span class="sd">        time_arr : list of float, default=None</span>
 <span class="sd">            A time range to turn lons, lats and z-values into netCDF4 grids. If not provided,</span>
-<span class="sd">            ``time_arr`` defaults to the full ``time_array`` provided to ``SeafloorGrids``.</span>
-<span class="sd">        unmasked : bool, default False</span>
+<span class="sd">            ``time_arr`` defaults to the full ``time_array`` provided to :class:`SeafloorGrid`.</span>
+<span class="sd">        unmasked : bool, default=False</span>
 <span class="sd">            Save unmasked grids, in addition to masked versions.</span>
-<span class="sd">        nprocs : int, defaullt 1</span>
+<span class="sd">        nprocs : int, defaullt=1</span>
 <span class="sd">            Number of processes to use for certain operations (requires joblib).</span>
 <span class="sd">            Passed to ``joblib.Parallel``, so -1 means all available processes.</span>
 <span class="sd">        &quot;&quot;&quot;</span>
@@ -1532,9 +1550,22 @@
         <span class="bp">self</span><span class="p">,</span>
         <span class="n">name</span><span class="p">,</span>
         <span class="n">times</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
-        <span class="n">unmasked</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-        <span class="n">nprocs</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">unmasked</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+        <span class="n">nprocs</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
     <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Interpolate the sample points to create regular grids and save as NetCDF files.</span>
+
+<span class="sd">        Parameters</span>
+<span class="sd">        ----------</span>
+<span class="sd">        name: str</span>
+<span class="sd">            The variable name, such as ``SEAFLOOR_AGE`` or ``SPREADING_RATE``.</span>
+<span class="sd">        times: list</span>
+<span class="sd">            A list of times of interest.</span>
+<span class="sd">        unmasked: bool</span>
+<span class="sd">            A flag to indicate if the unmasked grids should be saved.</span>
+<span class="sd">        nprocs: int</span>
+<span class="sd">            The number of processes to use for multiprocessing.</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="n">times</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">times</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_times</span>
         <span class="k">if</span> <span class="n">nprocs</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
@@ -1758,7 +1789,7 @@
         <span class="n">f</span> <span class="o">=</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">Feature</span><span class="p">()</span>
         <span class="n">p</span> <span class="o">=</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">PointOnSphere</span><span class="p">(</span><span class="n">lat</span><span class="p">,</span> <span class="n">lon</span><span class="p">)</span>
         <span class="n">f</span><span class="o">.</span><span class="n">set_geometry</span><span class="p">(</span><span class="n">p</span><span class="p">)</span>
-        <span class="n">f</span><span class="o">.</span><span class="n">set_valid_time</span><span class="p">(</span><span class="n">age</span> <span class="o">+</span> <span class="n">paleo_time</span><span class="p">,</span> <span class="n">paleo_time</span><span class="p">)</span>
+        <span class="n">f</span><span class="o">.</span><span class="n">set_valid_time</span><span class="p">(</span><span class="n">age</span> <span class="o">+</span> <span class="n">paleo_time</span><span class="p">,</span> <span class="n">paleo_time</span><span class="p">)</span>  <span class="c1"># type: ignore</span>
         <span class="n">features</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">f</span><span class="p">)</span>
     <span class="n">pygplates</span><span class="o">.</span><span class="n">FeatureCollection</span><span class="p">(</span><span class="n">features</span><span class="p">)</span><span class="o">.</span><span class="n">write</span><span class="p">(</span>
         <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">output_file_dir</span><span class="p">,</span> <span class="n">SAMPLE_POINTS_GPMLZ_FILE_NAME</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">paleo_time</span><span class="p">))</span>
@@ -1775,7 +1806,7 @@
         <span class="n">pygplates</span><span class="o">.</span><span class="n">ScalarType</span><span class="o">.</span><span class="n">create_gpml</span><span class="p">(</span><span class="s2">&quot;SeafloorAge&quot;</span><span class="p">):</span> <span class="n">seafloor_ages</span><span class="p">,</span>
     <span class="p">}</span>
     <span class="n">f</span><span class="o">.</span><span class="n">set_geometry</span><span class="p">((</span><span class="n">coverage_geometry</span><span class="p">,</span> <span class="n">coverage_scalars</span><span class="p">))</span>
-    <span class="n">f</span><span class="o">.</span><span class="n">set_valid_time</span><span class="p">(</span><span class="n">paleo_time</span> <span class="o">+</span> <span class="mf">0.5</span><span class="p">,</span> <span class="n">paleo_time</span> <span class="o">-</span> <span class="mf">0.5</span><span class="p">)</span>
+    <span class="n">f</span><span class="o">.</span><span class="n">set_valid_time</span><span class="p">(</span><span class="n">paleo_time</span> <span class="o">+</span> <span class="mf">0.5</span><span class="p">,</span> <span class="n">paleo_time</span> <span class="o">-</span> <span class="mf">0.5</span><span class="p">)</span>  <span class="c1"># type: ignore</span>
     <span class="n">pygplates</span><span class="o">.</span><span class="n">FeatureCollection</span><span class="p">([</span><span class="n">f</span><span class="p">])</span><span class="o">.</span><span class="n">write</span><span class="p">(</span>
         <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span>
             <span class="n">output_file_dir</span><span class="p">,</span> <span class="s2">&quot;seed_points_coverage_</span><span class="si">{:0.2f}</span><span class="s2">_Ma.gpmlz&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">paleo_time</span><span class="p">)</span>
@@ -1862,7 +1893,7 @@
     <span class="n">grids</span><span class="o">.</span><span class="n">write_netcdf_grid</span><span class="p">(</span>
         <span class="n">continent_mask_filepath</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">time</span><span class="p">),</span>
         <span class="n">continent_mask</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s2">&quot;i1&quot;</span><span class="p">),</span>
-        <span class="n">extent</span><span class="o">=</span><span class="p">[</span><span class="o">-</span><span class="mi">180</span><span class="p">,</span> <span class="mi">180</span><span class="p">,</span> <span class="o">-</span><span class="mi">90</span><span class="p">,</span> <span class="mi">90</span><span class="p">],</span>
+        <span class="n">extent</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mi">180</span><span class="p">,</span> <span class="mi">180</span><span class="p">,</span> <span class="o">-</span><span class="mi">90</span><span class="p">,</span> <span class="mi">90</span><span class="p">),</span>
         <span class="n">fill_value</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
     <span class="p">)</span>
     <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>

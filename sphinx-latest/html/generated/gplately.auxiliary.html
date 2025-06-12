@@ -20,7 +20,7 @@
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="gplately.reconstruct_points_by_topologies" href="gplately.reconstruct_points_by_topologies.html" />
+    <link rel="next" title="gplately.ptt.subduction_convergence_func" href="gplately.ptt.subduction_convergence_func.html" />
     <link rel="prev" title="Functions" href="../functions.html" /> 
 </head>
 
@@ -64,7 +64,9 @@
 <li class="toctree-l3"><a class="reference internal" href="#gplately.auxiliary.get_pygmt_basemap_figure"><code class="docutils literal notranslate"><span class="pre">get_pygmt_basemap_figure()</span></code></a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="gplately.reconstruct_points_by_topologies.html">gplately.reconstruct_points_by_topologies</a></li>
+<li class="toctree-l2"><a class="reference internal" href="gplately.ptt.subduction_convergence_func.html">gplately.ptt.subduction_convergence_func</a></li>
+<li class="toctree-l2"><a class="reference internal" href="gplately.ptt.ridge_spreading_rate_func.html">gplately.ptt.ridge_spreading_rate_func</a></li>
+<li class="toctree-l2"><a class="reference internal" href="gplately.grids.read_netcdf_grid.html">gplately.grids.read_netcdf_grid</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../secondaries.html">Other Classes</a></li>
@@ -97,7 +99,8 @@
              
   <section id="module-gplately.auxiliary">
 <span id="gplately-auxiliary"></span><h1>gplately.auxiliary<a class="headerlink" href="#module-gplately.auxiliary" title="Link to this heading"></a></h1>
-<p>A set of helper functions designed to streamline the use of GPlately’s functionalities, minimizing the coding effort required from users.</p>
+<p>A set of helper functions designed to streamline the use of GPlately’s functionalities,
+minimizing the coding effort required from users.</p>
 <p class="rubric">Functions</p>
 <table class="autosummary longtable docutils align-default">
 <tbody>
@@ -132,9 +135,9 @@
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>model</strong> (<em>str</em><em> or </em><a class="reference internal" href="gplately.PlateModel.html#gplately.PlateModel" title="gplately.PlateModel"><em>PlateModel</em></a>) – model name or a <a class="reference internal" href="gplately.PlateModel.html#gplately.PlateModel" title="gplately.PlateModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">gplately.PlateModel</span></code></a> object</p></li>
-<li><p><strong>model_repo_dir</strong> (<em>str</em><em>, </em><em>default=&quot;./&quot;</em>) – the folder in which you would like to keep the model files</p></li>
-<li><p><strong>time</strong> (<em>int</em><em> or </em><em>float</em><em>, </em><em>default=0</em>) – the reconstruction age/time</p></li>
+<li><p><strong>model</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em> or </em><a class="reference internal" href="gplately.PlateModel.html#gplately.PlateModel" title="gplately.PlateModel"><em>PlateModel</em></a>) – model name or a <a class="reference internal" href="gplately.PlateModel.html#gplately.PlateModel" title="gplately.PlateModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">gplately.PlateModel</span></code></a> object</p></li>
+<li><p><strong>model_repo_dir</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em>, </em><em>default=&quot;./&quot;</em>) – the folder in which you would like to keep the model files</p></li>
+<li><p><strong>time</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a><em> or </em><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a><em>, </em><em>default=0</em>) – the reconstruction age/time</p></li>
 <li><p><strong>plot_engine</strong> (<a class="reference internal" href="gplately.PlotEngine.html#gplately.PlotEngine" title="gplately.PlotEngine"><em>PlotEngine</em></a><em>, </em><em>default=CartopyPlotEngine</em><em>(</em><em>)</em>) – two choices - CartopyPlotEngine() or PygmtPlotEngine()</p></li>
 </ul>
 </dd>
@@ -153,13 +156,13 @@
 
 <dl class="py function">
 <dt class="sig sig-object py" id="gplately.auxiliary.get_plate_reconstruction">
-<span class="sig-prename descclassname"><span class="pre">gplately.auxiliary.</span></span><span class="sig-name descname"><span class="pre">get_plate_reconstruction</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="gplately.PlateModel.html#gplately.PlateModel" title="plate_model_manager.plate_model.PlateModel"><span class="pre">PlateModel</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_repo_dir</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'./'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gplately/auxiliary.html#get_plate_reconstruction"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.auxiliary.get_plate_reconstruction" title="Link to this definition"></a></dt>
+<span class="sig-prename descclassname"><span class="pre">gplately.auxiliary.</span></span><span class="sig-name descname"><span class="pre">get_plate_reconstruction</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">model</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference internal" href="gplately.PlateModel.html#gplately.PlateModel" title="plate_model_manager.plate_model.PlateModel"><span class="pre">PlateModel</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">model_repo_dir</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'./'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gplately/auxiliary.html#get_plate_reconstruction"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.auxiliary.get_plate_reconstruction" title="Link to this definition"></a></dt>
 <dd><p>Return a <a class="reference internal" href="gplately.PlateReconstruction.html#gplately.PlateReconstruction" title="gplately.PlateReconstruction"><code class="xref py py-class docutils literal notranslate"><span class="pre">gplately.PlateReconstruction</span></code></a> object for a given model name or <a class="reference internal" href="gplately.PlateModel.html#gplately.PlateModel" title="gplately.PlateModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">gplately.PlateModel</span></code></a> object.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>model</strong> (<em>str</em><em> or </em><a class="reference internal" href="gplately.PlateModel.html#gplately.PlateModel" title="gplately.PlateModel"><em>PlateModel</em></a>) – model name or a <a class="reference internal" href="gplately.PlateModel.html#gplately.PlateModel" title="gplately.PlateModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">gplately.PlateModel</span></code></a> object</p></li>
-<li><p><strong>model_repo_dir</strong> (<em>str</em><em>, </em><em>default=&quot;./&quot;</em>) – the folder in which you would like to keep the model files</p></li>
+<li><p><strong>model</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em> or </em><a class="reference internal" href="gplately.PlateModel.html#gplately.PlateModel" title="gplately.PlateModel"><em>PlateModel</em></a>) – model name or a <a class="reference internal" href="gplately.PlateModel.html#gplately.PlateModel" title="gplately.PlateModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">gplately.PlateModel</span></code></a> object</p></li>
+<li><p><strong>model_repo_dir</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em>, </em><em>default=&quot;./&quot;</em>) – the folder in which you would like to keep the model files</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -182,8 +185,8 @@
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>projection</strong> (<em>str</em><em>, </em><em>default=&quot;N180/10c&quot;</em>) – string to define the map projection in GMT style</p></li>
-<li><p><strong>region</strong> (<em>str</em><em>, </em><em>default=&quot;d&quot;</em>) – string to define the map extent in GMT style</p></li>
+<li><p><strong>projection</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em>, </em><em>default=&quot;N180/10c&quot;</em>) – string to define the map projection in GMT style</p></li>
+<li><p><strong>region</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em>, </em><em>default=&quot;d&quot;</em>) – string to define the map extent in GMT style</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -202,7 +205,7 @@
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
         <a href="../functions.html" class="btn btn-neutral float-left" title="Functions" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="gplately.reconstruct_points_by_topologies.html" class="btn btn-neutral float-right" title="gplately.reconstruct_points_by_topologies" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="gplately.ptt.subduction_convergence_func.html" class="btn btn-neutral float-right" title="gplately.ptt.subduction_convergence_func" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>

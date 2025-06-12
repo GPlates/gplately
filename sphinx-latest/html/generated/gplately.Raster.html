@@ -127,46 +127,46 @@
 <h1>gplately.Raster<a class="headerlink" href="#gplately-raster" title="Link to this heading"></a></h1>
 <dl class="py class">
 <dt class="sig sig-object py" id="gplately.Raster">
-<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">gplately.</span></span><span class="sig-name descname"><span class="pre">Raster</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plate_reconstruction</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">extent</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">tuple</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'global'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">realign</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">resample</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">resize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">origin</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x_dimension_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y_dimension_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_variable_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gplately/grids.html#Raster"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.Raster" title="Link to this definition"></a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
-<p>The Raster class handles raster data.</p>
-<p>The functionalities of <a class="reference internal" href="#gplately.Raster" title="gplately.Raster"><code class="xref py py-class docutils literal notranslate"><span class="pre">gplately.Raster</span></code></a> include sampling data at points using spline
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">gplately.</span></span><span class="sig-name descname"><span class="pre">Raster</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plate_reconstruction</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">extent</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.13)"><span class="pre">tuple</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'global'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">realign</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">resample</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">resize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">origin</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x_dimension_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y_dimension_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_variable_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gplately/grids.html#Raster"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.Raster" title="Link to this definition"></a></dt>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
+<p>The functionalities of <a class="reference internal" href="#gplately.Raster" title="gplately.Raster"><code class="xref py py-class docutils literal notranslate"><span class="pre">Raster</span></code></a> class include sampling data at points using spline
 interpolation, resampling rasters with new X and Y-direction spacings and
 resizing rasters using new X and Y grid pixel resolutions. NaN-type data
 in rasters can be replaced with the values of their nearest valid neighbours.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="gplately.Raster.__init__">
-<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plate_reconstruction</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">extent</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">tuple</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'global'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">realign</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">resample</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">resize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">origin</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x_dimension_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y_dimension_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_variable_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">str</span></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gplately/grids.html#Raster.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.Raster.__init__" title="Link to this definition"></a></dt>
-<dd><p>Constructs all necessary attributes for the raster object.</p>
-<p>Note: either a str path to a netCDF file OR an ndarray representing a grid must be specified.</p>
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plate_reconstruction</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">extent</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.13)"><span class="pre">tuple</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">'global'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">realign</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">resample</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">resize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">origin</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x_dimension_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y_dimension_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_variable_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gplately/grids.html#Raster.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.Raster.__init__" title="Link to this definition"></a></dt>
+<dd><p>Constructor. Create a <a class="reference internal" href="#gplately.Raster" title="gplately.Raster"><code class="xref py py-class docutils literal notranslate"><span class="pre">Raster</span></code></a> object.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>data</strong> (<em>str</em><em> or </em><em>array-like</em>) – The raster data, either as a filename (<code class="docutils literal notranslate"><span class="pre">str</span></code>) or array.</p></li>
-<li><p><strong>plate_reconstruction</strong> (<a class="reference internal" href="gplately.PlateReconstruction.html#gplately.PlateReconstruction" title="gplately.PlateReconstruction"><em>gplately.PlateReconstruction</em></a>) – Allows for the accessibility of PlateReconstruction object attributes.
-Namely, PlateReconstruction object attributes rotation_model,
-topology_features and static_polygons can be used in the <code class="docutils literal notranslate"><span class="pre">Raster</span></code>
-object if called using <code class="docutils literal notranslate"><span class="pre">self.plate_reconstruction.X</span></code>, where X is the
-attribute.</p></li>
-<li><p><strong>extent</strong> (<em>str</em><em> or </em><em>4-tuple</em><em>, </em><em>default: 'global'</em>) – 4-tuple to specify (min_lon, max_lon, min_lat, max_lat) extents
+<li><p><strong>data</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em> or </em><em>array-like</em>) – The raster data, either as a file path (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>) or array data.</p></li>
+<li><p><strong>plate_reconstruction</strong> (<a class="reference internal" href="gplately.PlateReconstruction.html#gplately.PlateReconstruction" title="gplately.PlateReconstruction"><em>PlateReconstruction</em></a>) – <p>A <a class="reference internal" href="gplately.PlateReconstruction.html#gplately.PlateReconstruction" title="gplately.PlateReconstruction"><code class="xref py py-class docutils literal notranslate"><span class="pre">PlateReconstruction</span></code></a> object to provide the following essential components for reconstructing points.</p>
+<ul>
+<li><p><a class="reference internal" href="gplately.PlateReconstruction.html#gplately.PlateReconstruction.rotation_model" title="gplately.PlateReconstruction.rotation_model"><code class="xref py py-attr docutils literal notranslate"><span class="pre">PlateReconstruction.rotation_model</span></code></a></p></li>
+<li><p><code class="xref py py-attr docutils literal notranslate"><span class="pre">PlateReconstruction.topology_featues</span></code></p></li>
+<li><p><a class="reference internal" href="gplately.PlateReconstruction.html#gplately.PlateReconstruction.static_polygons" title="gplately.PlateReconstruction.static_polygons"><code class="xref py py-attr docutils literal notranslate"><span class="pre">PlateReconstruction.static_polygons</span></code></a></p></li>
+</ul>
+</p></li>
+<li><p><strong>extent</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em> or </em><em>4-tuple</em><em>, </em><em>default: 'global'</em>) – 4-tuple to specify (min_lon, max_lon, min_lat, max_lat) extents
 of the raster. If no extents are supplied, full global extent
-[-180,180,-90,90] is assumed (equivalent to <code class="docutils literal notranslate"><span class="pre">extent='global'</span></code>).
+(-180, 180, -90, 90) is assumed (equivalent to <code class="docutils literal notranslate"><span class="pre">extent='global'</span></code>).
 For array data with an upper-left origin, make sure <code class="docutils literal notranslate"><span class="pre">min_lat</span></code> is
 greater than <code class="docutils literal notranslate"><span class="pre">max_lat</span></code>, or specify <code class="docutils literal notranslate"><span class="pre">origin</span></code> parameter.</p></li>
 <li><p><strong>resample</strong> (<em>2-tuple</em><em>, </em><em>optional</em>) – Optionally resample grid, pass spacing in X and Y direction as a
 2-tuple e.g. resample=(spacingX, spacingY).</p></li>
 <li><p><strong>resize</strong> (<em>2-tuple</em><em>, </em><em>optional</em>) – Optionally resample grid to X-columns, Y-rows as a
 2-tuple e.g. resample=(resX, resY).</p></li>
-<li><p><strong>time</strong> (<em>float</em><em>, </em><em>default: 0.0</em>) – The time step represented by the raster data. Used for raster reconstruction.</p></li>
+<li><p><strong>time</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a><em>, </em><em>default: 0.0</em>) – The geological time the time-dependant raster data.</p></li>
 <li><p><strong>origin</strong> (<em>{'lower'</em><em>, </em><em>'upper'}</em><em>, </em><em>optional</em>) – When <code class="docutils literal notranslate"><span class="pre">data</span></code> is an array, use this parameter to specify the origin
 (upper left or lower left) of the data (overriding <code class="docutils literal notranslate"><span class="pre">extent</span></code>).</p></li>
-<li><p><strong>x_dimension_name</strong> (<em>str</em><em>, </em><em>optional</em><em>, </em><em>default=&quot;&quot;</em>) – If the grid file uses comman names, such as “x”, “lon”, “lons” or “longitude”, you need not set this parameter.
-Otherwise, you need to tell us what the x dimension name is.</p></li>
-<li><p><strong>y_dimension_name</strong> (<em>str</em><em>, </em><em>optional</em><em>, </em><em>default=&quot;&quot;</em>) – If the grid file uses comman names, such as “y”, “lat”, “lats” or “latitude”, you need not set this parameter.
-Otherwise, you need to tell us what the y dimension name is.</p></li>
-<li><p><strong>data_variable_name</strong> (<em>str</em><em>, </em><em>optional</em><em>, </em><em>default=&quot;&quot;</em>) – The program will try its best to determine the data variable name.
-However, it would be better if you could tell us what the data variable name is.
-Otherwise, the program will guess. The result may/may not be correct.</p></li>
+<li><p><strong>x_dimension_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em>, </em><em>optional</em><em>, </em><em>default=&quot;&quot;</em>) – If the grid file uses the comman names, such as <code class="docutils literal notranslate"><span class="pre">x</span></code>, <code class="docutils literal notranslate"><span class="pre">lon</span></code>, <code class="docutils literal notranslate"><span class="pre">lons</span></code> or <code class="docutils literal notranslate"><span class="pre">longitude</span></code>,
+you need not to provide this parameter. Otherwise, you need to tell us what the x dimension name is.</p></li>
+<li><p><strong>y_dimension_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em>, </em><em>optional</em><em>, </em><em>default=&quot;&quot;</em>) – If the grid file uses the comman names, such as <code class="docutils literal notranslate"><span class="pre">y</span></code>, <code class="docutils literal notranslate"><span class="pre">lat</span></code>, <code class="docutils literal notranslate"><span class="pre">lats</span></code> or <code class="docutils literal notranslate"><span class="pre">latitude</span></code>,
+you need not to provide this parameter. Otherwise, you need to tell us what the y dimension name is.</p></li>
+<li><p><strong>data_variable_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em>, </em><em>optional</em><em>, </em><em>default=&quot;&quot;</em>) – GPlately will try its best to guess the data variable name.
+However, it would be much better if you tell us what the data variable name is.
+Otherwise, GPlately’s guess may/may not be correct.</p></li>
 <li><p><strong>**kwargs</strong> – Handle deprecated arguments such as <code class="docutils literal notranslate"><span class="pre">PlateReconstruction_object</span></code>, <code class="docutils literal notranslate"><span class="pre">filename</span></code>, and <code class="docutils literal notranslate"><span class="pre">array</span></code>.</p></li>
 </ul>
 </dd>
@@ -177,16 +177,16 @@ Otherwise, the program will guess. The result may/may not be correct.</p></li>
 <table class="autosummary longtable docutils align-default">
 <tbody>
 <tr class="row-odd"><td><p><a class="reference internal" href="#gplately.Raster.__init__" title="gplately.Raster.__init__"><code class="xref py py-obj docutils literal notranslate"><span class="pre">__init__</span></code></a>([data, plate_reconstruction, ...])</p></td>
-<td><p>Constructs all necessary attributes for the raster object.</p></td>
+<td><p>Constructor.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#gplately.Raster.clip_by_extent" title="gplately.Raster.clip_by_extent"><code class="xref py py-obj docutils literal notranslate"><span class="pre">clip_by_extent</span></code></a>(extent)</p></td>
-<td><p>clip the raster according to a given extent [x_min, x_max, y_min, y_max] the extent of the returned raster may be slightly bigger than the given extent.</p></td>
+<td><p>Clip the raster according to a given extent <code class="docutils literal notranslate"><span class="pre">(x_min,</span> <span class="pre">x_max,</span> <span class="pre">y_min,</span> <span class="pre">y_max)</span></code>.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#gplately.Raster.copy" title="gplately.Raster.copy"><code class="xref py py-obj docutils literal notranslate"><span class="pre">copy</span></code></a>()</p></td>
-<td><p>Returns a copy of the Raster</p></td>
+<td><p>Return a copy of the <a class="reference internal" href="#gplately.Raster" title="gplately.Raster"><code class="xref py py-class docutils literal notranslate"><span class="pre">Raster</span></code></a> object.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#gplately.Raster.fill_NaNs" title="gplately.Raster.fill_NaNs"><code class="xref py py-obj docutils literal notranslate"><span class="pre">fill_NaNs</span></code></a>([inplace, return_array])</p></td>
-<td><p>Search for invalid <code class="docutils literal notranslate"><span class="pre">data</span></code> cells containing NaN-type entries and replaces NaNs with the value of the nearest valid data cell.</p></td>
+<td><p>Search for the invalid <code class="docutils literal notranslate"><span class="pre">data</span></code> cells containing NaN-type entries and replaces NaNs with the value of the nearest valid data cell.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#gplately.Raster.imshow" title="gplately.Raster.imshow"><code class="xref py py-obj docutils literal notranslate"><span class="pre">imshow</span></code></a>([ax, projection])</p></td>
 <td><p>Display raster data.</p></td>
@@ -198,7 +198,7 @@ Otherwise, the program will guess. The result may/may not be correct.</p></li>
 <td><p>Display raster data.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#gplately.Raster.query" title="gplately.Raster.query"><code class="xref py py-obj docutils literal notranslate"><span class="pre">query</span></code></a>(lons, lats[, region_of_interest])</p></td>
-<td><p>Given a set of location coordinates, return the grid values at these locations</p></td>
+<td><p>Given a set of location coordinates, return the grid values at these locations.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#gplately.Raster.reconstruct" title="gplately.Raster.reconstruct"><code class="xref py py-obj docutils literal notranslate"><span class="pre">reconstruct</span></code></a>(time[, fill_value, ...])</p></td>
 <td><p>Reconstruct the raster from its initial time (<code class="docutils literal notranslate"><span class="pre">self.time</span></code>) to a new time.</p></td>
@@ -207,13 +207,13 @@ Otherwise, the program will guess. The result may/may not be correct.</p></li>
 <td><p>Resamples the grid with a new <code class="docutils literal notranslate"><span class="pre">spacingX</span></code> and <code class="docutils literal notranslate"><span class="pre">spacingY</span></code>, meshed with linear interpolation.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#gplately.Raster.resize" title="gplately.Raster.resize"><code class="xref py py-obj docutils literal notranslate"><span class="pre">resize</span></code></a>(resX, resY[, inplace, method, ...])</p></td>
-<td><p>Resize the grid with a new resolution(<code class="docutils literal notranslate"><span class="pre">resX</span></code> and <code class="docutils literal notranslate"><span class="pre">resY</span></code>) using linear interpolation.</p></td>
+<td><p>Resize the grid with a new resolution (<code class="docutils literal notranslate"><span class="pre">resX</span></code> and <code class="docutils literal notranslate"><span class="pre">resY</span></code>) using linear interpolation.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#gplately.Raster.rotate_reference_frames" title="gplately.Raster.rotate_reference_frames"><code class="xref py py-obj docutils literal notranslate"><span class="pre">rotate_reference_frames</span></code></a>(...[, ...])</p></td>
-<td><p>Rotate a grid defined in one plate model reference frame within a :class:gplately.Raster object to another plate reconstruction model reference frame.</p></td>
+<td><p>Rotate a grid defined in one plate model reference frame within a <a class="reference internal" href="#gplately.Raster" title="gplately.Raster"><code class="xref py py-class docutils literal notranslate"><span class="pre">Raster</span></code></a> object to another plate reconstruction model reference frame.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#gplately.Raster.save_to_netcdf4" title="gplately.Raster.save_to_netcdf4"><code class="xref py py-obj docutils literal notranslate"><span class="pre">save_to_netcdf4</span></code></a>(filename[, ...])</p></td>
-<td><p>Saves the grid attributed to the <cite>Raster</cite> object to the given <cite>filename</cite> (including the &quot;.nc&quot; extension) in netCDF4 format.</p></td>
+<td><p>Saves the grid attributed to the <a class="reference internal" href="#gplately.Raster" title="gplately.Raster"><code class="xref py py-class docutils literal notranslate"><span class="pre">Raster</span></code></a> object to the given <code class="docutils literal notranslate"><span class="pre">filename</span></code> (including the &quot;.nc&quot; extension) in netCDF4 format.</p></td>
 </tr>
 </tbody>
 </table>
@@ -221,16 +221,16 @@ Otherwise, the program will guess. The result may/may not be correct.</p></li>
 <table class="autosummary longtable docutils align-default">
 <tbody>
 <tr class="row-odd"><td><p><a class="reference internal" href="#gplately.Raster.data" title="gplately.Raster.data"><code class="xref py py-obj docutils literal notranslate"><span class="pre">data</span></code></a></p></td>
-<td><p>Array containing the underlying raster data.</p></td>
+<td><p>Array containing the raster data.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#gplately.Raster.dtype" title="gplately.Raster.dtype"><code class="xref py py-obj docutils literal notranslate"><span class="pre">dtype</span></code></a></p></td>
 <td><p>The data type of the array.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#gplately.Raster.extent" title="gplately.Raster.extent"><code class="xref py py-obj docutils literal notranslate"><span class="pre">extent</span></code></a></p></td>
-<td><p>The spatial extent (x0, x1, y0, y1) of the data.</p></td>
+<td><p>The spatial extent <code class="docutils literal notranslate"><span class="pre">(x0,</span> <span class="pre">x1,</span> <span class="pre">y0,</span> <span class="pre">y1)</span></code> of the data.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#gplately.Raster.filename" title="gplately.Raster.filename"><code class="xref py py-obj docutils literal notranslate"><span class="pre">filename</span></code></a></p></td>
-<td><p>The filename used to create the <code class="docutils literal notranslate"><span class="pre">Raster</span></code> object.</p></td>
+<td><p>The filename used to create the <a class="reference internal" href="#gplately.Raster" title="gplately.Raster"><code class="xref py py-class docutils literal notranslate"><span class="pre">Raster</span></code></a> object.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#gplately.Raster.lats" title="gplately.Raster.lats"><code class="xref py py-obj docutils literal notranslate"><span class="pre">lats</span></code></a></p></td>
 <td><p>The y-coordinates of the raster data.</p></td>
@@ -242,10 +242,10 @@ Otherwise, the program will guess. The result may/may not be correct.</p></li>
 <td><p>The number of dimensions in the array.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#gplately.Raster.origin" title="gplately.Raster.origin"><code class="xref py py-obj docutils literal notranslate"><span class="pre">origin</span></code></a></p></td>
-<td><p>The origin ('lower' or 'upper') of the data array, used for e.g. plotting.</p></td>
+<td><p>The origin (<code class="docutils literal notranslate"><span class="pre">lower</span></code> or <code class="docutils literal notranslate"><span class="pre">upper</span></code>) of the data array.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#gplately.Raster.plate_reconstruction" title="gplately.Raster.plate_reconstruction"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plate_reconstruction</span></code></a></p></td>
-<td><p>An instance of <a class="reference internal" href="gplately.PlateReconstruction.html#gplately.PlateReconstruction" title="gplately.PlateReconstruction"><code class="xref py py-class docutils literal notranslate"><span class="pre">gplately.PlateReconstruction</span></code></a> class, like the <code class="docutils literal notranslate"><span class="pre">rotation_model</span></code>, a set of reconstructable <code class="docutils literal notranslate"><span class="pre">topology_features</span></code> and <code class="docutils literal notranslate"><span class="pre">static_polygons</span></code> that belong to a particular plate model.</p></td>
+<td><p>A <a class="reference internal" href="gplately.PlateReconstruction.html#gplately.PlateReconstruction" title="gplately.PlateReconstruction"><code class="xref py py-class docutils literal notranslate"><span class="pre">PlateReconstruction</span></code></a> object to provide the following essential components for reconstructing points.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#gplately.Raster.shape" title="gplately.Raster.shape"><code class="xref py py-obj docutils literal notranslate"><span class="pre">shape</span></code></a></p></td>
 <td><p>The shape of the data array.</p></td>
@@ -254,25 +254,36 @@ Otherwise, the program will guess. The result may/may not be correct.</p></li>
 <td><p>The size of the data array.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#gplately.Raster.time" title="gplately.Raster.time"><code class="xref py py-obj docutils literal notranslate"><span class="pre">time</span></code></a></p></td>
-<td><p>The time step represented by the raster data.</p></td>
+<td><p>The geological time for the time-dependant raster data.</p></td>
 </tr>
 </tbody>
 </table>
 <dl class="py method">
 <dt class="sig sig-object py" id="gplately.Raster.clip_by_extent">
 <span class="sig-name descname"><span class="pre">clip_by_extent</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">extent</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gplately/grids.html#Raster.clip_by_extent"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.Raster.clip_by_extent" title="Link to this definition"></a></dt>
-<dd><p>clip the raster according to a given extent [x_min, x_max, y_min, y_max]
-the extent of the returned raster may be slightly bigger than the given extent.
-this happens when the border of the given extent fall between two gird lines.</p>
+<dd><p>Clip the raster according to a given extent <code class="docutils literal notranslate"><span class="pre">(x_min,</span> <span class="pre">x_max,</span> <span class="pre">y_min,</span> <span class="pre">y_max)</span></code>.
+The extent of the returned raster may be slightly bigger than the given extent.
+This happens when the border of the given extent fall between two gird lines.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>extent</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.13)"><em>tuple</em></a>) – A tuple of 4 (min_lon, max_lon, min_lat, max_lat) extent.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The clipped grid.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference internal" href="#gplately.Raster" title="gplately.Raster">Raster</a></p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="gplately.Raster.copy">
 <span class="sig-name descname"><span class="pre">copy</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gplately/grids.html#Raster.copy"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.Raster.copy" title="Link to this definition"></a></dt>
-<dd><p>Returns a copy of the Raster</p>
+<dd><p>Return a copy of the <a class="reference internal" href="#gplately.Raster" title="gplately.Raster"><code class="xref py py-class docutils literal notranslate"><span class="pre">Raster</span></code></a> object.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Returns<span class="colon">:</span></dt>
-<dd class="field-odd"><p>A copy of the current Raster object</p>
+<dd class="field-odd"><p>A copy of the current <a class="reference internal" href="#gplately.Raster" title="gplately.Raster"><code class="xref py py-class docutils literal notranslate"><span class="pre">Raster</span></code></a> object.</p>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
 <dd class="field-even"><p><a class="reference internal" href="#gplately.Raster" title="gplately.Raster">Raster</a></p>
@@ -283,8 +294,7 @@ this happens when the border of the given extent fall between two gird lines.</p
 <dl class="py property">
 <dt class="sig sig-object py" id="gplately.Raster.data">
 <em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">data</span></span><a class="headerlink" href="#gplately.Raster.data" title="Link to this definition"></a></dt>
-<dd><p>Array containing the underlying raster data. This attribute can be
-modified after creation of the <code class="docutils literal notranslate"><span class="pre">Raster</span></code>.</p>
+<dd><p>Array containing the raster data. This attribute can be modified after creating the <a class="reference internal" href="#gplately.Raster" title="gplately.Raster"><code class="xref py py-class docutils literal notranslate"><span class="pre">Raster</span></code></a> object.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>ndarray, shape (ny, nx)</p>
@@ -301,12 +311,11 @@ modified after creation of the <code class="docutils literal notranslate"><span 
 <dl class="py property">
 <dt class="sig sig-object py" id="gplately.Raster.extent">
 <em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">extent</span></span><a class="headerlink" href="#gplately.Raster.extent" title="Link to this definition"></a></dt>
-<dd><p>The spatial extent (x0, x1, y0, y1) of the data. If no extents are supplied, full
-global extent [-180,180,-90,90] is assumed.</p>
+<dd><p>The spatial extent <code class="docutils literal notranslate"><span class="pre">(x0,</span> <span class="pre">x1,</span> <span class="pre">y0,</span> <span class="pre">y1)</span></code> of the data. If not supplied, global extent <code class="docutils literal notranslate"><span class="pre">(-180,</span> <span class="pre">180,</span> <span class="pre">-90,</span> <span class="pre">90)</span></code> is assumed.</p>
 <p>If y0 &lt; y1, the origin is the lower-left corner; else the upper-left.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>tuple of 4 floats</p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.13)">tuple</a> of 4 floats</p>
 </dd>
 </dl>
 </dd></dl>
@@ -314,11 +323,11 @@ global extent [-180,180,-90,90] is assumed.</p>
 <dl class="py property">
 <dt class="sig sig-object py" id="gplately.Raster.filename">
 <em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">filename</span></span><a class="headerlink" href="#gplately.Raster.filename" title="Link to this definition"></a></dt>
-<dd><p>The filename used to create the <code class="docutils literal notranslate"><span class="pre">Raster</span></code> object. If the object was
-created directly from an array, this attribute is <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p>
+<dd><p>The filename used to create the <a class="reference internal" href="#gplately.Raster" title="gplately.Raster"><code class="xref py py-class docutils literal notranslate"><span class="pre">Raster</span></code></a> object.
+If the object was created directly from an array, this attribute is <code class="docutils literal notranslate"><span class="pre">None</span></code>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>str or None</p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)">str</a> or None</p>
 </dd>
 </dl>
 </dd></dl>
@@ -326,19 +335,17 @@ created directly from an array, this attribute is <code class="docutils literal 
 <dl class="py method">
 <dt class="sig sig-object py" id="gplately.Raster.fill_NaNs">
 <span class="sig-name descname"><span class="pre">fill_NaNs</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">inplace</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_array</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gplately/grids.html#Raster.fill_NaNs"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.Raster.fill_NaNs" title="Link to this definition"></a></dt>
-<dd><p>Search for invalid <code class="docutils literal notranslate"><span class="pre">data</span></code> cells containing NaN-type entries and
+<dd><p>Search for the invalid <code class="docutils literal notranslate"><span class="pre">data</span></code> cells containing NaN-type entries and
 replaces NaNs with the value of the nearest valid data cell.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>inplace</strong> (<em>bool</em><em>, </em><em>default=False</em>) – Choose whether to overwrite the grid currently held in the <code class="docutils literal notranslate"><span class="pre">data</span></code> attribute with
-the filled grid.</p></li>
-<li><p><strong>return_array</strong> (<em>bool</em><em>, </em><em>default False</em>) – Return a <code class="docutils literal notranslate"><span class="pre">numpy.ndarray</span></code>, rather than a <code class="docutils literal notranslate"><span class="pre">Raster</span></code>.</p></li>
+<li><p><strong>inplace</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><em>bool</em></a><em>, </em><em>default=False</em>) – Choose whether to overwrite the grid currently held in the <code class="docutils literal notranslate"><span class="pre">data</span></code> attribute with the filled grid.</p></li>
+<li><p><strong>return_array</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><em>bool</em></a><em>, </em><em>default False</em>) – Return a <code class="docutils literal notranslate"><span class="pre">numpy.ndarray</span></code>, rather than a <a class="reference internal" href="#gplately.Raster" title="gplately.Raster"><code class="xref py py-class docutils literal notranslate"><span class="pre">Raster</span></code></a>.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>The resized grid. If <code class="docutils literal notranslate"><span class="pre">inplace</span></code> is set to <code class="docutils literal notranslate"><span class="pre">True</span></code>, this raster overwrites the
-one attributed to <code class="docutils literal notranslate"><span class="pre">data</span></code>.</p>
+<dd class="field-even"><p>The resized grid. If <code class="docutils literal notranslate"><span class="pre">inplace</span></code> is set to <code class="docutils literal notranslate"><span class="pre">True</span></code>, the data in <a class="reference internal" href="#gplately.Raster.data" title="gplately.Raster.data"><code class="xref py py-attr docutils literal notranslate"><span class="pre">Raster.data</span></code></a> will be overwritten.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference internal" href="#gplately.Raster" title="gplately.Raster">Raster</a></p>
@@ -360,7 +367,7 @@ are determined automatically and should not be specified.</p>
 <li><p><strong>projection</strong> (<em>cartopy.crs.Projection</em><em>, </em><em>optional</em>) – The map projection to be used. If both <code class="docutils literal notranslate"><span class="pre">ax</span></code> and <code class="docutils literal notranslate"><span class="pre">projection</span></code>
 are specified, this will be checked against the <code class="docutils literal notranslate"><span class="pre">projection</span></code>
 attribute of <code class="docutils literal notranslate"><span class="pre">ax</span></code>, if it exists.</p></li>
-<li><p><strong>**kwargs</strong> (<em>dict</em><em>, </em><em>optional</em>) – Any further keyword arguments are passed to
+<li><p><strong>**kwargs</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><em>dict</em></a><em>, </em><em>optional</em>) – Any further keyword arguments are passed to
 <code class="docutils literal notranslate"><span class="pre">matplotlib.pyplot.imshow</span></code> or <code class="docutils literal notranslate"><span class="pre">matplotlib.axes.Axes.imshow</span></code>,
 where appropriate.</p></li>
 </ul>
@@ -369,8 +376,7 @@ where appropriate.</p></li>
 <dd class="field-even"><p>matplotlib.image.AxesImage</p>
 </dd>
 <dt class="field-odd">Raises<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>ValueError</strong> – If <code class="docutils literal notranslate"><span class="pre">ax</span></code> and <code class="docutils literal notranslate"><span class="pre">projection</span></code> are both specified, but do not match
-    (i.e. <code class="docutils literal notranslate"><span class="pre">ax.projection</span> <span class="pre">!=</span> <span class="pre">projection</span></code>).</p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.13)"><strong>ValueError</strong></a> – If <code class="docutils literal notranslate"><span class="pre">ax</span></code> and <code class="docutils literal notranslate"><span class="pre">projection</span></code> are both specified, but do not match (i.e. <code class="docutils literal notranslate"><span class="pre">ax.projection</span> <span class="pre">!=</span> <span class="pre">projection</span></code>).</p>
 </dd>
 </dl>
 </dd></dl>
@@ -386,10 +392,10 @@ where appropriate.</p></li>
 gridded data. Must be broadcastable to a common shape.</p></li>
 <li><p><strong>lats</strong> (<em>array_like</em>) – The longitudes and latitudes of the points to interpolate onto the
 gridded data. Must be broadcastable to a common shape.</p></li>
-<li><p><strong>method</strong> (<em>str</em><em> or </em><em>int; default: 'linear'</em>) – The order of spline interpolation. Must be an integer in the range
-0-5. ‘nearest’, ‘linear’, and ‘cubic’ are aliases for 0, 1, and 3,
+<li><p><strong>method</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em> or </em><em>int; default: 'linear'</em>) – The order of spline interpolation. Must be an integer in the range
+0-5. <code class="docutils literal notranslate"><span class="pre">nearest</span></code>, <code class="docutils literal notranslate"><span class="pre">linear</span></code>, and <code class="docutils literal notranslate"><span class="pre">cubic</span></code> are aliases for 0, 1, and 3,
 respectively.</p></li>
-<li><p><strong>return_indices</strong> (<em>bool</em><em>, </em><em>default=False</em>) – Whether to return the row and column indices of the nearest grid
+<li><p><strong>return_indices</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><em>bool</em></a><em>, </em><em>default=False</em>) – Whether to return the row and column indices of the nearest grid
 points.</p></li>
 </ul>
 </dd>
@@ -403,8 +409,8 @@ points, only present if <code class="docutils literal notranslate"><span class="
 </dd>
 <dt class="field-odd">Raises<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>ValueError</strong> – If an invalid <code class="docutils literal notranslate"><span class="pre">method</span></code> is provided.</p></li>
-<li><p><strong>RuntimeWarning</strong> – If <code class="docutils literal notranslate"><span class="pre">lats</span></code> contains any invalid values outside of the interval
+<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.13)"><strong>ValueError</strong></a> – If an invalid <code class="docutils literal notranslate"><span class="pre">method</span></code> is provided.</p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#RuntimeWarning" title="(in Python v3.13)"><strong>RuntimeWarning</strong></a> – If <code class="docutils literal notranslate"><span class="pre">lats</span></code> contains any invalid values outside of the interval
     [-90, 90]. Invalid values will be clipped to this interval.</p></li>
 </ul>
 </dd>
@@ -412,7 +418,7 @@ points, only present if <code class="docutils literal notranslate"><span class="
 <div class="admonition note">
 <p class="admonition-title">Note</p>
 <p>If <code class="docutils literal notranslate"><span class="pre">return_indices</span></code> is set to <code class="docutils literal notranslate"><span class="pre">True</span></code>, the nearest array indices
-are returned as a tuple of arrays, in (i, j) or (lat, lon) format.</p>
+are returned as a tuple of arrays, in <code class="docutils literal notranslate"><span class="pre">(i,</span> <span class="pre">j)</span></code> or <code class="docutils literal notranslate"><span class="pre">(lat,</span> <span class="pre">lon)</span></code> format.</p>
 </div>
 <p>An example output:</p>
 <div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp"># </span>The<span class="w"> </span>first<span class="w"> </span>array<span class="w"> </span>holds<span class="w"> </span>the<span class="w"> </span>rows<span class="w"> </span>of<span class="w"> </span>the<span class="w"> </span>raster<span class="w"> </span>where<span class="w"> </span>point<span class="w"> </span>data<span class="w"> </span>spatially<span class="w"> </span>falls<span class="w"> </span>near.
@@ -425,8 +431,7 @@ are returned as a tuple of arrays, in (i, j) or (lat, lon) format.</p>
 <dl class="py property">
 <dt class="sig sig-object py" id="gplately.Raster.lats">
 <em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">lats</span></span><a class="headerlink" href="#gplately.Raster.lats" title="Link to this definition"></a></dt>
-<dd><p>The y-coordinates of the raster data. This attribute can be modified
-after creation of the <code class="docutils literal notranslate"><span class="pre">Raster</span></code>.</p>
+<dd><p>The y-coordinates of the raster data. This attribute can be modified after creating the <a class="reference internal" href="#gplately.Raster" title="gplately.Raster"><code class="xref py py-class docutils literal notranslate"><span class="pre">Raster</span></code></a> object.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>ndarray, shape (ny,)</p>
@@ -437,8 +442,7 @@ after creation of the <code class="docutils literal notranslate"><span class="pr
 <dl class="py property">
 <dt class="sig sig-object py" id="gplately.Raster.lons">
 <em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">lons</span></span><a class="headerlink" href="#gplately.Raster.lons" title="Link to this definition"></a></dt>
-<dd><p>The x-coordinates of the raster data. This attribute can be modified
-after creation of the <code class="docutils literal notranslate"><span class="pre">Raster</span></code>.</p>
+<dd><p>The x-coordinates of the raster data. This attribute can be modified after creating the <a class="reference internal" href="#gplately.Raster" title="gplately.Raster"><code class="xref py py-class docutils literal notranslate"><span class="pre">Raster</span></code></a> object.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>ndarray, shape (nx,)</p>
@@ -455,10 +459,10 @@ after creation of the <code class="docutils literal notranslate"><span class="pr
 <dl class="py property">
 <dt class="sig sig-object py" id="gplately.Raster.origin">
 <em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">origin</span></span><a class="headerlink" href="#gplately.Raster.origin" title="Link to this definition"></a></dt>
-<dd><p>The origin (‘lower’ or ‘upper’) of the data array, used for e.g. plotting.</p>
+<dd><p>The origin (<code class="docutils literal notranslate"><span class="pre">lower</span></code> or <code class="docutils literal notranslate"><span class="pre">upper</span></code>) of the data array.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>str</p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)">str</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -466,15 +470,17 @@ after creation of the <code class="docutils literal notranslate"><span class="pr
 <dl class="py property">
 <dt class="sig sig-object py" id="gplately.Raster.plate_reconstruction">
 <em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">plate_reconstruction</span></span><a class="headerlink" href="#gplately.Raster.plate_reconstruction" title="Link to this definition"></a></dt>
-<dd><p>An instance of <a class="reference internal" href="gplately.PlateReconstruction.html#gplately.PlateReconstruction" title="gplately.PlateReconstruction"><code class="xref py py-class docutils literal notranslate"><span class="pre">gplately.PlateReconstruction</span></code></a> class, like the
-<code class="docutils literal notranslate"><span class="pre">rotation_model</span></code>, a set of reconstructable <code class="docutils literal notranslate"><span class="pre">topology_features</span></code> and
-<code class="docutils literal notranslate"><span class="pre">static_polygons</span></code> that belong to a particular plate model. These
-attributes can be used in the <code class="docutils literal notranslate"><span class="pre">Raster</span></code> object if called using
-<code class="docutils literal notranslate"><span class="pre">self.plate_reconstruction.X</span></code>, where X is the attribute. This
-attribute can be modified after creation of the <code class="docutils literal notranslate"><span class="pre">Raster</span></code>.</p>
+<dd><p>A <a class="reference internal" href="gplately.PlateReconstruction.html#gplately.PlateReconstruction" title="gplately.PlateReconstruction"><code class="xref py py-class docutils literal notranslate"><span class="pre">PlateReconstruction</span></code></a> object to provide the following essential components for reconstructing points.</p>
+<blockquote>
+<div><ul class="simple">
+<li><p><a class="reference internal" href="gplately.PlateReconstruction.html#gplately.PlateReconstruction.rotation_model" title="gplately.PlateReconstruction.rotation_model"><code class="xref py py-attr docutils literal notranslate"><span class="pre">PlateReconstruction.rotation_model</span></code></a></p></li>
+<li><p><code class="xref py py-attr docutils literal notranslate"><span class="pre">PlateReconstruction.topology_featues</span></code></p></li>
+<li><p><a class="reference internal" href="gplately.PlateReconstruction.html#gplately.PlateReconstruction.static_polygons" title="gplately.PlateReconstruction.static_polygons"><code class="xref py py-attr docutils literal notranslate"><span class="pre">PlateReconstruction.static_polygons</span></code></a></p></li>
+</ul>
+</div></blockquote>
 <dl class="field-list simple">
 <dt class="field-odd">Type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference internal" href="gplately.PlateReconstruction.html#gplately.PlateReconstruction" title="gplately.PlateReconstruction">gplately.PlateReconstruction</a></p>
+<dd class="field-odd"><p><a class="reference internal" href="gplately.PlateReconstruction.html#gplately.PlateReconstruction" title="gplately.PlateReconstruction">PlateReconstruction</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -493,7 +499,7 @@ are determined automatically and should not be specified.</p>
 <li><p><strong>projection</strong> (<em>cartopy.crs.Projection</em><em>, </em><em>optional</em>) – The map projection to be used. If both <code class="docutils literal notranslate"><span class="pre">ax</span></code> and <code class="docutils literal notranslate"><span class="pre">projection</span></code>
 are specified, this will be checked against the <code class="docutils literal notranslate"><span class="pre">projection</span></code>
 attribute of <code class="docutils literal notranslate"><span class="pre">ax</span></code>, if it exists.</p></li>
-<li><p><strong>**kwargs</strong> (<em>dict</em><em>, </em><em>optional</em>) – Any further keyword arguments are passed to
+<li><p><strong>**kwargs</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#dict" title="(in Python v3.13)"><em>dict</em></a><em>, </em><em>optional</em>) – Any further keyword arguments are passed to
 <code class="docutils literal notranslate"><span class="pre">matplotlib.pyplot.imshow</span></code> or <code class="docutils literal notranslate"><span class="pre">matplotlib.axes.Axes.imshow</span></code>,
 where appropriate.</p></li>
 </ul>
@@ -502,8 +508,7 @@ where appropriate.</p></li>
 <dd class="field-even"><p>matplotlib.image.AxesImage</p>
 </dd>
 <dt class="field-odd">Raises<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>ValueError</strong> – If <code class="docutils literal notranslate"><span class="pre">ax</span></code> and <code class="docutils literal notranslate"><span class="pre">projection</span></code> are both specified, but do not match
-    (i.e. <code class="docutils literal notranslate"><span class="pre">ax.projection</span> <span class="pre">!=</span> <span class="pre">projection</span></code>).</p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.13)"><strong>ValueError</strong></a> – If <code class="docutils literal notranslate"><span class="pre">ax</span></code> and <code class="docutils literal notranslate"><span class="pre">projection</span></code> are both specified, but do not match (i.e. <code class="docutils literal notranslate"><span class="pre">ax.projection</span> <span class="pre">!=</span> <span class="pre">projection</span></code>).</p>
 </dd>
 </dl>
 </dd></dl>
@@ -511,13 +516,13 @@ where appropriate.</p></li>
 <dl class="py method">
 <dt class="sig sig-object py" id="gplately.Raster.query">
 <span class="sig-name descname"><span class="pre">query</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">lons</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">lats</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">region_of_interest</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gplately/grids.html#Raster.query"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.Raster.query" title="Link to this definition"></a></dt>
-<dd><p>Given a set of location coordinates, return the grid values at these locations</p>
+<dd><p>Given a set of location coordinates, return the grid values at these locations.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>lons</strong> (<em>list</em>) – a list of longitudes of the location coordinates</p></li>
-<li><p><strong>lats</strong> (<em>list</em>) – a list of latitude of the location coordinates</p></li>
-<li><p><strong>region_of_interest</strong> (<em>float</em>) – the radius of the region of interest in km
+<li><p><strong>lons</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><em>list</em></a>) – a list of longitudes of the location coordinates</p></li>
+<li><p><strong>lats</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><em>list</em></a>) – a list of latitude of the location coordinates</p></li>
+<li><p><strong>region_of_interest</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a>) – the radius of the region of interest in km
 this is the arch length. we need to calculate the straight distance between the two points in 3D space from this arch length.</p></li>
 </ul>
 </dd>
@@ -525,7 +530,7 @@ this is the arch length. we need to calculate the straight distance between the 
 <dd class="field-even"><p>a list of grid values for the given locations.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>list</p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)">list</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -537,30 +542,29 @@ this is the arch length. we need to calculate the straight distance between the 
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>time</strong> (<em>float</em>) – Time to which the data will be reconstructed.</p></li>
-<li><p><strong>fill_value</strong> (<em>float</em><em>, </em><em>int</em><em>, </em><em>str</em><em>, or </em><em>tuple</em><em>, </em><em>optional</em>) – The value to be used for regions outside of the static polygons
+<li><p><strong>time</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a>) – Time to which the data will be reconstructed.</p></li>
+<li><p><strong>fill_value</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em>, or </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.13)"><em>tuple</em></a><em>, </em><em>optional</em>) – The value to be used for regions outside of the static polygons
 at <code class="docutils literal notranslate"><span class="pre">time</span></code>. By default (<code class="docutils literal notranslate"><span class="pre">fill_value=None</span></code>), this value will be
 determined based on the input.</p></li>
-<li><p><strong>partitioning_features</strong> (<em>sequence</em><em> of </em><em>Feature</em><em> or </em><em>str</em><em>, </em><em>optional</em>) – The features used to partition the raster grid and assign plate
+<li><p><strong>partitioning_features</strong> (<em>sequence</em><em> of </em><em>Feature</em><em> or </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em>, </em><em>optional</em>) – The features used to partition the raster grid and assign plate
 IDs. By default, <code class="docutils literal notranslate"><span class="pre">self.plate_reconstruction.static_polygons</span></code>
 will be used, but alternatively any valid argument to
 <code class="docutils literal notranslate"><span class="pre">pygplates.FeaturesFunctionArgument</span></code> can be specified here.</p></li>
-<li><p><strong>threads</strong> (<em>int</em><em>, </em><em>default 1</em>) – Number of threads to use for certain computationally heavy routines.</p></li>
-<li><p><strong>anchor_plate_id</strong> (<em>int</em><em>, </em><em>optional</em>) – ID of the anchored plate. By default, reconstructions are made with respect to
-the anchor plate ID specified in the <a class="reference internal" href="gplately.PlateReconstruction.html#gplately.PlateReconstruction" title="gplately.PlateReconstruction"><code class="xref py py-class docutils literal notranslate"><span class="pre">gplately.PlateReconstruction</span></code></a> object.</p></li>
-<li><p><strong>inplace</strong> (<em>bool</em><em>, </em><em>default False</em>) – Perform the reconstruction in-place (replace the raster’s data with the reconstructed data).</p></li>
-<li><p><strong>return_array</strong> (<em>bool</em><em>, </em><em>default False</em>) – Return a <code class="docutils literal notranslate"><span class="pre">numpy.ndarray</span></code>, rather than a <code class="docutils literal notranslate"><span class="pre">Raster</span></code>.</p></li>
+<li><p><strong>threads</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a><em>, </em><em>default 1</em>) – Number of threads to use for certain computationally heavy routines.</p></li>
+<li><p><strong>anchor_plate_id</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a><em>, </em><em>optional</em>) – ID of the anchored plate. By default, reconstructions are made with respect to
+the anchor plate ID specified in the <a class="reference internal" href="gplately.PlateReconstruction.html#gplately.PlateReconstruction" title="gplately.PlateReconstruction"><code class="xref py py-class docutils literal notranslate"><span class="pre">PlateReconstruction</span></code></a> object.</p></li>
+<li><p><strong>inplace</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><em>bool</em></a><em>, </em><em>default False</em>) – Perform the reconstruction in-place (replace the raster’s data with the reconstructed data).</p></li>
+<li><p><strong>return_array</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><em>bool</em></a><em>, </em><em>default False</em>) – Return a <code class="docutils literal notranslate"><span class="pre">numpy.ndarray</span></code>, rather than a <a class="reference internal" href="#gplately.Raster" title="gplately.Raster"><code class="xref py py-class docutils literal notranslate"><span class="pre">Raster</span></code></a>.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>The reconstructed grid. Areas for which no plate ID could be
-determined will be filled with <code class="docutils literal notranslate"><span class="pre">fill_value</span></code>.</p>
+<dd class="field-even"><p>The reconstructed grid. Areas for which no plate ID could be determined will be filled with <code class="docutils literal notranslate"><span class="pre">fill_value</span></code>.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference internal" href="#gplately.Raster" title="gplately.Raster">Raster</a> or np.ndarray</p>
 </dd>
 <dt class="field-even">Raises<span class="colon">:</span></dt>
-<dd class="field-even"><p><strong>TypeError</strong> – If this <code class="docutils literal notranslate"><span class="pre">Raster</span></code> has no <code class="docutils literal notranslate"><span class="pre">plate_reconstruction</span></code> set.</p>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#TypeError" title="(in Python v3.13)"><strong>TypeError</strong></a> – If this <a class="reference internal" href="#gplately.Raster" title="gplately.Raster"><code class="xref py py-class docutils literal notranslate"><span class="pre">Raster</span></code></a> object has no a valid <code class="docutils literal notranslate"><span class="pre">plate_reconstruction</span></code> object.</p>
 </dd>
 </dl>
 <div class="admonition note">
@@ -585,12 +589,12 @@ value will be transparent black (0.0, 0.0, 0.0, 0.0) or
 <dd><p>Resamples the grid with a new <code class="docutils literal notranslate"><span class="pre">spacingX</span></code> and <code class="docutils literal notranslate"><span class="pre">spacingY</span></code>, meshed with linear interpolation.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>Ultimately, <code class="docutils literal notranslate"><span class="pre">resample</span></code> changes the lat-lon resolution of the gridded data. The
+<p>Ultimately, the <a class="reference internal" href="#gplately.Raster.resample" title="gplately.Raster.resample"><code class="xref py py-meth docutils literal notranslate"><span class="pre">resample()</span></code></a> changes the lat-lon resolution of the gridded data. The
 larger the x and y spacings given are, the larger the pixellation of raster data.</p>
-<p><code class="docutils literal notranslate"><span class="pre">resample</span></code> creates new latitude and longitude arrays with specified spacings in the
+<p>The <a class="reference internal" href="#gplately.Raster.resample" title="gplately.Raster.resample"><code class="xref py py-meth docutils literal notranslate"><span class="pre">resample()</span></code></a> creates new latitude and longitude arrays with specified spacings in the
 X and Y directions (<code class="docutils literal notranslate"><span class="pre">spacingX</span></code> and <code class="docutils literal notranslate"><span class="pre">spacingY</span></code>). These arrays are linearly interpolated
 into a new raster. If <code class="docutils literal notranslate"><span class="pre">inplace</span></code> is set to <code class="docutils literal notranslate"><span class="pre">True</span></code>, the respaced latitude array, longitude
-array and raster will inplace the ones currently attributed to the <code class="docutils literal notranslate"><span class="pre">Raster</span></code> object.</p>
+array and raster will inplace the ones currently attributed to the <a class="reference internal" href="#gplately.Raster" title="gplately.Raster"><code class="xref py py-class docutils literal notranslate"><span class="pre">Raster</span></code></a> object.</p>
 </div>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -605,12 +609,12 @@ longitudinally.</p></li>
 Note: to keep the size of the raster consistent, set <code class="docutils literal notranslate"><span class="pre">spacingX</span> <span class="pre">=</span> <span class="pre">spacingY</span></code>;
 otherwise, if for example <code class="docutils literal notranslate"><span class="pre">spacingX</span> <span class="pre">&gt;</span> <span class="pre">spacingY</span></code>, the raster will appear stretched
 longitudinally.</p></li>
-<li><p><strong>method</strong> (<em>str</em><em> or </em><em>int; default: 'linear'</em>) – The order of spline interpolation. Must be an integer in the range
+<li><p><strong>method</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em> or </em><em>int; default: 'linear'</em>) – The order of spline interpolation. Must be an integer in the range
 0-5. ‘nearest’, ‘linear’, and ‘cubic’ are aliases for 0, 1, and 3,
 respectively.</p></li>
-<li><p><strong>inplace</strong> (<em>bool</em><em>, </em><em>default=False</em>) – Choose to overwrite the data (the <code class="docutils literal notranslate"><span class="pre">self.data</span></code> attribute), latitude array
+<li><p><strong>inplace</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><em>bool</em></a><em>, </em><em>default=False</em>) – Choose to overwrite the data (the <code class="docutils literal notranslate"><span class="pre">self.data</span></code> attribute), latitude array
 (<code class="docutils literal notranslate"><span class="pre">self.lats</span></code>) and longitude array (<code class="docutils literal notranslate"><span class="pre">self.lons</span></code>) currently attributed to the
-<code class="docutils literal notranslate"><span class="pre">Raster</span></code> object.</p></li>
+<a class="reference internal" href="#gplately.Raster" title="gplately.Raster"><code class="xref py py-class docutils literal notranslate"><span class="pre">Raster</span></code></a> object.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
@@ -626,15 +630,15 @@ one attributed to <code class="docutils literal notranslate"><span class="pre">d
 <dl class="py method">
 <dt class="sig sig-object py" id="gplately.Raster.resize">
 <span class="sig-name descname"><span class="pre">resize</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">resX</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">resY</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">inplace</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">method</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'linear'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_array</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gplately/grids.html#Raster.resize"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.Raster.resize" title="Link to this definition"></a></dt>
-<dd><p>Resize the grid with a new resolution(<code class="docutils literal notranslate"><span class="pre">resX</span></code> and <code class="docutils literal notranslate"><span class="pre">resY</span></code>) using linear interpolation.</p>
+<dd><p>Resize the grid with a new resolution (<code class="docutils literal notranslate"><span class="pre">resX</span></code> and <code class="docutils literal notranslate"><span class="pre">resY</span></code>) using linear interpolation.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>Ultimately, <code class="docutils literal notranslate"><span class="pre">resize</span></code> “stretches” a raster in the x and y directions. The larger
+<p>Ultimately, The <a class="reference internal" href="#gplately.Raster.resize" title="gplately.Raster.resize"><code class="xref py py-meth docutils literal notranslate"><span class="pre">resize()</span></code></a> “stretches” a raster in the x and y directions. The larger
 the resolutions in x and y, the more stretched the raster appears in x and y.</p>
 <p>It creates new latitude and longitude arrays with specific resolutions in
 the X and Y directions (<code class="docutils literal notranslate"><span class="pre">resX</span></code> and <code class="docutils literal notranslate"><span class="pre">resY</span></code>). These arrays are linearly interpolated
 into a new raster. If <code class="docutils literal notranslate"><span class="pre">inplace</span></code> is set to <code class="docutils literal notranslate"><span class="pre">True</span></code>, the resized latitude, longitude
-arrays and raster will inplace the ones currently attributed to the <code class="docutils literal notranslate"><span class="pre">Raster</span></code> object.</p>
+arrays and raster will inplace the ones currently attributed to the <a class="reference internal" href="#gplately.Raster" title="gplately.Raster"><code class="xref py py-class docutils literal notranslate"><span class="pre">Raster</span></code></a> object.</p>
 </div>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
@@ -645,18 +649,17 @@ more latitudinally-stretched the raster becomes.</p></li>
 <li><p><strong>resY</strong> (<em>ndarray</em>) – Specify the resolutions with which to resize the raster. The larger <code class="docutils literal notranslate"><span class="pre">resX</span></code> is,
 the more longitudinally-stretched the raster becomes. The larger <code class="docutils literal notranslate"><span class="pre">resY</span></code> is, the
 more latitudinally-stretched the raster becomes.</p></li>
-<li><p><strong>method</strong> (<em>str</em><em> or </em><em>int; default: 'linear'</em>) – The order of spline interpolation. Must be an integer in the range
+<li><p><strong>method</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em> or </em><em>int; default: 'linear'</em>) – The order of spline interpolation. Must be an integer in the range
 0-5. ‘nearest’, ‘linear’, and ‘cubic’ are aliases for 0, 1, and 3,
 respectively.</p></li>
-<li><p><strong>inplace</strong> (<em>bool</em><em>, </em><em>default=False</em>) – Choose to overwrite the data (the <code class="docutils literal notranslate"><span class="pre">self.data</span></code> attribute), latitude array
+<li><p><strong>inplace</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><em>bool</em></a><em>, </em><em>default=False</em>) – Choose to overwrite the data (the <code class="docutils literal notranslate"><span class="pre">self.data</span></code> attribute), latitude array
 (<code class="docutils literal notranslate"><span class="pre">self.lats</span></code>) and longitude array (<code class="docutils literal notranslate"><span class="pre">self.lons</span></code>) currently attributed to the
-<code class="docutils literal notranslate"><span class="pre">Raster</span></code> object.</p></li>
-<li><p><strong>return_array</strong> (<em>bool</em><em>, </em><em>default False</em>) – Return a <code class="docutils literal notranslate"><span class="pre">numpy.ndarray</span></code>, rather than a <code class="docutils literal notranslate"><span class="pre">Raster</span></code>.</p></li>
+<a class="reference internal" href="#gplately.Raster" title="gplately.Raster"><code class="xref py py-class docutils literal notranslate"><span class="pre">Raster</span></code></a> object.</p></li>
+<li><p><strong>return_array</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><em>bool</em></a><em>, </em><em>default False</em>) – Return a <code class="docutils literal notranslate"><span class="pre">numpy.ndarray</span></code>, rather than a <a class="reference internal" href="#gplately.Raster" title="gplately.Raster"><code class="xref py py-class docutils literal notranslate"><span class="pre">Raster</span></code></a> object.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>The resized grid. If <code class="docutils literal notranslate"><span class="pre">inplace</span></code> is set to <code class="docutils literal notranslate"><span class="pre">True</span></code>, this raster overwrites the
-one attributed to <code class="docutils literal notranslate"><span class="pre">data</span></code>.</p>
+<dd class="field-even"><p>The resized grid. If <code class="docutils literal notranslate"><span class="pre">inplace</span></code> is set to <code class="docutils literal notranslate"><span class="pre">True</span></code>, the data in <a class="reference internal" href="#gplately.Raster.data" title="gplately.Raster.data"><code class="xref py py-attr docutils literal notranslate"><span class="pre">Raster.data</span></code></a> will be overwritten.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p><a class="reference internal" href="#gplately.Raster" title="gplately.Raster">Raster</a></p>
@@ -668,32 +671,32 @@ one attributed to <code class="docutils literal notranslate"><span class="pre">d
 <dt class="sig sig-object py" id="gplately.Raster.rotate_reference_frames">
 <span class="sig-name descname"><span class="pre">rotate_reference_frames</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">grid_spacing_degrees</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">reconstruction_time</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">from_rotation_features_or_model</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">to_rotation_features_or_model</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">from_rotation_reference_plate</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">to_rotation_reference_plate</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">non_reference_plate</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">701</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gplately/grids.html#Raster.rotate_reference_frames"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.Raster.rotate_reference_frames" title="Link to this definition"></a></dt>
 <dd><p>Rotate a grid defined in one plate model reference frame
-within a :class:gplately.Raster object to another plate reconstruction model reference frame.</p>
+within a <a class="reference internal" href="#gplately.Raster" title="gplately.Raster"><code class="xref py py-class docutils literal notranslate"><span class="pre">Raster</span></code></a> object to another plate reconstruction model reference frame.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>grid_spacing_degrees</strong> (<em>float</em>) – The spacing (in degrees) for the output rotated grid.</p></li>
-<li><p><strong>reconstruction_time</strong> (<em>float</em>) – The time at which to rotate the input grid.</p></li>
-<li><p><strong>from_rotation_features_or_model</strong> (<em>str</em><em>, </em><em>list</em><em> of </em><em>str</em><em>, or </em><em>instance</em><em> of </em><em>pygplates.RotationModel</em>) – A filename, or a list of filenames, or a pyGPlates
+<li><p><strong>grid_spacing_degrees</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a>) – The spacing (in degrees) for the output rotated grid.</p></li>
+<li><p><strong>reconstruction_time</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a>) – The time at which to rotate the input grid.</p></li>
+<li><p><strong>from_rotation_features_or_model</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><em>list</em></a><em> of </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em>, or </em><em>instance</em><em> of </em><em>pygplates.RotationModel</em>) – A filename, or a list of filenames, or a pyGPlates
 RotationModel object that defines the rotation model
 that the input grid is currently associated with.</p></li>
-<li><p><strong>to_rotation_features_or_model</strong> (<em>str</em><em>, </em><em>list</em><em> of </em><em>str</em><em>, or </em><em>instance</em><em> of </em><em>pygplates.RotationModel</em>) – A filename, or a list of filenames, or a pyGPlates
+<li><p><strong>to_rotation_features_or_model</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em>, </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)"><em>list</em></a><em> of </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em>, or </em><em>instance</em><em> of </em><em>pygplates.RotationModel</em>) – A filename, or a list of filenames, or a pyGPlates
 RotationModel object that defines the rotation model
 that the input grid shall be rotated with.</p></li>
-<li><p><strong>from_rotation_reference_plate</strong> (<em>int</em><em>, </em><em>default = 0</em>) – The current reference plate for the plate model the grid
+<li><p><strong>from_rotation_reference_plate</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a><em>, </em><em>default = 0</em>) – The current reference plate for the plate model the grid
 is defined in. Defaults to the anchor plate 0.</p></li>
-<li><p><strong>to_rotation_reference_plate</strong> (<em>int</em><em>, </em><em>default = 0</em>) – The desired reference plate for the plate model the grid
+<li><p><strong>to_rotation_reference_plate</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a><em>, </em><em>default = 0</em>) – The desired reference plate for the plate model the grid
 is being rotated to. Defaults to the anchor plate 0.</p></li>
-<li><p><strong>non_reference_plate</strong> (<em>int</em><em>, </em><em>default = 701</em>) – An arbitrary placeholder reference frame with which
+<li><p><strong>non_reference_plate</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a><em>, </em><em>default = 701</em>) – An arbitrary placeholder reference frame with which
 to define the “from” and “to” reference frames.</p></li>
-<li><p><strong>output_name</strong> (<em>str</em><em>, </em><em>default None</em>) – If passed, the rotated grid is saved as a netCDF grid to this filename.</p></li>
+<li><p><strong>output_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em>, </em><em>default None</em>) – If passed, the rotated grid is saved as a netCDF grid to this filename.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>An instance of the gplately.Raster object containing the rotated grid.</p>
+<dd class="field-even"><p>An instance of the <a class="reference internal" href="#gplately.Raster" title="gplately.Raster"><code class="xref py py-class docutils literal notranslate"><span class="pre">Raster</span></code></a> object containing the rotated grid.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><a class="reference internal" href="#gplately.Raster" title="gplately.Raster">gplately.Raster</a>()</p>
+<dd class="field-odd"><p><a class="reference internal" href="#gplately.Raster" title="gplately.Raster">Raster</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -701,7 +704,7 @@ to define the “from” and “to” reference frames.</p></li>
 <dl class="py method">
 <dt class="sig sig-object py" id="gplately.Raster.save_to_netcdf4">
 <span class="sig-name descname"><span class="pre">save_to_netcdf4</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">significant_digits</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fill_value</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">nan</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gplately/grids.html#Raster.save_to_netcdf4"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.Raster.save_to_netcdf4" title="Link to this definition"></a></dt>
-<dd><p>Saves the grid attributed to the <cite>Raster</cite> object to the given <cite>filename</cite> (including
+<dd><p>Saves the grid attributed to the <a class="reference internal" href="#gplately.Raster" title="gplately.Raster"><code class="xref py py-class docutils literal notranslate"><span class="pre">Raster</span></code></a> object to the given <code class="docutils literal notranslate"><span class="pre">filename</span></code> (including
 the “.nc” extension) in netCDF4 format.</p>
 </dd></dl>
 
@@ -720,7 +723,12 @@ the “.nc” extension) in netCDF4 format.</p>
 <dl class="py property">
 <dt class="sig sig-object py" id="gplately.Raster.time">
 <em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">time</span></span><a class="headerlink" href="#gplately.Raster.time" title="Link to this definition"></a></dt>
-<dd><p>The time step represented by the raster data.</p>
+<dd><p>The geological time for the time-dependant raster data.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)">float</a></p>
+</dd>
+</dl>
 </dd></dl>
 
 </dd></dl>

@@ -1,0 +1,6 @@
+﻿gplately.ptt.ridge\_spreading\_rate\_func
+=========================================
+
+.. currentmodule:: gplately.ptt
+
+.. autofunction:: ridge_spreading_rate_func

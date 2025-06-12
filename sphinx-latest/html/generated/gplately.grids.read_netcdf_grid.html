@@ -1,0 +1,184 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>gplately.grids.read_netcdf_grid &mdash; gplately 2.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
+
+  
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=51b770b3"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="Other Classes" href="../secondaries.html" />
+    <link rel="prev" title="gplately.ptt.ridge_spreading_rate_func" href="gplately.ptt.ridge_spreading_rate_func.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            gplately
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../basic_usages.html">Minimal working example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../use_cases.html">Common Use Cases</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../faq.html">Trouble-shooting and FAQ</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../command_line_interface.html">Command Line Interface (CLI)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../primer.html">Primer</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Reference</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../api.html">Main Classes</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../functions.html">Functions</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="gplately.auxiliary.html">gplately.auxiliary</a></li>
+<li class="toctree-l2"><a class="reference internal" href="gplately.ptt.subduction_convergence_func.html">gplately.ptt.subduction_convergence_func</a></li>
+<li class="toctree-l2"><a class="reference internal" href="gplately.ptt.ridge_spreading_rate_func.html">gplately.ptt.ridge_spreading_rate_func</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">gplately.grids.read_netcdf_grid</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#gplately.grids.read_netcdf_grid"><code class="docutils literal notranslate"><span class="pre">read_netcdf_grid()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../secondaries.html">Other Classes</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">gplately</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../functions.html">Functions</a></li>
+      <li class="breadcrumb-item active">gplately.grids.read_netcdf_grid</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/generated/gplately.grids.read_netcdf_grid.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="gplately-grids-read-netcdf-grid">
+<h1>gplately.grids.read_netcdf_grid<a class="headerlink" href="#gplately-grids-read-netcdf-grid" title="Link to this heading"></a></h1>
+<dl class="py function">
+<dt class="sig sig-object py" id="gplately.grids.read_netcdf_grid">
+<span class="sig-prename descclassname"><span class="pre">gplately.grids.</span></span><span class="sig-name descname"><span class="pre">read_netcdf_grid</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">filename</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">return_grids</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">realign</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">resample</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">resize</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">x_dimension_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">y_dimension_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">data_variable_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span><span class="w"> </span><span class="o"><span class="pre">=</span></span><span class="w"> </span><span class="default_value"><span class="pre">''</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Tuple" title="(in Python v3.13)"><span class="pre">Tuple</span></a><span class="p"><span class="pre">[</span></span><span class="pre">MaskedArray</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">MaskedArray</span><span class="p"><span class="pre">,</span></span><span class="w"> </span><span class="pre">MaskedArray</span><span class="p"><span class="pre">]</span></span><span class="w"> </span><span class="p"><span class="pre">|</span></span><span class="w"> </span><span class="pre">MaskedArray</span></span></span><a class="reference internal" href="../_modules/gplately/grids.html#read_netcdf_grid"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.grids.read_netcdf_grid" title="Link to this definition"></a></dt>
+<dd><p>Read a <cite>netCDF</cite> (.nc) grid from a given <cite>filename</cite> and return its data as a
+<cite>MaskedArray</cite>.</p>
+<p class="rubric">Notes</p>
+<p>If a <cite>resample</cite> tuple is passed with X and Y spacings (<cite>spacingX</cite>, <cite>spacingY</cite>),
+the gridded data in <cite>filename</cite> will be resampled with these resolutions.</p>
+<p>By default, only the <cite>MaskedArray</cite> is returned to the user. However, if <cite>return_grids</cite> is
+set to <cite>True</cite>, the <cite>MaskedArray</cite> will be returned along with two additional arrays
+in a <cite>tuple</cite>:</p>
+<ul class="simple">
+<li><p>A 1d <cite>MaskedArray</cite> containing the longitudes of the <cite>netCDF</cite> gridded data</p></li>
+<li><p>A 1d <cite>MaskedArray</cite> containing the latitudes of the <cite>netCDF</cite> gridded data</p></li>
+</ul>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>filename</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a>) – Full path to the <cite>netCDF</cite> raster file.</p></li>
+<li><p><strong>return_grids</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><em>bool</em></a><em>, </em><em>optional</em><em>, </em><em>default=False</em>) – If set to <cite>True</cite>, returns lon, lat arrays associated with the grid data.</p></li>
+<li><p><strong>realign</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><em>bool</em></a><em>, </em><em>optional</em><em>, </em><em>default=False</em>) – if set to <cite>True</cite>, realigns grid to -180/180 and flips the array if the
+latitudinal coordinates are decreasing.</p></li>
+<li><p><strong>resample</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.13)"><em>tuple</em></a><em>, </em><em>optional</em><em>, </em><em>default=None</em>) – If passed as <cite>resample = (spacingX, spacingY)</cite>, the given <cite>netCDF</cite> grid is resampled
+with these x and y resolutions.</p></li>
+<li><p><strong>resize</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.13)"><em>tuple</em></a><em>, </em><em>optional</em><em>, </em><em>default=None</em>) – If passed as <cite>resample = (resX, resY)</cite>, the given <cite>netCDF</cite> grid is resized
+to the number of columns (resX) and rows (resY).</p></li>
+<li><p><strong>x_dimension_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em>, </em><em>optional</em><em>, </em><em>default=&quot;&quot;</em>) – If the grid file uses comman names, such as “x”, “lon”, “lons” or “longitude”, you need not set this parameter.
+Otherwise, you need to tell us what the x dimension name is.</p></li>
+<li><p><strong>y_dimension_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em>, </em><em>optional</em><em>, </em><em>default=&quot;&quot;</em>) – If the grid file uses comman names, such as “y”, “lat”, “lats” or “latitude”, you need not set this parameter.
+Otherwise, you need to tell us what the y dimension name is.</p></li>
+<li><p><strong>data_variable_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em>, </em><em>optional</em><em>, </em><em>default=&quot;&quot;</em>) – The program will try its best to determine the data variable name.
+However, it would be better if you could tell us what the data variable name is.
+Otherwise, the program will guess. The result may/may not be correct.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><ul>
+<li><p><strong>grid_z</strong> (<em>MaskedArray</em>) – A <cite>MaskedArray</cite> containing the gridded data from the supplied netCDF4 <cite>filename</cite>.
+Entries’ longitudes are re-aligned between -180 and 180 degrees.</p></li>
+<li><p><strong>lon, lat</strong> (<em>1d MaskedArrays</em>) – <cite>MaskedArrays</cite> encasing longitude and latitude variables belonging to the
+supplied netCDF4 file. Longitudes are rescaled between -180 and 180 degrees.
+An example output of <cite>cdf_lat</cite> is:</p>
+<blockquote>
+<div><p>masked_array(data=[-90. , -89.9, -89.8, …,  89.8,  89.9,  90. ], mask=False, fill_value=1e+20)</p>
+</div></blockquote>
+</li>
+</ul>
+</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="gplately.ptt.ridge_spreading_rate_func.html" class="btn btn-neutral float-left" title="gplately.ptt.ridge_spreading_rate_func" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../secondaries.html" class="btn btn-neutral float-right" title="Other Classes" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023-2025, The University of Sydney.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>

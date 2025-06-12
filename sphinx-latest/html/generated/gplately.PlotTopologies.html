@@ -180,17 +180,17 @@
 <dl class="py class">
 <dt class="sig sig-object py" id="gplately.PlotTopologies">
 <em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">gplately.</span></span><span class="sig-name descname"><span class="pre">PlotTopologies</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">plate_reconstruction</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">coastlines=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">continents=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">COBs=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time:</span> <span class="pre">float</span> <span class="pre">=</span> <span class="pre">140.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">anchor_plate_id=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot_engine:</span> <span class="pre">~gplately.mapping.plot_engine.PlotEngine</span> <span class="pre">=</span> <span class="pre">&lt;gplately.mapping.cartopy_plot.CartopyPlotEngine</span> <span class="pre">object&gt;</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gplately/plot.html#PlotTopologies"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.PlotTopologies" title="Link to this definition"></a></dt>
-<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
 <p>Read, reconstruct and plot topology features at specific reconstruction times.</p>
-<p>The <a class="reference internal" href="#gplately.PlotTopologies" title="gplately.PlotTopologies"><code class="xref py py-class docutils literal notranslate"><span class="pre">gplately.PlotTopologies</span></code></a> class:</p>
+<p>The <a class="reference internal" href="#gplately.PlotTopologies" title="gplately.PlotTopologies"><code class="xref py py-class docutils literal notranslate"><span class="pre">PlotTopologies</span></code></a> class:</p>
 <ul class="simple">
 <li><p>Read features held in GPlates GPML (GPlates Markup Language) files and ESRI shapefiles.</p></li>
 <li><p>Reconstruct the locations of these features as they migrate through geological time.</p></li>
 <li><p>Turn these reconstructed features into Shapely geometries for plotting.</p></li>
 </ul>
-<p>To create the <a class="reference internal" href="#gplately.PlotTopologies" title="gplately.PlotTopologies"><code class="xref py py-class docutils literal notranslate"><span class="pre">gplately.PlotTopologies</span></code></a> object, supply:</p>
+<p>To create the <a class="reference internal" href="#gplately.PlotTopologies" title="gplately.PlotTopologies"><code class="xref py py-class docutils literal notranslate"><span class="pre">PlotTopologies</span></code></a> object, supply:</p>
 <ul class="simple">
-<li><p>an instance of the <a class="reference internal" href="gplately.PlateReconstruction.html#gplately.PlateReconstruction" title="gplately.PlateReconstruction"><code class="xref py py-class docutils literal notranslate"><span class="pre">gplately.PlateReconstruction</span></code></a> object</p></li>
+<li><p>an instance of the <a class="reference internal" href="gplately.PlateReconstruction.html#gplately.PlateReconstruction" title="gplately.PlateReconstruction"><code class="xref py py-class docutils literal notranslate"><span class="pre">PlateReconstruction</span></code></a> object</p></li>
 </ul>
 <p>and optionally,</p>
 <ul class="simple">
@@ -215,9 +215,9 @@
 <span class="linenos">12</span><span class="n">gplot</span><span class="o">.</span><span class="n">time</span> <span class="o">=</span> <span class="mi">20</span>  <span class="c1"># Ma</span>
 </pre></div>
 </div>
-<p>The <code class="docutils literal notranslate"><span class="pre">coastline_filename</span></code>, <code class="docutils literal notranslate"><span class="pre">continent_filename</span></code> and <code class="docutils literal notranslate"><span class="pre">COB_filename</span></code> can be paths (str) to GPML and/or shapefiles,
-as well as instances of <code class="docutils literal notranslate"><span class="pre">pygplates.FeatureCollection</span></code>.</p>
-<p>Some features for plotting (like plate boundaries) are taken from the <a class="reference internal" href="gplately.PlateReconstruction.html#gplately.PlateReconstruction.topology_features" title="gplately.PlateReconstruction.topology_features"><code class="xref py py-attr docutils literal notranslate"><span class="pre">gplately.PlateReconstruction.topology_features</span></code></a>.
+<p>The <code class="docutils literal notranslate"><span class="pre">coastline_filename</span></code>, <code class="docutils literal notranslate"><span class="pre">continent_filename</span></code> and <code class="docutils literal notranslate"><span class="pre">COB_filename</span></code> can be paths (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">str</span></code></a>) to GPML and/or shapefiles,
+as well as instances of <a class="reference external" href="https://www.gplates.org/docs/pygplates/generated/pygplates.featurecollection#pygplates.FeatureCollection">pygplates.FeatureCollection</a>.</p>
+<p>Some features for plotting (like plate boundaries) are taken from the <a class="reference internal" href="gplately.PlateReconstruction.html#gplately.PlateReconstruction.topology_features" title="gplately.PlateReconstruction.topology_features"><code class="xref py py-attr docutils literal notranslate"><span class="pre">PlateReconstruction.topology_features</span></code></a>.
 They have already been reconstructed to the given <code class="docutils literal notranslate"><span class="pre">time</span></code>.
 Simply provide a new reconstruction time by changing the <code class="docutils literal notranslate"><span class="pre">time</span></code> attribute, e.g.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos">1</span><span class="n">gplot</span><span class="o">.</span><span class="n">time</span> <span class="o">=</span> <span class="mi">20</span> <span class="c1"># Ma</span>
@@ -236,7 +236,7 @@ You <strong>MUST</strong> set <code class="docutils literal notranslate"><span c
 <li><p>continent-ocean boundary polylines</p></li>
 <li><p>topological plate velocity vector fields</p></li>
 <li><dl class="simple">
-<dt>netCDF4 MaskedArray or ndarray raster data:</dt><dd><ul>
+<dt>netCDF4 <a class="reference external" href="https://numpy.org/doc/stable/reference/maskedarray.generic.html">MaskedArray</a> or ndarray raster data:</dt><dd><ul>
 <li><p>seafloor age grids</p></li>
 <li><p>paleo-age grids</p></li>
 <li><p>global relief (topography and bathymetry)</p></li>
@@ -257,24 +257,25 @@ You <strong>MUST</strong> set <code class="docutils literal notranslate"><span c
 <dl class="py method">
 <dt class="sig sig-object py" id="gplately.PlotTopologies.__init__">
 <span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">plate_reconstruction</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">coastlines=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">continents=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">COBs=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time:</span> <span class="pre">float</span> <span class="pre">=</span> <span class="pre">140.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">anchor_plate_id=None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">plot_engine:</span> <span class="pre">~gplately.mapping.plot_engine.PlotEngine</span> <span class="pre">=</span> <span class="pre">&lt;gplately.mapping.cartopy_plot.CartopyPlotEngine</span> <span class="pre">object&gt;</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gplately/plot.html#PlotTopologies.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.PlotTopologies.__init__" title="Link to this definition"></a></dt>
-<dd><dl class="field-list simple">
+<dd><p>Constructor. Create a <a class="reference internal" href="#gplately.PlotTopologies" title="gplately.PlotTopologies"><code class="xref py py-class docutils literal notranslate"><span class="pre">PlotTopologies</span></code></a> object.</p>
+<dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>plate_reconstruction</strong> (<em>instance</em><em> of </em><em>&lt;gplately.reconstruction.PlateReconstruction&gt;</em>) – The GPlately <a class="reference internal" href="gplately.PlateReconstruction.html#gplately.PlateReconstruction" title="gplately.PlateReconstruction"><code class="xref py py-class docutils literal notranslate"><span class="pre">gplately.PlateReconstruction</span></code></a> object will be used to access a plate
+<li><p><strong>plate_reconstruction</strong> (<a class="reference internal" href="gplately.PlateReconstruction.html#gplately.PlateReconstruction" title="gplately.PlateReconstruction"><em>PlateReconstruction</em></a>) – The <a class="reference internal" href="gplately.PlateReconstruction.html#gplately.PlateReconstruction" title="gplately.PlateReconstruction"><code class="xref py py-class docutils literal notranslate"><span class="pre">PlateReconstruction</span></code></a> object will be used to access a plate
 <code class="docutils literal notranslate"><span class="pre">rotation_model</span></code> and a set of <code class="docutils literal notranslate"><span class="pre">topology_features</span></code> which contains plate boundary
 features like trenches, ridges and transforms.</p></li>
-<li><p><strong>coastlines</strong> (<em>str</em><em>, or </em><em>instance</em><em> of </em><em>&lt;pygplates.FeatureCollection&gt;</em>) – The full string path to a coastline feature file. Coastline features can also
-be passed as instances of the <code class="docutils literal notranslate"><span class="pre">pygplates.FeatureCollection</span></code> object (this is
-the case if these features are sourced from the <a class="reference internal" href="gplately.DataServer.html#gplately.DataServer" title="gplately.DataServer"><code class="xref py py-class docutils literal notranslate"><span class="pre">gplately.DataServer</span></code></a> object).</p></li>
-<li><p><strong>continents</strong> (<em>str</em><em>, or </em><em>instance</em><em> of </em><em>&lt;pygplates.FeatureCollection&gt;</em>) – The full string path to a continent feature file. Continent features can also
-be passed as instances of the <code class="docutils literal notranslate"><span class="pre">pygplates.FeatureCollection</span></code> object (this is
-the case if these features are sourced from the <a class="reference internal" href="gplately.DataServer.html#gplately.DataServer" title="gplately.DataServer"><code class="xref py py-class docutils literal notranslate"><span class="pre">gplately.DataServer</span></code></a> object).</p></li>
-<li><p><strong>COBs</strong> (<em>str</em><em>, or </em><em>instance</em><em> of </em><em>&lt;pygplates.FeatureCollection&gt;</em>) – The full string path to a COB feature file. COB features can also be passed
-as instances of the <code class="docutils literal notranslate"><span class="pre">pygplates.FeatureCollection</span></code> object (this is the case
-if these features are sourced from the <a class="reference internal" href="gplately.DataServer.html#gplately.DataServer" title="gplately.DataServer"><code class="xref py py-class docutils literal notranslate"><span class="pre">gplately.DataServer</span></code></a> object).</p></li>
-<li><p><strong>time</strong> (<em>float</em>) – The time (Ma) to reconstruct and plot geological features to.</p></li>
-<li><p><strong>anchor_plate_id</strong> (<em>int</em>) – Anchor plate ID for reconstruction. Must be an integer &gt;= 0.</p></li>
-<li><p><strong>plot_engine</strong> (<a class="reference internal" href="gplately.PlotEngine.html#gplately.PlotEngine" title="gplately.PlotEngine"><code class="xref py py-class docutils literal notranslate"><span class="pre">gplately.PlotEngine</span></code></a>, default=CartopyPlotEngine()) – Use Cartopy (<a class="reference internal" href="gplately.CartopyPlotEngine.html#gplately.CartopyPlotEngine" title="gplately.CartopyPlotEngine"><code class="xref py py-class docutils literal notranslate"><span class="pre">CartopyPlotEngine</span></code></a>) or pyGMT (<a class="reference internal" href="gplately.PygmtPlotEngine.html#gplately.PygmtPlotEngine" title="gplately.PygmtPlotEngine"><code class="xref py py-class docutils literal notranslate"><span class="pre">PygmtPlotEngine</span></code></a>) to plot the map.</p></li>
+<li><p><strong>coastlines</strong> (str, or <a class="reference external" href="https://www.gplates.org/docs/pygplates/generated/pygplates.featurecollection#pygplates.FeatureCollection">pygplates.FeatureCollection</a>) – The full string path to a coastline feature file. Coastline features can also
+be passed as a <a class="reference external" href="https://www.gplates.org/docs/pygplates/generated/pygplates.featurecollection#pygplates.FeatureCollection">pygplates.FeatureCollection</a> object (this is
+the case if these features are sourced from the <a class="reference internal" href="gplately.DataServer.html#gplately.DataServer" title="gplately.DataServer"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataServer</span></code></a> object).</p></li>
+<li><p><strong>continents</strong> (str, or <a class="reference external" href="https://www.gplates.org/docs/pygplates/generated/pygplates.featurecollection#pygplates.FeatureCollection">pygplates.FeatureCollection</a>) – The full string path to a continent feature file. Continent features can also
+be passed as a <a class="reference external" href="https://www.gplates.org/docs/pygplates/generated/pygplates.featurecollection#pygplates.FeatureCollection">pygplates.FeatureCollection</a> object (this is
+the case if these features are sourced from the <a class="reference internal" href="gplately.DataServer.html#gplately.DataServer" title="gplately.DataServer"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataServer</span></code></a> object).</p></li>
+<li><p><strong>COBs</strong> (str, or <a class="reference external" href="https://www.gplates.org/docs/pygplates/generated/pygplates.featurecollection#pygplates.FeatureCollection">pygplates.FeatureCollection</a>) – The full string path to a COB feature file. COB features can also be passed
+as a <a class="reference external" href="https://www.gplates.org/docs/pygplates/generated/pygplates.featurecollection#pygplates.FeatureCollection">pygplates.FeatureCollection</a> object (this is the case
+if these features are sourced from the <a class="reference internal" href="gplately.DataServer.html#gplately.DataServer" title="gplately.DataServer"><code class="xref py py-class docutils literal notranslate"><span class="pre">DataServer</span></code></a> object).</p></li>
+<li><p><strong>time</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a>) – The time (Ma) to reconstruct and plot geological features to.</p></li>
+<li><p><strong>anchor_plate_id</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a>) – Anchor plate ID for reconstruction. Must be an integer &gt;= 0.</p></li>
+<li><p><strong>plot_engine</strong> (<a class="reference internal" href="gplately.PlotEngine.html#gplately.PlotEngine" title="gplately.PlotEngine"><code class="xref py py-class docutils literal notranslate"><span class="pre">PlotEngine</span></code></a>, default=CartopyPlotEngine()) – Use Cartopy (<a class="reference internal" href="gplately.CartopyPlotEngine.html#gplately.CartopyPlotEngine" title="gplately.CartopyPlotEngine"><code class="xref py py-class docutils literal notranslate"><span class="pre">CartopyPlotEngine</span></code></a>) or pyGMT (<a class="reference internal" href="gplately.PygmtPlotEngine.html#gplately.PygmtPlotEngine" title="gplately.PygmtPlotEngine"><code class="xref py py-class docutils literal notranslate"><span class="pre">PygmtPlotEngine</span></code></a>) to plot the map.</p></li>
 </ul>
 </dd>
 </dl>
@@ -284,85 +285,85 @@ if these features are sourced from the <a class="reference internal" href="gplat
 <table class="autosummary longtable docutils align-default">
 <tbody>
 <tr class="row-odd"><td><p><a class="reference internal" href="#gplately.PlotTopologies.__init__" title="gplately.PlotTopologies.__init__"><code class="xref py py-obj docutils literal notranslate"><span class="pre">__init__</span></code></a>(plate_reconstruction[, coastlines, ...])</p></td>
-<td><p></p></td>
+<td><p>Constructor.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#gplately.PlotTopologies.get_all_topological_sections" title="gplately.PlotTopologies.get_all_topological_sections"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_all_topological_sections</span></code></a>([...])</p></td>
-<td><p>Return the reconstructed topological features listed below as a <code class="docutils literal notranslate"><span class="pre">geopandas.GeoDataFrame</span></code> object.</p></td>
+<td><p>Return the reconstructed topological features listed below as a <a class="reference external" href="https://geopandas.org/en/stable/docs/reference/api/geopandas.GeoDataFrame.html">geopandas.GeoDataFrame</a> object.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#gplately.PlotTopologies.get_all_topologies" title="gplately.PlotTopologies.get_all_topologies"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_all_topologies</span></code></a>([central_meridian, ...])</p></td>
-<td><p>Return the reconstructed topological features listed below as a <code class="docutils literal notranslate"><span class="pre">geopandas.GeoDataFrame</span></code> object.</p></td>
+<td><p>Return the reconstructed topological features listed below as a <a class="reference external" href="https://geopandas.org/en/stable/docs/reference/api/geopandas.GeoDataFrame.html">geopandas.GeoDataFrame</a> object.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#gplately.PlotTopologies.get_coastlines" title="gplately.PlotTopologies.get_coastlines"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_coastlines</span></code></a>([central_meridian, ...])</p></td>
-<td><p>Return the reconstructed coastlines as a <code class="docutils literal notranslate"><span class="pre">geopandas.GeoDataFrame</span></code> object.</p></td>
+<td><p>Return the reconstructed coastlines as a <a class="reference external" href="https://geopandas.org/en/stable/docs/reference/api/geopandas.GeoDataFrame.html">geopandas.GeoDataFrame</a> object.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#gplately.PlotTopologies.get_continent_ocean_boundaries" title="gplately.PlotTopologies.get_continent_ocean_boundaries"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_continent_ocean_boundaries</span></code></a>([...])</p></td>
-<td><p>Return the reconstructed continent-ocean boundaries as a <code class="docutils literal notranslate"><span class="pre">geopandas.GeoDataFrame</span></code> object.</p></td>
+<td><p>Return the reconstructed continent-ocean boundaries as a <a class="reference external" href="https://geopandas.org/en/stable/docs/reference/api/geopandas.GeoDataFrame.html">geopandas.GeoDataFrame</a> object.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#gplately.PlotTopologies.get_continental_crusts" title="gplately.PlotTopologies.get_continental_crusts"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_continental_crusts</span></code></a>([central_meridian, ...])</p></td>
-<td><p>Return the reconstructed continental crust lines as a <code class="docutils literal notranslate"><span class="pre">geopandas.GeoDataFrame</span></code> object.</p></td>
+<td><p>Return the reconstructed continental crust lines as a <a class="reference external" href="https://geopandas.org/en/stable/docs/reference/api/geopandas.GeoDataFrame.html">geopandas.GeoDataFrame</a> object.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#gplately.PlotTopologies.get_continental_rifts" title="gplately.PlotTopologies.get_continental_rifts"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_continental_rifts</span></code></a>([central_meridian, ...])</p></td>
-<td><p>Return the reconstructed contiental rift lines as a <code class="docutils literal notranslate"><span class="pre">geopandas.GeoDataFrame</span></code> object.</p></td>
+<td><p>Return the reconstructed contiental rift lines as a <a class="reference external" href="https://geopandas.org/en/stable/docs/reference/api/geopandas.GeoDataFrame.html">geopandas.GeoDataFrame</a> object.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#gplately.PlotTopologies.get_continents" title="gplately.PlotTopologies.get_continents"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_continents</span></code></a>([central_meridian, ...])</p></td>
-<td><p>Return the reconstructed continental polygons as a <code class="docutils literal notranslate"><span class="pre">geopandas.GeoDataFrame</span></code> object.</p></td>
+<td><p>Return the reconstructed continental polygons as a <a class="reference external" href="https://geopandas.org/en/stable/docs/reference/api/geopandas.GeoDataFrame.html">geopandas.GeoDataFrame</a> object.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#gplately.PlotTopologies.get_extended_continental_crusts" title="gplately.PlotTopologies.get_extended_continental_crusts"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_extended_continental_crusts</span></code></a>([...])</p></td>
-<td><p>Return the reconstructed extended continental crust lines as a <code class="docutils literal notranslate"><span class="pre">geopandas.GeoDataFrame</span></code> object.</p></td>
+<td><p>Return the reconstructed extended continental crust lines as a <a class="reference external" href="https://geopandas.org/en/stable/docs/reference/api/geopandas.GeoDataFrame.html">geopandas.GeoDataFrame</a> object.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#gplately.PlotTopologies.get_faults" title="gplately.PlotTopologies.get_faults"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_faults</span></code></a>([central_meridian, ...])</p></td>
-<td><p>Return the reconstructed fault lines as a <code class="docutils literal notranslate"><span class="pre">geopandas.GeoDataFrame</span></code> object.</p></td>
+<td><p>Return the reconstructed fault lines as a <a class="reference external" href="https://geopandas.org/en/stable/docs/reference/api/geopandas.GeoDataFrame.html">geopandas.GeoDataFrame</a> object.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#gplately.PlotTopologies.get_feature" title="gplately.PlotTopologies.get_feature"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_feature</span></code></a>(feature[, central_meridian, ...])</p></td>
-<td><p>Convert feature(s) to a geopandas.GeoDataFrame object.</p></td>
+<td><p>Convert feature(s) to a <a class="reference external" href="https://geopandas.org/en/stable/docs/reference/api/geopandas.GeoDataFrame.html">geopandas.GeoDataFrame</a> object.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#gplately.PlotTopologies.get_fracture_zones" title="gplately.PlotTopologies.get_fracture_zones"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_fracture_zones</span></code></a>([central_meridian, ...])</p></td>
-<td><p>Return the reconstructed fracture zone lines as a <code class="docutils literal notranslate"><span class="pre">geopandas.GeoDataFrame</span></code> object.</p></td>
+<td><p>Return the reconstructed fracture zone lines as a <a class="reference external" href="https://geopandas.org/en/stable/docs/reference/api/geopandas.GeoDataFrame.html">geopandas.GeoDataFrame</a> object.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#gplately.PlotTopologies.get_inferred_paleo_boundaries" title="gplately.PlotTopologies.get_inferred_paleo_boundaries"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_inferred_paleo_boundaries</span></code></a>([...])</p></td>
-<td><p>Return the reconstructed inferred paleo boundary lines as a <code class="docutils literal notranslate"><span class="pre">geopandas.GeoDataFrame</span></code> object.</p></td>
+<td><p>Return the reconstructed inferred paleo boundary lines as a <a class="reference external" href="https://geopandas.org/en/stable/docs/reference/api/geopandas.GeoDataFrame.html">geopandas.GeoDataFrame</a> object.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#gplately.PlotTopologies.get_misc_boundaries" title="gplately.PlotTopologies.get_misc_boundaries"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_misc_boundaries</span></code></a>([central_meridian, ...])</p></td>
-<td><p>Return the reconstructed &quot;other&quot; lines as a <code class="docutils literal notranslate"><span class="pre">geopandas.GeoDataFrame</span></code> object.</p></td>
+<td><p>Return the reconstructed &quot;other&quot; lines as a <a class="reference external" href="https://geopandas.org/en/stable/docs/reference/api/geopandas.GeoDataFrame.html">geopandas.GeoDataFrame</a> object.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#gplately.PlotTopologies.get_misc_transforms" title="gplately.PlotTopologies.get_misc_transforms"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_misc_transforms</span></code></a>([central_meridian, ...])</p></td>
 <td><p>Deprecated! DO NOT USE.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#gplately.PlotTopologies.get_orogenic_belts" title="gplately.PlotTopologies.get_orogenic_belts"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_orogenic_belts</span></code></a>([central_meridian, ...])</p></td>
-<td><p>Return the reconstructed orogenic belt lines as a <code class="docutils literal notranslate"><span class="pre">geopandas.GeoDataFrame</span></code> object.</p></td>
+<td><p>Return the reconstructed orogenic belt lines as a <a class="reference external" href="https://geopandas.org/en/stable/docs/reference/api/geopandas.GeoDataFrame.html">geopandas.GeoDataFrame</a> object.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#gplately.PlotTopologies.get_passive_continental_boundaries" title="gplately.PlotTopologies.get_passive_continental_boundaries"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_passive_continental_boundaries</span></code></a>([...])</p></td>
-<td><p>Return the reconstructed passive continental boundary lines as a <code class="docutils literal notranslate"><span class="pre">geopandas.GeoDataFrame</span></code> object.</p></td>
+<td><p>Return the reconstructed passive continental boundary lines as a <a class="reference external" href="https://geopandas.org/en/stable/docs/reference/api/geopandas.GeoDataFrame.html">geopandas.GeoDataFrame</a> object.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#gplately.PlotTopologies.get_ridges" title="gplately.PlotTopologies.get_ridges"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_ridges</span></code></a>([central_meridian, ...])</p></td>
-<td><p>Return the reconstructed mid-ocean ridge lines (gpml:MidOceanRidge) as a <code class="docutils literal notranslate"><span class="pre">geopandas.GeoDataFrame</span></code> object.</p></td>
+<td><p>Return the reconstructed mid-ocean ridge lines (gpml:MidOceanRidge) as a <a class="reference external" href="https://geopandas.org/en/stable/docs/reference/api/geopandas.GeoDataFrame.html">geopandas.GeoDataFrame</a> object.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#gplately.PlotTopologies.get_ridges_and_transforms" title="gplately.PlotTopologies.get_ridges_and_transforms"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_ridges_and_transforms</span></code></a>([...])</p></td>
 <td><p>Deprecated! DO NOT USE.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#gplately.PlotTopologies.get_slab_edges" title="gplately.PlotTopologies.get_slab_edges"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_slab_edges</span></code></a>([central_meridian, ...])</p></td>
-<td><p>Return the reconstructed slab edge lines as a <code class="docutils literal notranslate"><span class="pre">geopandas.GeoDataFrame</span></code> object.</p></td>
+<td><p>Return the reconstructed slab edge lines as a <a class="reference external" href="https://geopandas.org/en/stable/docs/reference/api/geopandas.GeoDataFrame.html">geopandas.GeoDataFrame</a> object.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#gplately.PlotTopologies.get_subduction_direction" title="gplately.PlotTopologies.get_subduction_direction"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_subduction_direction</span></code></a>([central_meridian, ...])</p></td>
-<td><p>Return the <a class="reference internal" href="#gplately.PlotTopologies.trench_left" title="gplately.PlotTopologies.trench_left"><code class="xref py py-attr docutils literal notranslate"><span class="pre">PlotTopologies.trench_left</span></code></a> and <a class="reference internal" href="#gplately.PlotTopologies.trench_right" title="gplately.PlotTopologies.trench_right"><code class="xref py py-attr docutils literal notranslate"><span class="pre">PlotTopologies.trench_right</span></code></a> as a <code class="docutils literal notranslate"><span class="pre">geopandas.GeoDataFrame</span></code> object.</p></td>
+<td><p>Return the <a class="reference internal" href="#gplately.PlotTopologies.trench_left" title="gplately.PlotTopologies.trench_left"><code class="xref py py-attr docutils literal notranslate"><span class="pre">PlotTopologies.trench_left</span></code></a> and <a class="reference internal" href="#gplately.PlotTopologies.trench_right" title="gplately.PlotTopologies.trench_right"><code class="xref py py-attr docutils literal notranslate"><span class="pre">PlotTopologies.trench_right</span></code></a> as a <a class="reference external" href="https://geopandas.org/en/stable/docs/reference/api/geopandas.GeoDataFrame.html">geopandas.GeoDataFrame</a> object.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#gplately.PlotTopologies.get_sutures" title="gplately.PlotTopologies.get_sutures"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_sutures</span></code></a>([central_meridian, ...])</p></td>
-<td><p>Return the reconstructed suture lines as a <code class="docutils literal notranslate"><span class="pre">geopandas.GeoDataFrame</span></code> object.</p></td>
+<td><p>Return the reconstructed suture lines as a <a class="reference external" href="https://geopandas.org/en/stable/docs/reference/api/geopandas.GeoDataFrame.html">geopandas.GeoDataFrame</a> object.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#gplately.PlotTopologies.get_terrane_boundaries" title="gplately.PlotTopologies.get_terrane_boundaries"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_terrane_boundaries</span></code></a>([central_meridian, ...])</p></td>
-<td><p>Return the reconstructed terrane boundary lines as a <code class="docutils literal notranslate"><span class="pre">geopandas.GeoDataFrame</span></code> object.</p></td>
+<td><p>Return the reconstructed terrane boundary lines as a <a class="reference external" href="https://geopandas.org/en/stable/docs/reference/api/geopandas.GeoDataFrame.html">geopandas.GeoDataFrame</a> object.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#gplately.PlotTopologies.get_transforms" title="gplately.PlotTopologies.get_transforms"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_transforms</span></code></a>([central_meridian, ...])</p></td>
-<td><p>Return the reconstructed transform lines(gpml:Transform) as a <code class="docutils literal notranslate"><span class="pre">geopandas.GeoDataFrame</span></code> object.</p></td>
+<td><p>Return the reconstructed transform lines(gpml:Transform) as a <a class="reference external" href="https://geopandas.org/en/stable/docs/reference/api/geopandas.GeoDataFrame.html">geopandas.GeoDataFrame</a> object.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#gplately.PlotTopologies.get_transitional_crusts" title="gplately.PlotTopologies.get_transitional_crusts"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_transitional_crusts</span></code></a>([central_meridian, ...])</p></td>
-<td><p>Return the reconstructed transitional crust lines as a <code class="docutils literal notranslate"><span class="pre">geopandas.GeoDataFrame</span></code> object.</p></td>
+<td><p>Return the reconstructed transitional crust lines as a <a class="reference external" href="https://geopandas.org/en/stable/docs/reference/api/geopandas.GeoDataFrame.html">geopandas.GeoDataFrame</a> object.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#gplately.PlotTopologies.get_trenches" title="gplately.PlotTopologies.get_trenches"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_trenches</span></code></a>([central_meridian, ...])</p></td>
-<td><p>Return the reconstructed trench lines as a <code class="docutils literal notranslate"><span class="pre">geopandas.GeoDataFrame</span></code> object.</p></td>
+<td><p>Return the reconstructed trench lines as a <a class="reference external" href="https://geopandas.org/en/stable/docs/reference/api/geopandas.GeoDataFrame.html">geopandas.GeoDataFrame</a> object.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#gplately.PlotTopologies.get_unclassified_features" title="gplately.PlotTopologies.get_unclassified_features"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_unclassified_features</span></code></a>([...])</p></td>
-<td><p>Return the reconstructed unclassified feature lines as a <code class="docutils literal notranslate"><span class="pre">geopandas.GeoDataFrame</span></code> object.</p></td>
+<td><p>Return the reconstructed unclassified feature lines as a <a class="reference external" href="https://geopandas.org/en/stable/docs/reference/api/geopandas.GeoDataFrame.html">geopandas.GeoDataFrame</a> object.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#gplately.PlotTopologies.plot_all_topological_sections" title="gplately.PlotTopologies.plot_all_topological_sections"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_all_topological_sections</span></code></a>(ax[, color])</p></td>
 <td><p>Plot the reconstructed topological features listed below on a map.</p></td>
@@ -392,16 +393,16 @@ if these features are sourced from the <a class="reference internal" href="gplat
 <td><p>Plot faults on a map.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#gplately.PlotTopologies.plot_feature" title="gplately.PlotTopologies.plot_feature"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_feature</span></code></a>(ax, feature[, feature_name, color])</p></td>
-<td><p>Plot pygplates.FeatureCollection or pygplates.Feature onto a map.</p></td>
+<td><p>Plot <a class="reference external" href="https://www.gplates.org/docs/pygplates/generated/pygplates.featurecollection#pygplates.FeatureCollection">pygplates.FeatureCollection</a> or <a class="reference external" href="https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature">pygplates.Feature</a> onto a map.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#gplately.PlotTopologies.plot_fracture_zones" title="gplately.PlotTopologies.plot_fracture_zones"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_fracture_zones</span></code></a>(ax[, color])</p></td>
 <td><p>Plot fracture zones on a map.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#gplately.PlotTopologies.plot_grid" title="gplately.PlotTopologies.plot_grid"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_grid</span></code></a>(ax, grid[, extent])</p></td>
-<td><p>Plot a <code class="docutils literal notranslate"><span class="pre">MaskedArray</span></code> raster or grid onto a map.</p></td>
+<td><p>Plot a <a class="reference external" href="https://numpy.org/doc/stable/reference/maskedarray.generic.html">MaskedArray</a> raster or grid onto a map.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#gplately.PlotTopologies.plot_grid_from_netCDF" title="gplately.PlotTopologies.plot_grid_from_netCDF"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_grid_from_netCDF</span></code></a>(ax, filename, **kwargs)</p></td>
-<td><p>Read a raster from a netCDF file, convert it to a <code class="docutils literal notranslate"><span class="pre">MaskedArray</span></code> and plot ii on a map.</p></td>
+<td><p>Read raster data from a netCDF file, convert the data into a <a class="reference external" href="https://numpy.org/doc/stable/reference/maskedarray.generic.html">MaskedArray</a> object and plot it on a map.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#gplately.PlotTopologies.plot_inferred_paleo_boundaries" title="gplately.PlotTopologies.plot_inferred_paleo_boundaries"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_inferred_paleo_boundaries</span></code></a>(ax[, color])</p></td>
 <td><p>Plot inferred paleo boundaries on a map.</p></td>
@@ -493,10 +494,10 @@ if these features are sourced from the <a class="reference internal" href="gplat
 <td><p>Transform boundary features (all the features which are labelled as <code class="docutils literal notranslate"><span class="pre">gpml:Transform</span></code> in the model).</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#gplately.PlotTopologies.plate_reconstruction" title="gplately.PlotTopologies.plate_reconstruction"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plate_reconstruction</span></code></a></p></td>
-<td><p>The <a class="reference internal" href="gplately.PlateReconstruction.html#gplately.PlateReconstruction" title="gplately.PlateReconstruction"><code class="xref py py-class docutils literal notranslate"><span class="pre">gplately.PlateReconstruction</span></code></a> object will be used to access a plate <code class="docutils literal notranslate"><span class="pre">rotation_model</span></code> and a set of <code class="docutils literal notranslate"><span class="pre">topology_features</span></code> which contains plate boundary features like trenches, ridges and transforms.</p></td>
+<td><p>The <a class="reference internal" href="gplately.PlateReconstruction.html#gplately.PlateReconstruction" title="gplately.PlateReconstruction"><code class="xref py py-class docutils literal notranslate"><span class="pre">PlateReconstruction</span></code></a> object will be used to access a plate <code class="docutils literal notranslate"><span class="pre">rotation_model</span></code> and a set of <code class="docutils literal notranslate"><span class="pre">topology_features</span></code> which contains plate boundary features like trenches, ridges and transforms.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#gplately.PlotTopologies.base_projection" title="gplately.PlotTopologies.base_projection"><code class="xref py py-obj docutils literal notranslate"><span class="pre">base_projection</span></code></a></p></td>
-<td><p>instance of &lt;cartopy.crs.{transform}&gt;, default &lt;cartopy.crs.PlateCarree&gt; object where {transform} is the map Projection to use on the Cartopy GeoAxes.</p></td>
+<td><p>Cartopy map projection.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#gplately.PlotTopologies.coastlines" title="gplately.PlotTopologies.coastlines"><code class="xref py py-obj docutils literal notranslate"><span class="pre">coastlines</span></code></a></p></td>
 <td><p>A list containing coastline features reconstructed to the specified <code class="docutils literal notranslate"><span class="pre">time</span></code> attribute.</p></td>
@@ -527,7 +528,7 @@ if these features are sourced from the <a class="reference internal" href="gplat
 <dd><p>A list containing COB features reconstructed to the specified <code class="docutils literal notranslate"><span class="pre">time</span></code> attribute.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>iterable/list of &lt;pygplates.ReconstructedFeatureGeometry&gt;</p>
+<dd class="field-odd"><p>iterable/list of <a class="reference external" href="https://www.gplates.org/docs/pygplates/generated/pygplates.reconstructedfeaturegeometry">pygplates.ReconstructedFeatureGeometry</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -536,10 +537,10 @@ if these features are sourced from the <a class="reference internal" href="gplat
 <dt class="sig sig-object py" id="gplately.PlotTopologies.anchor_plate_id">
 <em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">anchor_plate_id</span></span><a class="headerlink" href="#gplately.PlotTopologies.anchor_plate_id" title="Link to this definition"></a></dt>
 <dd><p>Anchor plate ID for reconstruction. Must be an integer &gt;= 0.
-Defaults to the anchor plate of <code class="docutils literal notranslate"><span class="pre">plate_reconstruction</span></code>.</p>
+Defaults to <a class="reference internal" href="gplately.PlateReconstruction.html#gplately.PlateReconstruction.anchor_plate_id" title="gplately.PlateReconstruction.anchor_plate_id"><code class="xref py py-attr docutils literal notranslate"><span class="pre">PlateReconstruction.anchor_plate_id</span></code></a>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>int</p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)">int</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -547,11 +548,11 @@ Defaults to the anchor plate of <code class="docutils literal notranslate"><span
 <dl class="py attribute">
 <dt class="sig sig-object py" id="gplately.PlotTopologies.base_projection">
 <span class="sig-name descname"><span class="pre">base_projection</span></span><a class="headerlink" href="#gplately.PlotTopologies.base_projection" title="Link to this definition"></a></dt>
-<dd><p>instance of &lt;cartopy.crs.{transform}&gt;, default &lt;cartopy.crs.PlateCarree&gt; object
-where {transform} is the map Projection to use on the Cartopy GeoAxes.
-By default, the base projection is set to cartopy.crs.PlateCarree. See the
-<a class="reference external" href="https://scitools.org.uk/cartopy/docs/v0.15/crs/projections.html">Cartopy projection list</a>
-for all supported Projection types.</p>
+<dd><p>Cartopy map projection. Defaults to <code class="docutils literal notranslate"><span class="pre">cartopy.crs.PlateCarree</span></code>.</p>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<p><a class="reference external" href="https://scitools.org.uk/cartopy/docs/v0.15/crs/projections.html">Cartopy projection list</a>.</p>
+</div>
 </dd></dl>
 
 <dl class="py attribute">
@@ -560,7 +561,7 @@ for all supported Projection types.</p>
 <dd><p>A list containing coastline features reconstructed to the specified <code class="docutils literal notranslate"><span class="pre">time</span></code> attribute.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>iterable/list of &lt;pygplates.ReconstructedFeatureGeometry&gt;</p>
+<dd class="field-odd"><p>iterable/list of <a class="reference external" href="https://www.gplates.org/docs/pygplates/generated/pygplates.reconstructedfeaturegeometry">pygplates.ReconstructedFeatureGeometry</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -571,7 +572,7 @@ for all supported Projection types.</p>
 <dd><p>A list containing continent features reconstructed to the specified <code class="docutils literal notranslate"><span class="pre">time</span></code> attribute.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>iterable/list of &lt;pygplates.ReconstructedFeatureGeometry&gt;</p>
+<dd class="field-odd"><p>iterable/list of <a class="reference external" href="https://www.gplates.org/docs/pygplates/generated/pygplates.reconstructedfeaturegeometry">pygplates.ReconstructedFeatureGeometry</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -579,7 +580,7 @@ for all supported Projection types.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="gplately.PlotTopologies.get_all_topological_sections">
 <span class="sig-name descname"><span class="pre">get_all_topological_sections</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">central_meridian</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tessellate_degrees</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gplately/plot.html#PlotTopologies.get_all_topological_sections"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.PlotTopologies.get_all_topological_sections" title="Link to this definition"></a></dt>
-<dd><p>Return the reconstructed topological features listed below as a <code class="docutils literal notranslate"><span class="pre">geopandas.GeoDataFrame</span></code> object.</p>
+<dd><p>Return the reconstructed topological features listed below as a <a class="reference external" href="https://geopandas.org/en/stable/docs/reference/api/geopandas.GeoDataFrame.html">geopandas.GeoDataFrame</a> object.</p>
 <ul class="simple">
 <li><p>ridge and transform boundary</p></li>
 <li><p>subduction boundary</p></li>
@@ -590,15 +591,15 @@ for all supported Projection types.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>central_meridian</strong> (<em>float</em><em>, </em><em>default=0.0</em>) – The central meridian of the map. This will affect the dateline wrapping.</p></li>
-<li><p><strong>tessellate_degrees</strong> (<em>float</em><em> or </em><em>None</em><em>, </em><em>default=1.0</em>) – If provided, geometries will be tessellated to this resolution prior to wrapping.</p></li>
+<li><p><strong>central_meridian</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a><em>, </em><em>default=0.0</em>) – The central meridian of the map. This will affect the dateline wrapping.</p></li>
+<li><p><strong>tessellate_degrees</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a><em> or </em><em>None</em><em>, </em><em>default=1.0</em>) – If provided, geometries will be tessellated to this resolution prior to wrapping.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>A <code class="docutils literal notranslate"><span class="pre">geopandas.GeoDataFrame</span></code> object containing the reconstructed <strong>topological sections</strong> geometries. The geometry column name is “geometry”.</p>
+<dd class="field-even"><p>A <a class="reference external" href="https://geopandas.org/en/stable/docs/reference/api/geopandas.GeoDataFrame.html">geopandas.GeoDataFrame</a> object containing the reconstructed <strong>topological sections</strong> geometries. The geometry column name is “geometry”.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">geopandas.GeoDataFrame</span></code></p>
+<dd class="field-odd"><p><a class="reference external" href="https://geopandas.org/en/stable/docs/reference/api/geopandas.GeoDataFrame.html">geopandas.GeoDataFrame</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -606,7 +607,7 @@ for all supported Projection types.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="gplately.PlotTopologies.get_all_topologies">
 <span class="sig-name descname"><span class="pre">get_all_topologies</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">central_meridian</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tessellate_degrees</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gplately/plot.html#PlotTopologies.get_all_topologies"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.PlotTopologies.get_all_topologies" title="Link to this definition"></a></dt>
-<dd><p>Return the reconstructed topological features listed below as a <code class="docutils literal notranslate"><span class="pre">geopandas.GeoDataFrame</span></code> object.</p>
+<dd><p>Return the reconstructed topological features listed below as a <a class="reference external" href="https://geopandas.org/en/stable/docs/reference/api/geopandas.GeoDataFrame.html">geopandas.GeoDataFrame</a> object.</p>
 <ul class="simple">
 <li><p>pygplates.FeatureType.gpml_topological_network</p></li>
 <li><p>pygplates.FeatureType.gpml_oceanic_crust</p></li>
@@ -616,15 +617,15 @@ for all supported Projection types.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>central_meridian</strong> (<em>float</em><em>, </em><em>default=0.0</em>) – The central meridian of the map. This will affect the dateline wrapping.</p></li>
-<li><p><strong>tessellate_degrees</strong> (<em>float</em><em> or </em><em>None</em><em>, </em><em>default=1.0</em>) – If provided, geometries will be tessellated to this resolution prior to wrapping.</p></li>
+<li><p><strong>central_meridian</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a><em>, </em><em>default=0.0</em>) – The central meridian of the map. This will affect the dateline wrapping.</p></li>
+<li><p><strong>tessellate_degrees</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a><em> or </em><em>None</em><em>, </em><em>default=1.0</em>) – If provided, geometries will be tessellated to this resolution prior to wrapping.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>A <code class="docutils literal notranslate"><span class="pre">geopandas.GeoDataFrame</span></code> object containing the reconstructed <strong>topologies</strong> geometries. The geometry column name is “geometry”.</p>
+<dd class="field-even"><p>A <a class="reference external" href="https://geopandas.org/en/stable/docs/reference/api/geopandas.GeoDataFrame.html">geopandas.GeoDataFrame</a> object containing the reconstructed <strong>topologies</strong> geometries. The geometry column name is “geometry”.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">geopandas.GeoDataFrame</span></code></p>
+<dd class="field-odd"><p><a class="reference external" href="https://geopandas.org/en/stable/docs/reference/api/geopandas.GeoDataFrame.html">geopandas.GeoDataFrame</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -632,19 +633,19 @@ for all supported Projection types.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="gplately.PlotTopologies.get_coastlines">
 <span class="sig-name descname"><span class="pre">get_coastlines</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">central_meridian</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tessellate_degrees</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gplately/plot.html#PlotTopologies.get_coastlines"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.PlotTopologies.get_coastlines" title="Link to this definition"></a></dt>
-<dd><p>Return the reconstructed coastlines as a <code class="docutils literal notranslate"><span class="pre">geopandas.GeoDataFrame</span></code> object.</p>
+<dd><p>Return the reconstructed coastlines as a <a class="reference external" href="https://geopandas.org/en/stable/docs/reference/api/geopandas.GeoDataFrame.html">geopandas.GeoDataFrame</a> object.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>central_meridian</strong> (<em>float</em><em>, </em><em>default=0.0</em>) – The central meridian of the map. This will affect the dateline wrapping.</p></li>
-<li><p><strong>tessellate_degrees</strong> (<em>float</em><em> or </em><em>None</em><em>, </em><em>default=1.0</em>) – If provided, geometries will be tessellated to this resolution prior to wrapping.</p></li>
+<li><p><strong>central_meridian</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a><em>, </em><em>default=0.0</em>) – The central meridian of the map. This will affect the dateline wrapping.</p></li>
+<li><p><strong>tessellate_degrees</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a><em> or </em><em>None</em><em>, </em><em>default=1.0</em>) – If provided, geometries will be tessellated to this resolution prior to wrapping.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>A <code class="docutils literal notranslate"><span class="pre">geopandas.GeoDataFrame</span></code> object containing the reconstructed <strong>coastlines</strong> geometries. The geometry column name is “geometry”.</p>
+<dd class="field-even"><p>A <a class="reference external" href="https://geopandas.org/en/stable/docs/reference/api/geopandas.GeoDataFrame.html">geopandas.GeoDataFrame</a> object containing the reconstructed <strong>coastlines</strong> geometries. The geometry column name is “geometry”.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">geopandas.GeoDataFrame</span></code></p>
+<dd class="field-odd"><p><a class="reference external" href="https://geopandas.org/en/stable/docs/reference/api/geopandas.GeoDataFrame.html">geopandas.GeoDataFrame</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -652,19 +653,19 @@ for all supported Projection types.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="gplately.PlotTopologies.get_continent_ocean_boundaries">
 <span class="sig-name descname"><span class="pre">get_continent_ocean_boundaries</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">central_meridian</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tessellate_degrees</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gplately/plot.html#PlotTopologies.get_continent_ocean_boundaries"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.PlotTopologies.get_continent_ocean_boundaries" title="Link to this definition"></a></dt>
-<dd><p>Return the reconstructed continent-ocean boundaries as a <code class="docutils literal notranslate"><span class="pre">geopandas.GeoDataFrame</span></code> object.</p>
+<dd><p>Return the reconstructed continent-ocean boundaries as a <a class="reference external" href="https://geopandas.org/en/stable/docs/reference/api/geopandas.GeoDataFrame.html">geopandas.GeoDataFrame</a> object.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>central_meridian</strong> (<em>float</em><em>, </em><em>default=0.0</em>) – The central meridian of the map. This will affect the dateline wrapping.</p></li>
-<li><p><strong>tessellate_degrees</strong> (<em>float</em><em> or </em><em>None</em><em>, </em><em>default=1.0</em>) – If provided, geometries will be tessellated to this resolution prior to wrapping.</p></li>
+<li><p><strong>central_meridian</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a><em>, </em><em>default=0.0</em>) – The central meridian of the map. This will affect the dateline wrapping.</p></li>
+<li><p><strong>tessellate_degrees</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a><em> or </em><em>None</em><em>, </em><em>default=1.0</em>) – If provided, geometries will be tessellated to this resolution prior to wrapping.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>A <code class="docutils literal notranslate"><span class="pre">geopandas.GeoDataFrame</span></code> object containing the reconstructed <strong>COBs</strong> geometries. The geometry column name is “geometry”.</p>
+<dd class="field-even"><p>A <a class="reference external" href="https://geopandas.org/en/stable/docs/reference/api/geopandas.GeoDataFrame.html">geopandas.GeoDataFrame</a> object containing the reconstructed <strong>COBs</strong> geometries. The geometry column name is “geometry”.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">geopandas.GeoDataFrame</span></code></p>
+<dd class="field-odd"><p><a class="reference external" href="https://geopandas.org/en/stable/docs/reference/api/geopandas.GeoDataFrame.html">geopandas.GeoDataFrame</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -672,19 +673,19 @@ for all supported Projection types.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="gplately.PlotTopologies.get_continental_crusts">
 <span class="sig-name descname"><span class="pre">get_continental_crusts</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">central_meridian</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tessellate_degrees</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gplately/plot.html#PlotTopologies.get_continental_crusts"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.PlotTopologies.get_continental_crusts" title="Link to this definition"></a></dt>
-<dd><p>Return the reconstructed continental crust lines as a <code class="docutils literal notranslate"><span class="pre">geopandas.GeoDataFrame</span></code> object.</p>
+<dd><p>Return the reconstructed continental crust lines as a <a class="reference external" href="https://geopandas.org/en/stable/docs/reference/api/geopandas.GeoDataFrame.html">geopandas.GeoDataFrame</a> object.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>central_meridian</strong> (<em>float</em><em>, </em><em>default=0.0</em>) – The central meridian of the map. This will affect the dateline wrapping.</p></li>
-<li><p><strong>tessellate_degrees</strong> (<em>float</em><em> or </em><em>None</em><em>, </em><em>default=1.0</em>) – If provided, geometries will be tessellated to this resolution prior to wrapping.</p></li>
+<li><p><strong>central_meridian</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a><em>, </em><em>default=0.0</em>) – The central meridian of the map. This will affect the dateline wrapping.</p></li>
+<li><p><strong>tessellate_degrees</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a><em> or </em><em>None</em><em>, </em><em>default=1.0</em>) – If provided, geometries will be tessellated to this resolution prior to wrapping.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>A <code class="docutils literal notranslate"><span class="pre">geopandas.GeoDataFrame</span></code> object containing the reconstructed <strong>continental crusts</strong> geometries. The geometry column name is “geometry”.</p>
+<dd class="field-even"><p>A <a class="reference external" href="https://geopandas.org/en/stable/docs/reference/api/geopandas.GeoDataFrame.html">geopandas.GeoDataFrame</a> object containing the reconstructed <strong>continental crusts</strong> geometries. The geometry column name is “geometry”.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">geopandas.GeoDataFrame</span></code></p>
+<dd class="field-odd"><p><a class="reference external" href="https://geopandas.org/en/stable/docs/reference/api/geopandas.GeoDataFrame.html">geopandas.GeoDataFrame</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -692,19 +693,19 @@ for all supported Projection types.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="gplately.PlotTopologies.get_continental_rifts">
 <span class="sig-name descname"><span class="pre">get_continental_rifts</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">central_meridian</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tessellate_degrees</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gplately/plot.html#PlotTopologies.get_continental_rifts"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.PlotTopologies.get_continental_rifts" title="Link to this definition"></a></dt>
-<dd><p>Return the reconstructed contiental rift lines as a <code class="docutils literal notranslate"><span class="pre">geopandas.GeoDataFrame</span></code> object.</p>
+<dd><p>Return the reconstructed contiental rift lines as a <a class="reference external" href="https://geopandas.org/en/stable/docs/reference/api/geopandas.GeoDataFrame.html">geopandas.GeoDataFrame</a> object.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>central_meridian</strong> (<em>float</em><em>, </em><em>default=0.0</em>) – The central meridian of the map. This will affect the dateline wrapping.</p></li>
-<li><p><strong>tessellate_degrees</strong> (<em>float</em><em> or </em><em>None</em><em>, </em><em>default=1.0</em>) – If provided, geometries will be tessellated to this resolution prior to wrapping.</p></li>
+<li><p><strong>central_meridian</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a><em>, </em><em>default=0.0</em>) – The central meridian of the map. This will affect the dateline wrapping.</p></li>
+<li><p><strong>tessellate_degrees</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a><em> or </em><em>None</em><em>, </em><em>default=1.0</em>) – If provided, geometries will be tessellated to this resolution prior to wrapping.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>A <code class="docutils literal notranslate"><span class="pre">geopandas.GeoDataFrame</span></code> object containing the reconstructed <strong>continental rifts</strong> geometries. The geometry column name is “geometry”.</p>
+<dd class="field-even"><p>A <a class="reference external" href="https://geopandas.org/en/stable/docs/reference/api/geopandas.GeoDataFrame.html">geopandas.GeoDataFrame</a> object containing the reconstructed <strong>continental rifts</strong> geometries. The geometry column name is “geometry”.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">geopandas.GeoDataFrame</span></code></p>
+<dd class="field-odd"><p><a class="reference external" href="https://geopandas.org/en/stable/docs/reference/api/geopandas.GeoDataFrame.html">geopandas.GeoDataFrame</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -712,19 +713,19 @@ for all supported Projection types.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="gplately.PlotTopologies.get_continents">
 <span class="sig-name descname"><span class="pre">get_continents</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">central_meridian</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tessellate_degrees</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gplately/plot.html#PlotTopologies.get_continents"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.PlotTopologies.get_continents" title="Link to this definition"></a></dt>
-<dd><p>Return the reconstructed continental polygons as a <code class="docutils literal notranslate"><span class="pre">geopandas.GeoDataFrame</span></code> object.</p>
+<dd><p>Return the reconstructed continental polygons as a <a class="reference external" href="https://geopandas.org/en/stable/docs/reference/api/geopandas.GeoDataFrame.html">geopandas.GeoDataFrame</a> object.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>central_meridian</strong> (<em>float</em><em>, </em><em>default=0.0</em>) – The central meridian of the map. This will affect the dateline wrapping.</p></li>
-<li><p><strong>tessellate_degrees</strong> (<em>float</em><em> or </em><em>None</em><em>, </em><em>default=1.0</em>) – If provided, geometries will be tessellated to this resolution prior to wrapping.</p></li>
+<li><p><strong>central_meridian</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a><em>, </em><em>default=0.0</em>) – The central meridian of the map. This will affect the dateline wrapping.</p></li>
+<li><p><strong>tessellate_degrees</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a><em> or </em><em>None</em><em>, </em><em>default=1.0</em>) – If provided, geometries will be tessellated to this resolution prior to wrapping.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>A <code class="docutils literal notranslate"><span class="pre">geopandas.GeoDataFrame</span></code> object containing the reconstructed <strong>continents</strong> geometries. The geometry column name is “geometry”.</p>
+<dd class="field-even"><p>A <a class="reference external" href="https://geopandas.org/en/stable/docs/reference/api/geopandas.GeoDataFrame.html">geopandas.GeoDataFrame</a> object containing the reconstructed <strong>continents</strong> geometries. The geometry column name is “geometry”.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">geopandas.GeoDataFrame</span></code></p>
+<dd class="field-odd"><p><a class="reference external" href="https://geopandas.org/en/stable/docs/reference/api/geopandas.GeoDataFrame.html">geopandas.GeoDataFrame</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -732,19 +733,19 @@ for all supported Projection types.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="gplately.PlotTopologies.get_extended_continental_crusts">
 <span class="sig-name descname"><span class="pre">get_extended_continental_crusts</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">central_meridian</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tessellate_degrees</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gplately/plot.html#PlotTopologies.get_extended_continental_crusts"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.PlotTopologies.get_extended_continental_crusts" title="Link to this definition"></a></dt>
-<dd><p>Return the reconstructed extended continental crust lines as a <code class="docutils literal notranslate"><span class="pre">geopandas.GeoDataFrame</span></code> object.</p>
+<dd><p>Return the reconstructed extended continental crust lines as a <a class="reference external" href="https://geopandas.org/en/stable/docs/reference/api/geopandas.GeoDataFrame.html">geopandas.GeoDataFrame</a> object.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>central_meridian</strong> (<em>float</em><em>, </em><em>default=0.0</em>) – The central meridian of the map. This will affect the dateline wrapping.</p></li>
-<li><p><strong>tessellate_degrees</strong> (<em>float</em><em> or </em><em>None</em><em>, </em><em>default=1.0</em>) – If provided, geometries will be tessellated to this resolution prior to wrapping.</p></li>
+<li><p><strong>central_meridian</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a><em>, </em><em>default=0.0</em>) – The central meridian of the map. This will affect the dateline wrapping.</p></li>
+<li><p><strong>tessellate_degrees</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a><em> or </em><em>None</em><em>, </em><em>default=1.0</em>) – If provided, geometries will be tessellated to this resolution prior to wrapping.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>A <code class="docutils literal notranslate"><span class="pre">geopandas.GeoDataFrame</span></code> object containing the reconstructed <strong>extended continental crusts</strong> geometries. The geometry column name is “geometry”.</p>
+<dd class="field-even"><p>A <a class="reference external" href="https://geopandas.org/en/stable/docs/reference/api/geopandas.GeoDataFrame.html">geopandas.GeoDataFrame</a> object containing the reconstructed <strong>extended continental crusts</strong> geometries. The geometry column name is “geometry”.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">geopandas.GeoDataFrame</span></code></p>
+<dd class="field-odd"><p><a class="reference external" href="https://geopandas.org/en/stable/docs/reference/api/geopandas.GeoDataFrame.html">geopandas.GeoDataFrame</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -752,19 +753,19 @@ for all supported Projection types.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="gplately.PlotTopologies.get_faults">
 <span class="sig-name descname"><span class="pre">get_faults</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">central_meridian</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tessellate_degrees</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gplately/plot.html#PlotTopologies.get_faults"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.PlotTopologies.get_faults" title="Link to this definition"></a></dt>
-<dd><p>Return the reconstructed fault lines as a <code class="docutils literal notranslate"><span class="pre">geopandas.GeoDataFrame</span></code> object.</p>
+<dd><p>Return the reconstructed fault lines as a <a class="reference external" href="https://geopandas.org/en/stable/docs/reference/api/geopandas.GeoDataFrame.html">geopandas.GeoDataFrame</a> object.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>central_meridian</strong> (<em>float</em><em>, </em><em>default=0.0</em>) – The central meridian of the map. This will affect the dateline wrapping.</p></li>
-<li><p><strong>tessellate_degrees</strong> (<em>float</em><em> or </em><em>None</em><em>, </em><em>default=1.0</em>) – If provided, geometries will be tessellated to this resolution prior to wrapping.</p></li>
+<li><p><strong>central_meridian</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a><em>, </em><em>default=0.0</em>) – The central meridian of the map. This will affect the dateline wrapping.</p></li>
+<li><p><strong>tessellate_degrees</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a><em> or </em><em>None</em><em>, </em><em>default=1.0</em>) – If provided, geometries will be tessellated to this resolution prior to wrapping.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>A <code class="docutils literal notranslate"><span class="pre">geopandas.GeoDataFrame</span></code> object containing the reconstructed <strong>faults</strong> geometries. The geometry column name is “geometry”.</p>
+<dd class="field-even"><p>A <a class="reference external" href="https://geopandas.org/en/stable/docs/reference/api/geopandas.GeoDataFrame.html">geopandas.GeoDataFrame</a> object containing the reconstructed <strong>faults</strong> geometries. The geometry column name is “geometry”.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">geopandas.GeoDataFrame</span></code></p>
+<dd class="field-odd"><p><a class="reference external" href="https://geopandas.org/en/stable/docs/reference/api/geopandas.GeoDataFrame.html">geopandas.GeoDataFrame</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -772,13 +773,13 @@ for all supported Projection types.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="gplately.PlotTopologies.get_feature">
 <span class="sig-name descname"><span class="pre">get_feature</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">feature</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">central_meridian</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tessellate_degrees</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">validate_reconstruction_time</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gplately/plot.html#PlotTopologies.get_feature"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.PlotTopologies.get_feature" title="Link to this definition"></a></dt>
-<dd><p>Convert feature(s) to a geopandas.GeoDataFrame object.</p>
+<dd><p>Convert feature(s) to a <a class="reference external" href="https://geopandas.org/en/stable/docs/reference/api/geopandas.GeoDataFrame.html">geopandas.GeoDataFrame</a> object.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>feature</strong> (<em>pygplates.Feature</em><em>, </em><em>pygplates.ReconstructedFeatureGeometry</em><em>, </em><em>pygplates.GeometryOnSphere</em><em> or </em><em>iterable</em><em> of </em><em>the aforementioned three</em>) – Feature object(s).</p>
+<dd class="field-odd"><p><strong>feature</strong> (<a class="reference external" href="https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature">pygplates.Feature</a>, <a class="reference external" href="https://www.gplates.org/docs/pygplates/generated/pygplates.reconstructedfeaturegeometry">pygplates.ReconstructedFeatureGeometry</a>, pygplates.GeometryOnSphere or iterable of the aforementioned three) – Feature object(s).</p>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p><strong>gdf</strong> – A <code class="docutils literal notranslate"><span class="pre">pandas.GeoDataFrame</span></code> object contaning the feature geometries.</p>
+<dd class="field-even"><p><strong>gdf</strong> – A <a class="reference external" href="https://geopandas.org/en/stable/docs/reference/api/geopandas.GeoDataFrame.html">geopandas.GeoDataFrame</a> object contaning the feature geometries.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
 <dd class="field-odd"><p>geopandas.GeoDataFrame</p>
@@ -786,28 +787,27 @@ for all supported Projection types.</p>
 </dl>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>The feature(s) needed to produce the GeoDataFrame should already be reconstructed to a <code class="docutils literal notranslate"><span class="pre">time</span></code>.
-This function converts the feature(s) into a set of Shapely geometries whose coordinates are
-passed to a geopandas GeoDataFrame.</p>
+<p>The feature(s) needed to produce the <a class="reference external" href="https://geopandas.org/en/stable/docs/reference/api/geopandas.GeoDataFrame.html">geopandas.GeoDataFrame</a> object should already be reconstructed to a <code class="docutils literal notranslate"><span class="pre">time</span></code>.
+This function converts the feature(s) into a set of Shapely geometries and put them into a <a class="reference external" href="https://geopandas.org/en/stable/docs/reference/api/geopandas.GeoDataFrame.html">geopandas.GeoDataFrame</a> object.</p>
 </div>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="gplately.PlotTopologies.get_fracture_zones">
 <span class="sig-name descname"><span class="pre">get_fracture_zones</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">central_meridian</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tessellate_degrees</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gplately/plot.html#PlotTopologies.get_fracture_zones"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.PlotTopologies.get_fracture_zones" title="Link to this definition"></a></dt>
-<dd><p>Return the reconstructed fracture zone lines as a <code class="docutils literal notranslate"><span class="pre">geopandas.GeoDataFrame</span></code> object.</p>
+<dd><p>Return the reconstructed fracture zone lines as a <a class="reference external" href="https://geopandas.org/en/stable/docs/reference/api/geopandas.GeoDataFrame.html">geopandas.GeoDataFrame</a> object.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>central_meridian</strong> (<em>float</em><em>, </em><em>default=0.0</em>) – The central meridian of the map. This will affect the dateline wrapping.</p></li>
-<li><p><strong>tessellate_degrees</strong> (<em>float</em><em> or </em><em>None</em><em>, </em><em>default=1.0</em>) – If provided, geometries will be tessellated to this resolution prior to wrapping.</p></li>
+<li><p><strong>central_meridian</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a><em>, </em><em>default=0.0</em>) – The central meridian of the map. This will affect the dateline wrapping.</p></li>
+<li><p><strong>tessellate_degrees</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a><em> or </em><em>None</em><em>, </em><em>default=1.0</em>) – If provided, geometries will be tessellated to this resolution prior to wrapping.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>A <code class="docutils literal notranslate"><span class="pre">geopandas.GeoDataFrame</span></code> object containing the reconstructed <strong>fracture zones</strong> geometries. The geometry column name is “geometry”.</p>
+<dd class="field-even"><p>A <a class="reference external" href="https://geopandas.org/en/stable/docs/reference/api/geopandas.GeoDataFrame.html">geopandas.GeoDataFrame</a> object containing the reconstructed <strong>fracture zones</strong> geometries. The geometry column name is “geometry”.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">geopandas.GeoDataFrame</span></code></p>
+<dd class="field-odd"><p><a class="reference external" href="https://geopandas.org/en/stable/docs/reference/api/geopandas.GeoDataFrame.html">geopandas.GeoDataFrame</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -815,19 +815,19 @@ passed to a geopandas GeoDataFrame.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="gplately.PlotTopologies.get_inferred_paleo_boundaries">
 <span class="sig-name descname"><span class="pre">get_inferred_paleo_boundaries</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">central_meridian</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tessellate_degrees</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gplately/plot.html#PlotTopologies.get_inferred_paleo_boundaries"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.PlotTopologies.get_inferred_paleo_boundaries" title="Link to this definition"></a></dt>
-<dd><p>Return the reconstructed inferred paleo boundary lines as a <code class="docutils literal notranslate"><span class="pre">geopandas.GeoDataFrame</span></code> object.</p>
+<dd><p>Return the reconstructed inferred paleo boundary lines as a <a class="reference external" href="https://geopandas.org/en/stable/docs/reference/api/geopandas.GeoDataFrame.html">geopandas.GeoDataFrame</a> object.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>central_meridian</strong> (<em>float</em><em>, </em><em>default=0.0</em>) – The central meridian of the map. This will affect the dateline wrapping.</p></li>
-<li><p><strong>tessellate_degrees</strong> (<em>float</em><em> or </em><em>None</em><em>, </em><em>default=1.0</em>) – If provided, geometries will be tessellated to this resolution prior to wrapping.</p></li>
+<li><p><strong>central_meridian</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a><em>, </em><em>default=0.0</em>) – The central meridian of the map. This will affect the dateline wrapping.</p></li>
+<li><p><strong>tessellate_degrees</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a><em> or </em><em>None</em><em>, </em><em>default=1.0</em>) – If provided, geometries will be tessellated to this resolution prior to wrapping.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>A <code class="docutils literal notranslate"><span class="pre">geopandas.GeoDataFrame</span></code> object containing the reconstructed <strong>inferred paleo-boundaries</strong> geometries. The geometry column name is “geometry”.</p>
+<dd class="field-even"><p>A <a class="reference external" href="https://geopandas.org/en/stable/docs/reference/api/geopandas.GeoDataFrame.html">geopandas.GeoDataFrame</a> object containing the reconstructed <strong>inferred paleo-boundaries</strong> geometries. The geometry column name is “geometry”.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">geopandas.GeoDataFrame</span></code></p>
+<dd class="field-odd"><p><a class="reference external" href="https://geopandas.org/en/stable/docs/reference/api/geopandas.GeoDataFrame.html">geopandas.GeoDataFrame</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -835,19 +835,19 @@ passed to a geopandas GeoDataFrame.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="gplately.PlotTopologies.get_misc_boundaries">
 <span class="sig-name descname"><span class="pre">get_misc_boundaries</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">central_meridian</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tessellate_degrees</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gplately/plot.html#PlotTopologies.get_misc_boundaries"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.PlotTopologies.get_misc_boundaries" title="Link to this definition"></a></dt>
-<dd><p>Return the reconstructed “other” lines as a <code class="docutils literal notranslate"><span class="pre">geopandas.GeoDataFrame</span></code> object.</p>
+<dd><p>Return the reconstructed “other” lines as a <a class="reference external" href="https://geopandas.org/en/stable/docs/reference/api/geopandas.GeoDataFrame.html">geopandas.GeoDataFrame</a> object.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>central_meridian</strong> (<em>float</em><em>, </em><em>default=0.0</em>) – The central meridian of the map. This will affect the dateline wrapping.</p></li>
-<li><p><strong>tessellate_degrees</strong> (<em>float</em><em> or </em><em>None</em><em>, </em><em>default=1.0</em>) – If provided, geometries will be tessellated to this resolution prior to wrapping.</p></li>
+<li><p><strong>central_meridian</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a><em>, </em><em>default=0.0</em>) – The central meridian of the map. This will affect the dateline wrapping.</p></li>
+<li><p><strong>tessellate_degrees</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a><em> or </em><em>None</em><em>, </em><em>default=1.0</em>) – If provided, geometries will be tessellated to this resolution prior to wrapping.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>A <code class="docutils literal notranslate"><span class="pre">geopandas.GeoDataFrame</span></code> object containing the reconstructed <strong>other</strong> geometries. The geometry column name is “geometry”.</p>
+<dd class="field-even"><p>A <a class="reference external" href="https://geopandas.org/en/stable/docs/reference/api/geopandas.GeoDataFrame.html">geopandas.GeoDataFrame</a> object containing the reconstructed <strong>other</strong> geometries. The geometry column name is “geometry”.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">geopandas.GeoDataFrame</span></code></p>
+<dd class="field-odd"><p><a class="reference external" href="https://geopandas.org/en/stable/docs/reference/api/geopandas.GeoDataFrame.html">geopandas.GeoDataFrame</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -861,19 +861,19 @@ passed to a geopandas GeoDataFrame.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="gplately.PlotTopologies.get_orogenic_belts">
 <span class="sig-name descname"><span class="pre">get_orogenic_belts</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">central_meridian</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tessellate_degrees</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gplately/plot.html#PlotTopologies.get_orogenic_belts"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.PlotTopologies.get_orogenic_belts" title="Link to this definition"></a></dt>
-<dd><p>Return the reconstructed orogenic belt lines as a <code class="docutils literal notranslate"><span class="pre">geopandas.GeoDataFrame</span></code> object.</p>
+<dd><p>Return the reconstructed orogenic belt lines as a <a class="reference external" href="https://geopandas.org/en/stable/docs/reference/api/geopandas.GeoDataFrame.html">geopandas.GeoDataFrame</a> object.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>central_meridian</strong> (<em>float</em><em>, </em><em>default=0.0</em>) – The central meridian of the map. This will affect the dateline wrapping.</p></li>
-<li><p><strong>tessellate_degrees</strong> (<em>float</em><em> or </em><em>None</em><em>, </em><em>default=1.0</em>) – If provided, geometries will be tessellated to this resolution prior to wrapping.</p></li>
+<li><p><strong>central_meridian</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a><em>, </em><em>default=0.0</em>) – The central meridian of the map. This will affect the dateline wrapping.</p></li>
+<li><p><strong>tessellate_degrees</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a><em> or </em><em>None</em><em>, </em><em>default=1.0</em>) – If provided, geometries will be tessellated to this resolution prior to wrapping.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>A <code class="docutils literal notranslate"><span class="pre">geopandas.GeoDataFrame</span></code> object containing the reconstructed <strong>orogenic belts</strong> geometries. The geometry column name is “geometry”.</p>
+<dd class="field-even"><p>A <a class="reference external" href="https://geopandas.org/en/stable/docs/reference/api/geopandas.GeoDataFrame.html">geopandas.GeoDataFrame</a> object containing the reconstructed <strong>orogenic belts</strong> geometries. The geometry column name is “geometry”.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">geopandas.GeoDataFrame</span></code></p>
+<dd class="field-odd"><p><a class="reference external" href="https://geopandas.org/en/stable/docs/reference/api/geopandas.GeoDataFrame.html">geopandas.GeoDataFrame</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -881,19 +881,19 @@ passed to a geopandas GeoDataFrame.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="gplately.PlotTopologies.get_passive_continental_boundaries">
 <span class="sig-name descname"><span class="pre">get_passive_continental_boundaries</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">central_meridian</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tessellate_degrees</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gplately/plot.html#PlotTopologies.get_passive_continental_boundaries"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.PlotTopologies.get_passive_continental_boundaries" title="Link to this definition"></a></dt>
-<dd><p>Return the reconstructed passive continental boundary lines as a <code class="docutils literal notranslate"><span class="pre">geopandas.GeoDataFrame</span></code> object.</p>
+<dd><p>Return the reconstructed passive continental boundary lines as a <a class="reference external" href="https://geopandas.org/en/stable/docs/reference/api/geopandas.GeoDataFrame.html">geopandas.GeoDataFrame</a> object.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>central_meridian</strong> (<em>float</em><em>, </em><em>default=0.0</em>) – The central meridian of the map. This will affect the dateline wrapping.</p></li>
-<li><p><strong>tessellate_degrees</strong> (<em>float</em><em> or </em><em>None</em><em>, </em><em>default=1.0</em>) – If provided, geometries will be tessellated to this resolution prior to wrapping.</p></li>
+<li><p><strong>central_meridian</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a><em>, </em><em>default=0.0</em>) – The central meridian of the map. This will affect the dateline wrapping.</p></li>
+<li><p><strong>tessellate_degrees</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a><em> or </em><em>None</em><em>, </em><em>default=1.0</em>) – If provided, geometries will be tessellated to this resolution prior to wrapping.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>A <code class="docutils literal notranslate"><span class="pre">geopandas.GeoDataFrame</span></code> object containing the reconstructed <strong>passive continental boundaries</strong> geometries. The geometry column name is “geometry”.</p>
+<dd class="field-even"><p>A <a class="reference external" href="https://geopandas.org/en/stable/docs/reference/api/geopandas.GeoDataFrame.html">geopandas.GeoDataFrame</a> object containing the reconstructed <strong>passive continental boundaries</strong> geometries. The geometry column name is “geometry”.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">geopandas.GeoDataFrame</span></code></p>
+<dd class="field-odd"><p><a class="reference external" href="https://geopandas.org/en/stable/docs/reference/api/geopandas.GeoDataFrame.html">geopandas.GeoDataFrame</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -901,19 +901,19 @@ passed to a geopandas GeoDataFrame.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="gplately.PlotTopologies.get_ridges">
 <span class="sig-name descname"><span class="pre">get_ridges</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">central_meridian</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tessellate_degrees</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gplately/plot.html#PlotTopologies.get_ridges"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.PlotTopologies.get_ridges" title="Link to this definition"></a></dt>
-<dd><p>Return the reconstructed mid-ocean ridge lines (gpml:MidOceanRidge) as a <code class="docutils literal notranslate"><span class="pre">geopandas.GeoDataFrame</span></code> object.</p>
+<dd><p>Return the reconstructed mid-ocean ridge lines (gpml:MidOceanRidge) as a <a class="reference external" href="https://geopandas.org/en/stable/docs/reference/api/geopandas.GeoDataFrame.html">geopandas.GeoDataFrame</a> object.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>central_meridian</strong> (<em>float</em><em>, </em><em>default=0.0</em>) – The central meridian of the map. This will affect the dateline wrapping.</p></li>
-<li><p><strong>tessellate_degrees</strong> (<em>float</em><em> or </em><em>None</em><em>, </em><em>default=1.0</em>) – If provided, geometries will be tessellated to this resolution prior to wrapping.</p></li>
+<li><p><strong>central_meridian</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a><em>, </em><em>default=0.0</em>) – The central meridian of the map. This will affect the dateline wrapping.</p></li>
+<li><p><strong>tessellate_degrees</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a><em> or </em><em>None</em><em>, </em><em>default=1.0</em>) – If provided, geometries will be tessellated to this resolution prior to wrapping.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>A <code class="docutils literal notranslate"><span class="pre">geopandas.GeoDataFrame</span></code> object containing the reconstructed <strong>ridges</strong> geometries. The geometry column name is “geometry”.</p>
+<dd class="field-even"><p>A <a class="reference external" href="https://geopandas.org/en/stable/docs/reference/api/geopandas.GeoDataFrame.html">geopandas.GeoDataFrame</a> object containing the reconstructed <strong>ridges</strong> geometries. The geometry column name is “geometry”.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">geopandas.GeoDataFrame</span></code></p>
+<dd class="field-odd"><p><a class="reference external" href="https://geopandas.org/en/stable/docs/reference/api/geopandas.GeoDataFrame.html">geopandas.GeoDataFrame</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -927,19 +927,19 @@ passed to a geopandas GeoDataFrame.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="gplately.PlotTopologies.get_slab_edges">
 <span class="sig-name descname"><span class="pre">get_slab_edges</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">central_meridian</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tessellate_degrees</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gplately/plot.html#PlotTopologies.get_slab_edges"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.PlotTopologies.get_slab_edges" title="Link to this definition"></a></dt>
-<dd><p>Return the reconstructed slab edge lines as a <code class="docutils literal notranslate"><span class="pre">geopandas.GeoDataFrame</span></code> object.</p>
+<dd><p>Return the reconstructed slab edge lines as a <a class="reference external" href="https://geopandas.org/en/stable/docs/reference/api/geopandas.GeoDataFrame.html">geopandas.GeoDataFrame</a> object.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>central_meridian</strong> (<em>float</em><em>, </em><em>default=0.0</em>) – The central meridian of the map. This will affect the dateline wrapping.</p></li>
-<li><p><strong>tessellate_degrees</strong> (<em>float</em><em> or </em><em>None</em><em>, </em><em>default=1.0</em>) – If provided, geometries will be tessellated to this resolution prior to wrapping.</p></li>
+<li><p><strong>central_meridian</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a><em>, </em><em>default=0.0</em>) – The central meridian of the map. This will affect the dateline wrapping.</p></li>
+<li><p><strong>tessellate_degrees</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a><em> or </em><em>None</em><em>, </em><em>default=1.0</em>) – If provided, geometries will be tessellated to this resolution prior to wrapping.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>A <code class="docutils literal notranslate"><span class="pre">geopandas.GeoDataFrame</span></code> object containing the reconstructed <strong>slab edges</strong> geometries. The geometry column name is “geometry”.</p>
+<dd class="field-even"><p>A <a class="reference external" href="https://geopandas.org/en/stable/docs/reference/api/geopandas.GeoDataFrame.html">geopandas.GeoDataFrame</a> object containing the reconstructed <strong>slab edges</strong> geometries. The geometry column name is “geometry”.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">geopandas.GeoDataFrame</span></code></p>
+<dd class="field-odd"><p><a class="reference external" href="https://geopandas.org/en/stable/docs/reference/api/geopandas.GeoDataFrame.html">geopandas.GeoDataFrame</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -948,18 +948,18 @@ passed to a geopandas GeoDataFrame.</p>
 <dt class="sig sig-object py" id="gplately.PlotTopologies.get_subduction_direction">
 <span class="sig-name descname"><span class="pre">get_subduction_direction</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">central_meridian</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tessellate_degrees</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gplately/plot.html#PlotTopologies.get_subduction_direction"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.PlotTopologies.get_subduction_direction" title="Link to this definition"></a></dt>
 <dd><p>Return the <a class="reference internal" href="#gplately.PlotTopologies.trench_left" title="gplately.PlotTopologies.trench_left"><code class="xref py py-attr docutils literal notranslate"><span class="pre">PlotTopologies.trench_left</span></code></a> and
-<a class="reference internal" href="#gplately.PlotTopologies.trench_right" title="gplately.PlotTopologies.trench_right"><code class="xref py py-attr docutils literal notranslate"><span class="pre">PlotTopologies.trench_right</span></code></a> as a <code class="docutils literal notranslate"><span class="pre">geopandas.GeoDataFrame</span></code> object.</p>
+<a class="reference internal" href="#gplately.PlotTopologies.trench_right" title="gplately.PlotTopologies.trench_right"><code class="xref py py-attr docutils literal notranslate"><span class="pre">PlotTopologies.trench_right</span></code></a> as a <a class="reference external" href="https://geopandas.org/en/stable/docs/reference/api/geopandas.GeoDataFrame.html">geopandas.GeoDataFrame</a> object.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>central_meridian</strong> (<em>float</em><em>, </em><em>default=0.0</em>) – The central meridian of the map. This will affect the dateline wrapping.</p></li>
-<li><p><strong>tessellate_degrees</strong> (<em>float</em><em> or </em><em>None</em><em>, </em><em>default=1.0</em>) – If provided, geometries will be tessellated to this resolution prior to wrapping.</p></li>
+<li><p><strong>central_meridian</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a><em>, </em><em>default=0.0</em>) – The central meridian of the map. This will affect the dateline wrapping.</p></li>
+<li><p><strong>tessellate_degrees</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a><em> or </em><em>None</em><em>, </em><em>default=1.0</em>) – If provided, geometries will be tessellated to this resolution prior to wrapping.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
 <dd class="field-even"><p><ul class="simple">
-<li><p><strong>gdf_left</strong> (<em>geopandas.GeoDataFrame</em>) – A <code class="docutils literal notranslate"><span class="pre">geopandas.GeoDataFrame</span></code> object containing <cite>trench_left</cite> geometries.</p></li>
-<li><p><strong>gdf_right</strong> (<em>geopandas.GeoDataFrame</em>) – A <code class="docutils literal notranslate"><span class="pre">geopandas.GeoDataFrame</span></code> object containing <cite>trench_right</cite> geometries.</p></li>
+<li><p><strong>gdf_left</strong> (<em>geopandas.GeoDataFrame</em>) – A <a class="reference external" href="https://geopandas.org/en/stable/docs/reference/api/geopandas.GeoDataFrame.html">geopandas.GeoDataFrame</a> object containing <cite>trench_left</cite> geometries.</p></li>
+<li><p><strong>gdf_right</strong> (<em>geopandas.GeoDataFrame</em>) – A <a class="reference external" href="https://geopandas.org/en/stable/docs/reference/api/geopandas.GeoDataFrame.html">geopandas.GeoDataFrame</a> object containing <cite>trench_right</cite> geometries.</p></li>
 </ul>
 </p>
 </dd>
@@ -969,19 +969,19 @@ passed to a geopandas GeoDataFrame.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="gplately.PlotTopologies.get_sutures">
 <span class="sig-name descname"><span class="pre">get_sutures</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">central_meridian</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tessellate_degrees</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gplately/plot.html#PlotTopologies.get_sutures"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.PlotTopologies.get_sutures" title="Link to this definition"></a></dt>
-<dd><p>Return the reconstructed suture lines as a <code class="docutils literal notranslate"><span class="pre">geopandas.GeoDataFrame</span></code> object.</p>
+<dd><p>Return the reconstructed suture lines as a <a class="reference external" href="https://geopandas.org/en/stable/docs/reference/api/geopandas.GeoDataFrame.html">geopandas.GeoDataFrame</a> object.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>central_meridian</strong> (<em>float</em><em>, </em><em>default=0.0</em>) – The central meridian of the map. This will affect the dateline wrapping.</p></li>
-<li><p><strong>tessellate_degrees</strong> (<em>float</em><em> or </em><em>None</em><em>, </em><em>default=1.0</em>) – If provided, geometries will be tessellated to this resolution prior to wrapping.</p></li>
+<li><p><strong>central_meridian</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a><em>, </em><em>default=0.0</em>) – The central meridian of the map. This will affect the dateline wrapping.</p></li>
+<li><p><strong>tessellate_degrees</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a><em> or </em><em>None</em><em>, </em><em>default=1.0</em>) – If provided, geometries will be tessellated to this resolution prior to wrapping.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>A <code class="docutils literal notranslate"><span class="pre">geopandas.GeoDataFrame</span></code> object containing the reconstructed <strong>sutures</strong> geometries. The geometry column name is “geometry”.</p>
+<dd class="field-even"><p>A <a class="reference external" href="https://geopandas.org/en/stable/docs/reference/api/geopandas.GeoDataFrame.html">geopandas.GeoDataFrame</a> object containing the reconstructed <strong>sutures</strong> geometries. The geometry column name is “geometry”.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">geopandas.GeoDataFrame</span></code></p>
+<dd class="field-odd"><p><a class="reference external" href="https://geopandas.org/en/stable/docs/reference/api/geopandas.GeoDataFrame.html">geopandas.GeoDataFrame</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -989,19 +989,19 @@ passed to a geopandas GeoDataFrame.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="gplately.PlotTopologies.get_terrane_boundaries">
 <span class="sig-name descname"><span class="pre">get_terrane_boundaries</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">central_meridian</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tessellate_degrees</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gplately/plot.html#PlotTopologies.get_terrane_boundaries"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.PlotTopologies.get_terrane_boundaries" title="Link to this definition"></a></dt>
-<dd><p>Return the reconstructed terrane boundary lines as a <code class="docutils literal notranslate"><span class="pre">geopandas.GeoDataFrame</span></code> object.</p>
+<dd><p>Return the reconstructed terrane boundary lines as a <a class="reference external" href="https://geopandas.org/en/stable/docs/reference/api/geopandas.GeoDataFrame.html">geopandas.GeoDataFrame</a> object.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>central_meridian</strong> (<em>float</em><em>, </em><em>default=0.0</em>) – The central meridian of the map. This will affect the dateline wrapping.</p></li>
-<li><p><strong>tessellate_degrees</strong> (<em>float</em><em> or </em><em>None</em><em>, </em><em>default=1.0</em>) – If provided, geometries will be tessellated to this resolution prior to wrapping.</p></li>
+<li><p><strong>central_meridian</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a><em>, </em><em>default=0.0</em>) – The central meridian of the map. This will affect the dateline wrapping.</p></li>
+<li><p><strong>tessellate_degrees</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a><em> or </em><em>None</em><em>, </em><em>default=1.0</em>) – If provided, geometries will be tessellated to this resolution prior to wrapping.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>A <code class="docutils literal notranslate"><span class="pre">geopandas.GeoDataFrame</span></code> object containing the reconstructed <strong>terrane boundaries</strong> geometries. The geometry column name is “geometry”.</p>
+<dd class="field-even"><p>A <a class="reference external" href="https://geopandas.org/en/stable/docs/reference/api/geopandas.GeoDataFrame.html">geopandas.GeoDataFrame</a> object containing the reconstructed <strong>terrane boundaries</strong> geometries. The geometry column name is “geometry”.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">geopandas.GeoDataFrame</span></code></p>
+<dd class="field-odd"><p><a class="reference external" href="https://geopandas.org/en/stable/docs/reference/api/geopandas.GeoDataFrame.html">geopandas.GeoDataFrame</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -1009,19 +1009,19 @@ passed to a geopandas GeoDataFrame.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="gplately.PlotTopologies.get_transforms">
 <span class="sig-name descname"><span class="pre">get_transforms</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">central_meridian</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tessellate_degrees</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gplately/plot.html#PlotTopologies.get_transforms"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.PlotTopologies.get_transforms" title="Link to this definition"></a></dt>
-<dd><p>Return the reconstructed transform lines(gpml:Transform) as a <code class="docutils literal notranslate"><span class="pre">geopandas.GeoDataFrame</span></code> object.</p>
+<dd><p>Return the reconstructed transform lines(gpml:Transform) as a <a class="reference external" href="https://geopandas.org/en/stable/docs/reference/api/geopandas.GeoDataFrame.html">geopandas.GeoDataFrame</a> object.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>central_meridian</strong> (<em>float</em><em>, </em><em>default=0.0</em>) – The central meridian of the map. This will affect the dateline wrapping.</p></li>
-<li><p><strong>tessellate_degrees</strong> (<em>float</em><em> or </em><em>None</em><em>, </em><em>default=1.0</em>) – If provided, geometries will be tessellated to this resolution prior to wrapping.</p></li>
+<li><p><strong>central_meridian</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a><em>, </em><em>default=0.0</em>) – The central meridian of the map. This will affect the dateline wrapping.</p></li>
+<li><p><strong>tessellate_degrees</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a><em> or </em><em>None</em><em>, </em><em>default=1.0</em>) – If provided, geometries will be tessellated to this resolution prior to wrapping.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>A <code class="docutils literal notranslate"><span class="pre">geopandas.GeoDataFrame</span></code> object containing the reconstructed <strong>transforms</strong> geometries. The geometry column name is “geometry”.</p>
+<dd class="field-even"><p>A <a class="reference external" href="https://geopandas.org/en/stable/docs/reference/api/geopandas.GeoDataFrame.html">geopandas.GeoDataFrame</a> object containing the reconstructed <strong>transforms</strong> geometries. The geometry column name is “geometry”.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">geopandas.GeoDataFrame</span></code></p>
+<dd class="field-odd"><p><a class="reference external" href="https://geopandas.org/en/stable/docs/reference/api/geopandas.GeoDataFrame.html">geopandas.GeoDataFrame</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -1029,19 +1029,19 @@ passed to a geopandas GeoDataFrame.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="gplately.PlotTopologies.get_transitional_crusts">
 <span class="sig-name descname"><span class="pre">get_transitional_crusts</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">central_meridian</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tessellate_degrees</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gplately/plot.html#PlotTopologies.get_transitional_crusts"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.PlotTopologies.get_transitional_crusts" title="Link to this definition"></a></dt>
-<dd><p>Return the reconstructed transitional crust lines as a <code class="docutils literal notranslate"><span class="pre">geopandas.GeoDataFrame</span></code> object.</p>
+<dd><p>Return the reconstructed transitional crust lines as a <a class="reference external" href="https://geopandas.org/en/stable/docs/reference/api/geopandas.GeoDataFrame.html">geopandas.GeoDataFrame</a> object.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>central_meridian</strong> (<em>float</em><em>, </em><em>default=0.0</em>) – The central meridian of the map. This will affect the dateline wrapping.</p></li>
-<li><p><strong>tessellate_degrees</strong> (<em>float</em><em> or </em><em>None</em><em>, </em><em>default=1.0</em>) – If provided, geometries will be tessellated to this resolution prior to wrapping.</p></li>
+<li><p><strong>central_meridian</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a><em>, </em><em>default=0.0</em>) – The central meridian of the map. This will affect the dateline wrapping.</p></li>
+<li><p><strong>tessellate_degrees</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a><em> or </em><em>None</em><em>, </em><em>default=1.0</em>) – If provided, geometries will be tessellated to this resolution prior to wrapping.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>A <code class="docutils literal notranslate"><span class="pre">geopandas.GeoDataFrame</span></code> object containing the reconstructed <strong>transitional crusts</strong> geometries. The geometry column name is “geometry”.</p>
+<dd class="field-even"><p>A <a class="reference external" href="https://geopandas.org/en/stable/docs/reference/api/geopandas.GeoDataFrame.html">geopandas.GeoDataFrame</a> object containing the reconstructed <strong>transitional crusts</strong> geometries. The geometry column name is “geometry”.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">geopandas.GeoDataFrame</span></code></p>
+<dd class="field-odd"><p><a class="reference external" href="https://geopandas.org/en/stable/docs/reference/api/geopandas.GeoDataFrame.html">geopandas.GeoDataFrame</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -1049,19 +1049,19 @@ passed to a geopandas GeoDataFrame.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="gplately.PlotTopologies.get_trenches">
 <span class="sig-name descname"><span class="pre">get_trenches</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">central_meridian</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tessellate_degrees</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gplately/plot.html#PlotTopologies.get_trenches"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.PlotTopologies.get_trenches" title="Link to this definition"></a></dt>
-<dd><p>Return the reconstructed trench lines as a <code class="docutils literal notranslate"><span class="pre">geopandas.GeoDataFrame</span></code> object.</p>
+<dd><p>Return the reconstructed trench lines as a <a class="reference external" href="https://geopandas.org/en/stable/docs/reference/api/geopandas.GeoDataFrame.html">geopandas.GeoDataFrame</a> object.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>central_meridian</strong> (<em>float</em><em>, </em><em>default=0.0</em>) – The central meridian of the map. This will affect the dateline wrapping.</p></li>
-<li><p><strong>tessellate_degrees</strong> (<em>float</em><em> or </em><em>None</em><em>, </em><em>default=1.0</em>) – If provided, geometries will be tessellated to this resolution prior to wrapping.</p></li>
+<li><p><strong>central_meridian</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a><em>, </em><em>default=0.0</em>) – The central meridian of the map. This will affect the dateline wrapping.</p></li>
+<li><p><strong>tessellate_degrees</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a><em> or </em><em>None</em><em>, </em><em>default=1.0</em>) – If provided, geometries will be tessellated to this resolution prior to wrapping.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>A <code class="docutils literal notranslate"><span class="pre">geopandas.GeoDataFrame</span></code> object containing the reconstructed <strong>trenches</strong> geometries. The geometry column name is “geometry”.</p>
+<dd class="field-even"><p>A <a class="reference external" href="https://geopandas.org/en/stable/docs/reference/api/geopandas.GeoDataFrame.html">geopandas.GeoDataFrame</a> object containing the reconstructed <strong>trenches</strong> geometries. The geometry column name is “geometry”.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">geopandas.GeoDataFrame</span></code></p>
+<dd class="field-odd"><p><a class="reference external" href="https://geopandas.org/en/stable/docs/reference/api/geopandas.GeoDataFrame.html">geopandas.GeoDataFrame</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -1069,19 +1069,19 @@ passed to a geopandas GeoDataFrame.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="gplately.PlotTopologies.get_unclassified_features">
 <span class="sig-name descname"><span class="pre">get_unclassified_features</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">central_meridian</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tessellate_degrees</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gplately/plot.html#PlotTopologies.get_unclassified_features"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.PlotTopologies.get_unclassified_features" title="Link to this definition"></a></dt>
-<dd><p>Return the reconstructed unclassified feature lines as a <code class="docutils literal notranslate"><span class="pre">geopandas.GeoDataFrame</span></code> object.</p>
+<dd><p>Return the reconstructed unclassified feature lines as a <a class="reference external" href="https://geopandas.org/en/stable/docs/reference/api/geopandas.GeoDataFrame.html">geopandas.GeoDataFrame</a> object.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>central_meridian</strong> (<em>float</em><em>, </em><em>default=0.0</em>) – The central meridian of the map. This will affect the dateline wrapping.</p></li>
-<li><p><strong>tessellate_degrees</strong> (<em>float</em><em> or </em><em>None</em><em>, </em><em>default=1.0</em>) – If provided, geometries will be tessellated to this resolution prior to wrapping.</p></li>
+<li><p><strong>central_meridian</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a><em>, </em><em>default=0.0</em>) – The central meridian of the map. This will affect the dateline wrapping.</p></li>
+<li><p><strong>tessellate_degrees</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a><em> or </em><em>None</em><em>, </em><em>default=1.0</em>) – If provided, geometries will be tessellated to this resolution prior to wrapping.</p></li>
 </ul>
 </dd>
 <dt class="field-even">Returns<span class="colon">:</span></dt>
-<dd class="field-even"><p>A <code class="docutils literal notranslate"><span class="pre">geopandas.GeoDataFrame</span></code> object containing the reconstructed <strong>unclassified features</strong> geometries. The geometry column name is “geometry”.</p>
+<dd class="field-even"><p>A <a class="reference external" href="https://geopandas.org/en/stable/docs/reference/api/geopandas.GeoDataFrame.html">geopandas.GeoDataFrame</a> object containing the reconstructed <strong>unclassified features</strong> geometries. The geometry column name is “geometry”.</p>
 </dd>
 <dt class="field-odd">Return type<span class="colon">:</span></dt>
-<dd class="field-odd"><p><code class="docutils literal notranslate"><span class="pre">geopandas.GeoDataFrame</span></code></p>
+<dd class="field-odd"><p><a class="reference external" href="https://geopandas.org/en/stable/docs/reference/api/geopandas.GeoDataFrame.html">geopandas.GeoDataFrame</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -1100,7 +1100,7 @@ continental rifts, faults, orogenic belts, fracture zones, inferred paleo bounda
 boundaries and passive continental boundaries.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>iterable/list of &lt;pygplates.Feature&gt;</p>
+<dd class="field-odd"><p>iterable/list of <a class="reference external" href="https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature">pygplates.Feature</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -1108,12 +1108,11 @@ boundaries and passive continental boundaries.</p>
 <dl class="py attribute">
 <dt class="sig sig-object py" id="gplately.PlotTopologies.plate_reconstruction">
 <span class="sig-name descname"><span class="pre">plate_reconstruction</span></span><a class="headerlink" href="#gplately.PlotTopologies.plate_reconstruction" title="Link to this definition"></a></dt>
-<dd><p>The <a class="reference internal" href="gplately.PlateReconstruction.html#gplately.PlateReconstruction" title="gplately.PlateReconstruction"><code class="xref py py-class docutils literal notranslate"><span class="pre">gplately.PlateReconstruction</span></code></a> object will be used to access a plate
-<code class="docutils literal notranslate"><span class="pre">rotation_model</span></code> and a set of <code class="docutils literal notranslate"><span class="pre">topology_features</span></code> which contains plate boundary
-features like trenches, ridges and transforms.</p>
+<dd><p>The <a class="reference internal" href="gplately.PlateReconstruction.html#gplately.PlateReconstruction" title="gplately.PlateReconstruction"><code class="xref py py-class docutils literal notranslate"><span class="pre">PlateReconstruction</span></code></a> object will be used to access a plate <code class="docutils literal notranslate"><span class="pre">rotation_model</span></code> and a set of <code class="docutils literal notranslate"><span class="pre">topology_features</span></code>
+which contains plate boundary features like trenches, ridges and transforms.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>instance of &lt;gplately.reconstruction.PlateReconstruction&gt;</p>
+<dd class="field-odd"><p><a class="reference internal" href="gplately.PlateReconstruction.html#gplately.PlateReconstruction" title="gplately.PlateReconstruction">PlateReconstruction</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -1133,7 +1132,7 @@ features like trenches, ridges and transforms.</p>
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>ax</strong> – Cartopy ax or pygmt figure object</p></li>
-<li><p><strong>color</strong> (<em>str</em><em>, </em><em>default='black'</em>) – The edge colour of the geometries.</p></li>
+<li><p><strong>color</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em>, </em><em>default='black'</em>) – The edge colour of the geometries.</p></li>
 <li><p><strong>**kwargs</strong> – <a class="reference external" href="https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html">Matplotlib keyword arguments</a> or pygmt arguments</p></li>
 </ul>
 </dd>
@@ -1154,7 +1153,7 @@ features like trenches, ridges and transforms.</p>
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>ax</strong> – Cartopy ax or pygmt figure object</p></li>
-<li><p><strong>color</strong> (<em>str</em><em>, </em><em>default='black'</em>) – The edge colour of the geometries.</p></li>
+<li><p><strong>color</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em>, </em><em>default='black'</em>) – The edge colour of the geometries.</p></li>
 <li><p><strong>**kwargs</strong> – <a class="reference external" href="https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html">Matplotlib keyword arguments</a> or pygmt arguments</p></li>
 </ul>
 </dd>
@@ -1169,7 +1168,7 @@ features like trenches, ridges and transforms.</p>
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>ax</strong> – Cartopy ax or pygmt figure object</p></li>
-<li><p><strong>color</strong> (<em>str</em><em>, </em><em>default='black'</em>) – The edge colour of the geometries.</p></li>
+<li><p><strong>color</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em>, </em><em>default='black'</em>) – The edge colour of the geometries.</p></li>
 <li><p><strong>**kwargs</strong> – <a class="reference external" href="https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html">Matplotlib keyword arguments</a> or pygmt arguments</p></li>
 </ul>
 </dd>
@@ -1184,7 +1183,7 @@ features like trenches, ridges and transforms.</p>
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>ax</strong> – Cartopy ax or pygmt figure object</p></li>
-<li><p><strong>color</strong> (<em>str</em><em>, </em><em>default='black'</em>) – The edge colour of the geometries.</p></li>
+<li><p><strong>color</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em>, </em><em>default='black'</em>) – The edge colour of the geometries.</p></li>
 <li><p><strong>**kwargs</strong> – <a class="reference external" href="https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html">Matplotlib keyword arguments</a> or pygmt arguments</p></li>
 </ul>
 </dd>
@@ -1199,7 +1198,7 @@ features like trenches, ridges and transforms.</p>
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>ax</strong> – Cartopy ax or pygmt figure object</p></li>
-<li><p><strong>color</strong> (<em>str</em><em>, </em><em>default='black'</em>) – The edge colour of the geometries.</p></li>
+<li><p><strong>color</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em>, </em><em>default='black'</em>) – The edge colour of the geometries.</p></li>
 <li><p><strong>**kwargs</strong> – <a class="reference external" href="https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html">Matplotlib keyword arguments</a> or pygmt arguments</p></li>
 </ul>
 </dd>
@@ -1214,7 +1213,7 @@ features like trenches, ridges and transforms.</p>
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>ax</strong> – Cartopy ax or pygmt figure object</p></li>
-<li><p><strong>color</strong> (<em>str</em><em>, </em><em>default='black'</em>) – The edge colour of the geometries.</p></li>
+<li><p><strong>color</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em>, </em><em>default='black'</em>) – The edge colour of the geometries.</p></li>
 <li><p><strong>**kwargs</strong> – <a class="reference external" href="https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html">Matplotlib keyword arguments</a> or pygmt arguments</p></li>
 </ul>
 </dd>
@@ -1229,7 +1228,7 @@ features like trenches, ridges and transforms.</p>
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>ax</strong> – Cartopy ax or pygmt figure object</p></li>
-<li><p><strong>color</strong> (<em>str</em><em>, </em><em>default='black'</em>) – The edge colour of the geometries.</p></li>
+<li><p><strong>color</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em>, </em><em>default='black'</em>) – The edge colour of the geometries.</p></li>
 <li><p><strong>**kwargs</strong> – <a class="reference external" href="https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html">Matplotlib keyword arguments</a> or pygmt arguments</p></li>
 </ul>
 </dd>
@@ -1244,7 +1243,7 @@ features like trenches, ridges and transforms.</p>
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>ax</strong> – Cartopy ax or pygmt figure object</p></li>
-<li><p><strong>color</strong> (<em>str</em><em>, </em><em>default='black'</em>) – The edge colour of the geometries.</p></li>
+<li><p><strong>color</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em>, </em><em>default='black'</em>) – The edge colour of the geometries.</p></li>
 <li><p><strong>**kwargs</strong> – <a class="reference external" href="https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html">Matplotlib keyword arguments</a> or pygmt arguments</p></li>
 </ul>
 </dd>
@@ -1259,7 +1258,7 @@ features like trenches, ridges and transforms.</p>
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>ax</strong> – Cartopy ax or pygmt figure object</p></li>
-<li><p><strong>color</strong> (<em>str</em><em>, </em><em>default='black'</em>) – The edge colour of the geometries.</p></li>
+<li><p><strong>color</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em>, </em><em>default='black'</em>) – The edge colour of the geometries.</p></li>
 <li><p><strong>**kwargs</strong> – <a class="reference external" href="https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html">Matplotlib keyword arguments</a> or pygmt arguments</p></li>
 </ul>
 </dd>
@@ -1269,12 +1268,12 @@ features like trenches, ridges and transforms.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="gplately.PlotTopologies.plot_feature">
 <span class="sig-name descname"><span class="pre">plot_feature</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ax</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">feature</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">feature_name</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">''</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">color</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'black'</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gplately/plot.html#PlotTopologies.plot_feature"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.PlotTopologies.plot_feature" title="Link to this definition"></a></dt>
-<dd><p>Plot pygplates.FeatureCollection or pygplates.Feature onto a map.</p>
+<dd><p>Plot <a class="reference external" href="https://www.gplates.org/docs/pygplates/generated/pygplates.featurecollection#pygplates.FeatureCollection">pygplates.FeatureCollection</a> or <a class="reference external" href="https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature">pygplates.Feature</a> onto a map.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>ax</strong> – Cartopy ax or pygmt figure object</p></li>
-<li><p><strong>color</strong> (<em>str</em><em>, </em><em>default='black'</em>) – The edge colour of the geometries.</p></li>
+<li><p><strong>color</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em>, </em><em>default='black'</em>) – The edge colour of the geometries.</p></li>
 <li><p><strong>**kwargs</strong> – <a class="reference external" href="https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html">Matplotlib keyword arguments</a> or pygmt arguments</p></li>
 </ul>
 </dd>
@@ -1289,7 +1288,7 @@ features like trenches, ridges and transforms.</p>
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>ax</strong> – Cartopy ax or pygmt figure object</p></li>
-<li><p><strong>color</strong> (<em>str</em><em>, </em><em>default='black'</em>) – The edge colour of the geometries.</p></li>
+<li><p><strong>color</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em>, </em><em>default='black'</em>) – The edge colour of the geometries.</p></li>
 <li><p><strong>**kwargs</strong> – <a class="reference external" href="https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html">Matplotlib keyword arguments</a> or pygmt arguments</p></li>
 </ul>
 </dd>
@@ -1299,17 +1298,16 @@ features like trenches, ridges and transforms.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="gplately.PlotTopologies.plot_grid">
 <span class="sig-name descname"><span class="pre">plot_grid</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ax</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">grid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">extent</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[-180,</span> <span class="pre">180,</span> <span class="pre">-90,</span> <span class="pre">90]</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gplately/plot.html#PlotTopologies.plot_grid"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.PlotTopologies.plot_grid" title="Link to this definition"></a></dt>
-<dd><p>Plot a <code class="docutils literal notranslate"><span class="pre">MaskedArray</span></code> raster or grid onto a map.</p>
+<dd><p>Plot a <a class="reference external" href="https://numpy.org/doc/stable/reference/maskedarray.generic.html">MaskedArray</a> raster or grid onto a map.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>ax</strong> – Cartopy ax.</p></li>
-<li><p><strong>grid</strong> (<em>MaskedArray</em><em> or </em><a class="reference internal" href="gplately.Raster.html#gplately.Raster" title="gplately.Raster"><em>gplately.Raster</em></a>) – A <code class="docutils literal notranslate"><span class="pre">MaskedArray</span></code> with elements that define a grid. The number of rows in the raster
+<li><p><strong>grid</strong> (<em>MaskedArray</em><em> or </em><a class="reference internal" href="gplately.Raster.html#gplately.Raster" title="gplately.Raster"><em>Raster</em></a>) – A <a class="reference external" href="https://numpy.org/doc/stable/reference/maskedarray.generic.html">MaskedArray</a> with elements that define a grid. The number of rows in the raster
 corresponds to the number of latitudinal coordinates, while the number of raster
 columns corresponds to the number of longitudinal coordinates.</p></li>
-<li><p><strong>extent</strong> (<em>1d array</em><em>, </em><em>default=</em><em>[</em><em>-180</em><em>,</em><em>180</em><em>,</em><em>-90</em><em>,</em><em>90</em><em>]</em>) – A four-element array to specify the [min lon, max lon, min lat, max lat] with
-which to constrain the grid image. If no extents are supplied, full global
-extent is assumed.</p></li>
+<li><p><strong>extent</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.13)"><em>tuple</em></a><em>, </em><em>default=</em><em>(</em><em>-180</em><em>, </em><em>180</em><em>, </em><em>-90</em><em>, </em><em>90</em><em>)</em>) – A tuple of 4 (min lon, max lon, min lat, max lat) extent of gird.
+If no extent are provided, global extent is assumed.</p></li>
 <li><p><strong>**kwargs</strong> – Keyword arguments for plotting the grid.
 See Matplotlib’s <code class="docutils literal notranslate"><span class="pre">imshow()</span></code> keyword arguments
 <a class="reference external" href="https://matplotlib.org/3.5.1/api/_as_gen/matplotlib.axes.Axes.imshow.html">here</a>.</p></li>
@@ -1321,12 +1319,12 @@ See Matplotlib’s <code class="docutils literal notranslate"><span class="pre">
 <dl class="py method">
 <dt class="sig sig-object py" id="gplately.PlotTopologies.plot_grid_from_netCDF">
 <span class="sig-name descname"><span class="pre">plot_grid_from_netCDF</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ax</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filename</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gplately/plot.html#PlotTopologies.plot_grid_from_netCDF"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.PlotTopologies.plot_grid_from_netCDF" title="Link to this definition"></a></dt>
-<dd><p>Read a raster from a netCDF file, convert it to a <code class="docutils literal notranslate"><span class="pre">MaskedArray</span></code> and plot ii on a map.</p>
+<dd><p>Read raster data from a netCDF file, convert the data into a <a class="reference external" href="https://numpy.org/doc/stable/reference/maskedarray.generic.html">MaskedArray</a> object and plot it on a map.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>ax</strong> – Cartopy ax.</p></li>
-<li><p><strong>filename</strong> (<em>str</em>) – Full path to a netCDF file.</p></li>
+<li><p><strong>filename</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a>) – Full path to a netCDF file.</p></li>
 <li><p><strong>**kwargs</strong> – Keyword arguments for plotting the grid. See Matplotlib’s <code class="docutils literal notranslate"><span class="pre">imshow()</span></code> keyword arguments
 <a class="reference external" href="https://matplotlib.org/3.5.1/api/_as_gen/matplotlib.axes.Axes.imshow.html">here</a>.</p></li>
 </ul>
@@ -1342,7 +1340,7 @@ See Matplotlib’s <code class="docutils literal notranslate"><span class="pre">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>ax</strong> – Cartopy ax or pygmt figure object</p></li>
-<li><p><strong>color</strong> (<em>str</em><em>, </em><em>default='black'</em>) – The edge colour of the geometries.</p></li>
+<li><p><strong>color</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em>, </em><em>default='black'</em>) – The edge colour of the geometries.</p></li>
 <li><p><strong>**kwargs</strong> – <a class="reference external" href="https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html">Matplotlib keyword arguments</a> or pygmt arguments</p></li>
 </ul>
 </dd>
@@ -1357,7 +1355,7 @@ See Matplotlib’s <code class="docutils literal notranslate"><span class="pre">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>ax</strong> – Cartopy ax or pygmt figure object</p></li>
-<li><p><strong>color</strong> (<em>str</em><em>, </em><em>default='black'</em>) – The edge colour of the geometries.</p></li>
+<li><p><strong>color</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em>, </em><em>default='black'</em>) – The edge colour of the geometries.</p></li>
 <li><p><strong>**kwargs</strong> – <a class="reference external" href="https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html">Matplotlib keyword arguments</a> or pygmt arguments</p></li>
 </ul>
 </dd>
@@ -1378,7 +1376,7 @@ See Matplotlib’s <code class="docutils literal notranslate"><span class="pre">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>ax</strong> – Cartopy ax or pygmt figure object</p></li>
-<li><p><strong>color</strong> (<em>str</em><em>, </em><em>default='black'</em>) – The edge colour of the geometries.</p></li>
+<li><p><strong>color</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em>, </em><em>default='black'</em>) – The edge colour of the geometries.</p></li>
 <li><p><strong>**kwargs</strong> – <a class="reference external" href="https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html">Matplotlib keyword arguments</a> or pygmt arguments</p></li>
 </ul>
 </dd>
@@ -1393,7 +1391,7 @@ See Matplotlib’s <code class="docutils literal notranslate"><span class="pre">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>ax</strong> – Cartopy ax or pygmt figure object</p></li>
-<li><p><strong>color</strong> (<em>str</em><em>, </em><em>default='black'</em>) – The edge colour of the geometries.</p></li>
+<li><p><strong>color</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em>, </em><em>default='black'</em>) – The edge colour of the geometries.</p></li>
 <li><p><strong>**kwargs</strong> – <a class="reference external" href="https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html">Matplotlib keyword arguments</a> or pygmt arguments</p></li>
 </ul>
 </dd>
@@ -1416,7 +1414,7 @@ No new code should call this function.</p>
 <dd><p>Calculate plate motion velocity vector fields at a particular geological time and plot them on a map.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>The <code class="docutils literal notranslate"><span class="pre">plot_plate_motion_vectors</span></code> generates a MeshNode domain of point features using
+<p>The <a class="reference internal" href="#gplately.PlotTopologies.plot_plate_motion_vectors" title="gplately.PlotTopologies.plot_plate_motion_vectors"><code class="xref py py-meth docutils literal notranslate"><span class="pre">plot_plate_motion_vectors()</span></code></a> generates a MeshNode domain of point features using
 given spacings in the X and Y directions (<code class="docutils literal notranslate"><span class="pre">spacingX</span></code> and <code class="docutils literal notranslate"><span class="pre">spacingY</span></code>). Each point in
 the domain is assigned a plate ID, and these IDs are used to obtain equivalent stage
 rotations of identified tectonic plates over a 5 Ma time interval. Each point and
@@ -1430,10 +1428,10 @@ makes vector arrow lengths uniform.</p>
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>ax</strong> – Cartopy ax.</p></li>
-<li><p><strong>spacingX</strong> (<em>int</em><em>, </em><em>default=10</em>) – The spacing in the X direction used to make the velocity domain point feature mesh.</p></li>
-<li><p><strong>spacingY</strong> (<em>int</em><em>, </em><em>default=10</em>) – The spacing in the Y direction used to make the velocity domain point feature mesh.</p></li>
-<li><p><strong>normalise</strong> (<em>bool</em><em>, </em><em>default=False</em>) – Choose whether to normalise the velocity magnitudes so that vector lengths are all equal.</p></li>
-<li><p><strong>**kwargs</strong> – Keyword arguments for plotting the velocity vector field. See <code class="docutils literal notranslate"><span class="pre">Matplotlib</span></code> quiver keyword arguments
+<li><p><strong>spacingX</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a><em>, </em><em>default=10</em>) – The spacing in the X direction used to make the velocity domain point feature mesh.</p></li>
+<li><p><strong>spacingY</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a><em>, </em><em>default=10</em>) – The spacing in the Y direction used to make the velocity domain point feature mesh.</p></li>
+<li><p><strong>normalise</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><em>bool</em></a><em>, </em><em>default=False</em>) – Choose whether to normalise the velocity magnitudes so that vector lengths are all equal.</p></li>
+<li><p><strong>**kwargs</strong> – Keyword arguments for plotting the velocity vector field. See Matplotlib quiver keyword arguments
 <a class="reference external" href="https://matplotlib.org/3.5.1/api/_as_gen/matplotlib.axes.Axes.quiver.html">here</a>.</p></li>
 </ul>
 </dd>
@@ -1448,7 +1446,7 @@ makes vector arrow lengths uniform.</p>
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>ax</strong> – Cartopy ax or pygmt figure object.</p></li>
-<li><p><strong>plate_id</strong> (<em>int</em>) – A plate ID that identifies the continental polygon to plot. See the
+<li><p><strong>plate_id</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a>) – A plate ID that identifies the continental polygon to plot. See the
 <a class="reference external" href="https://www.earthbyte.org/webdav/ftp/earthbyte/GPlates/SampleData/FeatureCollections/Rotations/Global_EarthByte_PlateIDs_20071218.pdf">Global EarthByte plate IDs list</a>
 for a full list of plate IDs.</p></li>
 <li><p><strong>**kwargs</strong> – Keyword arguments for plotting.</p></li>
@@ -1465,13 +1463,13 @@ for a full list of plate IDs.</p></li>
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>ax</strong> – Cartopy ax.</p></li>
-<li><p><strong>lon</strong> (<em>float</em>) – Longitudinal coordinate to place pole.</p></li>
-<li><p><strong>lat</strong> (<em>float</em>) – Latitudinal coordinate to place pole.</p></li>
-<li><p><strong>a95</strong> (<em>float</em>) – The size of the pole (in degrees).</p></li>
+<li><p><strong>lon</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a>) – Longitudinal coordinate to place pole.</p></li>
+<li><p><strong>lat</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a>) – Latitudinal coordinate to place pole.</p></li>
+<li><p><strong>a95</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a>) – The size of the pole (in degrees).</p></li>
 </ul>
 </dd>
 <dt class="field-even">Return type<span class="colon">:</span></dt>
-<dd class="field-even"><p>matplotlib.patches.Circle handle</p>
+<dd class="field-even"><p>matplotlib.patches.Circle handle.</p>
 </dd>
 </dl>
 </dd></dl>
@@ -1484,7 +1482,7 @@ for a full list of plate IDs.</p></li>
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>ax</strong> – Cartopy ax or pygmt figure object</p></li>
-<li><p><strong>color</strong> (<em>str</em><em>, </em><em>default='black'</em>) – The edge colour of the geometries.</p></li>
+<li><p><strong>color</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em>, </em><em>default='black'</em>) – The edge colour of the geometries.</p></li>
 <li><p><strong>**kwargs</strong> – <a class="reference external" href="https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html">Matplotlib keyword arguments</a> or pygmt arguments</p></li>
 </ul>
 </dd>
@@ -1505,7 +1503,7 @@ for a full list of plate IDs.</p></li>
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>ax</strong> – Cartopy ax or pygmt figure object</p></li>
-<li><p><strong>color</strong> (<em>str</em><em>, </em><em>default='black'</em>) – The edge colour of the geometries.</p></li>
+<li><p><strong>color</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em>, </em><em>default='black'</em>) – The edge colour of the geometries.</p></li>
 <li><p><strong>**kwargs</strong> – <a class="reference external" href="https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html">Matplotlib keyword arguments</a> or pygmt arguments</p></li>
 </ul>
 </dd>
@@ -1514,22 +1512,22 @@ for a full list of plate IDs.</p></li>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="gplately.PlotTopologies.plot_subduction_teeth">
-<span class="sig-name descname"><span class="pre">plot_subduction_teeth</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ax</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">spacing</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.07</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">aspect</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">color</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'black'</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><span class="pre">None</span></span></span><a class="reference internal" href="../_modules/gplately/plot.html#PlotTopologies.plot_subduction_teeth"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.PlotTopologies.plot_subduction_teeth" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">plot_subduction_teeth</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ax</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">spacing</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.07</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">size</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">aspect</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">color</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'black'</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span> <span class="sig-return"><span class="sig-return-icon">&#x2192;</span> <span class="sig-return-typehint"><a class="reference external" href="https://docs.python.org/3/library/constants.html#None" title="(in Python v3.13)"><span class="pre">None</span></a></span></span><a class="reference internal" href="../_modules/gplately/plot.html#PlotTopologies.plot_subduction_teeth"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.PlotTopologies.plot_subduction_teeth" title="Link to this definition"></a></dt>
 <dd><p>Plot subduction teeth.</p>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>Subduction teeth are tessellated from <a class="reference internal" href="#gplately.PlotTopologies.trench_left" title="gplately.PlotTopologies.trench_left"><code class="xref py py-attr docutils literal notranslate"><span class="pre">gplately.PlotTopologies.trench_left</span></code></a> and
-<a class="reference internal" href="#gplately.PlotTopologies.trench_left" title="gplately.PlotTopologies.trench_left"><code class="xref py py-attr docutils literal notranslate"><span class="pre">gplately.PlotTopologies.trench_left</span></code></a> attributes, and transformed into Shapely polygons for plotting.</p>
+<p>Subduction teeth are tessellated from <a class="reference internal" href="#gplately.PlotTopologies.trench_left" title="gplately.PlotTopologies.trench_left"><code class="xref py py-attr docutils literal notranslate"><span class="pre">PlotTopologies.trench_left</span></code></a> and
+<a class="reference internal" href="#gplately.PlotTopologies.trench_right" title="gplately.PlotTopologies.trench_right"><code class="xref py py-attr docutils literal notranslate"><span class="pre">PlotTopologies.trench_right</span></code></a> attributes, and transformed into Shapely polygons for plotting.</p>
 </div>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>ax</strong> – Cartopy ax or pygmt figure object.</p></li>
-<li><p><strong>spacing</strong> (<em>float</em><em>, </em><em>default=0.07</em>) – The tessellation threshold (in radians). Parametrises subduction tooth density.
+<li><p><strong>spacing</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a><em>, </em><em>default=0.07</em>) – The tessellation threshold (in radians). Parametrises subduction tooth density.
 Triangles are generated only along line segments with distances that exceed the given threshold <code class="docutils literal notranslate"><span class="pre">spacing</span></code>.</p></li>
-<li><p><strong>size</strong> (<em>float</em><em>, </em><em>default=None</em>) – Length of teeth triangle base (in radians). If kept at <code class="docutils literal notranslate"><span class="pre">None</span></code>, then <code class="docutils literal notranslate"><span class="pre">size</span> <span class="pre">=</span> <span class="pre">0.5*spacing</span></code>.</p></li>
-<li><p><strong>aspect</strong> (<em>float</em><em>, </em><em>default=None</em>) – Aspect ratio of teeth triangles. If kept at <code class="docutils literal notranslate"><span class="pre">None</span></code>, then <code class="docutils literal notranslate"><span class="pre">aspect</span> <span class="pre">=</span> <span class="pre">2/3*size</span></code>.</p></li>
-<li><p><strong>color</strong> (<em>str</em><em>, </em><em>default='black'</em>) – The colour of the teeth. By default, it is set to black.</p></li>
+<li><p><strong>size</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a><em>, </em><em>default=None</em>) – Length of teeth triangle base (in radians). If kept at <code class="docutils literal notranslate"><span class="pre">None</span></code>, then <code class="docutils literal notranslate"><span class="pre">size</span> <span class="pre">=</span> <span class="pre">0.5*spacing</span></code>.</p></li>
+<li><p><strong>aspect</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a><em>, </em><em>default=None</em>) – Aspect ratio of teeth triangles. If kept at <code class="docutils literal notranslate"><span class="pre">None</span></code>, then <code class="docutils literal notranslate"><span class="pre">aspect</span> <span class="pre">=</span> <span class="pre">2/3*size</span></code>.</p></li>
+<li><p><strong>color</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em>, </em><em>default='black'</em>) – The colour of the teeth. By default, it is set to black.</p></li>
 <li><p><strong>**kwargs</strong> – Keyword arguments for plotting subduction teeth.
 See Matplotlib keyword arguments <a class="reference external" href="https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html">here</a>.</p></li>
 </ul>
@@ -1545,7 +1543,7 @@ See Matplotlib keyword arguments <a class="reference external" href="https://mat
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>ax</strong> – Cartopy ax or pygmt figure object</p></li>
-<li><p><strong>color</strong> (<em>str</em><em>, </em><em>default='black'</em>) – The edge colour of the geometries.</p></li>
+<li><p><strong>color</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em>, </em><em>default='black'</em>) – The edge colour of the geometries.</p></li>
 <li><p><strong>**kwargs</strong> – <a class="reference external" href="https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html">Matplotlib keyword arguments</a> or pygmt arguments</p></li>
 </ul>
 </dd>
@@ -1560,7 +1558,7 @@ See Matplotlib keyword arguments <a class="reference external" href="https://mat
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>ax</strong> – Cartopy ax or pygmt figure object</p></li>
-<li><p><strong>color</strong> (<em>str</em><em>, </em><em>default='black'</em>) – The edge colour of the geometries.</p></li>
+<li><p><strong>color</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em>, </em><em>default='black'</em>) – The edge colour of the geometries.</p></li>
 <li><p><strong>**kwargs</strong> – <a class="reference external" href="https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html">Matplotlib keyword arguments</a> or pygmt arguments</p></li>
 </ul>
 </dd>
@@ -1575,7 +1573,7 @@ See Matplotlib keyword arguments <a class="reference external" href="https://mat
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>ax</strong> – Cartopy ax or pygmt figure object</p></li>
-<li><p><strong>color</strong> (<em>str</em><em>, </em><em>default='black'</em>) – The edge colour of the geometries.</p></li>
+<li><p><strong>color</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em>, </em><em>default='black'</em>) – The edge colour of the geometries.</p></li>
 <li><p><strong>**kwargs</strong> – <a class="reference external" href="https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html">Matplotlib keyword arguments</a> or pygmt arguments</p></li>
 </ul>
 </dd>
@@ -1590,7 +1588,7 @@ See Matplotlib keyword arguments <a class="reference external" href="https://mat
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>ax</strong> – Cartopy ax or pygmt figure object</p></li>
-<li><p><strong>color</strong> (<em>str</em><em>, </em><em>default='black'</em>) – The edge colour of the geometries.</p></li>
+<li><p><strong>color</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em>, </em><em>default='black'</em>) – The edge colour of the geometries.</p></li>
 <li><p><strong>**kwargs</strong> – <a class="reference external" href="https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html">Matplotlib keyword arguments</a> or pygmt arguments</p></li>
 </ul>
 </dd>
@@ -1605,7 +1603,7 @@ See Matplotlib keyword arguments <a class="reference external" href="https://mat
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>ax</strong> – Cartopy ax or pygmt figure object</p></li>
-<li><p><strong>color</strong> (<em>str</em><em>, </em><em>default='black'</em>) – The edge colour of the geometries.</p></li>
+<li><p><strong>color</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em>, </em><em>default='black'</em>) – The edge colour of the geometries.</p></li>
 <li><p><strong>**kwargs</strong> – <a class="reference external" href="https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html">Matplotlib keyword arguments</a> or pygmt arguments</p></li>
 </ul>
 </dd>
@@ -1620,7 +1618,7 @@ See Matplotlib keyword arguments <a class="reference external" href="https://mat
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>ax</strong> – Cartopy ax or pygmt figure object</p></li>
-<li><p><strong>color</strong> (<em>str</em><em>, </em><em>default='black'</em>) – The edge colour of the geometries.</p></li>
+<li><p><strong>color</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em>, </em><em>default='black'</em>) – The edge colour of the geometries.</p></li>
 <li><p><strong>**kwargs</strong> – <a class="reference external" href="https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html">Matplotlib keyword arguments</a> or pygmt arguments</p></li>
 </ul>
 </dd>
@@ -1635,7 +1633,7 @@ See Matplotlib keyword arguments <a class="reference external" href="https://mat
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
 <li><p><strong>ax</strong> – Cartopy ax or pygmt figure object</p></li>
-<li><p><strong>color</strong> (<em>str</em><em>, </em><em>default='black'</em>) – The edge colour of the geometries.</p></li>
+<li><p><strong>color</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em>, </em><em>default='black'</em>) – The edge colour of the geometries.</p></li>
 <li><p><strong>**kwargs</strong> – <a class="reference external" href="https://matplotlib.org/stable/api/_as_gen/matplotlib.pyplot.plot.html">Matplotlib keyword arguments</a> or pygmt arguments</p></li>
 </ul>
 </dd>
@@ -1655,7 +1653,7 @@ See Matplotlib keyword arguments <a class="reference external" href="https://mat
 A list containing ridge and transform boundary sections of type <cite>pygplates.FeatureType.gpml_mid_ocean_ridge</cite>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>iterable/list of &lt;pygplates.Feature&gt;</p>
+<dd class="field-odd"><p>iterable/list of <a class="reference external" href="https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature">pygplates.Feature</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -1666,12 +1664,12 @@ A list containing ridge and transform boundary sections of type <cite>pygplates.
 <dd><p>The time (Ma) to reconstruct and plot geological features to.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>float</p>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)">float</a></p>
 </dd>
 </dl>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>You can either set the <code class="docutils literal notranslate"><span class="pre">time</span></code> attribute when creating the <a class="reference internal" href="#gplately.PlotTopologies" title="gplately.PlotTopologies"><code class="xref py py-class docutils literal notranslate"><span class="pre">gplately.PlotTopologies</span></code></a> object or anytime afterwards.</p>
+<p>You can either set the <code class="docutils literal notranslate"><span class="pre">time</span></code> attribute when creating the <a class="reference internal" href="#gplately.PlotTopologies" title="gplately.PlotTopologies"><code class="xref py py-class docutils literal notranslate"><span class="pre">PlotTopologies</span></code></a> object or anytime afterwards.</p>
 <div class="highlight-python notranslate"><div class="highlight"><pre><span></span><span class="linenos">1</span><span class="c1"># set the reconstruction time when creating the PlotTopologies object.</span>
 <span class="linenos">2</span><span class="n">gplot</span> <span class="o">=</span> <span class="n">gplately</span><span class="o">.</span><span class="n">PlotTopologies</span><span class="p">(</span><span class="o">...</span><span class="p">,</span> <span class="n">time</span><span class="o">=</span><span class="mi">100</span><span class="p">,</span><span class="o">...</span><span class="p">)</span>
 <span class="linenos">3</span>
@@ -1701,7 +1699,7 @@ A list containing assorted topologies like:</p>
 </ul>
 <dl class="field-list simple">
 <dt class="field-odd">Type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>iterable/list of &lt;pygplates.Feature&gt;</p>
+<dd class="field-odd"><p>iterable/list of <a class="reference external" href="https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature">pygplates.Feature</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -1713,7 +1711,7 @@ A list containing assorted topologies like:</p>
 A list containing transform boundary sections of type <cite>pygplates.FeatureType.gpml_transforms</cite>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>iterable/list of &lt;pygplates.Feature&gt;</p>
+<dd class="field-odd"><p>iterable/list of <a class="reference external" href="https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature">pygplates.Feature</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -1724,7 +1722,7 @@ A list containing transform boundary sections of type <cite>pygplates.FeatureTyp
 <dd><p>A list containing left subduction boundary sections of type <cite>pygplates.FeatureType.gpml_subduction_zone</cite>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>iterable/list of &lt;pygplates.Feature&gt;</p>
+<dd class="field-odd"><p>iterable/list of <a class="reference external" href="https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature">pygplates.Feature</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -1735,7 +1733,7 @@ A list containing transform boundary sections of type <cite>pygplates.FeatureTyp
 <dd><p>A list containing right subduction boundary sections of type pygplates.FeatureType.gpml_subduction_zone</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>iterable/list of &lt;pygplates.Feature&gt;</p>
+<dd class="field-odd"><p>iterable/list of <a class="reference external" href="https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature">pygplates.Feature</a></p>
 </dd>
 </dl>
 </dd></dl>
@@ -1746,7 +1744,7 @@ A list containing transform boundary sections of type <cite>pygplates.FeatureTyp
 <dd><p>A list containing trench boundary sections of type <cite>pygplates.FeatureType.gpml_subduction_zone</cite>.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Type<span class="colon">:</span></dt>
-<dd class="field-odd"><p>iterable/list of &lt;pygplates.Feature&gt;</p>
+<dd class="field-odd"><p>iterable/list of <a class="reference external" href="https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature">pygplates.Feature</a></p>
 </dd>
 </dl>
 </dd></dl>

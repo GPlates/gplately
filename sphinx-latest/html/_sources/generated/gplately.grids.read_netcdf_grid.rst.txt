@@ -1,0 +1,6 @@
+﻿gplately.grids.read\_netcdf\_grid
+=================================
+
+.. currentmodule:: gplately.grids
+
+.. autofunction:: read_netcdf_grid

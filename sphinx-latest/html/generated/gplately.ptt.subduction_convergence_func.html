@@ -1,0 +1,232 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../">
+<head>
+  <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
+
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>gplately.ptt.subduction_convergence_func &mdash; gplately 2.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
+
+  
+    <link rel="shortcut icon" href="../_static/favicon.ico"/>
+      <script src="../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../_static/documentation_options.js?v=51b770b3"></script>
+      <script src="../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="gplately.ptt.ridge_spreading_rate_func" href="gplately.ptt.ridge_spreading_rate_func.html" />
+    <link rel="prev" title="gplately.auxiliary" href="gplately.auxiliary.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../index.html" class="icon icon-home">
+            gplately
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../basic_usages.html">Minimal working example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../use_cases.html">Common Use Cases</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../faq.html">Trouble-shooting and FAQ</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../command_line_interface.html">Command Line Interface (CLI)</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../primer.html">Primer</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Reference</span></p>
+<ul class="current">
+<li class="toctree-l1"><a class="reference internal" href="../api.html">Main Classes</a></li>
+<li class="toctree-l1 current"><a class="reference internal" href="../functions.html">Functions</a><ul class="current">
+<li class="toctree-l2"><a class="reference internal" href="gplately.auxiliary.html">gplately.auxiliary</a></li>
+<li class="toctree-l2 current"><a class="current reference internal" href="#">gplately.ptt.subduction_convergence_func</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#gplately.ptt.subduction_convergence_func"><code class="docutils literal notranslate"><span class="pre">subduction_convergence_func()</span></code></a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="gplately.ptt.ridge_spreading_rate_func.html">gplately.ptt.ridge_spreading_rate_func</a></li>
+<li class="toctree-l2"><a class="reference internal" href="gplately.grids.read_netcdf_grid.html">gplately.grids.read_netcdf_grid</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../secondaries.html">Other Classes</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../index.html">gplately</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../functions.html">Functions</a></li>
+      <li class="breadcrumb-item active">gplately.ptt.subduction_convergence_func</li>
+      <li class="wy-breadcrumbs-aside">
+            <a href="../_sources/generated/gplately.ptt.subduction_convergence_func.rst.txt" rel="nofollow"> View page source</a>
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <section id="gplately-ptt-subduction-convergence-func">
+<h1>gplately.ptt.subduction_convergence_func<a class="headerlink" href="#gplately-ptt-subduction-convergence-func" title="Link to this heading"></a></h1>
+<dl class="py function">
+<dt class="sig sig-object py" id="gplately.ptt.subduction_convergence_func">
+<span class="sig-prename descclassname"><span class="pre">gplately.ptt.</span></span><span class="sig-name descname"><span class="pre">subduction_convergence_func</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rotation_features_or_model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">topology_features</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">threshold_sampling_distance_radians</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">velocity_delta_time</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">anchor_plate_id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">include_slab_topologies</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">include_network_boundaries</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#gplately.ptt.subduction_convergence_func" title="Link to this definition"></a></dt>
+<dd><p>Find the convergence and absolute velocities sampled along trenches (subduction zones) at a particular geological time.</p>
+<p>Each sampled point along trench returns the following information:</p>
+<ul class="simple">
+<li><p>0 longitude of sample point</p></li>
+<li><p>1 latitude of sample point</p></li>
+<li><p>2 subducting convergence (relative to trench) velocity magnitude (in cm/yr)</p></li>
+<li><p>3 subducting convergence velocity obliquity angle (angle between trench normal vector and convergence velocity vector)</p></li>
+<li><p>4 trench absolute (relative to anchor plate) velocity magnitude (in cm/yr)</p></li>
+<li><p>5 trench absolute velocity obliquity angle (angle between trench normal vector and trench absolute velocity vector)</p></li>
+<li><p>6 length of arc segment (in degrees) that current point is on</p></li>
+<li><p>7 trench normal azimuth angle (clockwise starting at North, ie, 0 to 360 degrees) at current point</p></li>
+<li><p>8 subducting plate ID</p></li>
+<li><p>9 trench plate ID</p></li>
+</ul>
+<p>The optional ‘output_*’ parameters can be used to append extra data to the above output for each sampled trench point.
+The order of any extra data is the same order in which the parameters are listed below.</p>
+<p>The obliquity angles are in the range (-180, 180). The range (0, 180) goes clockwise (when viewed from above the Earth) from the
+trench normal direction to the velocity vector. The range (0, -180) goes counter-clockwise.
+You can change the range (-180, 180) to the range (0, 360) by adding 360 to negative angles.
+The trench normal is perpendicular to the trench and pointing toward the overriding plate.</p>
+<p>Note that the convergence velocity magnitude is negative if the plates are diverging (if convergence obliquity angle
+is greater than 90 or less than -90). And note that the absolute velocity magnitude is negative if the trench (subduction zone)
+is moving towards the overriding plate (if absolute obliquity angle is less than 90 and greater than -90) - note that this
+ignores the kinematics of the subducting plate. Similiarly for the subducting plate absolute velocity magnitude
+(if keyword argument <cite>output_subducting_absolute_velocity</cite> is True).</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>rotation_features_or_model</strong> (<em>pygplates.RotationModel</em><em>, or </em><em>any combination</em><em> of </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em>, </em><em>pygplates.FeatureCollection</em><em>, </em><em>pygplates.Feature</em>) – The rotation model can be specified as a RotationModel. Or it can be specified as a rotation feature collection,
+or rotation filename, or rotation feature, or sequence of rotation features, or a sequence (eg, list or tuple) of any combination
+of those four types.</p></li>
+<li><p><strong>topology_features</strong> (<em>any combination</em><em> of </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em>, </em><em>pygplates.FeatureCollection</em><em>, </em><em>pygplates.Feature</em>) – The topological boundary and network features and the topological section features they reference (regular and topological lines).
+Can be specified as a feature collection, or filename, or feature, or sequence of features, or a sequence (eg, list or tuple)
+of any combination of those four types.</p></li>
+<li><p><strong>threshold_sampling_distance_radians</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a>) – Threshold sampling distance along trench (in radians).</p></li>
+<li><p><strong>time</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a>) – The reconstruction time at which to query subduction convergence.</p></li>
+<li><p><strong>velocity_delta_time</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a><em>, </em><em>optional</em>) – The delta time interval used for velocity calculations. Defaults to 1My.</p></li>
+<li><p><strong>anchor_plate_id</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a><em>, </em><em>optional</em>) – Anchor plate ID for reconstruction.
+If not specified then uses the default anchor plate of <cite>rotation_model</cite> if it’s a <cite>pygplates.RotationModel</cite> (otherwise uses zero).</p></li>
+<li><p><strong>include_slab_topologies</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><em>bool</em></a><em>, </em><em>default False</em>) – Include slab topologies (<cite>gpml:TopologicalSlabBoundary</cite>) in analysis.</p></li>
+<li><p><strong>include_network_boundaries</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><em>bool</em></a><em>, </em><em>default False</em>) – Whether to calculate subduction convergence along network boundaries that are not also plate boundaries (defaults to False).
+If a deforming network shares a boundary with a plate then it’ll get included regardless of this option.</p></li>
+<li><p><strong>output_distance_to_nearest_edge_of_trench</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><em>bool</em></a><em>, </em><em>default=False</em>) – Append the distance (in degrees) along the trench line to the nearest trench edge to each returned sample point.
+A trench edge is the farthermost location on the current trench feature that contributes to a plate boundary.</p></li>
+<li><p><strong>output_distance_to_start_edge_of_trench</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><em>bool</em></a><em>, </em><em>default=False</em>) – Append the distance (in degrees) along the trench line from the start edge of the trench to each returned sample point.
+The start of the trench is along the clockwise direction around the overriding plate.</p></li>
+<li><p><strong>output_convergence_velocity_components</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><em>bool</em></a><em>, </em><em>default=False</em>) – Append the convergence velocity orthogonal and parallel components (in cm/yr) to each returned sample point.
+Orthogonal is normal to trench (in direction of overriding plate when positive).
+Parallel is along trench (90 degrees clockwise from trench normal when positive).</p></li>
+<li><p><strong>output_trench_absolute_velocity_components</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><em>bool</em></a><em>, </em><em>default=False</em>) – Append the trench absolute velocity orthogonal and parallel components (in cm/yr) to each returned sample point.
+Orthogonal is normal to trench (in direction of overriding plate when positive).
+Parallel is along trench (90 degrees clockwise from trench normal when positive).</p></li>
+<li><p><strong>output_subducting_absolute_velocity</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><em>bool</em></a><em>, </em><em>default=False</em>) – Append the subducting plate absolute velocity magnitude (in cm/yr) and obliquity angle (in degrees) to each returned sample point.</p></li>
+<li><p><strong>output_subducting_absolute_velocity_components</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><em>bool</em></a><em>, </em><em>default=False</em>) – Append the subducting plate absolute velocity orthogonal and parallel components (in cm/yr) to each returned sample point.
+Orthogonal is normal to trench (in direction of overriding plate when positive).
+Parallel is along trench (90 degrees clockwise from trench normal when positive).</p></li>
+<li><p><strong>output_trench_normal</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><em>bool</em></a><em>, </em><em>default=False</em>) – Append the x, y and z components of the trench normal unit-length 3D vectors.
+These vectors are normal to the trench in the direction of subduction (towards overriding plate).
+These are global 3D vectors which differ from trench normal azimuth angles (ie, angles relative to North).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><p>The results for all points sampled along trench.
+The size of the returned list is equal to the number of sampled points.
+Each tuple in the list corresponds to a point and has the following tuple items:</p>
+<ul class="simple">
+<li><p>longitude of sample point</p></li>
+<li><p>latitude of sample point</p></li>
+<li><p>subducting convergence (relative to trench) velocity magnitude (in cm/yr)</p></li>
+<li><p>subducting convergence velocity obliquity angle (angle between trench normal vector and convergence velocity vector)</p></li>
+<li><p>trench absolute (relative to anchor plate) velocity magnitude (in cm/yr)</p></li>
+<li><p>trench absolute velocity obliquity angle (angle between trench normal vector and trench absolute velocity vector)</p></li>
+<li><p>length of arc segment (in degrees) that current point is on</p></li>
+<li><p>trench normal azimuth angle (clockwise starting at North, ie, 0 to 360 degrees) at current point</p></li>
+<li><p>subducting plate ID</p></li>
+<li><p>trench plate ID</p></li>
+</ul>
+<p>The optional ‘output_*’ parameters can be used to append extra data to the tuple of each sampled trench point.
+The order of any extra data is the same order in which the parameters are listed in this function.</p>
+</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)">list</a> of tuples</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>Each point in the output is the midpoint of a great circle arc between two adjacent points in the trench polyline.
+The trench normal vector used in the obliquity calculations is perpendicular to the great circle arc of each point (arc midpoint)
+and pointing towards the overriding plate (rather than away from it).</p>
+<p>Each trench is sampled at approximately uniform intervals along its length (specified via a threshold sampling distance).
+The sampling along the entire length of a trench is not exactly uniform. Each segment along a trench is sampled
+such that the samples have a uniform spacing that is less than or equal to the threshold sampling distance. However each segment
+in a trench might have a slightly different spacing distance (since segment lengths are not integer multiples of
+the threshold sampling distance).</p>
+<p>The trench normal (at each arc segment mid-point) always points <em>towards</em> the overriding plate.</p>
+</dd></dl>
+
+</section>
+
+
+           </div>
+          </div>
+          <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
+        <a href="gplately.auxiliary.html" class="btn btn-neutral float-left" title="gplately.auxiliary" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="gplately.ptt.ridge_spreading_rate_func.html" class="btn btn-neutral float-right" title="gplately.ptt.ridge_spreading_rate_func" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+    </div>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023-2025, The University of Sydney.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
