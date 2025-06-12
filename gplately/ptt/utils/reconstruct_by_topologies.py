@@ -17,7 +17,7 @@
 
 
 """
-Reconstruct point locations incrementally through time using dynamic (topological) polygons. 
+Reconstruct point locations incrementally through time using dynamic (topological) polygons.
 """
 
 
@@ -80,8 +80,7 @@ class ReconstructByTopologies(object):
     """
 
     use_plate_partitioner = False
-    """If True then use pygplates.PlatePartitioner to partition points,
-                           otherwise use faster points_in_polygons.find_polygons()."""
+    """If True then use pygplates.PlatePartitioner to partition points, otherwise use faster points_in_polygons.find_polygons()."""
 
     def __init__(
         self,

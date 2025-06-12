@@ -12,6 +12,6 @@ This page lists the assorted functions of the GPlately Python package.
    :toctree: generated
 
     gplately.auxiliary
-    gplately.reconstruct_points_by_topologies
     gplately.ptt.subduction_convergence_func
     gplately.ptt.ridge_spreading_rate_func
+    gplately.grids.read_netcdf_grid

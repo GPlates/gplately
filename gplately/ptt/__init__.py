@@ -15,7 +15,7 @@
 #    51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
 
-""" "ptt" stands for Plate Tectonics Tools.
+"""The "ptt" stands for Plate Tectonics Tools.
 
 This "ptt" module provides a collection of common plate tectonic functionality that researchers can use in their workflows.
 It is primarily built on top of the pyGPlates Python library.

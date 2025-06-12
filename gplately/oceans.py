@@ -192,15 +192,15 @@ class SeafloorGrid(object):
         continent_mask_filename=None,
         use_continent_contouring=False,
     ):
-        """SeafloorGrid constructor
+        """Constructor. Create a :class:`SeafloorGrid` object.
 
         Parameters
         ----------
-        PlateReconstruction_object : gplately.PlateReconstruction
-            A  :class:`gplately.PlateReconstruction` object with a <pygplates.RotationModel> and
-            a <pygplates.FeatureCollection> containing topology features.
-        PlotTopologies_object : gplately.PlotTopologies
-            A :class:`gplately.PlotTopologies` object with a continental polygon or COB terrane polygon file to mask grids with.
+        PlateReconstruction_object : PlateReconstruction
+            A :class:`PlateReconstruction` object with a `pygplates.RotationModel`_ and
+            a `pygplates.FeatureCollection`_ containing topology features.
+        PlotTopologies_object : PlotTopologies
+            A :class:`PlotTopologies` object with a continental polygon or COB terrane polygon file to mask grids with.
         max_time : float
             The maximum time for age gridding.
         min_time : float
@@ -211,32 +211,32 @@ class SeafloorGrid(object):
             The top-level directory to save all outputs to.
         file_collection : str, default=""
             A string to identify the plate model used (will be automated later).
-        refinement_levels : int, default 5
+        refinement_levels : int, default=5
             Control the number of points in the icosahedral mesh (higher integer means higher resolution of continent masks).
-        ridge_sampling : float, default 0.5
+        ridge_sampling : float, default=0.5
             Spatial resolution (in degrees) at which points that emerge from ridges are tessellated.
-        extent : tuple of 4, default (-180.,180.,-90.,90.)
+        extent : tuple of 4, default=(-180.,180.,-90.,90.)
             A tuple containing the mininum longitude, maximum longitude, minimum latitude and
             maximum latitude extents for all masking and final grids.
         grid_spacing : float, default=0.1
             The degree spacing/interval with which to space grid points across all masking and
             final grids. If ``grid_spacing`` is provided, all grids will use it. If not, ``grid_spacing`` defaults to 0.1.
-        subduction_collision_parameters : len-2 tuple of float, default (5.0, 10.0)
+        subduction_collision_parameters : len-2 tuple of float, default=(5.0, 10.0)
             A 2-tuple of (threshold velocity delta in kms/my, threshold distance to boundary per My in kms/my)
         initial_ocean_mean_spreading_rate : float, default=75.
             A spreading rate to uniformly allocate to points that define the initial ocean
             basin. These points will have inaccurate ages, but most of them will be phased
             out after points with plate-model prescribed ages emerge from ridges and spread
             to push them towards collision boundaries (where they are deleted).
-        resume_from_checkpoints : bool, default False
+        resume_from_checkpoints : bool, default=False
             If set to ``True``, and the gridding preparation stage (continental masking and/or
             ridge seed building) is interrupted, SeafloorGrids will resume gridding preparation
             from the last successful preparation time.
-            If set to ``False``, SeafloorGrids will automatically overwrite all files in
+            If set to ``False``, SeafloorGrids will automatically overwrite all files in the
             ``save_directory`` if re-run after interruption, or normally re-run, thus beginning
             gridding preparation from scratch. ``False`` will be useful if data allocated to the
             MOR seed points need to be augmented.
-        zval_names : list of str
+        zval_names : list of :class:`str`
             A list containing string labels for the z values to attribute to points.
             Will be used as column headers for z value point dataframes.
         continent_mask_filename : str
@@ -244,6 +244,10 @@ class SeafloorGrid(object):
             Assuming the time is in the filename, i.e. ``/path/to/continent_mask_0Ma.nc``, it should be
             passed as ``/path/to/continent_mask_{}Ma.nc`` with curly brackets. Include decimal formatting if needed.
 
+
+        .. _pygplates.RotationModel: https://www.gplates.org/docs/pygplates/generated/pygplates.rotationmodel
+        .. _pygplates.Feature: https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature
+        .. _pygplates.FeatureCollection: https://www.gplates.org/docs/pygplates/generated/pygplates.featurecollection#pygplates.FeatureCollection
         """
         # Provides a rotation model, topology features and reconstruction time for the SeafloorGrid
         self.PlateReconstruction_object = PlateReconstruction_object
@@ -313,7 +317,7 @@ class SeafloorGrid(object):
         self.total_column_headers = self.default_column_headers + self.zval_names
 
     def _map_res_to_node_percentage(self, continent_mask_filename):
-        """Determine which percentage to use to scale the continent mask resolution at max time"""
+        """Determine which percentage to use to scale the continent mask resolution at max time."""
         maskY, maskX = grids.read_netcdf_grid(
             continent_mask_filename.format(self._max_time)
         ).shape
@@ -330,10 +334,14 @@ class SeafloorGrid(object):
             percentage = 0.6
         elif mask_deg >= 1:
             percentage = 0.75
+        else:
+            raise Exception(
+                "Unable to determine percentage. The code here is suspicious. I am unsure about it."
+            )
         return mask_deg, percentage
 
     def _setup_output_paths(self, save_directory):
-        """create various folders for output files"""
+        """Create various folders for output files."""
         self.save_directory = Path(save_directory)
 
         # zvalue files
@@ -414,7 +422,7 @@ class SeafloorGrid(object):
         )
 
     def _set_grid_resolution(self, grid_spacing=0.1):
-        """determine the output grid resolution"""
+        """Determine the output grid resolution."""
         if not grid_spacing:
             grid_spacing = 0.1
         # A list of degree spacings that allow an even division of the global lat-lon extent.
@@ -472,12 +480,18 @@ class SeafloorGrid(object):
     # object, its `time` attribute is not updated.
     @property
     def max_time(self):
-        """The reconstruction time."""
+        """The reconstruction time.
+
+        :type: float
+        """
         return self._max_time
 
     @property
     def PlotTopologiesTime(self):
-        """The `time` attribute in the PlotTopologies object."""
+        """The :attr:`PlotTopologies.time` attribute.
+
+        :type: float
+        """
         return self._PlotTopologies_object.time
 
     @max_time.setter
@@ -487,13 +501,19 @@ class SeafloorGrid(object):
         else:
             raise ValueError("Enter a valid time >= 0")
 
-    def update_time(self, max_time):
+    def update_time(self, max_time: float):
+        """Set the new reconstruction time.
+
+        Parameters
+        ----------
+        max_time: float
+            The new reconstruction time.
+        """
         self._max_time = float(max_time)
         self._PlotTopologies_object.time = float(max_time)
 
     def _collect_point_data_in_dataframe(self, feature_collection, zval_ndarray, time):
         """At a given timestep, create a pandas dataframe holding all attributes of point features.
-
         Rather than store z values as shapefile attributes, store them in a dataframe indexed by feature ID.
         """
         return _collect_point_data_in_dataframe(
@@ -505,7 +525,7 @@ class SeafloorGrid(object):
         )
 
     def _generate_ocean_points(self):
-        """generate ocean points by using the icosahedral mesh"""
+        """Generate ocean points by using the icosahedral mesh."""
         # Ensure COB terranes at max time have reconstruction IDs and valid times
         COB_polygons = ensure_polygon_geometry(
             self._PlotTopologies_object.continents,
@@ -544,7 +564,7 @@ class SeafloorGrid(object):
         return paleogeography[1]  # points in oceans
 
     def _get_ocean_points_from_continent_mask(self):
-        """get the ocean points from continent mask grid"""
+        """Get the ocean points from continent mask grid."""
         max_time_cont_mask = grids.Raster(
             self.continent_mask_filepath.format(self._max_time)
         )
@@ -583,7 +603,7 @@ class SeafloorGrid(object):
 
         The ocean mesh starts off as a global-spanning Stripy icosahedral mesh.
         ``create_initial_ocean_seed_points`` passes the automatically-resolved-to-current-time
-        continental polygons from the PlotTopologies_object's ``continents`` attribute
+        continental polygons from the :attr:`PlotTopologies.continents` attribute
         (which can be from a COB terrane file or a continental polygon file) into
         Plate Tectonic Tools' point-in-polygon routine. It identifies ocean basin points that lie:
 
@@ -593,12 +613,12 @@ class SeafloorGrid(object):
         Points from the mesh outside the continental polygons make up the ocean basin seed
         point mesh. The masked mesh is outputted as a compressed GPML (GPMLZ) file with
         the filename: ``ocean_basin_seed_points_{}Ma.gpmlz`` if a ``save_directory`` is passed.
-        Otherwise, the mesh is returned as a pyGPlates FeatureCollection object.
+        Otherwise, the mesh is returned as a `pygplates.FeatureCollection`_ object.
 
         .. note::
 
             This point mesh represents ocean basin seafloor that was produced
-            before ``SeafloorGrid.max_time``, and thus has unknown properties like valid
+            before :attr:`SeafloorGrid.max_time`, and thus has unknown properties like valid
             time and spreading rate. As time passes, the plate reconstruction model sees
             points emerging from MORs. These new points spread to occupy the ocean basins,
             moving the initial filler points closer to subduction zones and continental
@@ -614,8 +634,8 @@ class SeafloorGrid(object):
 
         Returns
         -------
-        ocean_basin_point_mesh : pygplates.FeatureCollection
-            A feature collection of ``pygplates.PointOnSphere`` objects on the ocean basin.
+        ocean_basin_point_mesh : `pygplates.FeatureCollection`_
+            A `pygplates.FeatureCollection`_ object containing the seed points on the ocean basin.
         """
 
         if (
@@ -714,13 +734,12 @@ class SeafloorGrid(object):
             asymmetries.
 
             In future, this will have a checkpoint save feature so that execution
-            (which occurs during preparation for ReconstructByTopologies and can take several hours)
+            (which occurs during preparation for ``ReconstructByTopologies`` and can take several hours)
             can be safeguarded against run interruptions.
 
         .. seealso::
 
-            The get_mid_ocean_ridge_seedpoints() has been adapted from
-            `this code <https://github.com/siwill22/agegrid-0.1/blob/master/automatic_age_grid_seeding.py#L117>`__.
+            `Get tessellated points along a mid ocean ridge <https://github.com/siwill22/agegrid-0.1/blob/master/automatic_age_grid_seeding.py#L117>`__.
         """
         overwrite = True
         if self.resume_from_checkpoints:
@@ -792,7 +811,7 @@ class SeafloorGrid(object):
             grids.write_netcdf_grid(
                 self.continent_mask_filepath.format(time),
                 final_grid.astype("i1"),
-                extent=[-180, 180, -90, 90],
+                extent=(-180, 180, -90, 90),
                 fill_value=None,
             )
             logger.info(f"Finished building a continental mask at {time} Ma!")
@@ -889,7 +908,7 @@ class SeafloorGrid(object):
         * Continental masks (from ``max_time`` to ``min_time``)
         * MOR points (from ``max_time`` to ``min_time``)
 
-        Returns lists of all attributes for the initial ocean point mesh and
+        Return lists of all attributes for the initial ocean point mesh and
         all ridge points for all times in the reconstruction time array.
         """
 
@@ -1076,8 +1095,10 @@ class SeafloorGrid(object):
         )
 
     def reconstruct_by_topological_model(self):
-        """Use ``pygplates.TopologicalModel`` class to reconstruct seed points.
-        This method is an alternative to ``reconstruct_by_topological()`` which uses Python code to do the reconstruction.
+        """Use `pygplates.TopologicalModel`_ class to reconstruct seed points.
+        This method is an alternative to :meth:`reconstruct_by_topologies()` which uses Python code to do the reconstruction.
+
+        .. _pygplates.TopologicalModel: https://www.gplates.org/docs/pygplates/generated/pygplates.topologicalmodel
         """
         self.create_initial_ocean_seed_points()
         logger.info("Finished building initial_ocean_seed_points!")
@@ -1141,10 +1162,8 @@ class SeafloorGrid(object):
                 break
 
     def reconstruct_by_topologies(self):
-        """Obtain all active ocean seed points at ``time`` - these are points that have not been consumed at subduction zones
-        or have not collided with continental polygons.
-
-        All active points' latitudes, longitues, seafloor ages, spreading rates and all
+        """Obtain all active ocean seed points which are points that have not been consumed at subduction zones
+        or have not collided with continental polygons. Active points' latitudes, longitues, seafloor ages, spreading rates and all
         other general z-values are saved to a gridding input file (.npz).
         """
         logger.info("Preparing all initial files...")
@@ -1327,7 +1346,7 @@ class SeafloorGrid(object):
                 break
 
             logger.info(
-                f"Reconstruction done for {topology_reconstruction.get_current_time()}!"
+                f"Reconstruction has been done for {topology_reconstruction.get_current_time()}!"
             )
         # return reconstruction_data
 
@@ -1344,19 +1363,18 @@ class SeafloorGrid(object):
         rate can be gridded with ``SPREADING_RATE``.
 
         Saves all grids to compressed netCDF format in the attributed directory. Grids
-        can be read into ndarray format using ``gplately.grids.read_netcdf_grid()``.
+        can be read into ndarray format using :func:`gplately.grids.read_netcdf_grid()`.
 
         Parameters
         ----------
         zval_name : str
-            A string identifiers for a column in the ReconstructByTopologies gridding
-            input files.
-        time_arr : list of float, default None
+            A string identifier for the z-value.
+        time_arr : list of float, default=None
             A time range to turn lons, lats and z-values into netCDF4 grids. If not provided,
-            ``time_arr`` defaults to the full ``time_array`` provided to ``SeafloorGrids``.
-        unmasked : bool, default False
+            ``time_arr`` defaults to the full ``time_array`` provided to :class:`SeafloorGrid`.
+        unmasked : bool, default=False
             Save unmasked grids, in addition to masked versions.
-        nprocs : int, defaullt 1
+        nprocs : int, defaullt=1
             Number of processes to use for certain operations (requires joblib).
             Passed to ``joblib.Parallel``, so -1 means all available processes.
         """
@@ -1417,9 +1435,22 @@ class SeafloorGrid(object):
         self,
         name,
         times=None,
-        unmasked=False,
-        nprocs=None,
+        unmasked: bool = False,
+        nprocs: Union[int, None] = None,
     ):
+        """Interpolate the sample points to create regular grids and save as NetCDF files.
+
+        Parameters
+        ----------
+        name: str
+            The variable name, such as ``SEAFLOOR_AGE`` or ``SPREADING_RATE``.
+        times: list
+            A list of times of interest.
+        unmasked: bool
+            A flag to indicate if the unmasked grids should be saved.
+        nprocs: int
+            The number of processes to use for multiprocessing.
+        """
         if times is None:
             times = self._times
         if nprocs is None:
@@ -1641,7 +1672,7 @@ def _save_age_grid_sample_points_to_gpml(
         f = pygplates.Feature()
         p = pygplates.PointOnSphere(lat, lon)
         f.set_geometry(p)
-        f.set_valid_time(age + paleo_time, paleo_time)
+        f.set_valid_time(age + paleo_time, paleo_time)  # type: ignore
         features.append(f)
     pygplates.FeatureCollection(features).write(
         os.path.join(output_file_dir, SAMPLE_POINTS_GPMLZ_FILE_NAME.format(paleo_time))
@@ -1658,7 +1689,7 @@ def _save_seed_points_as_multipoint_coverage(
         pygplates.ScalarType.create_gpml("SeafloorAge"): seafloor_ages,
     }
     f.set_geometry((coverage_geometry, coverage_scalars))
-    f.set_valid_time(paleo_time + 0.5, paleo_time - 0.5)
+    f.set_valid_time(paleo_time + 0.5, paleo_time - 0.5)  # type: ignore
     pygplates.FeatureCollection([f]).write(
         os.path.join(
             output_file_dir, "seed_points_coverage_{:0.2f}_Ma.gpmlz".format(paleo_time)
@@ -1745,7 +1776,7 @@ def _build_continental_mask_with_contouring(
     grids.write_netcdf_grid(
         continent_mask_filepath.format(time),
         continent_mask.astype("i1"),
-        extent=[-180, 180, -90, 90],
+        extent=(-180, 180, -90, 90),
         fill_value=None,
     )
     logger.warning(
