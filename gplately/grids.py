@@ -162,8 +162,8 @@ def _guess_data_variable_name(cdf: netCDF4.Dataset, x_name: str, y_name: str) ->
 
 def read_netcdf_grid(
     filename,
-    return_grids=False,
-    realign=False,
+    return_grids: bool = False,
+    realign: bool = False,
     resample=None,
     resize=None,
     x_dimension_name: str = "",
@@ -172,67 +172,40 @@ def read_netcdf_grid(
 ) -> Union[
     Tuple[np.ma.MaskedArray, np.ma.MaskedArray, np.ma.MaskedArray], np.ma.MaskedArray
 ]:
-    """Read a `netCDF` (.nc) grid from a given `filename` and return its data as a
-    `MaskedArray`.
-
-    Notes
-    -----
-    If a `resample` tuple is passed with X and Y spacings (`spacingX`, `spacingY`),
-    the gridded data in `filename` will be resampled with these resolutions.
-
-    By default, only the `MaskedArray` is returned to the user. However, if `return_grids` is
-    set to `True`, the `MaskedArray` will be returned along with two additional arrays
-    in a `tuple`:
-
-    * A 1d `MaskedArray` containing the longitudes of the `netCDF` gridded data
-    * A 1d `MaskedArray` containing the latitudes of the `netCDF` gridded data
+    """Read a ``netCDF (.nc)`` grid from a file and return the grid data as a `MaskedArray`_.
 
     Parameters
     ----------
     filename : str
-        Full path to the `netCDF` raster file.
-
+        Full path to the ``netCDF`` raster file.
     return_grids : bool, optional, default=False
-        If set to `True`, returns lon, lat arrays associated with the grid data.
-
+        If set to ``True``, returns lon, lat arrays associated with the grid data.
     realign : bool, optional, default=False
-        if set to `True`, realigns grid to -180/180 and flips the array if the
-        latitudinal coordinates are decreasing.
-
+        if set to ``True``, realigns grid to -180/180 and flips the array if the latitudinal coordinates are decreasing.
     resample : tuple, optional, default=None
-        If passed as `resample = (spacingX, spacingY)`, the given `netCDF` grid is resampled
-        with these x and y resolutions.
-
+        If provided as ``resample = (spacingX, spacingY)``, the grid data will be resampled with these x and y resolutions.
     resize : tuple, optional, default=None
-        If passed as `resample = (resX, resY)`, the given `netCDF` grid is resized
-        to the number of columns (resX) and rows (resY).
-
+        If provided as ``resample = (resX, resY)``, the grid data will be resized to the number of columns (resX) and rows (resY).
     x_dimension_name : str, optional, default=""
-        If the grid file uses comman names, such as "x", "lon", "lons" or "longitude", you need not set this parameter.
-        Otherwise, you need to tell us what the x dimension name is.
-
+        If the grid file uses the comman names, such as ``x``, ``lon``, ``lons`` or ``longitude``,
+        you need not to provide this parameter. Otherwise, you need to tell us what the x dimension name is.
     y_dimension_name : str, optional, default=""
-        If the grid file uses comman names, such as "y", "lat", "lats" or "latitude", you need not set this parameter.
-        Otherwise, you need to tell us what the y dimension name is.
-
+        If the grid file uses the comman names, such as ``y``, ``lat``, ``lats`` or ``latitude``,
+        you need not to provide this parameter. Otherwise, you need to tell us what the y dimension name is.
     data_variable_name : str, optional, default=""
-        The program will try its best to determine the data variable name.
-        However, it would be better if you could tell us what the data variable name is.
-        Otherwise, the program will guess. The result may/may not be correct.
-
+        GPlately will try its best to guess the data variable name.
+        However, it would be much better if you tell us what the data variable name is.
+        Otherwise, GPlately's guess may/may not be correct.
 
     Returns
     -------
-    grid_z : MaskedArray
-        A `MaskedArray` containing the gridded data from the supplied netCDF4 `filename`.
-        Entries' longitudes are re-aligned between -180 and 180 degrees.
+    grid_z : `MaskedArray`_
+        A `MaskedArray`_ object containing the grid data. The longitudes are re-aligned between -180 and 180 degrees.
+    lon, lat : `MaskedArray`_
+        When ``return_grids`` is ``True``, return two additional `MaskedArray`_ objects containing the longitudes and latitudes of the grid data.
 
-    lon, lat : 1d MaskedArrays
-        `MaskedArrays` encasing longitude and latitude variables belonging to the
-        supplied netCDF4 file. Longitudes are rescaled between -180 and 180 degrees.
-        An example output of `cdf_lat` is:
 
-            masked_array(data=[-90. , -89.9, -89.8, ...,  89.8,  89.9,  90. ], mask=False, fill_value=1e+20)
+    .. _MaskedArray: https://numpy.org/doc/stable/reference/maskedarray.generic.html
     """
 
     def find_label(keys, labels):

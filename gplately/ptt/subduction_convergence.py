@@ -16,7 +16,7 @@
 #
 
 """
-Find the convergence rate of trenches (subduction zones). 
+Find the convergence rate of trenches (subduction zones).
 """
 
 
@@ -168,7 +168,6 @@ def subduction_convergence(
     include_network_boundaries=False,
     **kwargs,
 ):
-    # Docstring in numpydoc format...
     """Find the convergence and absolute velocities sampled along trenches (subduction zones) at a particular geological time.
 
     Each sampled point along trench returns the following information:
@@ -184,7 +183,7 @@ def subduction_convergence(
     - 8 subducting plate ID
     - 9 trench plate ID
 
-    The optional 'output_*' parameters can be used to append extra data to the above output for each sampled trench point.
+    The optional ``output_*`` parameters can be used to append extra data to the above output for each sampled trench point.
     The order of any extra data is the same order in which the parameters are listed below.
 
     The obliquity angles are in the range (-180, 180). The range (0, 180) goes clockwise (when viewed from above the Earth) from the
@@ -196,15 +195,15 @@ def subduction_convergence(
     is greater than 90 or less than -90). And note that the absolute velocity magnitude is negative if the trench (subduction zone)
     is moving towards the overriding plate (if absolute obliquity angle is less than 90 and greater than -90) - note that this
     ignores the kinematics of the subducting plate. Similiarly for the subducting plate absolute velocity magnitude
-    (if keyword argument `output_subducting_absolute_velocity` is True).
+    (if keyword argument ``output_subducting_absolute_velocity`` is ``True``).
 
     Parameters
     ----------
-    rotation_features_or_model : pygplates.RotationModel, or any combination of str, pygplates.FeatureCollection, pygplates.Feature
-        The rotation model can be specified as a RotationModel. Or it can be specified as a rotation feature collection,
+    rotation_features_or_model : `pygplates.RotationModel`_, or any combination of str, `pygplates.FeatureCollection`_, `pygplates.Feature`_
+        The rotation model can be specified as a `pygplates.RotationModel`_. Or it can be specified as a rotation feature collection,
         or rotation filename, or rotation feature, or sequence of rotation features, or a sequence (eg, list or tuple) of any combination
         of those four types.
-    topology_features: any combination of str, pygplates.FeatureCollection, pygplates.Feature
+    topology_features: any combination of str, `pygplates.FeatureCollection`_, `pygplates.Feature`_
         The topological boundary and network features and the topological section features they reference (regular and topological lines).
         Can be specified as a feature collection, or filename, or feature, or sequence of features, or a sequence (eg, list or tuple)
         of any combination of those four types.
@@ -216,9 +215,9 @@ def subduction_convergence(
         The delta time interval used for velocity calculations. Defaults to 1My.
     anchor_plate_id: int, optional
         Anchor plate ID for reconstruction.
-        If not specified then uses the default anchor plate of `rotation_model` if it's a `pygplates.RotationModel` (otherwise uses zero).
+        If not specified then uses the default anchor plate of ``rotation_model`` if it's a `pygplates.RotationModel`_ (otherwise uses zero).
     include_slab_topologies : bool, default False
-        Include slab topologies (`gpml:TopologicalSlabBoundary`) in analysis.
+        Include slab topologies (``gpml:TopologicalSlabBoundary``) in analysis.
     include_network_boundaries : bool, default False
         Whether to calculate subduction convergence along network boundaries that are not also plate boundaries (defaults to False).
         If a deforming network shares a boundary with a plate then it'll get included regardless of this option.
@@ -265,22 +264,28 @@ def subduction_convergence(
         * subducting plate ID
         * trench plate ID
 
-        The optional 'output_*' parameters can be used to append extra data to the tuple of each sampled trench point.
+        The optional ``output_*`` parameters can be used to append extra data to the tuple of each sampled trench point.
         The order of any extra data is the same order in which the parameters are listed in this function.
 
-    Notes
-    -----
-    Each point in the output is the midpoint of a great circle arc between two adjacent points in the trench polyline.
-    The trench normal vector used in the obliquity calculations is perpendicular to the great circle arc of each point (arc midpoint)
-    and pointing towards the overriding plate (rather than away from it).
 
-    Each trench is sampled at approximately uniform intervals along its length (specified via a threshold sampling distance).
-    The sampling along the entire length of a trench is not exactly uniform. Each segment along a trench is sampled
-    such that the samples have a uniform spacing that is less than or equal to the threshold sampling distance. However each segment
-    in a trench might have a slightly different spacing distance (since segment lengths are not integer multiples of
-    the threshold sampling distance).
+    .. note::
 
-    The trench normal (at each arc segment mid-point) always points *towards* the overriding plate.
+        Each point in the output is the midpoint of a great circle arc between two adjacent points in the trench polyline.
+        The trench normal vector used in the obliquity calculations is perpendicular to the great circle arc of each point (arc midpoint)
+        and pointing towards the overriding plate (rather than away from it).
+
+        Each trench is sampled at approximately uniform intervals along its length (specified via a threshold sampling distance).
+        The sampling along the entire length of a trench is not exactly uniform. Each segment along a trench is sampled
+        such that the samples have a uniform spacing that is less than or equal to the threshold sampling distance. However each segment
+        in a trench might have a slightly different spacing distance (since segment lengths are not integer multiples of the threshold sampling distance).
+
+        The trench normal (at each arc segment mid-point) always points **towards** the overriding plate.
+
+
+    .. _pygplates.RotationModel: https://www.gplates.org/docs/pygplates/generated/pygplates.rotationmodel
+    .. _pygplates.Feature: https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature
+    .. _pygplates.FeatureCollection: https://www.gplates.org/docs/pygplates/generated/pygplates.featurecollection#pygplates.FeatureCollection
+    .. _pygplates.FeatureType: https://www.gplates.org/docs/pygplates/generated/pygplates.featuretype
     """
     time = float(time)
 
