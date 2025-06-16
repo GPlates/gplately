@@ -15,7 +15,7 @@ and more to help you get started with plate reconstructions.
 
 .. toctree::
    :caption: User Guide
-   :maxdepth: 3
+   :maxdepth: 2
 
    installation
    basic_usages
