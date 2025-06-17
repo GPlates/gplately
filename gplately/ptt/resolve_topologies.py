@@ -19,13 +19,10 @@ from __future__ import print_function
 
 import argparse
 import math
-import os.path
-import sys
 
 import pygplates
 
 from . import separate_ridge_transform_segments
-
 
 DEFAULT_OUTPUT_FILENAME_PREFIX = "topology_"
 DEFAULT_OUTPUT_FILENAME_EXTENSION = "shp"
@@ -50,9 +47,8 @@ def resolve_topologies(
     Parameters
     ----------
 
-    rotation_features_or_model
+    rotation_features_or_model:
         Rotation model or feature collection(s), or list of features, or filename(s).
-        rotation features or model
 
     topology_features
         Topology feature collection(s), or list of features, or filename(s) or any combination of those.
@@ -66,11 +62,12 @@ def resolve_topologies(
 
     anchor_plate_id: int, optional
         Anchor plate ID.
-        If not specified then defaults to `0` if using rotation *features*, or the default anchor plate of the rotation *model* if using one.
+        If not specified then defaults to ``0`` if using rotation **features**, or the default anchor plate of the rotation **model** if using one.
 
     resolve_topology_types:
-        A bitwise combination of any of `pygplates.ResolveTopologyType.boundary` or `pygplates.ResolveTopologyType.network`.
+        A bitwise combination of any of ``pygplates.ResolveTopologyType.boundary`` or ``pygplates.ResolveTopologyType.network``.
         Defaults to both boundaries and networks.
+
 
     Writes output files containing the following features...
 
@@ -83,9 +80,10 @@ def resolve_topologies(
     - right subduction boundary sections (resolved features)
     - other boundary sections (resolved features) that are not subduction zones or mid-ocean ridges (ridge/transform)
 
-    See Also
-    --------
-    resolve_topological_snapshot
+
+    .. seealso::
+
+        :func:`resolve_topological_snapshot`
     """
 
     # Resolve our topological plate polygons (and deforming networks) to the current 'time'.
@@ -122,7 +120,7 @@ def resolve_topological_snapshot(
     Parameters
     ----------
 
-    topological_snapshot: `pygplates.TopologicalSnapshot`
+    topological_snapshot: pygplates.TopologicalSnapshot
         Topology snapshot containing the resolved topologies at a particular reconstruction time.
 
     transform_segment_deviation_in_radians: number
@@ -130,8 +128,9 @@ def resolve_topological_snapshot(
         it's considered a transform segment (in radians).
 
     resolve_topology_types:
-        A bitwise combination of any of `pygplates.ResolveTopologyType.boundary` or `pygplates.ResolveTopologyType.network`.
+        A bitwise combination of any of ``pygplates.ResolveTopologyType.boundary`` or ``pygplates.ResolveTopologyType.network``.
         Defaults to both boundaries and networks.
+
 
     Writes output files containing the following features...
 
@@ -144,14 +143,14 @@ def resolve_topological_snapshot(
     - right subduction boundary sections (resolved features)
     - other boundary sections (resolved features) that are not subduction zones or mid-ocean ridges (ridge/transform)
 
-    Notes
-    -----
-    This is similar to `resolve_topologies_into_features` but is more efficient if you already have a topological snapshot because it
-    avoids resolving topologies again (the topological snapshot already contains resolved topologies for a particular reconstruction time).
+    .. note::
 
-    See Also
-    --------
-    resolve_topologies
+        This is similar to :func:`resolve_topologies_into_features` but is more efficient if you already have a topological snapshot because it
+        avoids resolving topologies again (the topological snapshot already contains resolved topologies for a particular reconstruction time).
+
+    .. seealso::
+
+        :func:`resolve_topologies`
     """
 
     # Resolve our topological plate polygons (and deforming networks) to the current 'time'.
@@ -221,11 +220,12 @@ def resolve_topologies_into_features(
 
     anchor_plate_id: int, optional
         Anchor plate ID.
-        If not specified then defaults to `0` if using rotation *features*, or the default anchor plate of the rotation *model* if using one.
+        If not specified then defaults to ``0`` if using rotation *features*, or the default anchor plate of the rotation *model* if using one.
 
     resolve_topology_types:
-        A bitwise combination of any of `pygplates.ResolveTopologyType.boundary` or `pygplates.ResolveTopologyType.network`.
+        A bitwise combination of any of ``pygplates.ResolveTopologyType.boundary`` or ``pygplates.ResolveTopologyType.network``.
         Defaults to both boundaries and networks.
+
 
     Returns a tuple containing the following lists...
 
@@ -238,9 +238,9 @@ def resolve_topologies_into_features(
     - right subduction boundary sections (resolved features)
     - other boundary sections (resolved features) that are not subduction zones or mid-ocean ridges (ridge/transform)
 
-    See Also
-    --------
-    resolve_topological_snapshot_into_features
+    .. seealso::
+
+        :func:`resolve_topological_snapshot_into_features`
     """
 
     # Resolve our topological plate polygons (and deforming networks) to the current 'time'.
@@ -273,7 +273,7 @@ def resolve_topological_snapshot_into_features(
     Parameters
     ----------
 
-    topological_snapshot: `pygplates.TopologicalSnapshot`
+    topological_snapshot: pygplates.TopologicalSnapshot
         Topology snapshot containing the resolved topologies at a particular reconstruction time.
 
     transform_segment_deviation_in_radians: number
@@ -281,8 +281,9 @@ def resolve_topological_snapshot_into_features(
         it's considered a transform segment (in radians).
 
     resolve_topology_types:
-        A bitwise combination of any of `pygplates.ResolveTopologyType.boundary` or `pygplates.ResolveTopologyType.network`.
+        A bitwise combination of any of ``pygplates.ResolveTopologyType.boundary`` or ``pygplates.ResolveTopologyType.network``.
         Defaults to both boundaries and networks.
+
 
     Returns a tuple containing the following lists...
 
@@ -295,14 +296,14 @@ def resolve_topological_snapshot_into_features(
     - right subduction boundary sections (resolved features)
     - other boundary sections (resolved features) that are not subduction zones or mid-ocean ridges (ridge/transform)
 
-    Notes
-    -----
-    This is similar to `resolve_topologies_into_features` but is more efficient if you already have a topological snapshot because it
-    avoids resolving topologies again (the topological snapshot already contains resolved topologies for a particular reconstruction time).
+    .. note::
 
-    See Also
-    --------
-    resolve_topologies_into_features
+        This is similar to ``resolve_topologies_into_features`` but is more efficient if you already have a topological snapshot because it
+        avoids resolving topologies again (the topological snapshot already contains resolved topologies for a particular reconstruction time).
+
+    .. seealso::
+
+        :func:`resolve_topologies_into_features`
     """
 
     # Extract the resolved topologies, shared boundary sections, rotation model and reconstruction time from the topological snapshot.
@@ -738,6 +739,7 @@ def main(args):
             topology_feature.remove(pygplates.PropertyName.gpml_shapefile_attributes)
             topology_features.append(topology_feature)
 
+    boundary_lengths_file = None
     if args.output_boundary_lengths:
         # Create the text file for writing.
         boundary_lengths_filename = "{0}boundary_lengths.txt".format(
@@ -811,6 +813,7 @@ def main(args):
                 other_boundary_section_features,
             )
 
+            assert boundary_lengths_file is not None
             boundary_lengths_file.write(
                 "{0} {1} {2} {3} {4} {5} {6} {7}\n".format(
                     reconstruction_time,

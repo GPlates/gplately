@@ -40,13 +40,21 @@ from plate_model_manager import PlateModel, PlateModelManager, PresentDayRasterM
 
 from . import auxiliary, ptt
 from .download import DataServer
-from .grids import Raster
+from .grids import Raster, read_netcdf_grid
 from .mapping.cartopy_plot import CartopyPlotEngine
 from .mapping.plot_engine import PlotEngine
 from .mapping.pygmt_plot import PygmtPlotEngine
 from .oceans import SeafloorGrid
 from .plot import PlotTopologies
 from .points import Points
+from .ptt.resolve_topologies import (
+    resolve_topological_snapshot,
+    resolve_topological_snapshot_into_features,
+    resolve_topologies,
+    resolve_topologies_into_features,
+)
+from .ptt.ridge_spreading_rate import spreading_rates as ridge_spreading_rate
+from .ptt.subduction_convergence import subduction_convergence
 from .reconstruction import PlateReconstruction
 from .tools import EARTH_RADIUS
 

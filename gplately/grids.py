@@ -172,7 +172,7 @@ def read_netcdf_grid(
 ) -> Union[
     Tuple[np.ma.MaskedArray, np.ma.MaskedArray, np.ma.MaskedArray], np.ma.MaskedArray
 ]:
-    """Read a ``netCDF (.nc)`` grid from a file and return the grid data as a `MaskedArray`_.
+    """Read grid data from a NetCDF (.nc) file.
 
     Parameters
     ----------
@@ -872,7 +872,7 @@ def reconstruct_grid(
     ----------
     grid : array_like, or str
         The grid to be reconstructed. If ``grid`` is a filename, it will be
-        loaded using :meth:`gplately.grids.read_netcdf_grid`.
+        loaded using :meth:`gplately.read_netcdf_grid`.
     partitioning_features : valid argument to pygplates.FeaturesFunctionArgument
         Features used to partition ``grid`` by plate ID, usually a static
         polygons file. ``partitioning_features`` may be a single

@@ -1363,7 +1363,7 @@ class SeafloorGrid(object):
         rate can be gridded with ``SPREADING_RATE``.
 
         Saves all grids to compressed netCDF format in the attributed directory. Grids
-        can be read into ndarray format using :func:`gplately.grids.read_netcdf_grid()`.
+        can be read into ndarray format using :func:`gplately.read_netcdf_grid()`.
 
         Parameters
         ----------
