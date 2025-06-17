@@ -7,8 +7,8 @@ Examples
    :local:
    :depth: 2
 
-Jypter Notebooks
-----------------
+Jupyter Notebooks
+-----------------
 
 - `01 - Getting Started`_: A brief overview of how to initialise GPlately's main objects
 - `02 - Plate Reconstructions`_: Setting up a :py:class:`gplately.PlateReconstruction` object, reconstructing geological data through time
