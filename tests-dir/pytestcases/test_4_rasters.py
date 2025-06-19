@@ -1,10 +1,15 @@
+import copy
 import os
 
 import numpy as np
 import pytest
-from conftest import gplately_merdith_raster, gplately_merdith_static_geometries
+from conftest import (
+    gplately_merdith_raster,
+    gplately_merdith_static_geometries,
+    gplately_plate_reconstruction_object,
+)
 from conftest import gplately_raster_object as graster
-from conftest import logger, pt_lat, pt_lon
+from conftest import logger, muller_2019_model, pt_lat, pt_lon
 
 import gplately
 
@@ -82,15 +87,39 @@ def test_fill_NaNs(graster):
     assert not np.isnan(no_NaNs).all(), "Unable to fill NaNs"
 
 
-def test_reconstruct(graster):
+def test_reconstruct(graster, muller_2019_model, gplately_plate_reconstruction_object):
     reconstructed_raster = graster.reconstruct(50)
     assert np.shape(reconstructed_raster) == np.shape(
         graster
     ), "Unable to reconstruct age grid"
 
+    # test inplace reconstruction with anchor_plate_id=701
+    ra = gplately.Raster(
+        data=muller_2019_model.get_raster("AgeGrids", 0),
+        plate_reconstruction=copy.deepcopy(gplately_plate_reconstruction_object),
+        extent=(-180, 180, -90, 90),
+    )
+    ra.reconstruct(100, inplace=True, anchor_plate_id=701)
+    assert ra.plate_reconstruction.rotation_model
+    assert ra.plate_reconstruction.rotation_model.get_default_anchor_plate_id() == 701
+
+    # test return a new Raster obj with anchor_plate_id=701
+    ra1 = gplately.Raster(
+        data=muller_2019_model.get_raster("AgeGrids", 0),
+        plate_reconstruction=gplately_plate_reconstruction_object,
+        extent=(-180, 180, -90, 90),
+    )
+    ret = ra1.reconstruct(100, return_array=False, anchor_plate_id=701)
+    assert isinstance(ret, gplately.Raster)
+    assert ret.plate_reconstruction.rotation_model
+    assert ret.plate_reconstruction.rotation_model.get_default_anchor_plate_id() == 701
+    assert ra1.plate_reconstruction.rotation_model
+    assert ra1.plate_reconstruction.rotation_model.get_default_anchor_plate_id() != 701
+
 
 @pytest.mark.skipif(
-    int(os.getenv("TEST_LEVEL", 0)) < 1, reason="requires TEST_LEVEL higher than 0"
+    int(os.getenv("GPLATELY_TEST_LEVEL", 0)) < 1,
+    reason="This testcase downloads a large file from Internet and takes long time to finish. Set GPLATELY_TEST_LEVEL higher than 1 to activate it.",
 )
 def test_reverse_reconstruct(
     gplately_merdith_raster,
@@ -113,6 +142,31 @@ def test_reverse_reconstruct(
     # RMS error after reconstructing and reverse reconstructing
     # should be fairly small if reconstruction is working well
     rmse = np.sqrt(np.nanmean(diff**2))
+    assert rmse < 250.0  # make sure RMSE is within a reasonable limit
+
+
+def test_reverse_reconstruct_1(
+    graster,
+    gplately_merdith_static_geometries,
+):
+    continents = gplately_merdith_static_geometries[1]
+    original_data = np.array(graster.data)
+
+    graster.reconstruct(
+        50,
+        partitioning_features=continents,
+        inplace=True,
+    )
+    graster.reconstruct(
+        0,
+        partitioning_features=continents,
+        inplace=True,
+    )
+    diff = graster.data - original_data
+    # RMS error after reconstructing and reverse reconstructing
+    # should be fairly small if reconstruction is working well
+    rmse = np.sqrt(np.nanmean(diff**2))
+    logger.info(f"test_reverse_reconstruct_1: the rmse is {rmse}.")
     assert rmse < 250.0  # make sure RMSE is within a reasonable limit
 
 

@@ -34,6 +34,7 @@ Classes
 * Raster
 """
 
+import copy
 import logging
 import math
 import warnings
@@ -868,6 +869,10 @@ def reconstruct_grid(
 ):
     """Reconstruct a gridded dataset to a given reconstruction time.
 
+    .. note::
+
+        Use :meth:`Raster.reconstruct` whenever is possible. This :func:`reconstruct_grid` is better to be private.
+
     Parameters
     ----------
     grid : array_like, or str
@@ -921,8 +926,7 @@ def reconstruct_grid(
     -------
     numpy.ndarray
         The reconstructed grid. Areas for which no plate ID could be
-        determined from ``partitioning_features`` will be filled with
-        ``fill_value``.
+        determined from ``partitioning_features`` will be filled with ``fill_value``.
 
     .. note::
 
@@ -935,8 +939,7 @@ def reconstruct_grid(
         will be black (0.0, 0.0, 0.0) or (0, 0, 0).
         For RGBA image grids, ``fill_value`` should be a 4-tuple RGBA
         colour code or a matplotlib colour string. The default fill
-        value will be transparent black (0.0, 0.0, 0.0, 0.0) or
-        (0, 0, 0, 0).
+        value will be transparent black (0.0, 0.0, 0.0, 0.0) or (0, 0, 0, 0).
     """
     try:
         grid = np.array(
@@ -1146,8 +1149,9 @@ def rasterise(
     extent: Union[tuple, str] = "global",
     origin=None,
     tessellate_degrees=0.1,
+    anchor_plate_id=None,
 ):
-    """Rasterise GPlates objects at a given reconstruction time.
+    """Rasterise geometries or GPlates features at a given reconstruction time.
 
     This function is particularly useful for rasterising static polygons
     to extract a grid of plate IDs.
@@ -1285,6 +1289,7 @@ def rasterise(
             rotation_model,
             reconstructed,
             time,
+            anchor_plate_id=anchor_plate_id,
         )
         geometries = pygplates_to_shapely(
             reconstructed,
@@ -1695,11 +1700,26 @@ class Raster(object):
 
     @property
     def time(self):
-        """The geological time for the time-dependant raster data.
+        """The geological time of the time-dependant raster data.
 
         :type: float
         """
         return self._time
+
+    @time.setter
+    def time(self, new_time: float):
+        """Set a new reconstruction time."""
+        try:
+            new_time_f = float(new_time)
+        except ValueError:
+            raise ValueError(f"Invalid new reconstruction time: {new_time}")
+        if new_time_f < 0.0:
+            raise ValueError(
+                f"The reconstruction time ({new_time_f}) must be greater than 0."
+            )
+        if not math.isclose(self._time, new_time_f):
+            self._time = new_time_f
+            self.reconstruct(new_time_f, inplace=True)
 
     @property
     def data(self):
@@ -2094,12 +2114,6 @@ class Raster(object):
         Raster or np.ndarray
             The reconstructed grid. Areas for which no plate ID could be determined will be filled with ``fill_value``.
 
-        Raises
-        ------
-        TypeError
-            If this :class:`Raster` object has no a valid ``plate_reconstruction`` object.
-
-
         .. note::
 
             For two-dimensional grids, ``fill_value`` should be a single
@@ -2114,22 +2128,27 @@ class Raster(object):
             value will be transparent black (0.0, 0.0, 0.0, 0.0) or
             (0, 0, 0, 0).
         """
-        if time < 0.0:
-            raise ValueError("Invalid time: {}".format(time))
-        time = float(time)
-        if self.plate_reconstruction is None:
-            raise TypeError(
-                "Cannot perform reconstruction - "
-                + "`plate_reconstruction` has not been set"
+        try:
+            to_time_f = float(time)
+        except ValueError:
+            raise ValueError(f"Invalid reconstruction time: {time}")
+        if to_time_f < 0.0:
+            raise ValueError(
+                f"The reconstruction time ({to_time_f}) must be greater than 0."
             )
+
+        # A valid PlateReconstruction object is required!
+        assert self.plate_reconstruction is not None
+
         if partitioning_features is None:
             partitioning_features = self.plate_reconstruction.static_polygons
+
         result = reconstruct_grid(
             grid=self.data,
             partitioning_features=partitioning_features,
             rotation_model=self.plate_reconstruction.rotation_model,
             from_time=self.time,
-            to_time=time,
+            to_time=to_time_f,
             extent=self.extent,
             origin=self.origin,
             fill_value=fill_value,
@@ -2137,21 +2156,43 @@ class Raster(object):
             anchor_plate_id=anchor_plate_id,
         )
 
+        raster_rotation_model = self.plate_reconstruction.rotation_model
+        # use the new reconstructed raster data to replace the current Raster obj
+        # TODO: maybe need to put anchor_plate_id into rotation_model if it is not None
         if inplace:
             self.data = result
-            self._time = time
+            self._time = to_time_f
+            if (
+                anchor_plate_id is not None
+                and raster_rotation_model
+                and raster_rotation_model.get_default_anchor_plate_id()
+                != anchor_plate_id
+            ):
+                self.plate_reconstruction.rotation_model = pygplates.RotationModel(
+                    raster_rotation_model, default_anchor_plate_id=anchor_plate_id
+                )
             if return_array:
                 return result
             return self
 
+        # create a new Raster obj to return
         if not return_array:
-            result = type(self)(
+            result = Raster(
                 data=result,
-                plate_reconstruction=self.plate_reconstruction,
+                plate_reconstruction=copy.deepcopy(self.plate_reconstruction),
                 extent=self.extent,
-                time=time,
+                time=to_time_f,
                 origin=self.origin,
             )
+            if (
+                anchor_plate_id is not None
+                and raster_rotation_model
+                and raster_rotation_model.get_default_anchor_plate_id()
+                != anchor_plate_id
+            ):
+                result.plate_reconstruction.rotation_model = pygplates.RotationModel(
+                    raster_rotation_model, default_anchor_plate_id=anchor_plate_id
+                )
         return result
 
     def imshow(self, ax=None, projection=None, **kwargs):
