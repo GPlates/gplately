@@ -115,6 +115,7 @@
 <span class="kn">import</span><span class="w"> </span><span class="nn">math</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">functools</span><span class="w"> </span><span class="kn">import</span> <span class="n">partial</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Union</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">cartopy.crs</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">ccrs</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">geopandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">gpd</span>
@@ -914,11 +915,13 @@
 <div class="viewcode-block" id="PlotTopologies.plot_feature">
 <a class="viewcode-back" href="../../generated/gplately.PlotTopologies.html#gplately.PlotTopologies.plot_feature">[docs]</a>
     <span class="nd">@append_docstring</span><span class="p">(</span><span class="n">PLOT_DOCSTRING</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s2">&quot;feature&quot;</span><span class="p">))</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">plot_feature</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ax</span><span class="p">,</span> <span class="n">feature</span><span class="p">,</span> <span class="n">feature_name</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;black&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">plot_feature</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">ax</span><span class="p">,</span> <span class="n">feature</span><span class="p">,</span> <span class="n">feature_name</span><span class="o">=</span><span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">color</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">list</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;black&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
+    <span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Plot `pygplates.FeatureCollection`_ or `pygplates.Feature`_ onto a map.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">feature</span><span class="p">:</span>
             <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span>
-                <span class="sa">f</span><span class="s2">&quot;The given feature(</span><span class="si">{</span><span class="n">feature_name</span><span class="si">}</span><span class="s2">:</span><span class="si">{</span><span class="n">feature</span><span class="si">}</span><span class="s2">) in model:</span><span class="si">{</span><span class="bp">self</span><span class="o">.</span><span class="n">plate_reconstruction</span><span class="o">.</span><span class="n">plate_model_name</span><span class="si">}</span><span class="s2"> is empty and will not be plotted.&quot;</span>
+                <span class="sa">f</span><span class="s2">&quot;The feature (</span><span class="si">{</span><span class="n">feature_name</span><span class="si">}</span><span class="s2">) is empty and will not be plotted.&quot;</span>
             <span class="p">)</span>
             <span class="k">return</span> <span class="n">ax</span>
         <span class="k">else</span><span class="p">:</span>
@@ -976,7 +979,7 @@
 <a class="viewcode-back" href="../../generated/gplately.PlotTopologies.html#gplately.PlotTopologies.plot_coastlines">[docs]</a>
     <span class="nd">@validate_reconstruction_time</span>
     <span class="nd">@append_docstring</span><span class="p">(</span><span class="n">PLOT_DOCSTRING</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s2">&quot;coastlines&quot;</span><span class="p">))</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">plot_coastlines</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ax</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;black&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">plot_coastlines</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ax</span><span class="p">,</span> <span class="n">color</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">list</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;black&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Plot reconstructed coastlines on a map.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">plot_feature</span><span class="p">(</span>
             <span class="n">ax</span><span class="p">,</span>
@@ -1036,7 +1039,9 @@
 <a class="viewcode-back" href="../../generated/gplately.PlotTopologies.html#gplately.PlotTopologies.plot_continent_ocean_boundaries">[docs]</a>
     <span class="nd">@validate_reconstruction_time</span>
     <span class="nd">@append_docstring</span><span class="p">(</span><span class="n">PLOT_DOCSTRING</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s2">&quot;continent ocean boundaries&quot;</span><span class="p">))</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">plot_continent_ocean_boundaries</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ax</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;black&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">plot_continent_ocean_boundaries</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">ax</span><span class="p">,</span> <span class="n">color</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">list</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;black&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span>
+    <span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Plot the reconstructed continent-ocean boundaries (COBs) on a map.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">plot_feature</span><span class="p">(</span>
             <span class="n">ax</span><span class="p">,</span>
@@ -2142,7 +2147,7 @@
 <a class="viewcode-back" href="../../generated/gplately.PlotTopologies.html#gplately.PlotTopologies.plot_all_topologies">[docs]</a>
     <span class="nd">@validate_topology_availability</span><span class="p">(</span><span class="s2">&quot;all topologies&quot;</span><span class="p">)</span>
     <span class="nd">@append_docstring</span><span class="p">(</span><span class="n">PLOT_DOCSTRING</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s2">&quot;topologies&quot;</span><span class="p">))</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">plot_all_topologies</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ax</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s2">&quot;black&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">plot_all_topologies</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ax</span><span class="p">,</span> <span class="n">color</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="nb">list</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;black&quot;</span><span class="p">,</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Plot the reconstructed topological features listed below on a map.</span>
 
 <span class="sd">        - pygplates.FeatureType.gpml_topological_network</span>

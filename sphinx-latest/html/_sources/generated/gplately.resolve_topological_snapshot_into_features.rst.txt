@@ -1,0 +1,6 @@
+﻿gplately.resolve\_topological\_snapshot\_into\_features
+=======================================================
+
+.. currentmodule:: gplately
+
+.. autofunction:: resolve_topological_snapshot_into_features

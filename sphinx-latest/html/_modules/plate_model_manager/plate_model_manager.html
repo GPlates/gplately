@@ -83,14 +83,15 @@
              
   <h1>Source code for plate_model_manager.plate_model_manager</h1><div class="highlight"><pre>
 <span></span><span class="kn">import</span><span class="w"> </span><span class="nn">json</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">re</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">Union</span>
 
-<span class="kn">import</span><span class="w"> </span><span class="nn">requests</span><span class="o">,</span><span class="w"> </span><span class="nn">logging</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">requests</span>
 
 <span class="kn">from</span><span class="w"> </span><span class="nn">.exceptions</span><span class="w"> </span><span class="kn">import</span> <span class="n">InvalidConfigFile</span><span class="p">,</span> <span class="n">ServerUnavailable</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">.plate_model</span><span class="w"> </span><span class="kn">import</span> <span class="n">PlateModel</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">List</span><span class="p">,</span> <span class="n">Union</span><span class="p">,</span> <span class="n">Dict</span>
 
 <span class="n">logger</span> <span class="o">=</span> <span class="n">logging</span><span class="o">.</span><span class="n">getLogger</span><span class="p">(</span><span class="s2">&quot;pmm&quot;</span><span class="p">)</span>
 
@@ -98,17 +99,22 @@
 <div class="viewcode-block" id="PlateModelManager">
 <a class="viewcode-back" href="../../generated/gplately.PlateModelManager.html#gplately.PlateModelManager">[docs]</a>
 <span class="k">class</span><span class="w"> </span><span class="nc">PlateModelManager</span><span class="p">:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;load a models.json file and manage plate models</span>
-<span class="sd">    see an example models.json file at PlateModelManager.get_default_repo_url()</span>
-
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Manage a set of public available plate reconstruction models.</span>
+<span class="sd">    The model files are hosted on EarthByte servers.</span>
+<span class="sd">    You need Internet connection to download the files.</span>
 <span class="sd">    &quot;&quot;&quot;</span>
+
+    <span class="c1"># Load a models.json file and manage plate models.</span>
+    <span class="c1"># See an example models.json file at PlateModelManager.get_default_repo_url().</span>
 
 <div class="viewcode-block" id="PlateModelManager.__init__">
 <a class="viewcode-back" href="../../generated/gplately.PlateModelManager.html#gplately.PlateModelManager.__init__">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="fm">__init__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">model_manifest</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span> <span class="n">timeout</span><span class="o">=</span><span class="p">(</span><span class="kc">None</span><span class="p">,</span> <span class="kc">None</span><span class="p">)):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;constructor</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Constructor. Create a :class:`PlateModelManager` instance.</span>
 
-<span class="sd">        :param model_manifest: the path to a models.json file</span>
+<span class="sd">        :param model_manifest: The URL to a ``models.json`` metadata file.</span>
+<span class="sd">                               Normally you don&#39;t need to provide this parameter unless</span>
+<span class="sd">                               you would like to setup your own plate model server.</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">model_manifest</span><span class="p">:</span>
@@ -165,6 +171,7 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">models</span><span class="p">(</span><span class="bp">self</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;The metadata for all the models.&quot;&quot;&quot;</span>
         <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">_models</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
             <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_models</span>
         <span class="k">else</span><span class="p">:</span>
@@ -177,7 +184,7 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_models</span> <span class="o">=</span> <span class="n">var</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">_replace_vars_with_values</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">var_dict</span><span class="p">,</span> <span class="n">json_obj</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;replace the variables in `json_obj` with the real values. the variables are defined in `var_dict`&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Replace the variables in `json_obj` with the real values. The variables are defined in `var_dict`.&quot;&quot;&quot;</span>
         <span class="k">for</span> <span class="n">key</span><span class="p">,</span> <span class="n">value</span> <span class="ow">in</span> <span class="n">json_obj</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
             <span class="k">if</span> <span class="n">key</span> <span class="o">==</span> <span class="s2">&quot;vars&quot;</span><span class="p">:</span>
                 <span class="k">continue</span>
@@ -197,12 +204,15 @@
     <span class="k">def</span><span class="w"> </span><span class="nf">get_model</span><span class="p">(</span>
         <span class="bp">self</span><span class="p">,</span> <span class="n">model_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;default&quot;</span><span class="p">,</span> <span class="n">data_dir</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;.&quot;</span>
     <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span><span class="n">PlateModel</span><span class="p">,</span> <span class="kc">None</span><span class="p">]:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;return a PlateModel object by model_name</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return a :class:`PlateModel` object for a given model name.</span>
 
-<span class="sd">        :param model_name: model name</span>
-<span class="sd">        :param data_dir: the default data_dir for the model. This dir can be changed with PlateModel.set_data_dir() later.</span>
+<span class="sd">        Call :meth:`get_available_model_names()` to see a list of available model names.</span>
 
-<span class="sd">        :returns: a PlateModel object or none if model name is no good</span>
+<span class="sd">        :param model_name: the model name of interest</span>
+<span class="sd">        :param data_dir: The folder to save the model files.</span>
+<span class="sd">                         This ``data_dir`` can be changed with :meth:`PlateModel.set_data_dir()` later.</span>
+
+<span class="sd">        :returns: a :class:`PlateModel` object or ``None`` if the model name is no good.</span>
 
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">model_name</span> <span class="o">=</span> <span class="n">model_name</span><span class="o">.</span><span class="n">lower</span><span class="p">()</span>
@@ -227,22 +237,26 @@
                     <span class="n">model_name</span><span class="p">,</span> <span class="n">model_cfg</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">models</span><span class="p">[</span><span class="n">model_name</span><span class="p">],</span> <span class="n">data_dir</span><span class="o">=</span><span class="n">data_dir</span>
                 <span class="p">)</span>
         <span class="k">else</span><span class="p">:</span>
-            <span class="n">logger</span><span class="o">.</span><span class="n">warning</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Model </span><span class="si">{</span><span class="n">model_name</span><span class="si">}</span><span class="s2"> is not available.&quot;</span><span class="p">)</span>
+            <span class="n">logger</span><span class="o">.</span><span class="n">error</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Model </span><span class="si">{</span><span class="n">model_name</span><span class="si">}</span><span class="s2"> is not available.&quot;</span><span class="p">)</span>
             <span class="k">return</span> <span class="kc">None</span></div>
 
 
 <div class="viewcode-block" id="PlateModelManager.get_available_model_names">
 <a class="viewcode-back" href="../../generated/gplately.PlateModelManager.html#gplately.PlateModelManager.get_available_model_names">[docs]</a>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_available_model_names</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;return the names of available models as a list&quot;&quot;&quot;</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the names of available models as a list.&quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="nb">list</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">models</span><span class="o">.</span><span class="n">keys</span><span class="p">())</span></div>
 
 
 <div class="viewcode-block" id="PlateModelManager.get_local_available_model_names">
 <a class="viewcode-back" href="../../generated/gplately.PlateModelManager.html#gplately.PlateModelManager.get_local_available_model_names">[docs]</a>
     <span class="nd">@staticmethod</span>
-    <span class="k">def</span><span class="w"> </span><span class="nf">get_local_available_model_names</span><span class="p">(</span><span class="n">local_dir</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;list all model names in a local folder&quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_local_available_model_names</span><span class="p">(</span><span class="n">local_dir</span><span class="p">:</span> <span class="nb">str</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return a list of model names in a local folder.</span>
+
+<span class="sd">        :param local_dir: The local folder containing models.</span>
+<span class="sd">        :type local_dir: str</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="n">models</span> <span class="o">=</span> <span class="p">[]</span>
         <span class="k">for</span> <span class="n">file</span> <span class="ow">in</span> <span class="n">os</span><span class="o">.</span><span class="n">listdir</span><span class="p">(</span><span class="n">local_dir</span><span class="p">):</span>
             <span class="n">d</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">local_dir</span><span class="p">,</span> <span class="n">file</span><span class="p">)</span>
@@ -255,6 +269,7 @@
 <a class="viewcode-back" href="../../generated/gplately.PlateModelManager.html#gplately.PlateModelManager.get_default_repo_url">[docs]</a>
     <span class="nd">@staticmethod</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">get_default_repo_url</span><span class="p">():</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the URL to the configuration data of models.&quot;&quot;&quot;</span>
         <span class="n">default_repo_url_list</span> <span class="o">=</span> <span class="p">[</span>
             <span class="s2">&quot;https://repo.gplates.org/webdav/pmm/config/models_v2.json&quot;</span><span class="p">,</span>
             <span class="s2">&quot;https://www.earthbyte.org/webdav/pmm/config/models_v2_eb.json&quot;</span><span class="p">,</span>
@@ -274,8 +289,12 @@
 
 <div class="viewcode-block" id="PlateModelManager.download_all_models">
 <a class="viewcode-back" href="../../generated/gplately.PlateModelManager.html#gplately.PlateModelManager.download_all_models">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">download_all_models</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data_dir</span><span class="o">=</span><span class="s2">&quot;./&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;download all available models into data_dir&quot;&quot;&quot;</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">download_all_models</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">data_dir</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;./&quot;</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="kc">None</span><span class="p">:</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Download all available models into the ``data_dir``.</span>
+
+<span class="sd">        :param data_dir: The folder to save the model files.</span>
+<span class="sd">        :type data_dir: str</span>
+<span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">for</span> <span class="n">name</span> <span class="ow">in</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_available_model_names</span><span class="p">():</span>
             <span class="nb">print</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;download </span><span class="si">{</span><span class="n">name</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
             <span class="n">model</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_model</span><span class="p">(</span><span class="n">name</span><span class="p">)</span>

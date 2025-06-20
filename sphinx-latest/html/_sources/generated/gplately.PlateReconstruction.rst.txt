@@ -41,6 +41,6 @@
       ~PlateReconstruction.rotation_model
       ~PlateReconstruction.topology_features
       ~PlateReconstruction.static_polygons
-      ~PlateReconstruction.plate_model_name
+      ~PlateReconstruction.plate_model
    
    

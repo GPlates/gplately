@@ -6,7 +6,7 @@
   <meta charset="utf-8" /><meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>gplately.ptt.subduction_convergence_func &mdash; gplately 2.0.0 documentation</title>
+  <title>gplately.subduction_convergence &mdash; gplately 2.0.0 documentation</title>
       <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=b86133f3" />
       <link rel="stylesheet" type="text/css" href="../_static/css/theme.css?v=e59714d7" />
 
@@ -20,8 +20,8 @@
     <script src="../_static/js/theme.js"></script>
     <link rel="index" title="Index" href="../genindex.html" />
     <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="gplately.ptt.ridge_spreading_rate_func" href="gplately.ptt.ridge_spreading_rate_func.html" />
-    <link rel="prev" title="gplately.auxiliary" href="gplately.auxiliary.html" /> 
+    <link rel="next" title="Other Classes" href="../secondaries.html" />
+    <link rel="prev" title="gplately.ridge_spreading_rate" href="gplately.ridge_spreading_rate.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -57,13 +57,18 @@
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="../api.html">Main Classes</a></li>
 <li class="toctree-l1 current"><a class="reference internal" href="../functions.html">Functions</a><ul class="current">
-<li class="toctree-l2"><a class="reference internal" href="gplately.auxiliary.html">gplately.auxiliary</a></li>
-<li class="toctree-l2 current"><a class="current reference internal" href="#">gplately.ptt.subduction_convergence_func</a><ul>
-<li class="toctree-l3"><a class="reference internal" href="#gplately.ptt.subduction_convergence_func"><code class="docutils literal notranslate"><span class="pre">subduction_convergence_func()</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../functions.html#reconstruction">Reconstruction</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../functions.html#resolve-topologies">Resolve Topologies</a></li>
+<li class="toctree-l2 current"><a class="reference internal" href="../functions.html#miscellaneous">Miscellaneous</a><ul class="current">
+<li class="toctree-l3"><a class="reference internal" href="gplately.auxiliary.html">gplately.auxiliary</a></li>
+<li class="toctree-l3"><a class="reference internal" href="gplately.read_netcdf_grid.html">gplately.read_netcdf_grid</a></li>
+<li class="toctree-l3"><a class="reference internal" href="gplately.ridge_spreading_rate.html">gplately.ridge_spreading_rate</a></li>
+<li class="toctree-l3 current"><a class="current reference internal" href="#">gplately.subduction_convergence</a><ul>
+<li class="toctree-l4"><a class="reference internal" href="#gplately.subduction_convergence"><code class="docutils literal notranslate"><span class="pre">subduction_convergence()</span></code></a></li>
 </ul>
 </li>
-<li class="toctree-l2"><a class="reference internal" href="gplately.ptt.ridge_spreading_rate_func.html">gplately.ptt.ridge_spreading_rate_func</a></li>
-<li class="toctree-l2"><a class="reference internal" href="gplately.grids.read_netcdf_grid.html">gplately.grids.read_netcdf_grid</a></li>
+</ul>
+</li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../secondaries.html">Other Classes</a></li>
@@ -84,9 +89,9 @@
   <ul class="wy-breadcrumbs">
       <li><a href="../index.html" class="icon icon-home" aria-label="Home"></a></li>
           <li class="breadcrumb-item"><a href="../functions.html">Functions</a></li>
-      <li class="breadcrumb-item active">gplately.ptt.subduction_convergence_func</li>
+      <li class="breadcrumb-item active">gplately.subduction_convergence</li>
       <li class="wy-breadcrumbs-aside">
-            <a href="../_sources/generated/gplately.ptt.subduction_convergence_func.rst.txt" rel="nofollow"> View page source</a>
+            <a href="../_sources/generated/gplately.subduction_convergence.rst.txt" rel="nofollow"> View page source</a>
       </li>
   </ul>
   <hr/>
@@ -94,11 +99,11 @@
           <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
            <div itemprop="articleBody">
              
-  <section id="gplately-ptt-subduction-convergence-func">
-<h1>gplately.ptt.subduction_convergence_func<a class="headerlink" href="#gplately-ptt-subduction-convergence-func" title="Link to this heading"></a></h1>
+  <section id="gplately-subduction-convergence">
+<h1>gplately.subduction_convergence<a class="headerlink" href="#gplately-subduction-convergence" title="Link to this heading"></a></h1>
 <dl class="py function">
-<dt class="sig sig-object py" id="gplately.ptt.subduction_convergence_func">
-<span class="sig-prename descclassname"><span class="pre">gplately.ptt.</span></span><span class="sig-name descname"><span class="pre">subduction_convergence_func</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rotation_features_or_model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">topology_features</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">threshold_sampling_distance_radians</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">velocity_delta_time</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">anchor_plate_id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">include_slab_topologies</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">include_network_boundaries</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="headerlink" href="#gplately.ptt.subduction_convergence_func" title="Link to this definition"></a></dt>
+<dt class="sig sig-object py" id="gplately.subduction_convergence">
+<span class="sig-prename descclassname"><span class="pre">gplately.</span></span><span class="sig-name descname"><span class="pre">subduction_convergence</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">rotation_features_or_model</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">topology_features</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">threshold_sampling_distance_radians</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">time</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">velocity_delta_time</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">anchor_plate_id</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">include_slab_topologies</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">include_network_boundaries</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">False</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gplately/ptt/subduction_convergence.html#subduction_convergence"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.subduction_convergence" title="Link to this definition"></a></dt>
 <dd><p>Find the convergence and absolute velocities sampled along trenches (subduction zones) at a particular geological time.</p>
 <p>Each sampled point along trench returns the following information:</p>
 <ul class="simple">
@@ -113,7 +118,7 @@
 <li><p>8 subducting plate ID</p></li>
 <li><p>9 trench plate ID</p></li>
 </ul>
-<p>The optional ‘output_*’ parameters can be used to append extra data to the above output for each sampled trench point.
+<p>The optional <code class="docutils literal notranslate"><span class="pre">output_*</span></code> parameters can be used to append extra data to the above output for each sampled trench point.
 The order of any extra data is the same order in which the parameters are listed below.</p>
 <p>The obliquity angles are in the range (-180, 180). The range (0, 180) goes clockwise (when viewed from above the Earth) from the
 trench normal direction to the velocity vector. The range (0, -180) goes counter-clockwise.
@@ -123,22 +128,22 @@ The trench normal is perpendicular to the trench and pointing toward the overrid
 is greater than 90 or less than -90). And note that the absolute velocity magnitude is negative if the trench (subduction zone)
 is moving towards the overriding plate (if absolute obliquity angle is less than 90 and greater than -90) - note that this
 ignores the kinematics of the subducting plate. Similiarly for the subducting plate absolute velocity magnitude
-(if keyword argument <cite>output_subducting_absolute_velocity</cite> is True).</p>
+(if keyword argument <code class="docutils literal notranslate"><span class="pre">output_subducting_absolute_velocity</span></code> is <code class="docutils literal notranslate"><span class="pre">True</span></code>).</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
-<li><p><strong>rotation_features_or_model</strong> (<em>pygplates.RotationModel</em><em>, or </em><em>any combination</em><em> of </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em>, </em><em>pygplates.FeatureCollection</em><em>, </em><em>pygplates.Feature</em>) – The rotation model can be specified as a RotationModel. Or it can be specified as a rotation feature collection,
+<li><p><strong>rotation_features_or_model</strong> (<a class="reference external" href="https://www.gplates.org/docs/pygplates/generated/pygplates.rotationmodel">pygplates.RotationModel</a>, or any combination of str, <a class="reference external" href="https://www.gplates.org/docs/pygplates/generated/pygplates.featurecollection#pygplates.FeatureCollection">pygplates.FeatureCollection</a>, <a class="reference external" href="https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature">pygplates.Feature</a>) – The rotation model can be specified as a <a class="reference external" href="https://www.gplates.org/docs/pygplates/generated/pygplates.rotationmodel">pygplates.RotationModel</a>. Or it can be specified as a rotation feature collection,
 or rotation filename, or rotation feature, or sequence of rotation features, or a sequence (eg, list or tuple) of any combination
 of those four types.</p></li>
-<li><p><strong>topology_features</strong> (<em>any combination</em><em> of </em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a><em>, </em><em>pygplates.FeatureCollection</em><em>, </em><em>pygplates.Feature</em>) – The topological boundary and network features and the topological section features they reference (regular and topological lines).
+<li><p><strong>topology_features</strong> (any combination of str, <a class="reference external" href="https://www.gplates.org/docs/pygplates/generated/pygplates.featurecollection#pygplates.FeatureCollection">pygplates.FeatureCollection</a>, <a class="reference external" href="https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature">pygplates.Feature</a>) – The topological boundary and network features and the topological section features they reference (regular and topological lines).
 Can be specified as a feature collection, or filename, or feature, or sequence of features, or a sequence (eg, list or tuple)
 of any combination of those four types.</p></li>
 <li><p><strong>threshold_sampling_distance_radians</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a>) – Threshold sampling distance along trench (in radians).</p></li>
 <li><p><strong>time</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a>) – The reconstruction time at which to query subduction convergence.</p></li>
 <li><p><strong>velocity_delta_time</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a><em>, </em><em>optional</em>) – The delta time interval used for velocity calculations. Defaults to 1My.</p></li>
 <li><p><strong>anchor_plate_id</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.13)"><em>int</em></a><em>, </em><em>optional</em>) – Anchor plate ID for reconstruction.
-If not specified then uses the default anchor plate of <cite>rotation_model</cite> if it’s a <cite>pygplates.RotationModel</cite> (otherwise uses zero).</p></li>
-<li><p><strong>include_slab_topologies</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><em>bool</em></a><em>, </em><em>default False</em>) – Include slab topologies (<cite>gpml:TopologicalSlabBoundary</cite>) in analysis.</p></li>
+If not specified then uses the default anchor plate of <code class="docutils literal notranslate"><span class="pre">rotation_model</span></code> if it’s a <a class="reference external" href="https://www.gplates.org/docs/pygplates/generated/pygplates.rotationmodel">pygplates.RotationModel</a> (otherwise uses zero).</p></li>
+<li><p><strong>include_slab_topologies</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><em>bool</em></a><em>, </em><em>default False</em>) – Include slab topologies (<code class="docutils literal notranslate"><span class="pre">gpml:TopologicalSlabBoundary</span></code>) in analysis.</p></li>
 <li><p><strong>include_network_boundaries</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><em>bool</em></a><em>, </em><em>default False</em>) – Whether to calculate subduction convergence along network boundaries that are not also plate boundaries (defaults to False).
 If a deforming network shares a boundary with a plate then it’ll get included regardless of this option.</p></li>
 <li><p><strong>output_distance_to_nearest_edge_of_trench</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><em>bool</em></a><em>, </em><em>default=False</em>) – Append the distance (in degrees) along the trench line to the nearest trench edge to each returned sample point.
@@ -176,7 +181,7 @@ Each tuple in the list corresponds to a point and has the following tuple items:
 <li><p>subducting plate ID</p></li>
 <li><p>trench plate ID</p></li>
 </ul>
-<p>The optional ‘output_*’ parameters can be used to append extra data to the tuple of each sampled trench point.
+<p>The optional <code class="docutils literal notranslate"><span class="pre">output_*</span></code> parameters can be used to append extra data to the tuple of each sampled trench point.
 The order of any extra data is the same order in which the parameters are listed in this function.</p>
 </p>
 </dd>
@@ -184,16 +189,17 @@ The order of any extra data is the same order in which the parameters are listed
 <dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.13)">list</a> of tuples</p>
 </dd>
 </dl>
-<p class="rubric">Notes</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
 <p>Each point in the output is the midpoint of a great circle arc between two adjacent points in the trench polyline.
 The trench normal vector used in the obliquity calculations is perpendicular to the great circle arc of each point (arc midpoint)
 and pointing towards the overriding plate (rather than away from it).</p>
 <p>Each trench is sampled at approximately uniform intervals along its length (specified via a threshold sampling distance).
 The sampling along the entire length of a trench is not exactly uniform. Each segment along a trench is sampled
 such that the samples have a uniform spacing that is less than or equal to the threshold sampling distance. However each segment
-in a trench might have a slightly different spacing distance (since segment lengths are not integer multiples of
-the threshold sampling distance).</p>
-<p>The trench normal (at each arc segment mid-point) always points <em>towards</em> the overriding plate.</p>
+in a trench might have a slightly different spacing distance (since segment lengths are not integer multiples of the threshold sampling distance).</p>
+<p>The trench normal (at each arc segment mid-point) always points <strong>towards</strong> the overriding plate.</p>
+</div>
 </dd></dl>
 
 </section>
@@ -202,8 +208,8 @@ the threshold sampling distance).</p>
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="gplately.auxiliary.html" class="btn btn-neutral float-left" title="gplately.auxiliary" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="gplately.ptt.ridge_spreading_rate_func.html" class="btn btn-neutral float-right" title="gplately.ptt.ridge_spreading_rate_func" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="gplately.ridge_spreading_rate.html" class="btn btn-neutral float-left" title="gplately.ridge_spreading_rate" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="../secondaries.html" class="btn btn-neutral float-right" title="Other Classes" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>

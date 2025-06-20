@@ -1,6 +1,0 @@
-﻿gplately.ptt.subduction\_convergence\_func
-==========================================
-
-.. currentmodule:: gplately.ptt
-
-.. autofunction:: subduction_convergence_func

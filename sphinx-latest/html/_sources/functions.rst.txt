@@ -7,11 +7,36 @@ This page lists the assorted functions of the GPlately Python package.
    :local:
    :depth: 3
 
+Reconstruction
+--------------
+
 .. autosummary::
    :nosignatures:
    :toctree: generated
 
-    gplately.auxiliary
-    gplately.ptt.subduction_convergence_func
-    gplately.ptt.ridge_spreading_rate_func
-    gplately.grids.read_netcdf_grid
+   gplately.reconstruct_grid
+
+Resolve Topologies
+------------------
+
+.. autosummary::
+   :nosignatures:
+   :toctree: generated
+
+   gplately.resolve_topologies
+   gplately.resolve_topological_snapshot
+   gplately.resolve_topologies_into_features
+   gplately.resolve_topological_snapshot_into_features
+
+Miscellaneous
+-------------
+
+.. autosummary::
+   :nosignatures:
+   :toctree: generated
+
+   gplately.auxiliary
+   gplately.read_netcdf_grid
+   gplately.ridge_spreading_rate
+   gplately.subduction_convergence
+   

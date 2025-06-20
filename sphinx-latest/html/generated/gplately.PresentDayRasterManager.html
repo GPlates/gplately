@@ -108,16 +108,21 @@
 <h1>gplately.PresentDayRasterManager<a class="headerlink" href="#gplately-presentdayrastermanager" title="Link to this heading"></a></h1>
 <dl class="py class">
 <dt class="sig sig-object py" id="gplately.PresentDayRasterManager">
-<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">gplately.</span></span><span class="sig-name descname"><span class="pre">PresentDayRasterManager</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">raster_manifest</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/plate_model_manager/present_day_rasters.html#PresentDayRasterManager"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.PresentDayRasterManager" title="Link to this definition"></a></dt>
+<em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">gplately.</span></span><span class="sig-name descname"><span class="pre">PresentDayRasterManager</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data_dir</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'present-day-rasters'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">raster_manifest</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/plate_model_manager/present_day_rasters.html#PresentDayRasterManager"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.PresentDayRasterManager" title="Link to this definition"></a></dt>
 <dd><p>Bases: <a class="reference external" href="https://docs.python.org/3/library/functions.html#object" title="(in Python v3.13)"><code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></a></p>
-<p>manage present-day rasters</p>
+<p>Manage the present-day rasters.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="gplately.PresentDayRasterManager.__init__">
-<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">raster_manifest</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/plate_model_manager/present_day_rasters.html#PresentDayRasterManager.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.PresentDayRasterManager.__init__" title="Link to this definition"></a></dt>
-<dd><p>constructor</p>
+<span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data_dir</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'present-day-rasters'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">raster_manifest</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/plate_model_manager/present_day_rasters.html#PresentDayRasterManager.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.PresentDayRasterManager.__init__" title="Link to this definition"></a></dt>
+<dd><p>Constructor. Create a <a class="reference internal" href="#gplately.PresentDayRasterManager" title="gplately.PresentDayRasterManager"><code class="xref py py-class docutils literal notranslate"><span class="pre">PresentDayRasterManager</span></code></a> instance.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
-<dd class="field-odd"><p><strong>raster_manifest</strong> – the path to a present_day_rasters.json file</p>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>raster_manifest</strong> – The URL to a <code class="docutils literal notranslate"><span class="pre">present_day_rasters.json</span></code> metadata file.
+Normally you don’t need to provide this parameter unless
+you would like to setup your own present-day raster server.</p></li>
+<li><p><strong>data_dir</strong> – The path to a folder to save the present-day raster files.</p></li>
+</ul>
 </dd>
 </dl>
 </dd></dl>
@@ -125,20 +130,20 @@
 <p class="rubric">Methods</p>
 <table class="autosummary longtable docutils align-default">
 <tbody>
-<tr class="row-odd"><td><p><a class="reference internal" href="#gplately.PresentDayRasterManager.__init__" title="gplately.PresentDayRasterManager.__init__"><code class="xref py py-obj docutils literal notranslate"><span class="pre">__init__</span></code></a>([raster_manifest])</p></td>
-<td><p>constructor</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#gplately.PresentDayRasterManager.__init__" title="gplately.PresentDayRasterManager.__init__"><code class="xref py py-obj docutils literal notranslate"><span class="pre">__init__</span></code></a>([data_dir, raster_manifest])</p></td>
+<td><p>Constructor.</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#gplately.PresentDayRasterManager.get_raster" title="gplately.PresentDayRasterManager.get_raster"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_raster</span></code></a>(_name[, width, height, bbox, ...])</p></td>
-<td><p>download the raster by name.</p></td>
+<td><p>Download a raster file by name, save the raster file in <code class="docutils literal notranslate"><span class="pre">self.data_dir</span></code> and return the local path to the raster file.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#gplately.PresentDayRasterManager.is_wms" title="gplately.PresentDayRasterManager.is_wms"><code class="xref py py-obj docutils literal notranslate"><span class="pre">is_wms</span></code></a>(_name[, check_raster_avail_flag])</p></td>
-<td><p>return True if the raster is served by Web Map Service, otherwise False</p></td>
+<td><p>Return <code class="docutils literal notranslate"><span class="pre">True</span></code> if the raster is served by <code class="docutils literal notranslate"><span class="pre">Web</span> <span class="pre">Map</span> <span class="pre">Service</span></code>, otherwise <code class="docutils literal notranslate"><span class="pre">False</span></code></p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#gplately.PresentDayRasterManager.list_present_day_rasters" title="gplately.PresentDayRasterManager.list_present_day_rasters"><code class="xref py py-obj docutils literal notranslate"><span class="pre">list_present_day_rasters</span></code></a>()</p></td>
-<td><p></p></td>
+<td><p>Return a list of available  present-day rasters.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#gplately.PresentDayRasterManager.set_data_dir" title="gplately.PresentDayRasterManager.set_data_dir"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_data_dir</span></code></a>(folder)</p></td>
-<td><p></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#gplately.PresentDayRasterManager.set_data_dir" title="gplately.PresentDayRasterManager.set_data_dir"><code class="xref py py-obj docutils literal notranslate"><span class="pre">set_data_dir</span></code></a>(data_dir)</p></td>
+<td><p>Set a new data folder to save the present-day rasters.</p></td>
 </tr>
 </tbody>
 </table>
@@ -146,36 +151,59 @@
 <table class="autosummary longtable docutils align-default">
 <tbody>
 <tr class="row-odd"><td><p><a class="reference internal" href="#gplately.PresentDayRasterManager.rasters" title="gplately.PresentDayRasterManager.rasters"><code class="xref py py-obj docutils literal notranslate"><span class="pre">rasters</span></code></a></p></td>
-<td><p></p></td>
+<td><p>The metadata of rasters.</p></td>
 </tr>
 </tbody>
 </table>
 <dl class="py method">
 <dt class="sig sig-object py" id="gplately.PresentDayRasterManager.get_raster">
 <span class="sig-name descname"><span class="pre">get_raster</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">width</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1800</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">height</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">800</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">bbox</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[-180,</span> <span class="pre">-80,</span> <span class="pre">180,</span> <span class="pre">80]</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">large_file_hint</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/plate_model_manager/present_day_rasters.html#PresentDayRasterManager.get_raster"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.PresentDayRasterManager.get_raster" title="Link to this definition"></a></dt>
-<dd><p>download the raster by name. Save the raster in self.data_dir</p>
+<dd><p>Download a raster file by name, save the raster file in <code class="docutils literal notranslate"><span class="pre">self.data_dir</span></code> and return the local path to the raster file.</p>
+<p>Call <a class="reference internal" href="#gplately.PresentDayRasterManager.list_present_day_rasters" title="gplately.PresentDayRasterManager.list_present_day_rasters"><code class="xref py py-meth docutils literal notranslate"><span class="pre">list_present_day_rasters()</span></code></a> to see a list of available present-day raster names.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a>) – The raster name of interest.</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>The local path to the downloaded raster file.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)">str</a></p>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="gplately.PresentDayRasterManager.is_wms">
 <span class="sig-name descname"><span class="pre">is_wms</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">_name</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><span class="pre">str</span></a></span></em>, <em class="sig-param"><span class="n"><span class="pre">check_raster_avail_flag</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/plate_model_manager/present_day_rasters.html#PresentDayRasterManager.is_wms"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.PresentDayRasterManager.is_wms" title="Link to this definition"></a></dt>
-<dd><p>return True if the raster is served by Web Map Service, otherwise False</p>
+<dd><p>Return <code class="docutils literal notranslate"><span class="pre">True</span></code> if the raster is served by <code class="docutils literal notranslate"><span class="pre">Web</span> <span class="pre">Map</span> <span class="pre">Service</span></code>, otherwise <code class="docutils literal notranslate"><span class="pre">False</span></code></p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.13)"><em>str</em></a>) – The raster name of interest.</p></li>
+<li><p><strong>check_raster_avail_flag</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#bool" title="(in Python v3.13)"><em>bool</em></a>) – If the flag is <code class="docutils literal notranslate"><span class="pre">True</span></code>, validate the raster name against the raster configuration.</p></li>
+</ul>
+</dd>
+</dl>
 </dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="gplately.PresentDayRasterManager.list_present_day_rasters">
 <span class="sig-name descname"><span class="pre">list_present_day_rasters</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/plate_model_manager/present_day_rasters.html#PresentDayRasterManager.list_present_day_rasters"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.PresentDayRasterManager.list_present_day_rasters" title="Link to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>Return a list of available  present-day rasters.</p>
+</dd></dl>
 
 <dl class="py property">
 <dt class="sig sig-object py" id="gplately.PresentDayRasterManager.rasters">
 <em class="property"><span class="k"><span class="pre">property</span></span><span class="w"> </span></em><span class="sig-name descname"><span class="pre">rasters</span></span><em class="property"><span class="p"><span class="pre">:</span></span><span class="w"> </span><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.13)"><span class="pre">Dict</span></a></em><a class="headerlink" href="#gplately.PresentDayRasterManager.rasters" title="Link to this definition"></a></dt>
-<dd></dd></dl>
+<dd><p>The metadata of rasters.</p>
+</dd></dl>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="gplately.PresentDayRasterManager.set_data_dir">
-<span class="sig-name descname"><span class="pre">set_data_dir</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">folder</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/plate_model_manager/present_day_rasters.html#PresentDayRasterManager.set_data_dir"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.PresentDayRasterManager.set_data_dir" title="Link to this definition"></a></dt>
-<dd></dd></dl>
+<span class="sig-name descname"><span class="pre">set_data_dir</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data_dir</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/plate_model_manager/present_day_rasters.html#PresentDayRasterManager.set_data_dir"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.PresentDayRasterManager.set_data_dir" title="Link to this definition"></a></dt>
+<dd><p>Set a new data folder to save the present-day rasters.</p>
+</dd></dl>
 
 </dd></dl>
 

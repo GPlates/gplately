@@ -118,6 +118,7 @@
 <span class="sd">* Raster</span>
 <span class="sd">&quot;&quot;&quot;</span>
 
+<span class="kn">import</span><span class="w"> </span><span class="nn">copy</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">math</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
@@ -245,11 +246,11 @@
 
 
 <div class="viewcode-block" id="read_netcdf_grid">
-<a class="viewcode-back" href="../../generated/gplately.grids.read_netcdf_grid.html#gplately.read_netcdf_grid">[docs]</a>
+<a class="viewcode-back" href="../../generated/gplately.read_netcdf_grid.html#gplately.read_netcdf_grid">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">read_netcdf_grid</span><span class="p">(</span>
     <span class="n">filename</span><span class="p">,</span>
-    <span class="n">return_grids</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
-    <span class="n">realign</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+    <span class="n">return_grids</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">realign</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
     <span class="n">resample</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
     <span class="n">resize</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
     <span class="n">x_dimension_name</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s2">&quot;&quot;</span><span class="p">,</span>
@@ -258,67 +259,40 @@
 <span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Union</span><span class="p">[</span>
     <span class="n">Tuple</span><span class="p">[</span><span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">MaskedArray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">MaskedArray</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">MaskedArray</span><span class="p">],</span> <span class="n">np</span><span class="o">.</span><span class="n">ma</span><span class="o">.</span><span class="n">MaskedArray</span>
 <span class="p">]:</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Read a `netCDF` (.nc) grid from a given `filename` and return its data as a</span>
-<span class="sd">    `MaskedArray`.</span>
-
-<span class="sd">    Notes</span>
-<span class="sd">    -----</span>
-<span class="sd">    If a `resample` tuple is passed with X and Y spacings (`spacingX`, `spacingY`),</span>
-<span class="sd">    the gridded data in `filename` will be resampled with these resolutions.</span>
-
-<span class="sd">    By default, only the `MaskedArray` is returned to the user. However, if `return_grids` is</span>
-<span class="sd">    set to `True`, the `MaskedArray` will be returned along with two additional arrays</span>
-<span class="sd">    in a `tuple`:</span>
-
-<span class="sd">    * A 1d `MaskedArray` containing the longitudes of the `netCDF` gridded data</span>
-<span class="sd">    * A 1d `MaskedArray` containing the latitudes of the `netCDF` gridded data</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Read grid data from a NetCDF (.nc) file.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    filename : str</span>
-<span class="sd">        Full path to the `netCDF` raster file.</span>
-
+<span class="sd">        Full path to the ``netCDF`` raster file.</span>
 <span class="sd">    return_grids : bool, optional, default=False</span>
-<span class="sd">        If set to `True`, returns lon, lat arrays associated with the grid data.</span>
-
+<span class="sd">        If set to ``True``, returns lon, lat arrays associated with the grid data.</span>
 <span class="sd">    realign : bool, optional, default=False</span>
-<span class="sd">        if set to `True`, realigns grid to -180/180 and flips the array if the</span>
-<span class="sd">        latitudinal coordinates are decreasing.</span>
-
+<span class="sd">        if set to ``True``, realigns grid to -180/180 and flips the array if the latitudinal coordinates are decreasing.</span>
 <span class="sd">    resample : tuple, optional, default=None</span>
-<span class="sd">        If passed as `resample = (spacingX, spacingY)`, the given `netCDF` grid is resampled</span>
-<span class="sd">        with these x and y resolutions.</span>
-
+<span class="sd">        If provided as ``resample = (spacingX, spacingY)``, the grid data will be resampled with these x and y resolutions.</span>
 <span class="sd">    resize : tuple, optional, default=None</span>
-<span class="sd">        If passed as `resample = (resX, resY)`, the given `netCDF` grid is resized</span>
-<span class="sd">        to the number of columns (resX) and rows (resY).</span>
-
+<span class="sd">        If provided as ``resample = (resX, resY)``, the grid data will be resized to the number of columns (resX) and rows (resY).</span>
 <span class="sd">    x_dimension_name : str, optional, default=&quot;&quot;</span>
-<span class="sd">        If the grid file uses comman names, such as &quot;x&quot;, &quot;lon&quot;, &quot;lons&quot; or &quot;longitude&quot;, you need not set this parameter.</span>
-<span class="sd">        Otherwise, you need to tell us what the x dimension name is.</span>
-
+<span class="sd">        If the grid file uses the comman names, such as ``x``, ``lon``, ``lons`` or ``longitude``,</span>
+<span class="sd">        you need not to provide this parameter. Otherwise, you need to tell us what the x dimension name is.</span>
 <span class="sd">    y_dimension_name : str, optional, default=&quot;&quot;</span>
-<span class="sd">        If the grid file uses comman names, such as &quot;y&quot;, &quot;lat&quot;, &quot;lats&quot; or &quot;latitude&quot;, you need not set this parameter.</span>
-<span class="sd">        Otherwise, you need to tell us what the y dimension name is.</span>
-
+<span class="sd">        If the grid file uses the comman names, such as ``y``, ``lat``, ``lats`` or ``latitude``,</span>
+<span class="sd">        you need not to provide this parameter. Otherwise, you need to tell us what the y dimension name is.</span>
 <span class="sd">    data_variable_name : str, optional, default=&quot;&quot;</span>
-<span class="sd">        The program will try its best to determine the data variable name.</span>
-<span class="sd">        However, it would be better if you could tell us what the data variable name is.</span>
-<span class="sd">        Otherwise, the program will guess. The result may/may not be correct.</span>
-
+<span class="sd">        GPlately will try its best to guess the data variable name.</span>
+<span class="sd">        However, it would be much better if you tell us what the data variable name is.</span>
+<span class="sd">        Otherwise, GPlately&#39;s guess may/may not be correct.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
-<span class="sd">    grid_z : MaskedArray</span>
-<span class="sd">        A `MaskedArray` containing the gridded data from the supplied netCDF4 `filename`.</span>
-<span class="sd">        Entries&#39; longitudes are re-aligned between -180 and 180 degrees.</span>
+<span class="sd">    grid_z : `MaskedArray`_</span>
+<span class="sd">        A `MaskedArray`_ object containing the grid data. The longitudes are re-aligned between -180 and 180 degrees.</span>
+<span class="sd">    lon, lat : `MaskedArray`_</span>
+<span class="sd">        When ``return_grids`` is ``True``, return two additional `MaskedArray`_ objects containing the longitudes and latitudes of the grid data.</span>
 
-<span class="sd">    lon, lat : 1d MaskedArrays</span>
-<span class="sd">        `MaskedArrays` encasing longitude and latitude variables belonging to the</span>
-<span class="sd">        supplied netCDF4 file. Longitudes are rescaled between -180 and 180 degrees.</span>
-<span class="sd">        An example output of `cdf_lat` is:</span>
 
-<span class="sd">            masked_array(data=[-90. , -89.9, -89.8, ...,  89.8,  89.9,  90. ], mask=False, fill_value=1e+20)</span>
+<span class="sd">    .. _MaskedArray: https://numpy.org/doc/stable/reference/maskedarray.generic.html</span>
 <span class="sd">    &quot;&quot;&quot;</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">find_label</span><span class="p">(</span><span class="n">keys</span><span class="p">,</span> <span class="n">labels</span><span class="p">):</span>
@@ -965,6 +939,8 @@
     <span class="k">return</span> <span class="n">interpolated</span>
 
 
+<div class="viewcode-block" id="reconstruct_grid">
+<a class="viewcode-back" href="../../generated/gplately.reconstruct_grid.html#gplately.reconstruct_grid">[docs]</a>
 <span class="k">def</span><span class="w"> </span><span class="nf">reconstruct_grid</span><span class="p">(</span>
     <span class="n">grid</span><span class="p">,</span>
     <span class="n">partitioning_features</span><span class="p">,</span>
@@ -982,44 +958,41 @@
 <span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;Reconstruct a gridded dataset to a given reconstruction time.</span>
 
+<span class="sd">    .. note::</span>
+
+<span class="sd">        Use :meth:`Raster.reconstruct` whenever is possible. This :func:`reconstruct_grid` is better to be private.</span>
+
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    grid : array_like, or str</span>
-<span class="sd">        The grid to be reconstructed. If ``grid`` is a filename, it will be</span>
-<span class="sd">        loaded using :meth:`gplately.grids.read_netcdf_grid`.</span>
+<span class="sd">        The grid to be reconstructed. If ``grid`` is a filename, it will be loaded using :meth:`read_netcdf_grid`.</span>
 <span class="sd">    partitioning_features : valid argument to pygplates.FeaturesFunctionArgument</span>
-<span class="sd">        Features used to partition ``grid`` by plate ID, usually a static</span>
-<span class="sd">        polygons file. ``partitioning_features`` may be a single</span>
-<span class="sd">        feature (``pygplates.Feature``), a feature collection</span>
-<span class="sd">        (``pygplates.FeatureCollection``), a filename (``str``), or a (potentially</span>
+<span class="sd">        Features used to partition the ``grid`` by plate ID, usually a static</span>
+<span class="sd">        polygons file. The ``partitioning_features`` may be a single</span>
+<span class="sd">        ``pygplates.Feature`` object, a ``pygplates.FeatureCollection``, a filename (:class:`str`), or a (potentially</span>
 <span class="sd">        nested) sequence of any combination of the above types.</span>
 <span class="sd">    rotation_model : valid argument to pygplates.RotationModel</span>
-<span class="sd">        The rotation model used to reconstruct ``grid``.</span>
-<span class="sd">        ``rotation_model`` may be a rotation model object</span>
-<span class="sd">        (``pygplates.RotationModel``), a rotation feature collection</span>
-<span class="sd">        (``pygplates.FeatureCollection``), a rotation filename</span>
-<span class="sd">        (``str``), a rotation feature (``pygplates.Feature``), a sequence of</span>
+<span class="sd">        The rotation model used to reconstruct the ``grid``.</span>
+<span class="sd">        The ``rotation_model`` may be a ``pygplates.RotationModel`` object, a rotation ``pygplates.FeatureCollection``, a rotation filename</span>
+<span class="sd">        (:class:`str`), a rotation ``pygplates.Feature``, a sequence of</span>
 <span class="sd">        rotation features, or a (potentially nested) sequence of any combination of the above types.</span>
 <span class="sd">    to_time : float</span>
 <span class="sd">        Time to which ``grid`` will be reconstructed.</span>
-<span class="sd">    from_time : float, default 0.0</span>
-<span class="sd">        Time from which to reconstruct ``grid``.</span>
-<span class="sd">    extent : tuple or &quot;global&quot;, default &quot;global&quot;</span>
-<span class="sd">        Extent of ``grid``. Valid arguments are a tuple of</span>
-<span class="sd">        the form (xmin, xmax, ymin, ymax), or the string &quot;global&quot;,</span>
+<span class="sd">    from_time : float, default=0.0</span>
+<span class="sd">        Time from which to reconstruct the ``grid``.</span>
+<span class="sd">    extent : tuple or str, default=&quot;global&quot;</span>
+<span class="sd">        Extent of the ``grid``. Valid arguments are a tuple of the form (xmin, xmax, ymin, ymax), or the string &quot;global&quot;,</span>
 <span class="sd">        equivalent to (-180.0, 180.0, -90.0, 90.0).</span>
 <span class="sd">    origin : {&quot;upper&quot;, &quot;lower&quot;}, optional</span>
-<span class="sd">        Origin of ``grid`` - either lower-left or upper-left. By default,</span>
-<span class="sd">        determined from `extent`.</span>
-<span class="sd">    fill_value : float, int, or tuple, optional</span>
+<span class="sd">        Origin of the ``grid`` - either lower-left or upper-left. By default, determined from `extent`.</span>
+<span class="sd">    fill_value : float, int, or tuple, optional, default=None</span>
 <span class="sd">        The value to be used for regions outside of ``partitioning_features``</span>
-<span class="sd">        at ``to_time``. By default (``fill_value=None``), this value will be</span>
-<span class="sd">        determined based on the input.</span>
-<span class="sd">    threads : int, default 1</span>
+<span class="sd">        at ``to_time``. If not provided, this value will be determined based on the input.</span>
+<span class="sd">    threads : int, default=1</span>
 <span class="sd">        Number of threads to use for certain computationally heavy routines.</span>
-<span class="sd">    anchor_plate_id : int, optional</span>
-<span class="sd">        ID of the anchored plate. By default, reconstructions are made with respect to the</span>
-<span class="sd">        default anchor plate ID of ``rotation_model`` if it&#39;s a ``pygplates.RotationModel`` (otherwise zero).</span>
+<span class="sd">    anchor_plate_id : int, optional, default=None</span>
+<span class="sd">        ID of the anchored plate. By default, use the default anchor plate ID of ``rotation_model``</span>
+<span class="sd">        if it&#39;s a ``pygplates.RotationModel`` (otherwise zero).</span>
 <span class="sd">    x_dimension_name : str, optional, default=&quot;&quot;</span>
 <span class="sd">        If the grid file uses comman names, such as &quot;x&quot;, &quot;lon&quot;, &quot;lons&quot; or &quot;longitude&quot;, you need not set this parameter.</span>
 <span class="sd">        Otherwise, you need to tell us what the x dimension name is.</span>
@@ -1035,8 +1008,8 @@
 <span class="sd">    -------</span>
 <span class="sd">    numpy.ndarray</span>
 <span class="sd">        The reconstructed grid. Areas for which no plate ID could be</span>
-<span class="sd">        determined from ``partitioning_features`` will be filled with</span>
-<span class="sd">        ``fill_value``.</span>
+<span class="sd">        determined from ``partitioning_features`` will be filled with ``fill_value``.</span>
+
 
 <span class="sd">    .. note::</span>
 
@@ -1045,12 +1018,11 @@
 <span class="sd">        complex types, the minimum value for integer types, and the</span>
 <span class="sd">        maximum value for unsigned types.</span>
 <span class="sd">        For RGB image grids, ``fill_value`` should be a 3-tuple RGB</span>
-<span class="sd">        colour code or a matplotlib colour string. The default value</span>
-<span class="sd">        will be black (0.0, 0.0, 0.0) or (0, 0, 0).</span>
+<span class="sd">        colour code or a matplotlib colour name. The default value</span>
+<span class="sd">        will be black (0.0, 0.0, 0.0).</span>
 <span class="sd">        For RGBA image grids, ``fill_value`` should be a 4-tuple RGBA</span>
-<span class="sd">        colour code or a matplotlib colour string. The default fill</span>
-<span class="sd">        value will be transparent black (0.0, 0.0, 0.0, 0.0) or</span>
-<span class="sd">        (0, 0, 0, 0).</span>
+<span class="sd">        colour code or a matplotlib colour name. The default fill</span>
+<span class="sd">        value will be transparent black (0.0, 0.0, 0.0, 0.0).</span>
 <span class="sd">    &quot;&quot;&quot;</span>
     <span class="k">try</span><span class="p">:</span>
         <span class="n">grid</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">(</span>
@@ -1152,6 +1124,7 @@
         <span class="n">extent</span><span class="o">=</span><span class="n">extent</span><span class="p">,</span>
         <span class="n">shape</span><span class="o">=</span><span class="n">grid</span><span class="o">.</span><span class="n">shape</span><span class="p">[:</span><span class="mi">2</span><span class="p">],</span>
         <span class="n">origin</span><span class="o">=</span><span class="n">origin</span><span class="p">,</span>
+        <span class="n">anchor_plate_id</span><span class="o">=</span><span class="n">anchor_plate_id</span><span class="p">,</span>
     <span class="p">)</span>
     <span class="n">valid_output_mask</span> <span class="o">=</span> <span class="p">(</span>
         <span class="n">rasterise</span><span class="p">(</span>
@@ -1162,6 +1135,7 @@
             <span class="n">extent</span><span class="o">=</span><span class="n">extent</span><span class="p">,</span>
             <span class="n">shape</span><span class="o">=</span><span class="n">grid</span><span class="o">.</span><span class="n">shape</span><span class="p">[:</span><span class="mi">2</span><span class="p">],</span>
             <span class="n">origin</span><span class="o">=</span><span class="n">origin</span><span class="p">,</span>
+            <span class="n">anchor_plate_id</span><span class="o">=</span><span class="n">anchor_plate_id</span><span class="p">,</span>
         <span class="p">)</span>
         <span class="o">!=</span> <span class="o">-</span><span class="mi">1</span>
     <span class="p">)</span>
@@ -1246,7 +1220,8 @@
             <span class="n">output_data</span> <span class="o">=</span> <span class="n">valid_data</span><span class="p">[</span><span class="n">k</span><span class="p">,</span> <span class="n">indices</span><span class="p">]</span>
             <span class="n">output_grid</span><span class="p">[</span><span class="o">...</span><span class="p">,</span> <span class="n">k</span><span class="p">][</span><span class="n">valid_output_mask</span><span class="p">]</span> <span class="o">=</span> <span class="n">output_data</span>
 
-    <span class="k">return</span> <span class="n">output_grid</span>
+    <span class="k">return</span> <span class="n">output_grid</span></div>
+
 
 
 <span class="k">def</span><span class="w"> </span><span class="nf">rasterise</span><span class="p">(</span>
@@ -1260,8 +1235,9 @@
     <span class="n">extent</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">tuple</span><span class="p">,</span> <span class="nb">str</span><span class="p">]</span> <span class="o">=</span> <span class="s2">&quot;global&quot;</span><span class="p">,</span>
     <span class="n">origin</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
     <span class="n">tessellate_degrees</span><span class="o">=</span><span class="mf">0.1</span><span class="p">,</span>
+    <span class="n">anchor_plate_id</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
 <span class="p">):</span>
-<span class="w">    </span><span class="sd">&quot;&quot;&quot;Rasterise GPlates objects at a given reconstruction time.</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Rasterise geometries or GPlates features at a given reconstruction time.</span>
 
 <span class="sd">    This function is particularly useful for rasterising static polygons</span>
 <span class="sd">    to extract a grid of plate IDs.</span>
@@ -1399,6 +1375,7 @@
             <span class="n">rotation_model</span><span class="p">,</span>
             <span class="n">reconstructed</span><span class="p">,</span>
             <span class="n">time</span><span class="p">,</span>
+            <span class="n">anchor_plate_id</span><span class="o">=</span><span class="n">anchor_plate_id</span><span class="p">,</span>
         <span class="p">)</span>
         <span class="n">geometries</span> <span class="o">=</span> <span class="n">pygplates_to_shapely</span><span class="p">(</span>
             <span class="n">reconstructed</span><span class="p">,</span>
@@ -1814,11 +1791,26 @@
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">time</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
-<span class="w">        </span><span class="sd">&quot;&quot;&quot;The geological time for the time-dependant raster data.</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;The geological time of the time-dependant raster data.</span>
 
 <span class="sd">        :type: float</span>
 <span class="sd">        &quot;&quot;&quot;</span>
         <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">_time</span>
+
+    <span class="nd">@time</span><span class="o">.</span><span class="n">setter</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">time</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">new_time</span><span class="p">:</span> <span class="nb">float</span><span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Set a new reconstruction time.&quot;&quot;&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">new_time_f</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">new_time</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Invalid new reconstruction time: </span><span class="si">{</span><span class="n">new_time</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">new_time_f</span> <span class="o">&lt;</span> <span class="mf">0.0</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;The reconstruction time (</span><span class="si">{</span><span class="n">new_time_f</span><span class="si">}</span><span class="s2">) must be greater than 0.&quot;</span>
+            <span class="p">)</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">math</span><span class="o">.</span><span class="n">isclose</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">_time</span><span class="p">,</span> <span class="n">new_time_f</span><span class="p">):</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_time</span> <span class="o">=</span> <span class="n">new_time_f</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">reconstruct</span><span class="p">(</span><span class="n">new_time_f</span><span class="p">,</span> <span class="n">inplace</span><span class="o">=</span><span class="kc">True</span><span class="p">)</span>
 
     <span class="nd">@property</span>
     <span class="k">def</span><span class="w"> </span><span class="nf">data</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
@@ -2233,12 +2225,6 @@
 <span class="sd">        Raster or np.ndarray</span>
 <span class="sd">            The reconstructed grid. Areas for which no plate ID could be determined will be filled with ``fill_value``.</span>
 
-<span class="sd">        Raises</span>
-<span class="sd">        ------</span>
-<span class="sd">        TypeError</span>
-<span class="sd">            If this :class:`Raster` object has no a valid ``plate_reconstruction`` object.</span>
-
-
 <span class="sd">        .. note::</span>
 
 <span class="sd">            For two-dimensional grids, ``fill_value`` should be a single</span>
@@ -2253,22 +2239,27 @@
 <span class="sd">            value will be transparent black (0.0, 0.0, 0.0, 0.0) or</span>
 <span class="sd">            (0, 0, 0, 0).</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="k">if</span> <span class="n">time</span> <span class="o">&lt;</span> <span class="mf">0.0</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;Invalid time: </span><span class="si">{}</span><span class="s2">&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">time</span><span class="p">))</span>
-        <span class="n">time</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">time</span><span class="p">)</span>
-        <span class="k">if</span> <span class="bp">self</span><span class="o">.</span><span class="n">plate_reconstruction</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">TypeError</span><span class="p">(</span>
-                <span class="s2">&quot;Cannot perform reconstruction - &quot;</span>
-                <span class="o">+</span> <span class="s2">&quot;`plate_reconstruction` has not been set&quot;</span>
+        <span class="k">try</span><span class="p">:</span>
+            <span class="n">to_time_f</span> <span class="o">=</span> <span class="nb">float</span><span class="p">(</span><span class="n">time</span><span class="p">)</span>
+        <span class="k">except</span> <span class="ne">ValueError</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Invalid reconstruction time: </span><span class="si">{</span><span class="n">time</span><span class="si">}</span><span class="s2">&quot;</span><span class="p">)</span>
+        <span class="k">if</span> <span class="n">to_time_f</span> <span class="o">&lt;</span> <span class="mf">0.0</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="sa">f</span><span class="s2">&quot;The reconstruction time (</span><span class="si">{</span><span class="n">to_time_f</span><span class="si">}</span><span class="s2">) must be greater than 0.&quot;</span>
             <span class="p">)</span>
+
+        <span class="c1"># A valid PlateReconstruction object is required!</span>
+        <span class="k">assert</span> <span class="bp">self</span><span class="o">.</span><span class="n">plate_reconstruction</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+
         <span class="k">if</span> <span class="n">partitioning_features</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
             <span class="n">partitioning_features</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">plate_reconstruction</span><span class="o">.</span><span class="n">static_polygons</span>
+
         <span class="n">result</span> <span class="o">=</span> <span class="n">reconstruct_grid</span><span class="p">(</span>
             <span class="n">grid</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">data</span><span class="p">,</span>
             <span class="n">partitioning_features</span><span class="o">=</span><span class="n">partitioning_features</span><span class="p">,</span>
             <span class="n">rotation_model</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">plate_reconstruction</span><span class="o">.</span><span class="n">rotation_model</span><span class="p">,</span>
             <span class="n">from_time</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">time</span><span class="p">,</span>
-            <span class="n">to_time</span><span class="o">=</span><span class="n">time</span><span class="p">,</span>
+            <span class="n">to_time</span><span class="o">=</span><span class="n">to_time_f</span><span class="p">,</span>
             <span class="n">extent</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">extent</span><span class="p">,</span>
             <span class="n">origin</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">origin</span><span class="p">,</span>
             <span class="n">fill_value</span><span class="o">=</span><span class="n">fill_value</span><span class="p">,</span>
@@ -2276,21 +2267,43 @@
             <span class="n">anchor_plate_id</span><span class="o">=</span><span class="n">anchor_plate_id</span><span class="p">,</span>
         <span class="p">)</span>
 
+        <span class="n">raster_rotation_model</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">plate_reconstruction</span><span class="o">.</span><span class="n">rotation_model</span>
+        <span class="c1"># use the new reconstructed raster data to replace the current Raster obj</span>
+        <span class="c1"># TODO: maybe need to put anchor_plate_id into rotation_model if it is not None</span>
         <span class="k">if</span> <span class="n">inplace</span><span class="p">:</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">data</span> <span class="o">=</span> <span class="n">result</span>
-            <span class="bp">self</span><span class="o">.</span><span class="n">_time</span> <span class="o">=</span> <span class="n">time</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_time</span> <span class="o">=</span> <span class="n">to_time_f</span>
+            <span class="k">if</span> <span class="p">(</span>
+                <span class="n">anchor_plate_id</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+                <span class="ow">and</span> <span class="n">raster_rotation_model</span>
+                <span class="ow">and</span> <span class="n">raster_rotation_model</span><span class="o">.</span><span class="n">get_default_anchor_plate_id</span><span class="p">()</span>
+                <span class="o">!=</span> <span class="n">anchor_plate_id</span>
+            <span class="p">):</span>
+                <span class="bp">self</span><span class="o">.</span><span class="n">plate_reconstruction</span><span class="o">.</span><span class="n">rotation_model</span> <span class="o">=</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">RotationModel</span><span class="p">(</span>
+                    <span class="n">raster_rotation_model</span><span class="p">,</span> <span class="n">default_anchor_plate_id</span><span class="o">=</span><span class="n">anchor_plate_id</span>
+                <span class="p">)</span>
             <span class="k">if</span> <span class="n">return_array</span><span class="p">:</span>
                 <span class="k">return</span> <span class="n">result</span>
             <span class="k">return</span> <span class="bp">self</span>
 
+        <span class="c1"># create a new Raster obj to return</span>
         <span class="k">if</span> <span class="ow">not</span> <span class="n">return_array</span><span class="p">:</span>
-            <span class="n">result</span> <span class="o">=</span> <span class="nb">type</span><span class="p">(</span><span class="bp">self</span><span class="p">)(</span>
+            <span class="n">result</span> <span class="o">=</span> <span class="n">Raster</span><span class="p">(</span>
                 <span class="n">data</span><span class="o">=</span><span class="n">result</span><span class="p">,</span>
-                <span class="n">plate_reconstruction</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">plate_reconstruction</span><span class="p">,</span>
+                <span class="n">plate_reconstruction</span><span class="o">=</span><span class="n">copy</span><span class="o">.</span><span class="n">deepcopy</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">plate_reconstruction</span><span class="p">),</span>
                 <span class="n">extent</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">extent</span><span class="p">,</span>
-                <span class="n">time</span><span class="o">=</span><span class="n">time</span><span class="p">,</span>
+                <span class="n">time</span><span class="o">=</span><span class="n">to_time_f</span><span class="p">,</span>
                 <span class="n">origin</span><span class="o">=</span><span class="bp">self</span><span class="o">.</span><span class="n">origin</span><span class="p">,</span>
             <span class="p">)</span>
+            <span class="k">if</span> <span class="p">(</span>
+                <span class="n">anchor_plate_id</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
+                <span class="ow">and</span> <span class="n">raster_rotation_model</span>
+                <span class="ow">and</span> <span class="n">raster_rotation_model</span><span class="o">.</span><span class="n">get_default_anchor_plate_id</span><span class="p">()</span>
+                <span class="o">!=</span> <span class="n">anchor_plate_id</span>
+            <span class="p">):</span>
+                <span class="n">result</span><span class="o">.</span><span class="n">plate_reconstruction</span><span class="o">.</span><span class="n">rotation_model</span> <span class="o">=</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">RotationModel</span><span class="p">(</span>
+                    <span class="n">raster_rotation_model</span><span class="p">,</span> <span class="n">default_anchor_plate_id</span><span class="o">=</span><span class="n">anchor_plate_id</span>
+                <span class="p">)</span>
         <span class="k">return</span> <span class="n">result</span></div>
 
 

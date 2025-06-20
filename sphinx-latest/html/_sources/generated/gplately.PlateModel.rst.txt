@@ -17,8 +17,6 @@
       ~PlateModel.create_model_dir
       ~PlateModel.download_all
       ~PlateModel.download_all_layers
-      ~PlateModel.download_layer_files
-      ~PlateModel.download_raster
       ~PlateModel.download_time_dependent_rasters
       ~PlateModel.get_COBs
       ~PlateModel.get_avail_layers

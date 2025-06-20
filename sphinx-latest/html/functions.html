@@ -20,7 +20,7 @@
     <script src="_static/js/theme.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="gplately.auxiliary" href="generated/gplately.auxiliary.html" />
+    <link rel="next" title="gplately.reconstruct_grid" href="generated/gplately.reconstruct_grid.html" />
     <link rel="prev" title="gplately.SeafloorGrid" href="generated/gplately.SeafloorGrid.html" /> 
 </head>
 
@@ -57,10 +57,24 @@
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="api.html">Main Classes</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Functions</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="generated/gplately.auxiliary.html">gplately.auxiliary</a></li>
-<li class="toctree-l2"><a class="reference internal" href="generated/gplately.ptt.subduction_convergence_func.html">gplately.ptt.subduction_convergence_func</a></li>
-<li class="toctree-l2"><a class="reference internal" href="generated/gplately.ptt.ridge_spreading_rate_func.html">gplately.ptt.ridge_spreading_rate_func</a></li>
-<li class="toctree-l2"><a class="reference internal" href="generated/gplately.grids.read_netcdf_grid.html">gplately.grids.read_netcdf_grid</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#reconstruction">Reconstruction</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="generated/gplately.reconstruct_grid.html">gplately.reconstruct_grid</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#resolve-topologies">Resolve Topologies</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="generated/gplately.resolve_topologies.html">gplately.resolve_topologies</a></li>
+<li class="toctree-l3"><a class="reference internal" href="generated/gplately.resolve_topological_snapshot.html">gplately.resolve_topological_snapshot</a></li>
+<li class="toctree-l3"><a class="reference internal" href="generated/gplately.resolve_topologies_into_features.html">gplately.resolve_topologies_into_features</a></li>
+<li class="toctree-l3"><a class="reference internal" href="generated/gplately.resolve_topological_snapshot_into_features.html">gplately.resolve_topological_snapshot_into_features</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#miscellaneous">Miscellaneous</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="generated/gplately.auxiliary.html">gplately.auxiliary</a></li>
+<li class="toctree-l3"><a class="reference internal" href="generated/gplately.read_netcdf_grid.html">gplately.read_netcdf_grid</a></li>
+<li class="toctree-l3"><a class="reference internal" href="generated/gplately.ridge_spreading_rate.html">gplately.ridge_spreading_rate</a></li>
+<li class="toctree-l3"><a class="reference internal" href="generated/gplately.subduction_convergence.html">gplately.subduction_convergence</a></li>
+</ul>
+</li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="secondaries.html">Other Classes</a></li>
@@ -93,22 +107,61 @@
   <section id="functions">
 <h1>Functions<a class="headerlink" href="#functions" title="Link to this heading"></a></h1>
 <p>This page lists the assorted functions of the GPlately Python package.</p>
+<nav class="contents local" id="contents">
+<ul class="simple">
+<li><p><a class="reference internal" href="#reconstruction" id="id1">Reconstruction</a></p></li>
+<li><p><a class="reference internal" href="#resolve-topologies" id="id2">Resolve Topologies</a></p></li>
+<li><p><a class="reference internal" href="#miscellaneous" id="id3">Miscellaneous</a></p></li>
+</ul>
+</nav>
+<section id="reconstruction">
+<h2><a class="toc-backref" href="#id1" role="doc-backlink">Reconstruction</a><a class="headerlink" href="#reconstruction" title="Link to this heading"></a></h2>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/gplately.reconstruct_grid.html#gplately.reconstruct_grid" title="gplately.reconstruct_grid"><code class="xref py py-obj docutils literal notranslate"><span class="pre">gplately.reconstruct_grid</span></code></a></p></td>
+<td><p>Reconstruct a gridded dataset to a given reconstruction time.</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="resolve-topologies">
+<h2><a class="toc-backref" href="#id2" role="doc-backlink">Resolve Topologies</a><a class="headerlink" href="#resolve-topologies" title="Link to this heading"></a></h2>
+<table class="autosummary longtable docutils align-default">
+<tbody>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/gplately.resolve_topologies.html#gplately.resolve_topologies" title="gplately.resolve_topologies"><code class="xref py py-obj docutils literal notranslate"><span class="pre">gplately.resolve_topologies</span></code></a></p></td>
+<td><p>Resolves topologies at specified time and saves (to separate files) the resolved topologies, and their boundary sections as subduction zones, mid-ocean ridges (ridge/transform) and others (not subduction zones or mid-ocean ridges).</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/gplately.resolve_topological_snapshot.html#gplately.resolve_topological_snapshot" title="gplately.resolve_topological_snapshot"><code class="xref py py-obj docutils literal notranslate"><span class="pre">gplately.resolve_topological_snapshot</span></code></a></p></td>
+<td><p>From the specified topological snapshot, saves (to separate files) the resolved topologies, and their boundary sections as subduction zones, mid-ocean ridges (ridge/transform) and others (not subduction zones or mid-ocean ridges).</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/gplately.resolve_topologies_into_features.html#gplately.resolve_topologies_into_features" title="gplately.resolve_topologies_into_features"><code class="xref py py-obj docutils literal notranslate"><span class="pre">gplately.resolve_topologies_into_features</span></code></a></p></td>
+<td><p>Resolves topologies at specified time and returns resolved topologies and their boundary sections as subduction zones, mid-ocean ridges (ridge/transform) and others (not subduction zones or mid-ocean ridges).</p></td>
+</tr>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/gplately.resolve_topological_snapshot_into_features.html#gplately.resolve_topological_snapshot_into_features" title="gplately.resolve_topological_snapshot_into_features"><code class="xref py py-obj docutils literal notranslate"><span class="pre">gplately.resolve_topological_snapshot_into_features</span></code></a></p></td>
+<td><p>From the specified topological snapshot, returns resolved topologies and their boundary sections as subduction zones, mid-ocean ridges (ridge/transform) and others (not subduction zones or mid-ocean ridges).</p></td>
+</tr>
+</tbody>
+</table>
+</section>
+<section id="miscellaneous">
+<h2><a class="toc-backref" href="#id3" role="doc-backlink">Miscellaneous</a><a class="headerlink" href="#miscellaneous" title="Link to this heading"></a></h2>
 <table class="autosummary longtable docutils align-default">
 <tbody>
 <tr class="row-odd"><td><p><a class="reference internal" href="generated/gplately.auxiliary.html#module-gplately.auxiliary" title="gplately.auxiliary"><code class="xref py py-obj docutils literal notranslate"><span class="pre">gplately.auxiliary</span></code></a></p></td>
 <td><p>A set of helper functions designed to streamline the use of GPlately’s functionalities, minimizing the coding effort required from users.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="generated/gplately.ptt.subduction_convergence_func.html#gplately.ptt.subduction_convergence_func" title="gplately.ptt.subduction_convergence_func"><code class="xref py py-obj docutils literal notranslate"><span class="pre">gplately.ptt.subduction_convergence_func</span></code></a></p></td>
-<td><p>Find the convergence and absolute velocities sampled along trenches (subduction zones) at a particular geological time.</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/gplately.read_netcdf_grid.html#gplately.read_netcdf_grid" title="gplately.read_netcdf_grid"><code class="xref py py-obj docutils literal notranslate"><span class="pre">gplately.read_netcdf_grid</span></code></a></p></td>
+<td><p>Read grid data from a NetCDF (.nc) file.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="generated/gplately.ptt.ridge_spreading_rate_func.html#gplately.ptt.ridge_spreading_rate_func" title="gplately.ptt.ridge_spreading_rate_func"><code class="xref py py-obj docutils literal notranslate"><span class="pre">gplately.ptt.ridge_spreading_rate_func</span></code></a></p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="generated/gplately.ridge_spreading_rate.html#gplately.ridge_spreading_rate" title="gplately.ridge_spreading_rate"><code class="xref py py-obj docutils literal notranslate"><span class="pre">gplately.ridge_spreading_rate</span></code></a></p></td>
 <td><p>Calculate spreading rate of ridge segments (and other statistics like spreading obqliquity, and ridge length/normals and left/right plates).</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="generated/gplately.grids.read_netcdf_grid.html#gplately.grids.read_netcdf_grid" title="gplately.grids.read_netcdf_grid"><code class="xref py py-obj docutils literal notranslate"><span class="pre">gplately.grids.read_netcdf_grid</span></code></a></p></td>
-<td><p>Read a <cite>netCDF</cite> (.nc) grid from a given <cite>filename</cite> and return its data as a <cite>MaskedArray</cite>.</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="generated/gplately.subduction_convergence.html#gplately.subduction_convergence" title="gplately.subduction_convergence"><code class="xref py py-obj docutils literal notranslate"><span class="pre">gplately.subduction_convergence</span></code></a></p></td>
+<td><p>Find the convergence and absolute velocities sampled along trenches (subduction zones) at a particular geological time.</p></td>
 </tr>
 </tbody>
 </table>
+</section>
 </section>
 
 
@@ -116,7 +169,7 @@
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
         <a href="generated/gplately.SeafloorGrid.html" class="btn btn-neutral float-left" title="gplately.SeafloorGrid" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
-        <a href="generated/gplately.auxiliary.html" class="btn btn-neutral float-right" title="gplately.auxiliary" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
+        <a href="generated/gplately.reconstruct_grid.html" class="btn btn-neutral float-right" title="gplately.reconstruct_grid" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
   <hr/>
