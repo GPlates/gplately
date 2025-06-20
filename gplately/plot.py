@@ -927,7 +927,9 @@ class PlotTopologies(object):
 
     @validate_reconstruction_time
     @append_docstring(PLOT_DOCSTRING.format("continent ocean boundaries"))
-    def plot_continent_ocean_boundaries(self, ax, color="black", **kwargs):
+    def plot_continent_ocean_boundaries(
+        self, ax, color: Union[str, list] = "black", **kwargs
+    ):
         """Plot the reconstructed continent-ocean boundaries (COBs) on a map."""
         return self.plot_feature(
             ax,
@@ -1895,7 +1897,7 @@ class PlotTopologies(object):
 
     @validate_topology_availability("all topologies")
     @append_docstring(PLOT_DOCSTRING.format("topologies"))
-    def plot_all_topologies(self, ax, color="black", **kwargs):
+    def plot_all_topologies(self, ax, color: Union[str, list] = "black", **kwargs):
         """Plot the reconstructed topological features listed below on a map.
 
         - pygplates.FeatureType.gpml_topological_network

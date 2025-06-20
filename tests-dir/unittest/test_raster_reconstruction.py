@@ -14,8 +14,7 @@ print(gplately.__file__)
 # gplately.turn_on_debug_logging()
 
 
-def main(show=True):
-    anchor_pid = 0
+def main(show=True, anchor_pid=0):
     model = gplately.auxiliary.get_plate_reconstruction(
         "Muller2019", model_repo_dir="plate-model-repo"
     )
@@ -42,7 +41,7 @@ def main(show=True):
 
     # plot 50 Ma
     ax_2 = fig.add_subplot(222, projection=ccrs.PlateCarree())
-    r_50.imshow(ax_2, interpolation="none")
+    r_50.imshow(ax_2, interpolation="none")  # type: ignore
     ax_2.set_title(f"50 Ma - APID:{anchor_pid}")
 
     # reconstruct to 100 Ma
@@ -52,7 +51,7 @@ def main(show=True):
 
     # plot 100 Ma
     ax_3 = fig.add_subplot(223, projection=ccrs.PlateCarree())
-    r_100.imshow(ax_3, interpolation="none")
+    r_100.imshow(ax_3, interpolation="none")  # type: ignore
     ax_3.set_title(f"100 Ma - APID:{anchor_pid}")
 
     # reconstruct to 200 Ma
@@ -62,7 +61,7 @@ def main(show=True):
 
     # plot 200 Ma
     ax_4 = fig.add_subplot(224, projection=ccrs.PlateCarree())
-    r_200.imshow(ax_4, interpolation="none")
+    r_200.imshow(ax_4, interpolation="none")  # type: ignore
     ax_4.set_title(f"200 Ma - APID:{anchor_pid}")
 
     if show:
@@ -72,7 +71,12 @@ def main(show=True):
 
 
 if __name__ == "__main__":
-    if len(sys.argv) == 2 and sys.argv[1] == "save":
-        main(show=False)
+    if len(sys.argv) == 2:
+        if sys.argv[1] == "save":
+            main(show=False)
+        else:
+            main(show=True, anchor_pid=int(sys.argv[1]))
+    elif len(sys.argv) == 3:
+        main(show=False, anchor_pid=int(sys.argv[1]))
     else:
         main(show=True)

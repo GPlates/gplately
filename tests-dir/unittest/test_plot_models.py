@@ -32,6 +32,8 @@ def plot_model(ax, model_name):
     except:
         model = PlateModel(model_name, data_dir=MODEL_REPO_DIR, readonly=True)
 
+    assert model
+
     age = random.randint(0, 140)
 
     test_model = PlateReconstruction(
