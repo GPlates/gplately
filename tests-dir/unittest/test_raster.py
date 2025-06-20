@@ -18,6 +18,8 @@ def main(show=True):
     pm_manager = PlateModelManager()
     plate_model = pm_manager.get_model("Muller2019", data_dir="plate-model-repo")
 
+    assert plate_model
+
     rotation_model = plate_model.get_rotation_model()
     topology_features = plate_model.get_topologies()
     static_polygons = plate_model.get_static_polygons()
@@ -29,7 +31,7 @@ def main(show=True):
     age_grid_raster = gplately.Raster(
         data=plate_model.get_raster("AgeGrids", 100),
         plate_reconstruction=model,
-        extent=[-180, 180, -90, 90],
+        extent=(-180, 180, -90, 90),
     )
 
     xx, yy = np.meshgrid(np.linspace(-180, 180, 180), np.linspace(-90, 90, 90))

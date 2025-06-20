@@ -19,11 +19,16 @@ def main():
     except:
         plate_model = PlateModel(model_name, data_dir="plate-model-repo", readonly=True)
 
+    assert plate_model
+
     rotation_files = plate_model.get_rotation_model()
     topology_files = plate_model.get_topologies()
     continent_files = plate_model.get_layer("ContinentalPolygons")
     if "Cratons" in plate_model.get_avail_layers():
-        continent_files += plate_model.get_layer("Cratons")
+        cratons_files = plate_model.get_layer("Cratons")
+        assert cratons_files
+        assert continent_files
+        continent_files += cratons_files
 
     reconstruction = PlateReconstruction(
         rotation_model=rotation_files,

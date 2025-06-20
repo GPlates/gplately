@@ -61,6 +61,7 @@ def get_plate_reconstruction(model: Union[str, PlateModel], model_repo_dir: str 
         plate_model.get_rotation_model(),
         topology_features=topology_features,
         static_polygons=static_polygons,
+        plate_model=plate_model,
     )
 
 

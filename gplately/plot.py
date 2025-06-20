@@ -31,6 +31,7 @@ import logging
 import math
 import warnings
 from functools import partial
+from typing import Union
 
 import cartopy.crs as ccrs
 import geopandas as gpd
@@ -820,11 +821,13 @@ class PlotTopologies(object):
         return gpd.GeoDataFrame({"geometry": shp}, geometry="geometry", crs="EPSG:4326")  # type: ignore
 
     @append_docstring(PLOT_DOCSTRING.format("feature"))
-    def plot_feature(self, ax, feature, feature_name="", color="black", **kwargs):
+    def plot_feature(
+        self, ax, feature, feature_name="", color: Union[str, list] = "black", **kwargs
+    ):
         """Plot `pygplates.FeatureCollection`_ or `pygplates.Feature`_ onto a map."""
         if not feature:
             logger.warning(
-                f"The given feature({feature_name}:{feature}) in model:{self.plate_reconstruction.plate_model_name} is empty and will not be plotted."
+                f"The feature ({feature_name}) is empty and will not be plotted."
             )
             return ax
         else:
@@ -876,7 +879,7 @@ class PlotTopologies(object):
 
     @validate_reconstruction_time
     @append_docstring(PLOT_DOCSTRING.format("coastlines"))
-    def plot_coastlines(self, ax, color="black", **kwargs):
+    def plot_coastlines(self, ax, color: Union[str, list] = "black", **kwargs):
         """Plot reconstructed coastlines on a map."""
         return self.plot_feature(
             ax,

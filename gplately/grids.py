@@ -1041,6 +1041,7 @@ def reconstruct_grid(
         extent=extent,
         shape=grid.shape[:2],
         origin=origin,
+        anchor_plate_id=anchor_plate_id,
     )
     valid_output_mask = (
         rasterise(
@@ -1051,6 +1052,7 @@ def reconstruct_grid(
             extent=extent,
             shape=grid.shape[:2],
             origin=origin,
+            anchor_plate_id=anchor_plate_id,
         )
         != -1
     )

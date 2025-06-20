@@ -30,6 +30,7 @@ from typing import Union
 
 import numpy as np
 import pygplates
+from plate_model_manager import PlateModel  # type: ignore
 
 from . import tools as _tools
 from .gpml import _load_FeatureCollection
@@ -51,7 +52,7 @@ class PlateReconstruction(object):
         topology_features=None,
         static_polygons=None,
         anchor_plate_id: Union[int, None] = None,
-        plate_model_name: str = "Nemo",
+        plate_model: Union[PlateModel, None] = None,
     ):
         """
         Parameters
@@ -74,8 +75,8 @@ class PlateReconstruction(object):
         anchor_plate_id : int, optional
             Default anchor plate ID for reconstruction.
             If not specified then uses the default anchor plate of :py:attr:`~rotation_model`.
-        plate_model_name : str, optional
-            Only if the plate model has a name and users would like the :py:class:`gplately.PlateReconstruction` object tracks the name
+        plate_model : PlateModel, optional
+            Only if users would like the :py:class:`gplately.PlateReconstruction` object tracks the :class:`PlateModel`.
 
 
         .. _pygplates.RotationModel: https://www.gplates.org/docs/pygplates/generated/pygplates.rotationmodel
@@ -126,7 +127,7 @@ class PlateReconstruction(object):
         )
 
         #: Optional plate model name
-        self.plate_model_name: str = plate_model_name
+        self.plate_model = plate_model
 
         # Keep a snapshot of the resolved topologies at its last requested snapshot time (and anchor plate).
         # Also keep a snapshot of the reconstructed static polygons at its the last requested snapshot time (and anchor plate)

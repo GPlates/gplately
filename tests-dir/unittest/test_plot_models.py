@@ -38,7 +38,7 @@ def plot_model(ax, model_name):
         model.get_rotation_model(),
         topology_features=model.get_layer("Topologies"),
         static_polygons=model.get_layer("StaticPolygons"),
-        plate_model_name=model_name,
+        plate_model=model,
     )
     gplot = PlotTopologies(
         test_model,
