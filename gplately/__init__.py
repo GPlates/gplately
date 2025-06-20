@@ -20,7 +20,7 @@ from .utils.check_pmm import ensure_plate_model_manager_compatible
 from .utils.log_utils import setup_logging
 from .utils.version import get_distribution_version
 
-REQUIRED_PMM_VERSION = "1.2.2"  # TODO: get this from package meta
+REQUIRED_PMM_VERSION = "1.3.0"  # TODO: get this from package meta
 USING_DEV_VERSION = True  ## change this to False before official release
 
 __version__ = get_distribution_version()
@@ -38,22 +38,29 @@ del ensure_plate_model_manager_compatible
 
 from plate_model_manager import PlateModel, PlateModelManager, PresentDayRasterManager
 
-from . import auxiliary, ptt
+from . import auxiliary
 from .download import DataServer
-from .grids import Raster
+from .grids import Raster, read_netcdf_grid, reconstruct_grid
 from .mapping.cartopy_plot import CartopyPlotEngine
 from .mapping.plot_engine import PlotEngine
 from .mapping.pygmt_plot import PygmtPlotEngine
 from .oceans import SeafloorGrid
 from .plot import PlotTopologies
 from .points import Points
+from .ptt.resolve_topologies import (
+    resolve_topological_snapshot,
+    resolve_topological_snapshot_into_features,
+    resolve_topologies,
+    resolve_topologies_into_features,
+)
+from .ptt.ridge_spreading_rate import spreading_rates as ridge_spreading_rate
+from .ptt.subduction_convergence import subduction_convergence
 from .reconstruction import PlateReconstruction
 from .tools import EARTH_RADIUS
 
 __all__ = [
     # modules
     "auxiliary",
-    "ptt",
     # main classes
     "DataServer",
     "PlateReconstruction",
@@ -69,6 +76,10 @@ __all__ = [
     "CartopyPlotEngine",
     "PygmtPlotEngine",
     # functions
+    "read_netcdf_grid",
+    "reconstruct_grid",
+    "ridge_spreading_rate",
+    "subduction_convergence",
     # constants
     "EARTH_RADIUS",
 ]

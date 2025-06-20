@@ -30,6 +30,7 @@ from typing import Union
 
 import numpy as np
 import pygplates
+from plate_model_manager import PlateModel  # type: ignore
 
 from . import tools as _tools
 from .gpml import _load_FeatureCollection
@@ -51,7 +52,7 @@ class PlateReconstruction(object):
         topology_features=None,
         static_polygons=None,
         anchor_plate_id: Union[int, None] = None,
-        plate_model_name: str = "Nemo",
+        plate_model: Union[PlateModel, None] = None,
     ):
         """
         Parameters
@@ -74,8 +75,8 @@ class PlateReconstruction(object):
         anchor_plate_id : int, optional
             Default anchor plate ID for reconstruction.
             If not specified then uses the default anchor plate of :py:attr:`~rotation_model`.
-        plate_model_name : str, optional
-            Only if the plate model has a name and users would like the :py:class:`gplately.PlateReconstruction` object tracks the name
+        plate_model : PlateModel, optional
+            Only if users would like the :py:class:`gplately.PlateReconstruction` object tracks the :class:`PlateModel`.
 
 
         .. _pygplates.RotationModel: https://www.gplates.org/docs/pygplates/generated/pygplates.rotationmodel
@@ -126,7 +127,7 @@ class PlateReconstruction(object):
         )
 
         #: Optional plate model name
-        self.plate_model_name: str = plate_model_name
+        self.plate_model = plate_model
 
         # Keep a snapshot of the resolved topologies at its last requested snapshot time (and anchor plate).
         # Also keep a snapshot of the reconstructed static polygons at its the last requested snapshot time (and anchor plate)
@@ -1061,11 +1062,11 @@ class PlateReconstruction(object):
         tessellation_threshold_radians : float, default=0.001
             The threshold sampling distance along the plate boundaries (in radians).
         ignore_warnings : bool, default=False
-            Choose to ignore warnings from :py:func:`ptt.subduction_convergence_func` (if ``use_ptt`` is ``True``).
+            Choose to ignore warnings from :py:func:`gplately.subduction_convergence` (if ``use_ptt`` is ``True``).
         return_geodataframe : bool, default=False
             Choose to return data in a ``geopandas.GeoDataFrame``.
         use_ptt : bool, default=False
-            If set to ``True`` then uses :py:func:`ptt.subduction_convergence_func` to calculate subduction convergence
+            If set to ``True`` then uses :py:func:`gplately.subduction_convergence` to calculate subduction convergence
             (which uses the subducting stage rotation of the subduction/trench plate IDs calculate subducting velocities).
             If set to ``False`` then uses plate convergence to calculate subduction convergence
             (which samples velocities of the two adjacent boundary plates at each sampled point to calculate subducting velocities).
@@ -1192,7 +1193,7 @@ class PlateReconstruction(object):
                 if ignore_warnings:
                     warnings.simplefilter("ignore")
 
-                subduction_data = _ptt.subduction_convergence_func(
+                subduction_data = _ptt.subduction_convergence.subduction_convergence(
                     self.rotation_model,
                     self._check_topology_features(
                         # Ignore topological slab boundaries since they are not *plate* boundaries
@@ -1357,11 +1358,11 @@ class PlateReconstruction(object):
         time : int
             The geological time at which to calculate total subduction zone lengths.
         use_ptt : bool, default=False
-            If set to ``True`` then uses :py:func:`ptt.subduction_convergence_func` to calculate total subduction zone length.
+            If set to ``True`` then uses :py:func:`gplately.subduction_convergence` to calculate total subduction zone length.
             If set to ``False`` then uses plate convergence instead.
             Plate convergence is the more general approach that works along all plate boundaries (not just subduction zones).
         ignore_warnings : bool, default=False
-            Choose to ignore warnings from :py:func:`ptt.subduction_convergence_func` (if ``use_ptt`` is ``True``).
+            Choose to ignore warnings from :py:func:`gplately.subduction_convergence` (if ``use_ptt`` is ``True``).
         include_network_boundaries : bool, default=False
             Whether to count lengths along network boundaries that are not also plate boundaries (defaults to False).
             If a deforming network shares a boundary with a plate then it'll get included regardless of this option.
@@ -1451,10 +1452,10 @@ class PlateReconstruction(object):
         trench_arc_distance : float
             The trench-to-arc distance (in kilometres) to project sampled trench points out by in the direction of the overriding plate.
         ignore_warnings : bool, default=True
-            Choose whether to ignore warning messages from :py:func:`ptt.subduction_convergence_func` (if ``use_ptt`` is ``True``)
+            Choose whether to ignore warning messages from :py:func:`gplately.subduction_convergence` (if ``use_ptt`` is ``True``)
             that alerts the user of subduction sub-segments that are ignored due to unidentified polarities and/or subducting plates.
         use_ptt : bool, default=False
-            If set to ``True`` then uses :py:func:`ptt.subduction_convergence_func` to sample subducting features and their subduction polarities.
+            If set to ``True`` then uses :py:func:`gplately.subduction_convergence` to sample subducting features and their subduction polarities.
             If set to ``False`` then uses plate convergence instead.
             Plate convergence is the more general approach that works along all plate boundaries (not just subduction zones).
         include_network_boundaries : bool, default=False
@@ -1765,11 +1766,11 @@ class PlateReconstruction(object):
         tessellation_threshold_radians : float, default=0.001
             The threshold sampling distance along the plate boundaries (in radians).
         ignore_warnings : bool, default=False
-            Choose to ignore warnings from Plate Tectonic Tools' :py:func:`ptt.ridge_spreading_rate_func` workflow (if ``use_ptt`` is True).
+            Choose to ignore warnings from Plate Tectonic Tools' :py:func:`gplately.ridge_spreading_rate` workflow (if ``use_ptt`` is True).
         return_geodataframe : bool, default=False
             Choose to return data in a ``geopandas.GeoDataFrame``.
         use_ptt : bool, default=False
-            If set to True then uses Plate Tectonic Tools' :py:func:`ptt.ridge_spreading_rate_func` workflow to calculate ridge spreading rates
+            If set to True then uses Plate Tectonic Tools' :py:func:`gplately.ridge_spreading_rate` workflow to calculate ridge spreading rates
             (which uses the spreading stage rotation of the left/right plate IDs calculate spreading velocities).
             If set to False then uses plate divergence to calculate ridge spreading rates
             (which samples velocities of the two adjacent boundary plates at each sampled point to calculate spreading velocities).
@@ -1880,7 +1881,7 @@ class PlateReconstruction(object):
                 if ignore_warnings:
                     warnings.simplefilter("ignore")
 
-                ridge_data = _ptt.ridge_spreading_rate_func(
+                ridge_data = _ptt.ridge_spreading_rate.spreading_rates(
                     self.rotation_model,
                     self._check_topology_features(
                         # Ignore topological slab boundaries since they are not *plate* boundaries
@@ -1970,13 +1971,13 @@ class PlateReconstruction(object):
         time : int
             The geological time at which to calculate total mid-ocean ridge lengths.
         use_ptt : bool, default=False
-            If set to ``True`` then uses :py:func:`ptt.ridge_spreading_rate_func()` to calculate total ridge length
+            If set to ``True`` then uses :py:func:`gplately.ridge_spreading_rate()` to calculate total ridge length
             (which uses the spreading stage rotation of the left/right plate IDs to calculate spreading directions - see ``transform_segment_deviation_in_radians``).
             If set to ``False`` then uses plate divergence to calculate total ridge length (which samples velocities of the two adjacent
             boundary plates at each sampled point to calculate spreading directions - see ``transform_segment_deviation_in_radians``).
             Plate divergence is the more general approach that works along all plate boundaries (not just mid-ocean ridges).
         ignore_warnings : bool, default=False
-            Choose to ignore warnings from :py:func:`ptt.ridge_spreading_rate_func()` (if ``use_ptt`` is ``True``).
+            Choose to ignore warnings from :py:func:`gplately.ridge_spreading_rate()` (if ``use_ptt`` is ``True``).
         spreading_feature_types : `pygplates.FeatureType`_ or sequence of `pygplates.FeatureType`_, default=pygplates.FeatureType.gpml_mid_ocean_ridge
             Only count lengths along plate boundaries of the specified feature types.
             Default is to only sample mid-ocean ridges.

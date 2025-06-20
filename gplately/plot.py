@@ -31,6 +31,7 @@ import logging
 import math
 import warnings
 from functools import partial
+from typing import Union
 
 import cartopy.crs as ccrs
 import geopandas as gpd
@@ -820,11 +821,13 @@ class PlotTopologies(object):
         return gpd.GeoDataFrame({"geometry": shp}, geometry="geometry", crs="EPSG:4326")  # type: ignore
 
     @append_docstring(PLOT_DOCSTRING.format("feature"))
-    def plot_feature(self, ax, feature, feature_name="", color="black", **kwargs):
+    def plot_feature(
+        self, ax, feature, feature_name="", color: Union[str, list] = "black", **kwargs
+    ):
         """Plot `pygplates.FeatureCollection`_ or `pygplates.Feature`_ onto a map."""
         if not feature:
             logger.warning(
-                f"The given feature({feature_name}:{feature}) in model:{self.plate_reconstruction.plate_model_name} is empty and will not be plotted."
+                f"The feature ({feature_name}) is empty and will not be plotted."
             )
             return ax
         else:
@@ -876,7 +879,7 @@ class PlotTopologies(object):
 
     @validate_reconstruction_time
     @append_docstring(PLOT_DOCSTRING.format("coastlines"))
-    def plot_coastlines(self, ax, color="black", **kwargs):
+    def plot_coastlines(self, ax, color: Union[str, list] = "black", **kwargs):
         """Plot reconstructed coastlines on a map."""
         return self.plot_feature(
             ax,
@@ -924,7 +927,9 @@ class PlotTopologies(object):
 
     @validate_reconstruction_time
     @append_docstring(PLOT_DOCSTRING.format("continent ocean boundaries"))
-    def plot_continent_ocean_boundaries(self, ax, color="black", **kwargs):
+    def plot_continent_ocean_boundaries(
+        self, ax, color: Union[str, list] = "black", **kwargs
+    ):
         """Plot the reconstructed continent-ocean boundaries (COBs) on a map."""
         return self.plot_feature(
             ax,
@@ -1892,7 +1897,7 @@ class PlotTopologies(object):
 
     @validate_topology_availability("all topologies")
     @append_docstring(PLOT_DOCSTRING.format("topologies"))
-    def plot_all_topologies(self, ax, color="black", **kwargs):
+    def plot_all_topologies(self, ax, color: Union[str, list] = "black", **kwargs):
         """Plot the reconstructed topological features listed below on a map.
 
         - pygplates.FeatureType.gpml_topological_network

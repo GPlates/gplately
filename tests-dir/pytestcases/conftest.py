@@ -161,7 +161,7 @@ def gplately_merdith_raster(
 ):
     raster_manager = PresentDayRasterManager()
     etopo = gplately.Raster(data=raster_manager.get_raster("ETOPO1_grd"))
-    etopo = etopo.data.astype("float")
+    etopo = etopo.data.astype("float")  # type: ignore
     downsampled = etopo[::15, ::15]
     raster = gplately.Raster(
         plate_reconstruction=gplately_merdith_reconstruction,

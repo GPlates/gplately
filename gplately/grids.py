@@ -34,6 +34,7 @@ Classes
 * Raster
 """
 
+import copy
 import logging
 import math
 import warnings
@@ -162,8 +163,8 @@ def _guess_data_variable_name(cdf: netCDF4.Dataset, x_name: str, y_name: str) ->
 
 def read_netcdf_grid(
     filename,
-    return_grids=False,
-    realign=False,
+    return_grids: bool = False,
+    realign: bool = False,
     resample=None,
     resize=None,
     x_dimension_name: str = "",
@@ -172,67 +173,40 @@ def read_netcdf_grid(
 ) -> Union[
     Tuple[np.ma.MaskedArray, np.ma.MaskedArray, np.ma.MaskedArray], np.ma.MaskedArray
 ]:
-    """Read a `netCDF` (.nc) grid from a given `filename` and return its data as a
-    `MaskedArray`.
-
-    Notes
-    -----
-    If a `resample` tuple is passed with X and Y spacings (`spacingX`, `spacingY`),
-    the gridded data in `filename` will be resampled with these resolutions.
-
-    By default, only the `MaskedArray` is returned to the user. However, if `return_grids` is
-    set to `True`, the `MaskedArray` will be returned along with two additional arrays
-    in a `tuple`:
-
-    * A 1d `MaskedArray` containing the longitudes of the `netCDF` gridded data
-    * A 1d `MaskedArray` containing the latitudes of the `netCDF` gridded data
+    """Read grid data from a NetCDF (.nc) file.
 
     Parameters
     ----------
     filename : str
-        Full path to the `netCDF` raster file.
-
+        Full path to the ``netCDF`` raster file.
     return_grids : bool, optional, default=False
-        If set to `True`, returns lon, lat arrays associated with the grid data.
-
+        If set to ``True``, returns lon, lat arrays associated with the grid data.
     realign : bool, optional, default=False
-        if set to `True`, realigns grid to -180/180 and flips the array if the
-        latitudinal coordinates are decreasing.
-
+        if set to ``True``, realigns grid to -180/180 and flips the array if the latitudinal coordinates are decreasing.
     resample : tuple, optional, default=None
-        If passed as `resample = (spacingX, spacingY)`, the given `netCDF` grid is resampled
-        with these x and y resolutions.
-
+        If provided as ``resample = (spacingX, spacingY)``, the grid data will be resampled with these x and y resolutions.
     resize : tuple, optional, default=None
-        If passed as `resample = (resX, resY)`, the given `netCDF` grid is resized
-        to the number of columns (resX) and rows (resY).
-
+        If provided as ``resample = (resX, resY)``, the grid data will be resized to the number of columns (resX) and rows (resY).
     x_dimension_name : str, optional, default=""
-        If the grid file uses comman names, such as "x", "lon", "lons" or "longitude", you need not set this parameter.
-        Otherwise, you need to tell us what the x dimension name is.
-
+        If the grid file uses the comman names, such as ``x``, ``lon``, ``lons`` or ``longitude``,
+        you need not to provide this parameter. Otherwise, you need to tell us what the x dimension name is.
     y_dimension_name : str, optional, default=""
-        If the grid file uses comman names, such as "y", "lat", "lats" or "latitude", you need not set this parameter.
-        Otherwise, you need to tell us what the y dimension name is.
-
+        If the grid file uses the comman names, such as ``y``, ``lat``, ``lats`` or ``latitude``,
+        you need not to provide this parameter. Otherwise, you need to tell us what the y dimension name is.
     data_variable_name : str, optional, default=""
-        The program will try its best to determine the data variable name.
-        However, it would be better if you could tell us what the data variable name is.
-        Otherwise, the program will guess. The result may/may not be correct.
-
+        GPlately will try its best to guess the data variable name.
+        However, it would be much better if you tell us what the data variable name is.
+        Otherwise, GPlately's guess may/may not be correct.
 
     Returns
     -------
-    grid_z : MaskedArray
-        A `MaskedArray` containing the gridded data from the supplied netCDF4 `filename`.
-        Entries' longitudes are re-aligned between -180 and 180 degrees.
+    grid_z : `MaskedArray`_
+        A `MaskedArray`_ object containing the grid data. The longitudes are re-aligned between -180 and 180 degrees.
+    lon, lat : `MaskedArray`_
+        When ``return_grids`` is ``True``, return two additional `MaskedArray`_ objects containing the longitudes and latitudes of the grid data.
 
-    lon, lat : 1d MaskedArrays
-        `MaskedArrays` encasing longitude and latitude variables belonging to the
-        supplied netCDF4 file. Longitudes are rescaled between -180 and 180 degrees.
-        An example output of `cdf_lat` is:
 
-            masked_array(data=[-90. , -89.9, -89.8, ...,  89.8,  89.9,  90. ], mask=False, fill_value=1e+20)
+    .. _MaskedArray: https://numpy.org/doc/stable/reference/maskedarray.generic.html
     """
 
     def find_label(keys, labels):
@@ -895,44 +869,41 @@ def reconstruct_grid(
 ):
     """Reconstruct a gridded dataset to a given reconstruction time.
 
+    .. note::
+
+        Use :meth:`Raster.reconstruct` whenever is possible. This :func:`reconstruct_grid` is better to be private.
+
     Parameters
     ----------
     grid : array_like, or str
-        The grid to be reconstructed. If ``grid`` is a filename, it will be
-        loaded using :meth:`gplately.grids.read_netcdf_grid`.
+        The grid to be reconstructed. If ``grid`` is a filename, it will be loaded using :meth:`read_netcdf_grid`.
     partitioning_features : valid argument to pygplates.FeaturesFunctionArgument
-        Features used to partition ``grid`` by plate ID, usually a static
-        polygons file. ``partitioning_features`` may be a single
-        feature (``pygplates.Feature``), a feature collection
-        (``pygplates.FeatureCollection``), a filename (``str``), or a (potentially
+        Features used to partition the ``grid`` by plate ID, usually a static
+        polygons file. The ``partitioning_features`` may be a single
+        ``pygplates.Feature`` object, a ``pygplates.FeatureCollection``, a filename (:class:`str`), or a (potentially
         nested) sequence of any combination of the above types.
     rotation_model : valid argument to pygplates.RotationModel
-        The rotation model used to reconstruct ``grid``.
-        ``rotation_model`` may be a rotation model object
-        (``pygplates.RotationModel``), a rotation feature collection
-        (``pygplates.FeatureCollection``), a rotation filename
-        (``str``), a rotation feature (``pygplates.Feature``), a sequence of
+        The rotation model used to reconstruct the ``grid``.
+        The ``rotation_model`` may be a ``pygplates.RotationModel`` object, a rotation ``pygplates.FeatureCollection``, a rotation filename
+        (:class:`str`), a rotation ``pygplates.Feature``, a sequence of
         rotation features, or a (potentially nested) sequence of any combination of the above types.
     to_time : float
         Time to which ``grid`` will be reconstructed.
-    from_time : float, default 0.0
-        Time from which to reconstruct ``grid``.
-    extent : tuple or "global", default "global"
-        Extent of ``grid``. Valid arguments are a tuple of
-        the form (xmin, xmax, ymin, ymax), or the string "global",
+    from_time : float, default=0.0
+        Time from which to reconstruct the ``grid``.
+    extent : tuple or str, default="global"
+        Extent of the ``grid``. Valid arguments are a tuple of the form (xmin, xmax, ymin, ymax), or the string "global",
         equivalent to (-180.0, 180.0, -90.0, 90.0).
     origin : {"upper", "lower"}, optional
-        Origin of ``grid`` - either lower-left or upper-left. By default,
-        determined from `extent`.
-    fill_value : float, int, or tuple, optional
+        Origin of the ``grid`` - either lower-left or upper-left. By default, determined from `extent`.
+    fill_value : float, int, or tuple, optional, default=None
         The value to be used for regions outside of ``partitioning_features``
-        at ``to_time``. By default (``fill_value=None``), this value will be
-        determined based on the input.
-    threads : int, default 1
+        at ``to_time``. If not provided, this value will be determined based on the input.
+    threads : int, default=1
         Number of threads to use for certain computationally heavy routines.
-    anchor_plate_id : int, optional
-        ID of the anchored plate. By default, reconstructions are made with respect to the
-        default anchor plate ID of ``rotation_model`` if it's a ``pygplates.RotationModel`` (otherwise zero).
+    anchor_plate_id : int, optional, default=None
+        ID of the anchored plate. By default, use the default anchor plate ID of ``rotation_model``
+        if it's a ``pygplates.RotationModel`` (otherwise zero).
     x_dimension_name : str, optional, default=""
         If the grid file uses comman names, such as "x", "lon", "lons" or "longitude", you need not set this parameter.
         Otherwise, you need to tell us what the x dimension name is.
@@ -948,8 +919,8 @@ def reconstruct_grid(
     -------
     numpy.ndarray
         The reconstructed grid. Areas for which no plate ID could be
-        determined from ``partitioning_features`` will be filled with
-        ``fill_value``.
+        determined from ``partitioning_features`` will be filled with ``fill_value``.
+
 
     .. note::
 
@@ -958,12 +929,11 @@ def reconstruct_grid(
         complex types, the minimum value for integer types, and the
         maximum value for unsigned types.
         For RGB image grids, ``fill_value`` should be a 3-tuple RGB
-        colour code or a matplotlib colour string. The default value
-        will be black (0.0, 0.0, 0.0) or (0, 0, 0).
+        colour code or a matplotlib colour name. The default value
+        will be black (0.0, 0.0, 0.0).
         For RGBA image grids, ``fill_value`` should be a 4-tuple RGBA
-        colour code or a matplotlib colour string. The default fill
-        value will be transparent black (0.0, 0.0, 0.0, 0.0) or
-        (0, 0, 0, 0).
+        colour code or a matplotlib colour name. The default fill
+        value will be transparent black (0.0, 0.0, 0.0, 0.0).
     """
     try:
         grid = np.array(
@@ -1065,6 +1035,7 @@ def reconstruct_grid(
         extent=extent,
         shape=grid.shape[:2],
         origin=origin,
+        anchor_plate_id=anchor_plate_id,
     )
     valid_output_mask = (
         rasterise(
@@ -1075,6 +1046,7 @@ def reconstruct_grid(
             extent=extent,
             shape=grid.shape[:2],
             origin=origin,
+            anchor_plate_id=anchor_plate_id,
         )
         != -1
     )
@@ -1173,8 +1145,9 @@ def rasterise(
     extent: Union[tuple, str] = "global",
     origin=None,
     tessellate_degrees=0.1,
+    anchor_plate_id=None,
 ):
-    """Rasterise GPlates objects at a given reconstruction time.
+    """Rasterise geometries or GPlates features at a given reconstruction time.
 
     This function is particularly useful for rasterising static polygons
     to extract a grid of plate IDs.
@@ -1312,6 +1285,7 @@ def rasterise(
             rotation_model,
             reconstructed,
             time,
+            anchor_plate_id=anchor_plate_id,
         )
         geometries = pygplates_to_shapely(
             reconstructed,
@@ -1722,11 +1696,26 @@ class Raster(object):
 
     @property
     def time(self):
-        """The geological time for the time-dependant raster data.
+        """The geological time of the time-dependant raster data.
 
         :type: float
         """
         return self._time
+
+    @time.setter
+    def time(self, new_time: float):
+        """Set a new reconstruction time."""
+        try:
+            new_time_f = float(new_time)
+        except ValueError:
+            raise ValueError(f"Invalid new reconstruction time: {new_time}")
+        if new_time_f < 0.0:
+            raise ValueError(
+                f"The reconstruction time ({new_time_f}) must be greater than 0."
+            )
+        if not math.isclose(self._time, new_time_f):
+            self._time = new_time_f
+            self.reconstruct(new_time_f, inplace=True)
 
     @property
     def data(self):
@@ -2121,12 +2110,6 @@ class Raster(object):
         Raster or np.ndarray
             The reconstructed grid. Areas for which no plate ID could be determined will be filled with ``fill_value``.
 
-        Raises
-        ------
-        TypeError
-            If this :class:`Raster` object has no a valid ``plate_reconstruction`` object.
-
-
         .. note::
 
             For two-dimensional grids, ``fill_value`` should be a single
@@ -2141,22 +2124,27 @@ class Raster(object):
             value will be transparent black (0.0, 0.0, 0.0, 0.0) or
             (0, 0, 0, 0).
         """
-        if time < 0.0:
-            raise ValueError("Invalid time: {}".format(time))
-        time = float(time)
-        if self.plate_reconstruction is None:
-            raise TypeError(
-                "Cannot perform reconstruction - "
-                + "`plate_reconstruction` has not been set"
+        try:
+            to_time_f = float(time)
+        except ValueError:
+            raise ValueError(f"Invalid reconstruction time: {time}")
+        if to_time_f < 0.0:
+            raise ValueError(
+                f"The reconstruction time ({to_time_f}) must be greater than 0."
             )
+
+        # A valid PlateReconstruction object is required!
+        assert self.plate_reconstruction is not None
+
         if partitioning_features is None:
             partitioning_features = self.plate_reconstruction.static_polygons
+
         result = reconstruct_grid(
             grid=self.data,
             partitioning_features=partitioning_features,
             rotation_model=self.plate_reconstruction.rotation_model,
             from_time=self.time,
-            to_time=time,
+            to_time=to_time_f,
             extent=self.extent,
             origin=self.origin,
             fill_value=fill_value,
@@ -2164,21 +2152,43 @@ class Raster(object):
             anchor_plate_id=anchor_plate_id,
         )
 
+        raster_rotation_model = self.plate_reconstruction.rotation_model
+        # use the new reconstructed raster data to replace the current Raster obj
+        # TODO: maybe need to put anchor_plate_id into rotation_model if it is not None
         if inplace:
             self.data = result
-            self._time = time
+            self._time = to_time_f
+            if (
+                anchor_plate_id is not None
+                and raster_rotation_model
+                and raster_rotation_model.get_default_anchor_plate_id()
+                != anchor_plate_id
+            ):
+                self.plate_reconstruction.rotation_model = pygplates.RotationModel(
+                    raster_rotation_model, default_anchor_plate_id=anchor_plate_id
+                )
             if return_array:
                 return result
             return self
 
+        # create a new Raster obj to return
         if not return_array:
-            result = type(self)(
+            result = Raster(
                 data=result,
-                plate_reconstruction=self.plate_reconstruction,
+                plate_reconstruction=copy.deepcopy(self.plate_reconstruction),
                 extent=self.extent,
-                time=time,
+                time=to_time_f,
                 origin=self.origin,
             )
+            if (
+                anchor_plate_id is not None
+                and raster_rotation_model
+                and raster_rotation_model.get_default_anchor_plate_id()
+                != anchor_plate_id
+            ):
+                result.plate_reconstruction.rotation_model = pygplates.RotationModel(
+                    raster_rotation_model, default_anchor_plate_id=anchor_plate_id
+                )
         return result
 
     def imshow(self, ax=None, projection=None, **kwargs):

@@ -7,8 +7,8 @@ Examples
    :local:
    :depth: 2
 
-Jypter Notebooks
-----------------
+Jupyter Notebooks
+-----------------
 
 - `01 - Getting Started`_: A brief overview of how to initialise GPlately's main objects
 - `02 - Plate Reconstructions`_: Setting up a :py:class:`gplately.PlateReconstruction` object, reconstructing geological data through time
@@ -21,7 +21,7 @@ Jypter Notebooks
 - `09 - Motion Paths and Flowlines`_: Using pyGPlates to create motion paths and flowines of points on a tectonic plate to illustrate the plate's trajectory through geological time.
 - `10 - SeafloorGrid`_: Defines the parameters needed to set up a :py:class:`gplately.SeafloorGrid` object, and demonstrates how to produce age and spreading rate grids from a set of plate reconstruction model files.
 - `11 - AndesFluxes`_: Demonstrates how the reconstructed subduction history along the Andean margin can be potentially used in the plate kinematics analysis and data mining.
-- 12 - Mutschler_WorldPorphyryCopperDeposits
+- `12 - MutschlerWorldPorphyryCopperDepositsRegionalPlots`_: Generates regional plots for Mutschler world porphyry copper deposits.
 
 .. _`01 - Getting Started`: https://gplates.github.io/gplately/stable/01-GettingStarted.html
 .. _`02 - Plate Reconstructions`: https://gplates.github.io/gplately/stable/02-PlateReconstructions.html
@@ -34,6 +34,7 @@ Jypter Notebooks
 .. _`09 - Motion Paths and Flowlines`: https://gplates.github.io/gplately/stable/09-CreatingMotionPathsAndFlowlines.html
 .. _`10 - SeafloorGrid`: https://gplates.github.io/gplately/stable/10-SeafloorGrids.html
 .. _`11 - AndesFluxes`: https://gplates.github.io/gplately/stable/11-AndesFluxes.html
+.. _`12 - MutschlerWorldPorphyryCopperDepositsRegionalPlots`: https://gplates.github.io/gplately/stable/12-MutschlerWorldPorphyryCopperDepositsRegionalPlots.html
 .. _`GPlates 2.3's sample data sets`: https://www.earthbyte.org/gplates-2-3-software-and-data-sets/
 
 .. note::

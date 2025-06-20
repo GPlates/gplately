@@ -32,13 +32,15 @@ def plot_model(ax, model_name):
     except:
         model = PlateModel(model_name, data_dir=MODEL_REPO_DIR, readonly=True)
 
+    assert model
+
     age = random.randint(0, 140)
 
     test_model = PlateReconstruction(
         model.get_rotation_model(),
         topology_features=model.get_layer("Topologies"),
         static_polygons=model.get_layer("StaticPolygons"),
-        plate_model_name=model_name,
+        plate_model=model,
     )
     gplot = PlotTopologies(
         test_model,

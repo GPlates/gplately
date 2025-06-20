@@ -14,7 +14,6 @@ from plate_model_manager import PlateModel, PlateModelManager
 import gplately
 from gplately import PlateReconstruction, PlotTopologies
 
-
 print(gplately.__file__)
 
 # test the plot function with the new PlateModel class
@@ -39,7 +38,7 @@ def main(show=True):
         model.get_rotation_model(),
         topology_features=model.get_layer("Topologies"),
         static_polygons=model.get_layer("StaticPolygons"),
-        plate_model_name=MODEL_NAME,
+        plate_model=model,
     )
     gplot = PlotTopologies(
         test_model,
@@ -106,13 +105,13 @@ def main(show=True):
         ids = set([f.get_reconstruction_plate_id() for f in gplot.topologies])
         for id in ids:
             if all_flag or plot_flag["plate_polygon_by_id"]:
-               color = list(np.random.choice(range(256), size=3) / 256)
-               gplot.plot_plate_polygon_by_id(
-                   ax,
-                   id,
-                   facecolor=color + [0.5],
-                   edgecolor=color,
-               )
+                color = list(np.random.choice(range(256), size=3) / 256)
+                gplot.plot_plate_polygon_by_id(
+                    ax,
+                    id,
+                    facecolor=color + [0.5],
+                    edgecolor=color,
+                )
 
     plt.title(f"{age} Ma")
 

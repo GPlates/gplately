@@ -35,7 +35,3 @@ from . import (
     utils,
     velocity_tools,
 )
-from .ridge_spreading_rate import spreading_rates as ridge_spreading_rate_func
-from .subduction_convergence import (
-    subduction_convergence as subduction_convergence_func,
-)

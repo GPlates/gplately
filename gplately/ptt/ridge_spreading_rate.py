@@ -17,7 +17,7 @@
 
 
 """
-Calculate mid-ocean ridge spreading rates. 
+Calculate mid-ocean ridge spreading rates.
 """
 
 
@@ -45,36 +45,35 @@ def spreading_rates(
 ):
     """Calculate spreading rate of ridge segments (and other statistics like spreading obqliquity, and ridge length/normals and left/right plates).
 
-    The transform segments of spreading features are ignored (unless `transform_segment_deviation_in_radians` is `None`).
+    The transform segments of spreading features are ignored (unless ``transform_segment_deviation_in_radians`` is ``None``).
 
-    Resolves topologies at 'time', tessellates all resolved spreading features to within `threshold_sampling_distance_radians` radians and
+    Resolves topologies at ``time``, tessellates all resolved spreading features to within ``threshold_sampling_distance_radians`` radians and
     returns a list of tuples where each tuple represents a tessellated point.
 
     Parameters
     ----------
-    rotation_features_or_model : str/`os.PathLike`, or <pygplates.FeatureCollection>, or <pygplates.Feature>, or sequence of <pygplates.Feature>, or a sequence (eg, a list or tuple) of any combination of those four types, or <pygplates.RotationModel>
+    rotation_features_or_model : str/os.PathLike, or `pygplates.FeatureCollection`_, or `pygplates.Feature`_, or sequence of `pygplates.Feature`_, or a sequence (eg, a list or tuple) of any combination of those four types, or `pygplates.RotationModel`_
         A rotation model to calculate spreading rate.
         Can be provided as a rotation filename, or rotation feature collection, or rotation feature, or
         sequence of rotation features, or a sequence (eg, a list or tuple) of any combination of those four types.
-    topology_features : str/`os.PathLike`, or <pygplates.FeatureCollection>, or <pygplates.Feature>, or a sequence <pygplates.Feature>, or a sequence (eg, a list or tuple) of any combination of those four types
+    topology_features : str/os.PathLike, or `pygplates.FeatureCollection`_, or `pygplates.Feature`_, or a sequence `pygplates.Feature`_, or a sequence (eg, a list or tuple) of any combination of those four types
         Reconstructable topological features representing the spreading features.
     time : float
         The reconstruction time (Ma) at which to calculate spreading rate.
     threshold_sampling_distance_radians : float
         Threshold sampling distance along spreading features (in radians).
-    spreading_feature_types : <pygplates.FeatureType> or sequence of <pygplates.FeatureType>, default=pygplates.FeatureType.gpml_mid_ocean_ridge
+    spreading_feature_types : `pygplates.FeatureType`_ or sequence of `pygplates.FeatureType`_, default=pygplates.FeatureType.gpml_mid_ocean_ridge
         Only spreading features with a feature type contained in this list are considered.
-        If `None` then all spreading features are considered.
+        If ``None`` then all spreading features are considered.
     transform_segment_deviation_in_radians : float, default=<implementation-defined>
         How much a segment can deviate from the stage pole before it's considered a transform segment (in radians).
         The default value has been empirically determined to give the best results for typical models.
-        If `None` then the full feature geometry is used (ie, it is not split into ridge and transform segments, with the transform segments getting ignored).
+        If ``None`` then the full feature geometry is used (ie, it is not split into ridge and transform segments, with the transform segments getting ignored).
     velocity_delta_time : float, default=1.0
-        Delta time interval used to calculate spreading velocity.
-        Defaults to 1 Myr.
+        Delta time interval used to calculate spreading velocity. Defaults to 1 Myr.
     anchor_plate_id : int, optional
         Anchor plate ID for reconstruction.
-        If not specified then uses the default anchor plate of `rotation_model` if it's a `pygplates.RotationModel` (otherwise uses zero).
+        If not specified then uses the default anchor plate of ``rotation_model`` if it's a `pygplates.RotationModel`_ (otherwise uses zero).
     include_network_boundaries : bool, default=False
         Whether to calculate spreading rate along network boundaries that are not also plate boundaries (defaults to False).
         If a deforming network shares a boundary with a plate then it'll get included regardless of this option.
@@ -87,16 +86,16 @@ def spreading_rates(
         The results for all tessellated points sampled along spreading features.
         The size of the returned list is equal to the number of tessellated points.
         Each tuple in the list corresponds to a tessellated point and has the following tuple items
-        (depending on `output_obliquity_and_normal_and_left_right_plates`):
+        (depending on ``output_obliquity_and_normal_and_left_right_plates``):
 
-        If `output_obliquity_and_normal_and_left_right_plates` is `False` (the default):
+        If ``output_obliquity_and_normal_and_left_right_plates`` is ``False`` (the default):
 
         * longitude of tessellated point
         * latitude of tessellated point
         * spreading velocity magnitude (in cm/yr)
         * length of arc segment (in degrees) that tessellated point is on
 
-        If `output_obliquity_and_normal_and_left_right_plates` is `True`:
+        If ``output_obliquity_and_normal_and_left_right_plates`` is ``True``:
 
         * longitude of tessellated point
         * latitude of tessellated point
@@ -106,6 +105,12 @@ def spreading_rates(
         * azimuth of vector normal to the arc segment in degrees (clockwise starting at North, ie, 0 to 360 degrees)
         * left plate ID
         * right plate ID
+
+
+    .. _pygplates.RotationModel: https://www.gplates.org/docs/pygplates/generated/pygplates.rotationmodel
+    .. _pygplates.Feature: https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature
+    .. _pygplates.FeatureCollection: https://www.gplates.org/docs/pygplates/generated/pygplates.featurecollection#pygplates.FeatureCollection
+    .. _pygplates.FeatureType: https://www.gplates.org/docs/pygplates/generated/pygplates.featuretype
     """
     # Turn rotation data into a RotationModel (if not already).
     rotation_model = pygplates.RotationModel(rotation_features_or_model)
