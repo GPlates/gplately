@@ -876,41 +876,34 @@ def reconstruct_grid(
     Parameters
     ----------
     grid : array_like, or str
-        The grid to be reconstructed. If ``grid`` is a filename, it will be
-        loaded using :meth:`gplately.read_netcdf_grid`.
+        The grid to be reconstructed. If ``grid`` is a filename, it will be loaded using :meth:`read_netcdf_grid`.
     partitioning_features : valid argument to pygplates.FeaturesFunctionArgument
-        Features used to partition ``grid`` by plate ID, usually a static
-        polygons file. ``partitioning_features`` may be a single
-        feature (``pygplates.Feature``), a feature collection
-        (``pygplates.FeatureCollection``), a filename (``str``), or a (potentially
+        Features used to partition the ``grid`` by plate ID, usually a static
+        polygons file. The ``partitioning_features`` may be a single
+        ``pygplates.Feature`` object, a ``pygplates.FeatureCollection``, a filename (:class:`str`), or a (potentially
         nested) sequence of any combination of the above types.
     rotation_model : valid argument to pygplates.RotationModel
-        The rotation model used to reconstruct ``grid``.
-        ``rotation_model`` may be a rotation model object
-        (``pygplates.RotationModel``), a rotation feature collection
-        (``pygplates.FeatureCollection``), a rotation filename
-        (``str``), a rotation feature (``pygplates.Feature``), a sequence of
+        The rotation model used to reconstruct the ``grid``.
+        The ``rotation_model`` may be a ``pygplates.RotationModel`` object, a rotation ``pygplates.FeatureCollection``, a rotation filename
+        (:class:`str`), a rotation ``pygplates.Feature``, a sequence of
         rotation features, or a (potentially nested) sequence of any combination of the above types.
     to_time : float
         Time to which ``grid`` will be reconstructed.
-    from_time : float, default 0.0
-        Time from which to reconstruct ``grid``.
-    extent : tuple or "global", default "global"
-        Extent of ``grid``. Valid arguments are a tuple of
-        the form (xmin, xmax, ymin, ymax), or the string "global",
+    from_time : float, default=0.0
+        Time from which to reconstruct the ``grid``.
+    extent : tuple or str, default="global"
+        Extent of the ``grid``. Valid arguments are a tuple of the form (xmin, xmax, ymin, ymax), or the string "global",
         equivalent to (-180.0, 180.0, -90.0, 90.0).
     origin : {"upper", "lower"}, optional
-        Origin of ``grid`` - either lower-left or upper-left. By default,
-        determined from `extent`.
-    fill_value : float, int, or tuple, optional
+        Origin of the ``grid`` - either lower-left or upper-left. By default, determined from `extent`.
+    fill_value : float, int, or tuple, optional, default=None
         The value to be used for regions outside of ``partitioning_features``
-        at ``to_time``. By default (``fill_value=None``), this value will be
-        determined based on the input.
-    threads : int, default 1
+        at ``to_time``. If not provided, this value will be determined based on the input.
+    threads : int, default=1
         Number of threads to use for certain computationally heavy routines.
-    anchor_plate_id : int, optional
-        ID of the anchored plate. By default, reconstructions are made with respect to the
-        default anchor plate ID of ``rotation_model`` if it's a ``pygplates.RotationModel`` (otherwise zero).
+    anchor_plate_id : int, optional, default=None
+        ID of the anchored plate. By default, use the default anchor plate ID of ``rotation_model``
+        if it's a ``pygplates.RotationModel`` (otherwise zero).
     x_dimension_name : str, optional, default=""
         If the grid file uses comman names, such as "x", "lon", "lons" or "longitude", you need not set this parameter.
         Otherwise, you need to tell us what the x dimension name is.
@@ -928,6 +921,7 @@ def reconstruct_grid(
         The reconstructed grid. Areas for which no plate ID could be
         determined from ``partitioning_features`` will be filled with ``fill_value``.
 
+
     .. note::
 
         For two-dimensional grids, ``fill_value`` should be a single
@@ -935,11 +929,11 @@ def reconstruct_grid(
         complex types, the minimum value for integer types, and the
         maximum value for unsigned types.
         For RGB image grids, ``fill_value`` should be a 3-tuple RGB
-        colour code or a matplotlib colour string. The default value
-        will be black (0.0, 0.0, 0.0) or (0, 0, 0).
+        colour code or a matplotlib colour name. The default value
+        will be black (0.0, 0.0, 0.0).
         For RGBA image grids, ``fill_value`` should be a 4-tuple RGBA
-        colour code or a matplotlib colour string. The default fill
-        value will be transparent black (0.0, 0.0, 0.0, 0.0) or (0, 0, 0, 0).
+        colour code or a matplotlib colour name. The default fill
+        value will be transparent black (0.0, 0.0, 0.0, 0.0).
     """
     try:
         grid = np.array(

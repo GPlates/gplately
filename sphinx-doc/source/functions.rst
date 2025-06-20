@@ -7,6 +7,15 @@ This page lists the assorted functions of the GPlately Python package.
    :local:
    :depth: 3
 
+Reconstruction
+--------------
+
+.. autosummary::
+   :nosignatures:
+   :toctree: generated
+
+   gplately.reconstruct_grid
+
 Resolve Topologies
 ------------------
 
