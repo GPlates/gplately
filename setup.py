@@ -97,7 +97,7 @@ if __name__ == "__main__":
             "rasterio",
             "geopandas",
             "stripy",
-            "plate-model-manager>=1.2.1",
+            "plate-model-manager>=1.3.0",
             "pyyaml",
             "pygmt",
             "rioxarray",
