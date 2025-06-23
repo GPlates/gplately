@@ -2450,7 +2450,7 @@ class PlateReconstruction(object):
                 # not sure about this. always set the "trail" to the last one in reconstructed_motion_paths?
                 # or there is only one path in reconstructed_motion_paths? -- Michael Chin
                 trail = reconstructed_motion_path.get_motion_path().to_lat_lon_array()
-            assert trail
+            assert trail is not None
             lon, lat = np.flipud(trail[:, 1]), np.flipud(trail[:, 0])
 
             rlons[:, i] = lon
