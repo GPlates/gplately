@@ -15,6 +15,8 @@ Reconstruction
    :toctree: generated
 
    gplately.reconstruct_grid
+   gplately.reconstruct_points
+   gplately.reconstruct_points_impl
 
 Resolve Topologies
 ------------------
