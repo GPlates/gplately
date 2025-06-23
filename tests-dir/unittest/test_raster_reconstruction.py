@@ -67,7 +67,7 @@ def main(show=True, anchor_pid=0):
     if show:
         plt.show()
     else:
-        save_fig(__file__)
+        save_fig(f"{__file__[:-3]}-{anchor_pid}.py")
 
 
 if __name__ == "__main__":

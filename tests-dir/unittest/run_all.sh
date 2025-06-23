@@ -14,6 +14,10 @@ $BASEDIR/test_anchor_plate_id.py save
 
 $BASEDIR/test_plot_with_raster.py save
 
+$BASEDIR/test_raster_reconstruction.py 701 save
+
+$BASEDIR/test_raster_reconstruction.py save
+
 $BASEDIR/test_reconstruct_points.py save
 
 $BASEDIR/test_tessellate.py save

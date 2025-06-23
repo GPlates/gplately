@@ -41,7 +41,12 @@ from plate_model_manager import PlateModel, PlateModelManager, PresentDayRasterM
 from . import auxiliary
 from .download import DataServer
 from .grids import Raster, read_netcdf_grid, reconstruct_grid
-from .lib.reconstruct import reconstruct_points, reconstruct_points_impl
+from .lib.reconstruct import (
+    reconstruct_points,
+    reconstruct_points_impl,
+    reverse_reconstruct_points,
+    reverse_reconstruct_points_impl,
+)
 from .mapping.cartopy_plot import CartopyPlotEngine
 from .mapping.plot_engine import PlotEngine
 from .mapping.pygmt_plot import PygmtPlotEngine

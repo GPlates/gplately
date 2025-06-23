@@ -506,24 +506,6 @@ def test_change_ancbor_plate(gplately_points_object):
 
 
 def test_reconstruct_points_func():
-    data_1 = {
-        "points": "95, 54, 142, -33",
-        "time": 140,
-        "model": "Muller2019",
-    }
-    data_2 = {"lons": "95, -117.26, 142", "lats": "54, 32.7, -33", "time": 140}
-    data_3 = {
-        "lons": [95, -117.26, 142],
-        "lats": [54, 32.7, -33],
-        "times": [140, 100, 50],
-        "model": "Muller2019",
-    }
-    data_4 = {
-        "lats": "50, 10, 50",
-        "lons": "-100, 160, 100",
-        "time": "100",
-        "model": "PALEOMAP",
-    }
     ret = gplately.reconstruct_points(
         lons=[95, -117.26, 142],
         lats=[54, 32.7, -33],
@@ -571,6 +553,20 @@ def test_reconstruct_points_func():
         model_name="Muller2019",
         times=140,
         reverse=True,
+    )
+    assert len(ret) == 1
+    assert math.isclose(ret[0]["lats"][0], 54, abs_tol=0.001)
+    assert math.isclose(ret[0]["lats"][1], -33, abs_tol=0.001)
+    assert math.isclose(ret[0]["lons"][0], 95, abs_tol=0.001)
+    assert math.isclose(ret[0]["lons"][1], 142, abs_tol=0.001)
+
+    logger.info(ret)
+
+    ret = gplately.reverse_reconstruct_points(
+        lons=[62.6938, 126.7291],
+        lats=[58.8486, -61.6615],
+        model_name="Muller2019",
+        time=140,
     )
     assert len(ret) == 1
     assert math.isclose(ret[0]["lats"][0], 54, abs_tol=0.001)
@@ -640,4 +636,29 @@ def test_reconstruct_points_func():
         valid_time=[(600, 0), (10, 0), (100, 0)],
     )
 
+    logger.info(ret)
+
+    from plate_model_manager import PlateModelManager
+
+    _model = PlateModelManager().get_model("Muller2019")
+    assert _model
+
+    static_polygon_fc = pygplates.FeatureCollection()
+    static_polygon_files = _model.get_static_polygons()
+    assert static_polygon_files
+    for f in static_polygon_files:
+        static_polygon_fc.add(pygplates.FeatureCollection(f))
+
+    ret = gplately.reverse_reconstruct_points_impl(
+        lons=[62.6938, 126.7291],
+        lats=[58.8486, -61.6615],
+        rotation_model=pygplates.RotationModel(_model.get_rotation_model()),
+        static_polygons=pygplates.FeatureCollection(static_polygon_fc),
+        time=140,
+    )
+    assert len(ret) == 1
+    assert math.isclose(ret[0]["lats"][0], 54, abs_tol=0.001)
+    assert math.isclose(ret[0]["lats"][1], -33, abs_tol=0.001)
+    assert math.isclose(ret[0]["lons"][0], 95, abs_tol=0.001)
+    assert math.isclose(ret[0]["lons"][1], 142, abs_tol=0.001)
     logger.info(ret)

@@ -91,8 +91,8 @@ def reconstruct_points_impl(
     ignore_valid_time: bool = False,
     reverse: bool = False,
 ):
-    """This function is similar to :func:`gplately.reconstruct_points`.
-    The only difference is that this function allows user to provide rotation model and static polygons feature collection instead of a model name.
+    """Similar to :func:`gplately.reconstruct_points`. The only difference is that this function allows
+    user to provide rotation model and static polygons feature collection instead of a model name.
 
     Parameters
     ----------
@@ -198,6 +198,56 @@ def reconstruct_points_impl(
                 )
             )
         return ret
+
+
+def reverse_reconstruct_points(
+    lons: list[float],
+    lats: list[float],
+    model_name: str,
+    time: float,
+    pids: Union[int, list[int], None] = None,
+    valid_time: Union[tuple[float, float], list[tuple[float, float]], None] = None,
+    anchor_plate_id: int = 0,
+    ignore_valid_time: bool = False,
+):
+    """Wrapper function to reverse reconstruct points with :func:`gplately.reconstruct_points`."""
+    return reconstruct_points(
+        lons,
+        lats,
+        model_name,
+        times=time,
+        pids=pids,
+        valid_time=valid_time,
+        anchor_plate_id=anchor_plate_id,
+        ignore_valid_time=ignore_valid_time,
+        reverse=True,
+    )
+
+
+def reverse_reconstruct_points_impl(
+    lons: list[float],
+    lats: list[float],
+    rotation_model: pygplates.RotationModel,
+    static_polygons: pygplates.FeatureCollection,
+    time: float,
+    pids: Union[int, list[int], None] = None,
+    valid_time: Union[tuple[float, float], list[tuple[float, float]], None] = None,
+    anchor_plate_id: int = 0,
+    ignore_valid_time: bool = False,
+):
+    """Wrapper function to reverse reconstruct points with :func:`gplately.reconstruct_points_impl`."""
+    return reconstruct_points_impl(
+        lons=lons,
+        lats=lats,
+        rotation_model=rotation_model,
+        static_polygons=static_polygons,
+        times=time,
+        pids=pids,
+        valid_time=valid_time,
+        anchor_plate_id=anchor_plate_id,
+        ignore_valid_time=ignore_valid_time,
+        reverse=True,
+    )
 
 
 def _get_reconstructed_data(
