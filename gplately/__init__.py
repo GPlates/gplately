@@ -38,7 +38,7 @@ del ensure_plate_model_manager_compatible
 
 from plate_model_manager import PlateModel, PlateModelManager, PresentDayRasterManager
 
-from . import auxiliary
+from . import auxiliary, ptt
 from .download import DataServer
 from .grids import Raster, read_netcdf_grid, reconstruct_grid
 from .lib.reconstruct import (
@@ -67,6 +67,7 @@ from .tools import EARTH_RADIUS
 __all__ = [
     # modules
     "auxiliary",
+    "ptt",
     # main classes
     "DataServer",
     "PlateReconstruction",

@@ -1,5 +1,6 @@
 #!/usr/bin/env python3
 
+import os
 import sys
 
 import cartopy.crs as ccrs
@@ -7,12 +8,15 @@ import matplotlib.pyplot as plt
 from common import MODEL_REPO_DIR, save_fig
 from plate_model_manager import PlateModelManager
 
+os.environ["DISABLE_GPLATELY_DEV_WARNING"] = "true"
 import gplately
 
 print(gplately.__file__)
 
 MODEL_NAME = "Clennett2020"
 # MODEL_NAME = "Muller2019"
+
+# test reconstruction with different anchor PIDs.
 
 
 def main(show=True):

@@ -1,7 +1,10 @@
 #!/usr/bin/env python3
 
+import os
 import random
 import sys
+
+os.environ["DISABLE_GPLATELY_DEV_WARNING"] = "true"
 
 import cartopy.crs as ccrs
 import matplotlib.pyplot as plt
@@ -15,13 +18,18 @@ from gplately import PlateReconstruction, PlotTopologies
 print(gplately.__file__)
 
 MODELS = [
+    "Shirmard2025",
+    "Cao2024",
     "Alfonso2024",
-    "Muller2019",
-    "Clennett2020",
     "Muller2022",
-    "Muller2016",
+    "Zahirovic2022",
     "Merdith2021",
+    "Clennett2020",
+    "Muller2019",
+    "matthews2016",
+    "Muller2016",
     "seton2012",
+    "paleomap",
 ]
 
 
@@ -38,7 +46,7 @@ def plot_model(ax, model_name):
 
     test_model = PlateReconstruction(
         model.get_rotation_model(),
-        topology_features=model.get_layer("Topologies"),
+        topology_features=model.get_layer("Topologies", return_none_if_not_exist=True),
         static_polygons=model.get_layer("StaticPolygons"),
         plate_model=model,
     )

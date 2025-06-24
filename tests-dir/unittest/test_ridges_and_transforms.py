@@ -1,8 +1,11 @@
 #!/usr/bin/env python3
 
 import math
+import os
 import sys
 from pathlib import Path
+
+os.environ["DISABLE_GPLATELY_DEV_WARNING"] = "true"
 
 import cartopy.crs as ccrs
 import matplotlib.pyplot as plt
@@ -22,11 +25,12 @@ try:
     model = PlateModelManager().get_model(model_name, data_dir=MODEL_REPO_DIR)
 except:
     model = PlateModel(model_name, data_dir=MODEL_REPO_DIR, readonly=True)
+assert model
 
 
 def plot_ridges_and_transforms(ax, angle):
     print(f"plotting angle:{angle}")
-
+    assert model
     (
         topologies,
         ridge_transforms,

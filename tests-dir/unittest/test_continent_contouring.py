@@ -1,15 +1,18 @@
 #!/usr/bin/env python3
 import math
+import os
 
 import pygplates
 from common import MODEL_REPO_DIR
 from plate_model_manager import PlateModel, PlateModelManager
 
+os.environ["DISABLE_GPLATELY_DEV_WARNING"] = "true"
 import gplately
-from gplately import PlateReconstruction, PlotTopologies
 from gplately.ptt import continent_contours
 
 print(gplately.__file__)
+
+# test using ContinentContouring to generate continent mask grid.
 
 max_distance_of_subduction_zone_from_active_margin_kms = 500
 max_distance_of_subduction_zone_from_active_margin_radians = (
@@ -70,8 +73,14 @@ if __name__ == "__main__":
     except:
         model = PlateModel(MODEL_NAME, data_dir=MODEL_REPO_DIR, readonly=True)
 
+    assert model
+
     rotation_model = pygplates.RotationModel(model.get_rotation_model())
-    continent_files = model.get_continental_polygons() + model.get_layer("Cratons")
+    continent_files = model.get_continental_polygons()
+    cratons_files = model.get_layer("Cratons")
+    assert continent_files
+    assert cratons_files
+    continent_files += cratons_files
     continent_features = [pygplates.FeatureCollection(f) for f in continent_files]
     print(continent_features)
     continent_contouring = continent_contours.ContinentContouring(
@@ -87,7 +96,9 @@ if __name__ == "__main__":
     continent_mask, contoured_continents = (
         continent_contouring.get_continent_mask_and_contoured_continents(time)
     )
-    continent_mask_filename = "continent_mask_{}.nc".format(time)
+    continent_mask_filename = (
+        f"./output/test-continent-contouring-continent-mask-{time}.nc"
+    )
     # Note that we need to convert the boolean mask grid to a non-boolean number type for NetCDF (and it seems floating-point for gplately).
     continent_mask_grid = continent_mask.astype("float")
     gplately.grids.write_netcdf_grid(continent_mask_filename, continent_mask_grid)

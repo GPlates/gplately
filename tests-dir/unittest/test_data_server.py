@@ -1,8 +1,12 @@
 #!/usr/bin/env python3
+import os
 
+os.environ["DISABLE_GPLATELY_DEV_WARNING"] = "true"
 from common import get_logger
 
 import gplately
+
+print(gplately.__file__)
 
 if __name__ == "__main__":
 

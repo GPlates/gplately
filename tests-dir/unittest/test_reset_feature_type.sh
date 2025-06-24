@@ -1,7 +1,7 @@
 #!/bin/bash
 export DISABLE_GPLATELY_DEV_WARNING=true
 
-TEST_DATA_DIR="test-reset-feature-type-data"
+TEST_DATA_DIR="./output/test-reset-feature-type-data"
 mkdir -p $TEST_DATA_DIR
 
 
