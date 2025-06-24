@@ -1,3 +1,5 @@
+import math
+
 import numpy as np
 import pygplates
 import pytest
@@ -501,3 +503,162 @@ def test_change_ancbor_plate(gplately_points_object):
     gplately_points_object.rotate_reference_frames(
         50, from_rotation_reference_plate=0, to_rotation_reference_plate=101
     )
+
+
+def test_reconstruct_points_func():
+    ret = gplately.reconstruct_points(
+        lons=[95, -117.26, 142],
+        lats=[54, 32.7, -33],
+        model_name="Muller2019",
+        times=[140, 100, 50],
+    )
+    logger.info(ret)
+    assert len(ret) == 3
+    assert ret[0]["time"] == 140
+    assert ret[1]["time"] == 100
+    assert ret[2]["time"] == 50
+
+    assert math.isclose(ret[0]["lons"][0], 62.6938, abs_tol=0.001)
+    assert math.isnan(ret[0]["lons"][1])
+    assert math.isclose(ret[0]["lons"][2], 126.7291, abs_tol=0.001)
+    assert math.isclose(ret[1]["lons"][0], 69.9307, abs_tol=0.001)
+    assert math.isnan(ret[1]["lons"][1])
+    assert math.isclose(ret[1]["lons"][2], 141.4215, abs_tol=0.001)
+    assert math.isclose(ret[2]["lons"][0], 84.3967, abs_tol=0.001)
+    assert math.isnan(ret[2]["lons"][1])
+    assert math.isclose(ret[2]["lons"][2], 137.0091, abs_tol=0.001)
+
+    assert math.isclose(ret[0]["lats"][0], 58.8486, abs_tol=0.001)
+    assert math.isnan(ret[0]["lats"][1])
+    assert math.isclose(ret[0]["lats"][2], -61.6615, abs_tol=0.001)
+    assert math.isclose(ret[1]["lats"][0], 56.6657, abs_tol=0.001)
+    assert math.isnan(ret[1]["lats"][1])
+    assert math.isclose(ret[1]["lats"][2], -55.9227, abs_tol=0.001)
+    assert math.isclose(ret[2]["lats"][0], 56.2327, abs_tol=0.001)
+    assert math.isnan(ret[2]["lats"][1])
+    assert math.isclose(ret[2]["lats"][2], -55.5198, abs_tol=0.001)
+
+    ret = gplately.reconstruct_points(
+        lons=[95, 142],
+        lats=[54, -33],
+        model_name="Muller2019",
+        times=140,
+    )
+
+    logger.info(ret)
+
+    ret = gplately.reconstruct_points(
+        lons=[62.6938, 126.7291],
+        lats=[58.8486, -61.6615],
+        model_name="Muller2019",
+        times=140,
+        reverse=True,
+    )
+    assert len(ret) == 1
+    assert math.isclose(ret[0]["lats"][0], 54, abs_tol=0.001)
+    assert math.isclose(ret[0]["lats"][1], -33, abs_tol=0.001)
+    assert math.isclose(ret[0]["lons"][0], 95, abs_tol=0.001)
+    assert math.isclose(ret[0]["lons"][1], 142, abs_tol=0.001)
+
+    logger.info(ret)
+
+    ret = gplately.reverse_reconstruct_points(
+        lons=[62.6938, 126.7291],
+        lats=[58.8486, -61.6615],
+        model_name="Muller2019",
+        time=140,
+    )
+    assert len(ret) == 1
+    assert math.isclose(ret[0]["lats"][0], 54, abs_tol=0.001)
+    assert math.isclose(ret[0]["lats"][1], -33, abs_tol=0.001)
+    assert math.isclose(ret[0]["lons"][0], 95, abs_tol=0.001)
+    assert math.isclose(ret[0]["lons"][1], 142, abs_tol=0.001)
+
+    logger.info(ret)
+
+    ret = gplately.reconstruct_points(
+        lons=[95, -117.26, 142],
+        lats=[54, 32.7, -33],
+        model_name="Muller2019",
+        times=[140, 100, 50],
+        ignore_valid_time=True,
+    )
+
+    logger.info(ret)
+
+    ret = gplately.reconstruct_points(
+        lons=[95, -117.26, 142],
+        lats=[54, 32.7, -33],
+        model_name="Muller2019",
+        times=[140, 100, 50],
+        anchor_plate_id=701,
+    )
+
+    logger.info(ret)
+
+    ret = gplately.reconstruct_points(
+        lons=[95, -117.26, 142],
+        lats=[54, 32.7, -33],
+        model_name="Muller2019",
+        times=[140, 100, 50],
+        pids=401,
+    )
+
+    logger.info(ret)
+
+    ret = gplately.reconstruct_points(
+        lons=[95, -117.26, 142],
+        lats=[54, 32.7, -33],
+        model_name="Muller2019",
+        times=[140, 100, 50],
+        pids=[401, 901, 801],
+    )
+
+    logger.info(ret)
+
+    ret = gplately.reconstruct_points(
+        lons=[95, -117.26, 142],
+        lats=[54, 32.7, -33],
+        model_name="Muller2019",
+        times=[140, 100, 50],
+        pids=[401, 901, 801],
+        valid_time=(600, 0),
+    )
+
+    logger.info(ret)
+
+    ret = gplately.reconstruct_points(
+        lons=[95, -117.26, 142],
+        lats=[54, 32.7, -33],
+        model_name="Muller2019",
+        times=[140, 100, 5],
+        pids=[401, 901, 801],
+        valid_time=[(600, 0), (10, 0), (100, 0)],
+    )
+
+    logger.info(ret)
+
+    from plate_model_manager import PlateModelManager
+
+    _model = PlateModelManager().get_model("Muller2019")
+    assert _model
+
+    static_polygon_fc = pygplates.FeatureCollection()
+    static_polygon_files = _model.get_static_polygons()
+    assert static_polygon_files
+    for f in static_polygon_files:
+        static_polygon_fc.add(pygplates.FeatureCollection(f))
+
+    ret = gplately.reverse_reconstruct_points_impl(
+        lons=[62.6938, 126.7291],
+        lats=[58.8486, -61.6615],
+        rotation_model=pygplates.RotationModel(_model.get_rotation_model()),
+        static_polygons=pygplates.FeatureCollection(static_polygon_fc),
+        time=140,
+    )
+    assert len(ret) == 1
+    assert math.isclose(ret[0]["lats"][0], 54, abs_tol=0.001)
+    assert math.isclose(ret[0]["lats"][1], -33, abs_tol=0.001)
+    assert math.isclose(ret[0]["lons"][0], 95, abs_tol=0.001)
+    assert math.isclose(ret[0]["lons"][1], 142, abs_tol=0.001)
+    logger.info(ret)

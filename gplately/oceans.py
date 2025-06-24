@@ -135,7 +135,12 @@ import numpy as np
 import pandas as pd
 import pygplates
 
-from . import grids, reconstruction, tools
+from . import grids, tools
+from .lib.reconstruct_by_topologies import (
+    _ContinentCollision,
+    _DefaultCollision,
+    _ReconstructByTopologies,
+)
 from .ptt import continent_contours, separate_ridge_transform_segments
 from .tools import _deg2pixels, _pixels2deg
 from .utils import seafloor_grid_utils
@@ -840,7 +845,7 @@ class SeafloorGrid(object):
         grids.write_netcdf_grid(
             self.continent_mask_filepath.format(time),
             final_grid.astype("i1"),
-            extent=[-180, 180, -90, 90],
+            extent=(-180, 180, -90, 90),
             fill_value=None,
         )
         logger.info(f"Finished building a continental mask at {time} Ma!")
@@ -1184,7 +1189,7 @@ class SeafloorGrid(object):
         point_id = range(len(active_points))
 
         # Specify the default collision detection region as subduction zones
-        default_collision = reconstruction._DefaultCollision(
+        default_collision = _DefaultCollision(
             feature_specific_collision_parameters=[
                 (
                     pygplates.FeatureType.gpml_subduction_zone,
@@ -1193,7 +1198,7 @@ class SeafloorGrid(object):
             ]
         )
         # In addition to the default subduction detection, also detect continental collisions
-        collision_spec = reconstruction._ContinentCollision(
+        collision_spec = _ContinentCollision(
             # This filename string should not have a time formatted into it - this is
             # taken care of later.
             self.continent_mask_filepath,
@@ -1202,7 +1207,7 @@ class SeafloorGrid(object):
         )
 
         # Call the reconstruct by topologies object
-        topology_reconstruction = reconstruction._ReconstructByTopologies(
+        topology_reconstruction = _ReconstructByTopologies(
             self.rotation_model,
             self.topology_features,
             self._max_time,

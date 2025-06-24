@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
+import os
 import sys
 
+os.environ["DISABLE_GPLATELY_DEV_WARNING"] = "true"
 import cartopy.crs as ccrs
 import matplotlib.pyplot as plt
 from common import MODEL_REPO_DIR, save_fig
@@ -67,7 +69,7 @@ def main(show=True, anchor_pid=0):
     if show:
         plt.show()
     else:
-        save_fig(__file__)
+        save_fig(f"{__file__[:-3]}-{anchor_pid}.py")
 
 
 if __name__ == "__main__":

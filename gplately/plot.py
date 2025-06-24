@@ -484,7 +484,7 @@ class PlotTopologies(object):
             self._time = new_time_f
             self._update_time()
         else:
-            logger.warning(
+            logger.debug(
                 "The new reconstruction 'time' is the same with the old one. Do nothing!"
             )
 

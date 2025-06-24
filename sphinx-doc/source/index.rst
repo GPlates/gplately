@@ -23,7 +23,6 @@ and more to help you get started with plate reconstructions.
    faq
    examples
    command_line_interface
-   primer
 
 .. toctree::
    :caption: Reference

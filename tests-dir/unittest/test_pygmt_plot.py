@@ -1,7 +1,10 @@
 #!/usr/bin/env python3
+import os
 
-from gplately.auxiliary import get_gplot
-from gplately.mapping.pygmt_plot import PygmtPlotEngine, get_pygmt_basemap_figure
+os.environ["DISABLE_GPLATELY_DEV_WARNING"] = "true"
+
+from gplately.auxiliary import get_gplot, get_pygmt_basemap_figure
+from gplately.mapping.pygmt_plot import PygmtPlotEngine
 
 if __name__ == "__main__":
     gplot = get_gplot(
@@ -44,4 +47,4 @@ if __name__ == "__main__":
     fig.legend(position="jBL+o-2.7/0", box="+gwhite+p0.5p")
 
     # fig.show(width=1200)
-    fig.savefig("test-pygmt-plot.pdf")
+    fig.savefig("./output/test-pygmt-plot.pdf")

@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
+import os
 import sys
 
+os.environ["DISABLE_GPLATELY_DEV_WARNING"] = "true"
 import cartopy.crs as ccrs
 import matplotlib.pyplot as plt
 import numpy as np
@@ -15,6 +17,7 @@ print(gplately.__file__)
 def main(show=True):
     pm_manager = PlateModelManager()
     muller2019_model = pm_manager.get_model("Muller2019", data_dir=MODEL_REPO_DIR)
+    assert muller2019_model
     rotation_model = muller2019_model.get_rotation_model()
     topology_features = muller2019_model.get_topologies()
     static_polygons = muller2019_model.get_static_polygons()
@@ -42,13 +45,13 @@ def main(show=True):
     rlats = np.empty((21, pt_lons.size))
 
     for time in range(0, 21):
-        rlons[time], rlats[time] = gpts.reconstruct(time, return_array=True)
+        rlons[time], rlats[time] = gpts.reconstruct(time, return_array=True)  # type: ignore
 
     gplot.time = 0  # present day
 
     fig = plt.figure(figsize=(6, 8))
     ax1 = fig.add_subplot(111, projection=ccrs.Mercator(190))
-    ax1.set_extent([130, 180, -60, -10])
+    ax1.set_extent([130, 180, -60, -10])  # type: ignore
 
     gplot.plot_coastlines(ax1, color="0.8")
 

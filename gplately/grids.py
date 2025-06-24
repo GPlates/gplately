@@ -2036,7 +2036,7 @@ class Raster(object):
         if return_array:
             return data
         else:
-            return Raster(data, self.plate_reconstruction, self.extent, self.time)
+            return Raster(data, self.plate_reconstruction, self.extent, time=self.time)
 
     def fill_NaNs(self, inplace=False, return_array=False):
         """Search for the invalid ``data`` cells containing NaN-type entries and

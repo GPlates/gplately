@@ -2,12 +2,14 @@
 
 import os
 
+os.environ["DISABLE_GPLATELY_DEV_WARNING"] = "true"
+
 from common import *
 from plate_model_manager import PlateModel, PlateModelManager
 
 from gplately import PlateReconstruction, PlotTopologies, SeafloorGrid
 
-os.environ["DISABLE_GPLATELY_DEV_WARNING"] = "true"
+# test using SeafloorGrid class to generate age grids.
 
 
 def main():
@@ -39,34 +41,70 @@ def main():
         continents=continent_files,
     )
 
-    use_continent_contouring_flag = False
-
-    grid = SeafloorGrid(
-        reconstruction,
-        gplot,
-        min_time=400,
-        max_time=410,
-        save_directory="test-age-grid-output-folder",
-        ridge_time_step=1,
-        refinement_levels=5,
-        grid_spacing=0.1,
-        ridge_sampling=0.5,
-        initial_ocean_mean_spreading_rate=75,
-        file_collection=model_name,
-        resume_from_checkpoints=True,
-        use_continent_contouring=use_continent_contouring_flag,
-    )
-
-    test_new = 1
-
-    if test_new:
+    if True:
+        # test the new reconstruct_by_topological_model method
+        grid = SeafloorGrid(
+            reconstruction,
+            gplot,
+            min_time=400,
+            max_time=410,
+            save_directory="./output/test-age-grid-reconstruct-by-topological-model",
+            ridge_time_step=1,
+            refinement_levels=5,
+            grid_spacing=0.1,
+            ridge_sampling=0.5,
+            initial_ocean_mean_spreading_rate=75,
+            file_collection=model_name,
+            resume_from_checkpoints=True,
+            use_continent_contouring=False,
+        )
         grid.reconstruct_by_topological_model()
         for val in ("SEAFLOOR_AGE", "SPREADING_RATE"):
             grid.save_netcdf_files(val)
-    else:
+
+    if True:
+        # test the old reconstruct_by_topologies method
+        grid = SeafloorGrid(
+            reconstruction,
+            gplot,
+            min_time=400,
+            max_time=410,
+            save_directory="./output/test-age-grid-reconstruct-by-topologies",
+            ridge_time_step=1,
+            refinement_levels=5,
+            grid_spacing=0.1,
+            ridge_sampling=0.5,
+            initial_ocean_mean_spreading_rate=75,
+            file_collection=model_name,
+            resume_from_checkpoints=True,
+            use_continent_contouring=False,
+        )
+
         grid.reconstruct_by_topologies()
         for val in ("SEAFLOOR_AGE", "SPREADING_RATE"):
             grid.lat_lon_z_to_netCDF(val, unmasked=False, nprocs=5)
+
+    if True:
+        # test the old reconstruct_by_topologies method
+        grid = SeafloorGrid(
+            reconstruction,
+            gplot,
+            min_time=400,
+            max_time=410,
+            save_directory="./output/test-age-grid-use_continent_contouring",
+            ridge_time_step=1,
+            refinement_levels=5,
+            grid_spacing=0.1,
+            ridge_sampling=0.5,
+            initial_ocean_mean_spreading_rate=75,
+            file_collection=model_name,
+            resume_from_checkpoints=True,
+            use_continent_contouring=True,
+        )
+
+        grid.reconstruct_by_topological_model()
+        for val in ("SEAFLOOR_AGE", "SPREADING_RATE"):
+            grid.save_netcdf_files(val)
 
 
 if __name__ == "__main__":

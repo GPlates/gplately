@@ -3,8 +3,10 @@
 
 # matplotlib.use("QtAgg")
 
+import os
 import sys
 
+os.environ["DISABLE_GPLATELY_DEV_WARNING"] = "true"
 import cartopy.crs as ccrs
 import matplotlib.pyplot as plt
 import numpy as np

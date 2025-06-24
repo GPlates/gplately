@@ -1,6 +1,6 @@
 export DISABLE_GPLATELY_DEV_WARNING=true
 
-TEST_DATA_DIR="test-feature-filter-data"
+TEST_DATA_DIR="./output/test-feature-filter-data"
 mkdir -p $TEST_DATA_DIR
 
 

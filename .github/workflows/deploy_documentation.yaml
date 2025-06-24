@@ -47,9 +47,9 @@ jobs:
       #  run: pdoc --config latex_math=True --template-dir .pdoc_template --html -o api --force gplately
       #  shell: bash -el {0}
       
-      - name: Convert jupyter notebooks to html
-        run: jupyter-nbconvert --to=html --output-dir=api/gplately/ Notebooks/*.ipynb
-        shell: bash -el {0}
+      #- name: Convert jupyter notebooks to html
+      #  run: jupyter-nbconvert --to=html --output-dir=api/gplately/ Notebooks/*.ipynb
+      #  shell: bash -el {0}
 
       - name: Build doc with sphinx
         run : |

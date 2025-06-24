@@ -1,8 +1,9 @@
 #!/usr/bin/env python3
-import sys, os
+import os
+import sys
 
 os.environ["GPLATELY_DEBUG"] = "1"
-
+os.environ["DISABLE_GPLATELY_DEV_WARNING"] = "true"
 
 import cartopy.crs as ccrs
 import matplotlib.pyplot as plt

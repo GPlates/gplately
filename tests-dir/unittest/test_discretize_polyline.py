@@ -7,6 +7,7 @@ import sys
 import pygplates
 from common import MODEL_REPO_DIR, save_fig
 
+os.environ["DISABLE_GPLATELY_DEV_WARNING"] = "true"
 import gplately
 from gplately.lib import discretize_polyline
 
@@ -37,7 +38,7 @@ def main(input_file, distance, output_file, strict_mode=True):
         for geom in f.get_all_geometries():
             assert isinstance(geom, pygplates.PolylineOnSphere)
             # convert lat, lon from degrees to radians
-            line_points = [degree_to_radian(p) for p in geom.to_lat_lon_list()]
+            line_points = [degree_to_radian(p) for p in geom.to_lat_lon_list()]  # type: ignore
 
             # print(len(line_points))
             assert len(line_points) > 1
@@ -55,7 +56,7 @@ def main(input_file, distance, output_file, strict_mode=True):
                         [radian_to_degree(p) for p in new_line_points]
                     )
                 )
-                nf.set_name(f_name)
+                nf.set_name(f_name)  # type: ignore
                 new_fc.add(nf)
     new_fc.write(output_file)
 
@@ -76,11 +77,11 @@ if __name__ == "__main__":
     # degrees=2
     # radians=math.radians(degrees)
 
-    out_file = "test_discretize_polyline_results.gpmlz"
+    out_file = "./output/test_discretize_polyline_results.gpmlz"
     in_file = f"{os.path.dirname(os.path.realpath(__file__))}/../data/test_discretize_polyline.gpmlz"
     main(in_file, radians, out_file)
     print(f"The points have been saved to {out_file} ")
 
-    out_file = "test_discretize_polyline_results_not_strict.gpmlz"
+    out_file = "./output/test_discretize_polyline_results_not_strict.gpmlz"
     main(in_file, radians, out_file, strict_mode=False)
     print(f"The points have been saved to {out_file} ")

@@ -38,9 +38,15 @@ del ensure_plate_model_manager_compatible
 
 from plate_model_manager import PlateModel, PlateModelManager, PresentDayRasterManager
 
-from . import auxiliary
+from . import auxiliary, ptt
 from .download import DataServer
 from .grids import Raster, read_netcdf_grid, reconstruct_grid
+from .lib.reconstruct import (
+    reconstruct_points,
+    reconstruct_points_impl,
+    reverse_reconstruct_points,
+    reverse_reconstruct_points_impl,
+)
 from .mapping.cartopy_plot import CartopyPlotEngine
 from .mapping.plot_engine import PlotEngine
 from .mapping.pygmt_plot import PygmtPlotEngine
@@ -61,6 +67,7 @@ from .tools import EARTH_RADIUS
 __all__ = [
     # modules
     "auxiliary",
+    "ptt",
     # main classes
     "DataServer",
     "PlateReconstruction",
@@ -78,6 +85,7 @@ __all__ = [
     # functions
     "read_netcdf_grid",
     "reconstruct_grid",
+    "reconstruct_points",
     "ridge_spreading_rate",
     "subduction_convergence",
     # constants

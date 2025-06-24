@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
+import os
 
-
+os.environ["DISABLE_GPLATELY_DEV_WARNING"] = "true"
 from common import *
 
 import gplately

@@ -1,14 +1,16 @@
 #!/usr/bin/env python3
+import os
 import sys
 
+os.environ["DISABLE_GPLATELY_DEV_WARNING"] = "true"
 import cartopy.crs as ccrs
 import matplotlib.pyplot as plt
 import numpy as np
+import pygplates
 from common import MODEL_REPO_DIR, save_fig
 from plate_model_manager import PlateModelManager
 
 import gplately
-import pygplates
 
 print(gplately.__file__)
 
@@ -17,6 +19,7 @@ def main(show=True):
     # Call GPlately's PlateModelManager object and request data from the Müller et al. 2019 study
     pm_manager = PlateModelManager()
     muller2019_model = pm_manager.get_model("Muller2019", data_dir=MODEL_REPO_DIR)
+    assert muller2019_model
     rotation_model = muller2019_model.get_rotation_model()
     topology_features = muller2019_model.get_topologies()
     static_polygons = muller2019_model.get_static_polygons()
@@ -120,13 +123,13 @@ def main(show=True):
     # Non-geometry columns of subduction data.
     subduction_data_columns = [
         column
-        for column in subduction_data.columns
-        if column != subduction_data.geometry.name
+        for column in subduction_data.columns  # type: ignore
+        if column != subduction_data.geometry.name  # type: ignore
     ]
 
     # Non-geometry columns of ridge data.
     ridge_data_columns = [
-        column for column in ridge_data.columns if column != ridge_data.geometry.name
+        column for column in ridge_data.columns if column != ridge_data.geometry.name  # type: ignore
     ]
 
     # Subduction and ridge subplots followed by a single plate boundary statistics subplot.
@@ -139,7 +142,7 @@ def main(show=True):
     #
     # Note: You'll need to zoom to 100% if viewing figure saved to a file.
     fig = plt.figure(
-        figsize=(16 * nun_subplot_columns, 8 * num_subplot_rows), layout="constrained"
+        figsize=(6 * nun_subplot_columns, 2 * num_subplot_rows), layout="constrained"
     )
     fig.suptitle(f"Time {time} Ma", fontsize="x-large")
     axes = fig.subplots(
@@ -155,9 +158,9 @@ def main(show=True):
         ax = axes.flatten()[subplot_index]
         ax.set_global()
         im_subduction = ax.scatter(
-            subduction_data.geometry.x,  # longitude
-            subduction_data.geometry.y,  # latitude
-            c=subduction_data.loc[:, subduction_data_column],
+            subduction_data.geometry.x,  # longitude # type: ignore
+            subduction_data.geometry.y,  # latitude # type: ignore
+            c=subduction_data.loc[:, subduction_data_column],  # type: ignore
             s=2,
             transform=ccrs.PlateCarree(),
         )
@@ -171,9 +174,9 @@ def main(show=True):
         ax = axes.flatten()[subplot_index]
         ax.set_global()
         im_ridge = ax.scatter(
-            ridge_data.geometry.x,  # longitude
-            ridge_data.geometry.y,  # latitude
-            c=ridge_data.loc[:, ridge_data_column],
+            ridge_data.geometry.x,  # longitude # type: ignore
+            ridge_data.geometry.y,  # latitude # type: ignore
+            c=ridge_data.loc[:, ridge_data_column],  # type: ignore
             s=2,
             transform=ccrs.PlateCarree(),
         )
