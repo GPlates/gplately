@@ -48,7 +48,6 @@
 <li class="toctree-l1"><a class="reference internal" href="../../faq.html">Trouble-shooting and FAQ</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../examples.html">Examples</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../../command_line_interface.html">Command Line Interface (CLI)</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../../primer.html">Primer</a></li>
 </ul>
 <p class="caption" role="heading"><span class="caption-text">Reference</span></p>
 <ul>
@@ -219,7 +218,12 @@
 <span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">pygplates</span>
 
-<span class="kn">from</span><span class="w"> </span><span class="nn">.</span><span class="w"> </span><span class="kn">import</span> <span class="n">grids</span><span class="p">,</span> <span class="n">reconstruction</span><span class="p">,</span> <span class="n">tools</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.</span><span class="w"> </span><span class="kn">import</span> <span class="n">grids</span><span class="p">,</span> <span class="n">tools</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">.lib.reconstruct_by_topologies</span><span class="w"> </span><span class="kn">import</span> <span class="p">(</span>
+    <span class="n">_ContinentCollision</span><span class="p">,</span>
+    <span class="n">_DefaultCollision</span><span class="p">,</span>
+    <span class="n">_ReconstructByTopologies</span><span class="p">,</span>
+<span class="p">)</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">.ptt</span><span class="w"> </span><span class="kn">import</span> <span class="n">continent_contours</span><span class="p">,</span> <span class="n">separate_ridge_transform_segments</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">.tools</span><span class="w"> </span><span class="kn">import</span> <span class="n">_deg2pixels</span><span class="p">,</span> <span class="n">_pixels2deg</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">.utils</span><span class="w"> </span><span class="kn">import</span> <span class="n">seafloor_grid_utils</span>
@@ -938,7 +942,7 @@
         <span class="n">grids</span><span class="o">.</span><span class="n">write_netcdf_grid</span><span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">continent_mask_filepath</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">time</span><span class="p">),</span>
             <span class="n">final_grid</span><span class="o">.</span><span class="n">astype</span><span class="p">(</span><span class="s2">&quot;i1&quot;</span><span class="p">),</span>
-            <span class="n">extent</span><span class="o">=</span><span class="p">[</span><span class="o">-</span><span class="mi">180</span><span class="p">,</span> <span class="mi">180</span><span class="p">,</span> <span class="o">-</span><span class="mi">90</span><span class="p">,</span> <span class="mi">90</span><span class="p">],</span>
+            <span class="n">extent</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mi">180</span><span class="p">,</span> <span class="mi">180</span><span class="p">,</span> <span class="o">-</span><span class="mi">90</span><span class="p">,</span> <span class="mi">90</span><span class="p">),</span>
             <span class="n">fill_value</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
         <span class="p">)</span>
         <span class="n">logger</span><span class="o">.</span><span class="n">info</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Finished building a continental mask at </span><span class="si">{</span><span class="n">time</span><span class="si">}</span><span class="s2"> Ma!&quot;</span><span class="p">)</span>
@@ -1293,7 +1297,7 @@
         <span class="n">point_id</span> <span class="o">=</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">active_points</span><span class="p">))</span>
 
         <span class="c1"># Specify the default collision detection region as subduction zones</span>
-        <span class="n">default_collision</span> <span class="o">=</span> <span class="n">reconstruction</span><span class="o">.</span><span class="n">_DefaultCollision</span><span class="p">(</span>
+        <span class="n">default_collision</span> <span class="o">=</span> <span class="n">_DefaultCollision</span><span class="p">(</span>
             <span class="n">feature_specific_collision_parameters</span><span class="o">=</span><span class="p">[</span>
                 <span class="p">(</span>
                     <span class="n">pygplates</span><span class="o">.</span><span class="n">FeatureType</span><span class="o">.</span><span class="n">gpml_subduction_zone</span><span class="p">,</span>
@@ -1302,7 +1306,7 @@
             <span class="p">]</span>
         <span class="p">)</span>
         <span class="c1"># In addition to the default subduction detection, also detect continental collisions</span>
-        <span class="n">collision_spec</span> <span class="o">=</span> <span class="n">reconstruction</span><span class="o">.</span><span class="n">_ContinentCollision</span><span class="p">(</span>
+        <span class="n">collision_spec</span> <span class="o">=</span> <span class="n">_ContinentCollision</span><span class="p">(</span>
             <span class="c1"># This filename string should not have a time formatted into it - this is</span>
             <span class="c1"># taken care of later.</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">continent_mask_filepath</span><span class="p">,</span>
@@ -1311,7 +1315,7 @@
         <span class="p">)</span>
 
         <span class="c1"># Call the reconstruct by topologies object</span>
-        <span class="n">topology_reconstruction</span> <span class="o">=</span> <span class="n">reconstruction</span><span class="o">.</span><span class="n">_ReconstructByTopologies</span><span class="p">(</span>
+        <span class="n">topology_reconstruction</span> <span class="o">=</span> <span class="n">_ReconstructByTopologies</span><span class="p">(</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">rotation_model</span><span class="p">,</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">topology_features</span><span class="p">,</span>
             <span class="bp">self</span><span class="o">.</span><span class="n">_max_time</span><span class="p">,</span>

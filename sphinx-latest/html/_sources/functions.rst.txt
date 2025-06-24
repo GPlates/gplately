@@ -15,6 +15,10 @@ Reconstruction
    :toctree: generated
 
    gplately.reconstruct_grid
+   gplately.reconstruct_points
+   gplately.reconstruct_points_impl
+   gplately.reverse_reconstruct_points
+   gplately.reverse_reconstruct_points_impl
 
 Resolve Topologies
 ------------------

@@ -1,0 +1,454 @@
+
+
+<!DOCTYPE html>
+<html class="writer-html5" lang="en" data-content_root="../../../">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>gplately.lib.reconstruct &mdash; gplately 2.0.0 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=b86133f3" />
+      <link rel="stylesheet" type="text/css" href="../../../_static/css/theme.css?v=e59714d7" />
+
+  
+    <link rel="shortcut icon" href="../../../_static/favicon.ico"/>
+      <script src="../../../_static/jquery.js?v=5d32c60e"></script>
+      <script src="../../../_static/_sphinx_javascript_frameworks_compat.js?v=2cd50e6c"></script>
+      <script src="../../../_static/documentation_options.js?v=51b770b3"></script>
+      <script src="../../../_static/doctools.js?v=9bcbadda"></script>
+      <script src="../../../_static/sphinx_highlight.js?v=dc90522c"></script>
+    <script src="../../../_static/js/theme.js"></script>
+    <link rel="index" title="Index" href="../../../genindex.html" />
+    <link rel="search" title="Search" href="../../../search.html" /> 
+</head>
+
+<body class="wy-body-for-nav"> 
+  <div class="wy-grid-for-nav">
+    <nav data-toggle="wy-nav-shift" class="wy-nav-side">
+      <div class="wy-side-scroll">
+        <div class="wy-side-nav-search" >
+
+          
+          
+          <a href="../../../index.html" class="icon icon-home">
+            gplately
+          </a>
+<div role="search">
+  <form id="rtd-search-form" class="wy-form" action="../../../search.html" method="get">
+    <input type="text" name="q" placeholder="Search docs" aria-label="Search docs" />
+    <input type="hidden" name="check_keywords" value="yes" />
+    <input type="hidden" name="area" value="default" />
+  </form>
+</div>
+        </div><div class="wy-menu wy-menu-vertical" data-spy="affix" role="navigation" aria-label="Navigation menu">
+              <p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../installation.html">Installation</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../basic_usages.html">Minimal working example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../use_cases.html">Common Use Cases</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../faq.html">Trouble-shooting and FAQ</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../examples.html">Examples</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../command_line_interface.html">Command Line Interface (CLI)</a></li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Reference</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../../../api.html">Main Classes</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../functions.html">Functions</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../../../secondaries.html">Other Classes</a></li>
+</ul>
+
+        </div>
+      </div>
+    </nav>
+
+    <section data-toggle="wy-nav-shift" class="wy-nav-content-wrap"><nav class="wy-nav-top" aria-label="Mobile navigation menu" >
+          <i data-toggle="wy-nav-top" class="fa fa-bars"></i>
+          <a href="../../../index.html">gplately</a>
+      </nav>
+
+      <div class="wy-nav-content">
+        <div class="rst-content">
+          <div role="navigation" aria-label="Page navigation">
+  <ul class="wy-breadcrumbs">
+      <li><a href="../../../index.html" class="icon icon-home" aria-label="Home"></a></li>
+          <li class="breadcrumb-item"><a href="../../index.html">Module code</a></li>
+      <li class="breadcrumb-item active">gplately.lib.reconstruct</li>
+      <li class="wy-breadcrumbs-aside">
+      </li>
+  </ul>
+  <hr/>
+</div>
+          <div role="main" class="document" itemscope="itemscope" itemtype="http://schema.org/Article">
+           <div itemprop="articleBody">
+             
+  <h1>Source code for gplately.lib.reconstruct</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">math</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Union</span>
+
+<span class="kn">import</span><span class="w"> </span><span class="nn">pygplates</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">plate_model_manager</span><span class="w"> </span><span class="kn">import</span> <span class="n">PlateModelManager</span>
+
+
+<div class="viewcode-block" id="reconstruct_points">
+<a class="viewcode-back" href="../../../generated/gplately.reconstruct_points.html#gplately.reconstruct_points">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">reconstruct_points</span><span class="p">(</span>
+    <span class="n">lons</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span>
+    <span class="n">lats</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span>
+    <span class="n">model_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">times</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">]],</span>
+    <span class="n">pids</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">valid_time</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">],</span> <span class="nb">list</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]],</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">anchor_plate_id</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+    <span class="n">ignore_valid_time</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">reverse</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Reconstruct points to the given time(s).</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    lons: a list of float</span>
+<span class="sd">        The longitudes of points.</span>
+<span class="sd">    lats: a list of float</span>
+<span class="sd">        The latitudes of points.</span>
+<span class="sd">    model_name: str</span>
+<span class="sd">        The plate model name.</span>
+<span class="sd">    times: float or a list of float</span>
+<span class="sd">        The reconstruction time(s)</span>
+<span class="sd">    pids: a list of int, int or None, optional, default=None</span>
+<span class="sd">        Allow user to provide plate IDs to speed up the reconstruction.</span>
+<span class="sd">        If user provided ``pids`` without ``valid_time``.</span>
+<span class="sd">        The reconstruction will not consider the valid time range, same as ``ignore_valid_time``.</span>
+<span class="sd">    valid_time: tuple of 2, a list of tuple of 2, or None, optional, default=None</span>
+<span class="sd">        Allow user to provide valid times for points.</span>
+<span class="sd">    anchor_plate_id: int, optional, default=0</span>
+<span class="sd">        The anchor plate ID.</span>
+<span class="sd">    ignore_valid_time: bool, optional default=False</span>
+<span class="sd">        If True, reconstruct the points without considering the valid time range.</span>
+<span class="sd">    reverse: bool, optional, default=False</span>
+<span class="sd">        If True, do reverse reconstruction to present-day (0Ma).</span>
+<span class="sd">        The reverse reconstruction works only with a single reconstruction time.</span>
+
+<span class="sd">    Returns</span>
+<span class="sd">    -------</span>
+<span class="sd">    A list of :class:`dict`.</span>
+<span class="sd">        The returned :class:`dict` contains:</span>
+
+<span class="sd">        * lons</span>
+<span class="sd">        * lats</span>
+<span class="sd">        * pids (plate IDs)</span>
+<span class="sd">        * begin_times</span>
+<span class="sd">        * end_times</span>
+<span class="sd">        * time (the reconstruction time)</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="n">_model</span> <span class="o">=</span> <span class="n">PlateModelManager</span><span class="p">()</span><span class="o">.</span><span class="n">get_model</span><span class="p">(</span><span class="n">model_name</span><span class="p">)</span>
+    <span class="c1"># user must provide a valid plate model name. See https://gplates.github.io/gplately/sphinx-latest/html/use_cases.html#id1</span>
+    <span class="k">assert</span> <span class="n">_model</span>
+
+    <span class="n">static_polygon_fc</span> <span class="o">=</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">FeatureCollection</span><span class="p">()</span>
+    <span class="n">static_polygon_files</span> <span class="o">=</span> <span class="n">_model</span><span class="o">.</span><span class="n">get_static_polygons</span><span class="p">()</span>
+    <span class="k">assert</span> <span class="n">static_polygon_files</span>
+    <span class="k">for</span> <span class="n">f</span> <span class="ow">in</span> <span class="n">static_polygon_files</span><span class="p">:</span>
+        <span class="n">static_polygon_fc</span><span class="o">.</span><span class="n">add</span><span class="p">(</span><span class="n">pygplates</span><span class="o">.</span><span class="n">FeatureCollection</span><span class="p">(</span><span class="n">f</span><span class="p">))</span>
+
+    <span class="k">return</span> <span class="n">reconstruct_points_impl</span><span class="p">(</span>
+        <span class="n">lons</span><span class="p">,</span>
+        <span class="n">lats</span><span class="p">,</span>
+        <span class="n">pygplates</span><span class="o">.</span><span class="n">RotationModel</span><span class="p">(</span><span class="n">_model</span><span class="o">.</span><span class="n">get_rotation_model</span><span class="p">()),</span>
+        <span class="n">pygplates</span><span class="o">.</span><span class="n">FeatureCollection</span><span class="p">(</span><span class="n">static_polygon_fc</span><span class="p">),</span>
+        <span class="n">times</span><span class="p">,</span>
+        <span class="n">pids</span><span class="p">,</span>
+        <span class="n">valid_time</span><span class="p">,</span>
+        <span class="n">anchor_plate_id</span><span class="p">,</span>
+        <span class="n">ignore_valid_time</span><span class="p">,</span>
+        <span class="n">reverse</span><span class="p">,</span>
+    <span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="reconstruct_points_impl">
+<a class="viewcode-back" href="../../../generated/gplately.reconstruct_points_impl.html#gplately.reconstruct_points_impl">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">reconstruct_points_impl</span><span class="p">(</span>
+    <span class="n">lons</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span>
+    <span class="n">lats</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span>
+    <span class="n">rotation_model</span><span class="p">:</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">RotationModel</span><span class="p">,</span>
+    <span class="n">static_polygons</span><span class="p">:</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">FeatureCollection</span><span class="p">,</span>
+    <span class="n">times</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">]],</span>
+    <span class="n">pids</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">valid_time</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">],</span> <span class="nb">list</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]],</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">anchor_plate_id</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+    <span class="n">ignore_valid_time</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+    <span class="n">reverse</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Similar to :func:`gplately.reconstruct_points`. The only difference is that this function allows</span>
+<span class="sd">    user to provide rotation model and static polygons feature collection instead of a model name.</span>
+
+<span class="sd">    Parameters</span>
+<span class="sd">    ----------</span>
+<span class="sd">    rotation_model: pygplates.RotationModel</span>
+<span class="sd">        The rotation model as a ``pygplates.RotationModel`` object.</span>
+<span class="sd">    static_polygons: pygplates.FeatureCollection</span>
+<span class="sd">        The static polygons as a ``pygplates.FeatureCollection`` object.</span>
+
+
+<span class="sd">    See :func:`gplately.reconstruct_points` for other parameters.</span>
+
+<span class="sd">    &quot;&quot;&quot;</span>
+    <span class="c1"># the length of lons and lats must be the same.</span>
+    <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">lons</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">lats</span><span class="p">)</span>
+
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">pids</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+        <span class="c1"># if user has provided a list of pids for the points, the length must be the same as lons and lats.</span>
+        <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">lons</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">pids</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">pids</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">pids</span><span class="p">,</span> <span class="nb">int</span><span class="p">):</span>
+        <span class="n">_pids</span> <span class="o">=</span> <span class="p">[</span><span class="n">pids</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">lons</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">_pids</span> <span class="o">=</span> <span class="n">pids</span>
+
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">valid_time</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+        <span class="c1"># if user has provided a list of valid_time for the points, the length must be the same as lons and lats.</span>
+        <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">lons</span><span class="p">)</span> <span class="o">==</span> <span class="nb">len</span><span class="p">(</span><span class="n">valid_time</span><span class="p">)</span>
+    <span class="k">if</span> <span class="n">valid_time</span> <span class="ow">is</span> <span class="kc">None</span> <span class="ow">or</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">valid_time</span><span class="p">,</span> <span class="nb">tuple</span><span class="p">):</span>
+        <span class="n">_valid_time</span> <span class="o">=</span> <span class="p">[</span><span class="n">valid_time</span><span class="p">]</span> <span class="o">*</span> <span class="nb">len</span><span class="p">(</span><span class="n">lons</span><span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">_valid_time</span> <span class="o">=</span> <span class="n">valid_time</span>
+
+    <span class="k">if</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">times</span><span class="p">,</span> <span class="nb">list</span><span class="p">):</span>
+        <span class="n">_times</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="n">times</span>  <span class="c1"># type: ignore</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">_times</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">]</span> <span class="o">=</span> <span class="p">[</span><span class="nb">float</span><span class="p">(</span><span class="n">times</span><span class="p">)]</span>
+
+    <span class="c1"># create point features</span>
+    <span class="n">p_index</span> <span class="o">=</span> <span class="mi">0</span>
+    <span class="n">point_features</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="k">for</span> <span class="n">lat</span><span class="p">,</span> <span class="n">lon</span><span class="p">,</span> <span class="n">pid</span><span class="p">,</span> <span class="n">v_time</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">lats</span><span class="p">,</span> <span class="n">lons</span><span class="p">,</span> <span class="n">_pids</span><span class="p">,</span> <span class="n">_valid_time</span><span class="p">):</span>
+        <span class="n">point_feature</span> <span class="o">=</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">Feature</span><span class="p">()</span>
+        <span class="n">point_feature</span><span class="o">.</span><span class="n">set_geometry</span><span class="p">(</span><span class="n">pygplates</span><span class="o">.</span><span class="n">PointOnSphere</span><span class="p">(</span><span class="n">lat</span><span class="p">,</span> <span class="n">lon</span><span class="p">))</span>
+        <span class="n">point_feature</span><span class="o">.</span><span class="n">set_name</span><span class="p">(</span><span class="nb">str</span><span class="p">(</span><span class="n">p_index</span><span class="p">))</span>  <span class="c1"># type: ignore</span>
+        <span class="k">if</span> <span class="n">pid</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">point_feature</span><span class="o">.</span><span class="n">set_reconstruction_plate_id</span><span class="p">(</span><span class="n">pid</span><span class="p">)</span>  <span class="c1"># type: ignore</span>
+        <span class="k">if</span> <span class="n">v_time</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="c1"># the valid time must be a tuple of 2 (begin_time, end_time)</span>
+            <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">v_time</span><span class="p">)</span> <span class="o">==</span> <span class="mi">2</span>
+            <span class="n">point_feature</span><span class="o">.</span><span class="n">set_valid_time</span><span class="p">(</span><span class="n">v_time</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">v_time</span><span class="p">[</span><span class="mi">1</span><span class="p">])</span>  <span class="c1"># type: ignore</span>
+        <span class="n">point_features</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">point_feature</span><span class="p">)</span>
+        <span class="n">p_index</span> <span class="o">+=</span> <span class="mi">1</span>
+
+    <span class="c1"># if user has provided plate id(s), do not partition(slow)</span>
+    <span class="k">if</span> <span class="n">pids</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">properties_to_copy</span> <span class="o">=</span> <span class="p">[</span><span class="n">pygplates</span><span class="o">.</span><span class="n">PartitionProperty</span><span class="o">.</span><span class="n">reconstruction_plate_id</span><span class="p">]</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">ignore_valid_time</span><span class="p">:</span>
+            <span class="n">properties_to_copy</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">pygplates</span><span class="o">.</span><span class="n">PartitionProperty</span><span class="o">.</span><span class="n">valid_time_period</span><span class="p">)</span>
+
+        <span class="k">if</span> <span class="n">reverse</span><span class="p">:</span>
+            <span class="c1"># if it is reverse reconstruction, the &quot;times&quot; must be a single time</span>
+            <span class="k">assert</span> <span class="nb">len</span><span class="p">(</span><span class="n">_times</span><span class="p">)</span> <span class="o">==</span> <span class="mi">1</span>
+            <span class="n">partition_time</span> <span class="o">=</span> <span class="n">_times</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">partition_time</span> <span class="o">=</span> <span class="mf">0.0</span>
+
+        <span class="c1"># LOOK HERE !!!!</span>
+        <span class="c1"># it seems when the partition_time is not 0</span>
+        <span class="c1"># the returned assigned_point_features contains reverse reconstructed present-day geometries.</span>
+        <span class="c1"># so, when doing reverse reconstruct, do not reverse reconstruct again later.</span>
+        <span class="n">assigned_point_features</span> <span class="o">=</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">partition_into_plates</span><span class="p">(</span>
+            <span class="n">static_polygons</span><span class="p">,</span>
+            <span class="n">rotation_model</span><span class="p">,</span>
+            <span class="n">point_features</span><span class="p">,</span>
+            <span class="n">properties_to_copy</span><span class="o">=</span><span class="n">properties_to_copy</span><span class="p">,</span>
+            <span class="n">reconstruction_time</span><span class="o">=</span><span class="n">partition_time</span><span class="p">,</span>  <span class="c1"># type: ignore</span>
+        <span class="p">)</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="n">assigned_point_features</span> <span class="o">=</span> <span class="n">point_features</span>
+
+    <span class="k">if</span> <span class="n">reverse</span><span class="p">:</span>
+        <span class="c1"># we still need reverse reconstruct if the points had not been partitioned.</span>
+        <span class="c1"># if user had provided the pids, we did not do partition. So, we need to call pygplates.reverse_reconstruct in that case.</span>
+        <span class="k">if</span> <span class="n">pids</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">need_reverse_reconstruct</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">need_reverse_reconstruct</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="n">ret</span> <span class="o">=</span> <span class="n">_get_reverse_reconstructed_data</span><span class="p">(</span>
+            <span class="n">assigned_point_features</span><span class="p">,</span>
+            <span class="n">rotation_model</span><span class="p">,</span>
+            <span class="n">_times</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span>  <span class="c1"># can only do single time for reverse reconstruction</span>
+            <span class="n">anchor_plate_id</span><span class="p">,</span>
+            <span class="n">need_reverse_reconstruct</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="k">return</span> <span class="p">[</span><span class="n">ret</span><span class="p">]</span>
+    <span class="k">else</span><span class="p">:</span>
+        <span class="c1"># handle normal reconstruction</span>
+        <span class="n">ret</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">t</span> <span class="ow">in</span> <span class="n">_times</span><span class="p">:</span>
+            <span class="n">ret</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
+                <span class="n">_get_reconstructed_data</span><span class="p">(</span>
+                    <span class="n">assigned_point_features</span><span class="p">,</span> <span class="n">rotation_model</span><span class="p">,</span> <span class="n">t</span><span class="p">,</span> <span class="n">anchor_plate_id</span>
+                <span class="p">)</span>
+            <span class="p">)</span>
+        <span class="k">return</span> <span class="n">ret</span></div>
+
+
+
+<div class="viewcode-block" id="reverse_reconstruct_points">
+<a class="viewcode-back" href="../../../generated/gplately.reverse_reconstruct_points.html#gplately.reverse_reconstruct_points">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">reverse_reconstruct_points</span><span class="p">(</span>
+    <span class="n">lons</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span>
+    <span class="n">lats</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span>
+    <span class="n">model_name</span><span class="p">:</span> <span class="nb">str</span><span class="p">,</span>
+    <span class="n">time</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+    <span class="n">pids</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">valid_time</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">],</span> <span class="nb">list</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]],</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">anchor_plate_id</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+    <span class="n">ignore_valid_time</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Wrapper function to reverse reconstruct points with :func:`gplately.reconstruct_points`.&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">reconstruct_points</span><span class="p">(</span>
+        <span class="n">lons</span><span class="p">,</span>
+        <span class="n">lats</span><span class="p">,</span>
+        <span class="n">model_name</span><span class="p">,</span>
+        <span class="n">times</span><span class="o">=</span><span class="n">time</span><span class="p">,</span>
+        <span class="n">pids</span><span class="o">=</span><span class="n">pids</span><span class="p">,</span>
+        <span class="n">valid_time</span><span class="o">=</span><span class="n">valid_time</span><span class="p">,</span>
+        <span class="n">anchor_plate_id</span><span class="o">=</span><span class="n">anchor_plate_id</span><span class="p">,</span>
+        <span class="n">ignore_valid_time</span><span class="o">=</span><span class="n">ignore_valid_time</span><span class="p">,</span>
+        <span class="n">reverse</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="p">)</span></div>
+
+
+
+<div class="viewcode-block" id="reverse_reconstruct_points_impl">
+<a class="viewcode-back" href="../../../generated/gplately.reverse_reconstruct_points_impl.html#gplately.reverse_reconstruct_points_impl">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">reverse_reconstruct_points_impl</span><span class="p">(</span>
+    <span class="n">lons</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span>
+    <span class="n">lats</span><span class="p">:</span> <span class="nb">list</span><span class="p">[</span><span class="nb">float</span><span class="p">],</span>
+    <span class="n">rotation_model</span><span class="p">:</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">RotationModel</span><span class="p">,</span>
+    <span class="n">static_polygons</span><span class="p">:</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">FeatureCollection</span><span class="p">,</span>
+    <span class="n">time</span><span class="p">:</span> <span class="nb">float</span><span class="p">,</span>
+    <span class="n">pids</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">int</span><span class="p">,</span> <span class="nb">list</span><span class="p">[</span><span class="nb">int</span><span class="p">],</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">valid_time</span><span class="p">:</span> <span class="n">Union</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">],</span> <span class="nb">list</span><span class="p">[</span><span class="nb">tuple</span><span class="p">[</span><span class="nb">float</span><span class="p">,</span> <span class="nb">float</span><span class="p">]],</span> <span class="kc">None</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span><span class="p">,</span>
+    <span class="n">anchor_plate_id</span><span class="p">:</span> <span class="nb">int</span> <span class="o">=</span> <span class="mi">0</span><span class="p">,</span>
+    <span class="n">ignore_valid_time</span><span class="p">:</span> <span class="nb">bool</span> <span class="o">=</span> <span class="kc">False</span><span class="p">,</span>
+<span class="p">):</span>
+<span class="w">    </span><span class="sd">&quot;&quot;&quot;Wrapper function to reverse reconstruct points with :func:`gplately.reconstruct_points_impl`.&quot;&quot;&quot;</span>
+    <span class="k">return</span> <span class="n">reconstruct_points_impl</span><span class="p">(</span>
+        <span class="n">lons</span><span class="o">=</span><span class="n">lons</span><span class="p">,</span>
+        <span class="n">lats</span><span class="o">=</span><span class="n">lats</span><span class="p">,</span>
+        <span class="n">rotation_model</span><span class="o">=</span><span class="n">rotation_model</span><span class="p">,</span>
+        <span class="n">static_polygons</span><span class="o">=</span><span class="n">static_polygons</span><span class="p">,</span>
+        <span class="n">times</span><span class="o">=</span><span class="n">time</span><span class="p">,</span>
+        <span class="n">pids</span><span class="o">=</span><span class="n">pids</span><span class="p">,</span>
+        <span class="n">valid_time</span><span class="o">=</span><span class="n">valid_time</span><span class="p">,</span>
+        <span class="n">anchor_plate_id</span><span class="o">=</span><span class="n">anchor_plate_id</span><span class="p">,</span>
+        <span class="n">ignore_valid_time</span><span class="o">=</span><span class="n">ignore_valid_time</span><span class="p">,</span>
+        <span class="n">reverse</span><span class="o">=</span><span class="kc">True</span><span class="p">,</span>
+    <span class="p">)</span></div>
+
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_get_reconstructed_data</span><span class="p">(</span>
+    <span class="n">assigned_point_features</span><span class="p">,</span> <span class="n">rotation_model</span><span class="p">,</span> <span class="n">time</span><span class="p">,</span> <span class="n">anchor_plate_id</span>
+<span class="p">):</span>
+    <span class="n">reconstructed_feature_geometries</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="n">pygplates</span><span class="o">.</span><span class="n">reconstruct</span><span class="p">(</span>  <span class="c1"># type: ignore</span>
+        <span class="n">assigned_point_features</span><span class="p">,</span>
+        <span class="n">rotation_model</span><span class="p">,</span>
+        <span class="n">reconstructed_feature_geometries</span><span class="p">,</span>
+        <span class="n">time</span><span class="p">,</span>
+        <span class="n">anchor_plate_id</span><span class="o">=</span><span class="n">anchor_plate_id</span><span class="p">,</span>
+    <span class="p">)</span>
+    <span class="n">point_count</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">assigned_point_features</span><span class="p">)</span>
+    <span class="n">r_lons</span> <span class="o">=</span> <span class="n">point_count</span> <span class="o">*</span> <span class="p">[</span><span class="n">math</span><span class="o">.</span><span class="n">nan</span><span class="p">]</span>
+    <span class="n">r_lats</span> <span class="o">=</span> <span class="n">point_count</span> <span class="o">*</span> <span class="p">[</span><span class="n">math</span><span class="o">.</span><span class="n">nan</span><span class="p">]</span>
+    <span class="n">r_pids</span> <span class="o">=</span> <span class="n">point_count</span> <span class="o">*</span> <span class="p">[</span><span class="n">math</span><span class="o">.</span><span class="n">nan</span><span class="p">]</span>
+    <span class="n">r_btimes</span> <span class="o">=</span> <span class="n">point_count</span> <span class="o">*</span> <span class="p">[</span><span class="n">math</span><span class="o">.</span><span class="n">nan</span><span class="p">]</span>
+    <span class="n">r_etimes</span> <span class="o">=</span> <span class="n">point_count</span> <span class="o">*</span> <span class="p">[</span><span class="n">math</span><span class="o">.</span><span class="n">nan</span><span class="p">]</span>
+    <span class="k">for</span> <span class="n">rfg</span> <span class="ow">in</span> <span class="n">reconstructed_feature_geometries</span><span class="p">:</span>
+        <span class="n">lat</span><span class="p">,</span> <span class="n">lon</span> <span class="o">=</span> <span class="n">rfg</span><span class="o">.</span><span class="n">get_reconstructed_geometry</span><span class="p">()</span><span class="o">.</span><span class="n">to_lat_lon</span><span class="p">()</span>
+        <span class="n">feature</span> <span class="o">=</span> <span class="n">rfg</span><span class="o">.</span><span class="n">get_feature</span><span class="p">()</span>
+        <span class="n">idx</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">feature</span><span class="o">.</span><span class="n">get_name</span><span class="p">())</span>
+        <span class="n">r_lons</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="o">=</span> <span class="n">lon</span>
+        <span class="n">r_lats</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="o">=</span> <span class="n">lat</span>
+    <span class="k">for</span> <span class="n">idx</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">assigned_point_features</span><span class="p">)):</span>
+        <span class="n">feature</span> <span class="o">=</span> <span class="n">assigned_point_features</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span>
+        <span class="n">r_pids</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="o">=</span> <span class="n">feature</span><span class="o">.</span><span class="n">get_reconstruction_plate_id</span><span class="p">()</span>
+        <span class="n">btime</span><span class="p">,</span> <span class="n">etime</span> <span class="o">=</span> <span class="n">feature</span><span class="o">.</span><span class="n">get_valid_time</span><span class="p">()</span>
+        <span class="n">r_btimes</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="o">=</span> <span class="n">btime</span>
+        <span class="n">r_etimes</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="o">=</span> <span class="n">etime</span>
+
+    <span class="k">return</span> <span class="p">{</span>
+        <span class="s2">&quot;lons&quot;</span><span class="p">:</span> <span class="n">r_lons</span><span class="p">,</span>
+        <span class="s2">&quot;lats&quot;</span><span class="p">:</span> <span class="n">r_lats</span><span class="p">,</span>
+        <span class="s2">&quot;pids&quot;</span><span class="p">:</span> <span class="n">r_pids</span><span class="p">,</span>
+        <span class="s2">&quot;begin_times&quot;</span><span class="p">:</span> <span class="n">r_btimes</span><span class="p">,</span>
+        <span class="s2">&quot;end_times&quot;</span><span class="p">:</span> <span class="n">r_etimes</span><span class="p">,</span>
+        <span class="s2">&quot;time&quot;</span><span class="p">:</span> <span class="n">time</span><span class="p">,</span>
+    <span class="p">}</span>
+
+
+<span class="k">def</span><span class="w"> </span><span class="nf">_get_reverse_reconstructed_data</span><span class="p">(</span>
+    <span class="n">assigned_point_features</span><span class="p">,</span>
+    <span class="n">rotation_model</span><span class="p">,</span>
+    <span class="n">time</span><span class="p">,</span>
+    <span class="n">anchor_plate_id</span><span class="p">,</span>
+    <span class="n">need_reverse_reconstruct</span><span class="p">,</span>
+<span class="p">):</span>
+    <span class="k">if</span> <span class="n">need_reverse_reconstruct</span><span class="p">:</span>
+        <span class="n">pygplates</span><span class="o">.</span><span class="n">reverse_reconstruct</span><span class="p">(</span>  <span class="c1"># type: ignore</span>
+            <span class="n">assigned_point_features</span><span class="p">,</span>
+            <span class="n">rotation_model</span><span class="p">,</span>
+            <span class="n">time</span><span class="p">,</span>
+            <span class="n">anchor_plate_id</span><span class="o">=</span><span class="n">anchor_plate_id</span><span class="p">,</span>
+        <span class="p">)</span>
+    <span class="n">point_count</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">assigned_point_features</span><span class="p">)</span>
+    <span class="n">r_lons</span> <span class="o">=</span> <span class="n">point_count</span> <span class="o">*</span> <span class="p">[</span><span class="n">math</span><span class="o">.</span><span class="n">nan</span><span class="p">]</span>
+    <span class="n">r_lats</span> <span class="o">=</span> <span class="n">point_count</span> <span class="o">*</span> <span class="p">[</span><span class="n">math</span><span class="o">.</span><span class="n">nan</span><span class="p">]</span>
+    <span class="n">r_pids</span> <span class="o">=</span> <span class="n">point_count</span> <span class="o">*</span> <span class="p">[</span><span class="n">math</span><span class="o">.</span><span class="n">nan</span><span class="p">]</span>
+    <span class="n">r_btimes</span> <span class="o">=</span> <span class="n">point_count</span> <span class="o">*</span> <span class="p">[</span><span class="n">math</span><span class="o">.</span><span class="n">nan</span><span class="p">]</span>
+    <span class="n">r_etimes</span> <span class="o">=</span> <span class="n">point_count</span> <span class="o">*</span> <span class="p">[</span><span class="n">math</span><span class="o">.</span><span class="n">nan</span><span class="p">]</span>
+    <span class="k">for</span> <span class="n">feature</span> <span class="ow">in</span> <span class="n">assigned_point_features</span><span class="p">:</span>
+        <span class="n">lat</span><span class="p">,</span> <span class="n">lon</span> <span class="o">=</span> <span class="n">feature</span><span class="o">.</span><span class="n">get_geometry</span><span class="p">()</span><span class="o">.</span><span class="n">to_lat_lon</span><span class="p">()</span>
+        <span class="n">idx</span> <span class="o">=</span> <span class="nb">int</span><span class="p">(</span><span class="n">feature</span><span class="o">.</span><span class="n">get_name</span><span class="p">())</span>
+        <span class="n">r_lons</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="o">=</span> <span class="n">lon</span>
+        <span class="n">r_lats</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="o">=</span> <span class="n">lat</span>
+        <span class="n">r_pids</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="o">=</span> <span class="n">feature</span><span class="o">.</span><span class="n">get_reconstruction_plate_id</span><span class="p">()</span>
+        <span class="n">btime</span><span class="p">,</span> <span class="n">etime</span> <span class="o">=</span> <span class="n">feature</span><span class="o">.</span><span class="n">get_valid_time</span><span class="p">()</span>
+        <span class="n">r_btimes</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="o">=</span> <span class="n">btime</span>
+        <span class="n">r_etimes</span><span class="p">[</span><span class="n">idx</span><span class="p">]</span> <span class="o">=</span> <span class="n">etime</span>
+    <span class="k">return</span> <span class="p">{</span>
+        <span class="s2">&quot;lons&quot;</span><span class="p">:</span> <span class="n">r_lons</span><span class="p">,</span>
+        <span class="s2">&quot;lats&quot;</span><span class="p">:</span> <span class="n">r_lats</span><span class="p">,</span>
+        <span class="s2">&quot;pids&quot;</span><span class="p">:</span> <span class="n">r_pids</span><span class="p">,</span>
+        <span class="s2">&quot;begin_times&quot;</span><span class="p">:</span> <span class="n">r_btimes</span><span class="p">,</span>
+        <span class="s2">&quot;end_times&quot;</span><span class="p">:</span> <span class="n">r_etimes</span><span class="p">,</span>
+        <span class="s2">&quot;time&quot;</span><span class="p">:</span> <span class="n">time</span><span class="p">,</span>
+    <span class="p">}</span>
+</pre></div>
+
+           </div>
+          </div>
+          <footer>
+
+  <hr/>
+
+  <div role="contentinfo">
+    <p>&#169; Copyright 2023-2025, The University of Sydney.</p>
+  </div>
+
+  Built with <a href="https://www.sphinx-doc.org/">Sphinx</a> using a
+    <a href="https://github.com/readthedocs/sphinx_rtd_theme">theme</a>
+    provided by <a href="https://readthedocs.org">Read the Docs</a>.
+   
+
+</footer>
+        </div>
+      </div>
+    </section>
+  </div>
+  <script>
+      jQuery(function () {
+          SphinxRtdTheme.Navigation.enable(true);
+      });
+  </script> 
+
+</body>
+</html>
