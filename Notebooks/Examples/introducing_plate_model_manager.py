@@ -27,6 +27,7 @@ def main():
     print("Folders/files in 'Muller2019' folder: ")
     print("**************************************")
     model = pm_manager.get_model("Muller2019")
+    assert model
     model.set_data_dir("plate-model-repo")
     for layer in model.get_avail_layers():
         model.get_layer(layer)

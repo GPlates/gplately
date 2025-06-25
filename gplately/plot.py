@@ -1255,8 +1255,12 @@ class PlotTopologies(object):
         )
         return self.plot_plate_polygon_by_id(*args, **kwargs)
 
-    def plot_grid(self, ax, grid, extent=[-180, 180, -90, 90], **kwargs):
+    def plot_grid(self, ax, grid, extent=(-180, 180, -90, 90), **kwargs):
         """Plot a `MaskedArray`_ raster or grid onto a map.
+
+        .. note::
+
+            Plotting grid with pygmt has not been implemented yet!
 
         Parameters
         ----------
@@ -1269,8 +1273,7 @@ class PlotTopologies(object):
             columns corresponds to the number of longitudinal coordinates.
 
         extent : tuple, default=(-180, 180, -90, 90)
-            A tuple of 4 (min lon, max lon, min lat, max lat) extent of gird.
-            If no extent are provided, global extent is assumed.
+            A tuple of 4 (min_lon, max_lon, min_lat, max_lat) representing the extent of gird.
 
         **kwargs :
             Keyword arguments for plotting the grid.
@@ -1999,6 +2002,17 @@ class PlotTopologies(object):
             self.get_all_topological_sections,
             color=color,
             **kwargs,
+        )
+
+    @append_docstring(GET_DATE_DOCSTRING.format("topological plate boundaries"))
+    def get_topological_plate_boundaries(
+        self, central_meridian=0.0, tessellate_degrees=1
+    ):
+        """Return the reconstructed "topological plate boundaries" lines as a `geopandas.GeoDataFrame`_ object."""
+        return self.get_feature(
+            self._topological_plate_boundaries,
+            central_meridian=central_meridian,
+            tessellate_degrees=tessellate_degrees,
         )
 
     @validate_topology_availability("topological plate boundaries")
