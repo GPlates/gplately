@@ -62,7 +62,7 @@ jobs:
         with:
           branch: gh-pages
           folder: sphinx-doc/build/
-          target-folder: sphinx-latest/
+          target-folder: latest/sphinx/
 
       #- name: Deploy to gh-pages
       #  uses: JamesIves/github-pages-deploy-action@v4.2.2

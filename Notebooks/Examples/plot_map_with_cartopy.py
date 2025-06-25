@@ -11,7 +11,7 @@ gplot = auxiliary.get_gplot("Muller2019", time=100)  # 100Ma
 agegrid = Raster(
     data=PlateModelManager()
     .get_model("Muller2019")
-    .get_raster("AgeGrids", int(gplot.time))
+    .get_raster("AgeGrids", int(gplot.time))  # type: ignore
 )
 
 fig = plt.figure(figsize=(8, 4))

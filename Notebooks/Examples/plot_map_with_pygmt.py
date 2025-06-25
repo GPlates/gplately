@@ -11,9 +11,12 @@ from gplately.mapping.pygmt_plot import PygmtPlotEngine
 if __name__ == "__main__":
     # tell PlotTopologies object to use the PygmtPlotEngine
     gplot = get_gplot(
-        "merdith2021", "plate-model-repo", time=55, plot_engine=PygmtPlotEngine()
+        model="merdith2021",
+        model_repo_dir="plate-model-repo",
+        time=55,
+        plot_engine=PygmtPlotEngine(),
     )
-    # you need to know how to specify projection and region in pygmt way
+    # you need to know how to specify projection and region in GMT way
     fig = get_pygmt_basemap_figure(projection="N180/10c", region="d")
 
     # now you can plot some features with the PlotTopologies object
