@@ -36,6 +36,7 @@
       ~PlotTopologies.get_subduction_direction
       ~PlotTopologies.get_sutures
       ~PlotTopologies.get_terrane_boundaries
+      ~PlotTopologies.get_topological_plate_boundaries
       ~PlotTopologies.get_transforms
       ~PlotTopologies.get_transitional_crusts
       ~PlotTopologies.get_trenches

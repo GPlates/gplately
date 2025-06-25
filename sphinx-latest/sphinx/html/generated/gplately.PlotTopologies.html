@@ -89,6 +89,7 @@
 <li class="toctree-l4"><a class="reference internal" href="#gplately.PlotTopologies.get_subduction_direction"><code class="docutils literal notranslate"><span class="pre">PlotTopologies.get_subduction_direction()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#gplately.PlotTopologies.get_sutures"><code class="docutils literal notranslate"><span class="pre">PlotTopologies.get_sutures()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#gplately.PlotTopologies.get_terrane_boundaries"><code class="docutils literal notranslate"><span class="pre">PlotTopologies.get_terrane_boundaries()</span></code></a></li>
+<li class="toctree-l4"><a class="reference internal" href="#gplately.PlotTopologies.get_topological_plate_boundaries"><code class="docutils literal notranslate"><span class="pre">PlotTopologies.get_topological_plate_boundaries()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#gplately.PlotTopologies.get_transforms"><code class="docutils literal notranslate"><span class="pre">PlotTopologies.get_transforms()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#gplately.PlotTopologies.get_transitional_crusts"><code class="docutils literal notranslate"><span class="pre">PlotTopologies.get_transitional_crusts()</span></code></a></li>
 <li class="toctree-l4"><a class="reference internal" href="#gplately.PlotTopologies.get_trenches"><code class="docutils literal notranslate"><span class="pre">PlotTopologies.get_trenches()</span></code></a></li>
@@ -352,115 +353,118 @@ if these features are sourced from the <a class="reference internal" href="gplat
 <tr class="row-odd"><td><p><a class="reference internal" href="#gplately.PlotTopologies.get_terrane_boundaries" title="gplately.PlotTopologies.get_terrane_boundaries"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_terrane_boundaries</span></code></a>([central_meridian, ...])</p></td>
 <td><p>Return the reconstructed terrane boundary lines as a <a class="reference external" href="https://geopandas.org/en/stable/docs/reference/api/geopandas.GeoDataFrame.html">geopandas.GeoDataFrame</a> object.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#gplately.PlotTopologies.get_transforms" title="gplately.PlotTopologies.get_transforms"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_transforms</span></code></a>([central_meridian, ...])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#gplately.PlotTopologies.get_topological_plate_boundaries" title="gplately.PlotTopologies.get_topological_plate_boundaries"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_topological_plate_boundaries</span></code></a>([...])</p></td>
+<td><p>Return the reconstructed &quot;topological plate boundaries&quot; lines as a <a class="reference external" href="https://geopandas.org/en/stable/docs/reference/api/geopandas.GeoDataFrame.html">geopandas.GeoDataFrame</a> object.</p></td>
+</tr>
+<tr class="row-odd"><td><p><a class="reference internal" href="#gplately.PlotTopologies.get_transforms" title="gplately.PlotTopologies.get_transforms"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_transforms</span></code></a>([central_meridian, ...])</p></td>
 <td><p>Return the reconstructed transform lines(gpml:Transform) as a <a class="reference external" href="https://geopandas.org/en/stable/docs/reference/api/geopandas.GeoDataFrame.html">geopandas.GeoDataFrame</a> object.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#gplately.PlotTopologies.get_transitional_crusts" title="gplately.PlotTopologies.get_transitional_crusts"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_transitional_crusts</span></code></a>([central_meridian, ...])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#gplately.PlotTopologies.get_transitional_crusts" title="gplately.PlotTopologies.get_transitional_crusts"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_transitional_crusts</span></code></a>([central_meridian, ...])</p></td>
 <td><p>Return the reconstructed transitional crust lines as a <a class="reference external" href="https://geopandas.org/en/stable/docs/reference/api/geopandas.GeoDataFrame.html">geopandas.GeoDataFrame</a> object.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#gplately.PlotTopologies.get_trenches" title="gplately.PlotTopologies.get_trenches"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_trenches</span></code></a>([central_meridian, ...])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#gplately.PlotTopologies.get_trenches" title="gplately.PlotTopologies.get_trenches"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_trenches</span></code></a>([central_meridian, ...])</p></td>
 <td><p>Return the reconstructed trench lines as a <a class="reference external" href="https://geopandas.org/en/stable/docs/reference/api/geopandas.GeoDataFrame.html">geopandas.GeoDataFrame</a> object.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#gplately.PlotTopologies.get_unclassified_features" title="gplately.PlotTopologies.get_unclassified_features"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_unclassified_features</span></code></a>([...])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#gplately.PlotTopologies.get_unclassified_features" title="gplately.PlotTopologies.get_unclassified_features"><code class="xref py py-obj docutils literal notranslate"><span class="pre">get_unclassified_features</span></code></a>([...])</p></td>
 <td><p>Return the reconstructed unclassified feature lines as a <a class="reference external" href="https://geopandas.org/en/stable/docs/reference/api/geopandas.GeoDataFrame.html">geopandas.GeoDataFrame</a> object.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#gplately.PlotTopologies.plot_all_topological_sections" title="gplately.PlotTopologies.plot_all_topological_sections"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_all_topological_sections</span></code></a>(ax[, color])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#gplately.PlotTopologies.plot_all_topological_sections" title="gplately.PlotTopologies.plot_all_topological_sections"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_all_topological_sections</span></code></a>(ax[, color])</p></td>
 <td><p>Plot the reconstructed topological features listed below on a map.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#gplately.PlotTopologies.plot_all_topologies" title="gplately.PlotTopologies.plot_all_topologies"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_all_topologies</span></code></a>(ax[, color])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#gplately.PlotTopologies.plot_all_topologies" title="gplately.PlotTopologies.plot_all_topologies"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_all_topologies</span></code></a>(ax[, color])</p></td>
 <td><p>Plot the reconstructed topological features listed below on a map.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#gplately.PlotTopologies.plot_coastlines" title="gplately.PlotTopologies.plot_coastlines"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_coastlines</span></code></a>(ax[, color])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#gplately.PlotTopologies.plot_coastlines" title="gplately.PlotTopologies.plot_coastlines"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_coastlines</span></code></a>(ax[, color])</p></td>
 <td><p>Plot reconstructed coastlines on a map.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#gplately.PlotTopologies.plot_continent_ocean_boundaries" title="gplately.PlotTopologies.plot_continent_ocean_boundaries"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_continent_ocean_boundaries</span></code></a>(ax[, color])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#gplately.PlotTopologies.plot_continent_ocean_boundaries" title="gplately.PlotTopologies.plot_continent_ocean_boundaries"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_continent_ocean_boundaries</span></code></a>(ax[, color])</p></td>
 <td><p>Plot the reconstructed continent-ocean boundaries (COBs) on a map.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#gplately.PlotTopologies.plot_continental_crusts" title="gplately.PlotTopologies.plot_continental_crusts"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_continental_crusts</span></code></a>(ax[, color])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#gplately.PlotTopologies.plot_continental_crusts" title="gplately.PlotTopologies.plot_continental_crusts"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_continental_crusts</span></code></a>(ax[, color])</p></td>
 <td><p>Plot continental crust lines on a map.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#gplately.PlotTopologies.plot_continental_rifts" title="gplately.PlotTopologies.plot_continental_rifts"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_continental_rifts</span></code></a>(ax[, color])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#gplately.PlotTopologies.plot_continental_rifts" title="gplately.PlotTopologies.plot_continental_rifts"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_continental_rifts</span></code></a>(ax[, color])</p></td>
 <td><p>Plot continental rifts on a map.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#gplately.PlotTopologies.plot_continents" title="gplately.PlotTopologies.plot_continents"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_continents</span></code></a>(ax[, color])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#gplately.PlotTopologies.plot_continents" title="gplately.PlotTopologies.plot_continents"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_continents</span></code></a>(ax[, color])</p></td>
 <td><p>Plot the reconstructed continental polygons on a map.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#gplately.PlotTopologies.plot_extended_continental_crusts" title="gplately.PlotTopologies.plot_extended_continental_crusts"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_extended_continental_crusts</span></code></a>(ax[, color])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#gplately.PlotTopologies.plot_extended_continental_crusts" title="gplately.PlotTopologies.plot_extended_continental_crusts"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_extended_continental_crusts</span></code></a>(ax[, color])</p></td>
 <td><p>Plot extended continental crust lines on a map.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#gplately.PlotTopologies.plot_faults" title="gplately.PlotTopologies.plot_faults"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_faults</span></code></a>(ax[, color])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#gplately.PlotTopologies.plot_faults" title="gplately.PlotTopologies.plot_faults"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_faults</span></code></a>(ax[, color])</p></td>
 <td><p>Plot faults on a map.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#gplately.PlotTopologies.plot_feature" title="gplately.PlotTopologies.plot_feature"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_feature</span></code></a>(ax, feature[, feature_name, color])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#gplately.PlotTopologies.plot_feature" title="gplately.PlotTopologies.plot_feature"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_feature</span></code></a>(ax, feature[, feature_name, color])</p></td>
 <td><p>Plot <a class="reference external" href="https://www.gplates.org/docs/pygplates/generated/pygplates.featurecollection#pygplates.FeatureCollection">pygplates.FeatureCollection</a> or <a class="reference external" href="https://www.gplates.org/docs/pygplates/generated/pygplates.feature#pygplates.Feature">pygplates.Feature</a> onto a map.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#gplately.PlotTopologies.plot_fracture_zones" title="gplately.PlotTopologies.plot_fracture_zones"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_fracture_zones</span></code></a>(ax[, color])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#gplately.PlotTopologies.plot_fracture_zones" title="gplately.PlotTopologies.plot_fracture_zones"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_fracture_zones</span></code></a>(ax[, color])</p></td>
 <td><p>Plot fracture zones on a map.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#gplately.PlotTopologies.plot_grid" title="gplately.PlotTopologies.plot_grid"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_grid</span></code></a>(ax, grid[, extent])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#gplately.PlotTopologies.plot_grid" title="gplately.PlotTopologies.plot_grid"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_grid</span></code></a>(ax, grid[, extent])</p></td>
 <td><p>Plot a <a class="reference external" href="https://numpy.org/doc/stable/reference/maskedarray.generic.html">MaskedArray</a> raster or grid onto a map.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#gplately.PlotTopologies.plot_grid_from_netCDF" title="gplately.PlotTopologies.plot_grid_from_netCDF"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_grid_from_netCDF</span></code></a>(ax, filename, **kwargs)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#gplately.PlotTopologies.plot_grid_from_netCDF" title="gplately.PlotTopologies.plot_grid_from_netCDF"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_grid_from_netCDF</span></code></a>(ax, filename, **kwargs)</p></td>
 <td><p>Read raster data from a netCDF file, convert the data into a <a class="reference external" href="https://numpy.org/doc/stable/reference/maskedarray.generic.html">MaskedArray</a> object and plot it on a map.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#gplately.PlotTopologies.plot_inferred_paleo_boundaries" title="gplately.PlotTopologies.plot_inferred_paleo_boundaries"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_inferred_paleo_boundaries</span></code></a>(ax[, color])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#gplately.PlotTopologies.plot_inferred_paleo_boundaries" title="gplately.PlotTopologies.plot_inferred_paleo_boundaries"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_inferred_paleo_boundaries</span></code></a>(ax[, color])</p></td>
 <td><p>Plot inferred paleo boundaries on a map.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#gplately.PlotTopologies.plot_misc_boundaries" title="gplately.PlotTopologies.plot_misc_boundaries"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_misc_boundaries</span></code></a>(ax[, color])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#gplately.PlotTopologies.plot_misc_boundaries" title="gplately.PlotTopologies.plot_misc_boundaries"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_misc_boundaries</span></code></a>(ax[, color])</p></td>
 <td><p>Plot the reconstructed miscellaneous plate boundary lines on a map.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#gplately.PlotTopologies.plot_misc_transforms" title="gplately.PlotTopologies.plot_misc_transforms"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_misc_transforms</span></code></a>(ax[, color])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#gplately.PlotTopologies.plot_misc_transforms" title="gplately.PlotTopologies.plot_misc_transforms"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_misc_transforms</span></code></a>(ax[, color])</p></td>
 <td><p>Deprecated! DO NOT USE.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#gplately.PlotTopologies.plot_orogenic_belts" title="gplately.PlotTopologies.plot_orogenic_belts"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_orogenic_belts</span></code></a>(ax[, color])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#gplately.PlotTopologies.plot_orogenic_belts" title="gplately.PlotTopologies.plot_orogenic_belts"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_orogenic_belts</span></code></a>(ax[, color])</p></td>
 <td><p>Plot orogenic belts on a map.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#gplately.PlotTopologies.plot_passive_continental_boundaries" title="gplately.PlotTopologies.plot_passive_continental_boundaries"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_passive_continental_boundaries</span></code></a>(ax[, color])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#gplately.PlotTopologies.plot_passive_continental_boundaries" title="gplately.PlotTopologies.plot_passive_continental_boundaries"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_passive_continental_boundaries</span></code></a>(ax[, color])</p></td>
 <td><p>Plot passive continental boundaries on a map.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#gplately.PlotTopologies.plot_plate_id" title="gplately.PlotTopologies.plot_plate_id"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_plate_id</span></code></a>(*args, **kwargs)</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#gplately.PlotTopologies.plot_plate_id" title="gplately.PlotTopologies.plot_plate_id"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_plate_id</span></code></a>(*args, **kwargs)</p></td>
 <td><p>Deprecated! DO NOT USE!</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#gplately.PlotTopologies.plot_plate_motion_vectors" title="gplately.PlotTopologies.plot_plate_motion_vectors"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_plate_motion_vectors</span></code></a>(ax[, spacingX, ...])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#gplately.PlotTopologies.plot_plate_motion_vectors" title="gplately.PlotTopologies.plot_plate_motion_vectors"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_plate_motion_vectors</span></code></a>(ax[, spacingX, ...])</p></td>
 <td><p>Calculate plate motion velocity vector fields at a particular geological time and plot them on a map.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#gplately.PlotTopologies.plot_plate_polygon_by_id" title="gplately.PlotTopologies.plot_plate_polygon_by_id"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_plate_polygon_by_id</span></code></a>(ax, plate_id[, color])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#gplately.PlotTopologies.plot_plate_polygon_by_id" title="gplately.PlotTopologies.plot_plate_polygon_by_id"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_plate_polygon_by_id</span></code></a>(ax, plate_id[, color])</p></td>
 <td><p>Plot a plate polygon with the given``plate_id`` on a map.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#gplately.PlotTopologies.plot_pole" title="gplately.PlotTopologies.plot_pole"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_pole</span></code></a>(ax, lon, lat, a95, **kwargs)</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#gplately.PlotTopologies.plot_pole" title="gplately.PlotTopologies.plot_pole"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_pole</span></code></a>(ax, lon, lat, a95, **kwargs)</p></td>
 <td><p>Plot pole onto a matplotlib axes.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#gplately.PlotTopologies.plot_ridges" title="gplately.PlotTopologies.plot_ridges"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_ridges</span></code></a>(ax[, color])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#gplately.PlotTopologies.plot_ridges" title="gplately.PlotTopologies.plot_ridges"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_ridges</span></code></a>(ax[, color])</p></td>
 <td><p>Plot the reconstructed mid-ocean ridge lines(gpml:MidOceanRidge) on a map.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#gplately.PlotTopologies.plot_ridges_and_transforms" title="gplately.PlotTopologies.plot_ridges_and_transforms"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_ridges_and_transforms</span></code></a>(ax[, color])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#gplately.PlotTopologies.plot_ridges_and_transforms" title="gplately.PlotTopologies.plot_ridges_and_transforms"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_ridges_and_transforms</span></code></a>(ax[, color])</p></td>
 <td><p>Deprecated! DO NOT USE!</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#gplately.PlotTopologies.plot_slab_edges" title="gplately.PlotTopologies.plot_slab_edges"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_slab_edges</span></code></a>(ax[, color])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#gplately.PlotTopologies.plot_slab_edges" title="gplately.PlotTopologies.plot_slab_edges"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_slab_edges</span></code></a>(ax[, color])</p></td>
 <td><p>Plot slab edges on a map.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#gplately.PlotTopologies.plot_subduction_teeth" title="gplately.PlotTopologies.plot_subduction_teeth"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_subduction_teeth</span></code></a>(ax[, spacing, size, ...])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#gplately.PlotTopologies.plot_subduction_teeth" title="gplately.PlotTopologies.plot_subduction_teeth"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_subduction_teeth</span></code></a>(ax[, spacing, size, ...])</p></td>
 <td><p>Plot subduction teeth.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#gplately.PlotTopologies.plot_sutures" title="gplately.PlotTopologies.plot_sutures"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_sutures</span></code></a>(ax[, color])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#gplately.PlotTopologies.plot_sutures" title="gplately.PlotTopologies.plot_sutures"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_sutures</span></code></a>(ax[, color])</p></td>
 <td><p>Plot sutures on a map.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#gplately.PlotTopologies.plot_terrane_boundaries" title="gplately.PlotTopologies.plot_terrane_boundaries"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_terrane_boundaries</span></code></a>(ax[, color])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#gplately.PlotTopologies.plot_terrane_boundaries" title="gplately.PlotTopologies.plot_terrane_boundaries"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_terrane_boundaries</span></code></a>(ax[, color])</p></td>
 <td><p>Plot terrane boundaries on a map.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#gplately.PlotTopologies.plot_topological_plate_boundaries" title="gplately.PlotTopologies.plot_topological_plate_boundaries"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_topological_plate_boundaries</span></code></a>(ax[, color])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#gplately.PlotTopologies.plot_topological_plate_boundaries" title="gplately.PlotTopologies.plot_topological_plate_boundaries"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_topological_plate_boundaries</span></code></a>(ax[, color])</p></td>
 <td><p>Plot the topological plate boundaries.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#gplately.PlotTopologies.plot_transforms" title="gplately.PlotTopologies.plot_transforms"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_transforms</span></code></a>(ax[, color])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#gplately.PlotTopologies.plot_transforms" title="gplately.PlotTopologies.plot_transforms"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_transforms</span></code></a>(ax[, color])</p></td>
 <td><p>Plot transform boundaries(gpml:Transform) on a map.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#gplately.PlotTopologies.plot_transitional_crusts" title="gplately.PlotTopologies.plot_transitional_crusts"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_transitional_crusts</span></code></a>(ax[, color])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#gplately.PlotTopologies.plot_transitional_crusts" title="gplately.PlotTopologies.plot_transitional_crusts"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_transitional_crusts</span></code></a>(ax[, color])</p></td>
 <td><p>Plot transitional crust on a map.</p></td>
 </tr>
-<tr class="row-odd"><td><p><a class="reference internal" href="#gplately.PlotTopologies.plot_trenches" title="gplately.PlotTopologies.plot_trenches"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_trenches</span></code></a>(ax[, color])</p></td>
+<tr class="row-even"><td><p><a class="reference internal" href="#gplately.PlotTopologies.plot_trenches" title="gplately.PlotTopologies.plot_trenches"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_trenches</span></code></a>(ax[, color])</p></td>
 <td><p>Plot the reconstructed trenches on a map.</p></td>
 </tr>
-<tr class="row-even"><td><p><a class="reference internal" href="#gplately.PlotTopologies.plot_unclassified_features" title="gplately.PlotTopologies.plot_unclassified_features"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_unclassified_features</span></code></a>(ax[, color])</p></td>
+<tr class="row-odd"><td><p><a class="reference internal" href="#gplately.PlotTopologies.plot_unclassified_features" title="gplately.PlotTopologies.plot_unclassified_features"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_unclassified_features</span></code></a>(ax[, color])</p></td>
 <td><p>Plot GPML unclassified features on a map.</p></td>
 </tr>
 </tbody>
@@ -1006,6 +1010,26 @@ This function converts the feature(s) into a set of Shapely geometries and put t
 </dd></dl>
 
 <dl class="py method">
+<dt class="sig sig-object py" id="gplately.PlotTopologies.get_topological_plate_boundaries">
+<span class="sig-name descname"><span class="pre">get_topological_plate_boundaries</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">central_meridian</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tessellate_degrees</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gplately/plot.html#PlotTopologies.get_topological_plate_boundaries"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.PlotTopologies.get_topological_plate_boundaries" title="Link to this definition"></a></dt>
+<dd><p>Return the reconstructed “topological plate boundaries” lines as a <a class="reference external" href="https://geopandas.org/en/stable/docs/reference/api/geopandas.GeoDataFrame.html">geopandas.GeoDataFrame</a> object.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>central_meridian</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a><em>, </em><em>default=0.0</em>) – The central meridian of the map. This will affect the dateline wrapping.</p></li>
+<li><p><strong>tessellate_degrees</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#float" title="(in Python v3.13)"><em>float</em></a><em> or </em><em>None</em><em>, </em><em>default=1.0</em>) – If provided, geometries will be tessellated to this resolution prior to wrapping.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p>A <a class="reference external" href="https://geopandas.org/en/stable/docs/reference/api/geopandas.GeoDataFrame.html">geopandas.GeoDataFrame</a> object containing the reconstructed <strong>topological plate boundaries</strong> geometries. The geometry column name is “geometry”.</p>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://geopandas.org/en/stable/docs/reference/api/geopandas.GeoDataFrame.html">geopandas.GeoDataFrame</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py method">
 <dt class="sig sig-object py" id="gplately.PlotTopologies.get_transforms">
 <span class="sig-name descname"><span class="pre">get_transforms</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">central_meridian</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">tessellate_degrees</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gplately/plot.html#PlotTopologies.get_transforms"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.PlotTopologies.get_transforms" title="Link to this definition"></a></dt>
 <dd><p>Return the reconstructed transform lines(gpml:Transform) as a <a class="reference external" href="https://geopandas.org/en/stable/docs/reference/api/geopandas.GeoDataFrame.html">geopandas.GeoDataFrame</a> object.</p>
@@ -1296,8 +1320,12 @@ which contains plate boundary features like trenches, ridges and transforms.</p>
 
 <dl class="py method">
 <dt class="sig sig-object py" id="gplately.PlotTopologies.plot_grid">
-<span class="sig-name descname"><span class="pre">plot_grid</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ax</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">grid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">extent</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">[-180,</span> <span class="pre">180,</span> <span class="pre">-90,</span> <span class="pre">90]</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gplately/plot.html#PlotTopologies.plot_grid"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.PlotTopologies.plot_grid" title="Link to this definition"></a></dt>
+<span class="sig-name descname"><span class="pre">plot_grid</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ax</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">grid</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">extent</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">(-180,</span> <span class="pre">180,</span> <span class="pre">-90,</span> <span class="pre">90)</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gplately/plot.html#PlotTopologies.plot_grid"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.PlotTopologies.plot_grid" title="Link to this definition"></a></dt>
 <dd><p>Plot a <a class="reference external" href="https://numpy.org/doc/stable/reference/maskedarray.generic.html">MaskedArray</a> raster or grid onto a map.</p>
+<div class="admonition note">
+<p class="admonition-title">Note</p>
+<p>Plotting grid with pygmt has not been implemented yet!</p>
+</div>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
@@ -1305,8 +1333,7 @@ which contains plate boundary features like trenches, ridges and transforms.</p>
 <li><p><strong>grid</strong> (<em>MaskedArray</em><em> or </em><a class="reference internal" href="gplately.Raster.html#gplately.Raster" title="gplately.Raster"><em>Raster</em></a>) – A <a class="reference external" href="https://numpy.org/doc/stable/reference/maskedarray.generic.html">MaskedArray</a> with elements that define a grid. The number of rows in the raster
 corresponds to the number of latitudinal coordinates, while the number of raster
 columns corresponds to the number of longitudinal coordinates.</p></li>
-<li><p><strong>extent</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.13)"><em>tuple</em></a><em>, </em><em>default=</em><em>(</em><em>-180</em><em>, </em><em>180</em><em>, </em><em>-90</em><em>, </em><em>90</em><em>)</em>) – A tuple of 4 (min lon, max lon, min lat, max lat) extent of gird.
-If no extent are provided, global extent is assumed.</p></li>
+<li><p><strong>extent</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#tuple" title="(in Python v3.13)"><em>tuple</em></a><em>, </em><em>default=</em><em>(</em><em>-180</em><em>, </em><em>180</em><em>, </em><em>-90</em><em>, </em><em>90</em><em>)</em>) – A tuple of 4 (min_lon, max_lon, min_lat, max_lat) representing the extent of gird.</p></li>
 <li><p><strong>**kwargs</strong> – Keyword arguments for plotting the grid.
 See Matplotlib’s <code class="docutils literal notranslate"><span class="pre">imshow()</span></code> keyword arguments
 <a class="reference external" href="https://matplotlib.org/3.5.1/api/_as_gen/matplotlib.axes.Axes.imshow.html">here</a>.</p></li>

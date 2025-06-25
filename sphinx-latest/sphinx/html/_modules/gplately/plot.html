@@ -1402,8 +1402,12 @@
 
 <div class="viewcode-block" id="PlotTopologies.plot_grid">
 <a class="viewcode-back" href="../../generated/gplately.PlotTopologies.html#gplately.PlotTopologies.plot_grid">[docs]</a>
-    <span class="k">def</span><span class="w"> </span><span class="nf">plot_grid</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ax</span><span class="p">,</span> <span class="n">grid</span><span class="p">,</span> <span class="n">extent</span><span class="o">=</span><span class="p">[</span><span class="o">-</span><span class="mi">180</span><span class="p">,</span> <span class="mi">180</span><span class="p">,</span> <span class="o">-</span><span class="mi">90</span><span class="p">,</span> <span class="mi">90</span><span class="p">],</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">plot_grid</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">ax</span><span class="p">,</span> <span class="n">grid</span><span class="p">,</span> <span class="n">extent</span><span class="o">=</span><span class="p">(</span><span class="o">-</span><span class="mi">180</span><span class="p">,</span> <span class="mi">180</span><span class="p">,</span> <span class="o">-</span><span class="mi">90</span><span class="p">,</span> <span class="mi">90</span><span class="p">),</span> <span class="o">**</span><span class="n">kwargs</span><span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Plot a `MaskedArray`_ raster or grid onto a map.</span>
+
+<span class="sd">        .. note::</span>
+
+<span class="sd">            Plotting grid with pygmt has not been implemented yet!</span>
 
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
@@ -1416,8 +1420,7 @@
 <span class="sd">            columns corresponds to the number of longitudinal coordinates.</span>
 
 <span class="sd">        extent : tuple, default=(-180, 180, -90, 90)</span>
-<span class="sd">            A tuple of 4 (min lon, max lon, min lat, max lat) extent of gird.</span>
-<span class="sd">            If no extent are provided, global extent is assumed.</span>
+<span class="sd">            A tuple of 4 (min_lon, max_lon, min_lat, max_lat) representing the extent of gird.</span>
 
 <span class="sd">        **kwargs :</span>
 <span class="sd">            Keyword arguments for plotting the grid.</span>
@@ -2254,6 +2257,20 @@
             <span class="bp">self</span><span class="o">.</span><span class="n">get_all_topological_sections</span><span class="p">,</span>
             <span class="n">color</span><span class="o">=</span><span class="n">color</span><span class="p">,</span>
             <span class="o">**</span><span class="n">kwargs</span><span class="p">,</span>
+        <span class="p">)</span></div>
+
+
+<div class="viewcode-block" id="PlotTopologies.get_topological_plate_boundaries">
+<a class="viewcode-back" href="../../generated/gplately.PlotTopologies.html#gplately.PlotTopologies.get_topological_plate_boundaries">[docs]</a>
+    <span class="nd">@append_docstring</span><span class="p">(</span><span class="n">GET_DATE_DOCSTRING</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="s2">&quot;topological plate boundaries&quot;</span><span class="p">))</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">get_topological_plate_boundaries</span><span class="p">(</span>
+        <span class="bp">self</span><span class="p">,</span> <span class="n">central_meridian</span><span class="o">=</span><span class="mf">0.0</span><span class="p">,</span> <span class="n">tessellate_degrees</span><span class="o">=</span><span class="mi">1</span>
+    <span class="p">):</span>
+<span class="w">        </span><span class="sd">&quot;&quot;&quot;Return the reconstructed &quot;topological plate boundaries&quot; lines as a `geopandas.GeoDataFrame`_ object.&quot;&quot;&quot;</span>
+        <span class="k">return</span> <span class="bp">self</span><span class="o">.</span><span class="n">get_feature</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">_topological_plate_boundaries</span><span class="p">,</span>
+            <span class="n">central_meridian</span><span class="o">=</span><span class="n">central_meridian</span><span class="p">,</span>
+            <span class="n">tessellate_degrees</span><span class="o">=</span><span class="n">tessellate_degrees</span><span class="p">,</span>
         <span class="p">)</span></div>
 
 
