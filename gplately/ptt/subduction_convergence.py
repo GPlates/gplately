@@ -1,5 +1,5 @@
 #
-#    Copyright (C) 2016 The University of Sydney, Australia
+#    Copyright (C) 2016-2025 The University of Sydney, Australia
 #
 #    This program is free software; you can redistribute it and/or modify it under
 #    the terms of the GNU General Public License, version 2, as published by
@@ -15,10 +15,7 @@
 #    51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
 
-"""
-Find the convergence rate of trenches (subduction zones).
-"""
-
+"""Find the convergence rate of trenches (subduction zones)."""
 
 from __future__ import print_function
 

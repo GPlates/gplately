@@ -1,5 +1,5 @@
 #
-#    Copyright (C) 2024 The University of Sydney, Australia
+#    Copyright (C) 2024-2025 The University of Sydney, Australia
 #
 #    This program is free software; you can redistribute it and/or modify it under
 #    the terms of the GNU General Public License, version 2, as published by
@@ -22,12 +22,7 @@ import pandas as pd
 import pygplates
 import scipy
 
-from .spatial import (
-    haversine_distance,
-    geocentric_radius,
-    lonlat2xyz,
-    xyz2lonlat,
-)
+from .spatial import geocentric_radius, haversine_distance, lonlat2xyz, xyz2lonlat
 
 EARTH_RADIUS = pygplates.Earth.mean_radius_in_kms
 
