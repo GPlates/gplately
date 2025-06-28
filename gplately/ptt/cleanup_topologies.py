@@ -1,5 +1,5 @@
 #
-#    Copyright (C) 2019 The University of Sydney, Australia
+#    Copyright (C) 2019-2025 The University of Sydney, Australia
 #
 #    This program is free software; you can redistribute it and/or modify it under
 #    the terms of the GNU General Public License, version 2, as published by
@@ -17,9 +17,9 @@
 """
 Clean up topologies
 
-including:   
-- Removing any regular features not referenced by topologies.                                
-- Restricting the time periods of referenced features to match the referencing topologies.   
+including:
+- Removing any regular features not referenced by topologies.
+- Restricting the time periods of referenced features to match the referencing topologies.
 
 """
 

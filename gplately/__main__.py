@@ -1,5 +1,5 @@
 #
-#    Copyright (C) 2024 The University of Sydney, Australia
+#    Copyright (C) 2024-2025 The University of Sydney, Australia
 #
 #    This program is free software; you can redistribute it and/or modify it under
 #    the terms of the GNU General Public License, version 2, as published by
@@ -27,8 +27,8 @@ from .commands import (
     create_age_grids,
     feature_filter,
     list_models,
-    reset_feature_type,
     regrid,
+    reset_feature_type,
 )
 from .ptt import (
     cleanup_topologies,

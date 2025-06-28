@@ -1,5 +1,5 @@
 #
-#    Copyright (C) 2024 The University of Sydney, Australia
+#    Copyright (C) 2024-2025 The University of Sydney, Australia
 #
 #    This program is free software; you can redistribute it and/or modify it under
 #    the terms of the GNU General Public License, version 2, as published by
@@ -21,7 +21,7 @@ from .utils.log_utils import setup_logging
 from .utils.version import get_distribution_version
 
 REQUIRED_PMM_VERSION = "1.3.0"  # TODO: get this from package meta
-USING_DEV_VERSION = True  ## change this to False before official release
+USING_DEV_VERSION = False  ## change this to False before official release
 
 __version__ = get_distribution_version()
 

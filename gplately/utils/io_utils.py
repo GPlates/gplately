@@ -1,5 +1,5 @@
 #
-#    Copyright (C) 2024 The University of Sydney, Australia
+#    Copyright (C) 2024-2025 The University of Sydney, Australia
 #
 #    This program is free software; you can redistribute it and/or modify it under
 #    the terms of the GNU General Public License, version 2, as published by
@@ -16,13 +16,13 @@
 #
 
 """
-Tools to read geometry data from input files and output them as `Shapely` 
-geometries. These geometries can be plotted directly with GPlately's 
+Tools to read geometry data from input files and output them as `Shapely`
+geometries. These geometries can be plotted directly with GPlately's
 `PlotTopologies` object.
 
-By default, input files are read with `GeoPandas` and output as a 
+By default, input files are read with `GeoPandas` and output as a
 `geopandas.GeoSeries` object that contains `Shapely` geometries.
-If `GeoPandas` is not found on the system, input files are read with 
+If `GeoPandas` is not found on the system, input files are read with
 `Shapely` instead and are still returned as `Shapely` geometries.
 
 """

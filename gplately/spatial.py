@@ -1,5 +1,5 @@
 #
-#    Copyright (C) 2024 The University of Sydney, Australia
+#    Copyright (C) 2024-2025 The University of Sydney, Australia
 #
 #    This program is free software; you can redistribute it and/or modify it under
 #    the terms of the GNU General Public License, version 2, as published by
@@ -15,12 +15,11 @@
 #    51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
 
-"""This sub-module contains spatial tools for calculating distances on the Earth.
-"""
+"""This sub-module contains spatial tools for calculating distances on the Earth."""
 
 import numpy as np
-from scipy.spatial import cKDTree as _KDTree
 import pygplates
+from scipy.spatial import cKDTree as _KDTree
 
 EARTH_RADIUS = pygplates.Earth.mean_radius_in_kms
 
@@ -135,7 +134,7 @@ def cartesian_distance(
     lon1, lon2, lat1, lat2, degrees=True, k=1, return_neighbours=False
 ):
 
-    from .tools import lonlat2xyz, EARTH_RADIUS
+    from .tools import EARTH_RADIUS, lonlat2xyz
 
     x1, y1, z1 = lonlat2xyz(lon1, lat1, degrees)
     x2, y2, z2 = lonlat2xyz(lon2, lat2, degrees)
@@ -156,7 +155,7 @@ def great_circle_distance(
     lon1, lon2, lat1, lat2, degrees=True, k=1, return_neighbours=False
 ):
 
-    from .tools import lonlat2xyz, EARTH_RADIUS
+    from .tools import EARTH_RADIUS, lonlat2xyz
 
     x1, y1, z1 = lonlat2xyz(lon1, lat1, degrees)
     x2, y2, z2 = lonlat2xyz(lon2, lat2, degrees)

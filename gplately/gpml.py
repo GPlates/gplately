@@ -1,5 +1,5 @@
 #
-#    Copyright (C) 2024 The University of Sydney, Australia
+#    Copyright (C) 2024-2025 The University of Sydney, Australia
 #
 #    This program is free software; you can redistribute it and/or modify it under
 #    the terms of the GNU General Public License, version 2, as published by
@@ -15,7 +15,7 @@
 #    51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
 
-"""This sub-module contains functions for manipulating GPML (`.gpml`, `.gpmlz`) files, 
+"""This sub-module contains functions for manipulating GPML (`.gpml`, `.gpmlz`) files,
 as well as `pygplates.Feature` and `pygplates.FeatureCollection` objects.
 """
 import os

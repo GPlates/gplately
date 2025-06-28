@@ -1,5 +1,5 @@
 #
-#    Copyright (C) 2024 The University of Sydney, Australia
+#    Copyright (C) 2024-2025 The University of Sydney, Australia
 #
 #    This program is free software; you can redistribute it and/or modify it under
 #    the terms of the GNU General Public License, version 2, as published by
@@ -19,11 +19,11 @@ import argparse
 import datetime
 import logging
 import multiprocessing
+import pathlib
 import time
 import warnings
-from typing import Optional, Sequence, Union
-import pathlib
 from functools import partial
+from typing import Optional, Sequence, Union
 
 from ..grids import read_netcdf_grid, write_netcdf_grid
 

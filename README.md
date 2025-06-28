@@ -46,6 +46,9 @@ eprint = {https://rmets.onlinelibrary.wiley.com/doi/pdf/10.1002/gdj3.185},
 
 - [latest stable](https://gplates.github.io/gplately/stable/)
 - [latest development](https://gplates.github.io/gplately/latest/sphinx/html/index.html)
+- [v2.0.0](https://gplates.github.io/gplately/v2.0.0/)
+
+### Older versions
 - [v1.3.0](https://gplates.github.io/gplately/v1.3.0/)
 - [v1.2.0](https://gplates.github.io/gplately/v1.2.0/)
 - [v1.1.0](https://gplates.github.io/gplately/v1.1.0/)

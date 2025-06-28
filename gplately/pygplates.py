@@ -1,5 +1,5 @@
 #
-#    Copyright (C) 2024 The University of Sydney, Australia
+#    Copyright (C) 2024-2025 The University of Sydney, Australia
 #
 #    This program is free software; you can redistribute it and/or modify it under
 #    the terms of the GNU General Public License, version 2, as published by
@@ -23,9 +23,7 @@ But as of pygplates version 1.0, pickling is natively supported (within pygplate
 So now this module is no longer necessary, but retained for backward compatibility.
 """
 
-from pygplates import *
-
 # Also import some useful private symbols (with leading underscore).
 # This is similar to pygplates.__init__.
-from pygplates import __version__
-from pygplates import __doc__
+from pygplates import *
+from pygplates import __doc__, __version__

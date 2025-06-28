@@ -1,5 +1,5 @@
 #
-#    Copyright (C) 2019 The University of Sydney, Australia
+#    Copyright (C) 2019-2025 The University of Sydney, Australia
 #
 #    This program is free software; you can redistribute it and/or modify it under
 #    the terms of the GNU General Public License, version 2, as published by
@@ -14,16 +14,13 @@
 #    with this program; if not, write to Free Software Foundation, Inc.,
 #    51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
-
-
 """
 Various rotation utilities
 
-including:                                                                    
-- Calculating stage rotations between consecutive finite rotations in a plate pair.          
+including:
+- Calculating stage rotations between consecutive finite rotations in a plate pair.
 
 """
-
 
 from __future__ import print_function
 
