@@ -73,6 +73,8 @@ Basics
    Plot paleo-map using PyGMT.
 - `Reconstruct Files <../../notebook-html/reconstruct_files.html>`__
    Reconstruct and plot shapefiles and `other supported files <https://www.gplates.org/docs/pygplates/generated/pygplates.featurecollection>`__.
+- `Use your own plate model <../../notebook-html/use_your_own_plate_model.html>`__
+   Use your own plate model to reconstruct points.
 - `Save Reconstructed Geometries to Files <../../notebook-html/save_reconstructed_data.html>`__
    Save the reconstructed data to shapefiles.
 - `Shortcut to create PlateReconstruction and PlotTopologies objects <../../notebook-html/use_auxiliary_functions.html>`__
