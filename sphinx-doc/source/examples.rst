@@ -51,7 +51,7 @@ Workflows
 .. _`09 - Motion Paths and Flowlines`: ../../notebook-html/09-CreatingMotionPathsAndFlowlines.html
 .. _`10 - Seafloor Grid`: ../../notebook-html/10-SeafloorGrids.html
 .. _`11 - Andes Fluxes`: ../../notebook-html/11-AndesFluxes.html
-.. _`12 - Mutschler World Porphyry Copper Deposits Regional Plots`: ../notebook-html/12-MutschlerWorldPorphyryCopperDepositsRegionalPlots.html
+.. _`12 - Mutschler World Porphyry Copper Deposits Regional Plots`: ../../notebook-html/12-MutschlerWorldPorphyryCopperDepositsRegionalPlots.html
 .. _`GPlates 2.3's sample data sets`: https://www.earthbyte.org/gplates-2-3-software-and-data-sets/
 
 .. note::
