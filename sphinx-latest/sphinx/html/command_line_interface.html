@@ -157,32 +157,32 @@ If a model name is given, show the details about this model.</p>
 </section>
 <section id="filter">
 <h2><a class="toc-backref" href="#id3" role="doc-backlink">filter</a><a class="headerlink" href="#filter" title="Link to this heading"></a></h2>
-<p>Filter feature collection by various criteria.</p>
-<p>👉 only keep features whose name contains “Africa” or “North America” and save the features to output_file</p>
+<p>Filter feature collection by various criteria and save the result to the <cite>output_file</cite>.</p>
+<p>👉 only keep features whose name contains “Africa” or “North America”</p>
 <div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>gplately<span class="w"> </span>filter<span class="w"> </span>input_file<span class="w"> </span>output_file<span class="w"> </span>-n<span class="w"> </span>Africa<span class="w"> </span><span class="s2">&quot;North America&quot;</span>
 </pre></div>
 </div>
-<p>👉 only keep features whose plate ID is one of “701 714 715 101” and save the features to output_file</p>
+<p>👉 only keep features whose plate ID is one of “701 714 715 101”</p>
 <div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>gplately<span class="w"> </span>filter<span class="w"> </span>input_file<span class="w"> </span>output_file<span class="w"> </span>-p<span class="w"> </span><span class="m">701</span><span class="w"> </span><span class="m">714</span><span class="w"> </span><span class="m">715</span><span class="w"> </span><span class="m">101</span>
 </pre></div>
 </div>
-<p>👉 only keep features whose birth age is older than 500Myr and save the features to output_file</p>
+<p>👉 only keep features whose birth age is older than 500Myr</p>
 <div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>gplately<span class="w"> </span>filter<span class="w"> </span>input_file<span class="w"> </span>output_file<span class="w"> </span>--min-birth-age<span class="w"> </span><span class="m">500</span>
 </pre></div>
 </div>
-<p>👉 only keep features whose birth age is younger than 500Myr and save the features to output_file</p>
+<p>👉 only keep features whose birth age is younger than 500Myr</p>
 <div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>gplately<span class="w"> </span>filter<span class="w"> </span>input_file<span class="w"> </span>output_file<span class="w"> </span>--max-birth-age<span class="w"> </span><span class="m">500</span>
 </pre></div>
 </div>
-<p>👉 only keep features whose name contains “Africa” or “North America” and plate ID is one of “701 714 715 101” and birth age is older than 500Myr and save the features to output_file</p>
+<p>👉 only keep features whose name contains “Africa” or “North America” and plate ID is one of “701 714 715 101” and birth age is older than 500Myr</p>
 <div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>gplately<span class="w"> </span>filter<span class="w"> </span>input_file<span class="w"> </span>output_file<span class="w"> </span>-n<span class="w"> </span>Africa<span class="w"> </span><span class="s2">&quot;North America&quot;</span><span class="w"> </span>-p<span class="w"> </span><span class="m">701</span><span class="w"> </span><span class="m">714</span><span class="w"> </span><span class="m">715</span><span class="w"> </span><span class="m">101</span><span class="w"> </span>--min-birth-age<span class="w"> </span><span class="m">500</span>
 </pre></div>
 </div>
-<p>👉 only keep gpml:Basin features and save the features to output_file</p>
+<p>👉 only keep gpml:Basin features</p>
 <div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>gplately<span class="w"> </span>filter<span class="w"> </span>input_file<span class="w"> </span>output_file<span class="w"> </span>-t<span class="w"> </span>gpml:Basin
 </pre></div>
 </div>
-<p>👉 only keep gpml:Basin and gpml:IslandArc features and save the features to output_file</p>
+<p>👉 only keep gpml:Basin and gpml:IslandArc features</p>
 <div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>gplately<span class="w"> </span>filter<span class="w"> </span>input_file<span class="w"> </span>output_file<span class="w"> </span>-t<span class="w"> </span><span class="s2">&quot;gpml:IslandArc|gpml:Basin&quot;</span>
 </pre></div>
 </div>
@@ -222,7 +222,7 @@ If a model name is given, show the details about this model.</p>
 <section id="agegrid-ag">
 <h2><a class="toc-backref" href="#id5" role="doc-backlink">agegrid (ag)</a><a class="headerlink" href="#agegrid-ag" title="Link to this heading"></a></h2>
 <p>Generate age grids for a plate reconstruction model.</p>
-<p>👉 create age grids from 10Ma to 0Ma with 1Myr increment for the merdith2021 reconstruction mode</p>
+<p>👉 create age grids from 10Ma to 0Ma with 1Myr increment for the <cite>merdith2021</cite> reconstruction mode</p>
 <div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>gplately<span class="w"> </span>ag<span class="w"> </span>output<span class="w"> </span>-m<span class="w"> </span>merdith2021<span class="w"> </span>-e<span class="w"> </span><span class="m">0</span><span class="w"> </span>-s<span class="w"> </span><span class="m">10</span>
 </pre></div>
 </div>
@@ -306,8 +306,8 @@ and their boundary sections as subduction zones, mid-ocean ridges (ridge/transfo
 </section>
 <section id="gpmdb">
 <h2><a class="toc-backref" href="#id15" role="doc-backlink">gpmdb</a><a class="headerlink" href="#gpmdb" title="Link to this heading"></a></h2>
-<p>Retrieve the paleomagnetic data from <a class="reference external" href="http://www.gpmdb.net">GPMDB website</a>, create GPlates-compatible VGP features and save the VGP features in a .gpmlz file.</p>
-<p>👉 download the paleomagnetic data and generate GPlates-compatible VGP features using the zahirovic2022 reconstruction model</p>
+<p>Retrieve the paleomagnetic data from the <a class="reference external" href="http://www.gpmdb.net">GPMDB website</a>, create GPlates-compatible VGP features and save them in a .gpmlz file.</p>
+<p>👉 download the paleomagnetic data and generate GPlates-compatible VGP features using the <cite>zahirovic2022</cite> reconstruction model</p>
 <div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>gplately<span class="w"> </span>gpmdb<span class="w"> </span>-m<span class="w"> </span>zahirovic2022<span class="w"> </span>-o<span class="w"> </span>vgp.gpmlz
 </pre></div>
 </div>

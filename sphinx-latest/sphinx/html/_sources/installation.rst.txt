@@ -21,7 +21,7 @@ The following commands will create a new conda environment called **my-gplately-
 
 .. note::
     
-    ✏️ If conda gets **stuck while solving the environment** during the installation of GPlately, you can try to use micromamba_ instead.
+    If conda gets **stuck while solving the environment** during the installation of GPlately, you can try to use micromamba_ instead.
 
 Use pip
 -------
@@ -35,7 +35,7 @@ GPlately can also be installed using pip_.
     $ pip install gplately
 
 
-👉 Install from the `GPlately GitHub repository`_ (if you need the latest code changes on GitHub)
+👉 Install from the `GitHub GPlately repository`_ (if you need the latest code changes on GitHub)
 
 .. code:: console
 
@@ -55,7 +55,7 @@ GPlately can also be installed using pip_.
     
 .. note::
 
-    ✏️ The "pip install -e ." command installs GPlately in `editable mode`_.
+    ✏️ The ``pip install -e .`` command installs GPlately in `editable mode`_.
 
 .. _`editable mode`: https://pip.pypa.io/en/stable/topics/local-project-installs/#editable-installs
 
@@ -87,8 +87,13 @@ The commands above will start a `Jupyter Notebook`_ server on port 8888. Open th
 
 .. note::
 
-    ✏️ Replace ``THE_FULL_PATH_TO_YOUR_SCRIPT_FOLDER`` with the full path to the folder containing your script file. 
+    Replace ``THE_FULL_PATH_TO_YOUR_SCRIPT_FOLDER`` with the full path to the folder containing your script file. 
     In **PowerShell**, you can use "$PWD" if your script is in the current working directory. On **Linux** or **macOS**, you can use \`pwd\` instead.
+
+Docker images are available at both `Docker Hub <https://hub.docker.com/>`__ and `GitHub Container Registry <https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-container-registry>`__.
+
+- https://hub.docker.com/r/gplates/gplately/tags
+- https://github.com/GPlates/gplately/pkgs/container/gplately 
 
 Visit this `Docker README page`_ for more details about using Docker with GPlately.
 
@@ -97,7 +102,7 @@ Visit this `Docker README page`_ for more details about using Docker with GPlate
 .. _micromamba: https://mamba.readthedocs.io/en/latest/user_guide/micromamba.html
 .. _pip: https://pip.pypa.io/en/stable/
 .. _PyPI: https://pypi.org/project/gplately/
-.. _`GPlately GitHub repository`: https://github.com/GPlates/gplately.git
+.. _`GitHub GPlately repository`: https://github.com/GPlates/gplately.git
 .. _`Docker README page`: https://github.com/GPlates/gplately/tree/master/docker/README.md 
 .. _`GPlately commands`: command_line_interface.html
 .. _`Jupyter Notebook`: https://jupyter-notebook.readthedocs.io/en/latest/ 

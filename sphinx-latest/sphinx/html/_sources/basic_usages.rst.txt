@@ -135,8 +135,8 @@ Option 2: Jupyter Notebook
    - `GPlately Hello World Python Script`_
    - `GPlately Hello World Jupyter Notebook`_
 
-.. _`GPlately Hello World Python Script`: https://github.com/GPlates/gplately/blob/update-doc-readme-examples/Notebooks/Examples/hello_world.py
-.. _`GPlately Hello World Jupyter Notebook`: https://github.com/GPlates/gplately/blob/update-doc-readme-examples/Notebooks/Examples/hello_world.ipynb
+.. _`GPlately Hello World Python Script`: https://github.com/GPlates/gplately/blob/master/Notebooks/Examples/hello_world.py
+.. _`GPlately Hello World Jupyter Notebook`: https://github.com/GPlates/gplately/blob/master/Notebooks/Examples/hello_world.ipynb
 .. _micromamba: https://mamba.readthedocs.io/en/latest/user_guide/micromamba.html
 .. |How to install micromamba?| raw:: html
    

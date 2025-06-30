@@ -51,45 +51,45 @@ Combine multiple feature collections into one.
 filter
 ------
 
-Filter feature collection by various criteria.  
+Filter feature collection by various criteria and save the result to the `output_file`.  
 
-👉 only keep features whose name contains "Africa" or "North America" and save the features to output_file
+👉 only keep features whose name contains "Africa" or "North America" 
 
 .. code:: console
 
    $ gplately filter input_file output_file -n Africa "North America"
   
-👉 only keep features whose plate ID is one of "701 714 715 101" and save the features to output_file
+👉 only keep features whose plate ID is one of "701 714 715 101"
 
 .. code:: console
 
    $ gplately filter input_file output_file -p 701 714 715 101
 
-👉 only keep features whose birth age is older than 500Myr and save the features to output_file
+👉 only keep features whose birth age is older than 500Myr
 
 .. code:: console
 
    $ gplately filter input_file output_file --min-birth-age 500
 
-👉 only keep features whose birth age is younger than 500Myr and save the features to output_file
+👉 only keep features whose birth age is younger than 500Myr
 
 .. code:: console
 
    $ gplately filter input_file output_file --max-birth-age 500
    
-👉 only keep features whose name contains "Africa" or "North America" and plate ID is one of "701 714 715 101" and birth age is older than 500Myr and save the features to output_file
+👉 only keep features whose name contains "Africa" or "North America" and plate ID is one of "701 714 715 101" and birth age is older than 500Myr
 
 .. code:: console
 
    $ gplately filter input_file output_file -n Africa "North America" -p 701 714 715 101 --min-birth-age 500
    
-👉 only keep gpml:Basin features and save the features to output_file
+👉 only keep gpml:Basin features
 
 .. code:: console
 
    $ gplately filter input_file output_file -t gpml:Basin
    
-👉 only keep gpml:Basin and gpml:IslandArc features and save the features to output_file
+👉 only keep gpml:Basin and gpml:IslandArc features
 
 .. code:: console
 
@@ -139,7 +139,7 @@ agegrid (ag)
 
 Generate age grids for a plate reconstruction model. 
 
-👉 create age grids from 10Ma to 0Ma with 1Myr increment for the merdith2021 reconstruction mode
+👉 create age grids from 10Ma to 0Ma with 1Myr increment for the `merdith2021` reconstruction mode
 
 .. code:: console
 
@@ -263,9 +263,9 @@ Find the convergence rates along trenches (subduction zones) over time.
 gpmdb
 -----
 
-Retrieve the paleomagnetic data from `GPMDB website <http://www.gpmdb.net>`__, create GPlates-compatible VGP features and save the VGP features in a .gpmlz file. 
+Retrieve the paleomagnetic data from the `GPMDB website <http://www.gpmdb.net>`__, create GPlates-compatible VGP features and save them in a .gpmlz file. 
 
-👉 download the paleomagnetic data and generate GPlates-compatible VGP features using the zahirovic2022 reconstruction model
+👉 download the paleomagnetic data and generate GPlates-compatible VGP features using the `zahirovic2022` reconstruction model
 
 .. code:: console
 

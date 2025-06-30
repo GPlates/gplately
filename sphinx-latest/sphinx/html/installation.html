@@ -108,7 +108,7 @@ The following commands will create a new conda environment called <strong>my-gpl
 </div>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>✏️ If conda gets <strong>stuck while solving the environment</strong> during the installation of GPlately, you can try to use <a class="reference external" href="https://mamba.readthedocs.io/en/latest/user_guide/micromamba.html">micromamba</a> instead.</p>
+<p>If conda gets <strong>stuck while solving the environment</strong> during the installation of GPlately, you can try to use <a class="reference external" href="https://mamba.readthedocs.io/en/latest/user_guide/micromamba.html">micromamba</a> instead.</p>
 </div>
 </section>
 <section id="use-pip">
@@ -118,7 +118,7 @@ The following commands will create a new conda environment called <strong>my-gpl
 <div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>pip<span class="w"> </span>install<span class="w"> </span>gplately
 </pre></div>
 </div>
-<p>👉 Install from the <a class="reference external" href="https://github.com/GPlates/gplately.git">GPlately GitHub repository</a> (if you need the latest code changes on GitHub)</p>
+<p>👉 Install from the <a class="reference external" href="https://github.com/GPlates/gplately.git">GitHub GPlately repository</a> (if you need the latest code changes on GitHub)</p>
 <div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>pip<span class="w"> </span>install<span class="w"> </span>git+https://github.com/GPlates/gplately.git
 </pre></div>
 </div>
@@ -133,7 +133,7 @@ The following commands will create a new conda environment called <strong>my-gpl
 </div>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>✏️ The “pip install -e .” command installs GPlately in <a class="reference external" href="https://pip.pypa.io/en/stable/topics/local-project-installs/#editable-installs">editable mode</a>.</p>
+<p>✏️ The <code class="docutils literal notranslate"><span class="pre">pip</span> <span class="pre">install</span> <span class="pre">-e</span> <span class="pre">.</span></code> command installs GPlately in <a class="reference external" href="https://pip.pypa.io/en/stable/topics/local-project-installs/#editable-installs">editable mode</a>.</p>
 </div>
 </section>
 <section id="use-docker">
@@ -155,9 +155,14 @@ The following commands will create a new conda environment called <strong>my-gpl
 </div>
 <div class="admonition note">
 <p class="admonition-title">Note</p>
-<p>✏️ Replace <code class="docutils literal notranslate"><span class="pre">THE_FULL_PATH_TO_YOUR_SCRIPT_FOLDER</span></code> with the full path to the folder containing your script file.
+<p>Replace <code class="docutils literal notranslate"><span class="pre">THE_FULL_PATH_TO_YOUR_SCRIPT_FOLDER</span></code> with the full path to the folder containing your script file.
 In <strong>PowerShell</strong>, you can use “$PWD” if your script is in the current working directory. On <strong>Linux</strong> or <strong>macOS</strong>, you can use `pwd` instead.</p>
 </div>
+<p>Docker images are available at both <a class="reference external" href="https://hub.docker.com/">Docker Hub</a> and <a class="reference external" href="https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-container-registry">GitHub Container Registry</a>.</p>
+<ul class="simple">
+<li><p><a class="reference external" href="https://hub.docker.com/r/gplates/gplately/tags">https://hub.docker.com/r/gplates/gplately/tags</a></p></li>
+<li><p><a class="reference external" href="https://github.com/GPlates/gplately/pkgs/container/gplately">https://github.com/GPlates/gplately/pkgs/container/gplately</a></p></li>
+</ul>
 <p>Visit this <a class="reference external" href="https://github.com/GPlates/gplately/tree/master/docker/README.md">Docker README page</a> for more details about using Docker with GPlately.</p>
 </section>
 </section>

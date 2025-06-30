@@ -5,13 +5,24 @@ Trouble-shooting and FAQ
    :local:
    :depth: 1
 
-Frequently Asked Questions
---------------------------
+
+Trouble-shooting
+----------------
 
 It is taking Conda forever to solve the environment during GPlately installation.
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 If Conda gets **stuck while solving the environment** during the installation of GPlately, you can try to use micromamba_ instead.
+
+Unable to install or use GPlately on my computer.
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+For various reasons, GPlately may not install or function correctly on some computers. 
+To address this, we've prepared a Docker image with a fully working GPlately installation. 
+See `this web page <installation.html#use-docker>`__.
+
+Frequently Asked Questions
+--------------------------
 
 Where to get help?
 ~~~~~~~~~~~~~~~~~~
@@ -21,10 +32,10 @@ You may post questions on the `GPlates online forum <https://discourse.gplates.o
 Where to report bugs?
 ~~~~~~~~~~~~~~~~~~~~~
 
-You may `create issues <https://github.com/GPlates/gplately/issues>`__ in GPlately GitHub repository.
+You may `create issues <https://github.com/GPlates/gplately/issues>`__ in the GitHub GPlately repository.
 
-How to contact the owner of GPlately?
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+How to contact the development team?
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 You may `contact EarthByte research group <https://www.earthbyte.org/contact-us-3/>`__.
 
