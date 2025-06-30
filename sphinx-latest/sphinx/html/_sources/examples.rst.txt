@@ -66,12 +66,19 @@ Basics
 - `Hello World <../../notebook-html/hello_world.html>`__ 
    A minimal working example of GPlately.
 - `Use Plate Model Manager <../../notebook-html/introducing_plate_model_manager.html>`__
-   How to use Plate Model Manager to download plate reconstruction models.
+   Use Plate Model Manager to download plate reconstruction models.
 - `Plot with Cartopy <../../notebook-html/plot_map_with_cartopy.html>`__
    Plot paleo-map using Cartopy.
 - `Plot with PyGMT <../../notebook-html/plot_map_with_pygmt.html>`__
    Plot paleo-map using PyGMT.
+- `Reconstruct Files <../../notebook-html/reconstruct_files.html>`__
+   Reconstruct and plot shapefiles and `other supported files <https://www.gplates.org/docs/pygplates/generated/pygplates.featurecollection>`__.
 - `Save Reconstructed Geometries to Files <../../notebook-html/save_reconstructed_data.html>`__
-   How to save the reconstructed data to shapefiles.
+   Save the reconstructed data to shapefiles.
 - `Shortcut to create PlateReconstruction and PlotTopologies objects <../../notebook-html/use_auxiliary_functions.html>`__
    Easier way to get PlateReconstruction and PlotTopologies objects from the name of a plate reconstruction model.
+
+.. note::
+
+   The `Jupyter Notebook <https://docs.jupyter.org/en/latest/#what-is-a-notebook>`__ files of these basic examples 
+   are available `here <https://github.com/GPlates/gplately/tree/master/Notebooks/Examples>`__.
