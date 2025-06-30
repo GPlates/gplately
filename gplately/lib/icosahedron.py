@@ -140,7 +140,7 @@ if __name__ == "__main__":
     seen = set()
 
     vertices_0, faces_0 = get_mesh(6)
-    print(vertices_0.shape, faces_0.shape)
+    print(vertices_0.shape, faces_0.shape)  # type: ignore
 
     with open("sphere_mesh.gmt", "w+") as f:
         for v in vertices_0:

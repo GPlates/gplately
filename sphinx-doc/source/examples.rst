@@ -66,19 +66,21 @@ Basics
 - `Hello World <../../notebook-html/hello_world.html>`__ 
    A minimal working example of GPlately.
 - `Use Plate Model Manager <../../notebook-html/introducing_plate_model_manager.html>`__
-   Use Plate Model Manager to download plate reconstruction models.
+   Use plate-model-manager to download plate reconstruction models.
 - `Plot with Cartopy <../../notebook-html/plot_map_with_cartopy.html>`__
    Plot paleo-map using Cartopy.
 - `Plot with PyGMT <../../notebook-html/plot_map_with_pygmt.html>`__
    Plot paleo-map using PyGMT.
 - `Reconstruct Files <../../notebook-html/reconstruct_files.html>`__
    Reconstruct and plot shapefiles and `other supported files <https://www.gplates.org/docs/pygplates/generated/pygplates.featurecollection>`__.
-- `Use your own plate model <../../notebook-html/use_your_own_plate_model.html>`__
+- `Use Your Own Plate Model <../../notebook-html/use_your_own_plate_model.html>`__
    Use your own plate model to reconstruct points.
 - `Save Reconstructed Geometries to Files <../../notebook-html/save_reconstructed_data.html>`__
    Save the reconstructed data to shapefiles.
-- `Shortcut to create PlateReconstruction and PlotTopologies objects <../../notebook-html/use_auxiliary_functions.html>`__
+- `Shortcut to Create PlateReconstruction and PlotTopologies Objects <../../notebook-html/use_auxiliary_functions.html>`__
    Easier way to get PlateReconstruction and PlotTopologies objects from the name of a plate reconstruction model.
+- `Generate Icosahedron Mesh <../../notebook-html/icosahedron_mesh.html>`__
+   Generate and visualize Icosahedron mesh. 
 
 .. note::
 
