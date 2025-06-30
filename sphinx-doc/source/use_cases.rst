@@ -316,7 +316,7 @@ Alternatively, you may use the auxiliary functions to create a :py:class:`gplate
 
 
 The `PlateReconstructions example`_ demonstrates in details how to use the :py:class:`gplately.PlateReconstruction` class.
-The `02-PlateReconstructions.ipynb`_ Jupyter Notebook is available in the GPlately GitHub repository.
+The `02-PlateReconstructions.ipynb`_ Jupyter Notebook is available in the GitHub GPlately repository.
 
 .. _`02-PlateReconstructions.ipynb`: https://github.com/GPlates/gplately/blob/master/Notebooks/02-PlateReconstructions.ipynb
 .. _`PlateReconstructions example`: https://gplates.github.io/gplately/stable/02-PlateReconstructions.html
@@ -349,7 +349,7 @@ through geologic time. This motion can be visualised using flowlines or motion p
 
 
 The `WorkingWithPoints example`_ demonstrates in details how to use the Points class. 
-The `03-WorkingWithPoints.ipynb`_ Jupyter Notebook is available in the GPlately GitHub repository.
+The `03-WorkingWithPoints.ipynb`_ Jupyter Notebook is available in the GitHub GPlately repository.
 
 .. _`WorkingWithPoints example`: https://gplates.github.io/gplately/stable/03-WorkingWithPoints.html
 .. _`03-WorkingWithPoints.ipynb`: https://github.com/GPlates/gplately/blob/master/Notebooks/03-WorkingWithPoints.ipynb
@@ -359,7 +359,7 @@ The `03-WorkingWithPoints.ipynb`_ Jupyter Notebook is available in the GPlately 
       :alt: PointsDemo
 
 The `CreatingMotionPathsAndFlowlines example`_ demonstrates how to create motion paths and flowlines.
-The `09-CreatingMotionPathsAndFlowlines.ipynb`_ Jupyter Notebook is available in the GPlately GitHub repository.
+The `09-CreatingMotionPathsAndFlowlines.ipynb`_ Jupyter Notebook is available in the GitHub GPlately repository.
 
 .. _`CreatingMotionPathsAndFlowlines example`:
 .. _`09-CreatingMotionPathsAndFlowlines.ipynb`: https://github.com/GPlates/gplately/blob/master/Notebooks/09-CreatingMotionPathsAndFlowlines.ipynb
@@ -403,7 +403,7 @@ interpolated onto Raster grids.
 
 
 The `Rasters example`_ demonstrates in details how to use the :py:class:`gplately.Raster` class. 
-The `06-Rasters.ipynb`_ Jupyter Notebook is available in the GPlately GitHub repository.
+The `06-Rasters.ipynb`_ Jupyter Notebook is available in the GitHub GPlately repository.
 
 .. _`06-Rasters.ipynb`: https://github.com/GPlates/gplately/blob/master/Notebooks/06-Rasters.ipynb
 .. _`Rasters example`: https://gplates.github.io/gplately/stable/06-Rasters.html
@@ -448,7 +448,7 @@ You may use the auxiliary functions to create a :py:class:`gplately.PlotTopologi
    plot_topologies_obj = get_gplot("Muller2019", time=55)
 
 The `PlateReconstructions example`_ demonstrates in details how to use the :py:class:`gplately.PlotTopologies` class.
-The `02-PlateReconstructions.ipynb`_ Jupyter Notebook is available in the GPlately GitHub repository.
+The `02-PlateReconstructions.ipynb`_ Jupyter Notebook is available in the GitHub GPlately repository.
 
 .. image:: images/plottopologies.png
       :width: 600
@@ -487,7 +487,7 @@ as encoded by a plate reconstruction model.
 
 The `SeafloorGrids example`_ is a tutorial notebook that demonstrates
 how to set up and use the :py:class:`gplately.SeafloorGrid` object, and shows a sample set of output grids. 
-The `10-SeafloorGrids.ipynb`_ Jupyter Notebook is available in the GPlately GitHub repository.
+The `10-SeafloorGrids.ipynb`_ Jupyter Notebook is available in the GitHub GPlately repository.
 
 .. _`SeafloorGrids example`: https://gplates.github.io/gplately/dev-doc/10-SeafloorGrids.html
 .. _`10-SeafloorGrids.ipynb`: https://github.com/GPlates/gplately/blob/master/Notebooks/10-SeafloorGrids.ipynb

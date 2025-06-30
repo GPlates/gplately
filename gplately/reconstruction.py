@@ -74,7 +74,7 @@ class PlateReconstruction(object):
             Default anchor plate ID for reconstruction.
             If not specified then uses the default anchor plate of :py:attr:`~rotation_model`.
         plate_model : PlateModel, optional
-            Only if users would like the :py:class:`gplately.PlateReconstruction` object tracks the :class:`PlateModel`.
+            Only if users would like the :py:class:`PlateReconstruction` object tracks the :class:`PlateModel`.
 
 
         .. _pygplates.RotationModel: https://www.gplates.org/docs/pygplates/generated/pygplates.rotationmodel

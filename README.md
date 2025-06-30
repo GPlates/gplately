@@ -19,7 +19,7 @@ GPlately was created to accelerate spatio-temporal data analysis by leveraging [
 
 ![SeedPointGIF](https://raw.githubusercontent.com/GPlates/gplately/master/Notebooks/NotebookFiles/ReadMe_Files/muller19_seedpoints.gif)
  
-GPlately can be installed using either `pip` or `conda` (via the conda-forge channel). For detailed installation instructions, please refer to the [Installation](https://github.com/GPlates/gplately/tree/update-doc-examples-tests?tab=readme-ov-file#installation) section. Additionally, [Docker images](https://github.com/GPlates/gplately/tree/update-doc-examples-tests?tab=readme-ov-file#3-using-docker-) are available for your convenience.
+GPlately can be installed using either `pip` or `conda` (via the conda-forge channel). For detailed installation instructions, please refer to the [Installation](https://gplates.github.io/gplately/latest/sphinx/html/installation.html) section. Additionally, [Docker images](https://gplates.github.io/gplately/latest/sphinx/html/installation.html#use-docker) are available for your convenience.
 
 Sample data is available from [EarthByte servers](https://www.earthbyte.org/category/resources/), which
 include rasters, seafloor age grids, rotation files, and more to help you get started with plate reconstructions.
@@ -42,11 +42,11 @@ eprint = {https://rmets.onlinelibrary.wiley.com/doi/pdf/10.1002/gdj3.185},
 }
 ```
 
-## [Documentation](https://gplates.github.io/gplately/dev)
+## Documentation
 
-- [latest stable](https://gplates.github.io/gplately/stable/)
+- [latest stable](https://gplates.github.io/gplately/stable/sphinx/html/index.html)
 - [latest development](https://gplates.github.io/gplately/latest/sphinx/html/index.html)
-- [v2.0.0](https://gplates.github.io/gplately/v2.0.0/)
+- [v2.0.0](https://gplates.github.io/gplately/v2.0.0/sphinx/html/index.html)
 
 ### Older versions
 - [v1.3.0](https://gplates.github.io/gplately/v1.3.0/)
@@ -58,12 +58,11 @@ eprint = {https://rmets.onlinelibrary.wiley.com/doi/pdf/10.1002/gdj3.185},
 
 - [pyGPlates](https://www.gplates.org/docs/pygplates/pygplates_getting_started.html#installation) 
 - [plate-model-manager](https://pypi.org/project/plate-model-manager/) 
-- [Shapely](https://shapely.readthedocs.io/en/stable/project.html#installing-shapely)
+- [Shapely](https://shapely.readthedocs.io/en/stable/manual.html)
 - [NumPy](https://numpy.org/install/) 
 - [SciPy](https://scipy.org/install/) 
 - [Matplotlib](https://matplotlib.org/stable/users/installing/index.html)
 - [Cartopy](https://scitools.org.uk/cartopy/docs/latest/index.html#getting-started)
-- [Shapely](https://shapely.readthedocs.io/en/stable/installation.html)
 - [Pooch](https://github.com/fatiando/pooch)
 - [GeoPandas](https://geopandas.org/en/stable/getting_started.html)
 - [netCDF4](https://unidata.github.io/netcdf4-python/#quick-install)
