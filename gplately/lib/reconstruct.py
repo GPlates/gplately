@@ -118,7 +118,9 @@ def reconstruct_points_impl(
         The static polygons as a ``pygplates.FeatureCollection`` object.
 
 
-    See :func:`gplately.reconstruct_points` for other parameters.
+    .. seealso::
+
+        See :func:`gplately.reconstruct_points` for other parameter details.
 
     """
     # the length of lons and lats must be the same.
@@ -226,7 +228,12 @@ def reverse_reconstruct_points(
     anchor_plate_id: int = 0,
     ignore_valid_time: bool = False,
 ):
-    """Wrapper function to reverse reconstruct points with :func:`gplately.reconstruct_points`."""
+    """Wrapper function to reverse reconstruct points with :func:`gplately.reconstruct_points`.
+
+    .. seealso::
+
+        See :func:`gplately.reconstruct_points` for parameter details.
+    """
     return reconstruct_points(
         lons,
         lats,
@@ -251,7 +258,12 @@ def reverse_reconstruct_points_impl(
     anchor_plate_id: int = 0,
     ignore_valid_time: bool = False,
 ):
-    """Wrapper function to reverse reconstruct points with :func:`gplately.reconstruct_points_impl`."""
+    """Wrapper function to reverse reconstruct points with :func:`gplately.reconstruct_points_impl`.
+
+    .. seealso::
+
+        See :func:`gplately.reconstruct_points` for parameter details.
+    """
     return reconstruct_points_impl(
         lons=lons,
         lats=lats,

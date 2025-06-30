@@ -49,4 +49,4 @@ Index
 .. _`conda-forge channel`: https://conda-forge.org/
 .. |Docker images| raw:: html
 
-   <a href="https://github.com/GPlates/gplately/blob/master/docker/README.md" target="_blank">Docker images</a>
+   <a href="installation.html#use-docker" target="_blank">Docker images</a>

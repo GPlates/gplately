@@ -43,9 +43,7 @@ $BASEDIR/test_reset_feature_type.sh
 
 $BASEDIR/test_ridges_and_transforms.py save
 
-
 $BASEDIR/test_subduction_teeth.py save
-
 
 $BASEDIR/test_tessellate.py save
 
