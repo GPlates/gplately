@@ -17,7 +17,7 @@ jobs:
       -
         name: Decide the docker image version number
         run: |
-            if [[ -f ./docker/build-docker-image-version.txt ]]; then
+            if [[ "${{ github.ref_name }}" == "build-docker-image" ]] && [[ -f ./docker/build-docker-image-version.txt ]]; then
               echo "DOCKER_IMAGE_TAG=$( tail -n 1 ./docker/build-docker-image-version.txt )" >> $GITHUB_ENV
             else
               echo "DOCKER_IMAGE_TAG=${{ github.ref_name }}" >> $GITHUB_ENV
