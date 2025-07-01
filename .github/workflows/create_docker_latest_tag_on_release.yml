@@ -1,0 +1,43 @@
+name: create docker latest tag on publishing release
+
+on:
+  release:
+    types: [published]
+
+jobs:
+  docker:
+    runs-on: ubuntu-latest
+    steps:
+      -
+        name: Checkout
+        uses: actions/checkout@v4
+      -
+        name: Decide the docker image version number
+        run: |
+            echo "DOCKER_IMAGE_TAG=${{ github.ref_name }}" >> $GITHUB_ENV
+            echo ${{ env.DOCKER_IMAGE_TAG }}
+      -
+        name: Set up QEMU
+        uses: docker/setup-qemu-action@v3
+      -
+        name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      -
+        name: Login to Docker Hub
+        uses: docker/login-action@v3
+        with:
+          username: ${{ secrets.DOCKERHUB_USERNAME }}
+          password: ${{ secrets.DOCKERHUB_TOKEN }}
+      - 
+        name: Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+      -     
+        name: Create the latest tags
+        run: |
+          docker buildx imagetools create -t gplates/gplately:latest gplates/gplately:amd64-${{ env.DOCKER_IMAGE_TAG }} gplates/gplately:arm64-${{ env.DOCKER_IMAGE_TAG }}
+          docker buildx imagetools create -t ghcr.io/gplates/gplately:latest ghcr.io/gplates/gplately:amd64-${{ env.DOCKER_IMAGE_TAG }} ghcr.io/gplates/gplately:arm64-${{ env.DOCKER_IMAGE_TAG }} 
+
