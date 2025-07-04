@@ -1,10 +1,8 @@
-import pickle
-
 import numpy as np
 import pytest
 from conftest import gplately_plate_reconstruction_object as model
-from conftest import logger, reconstruction_times
-from pygplates import RotationModel
+from conftest import logger, muller_2019_model, reconstruction_times
+from pygplates import RotationModel, FeatureCollection
 
 import gplately
 
@@ -206,8 +204,53 @@ def test_rotation_model_copy(model):
     assert rot1 == rot2
 
 
-def test_pickle_reconstruction(model):
-    pickled = pickle.loads(pickle.dumps(model))
-    assert pickled.topology_features and len(model.topology_features) == len(
-        pickled.topology_features
+def test_pickle_reconstruction(model, muller_2019_model):
+    import pickle
+
+    # Also create a model from actual pygplates objects (instead of filenames).
+    pygplates_rotation_model = RotationModel(muller_2019_model.get_rotation_model())
+    pygplates_topology_features = [
+        FeatureCollection(f) for f in muller_2019_model.get_topologies()
+    ]
+    pygplates_static_polygons = [
+        FeatureCollection(f) for f in muller_2019_model.get_static_polygons()
+    ]
+    pygplates_model = gplately.PlateReconstruction(
+        rotation_model=pygplates_rotation_model,
+        topology_features=pygplates_topology_features,
+        static_polygons=pygplates_static_polygons,
     )
+
+    # Test both the model created using PlateModelManager (ie, using filenames) and
+    # the model created using actual pygplates objects (ie, not filenames).
+    #
+    # Pickling of the former will be faster than the latter.
+    for m in (model, pygplates_model):
+        pickled_model = pickle.loads(pickle.dumps(m))
+
+        time = 100.0
+        plate_id = 701
+
+        # Test pickled rotation model, topology features and static polygons.
+        # Since these are handled specially when pickling.
+        assert pickled_model.rotation_model.get_rotation(
+            time, plate_id
+        ) == m.rotation_model.get_rotation(time, plate_id)
+        assert pickled_model.topology_features and len(m.topology_features) == len(
+            pickled_model.topology_features
+        )
+        assert pickled_model.static_polygons and len(m.static_polygons) == len(
+            pickled_model.static_polygons
+        )
+
+        # The snapshots in the pickled model get rebuilt (rather than pickled).
+        pickled_topological_snapshot = pickled_model.topological_snapshot(
+            time, anchor_plate_id=plate_id
+        )
+        assert pickled_topological_snapshot.get_reconstruction_time() == time
+        assert pickled_topological_snapshot.get_anchor_plate_id() == plate_id
+        pickled_static_polygons_snapshot = pickled_model.static_polygons_snapshot(
+            time, anchor_plate_id=plate_id
+        )
+        assert pickled_static_polygons_snapshot.get_reconstruction_time() == time
+        assert pickled_static_polygons_snapshot.get_anchor_plate_id() == plate_id
