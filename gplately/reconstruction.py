@@ -127,7 +127,7 @@ class PlateReconstruction(object):
             _load_FeatureCollection(static_polygons)
         )
 
-        #: Optional plate model name
+        #: Optional PlateModel object
         self.plate_model = plate_model
 
         # Keep a snapshot of the resolved topologies at its last requested snapshot time (and anchor plate).

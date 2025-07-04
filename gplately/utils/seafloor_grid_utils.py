@@ -14,20 +14,18 @@
 #    with this program; if not, write to Free Software Foundation, Inc.,
 #    51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
-"""
-Auxiliary functions for SeafloorGrid
-"""
+
+"""Auxiliary functions for SeafloorGrid"""
 
 import numpy as np
 import pygplates
 
 from .. import ptt
+from ..lib.icosahedron import get_mesh, xyz2lonlat
 
 
 def create_icosahedral_mesh(refinement_levels):
-    """Define a global point mesh with Stripy's
-    [icosahedral triangulated mesh](https://github.com/underworldcode/stripy/blob/294354c00dd72e085a018e69c345d9353c6fafef/stripy/spherical_meshes.py#L27)
-    and turn all mesh domains into pyGPlates MultiPointOnSphere types.
+    """Return a Icospheres mesh as pygplates.MultiPointOnSphere.
 
     This global mesh will be masked with a set of continental or COB terrane
     polygons to define the ocean basin at a given reconstruction time.
@@ -45,21 +43,14 @@ def create_icosahedral_mesh(refinement_levels):
     multi_point : instance of <pygplates.MultiPointOnSphere>
         The longitues and latitudes that make up the icosahedral ocean mesh
         collated into a MultiPointOnSphere object.
-    icosahedral_global_mesh : instance of <stripy.spherical_meshes.icosahedral_mesh>
-        The original global icosahedral triangulated mesh.
     """
-    import stripy
 
-    # Create the ocean basin mesh using Stripy's icosahedral spherical mesh
-    icosahedral_global_mesh = stripy.spherical_meshes.icosahedral_mesh(
-        refinement_levels, include_face_points=False, trisection=False, tree=False
+    # Create the ocean basin mesh (icosahedral spherical mesh)
+    vertices, _ = get_mesh(refinement_levels, use_stripy_icosahedron=True)
+    # return the mesh as MultiPointOnSphere
+    return pygplates.MultiPointOnSphere(
+        [tuple(reversed(xyz2lonlat(v[0], v[1], v[2]))) for v in vertices]
     )
-    # Get lons and lats of mesh, and turn them into a MultiPointOnSphere
-    lats_arr = np.rad2deg(icosahedral_global_mesh.lats)
-    lons_arr = np.rad2deg(icosahedral_global_mesh.lons)
-    multi_point = pygplates.MultiPointOnSphere(zip(lats_arr, lons_arr))
-
-    return multi_point, icosahedral_global_mesh
 
 
 def ensure_polygon_geometry(reconstructed_polygons, rotation_model, time):

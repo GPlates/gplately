@@ -305,10 +305,8 @@ class SeafloorGrid(object):
             self._PlotTopologies_object.continents, self.rotation_model, self._max_time
         )
         self._PlotTopologies_object.continents = PlotTopologies_object.continents
-        (
-            self.icosahedral_multi_point,
-            self.icosahedral_global_mesh,
-        ) = create_icosahedral_mesh(self.refinement_levels)
+
+        self.icosahedral_multi_point = create_icosahedral_mesh(self.refinement_levels)
 
         # Z value parameters
         self.zval_names = zval_names
