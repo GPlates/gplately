@@ -490,13 +490,48 @@ def test_point_attributes(gplately_points_object):
 def test_pickle_Points(gplately_points_object):
     import pickle
 
-    gpts_dump = pickle.dumps(gplately_points_object)
-    gpts_load = pickle.loads(gpts_dump)
+    pickled_points = pickle.loads(pickle.dumps(gplately_points_object))
 
+    # Check the associated PlateReconstruction model got pickled properly.
+    assert pickled_points.plate_reconstruction.rotation_model.get_rotation(
+        100.0, 701
+    ) == gplately_points_object.plate_reconstruction.rotation_model.get_rotation(
+        100.0, 701
+    )
+    assert pickled_points.plate_reconstruction.topology_features and len(
+        gplately_points_object.plate_reconstruction.topology_features
+    ) == len(pickled_points.plate_reconstruction.topology_features)
+    assert pickled_points.plate_reconstruction.static_polygons and len(
+        gplately_points_object.plate_reconstruction.static_polygons
+    ) == len(pickled_points.plate_reconstruction.static_polygons)
+
+    # The pygplates points and features get rebuilt in the pickled Points (rather than pickled).
+    assert pickled_points.points == gplately_points_object.points
+    assert len(pickled_points.feature_collection) == len(
+        gplately_points_object.feature_collection
+    )
+    assert len(pickled_points.features) == len(gplately_points_object.features)
+    assert len(pickled_points.features) == len(pickled_points.points)
+    assert len(pickled_points.features) == len(pickled_points.plate_id)
+    assert len(pickled_points.features) == len(pickled_points.age)
+    # Test the properties of each pickled point feature.
+    for point_index in range(len(pickled_points.features)):
+        pickled_point_feature = pickled_points.features[point_index]
+        assert (
+            pickled_point_feature.get_geometry() == pickled_points.points[point_index]
+        )
+        assert (
+            pickled_point_feature.get_reconstruction_plate_id()
+            == pickled_points.plate_id[point_index]
+        )
+        assert (
+            pickled_point_feature.get_valid_time()[0] == pickled_points.age[point_index]
+        )
+
+    # Test pickling of point attributes.
     attr = np.arange(0, gplately_points_object.size)
     gplately_points_object.add_attributes(FROMAGE=attr, TOAGE=attr)
-    gpts_dump = pickle.dumps(gplately_points_object)
-    gpts_load = pickle.loads(gpts_dump)
+    pickle.loads(pickle.dumps(gplately_points_object))
 
 
 def test_change_ancbor_plate(gplately_points_object):

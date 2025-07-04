@@ -123,6 +123,8 @@ class Points(object):
         else:
             anchor_plate_id = self._check_anchor_plate_id(anchor_plate_id)
 
+        # Note: I'm not sure why this code was added because these variables always get initialised further below
+        #       regardless of whether 'age' and 'plate_id' are each None or not.
         point_ages = np.array([])
         point_plate_ids = np.array([])
 
@@ -272,35 +274,6 @@ class Points(object):
             # All points are now reconstructable.
             points_are_reconstructable = np.full(num_points, True)
 
-        # Create a feature for each point.
-        #
-        # Each feature has a point, a plate ID and a valid time range.
-        #
-        # Note: The valid time range always includes present day.
-        point_features = []
-        for point_index in range(num_points):
-            point_feature = pygplates.Feature()
-            # Set the geometry.
-            point_feature.set_geometry(points[point_index])
-            # Set the plate ID.
-            point_feature.set_reconstruction_plate_id(point_plate_ids[point_index])  # type: ignore
-            # Set the begin/end time.
-            point_feature.set_valid_time(
-                point_ages[point_index],  # begin (age)
-                -np.inf,  # end (distant future; could also be zero for present day)
-            )  # type: ignore
-            point_features.append(point_feature)
-
-        # If the points represent a snapshot at a *past* geological time then we need to reverse reconstruct them
-        # such that their features contain present-day points.
-        if time != 0:
-            pygplates.reverse_reconstruct(  # type: ignore
-                point_features,
-                plate_reconstruction.rotation_model,
-                time,
-                anchor_plate_id=anchor_plate_id,
-            )
-
         # Map each unique plate ID to indices of points assigned that plate ID.
         unique_plate_id_groups = {}
         unique_plate_ids = np.unique(point_plate_ids)
@@ -345,11 +318,66 @@ class Points(object):
         self._reconstructable = points_are_reconstructable
         self._unique_plate_id_groups = unique_plate_id_groups
 
-        self.features = point_features
-        self.feature_collection = pygplates.FeatureCollection(point_features)
+        # Create a feature for each point.
+        #
+        # Each feature has a point, a plate ID and a valid time range.
+        #
+        # Note: The valid time range always includes present day.
+        self.features = self._create_point_features(
+            points,
+            point_plate_ids,
+            point_ages,
+            plate_reconstruction,
+            time,
+            anchor_plate_id,
+        )
+        self.feature_collection = pygplates.FeatureCollection(self.features)
+
+    @staticmethod
+    def _create_point_features(
+        points, point_plate_ids, point_ages, plate_reconstruction, time, anchor_plate_id
+    ):
+        # Create a feature for each point.
+        #
+        # Each feature has a point, a plate ID and a valid time range.
+        #
+        # Note: The valid time range always includes present day.
+        point_features = []
+        for point_index in range(len(points)):
+            point_feature = pygplates.Feature()
+            # Set the geometry.
+            point_feature.set_geometry(points[point_index])
+            # Set the plate ID.
+            point_feature.set_reconstruction_plate_id(point_plate_ids[point_index])  # type: ignore
+            # Set the begin/end time.
+            point_feature.set_valid_time(
+                point_ages[point_index],  # begin (age)
+                -np.inf,  # end (distant future; could also be zero for present day)
+            )  # type: ignore
+            point_features.append(point_feature)
+
+        # If the points represent a snapshot at a *past* geological time then we need to reverse reconstruct them
+        # such that their features contain present-day points.
+        if time != 0:
+            pygplates.reverse_reconstruct(  # type: ignore
+                point_features,
+                plate_reconstruction.rotation_model,
+                time,
+                anchor_plate_id=anchor_plate_id,
+            )
+
+        return point_features
 
     def __getstate__(self):
         state = self.__dict__.copy()
+
+        # Set data members containing pyGPlates objects to None to avoid pickling them.
+        #
+        # Instead we can rebuild them from the pickled data members (during unpickling).
+        # It's faster to rebuild them (when unpickling) than it is to pickle/unpickle pyGPlates objects.
+        state["points"] = None
+        state["features"] = None
+        state["feature_collection"] = None
 
         # Remove the unpicklable entries.
         #
@@ -361,6 +389,26 @@ class Points(object):
 
     def __setstate__(self, state):
         self.__dict__.update(state)
+
+        # Rebuild data members containing pyGPlates objects (from the pickled data members).
+        #
+        # It's faster to rebuild them than it is to pickle/unpickle pyGPlates objects.
+        #
+        # Create pygplates points.
+        self.points = [
+            pygplates.PointOnSphere(lat, lon) for lon, lat in zip(self.lons, self.lats)
+        ]
+        # Create a feature for each point.
+        self.features = self._create_point_features(
+            self.points,
+            self.plate_id,
+            self.age,
+            self.plate_reconstruction,
+            self.time,
+            self.anchor_plate_id,
+        )
+        # Create a collection of the point features.
+        self.feature_collection = pygplates.FeatureCollection(self.features)
 
         # Restore the unpicklable entries.
         #

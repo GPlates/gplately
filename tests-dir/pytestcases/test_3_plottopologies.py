@@ -1,9 +1,8 @@
-import pickle
-
 import matplotlib.pyplot as plt
 import pytest
 from conftest import gplately_plot_topologies_object as gplot
-from conftest import logger, reconstruction_times
+from conftest import logger, muller_2019_model, reconstruction_times
+from pygplates import FeatureCollection
 
 import gplately
 
@@ -161,12 +160,54 @@ def test_PlotTopologies_subduction_teeth(gplot):
     plt.close(fig)
 
 
-def test_pickle_plotTopologies_object(gplot):
-    gplot_dump = pickle.dumps(gplot)
-    gplot_load = pickle.loads(gplot_dump)
-    assert gplot_load.coastlines and len(gplot_load.coastlines) == len(gplot.coastlines)
-    assert gplot_load.continents and len(gplot_load.continents) == len(gplot.continents)
-    assert gplot_load.COBs and len(gplot_load.COBs) == len(gplot.COBs)
+def test_pickle_plotTopologies_object(gplot, muller_2019_model):
+    import pickle
+
+    # Also create a plot object from actual pygplates objects (instead of filenames).
+    pygplates_coastline_features = [
+        FeatureCollection(f) for f in muller_2019_model.get_layer("Coastlines")
+    ]
+    pygplates_continent_features = [
+        FeatureCollection(f) for f in muller_2019_model.get_layer("ContinentalPolygons")
+    ]
+    pygplates_COB_features = [
+        FeatureCollection(f) for f in muller_2019_model.get_layer("COBs")
+    ]
+    pygplates_gplot = gplately.PlotTopologies(
+        gplot.plate_reconstruction,
+        coastlines=pygplates_coastline_features,
+        continents=pygplates_continent_features,
+        COBs=pygplates_COB_features,
+    )
+    pygplates_gplot.time = 0
+
+    # Test both the plot object created using PlateModelManager (ie, using filenames) and
+    # the plot object created using actual pygplates objects (ie, not filenames).
+    #
+    # Pickling of the former will be faster than the latter.
+    for g in (gplot, pygplates_gplot):
+        pickled_plot = pickle.loads(pickle.dumps(g))
+
+        # Check the associated PlateReconstruction model got pickled properly.
+        assert pickled_plot.plate_reconstruction.rotation_model.get_rotation(
+            100.0, 701
+        ) == g.plate_reconstruction.rotation_model.get_rotation(100.0, 701)
+        assert pickled_plot.plate_reconstruction.topology_features and len(
+            g.plate_reconstruction.topology_features
+        ) == len(pickled_plot.plate_reconstruction.topology_features)
+        assert pickled_plot.plate_reconstruction.static_polygons and len(
+            g.plate_reconstruction.static_polygons
+        ) == len(pickled_plot.plate_reconstruction.static_polygons)
+
+        # Test pickled coastline/continent/COB.
+        # Since these are handled specially when pickling.
+        assert pickled_plot.coastlines and len(pickled_plot.coastlines) == len(
+            g.coastlines
+        )
+        assert pickled_plot.continents and len(pickled_plot.continents) == len(
+            g.continents
+        )
+        assert pickled_plot.COBs and len(pickled_plot.COBs) == len(g.COBs)
 
 
 def test_set_invalid_time(gplot):
