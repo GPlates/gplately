@@ -97,6 +97,7 @@ class PlateReconstruction(object):
         else:
             self.name = None
 
+        self._rotation_model_pickle = rotation_model  # Pickle the __init__ argument (see __getstate__/__setstate__ for details).
         if anchor_plate_id is None:
             if isinstance(rotation_model, pygplates.RotationModel):  # type: ignore
                 # Use the default anchor plate of 'rotation_model'.
@@ -112,12 +113,14 @@ class PlateReconstruction(object):
                 rotation_model, default_anchor_plate_id=anchor_plate_id
             )
 
+        self._topology_features_pickle = topology_features  # Pickle the __init__ argument (see __getstate__/__setstate__ for details).
         #: A `pygplates.FeatureCollection <https://www.gplates.org/docs/pygplates/generated/pygplates.featurecollection#pygplates.FeatureCollection>`__
         #: object containing topological features like trenches, ridges and transforms.
         self.topology_features: Union[pygplates.FeatureCollection, None] = (
             _load_FeatureCollection(topology_features)
         )
 
+        self._static_polygons_pickle = static_polygons  # Pickle the __init__ argument (see __getstate__/__setstate__ for details).
         #: A `pygplates.FeatureCollection <https://www.gplates.org/docs/pygplates/generated/pygplates.featurecollection#pygplates.FeatureCollection>`__
         #: object containing the present-day static polygons whose shapes do not change through geological time when reconstructed.
         self.static_polygons: Union[pygplates.FeatureCollection, None] = (
@@ -139,7 +142,31 @@ class PlateReconstruction(object):
         self._static_polygons_snapshot = None
 
     def __getstate__(self):
+        # Save the instance data variables.
         state = self.__dict__.copy()
+
+        # Set 'rotation_model' to None to avoid pickling it.
+        #
+        # Instead we're pickling '_rotation_model_pickle'.
+        # If that is just rotation filenames then it's faster to rebuild a RotationModel (from files when unpickling)
+        # than it is to pickle/unpickle a RotationModel.
+        state["rotation_model"] = None
+        # Pickle the anchor plate ID since we'll need that when unpickling (if '_rotation_model_pickle' is not a RotationModel).
+        state["_anchor_plate_id_pickle"] = self.anchor_plate_id
+
+        # Set 'topology_features' and 'static_polygons' to None to avoid pickling them.
+        #
+        # Instead we're pickling '_topology_features_pickle' and '_static_polygons_pickle'.
+        # If they are just filenames then it's faster to rebuild FeatureCollection's (from files when unpickling)
+        # than it is to pickle/unpickle FeatureCollection's.
+        state["topology_features"] = None
+        state["static_polygons"] = None
+
+        # Set the snapshots to None to avoid pickling them (ie, avoids slowing down the pickling).
+        #
+        # These will get rebuilt when/if user requestes snapshots from the pickled PlateReconstruction object.
+        state["_topological_snapshot"] = None
+        state["_static_polygons_snapshot"] = None
 
         # Remove the unpicklable entries.
         #
@@ -150,7 +177,43 @@ class PlateReconstruction(object):
         return state
 
     def __setstate__(self, state):
+        # Extract the anchor plate ID and remove it so that we don't get a 'self._anchor_plate_id_pickle' attribute.
+        anchor_plate_id = state["_anchor_plate_id_pickle"]
+        del state["_anchor_plate_id_pickle"]
+
+        # Restore the instance data variables.
         self.__dict__.update(state)
+
+        # Rebuild the pygplates.RotationModel from 'self._rotation_model_pickle'.
+        #
+        # If 'self._rotation_model_pickle' is just rotation filenames then it's faster to
+        # reload a RotationModel from files than it is to pickle/unpickle a RotationModel.
+        if self._rotation_model_pickle:
+            if (
+                isinstance(self._rotation_model_pickle, pygplates.RotationModel)
+                and self._rotation_model_pickle.get_default_anchor_plate_id()
+                == anchor_plate_id
+            ):
+                # 'self._rotation_model_pickle' is already a 'pygplates.RotationModel' with the correct anchor plate ID.
+                self.rotation_model = self._rotation_model_pickle
+            else:
+                # 'self._rotation_model_pickle' is either rotation features/files or a RotationModel with a different anchor plate ID.
+                # In either case we need to create a new RotationModel and give it the correct anchor plate ID.
+                #
+                # This single call works when 'self._rotation_model_pickle' is a RotationModel or rotation features/files.
+                self.rotation_model = pygplates.RotationModel(
+                    self._rotation_model_pickle,
+                    default_anchor_plate_id=anchor_plate_id,
+                )
+        # else 'self.rotation_model' is None.
+
+        # Load the topology features and static polygons.
+        #
+        # The pickled attributes could be features and/or filesnames.
+        # If they are just filenames then it's faster to reload FeatureCollection's
+        # from files than it is to pickle/unpickle FeatureCollection's.
+        self.topology_features = _load_FeatureCollection(self._topology_features_pickle)
+        self.static_polygons = _load_FeatureCollection(self._static_polygons_pickle)
 
         # Restore the unpicklable entries.
         #

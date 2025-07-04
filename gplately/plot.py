@@ -251,8 +251,13 @@ class PlotTopologies(object):
             `Cartopy projection list <https://scitools.org.uk/cartopy/docs/v0.15/crs/projections.html>`__.
         """
 
-        # store these for when time is updated
-        # make sure these are initialised as FeatureCollection objects
+        # Pickle the __init__ arguments used to create coastline/continent/COB FeatureCollection's (see __reduce__ for details).
+        self._coastlines_pickle = coastlines
+        self._continents_pickle = continents
+        self._COBs_pickle = COBs
+        # Load the coastline/continent/COB FeatureCollection's.
+        #
+        # These will get used to create reconstructed geometries when the time is updated.
         self._coastlines = _load_FeatureCollection(coastlines)
         self._continents = _load_FeatureCollection(continents)
         self._COBs = _load_FeatureCollection(COBs)
@@ -311,78 +316,37 @@ class PlotTopologies(object):
         else:
             self._anchor_plate_id = self._check_anchor_plate_id(anchor_plate_id)
 
+        # Note: This calls 'update_time()' which reconstructs our features and topologies.
         self.time = time
 
     def __reduce__(self):
         # Arguments for __init__.
         #
-        # Only one argument is required by __init__, and that's a PlateReconstruction object (which'll get pickled).
-        init_args = (self.plate_reconstruction,)
+        # Note: Instead of pickling the coastline/continent/COB FeatureCollection's we're pickling the __init__ arguments
+        #       used to create them. And if they are just filenames then it ends up being faster to rebuild the FeatureCollection's
+        #       (from files when __init__ is called during unpickling) than it is to pickle/unpickle the FeatureCollection's.
+        init_args = (
+            self.plate_reconstruction,
+            self._coastlines_pickle,  # pickle the __init__ argument
+            self._continents_pickle,  # pickle the __init__ argument
+            self._COBs_pickle,  # pickle the __init__ argument
+            self._time,  # is always valid (due to 'self.time = time' in __init__)
+            self._anchor_plate_id,  # can be None (meaning use PlateReconstruction's anchor plate ID)
+            self._plot_engine,
+        )
 
-        # State for __setstate__.
-        state = self.__dict__.copy()
-
-        # Remove 'plate_reconstruction' since that will get passed to __init__.
-        del state["plate_reconstruction"]
-
-        # Remove the unpicklable entries.
+        # The reason we implement __reduce__ is so that __init__ gets called.
         #
-        # This includes pygplates reconstructed feature geometries and resolved topological geometries.
-        # Note: PyGPlates features and features collections (and rotation models) can be pickled though.
+        # We do this instead of implementing __getstate__ (where __init__ doesn't get called) since it's easier to keep
+        # things in sync, otherwise __setstate__ would need to stay in sync with __init__ whenever __init_'s code gets modified.
         #
-        # __setstate__ will call 'update_time()' to generate these reconstructed/resolved geometries/features.
-        # So we don't need to pickle them.
-        # Note: Some of them we can pickle (eg, "resolved features", which are of type pygplates.Feature) and
-        #       some we cannot (like 'coastlines' which are of type pygplates.ReconstructedFeatureGeometry).
-        #       However, as mentioned, we won't pickle any of them (since taken care of by 'update_time()').
-        for key in (
-            "coastlines",  # we're keeping "_coastlines" though (we need the original 'pygplates.Feature's to reconstruct with)
-            "continents",  # we're keeping "_continents" though (we need the original 'pygplates.Feature's to reconstruct with)
-            "COBs",  # we're keeping "_COBs" though (we need the original 'pygplates.Feature's to reconstruct with)
-            "_topological_plate_boundaries",
-            "_topologies",
-            "_ridges",
-            "_ridges_do_not_use_for_now",
-            "_transforms",
-            "_transforms_do_not_use_for_now",
-            "trenches",
-            "trench_left",
-            "trench_right",
-            "other",
-            "continental_rifts",
-            "faults",
-            "fracture_zones",
-            "inferred_paleo_boundaries",
-            "terrane_boundaries",
-            "transitional_crusts",
-            "orogenic_belts",
-            "sutures",
-            "continental_crusts",
-            "extended_continental_crusts",
-            "passive_continental_boundaries",
-            "slab_edges",
-            "unclassified_features",
-        ):
-            if key in state:  # in case some state has not been initialised yet
-                del state[key]
-
-        # Call __init__ so that we default initialise everything in a consistent state before __setstate__ gets called.
-        # Note that this is the reason we implement __reduce__, instead of __getstate__ (where __init__ doesn't get called).
+        # It also means we don't have to worry about pickling the *reconstructed* features and topologies.
+        # These are unpickable items because pygplates reconstructed feature geometries and resolved topological geometries
+        # cannot be pickled (only the *unreconstructed* pygplates features and features collections can be pickled).
         #
-        # If we don't do this then __setstate__ would need to stay in sync with __init__ (whenever it gets updated).
-        return PlotTopologies, init_args, state
-
-    def __setstate__(self, state):
-        self.__dict__.update(state)
-
-        # Restore the unpicklable entries.
-        #
-        # This includes pygplates reconstructed feature geometries and resolved topological geometries.
-        # Note: PyGPlates features and features collections (and rotation models) can be pickled though.
-        #
-        # Re-generate the pygplates reconstructed feature geometries and resolved topological geometries
-        # deleted from the state returned by __reduce__.
-        self._update_time()
+        # Note: We set the 3rd tuple element (the object state) to None so that __setstate__ doesn't get called since
+        #       we currently don't need to set any extra state beyond what __init__ sets up for us.
+        return PlotTopologies, init_args, None
 
     @property
     def topological_plate_boundaries(self):
