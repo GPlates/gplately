@@ -210,6 +210,8 @@
         <span class="k">else</span><span class="p">:</span>
             <span class="n">anchor_plate_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_check_anchor_plate_id</span><span class="p">(</span><span class="n">anchor_plate_id</span><span class="p">)</span>
 
+        <span class="c1"># Note: I&#39;m not sure why this code was added because these variables always get initialised further below</span>
+        <span class="c1">#       regardless of whether &#39;age&#39; and &#39;plate_id&#39; are each None or not.</span>
         <span class="n">point_ages</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([])</span>
         <span class="n">point_plate_ids</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([])</span>
 
@@ -359,35 +361,6 @@
             <span class="c1"># All points are now reconstructable.</span>
             <span class="n">points_are_reconstructable</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="n">num_points</span><span class="p">,</span> <span class="kc">True</span><span class="p">)</span>
 
-        <span class="c1"># Create a feature for each point.</span>
-        <span class="c1">#</span>
-        <span class="c1"># Each feature has a point, a plate ID and a valid time range.</span>
-        <span class="c1">#</span>
-        <span class="c1"># Note: The valid time range always includes present day.</span>
-        <span class="n">point_features</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="k">for</span> <span class="n">point_index</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_points</span><span class="p">):</span>
-            <span class="n">point_feature</span> <span class="o">=</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">Feature</span><span class="p">()</span>
-            <span class="c1"># Set the geometry.</span>
-            <span class="n">point_feature</span><span class="o">.</span><span class="n">set_geometry</span><span class="p">(</span><span class="n">points</span><span class="p">[</span><span class="n">point_index</span><span class="p">])</span>
-            <span class="c1"># Set the plate ID.</span>
-            <span class="n">point_feature</span><span class="o">.</span><span class="n">set_reconstruction_plate_id</span><span class="p">(</span><span class="n">point_plate_ids</span><span class="p">[</span><span class="n">point_index</span><span class="p">])</span>  <span class="c1"># type: ignore</span>
-            <span class="c1"># Set the begin/end time.</span>
-            <span class="n">point_feature</span><span class="o">.</span><span class="n">set_valid_time</span><span class="p">(</span>
-                <span class="n">point_ages</span><span class="p">[</span><span class="n">point_index</span><span class="p">],</span>  <span class="c1"># begin (age)</span>
-                <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">,</span>  <span class="c1"># end (distant future; could also be zero for present day)</span>
-            <span class="p">)</span>  <span class="c1"># type: ignore</span>
-            <span class="n">point_features</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">point_feature</span><span class="p">)</span>
-
-        <span class="c1"># If the points represent a snapshot at a *past* geological time then we need to reverse reconstruct them</span>
-        <span class="c1"># such that their features contain present-day points.</span>
-        <span class="k">if</span> <span class="n">time</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="n">pygplates</span><span class="o">.</span><span class="n">reverse_reconstruct</span><span class="p">(</span>  <span class="c1"># type: ignore</span>
-                <span class="n">point_features</span><span class="p">,</span>
-                <span class="n">plate_reconstruction</span><span class="o">.</span><span class="n">rotation_model</span><span class="p">,</span>
-                <span class="n">time</span><span class="p">,</span>
-                <span class="n">anchor_plate_id</span><span class="o">=</span><span class="n">anchor_plate_id</span><span class="p">,</span>
-            <span class="p">)</span>
-
         <span class="c1"># Map each unique plate ID to indices of points assigned that plate ID.</span>
         <span class="n">unique_plate_id_groups</span> <span class="o">=</span> <span class="p">{}</span>
         <span class="n">unique_plate_ids</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">unique</span><span class="p">(</span><span class="n">point_plate_ids</span><span class="p">)</span>
@@ -432,12 +405,67 @@
         <span class="bp">self</span><span class="o">.</span><span class="n">_reconstructable</span> <span class="o">=</span> <span class="n">points_are_reconstructable</span>
         <span class="bp">self</span><span class="o">.</span><span class="n">_unique_plate_id_groups</span> <span class="o">=</span> <span class="n">unique_plate_id_groups</span>
 
-        <span class="bp">self</span><span class="o">.</span><span class="n">features</span> <span class="o">=</span> <span class="n">point_features</span>
-        <span class="bp">self</span><span class="o">.</span><span class="n">feature_collection</span> <span class="o">=</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">FeatureCollection</span><span class="p">(</span><span class="n">point_features</span><span class="p">)</span></div>
+        <span class="c1"># Create a feature for each point.</span>
+        <span class="c1">#</span>
+        <span class="c1"># Each feature has a point, a plate ID and a valid time range.</span>
+        <span class="c1">#</span>
+        <span class="c1"># Note: The valid time range always includes present day.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">features</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_create_point_features</span><span class="p">(</span>
+            <span class="n">points</span><span class="p">,</span>
+            <span class="n">point_plate_ids</span><span class="p">,</span>
+            <span class="n">point_ages</span><span class="p">,</span>
+            <span class="n">plate_reconstruction</span><span class="p">,</span>
+            <span class="n">time</span><span class="p">,</span>
+            <span class="n">anchor_plate_id</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">feature_collection</span> <span class="o">=</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">FeatureCollection</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">features</span><span class="p">)</span></div>
 
+
+    <span class="nd">@staticmethod</span>
+    <span class="k">def</span><span class="w"> </span><span class="nf">_create_point_features</span><span class="p">(</span>
+        <span class="n">points</span><span class="p">,</span> <span class="n">point_plate_ids</span><span class="p">,</span> <span class="n">point_ages</span><span class="p">,</span> <span class="n">plate_reconstruction</span><span class="p">,</span> <span class="n">time</span><span class="p">,</span> <span class="n">anchor_plate_id</span>
+    <span class="p">):</span>
+        <span class="c1"># Create a feature for each point.</span>
+        <span class="c1">#</span>
+        <span class="c1"># Each feature has a point, a plate ID and a valid time range.</span>
+        <span class="c1">#</span>
+        <span class="c1"># Note: The valid time range always includes present day.</span>
+        <span class="n">point_features</span> <span class="o">=</span> <span class="p">[]</span>
+        <span class="k">for</span> <span class="n">point_index</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">points</span><span class="p">)):</span>
+            <span class="n">point_feature</span> <span class="o">=</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">Feature</span><span class="p">()</span>
+            <span class="c1"># Set the geometry.</span>
+            <span class="n">point_feature</span><span class="o">.</span><span class="n">set_geometry</span><span class="p">(</span><span class="n">points</span><span class="p">[</span><span class="n">point_index</span><span class="p">])</span>
+            <span class="c1"># Set the plate ID.</span>
+            <span class="n">point_feature</span><span class="o">.</span><span class="n">set_reconstruction_plate_id</span><span class="p">(</span><span class="n">point_plate_ids</span><span class="p">[</span><span class="n">point_index</span><span class="p">])</span>  <span class="c1"># type: ignore</span>
+            <span class="c1"># Set the begin/end time.</span>
+            <span class="n">point_feature</span><span class="o">.</span><span class="n">set_valid_time</span><span class="p">(</span>
+                <span class="n">point_ages</span><span class="p">[</span><span class="n">point_index</span><span class="p">],</span>  <span class="c1"># begin (age)</span>
+                <span class="o">-</span><span class="n">np</span><span class="o">.</span><span class="n">inf</span><span class="p">,</span>  <span class="c1"># end (distant future; could also be zero for present day)</span>
+            <span class="p">)</span>  <span class="c1"># type: ignore</span>
+            <span class="n">point_features</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">point_feature</span><span class="p">)</span>
+
+        <span class="c1"># If the points represent a snapshot at a *past* geological time then we need to reverse reconstruct them</span>
+        <span class="c1"># such that their features contain present-day points.</span>
+        <span class="k">if</span> <span class="n">time</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">pygplates</span><span class="o">.</span><span class="n">reverse_reconstruct</span><span class="p">(</span>  <span class="c1"># type: ignore</span>
+                <span class="n">point_features</span><span class="p">,</span>
+                <span class="n">plate_reconstruction</span><span class="o">.</span><span class="n">rotation_model</span><span class="p">,</span>
+                <span class="n">time</span><span class="p">,</span>
+                <span class="n">anchor_plate_id</span><span class="o">=</span><span class="n">anchor_plate_id</span><span class="p">,</span>
+            <span class="p">)</span>
+
+        <span class="k">return</span> <span class="n">point_features</span>
 
     <span class="k">def</span><span class="w"> </span><span class="nf">__getstate__</span><span class="p">(</span><span class="bp">self</span><span class="p">):</span>
         <span class="n">state</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
+
+        <span class="c1"># Set data members containing pyGPlates objects to None to avoid pickling them.</span>
+        <span class="c1">#</span>
+        <span class="c1"># Instead we can rebuild them from the pickled data members (during unpickling).</span>
+        <span class="c1"># It&#39;s faster to rebuild them (when unpickling) than it is to pickle/unpickle pyGPlates objects.</span>
+        <span class="n">state</span><span class="p">[</span><span class="s2">&quot;points&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">state</span><span class="p">[</span><span class="s2">&quot;features&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
+        <span class="n">state</span><span class="p">[</span><span class="s2">&quot;feature_collection&quot;</span><span class="p">]</span> <span class="o">=</span> <span class="kc">None</span>
 
         <span class="c1"># Remove the unpicklable entries.</span>
         <span class="c1">#</span>
@@ -449,6 +477,26 @@
 
     <span class="k">def</span><span class="w"> </span><span class="nf">__setstate__</span><span class="p">(</span><span class="bp">self</span><span class="p">,</span> <span class="n">state</span><span class="p">):</span>
         <span class="bp">self</span><span class="o">.</span><span class="vm">__dict__</span><span class="o">.</span><span class="n">update</span><span class="p">(</span><span class="n">state</span><span class="p">)</span>
+
+        <span class="c1"># Rebuild data members containing pyGPlates objects (from the pickled data members).</span>
+        <span class="c1">#</span>
+        <span class="c1"># It&#39;s faster to rebuild them than it is to pickle/unpickle pyGPlates objects.</span>
+        <span class="c1">#</span>
+        <span class="c1"># Create pygplates points.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">points</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="n">pygplates</span><span class="o">.</span><span class="n">PointOnSphere</span><span class="p">(</span><span class="n">lat</span><span class="p">,</span> <span class="n">lon</span><span class="p">)</span> <span class="k">for</span> <span class="n">lon</span><span class="p">,</span> <span class="n">lat</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">lons</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">lats</span><span class="p">)</span>
+        <span class="p">]</span>
+        <span class="c1"># Create a feature for each point.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">features</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">_create_point_features</span><span class="p">(</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">points</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">plate_id</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">age</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">plate_reconstruction</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">time</span><span class="p">,</span>
+            <span class="bp">self</span><span class="o">.</span><span class="n">anchor_plate_id</span><span class="p">,</span>
+        <span class="p">)</span>
+        <span class="c1"># Create a collection of the point features.</span>
+        <span class="bp">self</span><span class="o">.</span><span class="n">feature_collection</span> <span class="o">=</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">FeatureCollection</span><span class="p">(</span><span class="bp">self</span><span class="o">.</span><span class="n">features</span><span class="p">)</span>
 
         <span class="c1"># Restore the unpicklable entries.</span>
         <span class="c1">#</span>
