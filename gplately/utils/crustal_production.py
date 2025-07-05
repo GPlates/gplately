@@ -18,10 +18,12 @@ import logging
 import os
 import sys
 
-import pygmt
-import xarray as xr
-
 logger = logging.getLogger("gplately")
+try:
+    import pygmt
+except:
+    logger.error("Failed to import PyGMT. PyGMT requires Python>=3.11.")
+import xarray as xr
 
 
 def compute_crustal_production_rate(agegrid_fn: str, age_threshold: int = 3):

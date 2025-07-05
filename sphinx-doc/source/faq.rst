@@ -21,6 +21,18 @@ For various reasons, GPlately may not install or function correctly on some comp
 To address this, we've prepared a Docker image with a fully working GPlately installation. 
 See `this web page <installation.html#use-docker>`__.
 
+Failed to import PyGMT.
+~~~~~~~~~~~~~~~~~~~~~~~
+
+PyGMT requires Python>=3.11. Upgrade your Python if you want PyGMT.
+
+Parallel code running slower than serial code.
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+This is because the overhead of multiprocessing is too high, outweighing the benefits of parallelization.
+Optimizing your workflow for parallel computing can significantly improve performance. For example, 
+pickling certain Python objects can be costly. In some cases, it's faster to recreate these objects than to serialize them.
+
 Frequently Asked Questions
 --------------------------
 

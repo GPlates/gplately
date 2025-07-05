@@ -2,7 +2,7 @@ import numpy as np
 import pytest
 from conftest import gplately_plate_reconstruction_object as model
 from conftest import logger, muller_2019_model, reconstruction_times
-from pygplates import RotationModel, FeatureCollection
+from pygplates import FeatureCollection, RotationModel
 
 import gplately
 
@@ -254,3 +254,10 @@ def test_pickle_reconstruction(model, muller_2019_model):
         )
         assert pickled_static_polygons_snapshot.get_reconstruction_time() == time
         assert pickled_static_polygons_snapshot.get_anchor_plate_id() == plate_id
+
+
+def test_auxiliary_get_plate_reconstruction():
+    from gplately import auxiliary
+
+    m = auxiliary.get_plate_reconstruction("Muller2022")
+    assert isinstance(m, gplately.PlateReconstruction)

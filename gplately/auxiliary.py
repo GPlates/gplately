@@ -18,9 +18,14 @@
 """A set of helper functions designed to streamline the use of GPlately’s functionalities,
 minimizing the coding effort required from users."""
 
+import logging
 from typing import Union
 
-import pygmt
+logger = logging.getLogger("gplately")
+try:
+    import pygmt
+except:
+    logger.error("Failed to import PyGMT. PyGMT requires Python>=3.11.")
 from plate_model_manager import PlateModel, PlateModelManager
 
 from .download import path_to_cache

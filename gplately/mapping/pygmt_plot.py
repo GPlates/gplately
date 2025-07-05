@@ -14,19 +14,25 @@
 #    with this program; if not, write to Free Software Foundation, Inc.,
 #    51 Franklin Street, Fifth Floor, Boston, MA  02110-1301, USA.
 #
-import pygmt
+import logging
+
+logger = logging.getLogger("gplately")
+try:
+    import pygmt
+
+    pygmt.config(
+        FONT_ANNOT=8,
+        FONT_LABEL=8,
+        FONT=8,
+        MAP_TICK_PEN="0.75p",
+        MAP_FRAME_PEN="0.75p",
+        MAP_TICK_LENGTH_PRIMARY="4p",
+    )
+except:
+    logger.error("Failed to import PyGMT. PyGMT requires Python>=3.11.")
 from geopandas.geodataframe import GeoDataFrame
 
 from .plot_engine import PlotEngine
-
-pygmt.config(
-    FONT_ANNOT=8,
-    FONT_LABEL=8,
-    FONT=8,
-    MAP_TICK_PEN="0.75p",
-    MAP_FRAME_PEN="0.75p",
-    MAP_TICK_LENGTH_PRIMARY="4p",
-)
 
 # NW's example is at https://gist.github.com/nickywright/f53018a8eda29223cca6f39ab2cfa25d
 
