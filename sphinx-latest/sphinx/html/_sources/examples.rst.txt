@@ -3,6 +3,16 @@
 Examples
 ========
 
+It is recommended to use a Conda environment to run these examples.
+Download `this yaml file <https://github.com/GPlates/gplately/blob/master/docker/env.yaml>`__ and 
+run the commands below to start using Jupyter Notebook.
+
+.. code:: console
+
+   $ conda env create --name my-gplately-env --file=env.yaml
+   $ conda activate my-gplately-env
+   $ jupyter notebook
+
 .. contents::
    :local:
    :depth: 2

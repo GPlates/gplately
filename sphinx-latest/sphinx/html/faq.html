@@ -52,6 +52,8 @@
 <li class="toctree-l2"><a class="reference internal" href="#trouble-shooting">Trouble-shooting</a><ul>
 <li class="toctree-l3"><a class="reference internal" href="#it-is-taking-conda-forever-to-solve-the-environment-during-gplately-installation">It is taking Conda forever to solve the environment during GPlately installation.</a></li>
 <li class="toctree-l3"><a class="reference internal" href="#unable-to-install-or-use-gplately-on-my-computer">Unable to install or use GPlately on my computer.</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#failed-to-import-pygmt">Failed to import PyGMT.</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#parallel-code-running-slower-than-serial-code">Parallel code running slower than serial code.</a></li>
 </ul>
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#frequently-asked-questions">Frequently Asked Questions</a><ul>
@@ -116,6 +118,16 @@
 <p>For various reasons, GPlately may not install or function correctly on some computers.
 To address this, we’ve prepared a Docker image with a fully working GPlately installation.
 See <a class="reference external" href="installation.html#use-docker">this web page</a>.</p>
+</section>
+<section id="failed-to-import-pygmt">
+<h3>Failed to import PyGMT.<a class="headerlink" href="#failed-to-import-pygmt" title="Link to this heading"></a></h3>
+<p>PyGMT requires Python&gt;=3.11. Upgrade your Python if you want PyGMT.</p>
+</section>
+<section id="parallel-code-running-slower-than-serial-code">
+<h3>Parallel code running slower than serial code.<a class="headerlink" href="#parallel-code-running-slower-than-serial-code" title="Link to this heading"></a></h3>
+<p>This is because the overhead of multiprocessing is too high, outweighing the benefits of parallelization.
+Optimizing your workflow for parallel computing can significantly improve performance. For example,
+pickling certain Python objects can be costly. In some cases, it’s faster to recreate these objects than to serialize them.</p>
 </section>
 </section>
 <section id="frequently-asked-questions">
