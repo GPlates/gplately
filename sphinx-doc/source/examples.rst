@@ -7,11 +7,20 @@ It is recommended to use a Conda environment to run these examples.
 Download `this yaml file <https://github.com/GPlates/gplately/blob/master/docker/env.yaml>`__ and 
 run the commands below to start using Jupyter Notebook.
 
+
 .. code:: console
 
    $ conda env create --name my-gplately-env --file=env.yaml
    $ conda activate my-gplately-env
    $ jupyter notebook
+
+Alternatively, you may use Docker to run these examples as well. Use ``-v`` option to access the local directory on the host machine.
+Visit `this page <https://docs.docker.com/engine/storage/bind-mounts/#options-for---volume>`__ for details.
+
+.. code:: console 
+
+   $ docker pull gplates/gplately
+   $ docker run --rm -ti -v .:/ws -w /ws -p 8888:8888 gplates/gplately
 
 .. contents::
    :local:
