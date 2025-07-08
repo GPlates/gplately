@@ -101,7 +101,7 @@ def _tessellate_triangles(
             geometries_new.extend(_project_geometry(i, projection, transform))
         geometries = geometries_new
         del geometries_new
-    geometries = linemerge(geometries)
+    geometries = linemerge(geometries, directed=True)
     if isinstance(geometries, BaseMultipartGeometry):
         geometries = list(geometries.geoms)
     elif isinstance(geometries, BaseGeometry):

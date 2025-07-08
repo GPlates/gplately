@@ -1927,7 +1927,7 @@ class PlotTopologies(object):
                             tmp.append(i)
                     converted = tmp
                     del tmp
-                    converted = linemerge(converted)
+                    converted = linemerge(converted, directed=True)
                 elif len(converted) == 1:
                     converted = converted[0]
                 else:
