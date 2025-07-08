@@ -7,7 +7,7 @@ Installation
    :local:
    :depth: 2
    
-Use conda (recommended)
+Use Conda (recommended)
 -----------------------
 
 The latest stable public release of **GPlately** can be installed using conda_ from the `conda-forge channel`_. 
@@ -23,26 +23,26 @@ The following commands will create a new conda environment called **my-gplately-
     
     If conda gets **stuck while solving the environment** during the installation of GPlately, you can try to use micromamba_ instead.
 
-Use pip
+Use Pip
 -------
 
 GPlately can also be installed using pip_.
 
-👉 Install the latest stable public release from PyPI_
+👉 Install the latest stable public release from PyPI_.
 
 .. code:: console
 
     $ pip install gplately
 
 
-👉 Install from the `GitHub GPlately repository`_ (if you need the latest code changes on GitHub)
+👉 Install from the `GitHub GPlately repository`_ (if you need the latest code changes on GitHub).
 
 .. code:: console
 
     $ pip install git+https://github.com/GPlates/gplately.git
 
 
-👉 Install from a local folder (if you need local code changes)
+👉 Install from a local folder (if you need local code changes).
 
 .. code:: console
 
@@ -60,10 +60,10 @@ GPlately can also be installed using pip_.
 .. _`editable mode`: https://pip.pypa.io/en/stable/topics/local-project-installs/#editable-installs
 
 
-Use docker
+Use Docker
 ----------
 
-👉 Run GPlately notebooks with Docker
+👉 Run GPlately notebooks within a Docker container.
 
 .. code:: console
 
@@ -72,14 +72,14 @@ Use docker
 
 The commands above will start a `Jupyter Notebook`_ server on port 8888. Open this link http://localhost:8888 in a web browser.
 
-👉 Run `GPlately commands`_ with Docker
+👉 Run `GPlately commands`_ within a Docker container.
 
 .. code:: console
 
     $ docker run gplates/gplately gplately --version
     $ docker run gplates/gplately gplately --help
 
-👉 Run your Python scripts with Docker
+👉 Run your Python scripts within a Docker container.
 
 .. code:: console
 
@@ -90,7 +90,13 @@ The commands above will start a `Jupyter Notebook`_ server on port 8888. Open th
     Replace ``THE_FULL_PATH_TO_YOUR_SCRIPT_FOLDER`` with the full path to the folder containing your script file. 
     In **PowerShell**, you can use "$PWD" if your script is in the current working directory. On **Linux** or **macOS**, you can use \`pwd\` instead.
 
-Docker images are available at both `Docker Hub <https://hub.docker.com/>`__ and `GitHub Container Registry <https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-container-registry>`__.
+In certain shell environments, using a relative path may also work. You can try the following command to mount your current working directory to ``/ws``.
+
+.. code:: console
+
+    $ docker run -it --rm -p 8888:8888 -v .:/ws -w /ws gplates/gplately
+
+GPlately Docker images are available at both `Docker Hub <https://hub.docker.com/>`__ and `GitHub Container Registry <https://docs.github.com/en/packages/working-with-a-github-packages-registry/working-with-the-container-registry>`__.
 
 - https://hub.docker.com/r/gplates/gplately/tags
 - https://github.com/GPlates/gplately/pkgs/container/gplately 

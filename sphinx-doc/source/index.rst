@@ -1,9 +1,9 @@
-GPlately v2.0.0 documentation
+GPlately v2.0.0 Documentation
 =============================
 
 GPlately_ was created to accelerate spatio-temporal data analysis by leveraging pyGPlates_ within a simplified Python interface. 
 This object-oriented package enables the reconstruction of data through deep geologic time (such as points, lines, polygons, and rasters), 
-the interrogation of plate kinematic information (plate velocities, rates of subduction and seafloor spreading), 
+the interrogation of plate kinematic information (plate velocities and rates of subduction and seafloor spreading), 
 the rapid comparison of multiple plate motion models, and the plotting of reconstructed output data on maps. 
 All tools are designed to be parallel-safe, accelerating spatio-temporal analysis over multiple CPU processors.
 

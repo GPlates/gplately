@@ -38,13 +38,13 @@ from .plot_engine import PlotEngine
 
 
 class PygmtPlotEngine(PlotEngine):
-    """Use pygmt for map plotting"""
+    """Use PyGMT for map plotting."""
 
     def __init__(self):
         pass
 
     def plot_geo_data_frame(self, ax_or_fig, gdf: GeoDataFrame, **kwargs):
-        """Use pygmt to plot geometries in a GeoDataFrame object onto a map
+        """Use PyGMT to plot geometries in a GeoDataFrame object onto a map.
 
         Parameters
         ----------
@@ -105,7 +105,7 @@ class PygmtPlotEngine(PlotEngine):
         color="blue",
         **kwargs,
     ):
-        """Use pygmt to plot subduction zones with "teeth"
+        """Use PyGMT to plot subduction zones with "teeth"
 
         Parameters
         ----------

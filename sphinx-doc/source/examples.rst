@@ -34,17 +34,17 @@ Workflows
 - `02 - Plate Reconstructions`_ 
    Setting up a :py:class:`gplately.PlateReconstruction` object, reconstructing geological data through time.
 - `03 - Working with Points`_ 
-   Setting up a :py:class:`gplately.Points` object, reconstructing seed point locations through time with. 
+   Setting up a :py:class:`gplately.Points` object, reconstructing seed point locations through time. 
    This notebook uses point data from the Paleobiology Database (PBDB).
 - `04 - Velocity Basics`_ 
-   Calculating plate velocities, plotting velocity vector fields.
+   Calculating plate velocities and plotting velocity vector fields.
 - `05 - Working with Feature Geometries`_ 
    Processing and plotting assorted polyline, polygon and point data from `GPlates 2.3's sample data sets`_.
 - `06 - Rasters`_ 
    Reading, resizing, resampling raster data, and linearly interpolating point data onto raster data.
 - `07 - Plate Tectonic Stats`_ 
    Calculating and plotting subduction zone and ridge data (convergence/spreading velocities, subduction angles, 
-   subduction zone and ridge lengths, crustal surface areas produced and subducted etc.).
+   subduction zone and ridge lengths, crustal surface areas produced and subducted, etc.).
 - `08 - Predicting Slab Flux`_ 
    Predicting the average slab dip angle of subducting oceanic lithosphere.
 - `09 - Motion Paths and Flowlines`_ 
@@ -87,9 +87,9 @@ Basics
 - `Use Plate Model Manager <../../notebook-html/introducing_plate_model_manager.html>`__
    Use plate-model-manager to download plate reconstruction models.
 - `Plot with Cartopy <../../notebook-html/plot_map_with_cartopy.html>`__
-   Plot paleo-map using Cartopy.
+   Plot a paleo-map using Cartopy.
 - `Plot with PyGMT <../../notebook-html/plot_map_with_pygmt.html>`__
-   Plot paleo-map using PyGMT.
+   Plot a paleo-map using PyGMT.
 - `Reconstruct Files <../../notebook-html/reconstruct_files.html>`__
    Reconstruct and plot shapefiles and `other supported files <https://www.gplates.org/docs/pygplates/generated/pygplates.featurecollection>`__.
 - `Use Your Own Plate Model <../../notebook-html/use_your_own_plate_model.html>`__

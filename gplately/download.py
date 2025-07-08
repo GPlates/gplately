@@ -1091,7 +1091,7 @@ class DataServer(object):
         .. code-block:: python
 
             # create a DataServer object for the Cao2024 model (https://zenodo.org/records/11536686)
-            data_server = gplately.download.DataServer("Cao2024")
+            data_server = gplately.DataServer("Cao2024")
 
         Parameters
         ----------

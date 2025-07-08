@@ -30,7 +30,7 @@ DEFAULT_CARTOPY_PROJECTION = ccrs.PlateCarree()
 
 
 class CartopyPlotEngine(PlotEngine):
-    """Use Cartopy for map plotting"""
+    """Use Cartopy for map plotting."""
 
     def __init__(self):
         pass

@@ -39,7 +39,7 @@ def spreading_rates(
     include_network_boundaries=False,
     output_obliquity_and_normal_and_left_right_plates=False,
 ):
-    """Calculate spreading rate of ridge segments (and other statistics like spreading obqliquity, and ridge length/normals and left/right plates).
+    """Calculate the spreading rate of ridge segments (and other statistics like spreading obliquity, and ridge length/normals and left/right plates).
 
     The transform segments of spreading features are ignored (unless ``transform_segment_deviation_in_radians`` is ``None``).
 

@@ -175,7 +175,7 @@ SAMPLE_POINTS_PKL_FILE_NAME = "sample_points_{:0.2f}_Ma.pkl"
 
 
 class SeafloorGrid(object):
-    """Generate grids that track data atop global ocean basin points (which emerge from mid ocean ridges) through geological time."""
+    """Generate grids that track data atop global ocean basin points (which emerge from mid-ocean ridges) through geological time."""
 
     def __init__(
         self,

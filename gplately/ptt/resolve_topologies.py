@@ -41,7 +41,7 @@ def resolve_topologies(
     ),
 ):
     """
-    Resolves topologies at specified time and saves (to separate files) the resolved topologies, and their boundary sections as subduction zones,
+    Resolve topologies at a specified time and save (to separate files) the resolved topologies, and their boundary sections as subduction zones,
     mid-ocean ridges (ridge/transform) and others (not subduction zones or mid-ocean ridges).
 
     Parameters
@@ -114,7 +114,7 @@ def resolve_topological_snapshot(
     ),
 ):
     """
-    From the specified topological snapshot, saves (to separate files) the resolved topologies, and their boundary sections as subduction zones,
+    From the specified topological snapshot, save (to separate files) the resolved topologies, and their boundary sections as subduction zones,
     mid-ocean ridges (ridge/transform) and others (not subduction zones or mid-ocean ridges).
 
     Parameters
@@ -199,7 +199,7 @@ def resolve_topologies_into_features(
     ),
 ):
     """
-    Resolves topologies at specified time and returns resolved topologies and their boundary sections as subduction zones,
+    Resolve topologies at a specified time and return resolved topologies and their boundary sections as subduction zones,
     mid-ocean ridges (ridge/transform) and others (not subduction zones or mid-ocean ridges).
 
     Parameters
@@ -267,7 +267,7 @@ def resolve_topological_snapshot_into_features(
     ),
 ):
     """
-    From the specified topological snapshot, returns resolved topologies and their boundary sections as subduction zones,
+    From the specified topological snapshot, return resolved topologies and their boundary sections as subduction zones,
     mid-ocean ridges (ridge/transform) and others (not subduction zones or mid-ocean ridges).
 
     Parameters
@@ -444,9 +444,7 @@ def find_total_boundary_length_in_kms(
     right_subduction_boundary_section_features,
     other_boundary_section_features,
 ):
-    """
-    Find the total length (in kms) of resolved topology boundary sections (in the various categories).
-    """
+    """Find the total length (in kms) of resolved topology boundary sections (in the various categories)."""
 
     def find_total_length(features):
         total_length_features = 0.0
