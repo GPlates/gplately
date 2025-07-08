@@ -65,19 +65,19 @@ Filter feature collection by various criteria and save the result to the `output
 
    $ gplately filter input_file output_file -p 701 714 715 101
 
-👉 only keep features whose birth age is older than 500Myr
+👉 only keep features whose birth age is older than 500 Myr
 
 .. code:: console
 
    $ gplately filter input_file output_file --min-birth-age 500
 
-👉 only keep features whose birth age is younger than 500Myr
+👉 only keep features whose birth age is younger than 500 Myr
 
 .. code:: console
 
    $ gplately filter input_file output_file --max-birth-age 500
    
-👉 only keep features whose name contains "Africa" or "North America" and plate ID is one of "701 714 715 101" and birth age is older than 500Myr
+👉 only keep features whose name contains "Africa" or "North America" and plate ID is one of "701 714 715 101" and birth age is older than 500 Myr
 
 .. code:: console
 
@@ -139,13 +139,13 @@ agegrid (ag)
 
 Generate age grids for a plate reconstruction model. 
 
-👉 create age grids from 10Ma to 0Ma with 1Myr increment for the `merdith2021` reconstruction mode
+👉 create age grids from 10 Ma to 0 Ma with 1 Myr increment for the `merdith2021` reconstruction model
 
 .. code:: console
 
    $ gplately ag output -m merdith2021 -e 0 -s 10
    
-👉 create age grids from 10Ma to 0Ma with 1Myr increment using the specified reconstruction files
+👉 create age grids from 10 Ma to 0 Ma with 1 Myr increment using the specified reconstruction files
 
 .. code:: console
 
@@ -157,7 +157,7 @@ fix_crossovers
 
 Fixes crossovers in rotation file(s).
 
-👉 fix crossovers in two rotation files with a threshold 0.01 degree and ignore plate ID 201 and 701
+👉 fix crossovers in two rotation files with a threshold of 0.01 degrees and ignore plate IDs 201 and 701
 
 .. code:: console
 
@@ -169,7 +169,7 @@ remove_rotations
 
 Remove one or more plate IDs from a rotation model (consisting of one or more rotation files). 
 
-👉 remove plate IDs 70,4,3 and 1 from a rotation file
+👉 remove plate IDs 70, 4, 3 and 1 from a rotation file
 
 .. code:: console
 
@@ -191,9 +191,9 @@ Remove any regular features not referenced by topological features.
 convert_xy_to_gplates
 ---------------------
 
-Converts geometry in one or more input ascii files (such as '.xy' files) to output files suitable for loading into GPlates. 
+Converts geometry in one or more input ASCII files (such as '.xy' files) to output files suitable for loading into GPlates. 
 
-👉 convert two .xy file into a shapefile
+👉 convert two .xy files into a shapefile
 
 .. code:: console
 
@@ -215,10 +215,10 @@ Diagnose one or more rotation files to check for inconsistencies.
 resolve_topologies
 ------------------
 
-Resolve topological plate polygons (and deforming networks) and saves (to separate files) the resolved topologies, 
+Resolve topological plate polygons (and deforming networks) and save (to separate files) the resolved topologies, 
 and their boundary sections as subduction zones, mid-ocean ridges (ridge/transform) and others (not subduction zones or mid-ocean ridges). 
 
-👉 resolve topologies at 10Ma
+👉 resolve topologies at 10 Ma
 
 .. code:: console
 
@@ -241,7 +241,7 @@ separate_ridge_transform_segments
 
 Split the geometries of isochrons and mid-ocean ridges into ridge and transform segments. 
 
-👉 pick out ridge and transform features from the file spreading_features.gpml
+👉 pick out the ridge and transform features from the file spreading_features.gpml
 
 .. code:: console
 
@@ -253,7 +253,7 @@ subduction_convergence
 
 Find the convergence rates along trenches (subduction zones) over time. 
 
-👉 calculate the convergence rates along subduction zones from 200Ma to 0Ma
+👉 calculate the convergence rates along subduction zones from 200 Ma to 0 Ma
 
 .. code:: console
 

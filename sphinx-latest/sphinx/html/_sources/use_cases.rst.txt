@@ -274,9 +274,9 @@ The table below provides a list of all available plate reconstruction models.
 .. note::
 
    - ``Topology``: topological plate polygons and plate boundaries 
-   - ``Coasts``: coastlines. The Greenland coastline uses the Danish Geological Survey dataset. The rest of the world uses the World Vector Shoreline from the the Global Self-consistent Hierarchical High-resolution Geography (GSHHG) dataset.
+   - ``Coasts``: coastlines. The Greenland coastline uses the Danish Geological Survey dataset. The rest of the world uses the World Vector Shoreline from the Global Self-consistent Hierarchical High-resolution Geography (GSHHG) dataset.
    - ``Continents``: continental polygons, derived from the Static Polygons, containing continental crust and volcanically-modified oceanic crust (including island arcs). 
-   - ``COB``: continent-ocean boundary. The COBs are represented as lines along passive margins and does not include data from active margins.
+   - ``COB``: continent-ocean boundary. The COBs are represented as lines along passive margins and do not include data from active margins.
    - ``Age Grids``: numerical grid of seafloor age
    - ``SR Grids``: numerical grid of seafloor spreading rate
 
@@ -315,7 +315,7 @@ Alternatively, you may use the auxiliary functions to create a :py:class:`gplate
    plate_reconstruction_instance = get_plate_reconstruction("Muller2019")
 
 
-The `PlateReconstructions example`_ demonstrates in details how to use the :py:class:`gplately.PlateReconstruction` class.
+The `PlateReconstructions example`_ demonstrates in detail how to use the :py:class:`gplately.PlateReconstruction` class.
 The `02-PlateReconstructions.ipynb`_ Jupyter Notebook is available in the GitHub GPlately repository.
 
 .. _`02-PlateReconstructions.ipynb`: https://github.com/GPlates/gplately/blob/master/Notebooks/02-PlateReconstructions.ipynb
@@ -340,7 +340,7 @@ through geologic time. This motion can be visualised using flowlines or motion p
    # Create a plate reconstruction model using a rotation model, a set of topology features and static polygons
    recon_model = auxiliary.get_plate_reconstruction(model)
 
-   # Define some points using their latitude and longitude coordinates so we can track them though time!
+   # Define some points using their latitude and longitude coordinates so we can track them through time!
    pt_lons = np.array([140.0, 150.0, 160.0])
    pt_lats = np.array([-30.0, -40.0, -50.0])
 
@@ -348,7 +348,7 @@ through geologic time. This motion can be visualised using flowlines or motion p
    gpts = Points(recon_model, pt_lons, pt_lats)
 
 
-The `WorkingWithPoints example`_ demonstrates in details how to use the Points class. 
+The `WorkingWithPoints example`_ demonstrates in detail how to use the Points class. 
 The `03-WorkingWithPoints.ipynb`_ Jupyter Notebook is available in the GitHub GPlately repository.
 
 .. _`WorkingWithPoints example`: https://gplates.github.io/gplately/stable/03-WorkingWithPoints.html
@@ -402,7 +402,7 @@ interpolated onto Raster grids.
    )
 
 
-The `Rasters example`_ demonstrates in details how to use the :py:class:`gplately.Raster` class. 
+The `Rasters example`_ demonstrates in detail how to use the :py:class:`gplately.Raster` class. 
 The `06-Rasters.ipynb`_ Jupyter Notebook is available in the GitHub GPlately repository.
 
 .. _`06-Rasters.ipynb`: https://github.com/GPlates/gplately/blob/master/Notebooks/06-Rasters.ipynb
@@ -447,7 +447,7 @@ You may use the auxiliary functions to create a :py:class:`gplately.PlotTopologi
    # use the auxiliary function to create a PlotTopologies object
    plot_topologies_obj = get_gplot("Muller2019", time=55)
 
-The `PlateReconstructions example`_ demonstrates in details how to use the :py:class:`gplately.PlotTopologies` class.
+The `PlateReconstructions example`_ demonstrates in detail how to use the :py:class:`gplately.PlotTopologies` class.
 The `02-PlateReconstructions.ipynb`_ Jupyter Notebook is available in the GitHub GPlately repository.
 
 .. image:: images/plottopologies.png

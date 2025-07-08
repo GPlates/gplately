@@ -46,9 +46,9 @@
               <p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="basic_usages.html">Minimal working example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="basic_usages.html">Minimal Working Example</a></li>
 <li class="toctree-l1"><a class="reference internal" href="use_cases.html">Common Use Cases</a></li>
-<li class="toctree-l1"><a class="reference internal" href="faq.html">Trouble-shooting and FAQ</a></li>
+<li class="toctree-l1"><a class="reference internal" href="faq.html">Troubleshooting and FAQ</a></li>
 <li class="toctree-l1"><a class="reference internal" href="examples.html">Examples</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Command Line Interface (CLI)</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#list">list</a></li>
@@ -166,15 +166,15 @@ If a model name is given, show the details about this model.</p>
 <div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>gplately<span class="w"> </span>filter<span class="w"> </span>input_file<span class="w"> </span>output_file<span class="w"> </span>-p<span class="w"> </span><span class="m">701</span><span class="w"> </span><span class="m">714</span><span class="w"> </span><span class="m">715</span><span class="w"> </span><span class="m">101</span>
 </pre></div>
 </div>
-<p>👉 only keep features whose birth age is older than 500Myr</p>
+<p>👉 only keep features whose birth age is older than 500 Myr</p>
 <div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>gplately<span class="w"> </span>filter<span class="w"> </span>input_file<span class="w"> </span>output_file<span class="w"> </span>--min-birth-age<span class="w"> </span><span class="m">500</span>
 </pre></div>
 </div>
-<p>👉 only keep features whose birth age is younger than 500Myr</p>
+<p>👉 only keep features whose birth age is younger than 500 Myr</p>
 <div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>gplately<span class="w"> </span>filter<span class="w"> </span>input_file<span class="w"> </span>output_file<span class="w"> </span>--max-birth-age<span class="w"> </span><span class="m">500</span>
 </pre></div>
 </div>
-<p>👉 only keep features whose name contains “Africa” or “North America” and plate ID is one of “701 714 715 101” and birth age is older than 500Myr</p>
+<p>👉 only keep features whose name contains “Africa” or “North America” and plate ID is one of “701 714 715 101” and birth age is older than 500 Myr</p>
 <div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>gplately<span class="w"> </span>filter<span class="w"> </span>input_file<span class="w"> </span>output_file<span class="w"> </span>-n<span class="w"> </span>Africa<span class="w"> </span><span class="s2">&quot;North America&quot;</span><span class="w"> </span>-p<span class="w"> </span><span class="m">701</span><span class="w"> </span><span class="m">714</span><span class="w"> </span><span class="m">715</span><span class="w"> </span><span class="m">101</span><span class="w"> </span>--min-birth-age<span class="w"> </span><span class="m">500</span>
 </pre></div>
 </div>
@@ -222,11 +222,11 @@ If a model name is given, show the details about this model.</p>
 <section id="agegrid-ag">
 <h2><a class="toc-backref" href="#id5" role="doc-backlink">agegrid (ag)</a><a class="headerlink" href="#agegrid-ag" title="Link to this heading"></a></h2>
 <p>Generate age grids for a plate reconstruction model.</p>
-<p>👉 create age grids from 10Ma to 0Ma with 1Myr increment for the <cite>merdith2021</cite> reconstruction mode</p>
+<p>👉 create age grids from 10 Ma to 0 Ma with 1 Myr increment for the <cite>merdith2021</cite> reconstruction model</p>
 <div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>gplately<span class="w"> </span>ag<span class="w"> </span>output<span class="w"> </span>-m<span class="w"> </span>merdith2021<span class="w"> </span>-e<span class="w"> </span><span class="m">0</span><span class="w"> </span>-s<span class="w"> </span><span class="m">10</span>
 </pre></div>
 </div>
-<p>👉 create age grids from 10Ma to 0Ma with 1Myr increment using the specified reconstruction files</p>
+<p>👉 create age grids from 10 Ma to 0 Ma with 1 Myr increment using the specified reconstruction files</p>
 <div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>gplately<span class="w"> </span>ag<span class="w"> </span>rotations.rot<span class="w"> </span>topologies.gpmlz<span class="w"> </span>output<span class="w"> </span>-c<span class="w"> </span>continental_polygons.gpmlz<span class="w"> </span>-e<span class="w"> </span><span class="m">0</span><span class="w"> </span>-s<span class="w"> </span><span class="m">10</span>
 </pre></div>
 </div>
@@ -234,7 +234,7 @@ If a model name is given, show the details about this model.</p>
 <section id="fix-crossovers">
 <h2><a class="toc-backref" href="#id6" role="doc-backlink">fix_crossovers</a><a class="headerlink" href="#fix-crossovers" title="Link to this heading"></a></h2>
 <p>Fixes crossovers in rotation file(s).</p>
-<p>👉 fix crossovers in two rotation files with a threshold 0.01 degree and ignore plate ID 201 and 701</p>
+<p>👉 fix crossovers in two rotation files with a threshold of 0.01 degrees and ignore plate IDs 201 and 701</p>
 <div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>gplately<span class="w"> </span>fix_crossovers<span class="w"> </span>-d<span class="w"> </span>-c<span class="w"> </span><span class="m">0</span>.01<span class="w"> </span>-i<span class="w"> </span><span class="m">201</span><span class="w"> </span><span class="m">701</span><span class="w"> </span>--<span class="w"> </span>input_rotations1.rot<span class="w"> </span>input_rotations2.rot
 </pre></div>
 </div>
@@ -242,7 +242,7 @@ If a model name is given, show the details about this model.</p>
 <section id="remove-rotations">
 <h2><a class="toc-backref" href="#id7" role="doc-backlink">remove_rotations</a><a class="headerlink" href="#remove-rotations" title="Link to this heading"></a></h2>
 <p>Remove one or more plate IDs from a rotation model (consisting of one or more rotation files).</p>
-<p>👉 remove plate IDs 70,4,3 and 1 from a rotation file</p>
+<p>👉 remove plate IDs 70, 4, 3 and 1 from a rotation file</p>
 <div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>gplately<span class="w"> </span>remove_rotations<span class="w"> </span>-p<span class="w"> </span><span class="m">70</span><span class="w"> </span><span class="m">4</span><span class="w"> </span><span class="m">3</span><span class="w"> </span><span class="m">1</span><span class="w"> </span>-o<span class="w"> </span>removed_ref_frames_<span class="w"> </span>--<span class="w"> </span>rotations.rot
 </pre></div>
 </div>
@@ -257,8 +257,8 @@ If a model name is given, show the details about this model.</p>
 </section>
 <section id="convert-xy-to-gplates">
 <h2><a class="toc-backref" href="#id9" role="doc-backlink">convert_xy_to_gplates</a><a class="headerlink" href="#convert-xy-to-gplates" title="Link to this heading"></a></h2>
-<p>Converts geometry in one or more input ascii files (such as ‘.xy’ files) to output files suitable for loading into GPlates.</p>
-<p>👉 convert two .xy file into a shapefile</p>
+<p>Converts geometry in one or more input ASCII files (such as ‘.xy’ files) to output files suitable for loading into GPlates.</p>
+<p>👉 convert two .xy files into a shapefile</p>
 <div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>gplately<span class="w"> </span>convert_xy_to_gplates<span class="w"> </span>-e<span class="w"> </span>shp<span class="w"> </span>--<span class="w"> </span>input1.xy<span class="w"> </span>input2.xy
 </pre></div>
 </div>
@@ -273,9 +273,9 @@ If a model name is given, show the details about this model.</p>
 </section>
 <section id="resolve-topologies">
 <h2><a class="toc-backref" href="#id11" role="doc-backlink">resolve_topologies</a><a class="headerlink" href="#resolve-topologies" title="Link to this heading"></a></h2>
-<p>Resolve topological plate polygons (and deforming networks) and saves (to separate files) the resolved topologies,
+<p>Resolve topological plate polygons (and deforming networks) and save (to separate files) the resolved topologies,
 and their boundary sections as subduction zones, mid-ocean ridges (ridge/transform) and others (not subduction zones or mid-ocean ridges).</p>
-<p>👉 resolve topologies at 10Ma</p>
+<p>👉 resolve topologies at 10 Ma</p>
 <div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>gplately<span class="w"> </span>resolve_topologies<span class="w"> </span>-r<span class="w"> </span>rotations1.rot<span class="w"> </span>rotations2.rot<span class="w"> </span>-m<span class="w"> </span>topologies1.gpml<span class="w"> </span>topologies2.gpml<span class="w"> </span>-t<span class="w"> </span><span class="m">10</span>
 </pre></div>
 </div>
@@ -291,7 +291,7 @@ and their boundary sections as subduction zones, mid-ocean ridges (ridge/transfo
 <section id="separate-ridge-transform-segments">
 <h2><a class="toc-backref" href="#id13" role="doc-backlink">separate_ridge_transform_segments</a><a class="headerlink" href="#separate-ridge-transform-segments" title="Link to this heading"></a></h2>
 <p>Split the geometries of isochrons and mid-ocean ridges into ridge and transform segments.</p>
-<p>👉 pick out ridge and transform features from the file spreading_features.gpml</p>
+<p>👉 pick out the ridge and transform features from the file spreading_features.gpml</p>
 <div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>gplately<span class="w"> </span>separate_ridge_transform_segments<span class="w"> </span>-r<span class="w"> </span>rotations.rot<span class="w"> </span>-d<span class="w"> </span><span class="m">45</span><span class="w"> </span>-s<span class="w"> </span>_ridges<span class="w"> </span>-t<span class="w"> </span>_transforms<span class="w"> </span>--<span class="w"> </span>spreading_features.gpml
 </pre></div>
 </div>
@@ -299,7 +299,7 @@ and their boundary sections as subduction zones, mid-ocean ridges (ridge/transfo
 <section id="subduction-convergence">
 <h2><a class="toc-backref" href="#id14" role="doc-backlink">subduction_convergence</a><a class="headerlink" href="#subduction-convergence" title="Link to this heading"></a></h2>
 <p>Find the convergence rates along trenches (subduction zones) over time.</p>
-<p>👉 calculate the convergence rates along subduction zones from 200Ma to 0Ma</p>
+<p>👉 calculate the convergence rates along subduction zones from 200 Ma to 0 Ma</p>
 <div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>gplately<span class="w"> </span>subduction_convergence<span class="w"> </span>-r<span class="w"> </span>rotations.rot<span class="w"> </span>-m<span class="w"> </span>topologies.gpml<span class="w"> </span>-t<span class="w"> </span><span class="m">0</span><span class="w"> </span><span class="m">200</span><span class="w"> </span>-i<span class="w"> </span><span class="m">1</span><span class="w"> </span>-v<span class="w"> </span><span class="m">1</span><span class="w"> </span>-d<span class="w"> </span><span class="m">0</span>.5<span class="w"> </span>-e<span class="w"> </span>xy<span class="w"> </span>--<span class="w"> </span>convergence
 </pre></div>
 </div>

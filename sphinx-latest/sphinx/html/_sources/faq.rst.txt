@@ -1,4 +1,4 @@
-Trouble-shooting and FAQ
+Troubleshooting and FAQ
 ========================
 
 .. contents::
@@ -6,11 +6,11 @@ Trouble-shooting and FAQ
    :depth: 1
 
 
-Trouble-shooting
+Troubleshooting
 ----------------
 
-It is taking Conda forever to solve the environment during GPlately installation.
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+It is taking Conda forever to solve the environment during the GPlately installation.
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 If Conda gets **stuck while solving the environment** during the installation of GPlately, you can try to use micromamba_ instead.
 

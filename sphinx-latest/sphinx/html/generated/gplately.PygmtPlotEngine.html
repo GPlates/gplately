@@ -45,9 +45,9 @@
               <p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../installation.html">Installation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../basic_usages.html">Minimal working example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../basic_usages.html">Minimal Working Example</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../use_cases.html">Common Use Cases</a></li>
-<li class="toctree-l1"><a class="reference internal" href="../faq.html">Trouble-shooting and FAQ</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../faq.html">Troubleshooting and FAQ</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../examples.html">Examples</a></li>
 <li class="toctree-l1"><a class="reference internal" href="../command_line_interface.html">Command Line Interface (CLI)</a></li>
 </ul>
@@ -106,7 +106,7 @@
 <dt class="sig sig-object py" id="gplately.PygmtPlotEngine">
 <em class="property"><span class="k"><span class="pre">class</span></span><span class="w"> </span></em><span class="sig-prename descclassname"><span class="pre">gplately.</span></span><span class="sig-name descname"><span class="pre">PygmtPlotEngine</span></span><a class="reference internal" href="../_modules/gplately/mapping/pygmt_plot.html#PygmtPlotEngine"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.PygmtPlotEngine" title="Link to this definition"></a></dt>
 <dd><p>Bases: <a class="reference internal" href="gplately.PlotEngine.html#gplately.PlotEngine" title="gplately.mapping.plot_engine.PlotEngine"><code class="xref py py-class docutils literal notranslate"><span class="pre">PlotEngine</span></code></a></p>
-<p>Use pygmt for map plotting</p>
+<p>Use PyGMT for map plotting.</p>
 <dl class="py method">
 <dt class="sig sig-object py" id="gplately.PygmtPlotEngine.__init__">
 <span class="sig-name descname"><span class="pre">__init__</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gplately/mapping/pygmt_plot.html#PygmtPlotEngine.__init__"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.PygmtPlotEngine.__init__" title="Link to this definition"></a></dt>
@@ -119,20 +119,20 @@
 <td><p></p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#gplately.PygmtPlotEngine.plot_geo_data_frame" title="gplately.PygmtPlotEngine.plot_geo_data_frame"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_geo_data_frame</span></code></a>(ax_or_fig, gdf, **kwargs)</p></td>
-<td><p>Use pygmt to plot geometries in a GeoDataFrame object onto a map</p></td>
+<td><p>Use PyGMT to plot geometries in a GeoDataFrame object onto a map.</p></td>
 </tr>
 <tr class="row-odd"><td><p><a class="reference internal" href="#gplately.PygmtPlotEngine.plot_pygplates_features" title="gplately.PygmtPlotEngine.plot_pygplates_features"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_pygplates_features</span></code></a>(ax_or_fig, features, ...)</p></td>
 <td><p>Not implemented yet</p></td>
 </tr>
 <tr class="row-even"><td><p><a class="reference internal" href="#gplately.PygmtPlotEngine.plot_subduction_zones" title="gplately.PygmtPlotEngine.plot_subduction_zones"><code class="xref py py-obj docutils literal notranslate"><span class="pre">plot_subduction_zones</span></code></a>(ax_or_fig, ...[, color])</p></td>
-<td><p>Use pygmt to plot subduction zones with &quot;teeth&quot;</p></td>
+<td><p>Use PyGMT to plot subduction zones with &quot;teeth&quot;</p></td>
 </tr>
 </tbody>
 </table>
 <dl class="py method">
 <dt class="sig sig-object py" id="gplately.PygmtPlotEngine.plot_geo_data_frame">
 <span class="sig-name descname"><span class="pre">plot_geo_data_frame</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ax_or_fig</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gdf</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">GeoDataFrame</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gplately/mapping/pygmt_plot.html#PygmtPlotEngine.plot_geo_data_frame"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.PygmtPlotEngine.plot_geo_data_frame" title="Link to this definition"></a></dt>
-<dd><p>Use pygmt to plot geometries in a GeoDataFrame object onto a map</p>
+<dd><p>Use PyGMT to plot geometries in a GeoDataFrame object onto a map.</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">
@@ -159,7 +159,7 @@ Currently, only colour names are tested and officially supported, for example, �
 <dl class="py method">
 <dt class="sig sig-object py" id="gplately.PygmtPlotEngine.plot_subduction_zones">
 <span class="sig-name descname"><span class="pre">plot_subduction_zones</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ax_or_fig</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gdf_subduction_left</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">GeoDataFrame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">gdf_subduction_right</span></span><span class="p"><span class="pre">:</span></span><span class="w"> </span><span class="n"><span class="pre">GeoDataFrame</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">color</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'blue'</span></span></em>, <em class="sig-param"><span class="o"><span class="pre">**</span></span><span class="n"><span class="pre">kwargs</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/gplately/mapping/pygmt_plot.html#PygmtPlotEngine.plot_subduction_zones"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#gplately.PygmtPlotEngine.plot_subduction_zones" title="Link to this definition"></a></dt>
-<dd><p>Use pygmt to plot subduction zones with “teeth”</p>
+<dd><p>Use PyGMT to plot subduction zones with “teeth”</p>
 <dl class="field-list simple">
 <dt class="field-odd">Parameters<span class="colon">:</span></dt>
 <dd class="field-odd"><ul class="simple">

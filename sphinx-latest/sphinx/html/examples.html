@@ -21,7 +21,7 @@
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
     <link rel="next" title="Command Line Interface (CLI)" href="command_line_interface.html" />
-    <link rel="prev" title="Trouble-shooting and FAQ" href="faq.html" /> 
+    <link rel="prev" title="Troubleshooting and FAQ" href="faq.html" /> 
 </head>
 
 <body class="wy-body-for-nav"> 
@@ -46,9 +46,9 @@
               <p class="caption" role="heading"><span class="caption-text">User Guide</span></p>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="installation.html">Installation</a></li>
-<li class="toctree-l1"><a class="reference internal" href="basic_usages.html">Minimal working example</a></li>
+<li class="toctree-l1"><a class="reference internal" href="basic_usages.html">Minimal Working Example</a></li>
 <li class="toctree-l1"><a class="reference internal" href="use_cases.html">Common Use Cases</a></li>
-<li class="toctree-l1"><a class="reference internal" href="faq.html">Trouble-shooting and FAQ</a></li>
+<li class="toctree-l1"><a class="reference internal" href="faq.html">Troubleshooting and FAQ</a></li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Examples</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#workflows">Workflows</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#basics">Basics</a></li>
@@ -97,6 +97,12 @@ run the commands below to start using Jupyter Notebook.</p>
 <span class="gp">$ </span>jupyter<span class="w"> </span>notebook
 </pre></div>
 </div>
+<p>Alternatively, you may use Docker to run these examples as well. Use <code class="docutils literal notranslate"><span class="pre">-v</span></code> option to access the local directory on the host machine.
+Visit <a class="reference external" href="https://docs.docker.com/engine/storage/bind-mounts/#options-for---volume">this page</a> for details.</p>
+<div class="highlight-console notranslate"><div class="highlight"><pre><span></span><span class="gp">$ </span>docker<span class="w"> </span>pull<span class="w"> </span>gplates/gplately
+<span class="gp">$ </span>docker<span class="w"> </span>run<span class="w"> </span>--rm<span class="w"> </span>-ti<span class="w"> </span>-v<span class="w"> </span>.:/ws<span class="w"> </span>-w<span class="w"> </span>/ws<span class="w"> </span>-p<span class="w"> </span><span class="m">8888</span>:8888<span class="w"> </span>gplates/gplately
+</pre></div>
+</div>
 <nav class="contents local" id="contents">
 <ul class="simple">
 <li><p><a class="reference internal" href="#workflows" id="id1">Workflows</a></p></li>
@@ -117,13 +123,13 @@ run the commands below to start using Jupyter Notebook.</p>
 </dl>
 </li>
 <li><dl class="simple">
-<dt><a class="reference external" href="../../notebook-html/03-WorkingWithPoints.html">03 - Working with Points</a></dt><dd><p>Setting up a <a class="reference internal" href="generated/gplately.Points.html#gplately.Points" title="gplately.Points"><code class="xref py py-class docutils literal notranslate"><span class="pre">gplately.Points</span></code></a> object, reconstructing seed point locations through time with.
+<dt><a class="reference external" href="../../notebook-html/03-WorkingWithPoints.html">03 - Working with Points</a></dt><dd><p>Setting up a <a class="reference internal" href="generated/gplately.Points.html#gplately.Points" title="gplately.Points"><code class="xref py py-class docutils literal notranslate"><span class="pre">gplately.Points</span></code></a> object, reconstructing seed point locations through time.
 This notebook uses point data from the Paleobiology Database (PBDB).</p>
 </dd>
 </dl>
 </li>
 <li><dl class="simple">
-<dt><a class="reference external" href="../../notebook-html/04-VelocityBasics.html">04 - Velocity Basics</a></dt><dd><p>Calculating plate velocities, plotting velocity vector fields.</p>
+<dt><a class="reference external" href="../../notebook-html/04-VelocityBasics.html">04 - Velocity Basics</a></dt><dd><p>Calculating plate velocities and plotting velocity vector fields.</p>
 </dd>
 </dl>
 </li>
@@ -139,7 +145,7 @@ This notebook uses point data from the Paleobiology Database (PBDB).</p>
 </li>
 <li><dl class="simple">
 <dt><a class="reference external" href="../../notebook-html/07-WorkingWithPlateTectonicStats.html">07 - Plate Tectonic Stats</a></dt><dd><p>Calculating and plotting subduction zone and ridge data (convergence/spreading velocities, subduction angles,
-subduction zone and ridge lengths, crustal surface areas produced and subducted etc.).</p>
+subduction zone and ridge lengths, crustal surface areas produced and subducted, etc.).</p>
 </dd>
 </dl>
 </li>
@@ -192,12 +198,12 @@ are available <a class="reference external" href="https://github.com/GPlates/gpl
 </dl>
 </li>
 <li><dl class="simple">
-<dt><a class="reference external" href="../../notebook-html/plot_map_with_cartopy.html">Plot with Cartopy</a></dt><dd><p>Plot paleo-map using Cartopy.</p>
+<dt><a class="reference external" href="../../notebook-html/plot_map_with_cartopy.html">Plot with Cartopy</a></dt><dd><p>Plot a paleo-map using Cartopy.</p>
 </dd>
 </dl>
 </li>
 <li><dl class="simple">
-<dt><a class="reference external" href="../../notebook-html/plot_map_with_pygmt.html">Plot with PyGMT</a></dt><dd><p>Plot paleo-map using PyGMT.</p>
+<dt><a class="reference external" href="../../notebook-html/plot_map_with_pygmt.html">Plot with PyGMT</a></dt><dd><p>Plot a paleo-map using PyGMT.</p>
 </dd>
 </dl>
 </li>
@@ -239,7 +245,7 @@ are available <a class="reference external" href="https://github.com/GPlates/gpl
            </div>
           </div>
           <footer><div class="rst-footer-buttons" role="navigation" aria-label="Footer">
-        <a href="faq.html" class="btn btn-neutral float-left" title="Trouble-shooting and FAQ" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
+        <a href="faq.html" class="btn btn-neutral float-left" title="Troubleshooting and FAQ" accesskey="p" rel="prev"><span class="fa fa-arrow-circle-left" aria-hidden="true"></span> Previous</a>
         <a href="command_line_interface.html" class="btn btn-neutral float-right" title="Command Line Interface (CLI)" accesskey="n" rel="next">Next <span class="fa fa-arrow-circle-right" aria-hidden="true"></span></a>
     </div>
 
