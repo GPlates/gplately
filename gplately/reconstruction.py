@@ -2609,7 +2609,10 @@ class PlateReconstruction(object):
             motion_path_feature = pygplates.Feature.create_motion_path(
                 point,
                 time_array,
-                valid_time=(time_array[-1], time_array[0]),  # max, min
+                # We want the motion path to get reconstructed all the way to present day, even if the
+                # time array doesn't include present day. The motion path should only disappear when
+                # reconstructed further back in time than the oldest time in the time array...
+                valid_time=(time_array[-1], 0.0),  # max(time_array), present-day
                 relative_plate=relative_plate_id,
                 reconstruction_plate_id=point_plate_ids[point_index],
             )
@@ -2657,9 +2660,19 @@ class PlateReconstruction(object):
                 if return_times or return_rate_of_motion:
                     # These are the *last* 'num_rtimes' times in the time array.
                     #
-                    # Note: We only need one array for *all* the motion paths
+                    # Note: We only need one time array for *all* the motion paths
                     #       (unlike the rate-of-motion that requires one array *per* motion path).
                     rtimes = time_array[-num_rtimes:]
+                    # Also change the youngest time to the reconstruction time if it's within the time array range.
+                    #
+                    # This is a subtle point that unfortunately we need to handle.
+                    # It would be better for pygplates.ReconstructedMotionPath to add a method
+                    # that returns these times.
+                    if (
+                        time_array[0] - 1e-6 < to_time
+                        and to_time < time_array[-1] + 1e-6
+                    ):
+                        rtimes[0] = to_time
 
                 # To be filled with reconstructed points of the motion path of each seed point.
                 rlons = np.empty((num_points, num_rtimes))
