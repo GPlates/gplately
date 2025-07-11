@@ -106,6 +106,7 @@
 <span class="c1"># pyright: reportMissingTypeStubs=true</span>
 
 <span class="kn">import</span><span class="w"> </span><span class="nn">logging</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">numbers</span>
 <span class="kn">import</span><span class="w"> </span><span class="nn">warnings</span>
 <span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Union</span>
 
@@ -2279,7 +2280,6 @@
                 <span class="p">)</span><span class="o">.</span><span class="n">get_features</span><span class="p">()</span>
             <span class="p">]</span>
             <span class="c1"># Reverse reconstruct in-place (modifies each feature&#39;s geometry).</span>
-
             <span class="n">pygplates</span><span class="o">.</span><span class="n">reverse_reconstruct</span><span class="p">(</span>  <span class="c1"># type: ignore</span>
                 <span class="n">reconstructable_features</span><span class="p">,</span>
                 <span class="bp">self</span><span class="o">.</span><span class="n">rotation_model</span><span class="p">,</span>
@@ -2515,21 +2515,29 @@
         <span class="n">lons</span><span class="p">,</span>
         <span class="n">lats</span><span class="p">,</span>
         <span class="n">time_array</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">from_time</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+        <span class="n">to_time</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
         <span class="n">plate_id</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">relative_plate_id</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
         <span class="n">anchor_plate_id</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">return_times</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
         <span class="n">return_rate_of_motion</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
     <span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Create a path of points to mark the trajectory of a plate&#39;s motion through geological time.</span>
 
+<span class="sd">        One motion path is created for each point using its plate ID (either given or assigned using :py:attr:`topology_features`).</span>
+<span class="sd">        Each motion path is reconstructed to ``to_time`` (defaults to ``from_time`` which defaults to present day).</span>
+
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
-<span class="sd">        lons : arr</span>
-<span class="sd">            An array containing the longitudes of seed points on a plate in motion.</span>
-<span class="sd">        lats : arr</span>
-<span class="sd">            An array containing the latitudes of seed points on a plate in motion.</span>
-<span class="sd">        time_array : arr</span>
-<span class="sd">            An array of reconstruction times at which to determine the trajectory</span>
-<span class="sd">            of a point on a plate. For example:</span>
+<span class="sd">        lons : float or 1D array</span>
+<span class="sd">            A single longitude or an array of longitudes of seed points of the motion paths.</span>
+<span class="sd">        lats : float or 1D array</span>
+<span class="sd">            A single latitude or an array of latitudes of seed points of the motion paths.</span>
+<span class="sd">        time_array : float or 1D array</span>
+<span class="sd">            An array of reconstruction times at which to determine the trajectory of the seed points.</span>
+<span class="sd">            For example:</span>
 
 <span class="sd">            .. code-block:: python</span>
 <span class="sd">                :linenos:</span>
@@ -2540,32 +2548,73 @@
 <span class="sd">                time_step = 2.5</span>
 <span class="sd">                time_array = np.arange(min_time, max_time + time_step, time_step)</span>
 
-<span class="sd">        plate_id : int, optional</span>
-<span class="sd">            The ID of the moving plate. If this is not passed, the plate ID of the</span>
-<span class="sd">            seed points are ascertained using pygplates&#39; ``PlatePartitioner``.</span>
+<span class="sd">            Note that the time array will be sorted in ascending order (if it is not already).</span>
+
+<span class="sd">        from_time : float, default=0</span>
+<span class="sd">            The initial time (Ma) of the seed points.</span>
+<span class="sd">            The ``lons`` and ``lats`` are the initial coordinates of the seed points at this time.</span>
+<span class="sd">            Defaults to present day (0 Ma).</span>
+<span class="sd">        to_time : float, optional</span>
+<span class="sd">            The reconstruction time (Ma) to reconstruct the motion path to.</span>
+<span class="sd">            Defaults to ``from_time`` (which itself defaults to present day).</span>
+<span class="sd">        plate_id : int or 1D array, optional</span>
+<span class="sd">            The ID of the moving plate(s). If it is a single integer then all seed points will have the same plate ID.</span>
+<span class="sd">            If it is a 1D array then length must match the number of seed points. If ``None`` then the plate ID of</span>
+<span class="sd">            each seed point is determined using the :py:attr:`topology_features` (resolved at the initial time ``from_time``).</span>
+<span class="sd">        relative_plate_id : int, optional</span>
+<span class="sd">            The ID of the plate that the motion path is relative to. Defaults to ``anchor_plate_id`` which itself</span>
+<span class="sd">            defaults to the current anchor plate ID (:py:attr:`anchor_plate_id` attribute).</span>
 <span class="sd">        anchor_plate_id : int, optional</span>
-<span class="sd">            The ID of the anchor plate. Defaults to the default anchor plate</span>
-<span class="sd">            (specified in ``__init__`` or set with ``anchor_plate_id`` attribute).</span>
+<span class="sd">            Anchor plate ID. Defaults to the current anchor plate ID (:py:attr:`anchor_plate_id` attribute).</span>
+<span class="sd">        return_times : bool, default=False</span>
+<span class="sd">            Choose whether to return the times in ``time_array`` that are older than the reconstruction time</span>
+<span class="sd">            (ie, where ``time_array[i] &gt; to_time``). This includes the reconstruction time (``to_time``)</span>
+<span class="sd">            unless it is outside the time range of ``time_array``.</span>
 <span class="sd">        return_rate_of_motion : bool, default=False</span>
-<span class="sd">            Choose whether to return the rate of plate motion through time for each step.</span>
+<span class="sd">            Choose whether to return the rate of plate motion through time for each time step between the times in ``time_array``</span>
+<span class="sd">            that are older than the reconstruction time (ie, where ``time_array[i] &gt; to_time``). This includes the reconstruction time</span>
+<span class="sd">            (``to_time``) unless it is outside the time range of ``time_array``.</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
-<span class="sd">        rlons : ndarray</span>
-<span class="sd">            An n-dimensional array with columns containing the longitudes of</span>
-<span class="sd">            the seed points at each timestep in ``time_array``. There are n columns for n seed points.</span>
-<span class="sd">        rlats : ndarray</span>
-<span class="sd">            An n-dimensional array with columns containing the latitudes of</span>
-<span class="sd">            the seed points at each timestep in ``time_array``. There are n columns for n seed points.</span>
-<span class="sd">        StepTimes : ndarray</span>
-<span class="sd">            Time interval for each step.</span>
-<span class="sd">        StepRates : ndarray</span>
-<span class="sd">            The rate of plate motion for each step.</span>
+<span class="sd">        rlons : 2D array</span>
+<span class="sd">            A 2D array with each row containing the history of longitudes of a seed point at each time in ``time_array`` that is</span>
+<span class="sd">            older than the reconstruction time (ie, where ``time_array[i] &gt;= to_time``).</span>
+<span class="sd">            There are n rows for n seed points.</span>
+<span class="sd">        rlats : 2D array</span>
+<span class="sd">            A 2D array with each row containing the history of latitudes of a seed point at each time in ``time_array`` that is</span>
+<span class="sd">            older than the reconstruction time (ie, where ``time_array[i] &gt;= to_time``).</span>
+<span class="sd">            There are n rows for n seed points.</span>
+<span class="sd">        rtimes : 1D array</span>
+<span class="sd">            Only provided if ``return_times`` is True.</span>
+<span class="sd">            A 1D array with the times in ``time_array`` that are older than the reconstruction time (ie, where ``time_array[i] &gt;= to_time``).</span>
+<span class="sd">            The size of this array is the same as the number of columns in ``rlons`` and ``rlats``.</span>
+<span class="sd">        rate_of_motion : 2D array</span>
+<span class="sd">            Only provided if ``return_rate_of_motion`` is True.</span>
+<span class="sd">            The rate of plate motion (in cm/yr) for each time step between the times in ``time_array`` that are older than the</span>
+<span class="sd">            reconstruction time (ie, where ``time_array[i] &gt;= to_time``).</span>
+<span class="sd">            The number of columns is one less than the number of columns in ``rlons`` and ``rlats``.</span>
+<span class="sd">            There are n rows for n seed points.</span>
+
+<span class="sd">        .. note::</span>
+
+<span class="sd">            If ``max(time_array) &lt;= to_time`` then there will be no history in the returned arrays</span>
+<span class="sd">            (ie, the number of columns will be zero for each returned array, including ``rtimes`` and ``rate_of_motion`` if requested).</span>
 
 <span class="sd">        Raises</span>
 <span class="sd">        ------</span>
 <span class="sd">        ValueError</span>
 <span class="sd">            If ``plate_id`` is ``None`` and topology features have not been set in this :class:`PlateReconstruction`.</span>
+
+<span class="sd">        .. note::</span>
+
+<span class="sd">            If ``from_time`` is non-zero (ie, not present day) then ``lons`` and ``lats`` are assumed to be the **reconstructed**</span>
+<span class="sd">            seed point locations at ``from_time``. And the reconstructed positions are assumed to be relative to the anchor plate.</span>
+
+<span class="sd">            If ``plate_id`` is None then the plate ID of each seed point is determined by resolving the topologies to ``from_time`` (relative to the anchor plate) and</span>
+<span class="sd">            then, for each seed point, assigning the plate ID of the resolved topological plate/network containing the point.</span>
+<span class="sd">            If a point is not contained by any resolved topological plates/networks then it is assigned the anchor plate ID</span>
+<span class="sd">            (however this is very unlikely to happen if the topological model has global coverage).</span>
 
 <span class="sd">        Examples</span>
 <span class="sd">        --------</span>
@@ -2574,137 +2623,235 @@
 <span class="sd">        .. code-block:: python</span>
 <span class="sd">            :linenos:</span>
 
-<span class="sd">            for i in np.arange(0,len(seed_points)):</span>
-<span class="sd">                current_lons = lon[:,i]</span>
-<span class="sd">                current_lats = lat[:,i]</span>
+<span class="sd">            lons = [...]</span>
+<span class="sd">            lats = [...]</span>
+<span class="sd">            time_array = [0, 10, 20, 30, 40, 50]</span>
+
+<span class="sd">            rlons, rlats = model.create_motion_path(lons, lats, time_array)</span>
+
+<span class="sd">            for i in range(len(rlons)):</span>
+<span class="sd">                current_lons = rlons[i]</span>
+<span class="sd">                current_lats = rlats[i]</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">lons</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">atleast_1d</span><span class="p">(</span><span class="n">lons</span><span class="p">)</span>
-        <span class="n">lats</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">atleast_1d</span><span class="p">(</span><span class="n">lats</span><span class="p">)</span>
-        <span class="n">time_array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">atleast_1d</span><span class="p">(</span><span class="n">time_array</span><span class="p">)</span>
+        <span class="c1"># If the anchor plate is None then use default anchor plate.</span>
+        <span class="k">if</span> <span class="n">anchor_plate_id</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">anchor_plate_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">anchor_plate_id</span>
+        <span class="c1"># If the relative plate is None then use the anchor plate.</span>
+        <span class="k">if</span> <span class="n">relative_plate_id</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">relative_plate_id</span> <span class="o">=</span> <span class="n">anchor_plate_id</span>
 
-        <span class="c1"># ndarrays to fill with reconstructed points and</span>
-        <span class="c1"># rates of motion (if requested)</span>
-        <span class="n">rlons</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">time_array</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">lons</span><span class="p">)))</span>
-        <span class="n">rlats</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">time_array</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">lons</span><span class="p">)))</span>
+        <span class="c1"># The reconstruction time (&#39;to_time&#39;) defaults to the</span>
+        <span class="c1"># initial time (&#39;from_time&#39;) of the seed point locations.</span>
+        <span class="k">if</span> <span class="n">to_time</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">to_time</span> <span class="o">=</span> <span class="n">from_time</span>
 
-        <span class="k">if</span> <span class="n">plate_id</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
-            <span class="n">query_plate_id</span> <span class="o">=</span> <span class="kc">True</span>
-            <span class="n">plate_ids</span> <span class="o">=</span> <span class="p">[]</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">query_plate_id</span> <span class="o">=</span> <span class="kc">False</span>
-            <span class="n">plate_ids</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">ones</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">lons</span><span class="p">),</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span> <span class="o">*</span> <span class="n">plate_id</span>
+        <span class="c1"># Make sure time array is ascending.</span>
+        <span class="n">time_array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">atleast_1d</span><span class="p">(</span><span class="n">time_array</span><span class="p">))</span>
 
-        <span class="n">seed_points</span> <span class="o">=</span> <span class="nb">zip</span><span class="p">(</span><span class="n">lats</span><span class="p">,</span> <span class="n">lons</span><span class="p">)</span>
-        <span class="k">if</span> <span class="n">return_rate_of_motion</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
-            <span class="n">StepTimes</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(((</span><span class="nb">len</span><span class="p">(</span><span class="n">time_array</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="mi">2</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">lons</span><span class="p">)))</span>
-            <span class="n">StepRates</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(((</span><span class="nb">len</span><span class="p">(</span><span class="n">time_array</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="mi">2</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">lons</span><span class="p">)))</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="n">StepTimes</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([])</span>
-            <span class="n">StepRates</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([])</span>
-        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">lat_lon</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">seed_points</span><span class="p">):</span>
-            <span class="n">seed_points_at_digitisation_time</span> <span class="o">=</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">PointOnSphere</span><span class="p">(</span>
-                <span class="n">pygplates</span><span class="o">.</span><span class="n">LatLonPoint</span><span class="p">(</span><span class="nb">float</span><span class="p">(</span><span class="n">lat_lon</span><span class="p">[</span><span class="mi">0</span><span class="p">]),</span> <span class="nb">float</span><span class="p">(</span><span class="n">lat_lon</span><span class="p">[</span><span class="mi">1</span><span class="p">]))</span>
-            <span class="p">)</span>
-            <span class="c1"># Allocate the present-day plate ID to the PointOnSphere if</span>
-            <span class="c1"># it was not given.</span>
-            <span class="k">if</span> <span class="n">query_plate_id</span><span class="p">:</span>
-                <span class="n">plate_id</span> <span class="o">=</span> <span class="n">_tools</span><span class="o">.</span><span class="n">plate_partitioner_for_point</span><span class="p">(</span>
-                    <span class="n">lat_lon</span><span class="p">,</span> <span class="bp">self</span><span class="o">.</span><span class="n">_check_topology_features</span><span class="p">(),</span> <span class="bp">self</span><span class="o">.</span><span class="n">rotation_model</span>
+        <span class="c1"># Most common case first: both lons and lats are sequences.</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isscalar</span><span class="p">(</span><span class="n">lons</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isscalar</span><span class="p">(</span><span class="n">lats</span><span class="p">):</span>
+            <span class="c1"># Make sure numpy arrays (if not already).</span>
+            <span class="n">lons</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">lons</span><span class="p">)</span>
+            <span class="n">lats</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">lats</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">lons</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">lats</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="s2">&quot;&#39;lons&#39; and &#39;lats&#39; must be of equal length (</span><span class="si">{}</span><span class="s2"> != </span><span class="si">{}</span><span class="s2">)&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                        <span class="nb">len</span><span class="p">(</span><span class="n">lons</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">lats</span><span class="p">)</span>
+                    <span class="p">)</span>
                 <span class="p">)</span>
-            <span class="k">else</span><span class="p">:</span>
-                <span class="n">plate_id</span> <span class="o">=</span> <span class="n">plate_ids</span><span class="p">[</span><span class="n">i</span><span class="p">]</span>
-
-            <span class="c1"># Create the motion path feature. enforce float and int for C++ signature.</span>
-            <span class="n">motion_path_feature</span> <span class="o">=</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">Feature</span><span class="o">.</span><span class="n">create_motion_path</span><span class="p">(</span>
-                <span class="n">seed_points_at_digitisation_time</span><span class="p">,</span>
-                <span class="n">time_array</span><span class="p">,</span>
-                <span class="n">valid_time</span><span class="o">=</span><span class="p">(</span><span class="n">time_array</span><span class="o">.</span><span class="n">max</span><span class="p">(),</span> <span class="n">time_array</span><span class="o">.</span><span class="n">min</span><span class="p">()),</span>
-                <span class="n">relative_plate</span><span class="o">=</span><span class="p">(</span>  <span class="c1"># if None then uses &#39;self.anchor_plate_id&#39; (default anchor plate of &#39;self.rotation_model&#39;)</span>
-                    <span class="n">anchor_plate_id</span>
-                    <span class="k">if</span> <span class="n">anchor_plate_id</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
-                    <span class="k">else</span> <span class="bp">self</span><span class="o">.</span><span class="n">anchor_plate_id</span>
-                <span class="p">),</span>
-                <span class="n">reconstruction_plate_id</span><span class="o">=</span><span class="nb">int</span><span class="p">(</span><span class="n">plate_id</span><span class="p">),</span>
+        <span class="k">elif</span> <span class="n">np</span><span class="o">.</span><span class="n">isscalar</span><span class="p">(</span><span class="n">lons</span><span class="p">)</span> <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">isscalar</span><span class="p">(</span><span class="n">lats</span><span class="p">):</span>
+            <span class="c1"># Both are scalars. Convert to arrays with one element.</span>
+            <span class="n">lons</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">atleast_1d</span><span class="p">(</span><span class="n">lons</span><span class="p">)</span>
+            <span class="n">lats</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">atleast_1d</span><span class="p">(</span><span class="n">lats</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">&quot;Both &#39;lats&#39; and &#39;lons&#39; must both be a sequence or both a scalar&quot;</span>
             <span class="p">)</span>
 
+        <span class="n">points</span> <span class="o">=</span> <span class="p">[</span><span class="n">pygplates</span><span class="o">.</span><span class="n">PointOnSphere</span><span class="p">(</span><span class="n">lat</span><span class="p">,</span> <span class="n">lon</span><span class="p">)</span> <span class="k">for</span> <span class="n">lon</span><span class="p">,</span> <span class="n">lat</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">lons</span><span class="p">,</span> <span class="n">lats</span><span class="p">)]</span>
+
+        <span class="n">num_points</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">points</span><span class="p">)</span>
+
+        <span class="c1"># If caller provided plate IDs.</span>
+        <span class="k">if</span> <span class="n">plate_id</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="c1"># If plate ID is a scalar then all points have the same plate ID.</span>
+            <span class="k">if</span> <span class="n">np</span><span class="o">.</span><span class="n">isscalar</span><span class="p">(</span><span class="n">plate_id</span><span class="p">):</span>
+                <span class="n">point_plate_ids</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">full</span><span class="p">(</span><span class="n">num_points</span><span class="p">,</span> <span class="n">plate_id</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
+            <span class="k">else</span><span class="p">:</span>
+                <span class="n">point_plate_ids</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">plate_id</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
+                <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">point_plate_ids</span><span class="p">)</span> <span class="o">!=</span> <span class="n">num_points</span><span class="p">:</span>
+                    <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                        <span class="s2">&quot;&#39;plate_id&#39; must be same length as &#39;lons&#39; and &#39;lats&#39; (</span><span class="si">{}</span><span class="s2"> != </span><span class="si">{}</span><span class="s2">)&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                            <span class="nb">len</span><span class="p">(</span><span class="n">point_plate_ids</span><span class="p">),</span> <span class="n">num_points</span>
+                        <span class="p">)</span>
+                    <span class="p">)</span>
+        <span class="c1"># Else assign a plate ID to each point based on which resolved topology it&#39;s inside.</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">topological_snapshot</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">topological_snapshot</span><span class="p">(</span>
+                <span class="c1"># The initial time of the seed point locations...</span>
+                <span class="n">time</span><span class="o">=</span><span class="n">from_time</span><span class="p">,</span>
+                <span class="n">anchor_plate_id</span><span class="o">=</span><span class="n">anchor_plate_id</span><span class="p">,</span>
+                <span class="c1"># Ignore topological slab boundaries since they are not *plate* boundaries...</span>
+                <span class="n">include_topological_slab_boundaries</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
+            <span class="p">)</span>
+
+            <span class="n">resolved_topology_locations_containing_points</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">topological_snapshot</span><span class="o">.</span><span class="n">get_point_locations</span><span class="p">(</span><span class="n">points</span><span class="p">)</span>
+            <span class="p">)</span>
+
+            <span class="n">point_plate_ids</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(</span><span class="n">num_points</span><span class="p">,</span> <span class="n">dtype</span><span class="o">=</span><span class="nb">int</span><span class="p">)</span>
+            <span class="k">for</span> <span class="n">point_index</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="n">num_points</span><span class="p">):</span>
+                <span class="n">resolved_topology_location</span> <span class="o">=</span> <span class="p">(</span>
+                    <span class="n">resolved_topology_locations_containing_points</span><span class="p">[</span><span class="n">point_index</span><span class="p">]</span>
+                <span class="p">)</span>
+
+                <span class="c1"># If current point is inside a resolved topology then assign its plate ID to the point,</span>
+                <span class="c1"># otherwise assign the anchor plate to the point.</span>
+                <span class="k">if</span> <span class="p">(</span>
+                    <span class="n">resolved_topology_location</span><span class="o">.</span><span class="n">located_in_resolved_boundary</span><span class="p">()</span>
+                <span class="p">):</span>  <span class="c1"># if point is inside a resolved boundary</span>
+                    <span class="n">point_plate_ids</span><span class="p">[</span><span class="n">point_index</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+                        <span class="n">resolved_topology_location</span><span class="o">.</span><span class="n">located_in_resolved_boundary</span><span class="p">()</span>
+                        <span class="o">.</span><span class="n">get_feature</span><span class="p">()</span>
+                        <span class="o">.</span><span class="n">get_reconstruction_plate_id</span><span class="p">()</span>
+                    <span class="p">)</span>
+                <span class="k">elif</span> <span class="p">(</span>
+                    <span class="n">resolved_topology_location</span><span class="o">.</span><span class="n">located_in_resolved_network</span><span class="p">()</span>
+                <span class="p">):</span>  <span class="c1"># if point is inside a resolved network</span>
+                    <span class="n">point_plate_ids</span><span class="p">[</span><span class="n">point_index</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span>
+                        <span class="n">resolved_topology_location</span><span class="o">.</span><span class="n">located_in_resolved_network</span><span class="p">()</span>
+                        <span class="o">.</span><span class="n">get_feature</span><span class="p">()</span>
+                        <span class="o">.</span><span class="n">get_reconstruction_plate_id</span><span class="p">()</span>
+                    <span class="p">)</span>
+                <span class="k">else</span><span class="p">:</span>  <span class="c1"># point is not in any resolved topologies</span>
+                    <span class="c1"># Assign the anchor plate ID to indicate we could NOT assign a proper plate ID.</span>
+                    <span class="c1"># This generally shouldn&#39;t happen if the topologies have global coverage.</span>
+                    <span class="n">point_plate_ids</span><span class="p">[</span><span class="n">point_index</span><span class="p">]</span> <span class="o">=</span> <span class="n">anchor_plate_id</span>
+
+        <span class="c1"># Need to query the first reconstructed motion path before we can size the return arrays.</span>
+        <span class="n">created_return_arrays</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="c1"># To avoid Pylance warning.</span>
+        <span class="n">rlons</span> <span class="o">=</span> <span class="n">rlats</span> <span class="o">=</span> <span class="n">rtimes</span> <span class="o">=</span> <span class="n">rate_of_motion</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([])</span>
+
+        <span class="k">for</span> <span class="n">point_index</span><span class="p">,</span> <span class="n">point</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">points</span><span class="p">):</span>
+            <span class="c1"># Create the motion path feature.</span>
+            <span class="n">motion_path_feature</span> <span class="o">=</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">Feature</span><span class="o">.</span><span class="n">create_motion_path</span><span class="p">(</span>
+                <span class="n">point</span><span class="p">,</span>
+                <span class="n">time_array</span><span class="p">,</span>
+                <span class="c1"># We want the motion path to get reconstructed all the way to present day, even if the</span>
+                <span class="c1"># time array doesn&#39;t include present day. The motion path should only disappear when</span>
+                <span class="c1"># reconstructed further back in time than the oldest time in the time array...</span>
+                <span class="n">valid_time</span><span class="o">=</span><span class="p">(</span><span class="n">time_array</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="mf">0.0</span><span class="p">),</span>  <span class="c1"># max(time_array), present-day</span>
+                <span class="n">relative_plate</span><span class="o">=</span><span class="n">relative_plate_id</span><span class="p">,</span>
+                <span class="n">reconstruction_plate_id</span><span class="o">=</span><span class="n">point_plate_ids</span><span class="p">[</span><span class="n">point_index</span><span class="p">],</span>
+            <span class="p">)</span>
+
+            <span class="c1"># Reconstruct the motion path feature.</span>
+            <span class="c1">#</span>
+            <span class="c1"># This involves *reverse* reconstructing it from &#39;from_time&#39; to present day</span>
+            <span class="c1"># (since all pygplates.Feature must have present day coordinates) and then</span>
+            <span class="c1"># reconstructing the motion path feature from present day to &#39;to_time&#39;.</span>
             <span class="n">reconstructed_motion_paths</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">reconstruct</span><span class="p">(</span>
                 <span class="n">motion_path_feature</span><span class="p">,</span>
-                <span class="n">to_time</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+                <span class="n">to_time</span><span class="o">=</span><span class="n">to_time</span><span class="p">,</span>  <span class="c1"># reconstruct to &#39;to_time&#39;</span>
+                <span class="n">from_time</span><span class="o">=</span><span class="n">from_time</span><span class="p">,</span>  <span class="c1"># initial seed point locations correspond to &#39;from_time&#39;</span>
+                <span class="n">anchor_plate_id</span><span class="o">=</span><span class="n">anchor_plate_id</span><span class="p">,</span>
                 <span class="n">reconstruct_type</span><span class="o">=</span><span class="n">pygplates</span><span class="o">.</span><span class="n">ReconstructType</span><span class="o">.</span><span class="n">motion_path</span><span class="p">,</span>
-                <span class="n">anchor_plate_id</span><span class="o">=</span><span class="n">anchor_plate_id</span><span class="p">,</span>  <span class="c1"># if None then uses &#39;self.anchor_plate_id&#39; (default anchor plate of &#39;self.rotation_model&#39;)</span>
             <span class="p">)</span>
-            <span class="c1"># Turn motion paths in to lat-lon coordinates</span>
-            <span class="n">trail</span> <span class="o">=</span> <span class="kc">None</span>
-            <span class="k">for</span> <span class="n">reconstructed_motion_path</span> <span class="ow">in</span> <span class="n">reconstructed_motion_paths</span><span class="p">:</span>
-                <span class="c1"># not sure about this. always set the &quot;trail&quot; to the last one in reconstructed_motion_paths?</span>
-                <span class="c1"># or there is only one path in reconstructed_motion_paths? -- Michael Chin</span>
-                <span class="n">trail</span> <span class="o">=</span> <span class="n">reconstructed_motion_path</span><span class="o">.</span><span class="n">get_motion_path</span><span class="p">()</span><span class="o">.</span><span class="n">to_lat_lon_array</span><span class="p">()</span>
-            <span class="k">assert</span> <span class="n">trail</span> <span class="ow">is</span> <span class="ow">not</span> <span class="kc">None</span>
-            <span class="n">lon</span><span class="p">,</span> <span class="n">lat</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">flipud</span><span class="p">(</span><span class="n">trail</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]),</span> <span class="n">np</span><span class="o">.</span><span class="n">flipud</span><span class="p">(</span><span class="n">trail</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">])</span>
 
-            <span class="n">rlons</span><span class="p">[:,</span> <span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">lon</span>
-            <span class="n">rlats</span><span class="p">[:,</span> <span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">lat</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">reconstructed_motion_paths</span><span class="p">:</span>
+                <span class="c1"># If we get here then there are not enough points to form a polyline (needs 2 points) for the reconstructed motion path.</span>
+                <span class="c1"># This can be because &#39;time_array.max() &lt;= to_time&#39; and hence there&#39;s only zero or one point in the motion path.</span>
+                <span class="c1">#</span>
+                <span class="c1"># Return arrays with zero columns (ie, no history).</span>
+                <span class="n">rlons</span> <span class="o">=</span> <span class="n">rlats</span> <span class="o">=</span> <span class="n">rtimes</span> <span class="o">=</span> <span class="n">rate_of_motion</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">num_points</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
 
-            <span class="c1"># Obtain step-plot coordinates for rate of motion</span>
-            <span class="k">if</span> <span class="n">return_rate_of_motion</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
-                <span class="c1"># Get timestep</span>
-                <span class="n">TimeStep</span> <span class="o">=</span> <span class="p">[]</span>
-                <span class="k">for</span> <span class="n">j</span> <span class="ow">in</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">time_array</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">):</span>
-                    <span class="n">diff</span> <span class="o">=</span> <span class="n">time_array</span><span class="p">[</span><span class="n">j</span> <span class="o">+</span> <span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">time_array</span><span class="p">[</span><span class="n">j</span><span class="p">]</span>
-                    <span class="n">TimeStep</span><span class="o">.</span><span class="n">append</span><span class="p">(</span><span class="n">diff</span><span class="p">)</span>
+                <span class="c1"># Return early.</span>
+                <span class="n">return_tuple</span> <span class="o">=</span> <span class="n">rlons</span><span class="p">,</span> <span class="n">rlats</span>
+                <span class="k">if</span> <span class="n">return_times</span><span class="p">:</span>
+                    <span class="n">return_tuple</span> <span class="o">+=</span> <span class="p">(</span><span class="n">rtimes</span><span class="p">,)</span>
+                <span class="k">if</span> <span class="n">return_rate_of_motion</span><span class="p">:</span>
+                    <span class="n">return_tuple</span> <span class="o">+=</span> <span class="p">(</span><span class="n">rate_of_motion</span><span class="p">,)</span>
+                <span class="k">return</span> <span class="n">return_tuple</span>
 
+            <span class="c1"># There should be only one reconstructed motion path since it was created from only one seed point.</span>
+            <span class="n">reconstructed_motion_path</span> <span class="o">=</span> <span class="n">reconstructed_motion_paths</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
+            <span class="k">del</span> <span class="n">reconstructed_motion_paths</span>  <span class="c1"># so we don&#39;t accidentally use it</span>
+
+            <span class="c1"># Turn the motion path in to lat-lon coordinates.</span>
+            <span class="n">trail_lat_lon</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">reconstructed_motion_path</span><span class="o">.</span><span class="n">get_motion_path</span><span class="p">()</span><span class="o">.</span><span class="n">to_lat_lon_array</span><span class="p">()</span>
+            <span class="p">)</span>
+            <span class="c1"># Note that the motion path coordinates come out starting with the oldest time and working forwards.</span>
+            <span class="c1"># So, to match our &#39;times&#39; array, we flip the order.</span>
+            <span class="n">trail_lat_lon</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">flipud</span><span class="p">(</span><span class="n">trail_lat_lon</span><span class="p">)</span>
+
+            <span class="c1"># Create the return arrays (if haven&#39;t already).</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">created_return_arrays</span><span class="p">:</span>
+                <span class="c1"># All motion paths will have the same times in the motion path because they</span>
+                <span class="c1"># were all created with the same time array (and same begin/end valid time).</span>
+                <span class="c1">#</span>
+                <span class="c1"># So we can assume all motion paths (one per seed point) will have the same size.</span>
+                <span class="n">num_rtimes</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">trail_lat_lon</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">return_times</span> <span class="ow">or</span> <span class="n">return_rate_of_motion</span><span class="p">:</span>
+                    <span class="c1"># These are the *last* &#39;num_rtimes&#39; times in the time array.</span>
+                    <span class="c1">#</span>
+                    <span class="c1"># Note: We only need one time array for *all* the motion paths</span>
+                    <span class="c1">#       (unlike the rate-of-motion that requires one array *per* motion path).</span>
+                    <span class="n">rtimes</span> <span class="o">=</span> <span class="n">time_array</span><span class="p">[</span><span class="o">-</span><span class="n">num_rtimes</span><span class="p">:]</span>
+                    <span class="c1"># Also change the youngest time to the reconstruction time if it&#39;s within the time array range.</span>
+                    <span class="c1">#</span>
+                    <span class="c1"># This is a subtle point that unfortunately we need to handle.</span>
+                    <span class="c1"># It would be better for pygplates.ReconstructedMotionPath to add a method</span>
+                    <span class="c1"># that returns these times.</span>
+                    <span class="k">if</span> <span class="p">(</span>
+                        <span class="n">time_array</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">-</span> <span class="mf">1e-6</span> <span class="o">&lt;</span> <span class="n">to_time</span>
+                        <span class="ow">and</span> <span class="n">to_time</span> <span class="o">&lt;</span> <span class="n">time_array</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span> <span class="o">+</span> <span class="mf">1e-6</span>
+                    <span class="p">):</span>
+                        <span class="n">rtimes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">to_time</span>
+
+                <span class="c1"># To be filled with reconstructed points of the motion path of each seed point.</span>
+                <span class="n">rlons</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="n">num_points</span><span class="p">,</span> <span class="n">num_rtimes</span><span class="p">))</span>
+                <span class="n">rlats</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="n">num_points</span><span class="p">,</span> <span class="n">num_rtimes</span><span class="p">))</span>
+
+                <span class="c1"># To be filled with the rate of motion between reconstructed points of the motion path</span>
+                <span class="c1"># of each seed point (if requested).</span>
+                <span class="k">if</span> <span class="n">return_rate_of_motion</span><span class="p">:</span>
+                    <span class="n">rate_of_motion</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="n">num_points</span><span class="p">,</span> <span class="n">num_rtimes</span> <span class="o">-</span> <span class="mi">1</span><span class="p">))</span>
+
+                <span class="n">created_return_arrays</span> <span class="o">=</span> <span class="kc">True</span>
+
+            <span class="n">rlons</span><span class="p">[</span><span class="n">point_index</span><span class="p">]</span> <span class="o">=</span> <span class="n">trail_lat_lon</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span>
+            <span class="n">rlats</span><span class="p">[</span><span class="n">point_index</span><span class="p">]</span> <span class="o">=</span> <span class="n">trail_lat_lon</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span>
+
+            <span class="c1"># Calculate rate of motion (if requested).</span>
+            <span class="k">if</span> <span class="n">return_rate_of_motion</span><span class="p">:</span>
                 <span class="c1"># Iterate over each segment in the reconstructed motion path, get the distance travelled by the moving</span>
                 <span class="c1"># plate relative to the fixed plate in each time step</span>
-                <span class="n">Dist</span> <span class="o">=</span> <span class="p">[]</span>
-                <span class="k">for</span> <span class="n">reconstructed_motion_path</span> <span class="ow">in</span> <span class="n">reconstructed_motion_paths</span><span class="p">:</span>
-                    <span class="k">for</span> <span class="p">(</span>
-                        <span class="n">segment</span>
-                    <span class="p">)</span> <span class="ow">in</span> <span class="n">reconstructed_motion_path</span><span class="o">.</span><span class="n">get_motion_path</span><span class="p">()</span><span class="o">.</span><span class="n">get_segments</span><span class="p">():</span>
-                        <span class="n">Dist</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
-                            <span class="n">segment</span><span class="o">.</span><span class="n">get_arc_length</span><span class="p">()</span>
-                            <span class="o">*</span> <span class="n">_tools</span><span class="o">.</span><span class="n">geocentric_radius</span><span class="p">(</span>
-                                <span class="n">segment</span><span class="o">.</span><span class="n">get_start_point</span><span class="p">()</span><span class="o">.</span><span class="n">to_lat_lon</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
-                            <span class="p">)</span>
-                            <span class="o">/</span> <span class="mf">1e3</span>
-                        <span class="p">)</span>
+                <span class="n">distance</span> <span class="o">=</span> <span class="p">[</span>
+                    <span class="n">segment</span><span class="o">.</span><span class="n">get_arc_length</span><span class="p">()</span>
+                    <span class="o">*</span> <span class="n">_tools</span><span class="o">.</span><span class="n">geocentric_radius</span><span class="p">(</span>
+                        <span class="n">segment</span><span class="o">.</span><span class="n">get_start_point</span><span class="p">()</span><span class="o">.</span><span class="n">to_lat_lon</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
+                    <span class="p">)</span>
+                    <span class="k">for</span> <span class="n">segment</span> <span class="ow">in</span> <span class="n">reconstructed_motion_path</span><span class="o">.</span><span class="n">get_motion_path</span><span class="p">()</span><span class="o">.</span><span class="n">get_segments</span><span class="p">()</span>
+                <span class="p">]</span>
 
-                <span class="c1"># Note that the motion path coordinates come out starting with the oldest time and working forwards</span>
-                <span class="c1"># So, to match our &#39;times&#39; array, we flip the order</span>
-                <span class="n">Dist</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">flipud</span><span class="p">(</span><span class="n">Dist</span><span class="p">)</span>
+                <span class="c1"># Note that the motion path coordinates come out starting with the oldest time and working forwards.</span>
+                <span class="c1"># So, to match our &#39;times&#39; array, we flip the order.</span>
+                <span class="n">distance</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">flipud</span><span class="p">(</span><span class="n">distance</span><span class="p">)</span>
 
-                <span class="c1"># Get rate of motion as distance per Myr</span>
-                <span class="n">Rate</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">Dist</span><span class="p">)</span> <span class="o">/</span> <span class="n">TimeStep</span>
+                <span class="c1"># Get rate of motion as cm/yr (from metres/Myr by multiplying with 1e-4).</span>
+                <span class="n">rate_of_motion</span><span class="p">[</span><span class="n">point_index</span><span class="p">]</span> <span class="o">=</span> <span class="p">(</span><span class="n">distance</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">rtimes</span><span class="p">))</span> <span class="o">*</span> <span class="mf">1e-4</span>
 
-                <span class="c1"># Manipulate arrays to get a step plot</span>
-                <span class="n">StepRate</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">Rate</span><span class="p">)</span> <span class="o">*</span> <span class="mi">2</span><span class="p">)</span>
-                <span class="n">StepRate</span><span class="p">[::</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">Rate</span>
-                <span class="n">StepRate</span><span class="p">[</span><span class="mi">1</span><span class="p">::</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">Rate</span>
+        <span class="n">return_tuple</span> <span class="o">=</span> <span class="n">rlons</span><span class="p">,</span> <span class="n">rlats</span>
 
-                <span class="n">StepTime</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">Rate</span><span class="p">)</span> <span class="o">*</span> <span class="mi">2</span><span class="p">)</span>
-                <span class="n">StepTime</span><span class="p">[::</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">time_array</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
-                <span class="n">StepTime</span><span class="p">[</span><span class="mi">1</span><span class="p">::</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">time_array</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>
+        <span class="k">if</span> <span class="n">return_times</span><span class="p">:</span>
+            <span class="n">return_tuple</span> <span class="o">+=</span> <span class="p">(</span><span class="n">rtimes</span><span class="p">,)</span>
 
-                <span class="c1"># Append the nth point&#39;s step time and step rate coordinates to the ndarray</span>
-                <span class="n">StepTimes</span><span class="p">[:,</span> <span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">StepTime</span>
-                <span class="n">StepRates</span><span class="p">[:,</span> <span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">StepRate</span> <span class="o">*</span> <span class="mf">0.1</span>  <span class="c1"># cm/yr</span>
+        <span class="k">if</span> <span class="n">return_rate_of_motion</span><span class="p">:</span>
+            <span class="n">return_tuple</span> <span class="o">+=</span> <span class="p">(</span><span class="n">rate_of_motion</span><span class="p">,)</span>
 
-                <span class="c1"># Obseleted by Lauren&#39;s changes above (though it is more efficient)</span>
-                <span class="c1"># multiply arc length of the motion path segment by a latitude-dependent Earth radius</span>
-                <span class="c1"># use latitude of the segment start point</span>
-                <span class="c1"># distance.append( segment.get_arc_length() * _tools.geocentric_radius(segment.get_start_point().to_lat_lon()[0]) / 1e3)</span>
-                <span class="c1"># rate = np.asarray(distance)/np.diff(time_array)</span>
-                <span class="c1"># rates[:,i] = np.flipud(rate)</span>
-                <span class="c1"># rates *= 0.1 # cm/yr</span>
-
-        <span class="k">if</span> <span class="n">return_rate_of_motion</span> <span class="ow">is</span> <span class="kc">True</span><span class="p">:</span>
-            <span class="k">return</span> <span class="p">(</span>
-                <span class="n">np</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="n">rlons</span><span class="p">),</span>
-                <span class="n">np</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="n">rlats</span><span class="p">),</span>
-                <span class="n">np</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="n">StepTimes</span><span class="p">),</span>
-                <span class="n">np</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="n">StepRates</span><span class="p">),</span>
-            <span class="p">)</span>
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">return</span> <span class="n">np</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="n">rlons</span><span class="p">),</span> <span class="n">np</span><span class="o">.</span><span class="n">squeeze</span><span class="p">(</span><span class="n">rlats</span><span class="p">)</span></div>
+        <span class="k">return</span> <span class="n">return_tuple</span></div>
 
 
 <div class="viewcode-block" id="PlateReconstruction.create_flowline">
@@ -2714,166 +2861,322 @@
         <span class="n">lons</span><span class="p">,</span>
         <span class="n">lats</span><span class="p">,</span>
         <span class="n">time_array</span><span class="p">,</span>
-        <span class="n">left_plate_ID</span><span class="p">,</span>
-        <span class="n">right_plate_ID</span><span class="p">,</span>
+        <span class="n">left_plate_id</span><span class="p">,</span>
+        <span class="n">right_plate_id</span><span class="p">,</span>
+        <span class="o">*</span><span class="p">,</span>
+        <span class="n">from_time</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+        <span class="n">to_time</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">anchor_plate_id</span><span class="o">=</span><span class="kc">None</span><span class="p">,</span>
+        <span class="n">return_times</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
         <span class="n">return_rate_of_motion</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span>
     <span class="p">):</span>
 <span class="w">        </span><span class="sd">&quot;&quot;&quot;Create a path of points to track plate motion away from spreading ridges over time using half-stage rotations.</span>
 
+<span class="sd">        One flowline is created for each point using the left and right plate IDs.</span>
+<span class="sd">        Each flowline is reconstructed to ``to_time`` (defaults to ``from_time`` which defaults to present day).</span>
+
 <span class="sd">        Parameters</span>
 <span class="sd">        ----------</span>
-<span class="sd">        lons : arr</span>
-<span class="sd">            An array of longitudes of points along spreading ridges.</span>
-<span class="sd">        lats : arr</span>
-<span class="sd">            An array of latitudes of points along spreading ridges.</span>
-<span class="sd">        time_array : arr</span>
-<span class="sd">            A list of times to obtain seed point locations at.</span>
-<span class="sd">        left_plate_ID : int</span>
-<span class="sd">            The plate ID of the polygon to the left of the spreading</span>
-<span class="sd">            ridge.</span>
-<span class="sd">        right_plate_ID : int</span>
-<span class="sd">            The plate ID of the polygon to the right of the spreading</span>
-<span class="sd">            ridge.</span>
-<span class="sd">        return_rate_of_motion : bool, default False</span>
-<span class="sd">            Choose whether to return a step time and step rate array</span>
-<span class="sd">            for a step plot of motion.</span>
+<span class="sd">        lons : float or 1D array</span>
+<span class="sd">            A single longitude or an array of longitudes of seed points of the flowlines.</span>
+<span class="sd">        lats : float or 1D array</span>
+<span class="sd">            A single latitude or an array of latitudes of seed points of the flowlines.</span>
+<span class="sd">        time_array : float or 1D array</span>
+<span class="sd">            An array of reconstruction times at which to track spreading of the seed points.</span>
+<span class="sd">            For example:</span>
+
+<span class="sd">            .. code-block:: python</span>
+<span class="sd">                :linenos:</span>
+
+<span class="sd">                import numpy as np</span>
+<span class="sd">                min_time = 30</span>
+<span class="sd">                max_time = 100</span>
+<span class="sd">                time_step = 2.5</span>
+<span class="sd">                time_array = np.arange(min_time, max_time + time_step, time_step)</span>
+
+<span class="sd">            Note that the time array will be sorted in ascending order (if it is not already).</span>
+
+<span class="sd">        left_plate_id : int</span>
+<span class="sd">            The plate ID of the plate to the left of the spreading ridge.</span>
+<span class="sd">        right_plate_id : int</span>
+<span class="sd">            The plate ID of the plate to the right of the spreading ridge.</span>
+<span class="sd">        from_time : float, default=0</span>
+<span class="sd">            The initial time (Ma) of the seed points.</span>
+<span class="sd">            The ``lons`` and ``lats`` are the initial coordinates of the seed points at this time.</span>
+<span class="sd">            Defaults to present day (0 Ma).</span>
+<span class="sd">        to_time : float, optional</span>
+<span class="sd">            The reconstruction time (Ma) to reconstruct the flowline to.</span>
+<span class="sd">            Defaults to ``from_time`` (which itself defaults to present day).</span>
+<span class="sd">        anchor_plate_id : int, optional</span>
+<span class="sd">            Anchor plate ID. Defaults to the current anchor plate ID (:py:attr:`anchor_plate_id` attribute).</span>
+<span class="sd">        return_times : bool, default=False</span>
+<span class="sd">            Choose whether to return the times in ``time_array`` that are older than the reconstruction time</span>
+<span class="sd">            (ie, where ``time_array[i] &gt; to_time``). This includes the reconstruction time (``to_time``)</span>
+<span class="sd">            unless it is outside the time range of ``time_array``.</span>
+<span class="sd">        return_rate_of_motion : bool, default=False</span>
+<span class="sd">            Choose whether to return the full spreading rate through time for each time step between the times in ``time_array``</span>
+<span class="sd">            that are older than the reconstruction time (ie, where ``time_array[i] &gt; to_time``). This includes the reconstruction time</span>
+<span class="sd">            (``to_time``) unless it is outside the time range of ``time_array``.</span>
 
 <span class="sd">        Returns</span>
 <span class="sd">        -------</span>
-<span class="sd">        left_lon : ndarray</span>
-<span class="sd">            The longitudes of the left flowline for n seed points.</span>
-<span class="sd">            There are n columns for n seed points, and m rows</span>
-<span class="sd">            for m time steps in time_array.</span>
-<span class="sd">        left_lat : ndarray</span>
-<span class="sd">            The latitudes of the left flowline of n seed points.</span>
-<span class="sd">            There are n columns for n seed points, and m rows</span>
-<span class="sd">            for m time steps in time_array.</span>
-<span class="sd">        right_lon : ndarray</span>
-<span class="sd">            The longitudes of the right flowline of n seed points.</span>
-<span class="sd">            There are n columns for n seed points, and m rows</span>
-<span class="sd">            for m time steps in time_array.</span>
-<span class="sd">        right_lat : ndarray</span>
-<span class="sd">            The latitudes of the right flowline of n seed points.</span>
-<span class="sd">            There are n columns for n seed points, and m rows</span>
-<span class="sd">            for m time steps in time_array.</span>
+<span class="sd">        left_rlons : 2D array</span>
+<span class="sd">            A 2D array with each row containing the **left** plate spreading history of longitudes of a seed point</span>
+<span class="sd">            at each time in ``time_array`` that is older than the reconstruction time (ie, where ``time_array[i] &gt;= to_time``).</span>
+<span class="sd">            There are n rows for n seed points.</span>
+<span class="sd">        left_rlats : 2D array</span>
+<span class="sd">            A 2D array with each row containing the **left** plate spreading history of latitudes of a seed point</span>
+<span class="sd">            at each time in ``time_array`` that is older than the reconstruction time (ie, where ``time_array[i] &gt;= to_time``).</span>
+<span class="sd">            There are n rows for n seed points.</span>
+<span class="sd">        right_rlons : 2D array</span>
+<span class="sd">            A 2D array with each row containing the **right** plate spreading history of longitudes of a seed point</span>
+<span class="sd">            at each time in ``time_array`` that is older than the reconstruction time (ie, where ``time_array[i] &gt;= to_time``).</span>
+<span class="sd">            There are n rows for n seed points.</span>
+<span class="sd">        right_rlats : 2D array</span>
+<span class="sd">            A 2D array with each row containing the **right** plate spreading history of latitudes of a seed point</span>
+<span class="sd">            at each time in ``time_array`` that is older than the reconstruction time (ie, where ``time_array[i] &gt;= to_time``).</span>
+<span class="sd">            There are n rows for n seed points.</span>
+<span class="sd">        rtimes : 1D array</span>
+<span class="sd">            Only provided if ``return_times`` is True.</span>
+<span class="sd">            A 1D array with the times in ``time_array`` that are older than the reconstruction time (ie, where ``time_array[i] &gt;= to_time``).</span>
+<span class="sd">            The size of this array is the same as the number of columns in ``left_rlons`, ``left_rlats``, ``right_rlons` and ``right_rlats``.</span>
+<span class="sd">        rate_of_motion : 2D array</span>
+<span class="sd">            Only provided if ``return_rate_of_motion`` is True.</span>
+<span class="sd">            The full spreading rate (in cm/yr) for each time step between the times in ``time_array`` that are older than the</span>
+<span class="sd">            reconstruction time (ie, where ``time_array[i] &gt;= to_time``).</span>
+<span class="sd">            The number of columns is one less than the number of columns in ``left_rlons`, ``left_rlats``, ``right_rlons` and ``right_rlats``.</span>
+<span class="sd">            There are n rows for n seed points.</span>
+
+<span class="sd">        .. note::</span>
+
+<span class="sd">            If ``max(time_array) &lt;= time`` then there will be no history in the returned arrays</span>
+<span class="sd">            (ie, the number of columns will be zero for each returned array, including ``rtimes`` and ``rate_of_motion`` if requested).</span>
+
+<span class="sd">        .. note::</span>
+
+<span class="sd">            If ``from_time`` is non-zero (ie, not present day) then ``lons`` and ``lats`` are assumed to be the **reconstructed**</span>
+<span class="sd">            seed point locations at ``from_time``.</span>
 
 <span class="sd">        Examples</span>
 <span class="sd">        --------</span>
-<span class="sd">        To access the i\\ :sup:`th` seed point&#39;s left and right latitudes and</span>
-<span class="sd">        longitudes:</span>
+<span class="sd">        To access the latitudes and longitudes of each point&#39;s flowline:</span>
 
 <span class="sd">        .. code-block:: python</span>
 <span class="sd">            :linenos:</span>
 
-<span class="sd">            for i in np.arange(0,len(seed_points)):</span>
-<span class="sd">                left_flowline_longitudes = left_lon[:,i]</span>
-<span class="sd">                left_flowline_latitudes = left_lat[:,i]</span>
-<span class="sd">                right_flowline_longitudes = right_lon[:,i]</span>
-<span class="sd">                right_flowline_latitudes = right_lat[:,i]</span>
+<span class="sd">            lons = [...]</span>
+<span class="sd">            lats = [...]</span>
+<span class="sd">            gpts = gplately.Points(model, lons, lats)</span>
+
+<span class="sd">            time_array = [0, 10, 20, 30, 40, 50]</span>
+<span class="sd">            left_plate_ID=201</span>
+<span class="sd">            right_plate_ID=701</span>
+<span class="sd">            left_rlons, left_rlats, right_rlons, right_rlats = gpts.flowline(time_array, left_plate_ID, right_plate_ID)</span>
+
+<span class="sd">            # Left flowline.</span>
+<span class="sd">            for i in range(len(left_rlons)):</span>
+<span class="sd">                current_left_lons = left_rlons[i]</span>
+<span class="sd">                current_left_lats = left_rlats[i]</span>
+
+<span class="sd">            # Right flowline.</span>
+<span class="sd">            for i in range(len(right_rlons)):</span>
+<span class="sd">                current_right_lons = right_rlons[i]</span>
+<span class="sd">                current_right_lats = right_rlats[i]</span>
 <span class="sd">        &quot;&quot;&quot;</span>
-        <span class="n">lats</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">atleast_1d</span><span class="p">(</span><span class="n">lats</span><span class="p">)</span>
-        <span class="n">lons</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">atleast_1d</span><span class="p">(</span><span class="n">lons</span><span class="p">)</span>
-        <span class="n">time_array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">atleast_1d</span><span class="p">(</span><span class="n">time_array</span><span class="p">)</span>
+        <span class="c1"># The left/right plate IDs should be integers.</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span><span class="n">left_plate_id</span><span class="p">,</span> <span class="n">numbers</span><span class="o">.</span><span class="n">Integral</span><span class="p">)</span> <span class="ow">or</span> <span class="ow">not</span> <span class="nb">isinstance</span><span class="p">(</span>
+            <span class="n">right_plate_id</span><span class="p">,</span> <span class="n">numbers</span><span class="o">.</span><span class="n">Integral</span>
+        <span class="p">):</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s2">&quot;&#39;left_plate_id&#39; and &#39;right_plate_id&#39; should be integers&quot;</span><span class="p">)</span>
 
-        <span class="n">seed_points</span> <span class="o">=</span> <span class="nb">list</span><span class="p">(</span><span class="nb">zip</span><span class="p">(</span><span class="n">lats</span><span class="p">,</span> <span class="n">lons</span><span class="p">))</span>
-        <span class="n">multi_point</span> <span class="o">=</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">MultiPointOnSphere</span><span class="p">(</span><span class="n">seed_points</span><span class="p">)</span>
+        <span class="c1"># If the anchor plate is None then use default anchor plate.</span>
+        <span class="k">if</span> <span class="n">anchor_plate_id</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">anchor_plate_id</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">anchor_plate_id</span>
 
-        <span class="n">start</span> <span class="o">=</span> <span class="mi">0</span>
-        <span class="k">if</span> <span class="n">time_array</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">!=</span> <span class="mi">0</span><span class="p">:</span>
-            <span class="n">start</span> <span class="o">=</span> <span class="mi">1</span>
-            <span class="n">time_array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">hstack</span><span class="p">([[</span><span class="mi">0</span><span class="p">],</span> <span class="n">time_array</span><span class="p">])</span>
+        <span class="c1"># The reconstruction time (&#39;to_time&#39;) defaults to the</span>
+        <span class="c1"># initial time (&#39;from_time&#39;) of the seed point locations.</span>
+        <span class="k">if</span> <span class="n">to_time</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+            <span class="n">to_time</span> <span class="o">=</span> <span class="n">from_time</span>
 
-        <span class="c1"># Create the flowline feature</span>
-        <span class="n">flowline_feature</span> <span class="o">=</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">Feature</span><span class="o">.</span><span class="n">create_flowline</span><span class="p">(</span>
-            <span class="n">multi_point</span><span class="p">,</span>
-            <span class="n">time_array</span><span class="o">.</span><span class="n">tolist</span><span class="p">(),</span>
-            <span class="n">valid_time</span><span class="o">=</span><span class="p">(</span><span class="n">time_array</span><span class="o">.</span><span class="n">max</span><span class="p">(),</span> <span class="n">time_array</span><span class="o">.</span><span class="n">min</span><span class="p">()),</span>
-            <span class="n">left_plate</span><span class="o">=</span><span class="n">left_plate_ID</span><span class="p">,</span>
-            <span class="n">right_plate</span><span class="o">=</span><span class="n">right_plate_ID</span><span class="p">,</span>
+        <span class="c1"># Make sure time array is ascending.</span>
+        <span class="n">time_array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">sort</span><span class="p">(</span><span class="n">np</span><span class="o">.</span><span class="n">atleast_1d</span><span class="p">(</span><span class="n">time_array</span><span class="p">))</span>
+        <span class="c1"># If the reconstruction time (&#39;to_time&#39;) is younger than the youngest time in the input time array</span>
+        <span class="c1"># then it&#39;ll still get included in the reconstructed flowline. Since we only want to see flowline points</span>
+        <span class="c1"># within the time array we will need to ignore it in the reconstructed left/right flowlines.</span>
+        <span class="c1"># This is not a problem for motion paths though.</span>
+        <span class="k">if</span> <span class="n">to_time</span> <span class="o">&lt;</span> <span class="n">time_array</span><span class="p">[</span><span class="mi">0</span><span class="p">]:</span>
+            <span class="n">ignore_youngest_time_sample</span> <span class="o">=</span> <span class="kc">True</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="n">ignore_youngest_time_sample</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="c1"># Unfortunately a flowline will not get reconstructed properly unless present day is included in the input time array.</span>
+        <span class="c1"># So insert &#39;to_time&#39; into &#39;time_array&#39; if present day is not included.</span>
+        <span class="k">if</span> <span class="n">time_array</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">&gt;</span> <span class="mi">0</span><span class="p">:</span>
+            <span class="n">time_array</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">insert</span><span class="p">(</span><span class="n">time_array</span><span class="p">,</span> <span class="mi">0</span><span class="p">,</span> <span class="mf">0.0</span><span class="p">)</span>
+
+        <span class="c1"># Most common case first: both lons and lats are sequences.</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isscalar</span><span class="p">(</span><span class="n">lons</span><span class="p">)</span> <span class="ow">and</span> <span class="ow">not</span> <span class="n">np</span><span class="o">.</span><span class="n">isscalar</span><span class="p">(</span><span class="n">lats</span><span class="p">):</span>
+            <span class="c1"># Make sure numpy arrays (if not already).</span>
+            <span class="n">lons</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">lons</span><span class="p">)</span>
+            <span class="n">lats</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">lats</span><span class="p">)</span>
+            <span class="k">if</span> <span class="nb">len</span><span class="p">(</span><span class="n">lons</span><span class="p">)</span> <span class="o">!=</span> <span class="nb">len</span><span class="p">(</span><span class="n">lats</span><span class="p">):</span>
+                <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                    <span class="s2">&quot;&#39;lons&#39; and &#39;lats&#39; must be of equal length (</span><span class="si">{}</span><span class="s2"> != </span><span class="si">{}</span><span class="s2">)&quot;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span>
+                        <span class="nb">len</span><span class="p">(</span><span class="n">lons</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">lats</span><span class="p">)</span>
+                    <span class="p">)</span>
+                <span class="p">)</span>
+        <span class="k">elif</span> <span class="n">np</span><span class="o">.</span><span class="n">isscalar</span><span class="p">(</span><span class="n">lons</span><span class="p">)</span> <span class="ow">and</span> <span class="n">np</span><span class="o">.</span><span class="n">isscalar</span><span class="p">(</span><span class="n">lats</span><span class="p">):</span>
+            <span class="c1"># Both are scalars. Convert to arrays with one element.</span>
+            <span class="n">lons</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">atleast_1d</span><span class="p">(</span><span class="n">lons</span><span class="p">)</span>
+            <span class="n">lats</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">atleast_1d</span><span class="p">(</span><span class="n">lats</span><span class="p">)</span>
+        <span class="k">else</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span>
+                <span class="s2">&quot;Both &#39;lats&#39; and &#39;lons&#39; must both be a sequence or both a scalar&quot;</span>
+            <span class="p">)</span>
+
+        <span class="n">points</span> <span class="o">=</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">MultiPointOnSphere</span><span class="p">(</span>
+            <span class="p">[(</span><span class="n">lat</span><span class="p">,</span> <span class="n">lon</span><span class="p">)</span> <span class="k">for</span> <span class="n">lon</span><span class="p">,</span> <span class="n">lat</span> <span class="ow">in</span> <span class="nb">zip</span><span class="p">(</span><span class="n">lons</span><span class="p">,</span> <span class="n">lats</span><span class="p">)]</span>
         <span class="p">)</span>
 
-        <span class="c1"># reconstruct the flowline in present-day coordinates</span>
+        <span class="n">num_points</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">points</span><span class="p">)</span>
+
+        <span class="c1"># Create the flowline feature from *all* the seed points (because they all have the same parameters).</span>
+        <span class="n">flowline_feature</span> <span class="o">=</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">Feature</span><span class="o">.</span><span class="n">create_flowline</span><span class="p">(</span>
+            <span class="n">points</span><span class="p">,</span>
+            <span class="n">time_array</span><span class="p">,</span>
+            <span class="c1"># We want the flowline to get reconstructed all the way to present day, even if the</span>
+            <span class="c1"># time array doesn&#39;t include present day. The flowline should only disappear when</span>
+            <span class="c1"># reconstructed further back in time than the oldest time in the time array...</span>
+            <span class="n">valid_time</span><span class="o">=</span><span class="p">(</span><span class="n">time_array</span><span class="p">[</span><span class="o">-</span><span class="mi">1</span><span class="p">],</span> <span class="mf">0.0</span><span class="p">),</span>  <span class="c1"># max(time_array), present-day</span>
+            <span class="n">left_plate</span><span class="o">=</span><span class="n">left_plate_id</span><span class="p">,</span>
+            <span class="n">right_plate</span><span class="o">=</span><span class="n">right_plate_id</span><span class="p">,</span>
+        <span class="p">)</span>
+
+        <span class="c1"># Reconstruct the flowline feature.</span>
+        <span class="c1">#</span>
+        <span class="c1"># This involves *reverse* reconstructing it from &#39;from_time&#39; to present day</span>
+        <span class="c1"># (since all pygplates.Feature must have present day coordinates) and then</span>
+        <span class="c1"># reconstructing the flowline feature from present day to &#39;to_time&#39;.</span>
         <span class="n">reconstructed_flowlines</span> <span class="o">=</span> <span class="bp">self</span><span class="o">.</span><span class="n">reconstruct</span><span class="p">(</span>
             <span class="n">flowline_feature</span><span class="p">,</span>
-            <span class="n">to_time</span><span class="o">=</span><span class="mi">0</span><span class="p">,</span>
+            <span class="n">to_time</span><span class="o">=</span><span class="n">to_time</span><span class="p">,</span>  <span class="c1"># reconstruct to &#39;to_time&#39;</span>
+            <span class="n">from_time</span><span class="o">=</span><span class="n">from_time</span><span class="p">,</span>  <span class="c1"># initial seed point locations correspond to &#39;from_time&#39;</span>
+            <span class="n">anchor_plate_id</span><span class="o">=</span><span class="n">anchor_plate_id</span><span class="p">,</span>
             <span class="n">reconstruct_type</span><span class="o">=</span><span class="n">pygplates</span><span class="o">.</span><span class="n">ReconstructType</span><span class="o">.</span><span class="n">flowline</span><span class="p">,</span>
         <span class="p">)</span>
 
-        <span class="c1"># Wrap things to the dateline, to avoid plotting artefacts.</span>
-        <span class="n">date_line_wrapper</span> <span class="o">=</span> <span class="n">pygplates</span><span class="o">.</span><span class="n">DateLineWrapper</span><span class="p">()</span>
+        <span class="k">if</span> <span class="ow">not</span> <span class="n">reconstructed_flowlines</span><span class="p">:</span>
+            <span class="c1"># If we get here then there are not enough points to form a polyline (needs 2 points) for</span>
+            <span class="c1"># the left/right sides of the reconstructed flowlines.</span>
+            <span class="c1">#</span>
+            <span class="c1"># This can be because &#39;time_array.max() &lt;= to_time&#39; and hence there&#39;s only zero or one point</span>
+            <span class="c1"># in each left/right flowline.</span>
+            <span class="c1">#</span>
+            <span class="c1"># Return arrays with zero columns (ie, no history).</span>
+            <span class="n">left_rlons</span> <span class="o">=</span> <span class="n">left_rlats</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">num_points</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
+            <span class="n">right_rlons</span> <span class="o">=</span> <span class="n">right_rlats</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">num_points</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
+            <span class="n">rtimes</span> <span class="o">=</span> <span class="n">rate_of_motion</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">((</span><span class="n">num_points</span><span class="p">,</span> <span class="mi">0</span><span class="p">))</span>
 
-        <span class="c1"># Create lat-lon ndarrays to store the left and right lats and lons of flowlines</span>
-        <span class="n">left_lon</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">time_array</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">lons</span><span class="p">)))</span>
-        <span class="n">left_lat</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">time_array</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">lons</span><span class="p">)))</span>
-        <span class="n">right_lon</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">time_array</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">lons</span><span class="p">)))</span>
-        <span class="n">right_lat</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="nb">len</span><span class="p">(</span><span class="n">time_array</span><span class="p">),</span> <span class="nb">len</span><span class="p">(</span><span class="n">lons</span><span class="p">)))</span>
-        <span class="n">StepTimes</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(((</span><span class="nb">len</span><span class="p">(</span><span class="n">time_array</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="mi">2</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">lons</span><span class="p">)))</span>
-        <span class="n">StepRates</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">(((</span><span class="nb">len</span><span class="p">(</span><span class="n">time_array</span><span class="p">)</span> <span class="o">-</span> <span class="mi">1</span><span class="p">)</span> <span class="o">*</span> <span class="mi">2</span><span class="p">,</span> <span class="nb">len</span><span class="p">(</span><span class="n">lons</span><span class="p">)))</span>
+            <span class="c1"># Return early.</span>
+            <span class="n">return_tuple</span> <span class="o">=</span> <span class="n">left_rlons</span><span class="p">,</span> <span class="n">left_rlats</span><span class="p">,</span> <span class="n">right_rlons</span><span class="p">,</span> <span class="n">right_rlats</span>
+            <span class="k">if</span> <span class="n">return_times</span><span class="p">:</span>
+                <span class="n">return_tuple</span> <span class="o">+=</span> <span class="p">(</span><span class="n">rtimes</span><span class="p">,)</span>
+            <span class="k">if</span> <span class="n">return_rate_of_motion</span><span class="p">:</span>
+                <span class="n">return_tuple</span> <span class="o">+=</span> <span class="p">(</span><span class="n">rate_of_motion</span><span class="p">,)</span>
+            <span class="k">return</span> <span class="n">return_tuple</span>
 
-        <span class="c1"># Iterate over the reconstructed flowlines. Each seed point results in a &#39;left&#39; and &#39;right&#39; flowline</span>
-        <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">reconstructed_flowline</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">reconstructed_flowlines</span><span class="p">):</span>
-            <span class="c1"># Get the points for the left flowline only</span>
-            <span class="n">left_latlon</span> <span class="o">=</span> <span class="n">reconstructed_flowline</span><span class="o">.</span><span class="n">get_left_flowline</span><span class="p">()</span><span class="o">.</span><span class="n">to_lat_lon_array</span><span class="p">()</span>
-            <span class="n">left_lon</span><span class="p">[:,</span> <span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">left_latlon</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span>
-            <span class="n">left_lat</span><span class="p">[:,</span> <span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">left_latlon</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span>
+        <span class="c1"># Need to query the reconstructed flowline of the first seed point before we can size the return arrays.</span>
+        <span class="n">created_return_arrays</span> <span class="o">=</span> <span class="kc">False</span>
+        <span class="c1"># To avoid Pylance warning.</span>
+        <span class="n">left_rlons</span> <span class="o">=</span> <span class="n">left_rlats</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([])</span>
+        <span class="n">right_rlons</span> <span class="o">=</span> <span class="n">right_rlats</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([])</span>
+        <span class="n">rtimes</span> <span class="o">=</span> <span class="n">rate_of_motion</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">array</span><span class="p">([])</span>
 
-            <span class="c1"># Repeat for the right flowline points</span>
-            <span class="n">right_latlon</span> <span class="o">=</span> <span class="p">(</span>
+        <span class="k">for</span> <span class="n">point_index</span><span class="p">,</span> <span class="n">reconstructed_flowline</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">reconstructed_flowlines</span><span class="p">):</span>
+            <span class="c1"># Turn the left flowline in to lat-lon coordinates.</span>
+            <span class="n">left_trail_lat_lon</span> <span class="o">=</span> <span class="p">(</span>
+                <span class="n">reconstructed_flowline</span><span class="o">.</span><span class="n">get_left_flowline</span><span class="p">()</span><span class="o">.</span><span class="n">to_lat_lon_array</span><span class="p">()</span>
+            <span class="p">)</span>
+            <span class="c1"># Turn the right flowline in to lat-lon coordinates.</span>
+            <span class="n">right_trail_lat_lon</span> <span class="o">=</span> <span class="p">(</span>
                 <span class="n">reconstructed_flowline</span><span class="o">.</span><span class="n">get_right_flowline</span><span class="p">()</span><span class="o">.</span><span class="n">to_lat_lon_array</span><span class="p">()</span>
             <span class="p">)</span>
-            <span class="n">right_lon</span><span class="p">[:,</span> <span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">right_latlon</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span>
-            <span class="n">right_lat</span><span class="p">[:,</span> <span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">right_latlon</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span>
+
+            <span class="c1"># If we the youngest point (first point) then do so.</span>
+            <span class="k">if</span> <span class="n">ignore_youngest_time_sample</span><span class="p">:</span>
+                <span class="n">left_trail_lat_lon</span> <span class="o">=</span> <span class="n">left_trail_lat_lon</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>
+                <span class="n">right_trail_lat_lon</span> <span class="o">=</span> <span class="n">right_trail_lat_lon</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>
+
+            <span class="c1"># Create the return arrays (if haven&#39;t already).</span>
+            <span class="k">if</span> <span class="ow">not</span> <span class="n">created_return_arrays</span><span class="p">:</span>
+                <span class="c1"># All flowline will have the same times in the left/right flowline because they were all created</span>
+                <span class="c1"># with the same time array and left/right plate IDs (and same begin/end valid time).</span>
+                <span class="c1">#</span>
+                <span class="c1"># So we can assume all flowline (one per seed point) will have the same size.</span>
+                <span class="n">num_rtimes</span> <span class="o">=</span> <span class="nb">len</span><span class="p">(</span><span class="n">left_trail_lat_lon</span><span class="p">)</span>
+                <span class="k">if</span> <span class="n">return_times</span> <span class="ow">or</span> <span class="n">return_rate_of_motion</span><span class="p">:</span>
+                    <span class="c1"># These are the *last* &#39;num_rtimes&#39; times in the time array.</span>
+                    <span class="c1">#</span>
+                    <span class="c1"># Note: We only need one array for *all* the flowlines</span>
+                    <span class="c1">#       (unlike the rate-of-motion that requires one left and right array *per* flowline).</span>
+                    <span class="n">rtimes</span> <span class="o">=</span> <span class="n">time_array</span><span class="p">[</span><span class="o">-</span><span class="n">num_rtimes</span><span class="p">:]</span>
+                    <span class="c1"># Also change the youngest time to the reconstruction time (unless we&#39;ve already ignored it).</span>
+                    <span class="c1">#</span>
+                    <span class="c1"># This is a subtle point that unfortunately we need to handle.</span>
+                    <span class="c1"># It would be better for pygplates.ReconstructedFlowline to add a method that returns these times.</span>
+                    <span class="k">if</span> <span class="ow">not</span> <span class="n">ignore_youngest_time_sample</span><span class="p">:</span>
+                        <span class="n">rtimes</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span> <span class="o">=</span> <span class="n">to_time</span>
+
+                <span class="c1"># To be filled with reconstructed points of the left/right flowline of each seed point.</span>
+                <span class="n">left_rlons</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="n">num_points</span><span class="p">,</span> <span class="n">num_rtimes</span><span class="p">))</span>
+                <span class="n">left_rlats</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="n">num_points</span><span class="p">,</span> <span class="n">num_rtimes</span><span class="p">))</span>
+                <span class="n">right_rlons</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="n">num_points</span><span class="p">,</span> <span class="n">num_rtimes</span><span class="p">))</span>
+                <span class="n">right_rlats</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="n">num_points</span><span class="p">,</span> <span class="n">num_rtimes</span><span class="p">))</span>
+
+                <span class="c1"># To be filled with the spreading rates between reconstructed points of the flowline</span>
+                <span class="c1"># of each seed point (if requested).</span>
+                <span class="k">if</span> <span class="n">return_rate_of_motion</span><span class="p">:</span>
+                    <span class="n">rate_of_motion</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">empty</span><span class="p">((</span><span class="n">num_points</span><span class="p">,</span> <span class="n">num_rtimes</span> <span class="o">-</span> <span class="mi">1</span><span class="p">))</span>
+
+                <span class="n">created_return_arrays</span> <span class="o">=</span> <span class="kc">True</span>
+
+            <span class="n">left_rlons</span><span class="p">[</span><span class="n">point_index</span><span class="p">]</span> <span class="o">=</span> <span class="n">left_trail_lat_lon</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span>
+            <span class="n">left_rlats</span><span class="p">[</span><span class="n">point_index</span><span class="p">]</span> <span class="o">=</span> <span class="n">left_trail_lat_lon</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span>
+            <span class="n">right_rlons</span><span class="p">[</span><span class="n">point_index</span><span class="p">]</span> <span class="o">=</span> <span class="n">right_trail_lat_lon</span><span class="p">[:,</span> <span class="mi">1</span><span class="p">]</span>
+            <span class="n">right_rlats</span><span class="p">[</span><span class="n">point_index</span><span class="p">]</span> <span class="o">=</span> <span class="n">right_trail_lat_lon</span><span class="p">[:,</span> <span class="mi">0</span><span class="p">]</span>
+
+            <span class="c1"># Calculate spreading rate (if requested).</span>
+            <span class="k">if</span> <span class="n">return_rate_of_motion</span><span class="p">:</span>
+                <span class="c1"># Iterate over each segment in the either the left or right reconstructed flowline,</span>
+                <span class="c1"># get the distance travelled by the moving plate relative to the fixed plate in each time step</span>
+                <span class="n">segments</span> <span class="o">=</span> <span class="n">reconstructed_flowline</span><span class="o">.</span><span class="n">get_left_flowline</span><span class="p">()</span><span class="o">.</span><span class="n">get_segments</span><span class="p">()</span>
+
+                <span class="c1"># If we the youngest segment (first segment) then do so.</span>
+                <span class="k">if</span> <span class="n">ignore_youngest_time_sample</span><span class="p">:</span>
+                    <span class="n">segments</span> <span class="o">=</span> <span class="n">segments</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>
+
+                <span class="n">distance</span> <span class="o">=</span> <span class="p">[</span>
+                    <span class="n">segment</span><span class="o">.</span><span class="n">get_arc_length</span><span class="p">()</span>
+                    <span class="o">*</span> <span class="n">_tools</span><span class="o">.</span><span class="n">geocentric_radius</span><span class="p">(</span>
+                        <span class="n">segment</span><span class="o">.</span><span class="n">get_start_point</span><span class="p">()</span><span class="o">.</span><span class="n">to_lat_lon</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
+                    <span class="p">)</span>
+                    <span class="k">for</span> <span class="n">segment</span> <span class="ow">in</span> <span class="n">segments</span>
+                <span class="p">]</span>
+
+                <span class="c1"># Get spreading rate as cm/yr (from metres/Myr by multiplying with 1e-4).</span>
+                <span class="c1">#</span>
+                <span class="c1"># Note: Need to multiply rate by 2 since flowlines give us half-spreading rate and</span>
+                <span class="c1">#       we want the full spreading rate (assuming symmetric spreading for flowlines).</span>
+                <span class="n">rate_of_motion</span><span class="p">[</span><span class="n">point_index</span><span class="p">]</span> <span class="o">=</span> <span class="mi">2</span> <span class="o">*</span> <span class="p">(</span><span class="n">distance</span> <span class="o">/</span> <span class="n">np</span><span class="o">.</span><span class="n">diff</span><span class="p">(</span><span class="n">rtimes</span><span class="p">))</span> <span class="o">*</span> <span class="mf">1e-4</span>
+
+        <span class="n">return_tuple</span> <span class="o">=</span> <span class="n">left_rlons</span><span class="p">,</span> <span class="n">left_rlats</span><span class="p">,</span> <span class="n">right_rlons</span><span class="p">,</span> <span class="n">right_rlats</span>
+
+        <span class="k">if</span> <span class="n">return_times</span><span class="p">:</span>
+            <span class="n">return_tuple</span> <span class="o">+=</span> <span class="p">(</span><span class="n">rtimes</span><span class="p">,)</span>
 
         <span class="k">if</span> <span class="n">return_rate_of_motion</span><span class="p">:</span>
-            <span class="k">for</span> <span class="n">i</span><span class="p">,</span> <span class="n">reconstructed_motion_path</span> <span class="ow">in</span> <span class="nb">enumerate</span><span class="p">(</span><span class="n">reconstructed_flowlines</span><span class="p">):</span>
-                <span class="n">distance</span> <span class="o">=</span> <span class="p">[]</span>
-                <span class="k">for</span> <span class="p">(</span>
-                    <span class="n">segment</span>
-                <span class="p">)</span> <span class="ow">in</span> <span class="n">reconstructed_motion_path</span><span class="o">.</span><span class="n">get_left_flowline</span><span class="p">()</span><span class="o">.</span><span class="n">get_segments</span><span class="p">():</span>
-                    <span class="n">distance</span><span class="o">.</span><span class="n">append</span><span class="p">(</span>
-                        <span class="n">segment</span><span class="o">.</span><span class="n">get_arc_length</span><span class="p">()</span>
-                        <span class="o">*</span> <span class="n">_tools</span><span class="o">.</span><span class="n">geocentric_radius</span><span class="p">(</span>
-                            <span class="n">segment</span><span class="o">.</span><span class="n">get_start_point</span><span class="p">()</span><span class="o">.</span><span class="n">to_lat_lon</span><span class="p">()[</span><span class="mi">0</span><span class="p">]</span>
-                        <span class="p">)</span>
-                        <span class="o">/</span> <span class="mf">1e3</span>
-                    <span class="p">)</span>
+            <span class="n">return_tuple</span> <span class="o">+=</span> <span class="p">(</span><span class="n">rate_of_motion</span><span class="p">,)</span>
 
-                <span class="c1"># Get rate of motion as distance per Myr</span>
-                <span class="c1"># Need to multiply rate by 2, since flowlines give us half-spreading rate</span>
-                <span class="n">time_step</span> <span class="o">=</span> <span class="n">time_array</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span> <span class="o">-</span> <span class="n">time_array</span><span class="p">[</span><span class="mi">0</span><span class="p">]</span>
-                <span class="n">Rate</span> <span class="o">=</span> <span class="p">(</span>
-                    <span class="n">np</span><span class="o">.</span><span class="n">asarray</span><span class="p">(</span><span class="n">distance</span><span class="p">)</span> <span class="o">/</span> <span class="n">time_step</span>
-                <span class="p">)</span> <span class="o">*</span> <span class="mi">2</span>  <span class="c1"># since we created the flowline at X increment</span>
-
-                <span class="c1"># Manipulate arrays to get a step plot</span>
-                <span class="n">StepRate</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">Rate</span><span class="p">)</span> <span class="o">*</span> <span class="mi">2</span><span class="p">)</span>
-                <span class="n">StepRate</span><span class="p">[::</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">Rate</span>
-                <span class="n">StepRate</span><span class="p">[</span><span class="mi">1</span><span class="p">::</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">Rate</span>
-
-                <span class="n">StepTime</span> <span class="o">=</span> <span class="n">np</span><span class="o">.</span><span class="n">zeros</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">Rate</span><span class="p">)</span> <span class="o">*</span> <span class="mi">2</span><span class="p">)</span>
-                <span class="n">StepTime</span><span class="p">[::</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">time_array</span><span class="p">[:</span><span class="o">-</span><span class="mi">1</span><span class="p">]</span>
-                <span class="n">StepTime</span><span class="p">[</span><span class="mi">1</span><span class="p">::</span><span class="mi">2</span><span class="p">]</span> <span class="o">=</span> <span class="n">time_array</span><span class="p">[</span><span class="mi">1</span><span class="p">:]</span>
-
-                <span class="c1"># Append the nth point&#39;s step time and step rate coordinates to the ndarray</span>
-                <span class="n">StepTimes</span><span class="p">[:,</span> <span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">StepTime</span>
-                <span class="n">StepRates</span><span class="p">[:,</span> <span class="n">i</span><span class="p">]</span> <span class="o">=</span> <span class="n">StepRate</span> <span class="o">*</span> <span class="mf">0.1</span>  <span class="c1"># cm/yr</span>
-
-            <span class="k">return</span> <span class="p">(</span>
-                <span class="n">left_lon</span><span class="p">[</span><span class="n">start</span><span class="p">:],</span>
-                <span class="n">left_lat</span><span class="p">[</span><span class="n">start</span><span class="p">:],</span>
-                <span class="n">right_lon</span><span class="p">[</span><span class="n">start</span><span class="p">:],</span>
-                <span class="n">right_lat</span><span class="p">[</span><span class="n">start</span><span class="p">:],</span>
-                <span class="n">StepTimes</span><span class="p">,</span>
-                <span class="n">StepRates</span><span class="p">,</span>
-            <span class="p">)</span>
-
-        <span class="k">else</span><span class="p">:</span>
-            <span class="k">return</span> <span class="p">(</span>
-                <span class="n">left_lon</span><span class="p">[</span><span class="n">start</span><span class="p">:],</span>
-                <span class="n">left_lat</span><span class="p">[</span><span class="n">start</span><span class="p">:],</span>
-                <span class="n">right_lon</span><span class="p">[</span><span class="n">start</span><span class="p">:],</span>
-                <span class="n">right_lat</span><span class="p">[</span><span class="n">start</span><span class="p">:],</span>
-            <span class="p">)</span></div>
+        <span class="k">return</span> <span class="n">return_tuple</span></div>
 </div>
 
 </pre></div>
